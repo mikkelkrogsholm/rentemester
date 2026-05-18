@@ -1,0 +1,58 @@
+name: smoke
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: smoke-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  smoke:
+    name: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run smoke (timed)
+        id: smoke
+        run: |
+          set -o pipefail
+          start=$(date +%s)
+          bun run smoke 2>&1 | tee /tmp/smoke.log
+          status=${PIPESTATUS[0]}
+          end=$(date +%s)
+          duration=$(( end - start ))
+          echo "duration_seconds=${duration}" >> "$GITHUB_OUTPUT"
+          echo "Smoke wall-clock: ${duration}s"
+          exit "$status"
+
+      - name: Report wall-clock duration
+        if: always()
+        run: |
+          duration="${{ steps.smoke.outputs.duration_seconds }}"
+          if [ -z "$duration" ]; then
+            duration="unknown"
+          fi
+          {
+            echo "## Smoke wall-clock"
+            echo ""
+            echo "Duration: **${duration}s**"
+            echo ""
+            echo "_Budget tracking for issue #88._"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice title=Smoke wall-clock::${duration}s"
