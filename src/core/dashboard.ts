@@ -615,7 +615,7 @@ function header(input: DashboardInput): string {
     ? "Backup: ingen registreret"
     : `Backup: ${daysAgoLabel(backupDays)}`;
   const cvrLine = company.cvr
-    ? `<div class="cvr">CVR DK${escapeHtml(company.cvr)}</div>`
+    ? `<div class="cvr">CVR ${escapeHtml(company.cvr)}</div>`
     : "";
   return `<header class="header">
   <div>

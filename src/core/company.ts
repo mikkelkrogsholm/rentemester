@@ -22,9 +22,14 @@ const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
   fiscalYearLabelStrategy: "end-year",
 };
 
-export function normalizeCvr(value?: string | null) {
+export function normalizeCvr(value?: string | null): string | null {
   const trimmed = value?.trim();
-  return trimmed ? trimmed.toUpperCase() : null;
+  if (!trimmed) return null;
+  const stripped = trimmed.toUpperCase().replace(/^DK/, "");
+  if (!/^\d{8}$/.test(stripped)) {
+    throw new Error(`CVR must be 8 digits (optionally prefixed with DK), got: ${value}`);
+  }
+  return `DK${stripped}`;
 }
 
 export function normalizeFiscalYearStartMonth(value?: number | string | null) {

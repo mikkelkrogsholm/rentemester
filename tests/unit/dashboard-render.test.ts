@@ -29,7 +29,7 @@ function buildFixture(): DashboardInput {
       name: "Eksempel Snedker ApS",
       country: "DK",
       currency: "DKK",
-      cvr: "12345678",
+      cvr: "DK12345678",
       fiscalYearStartMonth: 1,
       fiscalYearLabelStrategy: "end-year",
     },
