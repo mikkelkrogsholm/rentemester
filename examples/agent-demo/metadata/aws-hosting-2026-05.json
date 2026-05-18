@@ -1,0 +1,20 @@
+{
+  "source": "email",
+  "issueDate": "2026-05-12",
+  "invoiceNo": "EUINV-AWS-2026-05",
+  "deliveryDescription": "AWS hosting (EC2 + S3 + CloudFront), april 2026",
+  "amountIncVat": 980,
+  "currency": "DKK",
+  "sender": {
+    "name": "Amazon Web Services EMEA SARL",
+    "address": "38 avenue John F. Kennedy, L-1855 Luxembourg",
+    "vatOrCvr": "LU26375245"
+  },
+  "recipient": {
+    "name": "Rentemester ApS",
+    "address": "Testvej 1, 2100 København Ø",
+    "vatOrCvr": "DK12345678"
+  },
+  "vatAmount": 0,
+  "paymentDetails": "Card payment 2026-05-12"
+}

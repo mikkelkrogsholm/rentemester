@@ -1,0 +1,12 @@
+{
+  "source": "photo-upload",
+  "documentType": "cash_register_receipt",
+  "issueDate": "2026-05-15",
+  "amountIncVat": 1205,
+  "currency": "DKK",
+  "sender": {
+    "name": "Restaurant Madklubben"
+  },
+  "vatAmount": 241,
+  "paymentDetails": "Card payment 2026-05-15"
+}

@@ -1,0 +1,12 @@
+From: receipts@openai.com
+To: regnskab@rentemester.dk
+Date: 2026-05-07
+Subject: OpenAI API receipt — Invoice OAI-9988
+---
+OpenAI, L.L.C.
+Invoice #: OAI-9988
+Period: 2026-05-01 to 2026-05-07
+Description: API usage (gpt-4.1, gpt-4o-mini)
+Amount: 425.00 DKK
+VAT: Reverse charge — VAT to be accounted by recipient
+Payment method: Visa **** 4242

@@ -1,0 +1,20 @@
+{
+  "source": "email",
+  "issueDate": "2026-05-03",
+  "invoiceNo": "GW-2026-05-001",
+  "deliveryDescription": "Google Workspace Business Standard, maj 2026",
+  "amountIncVat": 750,
+  "currency": "DKK",
+  "sender": {
+    "name": "Google Ireland Limited",
+    "address": "Gordon House, Barrow Street, Dublin 4, Ireland",
+    "vatOrCvr": "IE6388047V"
+  },
+  "recipient": {
+    "name": "Rentemester ApS",
+    "address": "Testvej 1, 2100 København Ø",
+    "vatOrCvr": "DK12345678"
+  },
+  "vatAmount": 150,
+  "paymentDetails": "Card payment 2026-05-03"
+}

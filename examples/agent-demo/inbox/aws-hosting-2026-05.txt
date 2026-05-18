@@ -1,0 +1,12 @@
+From: billing@amazon.com
+To: regnskab@rentemester.dk
+Date: 2026-05-12
+Subject: AWS Invoice EUINV-AWS-2026-05
+---
+Amazon Web Services EMEA SARL
+Invoice #: EUINV-AWS-2026-05
+Period: 2026-04-01 to 2026-04-30
+Services: EC2, S3, CloudFront
+Amount: 980.00 DKK
+VAT: Reverse charge — Article 196 VAT Directive 2006/112/EC
+Payment method: Visa **** 4242

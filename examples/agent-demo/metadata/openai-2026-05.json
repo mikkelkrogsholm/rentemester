@@ -1,0 +1,20 @@
+{
+  "source": "email",
+  "issueDate": "2026-05-07",
+  "invoiceNo": "OAI-9988",
+  "deliveryDescription": "OpenAI API usage, maj 2026",
+  "amountIncVat": 425,
+  "currency": "DKK",
+  "sender": {
+    "name": "OpenAI Ireland Ltd",
+    "address": "1st Floor, The Liffey Trust Centre, 117-126 Sheriff Street Upper, Dublin 1, Ireland",
+    "vatOrCvr": "IE3829476WH"
+  },
+  "recipient": {
+    "name": "Rentemester ApS",
+    "address": "Testvej 1, 2100 København Ø",
+    "vatOrCvr": "DK12345678"
+  },
+  "vatAmount": 0,
+  "paymentDetails": "Card payment 2026-05-07"
+}

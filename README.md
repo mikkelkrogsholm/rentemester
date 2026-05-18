@@ -122,6 +122,22 @@ Målet er ikke at fjerne ansvar. Målet er at fjerne gentagelser, rod og unødig
 
 ---
 
+## Se det virke
+
+Et eksekverbart eksempel ligger i [`examples/agent-demo/`](examples/agent-demo/) — det viser én månedes bogføring fra ende til ende over Rentemesters MCP-overflade.
+
+```bash
+bun run agent-demo
+# eller direkte:
+bun examples/agent-demo/run.ts --company /tmp/agent-demo --mode rule-based
+```
+
+Demoen importerer en bank-CSV, ingester 6 bilag (Google Workspace, OpenAI, AWS, DSB, Elgiganten, og en restaurant-bon uden formålsbeskrivelse), foreslår match mod bankudtog, auto-bogfører 5 høj-confidence udgifter, og lader resten ligge i exception-køen. Til sidst kører den momsrapport, audit-verifikation og healthcheck. Ingen API-keys, intet netværk — alt kører lokalt over MCP-stdio mod `src/mcp/server.ts`.
+
+Se [`examples/agent-demo/README.md`](examples/agent-demo/README.md) for forventet output og kode-walkthrough.
+
+---
+
 ## Hvad er bygget nu?
 
 Rentemester er i en tidlig teknisk prototype. Den nuværende version har allerede en fungerende kerne for:
