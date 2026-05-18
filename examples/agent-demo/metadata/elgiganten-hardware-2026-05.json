@@ -1,0 +1,20 @@
+{
+  "source": "email",
+  "issueDate": "2026-05-09",
+  "invoiceNo": "EG-2026-05-3322",
+  "deliveryDescription": "MacBook Air 13\" M3 (arbejdscomputer)",
+  "amountIncVat": 12000,
+  "currency": "DKK",
+  "sender": {
+    "name": "Elgiganten A/S",
+    "address": "Hjulmagervej 51, 9000 Aalborg",
+    "vatOrCvr": "DK17220519"
+  },
+  "recipient": {
+    "name": "Rentemester ApS",
+    "address": "Testvej 1, 2100 København Ø",
+    "vatOrCvr": "DK12345678"
+  },
+  "vatAmount": 2400,
+  "paymentDetails": "Card payment 2026-05-09"
+}

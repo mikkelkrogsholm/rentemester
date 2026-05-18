@@ -1,0 +1,20 @@
+{
+  "source": "email",
+  "issueDate": "2026-05-14",
+  "invoiceNo": "DSB-2026-05-7741",
+  "deliveryDescription": "Togrejse København → Aarhus (kundemøde)",
+  "amountIncVat": 450,
+  "currency": "DKK",
+  "sender": {
+    "name": "DSB",
+    "address": "Telegade 2, 2630 Taastrup",
+    "vatOrCvr": "DK25050053"
+  },
+  "recipient": {
+    "name": "Rentemester ApS",
+    "address": "Testvej 1, 2100 København Ø",
+    "vatOrCvr": "DK12345678"
+  },
+  "vatAmount": 90,
+  "paymentDetails": "Card payment 2026-05-14"
+}

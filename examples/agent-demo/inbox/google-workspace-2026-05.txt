@@ -1,0 +1,13 @@
+From: billing-noreply@google.com
+To: regnskab@rentemester.dk
+Date: 2026-05-03
+Subject: Your Google Workspace receipt — May 2026
+---
+Google Workspace
+Invoice #: GW-2026-05-001
+Period: 2026-05-01 to 2026-05-31
+Seats: 5 × Business Standard
+Amount excl. VAT: 600.00 DKK
+VAT (25%): 150.00 DKK
+Amount incl. VAT: 750.00 DKK
+Payment method: Visa **** 4242

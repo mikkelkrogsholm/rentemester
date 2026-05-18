@@ -1,0 +1,13 @@
+From: faktura@elgiganten.dk
+To: regnskab@rentemester.dk
+Date: 2026-05-09
+Subject: Faktura EG-2026-05-3322 — MacBook Air + tilbehør
+---
+Elgiganten A/S
+Faktura #: EG-2026-05-3322
+Vare: MacBook Air 13" M3 (8GB/256GB)
+Antal: 1
+Beløb ekskl. moms: 9.600,00 DKK
+Moms (25%): 2.400,00 DKK
+Beløb inkl. moms: 12.000,00 DKK
+Betalingsmiddel: Visa **** 4242
