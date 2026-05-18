@@ -1,10 +1,10 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, normalize, resolve } from "node:path";
-import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, createPublicKey, timingSafeEqual, verify as cryptoVerify } from "node:crypto";
 import { openDb } from "./db";
 import { verifyAuditChain } from "./ledger";
 import { companyPaths, ensureCompanyDirs } from "./paths";
-import { backupManifestKeyPath, backupManifestSignaturePath } from "./system-backups";
+import { backupAsymmetricSignaturePath, backupManifestKeyPath, backupManifestSignaturePath } from "./system-backups";
 import type { BackupManifest, ManifestFile } from "./system-backups";
 import { insertAuditLog } from "./actor";
 
@@ -14,6 +14,7 @@ export type RestoreSystemBackupInput = {
   backupDir: string;
   targetCompanyRoot: string;
   verificationKeyPath?: string;
+  publicKeyPath?: string;
 };
 
 export type RestoreSystemBackupResult = {
@@ -86,7 +87,7 @@ function manifestHmac(manifestText: string, keyHex: string) {
   return createHmac("sha256", Buffer.from(keyHex, "hex")).update(manifestText).digest("hex");
 }
 
-function verifyManifestAuthenticity(backupDir: string, manifestText: string, verificationKeyPath?: string) {
+function verifyManifestHmac(backupDir: string, manifestText: string, verificationKeyPath?: string) {
   const signaturePath = backupManifestSignaturePath(backupDir);
   if (!existsSync(signaturePath)) return "missing backup manifest signature: manifest.json.hmac";
   const signature = readFileSync(signaturePath, "utf8").trim();
@@ -101,6 +102,69 @@ function verifyManifestAuthenticity(backupDir: string, manifestText: string, ver
   const expected = Buffer.from(manifestHmac(manifestText, keyHex), "hex");
   const actual = Buffer.from(signature, "hex");
   if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) return "backup manifest authenticity check failed";
+  return null;
+}
+
+function verifyManifestEd25519(
+  backupDir: string,
+  manifest: BackupManifest,
+  manifestText: string,
+  overridePublicKeyPath?: string,
+): string | null {
+  if (!manifest.asymmetricSignature) return null; // nothing to verify
+  const sigPath = backupAsymmetricSignaturePath(backupDir);
+  if (!existsSync(sigPath)) return "missing ed25519 backup manifest signature: manifest.json.ed25519.sig";
+  const sigBase64 = readFileSync(sigPath, "utf8").trim();
+  let sigBytes: Buffer;
+  try {
+    sigBytes = Buffer.from(sigBase64, "base64");
+  } catch {
+    return "invalid ed25519 signature encoding";
+  }
+  if (sigBytes.length !== 64) return `invalid ed25519 signature length: ${sigBytes.length} (expected 64)`;
+
+  // Resolve public key: explicit override > path embedded in manifest > <backupDir>/config/backup-manifest.pub
+  let publicKeyPath: string | null = null;
+  if (overridePublicKeyPath) {
+    publicKeyPath = overridePublicKeyPath;
+  } else {
+    const declared = resolveManifestPath(backupDir, manifest.asymmetricSignature.publicKeyPath);
+    if (declared && existsSync(declared)) {
+      publicKeyPath = declared;
+    } else {
+      const fallback = join(backupDir, "config", "backup-manifest.pub");
+      if (existsSync(fallback)) publicKeyPath = fallback;
+    }
+  }
+  if (!publicKeyPath || !existsSync(publicKeyPath)) {
+    return "ed25519 public key not found; pass publicKeyPath or restore from a backup that ships the key under config/backup-manifest.pub";
+  }
+  const pem = readFileSync(publicKeyPath, "utf8");
+  let key;
+  try {
+    key = createPublicKey(pem);
+  } catch (error) {
+    return `failed to parse ed25519 public key: ${String(error)}`;
+  }
+  const ok = cryptoVerify(null, Buffer.from(manifestText, "utf8"), key, sigBytes);
+  if (!ok) return "ed25519 manifest signature verification failed";
+  return null;
+}
+
+function verifyManifestAuthenticity(
+  backupDir: string,
+  manifest: BackupManifest,
+  manifestText: string,
+  verificationKeyPath?: string,
+  publicKeyPath?: string,
+) {
+  const hmacError = verifyManifestHmac(backupDir, manifestText, verificationKeyPath);
+  if (hmacError) return hmacError;
+  // If the manifest advertises an ed25519 signature, it MUST also verify.
+  // This means: opting in to asymmetric signing strengthens the guarantee
+  // (both HMAC and ed25519 must agree); it never weakens HMAC.
+  const ed25519Error = verifyManifestEd25519(backupDir, manifest, manifestText, publicKeyPath);
+  if (ed25519Error) return ed25519Error;
   return null;
 }
 
@@ -152,6 +216,89 @@ function validateRestoredDb(dbPath: string, manifest: BackupManifest) {
   }
 }
 
+export type VerifyBackupSignatureInput = {
+  backupDir: string;
+  verificationKeyPath?: string;
+  publicKeyPath?: string;
+};
+
+export type VerifyBackupSignatureResult = {
+  ok: boolean;
+  backupId?: string;
+  algorithms: string[];
+  publicKeyHint?: string;
+  hmacKeyHint?: string;
+  errors: string[];
+};
+
+// Standalone verification — no restore, no DB writes, no target directory
+// required. Designed for 3rd-party use (revisor/Skattestyrelsen) where the
+// verifier holds only the backup directory and (optionally) a public key
+// file received out-of-band.
+export function verifyBackupSignature(input: VerifyBackupSignatureInput): VerifyBackupSignatureResult {
+  if (!input.backupDir || !existsSync(input.backupDir)) {
+    return { ok: false, algorithms: [], errors: [`backupDir does not exist: ${input.backupDir}`] };
+  }
+  const manifestText = readManifestText(input.backupDir);
+  if (!manifestText) return { ok: false, algorithms: [], errors: [`invalid or missing backup manifest in ${input.backupDir}`] };
+  const manifest = readManifest(input.backupDir);
+  if (!manifest) return { ok: false, algorithms: [], errors: [`invalid or missing backup manifest in ${input.backupDir}`] };
+
+  const algorithms: string[] = [];
+  const errors: string[] = [];
+
+  // Ed25519 is the 3rd-party-friendly path. Try it first, but only if the
+  // manifest advertises it. If the verifier only has a public key (no HMAC
+  // key) and the manifest has no ed25519 signature, we cannot verify.
+  if (manifest.asymmetricSignature) {
+    const ed25519Error = verifyManifestEd25519(input.backupDir, manifest, manifestText, input.publicKeyPath);
+    if (ed25519Error) {
+      errors.push(ed25519Error);
+    } else {
+      algorithms.push("ed25519");
+    }
+  }
+
+  // HMAC is verified when a key path is supplied or one can be inferred
+  // (i.e. we are next to the source company root). Skipped silently for
+  // pure 3rd-party verification where only the public key is held.
+  const hasInferableHmacKey = input.verificationKeyPath || inferVerificationKeyPath(input.backupDir);
+  if (hasInferableHmacKey) {
+    const hmacError = verifyManifestHmac(input.backupDir, manifestText, input.verificationKeyPath);
+    if (hmacError) {
+      errors.push(hmacError);
+    } else {
+      algorithms.push("hmac-sha256");
+    }
+  }
+
+  if (algorithms.length === 0 && errors.length === 0) {
+    errors.push(
+      "no verifiable signature found: manifest has no asymmetricSignature block and no HMAC key was provided or inferable",
+    );
+  }
+
+  // ALSO verify manifest file integrity claims (sha256/size) — a valid
+  // signature over a manifest whose file hashes no longer match the on-disk
+  // bytes is still a tamper-detection failure.
+  const fileErrors = [
+    ensureMatches(input.backupDir, manifest.dbSnapshot),
+    ...manifest.copiedFiles.documentsOriginals.map((file) => ensureMatches(input.backupDir, file)),
+    ...manifest.copiedFiles.invoicesIssued.map((file) => ensureMatches(input.backupDir, file)),
+    ...manifest.copiedFiles.config.map((file) => ensureMatches(input.backupDir, file)),
+  ].filter((value): value is string => Boolean(value));
+  errors.push(...fileErrors);
+
+  return {
+    ok: errors.length === 0 && algorithms.length > 0,
+    backupId: manifest.backupId,
+    algorithms,
+    publicKeyHint: manifest.asymmetricSignature?.publicKeyHint,
+    hmacKeyHint: manifest.manifestSignature?.keyHint,
+    errors,
+  };
+}
+
 export function restoreSystemBackup(input: RestoreSystemBackupInput): RestoreSystemBackupResult {
   const errors: string[] = [];
   if (!input.backupDir || !existsSync(input.backupDir)) errors.push(`backupDir does not exist: ${input.backupDir}`);
@@ -160,10 +307,10 @@ export function restoreSystemBackup(input: RestoreSystemBackupInput): RestoreSys
 
   const manifestText = readManifestText(input.backupDir);
   if (!manifestText) return { ok: false, appliedRules: [RULE_ID], errors: [`invalid or missing backup manifest in ${input.backupDir}`] };
-  const authenticityError = verifyManifestAuthenticity(input.backupDir, manifestText, input.verificationKeyPath);
-  if (authenticityError) return { ok: false, appliedRules: [RULE_ID], errors: [authenticityError] };
   const manifest = readManifest(input.backupDir);
   if (!manifest) return { ok: false, appliedRules: [RULE_ID], errors: [`invalid or missing backup manifest in ${input.backupDir}`] };
+  const authenticityError = verifyManifestAuthenticity(input.backupDir, manifest, manifestText, input.verificationKeyPath, input.publicKeyPath);
+  if (authenticityError) return { ok: false, appliedRules: [RULE_ID], errors: [authenticityError] };
 
   const manifestErrors = [
     ensureMatches(input.backupDir, manifest.dbSnapshot),

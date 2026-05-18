@@ -1,7 +1,7 @@
 import { companyPaths } from "../core/paths";
 import { openDb, migrate } from "../core/db";
-import { createSystemBackup, getBackupComplianceStatus } from "../core/system-backups";
-import { restoreSystemBackup } from "../core/system-restore";
+import { createSystemBackup, exportBackupPublicKey, getBackupComplianceStatus } from "../core/system-backups";
+import { restoreSystemBackup, verifyBackupSignature } from "../core/system-restore";
 import { exportAuthorityPackage } from "../core/authority-export";
 import type { CommandDispatch } from "../cli-dispatch";
 
@@ -9,9 +9,36 @@ export function register(dispatch: CommandDispatch): void {
   dispatch.on("system", "backup", (ctx) => {
     const db = openDb(companyPaths(ctx.companyRoot()).db);
     migrate(db);
-    const result = createSystemBackup(db, ctx.companyRoot(), { createdAt: ctx.arg("--at") });
+    const result = createSystemBackup(db, ctx.companyRoot(), {
+      createdAt: ctx.arg("--at"),
+      signWithEd25519: ctx.hasFlag("--sign-with-ed25519"),
+    });
     ctx.emitResult(result as Record<string, unknown>);
     db.close();
+  });
+
+  dispatch.on("system", "export-public-key", (ctx) => {
+    const out = ctx.arg("--out");
+    if (!out) {
+      console.error("Missing required --out <file>");
+      process.exit(2);
+    }
+    const result = exportBackupPublicKey(ctx.companyRoot(), out);
+    ctx.emitResult(result as Record<string, unknown>);
+  });
+
+  dispatch.on("system", "verify-backup-signature", (ctx) => {
+    const backupDir = ctx.arg("--backup-dir");
+    if (!backupDir) {
+      console.error("Missing required --backup-dir <dir>");
+      process.exit(2);
+    }
+    const result = verifyBackupSignature({
+      backupDir,
+      publicKeyPath: ctx.arg("--public-key") ?? undefined,
+      verificationKeyPath: ctx.arg("--verify-key") ?? undefined,
+    });
+    ctx.emitResult(result as Record<string, unknown>);
   });
 
   dispatch.on("system", "backup-status", (ctx) => {
@@ -33,6 +60,7 @@ export function register(dispatch: CommandDispatch): void {
       backupDir,
       targetCompanyRoot,
       verificationKeyPath: ctx.arg("--verify-key") ?? undefined,
+      publicKeyPath: ctx.arg("--public-key") ?? undefined,
     });
     ctx.emitResult(result as Record<string, unknown>);
   });

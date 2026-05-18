@@ -104,20 +104,43 @@ Mangel på CLI-rotation er noteret som ergonomi-forbedring i
 
 ## Public-key-eksport
 
-**Ikke muligt med nuværende implementering.** HMAC-SHA256 er symmetrisk
-— samme nøgle bruges til signering og verificering. Konsekvenser:
+**Nu muligt via opt-in ed25519 (issue #99).** HMAC-SHA256 forbliver
+default for hurtig tamper-detection — den er rotation-let og kræver
+ingen ny mekanik. For 3.-parts-verifikation tilbydes en parallel
+asymmetrisk signatur:
 
-- En revisor (eller Skattestyrelsen) kan **ikke** uafhængigt verificere
-  en backup-signatur uden også at få den nøgle der kan forge nye
-  signaturer.
-- `restoreSystemBackup()` tager faktisk en `verificationKeyPath` (se
-  `src/cli.ts` flag `--verify-key`), men det er stadig samme symmetriske
-  hemmelighed — ikke en public key.
-- Non-repudiation eksisterer ikke: virksomheden kan altid hævde at en
-  ægte backup er falsk (eller omvendt), fordi enhver med nøglen kan
-  producere gyldige signaturer.
+- `system backup --sign-with-ed25519` genererer ved første kald et
+  ed25519-keypair (`crypto.generateKeyPairSync("ed25519")`) og skriver
+  manifest-signaturen som `manifest.json.ed25519.sig` (base64-encoded
+  64-byte ed25519-signatur).
+- **Private key** ligger på `<companyRoot>/.backup-signing-key.pem`
+  (PKCS#8 PEM, mode `0o600`). Den kopieres aldrig ind i backuppen — på
+  samme måde som HMAC-nøglen.
+- **Public key** ligger på `<companyRoot>/config/backup-manifest.pub`
+  (SPKI PEM). Den ligger inde i `config/` og ryger derfor automatisk med
+  i hver backup via den almindelige config-kopi, så enhver der har
+  backuppen også har den public key der svarer til signaturen.
+- `system export-public-key --company <root> --out <file>` kopierer
+  public key ud til en separat fil, som virksomheden kan sende til
+  revisor/Skattestyrelsen out-of-band (signet email, attesteret
+  papirkopi, etc.) før selve backuppen overdrages.
+- `system verify-backup-signature --backup-dir <dir> --public-key <pem>`
+  verificerer en backup standalone uden restore og uden adgang til
+  source-company-root. Bruges af 3.-parten.
+- `system restore-backup --public-key <pem>` accepterer også eksplicit
+  public key hvis verifikatoren ikke stoler på den der ligger i
+  backuppens config/.
 
-Dette er flagget som et separat issue (se "Sårbarheder" nedenfor).
+Når en backup er signeret med ed25519, **skal begge signaturer**
+(HMAC + ed25519) verificere ved restore. Opt-in svækker aldrig HMAC.
+
+For HMAC alene gælder stadig:
+
+- `restoreSystemBackup()` tager en `verificationKeyPath` (flag
+  `--verify-key`) der peger på den symmetriske hemmelighed. Brug kun
+  denne i en flow hvor verifikatoren reelt er virksomheden selv.
+- Non-repudiation findes stadig kun via ed25519 — HMAC-signaturen kan
+  pr. definition forfalskes af alle der har nøglen.
 
 ## Trusselsmodel
 
@@ -130,15 +153,48 @@ operationelle perimeter. "Source company-root" betyder hele
 | 1 | Angriber har **læseadgang** til `<root>/backups/` (fx fejlkonfigureret cloud-sync, lækket disk-snapshot) | **Beskyttet** — nøglen ligger ikke i backup-mappen, så ingen forgery mulig | **Ikke beskyttet** — manifest, ledger.sqlite, dokumenter og fakturaer ligger i klartekst i backup-mappen | Tamper-evidence intakt; data eksponeret. Brugeren skal selv kryptere backup-mappen ved off-site replikation. |
 | 2 | Angriber har **skriveadgang** til `<root>/backups/` men **ikke** til `<root>/.backup-manifest.key` (fx læk af staging-bucket-credentials der kun har skriveret til backup-prefix) | **Beskyttet** — `verifyManifestAuthenticity()` afviser ændret manifest. Faktiske filændringer fanges af sha256 i manifest under `ensureMatches()` (system-restore.ts:67-76) | **Ikke relevant** (samme som #1 hvis der også er læseadgang) | Tamper-evidence virker. Restore vil fejle, hvilket er det ønskede signal. |
 | 3 | Angriber har **fuld adgang til source company-root** før backup tages (RCE på serveren der kører `rentemester`) | **Ikke beskyttet** — angriberen har både nøgle og indhold og kan producere arbitrære signed backups | **Ikke beskyttet** — samme reason | Uden for backup-systemets ansvar. Mitigeres af host-hardening, ikke af signing. |
-| 4 | Backup overdrages til **3.-part** (revisor/Skattestyrelsen) der vil verificere **uden** source-adgang og uden at risikere at få forge-evne | **Ikke muligt** med HMAC. 3.-part skal modtage den symmetriske nøgle, hvorefter de kan forge nye signaturer for samme virksomhed | n/a | **Begrænsning.** Se sårbarheds-issue nedenfor. |
+| 4 | Backup overdrages til **3.-part** (revisor/Skattestyrelsen) der vil verificere **uden** source-adgang og uden at risikere at få forge-evne | **Beskyttet** når backup er taget med `--sign-with-ed25519` (issue #99). 3.-part modtager kun public key, kan verificere men ikke signere. Med HMAC alene gælder den oprindelige begrænsning: ingen 3.-parts-verifikation uden forge-evne. | n/a | **Løst for ed25519-stien.** HMAC-only-backups understøtter stadig ikke scenarie #4. |
 | 5 | Angriber bytter en **gammel ægte backup** ud med en endnu ældre ægte backup (rollback) | **Ikke beskyttet** mod selve manifestet (gammel signatur er stadig gyldig), men `system backup-status` viser `latestBackupAt` baseret på manifestets `createdAt` — rollback synligt for operatøren der overvåger | n/a | Delvist beskyttet ved observation. Append-only ledger-log fanger ikke dette; kun out-of-band bookkeeping af backup-historik gør. |
 
 ## Sårbarheder fundet
 
 1. **Ingen asymmetrisk signering — 3.-part kan ikke verificere uden forge-evne.**
-   Opfølgningsissue:
+   ~~Opfølgningsissue:~~
    [#99](https://github.com/mikkelkrogsholm/rentemester/issues/99)
    "Support asymmetric backup signatures for 3rd-party verification".
+   **Status: lukket.** Ed25519 er nu tilgængelig som opt-in via
+   `system backup --sign-with-ed25519`; revisor får public key via
+   `system export-public-key` og verificerer standalone via
+   `system verify-backup-signature`. HMAC bevares som default, og
+   eksisterende HMAC-only-backups er fuldt bagudkompatible.
+
+## End-to-end-flow: revisor-verifikation med ed25519
+
+```bash
+# 1) Virksomhed laver en signeret backup
+bun run src/cli.ts system backup \
+  --company /path/to/company \
+  --at 2026-05-17T02:09:00.000Z \
+  --sign-with-ed25519
+
+# 2) Virksomhed eksporterer public key og sender den til revisor
+#    out-of-band (signet email, attesteret papirkopi, ...).
+bun run src/cli.ts system export-public-key \
+  --company /path/to/company \
+  --out /tmp/handover/company.pub
+
+# 3) Backup-mappen overdrages til revisor (USB, tar.gz, hvad som helst).
+
+# 4) Revisor verificerer standalone — uden adgang til source-company-root
+#    og uden HMAC-nøglen.
+bun run src/cli.ts system verify-backup-signature \
+  --backup-dir /path/to/backup-20260517T020900Z \
+  --public-key /tmp/handover/company.pub
+# -> { "ok": true, "algorithms": ["ed25519"], ... }
+```
+
+Det er konstruktionen der gør scenarie #4 i tabellen ovenfor til
+"Beskyttet": revisor får verifikationsevne, ikke forge-evne.
 
 ## Anbefalede forbedringer (ikke-blokerende)
 
@@ -157,6 +213,8 @@ operationelle perimeter. "Source company-root" betyder hele
 
 Signing-chainen er **bevisstærk for tamper-detection** så længe
 nøglefilen ikke kompromitteres sammen med backup-mappen. Den giver
-**ikke** confidentiality, og den giver **ikke** independent third-party
-verification (HMAC-begrænsning). Issue #87 lukkes med dette dokument og
-det opfølgende issue om asymmetrisk signering.
+**ikke** confidentiality. Den giver independent third-party
+verification **når backuppen er taget med `--sign-with-ed25519`**
+(issue #99); HMAC-only-backups understøtter stadig ikke 3.-parts
+verifikation uden forge-evne. Issue #87 blev lukket med dette dokument;
+issue #99 lukkes med tilføjelsen af ed25519-stien.
