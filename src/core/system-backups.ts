@@ -298,6 +298,7 @@ export function getBackupComplianceStatus(db: Database, companyRoot: string, asO
   const checkedAtMs = new Date(checkedAt).getTime();
   const latestActivityMs = activityMoments.length > 0 ? Math.max(...activityMoments) : null;
   const hasActivitySinceBackup = latestBackupMs === null ? activityMoments.length > 0 : latestActivityMs !== null && latestActivityMs > latestBackupMs;
+  // money-allowed: days-since-backup math, not currency
   const daysSinceLatestBackup = latestBackupMs === null ? null : Number(((checkedAtMs - latestBackupMs) / (24 * 60 * 60 * 1000)).toFixed(2));
   const backupDue = latestBackupMs === null ? hasActivitySinceBackup : hasActivitySinceBackup && (checkedAtMs - latestBackupMs > BACKUP_INTERVAL_MS);
   const requiredBy = latestBackupMs === null ? (hasActivitySinceBackup ? checkedAt : null) : hasActivitySinceBackup ? new Date(latestBackupMs + BACKUP_INTERVAL_MS).toISOString() : null;

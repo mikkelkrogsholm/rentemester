@@ -6,6 +6,7 @@ import type { InvoicePayload } from "./invoice";
 import { companyPaths } from "./paths";
 import { insertAuditLog } from "./actor";
 import { promoteTempFile, removeIfExists, writeTempFileFor } from "./atomic-file";
+import { formatAmount, formatDkk } from "./money";
 
 const RULE_ID = "DK-INVOICE-ISSUE-001";
 const PDF_DOCUMENT_TYPE = "issued_invoice_pdf";
@@ -34,9 +35,9 @@ function escapePdfText(value: string) {
 
 function amountLabel(value: unknown, currency = "DKK") {
   if (value == null || value === "") return null;
-  const amount = Number(value);
+  const amount = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(amount)) return null;
-  return `${amount.toFixed(2)} ${currency}`;
+  return formatDkk(amount, currency);
 }
 
 function compact(value: string | null | undefined) {
@@ -66,8 +67,8 @@ function invoiceTextLines(payload: InvoicePayload & { invoiceNumber?: string; is
   lines.push("Linjer:");
   for (const line of payload.lines ?? []) {
     const qty = line.quantity == null ? "" : ` x ${line.quantity}`;
-    const unit = line.unitPriceExVat == null ? "" : ` @ ${Number(line.unitPriceExVat).toFixed(2)}`;
-    const total = line.lineTotalExVat == null ? "" : ` = ${Number(line.lineTotalExVat).toFixed(2)} ${currency}`;
+    const unit = line.unitPriceExVat == null ? "" : ` @ ${formatAmount(line.unitPriceExVat) ?? ""}`;
+    const total = line.lineTotalExVat == null ? "" : ` = ${formatDkk(line.lineTotalExVat, currency) ?? ""}`;
     lines.push(`- ${line.description ?? ""}${qty}${unit}${total}`.trim());
   }
   lines.push("");

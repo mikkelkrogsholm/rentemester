@@ -74,6 +74,46 @@ export function roundDkk(value: number) {
   return Number.isFinite(value) ? fromScaledInt(scaledInt(value, 2), 2) : NaN;
 }
 
+/**
+ * Format a monetary amount as a fixed-precision string with 2 decimals.
+ *
+ * Uses integer-ore math internally (no floating-point drift) and emits a plain
+ * "1234.56" style string. Callers that need a currency suffix should append it
+ * themselves (e.g. `${formatAmount(value)} ${currency}`).
+ *
+ * Returns null for null/undefined/empty/NaN inputs so PDF/JSON renderers can
+ * keep their conditional formatting branches.
+ */
+export function formatAmount(value: number | string | bigint | null | undefined): string | null {
+  if (value == null || value === "") return null;
+  let ore: bigint;
+  if (typeof value === "bigint") {
+    ore = value;
+  } else {
+    const num = typeof value === "number" ? value : Number(value);
+    if (!Number.isFinite(num)) return null;
+    ore = toOre(num);
+  }
+  const negative = ore < 0n;
+  const abs = negative ? -ore : ore;
+  const whole = abs / 100n;
+  const fraction = abs % 100n;
+  const fractionText = fraction.toString().padStart(2, "0");
+  return `${negative ? "-" : ""}${whole.toString()}.${fractionText}`;
+}
+
+/**
+ * Format a DKK amount with currency suffix, e.g. "1234.56 DKK".
+ *
+ * Convenience wrapper around `formatAmount` that appends the (uppercased)
+ * currency code. Returns null on invalid/empty input.
+ */
+export function formatDkk(value: number | string | bigint | null | undefined, currency = "DKK"): string | null {
+  const amount = formatAmount(value);
+  if (amount == null) return null;
+  return `${amount} ${currency.trim().toUpperCase()}`;
+}
+
 export function roundRate6(value: number) {
   return Number.isFinite(value) ? fromScaledInt(scaledInt(value, 6), 6) : NaN;
 }
