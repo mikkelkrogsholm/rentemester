@@ -31,6 +31,12 @@ Every loop starts with one narrow hypothesis and ends with a pushed commit or an
    - Then run `bun run smoke` on fresh `/tmp/rentemester-smoke`.
    - Run `git diff --check` before commit.
 
+   **Smoke wall-clock budget**: smoke currently completes in ~2 seconds. To
+   catch performance regressions before they bog down the build loop, CI uses
+   `bun run smoke:budget`, which wraps `bun run smoke` and fails if wall-clock
+   exceeds **30 seconds** (override locally with `SMOKE_BUDGET_SECONDS=<n>`).
+   The plain `bun run smoke` target stays unchanged for fast local runs.
+
 6. **Review the diff before commit**
    - Confirm no generated company data, secrets, temp files, or half-built features are included.
    - Confirm rules/docs/tests match the behavior.
