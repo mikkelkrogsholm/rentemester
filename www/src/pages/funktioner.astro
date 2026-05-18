@@ -1,0 +1,116 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+
+const groups = [
+  {
+    title: "Input",
+    intro: "Sådan kommer data ind i systemet.",
+    items: [
+      { t: "Bilagsmail", d: "Send bilag til en dedikeret mailadresse — vedhæftninger registreres og knyttes til transaktioner." },
+      { t: "Dokument-ingest", d: "Importér bilag fra CLI med metadata. Understøtter PDF, billeder, tekst." },
+      { t: "Bankimport", d: "CSV-import med automatisk format-detektion for danske banker. DKK og EUR med dagskurs." },
+      { t: "MobilePay", d: "Importér transaktioner som CSV. Matches mod fakturaer og bilag." },
+    ],
+  },
+  {
+    title: "Bogføring",
+    intro: "Hvad systemet kan postere.",
+    items: [
+      { t: "Manuelle journalposter", d: "Klassiske posteringer med fuld kontrol over konti og moms." },
+      { t: "Bankafstemning", d: "Match banklinjer mod bilag og fakturaer." },
+      { t: "Modposter", d: "Reverser fejlbogføringer — uden at slette historikken." },
+      { t: "Periodisering", d: "Spread udgifter og indtægter over perioder hvor det er korrekt." },
+      { t: "Valuta", d: "EUR-bilag bogføres med dagskurs og valutakursdifferencer." },
+    ],
+  },
+  {
+    title: "Fakturering",
+    intro: "Hele fakturalivscyklussen — sporbart i ledgeren.",
+    items: [
+      { t: "Udstedelse", d: "Validér og udsted fakturaer i dansk format med moms og forfald." },
+      { t: "Bogføring", d: "Postér fakturaer automatisk når de udstedes." },
+      { t: "Påmindelser", d: "Send rykkere og bogfør dem som debitorhåndtering." },
+      { t: "Kompensationsbeløb", d: "Beregn og bogfør lovbestemte 310 kr kompensation ved forsinkelse." },
+      { t: "Renter", d: "Renteberegning efter referencerente, klar til indkrævning." },
+      { t: "Kreditnota", d: "Udsted kreditnota og refundér mod bank." },
+      { t: "Tab på debitorer", d: "Afskriv ubetalte fakturaer korrekt i forhold til moms." },
+    ],
+  },
+  {
+    title: "Moms",
+    intro: "Dansk moms — den komplekse del.",
+    items: [
+      { t: "Momsrapport", d: "Generér momsindberetning for periode. Klar til Skat." },
+      { t: "Repræsentation", d: "Korrekt fradrag for repræsentation efter danske regler." },
+      { t: "EU-handel", d: "Omvendt betalingspligt på EU-services og varer." },
+      { t: "Import udenfor EU", d: "Importmoms og told håndteres separat." },
+      { t: "VIES-validering", d: "Validér EU-momsnumre mod VIES før EU-bogføring." },
+      { t: "Blandet anvendelse", d: "Korrekt fordeling af moms på erhverv vs. privat brug." },
+    ],
+  },
+  {
+    title: "Audit & integritet",
+    intro: "Det der gør at en revisor kan stole på systemet.",
+    items: [
+      { t: "Append-only ledger", d: "Posteringer skrives én gang og overskrives aldrig. Rettelser sker som modposter." },
+      { t: "Hash-kæde", d: "Hver postering kædes til den forrige med SHA — manipulation kan opdages." },
+      { t: "Ed25519-signering", d: "Opt-in kryptografisk signering. Tredjepart kan verificere uden adgang til private nøgler." },
+      { t: "Audit verify", d: "CLI-kommando der verificerer hele kæden og signaturen." },
+      { t: "Backup-signering", d: "Backups signeres så genoprettelse kan bevises ægte." },
+      { t: "Skat-eksport", d: "Eksportpakke til myndigheder med komplet historik og verifikationsdata." },
+    ],
+  },
+  {
+    title: "Output & rapporter",
+    intro: "Det du faktisk får ud.",
+    items: [
+      { t: "Dashboard", d: "Deterministisk HTML-rapport — samme data giver bit-for-bit samme output." },
+      { t: "Healthcheck", d: "CLI-status der viser om alt er konsistent." },
+      { t: "Statusrapporter", d: "Faktura-status, åbne bilag, ubehandlede tasks." },
+      { t: "Eksport til revisor", d: "Komplet pakke med ledger, bilag og verifikationsdata." },
+    ],
+  },
+  {
+    title: "Integration",
+    intro: "Sådan taler andre systemer med Rentemester.",
+    items: [
+      { t: "CLI", d: "Alt er tilgængeligt via kommandolinje. Scriptbart, automatiserbart." },
+      { t: "MCP-server", d: "AI-klienter (Claude, ChatGPT, lokale modeller) kobler op via Model Context Protocol." },
+      { t: "JSON-input", d: "Strukturerede operations-payloads — ingen fri tekst hvor det betyder noget." },
+      { t: "Standard CSV", d: "Bank, MobilePay, kontoplan — alt der ikke er proprietært." },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title="Funktioner"
+  description="Funktioner i Rentemester: bilagsmail, bankimport, fakturering, momsrapportering, append-only ledger, ed25519-signering, MCP-integration og audit-eksport til revisor."
+  ogImage="/og-funktioner.png"
+>
+  <PageHero
+    eyebrow="Funktioner"
+    title="Hvad systemet kan"
+    lead="En oversigt over funktionerne i Rentemester, grupperet efter hvor de hører hjemme i workflow'et. Alt er åbent på GitHub — se selv hvordan det er implementeret."
+  />
+
+  <div class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-20 space-y-16">
+    {groups.map((g) => (
+      <section>
+        <div class="mb-8 max-w-2xl">
+          <h2 class="font-serif text-3xl md:text-4xl text-primary mb-2">{g.title}</h2>
+          <p class="text-on-surface-variant">{g.intro}</p>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-gutter">
+          {g.items.map((item) => (
+            <article class="bg-surface-container border border-outline-variant/10 p-6 hover:border-primary/30 transition-colors">
+              <h3 class="font-serif text-xl text-on-background mb-2">{item.t}</h3>
+              <p class="text-on-surface-variant text-[15px] leading-relaxed">{item.d}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    ))}
+  </div>
+</BaseLayout>

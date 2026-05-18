@@ -1,0 +1,80 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/PageHero.astro";
+import { SITE } from "../../consts";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  name: "Installer Rentemester",
+  inLanguage: "da",
+  totalTime: "PT5M",
+  step: [
+    { "@type": "HowToStep", position: 1, name: "Installer Bun", text: "Installer Bun runtime (1.2+) hvis du ikke allerede har det." },
+    { "@type": "HowToStep", position: 2, name: "Klon repoet", text: "Klon Rentemester fra GitHub." },
+    { "@type": "HowToStep", position: 3, name: "Installer dependencies", text: "Kør bun install i projektmappen." },
+    { "@type": "HowToStep", position: 4, name: "Initialiser virksomhed", text: "Kør init-kommandoen med et company-bibliotek." },
+    { "@type": "HowToStep", position: 5, name: "Tjek installation", text: "Kør system healthcheck for at verificere." },
+  ],
+};
+---
+
+<BaseLayout
+  title="Installation"
+  description="Installer Rentemester lokalt på din maskine. Krav: Bun 1.2+, git. Fem minutter fra git clone til en kørende lokal bogføring."
+  ogImage="/og-installation.png"
+  jsonLd={jsonLd}
+>
+  <PageHero
+    eyebrow="Dokumentation"
+    title="Installation"
+    lead="Rentemester kører lokalt på din maskine. Du skal bruge Bun og git, og du er kørende på fem minutter."
+  />
+
+  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
+    <h2>Krav</h2>
+    <ul>
+      <li><strong>Bun</strong> version 1.2 eller nyere. Installér via <a href="https://bun.sh" rel="noopener" target="_blank">bun.sh</a> eller <code>brew install oven-sh/bun/bun</code>.</li>
+      <li><strong>Git</strong> til at hente koden.</li>
+      <li>En tom mappe hvor din virksomheds data skal ligge.</li>
+    </ul>
+    <p>Det er det. Ingen Node, ingen Docker, ingen database-server. Bun og en lokal SQLite-fil er nok.</p>
+
+    <h2>1. Klon repoet</h2>
+    <pre><code>git clone {SITE.github}.git
+cd rentemester</code></pre>
+
+    <h2>2. Installer afhængigheder</h2>
+    <pre><code>bun install</code></pre>
+    <p>Bun henter <code>@modelcontextprotocol/sdk</code> og <code>zod</code>. Der er ikke meget mere — Rentemester holder afhængighedslisten kort med vilje.</p>
+
+    <h2>3. Initialiser din virksomhed</h2>
+    <p>Vælg en mappe hvor data skal ligge. Den skal være tom.</p>
+    <pre><code>bun run src/cli.ts init --company ./min-virksomhed</code></pre>
+    <p>Det opretter SQLite-ledgeren, mapper til bilag, og en konfigurationsfil. Du kan også køre den i en anden mappe — alt arbejde bruger <code>--company</code>-flaget til at pege på det rigtige bibliotek.</p>
+
+    <h2>4. Tjek at alt virker</h2>
+    <pre><code>bun run src/cli.ts system healthcheck --company ./min-virksomhed</code></pre>
+    <p>Hvis healthcheck er grøn, er du installeret korrekt.</p>
+
+    <h2>5. Prøv et eksempel-flow</h2>
+    <p>Repoet indeholder eksempler du kan køre igennem for at se hele flowet:</p>
+    <pre><code>bun run smoke</code></pre>
+    <p>Det kører hele smoke-testen: opretter en virksomhed, importerer bilag, bogfører, fakturerer, beregner moms, eksporterer til revisor og verificerer. Når den ender med "OK" har du set Rentemester arbejde end-to-end.</p>
+
+    <h2>MCP-server (for AI-klienter)</h2>
+    <p>Hvis du vil bruge Rentemester gennem Claude Desktop, ChatGPT eller en anden MCP-kompatibel klient:</p>
+    <pre><code>bun run mcp</code></pre>
+    <p>Og peg din klient mod den. Se <a href={`${SITE.github}/blob/main/docs/mcp.md`} rel="noopener" target="_blank">MCP-dokumentationen ↗</a> for klient-specifik opsætning.</p>
+
+    <h2>Næste skridt</h2>
+    <ul>
+      <li>Læs <a href={`${SITE.github}/blob/main/README.md`} rel="noopener" target="_blank">README ↗</a> for det fulde billede.</li>
+      <li>Læs <a href={`${SITE.github}/blob/main/CONTRIBUTING.md`} rel="noopener" target="_blank">CONTRIBUTING ↗</a> hvis du vil bidrage.</li>
+      <li>Åbn et <a href={`${SITE.github}/issues`} rel="noopener" target="_blank">issue ↗</a> hvis noget ikke virker.</li>
+    </ul>
+
+    <h2>Problemer?</h2>
+    <p>Den hurtigste vej er at åbne et issue på GitHub med output fra fejlen. Husk at sløre evt. private data først (bilag, banktransaktioner, CPR/CVR).</p>
+  </article>
+</BaseLayout>

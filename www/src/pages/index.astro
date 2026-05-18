@@ -1,0 +1,338 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { SITE } from "../consts";
+
+const faq = [
+  {
+    q: "Er Rentemester en service jeg kan købe?",
+    a: "Nej. Rentemester er et open source projekt under MIT-licens. Der er ingen tilmelding, ingen pris, ingen hosted version. Du kloner repoet fra GitHub og kører det selv — lokalt på din maskine eller på en server du selv styrer.",
+  },
+  {
+    q: "Hvem står bag?",
+    a: `Rentemester er et fællesskabsdrevet projekt startet af ${SITE.author}. Alt arbejde sker offentligt på GitHub. Bidrag fra revisorer, bogholdere, udviklere og brugere er meget velkomne.`,
+  },
+  {
+    q: "Hvorfor open source?",
+    a: "Fordi bogføring er virksomhedens fundament — det skal ikke ligge bag en lukket betalingsmur, og du skal kunne verificere at reglerne er korrekte. Når kildekoden er åben, kan din revisor inspicere logikken og du beholder fuld kontrol over data.",
+  },
+  {
+    q: "Kører det i skyen eller lokalt?",
+    a: "Lokalt som default. Rentemester er et CLI-værktøj bygget på Bun og TypeScript med en SQLite-ledger. Du bestemmer selv hvor data ligger. Ingen telemetri, ingen cloud-afhængighed.",
+  },
+  {
+    q: "Kan jeg bruge det til min ApS-bogføring i dag?",
+    a: "Projektet er under aktiv udvikling. Tjek roadmap og issues på GitHub for status. Du er velkommen til at afprøve det, give feedback og bidrage med regler eller kode.",
+  },
+  {
+    q: "Hvilken licens?",
+    a: "MIT. Du kan frit bruge, ændre og distribuere koden — også kommercielt. Eneste krav er at licens og copyright bevares.",
+  },
+];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faq.map((item) => ({
+    "@type": "Question",
+    name: item.q,
+    acceptedAnswer: { "@type": "Answer", text: item.a },
+  })),
+};
+---
+
+<BaseLayout
+  titleOverride={`${SITE.name} — ${SITE.tagline}`}
+  description={SITE.description}
+  jsonLd={jsonLd}
+>
+  <!-- HERO -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 -z-10">
+      <div class="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[1200px] max-w-[150vw] aspect-square bg-primary/[0.07] rounded-full blur-[140px]"></div>
+      <div class="absolute top-[40%] right-[-10%] w-[500px] aspect-square bg-cyber-blue/[0.05] rounded-full blur-[120px]"></div>
+    </div>
+    <div class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop pt-20 md:pt-28 pb-20 md:pb-28">
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-3 mb-8">
+          <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue bg-cyber-blue/10 border border-cyber-blue/30 px-3 py-1.5">
+            Open source · MIT
+          </span>
+          <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-on-surface-variant">
+            v0.0.1 · under udvikling
+          </span>
+        </div>
+
+        <h1 class="font-serif text-[44px] sm:text-[56px] md:text-[72px] leading-[1.05] tracking-[-0.02em] text-on-background font-semibold mb-6">
+          Bogholderen<br/>i maskinen
+        </h1>
+
+        <p class="text-on-surface-variant text-lg md:text-xl leading-relaxed max-w-2xl mb-4">
+          Rentemester er et <strong class="text-primary font-semibold">open source</strong> bogføringssystem til danske mikrovirksomheder, freelancere og små ApS'er. En AI-agent gør arbejdet, danske regler afgør hvad der må bogføres, og en append-only ledger sikrer historikken.
+        </p>
+        <p class="text-on-surface-variant text-base md:text-lg mb-10 max-w-2xl">
+          Det er ikke et produkt vi sælger. Det er et fællesskabsprojekt — kør det selv, bidrag, brug det.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <a
+            href={SITE.github}
+            rel="noopener me"
+            target="_blank"
+            class="inline-flex items-center justify-center gap-2 bg-brass-gold text-ink-black font-mono text-[12px] uppercase tracking-[0.15em] font-bold px-8 py-4 transition-all hover:shadow-[0_0_24px_rgba(197,160,89,0.35)] active:scale-[0.98]"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            Se projektet på GitHub
+          </a>
+          <a
+            href="/docs/installation"
+            class="inline-flex items-center justify-center gap-2 border border-cyber-blue/60 text-cyber-blue font-mono text-[12px] uppercase tracking-[0.15em] px-8 py-4 transition-all hover:bg-cyber-blue/5 hover:border-cyber-blue"
+          >
+            Installation →
+          </a>
+        </div>
+
+        <!-- Quick install snippet -->
+        <div class="mt-12 max-w-2xl">
+          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-outline mb-2">Klon og kør lokalt</div>
+          <div class="bg-deep-navy border border-outline-variant/20 px-5 py-4 font-mono text-[13px] text-parchment-text overflow-x-auto">
+            <div><span class="text-outline select-none">$ </span><span class="text-cyber-blue">git</span> clone {SITE.github}.git</div>
+            <div><span class="text-outline select-none">$ </span><span class="text-cyber-blue">cd</span> rentemester &amp;&amp; <span class="text-cyber-blue">bun</span> install</div>
+            <div><span class="text-outline select-none">$ </span><span class="text-cyber-blue">bun</span> run src/cli.ts init --company ./min-virksomhed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPEN SOURCE CALLOUT -->
+  <section class="border-y border-outline-variant/15 bg-deep-navy/40">
+    <div class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-16 md:py-20">
+      <div class="grid md:grid-cols-3 gap-10 md:gap-16">
+        <div class="md:col-span-1">
+          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Læs først</div>
+          <h2 class="font-serif text-3xl md:text-4xl text-primary leading-tight">Det her er ikke et produkt</h2>
+        </div>
+        <div class="md:col-span-2 prose-da">
+          <p>Rentemester er et <strong>fællesskabsdrevet open source projekt</strong>. Der er ingen virksomhed bag der sælger licenser, ingen support-aftaler, ingen SaaS-tilmelding. Alt foregår offentligt på GitHub under MIT-licens.</p>
+          <p>Du forventes at klone repoet, læse koden, køre det selv på din egen maskine, og — hvis noget mangler eller er forkert — åbne et issue eller en pull request. Projektet bliver bedre når flere bruger og bidrager.</p>
+          <p>Det betyder også: ingen telemetri, ingen cloud-afhængighed, ingen lock-in. Dine bogføringsdata er dine — i en lokal SQLite-fil du selv ejer.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRINITY: AGENT · REGLER · LEDGER -->
+  <section class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28">
+    <div class="max-w-2xl mb-14 md:mb-20">
+      <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Arkitektur</div>
+      <h2 class="font-serif text-4xl md:text-5xl text-on-background leading-tight mb-4">Tre lag der ikke kan snyde hinanden</h2>
+      <p class="text-on-surface-variant text-lg leading-relaxed">
+        AI'en arbejder ikke alene. Hver postering går gennem regler skrevet ud fra dansk bogføringspraksis, og lander i en ledger der ikke kan rettes — kun udvides.
+      </p>
+    </div>
+
+    <div class="grid gap-gutter md:grid-cols-3">
+      <article class="bg-surface-container border border-outline-variant/15 p-8 md:p-10 ai-glow-card">
+        <div class="flex items-start justify-between mb-8">
+          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">01 · Agent</div>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#e9c176" stroke-width="1.4" aria-hidden="true">
+            <rect x="3" y="6" width="18" height="14" rx="2"/>
+            <circle cx="8" cy="13" r="1.5" fill="#e9c176"/>
+            <circle cx="16" cy="13" r="1.5" fill="#e9c176"/>
+            <line x1="12" y1="2" x2="12" y2="6"/>
+            <circle cx="12" cy="2" r="1" fill="#e9c176"/>
+          </svg>
+        </div>
+        <h3 class="font-serif text-2xl text-on-background mb-3">Agenten handler</h3>
+        <p class="text-on-surface-variant leading-relaxed">
+          Henter bilag, matcher banktransaktioner, foreslår konti og moms. Når noget er usikkert, stopper den og spørger — den gætter aldrig.
+        </p>
+      </article>
+
+      <article class="bg-surface-container border border-outline-variant/15 p-8 md:p-10">
+        <div class="flex items-start justify-between mb-8">
+          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue">02 · Regler</div>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00D1FF" stroke-width="1.4" aria-hidden="true">
+            <path d="M12 2L4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+        <h3 class="font-serif text-2xl text-on-background mb-3">Reglerne afgør</h3>
+        <p class="text-on-surface-variant leading-relaxed">
+          Danske bogføringsregler er kode. De ligger i <code class="font-mono text-[13px] bg-deep-navy text-primary px-1.5 py-0.5">rules/dk/</code>, er versionerede, og enhver kan læse og udfordre dem.
+        </p>
+      </article>
+
+      <article class="bg-surface-container border border-outline-variant/15 p-8 md:p-10">
+        <div class="flex items-start justify-between mb-8">
+          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-primary-fixed-dim">03 · Ledger</div>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffdea5" stroke-width="1.4" aria-hidden="true">
+            <rect x="4" y="4" width="16" height="16" rx="1"/>
+            <line x1="4" y1="9" x2="20" y2="9"/>
+            <line x1="4" y1="14" x2="20" y2="14"/>
+            <line x1="9" y1="4" x2="9" y2="20"/>
+          </svg>
+        </div>
+        <h3 class="font-serif text-2xl text-on-background mb-3">Ledgeren husker</h3>
+        <p class="text-on-surface-variant leading-relaxed">
+          Append-only kassebog signeret med ed25519. Ingen rettelser — kun nye posteringer. Revisor kan verificere hele kæden kryptografisk.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <!-- FUNKTIONER -->
+  <section class="border-t border-outline-variant/15 bg-deep-navy/30">
+    <div class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+        <div class="max-w-xl">
+          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Funktioner</div>
+          <h2 class="font-serif text-4xl md:text-5xl text-on-background leading-tight">Bygget til virkeligheden</h2>
+        </div>
+        <a href="/funktioner" class="font-mono text-[12px] uppercase tracking-[0.15em] text-primary hover:text-cyber-blue self-start md:self-end">
+          Se alle funktioner →
+        </a>
+      </div>
+
+      <div class="grid gap-gutter sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { t: "Bilagsmail", d: "Send bilag til en mailadresse — agenten registrerer og knytter dem til transaktioner." },
+          { t: "Bankimport", d: "CSV-import fra danske banker. Automatisk matchning af linjer med bilag." },
+          { t: "Fakturering", d: "Udsted, send påmindelser, kompensation og renter — fuldt sporbart i ledgeren." },
+          { t: "Momsrapport", d: "Generér moms­indberetning for periode. Repræsentation, EU-handel, blandet anvendelse." },
+          { t: "Audit-eksport", d: "Eksportér til revisor eller Skattestyrelsen. Komplet kæde, kryptografisk signeret." },
+          { t: "Backup-signering", d: "Tredjepart kan verificere backup-integritet med offentlig ed25519-nøgle." },
+          { t: "Dashboard", d: "Deterministisk HTML-rapport. Samme data → samme output. Bit-for-bit." },
+          { t: "MCP-server", d: "AI-klienter (Claude, ChatGPT) taler med Rentemester via Model Context Protocol." },
+        ].map((f) => (
+          <article class="bg-surface-container border border-outline-variant/10 p-6 hover:border-primary/40 transition-colors">
+            <div class="font-mono text-[11px] uppercase tracking-[0.15em] text-primary mb-2">{f.t}</div>
+            <p class="text-on-surface-variant text-[15px] leading-relaxed">{f.d}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- HVEM ER DET TIL -->
+  <section class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28">
+    <div class="max-w-2xl mb-14">
+      <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Målgruppe</div>
+      <h2 class="font-serif text-4xl md:text-5xl text-on-background leading-tight mb-4">Lavet til små danske virksomheder</h2>
+      <p class="text-on-surface-variant text-lg leading-relaxed">
+        Simple forhold, dansk moms, behov for revisor-eksport. Ikke til store koncerner, lønadministration eller komplekse internationale opsætninger.
+      </p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+      {[
+        { t: "Freelancere", d: "Konsulenter og selvstændige der vil bruge minimal tid på administration." },
+        { t: "Enkeltmandsvirksomhed", d: "Almindelig drift, dansk moms, få bilag i ugen." },
+        { t: "Små ApS'er", d: "Få ansatte, behov for ordentligt audit-trail til årsregnskab." },
+        { t: "Iværksættere", d: "Starter op og vil have styr på det fra dag ét uden lock-in." },
+      ].map((p) => (
+        <article class="bg-surface-container-low border border-outline-variant/10 p-6">
+          <h3 class="font-serif text-xl text-primary mb-2">{p.t}</h3>
+          <p class="text-on-surface-variant text-[15px] leading-relaxed">{p.d}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <!-- TILLID -->
+  <section class="border-y border-outline-variant/15 relative overflow-hidden">
+    <div class="absolute inset-0 -z-10">
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] aspect-square bg-primary/5 rounded-full blur-[120px]"></div>
+    </div>
+    <div class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28 text-center">
+      <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Tillid uden tro</div>
+      <h2 class="font-serif text-4xl md:text-5xl text-primary leading-tight mb-6">AI'en gætter aldrig</h2>
+      <p class="text-parchment-text text-lg md:text-xl leading-relaxed mb-12">
+        Bogføring er ikke et sted hvor en sprogmodel skal improvisere. Rentemesters kerne er deterministisk: hver postering valideres mod danske regler, dobbelt bogholderi balancerer, og ledgeren signerer kryptografisk. Hvis AI'en er usikker, stopper den — og lægger spørgsmålet i din indbakke.
+      </p>
+      <div class="grid grid-cols-3 gap-6 max-w-md mx-auto">
+        <div>
+          <div class="font-mono text-3xl md:text-4xl text-primary font-bold mb-2">100%</div>
+          <div class="font-mono text-[11px] uppercase tracking-[0.15em] text-on-surface-variant">Dansk regelsæt</div>
+        </div>
+        <div>
+          <div class="font-mono text-3xl md:text-4xl text-primary font-bold mb-2">∞</div>
+          <div class="font-mono text-[11px] uppercase tracking-[0.15em] text-on-surface-variant">Audit-trail</div>
+        </div>
+        <div>
+          <div class="font-mono text-3xl md:text-4xl text-primary font-bold mb-2">0</div>
+          <div class="font-mono text-[11px] uppercase tracking-[0.15em] text-on-surface-variant">AI-gæt</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BIDRAG -->
+  <section class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28">
+    <div class="grid md:grid-cols-2 gap-12 md:gap-20 items-start">
+      <div>
+        <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Bidrag</div>
+        <h2 class="font-serif text-4xl md:text-5xl text-on-background leading-tight mb-6">Projektet vokser når flere er med</h2>
+        <p class="text-on-surface-variant text-lg leading-relaxed mb-6">
+          Du behøver ikke være udvikler for at hjælpe. Revisorer og bogholdere kan udfordre regler. Brugere kan rapportere mærkværdige bilagsformater. Udviklere kan tilføje integrationer.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <a href={`${SITE.github}/blob/main/CONTRIBUTING.md`} rel="noopener" target="_blank" class="inline-flex items-center justify-center gap-2 bg-brass-gold text-ink-black font-mono text-[12px] uppercase tracking-[0.15em] font-bold px-6 py-3 transition-all hover:brightness-110">
+            Læs bidragsguide ↗
+          </a>
+          <a href={`${SITE.github}/issues`} rel="noopener" target="_blank" class="inline-flex items-center justify-center gap-2 border border-cyber-blue/60 text-cyber-blue font-mono text-[12px] uppercase tracking-[0.15em] px-6 py-3 transition-all hover:bg-cyber-blue/5">
+            Åbne issues ↗
+          </a>
+        </div>
+      </div>
+      <div class="bg-surface-container-low border border-outline-variant/15 p-8">
+        <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-outline mb-6">Sådan bidrager du</div>
+        <ol class="space-y-5 text-on-surface-variant">
+          <li class="flex gap-4"><span class="font-mono text-primary shrink-0 w-6">01</span><span><strong class="text-on-background">Fork eller klon</strong> repoet fra GitHub og kør <code class="font-mono text-[13px] bg-deep-navy text-primary px-1.5 py-0.5">bun test</code>.</span></li>
+          <li class="flex gap-4"><span class="font-mono text-primary shrink-0 w-6">02</span><span><strong class="text-on-background">Skriv failing proof først</strong> — en test der demonstrerer problemet eller ønsket adfærd.</span></li>
+          <li class="flex gap-4"><span class="font-mono text-primary shrink-0 w-6">03</span><span><strong class="text-on-background">Lav minimal patch</strong> der får testen til at passe. Hold ændringen lille og fokuseret.</span></li>
+          <li class="flex gap-4"><span class="font-mono text-primary shrink-0 w-6">04</span><span><strong class="text-on-background">Åbn en pull request</strong>. Bun test + smoke-build skal være grønne.</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="border-t border-outline-variant/15 bg-deep-navy/30">
+    <div class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28">
+      <div class="mb-14">
+        <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Ofte stillede spørgsmål</div>
+        <h2 class="font-serif text-4xl md:text-5xl text-on-background leading-tight">Spørgsmål før du går i gang</h2>
+      </div>
+      <dl class="space-y-4">
+        {faq.map((item) => (
+          <details class="group bg-surface-container-low border border-outline-variant/15 hover:border-primary/30 transition-colors">
+            <summary class="cursor-pointer list-none flex items-start gap-4 p-6">
+              <span class="font-mono text-primary mt-1 group-open:rotate-45 transition-transform">+</span>
+              <dt class="font-serif text-xl text-on-background flex-1">{item.q}</dt>
+            </summary>
+            <dd class="px-6 pb-6 pl-14 text-on-surface-variant leading-relaxed">{item.a}</dd>
+          </details>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28 text-center">
+    <h2 class="font-serif text-4xl md:text-5xl text-on-background leading-tight mb-6">Klar til at klone?</h2>
+    <p class="text-on-surface-variant text-lg max-w-xl mx-auto mb-10">
+      Kildekoden er på GitHub. Læs den, kør den, send et issue hvis noget skurrer.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+      <a href={SITE.github} rel="noopener me" target="_blank" class="inline-flex items-center justify-center gap-2 bg-brass-gold text-ink-black font-mono text-[12px] uppercase tracking-[0.15em] font-bold px-8 py-4 transition-all hover:shadow-[0_0_24px_rgba(197,160,89,0.35)]">
+        Se på GitHub ↗
+      </a>
+      <a href="/docs/installation" class="inline-flex items-center justify-center gap-2 border border-cyber-blue/60 text-cyber-blue font-mono text-[12px] uppercase tracking-[0.15em] px-8 py-4 transition-all hover:bg-cyber-blue/5">
+        Installation
+      </a>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,9 @@
+# build output
+dist/
+.astro/
+
+# generated
+.cache/
+
+# system
+.DS_Store

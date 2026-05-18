@@ -1,0 +1,27 @@
+---
+export interface Props {
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+}
+const { eyebrow, title, lead } = Astro.props;
+---
+
+<section class="relative overflow-hidden border-b border-outline-variant/15">
+  <div class="absolute inset-0 -z-10">
+    <div class="absolute top-[-30%] left-1/2 -translate-x-1/2 w-[900px] aspect-square bg-primary/[0.06] rounded-full blur-[140px]"></div>
+  </div>
+  <div class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop pt-16 md:pt-24 pb-12 md:pb-16">
+    <div class="max-w-3xl">
+      {eyebrow && (
+        <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-4">{eyebrow}</div>
+      )}
+      <h1 class="font-serif text-4xl sm:text-5xl md:text-6xl text-on-background leading-[1.05] tracking-[-0.02em] font-semibold mb-6">
+        {title}
+      </h1>
+      {lead && (
+        <p class="text-on-surface-variant text-lg md:text-xl leading-relaxed max-w-2xl">{lead}</p>
+      )}
+    </div>
+  </div>
+</section>

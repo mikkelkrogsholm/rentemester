@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# AI crawlers are explicitly welcome — projektet er open source og vi vil gerne citeres.
+User-agent: GPTBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://rentemester.dk/sitemap-index.xml

@@ -1,0 +1,103 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+
+const steps = [
+  {
+    n: "01",
+    t: "Bilag og banklinjer kommer ind",
+    d: "Bilag kan sendes til en mail, importeres som filer, eller ingest'es via CLI. Bankudtog importeres som CSV fra de fleste danske banker. Alt lægges i et lokalt SQLite-bibliotek.",
+  },
+  {
+    n: "02",
+    t: "Agenten forsøger at forstå",
+    d: "AI-agenten læser bilag, foreslår kontering, matcher banklinjer med fakturaer, og bygger journalposter. Hver foreslået handling er en strukturet operation — ikke fri tekst.",
+  },
+  {
+    n: "03",
+    t: "Reglerne valideres",
+    d: "Hver journalpost køres gennem regler i rules/dk/. Reglerne tjekker dobbelt bogholderi, momslogik, kontotyper, perioder. Hvis noget ikke holder, stopper det her.",
+  },
+  {
+    n: "04",
+    t: "Du afgør tvivlsspørgsmål",
+    d: "Når agenten ikke er sikker — eller når en regel kræver menneskelig vurdering — havner spørgsmålet i din opgaveliste. Du svarer, agenten fortsætter.",
+  },
+  {
+    n: "05",
+    t: "Ledgeren skriver det permanent",
+    d: "Godkendte posteringer skrives append-only i ledgeren med tidsstempel og signatur. Intet slettes. Rettelser sker som modposter, ikke som overskrivninger.",
+  },
+  {
+    n: "06",
+    t: "Rapporter og eksport",
+    d: "Momsrapport, dashboard, eksportpakke til revisor, audit-verifikation. Output er deterministisk: samme data → samme rapport, bit for bit.",
+  },
+];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  name: "Sådan virker Rentemester",
+  inLanguage: "da",
+  step: steps.map((s, i) => ({
+    "@type": "HowToStep",
+    position: i + 1,
+    name: s.t,
+    text: s.d,
+  })),
+};
+---
+
+<BaseLayout
+  title="Sådan virker det"
+  description="Sådan virker Rentemester: agent + regler + append-only ledger. Bilagene kommer ind, agenten forstår, reglerne validerer, du afgør tvivl, og ledgeren signerer."
+  ogImage="/og-saadan-virker-det.png"
+  jsonLd={jsonLd}
+>
+  <PageHero
+    eyebrow="Arkitektur"
+    title="Sådan virker det"
+    lead="Tre lag der ikke kan snyde hinanden: en AI-agent der handler, danske regler der afgør, og en append-only ledger der husker. Her er flowet fra bilag til årsregnskab."
+  />
+
+  <section class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-20">
+    <div class="grid md:grid-cols-2 gap-6 md:gap-10">
+      {steps.map((s) => (
+        <article class="bg-surface-container border border-outline-variant/15 p-8 ai-glow-card">
+          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-primary mb-4">Trin {s.n}</div>
+          <h2 class="font-serif text-2xl text-on-background mb-3">{s.t}</h2>
+          <p class="text-on-surface-variant leading-relaxed">{s.d}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="border-t border-outline-variant/15 bg-deep-navy/30">
+    <div class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-16 md:py-24">
+      <h2 class="font-serif text-3xl md:text-4xl text-primary mb-6">Det tekniske fundament</h2>
+      <dl class="space-y-6">
+        <div>
+          <dt class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-2">Sprog &amp; runtime</dt>
+          <dd class="text-on-surface-variant leading-relaxed">TypeScript på Bun. Ingen Node-afhængigheder, ingen build-step for at køre. <code class="font-mono text-[13px] bg-deep-navy text-primary px-1.5 py-0.5">bun install</code> og du er kørende.</dd>
+        </div>
+        <div>
+          <dt class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-2">Ledger</dt>
+          <dd class="text-on-surface-variant leading-relaxed">SQLite, append-only. Hver postering er hashet og kædet til den forrige. Ledgeren signeres opt-in med ed25519, så en tredjepart kan verificere integriteten uden adgang til private nøgler.</dd>
+        </div>
+        <div>
+          <dt class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-2">Regler</dt>
+          <dd class="text-on-surface-variant leading-relaxed">Almindelige TypeScript-moduler i <code class="font-mono text-[13px] bg-deep-navy text-primary px-1.5 py-0.5">rules/dk/</code>. Læsbare for revisorer der kan kode bare lidt, testbare som almindelig kode, versionsstyrede via git.</dd>
+        </div>
+        <div>
+          <dt class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-2">Agent</dt>
+          <dd class="text-on-surface-variant leading-relaxed">Modelagnostisk. Eksponeres som MCP-server så Claude, ChatGPT og andre kan tale med Rentemester via en stram operations-protokol — ikke fri samtale.</dd>
+        </div>
+        <div>
+          <dt class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-2">Output</dt>
+          <dd class="text-on-surface-variant leading-relaxed">Dashboard som ren HTML (deterministisk render), eksportpakker som JSON+CSV, momsrapporter som strukturerede dokumenter klar til Skat.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+</BaseLayout>

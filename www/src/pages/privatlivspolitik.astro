@@ -1,0 +1,66 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+import { SITE } from "../consts";
+
+const updated = "2026-05-18";
+---
+
+<BaseLayout
+  title="Privatlivspolitik"
+  description="Rentemester.dk sætter ingen cookies, samler ingen personoplysninger og bruger ingen tracking. Her er detaljerne."
+>
+  <PageHero
+    eyebrow="Juridisk"
+    title="Privatlivspolitik"
+    lead="Kort version: rentemester.dk er en statisk hjemmeside uden cookies, uden tracking og uden personoplysninger. Her er den lange version."
+  />
+
+  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
+    <p><strong>Sidst opdateret:</strong> {updated}</p>
+
+    <h2>Hvad denne politik dækker</h2>
+    <p>
+      Denne politik gælder for hjemmesiden <strong>rentemester.dk</strong>. Den dækker <em>ikke</em> selve Rentemester-softwaren, som du installerer og kører lokalt på din egen maskine — der er du selv dataansvarlig.
+    </p>
+
+    <h2>Cookies</h2>
+    <p>Vi bruger ingen cookies. Hverken funktionelle, analytiske eller marketing-relaterede.</p>
+
+    <h2>Tracking og analytics</h2>
+    <p>Vi bruger ingen analytics-værktøjer (intet Google Analytics, ingen Plausible, ingen Mixpanel, ingen heat-maps). Vi måler ikke besøgende.</p>
+
+    <h2>Hosting og logs</h2>
+    <p>
+      Hjemmesiden hostes som statiske filer. Hosting-udbyderen kan af tekniske grunde logge IP-adresser kortvarigt til driftsovervågning og misbrugsbeskyttelse, men disse logs deles ikke med os og bruges ikke til personidentifikation.
+    </p>
+
+    <h2>Eksterne ressourcer</h2>
+    <p>
+      Siden henter typografiske ressourcer fra <strong>fonts.googleapis.com</strong> (EB Garamond, Hanken Grotesk, JetBrains Mono). Når din browser henter disse fonte, kan Google se din IP og browser. Vi modtager ikke disse data.
+    </p>
+    <p>
+      Når du klikker på et link til GitHub, gælder GitHubs egen privatlivspolitik.
+    </p>
+
+    <h2>Kontaktformularer</h2>
+    <p>
+      Der er ingen kontaktformularer på siden. Hvis du sender en email til <a href={`mailto:${SITE.email}`}>{SITE.email}</a>, opbevares din mail i indbakken indtil din henvendelse er besvaret og en rimelig periode derefter.
+    </p>
+
+    <h2>Dine rettigheder</h2>
+    <p>
+      Da vi ikke indsamler personoplysninger på siden, er der i praksis intet at få indsigt i eller slettet. Hvis du har sendt en mail og ønsker den slettet, så skriv blot tilbage og bed om det.
+    </p>
+
+    <h2>Ændringer</h2>
+    <p>
+      Hvis politikken ændres, opdateres datoen øverst og ændringen vises i sitets git-historik på <a href={SITE.github} rel="noopener" target="_blank">GitHub</a>.
+    </p>
+
+    <h2>Kontakt</h2>
+    <p>
+      Spørgsmål om privatliv: <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+    </p>
+  </article>
+</BaseLayout>

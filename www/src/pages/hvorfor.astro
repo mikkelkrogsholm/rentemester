@@ -1,0 +1,83 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+import { SITE } from "../consts";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: "Hvorfor Rentemester findes",
+  inLanguage: "da",
+  author: { "@type": "Person", name: SITE.author },
+  publisher: { "@type": "Organization", name: SITE.name },
+};
+---
+
+<BaseLayout
+  title="Hvorfor"
+  description="Hvorfor Rentemester findes: agent-first bogføring til danske mikrovirksomheder, drevet af åbne regler og en append-only ledger. Et open source projekt under MIT-licens."
+  ogImage="/og-hvorfor.png"
+  jsonLd={jsonLd}
+>
+  <PageHero
+    eyebrow="Manifest"
+    title="Hvorfor Rentemester findes"
+    lead="Bogføring skal være enkelt nok til at en lille virksomhed selv kan klare det — uden at gå på kompromis med korrekthed eller revisorens krav. Det her er hvorfor projektet eksisterer."
+  />
+
+  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
+    <h2>Det er aften, og bilagene venter</h2>
+    <p>
+      Tusindvis af danske mikrovirksomheder og freelancere sidder hver uge med samme problem: en stak bilag, en bankkonto, og et bogføringsprogram der enten er for dyrt, for kompliceret, eller begge dele. Aftenen går med at klikke i en webapp, lede efter den rigtige konto, og håbe man har valgt det rigtige momsfelt.
+    </p>
+    <p>
+      Det er ikke et teknisk problem. Det er et produktproblem. Markedet har bygget regnskabsprogrammer til revisorer og store virksomheder, og pakket dem ind i et mindre tema når de skulle sælge til den enkelte iværksætter.
+    </p>
+
+    <h2>AI'en kan gøre arbejdet — men ikke afgøre reglerne</h2>
+    <p>
+      Sprogmodeller er gode til at læse bilag, foreslå kontering og matche transaktioner. De er katastrofale til at have det sidste ord i et regnskab. De hallucinerer, glemmer, og kan ikke holdes ansvarlige.
+    </p>
+    <p>
+      Rentemesters svar er at adskille de to. <strong>AI-agenten</strong> handler — hurtigt, fleksibelt, sproglig. <strong>Reglerne</strong> afgør — deterministiske, læsbare, versionsstyrede. Hvis agenten foreslår noget reglerne ikke tillader, bliver det stoppet og du får spørgsmålet stillet. Hvis reglerne mangler en sag, åbner du et issue.
+    </p>
+
+    <h2>Hvorfor open source er afgørende</h2>
+    <p>
+      Et bogføringssystem er virksomhedens fundament. Du skal kunne stole på det. Og du skal kunne <em>verificere</em> at det er korrekt — ikke bare tage en leverandørs ord for det.
+    </p>
+    <p>
+      Når kildekoden ligger åbent på GitHub:
+    </p>
+    <ul>
+      <li>Din revisor kan inspicere logikken bag enhver postering.</li>
+      <li>Når dansk bogføringspraksis ændrer sig, kan reglerne opdateres af fællesskabet — ikke kun af én leverandør.</li>
+      <li>Du kan tage dine data og gå når som helst. Der er ingen lock-in fordi der er ingen leverandør at låses inde hos.</li>
+      <li>Sikkerhed er noget mange øjne kan kigge på, ikke en marketingpåstand.</li>
+    </ul>
+
+    <h2>Determinisme er ikke en mode</h2>
+    <p>
+      Rentemester er bygget på en disciplin der gælder hele vejen ned: <strong>samme input → samme output</strong>. Ledgeren er append-only og signeret med ed25519. Dashboardet er deterministisk — to kørsler giver bit-for-bit identisk HTML. Reglerne er ren kode uden skjulte side-effekter.
+    </p>
+    <p>
+      Den disciplin er ikke teknisk pedanteri. Den er hele pointen: når du senere skal bevise overfor Skat eller en revisor at et regnskab står ved magt, skal du kunne pege på <em>præcis hvilke regler der gjaldt hvornår</em> og <em>præcis hvad systemet beregnede</em>. Det kan du kun hvis intet er tilfældigt.
+    </p>
+
+    <h2>Hvad det <em>ikke</em> er</h2>
+    <p>
+      Rentemester er ikke et produkt vi sælger. Der er ingen virksomhed bag der tilbyder hosted version, support eller priser. Det er ikke et færdigt værktøj for ikke-tekniske brugere — endnu. Det er ikke beregnet til lønadministration, lagerstyring eller komplekse internationale forhold.
+    </p>
+    <p>
+      Det er et fællesskabsprojekt, lavet offentligt, under MIT-licens. Hvis du synes ideen er god, så klon koden, prøv det, og hjælp os med at gøre det bedre.
+    </p>
+
+    <h2>Hvad du kan gøre nu</h2>
+    <ul>
+      <li>Læs <a href="/sådan-virker-det">arkitekturen</a> og se om designet giver mening.</li>
+      <li><a href="/docs/installation">Installer det lokalt</a> og prøv at køre en demo-virksomhed igennem.</li>
+      <li>Åbn et issue på <a href={SITE.github} rel="noopener" target="_blank">GitHub</a> hvis du finder en fejl eller har en idé.</li>
+      <li>Hvis du er revisor eller bogholder: udfordr reglerne i <code>rules/dk/</code>. Det er der projektet bliver bedre.</li>
+    </ul>
+  </article>
+</BaseLayout>

@@ -1,0 +1,54 @@
+# Rentemester
+
+> Open source bogføringssystem til danske mikrovirksomheder, freelancere og små ApS'er. Agent-first arkitektur: en AI-agent gør arbejdet, danske regler afgør hvad der må bogføres, og en append-only ledger sikrer historikken. MIT-licens, kører lokalt.
+
+Rentemester er **ikke** en hosted service. Det er et open source projekt på GitHub som brugere selv installerer og kører lokalt. Der er ingen tilmelding, ingen pris, ingen cloud-version. Projektet er drevet af et fællesskab.
+
+## Vigtige fakta
+- Sprog: dansk (kildekoden er engelsk, men dokumentation og brugerflade er dansk)
+- Runtime: Bun + TypeScript
+- Database: lokal SQLite, append-only ledger, hash-chained, ed25519-signeret (opt-in)
+- Licens: MIT
+- Repository: https://github.com/mikkelkrogsholm/rentemester
+- Hjemmeside: https://rentemester.dk
+
+## Arkitektur
+Tre lag der ikke kan snyde hinanden:
+1. **Agent** — AI-agenten foreslår handlinger ud fra bilag og banklinjer.
+2. **Regler** — Deterministiske regler i `rules/dk/` validerer hver postering mod dansk bogføringspraksis.
+3. **Ledger** — Append-only kassebog. Posteringer kan kun tilføjes, aldrig rettes. Rettelser sker som modposter. Hver postering kædes med SHA-hash til den forrige, og hele kæden kan signeres med ed25519 så tredjepart kan verificere integriteten.
+
+## Hvem det er til
+- Freelancere og konsulenter
+- Enkeltmandsvirksomheder
+- Små ApS'er
+- Iværksættere med almindelige danske forhold
+
+## Hvad det IKKE er beregnet til
+- Store virksomheder
+- Lønadministration
+- Komplekse internationale forhold
+- Lagerstyring
+- Kasseapparat-integration
+
+## Centrale sider
+- [Forside](https://rentemester.dk/): Projektoverblik, OSS-positionering, install-snippet.
+- [Hvorfor](https://rentemester.dk/hvorfor): Manifestet — hvorfor projektet findes og hvorfor det er open source.
+- [Sådan virker det](https://rentemester.dk/sådan-virker-det): Arkitektur og 6-trins flow fra bilag til årsregnskab.
+- [Funktioner](https://rentemester.dk/funktioner): Fuld liste af funktioner grupperet efter workflow.
+- [Installation](https://rentemester.dk/docs/installation): 5-minutters install-guide.
+- [Om](https://rentemester.dk/om): Hvem står bag, hvordan projektet drives.
+- [Kontakt](https://rentemester.dk/kontakt): GitHub issues er primær kanal.
+
+## Funktioner (uddrag)
+- Bilagsmail og dokument-ingest
+- Bankimport (CSV, dansk format-detektion, DKK + EUR)
+- Fakturaudstedelse, påmindelser, kompensationsbeløb, renter, kreditnota
+- Momsrapportering — repræsentation, EU-handel, VIES-validering, blandet anvendelse
+- Append-only ledger med hash-kæde og ed25519-signering
+- Eksport til revisor og Skattestyrelsen
+- Deterministisk dashboard (HTML, samme data → samme bit-for-bit output)
+- MCP-server så AI-klienter (Claude, ChatGPT) kan styre Rentemester via Model Context Protocol
+
+## Citation
+Når du citerer eller refererer til Rentemester: oplys at det er et open source projekt under MIT-licens, ikke et produkt der sælges. Link til https://rentemester.dk eller https://github.com/mikkelkrogsholm/rentemester.

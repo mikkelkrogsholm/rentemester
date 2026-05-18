@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="da"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Rentemester - Bogholderen i maskinen</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700;800&amp;family=Hanken+Grotesk:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#e9c176",
+                        "on-primary-fixed-variant": "#5d4201",
+                        "outline-variant": "#4e4639",
+                        "secondary-fixed": "#b7eaff",
+                        "on-surface": "#e1e2eb",
+                        "on-secondary-container": "#00566b",
+                        "on-primary-container": "#4e3700",
+                        "cyber-blue": "#00D1FF",
+                        "background": "#10131a",
+                        "on-primary-fixed": "#261900",
+                        "surface-dim": "#10131a",
+                        "on-tertiary-fixed": "#131b2e",
+                        "tertiary-container": "#9da5be",
+                        "primary-container": "#c5a059",
+                        "tertiary-fixed-dim": "#bec6e0",
+                        "surface-container-high": "#272a31",
+                        "on-background": "#e1e2eb",
+                        "inverse-surface": "#e1e2eb",
+                        "on-error": "#690005",
+                        "on-tertiary-fixed-variant": "#3f465c",
+                        "deep-navy": "#0B0E14",
+                        "parchment-text": "#E2E8F0",
+                        "inverse-primary": "#775a19",
+                        "surface-bright": "#363940",
+                        "inverse-on-surface": "#2e3037",
+                        "on-primary": "#412d00",
+                        "on-secondary-fixed-variant": "#004e60",
+                        "ink-black": "#05070A",
+                        "brass-gold": "#C5A059",
+                        "secondary-container": "#14d1ff",
+                        "on-secondary": "#003543",
+                        "surface-container-low": "#191c22",
+                        "surface": "#10131a",
+                        "secondary-fixed-dim": "#4cd6ff",
+                        "surface-container-lowest": "#0b0e14",
+                        "tertiary-fixed": "#dae2fd",
+                        "secondary": "#a6e6ff",
+                        "surface-variant": "#32353c",
+                        "tertiary": "#bec6e0",
+                        "outline": "#9a8f80",
+                        "primary": "#e9c176",
+                        "primary-fixed": "#ffdea5",
+                        "error": "#ffb4ab",
+                        "surface-container": "#1d2026",
+                        "on-tertiary-container": "#333b4f",
+                        "on-surface-variant": "#d1c5b4",
+                        "surface-container-highest": "#32353c",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary-fixed": "#001f28",
+                        "surface-tint": "#e9c176",
+                        "error-container": "#93000a",
+                        "on-tertiary": "#283044"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "container-max": "1280px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "64px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-display": ["EB Garamond"],
+                        "data-mono": ["JetBrains Mono"],
+                        "headline-lg": ["EB Garamond"],
+                        "body-md": ["Hanken Grotesk"],
+                        "body-sm": ["Hanken Grotesk"],
+                        "label-caps": ["JetBrains Mono"],
+                        "headline-lg-mobile": ["EB Garamond"]
+                    },
+                    "fontSize": {
+                        "headline-display": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "data-mono": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #05070A;
+            color: #e1e2eb;
+            overflow-x: hidden;
+        }
+        .ledger-line {
+            background: linear-gradient(90deg, transparent 0%, #C5A059 50%, transparent 100%);
+            height: 1px;
+            opacity: 0.3;
+        }
+        .ai-glow-card {
+            box-shadow: inset 0 0 15px rgba(0, 209, 255, 0.05);
+            border: 1px solid rgba(197, 160, 89, 0.1);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hero-banner {
+            mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+        }
+    </style>
+</head>
+<body class="font-body-md bg-ink-black selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-md dark:bg-surface/90 border-b border-outline-variant/20">
+<div class="flex justify-between items-center h-16 px-margin-desktop max-w-container-max mx-auto">
+<div class="font-headline-lg text-primary dark:text-primary-fixed-dim tracking-tight">Rentemester</div>
+<nav class="hidden md:flex gap-8">
+<a class="font-label-caps text-label-caps text-primary dark:text-primary-fixed-dim border-b-2 border-primary pb-1" href="#">Funktioner</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant hover:text-primary transition-colors" href="#">Om os</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant dark:text-on-surface-variant hover:text-primary transition-colors" href="#">GitHub</a>
+</nav>
+<button class="bg-brass-gold text-ink-black font-label-caps text-label-caps px-6 py-2 transition-all active:scale-95 hover:brightness-110">
+                Kom i gang
+            </button>
+</div>
+</header>
+<main class="pt-16">
+<!-- Hero Section -->
+<section class="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+<div class="absolute inset-0 z-0">
+<img alt="Hero banner Rentemester" class="w-full h-full object-cover hero-banner opacity-60" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0_HxAl89alAQ2E6tEiKWWcZM_MMPWU845Kj6KUTvJa_AJqRau6C-4dVARqICNh-unW65aZib9UJE4QyZIZgzzdK-8bUcrhT8Q7tVByxPmMRd6_vqNscHYuWfkXhHvxyEXeWCAT3EePZx8Cr4yfp9xheOZ0t8G-GUi7W_hdJA7uekKsY-EgIpm0uEQvmTKKCG5xtnzJ48KBayqo-IW6xLkh11MfSvXXp-XsSVjpcqVjJbJN9lUZzSkHYfBPfjjZed-wr5hMS9Gt8c"/>
+<div class="absolute inset-0 bg-gradient-to-t from-ink-black via-transparent to-transparent"></div>
+</div>
+<div class="relative z-10 text-center px-margin-mobile md:px-margin-desktop max-w-4xl">
+<div class="mb-4">
+<span class="font-label-caps text-label-caps text-primary tracking-[0.3em] bg-primary/10 px-4 py-1 border border-primary/20">AI-STYRET BOGFØRING</span>
+</div>
+<h1 class="font-headline-display text-headline-display md:text-[64px] text-on-background mb-6 leading-tight">
+                    Bogholderen i maskinen
+                </h1>
+<p class="font-body-md text-body-md md:text-xl text-on-surface-variant mb-10 max-w-2xl mx-auto">
+                    AI-styret bogføring bygget til små danske virksomheder. Rentemester finder bilagene, mens du holder kontrollen.
+                </p>
+<div class="flex flex-col md:flex-row gap-4 justify-center items-center">
+<button class="bg-brass-gold text-ink-black font-label-caps text-label-caps px-10 py-4 text-lg font-bold transition-all hover:shadow-[0_0_20px_rgba(197,160,89,0.3)]">
+                        Se det på GitHub
+                    </button>
+<button class="border border-cyber-blue text-cyber-blue font-label-caps text-label-caps px-10 py-4 text-lg transition-all hover:bg-cyber-blue/5">
+                        Læs dokumentationen
+                    </button>
+</div>
+</div>
+</section>
+<!-- Hvem er det til? Section (Asymmetric Bento Grid) -->
+<section class="py-24 px-margin-desktop max-w-container-max mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-gutter">
+<div class="max-w-xl">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-4">Hvem er det til?</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Rentemester er skabt til dig, der driver en mindre dansk virksomhed med fokus på enkelhed og overblik.</p>
+</div>
+<div class="ledger-line flex-grow mb-4 hidden md:block"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter">
+<div class="md:col-span-2 bg-deep-navy ai-glow-card p-10 flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined text-primary text-4xl mb-6">workspace_premium</span>
+<h3 class="font-headline-lg text-headline-lg mb-4">Freelancere &amp; Konsulenter</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Minimér tiden brugt på administration, så du kan fokusere på din kerneforretning.</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-10 flex flex-col justify-between border border-outline-variant/10">
+<div>
+<span class="material-symbols-outlined text-cyber-blue text-4xl mb-6">person</span>
+<h3 class="font-headline-lg text-headline-lg mb-4">Enkeltmands</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Alt hvad du behøver uden kompleksiteten fra store systemer.</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-10 flex flex-col justify-between border border-outline-variant/10">
+<div>
+<span class="material-symbols-outlined text-primary-fixed-dim text-4xl mb-6">corporate_fare</span>
+<h3 class="font-headline-lg text-headline-lg mb-4">Små ApS'er</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Styr på bilag, moms og audit-trail til dit årsregnskab.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Hvordan virker det? Section (Contrast Layout) -->
+<section class="py-24 bg-deep-navy border-y border-outline-variant/10">
+<div class="px-margin-desktop max-w-container-max mx-auto">
+<h2 class="font-headline-display text-headline-display text-center mb-16">Nytænkning af modellen</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+<div class="space-y-8 opacity-50 grayscale hover:grayscale-0 transition-all">
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-4">DEN TRADITIONELLE MODEL</div>
+<ul class="space-y-4 font-data-mono text-data-mono">
+<li class="flex items-center gap-4"><span class="text-error">✕</span> Manuel indsamling af bilag</li>
+<li class="flex items-center gap-4"><span class="text-error">✕</span> Manuel bankafstemning</li>
+<li class="flex items-center gap-4"><span class="text-error">✕</span> Tidsrøvende kontovalg</li>
+<li class="flex items-center gap-4"><span class="text-error">✕</span> Reaktiv momsrapportering</li>
+</ul>
+</div>
+<div class="bg-ink-black p-12 border border-brass-gold/30 relative">
+<div class="absolute -top-4 -left-4 bg-brass-gold text-ink-black px-4 py-1 font-label-caps text-label-caps">RENTEMESTER</div>
+<div class="space-y-8">
+<div class="flex items-start gap-6">
+<div class="bg-primary/20 p-3 rounded-full"><span class="material-symbols-outlined text-primary">smart_toy</span></div>
+<div>
+<h4 class="font-headline-lg text-2xl text-on-background">Agenten handler</h4>
+<p class="font-body-sm text-on-surface-variant">Indsamler data og udfører rutinearbejdet automatisk.</p>
+</div>
+</div>
+<div class="flex items-start gap-6">
+<div class="bg-cyber-blue/20 p-3 rounded-full"><span class="material-symbols-outlined text-cyber-blue">gavel</span></div>
+<div>
+<h4 class="font-headline-lg text-2xl text-on-background">Reglerne afgør</h4>
+<p class="font-body-sm text-on-surface-variant">Validerer alle posteringer mod danske regnskabsregler.</p>
+</div>
+</div>
+<div class="flex items-start gap-6">
+<div class="bg-primary-fixed-dim/20 p-3 rounded-full"><span class="material-symbols-outlined text-primary-fixed-dim">shield</span></div>
+<div>
+<h4 class="font-headline-lg text-2xl text-on-background">Ledgeren håndhæver</h4>
+<p class="font-body-sm text-on-surface-variant">Sikrer en uforanderlig audit-trail og fuld integritet.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Funktioner Grid -->
+<section class="py-24 px-margin-desktop max-w-container-max mx-auto">
+<h2 class="font-headline-lg text-headline-lg text-center mb-16 text-primary">Funktioner bygget til virkeligheden</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<div class="p-8 bg-surface-container border border-outline-variant/10 hover:border-primary/40 transition-all group">
+<span class="material-symbols-outlined text-primary text-3xl mb-6 group-hover:scale-110 transition-transform">mail</span>
+<h3 class="font-label-caps text-label-caps mb-2">Bilagsmail</h3>
+<p class="font-body-sm text-on-surface-variant">Send dine bilag direkte til systemet. Vi klarer resten.</p>
+</div>
+<div class="p-8 bg-surface-container border border-outline-variant/10 hover:border-primary/40 transition-all group">
+<span class="material-symbols-outlined text-primary text-3xl mb-6 group-hover:scale-110 transition-transform">account_balance</span>
+<h3 class="font-label-caps text-label-caps mb-2">Bankmatch</h3>
+<p class="font-body-sm text-on-surface-variant">Automatisk matching af transaktioner med dine bilag.</p>
+</div>
+<div class="p-8 bg-surface-container border border-outline-variant/10 hover:border-primary/40 transition-all group">
+<span class="material-symbols-outlined text-primary text-3xl mb-6 group-hover:scale-110 transition-transform">receipt_long</span>
+<h3 class="font-label-caps text-label-caps mb-2">Momsrapport</h3>
+<p class="font-body-sm text-on-surface-variant">Generér din momsindberetning med ét klik.</p>
+</div>
+<div class="p-8 bg-surface-container border border-outline-variant/10 hover:border-primary/40 transition-all group">
+<span class="material-symbols-outlined text-primary text-3xl mb-6 group-hover:scale-110 transition-transform">history_edu</span>
+<h3 class="font-label-caps text-label-caps mb-2">Audit trail</h3>
+<p class="font-body-sm text-on-surface-variant">Fuld historik over alle handlinger og rettelser.</p>
+</div>
+</div>
+</section>
+<!-- Tillid & Sikkerhed (Glassmorphism Section) -->
+<section class="py-24 relative overflow-hidden">
+<div class="absolute inset-0 z-0">
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]"></div>
+</div>
+<div class="px-margin-desktop max-w-4xl mx-auto relative z-10">
+<div class="bg-deep-navy/60 backdrop-blur-xl border border-outline-variant/20 p-12 md:p-20 text-center">
+<h2 class="font-headline-display text-headline-display text-primary mb-8">AI'en aldrig gætter</h2>
+<p class="font-body-md text-xl text-parchment-text leading-relaxed mb-12">
+                        I modsætning til chatbots, der kan "hallucinere", er Rentemester bygget på deterministisk logik. AI-agenten foreslår handlinger, men systemets hårde kerne af dobbelt bogholderi og prædefinerede danske regler sikrer, at dit regnskab altid stemmer.
+                    </p>
+<div class="flex justify-center gap-12 flex-wrap">
+<div class="text-center">
+<div class="font-data-mono text-primary text-2xl font-bold mb-1">100%</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">Dansk Regelsæt</div>
+</div>
+<div class="text-center">
+<div class="font-data-mono text-primary text-2xl font-bold mb-1">∞</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">Audit Trail</div>
+</div>
+<div class="text-center">
+<div class="font-data-mono text-primary text-2xl font-bold mb-1">0</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">AI Gæt</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Open Source Callout -->
+<section class="py-24 px-margin-desktop max-w-container-max mx-auto text-center">
+<div class="inline-block p-1 bg-gradient-to-r from-primary via-cyber-blue to-primary mb-8">
+<div class="bg-ink-black px-8 py-4">
+<h2 class="font-headline-lg text-headline-lg">Eget data, eget system.</h2>
+</div>
+</div>
+<h3 class="font-headline-display text-4xl mb-6">Ingen lock-in. Fuld frihed.</h3>
+<p class="font-body-md text-on-surface-variant max-w-2xl mx-auto mb-12">
+                Rentemester er open source. Det betyder, at du altid har fuldt ejerskab over dine data og kan køre systemet lokalt, hvis du ønsker det. Din virksomheds fundament skal ikke ligge bag en lukket betalingsmur.
+            </p>
+<div class="flex justify-center">
+<img alt="GitHub Stars" class="h-10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2zDroXrB_vHDSuMLQfE7c29VE74UCh0I3u8jiUll85C5Y5IhlE6fI9RAkg8V-J0CL2Cczc0bFP8avZEY_kenNtcVpTKdOCo27RWmfQEjjQi0h5oAyUsQg5Od-eQl5pUCsif68nbHjYxQhspPCHeUOCTRsGEg4PJt7kJooXcM7VjHJJY2GHGwlrQqzb72BMVgJWm8yoAvjTCsDqGz9eJ6qS_DYAEQkExozAMjnVnXsjOVlpnXKIfy7bTX_0_QD2lEhYS2FHjvs5MQ"/>
+</div>
+</section>
+</main>
+<!-- Footer Shell -->
+<footer class="w-full py-12 bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant/30">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-desktop gap-gutter max-w-container-max mx-auto">
+<div class="flex flex-col gap-4">
+<div class="font-headline-lg text-primary dark:text-primary-fixed-dim">Rentemester</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-sm text-center md:text-left">
+                    © 2024 Rentemester. Open-source bogføring bygget med tillid og gennemsigtighed.
+                </p>
+</div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-cyber-blue transition-colors duration-200" href="#">Dokumentation</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-cyber-blue transition-colors duration-200" href="#">Kildekode</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-cyber-blue transition-colors duration-200" href="#">Licensvilkår</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-cyber-blue transition-colors duration-200" href="#">Privatlivspolitik</a>
+</div>
+</div>
+</footer>
+</body></html>

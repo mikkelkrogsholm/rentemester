@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Siden findes ikke"
+  description="Den side du leder efter findes ikke. Vend tilbage til forsiden eller dokumentationen."
+  noindex={true}
+>
+  <section class="min-h-[60vh] flex items-center">
+    <div class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-20 text-center">
+      <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-4">404</div>
+      <h1 class="font-serif text-5xl md:text-7xl text-on-background mb-6">Ikke fundet</h1>
+      <p class="text-on-surface-variant text-lg mb-10 max-w-xl mx-auto">
+        Den side findes ikke — eller findes ikke endnu. Tilbage til forsiden eller søg i dokumentationen.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <a href="/" class="inline-flex items-center justify-center gap-2 bg-brass-gold text-ink-black font-mono text-[12px] uppercase tracking-[0.15em] font-bold px-8 py-4 transition-all hover:brightness-110">Til forsiden</a>
+        <a href="/docs/installation" class="inline-flex items-center justify-center gap-2 border border-cyber-blue/60 text-cyber-blue font-mono text-[12px] uppercase tracking-[0.15em] px-8 py-4 transition-all hover:bg-cyber-blue/5">Dokumentation</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

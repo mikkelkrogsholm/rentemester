@@ -1,0 +1,136 @@
+---
+import "../styles/global.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { SITE } from "../consts";
+
+export interface Props {
+  title?: string;
+  description?: string;
+  pathname?: string;
+  ogImage?: string;
+  noindex?: boolean;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  /** Override the rendered page title fully (used on the homepage). */
+  titleOverride?: string;
+}
+
+const {
+  title,
+  description = SITE.description,
+  pathname = Astro.url.pathname,
+  ogImage = "/og-default.png",
+  noindex = false,
+  jsonLd,
+  titleOverride,
+} = Astro.props;
+
+const fullTitle = titleOverride
+  ? titleOverride
+  : title
+    ? `${title} · ${SITE.name}`
+    : `${SITE.name} — ${SITE.tagline}`;
+
+const canonical = new URL(pathname, SITE.url).toString();
+const ogImageUrl = new URL(ogImage, SITE.url).toString();
+
+const orgJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: SITE.name,
+  url: SITE.url,
+  logo: new URL("/favicon.svg", SITE.url).toString(),
+  sameAs: [SITE.github],
+};
+
+const softwareJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  name: SITE.name,
+  description: SITE.description,
+  codeRepository: SITE.github,
+  programmingLanguage: "TypeScript",
+  author: { "@type": "Person", name: SITE.author },
+  license: "https://opensource.org/licenses/MIT",
+  inLanguage: "da",
+  url: SITE.url,
+};
+
+const allJsonLd = [orgJsonLd, softwareJsonLd, ...(jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [])];
+---
+
+<!doctype html>
+<html lang={SITE.lang} class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    {noindex && <meta name="robots" content="noindex,nofollow" />}
+    {!noindex && <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />}
+
+    <meta name="author" content={SITE.author} />
+    <meta name="theme-color" content="#05070A" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:locale" content={SITE.locale} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content={`${SITE.name} — ${SITE.tagline}`} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Sitemap + feeds -->
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="application/atom+xml" title={`${SITE.name} blog`} href="/rss.xml" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+    />
+
+    <!-- Structured data -->
+    {allJsonLd.map((data) => (
+      <script type="application/ld+json" set:html={JSON.stringify(data)} />
+    ))}
+
+    <!-- AEO/LLM hint -->
+    <link rel="alternate" type="text/markdown" href="/llms.txt" />
+  </head>
+  <body class="min-h-screen bg-ink-black text-on-surface antialiased">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-brass-gold focus:text-ink-black focus:px-3 focus:py-2 focus:font-mono focus:text-xs">Spring til indhold</a>
+    <Header />
+    <main id="main" class="pt-16">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

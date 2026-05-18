@@ -1,0 +1,60 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+import { SITE } from "../consts";
+---
+
+<BaseLayout
+  title="Om projektet"
+  description="Om Rentemester: hvem står bag, hvorfor det er open source, og hvordan projektet drives."
+>
+  <PageHero
+    eyebrow="Om"
+    title="Om projektet"
+    lead="Rentemester er et open source projekt — ikke et firma, ikke en service. Her er hvad det betyder i praksis."
+  />
+
+  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
+    <h2>Hvem står bag</h2>
+    <p>
+      Projektet er startet og vedligeholdes af <a href="https://github.com/mikkelkrogsholm" rel="noopener" target="_blank">{SITE.author}</a>. Alt arbejde foregår offentligt i <a href={SITE.github} rel="noopener" target="_blank">GitHub-repoet</a>.
+    </p>
+    <p>
+      Bidrag fra andre er velkomne — revisorer, bogholdere, udviklere, brugere. Se commit-historikken og issues hvis du vil se hvem der ellers er involveret.
+    </p>
+
+    <h2>Hvordan projektet drives</h2>
+    <ul>
+      <li><strong>Offentligt</strong>. Alt sker på GitHub. Roadmap, issues, pull requests, diskussioner.</li>
+      <li><strong>Bygget på bevis</strong>. Hver ændring starter med en failing test der beviser at noget mangler eller er forkert. Først derefter kommer patchen.</li>
+      <li><strong>Minimal patch</strong>. Vi bygger ikke ting "i tilfælde af". Hver pull request skal have et klart formål og være så lille som muligt.</li>
+      <li><strong>Deterministisk</strong>. Output skal være forudsigeligt. Smoke-build og test skal være grønne før noget merges.</li>
+    </ul>
+
+    <h2>Hvordan det <em>ikke</em> drives</h2>
+    <ul>
+      <li>Der er ingen kommerciel støtteaftale.</li>
+      <li>Der er ingen SLA.</li>
+      <li>Der er ingen telemetri tilbage til en server.</li>
+      <li>Der er ingen plan om at lave en hosted version. Hvis nogen vil starte en kommerciel hosting baseret på koden, må de det fint under MIT-licensen — men det vil være en separat virksomhed, ikke det her projekt.</li>
+    </ul>
+
+    <h2>Licens</h2>
+    <p>
+      MIT. Hele teksten ligger i repoet: <a href={`${SITE.github}/blob/main/LICENSE`} rel="noopener" target="_blank">LICENSE ↗</a>.
+    </p>
+    <p>
+      Du kan frit bruge, ændre, distribuere og kommercialisere koden — også internt i din virksomhed. Kravet er at copyright-noticen følger med.
+    </p>
+
+    <h2>Sponsorat</h2>
+    <p>
+      Projektet tager imod GitHub Sponsors hvis du har lyst til at støtte. Det giver ingen særrettigheder — al kode er stadig MIT, og prioriteringen sættes ud fra hvad der gør projektet bedre, ikke hvem der har betalt.
+    </p>
+
+    <h2>Brandets navn</h2>
+    <p>
+      "Rentemester" er en historisk dansk embedsmandstitel for den kongelige finansforvalter — den der havde øjnene på pengene. Det er en knipoje til at projektet henter sin troværdighed fra dansk administrativ tradition, men leverer den med moderne værktøjer.
+    </p>
+  </article>
+</BaseLayout>

@@ -1,0 +1,5 @@
+Contact: mailto:kontakt@rentemester.dk
+Expires: 2027-05-18T00:00:00.000Z
+Preferred-Languages: da, en
+Canonical: https://rentemester.dk/.well-known/security.txt
+Policy: https://rentemester.dk/sikkerhed

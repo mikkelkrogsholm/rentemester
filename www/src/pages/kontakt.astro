@@ -1,0 +1,80 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+import { SITE } from "../consts";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  inLanguage: "da",
+  about: { "@type": "Organization", name: SITE.name, url: SITE.url },
+};
+---
+
+<BaseLayout
+  title="Kontakt"
+  description="Kontakt vedrørende Rentemester. Den hurtigste vej er at åbne et issue på GitHub, men du kan også skrive direkte."
+  jsonLd={jsonLd}
+>
+  <PageHero
+    eyebrow="Kontakt"
+    title="Kontakt"
+    lead="Den hurtigste vej til svar er et issue på GitHub — så ligger spørgsmålet offentligt og kan hjælpe andre. Men hvis det skal være direkte, så er der her."
+  />
+
+  <section class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16">
+    <div class="grid sm:grid-cols-2 gap-6">
+      <a
+        href={`${SITE.github}/issues/new`}
+        rel="noopener"
+        target="_blank"
+        class="block bg-surface-container border border-outline-variant/15 hover:border-primary/40 p-8 transition-colors"
+      >
+        <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Anbefalet</div>
+        <h2 class="font-serif text-2xl text-on-background mb-2">Åbn et issue</h2>
+        <p class="text-on-surface-variant text-[15px] leading-relaxed mb-4">
+          Bug, feature, spørgsmål om hvordan noget virker. Det er den åbne kanal — andre kan se og hjælpe.
+        </p>
+        <span class="font-mono text-[12px] uppercase tracking-[0.15em] text-primary">GitHub Issues ↗</span>
+      </a>
+
+      <a
+        href={`${SITE.github}/discussions`}
+        rel="noopener"
+        target="_blank"
+        class="block bg-surface-container border border-outline-variant/15 hover:border-primary/40 p-8 transition-colors"
+      >
+        <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-outline mb-3">Diskussion</div>
+        <h2 class="font-serif text-2xl text-on-background mb-2">Discussions</h2>
+        <p class="text-on-surface-variant text-[15px] leading-relaxed mb-4">
+          Bredere spørgsmål, idéer, deling af brugserfaring. Hvis du ikke er sikker på det er en bug.
+        </p>
+        <span class="font-mono text-[12px] uppercase tracking-[0.15em] text-primary">GitHub Discussions ↗</span>
+      </a>
+
+      <a
+        href={`mailto:${SITE.email}`}
+        class="block bg-surface-container-low border border-outline-variant/15 hover:border-primary/40 p-8 transition-colors"
+      >
+        <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-outline mb-3">Direkte</div>
+        <h2 class="font-serif text-2xl text-on-background mb-2">Email</h2>
+        <p class="text-on-surface-variant text-[15px] leading-relaxed mb-4">
+          Hvis det er fortroligt eller ikke passer i et offentligt forum.
+        </p>
+        <span class="font-mono text-[12px] uppercase tracking-[0.15em] text-primary">{SITE.email}</span>
+      </a>
+
+      <a
+        href="/sikkerhed"
+        class="block bg-surface-container-low border border-outline-variant/15 hover:border-error/60 p-8 transition-colors"
+      >
+        <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-error mb-3">Sikkerhed</div>
+        <h2 class="font-serif text-2xl text-on-background mb-2">Sårbarhed?</h2>
+        <p class="text-on-surface-variant text-[15px] leading-relaxed mb-4">
+          Hvis du har fundet en sikkerhedsfejl, så følg den ansvarlige proces — ikke et offentligt issue.
+        </p>
+        <span class="font-mono text-[12px] uppercase tracking-[0.15em] text-primary">Læs sikkerhedspolitik →</span>
+      </a>
+    </div>
+  </section>
+</BaseLayout>

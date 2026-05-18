@@ -1,0 +1,111 @@
+---
+import { SITE, NAV } from "../consts";
+const pathname = Astro.url.pathname;
+---
+
+<header class="fixed top-0 inset-x-0 z-50 bg-ink-black/85 backdrop-blur-md border-b border-outline-variant/20">
+  <div class="flex justify-between items-center h-16 px-margin-mobile md:px-margin-desktop max-w-container mx-auto">
+    <a href="/" class="font-serif text-2xl md:text-[28px] text-primary tracking-tight" aria-label={`${SITE.name} — forside`}>
+      {SITE.name}
+    </a>
+
+    <nav class="hidden md:flex gap-8 items-center" aria-label="Hovedmenu">
+      {NAV.map((item) => {
+        const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+        return (
+          <a
+            href={item.href}
+            class:list={[
+              "font-mono text-[12px] tracking-[0.1em] uppercase pb-1 transition-colors",
+              active
+                ? "text-primary border-b-2 border-primary"
+                : "text-on-surface-variant hover:text-primary",
+            ]}
+          >
+            {item.label}
+          </a>
+        );
+      })}
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <a
+        href={SITE.github}
+        rel="noopener me"
+        target="_blank"
+        class="hidden sm:inline-flex items-center gap-2 bg-brass-gold text-ink-black font-mono text-[12px] uppercase tracking-[0.1em] font-semibold px-5 py-2 transition-all hover:brightness-110 active:scale-95"
+      >
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        Se på GitHub
+      </a>
+      <a
+        href={SITE.github}
+        rel="noopener me"
+        target="_blank"
+        class="sm:hidden inline-flex items-center justify-center w-10 h-10 text-primary border border-outline-variant/40 hover:border-primary/60 transition-colors"
+        aria-label="GitHub-repository"
+      >
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+      </a>
+      <button
+        type="button"
+        id="mobile-nav-toggle"
+        class="md:hidden inline-flex items-center justify-center w-10 h-10 text-on-surface border border-outline-variant/40"
+        aria-label="Vis menu"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <nav
+    id="mobile-nav"
+    class="hidden md:hidden border-t border-outline-variant/20 bg-ink-black"
+    aria-label="Mobil-menu"
+  >
+    <ul class="flex flex-col px-margin-mobile py-4 gap-1">
+      {NAV.map((item) => (
+        <li>
+          <a
+            href={item.href}
+            class="block py-3 font-mono text-[12px] uppercase tracking-[0.1em] text-on-surface-variant hover:text-primary"
+          >
+            {item.label}
+          </a>
+        </li>
+      ))}
+      <li class="mt-2">
+        <a
+          href={SITE.github}
+          rel="noopener me"
+          target="_blank"
+          class="block py-3 font-mono text-[12px] uppercase tracking-[0.1em] text-primary"
+        >
+          GitHub →
+        </a>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<script is:inline>
+  (() => {
+    const btn = document.getElementById("mobile-nav-toggle");
+    const nav = document.getElementById("mobile-nav");
+    if (!btn || !nav) return;
+    btn.addEventListener("click", () => {
+      const open = nav.classList.toggle("hidden");
+      btn.setAttribute("aria-expanded", String(!open));
+    });
+  })();
+</script>

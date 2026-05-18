@@ -1,0 +1,46 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/PageHero.astro";
+import { SITE } from "../consts";
+---
+
+<BaseLayout
+  title="Sikkerhed"
+  description="Sikkerhedspolitik for Rentemester. Hvordan du ansvarligt rapporterer sårbarheder."
+>
+  <PageHero
+    eyebrow="Sikkerhed"
+    title="Rapportering af sårbarheder"
+    lead="Hvis du har fundet en sikkerhedsfejl i Rentemester, så følg processen her — ikke et offentligt issue."
+  />
+
+  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
+    <h2>Sådan rapporterer du</h2>
+    <p>
+      Send en email til <a href={`mailto:${SITE.email}`}>{SITE.email}</a> med emnefelt der starter med <code>[SECURITY]</code>. Inkludér:
+    </p>
+    <ul>
+      <li>En beskrivelse af problemet og potentielt impact.</li>
+      <li>Steps to reproduce hvis muligt.</li>
+      <li>Den version / commit du har fundet det på.</li>
+    </ul>
+
+    <h2>Hvad du kan forvente</h2>
+    <ul>
+      <li>Bekræftelse på modtagelse inden for 72 timer.</li>
+      <li>En vurdering af problemet og en plan for fix.</li>
+      <li>Kredit for fundet, hvis du ønsker det — i changelog eller release notes.</li>
+      <li>En koordineret offentliggørelse når fixet er ude.</li>
+    </ul>
+
+    <h2>Scope</h2>
+    <p>
+      Politikken dækker selve Rentemester-koden i <a href={SITE.github} rel="noopener" target="_blank">{SITE.githubRaw}</a>. Den dækker ikke tredjepartsafhængigheder direkte — de skal rapporteres til de relevante projekter — men hvis en sårbarhed i en afhængighed eksponeres på en særlig måde af Rentemester, er det relevant.
+    </p>
+
+    <h2>security.txt</h2>
+    <p>
+      Den maskinlæsbare version af denne politik ligger på <a href="/.well-known/security.txt"><code>/.well-known/security.txt</code></a>.
+    </p>
+  </article>
+</BaseLayout>

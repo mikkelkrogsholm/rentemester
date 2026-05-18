@@ -1,0 +1,20 @@
+{
+  "name": "rentemester-www",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "og": "bun run scripts/generate-og.ts"
+  },
+  "dependencies": {
+    "astro": "^5.1.0",
+    "@astrojs/sitemap": "^3.2.1",
+    "@astrojs/tailwind": "^5.1.5",
+    "tailwindcss": "^3.4.17"
+  }
+}
