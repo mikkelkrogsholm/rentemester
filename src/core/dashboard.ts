@@ -147,7 +147,7 @@ export function formatDkk(amount: number): string {
   if (!Number.isFinite(amount)) return "—";
   const negative = amount < 0;
   const abs = Math.abs(amount);
-  // Round to 2 decimals using string ops to avoid float printing variance.
+  // money-allowed: display-only formatting of already-rounded DKK, not currency math.
   const fixed = abs.toFixed(2);
   const [whole, frac] = fixed.split(".");
   let grouped = "";

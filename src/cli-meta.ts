@@ -100,6 +100,12 @@ export const COMMAND_SPECS: CommandSpec[] = [
   { key: "journal post", usage: "journal post --company <path> --input <file.json>", description: "Bogfører en manuel finanspostering.", allowedFlags: ["--company", "--input"], examplePath: "examples/journal-entry.expense.json" },
   { key: "journal reverse", usage: "journal reverse --company <path> (--entry-id <n> | --entry-no <no> | --match-text <text> [--match-date <YYYY-MM-DD>] [--match-document-id <n>]) --date <YYYY-MM-DD> --reason <text>", description: "Tilbagefører en bogført finanspostering.", allowedFlags: ["--company", "--entry-id", "--entry-no", "--match-text", "--match-date", "--match-document-id", "--date", "--reason"] },
   { key: "journal list", usage: "journal list --company <path>", description: "Lister finansposteringer.", allowedFlags: ["--company"] },
+  {
+    key: "dashboard",
+    usage: "dashboard --company <path> --out <file.html> [--as-of <YYYY-MM-DD>] [--open]",
+    description: "Genererer et statisk HTML-dashboard over virksomhedens nuværende bogføringsstatus.",
+    allowedFlags: ["--company", "--out", "--as-of", "--open"],
+  },
 ];
 
 const SPEC_MAP = new Map(COMMAND_SPECS.map((spec) => [spec.key, spec]));
