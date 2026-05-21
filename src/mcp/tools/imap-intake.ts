@@ -23,11 +23,7 @@ import {
 import type { MailIntakeMetadataInput } from "../../core/mail-intake";
 import { envelopeShape, errorEnvelope, successEnvelope } from "../envelope";
 import { withCompanyDbConfirmed, confirmField } from "../tool-runtime";
-
-const metadataSchema = z
-  .object({})
-  .catchall(z.unknown())
-  .describe("DocumentMetadata-payload (uden 'source') der anvendes på vedhæftningerne — se examples/bilagsmail.metadata.json");
+import { mailIntakeMetadataSchema } from "./documents";
 
 export function registerImapIntakeTools(server: McpServer): void {
   server.registerTool(
@@ -47,9 +43,9 @@ export function registerImapIntakeTools(server: McpServer): void {
         imapUsername: z.string().min(1).optional().describe("IMAP-brugernavn; standard RENTEMESTER_IMAP_USERNAME"),
         imapMailbox: z.string().min(1).optional().describe("Mailbox; standard INBOX"),
         sinceUid: z.number().int().nonnegative().optional().describe("Valgfri UID-nedre grænse"),
-        metadata: metadataSchema.optional(),
+        metadata: mailIntakeMetadataSchema.optional(),
         metadataPerMessage: z
-          .record(z.string(), metadataSchema)
+          .record(z.string(), mailIntakeMetadataSchema)
           .optional()
           .describe("Metadata pr. message-id; overstyrer 'metadata' for den pågældende besked"),
         force: z.boolean().optional(),

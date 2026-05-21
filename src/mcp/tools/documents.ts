@@ -19,7 +19,7 @@ const documentPartySchema = z.object({
   vatOrCvr: z.string().optional().describe("Party VAT or CVR number, e.g. 'DK12345678'."),
 });
 
-const documentMetadataSchema = z
+export const documentMetadataSchema = z
   .object({
     source: z
       .string()
@@ -61,6 +61,13 @@ const documentMetadataSchema = z
   .describe(
     "Document (bilag) metadata. amountIncVat and vatAmount are in kroner " +
       "(decimal DKK, 2 decimals — NOT øre).",
+  );
+
+export const mailIntakeMetadataSchema = documentMetadataSchema
+  .omit({ source: true })
+  .describe(
+    "DocumentMetadata payload applied to mail attachments. Same fields as " +
+      "documents_ingest.metadata, except source is generated from the mail message-id.",
   );
 
 export function registerDocumentTools(server: McpServer): void {

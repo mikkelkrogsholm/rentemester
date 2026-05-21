@@ -18,11 +18,7 @@ import {
 } from "../../core/mail-intake";
 import { envelopeShape, errorEnvelope, successEnvelope } from "../envelope";
 import { withCompanyDbConfirmed, confirmField } from "../tool-runtime";
-
-const metadataSchema = z
-  .object({})
-  .catchall(z.unknown())
-  .describe("DocumentMetadata-payload (uden 'source') der anvendes på vedhæftningerne — se examples/bilagsmail.metadata.json");
+import { mailIntakeMetadataSchema } from "./documents";
 
 export function registerMailIntakeTools(server: McpServer): void {
   server.registerTool(
@@ -37,9 +33,9 @@ export function registerMailIntakeTools(server: McpServer): void {
       inputSchema: {
         company: z.string().min(1),
         source: z.string().min(1).describe("Sti til en .eml-fil eller en maildrop-mappe"),
-        metadata: metadataSchema.optional(),
+        metadata: mailIntakeMetadataSchema.optional(),
         metadataPerMessage: z
-          .record(z.string(), metadataSchema)
+          .record(z.string(), mailIntakeMetadataSchema)
           .optional()
           .describe("Metadata pr. message-id; overstyrer 'metadata' for den pågældende besked"),
         force: z.boolean().optional(),

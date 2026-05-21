@@ -256,6 +256,25 @@ describe("#200/#206/#208/#210 — write tools expose fully-typed input schemas",
     const tool = tools.find((t) => t.name === "documents_ingest");
     expect((tool.description ?? "").toLowerCase()).toContain("filepath");
   });
+
+  test("#274 — mail intake metadata schemas are self-describing", () => {
+    for (const name of ["mail_intake_ingest", "imap_intake_poll"]) {
+      const schema = schemaOf(name);
+      const metadata = schema.properties?.metadata;
+      expect(metadata?.type, `${name}.metadata`).toBe("object");
+      expect(metadata?.properties?.issueDate, `${name}.metadata.issueDate`).toBeDefined();
+      expect(metadata?.properties?.amountIncVat, `${name}.metadata.amountIncVat`).toBeDefined();
+      expect(metadata?.properties?.sender?.properties?.vatOrCvr, `${name}.metadata.sender.vatOrCvr`).toBeDefined();
+      expect(metadata?.properties?.recipient?.properties?.vatOrCvr, `${name}.metadata.recipient.vatOrCvr`).toBeDefined();
+      expect(metadata?.properties?.source, `${name}.metadata.source`).toBeUndefined();
+
+      const perMessage = schema.properties?.metadataPerMessage;
+      const nested = perMessage?.additionalProperties;
+      expect(nested?.type, `${name}.metadataPerMessage.*`).toBe("object");
+      expect(nested?.properties?.issueDate, `${name}.metadataPerMessage.*.issueDate`).toBeDefined();
+      expect(nested?.properties?.source, `${name}.metadataPerMessage.*.source`).toBeUndefined();
+    }
+  });
 });
 
 describe("#232 — the remaining write tools carry field-level schemas", () => {
