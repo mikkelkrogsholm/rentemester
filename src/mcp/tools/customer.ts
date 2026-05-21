@@ -76,7 +76,7 @@ export function registerCustomerTools(server: McpServer): void {
           notes: z.string().optional(),
         }),
         fromCvr: z.string().optional(),
-        confirm: z.boolean(),
+        confirm: z.boolean().optional(),
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     },

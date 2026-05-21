@@ -53,7 +53,7 @@ export function registerPeppolTools(server: McpServer): void {
         invoiceNumber: z.string().optional(),
         accessPoint: accessPointSchema,
         acknowledgement: acknowledgementSchema,
-        confirm: z.boolean(),
+        confirm: z.boolean().optional(),
       },
       annotations: {
         readOnlyHint: false,

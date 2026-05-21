@@ -418,6 +418,35 @@ describe("MCP tools full surface (#78)", () => {
     expect(structured?.errors?.[0]).toContain("confirm: true required");
   });
 
+  test("invoice_issue with omitted confirm returns envelope error", async () => {
+    const response = await client.send("tools/call", {
+      name: "invoice_issue",
+      arguments: {
+        company: companyRoot,
+        payload: { invoiceNumber: "X" },
+      },
+    });
+    expect(response.error).toBeUndefined();
+    const structured = response.result?.structuredContent;
+    expect(structured?.ok).toBe(false);
+    expect(structured?.errors?.[0]).toContain("confirm: true required");
+  });
+
+  test("period_close with omitted confirm returns envelope error", async () => {
+    const response = await client.send("tools/call", {
+      name: "period_close",
+      arguments: {
+        company: companyRoot,
+        from: "2026-01-01",
+        to: "2026-03-31",
+      },
+    });
+    expect(response.error).toBeUndefined();
+    const structured = response.result?.structuredContent;
+    expect(structured?.ok).toBe(false);
+    expect(structured?.errors?.[0]).toContain("confirm: true required");
+  });
+
   test("system_restore_backup rejects missing confirmText", async () => {
     const response = await client.send("tools/call", {
       name: "system_restore_backup",

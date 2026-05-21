@@ -69,7 +69,7 @@ export function registerPeriodTools(server: McpServer): void {
         kind: z.enum(["vat_quarter", "fiscal_year", "custom"]).optional(),
         status: z.enum(["closed", "reported"]).optional(),
         reference: z.string().optional(),
-        confirm: z.boolean(),
+        confirm: z.boolean().optional(),
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     },

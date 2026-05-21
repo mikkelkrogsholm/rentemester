@@ -53,7 +53,7 @@ export function registerImapIntakeTools(server: McpServer): void {
           .optional()
           .describe("Metadata pr. message-id; overstyrer 'metadata' for den pågældende besked"),
         force: z.boolean().optional(),
-        confirm: z.boolean(),
+        confirm: z.boolean().optional(),
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },

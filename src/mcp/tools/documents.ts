@@ -76,7 +76,7 @@ export function registerDocumentTools(server: McpServer): void {
         metadata: documentMetadataSchema,
         vendorId: z.number().int().positive().optional(),
         force: z.boolean().optional(),
-        confirm: z.boolean(),
+        confirm: z.boolean().optional(),
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     },

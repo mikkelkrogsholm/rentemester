@@ -113,7 +113,7 @@ export function registerJournalTools(server: McpServer): void {
         matchDocumentId: z.number().int().positive().optional(),
         date: z.string().min(1, "date (transaction date for the reversal) is required"),
         reason: z.string().min(1, "reason is required"),
-        confirm: z.boolean(),
+        confirm: z.boolean().optional(),
       },
       annotations: {
         readOnlyHint: false,

@@ -168,7 +168,7 @@ export function registerBankTools(server: McpServer): void {
         account: z.string().optional(),
         profile: z.string().optional(),
         // ===== END BANK CLUSTER (#187,#186) =====
-        confirm: z.boolean(),
+        confirm: z.boolean().optional(),
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     },

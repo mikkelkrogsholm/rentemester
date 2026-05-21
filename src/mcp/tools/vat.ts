@@ -49,7 +49,7 @@ export function registerVatTools(server: McpServer): void {
       inputSchema: {
         company: z.string().min(1),
         payload: payloadSchema,
-        confirm: z.boolean(),
+        confirm: z.boolean().optional(),
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     },
@@ -87,7 +87,7 @@ export function registerVatTools(server: McpServer): void {
       inputSchema: {
         company: z.string().min(1),
         payload: payloadSchema,
-        confirm: z.boolean(),
+        confirm: z.boolean().optional(),
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     },

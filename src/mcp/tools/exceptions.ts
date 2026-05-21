@@ -52,7 +52,7 @@ export function registerExceptionTools(server: McpServer): void {
         company: z.string().min(1),
         id: z.number().int().positive(),
         note: z.string().optional(),
-        confirm: z.boolean(),
+        confirm: z.boolean().optional(),
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     },

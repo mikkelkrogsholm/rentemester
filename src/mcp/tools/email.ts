@@ -67,7 +67,7 @@ export function registerEmailTools(server: McpServer): void {
         invoiceNumber: z.string().optional(),
         kind: z.enum(["invoice", "reminder"]).optional(),
         to: z.string().optional(),
-        confirm: z.boolean(),
+        confirm: z.boolean().optional(),
       },
       annotations: {
         readOnlyHint: false,

@@ -31,7 +31,7 @@ export function registerExpenseTools(server: McpServer): void {
         paymentAccount: z.string().optional(),
         date: z.string().optional(),
         text: z.string().optional(),
-        confirm: z.boolean(),
+        confirm: z.boolean().optional(),
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     },

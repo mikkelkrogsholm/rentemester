@@ -39,7 +39,7 @@ export function registerCvrTools(server: McpServer): void {
         "Henter virksomhedens egne stamdata fra CVR-registret og opdaterer companies-rækken (navn, adresse, branche, virksomhedsform, status). write-reversible — kræver confirm:true. Regnskabsåret røres aldrig; et afvigende regnskabsår rapporteres kun.",
       inputSchema: {
         company: z.string().min(1),
-        confirm: z.boolean(),
+        confirm: z.boolean().optional(),
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
