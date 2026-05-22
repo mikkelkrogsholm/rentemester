@@ -122,7 +122,7 @@ first; only then fall through to reading `structuredContent.errors[]`.
 
 `system_restore_backup` is the only `destructive` tool. On top of
 `confirm: true` it requires `confirmText` to equal the exact string
-`RESTORE <targetCompany>`. A mismatch is rejected with
+`RESTORE <targetCompany>`. A missing or mismatched `confirmText` is rejected with
 `confirmText must match 'RESTORE <targetCompany>'`. Restore can overwrite
 files in the target company directory — the double confirmation is the
 guardrail against pointing it at the wrong directory.

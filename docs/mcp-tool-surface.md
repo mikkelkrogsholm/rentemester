@@ -547,7 +547,7 @@ Validation-fejl fra kernen:
 }
 ```
 
-Forkert `confirmText` på destructive-tool:
+Manglende eller forkert `confirmText` på destructive-tool:
 ```json
 {
   "ok": false,

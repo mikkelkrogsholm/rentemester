@@ -523,6 +523,7 @@ export function registerSystemTools(server: McpServer): void {
         confirmText: z
           .string()
           .min(1)
+          .optional()
           .describe(
             "Destructive-confirmation text. Must be EXACTLY 'RESTORE <targetCompany>' " +
               "— i.e. the literal word RESTORE, a space, then the targetCompany value " +
@@ -537,7 +538,7 @@ export function registerSystemTools(server: McpServer): void {
       targetCompany: string;
       verifyKey?: string;
       confirm?: boolean;
-      confirmText: string;
+      confirmText?: string;
     }>(
       "system_restore_backup",
       (args) => `RESTORE ${args.targetCompany}`,

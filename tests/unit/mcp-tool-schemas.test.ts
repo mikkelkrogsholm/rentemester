@@ -683,10 +683,12 @@ describe("#277 — older tools' flat scalar fields carry field descriptions", ()
   });
 
   test("system_restore_backup.confirmText states the exact RESTORE formula", () => {
-    const props = schemaOf("system_restore_backup").properties ?? {};
+    const schema = schemaOf("system_restore_backup");
+    const props = schema.properties ?? {};
     const desc: string = props.confirmText?.description ?? "";
     expect(typeof desc).toBe("string");
     expect(desc).toContain("RESTORE <targetCompany>");
+    expect(schema.required ?? []).not.toContain("confirmText");
   });
 });
 

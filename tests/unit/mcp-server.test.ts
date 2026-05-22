@@ -446,7 +446,7 @@ describe("MCP tools full surface (#78)", () => {
     expect(structured?.errors?.[0]).toContain("confirm: true required");
   });
 
-  test("system_restore_backup rejects missing confirmText", async () => {
+  test("system_restore_backup rejects wrong confirmText", async () => {
     const response = await client.send("tools/call", {
       name: "system_restore_backup",
       arguments: {
@@ -459,6 +459,23 @@ describe("MCP tools full surface (#78)", () => {
     const structured = response.result?.structuredContent;
     expect(structured?.ok).toBe(false);
     expect(structured?.errors?.[0]).toContain("confirmText must match");
+  });
+
+  test("system_restore_backup rejects omitted confirmText with an envelope error", async () => {
+    const response = await client.send("tools/call", {
+      name: "system_restore_backup",
+      arguments: {
+        backupDir: "/tmp/does-not-exist",
+        targetCompany: "/tmp/does-not-exist-target",
+        confirm: true,
+      },
+    });
+    expect(response.error).toBeUndefined();
+    const structured = response.result?.structuredContent;
+    expect(structured?.ok).toBe(false);
+    expect(structured?.errors?.[0]).toContain(
+      "confirmText must match 'RESTORE /tmp/does-not-exist-target' exactly",
+    );
   });
 
   test("system_restore_backup rejects missing confirm:true", async () => {
