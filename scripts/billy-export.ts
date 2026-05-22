@@ -154,20 +154,105 @@ async function main() {
   writeFileSync(join(outDir, "tax-rates.json"), JSON.stringify(taxRates, null, 2), "utf8");
   console.log(`  ${taxRates.length} tax rates`);
 
+  console.log("Fetching attachments...");
+  const attachments = await billyGetAll(
+    `/attachments?organizationId=${organizationId}`,
+    apiKey,
+    "attachments",
+  ) as Array<{
+    id: string;
+    ownerId: string;
+    ownerReference: string;
+    fileId: string;
+    documentDate: string | null;
+    amount: number | null;
+    supplier: string | null;
+  }>;
+  writeFileSync(join(outDir, "attachments.json"), JSON.stringify(attachments, null, 2), "utf8");
+  console.log(`  ${attachments.length} attachments`);
+
+  // Download attachment files with correct extensions
+  const bilagDir = join(outDir, "bilag");
+  mkdirSync(bilagDir, { recursive: true });
+  let downloadedCount = 0;
+  let downloadErrors = 0;
+  const mimeToExt: Record<string, string> = {
+    "application/pdf": ".pdf",
+    "image/png": ".png",
+    "image/jpeg": ".jpg",
+    "image/gif": ".gif",
+  };
+  for (const att of attachments) {
+    if (!att.fileId) continue;
+    try {
+      const fileRes = await fetch(`${API_BASE}/files/${att.fileId}`, {
+        headers: { "X-Access-Token": apiKey },
+      });
+      if (fileRes.ok) {
+        const contentType = (fileRes.headers.get("content-type") ?? "").split(";")[0]!.trim();
+        const ext = mimeToExt[contentType] ?? ".pdf";
+        const filePath = join(bilagDir, `${att.ownerId}__${att.id}${ext}`);
+        const buffer = await fileRes.arrayBuffer();
+        writeFileSync(filePath, Buffer.from(buffer));
+        downloadedCount++;
+      } else {
+        downloadErrors++;
+      }
+    } catch {
+      downloadErrors++;
+    }
+  }
+  console.log(`  ${downloadedCount} files downloaded${downloadErrors > 0 ? `, ${downloadErrors} failed` : ""}`);
+
+  // Build bill → transactionId mapping using entryDate + amount + text
+  const billMap: Array<{ billId: string; transactionId: string; voucherNo: string }> = [];
+  type PostingRecord = {
+    transactionId: string;
+    entryDate: string;
+    text: string;
+    amount: number;
+    side: string;
+    isVoided: boolean;
+    accountId: string;
+  };
+
   console.log("Fetching postings for balance computation...");
   const postings = await billyGetAll(
     `/postings?organizationId=${organizationId}`,
     apiKey,
     "postings",
-  ) as Array<{
-    accountId: string;
-    amount: number;
-    side: string;
-    entryDate: string;
-    isVoided: boolean;
-  }>;
+  ) as PostingRecord[];
   writeFileSync(join(outDir, "postings.json"), JSON.stringify(postings, null, 2), "utf8");
   console.log(`  ${postings.length} postings`);
+
+  // Build bill → transactionId mapping.
+  // Group postings by transactionId, then match each bill by entryDate + grossAmount.
+  const txnByKey = new Map<string, string>();
+  const groupedByTxn = new Map<string, PostingRecord[]>();
+  for (const p of postings) {
+    if (p.isVoided) continue;
+    if (!groupedByTxn.has(p.transactionId)) groupedByTxn.set(p.transactionId, []);
+    groupedByTxn.get(p.transactionId)!.push(p);
+  }
+  for (const [txnId, group] of groupedByTxn) {
+    const first = group[0]!;
+    const totalDebit = group
+      .filter((p) => p.side === "debit")
+      .reduce((sum, p) => sum + p.amount, 0);
+    const text = first.text || "";
+    // Key: date|amount|first-8-chars-of-text for disambiguation
+    const key = `${first.entryDate}|${Math.round(totalDebit * 100)}|${text.slice(0, 8).trim()}`;
+    if (!txnByKey.has(key)) txnByKey.set(key, txnId);
+  }
+  for (const bill of bills as Array<{ id: string; entryDate: string; grossAmount: number; lineDescription: string; voucherNo: string }>) {
+    const key = `${bill.entryDate}|${Math.round(bill.grossAmount * 100)}|${(bill.lineDescription || "").slice(0, 8).trim()}`;
+    const txnId = txnByKey.get(key);
+    if (txnId) {
+      billMap.push({ billId: bill.id, transactionId: txnId, voucherNo: bill.voucherNo ?? "" });
+    }
+  }
+  writeFileSync(join(outDir, "bill-transaction-map.json"), JSON.stringify(billMap, null, 2), "utf8");
+  console.log(`  ${billMap.length} / ${(bills as unknown[]).length} bills mapped to transactionIds`);
 
   // Build account ID → { accountNo, natureId } map
   const accountById = new Map<string, { accountNo: number; natureId: string }>();
