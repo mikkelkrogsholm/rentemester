@@ -24,6 +24,7 @@
 
 import type { ImportAccount, ImportOpeningBalanceLine, ParseResult, SourceParser } from "./types";
 import { dineroParser } from "./dinero";
+import { billyParser } from "./billy";
 
 const SYSTEM = "synthetic-csv";
 const LABEL = "Synthetic CSV (import-framework example)";
@@ -164,4 +165,5 @@ export const syntheticCsvParser: SourceParser = {
 export const PARSERS: Record<string, SourceParser> = {
   [SYSTEM]: syntheticCsvParser,
   [dineroParser.system]: dineroParser,
+  [billyParser.system]: billyParser,
 };
