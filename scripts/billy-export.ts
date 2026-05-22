@@ -200,8 +200,11 @@ async function main() {
     "image/jpeg": ".jpg",
     "image/gif": ".gif",
   };
-  for (const att of attachments) {
+  for (let i = 0; i < attachments.length; i++) {
+    const att = attachments[i]!;
     if (!att.fileId) continue;
+    // Rate-limit: pause between API calls to avoid 429 responses
+    if (i > 0 && i % 10 === 0) await new Promise((r) => setTimeout(r, 200));
     try {
       // Billy /v2/files returns JSON with a downloadUrl — not the file itself
       const metaRes = await fetch(`${API_BASE}/files/${att.fileId}`, {
