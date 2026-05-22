@@ -1,8 +1,9 @@
 // Tests: src/cli/asset.ts, src/cli.ts (asset register / depreciate / write-off CLI, #124 + #125)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { cleanupDir } from "../helpers/cleanup";
 
 async function runCli(args: string[]) {
   const proc = Bun.spawn(["bun", "run", "src/cli.ts", ...args], {
@@ -40,8 +41,7 @@ async function bootstrapCompanyWithDocument(label: string) {
   return {
     company,
     cleanup: () => {
-      rmSync(root, { recursive: true, force: true });
-      rmSync(inbox, { recursive: true, force: true });
+      cleanupDir(root, inbox);
     },
   };
 }
