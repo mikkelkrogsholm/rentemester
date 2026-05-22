@@ -120,7 +120,11 @@ export function parseBillyContacts(raw: string): {
   if (!Array.isArray(parsed)) {
     return { ok: false, contacts: [], errors: ["contacts.json: expected a JSON array"] };
   }
-  return { ok: true, contacts: parsed as BillyContact[], errors: [] };
+  const contacts = parsed.filter(
+    (entry): entry is BillyContact =>
+      typeof entry === "object" && entry !== null && typeof entry.name === "string",
+  );
+  return { ok: true, contacts, errors: [] };
 }
 
 export function importBillyContacts(

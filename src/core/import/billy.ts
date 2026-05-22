@@ -158,7 +158,12 @@ type BillyOrganization = {
 function parseOrganization(text: string, errors: string[]): ImportCompanyMasterData | undefined {
   let org: BillyOrganization;
   try {
-    org = JSON.parse(text);
+    const parsed = JSON.parse(text);
+    if (!parsed || typeof parsed !== "object") {
+      errors.push("organization.json: expected a JSON object");
+      return undefined;
+    }
+    org = parsed;
   } catch {
     errors.push("organization.json: invalid JSON");
     return undefined;
