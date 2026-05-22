@@ -18,10 +18,12 @@
 // and `unmappedVatCodes`.
 
 import { requireFile } from "./source";
+import { parseBillyPostings } from "./billy-postings";
 import type {
   ImportAccount,
   ImportAccountType,
   ImportCompanyMasterData,
+  ImportHistoricalEntry,
   ImportNormalBalance,
   ImportOpeningBalanceLine,
   MultiArtifactSource,
@@ -329,12 +331,34 @@ function parseBillySource(input: MultiArtifactSource): ParseResult {
     errors.push("accounts.json: no accounts parsed from the chart of accounts");
   }
 
+  // Build accountId → accountNo map for postings parser
+  const accountIdToNo = new Map<string, string>();
+  let rawAccountsForMap: Array<{ id: string; accountNo: number }> = [];
+  try { rawAccountsForMap = JSON.parse(accountsFile.text); } catch {}
+  if (Array.isArray(rawAccountsForMap)) {
+    for (const a of rawAccountsForMap) {
+      if (a.id && a.accountNo) accountIdToNo.set(a.id, String(a.accountNo));
+    }
+  }
+
   // Opening balance: from an optional `balances.json` (produced by the export
   // script from Billy's balance sheet). Without it, the import is chart-only.
   const balancesFile = input.files["balances.json"];
   const { openingBalances, cutOverDate } = balancesFile
     ? parseBalances(balancesFile.text, errors)
     : { openingBalances: [] as ImportOpeningBalanceLine[], cutOverDate: "" };
+
+  // Historical entries: year-to-date postings after the cut-over date.
+  // Parsed from `postings.json` when present and a cut-over date is set.
+  let historicalEntries: ImportHistoricalEntry[] = [];
+  const postingsFile = input.files["postings.json"];
+  if (postingsFile && cutOverDate) {
+    historicalEntries = parseBillyPostings(
+      postingsFile.text,
+      { cutOverDate, accountIdToNo },
+      errors,
+    );
+  }
 
   if (errors.length > 0) {
     return { ok: false, errors };
@@ -348,6 +372,7 @@ function parseBillySource(input: MultiArtifactSource): ParseResult {
       cutOverDate,
       chartOfAccounts: accounts,
       openingBalances,
+      ...(historicalEntries.length > 0 ? { historicalEntries } : {}),
       ...(companyMasterData ? { companyMasterData } : {}),
       ...(unmappedVatCodes.length > 0 ? { unmappedVatCodes } : {}),
     },
