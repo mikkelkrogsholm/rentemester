@@ -159,12 +159,11 @@ export function ingestBillyBilag(
         source: BILLY_BILAG_SOURCE,
         documentType: "cash_register_receipt",
       });
-      if (!ingest.ok || ingest.documentId == null) {
-        // ingestDocument may fail for MIME-type detection, etc. — skip, not fatal.
+      if (!ingest.ok || ingest.documentId == null || !ingest.documentNo) {
         continue;
       }
       documentId = ingest.documentId as unknown as number;
-      documentNo = ingest.documentNo!;
+      documentNo = ingest.documentNo;
     }
 
     // Map: billId → transactionId → journal entry

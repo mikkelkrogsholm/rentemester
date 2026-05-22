@@ -152,9 +152,14 @@ async function main() {
   );
 
   // Get Billy org ID
-  const orgData = (await (await fetch(`${API_BASE}/organization`, {
+  const orgRes = await fetch(`${API_BASE}/organization`, {
     headers: { "X-Access-Token": apiKey, Accept: "application/json" },
-  })).json()) as { organization: { id: string; name: string } };
+  });
+  if (!orgRes.ok) {
+    console.error(`Billy API error ${orgRes.status}: ${await orgRes.text()}`);
+    process.exit(1);
+  }
+  const orgData = (await orgRes.json()) as { organization: { id: string; name: string } };
   const organizationId = orgData.organization.id;
   console.log(`Organisation: ${orgData.organization.name}`);
 
@@ -226,82 +231,87 @@ async function main() {
 
   // Open Rentemester DB and post
   const db = new Database(dbPath);
-  migrate(db);
-  const accountMap = loadAccountMap(db);
-
   let posted = 0;
   let skipped = 0;
   let errors = 0;
-  const syncedPostingIds: string[] = [...state.lastPostingIds];
+  // Only track posting IDs for the boundary date — older dates are already
+  // excluded by the date filter, so storing their IDs wastes space.
+  const postedPostingIds = new Set<string>();
   let latestDate = state.lastSyncDate;
 
-  for (const txn of transactions) {
-    // Build journal entry lines
-    const lines: Array<{
-      accountNo: string;
-      debitAmount?: number;
-      creditAmount?: number;
-      text: string;
-    }> = [];
+  try {
+    migrate(db);
+    const accountMap = loadAccountMap(db);
 
-    let valid = true;
-    for (const p of txn.postings) {
-      const accountNo = billyIdToNo.get(p.accountId);
-      if (!accountNo || !accountMap.has(accountNo)) {
-        valid = false;
-        break;
+    for (const txn of transactions) {
+      const lines: Array<{
+        accountNo: string;
+        debitAmount?: number;
+        creditAmount?: number;
+        text: string;
+      }> = [];
+
+      let valid = true;
+      for (const p of txn.postings) {
+        const accountNo = billyIdToNo.get(p.accountId);
+        if (!accountNo || !accountMap.has(accountNo)) {
+          valid = false;
+          break;
+        }
+        if (p.amount === 0) continue;
+        const absAmount = Math.abs(p.amount);
+        if (p.side === "debit") {
+          lines.push({ accountNo, debitAmount: absAmount, text: p.text || txn.text });
+        } else if (p.side === "credit") {
+          lines.push({ accountNo, creditAmount: absAmount, text: p.text || txn.text });
+        }
       }
-      if (p.amount === 0) continue;
-      lines.push({
-        accountNo,
-        ...(p.side === "debit" ? { debitAmount: p.amount } : { creditAmount: p.amount }),
-        text: p.text || txn.text,
+
+      if (!valid || lines.length < 2) {
+        skipped++;
+        // Do NOT mark skipped postings as synced — they should be retried
+        // after the missing accounts are added to the chart.
+        continue;
+      }
+
+      // Balance check
+      let debitOre = 0n;
+      let creditOre = 0n;
+      for (const line of lines) {
+        if (line.debitAmount) debitOre += toOre(line.debitAmount);
+        if (line.creditAmount) creditOre += toOre(line.creditAmount);
+      }
+      if (debitOre !== creditOre) {
+        skipped++;
+        continue;
+      }
+
+      const result = postJournalEntry(db, {
+        transactionDate: txn.date,
+        text: `Billy sync: ${txn.text}`,
+        createdBy: actor || undefined,
+        createdByProgram: SYNC_PROGRAM,
+        importedHistorical: true,
+        lines,
       });
-    }
 
-    if (!valid || lines.length < 2) {
-      skipped++;
-      for (const p of txn.postings) syncedPostingIds.push(p.id);
-      continue;
+      if (result.ok) {
+        posted++;
+        for (const p of txn.postings) postedPostingIds.add(p.id);
+        if (txn.date > latestDate) latestDate = txn.date;
+      } else {
+        errors++;
+        console.error(`  Failed txn ${txn.txnId}: ${result.errors.join(", ")}`);
+      }
     }
-
-    // Balance check
-    let debitOre = 0n;
-    let creditOre = 0n;
-    for (const line of lines) {
-      if (line.debitAmount) debitOre += toOre(line.debitAmount);
-      if (line.creditAmount) creditOre += toOre(line.creditAmount);
-    }
-    if (debitOre !== creditOre) {
-      skipped++;
-      for (const p of txn.postings) syncedPostingIds.push(p.id);
-      continue;
-    }
-
-    const result = postJournalEntry(db, {
-      transactionDate: txn.date,
-      text: `Billy sync: ${txn.text}`,
-      createdBy: actor || undefined,
-      createdByProgram: SYNC_PROGRAM,
-      importedHistorical: true,
-      lines,
-    });
-
-    if (result.ok) {
-      posted++;
-      for (const p of txn.postings) syncedPostingIds.push(p.id);
-      if (txn.date > latestDate) latestDate = txn.date;
-    } else {
-      errors++;
-      console.error(`  Failed txn ${txn.txnId}: ${result.errors.join(", ")}`);
-    }
+  } finally {
+    db.close();
   }
 
-  db.close();
-
-  // Update sync state
+  // Update sync state — only keep posting IDs for the latest date boundary.
+  // Postings before lastSyncDate are excluded by the date filter on the next run.
   state.lastSyncDate = latestDate;
-  state.lastPostingIds = syncedPostingIds;
+  state.lastPostingIds = [...postedPostingIds];
   state.syncCount += 1;
   state.lastRunAt = new Date().toISOString();
   saveSyncState(company, state);

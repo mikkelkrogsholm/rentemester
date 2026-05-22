@@ -56,6 +56,11 @@ export function parseBillyPostings(
 
   const { cutOverDate, accountIdToNo } = options;
 
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(cutOverDate)) {
+    errors.push(`cutOverDate '${cutOverDate}' is not a valid YYYY-MM-DD date`);
+    return [];
+  }
+
   // Filter: non-voided, on or after cut-over date
   const active = postings.filter(
     (p) => !p.isVoided && p.entryDate >= cutOverDate,
@@ -98,19 +103,15 @@ export function parseBillyPostings(
 
     if (p.amount === 0) continue;
 
+    const lineText = p.text && p.text.trim().length > 0 ? p.text.trim() : undefined;
+    const absAmount = Math.abs(p.amount);
     if (p.side === "debit") {
-      voucher.lines.push({
-        accountNo,
-        debitAmount: p.amount,
-        text: p.text && p.text.trim().length > 0 ? p.text.trim() : undefined,
-      });
-    } else {
-      voucher.lines.push({
-        accountNo,
-        creditAmount: p.amount,
-        text: p.text && p.text.trim().length > 0 ? p.text.trim() : undefined,
-      });
+      voucher.lines.push({ accountNo, debitAmount: absAmount, text: lineText });
+    } else if (p.side === "credit") {
+      voucher.lines.push({ accountNo, creditAmount: absAmount, text: lineText });
     }
+    // Unknown side values are silently skipped — the voucher will have fewer
+    // lines and may be filtered out as single-line if all lines are unknown.
   }
 
   // Convert to ImportHistoricalEntry, filtering out single-line vouchers

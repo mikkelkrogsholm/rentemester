@@ -83,7 +83,9 @@ function buildTaxRateMap(taxRatesText: string | undefined): Map<string, string |
     const pct = rate.rate ?? 0;
     let vatCode: string | null = null;
 
-    if (pct === 0.25 || pct === 25) {
+    // Billy stores rates as decimals (0.25 = 25%). Normalize if given as percentage.
+    const normalizedPct = pct > 1 ? pct / 100 : pct;
+    if (normalizedPct >= 0.245 && normalizedPct <= 0.255) {
       if (name.includes("representation") || name.includes("repræsentation")) {
         vatCode = "REPRESENTATION_SPECIAL";
       } else {
