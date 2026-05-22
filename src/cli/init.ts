@@ -6,6 +6,7 @@ import {
   type CompanyOnboardingSummary,
 } from "../core/company";
 import { vatPeriodTypeLabelDa } from "../core/periods";
+import { MONTH_NAMES_DA, decapitalize } from "../core/dates";
 import {
   registerCompanyDirIntoWorkspace,
   resolveConfiguredWorkspaceRoot,
@@ -14,21 +15,6 @@ import {
 } from "../core/workspace";
 import { inferredMutationActor } from "../cli-actor";
 import type { CommandContext, CommandDispatch } from "../cli-dispatch";
-
-const MONTH_NAMES_DA = [
-  "januar",
-  "februar",
-  "marts",
-  "april",
-  "maj",
-  "juni",
-  "juli",
-  "august",
-  "september",
-  "oktober",
-  "november",
-  "december",
-];
 
 const FISCAL_LABEL_DA: Record<string, string> = {
   "end-year": "navngives efter slutåret",
@@ -59,7 +45,8 @@ function buildOnboardingLines(
   summary: CompanyOnboardingSummary,
   registration: WorkspaceAutoRegisterResult | null,
 ): string[] {
-  const monthName = MONTH_NAMES_DA[summary.fiscalYearStartMonth - 1] ?? `måned ${summary.fiscalYearStartMonth}`;
+  const capitalisedMonth = MONTH_NAMES_DA[summary.fiscalYearStartMonth - 1];
+  const monthName = capitalisedMonth ? decapitalize(capitalisedMonth) : `måned ${summary.fiscalYearStartMonth}`;
   const fiscalLabel = FISCAL_LABEL_DA[summary.fiscalYearLabelStrategy] ?? summary.fiscalYearLabelStrategy;
   const lines: string[] = [];
 

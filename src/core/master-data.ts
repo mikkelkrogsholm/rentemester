@@ -2,6 +2,7 @@ import type { Database } from "bun:sqlite";
 import type { InvoicePayload } from "./invoice";
 import type { DocumentMetadata } from "./documents";
 import { insertAuditLog } from "./actor";
+import { addDays } from "./dates";
 import { normalizeEanNumber, trimToNull } from "./ean";
 import { lookupCvrCompany, type CvrCompanyInfo, type CvrLookupOptions } from "./cvr";
 
@@ -254,12 +255,6 @@ export function resolveInvoiceMasterData(db: Database, payload: InvoicePayload, 
       dueDate: trimToNull(payload.dueDate) ?? (trimToNull(payload.issueDate) && customer.payment_terms_days > 0 ? addDays(payload.issueDate!, customer.payment_terms_days) : undefined),
     },
   };
-}
-
-function addDays(isoDate: string, days: number) {
-  const date = new Date(`${isoDate}T00:00:00Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
 }
 
 // ---------------------------------------------------------------------------

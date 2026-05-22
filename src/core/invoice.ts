@@ -1,5 +1,5 @@
 import { isValidIsoDate as looksLikeIsoDate } from "./dates";
-import { roundDkk, roundRate6 } from "./money";
+import { normalizeCurrency, roundDkk, roundRate6 } from "./money";
 import { normalizeEanNumber } from "./ean";
 export type InvoiceType = "full" | "simplified";
 export type VatTreatment = "standard" | "domestic_reverse_charge" | "foreign_reverse_charge";
@@ -89,7 +89,7 @@ function hasLineDescriptions(lines: InvoicePayload["lines"]) {
 }
 
 function normalizedCurrency(payload: InvoicePayload) {
-  return (payload.currency ?? "DKK").trim().toUpperCase();
+  return normalizeCurrency(payload.currency);
 }
 
 export function validateInvoice(payload: InvoicePayload): InvoiceValidationResult {

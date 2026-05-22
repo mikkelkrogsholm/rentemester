@@ -1,6 +1,6 @@
 import type { Database } from "bun:sqlite";
 import { insertAuditLog, resolveActor } from "./actor";
-import { isValidIsoDate as looksLikeIsoDate, addDays, todayIsoDate } from "./dates";
+import { isValidIsoDate as looksLikeIsoDate, addDays, todayIsoDate, MONTH_NAMES_DA } from "./dates";
 
 export type AccountingPeriodKind = "vat_quarter" | "fiscal_year" | "custom";
 export type AccountingPeriodStatus = "open" | "closed" | "reported";
@@ -120,7 +120,7 @@ export function vatPeriodLabel(window: VatPeriodWindow): string {
   const startMonth = Number(window.start.slice(5, 7)); // 1-based
   switch (window.vatPeriodType) {
     case "month":
-      return `${VAT_MONTH_NAMES_DA[startMonth - 1]} ${year}`;
+      return `${MONTH_NAMES_DA[startMonth - 1]} ${year}`;
     case "half-year": {
       const half = startMonth <= 6 ? 1 : 2;
       return `${half}. halvår ${year}`;
@@ -132,12 +132,6 @@ export function vatPeriodLabel(window: VatPeriodWindow): string {
     }
   }
 }
-
-/** Danish month names, capitalised, for `vatPeriodLabel`'s monthly cadence. */
-const VAT_MONTH_NAMES_DA = [
-  "Januar", "Februar", "Marts", "April", "Maj", "Juni",
-  "Juli", "August", "September", "Oktober", "November", "December",
-];
 
 /**
  * #299: every VAT period window that starts inside calendar `year`, for a

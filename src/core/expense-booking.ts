@@ -1,7 +1,7 @@
 import type { Database } from "bun:sqlite";
 import { postJournalEntry, type JournalPostResult } from "./ledger";
 import { postEuServiceReverseChargePurchase, postRepresentationPurchase } from "./vat";
-import { absDkk, compareDkk, percentOfDkk, roundDkk, subtractDkk } from "./money";
+import { absDkk, compareDkk, normalizeCurrency, percentOfDkk, roundDkk, subtractDkk } from "./money";
 
 export type ExpenseVatTreatment = "standard" | "reverse_charge" | "representation" | "exempt";
 
@@ -54,7 +54,7 @@ function resolveFxBookingBasis(document: { currency: string; amount_inc_vat: num
   amount_dkk: number | null;
   fx_rate_to_dkk: number | null;
 }): { ok: true; basis: FxBookingBasis } | { ok: false; error: string } {
-  const currency = (document.currency ?? "DKK").trim().toUpperCase();
+  const currency = normalizeCurrency(document.currency);
   const grossAmountForeign = roundDkk(Number(document.amount_inc_vat ?? 0));
 
   if (currency === "DKK") {
@@ -69,7 +69,7 @@ function resolveFxBookingBasis(document: { currency: string; amount_inc_vat: num
     };
   }
 
-  const bankCurrency = (bank.currency ?? "DKK").trim().toUpperCase();
+  const bankCurrency = normalizeCurrency(bank.currency);
   const fxRateToDkk = bank.fx_rate_to_dkk == null ? NaN : Number(bank.fx_rate_to_dkk);
   if (!(fxRateToDkk > 0)) {
     if (bankCurrency === "DKK") return { ok: false, error: "foreign-currency expense booking requires bank fx_rate_to_dkk for DKK-settled payments" };

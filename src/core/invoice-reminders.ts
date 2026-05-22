@@ -2,7 +2,7 @@ import type { Database } from "bun:sqlite";
 import { postJournalEntry, type JournalPostResult } from "./ledger";
 import { getInvoiceStatus } from "./invoice-payments";
 import { insertAuditLog } from "./actor";
-import { isValidIsoDate as looksLikeIsoDate } from "./dates";
+import { isValidIsoDate as looksLikeIsoDate, diffDays } from "./dates";
 import { roundDkk } from "./money";
 
 const RULE_ID = "DK-INVOICE-REMINDER-FEE-001";
@@ -49,12 +49,6 @@ export type PostInvoiceReminderToLedgerResult = JournalPostResult & {
   feeAmount?: number;
   claimOpenBalance?: number;
 };
-
-function diffDays(fromDate: string, toDate: string) {
-  const from = new Date(`${fromDate}T00:00:00Z`).getTime();
-  const to = new Date(`${toDate}T00:00:00Z`).getTime();
-  return Math.floor((to - from) / 86400000);
-}
 
 export function registerInvoiceReminder(db: Database, input: RegisterInvoiceReminderInput): RegisterInvoiceReminderResult {
   const errors: string[] = [];

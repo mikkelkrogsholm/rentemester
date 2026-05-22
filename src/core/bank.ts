@@ -6,7 +6,7 @@ import { companyPaths } from "./paths";
 import { insertAuditLog } from "./actor";
 import { isValidIsoDate as looksLikeIsoDate } from "./dates";
 import { retainUntilForDate } from "./retention";
-import { addDkk, compareDkk, equalsDkk, multiplyDkk, roundDkk, roundRate6, subtractDkk } from "./money";
+import { addDkk, compareDkk, equalsDkk, multiplyDkk, normalizeCurrency, roundDkk, roundRate6, subtractDkk } from "./money";
 // ===== BANK CLUSTER (#186,#189) =====
 import {
   getBankProfile,
@@ -116,7 +116,7 @@ export function addBankAccount(db: Database, input: AddBankAccountInput) {
   if (!name) errors.push("name is required");
   const slug = (input.slug?.trim() ? slugify(input.slug) : slugify(name ?? "")) || "";
   if (!slug) errors.push("slug could not be derived; pass an explicit --slug");
-  const currency = (input.currency ?? "DKK").trim().toUpperCase();
+  const currency = normalizeCurrency(input.currency);
   if (currency.length !== 3) errors.push("currency must be a 3-letter ISO currency code");
   if (errors.length > 0) return { ok: false as const, account: undefined, errors };
 
@@ -378,7 +378,7 @@ function toRow(input: Record<string, string>): BankImportRow {
     bookingDate: normalizeDateText(input.booking_date),
     text: input.text,
     amount: parseLocalizedNumber(input.amount) ?? NaN,
-    currency: input.currency || "DKK",
+    currency: normalizeCurrency(input.currency),
     reference: input.reference || undefined,
     amountDkk: parseLocalizedNumber(input.amount_dkk),
     fxRateToDkk: parseLocalizedNumber(input.fx_rate_to_dkk),
@@ -480,7 +480,7 @@ export function parseCsvWithProfile(bytes: Uint8Array, profile: BankImportProfil
       bookingDate: normalizeDateWithOrder(fields.booking_date, profile.dateOrder),
       text: fields.text ?? "",
       amount: parseLocalizedNumber(fields.amount) ?? NaN,
-      currency: fields.currency || "DKK",
+      currency: normalizeCurrency(fields.currency),
       reference: fields.reference || undefined,
       amountDkk: parseLocalizedNumber(fields.amount_dkk),
       fxRateToDkk: parseLocalizedNumber(fields.fx_rate_to_dkk),
@@ -506,7 +506,7 @@ export function validateBankImportRows(rows: BankImportRow[]) {
     if (typeof row.text !== "string" || row.text.trim().length === 0) errors.push(`rows[${idx}].text is required`);
     if (!Number.isFinite(normalizeAmount(row.amount))) errors.push(`rows[${idx}].amount must be numeric`);
 
-    const currency = (row.currency ?? "DKK").trim().toUpperCase();
+    const currency = normalizeCurrency(row.currency);
     if (currency.length !== 3) errors.push(`rows[${idx}].currency must be a 3-letter ISO currency code`);
     if (currency !== "DKK") {
       needsFxRule = true;
@@ -539,7 +539,7 @@ function transactionFingerprint(row: BankImportRow, occurrence: number, bankAcco
     booking_date: row.bookingDate ?? null,
     text: row.text.trim(),
     amount: normalizeAmount(row.amount),
-    currency: row.currency ?? "DKK",
+    currency: normalizeCurrency(row.currency),
     reference: row.reference ?? null,
     amount_dkk: normalizeAmountOrNull(row.amountDkk),
     fx_rate_to_dkk: row.fxRateToDkk == null ? null : roundRate6(row.fxRateToDkk),
@@ -795,7 +795,7 @@ export function importBankCsv(
       const existing = db.query("SELECT id FROM bank_transactions WHERE transaction_hash = ?").get(hash) as { id: number } | null;
       if (existing) {
         skippedDuplicates += 1;
-        skippedDuplicateRows.push(`${row.transactionDate} ${row.text.trim()} ${normalizeAmount(row.amount)} ${(row.currency ?? "DKK").trim().toUpperCase()}`);
+        skippedDuplicateRows.push(`${row.transactionDate} ${row.text.trim()} ${normalizeAmount(row.amount)} ${normalizeCurrency(row.currency)}`);
         continue;
       }
       const result = insert.run(
@@ -803,7 +803,7 @@ export function importBankCsv(
         row.bookingDate ?? null,
         row.text.trim(),
         normalizeAmount(row.amount),
-        (row.currency ?? "DKK").trim().toUpperCase(),
+        normalizeCurrency(row.currency),
         row.reference ?? null,
         normalizeAmountOrNull(row.amountDkk),
         row.fxRateToDkk == null ? null : roundRate6(row.fxRateToDkk),

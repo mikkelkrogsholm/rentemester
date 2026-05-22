@@ -6,6 +6,7 @@ import { buildBankReconciliationReport, listBankTransactions } from "../core/rec
 import { syncUnmatchedBankTransactionExceptions } from "../core/exceptions";
 import { openCommandDb } from "../cli-dispatch";
 import { renderHumanReport, formatKroner } from "../cli-format";
+import { ledgerStatusDa } from "../core/messages";
 import type { Database } from "bun:sqlite";
 import type { CommandContext, CommandDispatch } from "../cli-dispatch";
 
@@ -24,11 +25,6 @@ function resolveAccountFilter(ctx: CommandContext, db: Database): number | undef
 }
 // ===== END BANK CLUSTER (#187) =====
 
-const LEDGER_STATUS_DA: Record<string, string> = {
-  matched: "afstemt",
-  unmatched: "uafstemt",
-};
-
 function renderBankTransactionsHuman(rows: any[]): void {
   console.log(`Banktransaktioner (${rows.length})`);
   if (rows.length === 0) {
@@ -36,7 +32,7 @@ function renderBankTransactionsHuman(rows: any[]): void {
     return;
   }
   for (const row of rows) {
-    const status = LEDGER_STATUS_DA[String(row.ledgerStatus)] ?? row.ledgerStatus ?? "—";
+    const status = row.ledgerStatus != null ? ledgerStatusDa(String(row.ledgerStatus)) : "—";
     console.log("");
     console.log(`#${row.id} — ${row.transactionDate} | ${formatKroner(row.amount)}`);
     console.log(`  Tekst: ${row.text ?? "—"}`);

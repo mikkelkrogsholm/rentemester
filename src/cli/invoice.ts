@@ -18,6 +18,7 @@ import {
 } from "../core/public-einvoice";
 import { applyInvoicePayment, getInvoiceStatus } from "../core/invoice-payments";
 import { buildInvoiceList, buildOverdueInvoiceList, findInvoices } from "../core/invoice-list";
+import { invoiceStatusDa } from "../core/messages";
 import { postIssuedInvoiceToLedger } from "../core/invoice-booking";
 import { settleInvoiceFromBank } from "../core/invoice-settlement";
 import { settleInvoiceClaimsFromBank } from "../core/invoice-claim-settlement";
@@ -130,16 +131,6 @@ function withResolvedInvoicePayload<T extends Record<string, unknown>>(
   return { ...payload, [idKey]: resolved };
 }
 
-const INVOICE_STATUS_DA: Record<string, string> = {
-  open: "åben",
-  paid: "betalt",
-  credited: "krediteret",
-  refunded: "refunderet",
-  overpaid: "overbetalt",
-  written_off: "afskrevet",
-  overdue: "forfalden",
-};
-
 function renderInvoiceRowsHuman(title: string, rows: any[], emptyMessage: string): void {
   console.log(title);
   if (rows.length === 0) {
@@ -147,7 +138,7 @@ function renderInvoiceRowsHuman(title: string, rows: any[], emptyMessage: string
     return;
   }
   for (const row of rows) {
-    const statusDa = INVOICE_STATUS_DA[String(row.status)] ?? row.status ?? "—";
+    const statusDa = row.status != null ? invoiceStatusDa(String(row.status)) : "—";
     const customer = row.customerName ?? "(ukendt kunde)";
     console.log("");
     console.log(`Faktura ${row.invoiceNumber} — ${customer}`);

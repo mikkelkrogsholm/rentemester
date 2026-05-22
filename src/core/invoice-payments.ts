@@ -1,7 +1,7 @@
 import type { Database } from "bun:sqlite";
 import { postJournalEntry } from "./ledger";
 import { insertAuditLog } from "./actor";
-import { isValidIsoDate as looksLikeIsoDate } from "./dates";
+import { isValidIsoDate as looksLikeIsoDate, addDays, diffDays } from "./dates";
 import { addDkk, roundDkk, subtractDkk, sumDkk } from "./money";
 
 export type ApplyInvoicePaymentInput = {
@@ -116,19 +116,8 @@ const RULE_ID = "DK-INVOICE-PAYMENT-001";
 const CORRECTION_BALANCE_RULE_ID = "DK-INVOICE-CORRECTION-BALANCE-001";
 const DUE_DATE_RULE_ID = "DK-INVOICE-DUE-DATE-001";
 
-function isoDate(value: Date) { return value.toISOString().slice(0, 10); }
 function defaultComparisonDate(invoiceDate?: string, effectiveDueDate?: string) {
   return effectiveDueDate ?? invoiceDate ?? "1970-01-01";
-}
-function addDays(dateText: string, days: number) {
-  const date = new Date(`${dateText}T00:00:00Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-  return isoDate(date);
-}
-function diffDays(fromDate: string, toDate: string) {
-  const from = new Date(`${fromDate}T00:00:00Z`).getTime();
-  const to = new Date(`${toDate}T00:00:00Z`).getTime();
-  return Math.floor((to - from) / 86400000);
 }
 
 function getIssuedInvoice(db: Database, documentId: number) {

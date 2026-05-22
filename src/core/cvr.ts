@@ -1,4 +1,5 @@
 import type { Database } from "bun:sqlite";
+import { addDaysToTimestamp } from "./dates";
 
 /**
  * CVR-register integration — looks a company up in the Danish Central Business
@@ -123,12 +124,6 @@ function trimToNull(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
-}
-
-function addDays(isoDateTime: string, days: number) {
-  const date = new Date(isoDateTime);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString();
 }
 
 function isExpired(expiresAt: string, asOfIso: string) {
@@ -576,7 +571,7 @@ export async function lookupCvrCompany(
   storeCvrLookup(db, company, {
     rawResponse: JSON.stringify(fetched.entity),
     fetchedAt: asOf,
-    expiresAt: addDays(asOf, maxAgeDays),
+    expiresAt: addDaysToTimestamp(asOf, maxAgeDays),
   });
 
   return {

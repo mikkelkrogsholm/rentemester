@@ -1,4 +1,5 @@
 import type { Database } from "bun:sqlite";
+import { addDaysToTimestamp } from "./dates";
 
 export type NormalizedEuVat = {
   countryCode: string;
@@ -25,12 +26,6 @@ export type ValidateVatResult = {
 const RULE_ID = "DK-VAT-REVERSE-CHARGE-001";
 const DEFAULT_TTL_DAYS = 90;
 const DEFAULT_VIES_ENDPOINT = "https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number";
-
-function addDays(isoDateTime: string, days: number) {
-  const date = new Date(isoDateTime);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString();
-}
 
 // EU member-state VAT country codes recognised by VIES. EU service reverse
 // charge (momsloven §46) applies only to suppliers in *other* EU member
@@ -102,7 +97,7 @@ export function storeViesValidation(db: Database, validation: {
     : null);
   if (!parsed) throw new Error("valid EU VAT number is required");
   const validatedAt = validation.validatedAt ?? new Date().toISOString();
-  const expiresAt = validation.expiresAt ?? addDays(validatedAt, DEFAULT_TTL_DAYS);
+  const expiresAt = validation.expiresAt ?? addDaysToTimestamp(validatedAt, DEFAULT_TTL_DAYS);
   db.query(
     `INSERT INTO vies_validations (country_code, vat_number, valid, name, address, validated_at, expires_at, raw_response)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -192,7 +187,7 @@ function parseValidationResponse(json: any, parsed: NormalizedEuVat, validatedAt
       name,
       address,
       validatedAt,
-      expiresAt: addDays(validatedAt, DEFAULT_TTL_DAYS),
+      expiresAt: addDaysToTimestamp(validatedAt, DEFAULT_TTL_DAYS),
       rawResponse: JSON.stringify(json),
     },
   };

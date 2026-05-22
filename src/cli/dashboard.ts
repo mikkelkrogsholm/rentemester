@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { companyPaths } from "../core/paths";
+import { diffDaysSafe as daysBetween } from "../core/dates";
 import { openDb, migrate } from "../core/db";
 import { getCompanySettings } from "../core/company";
 import { buildInvoiceList, buildOverdueInvoiceList } from "../core/invoice-list";
@@ -136,15 +137,6 @@ function selectVatPeriodForDashboard(
   }
   // No outstanding period — show the period today falls in.
   return fallback;
-}
-
-function daysBetween(a: string, b: string): number {
-  const pa = /^(\d{4})-(\d{2})-(\d{2})/.exec(a);
-  const pb = /^(\d{4})-(\d{2})-(\d{2})/.exec(b);
-  if (!pa || !pb) return 0;
-  const da = Date.UTC(parseInt(pa[1]!, 10), parseInt(pa[2]!, 10) - 1, parseInt(pa[3]!, 10));
-  const db = Date.UTC(parseInt(pb[1]!, 10), parseInt(pb[2]!, 10) - 1, parseInt(pb[3]!, 10));
-  return Math.round((db - da) / 86400000);
 }
 
 function shortCommitSha(): string {

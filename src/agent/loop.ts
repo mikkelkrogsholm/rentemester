@@ -34,9 +34,10 @@ import {
   listExceptions,
   syncUnmatchedBankTransactionExceptions,
 } from "../core/exceptions";
-import { buildVatReport } from "../core/vat";
+import { buildVatReport, vatFilingDeadline } from "../core/vat";
 import { buildVatFiling } from "../core/vat-filing";
 import { fiscalYearForDate } from "../core/fiscal-year";
+import { vatPeriodWindowFor, type VatPeriodWindow } from "../core/periods";
 import { isValidIsoDate, diffDays, addDays } from "../core/dates";
 import { formatKroner } from "../cli-format";
 import {
@@ -169,32 +170,6 @@ function loadInbox(inboxDir: string, metadataDir: string): InboxBilag[] {
 
 function pad2(n: number) {
   return String(n).padStart(2, "0");
-}
-
-/** The VAT quarter that contains `asOf`. */
-function vatQuarterFor(asOf: string): { start: string; end: string } {
-  const year = Number(asOf.slice(0, 4));
-  const month = Number(asOf.slice(5, 7));
-  const quarter = Math.floor((month - 1) / 3) + 1;
-  const startMonth = (quarter - 1) * 3 + 1;
-  const endMonth = startMonth + 2;
-  const lastDay = new Date(Date.UTC(year, endMonth, 0)).getUTCDate();
-  return {
-    start: `${year}-${pad2(startMonth)}-01`,
-    end: `${year}-${pad2(endMonth)}-${pad2(lastDay)}`,
-  };
-}
-
-/**
- * Statutory deadline for a small-business quarterly momsangivelse: the 1st of
- * the third month after the quarter ends (a deliberate, conservative
- * simplification — the agent surfaces it, the human files it).
- */
-function vatFilingDeadline(quarterEnd: string): string {
-  const year = Number(quarterEnd.slice(0, 4));
-  const month = Number(quarterEnd.slice(5, 7));
-  const due = new Date(Date.UTC(year, month + 2, 1));
-  return `${due.getUTCFullYear()}-${pad2(due.getUTCMonth() + 1)}-${pad2(due.getUTCDate())}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -504,35 +479,44 @@ function routeException(
   }
 }
 
-/** The VAT quarter immediately before `quarter`. */
-function previousVatQuarter(quarter: { start: string }): { start: string; end: string } {
-  // One day before the quarter start lands inside the previous quarter.
-  return vatQuarterFor(addDays(quarter.start, -1));
+/** The VAT period immediately before `window`, on the same cadence. */
+function previousVatPeriod(window: VatPeriodWindow): VatPeriodWindow {
+  // One day before the period start lands inside the previous period.
+  return vatPeriodWindowFor(addDays(window.start, -1), window.vatPeriodType);
 }
 
 /**
- * Records one VAT-quarter deadline notice and, when the period needs the
+ * Records one VAT-period deadline notice and, when the period needs the
  * human (not closed) and its filing deadline is within the escalation
  * horizon, also escalates it as an exception. The agent never files — it
  * surfaces the obligation.
+ *
+ * The period boundaries follow the company's real SKAT cadence
+ * (`vatPeriodType`): a monthly filer gets a one-month window, a half-yearly
+ * filer a six-month one — the canonical `core/periods.ts` helpers own the
+ * window math, so a quarterly company is byte-identical to the historical
+ * hardcoded behaviour.
  */
-function reportVatQuarter(
+function reportVatPeriod(
   db: Database,
   asOf: string,
-  quarter: { start: string; end: string },
+  window: VatPeriodWindow,
   report: AgentRunReport,
 ): void {
-  const dueDate = vatFilingDeadline(quarter.end);
+  // The filing deadline comes from the canonical `core/vat.ts` helper — the
+  // same date every other VAT surface uses. The window end is always a valid
+  // ISO date, so the `null` branch is unreachable in practice.
+  const dueDate = vatFilingDeadline(window.end) ?? window.filingDeadline;
   const daysRemaining = diffDays(asOf, dueDate);
-  const filing = buildVatFiling(db, quarter.start, quarter.end);
+  const filing = buildVatFiling(db, window.start, window.end);
   const periodReady = filing.periodStatus === "closed" || filing.periodStatus === "reported";
-  const vatReport = buildVatReport(db, quarter.start, quarter.end);
+  const vatReport = buildVatReport(db, window.start, window.end);
   const net = vatReport.ok ? vatReport.netVatPayable : 0;
 
   report.upcomingDeadlines.push({
     kind: "vat_quarter",
-    periodStart: quarter.start,
-    periodEnd: quarter.end,
+    periodStart: window.start,
+    periodEnd: window.end,
     dueDate,
     daysRemaining,
     ready: periodReady,
@@ -542,13 +526,22 @@ function reportVatQuarter(
   });
 
   // Escalate only when the human still has to act AND the deadline is near
-  // (or already past) — a quarter still in progress is not yet actionable.
+  // (or already past) — a period still in progress is not yet actionable.
   if (!periodReady && daysRemaining <= DEADLINE_HORIZON_DAYS) {
+    // A quarterly company keeps the exact "Momskvartalet" wording (byte-
+    // identical); other cadences read the grammatically-correct definite form
+    // for the cadence noun ("måneden" is an en-word, "halvåret" is an et-word).
+    const periodWord =
+      window.vatPeriodType === "month"
+        ? "Momsmåneden"
+        : window.vatPeriodType === "half-year"
+          ? "Momshalvåret"
+          : "Momskvartalet";
     routeException(db, report, {
       type: "AGENT_VAT_DEADLINE_OPEN",
       severity: daysRemaining < 0 ? "high" : "medium",
       message:
-        `Momskvartalet ${quarter.start}..${quarter.end} er endnu ikke lukket, og momsangivelsen ` +
+        `${periodWord} ${window.start}..${window.end} er endnu ikke lukket, og momsangivelsen ` +
         (daysRemaining < 0
           ? `skulle have været indberettet ${dueDate} (fristen er overskredet med ${Math.abs(daysRemaining)} dage pr. ${asOf}).`
           : `skal indberettes senest ${dueDate} (${daysRemaining} dage fra ${asOf}).`),
@@ -560,25 +553,29 @@ function reportVatQuarter(
 }
 
 /**
- * Checks the VAT-quarter and fiscal-year deadlines relative to `asOf` and
+ * Checks the VAT-period and fiscal-year deadlines relative to `asOf` and
  * records each as an upcoming-deadline notice. A deadline that needs the
  * human (period not yet closed, near or past due) is escalated as an
  * exception. The agent always surfaces the obligation; it never files.
+ *
+ * VAT periods follow the company's `vatPeriodType` — the same canonical
+ * `core/periods.ts` cadence the dashboard and cockpit use — so a monthly or
+ * half-yearly filer gets correct windows and deadlines.
  */
 function checkDeadlines(db: Database, asOf: string, report: AgentRunReport): void {
-  // The quarter the company is currently accruing VAT in is always relevant.
-  const current = vatQuarterFor(asOf);
-  // The previous quarter's momsangivelse is the one with a live deadline; it
+  const settings = getCompanySettings(db);
+  // The VAT period the company is currently accruing in is always relevant.
+  const current = vatPeriodWindowFor(asOf, settings.vatPeriodType);
+  // The previous period's momsangivelse is the one with a live deadline; it
   // is reported whenever its filing deadline has not yet passed.
-  const previous = previousVatQuarter(current);
-  const previousDue = vatFilingDeadline(previous.end);
+  const previous = previousVatPeriod(current);
+  const previousDue = vatFilingDeadline(previous.end) ?? previous.filingDeadline;
   if (diffDays(asOf, previousDue) >= 0) {
-    reportVatQuarter(db, asOf, previous, report);
+    reportVatPeriod(db, asOf, previous, report);
   }
-  reportVatQuarter(db, asOf, current, report);
+  reportVatPeriod(db, asOf, current, report);
 
   // --- Fiscal year (årsrapport) ---
-  const settings = getCompanySettings(db);
   const fy = fiscalYearForDate(asOf, settings.fiscalYearStartMonth, settings.fiscalYearLabelStrategy);
   // Årsrapport for a class-B company is due ~5 months after the fiscal year
   // ends; the agent surfaces it conservatively, the human finalises it.

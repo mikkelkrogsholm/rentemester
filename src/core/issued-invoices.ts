@@ -3,6 +3,7 @@ import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import type { Database } from "bun:sqlite";
 import { companyPaths } from "./paths";
+import { addDays } from "./dates";
 import { validateInvoice, type InvoicePayload } from "./invoice";
 import { promoteTempFile, removeIfExists, writeTempFileFor } from "./atomic-file";
 import { insertAuditLog } from "./actor";
@@ -40,12 +41,6 @@ const LOCK_RULE_ID = "DK-INVOICE-LOCK-001";
 
 function hasText(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
-}
-
-function addDays(isoDate: string, days: number) {
-  const date = new Date(`${isoDate}T00:00:00Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
 }
 
 /**

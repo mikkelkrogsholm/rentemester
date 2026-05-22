@@ -2,25 +2,65 @@
 
 import type { CompanySummary } from "./types";
 
-/** Danish-style amount formatting. Ledger amounts are in minor units (øre). */
+/**
+ * The single canonical Danish display formatter for a kroner amount — a thin
+ * browser-local copy of `core/money.ts#formatKronerDa` (browser code cannot
+ * import from `src/core`). It MUST emit the byte-identical string: period
+ * thousands separator, comma decimal separator, exactly two decimals, a
+ * regular-space `" kr."` suffix and a minus prefix for negatives, e.g.
+ * `1234.5` → `"1.234,50 kr."`. Non-finite / null / undefined / empty input
+ * yields `"—"`.
+ *
+ * #314: this replaces the divergent `Intl.NumberFormat({style:"currency"})`
+ * rendering, which used a non-breaking space before the suffix and so drifted
+ * from every server-rendered surface.
+ */
+function formatKronerDa(value: unknown): string {
+  const num = typeof value === "number" ? value : Number(value);
+  if (value == null || value === "" || !Number.isFinite(num)) return "—";
+  const negative = num < 0;
+  const cents = Math.round(Math.abs(num) * 100);
+  const whole = Math.floor(cents / 100);
+  const fraction = (cents % 100).toString().padStart(2, "0");
+  const wholeText = whole.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${negative ? "-" : ""}${wholeText},${fraction} kr.`;
+}
+
+/**
+ * Normalizes a currency code: a browser-local copy of
+ * `core/money.ts#normalizeCurrency` — trims and upper-cases, defaulting to
+ * "DKK" for a null/undefined/empty value.
+ */
+function normalizeCurrency(value?: string | null): string {
+  const trimmed = (value ?? "").trim().toUpperCase();
+  return trimmed.length > 0 ? trimmed : "DKK";
+}
+
+/**
+ * Danish-style amount formatting. Ledger amounts are in minor units (øre).
+ *
+ * #314: a DKK amount renders via the canonical `formatKronerDa` so it is
+ * byte-identical to every server-rendered surface; a foreign-currency amount
+ * keeps its own code ("1.234,56 EUR") rather than a misleading "kr.".
+ */
 export function formatCurrency(minorUnits: number, currency = "DKK"): string {
-  const major = minorUnits / 100;
-  return new Intl.NumberFormat("da-DK", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 2,
-  }).format(major);
+  return formatKroner(minorUnits / 100, currency);
 }
 
 /**
  * Danish-style amount formatting for figures already expressed in kroner
  * (DKK with decimals) — e.g. the `/overview` P&L, VAT and bank fields. Use
  * this, not `formatCurrency`, which divides by 100 for minor-unit ledgers.
+ *
+ * #314: a DKK amount delegates to the canonical `formatKronerDa` (emitting the
+ * identical `"1.234,56 kr."` string as the rest of the system); a non-DKK
+ * amount keeps its own currency code.
  */
 export function formatKroner(kroner: number, currency = "DKK"): string {
+  if (normalizeCurrency(currency) === "DKK") return formatKronerDa(kroner);
   return new Intl.NumberFormat("da-DK", {
     style: "currency",
-    currency,
+    currency: normalizeCurrency(currency),
     maximumFractionDigits: 2,
   }).format(kroner);
 }

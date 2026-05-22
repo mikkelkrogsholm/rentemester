@@ -160,16 +160,16 @@ describe("dashboard CLI", () => {
 
     const html = readFileSync(out, "utf8");
     // The deadline box names Q1 2026, its real SKAT deadline and the real
-    // 5.400 kr payable — never the empty Q2 with 0,00 DKK. Amounts are
-    // formatted with an NBSP (U+00A0) before the currency.
+    // 5.400 kr payable — never the empty Q2 with 0,00 kr. #314: amounts
+    // use the canonical `formatKronerDa` (regular-space " kr." suffix).
     expect(html).toContain("Q1 2026");
     expect(html).toContain("2026-06-01");
-    expect(html).toContain("5.400,00 DKK");
+    expect(html).toContain("5.400,00 kr.");
     expect(html).not.toContain("Q2 2026");
     // The "Næste deadline" card carries the real payable, not 0,00.
     const cardMatch = /<div class="deadline-card">[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/.exec(html);
     expect(cardMatch).not.toBeNull();
-    expect(cardMatch![0]).toMatch(/amount-lg">5\.400,00 DKK</);
+    expect(cardMatch![0]).toMatch(/amount-lg">5\.400,00 kr\.</);
 
     rmSync(root, { recursive: true, force: true });
   });

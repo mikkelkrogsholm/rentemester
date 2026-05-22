@@ -963,6 +963,52 @@ describe("cockpit API — archive-aware core views (#197)", () => {
     }
   });
 
+  test("archived vat accounts are classified by normal balance, consistently across Balance and Flerårsoversigt (#321)", async () => {
+    const ws = makeWorkspace("arc-vat-class", ["Acme ApS"]);
+    try {
+      // The native-Rentemester chart types `4000` Købsmoms as `vat`/debit
+      // (input VAT — a receivable, so an asset) and `1200` Salgsmoms as
+      // `vat`/credit (output VAT — a payable, so a liability). An archived
+      // SaldoBalance carrying both must place them by their normal balance:
+      // `4000` under assets, `1200` under liabilities. The shared #321
+      // classification guarantees the Balance view and the Flerårsoversigt
+      // agree — before #321 the Flerårsoversigt left `vat` accounts
+      // unclassified, so its `balancesum` silently dropped the `4000` asset.
+      seedArchiveYear(ws, "acme-aps", 2024, [
+        ["2000", "Bank", 5000],
+        ["4000", "Købsmoms", 1000], // vat/debit → an asset
+        ["1200", "Salgsmoms", -2000], // vat/credit → a liability
+        ["5000", "Egenkapital", -1000],
+        ["1000", "Omsætning", -6000],
+        ["3000", "Software", 3000],
+      ]);
+      const cfg = config({ workspaceRoot: ws });
+
+      const balRes = await get(cfg, "/api/companies/acme-aps/balance?year=2024");
+      expect(balRes.status).toBe(200);
+      const b = balRes.body.balance;
+      // The vat/debit Købsmoms is an asset: 5000 Bank + 1000 Købsmoms.
+      expect(b.totalAssets).toBe(6000);
+      // The vat/credit Salgsmoms is a liability: 2000.
+      expect(b.liabilities.total).toBe(2000);
+      // The sheet still balances: assets = liabilities + equity.
+      expect(b.balanced).toBe(true);
+      expect(b.liabilities.total + b.equity.total).toBe(b.totalAssets);
+
+      const myRes = await get(cfg, "/api/companies/acme-aps/multi-year");
+      expect(myRes.status).toBe(200);
+      const my2024 = myRes.body.multiYear.years.find(
+        (r: { year: string }) => r.year === "2024",
+      );
+      // The Flerårsoversigt's balancesum counts the vat/debit account as an
+      // asset, exactly as the Balance view does — the two never disagree.
+      expect(my2024.balancesum).toBe(b.totalAssets);
+      expect(my2024.egenkapital).toBe(b.equity.total);
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
   test("trial-balance renders the archived SaldoBalance directly", async () => {
     const ws = makeWorkspace("arc-tb", ["Acme ApS"]);
     try {

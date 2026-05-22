@@ -75,6 +75,21 @@ export function roundDkk(value: number) {
 }
 
 /**
+ * The single canonical normalizer for a currency code: trims surrounding
+ * whitespace and upper-cases, defaulting to "DKK" for a null/undefined/empty
+ * value. Non-3-letter inputs are returned as-is (upper-cased) so callers that
+ * validate the length keep seeing the offending value; the default branch
+ * always yields a valid 3-letter code.
+ *
+ * This replaces the hand-written `(value ?? "DKK").trim().toUpperCase()` and
+ * the drifted `value || "DKK"` idioms scattered across the core modules. (#315)
+ */
+export function normalizeCurrency(value?: string | null): string {
+  const trimmed = (value ?? "").trim().toUpperCase();
+  return trimmed.length > 0 ? trimmed : "DKK";
+}
+
+/**
  * Format a monetary amount as a fixed-precision string with 2 decimals.
  *
  * Uses integer-ore math internally (no floating-point drift) and emits a plain
@@ -111,7 +126,33 @@ export function formatAmount(value: number | string | bigint | null | undefined)
 export function formatDkk(value: number | string | bigint | null | undefined, currency = "DKK"): string | null {
   const amount = formatAmount(value);
   if (amount == null) return null;
-  return `${amount} ${currency.trim().toUpperCase()}`;
+  return `${amount} ${normalizeCurrency(currency)}`;
+}
+
+/**
+ * The single canonical Danish display formatter for a kroner amount.
+ *
+ * Renders a DKK figure as Danish kroner-og-øre — period thousands separator,
+ * comma decimal separator, exactly two decimals, a regular-space `" kr."`
+ * suffix and a minus prefix for negatives: e.g. `1234.5` → `"1.234,50 kr."`,
+ * `-1234.5` → `"-1.234,50 kr."`. Non-finite / null / undefined / empty input
+ * yields `"—"`.
+ *
+ * This replaces the 5+ divergent per-module money formatters (`formatKroner`,
+ * `formatDkk` with a "DKK" suffix, `fmtAmount`, ...) so every human-facing
+ * surface emits the identical string. (#314)
+ */
+export function formatKronerDa(value: unknown): string {
+  const num = typeof value === "number" ? value : Number(value);
+  if (value == null || value === "" || !Number.isFinite(num)) return "—";
+  const negative = num < 0;
+  const cents = Math.round(Math.abs(num) * 100);
+  const whole = Math.floor(cents / 100);
+  const fraction = (cents % 100).toString().padStart(2, "0");
+  const wholeText = whole
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${negative ? "-" : ""}${wholeText},${fraction} kr.`;
 }
 
 export function roundRate6(value: number) {

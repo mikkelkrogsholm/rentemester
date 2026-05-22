@@ -45,3 +45,47 @@ export function diffDays(fromDate: string, toDate: string): number {
 export function daysBetween(a: string, b: string): number {
   return Math.abs(diffDays(a, b));
 }
+
+/**
+ * Null-safe signed day difference `to - from` for two strings that *start*
+ * with a `YYYY-MM-DD` date (a bare date or an ISO timestamp). Returns 0 when
+ * either input does not match that prefix, so callers shaping read-side JSON
+ * never propagate a NaN. The day math is identical to {@link diffDays}.
+ */
+export function diffDaysSafe(from: string, to: string): number {
+  const pf = /^(\d{4})-(\d{2})-(\d{2})/.exec(from);
+  const pt = /^(\d{4})-(\d{2})-(\d{2})/.exec(to);
+  if (!pf || !pt) return 0;
+  const f = Date.UTC(parseInt(pf[1]!, 10), parseInt(pf[2]!, 10) - 1, parseInt(pf[3]!, 10));
+  const t = Date.UTC(parseInt(pt[1]!, 10), parseInt(pt[2]!, 10) - 1, parseInt(pt[3]!, 10));
+  return Math.round((t - f) / 86400000);
+}
+
+/**
+ * Add `days` (may be negative) to a full ISO-8601 *timestamp* and return the
+ * resulting timestamp as a full ISO string. Unlike {@link addDays}, which is
+ * date-only in and date-only out, this preserves the time-of-day component —
+ * used for cache TTLs (`expiresAt`) computed off a `new Date().toISOString()`
+ * instant. UTC-based.
+ */
+export function addDaysToTimestamp(isoTimestamp: string, days: number): string {
+  const date = new Date(isoTimestamp);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString();
+}
+
+/**
+ * Danish month names in calendar order, capitalised (index 0 = "Januar").
+ * The single source of truth for month labels — consumers that need lowercase
+ * apply {@link decapitalize}, so casing differences are a display choice and
+ * never a second copy of the list.
+ */
+export const MONTH_NAMES_DA = [
+  "Januar", "Februar", "Marts", "April", "Maj", "Juni",
+  "Juli", "August", "September", "Oktober", "November", "December",
+] as const;
+
+/** Lowercases the first character of `value` (e.g. "Januar" -> "januar"). */
+export function decapitalize(value: string): string {
+  return value.length === 0 ? value : value[0]!.toLowerCase() + value.slice(1);
+}

@@ -1,4 +1,5 @@
 import type { Database } from "bun:sqlite";
+import { formatKronerDa, normalizeCurrency } from "./money";
 
 export type ExceptionSeverity = "low" | "medium" | "high";
 export type ExceptionStatus = "open" | "resolved" | "all";
@@ -296,28 +297,25 @@ function findCandidateBilag(db: Database, bankTransactionId: number, amount: num
   };
 }
 
-/** Danish kroner rendering of a raw bank/document amount (e.g. "1.205,00 kr."). */
-function formatKroner(amount: number): string {
-  return `${Math.abs(amount).toLocaleString("da-DK", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })} kr.`;
-}
-
 /**
  * Danish-locale rendering of a bank-line amount in its own currency. A DKK
  * line renders as kroner ("1.205,00 kr."). A foreign-currency line renders in
  * that currency ("100,00 EUR") — never as a DKK-formatted figure with "kr."
  * and the code tacked on, which would imply a wrong, far larger kroner value
  * (#269: 100 EUR is ~745 kr., so "100,00 kr. EUR" is numerically misleading).
+ *
+ * #314: the DKK branch delegates to the single canonical formatter
+ * `formatKronerDa` in `core/money.ts` (using its absolute value, since the
+ * surrounding wording already carries the in/out direction), so a kroner bank
+ * amount renders the identical string as every other human-facing surface.
  */
 function formatBankAmount(amount: number, currency: string | null | undefined): string {
-  if (!currency || currency === "DKK") return formatKroner(amount);
+  if (normalizeCurrency(currency) === "DKK") return formatKronerDa(Math.abs(amount));
   const formatted = Math.abs(amount).toLocaleString("da-DK", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
-  return `${formatted} ${currency}`;
+  return `${formatted} ${normalizeCurrency(currency)}`;
 }
 
 /**

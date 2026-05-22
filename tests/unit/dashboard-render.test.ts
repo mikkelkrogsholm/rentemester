@@ -265,11 +265,12 @@ describe("renderDashboard — structure", () => {
     expect(html).toMatch(/<footer class="footer">/);
   });
 
-  test("amounts are formatted with Danish locale (NBSP before DKK)", () => {
-    const NBSP = " ";
-    expect(html).toContain(`1.250,00${NBSP}DKK`);
-    expect(html).toContain(`8.750,00${NBSP}DKK`);
-    expect(html).toContain(`6.250,00${NBSP}DKK`);
+  test("amounts are formatted with Danish locale (canonical kr. suffix)", () => {
+    // #314: the dashboard now uses the single canonical `formatKronerDa`, so
+    // amounts carry a regular-space " kr." suffix (not an NBSP + "DKK").
+    expect(html).toContain("1.250,00 kr.");
+    expect(html).toContain("8.750,00 kr.");
+    expect(html).toContain("6.250,00 kr.");
   });
 
   test("output is under 100 KB", () => {
@@ -382,8 +383,8 @@ describe("renderDashboard — structure", () => {
     expect(cardMatch).not.toBeNull();
     const card = cardMatch![0];
     // The payable amount is the real 5.400 kr, never 0.
-    expect(card).toContain("5.400,00 DKK");
-    expect(card).toMatch(/amount-lg">5\.400,00\u00a0DKK</);
+    expect(card).toContain("5.400,00 kr.");
+    expect(card).toMatch(/amount-lg">5\.400,00 kr\.</);
   });
 
   // #263: the dashboard must not stop at a bare exception count — it lists
@@ -532,17 +533,18 @@ describe("renderDashboard — determinism", () => {
 
 describe("formatDkk", () => {
   test("formats positive numbers with Danish locale", () => {
-    expect(formatDkk(1234.56)).toBe("1.234,56 DKK");
-    expect(formatDkk(0)).toBe("0,00 DKK");
-    expect(formatDkk(1)).toBe("1,00 DKK");
-    expect(formatDkk(999)).toBe("999,00 DKK");
-    expect(formatDkk(1000)).toBe("1.000,00 DKK");
-    expect(formatDkk(1000000)).toBe("1.000.000,00 DKK");
+    // #314: canonical " kr." suffix from `formatKronerDa`, not " DKK".
+    expect(formatDkk(1234.56)).toBe("1.234,56 kr.");
+    expect(formatDkk(0)).toBe("0,00 kr.");
+    expect(formatDkk(1)).toBe("1,00 kr.");
+    expect(formatDkk(999)).toBe("999,00 kr.");
+    expect(formatDkk(1000)).toBe("1.000,00 kr.");
+    expect(formatDkk(1000000)).toBe("1.000.000,00 kr.");
   });
 
   test("formats negative numbers with minus prefix", () => {
-    expect(formatDkk(-1234.56)).toBe("-1.234,56 DKK");
-    expect(formatDkk(-0.01)).toBe("-0,01 DKK");
+    expect(formatDkk(-1234.56)).toBe("-1.234,56 kr.");
+    expect(formatDkk(-0.01)).toBe("-0,01 kr.");
   });
 
   test("returns em-dash for non-finite numbers", () => {

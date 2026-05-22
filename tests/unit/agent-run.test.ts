@@ -31,6 +31,13 @@ function freshCompany(): string {
   return root;
 }
 
+/** A fresh company initialised on a specific VAT cadence (#318). */
+function freshCompanyWithVatPeriod(vatPeriodType: "month" | "quarter" | "half-year"): string {
+  const root = mkdtempSync(join(tmpdir(), "rentemester-agent-run-"));
+  initialiseCompanyVolume(root, { cvr: "DK12345678", vatPeriodType });
+  return root;
+}
+
 describe("runtime bookkeeper agent — deterministic agent-run (#183)", () => {
   test("books the unambiguous and routes everything uncertain to exceptions", () => {
     const root = freshCompany();
@@ -237,5 +244,86 @@ describe("runtime bookkeeper agent — deterministic agent-run (#183)", () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+
+  // #318 — the agent loop drives VAT-period selection through the company's
+  // `vatPeriodType`. A quarterly company keeps the historical Q1..Q4 windows;
+  // monthly and half-yearly companies get correct cadence-driven windows.
+  describe("VAT deadlines follow the company's vatPeriodType (#318)", () => {
+    test("a quarterly company still gets the three-month VAT window", () => {
+      const root = freshCompanyWithVatPeriod("quarter");
+      try {
+        const report = runAgentLoop({ companyRoot: root, asOf: AS_OF });
+        expect(report.ok).toBe(true);
+        const current = report.upcomingDeadlines.find(
+          (d) => d.kind === "vat_quarter" && d.periodStart === "2026-04-01",
+        );
+        expect(current).toBeDefined();
+        // Q2 2026: Apr 1 .. Jun 30, due 1 September.
+        expect(current!.periodEnd).toBe("2026-06-30");
+        expect(current!.dueDate).toBe("2026-09-01");
+      } finally {
+        rmSync(root, { recursive: true, force: true });
+      }
+    });
+
+    test("a monthly company gets a one-month VAT window and deadline", () => {
+      const root = freshCompanyWithVatPeriod("month");
+      try {
+        const report = runAgentLoop({ companyRoot: root, asOf: AS_OF });
+        expect(report.ok).toBe(true);
+        // The as-of date is in May 2026 — a monthly filer's current VAT period
+        // is May 2026, NOT the hardcoded Q2 quarter.
+        const current = report.upcomingDeadlines.find(
+          (d) => d.kind === "vat_quarter" && d.periodStart === "2026-05-01",
+        );
+        expect(current).toBeDefined();
+        expect(current!.periodEnd).toBe("2026-05-31");
+        // Filing deadline: 1st of the third month after period end (Aug 1).
+        expect(current!.dueDate).toBe("2026-08-01");
+        // No hardcoded quarter window leaks through.
+        expect(
+          report.upcomingDeadlines.some(
+            (d) => d.kind === "vat_quarter" && d.periodEnd === "2026-06-30",
+          ),
+        ).toBe(false);
+      } finally {
+        rmSync(root, { recursive: true, force: true });
+      }
+    });
+
+    test("a half-yearly company gets a six-month VAT window and deadline", () => {
+      const root = freshCompanyWithVatPeriod("half-year");
+      try {
+        const report = runAgentLoop({ companyRoot: root, asOf: AS_OF });
+        expect(report.ok).toBe(true);
+        // May 2026 falls in the first half-year period: Jan 1 .. Jun 30.
+        const current = report.upcomingDeadlines.find(
+          (d) => d.kind === "vat_quarter" && d.periodStart === "2026-01-01",
+        );
+        expect(current).toBeDefined();
+        expect(current!.periodEnd).toBe("2026-06-30");
+        // Filing deadline: 1st of the third month after period end (Sep 1).
+        expect(current!.dueDate).toBe("2026-09-01");
+      } finally {
+        rmSync(root, { recursive: true, force: true });
+      }
+    });
+
+    test("a non-quarter VAT-deadline exception uses cadence-aware wording", () => {
+      const root = freshCompanyWithVatPeriod("month");
+      try {
+        const report = runAgentLoop({ companyRoot: root, asOf: AS_OF });
+        expect(report.ok).toBe(true);
+        const vatEx = report.openExceptions.find((x) => x.type === "AGENT_VAT_DEADLINE_OPEN");
+        expect(vatEx).toBeDefined();
+        // A monthly filer's escalation reads "Momsmåneden", never the
+        // quarter-specific "Momskvartalet".
+        expect(vatEx!.message).toContain("Momsmåneden");
+        expect(vatEx!.message).not.toContain("Momskvartalet");
+      } finally {
+        rmSync(root, { recursive: true, force: true });
+      }
+    });
   });
 });

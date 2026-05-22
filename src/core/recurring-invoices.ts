@@ -21,7 +21,7 @@
  */
 
 import type { Database } from "bun:sqlite";
-import { isValidIsoDate } from "./dates";
+import { isValidIsoDate, addDays } from "./dates";
 import { validateInvoice, type InvoicePayload } from "./invoice";
 import { issueInvoice } from "./issued-invoices";
 import { insertAuditLog } from "./actor";
@@ -347,12 +347,6 @@ export function listRecurringInvoiceGenerations(db: Database, templateId: number
   };
 }
 
-function addDaysIso(isoDate: string, days: number): string {
-  const date = new Date(`${isoDate}T00:00:00.000Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
-}
-
 export function generateRecurringInvoice(
   db: Database,
   companyRoot: string,
@@ -393,7 +387,7 @@ export function generateRecurringInvoice(
 
   const issueDate = addMonths(template.first_issue_date, intervalMonths * periodIndex);
   const window = deliveryWindow(template.delivery_period_mode, issueDate, intervalMonths);
-  const dueDate = addDaysIso(issueDate, template.payment_terms_days);
+  const dueDate = addDays(issueDate, template.payment_terms_days);
 
   // Idempotency gate: if this template/period was already generated, return
   // the existing invoice instead of issuing a duplicate.

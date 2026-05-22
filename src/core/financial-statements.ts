@@ -14,6 +14,7 @@
 // like the VAT report (src/core/vat.ts) treats period membership.
 
 import type { Database } from "bun:sqlite";
+import { classifyAccountSection } from "./account-classification";
 import { isValidIsoDate as looksLikeIsoDate } from "./dates";
 import { fromOre, toOre } from "./money";
 
@@ -356,21 +357,24 @@ export function buildBalanceSheet(db: Database, asOfDate: string): BalanceSheetR
 
   for (const acc of tb.accounts) {
     const debitSignedOre = toOre(acc.balance); // debit − credit
-    if (acc.type === "asset" || (acc.type === "vat" && acc.normalBalance === "debit")) {
+    // The statement section an account belongs to — the shared classification
+    // (#321), so the live sheet and the archive-aware views never disagree.
+    const section = classifyAccountSection(acc.type, acc.normalBalance);
+    if (section === "asset") {
       totalAssetsOre += debitSignedOre;
       assets.push({ accountNo: acc.accountNo, name: acc.name, type: acc.type, amount: fromOre(debitSignedOre) });
-    } else if (acc.type === "liability" || (acc.type === "vat" && acc.normalBalance === "credit")) {
+    } else if (section === "liability") {
       const creditSignedOre = -debitSignedOre;
       totalLiabilitiesOre += creditSignedOre;
       liabilities.push({ accountNo: acc.accountNo, name: acc.name, type: acc.type, amount: fromOre(creditSignedOre) });
-    } else if (acc.type === "equity") {
+    } else if (section === "equity") {
       const creditSignedOre = -debitSignedOre;
       totalEquityOre += creditSignedOre;
       equity.push({ accountNo: acc.accountNo, name: acc.name, type: acc.type, amount: fromOre(creditSignedOre) });
-    } else if (acc.type === "income") {
+    } else if (section === "income") {
       // credit − debit contributes positively to the result.
       periodResultOre += -debitSignedOre;
-    } else if (acc.type === "expense") {
+    } else if (section === "expense") {
       periodResultOre -= debitSignedOre;
     }
   }

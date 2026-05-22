@@ -8,14 +8,25 @@
 
 import type { AgentRunReport } from "./loop";
 import { AGENT_RULE_ID } from "./contract";
+import { formatKronerDa, normalizeCurrency } from "../core/money";
 
+/**
+ * Renders a booked-expense amount for the end-of-run report.
+ *
+ * #314: a DKK amount delegates to the single canonical formatter
+ * `formatKronerDa` in `core/money.ts`, so it emits the identical
+ * `"1.234,50 kr."` string as every other human-facing surface (the historical
+ * `" DKK"` suffix is gone). A foreign-currency amount keeps its own code
+ * ("100,00 EUR") rather than being mislabelled "kr." (cf. #269).
+ */
 function fmtAmount(n: number, ccy: string): string {
+  if (normalizeCurrency(ccy) === "DKK") return formatKronerDa(n);
   const sign = n < 0 ? "-" : "";
   const abs = Math.abs(n);
   return `${sign}${abs.toLocaleString("da-DK", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })} ${ccy}`;
+  })} ${normalizeCurrency(ccy)}`;
 }
 
 /**
