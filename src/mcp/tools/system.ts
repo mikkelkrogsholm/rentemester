@@ -516,8 +516,15 @@ export function registerSystemTools(server: McpServer): void {
           .string()
           .optional()
           .describe(
-            "Optional path to an ed25519 public key used to verify the backup " +
-              "signature. Typically required when backupDir is a .tar archive.",
+            "Optional path to the symmetric HMAC verification key used to verify " +
+              "the backup manifest. Typically required when backupDir is a .tar archive.",
+          ),
+        publicKey: z
+          .string()
+          .optional()
+          .describe(
+            "Optional path to an ed25519 public key used to verify the asymmetric " +
+              "backup signature. This matches the CLI --public-key flag.",
           ),
         confirm: confirmField,
         confirmText: z
@@ -536,6 +543,7 @@ export function registerSystemTools(server: McpServer): void {
       backupDir: string;
       targetCompany: string;
       verifyKey?: string;
+      publicKey?: string;
       confirm?: boolean;
       confirmText: string;
     }>(
@@ -546,6 +554,7 @@ export function registerSystemTools(server: McpServer): void {
           backupDir: args.backupDir,
           targetCompanyRoot: args.targetCompany,
           verificationKeyPath: args.verifyKey,
+          publicKeyPath: args.publicKey,
         });
         return wrapCoreResult(result);
       },

@@ -688,6 +688,20 @@ describe("#277 — older tools' flat scalar fields carry field descriptions", ()
     expect(typeof desc).toBe("string");
     expect(desc).toContain("RESTORE <targetCompany>");
   });
+
+  test("system_restore_backup separates HMAC verifyKey from ed25519 publicKey", () => {
+    const props = schemaOf("system_restore_backup").properties ?? {};
+
+    const verifyKeyDesc = props.verifyKey?.description ?? "";
+    expect(typeof verifyKeyDesc).toBe("string");
+    expect(verifyKeyDesc.toLowerCase()).toContain("hmac");
+    expect(verifyKeyDesc.toLowerCase()).not.toContain("ed25519");
+
+    const publicKeyDesc = props.publicKey?.description ?? "";
+    expect(typeof publicKeyDesc).toBe("string");
+    expect(publicKeyDesc.toLowerCase()).toContain("ed25519");
+    expect(publicKeyDesc).toContain("--public-key");
+  });
 });
 
 describe("#294 — scalar-flag tools carry field descriptions and the documentId|invoiceNumber selector", () => {

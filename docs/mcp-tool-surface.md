@@ -325,7 +325,7 @@ fremhæves kun det destruktive tool.
 
 | Tool | CLI-ækvivalent | Klassifikation | Input | Brief |
 |---|---|---|---|---|
-| `system_restore_backup` | `system restore-backup` | **destructive** | `{ backupDir, targetCompany, verifyKey?, confirm, confirmText }` | Gendanner backup til en ny virksomhedssti. `confirmText` skal være `"RESTORE <targetCompany>"` præcist. Sletter intet på source, men kan overskrive filer i `targetCompany`. |
+| `system_restore_backup` | `system restore-backup` | **destructive** | `{ backupDir, targetCompany, verifyKey?, publicKey?, confirm, confirmText }` | Gendanner backup til en ny virksomhedssti. `verifyKey` svarer til CLI `--verify-key` (symmetrisk HMAC-nøgle), og `publicKey` svarer til CLI `--public-key` (ed25519 offentlig nøgle). `confirmText` skal være `"RESTORE <targetCompany>"` præcist. Sletter intet på source, men kan overskrive filer i `targetCompany`. |
 
 ## CLI/MCP-mapping
 
@@ -500,7 +500,8 @@ Input:
   "arguments": {
     "backupDir": "/Users/mikkel/backups/acme-aps/2026-05-17T22-00-00Z",
     "targetCompany": "/Users/mikkel/companies/acme-aps-restored",
-    "verifyKey": "/Users/mikkel/keys/acme-aps-backup.pub",
+    "verifyKey": "/Users/mikkel/keys/acme-aps-backup.key",
+    "publicKey": "/Users/mikkel/keys/acme-aps-backup.pub",
     "confirm": true,
     "confirmText": "RESTORE /Users/mikkel/companies/acme-aps-restored"
   }
