@@ -14,22 +14,25 @@ import { join } from "node:path";
 
 const API_BASE = "https://api.billysbilling.com/v2";
 
-function parseArgs(): { outDir: string; orgId?: string } {
+function parseArgs(): { outDir: string; orgId?: string; cutOverDate?: string } {
   const args = process.argv.slice(2);
   let outDir = "";
   let orgId: string | undefined;
+  let cutOverDate: string | undefined;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--out" && args[i + 1]) {
       outDir = args[++i]!;
     } else if (args[i] === "--org-id" && args[i + 1]) {
       orgId = args[++i]!;
+    } else if (args[i] === "--cut-over" && args[i + 1]) {
+      cutOverDate = args[++i]!;
     }
   }
   if (!outDir) {
-    console.error("Usage: billy-export.ts --out <directory> [--org-id <id>]");
+    console.error("Usage: billy-export.ts --out <directory> [--org-id <id>] [--cut-over YYYY-MM-DD]");
     process.exit(2);
   }
-  return { outDir, orgId };
+  return { outDir, orgId, cutOverDate };
 }
 
 async function billyGet(path: string, token: string): Promise<unknown> {
@@ -70,7 +73,7 @@ async function main() {
     process.exit(2);
   }
 
-  const { outDir, orgId: argOrgId } = parseArgs();
+  const { outDir, orgId: argOrgId, cutOverDate: argCutOver } = parseArgs();
   mkdirSync(outDir, { recursive: true });
 
   console.log("Fetching organisation...");
@@ -150,6 +153,77 @@ async function main() {
   );
   writeFileSync(join(outDir, "tax-rates.json"), JSON.stringify(taxRates, null, 2), "utf8");
   console.log(`  ${taxRates.length} tax rates`);
+
+  console.log("Fetching postings for balance computation...");
+  const postings = await billyGetAll(
+    `/postings?organizationId=${organizationId}`,
+    apiKey,
+    "postings",
+  ) as Array<{
+    accountId: string;
+    amount: number;
+    side: string;
+    entryDate: string;
+    isVoided: boolean;
+  }>;
+  writeFileSync(join(outDir, "postings.json"), JSON.stringify(postings, null, 2), "utf8");
+  console.log(`  ${postings.length} postings`);
+
+  // Build account ID → { accountNo, natureId } map
+  const accountById = new Map<string, { accountNo: number; natureId: string }>();
+  for (const acct of accounts as Array<{ id: string; accountNo: number; natureId?: string }>) {
+    accountById.set(acct.id, { accountNo: acct.accountNo, natureId: acct.natureId ?? "" });
+  }
+
+  // Balance sheet natures — only these go into the opening balance.
+  // Income and expense accounts are P&L and net into retained earnings.
+  const balanceSheetNatures = new Set(["asset", "liability", "equity"]);
+
+  // Compute balances as of the cut-over date (start of current fiscal year)
+  const cutOverDate = argCutOver ?? `${new Date().getFullYear()}-01-01`;
+  const activePostings = postings.filter(
+    (p) => !p.isVoided && p.entryDate < cutOverDate,
+  );
+  const balanceByAccount = new Map<number, number>();
+  for (const p of activePostings) {
+    const acct = accountById.get(p.accountId);
+    if (!acct) continue;
+    if (!balanceSheetNatures.has(acct.natureId)) continue;
+    const signed = p.side === "debit" ? p.amount : -p.amount;
+    balanceByAccount.set(acct.accountNo, (balanceByAccount.get(acct.accountNo) ?? 0) + signed);
+  }
+  // The balance sheet must balance: sum(debits) == sum(credits). P&L accounts
+  // (income/expense) are excluded, so their net effect must be plugged into
+  // retained earnings (account 7120 "Transferred Result"). The plug is simply
+  // the imbalance: if debits > credits, retained earnings gets a credit (the
+  // company is profitable), and vice versa.
+  let debitSum = 0;
+  let creditSum = 0;
+  for (const amount of balanceByAccount.values()) {
+    if (amount > 0) debitSum += amount;
+    else creditSum += -amount;
+  }
+  const imbalance = debitSum - creditSum;
+  if (Math.abs(imbalance) > 0.005) {
+    // Positive imbalance → assets exceed liabilities+equity → net profit → credit 7120
+    // Negative imbalance → liabilities+equity exceed assets → net loss → debit 7120
+    const existing7120 = balanceByAccount.get(7120) ?? 0;
+    balanceByAccount.set(7120, existing7120 - imbalance);
+  }
+
+  const balances = [...balanceByAccount.entries()]
+    .filter(([, balance]) => Math.abs(balance) > 0.005)
+    .sort(([a], [b]) => a - b)
+    .map(([accountNo, balance]) => ({
+      accountNo: String(accountNo),
+      balance: Math.round(balance * 100) / 100,
+    }));
+  writeFileSync(
+    join(outDir, "balances.json"),
+    JSON.stringify({ cutOverDate, balances }, null, 2),
+    "utf8",
+  );
+  console.log(`  ${balances.length} account balances computed (cut-over: ${cutOverDate})`);
 
   console.log(`\nBilly export complete → ${outDir}`);
 }

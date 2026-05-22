@@ -3,6 +3,7 @@ import { migrate } from "../core/db";
 import { runImportFromSource } from "../core/import/framework";
 import { queryArchive } from "../core/import/dinero-archive";
 import { importDineroContacts } from "../core/import/dinero-contacts";
+import { importBillyContacts } from "../core/import/billy-contacts";
 import { PARSERS } from "../core/import/synthetic-csv";
 import { openCommandDb } from "../cli-dispatch";
 import type { CommandDispatch } from "../cli-dispatch";
@@ -69,6 +70,35 @@ export function register(dispatch: CommandDispatch): void {
     migrate(db);
     const result = await importDineroContacts(db, readFileSync(file, "utf8"), {
       enrichCvr: ctx.hasFlag("--enrich-cvr"),
+      defaultRole: defaultRole ?? undefined,
+    });
+    ctx.emitResult(result as unknown as Record<string, unknown>);
+    db.close();
+    if (!result.ok) process.exit(1);
+  });
+
+  // `import billy-contacts` — migrates a Billy contacts.json export into the
+  // customer/vendor master data. Similar to `import contacts` (Dinero) but
+  // reads a JSON array from the Billy API export.
+  dispatch.on("import", "billy-contacts", (ctx) => {
+    const file = ctx.arg("--file");
+    if (!file) {
+      console.error("Missing required --file <contacts.json>");
+      process.exit(2);
+    }
+    if (!existsSync(file)) {
+      console.error(`Contacts JSON does not exist: ${file}`);
+      process.exit(2);
+    }
+    const defaultRole = ctx.trimToNull(ctx.arg("--default-role"));
+    if (defaultRole !== null && defaultRole !== "customer" && defaultRole !== "vendor") {
+      console.error("--default-role must be 'customer' or 'vendor'");
+      process.exit(2);
+    }
+
+    const db = openCommandDb(ctx);
+    migrate(db);
+    const result = importBillyContacts(db, readFileSync(file, "utf8"), {
       defaultRole: defaultRole ?? undefined,
     });
     ctx.emitResult(result as unknown as Record<string, unknown>);
