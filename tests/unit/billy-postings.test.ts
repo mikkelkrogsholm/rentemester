@@ -216,4 +216,52 @@ describe("Billy postings parser", () => {
     // One line has unknown account → only 1 line → filtered as single-line
     expect(entries.length).toBe(0);
   });
+
+  test("uses absolute amounts (negative amounts become positive)", () => {
+    const errors: string[] = [];
+    const entries = parseBillyPostings(
+      JSON.stringify([
+        { id: "p1", transactionId: "txn-neg", entryDate: "2026-02-01", text: "Reversal", accountId: "acc-expense", amount: -200, side: "debit", isVoided: false, priority: 1 },
+        { id: "p2", transactionId: "txn-neg", entryDate: "2026-02-01", text: "Reversal", accountId: "acc-bank", amount: -200, side: "credit", isVoided: false, priority: 2 },
+      ]),
+      { cutOverDate: "2026-01-01", accountIdToNo: accountMap },
+      errors,
+    );
+
+    expect(entries.length).toBe(1);
+    const debitLine = entries[0]!.lines.find((l) => l.debitAmount !== undefined)!;
+    expect(debitLine.debitAmount).toBe(200);
+    const creditLine = entries[0]!.lines.find((l) => l.creditAmount !== undefined)!;
+    expect(creditLine.creditAmount).toBe(200);
+  });
+
+  test("skips postings with unknown side value", () => {
+    const errors: string[] = [];
+    const entries = parseBillyPostings(
+      JSON.stringify([
+        { id: "p1", transactionId: "txn-bad", entryDate: "2026-02-01", text: "Bad", accountId: "acc-expense", amount: 100, side: "unknown", isVoided: false, priority: 1 },
+        { id: "p2", transactionId: "txn-bad", entryDate: "2026-02-01", text: "Bad", accountId: "acc-bank", amount: 100, side: "credit", isVoided: false, priority: 2 },
+      ]),
+      { cutOverDate: "2026-01-01", accountIdToNo: accountMap },
+      errors,
+    );
+
+    // Unknown side skipped → only 1 valid line → filtered as single-line
+    expect(entries.length).toBe(0);
+  });
+
+  test("rejects invalid cutOverDate format", () => {
+    const errors: string[] = [];
+    const entries = parseBillyPostings(
+      JSON.stringify([
+        { id: "p1", transactionId: "txn-1", entryDate: "2026-01-15", text: "X", accountId: "acc-expense", amount: 100, side: "debit", isVoided: false, priority: 1 },
+        { id: "p2", transactionId: "txn-1", entryDate: "2026-01-15", text: "X", accountId: "acc-bank", amount: 100, side: "credit", isVoided: false, priority: 2 },
+      ]),
+      { cutOverDate: "not-a-date", accountIdToNo: accountMap },
+      errors,
+    );
+
+    expect(entries.length).toBe(0);
+    expect(errors[0]).toContain("not a valid");
+  });
 });
