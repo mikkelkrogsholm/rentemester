@@ -181,17 +181,17 @@ function parseAccounts(
   groupsText: string | undefined,
   taxRatesText: string | undefined,
   errors: string[],
-): { accounts: ImportAccount[]; unmappedVatCodes: string[] } {
+): { accounts: ImportAccount[]; unmappedVatCodes: string[]; accountIdToNo: Map<string, string> } {
   let rawAccounts: BillyAccount[];
   try {
     rawAccounts = JSON.parse(accountsText);
   } catch {
     errors.push("accounts.json: invalid JSON");
-    return { accounts: [], unmappedVatCodes: [] };
+    return { accounts: [], unmappedVatCodes: [], accountIdToNo: new Map() };
   }
   if (!Array.isArray(rawAccounts)) {
     errors.push("accounts.json: expected a JSON array");
-    return { accounts: [], unmappedVatCodes: [] };
+    return { accounts: [], unmappedVatCodes: [], accountIdToNo: new Map() };
   }
 
   const groupMap = new Map<string, BillyAccountGroup>();
@@ -209,6 +209,7 @@ function parseAccounts(
   const taxRateMap = buildTaxRateMap(taxRatesText);
   const accounts: ImportAccount[] = [];
   const unmapped = new Set<string>();
+  const accountIdToNo = new Map<string, string>();
 
   const sorted = [...rawAccounts].sort((a, b) => (a.accountNo ?? 0) - (b.accountNo ?? 0));
 
@@ -260,7 +261,12 @@ function parseAccounts(
     accounts.push(account);
   }
 
-  return { accounts, unmappedVatCodes: [...unmapped].sort() };
+  // Build ID → accountNo map from all raw accounts (not just parsed ones)
+  for (const raw of rawAccounts) {
+    if (raw.id && raw.accountNo) accountIdToNo.set(raw.id, String(raw.accountNo));
+  }
+
+  return { accounts, unmappedVatCodes: [...unmapped].sort(), accountIdToNo };
 }
 
 // Opening balance support.
@@ -322,7 +328,7 @@ function parseBillySource(input: MultiArtifactSource): ParseResult {
   const groupsFile = input.files["account-groups.json"];
   const taxRatesFile = input.files["tax-rates.json"];
   const companyMasterData = parseOrganization(orgFile.text, errors);
-  const { accounts, unmappedVatCodes } = parseAccounts(
+  const { accounts, unmappedVatCodes, accountIdToNo } = parseAccounts(
     accountsFile.text,
     groupsFile?.text,
     taxRatesFile?.text,
@@ -331,16 +337,6 @@ function parseBillySource(input: MultiArtifactSource): ParseResult {
 
   if (accounts.length === 0) {
     errors.push("accounts.json: no accounts parsed from the chart of accounts");
-  }
-
-  // Build accountId → accountNo map for postings parser
-  const accountIdToNo = new Map<string, string>();
-  let rawAccountsForMap: Array<{ id: string; accountNo: number }> = [];
-  try { rawAccountsForMap = JSON.parse(accountsFile.text); } catch {}
-  if (Array.isArray(rawAccountsForMap)) {
-    for (const a of rawAccountsForMap) {
-      if (a.id && a.accountNo) accountIdToNo.set(a.id, String(a.accountNo));
-    }
   }
 
   // Opening balance: from an optional `balances.json` (produced by the export

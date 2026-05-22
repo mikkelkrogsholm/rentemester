@@ -89,7 +89,7 @@ async function main() {
 
   console.log("Fetching accounts...");
   const accounts = await billyGetAll(
-    `/accounts?organizationId=${organizationId}`,
+    `/accounts?organizationId=${encodeURIComponent(organizationId)}`,
     apiKey,
     "accounts",
   );
@@ -98,7 +98,7 @@ async function main() {
 
   console.log("Fetching contacts...");
   const contacts = await billyGetAll(
-    `/contacts?organizationId=${organizationId}`,
+    `/contacts?organizationId=${encodeURIComponent(organizationId)}`,
     apiKey,
     "contacts",
   );
@@ -107,7 +107,7 @@ async function main() {
 
   console.log("Fetching daybook transactions...");
   const transactions = await billyGetAll(
-    `/daybookTransactions?organizationId=${organizationId}`,
+    `/daybookTransactions?organizationId=${encodeURIComponent(organizationId)}`,
     apiKey,
     "daybookTransactions",
   );
@@ -120,7 +120,7 @@ async function main() {
 
   console.log("Fetching invoices...");
   const invoices = await billyGetAll(
-    `/invoices?organizationId=${organizationId}`,
+    `/invoices?organizationId=${encodeURIComponent(organizationId)}`,
     apiKey,
     "invoices",
   );
@@ -129,7 +129,7 @@ async function main() {
 
   console.log("Fetching bills...");
   const bills = await billyGetAll(
-    `/bills?organizationId=${organizationId}`,
+    `/bills?organizationId=${encodeURIComponent(organizationId)}`,
     apiKey,
     "bills",
   );
@@ -138,7 +138,7 @@ async function main() {
 
   console.log("Fetching account groups...");
   const groups = await billyGetAll(
-    `/accountGroups?organizationId=${organizationId}`,
+    `/accountGroups?organizationId=${encodeURIComponent(organizationId)}`,
     apiKey,
     "accountGroups",
   );
@@ -147,16 +147,34 @@ async function main() {
 
   console.log("Fetching tax rates...");
   const taxRates = await billyGetAll(
-    `/taxRates?organizationId=${organizationId}`,
+    `/taxRates?organizationId=${encodeURIComponent(organizationId)}`,
     apiKey,
     "taxRates",
   );
   writeFileSync(join(outDir, "tax-rates.json"), JSON.stringify(taxRates, null, 2), "utf8");
   console.log(`  ${taxRates.length} tax rates`);
 
+  console.log("Fetching products...");
+  const products = await billyGetAll(
+    `/products?organizationId=${encodeURIComponent(organizationId)}`,
+    apiKey,
+    "products",
+  );
+  writeFileSync(join(outDir, "products.json"), JSON.stringify(products, null, 2), "utf8");
+  console.log(`  ${products.length} products`);
+
+  console.log("Fetching VAT returns (momsperioder)...");
+  const vatReturns = await billyGetAll(
+    `/salesTaxReturns?organizationId=${encodeURIComponent(organizationId)}`,
+    apiKey,
+    "salesTaxReturns",
+  );
+  writeFileSync(join(outDir, "vat-returns.json"), JSON.stringify(vatReturns, null, 2), "utf8");
+  console.log(`  ${vatReturns.length} VAT returns`);
+
   console.log("Fetching attachments...");
   const attachments = await billyGetAll(
-    `/attachments?organizationId=${organizationId}`,
+    `/attachments?organizationId=${encodeURIComponent(organizationId)}`,
     apiKey,
     "attachments",
   ) as Array<{
@@ -224,7 +242,7 @@ async function main() {
 
   console.log("Fetching postings for balance computation...");
   const postings = await billyGetAll(
-    `/postings?organizationId=${organizationId}`,
+    `/postings?organizationId=${encodeURIComponent(organizationId)}`,
     apiKey,
     "postings",
   ) as PostingRecord[];
