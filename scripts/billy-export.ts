@@ -185,19 +185,25 @@ async function main() {
   for (const att of attachments) {
     if (!att.fileId) continue;
     try {
-      const fileRes = await fetch(`${API_BASE}/files/${att.fileId}`, {
-        headers: { "X-Access-Token": apiKey },
+      // Billy /v2/files returns JSON with a downloadUrl — not the file itself
+      const metaRes = await fetch(`${API_BASE}/files/${att.fileId}`, {
+        headers: { "X-Access-Token": apiKey, Accept: "application/json" },
       });
+      if (!metaRes.ok) { downloadErrors++; continue; }
+      const meta = (await metaRes.json()) as {
+        file?: { downloadUrl?: string; fileType?: string };
+      };
+      const downloadUrl = meta.file?.downloadUrl;
+      if (!downloadUrl) { downloadErrors++; continue; }
+      const fileType = (meta.file?.fileType ?? "pdf").toLowerCase();
+      const ext = fileType === "jpg" || fileType === "jpeg" ? ".jpg"
+        : fileType === "png" ? ".png" : ".pdf";
+      const filePath = join(bilagDir, `${att.ownerId}__${att.id}${ext}`);
+      const fileRes = await fetch(downloadUrl);
       if (fileRes.ok) {
-        const contentType = (fileRes.headers.get("content-type") ?? "").split(";")[0]!.trim();
-        const ext = mimeToExt[contentType] ?? ".pdf";
-        const filePath = join(bilagDir, `${att.ownerId}__${att.id}${ext}`);
-        const buffer = await fileRes.arrayBuffer();
-        writeFileSync(filePath, Buffer.from(buffer));
+        writeFileSync(filePath, Buffer.from(await fileRes.arrayBuffer()));
         downloadedCount++;
-      } else {
-        downloadErrors++;
-      }
+      } else { downloadErrors++; }
     } catch {
       downloadErrors++;
     }
