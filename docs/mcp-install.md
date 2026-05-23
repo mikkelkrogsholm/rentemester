@@ -3,7 +3,7 @@
 Rentemester eksponerer sin CLI som en MCP-server, så agenter (Claude
 Desktop, Cursor, Claude Code, Codex m.fl.) kan kalde
 bogføringskommandoer direkte. Serveren eksponerer hele tool-surface'en —
-**81 tools** — fordelt på domænerne `invoice_*`, `bank_*`, `journal_*`,
+**95 tools** — fordelt på domænerne `invoice_*`, `bank_*`, `journal_*`,
 `vat_*`, `system_backup_*`, `asset_*`, `mileage_*`, `recurring_invoice_*`
 m.fl. Den autoritative liste med klassifikation og inputs står i
 [`docs/mcp-tool-surface.md`](mcp-tool-surface.md); kør `tools/list` mod en

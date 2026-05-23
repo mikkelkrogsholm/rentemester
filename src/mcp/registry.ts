@@ -1,10 +1,11 @@
 /**
  * Central tools-registrering for Rentemester-MCP-serveren.
  *
- * `registerAllTools` registrerer hele tool-surface'en — 81 tools fordelt
+ * `registerAllTools` registrerer hele tool-surface'en — 95 tools fordelt
  * på de domæne-funktioner der kaldes herunder. Den autoritative liste
  * (klassifikation, inputs, CLI-mapping) står i docs/mcp-tool-surface.md;
  * driv en kørende server med `tools/list` for den faktiske, aktuelle liste.
+ * Tæl-konsistens er bevogtet af tests/unit/mcp-tool-count-docs.test.ts (#367).
  *
  * Sikkerhedsklasser:
  *  - read              — bivirkningsfrie; må kaldes frit og parallelt.
