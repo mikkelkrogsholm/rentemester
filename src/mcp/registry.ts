@@ -101,8 +101,10 @@ function lockGuardedCallback(
             return envelopeToCallResult(
               errorEnvelope(
                 `Bogføring er låst (${toolName}): ${lock.reason}. ` +
-                  "Kør system_backup med archive:true for at låse op; placér derefter " +
-                  "kopien på en EU/EØS-destination med system_backup_place.",
+                  "Diagnosticér med system_backup_status; kør derefter system_backup " +
+                  "med archive:true for at låse op og placér kopien på en EU/EØS-" +
+                  "destination med system_backup_place.",
+                { code: "BACKUP_LOCKED" },
               ),
             );
           }

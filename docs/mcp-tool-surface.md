@@ -114,12 +114,29 @@ Konvolutten (`structuredContent` på et `tools/call`-svar):
 | `data` | `object` | Kun ved `ok:true`. Kerne-resultatet. Udeladt ved `ok:false`. |
 | `errors` | `string[]` | Altid. Tom ved `ok:true`; ikke-tom ved `ok:false`. |
 | `appliedRules` | `string[]` | Valgfri. Regel-id'er der fyrede (sættes for bogførings-tools). |
+| `code` | `string` | Valgfri. Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx `"BACKUP_LOCKED"`) — se "Cross-cutting preconditions" nedenfor. Sættes kun ved `ok:false`; udeladt for per-tool forretningsfejl. |
 
 `outputSchema` typer bevidst `data` som et **åbent objekt** (`passthrough`):
 den konkrete feltliste i `data` varierer pr. tool, og MCP-SDK'en validerer
 kun `structuredContent` mod schemaet for *succes*-svar (`isError:false`) —
 fejl-envelopes springes over. De per-tool `data`-felter er ikke hånd-typet
 95 gange; de er dokumenteret nedenfor og i tool-brief'ene.
+
+### Cross-cutting preconditions (envelope-`code`)
+
+Visse forudsætninger gælder *på tværs* af tool-surfacen og lever derfor uden
+for det enkelte tools `inputSchema`. Når en sådan precondition slår til,
+fejler tool'et med en konvolut der bærer en **stabil `code`-markør** så en
+agent kan branche uden at parse `errors[]`-strengen.
+
+| `code` | Trigger | Hvilke tools rammes | Recovery |
+|---|---|---|---|
+| `BACKUP_LOCKED` | Backup-pligten er forsømt og `system_backup_lock` er sat til `enforced:true` med overskredet grace-periode. | **Alle** skrive-tools (`write-reversible` + `write-irreversible`) bortset fra `system_*`-familien. Read-tools og `system_*`-tools er aldrig lås-gated — at låse op kræver `system_backup`, så det skal altid kunne kaldes. | 1) `system_backup_status` for at se hvor langt forsinkelsen er. 2) `system_backup` (med `archive:true`) for at producere arkivet og frigøre låsen. 3) `system_backup_place` for at placere arkivet på en EU/EØS-attesteret destination. |
+
+`errors[]` på en `BACKUP_LOCKED`-konvolut indeholder en dansk forklaring +
+det tool-navn der blev afvist, og nævner eksplicit `system_backup_status`
+som første næste-skridt. Maskinlæsbar branching skal dog ske på `code`, ikke
+på fri-tekst.
 
 ### `data`-felter pr. tool — det der har betydning
 
