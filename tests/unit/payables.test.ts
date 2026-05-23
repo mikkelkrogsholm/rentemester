@@ -222,4 +222,34 @@ describe("payables (kreditorstyring)", () => {
     rmSync(root, { recursive: true, force: true });
     rmSync(inbox, { recursive: true, force: true });
   });
+
+  test("defaulter asOfDate til i dag når den udelades — så overdue ikke skjules", () => {
+    const { root, db } = setup("rentemester-payables-default-asof-");
+    const inbox = mkdtempSync(join(tmpdir(), "rentemester-payables-default-asof-inbox-"));
+
+    // Bill due far in the past — should be overdue against today's date.
+    const overdueDoc = ingestPurchase(db, root, inbox, "Software ApS", "V-2001", 1250, 250);
+    registerPayable(db, { documentId: overdueDoc, billDate: "2024-01-10", dueDate: "2024-02-09", expenseAccountNo: "3000" });
+
+    const today = new Date().toISOString().slice(0, 10);
+
+    const list = buildPayablesList(db);
+    expect(list.ok).toBe(true);
+    expect(list.asOfDate).toBe(today);
+    expect(list.count).toBe(1);
+    const row = list.rows[0]!;
+    expect(row.isOverdue).toBe(true);
+    expect(row.overdueDays).toBeGreaterThan(0);
+    expect(list.overdueOpenBalance).toBe(1250);
+
+    // status: "overdue" without asOfDate must return the past-due bill, not an empty list.
+    const overdue = buildPayablesList(db, { status: "overdue" });
+    expect(overdue.ok).toBe(true);
+    expect(overdue.count).toBe(1);
+    expect(overdue.rows[0]!.billNo).toBe("V-2001");
+
+    db.close();
+    rmSync(root, { recursive: true, force: true });
+    rmSync(inbox, { recursive: true, force: true });
+  });
 });

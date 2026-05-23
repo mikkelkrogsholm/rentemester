@@ -177,7 +177,7 @@ export function registerPayableTools(server: McpServer): void {
         asOfDate: z
           .string()
           .optional()
-          .describe("Date in YYYY-MM-DD format the due dates are aged against. Default 1970-01-01 (nothing overdue)."),
+          .describe("Date in YYYY-MM-DD format the due dates are aged against. Defaults to today (UTC) when omitted, so status='overdue' returns currently overdue items."),
         supplier: z.string().optional().describe("Case-insensitive substring filter on the supplier name."),
         vendorId: z.number().int().positive().optional().describe("Filter to payables linked to this vendor id."),
         from: z.string().optional().describe("Earliest bill date (YYYY-MM-DD) to include."),

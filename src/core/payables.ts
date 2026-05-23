@@ -23,7 +23,7 @@
 import type { Database } from "bun:sqlite";
 import { postJournalEntry, type JournalPostResult } from "./ledger";
 import { insertAuditLog } from "./actor";
-import { isValidIsoDate as looksLikeIsoDate, diffDays } from "./dates";
+import { isValidIsoDate as looksLikeIsoDate, diffDays, todayIsoDate } from "./dates";
 import { absDkk, compareDkk, percentOfDkk, roundDkk, subtractDkk, sumDkk } from "./money";
 
 const RULE_ID = "DK-PAYABLE-001";
@@ -529,7 +529,10 @@ export function buildPayablesList(db: Database, filters: PayablesListFilters = {
   if (filters.vendorId !== undefined && (!Number.isInteger(filters.vendorId) || filters.vendorId <= 0)) {
     errors.push("vendorId must be a positive integer when present");
   }
-  const asOfDate = filters.asOfDate ?? "1970-01-01";
+  // Default til dagens dato så et kald uden asOfDate giver et brugbart svar:
+  // status="overdue" returnerer reelt forfaldne poster i stedet for at aldre
+  // mod en epoch-dato hvor intet nogensinde er forfaldent.
+  const asOfDate = filters.asOfDate ?? todayIsoDate();
   if (errors.length > 0) {
     return { ok: false, count: 0, status, asOfDate, totalOpenBalance: 0, overdueOpenBalance: 0, notYetDueOpenBalance: 0, rows: [], errors };
   }
