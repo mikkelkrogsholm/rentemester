@@ -785,6 +785,19 @@ describe("#294 — scalar-flag tools carry field descriptions and the documentId
     expect(recon.to?.description).toContain("YYYY-MM-DD");
   });
 
+  test("#387 — vat_report / vat_eu_sales_list / vat_oss_report from+to carry YYYY-MM-DD describes", () => {
+    for (const name of ["vat_report", "vat_eu_sales_list", "vat_oss_report"]) {
+      const props = schemaOf(name).properties ?? {};
+      expect(props.from?.description, `${name}.from description`).toContain("YYYY-MM-DD");
+      expect(props.to?.description, `${name}.to description`).toContain("YYYY-MM-DD");
+      // The endpoint-inclusion convention must be visible so agents don't drift by one day.
+      expect(
+        (props.to?.description ?? "").toLowerCase(),
+        `${name}.to states inclusion`,
+      ).toMatch(/inclusiv|inclusive/);
+    }
+  });
+
   // The documentId|invoiceNumber selector must be visible in BOTH fields.
   const SELECTOR_TOOLS = [
     "invoice_status",

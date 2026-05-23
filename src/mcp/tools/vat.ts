@@ -135,8 +135,17 @@ export function registerVatTools(server: McpServer): void {
       description: "Bygger momsrapport for perioden. Read-only.",
       inputSchema: {
         company: z.string().min(1),
-        from: z.string().min(1),
-        to: z.string().min(1),
+        from: z
+          .string()
+          .min(1)
+          .describe("Period start, YYYY-MM-DD (inclusive). The day itself is included in the report."),
+        to: z
+          .string()
+          .min(1)
+          .describe(
+            "Period end, YYYY-MM-DD (inclusive — the last day of the period is included). " +
+              "Pass e.g. '2026-03-31' for Q1 2026, not '2026-04-01'.",
+          ),
       },
       outputSchema: envelopeShape,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
@@ -158,8 +167,11 @@ export function registerVatTools(server: McpServer): void {
         "Read-only.",
       inputSchema: {
         company: z.string().min(1),
-        from: z.string().min(1).describe("Period start, YYYY-MM-DD."),
-        to: z.string().min(1).describe("Period end, YYYY-MM-DD."),
+        from: z.string().min(1).describe("Period start, YYYY-MM-DD (inclusive)."),
+        to: z
+          .string()
+          .min(1)
+          .describe("Period end, YYYY-MM-DD (inclusive — the last day of the period is included)."),
       },
       outputSchema: envelopeShape,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
@@ -180,8 +192,11 @@ export function registerVatTools(server: McpServer): void {
         "OSS_EU_CONSUMER. Bevidst smal — ikke en OSS-indberetning til SKAT. Read-only.",
       inputSchema: {
         company: z.string().min(1),
-        from: z.string().min(1).describe("Period start, YYYY-MM-DD."),
-        to: z.string().min(1).describe("Period end, YYYY-MM-DD."),
+        from: z.string().min(1).describe("Period start, YYYY-MM-DD (inclusive)."),
+        to: z
+          .string()
+          .min(1)
+          .describe("Period end, YYYY-MM-DD (inclusive — the last day of the period is included)."),
       },
       outputSchema: envelopeShape,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
