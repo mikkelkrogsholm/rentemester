@@ -283,6 +283,43 @@ Lav en minimal ændring. Kør tests. Forklar hvad du ændrede, hvorfor det er si
     </div>
   </section>
 
+  <!-- COCKPIT -->
+  <section id="cockpit" class="border-t border-outline-variant/15">
+    <div class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28">
+      <div class="grid lg:grid-cols-[1.1fr_1fr] gap-12 lg:gap-20 items-start">
+        <div>
+          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Cockpittet</div>
+          <h2 class="font-serif text-4xl md:text-5xl text-on-background leading-tight mb-5">En grafisk brugerflade — ikke kun terminal</h2>
+          <p class="text-on-surface-variant text-lg leading-relaxed mb-5">
+            Rentemester har et lokalt <strong class="text-on-background">cockpit</strong> — et web-baseret kontrolpanel der lever oven på samme ledger og samme regler som CLI'en. Hvis du foretrækker at klikke, behøver du ikke leve i terminalen.
+          </p>
+          <p class="text-on-surface-variant leading-relaxed mb-6">
+            Overblik, resultatopgørelse, balance, bilag, bank, fakturaer, moms og forpligtelser — alt sammen i en browser, og hver handling skriver tilbage i den samme append-only historik. CLI og cockpit er to ansigter på den samme bogholder.
+          </p>
+          <div class="bg-deep-navy border border-outline-variant/20 px-5 py-4 font-mono text-[13px] text-parchment-text overflow-x-auto mb-6">
+            <div><span class="text-outline select-none">$ </span><span class="text-cyber-blue">bun</span> run src/cli.ts serve --workspace ./min-workspace</div>
+            <div><span class="text-outline select-none">$ </span><span class="text-cyber-blue">cd</span> app &amp;&amp; <span class="text-cyber-blue">bun</span> install &amp;&amp; <span class="text-cyber-blue">bun</span> run dev</div>
+            <div class="text-outline mt-2"># åbn http://localhost:5319</div>
+          </div>
+          <a href="/docs" class="inline-flex items-center justify-center gap-2 border border-cyber-blue/60 text-cyber-blue font-mono text-[12px] uppercase tracking-[0.15em] px-6 py-3 transition-all hover:bg-cyber-blue/5">
+            Se docs &amp; daglig brug →
+          </a>
+        </div>
+        <div class="bg-surface-container border border-outline-variant/15 p-8">
+          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-outline mb-6">Hvad du finder i cockpittet</div>
+          <ul class="space-y-3 text-on-surface-variant">
+            <li class="flex gap-3"><span class="font-mono text-primary shrink-0">→</span><span><strong class="text-on-background">Overblik</strong> — likviditet, åbne fakturaer, exceptions, næste momsfrist</span></li>
+            <li class="flex gap-3"><span class="font-mono text-primary shrink-0">→</span><span><strong class="text-on-background">Bilag</strong> — søg, filtrér, åbn dokumenter direkte i browseren</span></li>
+            <li class="flex gap-3"><span class="font-mono text-primary shrink-0">→</span><span><strong class="text-on-background">Bank</strong> — importér CSV og match transaktioner mod bilag &amp; fakturaer</span></li>
+            <li class="flex gap-3"><span class="font-mono text-primary shrink-0">→</span><span><strong class="text-on-background">Fakturaer</strong> — udsted, send på e-mail, kreditnota og rykkere</span></li>
+            <li class="flex gap-3"><span class="font-mono text-primary shrink-0">→</span><span><strong class="text-on-background">Moms &amp; forpligtelser</strong> — rubrikker, frister og status</span></li>
+            <li class="flex gap-3"><span class="font-mono text-primary shrink-0">→</span><span><strong class="text-on-background">Posteringer</strong>, <strong class="text-on-background">kontakter</strong> og indbygget hjælp</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- FUNKTIONER -->
   <section class="border-t border-outline-variant/15 bg-deep-navy/30">
     <div class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28">
@@ -435,8 +472,8 @@ Lav en minimal ændring. Kør tests. Forklar hvad du ændrede, hvorfor det er si
       <a href={SITE.github} rel="noopener me" target="_blank" class="inline-flex items-center justify-center gap-2 bg-brass-gold text-ink-black font-mono text-[12px] uppercase tracking-[0.15em] font-bold px-8 py-4 transition-all hover:shadow-[0_0_24px_rgba(197,160,89,0.35)]">
         Se på GitHub ↗
       </a>
-      <a href="/docs/installation" class="inline-flex items-center justify-center gap-2 border border-cyber-blue/60 text-cyber-blue font-mono text-[12px] uppercase tracking-[0.15em] px-8 py-4 transition-all hover:bg-cyber-blue/5">
-        Installation
+      <a href="/docs" class="inline-flex items-center justify-center gap-2 border border-cyber-blue/60 text-cyber-blue font-mono text-[12px] uppercase tracking-[0.15em] px-8 py-4 transition-all hover:bg-cyber-blue/5">
+        Docs &amp; installation
       </a>
     </div>
   </section>

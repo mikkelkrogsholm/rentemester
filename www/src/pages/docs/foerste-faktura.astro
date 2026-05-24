@@ -1,0 +1,104 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/PageHero.astro";
+import { SITE } from "../../consts";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  name: "Send din første faktura med Rentemester",
+  inLanguage: "da",
+  totalTime: "PT10M",
+  step: [
+    { "@type": "HowToStep", position: 1, name: "Opret kunden", text: "Tilføj kunden via cockpittet eller customer add-kommandoen." },
+    { "@type": "HowToStep", position: 2, name: "Udfyld faktura", text: "Tilføj varelinjer, dansk momskode og forfald." },
+    { "@type": "HowToStep", position: 3, name: "Validér og udsted", text: "Lad reglerne validere fakturaen før den udstedes." },
+    { "@type": "HowToStep", position: 4, name: "Bogfør og send", text: "Bogfør i ledgeren og send PDF til kunden." },
+  ],
+};
+---
+
+<BaseLayout
+  title="Din første faktura med Rentemester"
+  description="Udsted, bogfør og send din første danske faktura med Rentemester — cockpit eller CLI. Med moms, PDF, e-mail og audit-trail."
+  pathname="/docs/foerste-faktura"
+  pageType="Article"
+  datePublished="2026-05-24"
+  dateModified="2026-05-24"
+  jsonLd={jsonLd}
+>
+  <PageHero
+    eyebrow="Dokumentation"
+    title="Din første faktura"
+    lead="Fra tom kundeliste til en valideret, bogført og afsendt dansk faktura — uden at omgå nogen regel."
+  />
+
+  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
+    <h2>Til hvem</h2>
+    <p>Til dig der har installeret Rentemester (<a href="/docs/installation">se installation</a>) og skal sende din første rigtige faktura til en kunde. Guiden viser begge veje — klik dig gennem cockpittet, eller kør CLI-kommandoer.</p>
+
+    <h2>Forudsætninger</h2>
+    <ul>
+      <li>Du har kørt <code>bun run src/cli.ts init --company ./min-virksomhed</code> og healthcheck er grøn.</li>
+      <li>Du har dit eget CVR-nummer og kundens CVR (eller adresse hvis kunden er en privatperson).</li>
+      <li>Du ved hvilken momskode der gælder for dit salg — almindeligt indenlandsk salg er 25 %; tjek <a href={`${SITE.github}/tree/main/rules/dk`} rel="noopener" target="_blank">rules/dk ↗</a> hvis du er i tvivl.</li>
+    </ul>
+
+    <h2>1. Start cockpittet (valgfrit)</h2>
+    <p>I én terminal kører du backend-serveren — i en anden cockpit-UI'en:</p>
+    <pre><code>bun run src/cli.ts serve --workspace .
+
+cd app &amp;&amp; bun install &amp;&amp; bun run dev
+# åbn http://localhost:5319</code></pre>
+    <p>I cockpittet bruger du venstre-menuens <strong>Fakturaer</strong> og <strong>Kontakter</strong>. Hvis du hellere vil køre rent CLI, skipper du dette skridt.</p>
+
+    <h2>2. Opret kunden</h2>
+    <p><strong>Cockpit:</strong> Gå til <em>Kontakter → Opret kunde</em>. Skriv CVR — Rentemester slår op i CVR-registret og udfylder navn, adresse og momspligt.</p>
+    <p><strong>CLI:</strong></p>
+    <pre><code>bun run src/cli.ts customer add \
+  --company ./min-virksomhed \
+  --cvr 12345678 \
+  --name "Eksempel ApS"</code></pre>
+
+    <h2>3. Udfyld fakturaen</h2>
+    <p><strong>Cockpit:</strong> <em>Fakturaer → Ny faktura</em>. Vælg kunden, tilføj én eller flere varelinjer (beskrivelse, antal, enhedspris, momskode), og sæt en forfaldsdato. Cockpittet viser totalen og momsen løbende.</p>
+    <p><strong>CLI:</strong> Lav en JSON-fil — fx <code>min-faktura.json</code> — efter samme skema som <a href={`${SITE.github}/blob/main/examples/full-invoice.dk.json`} rel="noopener" target="_blank">examples/full-invoice.dk.json ↗</a>. Felter du skal udfylde: <code>customer</code>, <code>lines</code> (med <code>description</code>, <code>quantity</code>, <code>unit_price</code>, <code>vat_code</code>), <code>issue_date</code> og <code>due_date</code>.</p>
+
+    <h2>4. Validér før udstedelse</h2>
+    <p>Rentemester validerer fakturaen mod danske regler <em>før</em> den udstedes — manglende CVR, ugyldig momskode, dato uden for åbent regnskabsår og lignende afvises.</p>
+    <pre><code>bun run src/cli.ts invoice validate --input min-faktura.json</code></pre>
+    <p>I cockpittet sker valideringen automatisk når du trykker <em>Udsted</em> — fejl vises som røde notitser ved det felt der bryder reglen.</p>
+
+    <h2>5. Udsted og bogfør</h2>
+    <p>Udstedelsen gemmer et <strong>immutabelt snapshot</strong> af fakturaen (PDF + JSON) og giver den et fakturanummer fra din valgte serie.</p>
+    <pre><code>bun run src/cli.ts invoice issue \
+  --company ./min-virksomhed \
+  --input min-faktura.json
+
+bun run src/cli.ts invoice post \
+  --company ./min-virksomhed \
+  --invoice-number 2026-0001</code></pre>
+    <p><code>invoice post</code> skriver de tre posteringer (debitor, omsætning, salgsmoms) ind i ledgeren. I cockpittet sker udstedelse og bogføring i samme klik — knappen viser <em>Udsted &amp; bogfør</em>.</p>
+
+    <h2>6. Send på e-mail</h2>
+    <p>Du kan vedhæfte PDF'en og sende direkte fra Rentemester:</p>
+    <pre><code>bun run src/cli.ts invoice send-email \
+  --company ./min-virksomhed \
+  --invoice-number 2026-0001 \
+  --to kunde@eksempel.dk</code></pre>
+    <p><strong>Bemærk:</strong> den indbyggede e-mailafsendelse kører i test-tilstand indtil du tilkobler din egen e-mailkanal — afsendelsen logges, men ingen rigtig e-mail forlader maskinen. Læs <a href={`${SITE.github}/blob/main/README.md`} rel="noopener" target="_blank">README ↗</a> for konfiguration.</p>
+
+    <h2>7. Når kunden betaler</h2>
+    <p>Importér bankudtoget (<a href="/docs/bank-import">se bank-import</a>), og afstem betalingen mod fakturaen. Rentemester foreslår matchet deterministisk; du bekræfter.</p>
+
+    <h2>Fejlfinding</h2>
+    <ul>
+      <li><strong>"vat_code unknown"</strong> — kig i <code>rules/dk/vat-codes.json</code> for gyldige koder. <code>21</code> er standard indenlandsk salg med 25 % moms.</li>
+      <li><strong>"customer CVR not found"</strong> — CVR-opslaget bruger en offline-snapshot; kør <code>bun run src/cli.ts customer refresh --cvr 12345678</code>.</li>
+      <li><strong>"period closed"</strong> — fakturadatoen falder i en lukket periode. Vælg en dato i en åben periode, eller åbn perioden hvis den er fejlagtigt lukket.</li>
+      <li><strong>"invoice already issued"</strong> — du kan ikke udstede den samme faktura to gange. Hvis du har brug for at rette, lav en kreditnota.</li>
+    </ul>
+
+    <p><a href="/docs">← Tilbage til docs-oversigten</a></p>
+  </article>
+</BaseLayout>
