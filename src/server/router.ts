@@ -33,7 +33,9 @@ import {
   type StatementCsvExport,
 } from "./data/statement-exports";
 import {
+  buildAssetNextDepreciationPeriod,
   buildCompanyArchiveYear,
+  buildCompanyAssets,
   buildCompanyBalance,
   buildCompanyBank,
   buildCompanyCashflow,
@@ -64,6 +66,9 @@ import {
 import { serveStatic } from "./static";
 import {
   handleAccountantExport,
+  handleAssetDepreciate,
+  handleAssetRegister,
+  handleAssetWriteOff,
   handleBankImport,
   handleClosePeriod,
   handleCompanyProfile,
@@ -219,6 +224,11 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "POST", pattern: "/api/companies/:slug/periods/reopen", summary: "Genåbner regnskabsperiode (#247-modstykke til CLI-only)." },
   { method: "GET", pattern: "/api/companies/:slug/mileage", summary: "Kørselsregister for valgt regnskabsår (#335)." },
   { method: "POST", pattern: "/api/companies/:slug/mileage", summary: "Registrerer en kørsel (#335)." },
+  { method: "GET", pattern: "/api/companies/:slug/assets", summary: "Anlægskartotek — kapitaliserede aktiver + straksafskrivninger (#336)." },
+  { method: "POST", pattern: "/api/companies/:slug/assets", summary: "Registrerer et anlæg + lineær afskrivningsplan (#336)." },
+  { method: "GET", pattern: "/api/companies/:slug/assets/:id/next-depreciation", summary: "Næste afskrivningsperiode for et anlæg (#336)." },
+  { method: "POST", pattern: "/api/companies/:slug/assets/:id/depreciate", summary: "Bogfører næste afskrivningsperiode (#336)." },
+  { method: "POST", pattern: "/api/companies/:slug/assets/write-off", summary: "Straksafskriver et småanskaffelse (#336)." },
 ];
 
 function handleHealth(config: ServerConfig): Response {
@@ -522,6 +532,25 @@ function handleCompanyInvoices(
 function handleCompanyContacts(config: ServerConfig, slug: string): Response {
   const data = buildCompanyContacts(config.workspaceRoot, slug);
   return okResponse({ contacts: data });
+}
+
+function handleCompanyAssets(config: ServerConfig, slug: string): Response {
+  const data = buildCompanyAssets(config.workspaceRoot, slug);
+  return okResponse({ assets: data });
+}
+
+function handleAssetNextDepreciation(
+  config: ServerConfig,
+  slug: string,
+  assetIdRaw: string,
+): Response {
+  const assetId = Number(assetIdRaw);
+  const data = buildAssetNextDepreciationPeriod(
+    config.workspaceRoot,
+    slug,
+    assetId,
+  );
+  return okResponse({ nextDepreciation: data });
 }
 
 function handleCompanySettings(config: ServerConfig, slug: string): Response {
@@ -1212,6 +1241,54 @@ export async function handleRequest(
       if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
       const slug = decodeURIComponent(periodReopenMatch[1]!);
       return await handleReopenPeriod(config, request, slug);
+    }
+
+    // Anlægskartotek read + write routes (#336). The cockpit becomes a third
+    // caller of `src/core/assets.ts` alongside the CLI's `asset` sub-commands
+    // and the MCP `asset_*` tools — no depreciation arithmetic is reimplemented
+    // here. Write routes go through `withCompanyMutation`, so the backup-lock,
+    // the localhost gate, actor attribution and the confirm gate all apply.
+    const assetsCollectionMatch =
+      /^\/api\/companies\/([^/]+)\/assets$/.exec(path);
+    if (assetsCollectionMatch) {
+      const slug = decodeURIComponent(assetsCollectionMatch[1]!);
+      if (method === "GET") return handleCompanyAssets(config, slug);
+      if (method === "POST")
+        return await handleAssetRegister(config, request, slug);
+      throw ApiError.methodNotAllowed("GET or POST required");
+    }
+
+    const assetWriteOffMatch =
+      /^\/api\/companies\/([^/]+)\/assets\/write-off$/.exec(path);
+    if (assetWriteOffMatch) {
+      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      const slug = decodeURIComponent(assetWriteOffMatch[1]!);
+      return await handleAssetWriteOff(config, request, slug);
+    }
+
+    const assetNextDepreciationMatch =
+      /^\/api\/companies\/([^/]+)\/assets\/(\d+)\/next-depreciation$/.exec(path);
+    if (assetNextDepreciationMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(assetNextDepreciationMatch[1]!);
+      return handleAssetNextDepreciation(
+        config,
+        slug,
+        assetNextDepreciationMatch[2]!,
+      );
+    }
+
+    const assetDepreciateMatch =
+      /^\/api\/companies\/([^/]+)\/assets\/(\d+)\/depreciate$/.exec(path);
+    if (assetDepreciateMatch) {
+      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      const slug = decodeURIComponent(assetDepreciateMatch[1]!);
+      return await handleAssetDepreciate(
+        config,
+        request,
+        slug,
+        assetDepreciateMatch[2]!,
+      );
     }
 
     const companyMatch = /^\/api\/companies\/([^/]+)$/.exec(path);

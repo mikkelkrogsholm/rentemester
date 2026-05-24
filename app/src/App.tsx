@@ -18,6 +18,7 @@
 //   /companies/:slug/fakturaer          Fakturaer (issued invoices)
 //   /companies/:slug/kontakter          Kontakter (customers + vendors)
 //   /companies/:slug/koersel            Kørsel (mileage register, #335)
+//   /companies/:slug/anlaeg             Anlæg (fixed assets + depreciation)
 //   /companies/:slug/manage             rename / archive
 //   /help                                hjælp og support (#421)
 //
@@ -43,6 +44,7 @@ import { InvoicesView } from "./views/InvoicesView";
 import { RecurringInvoicesView } from "./views/RecurringInvoicesView";
 import { ContactsView } from "./views/ContactsView";
 import { MileageView } from "./views/MileageView";
+import { AssetsView } from "./views/AssetsView";
 import { ManageCompanyView } from "./views/ManageCompanyView";
 import { HelpView } from "./views/HelpView";
 
@@ -111,6 +113,10 @@ export function App() {
           <Route
             path="/companies/:slug/koersel"
             element={<MileageView />}
+          />
+          <Route
+            path="/companies/:slug/anlaeg"
+            element={<AssetsView />}
           />
           <Route
             path="/companies/:slug/manage"

@@ -99,6 +99,8 @@ export {
   buildCompanyCashflow,
   buildCompanyRecurringInvoices,
   buildCompanyMileage,
+  buildCompanyAssets,
+  buildAssetNextDepreciationPeriod,
 } from "./data/company-views";
 export type {
   CompanySettingsView,
@@ -130,4 +132,8 @@ export type {
   MileageEntryRow,
   MileageMonthRow,
   CompanyMileage,
+  AssetRow,
+  AssetWriteOffRow,
+  CompanyAssets,
+  NextDepreciationPeriodView,
 } from "./data/company-views";

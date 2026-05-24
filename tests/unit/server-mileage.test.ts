@@ -142,7 +142,7 @@ describe("Cockpit Kørsel-routes (#335)", () => {
       );
       expect(res.status).toBe(400);
       expect(res.body.ok).toBe(false);
-      expect(String(res.body.error.message)).toMatch(/confirm/i);
+      expect(String(res.body.errors?.[0] ?? "")).toMatch(/confirm/i);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -160,7 +160,7 @@ describe("Cockpit Kørsel-routes (#335)", () => {
       );
       expect(res.status).toBe(400);
       expect(res.body.ok).toBe(false);
-      expect(String(res.body.error.message)).toMatch(/positive/i);
+      expect(String(res.body.errors?.[0] ?? "")).toMatch(/positive/i);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
