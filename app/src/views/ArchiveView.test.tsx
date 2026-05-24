@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
-import { screen, within } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { ArchiveView } from "./ArchiveView";
+import { ArchivedBanner } from "../components/ArchivedBanner";
 import { renderAt } from "../test/render";
 import { fiscalYears, mockFetch } from "../test/fixtures";
 
@@ -20,7 +21,7 @@ function renderView(routePath = "/companies/acme-aps/arkiv") {
 }
 
 describe("ArchiveView — Om arkivet", () => {
-  test("explains that the archive is the read-only Dinero #197 import", async () => {
+  test("explains that the archive is the read-only Dinero import", async () => {
     mockFetch(route());
     renderView();
     expect(
@@ -28,7 +29,21 @@ describe("ArchiveView — Om arkivet", () => {
         /Det arkiverede regnskab er skrivebeskyttet/,
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Dinero-eksport \(#197\)/)).toBeInTheDocument();
+    // The owner sees plain Danish — never raw GitHub-issue numbers (#371).
+    expect(screen.getByText(/Dinero-regnskab/)).toBeInTheDocument();
+    expect(
+      screen.queryByText(/\(#\d+\)/),
+    ).not.toBeInTheDocument();
+  });
+
+  test("the Kilde column reads as plain Danish, not a developer ticket (#371)", async () => {
+    mockFetch(route());
+    renderView();
+    const row = (
+      await screen.findByRole("cell", { name: /2025/ })
+    ).closest("tr")!;
+    const kilde = within(row as HTMLElement).getByText(/Dinero/);
+    expect(kilde.textContent).not.toMatch(/\(#\d+\)/);
   });
 
   test("lists each archived year with links into the core views", async () => {
@@ -48,6 +63,16 @@ describe("ArchiveView — Om arkivet", () => {
       "href",
       "/companies/acme-aps/resultatopgorelse?year=2025",
     );
+  });
+
+  test("the banner copy is plain Danish without GitHub-issue numbers (#371)", () => {
+    render(<ArchivedBanner year="2024" source="dinero" />);
+    expect(
+      screen.getByText(/Arkiveret regnskabsår 2024/),
+    ).toBeInTheDocument();
+    // The banner used to leak the literal "(#197)" into the body copy; the
+    // owner must see only plain Danish prose, never a developer ticket.
+    expect(screen.queryByText(/\(#\d+\)/)).not.toBeInTheDocument();
   });
 
   test("a company with no archive shows the empty state", async () => {
