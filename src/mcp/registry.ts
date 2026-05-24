@@ -17,9 +17,17 @@
  *                        `confirmText`.
  *
  * Hver `register*Tools(server)`-funktion lever i `src/mcp/tools/<area>.ts`
- * og tilføjer kun sit eget domæne. Det holder hver fil overskuelig og
- * tool-surface'en tæt på 1:1 med `src/cli-meta.ts` (kendte afvigelser er
- * dokumenteret i docs/mcp-tool-surface.md).
+ * og tilføjer kun sit eget domæne. Tool-surface'en er IKKE 1:1 med
+ * `src/cli-meta.ts`: der er mindst 10 dokumenterede afvigelser fordelt på
+ * en MCP-only-liste (fx `cvr`, `peppol`, `portfolio`, `period_list`) og en
+ * CLI-only-liste (fx `agent`, `annual-report`, `dashboard`,
+ * `opening-balance`, `reg`, `report`, `serve`, `bank-account`, `init`,
+ * `gdpr`). Den maskinlæsbare diff vedligeholdes pr. fil i
+ * `docs/mcp-tool-surface.md`-sektionerne "MCP-only — tools uden
+ * CLI-pendant" og "CLI-only — kommandoer uden MCP-pendant", og
+ * `tests/unit/surface-diff-discoverable.test.ts` (#376) fejler, hvis en ny
+ * `src/cli/<x>.ts` eller `src/mcp/tools/<x>.ts` tilføjes uden at blive
+ * listet der.
  */
 
 import { existsSync } from "node:fs";

@@ -444,8 +444,116 @@ Felt-detaljer for `system_restore_backup`:
 
 ## CLI/MCP-mapping
 
-MCP-surface'en er *tæt på* 1:1 med CLI'en, men ikke fuldstændig. Kendte
-afvigelser pr. denne revision:
+MCP-surface'en er *tæt på* 1:1 med CLI'en, men **ikke fuldstændig**: der er
+mindst 10 dokumenterede afvigelser fordelt på en CLI-only-liste og en
+MCP-only-liste (se nedenfor). En agent der vælger MCP som primær overflade
+finder altså IKKE alle CLI-only-funktionerne i `tools/list` — og omvendt.
+Sektionerne nedenfor er maskinlæsbart udgivet: hver post navngiver den
+underliggende kildefil i `src/cli/<x>.ts` eller `src/mcp/tools/<x>.ts`, så en
+agent kan krydsverificere uden at læse kildekoden. Et CI-check
+(`tests/unit/surface-diff-discoverable.test.ts`) fejler, hvis en ny
+`src/cli/<x>.ts` eller `src/mcp/tools/<x>.ts` tilføjes uden at blive nævnt i
+mapping-doc'en — `tæt på 1:1` er altså ikke længere et løst løfte, men en
+konkret diff, der vedligeholdes pr. fil.
+
+### MCP-only — tools uden CLI-pendant
+
+MCP-tools, der ikke findes på CLI'en (`src/mcp/tools/<filename>.ts` ⇒ intet
+modsvar i `src/cli/`). En agent, der CLI-fortrinsstiller, vil aldrig opdage
+disse uden at læse mapping-doc'en:
+
+- `src/mcp/tools/cvr.ts` — `cvr_lookup` (CVR-opslag mod virk.dk). CLI'en har
+  kun `customer cvr-lookup` (knyttet til `src/cli/customer.ts`); der findes
+  ingen selvstændig `cvr`-kommando.
+- `src/mcp/tools/peppol.ts` — `peppol_submit_public_invoice` (PEPPOL-submission
+  af bogført faktura). CLI'en har `invoice submit-public-peppol`
+  (`src/cli/invoice.ts`), men den er filtmæssigt en del af `invoice`-domænet
+  — ikke en selvstændig `peppol`-CLI.
+- `src/mcp/tools/portfolio.ts` — `portfolio_overview` (workspace-vid
+  porteføljeoversigt). CLI'en har kun `dashboard` (`src/cli/dashboard.ts`),
+  der er virksomheds-scopet og kun delvist overlapper.
+- `src/mcp/tools/period.ts` — `period_list` (lister regnskabsperioder).
+  CLI'en har kun `period close`/`period reopen` (`src/cli/period.ts`) — der
+  er ingen `period list`-kommando.
+
+### CLI-only-kommandoer uden MCP-pendant
+
+CLI-kommandoer, der ikke har et MCP-tool (`src/cli/<filename>.ts` ⇒ intet
+modsvar i `src/mcp/tools/`). En agent, der MCP-fortrinsstiller, vil aldrig
+opdage disse uden at læse mapping-doc'en. Genåbning af en lukket
+regnskabsperiode (`period reopen`) er fx CLI-only — se også underafsnittet
+"Andre kendte mikro-afvigelser" længere nede:
+
+- `src/cli/agent.ts` — `agent run` (den pakkede runtime-agent-loop; egen
+  kontrakt i `runtime-agent-contract.md`). Ingen `agent_*`-MCP-tools.
+- `src/cli/annual-report.ts` — `report annual` og afledte årsrapport-flows.
+  Ingen `annual_report_*`-MCP-tools.
+- `src/cli/dashboard.ts` — `dashboard` (virksomheds-scopet nøgletal). MCP
+  har det workspace-scopede `portfolio_overview` i stedet (se MCP-only
+  ovenfor) — ikke et 1:1-modstykke.
+- `src/cli/opening-balance.ts` — `opening-balance post` (etablerer
+  primosaldo). Ingen `opening_balance_*`-MCP-tools.
+- `src/cli/reg.ts` — `reg coverage` og `reg citations` (regulatorisk
+  dækningsrapport + paragrafhenvisninger). Ingen `reg_*`-MCP-tools.
+- `src/cli/report.ts` — `report balance`, `report profit-loss`,
+  `report trial-balance`, `report tax`. MCP har kun `tax_return_prepare`;
+  resten er CLI-only.
+- `src/cli/serve.ts` — `serve` (starter cockpit HTTP-API'en). Det er en
+  proces-host og giver ikke mening som MCP-tool.
+- `src/cli/bank-account.ts` — `bank-account add`/`bank-account list`
+  (registrér/lis bankkonti for FX-bogføring). Ingen `bank_account_*`-MCP-tools.
+- `src/cli/init.ts` — `init` (initialisér en virksomhed). MCP eksponerer
+  `company_add` (`src/mcp/tools/system.ts`) i stedet, ikke `init` direkte.
+- `src/cli/gdpr.ts` — `gdpr export`/`gdpr erase`/`gdpr forget`. Ingen
+  `gdpr_*`-MCP-tools — bevidst CLI-gatet for actor-attribution.
+
+> **Andre kendte mikro-afvigelser (samme filnavn, divergent klassifikation
+> eller ergonomi):**
+>
+> - **`import_archive_year` har ingen selvstændig CLI-kommando.** Den henter
+>   fra samme arkiv-artefakt som `import archive` skriver/lister
+>   (`src/cli/import.ts`).
+> - **`period reopen` er CLI-only.** En for tidligt lukket regnskabsperiode kan
+>   kun genåbnes via CLI-kommandoen `period reopen` (en kontrolleret, fuldt
+>   revisionssporet handling, #247) — der findes *ingen* `period_reopen`
+>   MCP-tool. MCP-surface'en eksponerer `period_list` (read) og `period_close`
+>   (write-irreversible), men ikke en genåbning. En agent der over MCP rammer
+>   en lukket-periode-afvisning kan altså ikke selv genåbne perioden; den må
+>   henvise mennesket til `rentemester period reopen`. HTTP-laget har
+>   derimod `POST /api/companies/:slug/periods/reopen` — så cockpittet er
+>   ikke begrænset på samme måde.
+> - **`invoice create` er CLI-only — den ergonomiske CLI-vej til at fakturere.**
+>   `invoice create` udsteder en kundefaktura uden at man selv skriver JSON eller
+>   regner moms (linjer som `"beskrivelse|antal|stykpris"`, satsen i procent).
+>   Den har *ingen* MCP-tool: MCP-pendanten er det typede `invoice_issue`, der
+>   tager en fuld `InvoicePayload` med færdigberegnede totaler. En agent over MCP
+>   bruger altså `invoice_issue` (typet payload) — `invoice create` er
+>   CLI-ergonomien for et menneske.
+> - **`invoice export-public` og `invoice export-public-oioubl` er CLI-only.**
+>   De skriver deterministiske handoff-artefakter til offentlig e-faktura
+>   (henholdsvis et EAN/GLN-preview og et OIOUBL-handoff) uden PEPPOL-transport.
+>   Der findes ingen `*_export_public*` MCP-tools — MCP-surface'en eksponerer kun
+>   `peppol_submit_public_invoice` til den egentlige PEPPOL-submission.
+> - **`portfolio_overview`** dækker delvist det CLI'en eksponerer som
+>   `dashboard`, men er et workspace-tool (`workspace`-parameter, ikke
+>   `company`).
+> - **`customer_validate_vat` (MCP) vs. `customer validate-vat` (CLI)** —
+>   MCP-tool'et er `read` (ikke confirm-gatet, ingen actor); CLI-kommandoen er
+>   `actor`-gatet via `MUTATING_COMMANDS`. Se "Read-tools"-sektionen for den
+>   bevidste divergens i governance-klasse.
+>
+> ### Den oprindelige løse note (for historisk reference)
+>
+> Flere CLI-kommandoer eksponeres ikke som tools, fx `init`, `serve`,
+> `report *`, `vat momsangivelse`/`vat filing`, `period reopen`,
+> `gdpr export`/`gdpr erase`, `opening-balance post`, `bank-account add`/`list`,
+> `import run`/`systems`/`contacts`, `agent run`, `reg coverage`/`reg citations`,
+> `invoice create`, `invoice export-public`/`invoice export-public-oioubl` og
+> diverse `system export-*`/`verify-*`-kommandoer. Disse driver lokale
+> workflows eller hører til den indbyggede `agent run`-loop og er bevidst
+> holdt uden for den løse agent-surface.
+
+### Historiske afvigelser (samlet i den nye liste ovenfor)
 
 - **`period_list` har ingen CLI-kommando.** Tool'et `period_list` lister
   regnskabsperioder over MCP, men CLI'en har kun `period close` — der er
@@ -454,40 +562,9 @@ afvigelser pr. denne revision:
   bygget. MCP-tool'et læser `accounting_periods` direkte.) Vil man genskabe
   1:1-mappingen skal en `period list`-CLI-kommando tilføjes — ellers er
   dette en bevidst, dokumenteret afvigelse.
-- **`import_archive_year` har ingen selvstændig CLI-kommando.** Den henter
-  fra samme arkiv-artefakt som `import archive` skriver/lister.
-- **`portfolio_overview`** dækker delvist det CLI'en eksponerer som
-  `dashboard`, men er et workspace-tool (`workspace`-parameter, ikke
-  `company`).
-- **`period reopen` er CLI-only.** En for tidligt lukket regnskabsperiode kan
-  kun genåbnes via CLI-kommandoen `period reopen` (en kontrolleret, fuldt
-  revisionssporet handling, #247) — der findes *ingen* `period_reopen`
-  MCP-tool. MCP-surface'en eksponerer `period_list` (read) og `period_close`
-  (write-irreversible), men ikke en genåbning. En agent der over MCP rammer
-  en lukket-periode-afvisning kan altså ikke selv genåbne perioden; den må
-  henvise mennesket til `rentemester period reopen`.
-- **`invoice create` er CLI-only — den ergonomiske CLI-vej til at fakturere.**
-  `invoice create` udsteder en kundefaktura uden at man selv skriver JSON eller
-  regner moms (linjer som `"beskrivelse|antal|stykpris"`, satsen i procent).
-  Den har *ingen* MCP-tool: MCP-pendanten er det typede `invoice_issue`, der
-  tager en fuld `InvoicePayload` med færdigberegnede totaler. En agent over MCP
-  bruger altså `invoice_issue` (typet payload) — `invoice create` er
-  CLI-ergonomien for et menneske.
-- **`invoice export-public` og `invoice export-public-oioubl` er CLI-only.**
-  De skriver deterministiske handoff-artefakter til offentlig e-faktura
-  (henholdsvis et EAN/GLN-preview og et OIOUBL-handoff) uden PEPPOL-transport.
-  Der findes ingen `*_export_public*` MCP-tools — MCP-surface'en eksponerer kun
-  `peppol_submit_public_invoice` til den egentlige PEPPOL-submission.
-- **CLI-only-kommandoer uden MCP-tool.** Flere CLI-kommandoer eksponeres
-  ikke som tools, fx `init`, `serve`, `report *`, `vat momsangivelse`/
-  `vat filing`, `period reopen`, `gdpr export`/`gdpr erase`,
-  `opening-balance post`, `bank-account add`/`list`,
-  `import run`/`systems`/`contacts`, `agent run`,
-  `reg coverage`/`reg citations`, `invoice create`,
-  `invoice export-public`/`invoice export-public-oioubl` og diverse
-  `system export-*`/`verify-*`-kommandoer. Disse driver lokale workflows
-  eller hører til den indbyggede `agent run`-loop og er bevidst holdt uden
-  for den løse agent-surface.
+_(De oprindelige løse notater er nu listet eksplicit pr. fil i sektionerne
+"MCP-only — tools uden CLI-pendant" og "CLI-only — kommandoer uden
+MCP-pendant" ovenfor.)_
 
 ## Eksempel-handshakes
 

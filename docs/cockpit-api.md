@@ -105,7 +105,7 @@ when omitted.
 
 | Method + path | Response key | Purpose |
 |---|---|---|
-| `GET /api` or `GET /api/health` | `service`, `workspace`, `authRequired` | Health probe + server identity. |
+| `GET /api` or `GET /api/health` | `service`, `workspace`, `authRequired`, `routes` | Health probe + server identity + route-catalog (#376). `routes` is a machine-readable list of every HTTP endpoint with `{ method, pattern, summary }` so an agent can enumerate the surface without reading source. The catalog is the same `ROUTE_CATALOG` exported from `src/server/router.ts`. |
 | `GET /api/portfolio?asOf=` | `portfolio` | Cross-company portfolio overview. |
 | `GET /api/companies` | `workspace`, `count`, `companies[]` | List workspace companies (`{slug,name,createdAt,archived}`). Discovers and adopts an unlisted-but-present company directory before listing. |
 | `GET /api/companies/:slug/dashboard?asOf=` | `dashboard` | The company dashboard data. |

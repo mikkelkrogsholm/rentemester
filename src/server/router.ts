@@ -127,11 +127,75 @@ function optionalString(
 // Route handlers — reads + workspace management only.
 // --------------------------------------------------------------------------
 
+/**
+ * The HTTP route catalog (#376) — a machine-readable list of every route
+ * `handleRequest` dispatches, used by `GET /api` and `GET /api/health` so an
+ * agent can enumerate the HTTP surface without reading source. Each entry
+ * carries the `method`, the path `pattern` (with `:param`-placeholders) and a
+ * short Danish `summary`. Order is the dispatch order in `handleRequest` to
+ * make drift obvious in code review.
+ *
+ * The list is exported so `tests/unit/surface-diff-discoverable.test.ts` can
+ * assert that it stays the single source of truth for the catalog.
+ */
+export const ROUTE_CATALOG: ReadonlyArray<{
+  method: string;
+  pattern: string;
+  summary: string;
+}> = [
+  { method: "GET", pattern: "/api", summary: "Sundhedstjek + rute-katalog." },
+  { method: "GET", pattern: "/api/health", summary: "Alias for GET /api." },
+  { method: "GET", pattern: "/api/portfolio", summary: "Workspace-portfolio." },
+  { method: "GET", pattern: "/api/companies", summary: "Lister virksomheder i workspacet." },
+  { method: "POST", pattern: "/api/companies", summary: "Opretter virksomhed i workspacet." },
+  { method: "PATCH", pattern: "/api/companies/:slug", summary: "Omdøber/arkiverer en virksomhed." },
+  { method: "GET", pattern: "/api/companies/:slug/dashboard", summary: "Virksomhedens dashboard." },
+  { method: "GET", pattern: "/api/companies/:slug/fiscal-years", summary: "Kendte regnskabsår." },
+  { method: "GET", pattern: "/api/companies/:slug/overview", summary: "Nøgletalsoverblik." },
+  { method: "GET", pattern: "/api/companies/:slug/income-statement", summary: "Resultatopgørelse." },
+  { method: "GET", pattern: "/api/companies/:slug/balance", summary: "Balance." },
+  { method: "GET", pattern: "/api/companies/:slug/trial-balance", summary: "Saldobalance." },
+  { method: "GET", pattern: "/api/companies/:slug/journal", summary: "Journalposter." },
+  { method: "GET", pattern: "/api/companies/:slug/bank", summary: "Bank-transaktioner." },
+  { method: "GET", pattern: "/api/companies/:slug/vat", summary: "Momsoplysninger." },
+  { method: "GET", pattern: "/api/companies/:slug/documents", summary: "Bilagsliste." },
+  { method: "GET", pattern: "/api/companies/:slug/documents/:id/file", summary: "Henter et bilag." },
+  { method: "GET", pattern: "/api/companies/:slug/recurring-invoices", summary: "Gentagende fakturaer." },
+  { method: "POST", pattern: "/api/companies/:slug/recurring-invoices/:id/generate", summary: "Materialiserer en gentagende faktura." },
+  { method: "GET", pattern: "/api/companies/:slug/archive/:year", summary: "Arkiveret regnskabsår." },
+  { method: "GET", pattern: "/api/companies/:slug/multi-year", summary: "Flerårsoversigt." },
+  { method: "GET", pattern: "/api/companies/:slug/invoices", summary: "Udstedte fakturaer." },
+  { method: "GET", pattern: "/api/companies/:slug/invoices/:id/pdf", summary: "Henter en faktura-PDF." },
+  { method: "GET", pattern: "/api/companies/:slug/contacts", summary: "Kunder + leverandører." },
+  { method: "POST", pattern: "/api/companies/:slug/customers", summary: "Opretter kunde." },
+  { method: "PATCH", pattern: "/api/companies/:slug/customers/:id", summary: "Opdaterer kunde." },
+  { method: "POST", pattern: "/api/companies/:slug/vendors", summary: "Opretter leverandør." },
+  { method: "PATCH", pattern: "/api/companies/:slug/vendors/:id", summary: "Opdaterer leverandør." },
+  { method: "GET", pattern: "/api/companies/:slug/cvr-lookup", summary: "Slår CVR op." },
+  { method: "GET", pattern: "/api/companies/:slug/company", summary: "Virksomhedens stamdata." },
+  { method: "PATCH", pattern: "/api/companies/:slug/company", summary: "Opdaterer stamdata + bank/betaling." },
+  { method: "POST", pattern: "/api/companies/:slug/sync-cvr", summary: "Synkroniserer stamdata fra CVR." },
+  { method: "GET", pattern: "/api/companies/:slug/obligations", summary: "Frister og forpligtelser." },
+  { method: "GET", pattern: "/api/companies/:slug/cashflow", summary: "Likviditetsprognose." },
+  { method: "POST", pattern: "/api/companies/:slug/exceptions/:id/resolve", summary: "Løser en exception." },
+  { method: "POST", pattern: "/api/companies/:slug/bank/import", summary: "Importerer bank-CSV." },
+  { method: "POST", pattern: "/api/companies/:slug/import", summary: "Generel data-import." },
+  { method: "POST", pattern: "/api/companies/:slug/accountant-export", summary: "Revisor-eksport (.tar)." },
+  { method: "POST", pattern: "/api/companies/:slug/documents/ingest", summary: "Modtager et bilag." },
+  { method: "POST", pattern: "/api/companies/:slug/invoices/issue", summary: "Udsteder en faktura." },
+  { method: "POST", pattern: "/api/companies/:slug/invoices/post", summary: "Bogfører en udstedt faktura." },
+  { method: "POST", pattern: "/api/companies/:slug/invoices/settle", summary: "Afregner faktura fra bank." },
+  { method: "POST", pattern: "/api/companies/:slug/invoices/credit-note", summary: "Udsteder kreditnota." },
+  { method: "POST", pattern: "/api/companies/:slug/periods/close", summary: "Lukker regnskabsperiode." },
+  { method: "POST", pattern: "/api/companies/:slug/periods/reopen", summary: "Genåbner regnskabsperiode (#247-modstykke til CLI-only)." },
+];
+
 function handleHealth(config: ServerConfig): Response {
   return okResponse({
     service: "rentemester-cockpit",
     workspace: config.workspaceRoot,
     authRequired: config.authRequired,
+    routes: ROUTE_CATALOG,
   });
 }
 
