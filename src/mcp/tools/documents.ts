@@ -12,6 +12,7 @@ import { resolveDocumentMasterData } from "../../core/master-data";
 import { recordException } from "../../core/exceptions";
 import { envelopeShape, errorEnvelope, successEnvelope, wrapCoreResult } from "../envelope";
 import { withCompanyDb, withCompanyDbConfirmed, confirmField } from "../tool-runtime";
+import { applyPagination, paginationFields, paginationDescriptionSuffix } from "../pagination";
 
 const documentPartySchema = z.object({
   name: z.string().optional().describe("Party name."),
@@ -85,12 +86,15 @@ export function registerDocumentTools(server: McpServer): void {
     "documents_list",
     {
       title: "List documents",
-      description: "Lister gemte bilag i virksomhedsmappen. Read-only.",
-      inputSchema: { company: z.string().min(1) },
+      description: "Lister gemte bilag i virksomhedsmappen. Read-only." + paginationDescriptionSuffix,
+      inputSchema: {
+        company: z.string().min(1),
+        ...paginationFields,
+      },
       outputSchema: envelopeShape,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },
-    withCompanyDb<{ company: string }>(server, ({ db }) => {
+    withCompanyDb<{ company: string; limit?: number; offset?: number }>(server, ({ db, args }) => {
       const rows = db
         .query(
           `SELECT id, document_no, source, original_filename, invoice_date, amount_inc_vat,
@@ -109,20 +113,19 @@ export function registerDocumentTools(server: McpServer): void {
           status: string;
           stored_path: string | null;
         }>;
-      return successEnvelope({
-        documents: rows.map((row) => ({
-          id: row.id,
-          documentNo: row.document_no,
-          source: row.source,
-          originalFilename: row.original_filename,
-          invoiceDate: row.invoice_date,
-          amountIncVat: row.amount_inc_vat,
-          currency: row.currency,
-          status: row.status,
-          storedPath: row.stored_path,
-        })),
-        count: rows.length,
-      });
+      const mapped = rows.map((row) => ({
+        id: row.id,
+        documentNo: row.document_no,
+        source: row.source,
+        originalFilename: row.original_filename,
+        invoiceDate: row.invoice_date,
+        amountIncVat: row.amount_inc_vat,
+        currency: row.currency,
+        status: row.status,
+        storedPath: row.stored_path,
+      }));
+      const { pageRows, meta } = applyPagination(mapped, { limit: args.limit, offset: args.offset });
+      return successEnvelope({ documents: pageRows, ...meta });
     }),
   );
 

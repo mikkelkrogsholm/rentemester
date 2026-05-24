@@ -15,28 +15,32 @@ import {
   type CreateCustomerInput,
 } from "../../core/master-data";
 import { validateVatAgainstVies } from "../../core/vies";
-import { envelopeShape, wrapCoreResult } from "../envelope";
+import { envelopeShape, successEnvelope, wrapCoreResult } from "../envelope";
 import { withCompanyDb, withCompanyDbConfirmed, confirmField } from "../tool-runtime";
+import { applyPagination, paginationFields, paginationDescriptionSuffix } from "../pagination";
 
 export function registerCustomerTools(server: McpServer): void {
   server.registerTool(
     "customer_list",
     {
       title: "List customers",
-      description: "Lister kendte kunder. Read-only.",
+      description: "Lister kendte kunder. Read-only." + paginationDescriptionSuffix,
       inputSchema: {
         company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         archived: z
           .boolean()
           .optional()
           .describe("When true, list archived customers instead of active ones (default false)."),
+        ...paginationFields,
       },
       outputSchema: envelopeShape,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },
-    withCompanyDb<{ company: string; archived?: boolean }>(server, ({ db, args }) => {
+    withCompanyDb<{ company: string; archived?: boolean; limit?: number; offset?: number }>(server, ({ db, args }) => {
       const result = listCustomers(db, { archived: args.archived === true });
-      return wrapCoreResult(result);
+      if (!result.ok) return wrapCoreResult(result);
+      const { pageRows, meta } = applyPagination(result.rows, { limit: args.limit, offset: args.offset });
+      return successEnvelope({ rows: pageRows, ...meta });
     }),
   );
 

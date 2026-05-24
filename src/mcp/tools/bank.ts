@@ -25,6 +25,7 @@ import { suggestBankMatches } from "../../core/bank-suggest-matches";
 import { syncUnmatchedBankTransactionExceptions } from "../../core/exceptions";
 import { envelopeShape, successEnvelope, wrapCoreResult } from "../envelope";
 import { withCompanyDb, withCompanyDbConfirmed, confirmField } from "../tool-runtime";
+import { applyPagination, paginationFields, paginationDescriptionSuffix } from "../pagination";
 
 const statusSchema = z.enum(["all", "matched", "unmatched"]).optional();
 
@@ -34,7 +35,8 @@ export function registerBankTools(server: McpServer): void {
     {
       title: "List bank transactions",
       description:
-        "Lister importerede banktransaktioner med valgfri filtre på status, dato, tekstmatch og beløb. Read-only.",
+        "Lister importerede banktransaktioner med valgfri filtre på status, dato, tekstmatch og beløb. Read-only." +
+        paginationDescriptionSuffix,
       inputSchema: {
         company: z.string().min(1),
         status: statusSchema.describe(
@@ -65,6 +67,7 @@ export function registerBankTools(server: McpServer): void {
               "When omitted, transactions across all bank accounts are listed.",
           ),
         // ===== END BANK CLUSTER (#187) =====
+        ...paginationFields,
       },
       outputSchema: envelopeShape,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
@@ -77,6 +80,8 @@ export function registerBankTools(server: McpServer): void {
       textMatch?: string;
       amount?: number;
       account?: string;
+      limit?: number;
+      offset?: number;
     }>(server, ({ db, args }) => {
       // ===== BANK CLUSTER (#187) =====
       let bankAccountId: number | undefined;
@@ -96,7 +101,9 @@ export function registerBankTools(server: McpServer): void {
         amount: args.amount,
         bankAccountId,
       });
-      return wrapCoreResult(result);
+      if (!result.ok) return wrapCoreResult(result);
+      const { pageRows, meta } = applyPagination(result.rows, { limit: args.limit, offset: args.offset });
+      return successEnvelope({ rows: pageRows, ...meta });
     }),
   );
 
