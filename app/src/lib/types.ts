@@ -779,6 +779,12 @@ export type CompanyInvoiceRow = {
   invoiceDate: string | null;
   customerName: string | null;
   /**
+   * Customer's e-mail when set on the kontaktkort (#429). The cockpit row
+   * offers "Send på mail" only when this is present so the dialog can
+   * prefill the recipient without a second round-trip.
+   */
+  customerEmail: string | null;
+  /**
    * Buyer's EAN-number (13 digits) when set on the invoice payload. The
    * cockpit row offers "Send som e-faktura" only when this is present.
    */
@@ -787,6 +793,13 @@ export type CompanyInvoiceRow = {
   buyerPublicRecipient: boolean;
   /** Latest PEPPOL submission/transmission, or `null` when never sent. */
   peppolStatus: InvoicePeppolStatus | null;
+  /**
+   * Timestamp (ISO-8601) of the most recent `email_send_log` row for this
+   * invoice (#429), or `null` when the invoice has never been emailed from
+   * the cockpit. Surfaced so the row can show "Sendt {dato}" beside the
+   * settlement status.
+   */
+  lastEmailedAt: string | null;
   /** Gross amount inc. VAT, kroner. */
   grossAmount: number;
   /** Still-outstanding balance on the invoice, kroner. */

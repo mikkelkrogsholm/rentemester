@@ -55,7 +55,14 @@ import {
   submitPublicEInvoicePeppol,
   type PeppolAccessPointConfig,
 } from "../core/public-einvoice";
-import { readFileSync } from "node:fs";
+import {
+  createSmtpTransport,
+  sendInvoiceEmail,
+  type EmailKind,
+  type SmtpConfig,
+} from "../core/email";
+import { companyPaths } from "../core/paths";
+import { existsSync, readFileSync } from "node:fs";
 import {
   getCompanySettings,
   resolveCompanyPaymentDetails,
@@ -1238,6 +1245,146 @@ export async function handleInvoiceSendPublic(
       duplicate: Boolean(result.duplicate),
       envelopeSha256: result.envelopeSha256 ?? null,
       oioublSha256: result.oioublSha256 ?? null,
+    },
+  });
+}
+
+// --------------------------------------------------------------------------
+// Send invoice by e-mail (#429).
+//
+// Before this route the cockpit could only render "Hent PDF" — to actually
+// get the invoice to the customer the owner had to download the PDF, open
+// Outlook/Gmail/Apple Mail, look up the customer's e-mail and attach the
+// file by hand. The fall-back was the CLI command `invoice send`, which
+// most owners never discover. This handler is the cockpit's third caller of
+// the SAME `sendInvoiceEmail` core function the CLI's `invoice send` and the
+// MCP tool `invoice_send_email` use — so the cockpit and the terminal
+// produce a byte-identical MIME message and the same `email_send_log` row.
+//
+// SMTP CONFIG (non-secret host/port/fromAddress + optional credentials) is
+// read from a file at `config/smtp.json` inside the company directory,
+// mirroring how the CLI command loads its config. Credentials never enter
+// the request body nor the server config object. When the file is missing
+// the handler returns a 400 with a clear next-step message — never a 500.
+// --------------------------------------------------------------------------
+
+/**
+ * Loads `config/smtp.json` from the company directory. The file is non-secret
+ * config (host/port/fromAddress) plus optional credentials the default SMTP
+ * transport reads but never persists. Returns a `400` with a clear next-step
+ * when the file is missing or malformed — the cockpit shows that message
+ * verbatim so the owner knows what to configure.
+ */
+function loadConfiguredSmtp(companyRoot: string): SmtpConfig {
+  const path = join(companyPaths(companyRoot).config, "smtp.json");
+  if (!existsSync(path)) {
+    throw ApiError.badRequest(
+      "SMTP er ikke konfigureret for denne virksomhed. Opret config/smtp.json " +
+        "med {host, port, fromAddress} (og evt. username/password) inde i " +
+        "virksomhedsmappen for at sende fakturaer på mail fra cockpittet.",
+    );
+  }
+  let raw: string;
+  try {
+    raw = readFileSync(path, "utf8");
+  } catch (error) {
+    throw ApiError.badRequest(
+      `SMTP-config kunne ikke læses fra ${path}: ${(error as Error).message}`,
+    );
+  }
+  let parsed: Partial<SmtpConfig>;
+  try {
+    parsed = JSON.parse(raw) as Partial<SmtpConfig>;
+  } catch (error) {
+    throw ApiError.badRequest(
+      `SMTP-config er ikke gyldig JSON: ${(error as Error).message}`,
+    );
+  }
+  return {
+    host: typeof parsed.host === "string" ? parsed.host : "",
+    port: typeof parsed.port === "number" ? parsed.port : Number(parsed.port ?? 0),
+    fromAddress: typeof parsed.fromAddress === "string" ? parsed.fromAddress : "",
+    fromName: typeof parsed.fromName === "string" ? parsed.fromName : undefined,
+    username: typeof parsed.username === "string" ? parsed.username : undefined,
+    password: typeof parsed.password === "string" ? parsed.password : undefined,
+    dryRun: typeof parsed.dryRun === "boolean" ? parsed.dryRun : undefined,
+  };
+}
+
+/**
+ * POST /api/companies/:slug/invoices/send-email — sends an issued invoice
+ * (or a reminder for it) to the customer's e-mail via SMTP, with the PDF
+ * attached.
+ *
+ * Body: `{ invoiceDocumentId: number, to: string, kind?: 'invoice' |
+ * 'reminder', confirm: true }`. Calls the SAME `sendInvoiceEmail` core
+ * function the CLI's `invoice send` command uses, so the cockpit and the
+ * terminal produce a byte-identical MIME message and `email_send_log` row.
+ * Idempotent: an identical send collapses onto the existing row instead of
+ * re-transmitting (the core derives the message-id from the inputs).
+ *
+ * Write-irreversible (it appends an `email_send_log` row AND an `audit_log`
+ * entry — both write-once tables) so `requireConfirm` is set. Goes through
+ * `withCompanyMutation`, so the backup lock, the localhost gate and actor
+ * attribution all apply.
+ *
+ * SMTP config (non-secret host/port/fromAddress + optional credentials) is
+ * loaded from `config/smtp.json` inside the company directory; credentials
+ * are NEVER passed in the request body. A missing/invalid config is a 400.
+ */
+export async function handleInvoiceSendEmail(
+  config: ServerConfig,
+  request: Request,
+  slug: string,
+): Promise<Response> {
+  const result = await withCompanyMutation(
+    request,
+    config,
+    slug,
+    (ctx, body) => {
+      void ctx.actor;
+      const invoiceDocumentId = requireBodyPositiveInt(body, "invoiceDocumentId");
+      const to = requireBodyString(body, "to");
+      const kindRaw = body.kind;
+      if (
+        kindRaw !== undefined &&
+        kindRaw !== "invoice" &&
+        kindRaw !== "reminder"
+      ) {
+        throw ApiError.badRequest(
+          "'kind' must be 'invoice' or 'reminder' when present",
+        );
+      }
+      const kind = (kindRaw ?? "invoice") as EmailKind;
+      const smtp = loadConfiguredSmtp(ctx.companyRoot);
+      const sent = sendInvoiceEmail(ctx.db, ctx.companyRoot, {
+        invoiceDocumentId,
+        kind,
+        to,
+        smtp,
+        transport: createSmtpTransport(smtp),
+      });
+      return {
+        ok: sent.ok,
+        errors: sent.errors,
+        invoiceNumber: sent.invoiceNumber,
+        recipient: sent.recipient,
+        subject: sent.subject,
+        messageId: sent.messageId,
+        kind: sent.kind,
+        duplicate: sent.duplicate,
+      };
+    },
+    { requireConfirm: true },
+  );
+
+  return okResponse({
+    delivery: {
+      invoiceNumber: result.invoiceNumber ?? null,
+      recipient: result.recipient ?? null,
+      subject: result.subject ?? null,
+      messageId: result.messageId ?? null,
+      duplicate: Boolean(result.duplicate),
     },
   });
 }

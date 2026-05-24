@@ -65,6 +65,8 @@ export function InvoicesView() {
   const [crediting, setCrediting] = useState<CompanyInvoiceRow | null>(null);
   // The invoice row whose "Send som e-faktura" ConfirmDialog is open (#428).
   const [sendingPublic, setSendingPublic] = useState<CompanyInvoiceRow | null>(null);
+  // The invoice row whose "Send på mail" ConfirmDialog is open (#429).
+  const [sendingEmail, setSendingEmail] = useState<CompanyInvoiceRow | null>(null);
 
   if (state.loading && !state.data)
     return <Loading label="Henter fakturaer…" />;
@@ -234,6 +236,66 @@ export function InvoicesView() {
         />
       )}
 
+      {/* #429: Send på mail ConfirmDialog. The action is only offered for
+          rows where the customer has an e-mail on the kontaktkort, so the
+          dialog can prefill the recipient. The recipient field is editable
+          (noteLabel) so the owner can override the customer's default
+          address. Write-irreversible (it appends an `email_send_log` row
+          + an `audit_log` entry), so the server requires `confirm: true`.
+          Replaces the missing CLI step `invoice send` — SMB owners no
+          longer need to download the PDF and open their mail client to get
+          the invoice out to the customer. */}
+      {sendingEmail && (
+        <ConfirmDialog
+          title="Send faktura på mail"
+          body={
+            <div>
+              <p>
+                Send faktura <strong>{sendingEmail.invoiceNo}</strong> til{" "}
+                <strong>{sendingEmail.customerName ?? "modtageren"}</strong>{" "}
+                med PDF'en vedhæftet.
+              </p>
+              <dl className="confirm-meta">
+                <div>
+                  <dt>Emne</dt>
+                  <dd>Faktura {sendingEmail.invoiceNo}</dd>
+                </div>
+                <div>
+                  <dt>Vedhæftning</dt>
+                  <dd>{sendingEmail.invoiceNo}.pdf</dd>
+                </div>
+              </dl>
+              <p className="muted">
+                Modtageren kan ændres herunder. Afsendelsen registreres i
+                revisionssporet og kan ikke fortrydes.
+              </p>
+            </div>
+          }
+          confirmLabel="Send faktura"
+          confirmKind="danger"
+          noteLabel="Modtager"
+          notePlaceholder="kunde@eksempel.dk"
+          noteInitialValue={sendingEmail.customerEmail ?? ""}
+          noteInputType="email"
+          onConfirm={async (recipient) => {
+            const trimmed = recipient.trim();
+            if (!trimmed) {
+              throw {
+                code: "bad_request",
+                message:
+                  "Angiv modtagerens e-mailadresse — fakturaen kan ikke sendes uden.",
+              };
+            }
+            await api.sendInvoiceByEmail(slug, {
+              invoiceDocumentId: sendingEmail.documentId,
+              to: trimmed,
+            });
+            state.reload();
+          }}
+          onClose={() => setSendingEmail(null)}
+        />
+      )}
+
       {inv.archived ? (
         <ArchivedNotice year={inv.selectedYear} />
       ) : inv.invoices.length === 0 ? (
@@ -319,6 +381,12 @@ export function InvoicesView() {
                     Boolean(row.buyerEanNumber) &&
                     row.buyerPublicRecipient &&
                     row.peppolStatus?.status !== "acknowledged";
+                  // #429: "Send på mail" appears only when the customer
+                  // has an e-mail on the kontaktkort — without it the
+                  // dialog has no recipient to prefill, and the issue
+                  // body asks the cockpit to hide the action instead of
+                  // surfacing an empty form.
+                  const canSendEmail = Boolean(row.customerEmail);
                   return (
                     <tr key={row.documentId}>
                       <td className="account-no">{row.invoiceNo}</td>
@@ -342,6 +410,20 @@ export function InvoicesView() {
                             ? ` · ${row.overdueDays} dage`
                             : ""}
                         </span>
+                        {/* #429 — surface a "Sendt {dato}" flag once the
+                            invoice has been emailed from the cockpit so the
+                            owner can see at a glance whether the customer
+                            already got it. The date is the ISO timestamp
+                            sliced to YYYY-MM-DD — the audit row carries the
+                            full timestamp, the row only needs the day. */}
+                        {row.lastEmailedAt && (
+                          <span
+                            className="flag ok"
+                            title={`Sendt på mail ${row.lastEmailedAt}`}
+                          >
+                            Sendt {row.lastEmailedAt.slice(0, 10)}
+                          </span>
+                        )}
                         {/* #428 — surface e-faktura status next to settlement
                             status so the owner can see at a glance whether
                             the invoice has been transmitted to NemHandel. */}
@@ -415,6 +497,22 @@ export function InvoicesView() {
                               onClick={() => setSendingPublic(row)}
                             >
                               Send som e-faktura
+                            </button>
+                          )}
+                          {/* #429 — "Send på mail" is shown ONLY when the
+                              customer has an e-mail on the kontaktkort.
+                              Hidden for archived years (no live ledger).
+                              The button replaces the missing CLI step
+                              `invoice send` so SMB owners no longer have to
+                              download the PDF and open their own mail
+                              client to get the invoice out to the customer. */}
+                          {!inv.archived && canSendEmail && (
+                            <button
+                              type="button"
+                              className="btn secondary"
+                              onClick={() => setSendingEmail(row)}
+                            >
+                              Send på mail
                             </button>
                           )}
                         </div>

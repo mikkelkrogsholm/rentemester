@@ -579,6 +579,34 @@ export const api = {
     ).then((r) => r.creditNote),
 
   /**
+   * #429 — sends an issued invoice to the customer's e-mail with the PDF
+   * attached, from the cockpit. Third caller of the SAME `sendInvoiceEmail`
+   * core function the CLI's `invoice send` command and the MCP tool
+   * `invoice_send_email` use, so the cockpit and the terminal produce a
+   * byte-identical MIME message and `email_send_log` row.
+   *
+   * SMTP CONFIG (host/port/fromAddress + optional username/password) is read
+   * server-side from `config/smtp.json` in the company directory — credentials
+   * never enter the request body. Idempotent: an identical send collapses onto
+   * the existing send-log row instead of re-transmitting. Write-irreversible
+   * (an `email_send_log` row + an `audit_log` entry), so the body carries
+   * `confirm: true`.
+   */
+  sendInvoiceByEmail: (slug: string, input: InvoiceSendEmailInput) =>
+    request<{ ok: true; delivery: InvoiceSendEmailSummary }>(
+      `/api/companies/${encodeURIComponent(slug)}/invoices/send-email`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          invoiceDocumentId: input.invoiceDocumentId,
+          to: input.to,
+          ...(input.kind ? { kind: input.kind } : {}),
+          confirm: true,
+        }),
+      },
+    ).then((r) => r.delivery),
+
+  /**
    * #428 — sends an issued invoice as an e-faktura (NemHandel/PEPPOL) via
    * the cockpit. Third caller of the SAME `submitPublicEInvoicePeppol` core
    * function the CLI / MCP use; the server loads its access-point config
@@ -785,6 +813,24 @@ export type InvoiceSendEInvoiceSummary = {
   duplicate: boolean;
   envelopeSha256: string | null;
   oioublSha256: string | null;
+};
+
+/** Input for `api.sendInvoiceByEmail` (#429). */
+export type InvoiceSendEmailInput = {
+  invoiceDocumentId: number;
+  /** Recipient email address — prefilled from the customer but editable. */
+  to: string;
+  /** What to send (#429): the invoice itself or a payment reminder. */
+  kind?: "invoice" | "reminder";
+};
+
+/** The email-delivery result the server echoes back (#429). */
+export type InvoiceSendEmailSummary = {
+  invoiceNumber: string | null;
+  recipient: string | null;
+  subject: string | null;
+  messageId: string | null;
+  duplicate: boolean;
 };
 
 /** The credit-note result the server echoes back. */

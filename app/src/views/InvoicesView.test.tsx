@@ -380,6 +380,163 @@ describe("InvoicesView — write actions", () => {
     });
   });
 
+  // --------------------------------------------------------------------------
+  // #429 — Send på mail (SMTP) fra fakturarækken.
+  //
+  // En SMB-ejer skal kunne sende fakturaen direkte til kundens e-mail fra
+  // cockpittet — uden at downloade PDF'en og åbne Outlook/Gmail/Apple Mail.
+  // Cockpittet kalder den samme `sendInvoiceEmail` core-funktion som CLI'en
+  // (`invoice send`) og MCP-værktøjet (`invoice_send_email`) bruger.
+  // --------------------------------------------------------------------------
+
+  test("Send på mail is offered only for rows whose customer has an email", async () => {
+    mockFetch(
+      route({
+        invoices: [
+          // Kunde uden e-mail — INGEN "Send på mail"-knap.
+          {
+            documentId: 1,
+            invoiceNo: "2026-00001",
+            invoiceDate: "2026-03-15",
+            customerName: "Privat Kunde A/S",
+            customerEmail: null,
+            buyerEanNumber: null,
+            buyerPublicRecipient: false,
+            peppolStatus: null,
+            lastEmailedAt: null,
+            grossAmount: 1000,
+            openBalance: 0,
+            currency: "DKK",
+            status: "paid",
+            effectiveDueDate: "2026-04-14",
+            overdueDays: 0,
+          },
+          // Kunde med e-mail — "Send på mail"-knappen MÅ vises.
+          {
+            documentId: 2,
+            invoiceNo: "2026-00002",
+            invoiceDate: "2026-03-16",
+            customerName: "Beta ApS",
+            customerEmail: "faktura@beta.dk",
+            buyerEanNumber: null,
+            buyerPublicRecipient: false,
+            peppolStatus: null,
+            lastEmailedAt: null,
+            grossAmount: 2000,
+            openBalance: 2000,
+            currency: "DKK",
+            status: "open",
+            effectiveDueDate: "2026-04-15",
+            overdueDays: 0,
+          },
+        ],
+      }),
+    );
+    renderView();
+    await screen.findByRole("heading", { name: "Acme ApS" });
+    expect(
+      screen.getAllByRole("button", { name: "Send på mail" }),
+    ).toHaveLength(1);
+  });
+
+  test("Send på mail is hidden for an archived year (no live ledger)", async () => {
+    mockFetch(route({ archived: true, selectedYear: "2025", invoices: [] }));
+    renderView();
+    await screen.findByText(/Fakturaer er ikke tilgængelige for 2025/);
+    expect(
+      screen.queryByRole("button", { name: "Send på mail" }),
+    ).not.toBeInTheDocument();
+  });
+
+  test("Send på mail shows 'Sendt {dato}' once the invoice has been emailed", async () => {
+    mockFetch(
+      route({
+        invoices: [
+          {
+            documentId: 7,
+            invoiceNo: "2026-00007",
+            invoiceDate: "2026-03-15",
+            customerName: "Beta ApS",
+            customerEmail: "faktura@beta.dk",
+            buyerEanNumber: null,
+            buyerPublicRecipient: false,
+            peppolStatus: null,
+            lastEmailedAt: "2026-03-20T10:00:00Z",
+            grossAmount: 1000,
+            openBalance: 0,
+            currency: "DKK",
+            status: "paid",
+            effectiveDueDate: "2026-04-14",
+            overdueDays: 0,
+          },
+        ],
+      }),
+    );
+    renderView();
+    await screen.findByRole("heading", { name: "Acme ApS" });
+    expect(screen.getByText(/Sendt 2026-03-20/)).toBeInTheDocument();
+  });
+
+  test("Send på mail posts to send-email with confirm: true and the recipient", async () => {
+    mockFetch({
+      "GET /api/companies/acme-aps/invoices": {
+        invoices: invoices({
+          invoices: [
+            {
+              documentId: 42,
+              invoiceNo: "2026-00042",
+              invoiceDate: "2026-03-15",
+              customerName: "Beta ApS",
+              customerEmail: "faktura@beta.dk",
+              buyerEanNumber: null,
+              buyerPublicRecipient: false,
+              peppolStatus: null,
+              lastEmailedAt: null,
+              grossAmount: 5000,
+              openBalance: 5000,
+              currency: "DKK",
+              status: "open",
+              effectiveDueDate: "2026-04-14",
+              overdueDays: 0,
+            },
+          ],
+        }),
+      },
+      "POST /api/companies/acme-aps/invoices/send-email": {
+        delivery: {
+          invoiceNumber: "2026-00042",
+          recipient: "faktura@beta.dk",
+          subject: "Faktura 2026-00042",
+          messageId: "<abc@rentemester.local>",
+          duplicate: false,
+        },
+      },
+    });
+    renderView();
+    await screen.findByRole("heading", { name: "Acme ApS" });
+    await userEvent.click(
+      screen.getByRole("button", { name: "Send på mail" }),
+    );
+    // Dialogen viser kundens e-mail (forudfyldt og redigerbar).
+    expect(screen.getByDisplayValue("faktura@beta.dk")).toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Send faktura" }),
+    );
+
+    await waitFor(() => {
+      const calls = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls;
+      const sendCall = calls.find((c) =>
+        String(c[0]).includes("/invoices/send-email"),
+      );
+      expect(sendCall).toBeDefined();
+      const sent = JSON.parse(String((sendCall![1] as RequestInit).body));
+      expect(sent.invoiceDocumentId).toBe(42);
+      expect(sent.to).toBe("faktura@beta.dk");
+      // Write-irreversibel — body MUST carry confirm: true.
+      expect(sent.confirm).toBe(true);
+    });
+  });
+
   test("Krediter posts a credit note with the reason as begrundelse", async () => {
     mockFetch({
       "GET /api/companies/acme-aps/invoices": { invoices: invoices() },

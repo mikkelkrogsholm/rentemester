@@ -28,6 +28,18 @@ export type ConfirmDialogProps = {
   /** Placeholder for the note field. */
   notePlaceholder?: string;
   /**
+   * Optional initial value for the note field — used by #429's "Send på mail"
+   * dialog to prefill the recipient with the customer's stored e-mail while
+   * still letting the owner override it before sending.
+   */
+  noteInitialValue?: string;
+  /**
+   * When `"email"` the note field renders as a single-line `<input
+   * type="email">` instead of the default `<textarea>` — used by #429 so the
+   * cockpit gets browser-native e-mail validation on the recipient field.
+   */
+  noteInputType?: "textarea" | "email";
+  /**
    * Runs the write. Resolves on success (the dialog then closes via `onClose`);
    * rejects to surface an error. A rejection carrying `code === "conflict"` is
    * rendered as a kind LockBanner — the backup lock, not a user error.
@@ -47,10 +59,12 @@ export function ConfirmDialog({
   confirmKind = "primary",
   noteLabel,
   notePlaceholder,
+  noteInitialValue,
+  noteInputType = "textarea",
   onConfirm,
   onClose,
 }: ConfirmDialogProps) {
-  const [note, setNote] = useState("");
+  const [note, setNote] = useState(noteInitialValue ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [locked, setLocked] = useState<string | null>(null);
@@ -107,13 +121,23 @@ export function ConfirmDialog({
         {noteLabel && (
           <label className="modal-field">
             {noteLabel}
-            <textarea
-              value={note}
-              placeholder={notePlaceholder}
-              onChange={(e) => setNote(e.target.value)}
-              disabled={busy}
-              rows={3}
-            />
+            {noteInputType === "email" ? (
+              <input
+                type="email"
+                value={note}
+                placeholder={notePlaceholder}
+                onChange={(e) => setNote(e.target.value)}
+                disabled={busy}
+              />
+            ) : (
+              <textarea
+                value={note}
+                placeholder={notePlaceholder}
+                onChange={(e) => setNote(e.target.value)}
+                disabled={busy}
+                rows={3}
+              />
+            )}
           </label>
         )}
 

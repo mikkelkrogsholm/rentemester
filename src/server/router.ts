@@ -69,6 +69,7 @@ import {
   handleGenerateRecurringInvoice,
   handleInvoiceCreditNote,
   handleInvoiceSendPublic,
+  handleInvoiceSendEmail,
   handleInvoiceIssue,
   handleInvoicePost,
   handleInvoiceSettle,
@@ -193,6 +194,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "POST", pattern: "/api/companies/:slug/invoices/settle", summary: "Afregner faktura fra bank." },
   { method: "POST", pattern: "/api/companies/:slug/invoices/credit-note", summary: "Udsteder kreditnota." },
   { method: "POST", pattern: "/api/companies/:slug/invoices/send-public", summary: "Sender faktura som e-faktura (NemHandel/PEPPOL)." },
+  { method: "POST", pattern: "/api/companies/:slug/invoices/send-email", summary: "Sender faktura til kundens e-mail med PDF vedhæftet." },
   { method: "POST", pattern: "/api/companies/:slug/periods/close", summary: "Lukker regnskabsperiode." },
   { method: "POST", pattern: "/api/companies/:slug/periods/reopen", summary: "Genåbner regnskabsperiode (#247-modstykke til CLI-only)." },
 ];
@@ -994,6 +996,20 @@ export async function handleRequest(
       if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
       const slug = decodeURIComponent(invoiceSendPublicMatch[1]!);
       return await handleInvoiceSendPublic(config, request, slug);
+    }
+
+    // Bookkeeping write route (#429): send an issued invoice to the
+    // customer's e-mail with the PDF attached. Cockpit becomes a third
+    // caller of `sendInvoiceEmail`, alongside the CLI's `invoice send`
+    // command and the MCP tool `invoice_send_email`. SMTP config is read
+    // from `config/smtp.json` inside the company directory so credentials
+    // never enter core state or the request body.
+    const invoiceSendEmailMatch =
+      /^\/api\/companies\/([^/]+)\/invoices\/send-email$/.exec(path);
+    if (invoiceSendEmailMatch) {
+      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      const slug = decodeURIComponent(invoiceSendEmailMatch[1]!);
+      return await handleInvoiceSendEmail(config, request, slug);
     }
 
     // Bookkeeping write route (#287): close an accounting period — the
