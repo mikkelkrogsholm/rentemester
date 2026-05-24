@@ -97,3 +97,223 @@ describe("JournalView — Posteringer", () => {
     ).toBeInTheDocument();
   });
 });
+
+// --- #396: client-side filter-bar (fritekst, datointerval, beløbsspand) -----
+
+function multiEntryJournal() {
+  return route({
+    entries: [
+      {
+        id: 1,
+        entryNo: "B-2026-0001",
+        date: "2026-01-15",
+        text: "Salg af ydelse",
+        total: 22286.28,
+        lines: [
+          {
+            accountNo: "55000",
+            accountName: "Bank",
+            debit: 22286.28,
+            credit: 0,
+            text: null,
+          },
+          {
+            accountNo: "1000",
+            accountName: "Omsætning",
+            debit: 0,
+            credit: 17829.02,
+            text: null,
+          },
+        ],
+      },
+      {
+        id: 2,
+        entryNo: "B-2026-0042",
+        date: "2026-03-10",
+        text: "Køb af printer",
+        total: 1200,
+        lines: [
+          {
+            accountNo: "2400",
+            accountName: "Kontorudstyr",
+            debit: 1200,
+            credit: 0,
+            text: "HP LaserJet",
+          },
+          {
+            accountNo: "55000",
+            accountName: "Bank",
+            debit: 0,
+            credit: 1200,
+            text: null,
+          },
+        ],
+      },
+      {
+        id: 3,
+        entryNo: "B-2026-0099",
+        date: "2026-07-01",
+        text: "Internet abonnement",
+        total: 499,
+        lines: [
+          {
+            accountNo: "2200",
+            accountName: "Telefon og internet",
+            debit: 499,
+            credit: 0,
+            text: null,
+          },
+          {
+            accountNo: "55000",
+            accountName: "Bank",
+            debit: 0,
+            credit: 499,
+            text: null,
+          },
+        ],
+      },
+    ],
+  });
+}
+
+describe("JournalView — #396 filter-bar", () => {
+  test("a filter-bar with fritekstsøgning, datointerval and beløb is rendered", async () => {
+    mockFetch(multiEntryJournal());
+    renderView();
+    await screen.findByRole("heading", { name: "Acme ApS" });
+    expect(screen.getByPlaceholderText(/Søg/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Fra/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Til/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Beløb min/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Beløb maks/i)).toBeInTheDocument();
+  });
+
+  test("fritekstsøgning matches entry text", async () => {
+    mockFetch(multiEntryJournal());
+    renderView();
+    await screen.findByText("Salg af ydelse");
+    expect(screen.getByText("Køb af printer")).toBeInTheDocument();
+    expect(screen.getByText("Internet abonnement")).toBeInTheDocument();
+    const search = screen.getByPlaceholderText(/Søg/i);
+    await userEvent.type(search, "printer");
+    expect(screen.queryByText("Salg af ydelse")).not.toBeInTheDocument();
+    expect(screen.getByText("Køb af printer")).toBeInTheDocument();
+    expect(screen.queryByText("Internet abonnement")).not.toBeInTheDocument();
+    // Count: "1 af 3 posteringer matcher"
+    expect(screen.getByText(/1 af 3 posteringer/)).toBeInTheDocument();
+  });
+
+  test("fritekstsøgning matches the bilagsnummer (entryNo)", async () => {
+    mockFetch(multiEntryJournal());
+    renderView();
+    await screen.findByText("Salg af ydelse");
+    const search = screen.getByPlaceholderText(/Søg/i);
+    await userEvent.type(search, "0042");
+    expect(screen.queryByText("Salg af ydelse")).not.toBeInTheDocument();
+    expect(screen.getByText("Køb af printer")).toBeInTheDocument();
+  });
+
+  test("fritekstsøgning matches line text (HP LaserJet)", async () => {
+    mockFetch(multiEntryJournal());
+    renderView();
+    await screen.findByText("Salg af ydelse");
+    const search = screen.getByPlaceholderText(/Søg/i);
+    await userEvent.type(search, "laserjet");
+    expect(screen.queryByText("Salg af ydelse")).not.toBeInTheDocument();
+    expect(screen.getByText("Køb af printer")).toBeInTheDocument();
+  });
+
+  test("datointerval skærer korrekt: fra=2026-02-01 fjerner januar-entry", async () => {
+    mockFetch(multiEntryJournal());
+    renderView();
+    await screen.findByText("Salg af ydelse");
+    const fromInput = screen.getByLabelText(/Fra/i);
+    await userEvent.type(fromInput, "2026-02-01");
+    expect(screen.queryByText("Salg af ydelse")).not.toBeInTheDocument();
+    expect(screen.getByText("Køb af printer")).toBeInTheDocument();
+    expect(screen.getByText("Internet abonnement")).toBeInTheDocument();
+  });
+
+  test("datointerval skærer korrekt: til=2026-06-30 fjerner juli-entry", async () => {
+    mockFetch(multiEntryJournal());
+    renderView();
+    await screen.findByText("Salg af ydelse");
+    const toInput = screen.getByLabelText(/Til/i);
+    await userEvent.type(toInput, "2026-06-30");
+    expect(screen.getByText("Salg af ydelse")).toBeInTheDocument();
+    expect(screen.getByText("Køb af printer")).toBeInTheDocument();
+    expect(screen.queryByText("Internet abonnement")).not.toBeInTheDocument();
+  });
+
+  test("beløbsspand filtrerer på total", async () => {
+    mockFetch(multiEntryJournal());
+    renderView();
+    await screen.findByText("Salg af ydelse");
+    const minInput = screen.getByLabelText(/Beløb min/i);
+    await userEvent.type(minInput, "1000");
+    // 22286 og 1200 består; 499 fjernes
+    expect(screen.getByText("Salg af ydelse")).toBeInTheDocument();
+    expect(screen.getByText("Køb af printer")).toBeInTheDocument();
+    expect(screen.queryByText("Internet abonnement")).not.toBeInTheDocument();
+    const maxInput = screen.getByLabelText(/Beløb maks/i);
+    await userEvent.type(maxInput, "5000");
+    // 22286 fjernes nu også; kun 1200 består
+    expect(screen.queryByText("Salg af ydelse")).not.toBeInTheDocument();
+    expect(screen.getByText("Køb af printer")).toBeInTheDocument();
+  });
+
+  test("tomt resultat vises pænt", async () => {
+    mockFetch(multiEntryJournal());
+    renderView();
+    await screen.findByText("Salg af ydelse");
+    const search = screen.getByPlaceholderText(/Søg/i);
+    await userEvent.type(search, "intet-der-matcher-noget");
+    expect(screen.queryByText("Salg af ydelse")).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/Ingen posteringer matcher filtrene/),
+    ).toBeInTheDocument();
+  });
+
+  test("filtre læses fra URL-params ved første render (q + datointerval)", async () => {
+    mockFetch(multiEntryJournal());
+    renderAt(<JournalView />, {
+      route:
+        "/companies/acme-aps/posteringer?q=printer&from=2026-01-01&to=2026-12-31&amountMin=100&amountMax=5000",
+      path: "/companies/:slug/posteringer",
+    });
+    await screen.findByRole("heading", { name: "Acme ApS" });
+    const search = screen.getByPlaceholderText(/Søg/i) as HTMLInputElement;
+    expect(search.value).toBe("printer");
+    expect((screen.getByLabelText(/Fra/i) as HTMLInputElement).value).toBe(
+      "2026-01-01",
+    );
+    expect((screen.getByLabelText(/Til/i) as HTMLInputElement).value).toBe(
+      "2026-12-31",
+    );
+    expect((screen.getByLabelText(/Beløb min/i) as HTMLInputElement).value).toBe(
+      "100",
+    );
+    expect(
+      (screen.getByLabelText(/Beløb maks/i) as HTMLInputElement).value,
+    ).toBe("5000");
+    // And the filter is actually applied — only "Køb af printer" survives.
+    expect(screen.queryByText("Salg af ydelse")).not.toBeInTheDocument();
+    expect(screen.getByText("Køb af printer")).toBeInTheDocument();
+    expect(screen.queryByText("Internet abonnement")).not.toBeInTheDocument();
+  });
+
+  test("Ryd filtre-knap nulstiller alle filtre", async () => {
+    mockFetch(multiEntryJournal());
+    renderView();
+    await screen.findByText("Salg af ydelse");
+    const search = screen.getByPlaceholderText(/Søg/i);
+    await userEvent.type(search, "printer");
+    expect(screen.queryByText("Salg af ydelse")).not.toBeInTheDocument();
+    const clear = screen.getByRole("button", { name: /Ryd filtre/i });
+    await userEvent.click(clear);
+    expect(screen.getByText("Salg af ydelse")).toBeInTheDocument();
+    expect(screen.getByText("Køb af printer")).toBeInTheDocument();
+    expect(screen.getByText("Internet abonnement")).toBeInTheDocument();
+    expect((search as HTMLInputElement).value).toBe("");
+  });
+});

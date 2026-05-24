@@ -4,8 +4,13 @@
 // the year (entry no, date, text, total). Clicking an entry expands it to show
 // its debit/credit lines (account no + name, debit, credit). All money fields
 // are kroner — `formatKroner` is used throughout.
+//
+// #396 — filter-bar: fritekstsøgning (entry-tekst, linje-tekst, bilagsnummer,
+// modkonto), datointerval og beløbsspand. Alle filtre er client-side og
+// afspejles i URL-params (`q`, `from`, `to`, `amountMin`, `amountMax`) så
+// ejeren kan dele linket eller komme tilbage til samme udsnit.
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { formatKroner } from "../lib/format";
@@ -14,6 +19,8 @@ import type { CompanyJournal, JournalEntry } from "../lib/types";
 import { ErrorState, Loading } from "../components/Feedback";
 import { ArchivedBanner } from "../components/ArchivedBanner";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
+
+const FILTER_PARAM_KEYS = ["q", "from", "to", "amountMin", "amountMax"] as const;
 
 export function JournalView() {
   const { slug = "" } = useParams();
@@ -27,10 +34,59 @@ export function JournalView() {
     next.delete("account");
     setParams(next, { replace: true });
   };
+
+  // --- #396 filter-bar params (client-side; reflected in URL) ---------------
+  const q = params.get("q") ?? "";
+  const fromDate = params.get("from") ?? "";
+  const toDate = params.get("to") ?? "";
+  const amountMin = params.get("amountMin") ?? "";
+  const amountMax = params.get("amountMax") ?? "";
+
+  function setFilter(key: (typeof FILTER_PARAM_KEYS)[number], value: string) {
+    const next = new URLSearchParams(params);
+    if (value === "") {
+      next.delete(key);
+    } else {
+      next.set(key, value);
+    }
+    setParams(next, { replace: true });
+  }
+
+  function clearAllFilters() {
+    const next = new URLSearchParams(params);
+    for (const k of FILTER_PARAM_KEYS) next.delete(k);
+    setParams(next, { replace: true });
+  }
+
+  const hasActiveFilter =
+    q !== "" ||
+    fromDate !== "" ||
+    toDate !== "" ||
+    amountMin !== "" ||
+    amountMax !== "";
+
   const state = useAsync<CompanyJournal>(
     () => api.journal(slug, year, account),
     [slug, year, account],
   );
+
+  const filteredEntries = useMemo(() => {
+    const entries = state.data?.entries ?? [];
+    if (!hasActiveFilter) return entries;
+    const needle = q.trim().toLowerCase();
+    const minN = amountMin === "" ? null : Number(amountMin);
+    const maxN = amountMax === "" ? null : Number(amountMax);
+    return entries.filter((entry) => {
+      if (needle !== "" && !entryMatchesText(entry, needle)) return false;
+      if (fromDate !== "" && entry.date < fromDate) return false;
+      if (toDate !== "" && entry.date > toDate) return false;
+      if (minN !== null && !Number.isNaN(minN) && entry.total < minN)
+        return false;
+      if (maxN !== null && !Number.isNaN(maxN) && entry.total > maxN)
+        return false;
+      return true;
+    });
+  }, [state.data, hasActiveFilter, q, fromDate, toDate, amountMin, amountMax]);
 
   if (state.loading && !state.data)
     return <Loading label="Henter posteringer…" />;
@@ -39,6 +95,8 @@ export function JournalView() {
 
   const j = state.data!;
   const currency = j.company.currency || "DKK";
+  const totalCount = j.entries.length;
+  const matchCount = filteredEntries.length;
 
   return (
     <section className="statement">
@@ -83,26 +141,100 @@ export function JournalView() {
           </button>
         </div>
       )}
+
+      <div className="journal-filter-bar card" role="search">
+        <label className="journal-filter-field journal-filter-field--search">
+          <span className="muted">Søg</span>
+          <input
+            type="search"
+            value={q}
+            placeholder="Søg på tekst, bilagsnummer eller konto…"
+            onChange={(e) => setFilter("q", e.target.value)}
+          />
+        </label>
+        <label className="journal-filter-field">
+          <span className="muted">Fra</span>
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFilter("from", e.target.value)}
+          />
+        </label>
+        <label className="journal-filter-field">
+          <span className="muted">Til</span>
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setFilter("to", e.target.value)}
+          />
+        </label>
+        <label className="journal-filter-field">
+          <span className="muted">Beløb min</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            value={amountMin}
+            placeholder="0"
+            onChange={(e) => setFilter("amountMin", e.target.value)}
+          />
+        </label>
+        <label className="journal-filter-field">
+          <span className="muted">Beløb maks</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            value={amountMax}
+            placeholder="∞"
+            onChange={(e) => setFilter("amountMax", e.target.value)}
+          />
+        </label>
+        {hasActiveFilter && (
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={clearAllFilters}
+          >
+            Ryd filtre
+          </button>
+        )}
+      </div>
+
       <p className="statement-asof muted">
-        {j.periodStart} – {j.periodEnd} · {j.entries.length} posteringer
+        {j.periodStart} – {j.periodEnd} ·{" "}
+        {hasActiveFilter
+          ? `${matchCount} af ${totalCount} posteringer matcher`
+          : `${totalCount} posteringer`}
       </p>
-      {j.entries.length === 0 ? (
+      {filteredEntries.length === 0 ? (
         <div className="card statement-card">
           <p className="empty-inline" style={{ padding: "var(--space-md)" }}>
-            {j.accountFilter
-              ? "Ingen posteringer på kontoen i året."
-              : "Ingen posteringer i året."}
+            {hasActiveFilter
+              ? "Ingen posteringer matcher filtrene."
+              : j.accountFilter
+                ? "Ingen posteringer på kontoen i året."
+                : "Ingen posteringer i året."}
           </p>
         </div>
       ) : (
         <ul className="entry-list">
-          {j.entries.map((entry) => (
+          {filteredEntries.map((entry) => (
             <EntryRow key={entry.id} entry={entry} currency={currency} />
           ))}
         </ul>
       )}
     </section>
   );
+}
+
+function entryMatchesText(entry: JournalEntry, needle: string): boolean {
+  if (entry.entryNo.toLowerCase().includes(needle)) return true;
+  if (entry.text.toLowerCase().includes(needle)) return true;
+  for (const line of entry.lines) {
+    if (line.accountNo.toLowerCase().includes(needle)) return true;
+    if (line.accountName.toLowerCase().includes(needle)) return true;
+    if (line.text && line.text.toLowerCase().includes(needle)) return true;
+  }
+  return false;
 }
 
 function EntryRow({
