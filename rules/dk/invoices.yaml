@@ -561,6 +561,24 @@ rules:
       forbid: [modify_issued_invoice, delete_issued_invoice]
       require: credit_note_for_correction
     explanation: Corrections to issued invoices are handled via credit note and new invoice, not mutation.
+  - rule_id: DK-INVOICE-PREVIEW-001
+    name: Invoice preview must render the issued-invoice PDF without mutating the ledger
+    category: invoice_integrity
+    source_id: DK-MOMSBEKENDTGORELSEN-2023-1435
+    provisions:
+      - ref: "§ 58, stk. 1, nr. 2"
+        text_hash: "sha256:9908ba73ceb7a4bae7d4b0b205d2bc1d4f96ee8618ecc0487ea8822872e9c0a6"
+    severity: soft_warn
+    machine_rule:
+      require:
+        - same_validator_as_issue
+        - same_renderer_as_issue
+        - draft_invoice_number_placeholder
+      forbid:
+        - sequence_draw_during_preview
+        - documents_row_during_preview
+        - audit_log_entry_during_preview
+    explanation: Rentemester's "Forhåndsvis"-flow (#440) must run the same validator + renderer as the irreversible issue path so the owner sees the exact PDF the customer will receive, but without drawing a fortløbende invoice number, without writing a documents row, and without appending to audit_log — a closed preview must leave the ledger and sequence-serie untouched.
   # ===== RECURRING INVOICES (#118) =====
   - rule_id: DK-RECURRING-INVOICE-TEMPLATE-001
     name: Recurring invoice templates store an immutable, pre-validated invoice specification

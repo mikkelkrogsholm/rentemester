@@ -169,38 +169,51 @@ export function InvoiceIssueModal({
     );
   }
 
-  async function handleIssue() {
-    setError(null);
-    setLocked(null);
-
+  /**
+   * Parses + validates the modal's inputs into the shape both `handleIssue`
+   * and `handlePreview` (#440) POST to the server. Surfaces the same human-
+   * friendly errors in both flows — the preview path must not break with an
+   * exception when the owner forgets a field, it must show the same red
+   * banner as Udsted would.
+   *
+   * Returns `null` and sets `error` if validation fails, mirroring the
+   * inline behaviour the original `handleIssue` had.
+   */
+  function buildPayload():
+    | {
+        issueDate: string;
+        vatNum: number;
+        parsedLines: Array<{
+          description: string;
+          quantity: number;
+          unitPriceExVat: number;
+        }>;
+      }
+    | null {
     if (!issueDate.trim()) {
       setError("Angiv en fakturadato.");
-      return;
+      return null;
     }
     const vatNum = Number(vatRatePercent);
     if (!Number.isFinite(vatNum) || vatNum < 0) {
       setError("Momssats skal være et tal (procent, fx 25).");
-      return;
+      return null;
     }
-
-    // Every line must carry the three essentials. Rentemester computes the
-    // totals server-side — the modal only validates that the inputs are
-    // numeric so the human gets an immediate, clear message.
     const parsedLines = [];
     for (const [i, line] of lines.entries()) {
       if (!line.description.trim()) {
         setError(`Linje ${i + 1}: angiv en beskrivelse.`);
-        return;
+        return null;
       }
       const quantity = Number(line.quantity);
       const unitPrice = Number(line.unitPriceExVat);
       if (!line.quantity.trim() || !Number.isFinite(quantity)) {
         setError(`Linje ${i + 1}: antal skal være et tal.`);
-        return;
+        return null;
       }
       if (!line.unitPriceExVat.trim() || !Number.isFinite(unitPrice)) {
         setError(`Linje ${i + 1}: enhedspris skal være et tal.`);
-        return;
+        return null;
       }
       parsedLines.push({
         description: line.description.trim(),
@@ -208,31 +221,94 @@ export function InvoiceIssueModal({
         unitPriceExVat: unitPrice,
       });
     }
+    return { issueDate: issueDate.trim(), vatNum, parsedLines };
+  }
+
+  /**
+   * Builds the optional seller/buyer/dueDate/currency parts that both
+   * `handleIssue` and `handlePreview` (#440) send. Kept separate so the two
+   * call sites stay one source of truth — a divergence here would let the
+   * preview render a DIFFERENT PDF than the eventual issued PDF, which is
+   * exactly the failure mode #440 must rule out.
+   */
+  function buildPartyAndExtras() {
+    return {
+      currency: currency.trim() || "DKK",
+      dueDate: dueDate.trim() || undefined,
+      seller:
+        sellerName.trim() || sellerAddress.trim() || sellerVat.trim()
+          ? {
+              name: sellerName.trim() || undefined,
+              address: sellerAddress.trim() || undefined,
+              vatOrCvr: sellerVat.trim() || undefined,
+            }
+          : undefined,
+      buyer:
+        buyerName.trim() || buyerAddress.trim() || buyerVat.trim()
+          ? {
+              name: buyerName.trim() || undefined,
+              address: buyerAddress.trim() || undefined,
+              vatOrCvr: buyerVat.trim() || undefined,
+            }
+          : undefined,
+    };
+  }
+
+  /**
+   * #440 — Forhåndsvis. Builds the same payload Udsted would send and POSTs
+   * it to the read-only `/invoices/preview` endpoint. The response is a PDF
+   * blob; we open it in a new tab via `URL.createObjectURL` so the owner can
+   * eyeball the layout/amounts BEFORE clicking Udsted. The preview is
+   * read-only: no sequence draw, no audit_log, no journal entry — only the
+   * server-side renderer runs.
+   */
+  async function handlePreview() {
+    setError(null);
+    setLocked(null);
+
+    const parsed = buildPayload();
+    if (!parsed) return;
+    const extras = buildPartyAndExtras();
 
     setBusy(true);
     try {
+      const blob = await api.previewInvoice(slug, {
+        issueDate: parsed.issueDate,
+        lines: parsed.parsedLines,
+        vatRatePercent: parsed.vatNum,
+        ...extras,
+      });
+      const url = URL.createObjectURL(blob);
+      // Open in a new tab; revoke the object URL shortly after so the browser
+      // can garbage-collect the blob. The PDF stays visible in the tab
+      // because the browser has already created a stream/copy by then.
+      window.open(url, "_blank", "noopener");
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (err) {
+      const e = err as MaybeApiError;
+      const message = e?.message ?? "Forhåndsvisningen kunne ikke hentes.";
+      if (e?.code === "conflict") setLocked(message);
+      else setError(message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleIssue() {
+    setError(null);
+    setLocked(null);
+
+    const parsed = buildPayload();
+    if (!parsed) return;
+
+    setBusy(true);
+    try {
+      const extras = buildPartyAndExtras();
       const summary = await api.issueInvoice(slug, {
-        issueDate: issueDate.trim(),
-        lines: parsedLines,
-        vatRatePercent: vatNum,
-        currency: currency.trim() || "DKK",
-        dueDate: dueDate.trim() || undefined,
-        seller:
-          sellerName.trim() || sellerAddress.trim() || sellerVat.trim()
-            ? {
-                name: sellerName.trim() || undefined,
-                address: sellerAddress.trim() || undefined,
-                vatOrCvr: sellerVat.trim() || undefined,
-              }
-            : undefined,
-        buyer:
-          buyerName.trim() || buyerAddress.trim() || buyerVat.trim()
-            ? {
-                name: buyerName.trim() || undefined,
-                address: buyerAddress.trim() || undefined,
-                vatOrCvr: buyerVat.trim() || undefined,
-              }
-            : undefined,
+        issueDate: parsed.issueDate,
+        lines: parsed.parsedLines,
+        vatRatePercent: parsed.vatNum,
+        ...extras,
       });
       setDone(summary);
       onIssued();
@@ -541,6 +617,18 @@ export function InvoiceIssueModal({
                 disabled={busy}
               >
                 Annullér
+              </button>
+              {/* #440 — Forhåndsvis renders the customer-facing PDF without
+                  drawing a sequence number, writing a documents row, or
+                  appending to audit_log. The owner can verify layout +
+                  amounts BEFORE clicking Udsted. */}
+              <button
+                type="button"
+                className="btn secondary"
+                onClick={handlePreview}
+                disabled={busy}
+              >
+                {busy ? "Henter…" : "Forhåndsvis"}
               </button>
               <button
                 type="button"

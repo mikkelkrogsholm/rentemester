@@ -296,4 +296,226 @@ describe("InvoiceIssueModal", () => {
       screen.queryByText(/ingen bankkonto registreret/i),
     ).not.toBeInTheDocument();
   });
+
+  // #440 — Forhåndsvis button: must POST to /invoices/preview with the same
+  // payload as Udsted, but never issue. The cockpit opens the returned PDF
+  // blob in a new tab via URL.createObjectURL.
+  describe("#440 — Forhåndsvis", () => {
+    /**
+     * Stubs `URL.createObjectURL` + `window.open` so the test can assert the
+     * preview blob is rendered without a real browser. Returns the stubs so
+     * individual tests can introspect what was opened.
+     */
+    function stubWindowOpen() {
+      const createObjectURL = vi.fn(() => "blob:fake-preview-url");
+      const revokeObjectURL = vi.fn();
+      const open = vi.fn();
+      vi.stubGlobal("URL", {
+        ...URL,
+        createObjectURL,
+        revokeObjectURL,
+      });
+      vi.stubGlobal("open", open);
+      return { createObjectURL, revokeObjectURL, open };
+    }
+
+    /**
+     * `mockFetch` always returns the cockpit JSON envelope, but the preview
+     * route returns binary PDF bytes. This helper installs a fetch that
+     * returns the JSON envelope for issue/contacts/company routes and a fake
+     * PDF blob for the preview route.
+     */
+    function mockFetchWithPreview() {
+      const pdfBytes = new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31]); // %PDF-1
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+          const url = typeof input === "string" ? input : input.toString();
+          const path = url.replace(/^https?:\/\/[^/]+/, "").split("?")[0];
+          const method = (init?.method ?? "GET").toUpperCase();
+          if (
+            method === "POST" &&
+            path === "/api/companies/acme-aps/invoices/preview"
+          ) {
+            return new Response(pdfBytes, {
+              status: 200,
+              headers: {
+                "content-type": "application/pdf",
+                "content-disposition":
+                  "inline; filename*=UTF-8''2026-UDKAST.pdf",
+              },
+            });
+          }
+          if (method === "GET" && path === "/api/companies/acme-aps/company") {
+            return new Response(
+              JSON.stringify({
+                ok: true,
+                company: companySettings({
+                  payment: {
+                    bankName: "Danske Bank",
+                    registrationNo: "1234",
+                    accountNo: "0001234567",
+                    iban: null,
+                  },
+                }),
+              }),
+              {
+                status: 200,
+                headers: { "content-type": "application/json" },
+              },
+            );
+          }
+          // contacts + any other route — empty success envelope so the modal
+          // mounts without errors.
+          return new Response(
+            JSON.stringify({ ok: true, contacts: { customers: [], vendors: [] } }),
+            {
+              status: 200,
+              headers: { "content-type": "application/json" },
+            },
+          );
+        }),
+      );
+    }
+
+    test("renders the Forhåndsvis button next to Udsted faktura", () => {
+      mockFetch(companyRoute());
+      render(
+        <InvoiceIssueModal slug="acme-aps" onIssued={noop} onClose={noop} />,
+      );
+      expect(
+        screen.getByRole("button", { name: "Forhåndsvis" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Udsted faktura" }),
+      ).toBeInTheDocument();
+    });
+
+    test("clicking Forhåndsvis POSTs to /invoices/preview and opens the PDF blob", async () => {
+      mockFetchWithPreview();
+      const stubs = stubWindowOpen();
+      const onIssued = vi.fn();
+      render(
+        <InvoiceIssueModal
+          slug="acme-aps"
+          onIssued={onIssued}
+          onClose={noop}
+        />,
+      );
+      await fillMinimal();
+      await userEvent.click(
+        screen.getByRole("button", { name: "Forhåndsvis" }),
+      );
+
+      // The preview endpoint received the SAME line/date/vat shape Udsted
+      // would have sent — same source of truth for both calls.
+      const calls = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls;
+      const previewCall = calls.find((c) =>
+        String(c[0]).includes("/invoices/preview"),
+      );
+      expect(previewCall).toBeDefined();
+      const init = previewCall![1] as RequestInit;
+      expect(init.method).toBe("POST");
+      const sent = JSON.parse(String(init.body));
+      expect(sent.lines).toEqual([
+        { description: "Bogføring maj", quantity: 2, unitPriceExVat: 1000 },
+      ]);
+      expect(sent.vatRatePercent).toBe(25);
+      expect(sent.issueDate).toBe("2026-05-16");
+
+      // The blob was handed to URL.createObjectURL and window.open — the
+      // owner sees the PDF in a new tab.
+      expect(stubs.createObjectURL).toHaveBeenCalled();
+      expect(stubs.open).toHaveBeenCalledWith(
+        "blob:fake-preview-url",
+        "_blank",
+        "noopener",
+      );
+
+      // Crucially: Forhåndsvis must NEVER touch the issue endpoint, and
+      // must NEVER call onIssued — the ledger has not been mutated.
+      const issueCall = calls.find((c) =>
+        String(c[0]).includes("/invoices/issue"),
+      );
+      expect(issueCall).toBeUndefined();
+      expect(onIssued).not.toHaveBeenCalled();
+    });
+
+    test("Forhåndsvis runs the same validation as Udsted — no fetch on bad input", async () => {
+      mockFetchWithPreview();
+      stubWindowOpen();
+      render(
+        <InvoiceIssueModal slug="acme-aps" onIssued={noop} onClose={noop} />,
+      );
+      // Click Forhåndsvis without filling the date — same red banner Udsted
+      // would show, and the preview endpoint is NOT called.
+      await userEvent.click(
+        screen.getByRole("button", { name: "Forhåndsvis" }),
+      );
+      expect(
+        await screen.findByText(/Angiv en fakturadato/),
+      ).toBeInTheDocument();
+      const calls = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls;
+      const previewCall = calls.find((c) =>
+        String(c[0]).includes("/invoices/preview"),
+      );
+      expect(previewCall).toBeUndefined();
+    });
+
+    test("a server validation error from preview is shown as an error banner", async () => {
+      // Override the preview route to return the cockpit error envelope.
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+          const url = typeof input === "string" ? input : input.toString();
+          const path = url.replace(/^https?:\/\/[^/]+/, "").split("?")[0];
+          const method = (init?.method ?? "GET").toUpperCase();
+          if (
+            method === "POST" &&
+            path === "/api/companies/acme-aps/invoices/preview"
+          ) {
+            return new Response(
+              JSON.stringify({
+                ok: false,
+                error: { code: "bad_request", message: "buyer.name is required" },
+              }),
+              {
+                status: 400,
+                headers: { "content-type": "application/json" },
+              },
+            );
+          }
+          return new Response(
+            JSON.stringify({
+              ok: true,
+              company: companySettings({
+                payment: {
+                  bankName: "Danske Bank",
+                  registrationNo: "1234",
+                  accountNo: "0001234567",
+                  iban: null,
+                },
+              }),
+              contacts: { customers: [], vendors: [] },
+            }),
+            {
+              status: 200,
+              headers: { "content-type": "application/json" },
+            },
+          );
+        }),
+      );
+      stubWindowOpen();
+      render(
+        <InvoiceIssueModal slug="acme-aps" onIssued={noop} onClose={noop} />,
+      );
+      await fillMinimal();
+      await userEvent.click(
+        screen.getByRole("button", { name: "Forhåndsvis" }),
+      );
+      expect(
+        await screen.findByText("buyer.name is required"),
+      ).toBeInTheDocument();
+    });
+  });
 });

@@ -627,6 +627,64 @@ export const api = {
     }).then((r) => r.document),
 
   /**
+   * #440 — forhåndsviser en faktura uden at udstede. Same body as
+   * `issueInvoice`, but the server runs `previewIssuedInvoicePdf` instead of
+   * `issueInvoice`: no sequence draw, no `documents` row, no `audit_log`
+   * entry. The response is the raw PDF (Content-Type application/pdf) so the
+   * cockpit can open it in a new tab via `URL.createObjectURL`. Errors come
+   * back as the regular `{ok:false,error}` envelope (400 for validation,
+   * 409 for unknown customer/master-data, 404 for unknown company).
+   */
+  previewInvoice: async (
+    slug: string,
+    input: InvoiceIssueInput,
+  ): Promise<Blob> => {
+    const body = {
+      issueDate: input.issueDate,
+      lines: input.lines,
+      ...(input.vatRatePercent !== undefined
+        ? { vatRatePercent: input.vatRatePercent }
+        : {}),
+      ...(input.customerId ? { customerId: input.customerId } : {}),
+      ...(input.invoiceNumber ? { invoiceNumber: input.invoiceNumber } : {}),
+      ...(input.dueDate ? { dueDate: input.dueDate } : {}),
+      ...(input.currency ? { currency: input.currency } : {}),
+      ...(input.seller ? { seller: input.seller } : {}),
+      ...(input.buyer ? { buyer: input.buyer } : {}),
+    };
+    let res: Response;
+    try {
+      res = await fetch(
+        `/api/companies/${encodeURIComponent(slug)}/invoices/preview`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body),
+        },
+      );
+    } catch {
+      throw new ApiError(
+        "network",
+        "Kunne ikke nå serveren. Kører `rentemester serve`?",
+        0,
+      );
+    }
+    if (!res.ok) {
+      let message = `HTTP ${res.status}`;
+      let code = "internal";
+      try {
+        const errBody = (await res.json()) as {
+          error?: { code?: string; message?: string };
+        };
+        message = errBody.error?.message ?? message;
+        code = errBody.error?.code ?? code;
+      } catch {}
+      throw new ApiError(code, message, res.status);
+    }
+    return await res.blob();
+  },
+
+  /**
    * Issues a sales invoice (#213, slice 4). The human enters the customer and
    * the line items; the server COMPUTES every line total, net, VAT and gross
    * via the same core path the CLI's `invoice create` uses — the human never
