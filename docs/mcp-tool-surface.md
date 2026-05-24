@@ -314,22 +314,22 @@ modpostering.
 | `asset_write_off` | `asset write-off` | `{ company, name, category, acquisitionDate, cost, documentId, expenseAccount, date, thresholdRuleSource, confirmImmediateWriteOff, paymentAccount?, note?, confirm }` | Bogfører straksafskrivning af et mindre aktiv. |
 | `company_add` | `company add` | `{ workspace?, name, slug?, cvr?, fiscalYearStartMonth?, fiscalYearLabelStrategy?, confirm }` | Opretter en ny virksomhed under `<workspace>/<slug>/` og initialiserer ledgeren. Som ethvert write-tool kræver det `confirm: true` — uden flaget returneres `{ ok:false, errors:["confirm: true required for write tool company_add"] }` uden at noget oprettes. Udelades `workspace`, bruges miljøvariablen `RENTEMESTER_WORKSPACE` på MCP-serverens host; er den heller ikke sat, afvises kaldet med `no workspace given: pass 'workspace' or set RENTEMESTER_WORKSPACE`. **Ikke idempotent (`idempotentHint: false`):** et gentaget kald med samme `name`/`slug` *afvises* — det overskriver ALDRIG en eksisterende virksomhed. Findes der allerede en ledger på `<workspace>/<slug>/` fejler kaldet med `a company already exists at <sti>`, og et slug der allerede står i workspace-manifestet afvises ligeledes med en `ok:false`-envelope. For at oprette endnu en virksomhed med samme navn skal et nyt, unikt `slug` angives eksplicit. |
 | `expense_book` | `expense book` | `{ company, documentId, bankTransactionId, expenseAccount, vatTreatment?, paymentAccount?, date?, text?, confirm }` | Bogfører leverandørudgift fra bilag + bankpost. |
-| `invoice_apply_payment` | `invoice apply-payment` | `{ company, payload: InvoicePaymentPayload, confirm }` | Registrerer fakturabetaling fra payload. |
-| `invoice_claim_compensation` | `invoice claim-compensation` | `{ company, documentId? \| invoiceNumber?, asOf, amountDkk?, note?, confirm }` | Registrerer kompensationskrav. |
-| `invoice_claim_interest` | `invoice claim-interest` | `{ company, documentId? \| invoiceNumber?, asOf, referenceRate, note?, confirm }` | Registrerer morarentekrav. |
-| `invoice_credit_note` | `invoice credit-note` | `{ company, payload: CreditNotePayload, confirm }` | Udsteder kreditnota mod eksisterende faktura. |
-| `invoice_issue` | `invoice issue` | `{ company, payload: InvoicePayload, customerId?, confirm }` | Udsteder kundefaktura + immutable snapshot. |
-| `invoice_post` | `invoice post` | `{ company, documentId? \| invoiceNumber?, confirm }` | Bogfører udstedt faktura i finansen. |
-| `invoice_post_compensation` | `invoice post-compensation` | `{ company, documentId? \| invoiceNumber?, date?, confirm }` | Bogfører registreret kompensation. |
-| `invoice_post_interest` | `invoice post-interest` | `{ company, documentId? \| invoiceNumber?, claimId?, date?, confirm }` | Bogfører registreret morarentekrav. |
-| `invoice_post_reminder` | `invoice post-reminder` | `{ company, documentId? \| invoiceNumber?, reminderId?, date?, confirm }` | Bogfører registreret rykker. |
-| `invoice_refund_bank` | `invoice refund-bank` | `{ company, payload: RefundPayload, confirm }` | Bogfører refundering til kunde fra banken. |
-| `invoice_remind` | `invoice remind` | `{ company, documentId? \| invoiceNumber?, date, fee?, note?, confirm }` | Registrerer rykker på forfalden faktura. |
-| `invoice_render` | `invoice render` | `{ company, documentId? \| invoiceNumber?, confirm }` | Renderer (eller genskaber) deterministisk PDF. Idempotent. |
+| `invoice_apply_payment` | `invoice apply-payment` | `{ company, payload: InvoicePaymentPayload, confirm }` | Registrerer fakturabetaling fra payload. Forudsætning: `invoice_post`. |
+| `invoice_claim_compensation` | `invoice claim-compensation` | `{ company, documentId? \| invoiceNumber?, asOf, amountDkk?, note?, confirm }` | Registrerer kompensationskrav. Forudsætning: `invoice_post` (fakturaen skal være bogført og forfalden). |
+| `invoice_claim_interest` | `invoice claim-interest` | `{ company, documentId? \| invoiceNumber?, asOf, referenceRate, note?, confirm }` | Registrerer morarentekrav. Forudsætning: `invoice_post` (fakturaen skal være bogført og forfalden). |
+| `invoice_credit_note` | `invoice credit-note` | `{ company, payload: CreditNotePayload, confirm }` | Udsteder kreditnota mod eksisterende faktura. Forudsætning: den oprindelige faktura er udstedt med `invoice_issue` og bogført med `invoice_post`. |
+| `invoice_issue` | `invoice issue` | `{ company, payload: InvoicePayload, customerId?, confirm }` | Udsteder kundefaktura + immutable snapshot. Startpunktet for invoice-livscyklen. |
+| `invoice_post` | `invoice post` | `{ company, documentId? \| invoiceNumber?, confirm }` | Bogfører udstedt faktura i finansen. Forudsætning: `invoice_issue`. |
+| `invoice_post_compensation` | `invoice post-compensation` | `{ company, documentId? \| invoiceNumber?, date?, confirm }` | Bogfører registreret kompensation. Forudsætning: `invoice_claim_compensation`. |
+| `invoice_post_interest` | `invoice post-interest` | `{ company, documentId? \| invoiceNumber?, claimId?, date?, confirm }` | Bogfører registreret morarentekrav. Forudsætning: `invoice_claim_interest`. |
+| `invoice_post_reminder` | `invoice post-reminder` | `{ company, documentId? \| invoiceNumber?, reminderId?, date?, confirm }` | Bogfører registreret rykker. Forudsætning: `invoice_remind`. |
+| `invoice_refund_bank` | `invoice refund-bank` | `{ company, payload: RefundPayload, confirm }` | Bogfører refundering til kunde fra banken. Forudsætning: `invoice_post`. |
+| `invoice_remind` | `invoice remind` | `{ company, documentId? \| invoiceNumber?, date, fee?, note?, confirm }` | Registrerer rykker på forfalden faktura. Forudsætning: `invoice_post` (fakturaen skal være bogført og forfalden). |
+| `invoice_render` | `invoice render` | `{ company, documentId? \| invoiceNumber?, confirm }` | Renderer (eller genskaber) deterministisk PDF. Idempotent. Forudsætning: `invoice_issue`. |
 | `invoice_send_email` | `invoice send` | `{ company, documentId? \| invoiceNumber?, kind?, to?, confirm }` | Sender faktura/rykker via SMTP med PDF vedhæftet. Idempotent. SMTP-config læses fra `config/smtp.json` i virksomhedsmappen — påkrævede felter: `host`, `port`, `fromAddress`; valgfri: `fromName`, `username`, `password`, `dryRun`. Mangler filen ⇒ `{ ok:false, errors:["missing SMTP config: ..."] }`. Den indbyggede transport kører **kun** i dry-run: `dryRun:true` registrerer afsendelsen uden netværkskald (`ok:true`); uden `dryRun:true` fejler et rigtigt send med en `ok:false`-envelope. |
-| `invoice_settle_bank` | `invoice settle-bank` | `{ company, payload: SettlementPayload, confirm }` | Matcher bankbetaling mod faktura. |
-| `invoice_settle_claim_bank` | `invoice settle-claim-bank` | `{ company, payload: ClaimSettlementPayload, confirm }` | Matcher bankbetaling mod fakturakrav. |
-| `invoice_write_off_bad_debt` | `invoice write-off-bad-debt` | `{ company, payload: BadDebtPayload, confirm }` | Bogfører tab på debitor. |
+| `invoice_settle_bank` | `invoice settle-bank` | `{ company, payload: SettlementPayload, confirm }` | Matcher bankbetaling mod faktura. Forudsætning: `invoice_post`. |
+| `invoice_settle_claim_bank` | `invoice settle-claim-bank` | `{ company, payload: ClaimSettlementPayload, confirm }` | Matcher bankbetaling mod fakturakrav. Forudsætning: `invoice_post` + relevant `invoice_post_reminder` / `invoice_post_interest` / `invoice_post_compensation`. |
+| `invoice_write_off_bad_debt` | `invoice write-off-bad-debt` | `{ company, payload: BadDebtPayload, confirm }` | Bogfører tab på debitor. Forudsætning: `invoice_post`. |
 | `journal_post` | `journal post` | `{ company, payload: JournalEntryInput, confirm }` | Bogfører manuel finanspostering. |
 | `journal_reverse` | `journal reverse` | `{ company, entryId? \| entryNo? \| matchText?, matchDate?, matchDocumentId?, date, reason, confirm }` | Tilbagefører bogført finanspostering ved at oprette modpost. |
 | `payable_pay` | `payable pay` | `{ company, payableId, bankTransactionId, amount?, date?, paymentAccount?, note?, confirm }` | Matcher en udgående bankbetaling mod en åben kreditorpost (debit 7000 Leverandørgæld, credit bank). |
@@ -355,6 +355,71 @@ modpostering.
 > klassificeres her som `write-irreversible` fordi de er
 > `confirm`-gatede writes, men de oprettede records (destinationer,
 > placeringsregistreringer, lås-konfiguration) kan rettes ved nye kald.
+
+### Invoice lifecycle (#374)
+
+`invoice_*`-familien er en **sekvens**. Hvert downstream-tool kræver at
+en bestemt forrige tool er kørt — ellers afvises kaldet med en envelope-
+fejl der starter med `Forudsætning ikke opfyldt:` og navngiver det
+manglende forrige tool. En agent kan altså opdage rækkefølgen ud fra
+tools/list (`description` indeholder en `Forudsætning:`-linje) og uden
+at læse kildekoden.
+
+**Happy path — én faktura fra udstedelse til lukning:**
+
+```
+invoice_issue                                  (opretter document_type='issued_invoice')
+   │
+   ├──► invoice_render                         (PDF; idempotent)
+   │
+   └──► invoice_post                           (debit 1100 Debitorer, credit 1000 + udgående moms)
+            │
+            ├──► invoice_settle_bank           (matcher bankbetaling mod tilgodehavende)
+            │
+            ├──► invoice_apply_payment         (lukker betaling uden bank-match)
+            │
+            ├──► invoice_refund_bank           (refundering — typisk efter kreditnota)
+            │
+            ├──► invoice_credit_note           (kreditnota mod den bogførte faktura)
+            │
+            └──► invoice_write_off_bad_debt    (afskriv tab på debitor)
+```
+
+**Forfaldne-fakturaer-grenen** (rykker + morarente + kompensation —
+hver gren er to skridt: registrér først, bogfør derefter):
+
+```
+invoice_post (faktura forfalden)
+   │
+   ├──► invoice_remind ────────► invoice_post_reminder
+   │
+   ├──► invoice_claim_interest ─► invoice_post_interest
+   │
+   └──► invoice_claim_compensation ─► invoice_post_compensation
+            │
+            └──► invoice_settle_claim_bank     (kombineret eller separat bank-match
+                                                af de bogførte krav)
+```
+
+**Fejlmønster en agent skal kunne genkende.** Hvis fx
+`invoice_settle_bank` kaldes på en udstedt-men-ikke-bogført faktura,
+returneres:
+
+```json
+{
+  "ok": false,
+  "errors": [
+    "Forudsætning ikke opfyldt: faktura 2026-001 (documentId=42) er udstedt men ikke bogført. Kald invoice_post på fakturaen før invoice_settle_bank."
+  ]
+}
+```
+
+Beskeden er stabil i form: `Forudsætning ikke opfyldt:` + sætning der
+slutter med `Kald <forrige-tool> ... før <nuværende-tool>`. Det samme
+gælder for `invoice_post_reminder`/`invoice_post_interest`/
+`invoice_post_compensation` der kræver at det tilhørende krav først er
+registreret med `invoice_remind`/`invoice_claim_interest`/
+`invoice_claim_compensation`.
 
 ## System-tools
 

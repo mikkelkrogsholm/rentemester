@@ -403,6 +403,122 @@ function notFoundEnvelope(args: { documentId?: number | null; invoiceNumber?: st
   );
 }
 
+// ---------------------------------------------------------- lifecycle gates (#374)
+// The invoice_* family is a sequence: invoice_issue → invoice_post →
+// (invoice_settle_bank | invoice_apply_payment | invoice_refund_bank |
+//  invoice_write_off_bad_debt | invoice_remind → invoice_post_reminder |
+//  invoice_claim_interest → invoice_post_interest |
+//  invoice_claim_compensation → invoice_post_compensation |
+//  invoice_credit_note | invoice_settle_claim_bank).
+//
+// Core functions only check the document type ('issued_invoice'); they do not
+// know that a downstream tool requires the receivable to be booked first. If we
+// let the call through, a settle/payment proceeds against a phantom balance and
+// surfaces as a confusing "amount exceeds open balance" or balance-sheet skew.
+//
+// These helpers reject the call early with an envelope error that NAMES the
+// prior tool the agent must run — the gap #374 calls out.
+
+const POSTED_REQUIRED_PREFIX = "Forudsætning ikke opfyldt:";
+
+function lookupIssuedInvoice(
+  db: import("bun:sqlite").Database,
+  documentId: number,
+): { id: number; invoice_no: string; document_type: string } | null {
+  return (
+    db
+      .query(
+        `SELECT id, invoice_no, document_type FROM documents WHERE id = ? LIMIT 1`,
+      )
+      .get(documentId) as
+      | { id: number; invoice_no: string; document_type: string }
+      | null
+  );
+}
+
+function isInvoicePostedToLedger(
+  db: import("bun:sqlite").Database,
+  documentId: number,
+): boolean {
+  const row = db
+    .query(
+      `SELECT id FROM journal_entries WHERE document_id = ? AND reversal_of_entry_id IS NULL LIMIT 1`,
+    )
+    .get(documentId) as { id: number } | null;
+  return row != null;
+}
+
+/**
+ * Returns `null` when the invoice exists, is an issued invoice, and has a
+ * non-reversed journal entry (i.e. `invoice_post` ran). Otherwise returns an
+ * envelope error whose `errors[]` names the prior tool the agent must call —
+ * either `invoice_issue` (no such document / wrong type) or `invoice_post`
+ * (issued but not yet booked).
+ */
+function requireInvoicePostedEnvelope(
+  db: import("bun:sqlite").Database,
+  documentId: number,
+  /** Name of the tool the agent is currently calling — surfaced in the error. */
+  currentTool: string,
+) {
+  const doc = lookupIssuedInvoice(db, documentId);
+  if (!doc) {
+    return errorEnvelope(
+      `${POSTED_REQUIRED_PREFIX} ingen faktura med documentId=${documentId}. ` +
+        `Udsted fakturaen først med invoice_issue, eller find dens documentId/invoiceNumber via invoice_list / invoice_find inden ${currentTool}.`,
+    );
+  }
+  if (doc.document_type !== "issued_invoice") {
+    return errorEnvelope(
+      `${POSTED_REQUIRED_PREFIX} document ${documentId} er ikke en udstedt faktura (document_type='${doc.document_type}'). ` +
+        `${currentTool} virker kun på en faktura udstedt med invoice_issue.`,
+    );
+  }
+  if (!isInvoicePostedToLedger(db, documentId)) {
+    return errorEnvelope(
+      `${POSTED_REQUIRED_PREFIX} faktura ${doc.invoice_no} (documentId=${documentId}) er udstedt men ikke bogført. ` +
+        `Kald invoice_post på fakturaen før ${currentTool}.`,
+    );
+  }
+  return null;
+}
+
+function hasRegisteredReminder(
+  db: import("bun:sqlite").Database,
+  documentId: number,
+): boolean {
+  const row = db
+    .query(
+      `SELECT id FROM invoice_reminders WHERE invoice_document_id = ? LIMIT 1`,
+    )
+    .get(documentId) as { id: number } | null;
+  return row != null;
+}
+
+function hasRegisteredInterestClaim(
+  db: import("bun:sqlite").Database,
+  documentId: number,
+): boolean {
+  const row = db
+    .query(
+      `SELECT id FROM invoice_interest_claims WHERE invoice_document_id = ? LIMIT 1`,
+    )
+    .get(documentId) as { id: number } | null;
+  return row != null;
+}
+
+function hasRegisteredCompensationClaim(
+  db: import("bun:sqlite").Database,
+  documentId: number,
+): boolean {
+  const row = db
+    .query(
+      `SELECT id FROM invoice_compensation_claims WHERE invoice_document_id = ? LIMIT 1`,
+    )
+    .get(documentId) as { id: number } | null;
+  return row != null;
+}
+
 export function registerInvoiceTools(server: McpServer): void {
   // --------------------------------------------------------------- read tools
 
@@ -752,7 +868,8 @@ export function registerInvoiceTools(server: McpServer): void {
     {
       title: "Render invoice PDF",
       description:
-        "Renderer (eller genskaber) deterministisk PDF for udstedt faktura. write-irreversible.",
+        "Renderer (eller genskaber) deterministisk PDF for udstedt faktura. " +
+        "Forudsætning: fakturaen skal være udstedt med invoice_issue. write-irreversible.",
       inputSchema: { ...docIdOrNumberSchema, confirm: confirmField },
       outputSchema: envelopeShape,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
@@ -776,6 +893,7 @@ export function registerInvoiceTools(server: McpServer): void {
       title: "Issue credit note",
       description:
         "Udsteder kreditnota mod en eksisterende faktura. " +
+        "Forudsætning: den oprindelige faktura skal være udstedt med invoice_issue og bogført med invoice_post (kredit mod en ubogført faktura giver et åbent tilgodehavende uden modpostering). " +
         "payload.grossAmount er i kroner (decimal DKK, ikke øre). write-irreversible.",
       inputSchema: {
         company: z.string().min(1),
@@ -800,7 +918,11 @@ export function registerInvoiceTools(server: McpServer): void {
     "invoice_post",
     {
       title: "Post invoice to ledger",
-      description: "Bogfører en udstedt faktura i finansen. write-irreversible.",
+      description:
+        "Bogfører en udstedt faktura i finansen (debit 1100 Debitorer, credit 1000 Salg + udgående moms). " +
+        "Forudsætning: fakturaen skal være udstedt med invoice_issue og må ikke allerede være bogført. " +
+        "Når den er kørt kan downstream-tools som invoice_settle_bank/invoice_apply_payment/invoice_credit_note bruges. " +
+        "write-irreversible.",
       inputSchema: { ...docIdOrNumberSchema, confirm: confirmField },
       outputSchema: envelopeShape,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
@@ -823,7 +945,8 @@ export function registerInvoiceTools(server: McpServer): void {
     {
       title: "Settle invoice from bank",
       description:
-        "Matcher en bankbetaling mod en faktura. " +
+        "Matcher en bankbetaling mod en faktura (debit 2000 Bank, credit 1100 Debitorer). " +
+        "Forudsætning: fakturaen skal være bogført med invoice_post — ellers er der intet åbent tilgodehavende at modregne. " +
         "payload.amount er i kroner (decimal DKK, ikke øre). write-irreversible.",
       inputSchema: {
         company: z.string().min(1),
@@ -839,6 +962,11 @@ export function registerInvoiceTools(server: McpServer): void {
       confirm?: boolean;
     }>(server, "invoice_settle_bank", ({ db, args }) => {
       const resolved = resolveInvoiceInPayload(db, args.payload as Record<string, unknown>);
+      const docId = Number((resolved as { invoiceDocumentId?: unknown }).invoiceDocumentId);
+      if (Number.isInteger(docId) && docId > 0) {
+        const blocked = requireInvoicePostedEnvelope(db, docId, "invoice_settle_bank");
+        if (blocked) return blocked;
+      }
       const result = settleInvoiceFromBank(db, resolved as SettleInvoiceFromBankInput);
       return wrapCoreResult(result);
     }),
@@ -849,7 +977,8 @@ export function registerInvoiceTools(server: McpServer): void {
     {
       title: "Settle invoice claims from bank",
       description:
-        "Matcher en bankbetaling mod fakturakrav. " +
+        "Matcher en bankbetaling mod fakturakrav (rykkergebyr, morarente, kompensation). " +
+        "Forudsætning: fakturaen skal være bogført med invoice_post, og de krav der modregnes skal være registreret og bogført (invoice_post_reminder / invoice_post_interest / invoice_post_compensation). " +
         "payload.amount er i kroner (decimal DKK, ikke øre). write-irreversible.",
       inputSchema: {
         company: z.string().min(1),
@@ -865,6 +994,11 @@ export function registerInvoiceTools(server: McpServer): void {
       confirm?: boolean;
     }>(server, "invoice_settle_claim_bank", ({ db, args }) => {
       const resolved = resolveInvoiceInPayload(db, args.payload as Record<string, unknown>);
+      const docId = Number((resolved as { invoiceDocumentId?: unknown }).invoiceDocumentId);
+      if (Number.isInteger(docId) && docId > 0) {
+        const blocked = requireInvoicePostedEnvelope(db, docId, "invoice_settle_claim_bank");
+        if (blocked) return blocked;
+      }
       const result = settleInvoiceClaimsFromBank(db, resolved as SettleInvoiceClaimsFromBankInput);
       return wrapCoreResult(result);
     }),
@@ -876,6 +1010,7 @@ export function registerInvoiceTools(server: McpServer): void {
       title: "Write off bad debt",
       description:
         "Bogfører tab på debitor. " +
+        "Forudsætning: fakturaen skal være bogført med invoice_post — kun et bogført tilgodehavende kan afskrives som tab. " +
         "payload.grossAmount er i kroner (decimal DKK, ikke øre). write-irreversible.",
       inputSchema: {
         company: z.string().min(1),
@@ -891,6 +1026,11 @@ export function registerInvoiceTools(server: McpServer): void {
       confirm?: boolean;
     }>(server, "invoice_write_off_bad_debt", ({ db, args }) => {
       const resolved = resolveInvoiceInPayload(db, args.payload as Record<string, unknown>);
+      const docId = Number((resolved as { invoiceDocumentId?: unknown }).invoiceDocumentId);
+      if (Number.isInteger(docId) && docId > 0) {
+        const blocked = requireInvoicePostedEnvelope(db, docId, "invoice_write_off_bad_debt");
+        if (blocked) return blocked;
+      }
       const result = writeOffInvoiceBadDebt(db, resolved as WriteOffInvoiceBadDebtInput);
       return wrapCoreResult(result);
     }),
@@ -901,7 +1041,8 @@ export function registerInvoiceTools(server: McpServer): void {
     {
       title: "Apply invoice payment",
       description:
-        "Registrerer fakturabetaling fra payload. " +
+        "Registrerer fakturabetaling fra payload (uden bank-match — typisk til at lukke betalinger der allerede er konteret separat). " +
+        "Forudsætning: fakturaen skal være bogført med invoice_post — der skal være et åbent tilgodehavende at lukke. " +
         "payload.amount er i kroner (decimal DKK, ikke øre). write-irreversible.",
       inputSchema: {
         company: z.string().min(1),
@@ -917,6 +1058,11 @@ export function registerInvoiceTools(server: McpServer): void {
       confirm?: boolean;
     }>(server, "invoice_apply_payment", ({ db, args }) => {
       const resolved = resolveInvoiceInPayload(db, args.payload as Record<string, unknown>);
+      const docId = Number((resolved as { invoiceDocumentId?: unknown }).invoiceDocumentId);
+      if (Number.isInteger(docId) && docId > 0) {
+        const blocked = requireInvoicePostedEnvelope(db, docId, "invoice_apply_payment");
+        if (blocked) return blocked;
+      }
       const result = applyInvoicePayment(db, resolved as ApplyInvoicePaymentInput);
       return wrapCoreResult(result);
     }),
@@ -927,7 +1073,8 @@ export function registerInvoiceTools(server: McpServer): void {
     {
       title: "Refund invoice to bank",
       description:
-        "Bogfører refundering til kunde fra banken. " +
+        "Bogfører refundering til kunde fra banken (credit 2000 Bank, debit 1100 Debitorer). " +
+        "Forudsætning: fakturaen skal være bogført med invoice_post (typisk efter en kreditnota via invoice_credit_note som har skabt overskydende betaling). " +
         "payload.amount er i kroner (decimal DKK, ikke øre). write-irreversible.",
       inputSchema: {
         company: z.string().min(1),
@@ -943,6 +1090,11 @@ export function registerInvoiceTools(server: McpServer): void {
       confirm?: boolean;
     }>(server, "invoice_refund_bank", ({ db, args }) => {
       const resolved = resolveInvoiceInPayload(db, args.payload as Record<string, unknown>);
+      const docId = Number((resolved as { invoiceDocumentId?: unknown }).invoiceDocumentId);
+      if (Number.isInteger(docId) && docId > 0) {
+        const blocked = requireInvoicePostedEnvelope(db, docId, "invoice_refund_bank");
+        if (blocked) return blocked;
+      }
       const result = refundInvoiceToBank(db, resolved as RefundInvoiceToBankInput);
       return wrapCoreResult(result);
     }),
@@ -952,7 +1104,10 @@ export function registerInvoiceTools(server: McpServer): void {
     "invoice_remind",
     {
       title: "Register invoice reminder",
-      description: "Registrerer rykker på forfalden faktura. write-irreversible.",
+      description:
+        "Registrerer rykker på forfalden faktura (uden at bogføre rykkergebyret — kald invoice_post_reminder bagefter). " +
+        "Forudsætning: fakturaen skal være bogført med invoice_post og være forfalden. " +
+        "write-irreversible.",
       inputSchema: {
         ...docIdOrNumberSchema,
         date: z
@@ -983,6 +1138,8 @@ export function registerInvoiceTools(server: McpServer): void {
     }>(server, "invoice_remind", ({ db, args }) => {
       const id = resolveIssuedInvoiceDocumentId(db, args);
       if (!id) return notFoundEnvelope(args);
+      const blocked = requireInvoicePostedEnvelope(db, id, "invoice_remind");
+      if (blocked) return blocked;
       const result = registerInvoiceReminder(db, {
         invoiceDocumentId: id,
         reminderDate: args.date,
@@ -997,7 +1154,10 @@ export function registerInvoiceTools(server: McpServer): void {
     "invoice_post_reminder",
     {
       title: "Post invoice reminder to ledger",
-      description: "Bogfører en registreret rykker. write-irreversible.",
+      description:
+        "Bogfører en registreret rykker (rykkergebyret indtægtsføres). " +
+        "Forudsætning: en rykker skal være registreret med invoice_remind først. " +
+        "write-irreversible.",
       inputSchema: {
         ...docIdOrNumberSchema,
         reminderId: z
@@ -1031,6 +1191,12 @@ export function registerInvoiceTools(server: McpServer): void {
     }>(server, "invoice_post_reminder", ({ db, args }) => {
       const id = resolveIssuedInvoiceDocumentId(db, args);
       if (!id) return notFoundEnvelope(args);
+      if (!hasRegisteredReminder(db, id)) {
+        return errorEnvelope(
+          `${POSTED_REQUIRED_PREFIX} der er ingen registreret rykker på faktura documentId=${id}. ` +
+            `Kald invoice_remind først for at registrere rykkeren før invoice_post_reminder.`,
+        );
+      }
       const result = postInvoiceReminderToLedger(db, {
         invoiceDocumentId: id,
         reminderId: args.reminderId,
@@ -1044,7 +1210,10 @@ export function registerInvoiceTools(server: McpServer): void {
     "invoice_claim_interest",
     {
       title: "Register late-interest claim",
-      description: "Registrerer morarentekrav. write-irreversible.",
+      description:
+        "Registrerer morarentekrav (uden at bogføre — kald invoice_post_interest bagefter). " +
+        "Forudsætning: fakturaen skal være bogført med invoice_post og være forfalden. " +
+        "write-irreversible.",
       inputSchema: {
         ...docIdOrNumberSchema,
         asOf: z
@@ -1074,6 +1243,8 @@ export function registerInvoiceTools(server: McpServer): void {
     }>(server, "invoice_claim_interest", ({ db, args }) => {
       const id = resolveIssuedInvoiceDocumentId(db, args);
       if (!id) return notFoundEnvelope(args);
+      const blocked = requireInvoicePostedEnvelope(db, id, "invoice_claim_interest");
+      if (blocked) return blocked;
       const result = registerInvoiceLateInterest(db, {
         invoiceDocumentId: id,
         asOfDate: args.asOf,
@@ -1088,7 +1259,10 @@ export function registerInvoiceTools(server: McpServer): void {
     "invoice_post_interest",
     {
       title: "Post late-interest claim to ledger",
-      description: "Bogfører registreret morarentekrav. write-irreversible.",
+      description:
+        "Bogfører registreret morarentekrav (renten indtægtsføres). " +
+        "Forudsætning: et morarentekrav skal være registreret med invoice_claim_interest først. " +
+        "write-irreversible.",
       inputSchema: {
         ...docIdOrNumberSchema,
         claimId: z
@@ -1121,6 +1295,12 @@ export function registerInvoiceTools(server: McpServer): void {
     }>(server, "invoice_post_interest", ({ db, args }) => {
       const id = resolveIssuedInvoiceDocumentId(db, args);
       if (!id) return notFoundEnvelope(args);
+      if (!hasRegisteredInterestClaim(db, id)) {
+        return errorEnvelope(
+          `${POSTED_REQUIRED_PREFIX} der er ingen registreret morarentekrav på faktura documentId=${id}. ` +
+            `Kald invoice_claim_interest først for at registrere kravet før invoice_post_interest.`,
+        );
+      }
       const result = postInvoiceLateInterestToLedger(db, {
         invoiceDocumentId: id,
         claimId: args.claimId,
@@ -1134,7 +1314,10 @@ export function registerInvoiceTools(server: McpServer): void {
     "invoice_claim_compensation",
     {
       title: "Register late-compensation claim",
-      description: "Registrerer kompensationskrav (uden at bogføre). write-irreversible.",
+      description:
+        "Registrerer kompensationskrav (uden at bogføre — kald invoice_post_compensation bagefter). " +
+        "Forudsætning: fakturaen skal være bogført med invoice_post og være forfalden. " +
+        "write-irreversible.",
       inputSchema: {
         ...docIdOrNumberSchema,
         asOf: z
@@ -1165,6 +1348,8 @@ export function registerInvoiceTools(server: McpServer): void {
     }>(server, "invoice_claim_compensation", ({ db, args }) => {
       const id = resolveIssuedInvoiceDocumentId(db, args);
       if (!id) return notFoundEnvelope(args);
+      const blocked = requireInvoicePostedEnvelope(db, id, "invoice_claim_compensation");
+      if (blocked) return blocked;
       const result = registerInvoiceLateCompensation(db, {
         invoiceDocumentId: id,
         asOfDate: args.asOf,
@@ -1179,7 +1364,10 @@ export function registerInvoiceTools(server: McpServer): void {
     "invoice_post_compensation",
     {
       title: "Post compensation claim to ledger",
-      description: "Bogfører registreret kompensationskrav. write-irreversible.",
+      description:
+        "Bogfører registreret kompensationskrav (kompensationen indtægtsføres). " +
+        "Forudsætning: et kompensationskrav skal være registreret med invoice_claim_compensation først. " +
+        "write-irreversible.",
       inputSchema: {
         ...docIdOrNumberSchema,
         date: z
@@ -1202,6 +1390,12 @@ export function registerInvoiceTools(server: McpServer): void {
     }>(server, "invoice_post_compensation", ({ db, args }) => {
       const id = resolveIssuedInvoiceDocumentId(db, args);
       if (!id) return notFoundEnvelope(args);
+      if (!hasRegisteredCompensationClaim(db, id)) {
+        return errorEnvelope(
+          `${POSTED_REQUIRED_PREFIX} der er ingen registreret kompensationskrav på faktura documentId=${id}. ` +
+            `Kald invoice_claim_compensation først for at registrere kravet før invoice_post_compensation.`,
+        );
+      }
       const result = postInvoiceLateCompensationToLedger(db, {
         invoiceDocumentId: id,
         transactionDate: args.date,
