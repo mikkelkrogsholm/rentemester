@@ -1730,6 +1730,11 @@ system.rule_versions
 
 Hvis Rentemester bliver source of truth, backup er en kernefunktion.
 
+Praktiske, kildehenviste opsætningsguides (BEK 205/2024 § 4, stk. 2)
+ligger i [docs/compliance/backup-destinations.md](docs/compliance/backup-destinations.md),
+med konkrete udbyder-guides (fx Google Workspace) i
+[docs/compliance/backup-destinations/](docs/compliance/backup-destinations/).
+
 ### 33.1 Backup-krav
 
 Systemet skal kunne:
