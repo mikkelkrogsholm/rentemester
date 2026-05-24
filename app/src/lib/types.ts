@@ -1719,3 +1719,69 @@ export type AssetWriteOffSummary = {
   cost: number | null;
   thresholdDkk: number | null;
 };
+
+// --- Undtagelser (exception queue) — #332 ---------------------------------
+
+/** Status filter the cockpit "Undtagelser"-pills carry over the wire. */
+export type CompanyExceptionStatusFilter = "open" | "resolved" | "all";
+
+/** One row in the cockpit Undtagelser-listen. */
+export type CompanyExceptionRow = {
+  id: number;
+  type: string;
+  severity: "low" | "medium" | "high";
+  status: "open" | "resolved";
+  message: string;
+  requiredAction: string | null;
+  relatedBankTransactionId: number | null;
+  relatedDocumentId: number | null;
+  /** Opaque per-type evidence payload from core — view-only. */
+  sourceEvidence: unknown;
+  /** Opaque per-type "what would post on resolve" preview — view-only. */
+  postingPreview: unknown;
+  createdAt: string;
+  resolvedAt: string | null;
+  resolvedBy: string | null;
+  resolutionNote: string | null;
+  /** True when the exception belongs to an archived/closed period. */
+  archived: boolean;
+};
+
+/** One grouped summary line — shared with the Overblik "Opgaver" card. */
+export type CompanyExceptionGroup = {
+  type: string;
+  count: number;
+  severity: "low" | "medium" | "high";
+  label: string;
+  link: string | null;
+};
+
+/** Backs `GET /api/companies/:slug/exceptions` — the Undtagelser-arbejdsbordet. */
+export type CompanyExceptions = {
+  slug: string;
+  status: CompanyExceptionStatusFilter;
+  company: StatementCompany;
+  fiscalYears: FiscalYearEntry[];
+  rows: CompanyExceptionRow[];
+  count: number;
+  openCount: number;
+  resolvedCount: number;
+  openGroups: CompanyExceptionGroup[];
+};
+
+export type ExceptionsResponse = {
+  ok: true;
+  exceptions: CompanyExceptions;
+};
+
+/** Input for `api.resolveException` — non-destructive (clears an open exception). */
+export type ExceptionResolveInput = {
+  id: number;
+  note?: string;
+};
+
+export type ExceptionResolveSummary = {
+  id: number;
+  /** True when the call flipped the row from open to resolved; false when already resolved. */
+  resolved: boolean;
+};

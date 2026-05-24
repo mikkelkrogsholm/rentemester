@@ -83,6 +83,10 @@ const TAB_GROUPS: { name: string; tabs: NavTab[] }[] = [
       { to: "anlaeg", label: "Anlæg" },
       { to: "moms", label: "Moms" },
       { to: "koersel", label: "Kørsel" },
+      // #332 — agent + menneske-i-løkken. Usikre regelfortolkninger afgøres
+      // her, og listen forbinder Overblikkets "Opgaver"-kort til den
+      // dedikerede undtagelses-arbejdsbord.
+      { to: "undtagelser", label: "Undtagelser" },
     ],
   },
   {

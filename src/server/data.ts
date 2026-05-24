@@ -40,6 +40,14 @@ export type {
 // --- data/exceptions.ts ----------------------------------------------------
 export type { ExceptionGroup } from "./data/exceptions";
 
+// --- data/exceptions-view.ts -----------------------------------------------
+export { buildCompanyExceptions } from "./data/exceptions-view";
+export type {
+  CompanyExceptions,
+  CompanyExceptionRow,
+  CompanyExceptionStatusFilter,
+} from "./data/exceptions-view";
+
 // --- data/vat.ts -----------------------------------------------------------
 export type { VatPosition, VatRubrikker } from "./data/vat";
 

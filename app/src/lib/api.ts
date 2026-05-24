@@ -26,6 +26,7 @@ import type {
   ReopenPeriodResponse,
   CompanyListResponse,
   CompanyProfileInput,
+  CompanyExceptionStatusFilter,
   CompanySettingsResponse,
   ContactsResponse,
   CreateCompanyInput,
@@ -34,6 +35,9 @@ import type {
   CvrSystemStatusResponse,
   DashboardResponse,
   DocumentsResponse,
+  ExceptionResolveInput,
+  ExceptionResolveSummary,
+  ExceptionsResponse,
   FiscalYearsResponse,
   HealthResponse,
   IncomeStatementResponse,
@@ -1109,6 +1113,47 @@ export const api = {
         }),
       },
     ).then((r) => r.payment),
+
+  // --- Undtagelser (exception queue) — #332 -------------------------------
+  //
+  // Read-side mirrors the CLI's `exceptions list` + the agent loop. The
+  // resolve action goes through the existing `POST .../exceptions/:id/resolve`
+  // route (#213, slice 1) — non-destructive (the row stays in the ledger,
+  // status flips open → resolved). The cockpit modal IS the consent, so the
+  // body still carries `confirm: true` to match every other write route.
+
+  /**
+   * GET /api/companies/:slug/exceptions — the Undtagelser-arbejdsbordet.
+   * `?status=` filters the list: `open` (default), `resolved`, `all`.
+   */
+  exceptions: (slug: string, status?: CompanyExceptionStatusFilter) => {
+    const params = new URLSearchParams();
+    if (status) params.set("status", status);
+    const qs = params.toString();
+    return request<ExceptionsResponse>(
+      `/api/companies/${encodeURIComponent(slug)}/exceptions${
+        qs ? `?${qs}` : ""
+      }`,
+    ).then((r) => r.exceptions);
+  },
+
+  /**
+   * POST /api/companies/:slug/exceptions/:id/resolve — clears an open
+   * exception with an optional resolution note. The Cockpit modal is the
+   * human's consent; the actor flows through `withCompanyMutation` as
+   * `resolvedBy`, so the audit trail shows the Cockpit cleared it.
+   */
+  resolveException: (slug: string, input: ExceptionResolveInput) =>
+    request<{ ok: true; exception: ExceptionResolveSummary }>(
+      `/api/companies/${encodeURIComponent(slug)}/exceptions/${input.id}/resolve`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          ...(input.note ? { note: input.note } : {}),
+          confirm: true,
+        }),
+      },
+    ).then((r) => r.exception),
 };
 
 /** Wire type for one bookable expense account (#407). */

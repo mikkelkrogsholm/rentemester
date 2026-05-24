@@ -17,6 +17,7 @@ import type {
   CompanyJournal,
   CompanyMileage,
   CompanyMultiYear,
+  CompanyExceptions,
   CompanyObligations,
   CompanyOverview,
   CompanyPayables,
@@ -952,6 +953,76 @@ export function assets(
       writeOffCount: 1,
       writeOffTotal: 2500,
     },
+    ...over,
+  };
+}
+
+export function exceptions(
+  over: Partial<CompanyExceptions> = {},
+): CompanyExceptions {
+  return {
+    slug: "acme-aps",
+    status: "open",
+    company: STATEMENT_COMPANY,
+    fiscalYears: STATEMENT_FISCAL_YEARS,
+    rows: [
+      {
+        id: 1,
+        type: "UNMATCHED_BANK_TRANSACTION",
+        severity: "high",
+        status: "open",
+        message:
+          "Banktransaktionen \"Stripe payout\" den 2026-05-18 på 4.200,00 kr. er endnu ikke bogført.",
+        requiredAction:
+          "Find fakturaen for denne indbetaling og bogfør den mod banktransaktionen.",
+        relatedBankTransactionId: 17,
+        relatedDocumentId: null,
+        sourceEvidence: null,
+        postingPreview: null,
+        createdAt: "2026-05-20T10:12:00Z",
+        resolvedAt: null,
+        resolvedBy: null,
+        resolutionNote: null,
+        archived: false,
+      },
+      {
+        id: 2,
+        type: "AGENT_TAX_RETURN_NEEDS_REVIEW",
+        severity: "medium",
+        status: "open",
+        message:
+          "Oplysningsskema for regnskabsår 2025-01-01..2025-12-31: ikke-fradragsberettiget repræsentation.",
+        requiredAction: "Afklar tallet manuelt før indberetning til SKAT.",
+        relatedBankTransactionId: null,
+        relatedDocumentId: null,
+        sourceEvidence: null,
+        postingPreview: null,
+        createdAt: "2026-05-18T09:00:00Z",
+        resolvedAt: null,
+        resolvedBy: null,
+        resolutionNote: null,
+        archived: false,
+      },
+    ],
+    count: 2,
+    openCount: 2,
+    resolvedCount: 0,
+    openGroups: [
+      {
+        type: "UNMATCHED_BANK_TRANSACTION",
+        count: 1,
+        severity: "high",
+        label: "1 banktransaktion mangler afstemning",
+        link: "bank",
+      },
+      {
+        type: "AGENT_TAX_RETURN_NEEDS_REVIEW",
+        count: 1,
+        severity: "medium",
+        label: "1 undtagelse kræver gennemgang",
+        link: null,
+      },
+    ],
     ...over,
   };
 }

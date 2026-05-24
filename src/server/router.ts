@@ -44,6 +44,7 @@ import {
   buildCompanyContacts,
   buildCompanyDashboardData,
   buildCompanyDocuments,
+  buildCompanyExceptions,
   buildDocumentBookingOptions,
   buildCompanyFiscalYears,
   buildCompanyIncomeStatement,
@@ -217,6 +218,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "GET", pattern: "/api/companies/:slug/budget", summary: "Budget pr. konto pr. måned (#339)." },
   { method: "GET", pattern: "/api/companies/:slug/budget-vs-actual", summary: "Budget vs. faktisk for året (#339)." },
   { method: "POST", pattern: "/api/companies/:slug/budget", summary: "Sætter (append-only revision) en budgetlinje (#339)." },
+  { method: "GET", pattern: "/api/companies/:slug/exceptions", summary: "Undtagelseskø — åbne/løste/alle exceptions + grupperet status (#332)." },
   { method: "POST", pattern: "/api/companies/:slug/exceptions/:id/resolve", summary: "Løser en exception." },
   { method: "POST", pattern: "/api/companies/:slug/bank/import", summary: "Importerer bank-CSV." },
   { method: "POST", pattern: "/api/companies/:slug/import", summary: "Generel data-import." },
@@ -783,6 +785,32 @@ function handleCompanyPayables(
   return okResponse({ payables: data });
 }
 
+/**
+ * GET /api/companies/:slug/exceptions — the read-side payload backing the
+ * Undtagelser-arbejdsbordet (#332): the open/resolved exception list from
+ * `core/exceptions.ts#listExceptions`, plus the grouped Danish summary the
+ * Overblik "Opgaver" card uses (so the cockpit's two surfaces cannot diverge).
+ *
+ * `?status=` filters: `open` (default), `resolved`, `all`. `?includeArchived=true`
+ * opts back in to archived-period rows for audit; default leaves them hidden
+ * (exactly like the CLI's `exceptions list` default).
+ */
+function handleCompanyExceptions(
+  config: ServerConfig,
+  slug: string,
+  url: URL,
+): Response {
+  const status = url.searchParams.get("status");
+  const includeArchived = url.searchParams.get("includeArchived");
+  const data = buildCompanyExceptions(
+    config.workspaceRoot,
+    slug,
+    status,
+    includeArchived,
+  );
+  return okResponse({ exceptions: data });
+}
+
 // --------------------------------------------------------------------------
 // Dispatch
 // --------------------------------------------------------------------------
@@ -1168,6 +1196,8 @@ export async function handleRequest(
     }
 
     // Bookkeeping write route (#213, slice 1): resolve an open exception.
+    // Longer `/:id/resolve` route MUST come before the bare `/exceptions`
+    // collection match so the shorter pattern does not shadow it.
     const resolveExceptionMatch =
       /^\/api\/companies\/([^/]+)\/exceptions\/([^/]+)\/resolve$/.exec(path);
     if (resolveExceptionMatch) {
@@ -1175,6 +1205,17 @@ export async function handleRequest(
       const slug = decodeURIComponent(resolveExceptionMatch[1]!);
       const id = decodeURIComponent(resolveExceptionMatch[2]!);
       return await handleResolveException(config, request, slug, id);
+    }
+
+    // Cockpit read route (#332): the Undtagelser-arbejdsbordet — list open /
+    // resolved / all exceptions plus the grouped Danish summary lines the
+    // Overblik "Opgaver" card uses.
+    const exceptionsListMatch =
+      /^\/api\/companies\/([^/]+)\/exceptions$/.exec(path);
+    if (exceptionsListMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(exceptionsListMatch[1]!);
+      return handleCompanyExceptions(config, slug, url);
     }
 
     // Bookkeeping write route (#213, slice 2): import a bank-statement CSV.
