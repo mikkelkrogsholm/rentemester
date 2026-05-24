@@ -28,6 +28,9 @@ løses i kode (fx attestering af en backup-destination i EU/EØS).
   regelsæt Rentemester ikke håndterer (løn, hvidvask, selskabsret,
   cybersikkerheds-direktiver, …) og hvorfor. Lige så vigtigt som
   matricen — forhindrer at en bruger antager dækning, der ikke findes.
+- **[source-changes.md](source-changes.md)** — Log af verifikationer
+  hver gang en lov eller bekendtgørelse ændres. Bekræfter eller afkræfter
+  at en ændringsbekendtgørelse rammer Rentemester's regler.
 
 ### Guides
 
