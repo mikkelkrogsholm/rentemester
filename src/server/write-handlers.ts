@@ -24,6 +24,8 @@ import { importDineroContacts } from "../core/import/dinero-contacts";
 import {
   createCustomer,
   createVendor,
+  deleteCustomer,
+  deleteVendor,
   updateCustomer,
   updateVendor,
   type CreateCustomerInput,
@@ -1931,6 +1933,73 @@ export async function handleUpdateVendor(
     },
   );
   return okResponse({ vendor: { id, ok: result.ok } });
+}
+
+/**
+ * DELETE /api/companies/:slug/customers/:id — sletter en kunde fra master data
+ * (#430). En fejl-importeret eller dubleret kunde skal kunne fjernes fra
+ * cockpittet — ikke kun fra CLI'en. Tredje caller af samme `deleteCustomer`
+ * core funktion som CLI'en og MCP'en bruger (når disse senere wires).
+ *
+ * Sletningen blokeres af core hvis kunden er i brug på en åben (ikke-betalt)
+ * udstedt faktura — core returnerer `{ok:false, errors:[...]}` med et klart
+ * dansk-sproget budskab + fakturanummeret, og `withCompanyMutation` mapper det
+ * til en 400 så cockpittet kan vise beskeden verbatim. Bogførte fakturaer
+ * påvirkes ikke (buyer-snapshottet på fakturaen er ikke en FK).
+ *
+ * Sletningen audit-logges i `audit_log` (event_type `customer_delete`).
+ * `requireConfirm` er sat fordi sletningen er en irreversibel mutation af
+ * master-data.
+ */
+export async function handleDeleteCustomer(
+  config: ServerConfig,
+  request: Request,
+  slug: string,
+  idRaw: string,
+): Promise<Response> {
+  const id = parseIdParam(idRaw, "id");
+  const result = await withCompanyMutation(
+    request,
+    config,
+    slug,
+    (ctx) => {
+      const deleted = deleteCustomer(ctx.db, id);
+      return {
+        ok: deleted.ok,
+        errors: deleted.errors,
+      };
+    },
+    { requireConfirm: true },
+  );
+  return okResponse({ customer: { id, deleted: result.ok } });
+}
+
+/**
+ * DELETE /api/companies/:slug/vendors/:id — sletter en leverandør (#430).
+ * Blokeres hvis leverandøren er i brug på en åben gæld (`payables` med
+ * `vendor_id` FK). Audit-logges som `vendor_delete`.
+ */
+export async function handleDeleteVendor(
+  config: ServerConfig,
+  request: Request,
+  slug: string,
+  idRaw: string,
+): Promise<Response> {
+  const id = parseIdParam(idRaw, "id");
+  const result = await withCompanyMutation(
+    request,
+    config,
+    slug,
+    (ctx) => {
+      const deleted = deleteVendor(ctx.db, id);
+      return {
+        ok: deleted.ok,
+        errors: deleted.errors,
+      };
+    },
+    { requireConfirm: true },
+  );
+  return okResponse({ vendor: { id, deleted: result.ok } });
 }
 
 /**

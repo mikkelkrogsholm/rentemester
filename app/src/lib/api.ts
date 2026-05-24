@@ -501,6 +501,19 @@ export const api = {
       { method: "PATCH", body: JSON.stringify(input) },
     ).then((r) => r.customer),
 
+  /**
+   * #430 — sletter en kunde fra master data. Sletningen blokeres server-side
+   * (returnerer ApiError) hvis kunden er i brug på en åben (ikke-betalt)
+   * udstedt faktura; cockpittet viser fejlbeskeden verbatim. Bogførte
+   * fakturaer beholder deres navne-snapshot — historikken er intakt.
+   * Write-irreversibel, så body'en bærer `confirm: true`.
+   */
+  deleteCustomer: (slug: string, id: number) =>
+    request<{ ok: true; customer: { id: number; deleted: boolean } }>(
+      `/api/companies/${encodeURIComponent(slug)}/customers/${id}`,
+      { method: "DELETE", body: JSON.stringify({ confirm: true }) },
+    ).then((r) => r.customer),
+
   /** Creates a new vendor (#390). */
   createVendor: (slug: string, input: VendorInput) =>
     request<{ ok: true; vendor: { id: number } }>(
@@ -513,6 +526,16 @@ export const api = {
     request<{ ok: true; vendor: { id: number; ok: boolean } }>(
       `/api/companies/${encodeURIComponent(slug)}/vendors/${id}`,
       { method: "PATCH", body: JSON.stringify(input) },
+    ).then((r) => r.vendor),
+
+  /**
+   * #430 — sletter en leverandør. Blokeres hvis leverandøren er i brug på en
+   * åben gæld (`payables` med `vendor_id`-FK). Write-irreversibel.
+   */
+  deleteVendor: (slug: string, id: number) =>
+    request<{ ok: true; vendor: { id: number; deleted: boolean } }>(
+      `/api/companies/${encodeURIComponent(slug)}/vendors/${id}`,
+      { method: "DELETE", body: JSON.stringify({ confirm: true }) },
     ).then((r) => r.vendor),
 
   /**

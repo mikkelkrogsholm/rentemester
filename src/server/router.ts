@@ -63,6 +63,8 @@ import {
   handleCreateCustomer,
   handleCreateVendor,
   handleCvrLookup,
+  handleDeleteCustomer,
+  handleDeleteVendor,
   handleDataImport,
   handleDocumentBookExpense,
   handleDocumentIngest,
@@ -175,8 +177,10 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "GET", pattern: "/api/companies/:slug/contacts", summary: "Kunder + leverandører." },
   { method: "POST", pattern: "/api/companies/:slug/customers", summary: "Opretter kunde." },
   { method: "PATCH", pattern: "/api/companies/:slug/customers/:id", summary: "Opdaterer kunde." },
+  { method: "DELETE", pattern: "/api/companies/:slug/customers/:id", summary: "Sletter kunde (#430). Blokeres ved åbne fakturaer." },
   { method: "POST", pattern: "/api/companies/:slug/vendors", summary: "Opretter leverandør." },
   { method: "PATCH", pattern: "/api/companies/:slug/vendors/:id", summary: "Opdaterer leverandør." },
+  { method: "DELETE", pattern: "/api/companies/:slug/vendors/:id", summary: "Sletter leverandør (#430). Blokeres ved åbne gælder." },
   { method: "GET", pattern: "/api/companies/:slug/cvr-lookup", summary: "Slår CVR op." },
   { method: "GET", pattern: "/api/companies/:slug/company", summary: "Virksomhedens stamdata." },
   { method: "PATCH", pattern: "/api/companies/:slug/company", summary: "Opdaterer stamdata + bank/betaling." },
@@ -811,17 +815,27 @@ export async function handleRequest(
       return await handleCreateCustomer(config, request, slug);
     }
 
-    const updateCustomerMatch =
+    const customerByIdMatch =
       /^\/api\/companies\/([^/]+)\/customers\/(\d+)$/.exec(path);
-    if (updateCustomerMatch) {
-      if (method !== "PATCH") throw ApiError.methodNotAllowed("PATCH required");
-      const slug = decodeURIComponent(updateCustomerMatch[1]!);
-      return await handleUpdateCustomer(
-        config,
-        request,
-        slug,
-        updateCustomerMatch[2]!,
-      );
+    if (customerByIdMatch) {
+      const slug = decodeURIComponent(customerByIdMatch[1]!);
+      if (method === "PATCH") {
+        return await handleUpdateCustomer(
+          config,
+          request,
+          slug,
+          customerByIdMatch[2]!,
+        );
+      }
+      if (method === "DELETE") {
+        return await handleDeleteCustomer(
+          config,
+          request,
+          slug,
+          customerByIdMatch[2]!,
+        );
+      }
+      throw ApiError.methodNotAllowed("PATCH or DELETE required");
     }
 
     const createVendorMatch =
@@ -832,17 +846,27 @@ export async function handleRequest(
       return await handleCreateVendor(config, request, slug);
     }
 
-    const updateVendorMatch =
+    const vendorByIdMatch =
       /^\/api\/companies\/([^/]+)\/vendors\/(\d+)$/.exec(path);
-    if (updateVendorMatch) {
-      if (method !== "PATCH") throw ApiError.methodNotAllowed("PATCH required");
-      const slug = decodeURIComponent(updateVendorMatch[1]!);
-      return await handleUpdateVendor(
-        config,
-        request,
-        slug,
-        updateVendorMatch[2]!,
-      );
+    if (vendorByIdMatch) {
+      const slug = decodeURIComponent(vendorByIdMatch[1]!);
+      if (method === "PATCH") {
+        return await handleUpdateVendor(
+          config,
+          request,
+          slug,
+          vendorByIdMatch[2]!,
+        );
+      }
+      if (method === "DELETE") {
+        return await handleDeleteVendor(
+          config,
+          request,
+          slug,
+          vendorByIdMatch[2]!,
+        );
+      }
+      throw ApiError.methodNotAllowed("PATCH or DELETE required");
     }
 
     // CVR lookup helper for the Kontakter modal (#390) — read-only enrichment.

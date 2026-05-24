@@ -138,4 +138,33 @@ describe("ContactsView — Kontakter", () => {
     });
     expect(addCustomerButtons.length).toBeGreaterThanOrEqual(1);
   });
+
+  // #430 — sletning af kontakter fra cockpittet.
+  test("each customer row has a Slet action that opens a confirm dialog", async () => {
+    mockFetch(route());
+    renderView();
+    const deleteButton = await screen.findByRole("button", {
+      name: "Slet Kunde A/S",
+    });
+    await userEvent.click(deleteButton);
+    expect(
+      screen.getByRole("dialog", { name: /Slet kunde Kunde A\/S/i }),
+    ).toBeInTheDocument();
+    // Konsekvenser forklares i dansk, ikke-teknisk sprog.
+    expect(
+      screen.getByText(/bogførte fakturaer og posteringer beholder navnet/i),
+    ).toBeInTheDocument();
+  });
+
+  test("each vendor row has a Slet action that opens a confirm dialog", async () => {
+    mockFetch(route());
+    renderView();
+    const deleteButton = await screen.findByRole("button", {
+      name: "Slet Leverandør ApS",
+    });
+    await userEvent.click(deleteButton);
+    expect(
+      screen.getByRole("dialog", { name: /Slet leverandør Leverandør ApS/i }),
+    ).toBeInTheDocument();
+  });
 });

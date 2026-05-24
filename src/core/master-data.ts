@@ -317,6 +317,183 @@ export function updateCustomer(
   return { ok: true, customerId: id, appliedRules: ["DK-MASTER-DATA-CUSTOMER-001"], errors: [] };
 }
 
+/**
+ * Find issued invoices that reference a given customer by buyer.name +
+ * buyer.vatOrCvr snapshot (the snapshot is the only link — kontakter er IKKE
+ * en FK på fakturasnapshots — sletning er derfor ikke en data-corruption
+ * risiko for historikken). Returns the open invoices that should block a
+ * delete: an invoice counts as "open" when its status is `open`, `overdue`
+ * or `overpaid` — we lean on the same status derivation the cockpit shows
+ * on the invoice-listen, so the human's mental model lines up.
+ *
+ * Used by `deleteCustomer` (#430) to refuse the delete and surface a clear
+ * "kontakten er i brug på en åben faktura: <nummer>" message.
+ */
+function findOpenIssuedInvoicesForCustomer(
+  db: Database,
+  customer: { name: string; vatOrCvr: string | null },
+): Array<{ invoiceNo: string }> {
+  // Pull every issued-invoice document; the buyer match is done in JS
+  // because the buyer block lives in `payload_json` (a snapshot — there is
+  // no FK back to customers, by design). The cost is bounded by the
+  // company's invoice count, which is small for an SMB.
+  const rows = db
+    .query(
+      `SELECT id, invoice_no, payload_json
+       FROM documents
+       WHERE document_type = 'issued_invoice'`,
+    )
+    .all() as Array<{
+      id: number;
+      invoice_no: string;
+      payload_json: string | null;
+    }>;
+
+  const wantedName = customer.name.trim().toLowerCase();
+  const wantedCvr = (customer.vatOrCvr ?? "").trim().toUpperCase();
+
+  const matches: Array<{ invoiceNo: string; documentId: number }> = [];
+  for (const row of rows) {
+    if (!row.payload_json) continue;
+    let payload: { buyer?: { name?: string; vatOrCvr?: string } } | null = null;
+    try {
+      payload = JSON.parse(row.payload_json) as typeof payload;
+    } catch {
+      continue;
+    }
+    const buyerName = (payload?.buyer?.name ?? "").trim().toLowerCase();
+    const buyerCvr = (payload?.buyer?.vatOrCvr ?? "").trim().toUpperCase();
+    // A match is either (vat/cvr matches when both have one) OR (names match
+    // when no vat/cvr is set on either side). Mirrors how a human would
+    // recognise "same kunde" in the cockpit.
+    const matchByCvr = wantedCvr.length > 0 && buyerCvr === wantedCvr;
+    const matchByName =
+      wantedCvr.length === 0 && buyerCvr.length === 0 && buyerName === wantedName;
+    if (matchByCvr || matchByName) {
+      matches.push({ invoiceNo: row.invoice_no, documentId: row.id });
+    }
+  }
+
+  // For each matched invoice, check whether the invoice is fully settled.
+  // "Open" is defined by the absence of a balancing payment / credit /
+  // refund / write-off: gross > sum of payments. We use the raw tables
+  // here (rather than the rich `getInvoiceStatus` helper) to keep this
+  // function dependency-free and side-effect-free.
+  const open: Array<{ invoiceNo: string }> = [];
+  for (const match of matches) {
+    const settled = (db
+      .query(
+        `SELECT
+           COALESCE((SELECT SUM(amount) FROM invoice_payments WHERE invoice_document_id = ?), 0) AS paid,
+           COALESCE((SELECT SUM(amount) FROM invoice_refunds WHERE invoice_document_id = ?), 0) AS refunded,
+           COALESCE((SELECT SUM(gross_amount) FROM invoice_bad_debt_writeoffs WHERE invoice_document_id = ?), 0) AS written_off,
+           (SELECT amount_inc_vat FROM documents WHERE id = ?) AS gross`,
+      )
+      .get(match.documentId, match.documentId, match.documentId, match.documentId) as
+      | { paid: number; refunded: number; written_off: number; gross: number }
+      | null);
+    if (!settled) continue;
+    const gross = Number(settled.gross ?? 0);
+    const closed = Number(settled.paid ?? 0) + Number(settled.refunded ?? 0) + Number(settled.written_off ?? 0);
+    if (gross > closed + 0.005) {
+      open.push({ invoiceNo: match.invoiceNo });
+    }
+  }
+  return open;
+}
+
+/**
+ * Slet en kunde fra master data (#430). En fejl-importeret eller dubleret
+ * kunde skal kunne fjernes fra cockpittet — ikke kun fra CLI'en. Vi blokerer
+ * sletningen hvis kunden er i brug på en åben (ikke-betalt) udstedt faktura
+ * og giver et klart navngivet fakturanummer tilbage, så ejeren ved hvor
+ * problemet ligger.
+ *
+ * Bogførte fakturaer påvirkes IKKE: buyer-feltet er et snapshot i
+ * `documents.payload_json`, ikke en FK — den fortsatte revisions-eksport og
+ * det historiske ledger forbliver intakt. Sletningen audit-logges.
+ */
+export function deleteCustomer(db: Database, id: number) {
+  const existing = getCustomerById(db, id);
+  if (!existing) return { ok: false, errors: [`customer ${id} does not exist`] };
+
+  const openInvoices = findOpenIssuedInvoicesForCustomer(db, {
+    name: existing.name,
+    vatOrCvr: existing.vat_or_cvr,
+  });
+  if (openInvoices.length > 0) {
+    const list = openInvoices.map((inv) => inv.invoiceNo).join(", ");
+    return {
+      ok: false,
+      errors: [
+        `Kunden er i brug på åben faktura: ${list}. Bogfør betalingen eller udsted en kreditnota før kunden kan slettes.`,
+      ],
+      openInvoices,
+    };
+  }
+
+  db.transaction(() => {
+    db.run(`DELETE FROM customers WHERE id = ?`, id);
+    insertAuditLog(db, {
+      eventType: "customer_delete",
+      entityType: "customer",
+      entityId: id,
+      message: `Deleted customer ${existing.name}`,
+    });
+  }, { immediate: true })();
+
+  return { ok: true, customerId: id, errors: [] };
+}
+
+/**
+ * Slet en leverandør (#430). En leverandør med en åben gæld i `payables`
+ * blokeres med en klar besked — payables har en `vendor_id` FK, så vi kan
+ * detektere "er i brug" direkte uden at gætte på navne-snapshots.
+ * Historiske bogførte bilag har deres `sender_*`-felter som snapshot i
+ * `documents`, så de påvirkes ikke.
+ */
+export function deleteVendor(db: Database, id: number) {
+  const existing = getVendorById(db, id);
+  if (!existing) return { ok: false, errors: [`vendor ${id} does not exist`] };
+
+  // A payable is "open" when its gross > the sum of applied payable_payments.
+  const openPayables = db
+    .query(
+      `SELECT p.id, p.bill_no, p.gross_amount,
+              COALESCE((SELECT SUM(amount) FROM payable_payments pp WHERE pp.payable_id = p.id), 0) AS paid
+         FROM payables p
+        WHERE p.vendor_id = ?`,
+    )
+    .all(id) as Array<{ id: number; bill_no: string | null; gross_amount: number; paid: number }>;
+  const stillOpen = openPayables.filter(
+    (row) => Number(row.gross_amount) > Number(row.paid) + 0.005,
+  );
+  if (stillOpen.length > 0) {
+    const list = stillOpen
+      .map((row) => row.bill_no ?? `payable #${row.id}`)
+      .join(", ");
+    return {
+      ok: false,
+      errors: [
+        `Leverandøren er i brug på åben gæld: ${list}. Bogfør betalingen før leverandøren kan slettes.`,
+      ],
+      openPayables: stillOpen,
+    };
+  }
+
+  db.transaction(() => {
+    db.run(`DELETE FROM vendors WHERE id = ?`, id);
+    insertAuditLog(db, {
+      eventType: "vendor_delete",
+      entityType: "vendor",
+      entityId: id,
+      message: `Deleted vendor ${existing.name}`,
+    });
+  }, { immediate: true })();
+
+  return { ok: true, vendorId: id, errors: [] };
+}
+
 export type UpdateVendorInput = Partial<Omit<CreateVendorInput, "name">> & {
   name?: string;
 };
