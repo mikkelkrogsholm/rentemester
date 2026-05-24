@@ -75,6 +75,7 @@ import {
   handleInvoiceSendReminder,
   handleInvoiceIssue,
   handleInvoicePost,
+  handleCreateRecurringInvoiceTemplate,
   handleInvoiceSettle,
   handleReopenPeriod,
   handleResolveException,
@@ -171,6 +172,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "GET", pattern: "/api/companies/:slug/documents/:id/file", summary: "Henter et bilag." },
   { method: "GET", pattern: "/api/companies/:slug/documents/:id/booking-options", summary: "Forslagsdata til bogføring af et bilag." },
   { method: "GET", pattern: "/api/companies/:slug/recurring-invoices", summary: "Gentagende fakturaer." },
+  { method: "POST", pattern: "/api/companies/:slug/recurring-invoices", summary: "Opretter faktura-skabelon (#386)." },
   { method: "POST", pattern: "/api/companies/:slug/recurring-invoices/:id/generate", summary: "Materialiserer en gentagende faktura." },
   { method: "GET", pattern: "/api/companies/:slug/archive/:year", summary: "Arkiveret regnskabsår." },
   { method: "GET", pattern: "/api/companies/:slug/multi-year", summary: "Flerårsoversigt." },
@@ -749,9 +751,15 @@ export async function handleRequest(
     const recurringInvoicesMatch =
       /^\/api\/companies\/([^/]+)\/recurring-invoices$/.exec(path);
     if (recurringInvoicesMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
       const slug = decodeURIComponent(recurringInvoicesMatch[1]!);
-      return handleCompanyRecurringInvoices(config, slug);
+      if (method === "GET") return handleCompanyRecurringInvoices(config, slug);
+      // #386 — cockpit can create a recurring-invoice template instead of
+      // having to drop to the CLI. POSTs through the same write pipeline as
+      // the rest of the write-routes (backup lock, localhost gate, actor
+      // attribution, requireConfirm) — see `handleCreateRecurringInvoiceTemplate`.
+      if (method === "POST")
+        return await handleCreateRecurringInvoiceTemplate(config, request, slug);
+      throw ApiError.methodNotAllowed("GET or POST required");
     }
 
     const recurringInvoiceGenerateMatch =

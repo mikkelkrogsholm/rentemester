@@ -1,12 +1,18 @@
-// Tests for app/src/views/RecurringInvoicesView.tsx (#435 + earlier slices).
+// Tests for app/src/views/RecurringInvoicesView.tsx (#435 + #386 + earlier).
 //
-// Covers the Deaktivér action: the button is visible on active templates,
-// the confirm-dialog gate must be passed, the API call carries the optional
-// reason from the prompt, and a server failure is surfaced as a banner.
-// Inactive templates do NOT show the Generér / Deaktivér actions.
+// Covers the Deaktivér action (#435): the button is visible on active
+// templates, the confirm-dialog gate must be passed, the API call carries
+// the optional reason from the prompt, and a server failure is surfaced as
+// a banner. Inactive templates do NOT show the Generér / Deaktivér actions.
+//
+// Also covers the Opret skabelon action (#386): both the page-head button
+// and the empty-state CTA open the create modal; submitting the modal
+// POSTs to `/recurring-invoices` with the minimal payload + confirm:true,
+// and refreshes the list on success. The CLI snippet that used to live in
+// the empty-state is gone.
 
 import { describe, expect, test, vi, beforeEach, afterEach } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RecurringInvoicesView } from "./RecurringInvoicesView";
 import { renderAt } from "../test/render";
@@ -217,5 +223,188 @@ describe("RecurringInvoicesView — Faktura-skabeloner", () => {
       expect(body.confirm).toBe(true);
       expect(body.reason).toBeUndefined();
     });
+  });
+
+  // -------------------------------------------------------------------------
+  // #386 — Opret skabelon-knap + modal-flow
+  // -------------------------------------------------------------------------
+
+  test("page-head has a 'Opret skabelon' button when there are templates", async () => {
+    mockFetch(routes());
+    renderView();
+    await screen.findByText("ABC ApS · månedligt abonnement");
+    expect(
+      screen.getByRole("button", { name: /Opret skabelon/ }),
+    ).toBeInTheDocument();
+  });
+
+  test("empty state shows a 'Opret skabelon' CTA and no CLI snippet", async () => {
+    mockFetch({
+      ...routes({ templates: [] }),
+    });
+    renderView();
+    await screen.findByText(/Ingen skabeloner endnu/);
+
+    // The old CLI snippet must NOT appear — that was the bug in #386.
+    expect(screen.queryByText(/rentemester recurring-invoice create/)).toBeNull();
+
+    // Both the page-head button and the empty-state CTA are present.
+    const buttons = screen.getAllByRole("button", { name: /Opret skabelon/ });
+    expect(buttons.length).toBeGreaterThanOrEqual(2);
+  });
+
+  test("clicking 'Opret skabelon' opens the modal with the expected fields", async () => {
+    mockFetch({
+      ...routes({ templates: [] }),
+      "GET /api/companies/acme-aps/contacts": {
+        contacts: {
+          slug: "acme-aps",
+          company: { name: "Acme ApS", cvr: "DK12345678", country: "DK", currency: "DKK", fiscalYearStartMonth: 1, fiscalYearLabelStrategy: "calendar" },
+          fiscalYears: [],
+          customers: [],
+          vendors: [],
+        },
+      },
+    });
+    renderView();
+    await screen.findByText(/Ingen skabeloner endnu/);
+
+    await userEvent.click(
+      screen.getAllByRole("button", { name: /Opret skabelon/ })[0]!,
+    );
+
+    expect(
+      await screen.findByRole("dialog", { name: /Opret faktura-skabelon/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText(/Skabelonens navn/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Interval$/)).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/Første udstedelsesdato/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/Betalingsfrist i dage/),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText(/Linje 1 beskrivelse/)).toBeInTheDocument();
+  });
+
+  test("submitting the modal POSTs the template payload and reloads", async () => {
+    const fetchMock = vi.fn();
+    mockFetch({
+      ...routes({ templates: [] }),
+      "GET /api/companies/acme-aps/contacts": {
+        contacts: {
+          slug: "acme-aps",
+          company: { name: "Acme ApS", cvr: "DK12345678", country: "DK", currency: "DKK", fiscalYearStartMonth: 1, fiscalYearLabelStrategy: "calendar" },
+          fiscalYears: [],
+          customers: [],
+          vendors: [],
+        },
+      },
+      "POST /api/companies/acme-aps/recurring-invoices": {
+        template: {
+          templateId: 42,
+          name: "Ny månedlig",
+          interval: "monthly",
+          firstIssueDate: "2026-07-01",
+        },
+      },
+    });
+    void fetchMock;
+    renderView();
+    await screen.findByText(/Ingen skabeloner endnu/);
+
+    await userEvent.click(
+      screen.getAllByRole("button", { name: /Opret skabelon/ })[0]!,
+    );
+    await screen.findByRole("dialog", { name: /Opret faktura-skabelon/ });
+
+    await userEvent.type(
+      screen.getByLabelText(/Skabelonens navn/),
+      "Ny månedlig",
+    );
+    await userEvent.type(
+      screen.getByLabelText(/Første udstedelsesdato/),
+      "2026-07-01",
+    );
+    await userEvent.type(screen.getByLabelText(/Kundens navn/), "Kunde ApS");
+    await userEvent.type(
+      screen.getByLabelText(/Linje 1 beskrivelse/),
+      "Månedlig ydelse",
+    );
+    await userEvent.type(screen.getByLabelText(/Linje 1 antal/), "1");
+    await userEvent.type(
+      screen.getByLabelText(/Linje 1 enhedspris/),
+      "1500",
+    );
+
+    const dialog = await screen.findByRole("dialog", {
+      name: /Opret faktura-skabelon/,
+    });
+    const { getByRole } = within(dialog);
+    await userEvent.click(getByRole("button", { name: /^Opret skabelon$/ }));
+
+    await waitFor(() => {
+      const calls = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls;
+      const createCall = calls.find(
+        ([u, init]) =>
+          typeof u === "string" &&
+          u === "/api/companies/acme-aps/recurring-invoices" &&
+          (init as RequestInit | undefined)?.method === "POST",
+      );
+      expect(createCall).toBeTruthy();
+      const body = JSON.parse(String((createCall![1] as RequestInit).body));
+      expect(body.confirm).toBe(true);
+      expect(body.name).toBe("Ny månedlig");
+      expect(body.interval).toBe("monthly");
+      expect(body.firstIssueDate).toBe("2026-07-01");
+      expect(Array.isArray(body.lines)).toBe(true);
+      expect(body.lines).toHaveLength(1);
+      expect(body.lines[0].description).toBe("Månedlig ydelse");
+      expect(body.lines[0].quantity).toBe(1);
+      expect(body.lines[0].unitPriceExVat).toBe(1500);
+    });
+  });
+
+  test("submitting the modal without name shows a validation error", async () => {
+    mockFetch({
+      ...routes({ templates: [] }),
+      "GET /api/companies/acme-aps/contacts": {
+        contacts: {
+          slug: "acme-aps",
+          company: { name: "Acme ApS", cvr: "DK12345678", country: "DK", currency: "DKK", fiscalYearStartMonth: 1, fiscalYearLabelStrategy: "calendar" },
+          fiscalYears: [],
+          customers: [],
+          vendors: [],
+        },
+      },
+    });
+    renderView();
+    await screen.findByText(/Ingen skabeloner endnu/);
+
+    await userEvent.click(
+      screen.getAllByRole("button", { name: /Opret skabelon/ })[0]!,
+    );
+    await screen.findByRole("dialog", { name: /Opret faktura-skabelon/ });
+
+    const dialog = await screen.findByRole("dialog", {
+      name: /Opret faktura-skabelon/,
+    });
+    const { getByRole } = within(dialog);
+    await userEvent.click(getByRole("button", { name: /^Opret skabelon$/ }));
+
+    expect(
+      await screen.findByText(/Angiv et navn på skabelonen/),
+    ).toBeInTheDocument();
+
+    // No POST was made — only the GETs (recurring-invoices + fiscal-years +
+    // contacts).
+    const calls = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls;
+    const createCall = calls.find(
+      ([u, init]) =>
+        typeof u === "string" &&
+        u === "/api/companies/acme-aps/recurring-invoices" &&
+        (init as RequestInit | undefined)?.method === "POST",
+    );
+    expect(createCall).toBeUndefined();
   });
 });

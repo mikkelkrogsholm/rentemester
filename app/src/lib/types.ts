@@ -1245,6 +1245,43 @@ export type RecurringInvoiceTemplateRow = {
   generations: RecurringInvoiceGenerationRow[];
 };
 
+/** Public alias used by the create modal (#386). */
+export type RecurringInterval = "monthly" | "quarterly" | "yearly";
+export type DeliveryPeriodMode = "issue_month" | "interval_window" | "none";
+
+/**
+ * Minimal create-template payload the cockpit POSTs (#386). The server
+ * computes line totals + net/moms/brutto via `computeInvoiceAmounts` and runs
+ * the same `createRecurringInvoiceTemplate` core function the CLI calls —
+ * the cockpit never hand-builds an `InvoicePayload`.
+ */
+export type RecurringInvoiceTemplateInput = {
+  name: string;
+  interval: RecurringInterval;
+  firstIssueDate: string;
+  paymentTermsDays: number;
+  deliveryPeriodMode?: DeliveryPeriodMode;
+  notes?: string;
+  vatRatePercent: number;
+  currency?: string;
+  /** When set, server back-fills the buyer from stored customer master-data. */
+  customerId?: number;
+  buyer?: { name?: string; address?: string; vatOrCvr?: string };
+  lines: Array<{
+    description: string;
+    quantity: number;
+    unitPriceExVat: number;
+  }>;
+};
+
+/** Server's echo of a successful create. */
+export type RecurringInvoiceTemplateCreatedResult = {
+  templateId: number;
+  name: string;
+  interval: RecurringInterval;
+  firstIssueDate: string;
+};
+
 export type CompanyRecurringInvoices = {
   slug: string;
   templates: RecurringInvoiceTemplateRow[];

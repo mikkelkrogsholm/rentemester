@@ -33,6 +33,8 @@ import type {
   OverviewResponse,
   PortfolioResponse,
   RecurringInvoiceGenerationResult,
+  RecurringInvoiceTemplateCreatedResult,
+  RecurringInvoiceTemplateInput,
   RecurringInvoicesResponse,
   SyncCvrResponse,
   TrialBalanceResponse,
@@ -192,6 +194,28 @@ export const api = {
     request<RecurringInvoicesResponse>(
       `/api/companies/${encodeURIComponent(slug)}/recurring-invoices`,
     ).then((r) => r.recurringInvoices),
+
+  /**
+   * Creates a recurring-invoice template (#386). The cockpit hands the server
+   * a minimal `{name, interval, firstIssueDate, paymentTermsDays,
+   * deliveryPeriodMode, notes, vatRatePercent, currency, customerId, buyer,
+   * lines}`; the server runs `computeInvoiceAmounts` + `resolveInvoiceMasterData`
+   * and then `createRecurringInvoiceTemplate` — the same core path the CLI's
+   * `recurring-invoice create` uses. Write-irreversible (a template that
+   * cannot be edited or deleted, only retired), so the body carries
+   * `confirm: true` to match the surrounding write-routes.
+   */
+  createRecurringInvoiceTemplate: (
+    slug: string,
+    input: RecurringInvoiceTemplateInput,
+  ) =>
+    request<{ ok: true; template: RecurringInvoiceTemplateCreatedResult }>(
+      `/api/companies/${encodeURIComponent(slug)}/recurring-invoices`,
+      {
+        method: "POST",
+        body: JSON.stringify({ ...input, confirm: true }),
+      },
+    ).then((r) => r.template),
 
   /**
    * Generates the next invoice from a template for the given `asOfDate`. The

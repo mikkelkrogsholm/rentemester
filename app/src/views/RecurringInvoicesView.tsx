@@ -3,18 +3,19 @@
 // The deterministic core (createRecurringInvoiceTemplate / generateRecurringInvoice
 // / retireRecurringInvoiceTemplate) is already in place — this view lists the
 // templates, surfaces their next-issue date, lets a human generate the next
-// invoice with one click, and lets the owner retire a template that should no
-// longer suggest itself (#435). Generation is idempotent, so re-clicking is
-// safe.
+// invoice with one click, lets the owner retire a template that should no
+// longer suggest itself (#435), and — as of #386 — lets the owner create a
+// new template from the cockpit instead of having to use the CLI. Generation
+// is idempotent, so re-clicking is safe.
 //
 // Templates are append-only by schema: a retired template cannot be
 // reactivated, and identity/payload columns cannot be mutated. When an owner
 // needs to change terms (price, frequency, customer), they retire the old
 // template and create a new one — past generations stay on the original
-// template's history. Creation from the cockpit is tracked separately (#386);
-// today the create-flow lives in the CLI.
+// template's history.
 
 import { useState } from "react";
+import { RecurringInvoiceTemplateModal } from "../components/RecurringInvoiceTemplateModal";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
@@ -40,6 +41,9 @@ const INTERVAL_LABELS: Record<RecurringInvoiceTemplateRow["interval"], string> =
 export function RecurringInvoicesView() {
   const { slug = "" } = useParams();
   const { year, setYear } = useCompanyYear();
+  // #386: the create-template modal is rendered into the view; it is toggled
+  // by both the page-head primary button and the empty-state CTA.
+  const [createOpen, setCreateOpen] = useState(false);
   const state = useAsync<Page>(
     async () => {
       const [recurringInvoices, fiscalYears] = await Promise.all([
@@ -64,6 +68,12 @@ export function RecurringInvoicesView() {
     String(new Date().getFullYear());
   const active = r.templates.filter((t) => t.active);
   const retired = r.templates.filter((t) => !t.active);
+  // #386: the selected fiscal year decides whether the create button is
+  // shown. Archived years are read-only across the cockpit (mirrors
+  // InvoicesView, BankView etc.), so an archived year hides the CTA without
+  // removing the read-only listing of past templates.
+  const selectedYearArchived =
+    fiscalYears.find((y) => y.label === selectedYear)?.source === "archive";
 
   return (
     <section className="statement">
@@ -76,9 +86,20 @@ export function RecurringInvoicesView() {
             udsteder ikke en ny faktura.
           </p>
         </div>
-        <Link className="btn secondary" to={`/companies/${slug}/fakturaer`}>
-          Tilbage til fakturaer
-        </Link>
+        <div className="row-actions" style={{ gap: 8 }}>
+          {!selectedYearArchived && (
+            <button
+              type="button"
+              className="btn"
+              onClick={() => setCreateOpen(true)}
+            >
+              Opret skabelon
+            </button>
+          )}
+          <Link className="btn secondary" to={`/companies/${slug}/fakturaer`}>
+            Tilbage til fakturaer
+          </Link>
+        </div>
       </div>
 
       <CompanyNav
@@ -94,15 +115,23 @@ export function RecurringInvoicesView() {
           <p className="muted">
             Der er ikke oprettet nogen faktura-skabeloner for denne
             virksomhed. Når du har en gentagen faktura — fx et månedligt
-            abonnement eller en kvartalsvis ydelse — kan du oprette en
-            skabelon her, og cockpittet udsteder den næste faktura med ét
-            klik.
+            abonnement eller en kvartalsvis ydelse — opretter du en skabelon,
+            og cockpittet udsteder den næste faktura med ét klik.
           </p>
-          <p className="muted">
-            Oprettelse direkte fra cockpittet er på vej. Indtil da kan du
-            oprette en almindelig faktura under{" "}
-            <Link to={`/companies/${slug}/fakturaer`}>Fakturaer</Link>.
-          </p>
+          {selectedYearArchived ? (
+            <p className="muted">
+              Regnskabsåret er arkiveret. Skift til et aktivt år for at oprette
+              en skabelon.
+            </p>
+          ) : (
+            <button
+              type="button"
+              className="btn"
+              onClick={() => setCreateOpen(true)}
+            >
+              Opret skabelon
+            </button>
+          )}
         </div>
       ) : (
         <>
@@ -133,6 +162,14 @@ export function RecurringInvoicesView() {
             </div>
           )}
         </>
+      )}
+
+      {createOpen && (
+        <RecurringInvoiceTemplateModal
+          slug={slug}
+          onCreated={state.reload}
+          onClose={() => setCreateOpen(false)}
+        />
       )}
     </section>
   );

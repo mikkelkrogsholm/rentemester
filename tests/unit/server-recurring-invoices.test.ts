@@ -286,4 +286,139 @@ describe("cockpit API — recurring invoices", () => {
       rmSync(ws, { recursive: true, force: true });
     }
   });
+
+  // #386 — cockpit can create a recurring-invoice template instead of having
+  // to drop to the CLI. The route accepts the minimal `{name, interval,
+  // firstIssueDate, paymentTermsDays, deliveryPeriodMode, vatRatePercent,
+  // currency, buyer, lines}` shape — the server computes line totals + net
+  // /moms/brutto via computeInvoiceAmounts and then runs the same
+  // createRecurringInvoiceTemplate core path the CLI uses.
+  test("POST .../recurring-invoices creates a template the list then surfaces", async () => {
+    const { root: ws, slug } = makeWorkspace("rec-create");
+    try {
+      const create = await post(
+        config(ws),
+        `/api/companies/${slug}/recurring-invoices`,
+        {
+          confirm: true,
+          name: "ABC ApS · månedligt abonnement",
+          interval: "monthly",
+          firstIssueDate: "2026-07-01",
+          paymentTermsDays: 14,
+          deliveryPeriodMode: "issue_month",
+          vatRatePercent: 25,
+          currency: "DKK",
+          notes: "Faktura sendes på e-mail",
+          buyer: {
+            name: "ABC ApS",
+            address: "Hovedgaden 1, 8000 Aarhus C",
+            vatOrCvr: "DK87654321",
+          },
+          seller: {
+            name: "Acme ApS",
+            address: "Testvej 1, 2100 København Ø",
+            vatOrCvr: "DK12345678",
+          },
+          lines: [
+            {
+              description: "Bogføring",
+              quantity: 1,
+              unitPriceExVat: 2000,
+            },
+          ],
+        },
+      );
+      expect(create.status).toBe(200);
+      expect(create.body.ok).toBe(true);
+      expect(typeof create.body.template.templateId).toBe("number");
+      expect(create.body.template.name).toBe("ABC ApS · månedligt abonnement");
+      expect(create.body.template.interval).toBe("monthly");
+
+      // The new template now shows up in the list as an active row.
+      const listed = await getJson(
+        config(ws),
+        `/api/companies/${slug}/recurring-invoices`,
+      );
+      expect(listed.status).toBe(200);
+      const row = listed.body.recurringInvoices.templates.find(
+        (t: { id: number }) =>
+          t.id === create.body.template.templateId,
+      );
+      expect(row).toBeTruthy();
+      expect(row.active).toBe(true);
+      expect(row.interval).toBe("monthly");
+      expect(row.firstIssueDate).toBe("2026-07-01");
+      expect(row.paymentTermsDays).toBe(14);
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
+  test("POST .../recurring-invoices without confirm is refused (400)", async () => {
+    const { root: ws, slug } = makeWorkspace("rec-create-noconfirm");
+    try {
+      const res = await post(
+        config(ws),
+        `/api/companies/${slug}/recurring-invoices`,
+        {
+          name: "x",
+          interval: "monthly",
+          firstIssueDate: "2026-07-01",
+          buyer: { name: "Kunde" },
+          lines: [{ description: "Linje", quantity: 1, unitPriceExVat: 100 }],
+        },
+      );
+      expect(res.status).toBe(400);
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
+  test("POST .../recurring-invoices with bad interval is refused (400)", async () => {
+    const { root: ws, slug } = makeWorkspace("rec-create-badinterval");
+    try {
+      const res = await post(
+        config(ws),
+        `/api/companies/${slug}/recurring-invoices`,
+        {
+          confirm: true,
+          name: "x",
+          interval: "weekly", // not valid
+          firstIssueDate: "2026-07-01",
+          buyer: { name: "Kunde" },
+          lines: [{ description: "Linje", quantity: 1, unitPriceExVat: 100 }],
+        },
+      );
+      expect(res.status).toBe(400);
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
+  test("POST .../recurring-invoices with blank line description surfaces ok:false", async () => {
+    const { root: ws, slug } = makeWorkspace("rec-create-blankline");
+    try {
+      const res = await post(
+        config(ws),
+        `/api/companies/${slug}/recurring-invoices`,
+        {
+          confirm: true,
+          name: "x",
+          interval: "monthly",
+          firstIssueDate: "2026-07-01",
+          buyer: { name: "Kunde" },
+          lines: [{ description: "Linje", quantity: 0, unitPriceExVat: 100 }],
+        },
+      );
+      // computeInvoiceAmounts rejects quantity <= 0 — the handler returns
+      // ok:false inside the envelope.
+      if (res.status === 200) {
+        expect(res.body.ok).toBe(false);
+      } else {
+        expect([400, 409]).toContain(res.status);
+      }
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
 });
