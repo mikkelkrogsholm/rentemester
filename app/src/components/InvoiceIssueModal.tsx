@@ -16,6 +16,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api, type InvoiceIssueSummary } from "../lib/api";
 import { formatKroner } from "../lib/format";
+import type { ContactCustomerRow } from "../lib/types";
 import { Banner } from "./Feedback";
 import { LockBanner } from "./LockBanner";
 
@@ -61,6 +62,13 @@ export function InvoiceIssueModal({
   const [buyerVat, setBuyerVat] = useState("");
   const [lines, setLines] = useState<LineDraft[]>([{ ...EMPTY_LINE }]);
 
+  // #380: surfacing the company's contact list inside the invoice modal so the
+  // owner can pick an existing customer instead of retyping name/address/CVR
+  // every time. The list is fetched lazily on mount; a fetch failure simply
+  // leaves the picker empty — the owner can still type the buyer manually.
+  const [customers, setCustomers] = useState<ContactCustomerRow[]>([]);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
+
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [locked, setLocked] = useState<string | null>(null);
@@ -80,6 +88,26 @@ export function InvoiceIssueModal({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [busy, onClose]);
+
+  // #380: load the contact list so the modal can offer a "Vælg kunde" picker.
+  // The fetch is best-effort: any failure leaves the dropdown empty and the
+  // owner falls back to typing the buyer manually — invoicing must never be
+  // blocked by a side-channel like the contacts route.
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .contacts(slug)
+      .then((data) => {
+        if (cancelled) return;
+        setCustomers(data.customers);
+      })
+      .catch(() => {
+        // A failed contacts lookup must not block invoicing.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
 
   // Check up-front whether the company has payment details — an invoice with
   // no bank account carries no "BETALING" block, so the human is warned (#284).
@@ -107,6 +135,23 @@ export function InvoiceIssueModal({
       cancelled = true;
     };
   }, [slug]);
+
+  /**
+   * #380: prefill the buyer fields from a Kontakter entry. The fields stay
+   * editable — the invoice's buyer block is a snapshot, not a live reference,
+   * so the owner can still tweak a one-off address for a single invoice. An
+   * empty selection clears the dropdown but leaves any typed-in buyer alone.
+   */
+  function selectCustomer(rawId: string) {
+    setSelectedCustomerId(rawId);
+    if (rawId === "") return;
+    const id = Number(rawId);
+    const row = customers.find((c) => c.id === id);
+    if (!row) return;
+    setBuyerName(row.name);
+    setBuyerAddress(row.address ?? "");
+    setBuyerVat(row.vatOrCvr ?? "");
+  }
 
   function updateLine(index: number, patch: Partial<LineDraft>) {
     setLines((prev) =>
@@ -371,6 +416,26 @@ export function InvoiceIssueModal({
                 disabled={busy}
               />
             </label>
+
+            {customers.length > 0 && (
+              <label className="modal-field">
+                Vælg kunde
+                <select
+                  value={selectedCustomerId}
+                  onChange={(e) => selectCustomer(e.target.value)}
+                  disabled={busy}
+                  aria-label="Vælg kunde"
+                >
+                  <option value="">— Ny kunde (indtast nedenfor) —</option>
+                  {customers.map((c) => (
+                    <option key={c.id} value={String(c.id)}>
+                      {c.name}
+                      {c.vatOrCvr ? ` · ${c.vatOrCvr}` : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
 
             <div className="modal-field-grid">
               <label className="modal-field">

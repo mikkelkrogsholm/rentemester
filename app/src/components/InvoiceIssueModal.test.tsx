@@ -2,7 +2,7 @@ import { describe, expect, test, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { InvoiceIssueModal } from "./InvoiceIssueModal";
-import { companySettings, mockFetch } from "../test/fixtures";
+import { companySettings, contacts, mockFetch } from "../test/fixtures";
 
 function noop() {}
 
@@ -25,6 +25,13 @@ function companyRoute(paymentConfigured = true) {
           : null,
       }),
     },
+  };
+}
+
+/** A contacts route returning one customer "Kunde A/S" with a known CVR. */
+function contactsRoute() {
+  return {
+    "GET /api/companies/acme-aps/contacts": { contacts: contacts() },
   };
 }
 
@@ -255,6 +262,27 @@ describe("InvoiceIssueModal", () => {
     expect(
       await screen.findByText(/ingen bankkonto registreret/i),
     ).toBeInTheDocument();
+  });
+
+  // #380 — picking an existing customer from Kontakter prefills the buyer
+  // fields so the owner does not retype name/CVR/address every invoice. The
+  // fields stay editable: the invoice's buyer block is a per-invoice snapshot.
+  test("selecting an existing customer prefills buyer name, CVR and address", async () => {
+    mockFetch({
+      ...companyRoute(),
+      ...contactsRoute(),
+    });
+    render(
+      <InvoiceIssueModal slug="acme-aps" onIssued={noop} onClose={noop} />,
+    );
+    const picker = await screen.findByLabelText("Vælg kunde");
+    await userEvent.selectOptions(picker, "1");
+    const buyer = screen.getByLabelText("Kunde") as HTMLInputElement;
+    expect(buyer.value).toBe("Kunde A/S");
+    const cvrInput = screen.getByLabelText(
+      "Kunde CVR/moms",
+    ) as HTMLInputElement;
+    expect(cvrInput.value).toBe("DK87654321");
   });
 
   test("no warning when the company has payment details", async () => {
