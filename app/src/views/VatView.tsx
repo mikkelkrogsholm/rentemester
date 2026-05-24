@@ -293,15 +293,14 @@ function RubrikkerCard({
           <>
             De felter der hører til momsangivelsen på skat.dk (TastSelv
             Erhverv). Momsperioden er <strong>ikke lukket endnu</strong>, så
-            tallene er foreløbige og udgør ikke en indberetningsklar
-            momsangivelse — <code>vat momsangivelse</code> i terminalen afviser
-            en åben periode. Luk perioden for at få de endelige tal.
+            tallene er foreløbige og kan stadig ændre sig. Når perioden er
+            forbi og lukket, bliver tallene endelige og kan indberettes.
           </>
         ) : (
           <>
-            De felter du udfylder i momsangivelsen på skat.dk (TastSelv
-            Erhverv). Tallene er de samme, som <code>vat momsangivelse</code> i
-            terminalen viser.
+            Disse felter svarer 1:1 til momsangivelsen på skat.dk (TastSelv
+            Erhverv) — udfyld dem som vist. Perioden er lukket, så tallene er
+            endelige.
           </>
         )}
       </p>

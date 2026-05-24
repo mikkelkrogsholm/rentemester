@@ -87,12 +87,16 @@ export function RecurringInvoicesView() {
           <h3>Ingen skabeloner endnu</h3>
           <p className="muted">
             Der er ikke oprettet nogen faktura-skabeloner for denne
-            virksomhed. Opret en med CLI'en:
+            virksomhed. Når du har en gentagen faktura — fx et månedligt
+            abonnement eller en kvartalsvis ydelse — kan du oprette en
+            skabelon her, og cockpittet udsteder den næste faktura med ét
+            klik.
           </p>
-          <pre className="code-block">
-            rentemester recurring-invoice create --company &lt;path&gt; --input
-            template.json
-          </pre>
+          <p className="muted">
+            Oprettelse direkte fra cockpittet er på vej. Indtil da kan du
+            oprette en almindelig faktura under{" "}
+            <Link to={`/companies/${slug}/fakturaer`}>Fakturaer</Link>.
+          </p>
         </div>
       ) : (
         <>

@@ -212,6 +212,40 @@ describe("VatView — Moms", () => {
     ).not.toBeInTheDocument();
   });
 
+  // #413: the rubrics explanation must not leak CLI jargon ("vat momsangivelse",
+  // "i terminalen") to the SMB owner. The cockpit is the authoritative surface;
+  // referring to a terminal command undermines trust and confuses non-technical
+  // owners. Both the open- and closed-period notes must be CLI-free.
+  test("rubrics explanation does not leak CLI jargon to the SMB owner (closed period)", async () => {
+    mockFetch(route({ periodStatus: "closed", momsangivelseReady: true }));
+    renderView();
+    const heading = await screen.findByText(
+      /SKAT-rubrikker \(momsangivelse\)/i,
+    );
+    const card = heading.closest(".statement-card") as HTMLElement;
+    expect(card).not.toBeNull();
+    expect(card.textContent ?? "").not.toMatch(/vat momsangivelse/i);
+    expect(card.textContent ?? "").not.toMatch(/i terminalen/i);
+    // The replacement text reassures the owner without jargon.
+    expect(card.textContent ?? "").toMatch(/skat\.dk/i);
+    expect(card.textContent ?? "").toMatch(/TastSelv Erhverv/i);
+  });
+
+  test("rubrics explanation does not leak CLI jargon (open period)", async () => {
+    mockFetch(route({ periodStatus: "open", momsangivelseReady: false }));
+    renderView();
+    const heading = await screen.findByText(
+      /SKAT-rubrikker \(foreløbige — åben periode\)/i,
+    );
+    const card = heading.closest(".statement-card") as HTMLElement;
+    expect(card).not.toBeNull();
+    expect(card.textContent ?? "").not.toMatch(/vat momsangivelse/i);
+    expect(card.textContent ?? "").not.toMatch(/i terminalen/i);
+    // The replacement text explains provisional-vs-final without jargon.
+    expect(card.textContent ?? "").toMatch(/foreløbige/i);
+    expect(card.textContent ?? "").toMatch(/lukket|endelige/i);
+  });
+
   // #301: a closed period can be reopened from the cockpit — the controlled,
   // audit-logged recovery path for a period closed too early.
   test("offers a reopen action for a closed period and reopens it", async () => {
