@@ -18,6 +18,8 @@ describe("init CLI", () => {
       "--cvr", "DK12345678",
       "--fiscal-year-start-month", "7",
       "--fiscal-year-label-strategy", "span",
+      // #241: passing bank details keeps stderr clean (no advisory warning).
+      "--bank-name", "Testbank", "--bank-reg", "1234", "--bank-account", "5678901234",
     ], {
       cwd: process.cwd(),
       stdout: "pipe",
@@ -51,7 +53,12 @@ describe("init CLI", () => {
     try {
       const company = join(ws, "acme-aps");
       const initProc = Bun.spawn(
-        ["bun", "run", "src/cli.ts", "init", "--company", company, "--format", "json"],
+        [
+          "bun", "run", "src/cli.ts", "init", "--company", company, "--format", "json",
+          // #241: pass bank details so the advisory warning on stderr does not
+          // confuse this test, which is about workspace registration, not #241.
+          "--bank-name", "Testbank", "--bank-reg", "1234", "--bank-account", "5678901234",
+        ],
         {
           cwd: process.cwd(),
           stdout: "pipe",
@@ -206,6 +213,9 @@ describe("init CLI", () => {
         "--company", company,
         "--vat-period", "half-year",
         "--format", "json",
+        // #241: bank details keep stderr clean — this test asserts VAT period
+        // handling, not the missing-bank-details advisory.
+        "--bank-name", "Testbank", "--bank-reg", "1234", "--bank-account", "5678901234",
       ], { cwd: process.cwd(), stdout: "pipe", stderr: "pipe" });
       const stdout = await new Response(proc.stdout).text();
       const stderr = await new Response(proc.stderr).text();
@@ -280,6 +290,8 @@ describe("init CLI", () => {
       "bun", "run", "src/cli.ts", "init",
       "--company", company,
       "--cvr", "DK12345678",
+      // #241: bank details keep stderr clean for this CVR-format assertion.
+      "--bank-name", "Testbank", "--bank-reg", "1234", "--bank-account", "5678901234",
     ], { cwd: process.cwd(), stdout: "pipe", stderr: "pipe" });
     const initStderr = await new Response(initProc.stderr).text();
     const initExit = await initProc.exited;

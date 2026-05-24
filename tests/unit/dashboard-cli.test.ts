@@ -22,7 +22,12 @@ describe("dashboard CLI", () => {
     const company = join(root, "company");
     const outPath = join(root, "dashboard.html");
 
-    const init = await runCli(["init", "--company", company, "--cvr", "12345678"]);
+    const init = await runCli([
+      "init", "--company", company, "--cvr", "12345678",
+      // #241: bank details keep stderr clean — this test asserts dashboard
+      // rendering, not the missing-bank-details advisory.
+      "--bank-name", "Testbank", "--bank-reg", "1234", "--bank-account", "5678901234",
+    ]);
     expect({ exitCode: init.exitCode, stderr: init.stderr }).toEqual({ exitCode: 0, stderr: "" });
 
     const dash = await runCli([

@@ -48,16 +48,46 @@ describe("#239 — global usage does not mislabel file-writing commands as read-
 });
 
 describe("#241 — init/company add warn when no payment details are set", () => {
-  test("init human output warns about missing bank details", async () => {
+  // #241: the warning goes to stderr so JSON-consuming machines never see it
+  // mixed into stdout, and so it survives `init > log.txt` redirection. Init
+  // still succeeds (exit 0) — this is advisory, not fatal.
+  test("init emits the missing-bank-details warning to stderr (not stdout)", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-241-init-"));
     try {
       const company = join(root, "company");
       const proc = run(["init", "--company", company, "--format", "human"]);
       const stdout = await new Response(proc.stdout).text();
+      const stderr = await new Response(proc.stderr).text();
       expect(await proc.exited).toBe(0);
-      expect(stdout).toContain("ADVARSEL");
-      expect(stdout).toContain("betalingsanvisning");
-      expect(stdout).toContain("company set-profile");
+      // Warning is on stderr…
+      expect(stderr).toContain("ADVARSEL");
+      expect(stderr).toContain("ingen betalingsoplysninger");
+      expect(stderr).toContain("betalingsanvisning");
+      expect(stderr).toContain("company set-profile");
+      // …and never leaks into stdout, where the human onboarding block lives.
+      expect(stdout).not.toContain("ADVARSEL");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  // #241: JSON output is for machines — stdout must stay parseable, so the
+  // warning still routes to stderr even when --format json is used.
+  test("init --format json keeps stdout parseable and still warns on stderr", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-241-init-json-warn-"));
+    try {
+      const company = join(root, "company");
+      const proc = run(["init", "--company", company, "--format", "json"]);
+      const stdout = await new Response(proc.stdout).text();
+      const stderr = await new Response(proc.stderr).text();
+      expect(await proc.exited).toBe(0);
+      // stdout is a single clean JSON document.
+      const parsed = JSON.parse(stdout);
+      expect(parsed.ok).toBe(true);
+      expect(parsed.hasPaymentDetails).toBe(false);
+      // The warning still appears, but only on stderr.
+      expect(stderr).toContain("ADVARSEL");
+      expect(stderr).toContain("ingen betalingsoplysninger");
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -72,8 +102,11 @@ describe("#241 — init/company add warn when no payment details are set", () =>
         "--bank-name", "Testbank", "--bank-reg", "1234", "--bank-account", "5678901234",
       ]);
       const stdout = await new Response(proc.stdout).text();
+      const stderr = await new Response(proc.stderr).text();
       expect(await proc.exited).toBe(0);
       expect(stdout).not.toContain("ADVARSEL — ingen betalingsoplysninger");
+      // With bank details set, stderr stays clean of the warning.
+      expect(stderr).not.toContain("ADVARSEL");
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -92,7 +125,7 @@ describe("#241 — init/company add warn when no payment details are set", () =>
     }
   });
 
-  test("company add warns about missing bank details", async () => {
+  test("company add warns about missing bank details — on stderr, not stdout", async () => {
     const ws = mkdtempSync(join(tmpdir(), "rentemester-241-add-"));
     try {
       const proc = run(
@@ -100,9 +133,13 @@ describe("#241 — init/company add warn when no payment details are set", () =>
         { RENTEMESTER_WORKSPACE: ws, RENTEMESTER_COMPANY: "" },
       );
       const stdout = await new Response(proc.stdout).text();
+      const stderr = await new Response(proc.stderr).text();
       expect(await proc.exited).toBe(0);
-      expect(stdout).toContain("ADVARSEL");
-      expect(stdout).toContain("company set-profile");
+      // The warning is on stderr, mirroring `init`'s behavior.
+      expect(stderr).toContain("ADVARSEL");
+      expect(stderr).toContain("company set-profile");
+      // …and is not duplicated into stdout (which carries the success line).
+      expect(stdout).not.toContain("ADVARSEL");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }

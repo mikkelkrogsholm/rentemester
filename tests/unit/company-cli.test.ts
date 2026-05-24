@@ -26,7 +26,12 @@ describe("company CLI", () => {
   test("company add creates a company volume inside the workspace", async () => {
     const ws = tmpRoot("company-cli-add");
     try {
-      const res = await run(["company", "add", "--name", "Acme ApS", "--cvr", "DK12345678"], {
+      const res = await run([
+        "company", "add", "--name", "Acme ApS", "--cvr", "DK12345678",
+        // #241: bank details keep stderr clean — this test asserts company add
+        // creates the volume, not the missing-bank-details advisory.
+        "--bank-name", "Testbank", "--bank-reg", "1234", "--bank-account", "5678901234",
+      ], {
         RENTEMESTER_WORKSPACE: ws,
       });
       expect({ exitCode: res.exitCode, stderr: res.stderr }).toEqual({ exitCode: 0, stderr: "" });
@@ -69,7 +74,12 @@ describe("company CLI", () => {
     const root = tmpRoot("company-cli-rawpath");
     try {
       const company = join(root, "company");
-      const initRes = await run(["init", "--company", company]);
+      const initRes = await run([
+        "init", "--company", company,
+        // #241: bank details keep stderr clean — this test asserts the raw
+        // --company path still resolves, not the missing-bank-details advisory.
+        "--bank-name", "Testbank", "--bank-reg", "1234", "--bank-account", "5678901234",
+      ]);
       expect({ exitCode: initRes.exitCode, stderr: initRes.stderr }).toEqual({
         exitCode: 0,
         stderr: "",
