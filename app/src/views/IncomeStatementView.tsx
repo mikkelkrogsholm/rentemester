@@ -47,6 +47,16 @@ export function IncomeStatementView() {
           </p>
         </div>
         <div className="row-actions">
+          {/* #372 — den dansk-erhvervs-standard "Hent rapport"-genvej. CSV
+              åbner i Excel/Numbers/Sheets med samme tal som tabellen viser
+              på skærmen. PDF følger i et opfølger-issue. */}
+          <a
+            className="btn secondary"
+            href={api.statementCsvUrl(slug, "income-statement", s.selectedYear)}
+            download
+          >
+            Hent CSV
+          </a>
           <Link className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
           </Link>

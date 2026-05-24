@@ -62,6 +62,17 @@ describe("BalanceView — Balance", () => {
     ).toBeInTheDocument();
   });
 
+  test("#372 — 'Hent CSV' links to the balance CSV export endpoint", async () => {
+    mockFetch(route());
+    renderView();
+    const link = await screen.findByRole("link", { name: "Hent CSV" });
+    const href = link.getAttribute("href") ?? "";
+    expect(href).toContain("/api/companies/acme-aps/balance/export");
+    expect(href).toContain("format=csv");
+    expect(href).toContain("year=2026");
+    expect(link.hasAttribute("download")).toBe(true);
+  });
+
   test("an archived year renders the balance sheet under a read-only banner", async () => {
     mockFetch(
       route({ archived: true, archivedSource: "dinero", selectedYear: "2024" }),

@@ -27,6 +27,12 @@ import type { ServerConfig } from "./config";
 import { authMiddleware } from "./auth";
 import { ApiError, toErrorResponse } from "./errors";
 import {
+  exportBalanceCsv,
+  exportIncomeStatementCsv,
+  exportTrialBalanceCsv,
+  type StatementCsvExport,
+} from "./data/statement-exports";
+import {
   buildCompanyArchiveYear,
   buildCompanyBalance,
   buildCompanyBank,
@@ -161,8 +167,11 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "GET", pattern: "/api/companies/:slug/fiscal-years", summary: "Kendte regnskabsår." },
   { method: "GET", pattern: "/api/companies/:slug/overview", summary: "Nøgletalsoverblik." },
   { method: "GET", pattern: "/api/companies/:slug/income-statement", summary: "Resultatopgørelse." },
+  { method: "GET", pattern: "/api/companies/:slug/income-statement/export", summary: "Resultatopgørelse som CSV-download (#372)." },
   { method: "GET", pattern: "/api/companies/:slug/balance", summary: "Balance." },
+  { method: "GET", pattern: "/api/companies/:slug/balance/export", summary: "Balance som CSV-download (#372)." },
   { method: "GET", pattern: "/api/companies/:slug/trial-balance", summary: "Saldobalance." },
+  { method: "GET", pattern: "/api/companies/:slug/trial-balance/export", summary: "Saldobalance som CSV-download (#372)." },
   { method: "GET", pattern: "/api/companies/:slug/journal", summary: "Journalposter." },
   { method: "GET", pattern: "/api/companies/:slug/bank", summary: "Bank-transaktioner." },
   { method: "GET", pattern: "/api/companies/:slug/vat", summary: "Momsoplysninger." },
@@ -305,6 +314,56 @@ function handleCompanyTrialBalance(
   const year = resolveYearParam(url.searchParams.get("year"));
   const data = buildCompanyTrialBalance(config.workspaceRoot, slug, year);
   return okResponse({ trialBalance: data });
+}
+
+/**
+ * GET /api/companies/:slug/(income-statement|balance|trial-balance)/export
+ * — #372: cockpittet skal kunne hente de tre kerne-rapporter som CSV-filer
+ * uden at gå via "Print hele browser-siden". Endpointet returnerer en
+ * UTF-8-BOM-CSV med stabile danske kolonnenavne (header + metadata-blok), så
+ * filen åbner direkte i Excel/Numbers/Sheets.
+ *
+ * Kun `format=csv` er understøttet i denne første slice — PDF-eksporten
+ * kræver en ny render-pipeline og er bevidst udskudt til et opfølger-issue.
+ * Et fravær eller `format=csv` accepteres som CSV; alt andet (fx `pdf`,
+ * `xlsx`) afvises som en venlig 400 så cockpittet kan vise en hint i
+ * stedet for at silent-fejle.
+ */
+function handleCompanyStatementExport(
+  config: ServerConfig,
+  slug: string,
+  url: URL,
+  kind: "income-statement" | "balance" | "trial-balance",
+): Response {
+  const format = (url.searchParams.get("format") ?? "csv").toLowerCase();
+  if (format !== "csv") {
+    if (format === "pdf") {
+      throw ApiError.badRequest(
+        "PDF-eksport er endnu ikke understøttet — brug format=csv (PDF følger i et opfølger-issue til #372).",
+      );
+    }
+    throw ApiError.badRequest(
+      `format=${format} understøttes ikke — kun csv er gyldig i denne version.`,
+    );
+  }
+  const year = resolveYearParam(url.searchParams.get("year"));
+  let exported: StatementCsvExport;
+  if (kind === "income-statement") {
+    exported = exportIncomeStatementCsv(config.workspaceRoot, slug, year);
+  } else if (kind === "balance") {
+    exported = exportBalanceCsv(config.workspaceRoot, slug, year);
+  } else {
+    exported = exportTrialBalanceCsv(config.workspaceRoot, slug, year);
+  }
+  return new Response(exported.content, {
+    headers: {
+      // text/csv per RFC 4180; charset=utf-8 fordi vi præfikser med en BOM.
+      "content-type": "text/csv; charset=utf-8",
+      "content-disposition": `attachment; filename*=UTF-8''${encodeURIComponent(exported.filename)}`,
+      "x-content-type-options": "nosniff",
+      "cache-control": "private, no-store",
+    },
+  });
 }
 
 function handleCompanyJournal(
@@ -673,6 +732,14 @@ export async function handleRequest(
       return handleCompanyOverview(config, slug, url);
     }
 
+    const incomeStatementExportMatch =
+      /^\/api\/companies\/([^/]+)\/income-statement\/export$/.exec(path);
+    if (incomeStatementExportMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(incomeStatementExportMatch[1]!);
+      return handleCompanyStatementExport(config, slug, url, "income-statement");
+    }
+
     const incomeStatementMatch =
       /^\/api\/companies\/([^/]+)\/income-statement$/.exec(path);
     if (incomeStatementMatch) {
@@ -681,11 +748,26 @@ export async function handleRequest(
       return handleCompanyIncomeStatement(config, slug, url);
     }
 
+    const balanceExportMatch = /^\/api\/companies\/([^/]+)\/balance\/export$/.exec(path);
+    if (balanceExportMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(balanceExportMatch[1]!);
+      return handleCompanyStatementExport(config, slug, url, "balance");
+    }
+
     const balanceMatch = /^\/api\/companies\/([^/]+)\/balance$/.exec(path);
     if (balanceMatch) {
       if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
       const slug = decodeURIComponent(balanceMatch[1]!);
       return handleCompanyBalance(config, slug, url);
+    }
+
+    const trialBalanceExportMatch =
+      /^\/api\/companies\/([^/]+)\/trial-balance\/export$/.exec(path);
+    if (trialBalanceExportMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(trialBalanceExportMatch[1]!);
+      return handleCompanyStatementExport(config, slug, url, "trial-balance");
     }
 
     const trialBalanceMatch =

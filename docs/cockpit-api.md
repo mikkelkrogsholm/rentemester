@@ -112,8 +112,11 @@ when omitted.
 | `GET /api/companies/:slug/fiscal-years` | `fiscalYears` | The company's fiscal years. |
 | `GET /api/companies/:slug/overview?year=` | `overview` | Per-year overview. |
 | `GET /api/companies/:slug/income-statement?year=` | `incomeStatement` | Income statement (resultatopgørelse). |
+| `GET /api/companies/:slug/income-statement/export?format=csv&year=` | _binary CSV_ | #372 — Resultatopgørelse som CSV-download (text/csv attachment, dansk semikolon-separator + UTF-8 BOM, byte-deterministic for samme ledger). PDF følger i et opfølger-issue. |
 | `GET /api/companies/:slug/balance?year=` | `balance` | Balance sheet (balance). |
+| `GET /api/companies/:slug/balance/export?format=csv&year=` | _binary CSV_ | #372 — Balance som CSV-download. |
 | `GET /api/companies/:slug/trial-balance?year=` | `trialBalance` | Trial balance (saldobalance). |
+| `GET /api/companies/:slug/trial-balance/export?format=csv&year=` | _binary CSV_ | #372 — Saldobalance som CSV-download. |
 | `GET /api/companies/:slug/journal?year=&account=` | `journal` | Journal entries, optionally filtered by account. |
 | `GET /api/companies/:slug/bank?year=` | `bank` | Bank transactions. |
 | `GET /api/companies/:slug/vat?year=` | `vat` | VAT report (momsopgørelse). |

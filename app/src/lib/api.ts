@@ -187,6 +187,23 @@ export const api = {
   invoicePdfUrl: (slug: string, id: number) =>
     `/api/companies/${encodeURIComponent(slug)}/invoices/${id}/pdf`,
 
+  /**
+   * URL of the Resultatopgørelse, Balance eller Saldobalance som CSV-fil
+   * (#372). Endpointet returnerer en `text/csv`-attachment med stabile
+   * danske kolonnenavne og semikolon-separator, så browseren downloader
+   * filen direkte når URL'en åbnes (typisk via et `<a href download>`).
+   * PDF følger i et opfølger-issue.
+   */
+  statementCsvUrl: (
+    slug: string,
+    report: "income-statement" | "balance" | "trial-balance",
+    year?: string,
+  ) => {
+    const params = new URLSearchParams({ format: "csv" });
+    if (year) params.set("year", year);
+    return `/api/companies/${encodeURIComponent(slug)}/${report}/export?${params.toString()}`;
+  },
+
   /** Recurring-invoice templates + their past generations for a company. */
   recurringInvoices: (slug: string) =>
     request<RecurringInvoicesResponse>(
