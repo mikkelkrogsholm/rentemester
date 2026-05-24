@@ -41,6 +41,7 @@ import { DocumentsView } from "./views/DocumentsView";
 import { ArchiveView } from "./views/ArchiveView";
 import { MultiYearView } from "./views/MultiYearView";
 import { InvoicesView } from "./views/InvoicesView";
+import { PayablesView } from "./views/PayablesView";
 import { RecurringInvoicesView } from "./views/RecurringInvoicesView";
 import { ContactsView } from "./views/ContactsView";
 import { MileageView } from "./views/MileageView";
@@ -93,6 +94,10 @@ export function App() {
           <Route path="/companies/:slug/bank" element={<BankView />} />
           <Route path="/companies/:slug/moms" element={<VatView />} />
           <Route path="/companies/:slug/bilag" element={<DocumentsView />} />
+          <Route
+            path="/companies/:slug/leverandoerfaktura"
+            element={<PayablesView />}
+          />
           <Route path="/companies/:slug/arkiv" element={<ArchiveView />} />
           <Route
             path="/companies/:slug/fleraar"

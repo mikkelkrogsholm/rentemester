@@ -51,6 +51,7 @@ import {
   buildCompanyMultiYear,
   buildCompanyObligations,
   buildCompanyOverview,
+  buildCompanyPayables,
   buildCompanyRecurringInvoices,
   buildCompanySettings,
   buildCompanyTrialBalance,
@@ -90,6 +91,8 @@ import {
   handleCreateRecurringInvoiceTemplate,
   handleInvoiceSettle,
   handleMileageCreate,
+  handlePayablePay,
+  handlePayableRegister,
   handleReopenPeriod,
   handleResolveException,
   handleRetireRecurringInvoiceTemplate,
@@ -229,6 +232,9 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "GET", pattern: "/api/companies/:slug/assets/:id/next-depreciation", summary: "Næste afskrivningsperiode for et anlæg (#336)." },
   { method: "POST", pattern: "/api/companies/:slug/assets/:id/depreciate", summary: "Bogfører næste afskrivningsperiode (#336)." },
   { method: "POST", pattern: "/api/companies/:slug/assets/write-off", summary: "Straksafskriver et småanskaffelse (#336)." },
+  { method: "GET", pattern: "/api/companies/:slug/payables", summary: "Leverandørfaktura-arbejdsbord — kreditorliste + modal-data (#340)." },
+  { method: "POST", pattern: "/api/companies/:slug/payables", summary: "Registrerer et bilag som leverandørfaktura (#340)." },
+  { method: "POST", pattern: "/api/companies/:slug/payables/:id/pay", summary: "Markerer leverandørfaktura betalt fra bankpost (#340)." },
 ];
 
 function handleHealth(config: ServerConfig): Response {
@@ -715,6 +721,27 @@ async function handleCompanyUpdate(
     const message = err instanceof Error ? err.message : String(err);
     throw ApiError.badRequest(message);
   }
+}
+
+/**
+ * GET /api/companies/:slug/payables — the read-side payload backing the
+ * Leverandørfaktura-arbejdsbordet (#340): the kreditorliste from
+ * `core/payables.ts#buildPayablesList`, plus the modal picker rows (vendors,
+ * expense accounts, unregistered purchase documents) the "Registrér
+ * leverandørfaktura"-modal needs to register an existing bilag.
+ *
+ * `?status=` filters the list: `open` (default), `paid`, `overdue`, `all`.
+ * `?asOf=YYYY-MM-DD` overrides the comparison date for the aging buckets.
+ */
+function handleCompanyPayables(
+  config: ServerConfig,
+  slug: string,
+  url: URL,
+): Response {
+  const status = url.searchParams.get("status");
+  const asOf = url.searchParams.get("asOf");
+  const data = buildCompanyPayables(config.workspaceRoot, slug, status, asOf);
+  return okResponse({ payables: data });
 }
 
 // --------------------------------------------------------------------------
@@ -1221,6 +1248,26 @@ export async function handleRequest(
       if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
       const slug = decodeURIComponent(invoiceSendReminderMatch[1]!);
       return await handleInvoiceSendReminder(config, request, slug);
+    }
+
+    // Leverandørfaktura-arbejdsbordet (#340) — match the per-id /pay route
+    // first because the bare /payables routes would otherwise consume it.
+    const payablePayMatch =
+      /^\/api\/companies\/([^/]+)\/payables\/(\d+)\/pay$/.exec(path);
+    if (payablePayMatch) {
+      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      const slug = decodeURIComponent(payablePayMatch[1]!);
+      return await handlePayablePay(config, request, slug, payablePayMatch[2]!);
+    }
+
+    const payablesMatch = /^\/api\/companies\/([^/]+)\/payables$/.exec(path);
+    if (payablesMatch) {
+      const slug = decodeURIComponent(payablesMatch[1]!);
+      if (method === "GET") return handleCompanyPayables(config, slug, url);
+      if (method === "POST") {
+        return await handlePayableRegister(config, request, slug);
+      }
+      throw ApiError.methodNotAllowed("GET or POST required");
     }
 
     // Bookkeeping write route (#287): close an accounting period — the

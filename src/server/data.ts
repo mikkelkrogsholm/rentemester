@@ -82,6 +82,16 @@ export type {
   CompanyMultiYear,
 } from "./data/statements";
 
+// --- data/payables-view.ts -------------------------------------------------
+export { buildCompanyPayables } from "./data/payables-view";
+export type {
+  CompanyPayables,
+  CompanyPayableRow,
+  UnregisteredPurchaseDocumentRow,
+  PayableExpenseAccountOption,
+  PayableVendorOption,
+} from "./data/payables-view";
+
 // --- data/company-views.ts -------------------------------------------------
 export {
   buildCompanySettings,
