@@ -24,6 +24,10 @@ løses i kode (fx attestering af en backup-destination i EU/EØS).
 - **[requirements-by-area.md](requirements-by-area.md)** — Samme krav,
   men grupperet efter system-område (hovedbog, salgsfakturaer, moms,
   backup, …). Brug denne når du arbejder i en konkret del af koden.
+- **[out-of-scope.md](out-of-scope.md)** — Bevidste fravalg: hvilke
+  regelsæt Rentemester ikke håndterer (løn, hvidvask, selskabsret,
+  cybersikkerheds-direktiver, …) og hvorfor. Lige så vigtigt som
+  matricen — forhindrer at en bruger antager dækning, der ikke findes.
 
 ### Guides
 
