@@ -62,6 +62,14 @@ classes (full table in `docs/mcp-tool-surface.md`):
 
 ### The confirm convention
 
+> **Cross-stack opslag.** Den fulde tabel pr. business-operation —
+> "hvilke MCP-tools, cockpit-routes og CLI-kommandoer kræver confirm, og
+> i hvilken syntax" — står i
+> [`docs/confirm-contract.md`](confirm-contract.md). Samme operation kan
+> have **modsat regel** på cockpit (`POST /invoices/issue` kræver det
+> ikke; `invoice_issue` her gør) — afvigelsen er bevidst og forklaret
+> dér.
+
 Write tools refuse to run unless the arguments contain `confirm: true`.
 Without it the server returns
 `{ ok: false, errors: ["confirm: true required for write tool <name>"] }`

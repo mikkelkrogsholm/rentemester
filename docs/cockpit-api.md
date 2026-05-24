@@ -153,6 +153,14 @@ core runs. The two non-irreversible writes (`exceptions/:id/resolve`,
 `invoices/issue`) do **not** require `confirm` — the cockpit modal is the
 human's consent.
 
+> **Cross-stack opslag.** Cockpittets confirm-regel er **anderledes** end
+> MCP's (som kræver `confirm: true` på *alle* writes) og CLI's (som bruger
+> `--confirm yes` kun på destruktive kommandoer). Den fulde tabel pr.
+> business-operation står i [`docs/confirm-contract.md`](confirm-contract.md).
+> Samme operation kan have modsat regel — fx kræver `invoice_issue` på MCP
+> `confirm: true`, mens `POST /invoices/issue` på cockpittet ikke gør.
+> Afvigelsen er bevidst (modalen er samtykket) og forklaret i opslaget.
+
 **The backup-lock gate.** When the workspace owner has opted into the
 BEK 205/2024 §4 backup lock and a weekly backup is overdue past the grace
 window, every bookkeeping write is refused with `409` and the shared Danish
