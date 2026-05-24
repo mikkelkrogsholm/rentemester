@@ -39,6 +39,23 @@ function resolveInitWorkspaceRoot(ctx: CommandContext): string | null {
   }
 }
 
+/**
+ * #241: the missing-payment-details warning. Returned as a separate block so
+ * the caller can route it to stderr — the rest of the onboarding output goes
+ * to stdout, but a warning that signals "your invoices will be unpayable"
+ * belongs on stderr so it survives stdout redirection (e.g. `init > log.txt`)
+ * and so machine-consumers that parse stdout never see prose mixed in.
+ */
+export function buildPaymentDetailsWarningLines(): string[] {
+  return [
+    "ADVARSEL — ingen betalingsoplysninger:",
+    "  Du har ikke angivet bank/IBAN. Fakturaer udstedt nu får INGEN",
+    "  betalingsanvisning (BETALING-blok) på PDF'en — kunden kan ikke se,",
+    "  hvor pengene skal hen. Sæt dem med 'rentemester company set-profile'",
+    "  (--bank-name --bank-reg --bank-account --iban), før du sender fakturaer.",
+  ];
+}
+
 /** Renders the human-readable onboarding block printed after a successful `init`. */
 function buildOnboardingLines(
   root: string,
@@ -63,25 +80,10 @@ function buildOnboardingLines(
     lines.push(`  - Allerede registreret i Cockpit-workspacet som '${registration.slug}'`);
   }
 
-  // #241: an issued invoice's PDF only carries a BETALING-blok (konto/IBAN/
-  // reference) when payment details were given. Warn loudly when they were
-  // not, so the owner does not unknowingly send invoices a customer cannot pay.
-  if (!summary.hasPaymentDetails) {
-    lines.push("");
-    lines.push("ADVARSEL — ingen betalingsoplysninger:");
-    lines.push(
-      "  Du har ikke angivet bank/IBAN. Fakturaer udstedt nu får INGEN",
-    );
-    lines.push(
-      "  betalingsanvisning (BETALING-blok) på PDF'en — kunden kan ikke se,",
-    );
-    lines.push(
-      "  hvor pengene skal hen. Sæt dem med 'rentemester company set-profile'",
-    );
-    lines.push(
-      "  (--bank-name --bank-reg --bank-account --iban), før du sender fakturaer.",
-    );
-  }
+  // #241: the missing-payment-details warning used to live here too, but it is
+  // now emitted to stderr by the dispatch handler so machine-consumers that
+  // capture stdout never see it (and so a redirected stdout does not swallow
+  // the warning). See buildPaymentDetailsWarningLines above.
 
   const vatLabel = vatPeriodTypeLabelDa(summary.vatPeriod);
   lines.push("");
@@ -188,6 +190,16 @@ export function register(dispatch: CommandDispatch): void {
     if (ctx.outputFormat === "human") {
       for (const line of buildOnboardingLines(root, summary, registration)) {
         console.log(line);
+      }
+    }
+
+    // #241: warn loudly on stderr (in *any* output format) when no bank/IBAN
+    // is set — issued invoices will have no BETALING block and become
+    // unpayable. stderr keeps stdout machine-clean and survives `init > log`
+    // redirection. Init itself still succeeds (exit 0); this is advisory.
+    if (!summary.hasPaymentDetails) {
+      for (const line of buildPaymentDetailsWarningLines()) {
+        console.error(line);
       }
     }
   });
