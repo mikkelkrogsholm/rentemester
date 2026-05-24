@@ -27,7 +27,10 @@ describe("imap-intake poll CLI", () => {
   test("fails cleanly when IMAP credentials are missing (no network)", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-imapcli-"));
     const company = join(root, "company");
-    await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
+    // #248: the derived OS user that runs `init` is seeded into the
+    // allowlist. Pin USER to `tester` for both calls so the seeded actor
+    // and the actor on the mutating `poll` are the same.
+    await Bun.$`bun run src/cli.ts init --company ${company}`.env({ ...process.env, USER: "tester" }).quiet();
 
     const proc = Bun.spawn(
       ["bun", "run", "src/cli.ts", "imap-intake", "poll", "--company", company, "--format", "json"],
@@ -59,7 +62,9 @@ describe("imap-intake poll CLI", () => {
   test("rejects an invalid --imap-port without contacting a server", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-imapcli-port-"));
     const company = join(root, "company");
-    await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
+    // #248: keep the OS-derived actor consistent between init and poll so
+    // the allowlist seed matches who actually runs the mutating command.
+    await Bun.$`bun run src/cli.ts init --company ${company}`.env({ ...process.env, USER: "tester" }).quiet();
 
     const proc = Bun.spawn(
       [

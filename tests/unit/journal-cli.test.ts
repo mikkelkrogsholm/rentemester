@@ -64,7 +64,10 @@ describe("journal post CLI", () => {
 
     await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
     writeFileSync(join(companyPaths(company).config, "policy.yaml"), `company_policy:\n  country: DK\n  currency: DKK\n  allow_direct_sql_write: false\n  block_if_uncertain: true\nactor_allowlist:\n  agents:\n    - freja\n`);
-    await Bun.$`bun run src/cli.ts documents ingest --company ${company} --file examples/vendor-invoice.txt --metadata examples/vendor-invoice.metadata.json`.quiet();
+    // #248: the seeded init user was overwritten above, so the derived OS
+    // actor is no longer in the allowlist — the ingest must use the explicit
+    // agent:freja actor (the only one this rewritten allowlist permits).
+    await Bun.$`bun run src/cli.ts documents ingest --company ${company} --file examples/vendor-invoice.txt --metadata examples/vendor-invoice.metadata.json --actor agent:freja`.quiet();
 
     const proc = Bun.spawn([
       "bun", "run", "src/cli.ts", "journal", "post",

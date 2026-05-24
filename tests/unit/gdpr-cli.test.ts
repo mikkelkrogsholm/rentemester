@@ -17,12 +17,21 @@ async function runCli(args: string[]) {
   return { stdout, stderr, exitCode };
 }
 
+// #248: init seeds the OS-derived actor into the allowlist. Use the same
+// USER for init as runCli does for follow-on mutating commands so the
+// derived actor on both calls is the same identity.
+async function initCompany(company: string): Promise<void> {
+  await Bun.$`bun run src/cli.ts init --company ${company}`
+    .env({ ...process.env, USER: "gdpr-test" })
+    .quiet();
+}
+
 describe("GDPR CLI", () => {
   test("exports a customer's personal data and then erases it once unretained", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-cli-"));
     const company = join(root, "company");
 
-    await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
+    await initCompany(company);
     const created = await runCli([
       "customer", "create", "--company", company,
       "--name", "GDPR Kunde", "--cvr", "DK90909090",
@@ -62,7 +71,7 @@ describe("GDPR CLI", () => {
   test("export requires a subject identifier", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-cli-nosubj-"));
     const company = join(root, "company");
-    await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
+    await initCompany(company);
 
     const exported = await runCli(["gdpr", "export", "--company", company]);
     rmSync(root, { recursive: true, force: true });
@@ -75,7 +84,7 @@ describe("GDPR CLI", () => {
     const company = join(root, "company");
     const outDir = join(root, "export");
 
-    await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
+    await initCompany(company);
     await runCli([
       "customer", "create", "--company", company,
       "--name", "Out Kunde", "--cvr", "DK11111111",
@@ -100,7 +109,7 @@ describe("GDPR CLI", () => {
   test("forget without --after-retention-expiry is refused", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-cli-forget-no-"));
     const company = join(root, "company");
-    await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
+    await initCompany(company);
     await runCli([
       "customer", "create", "--company", company,
       "--name", "Forget Kunde", "--cvr", "DK22222222",
@@ -117,7 +126,7 @@ describe("GDPR CLI", () => {
   test("forget --after-retention-expiry runs and redacts unretained personal data", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-cli-forget-ok-"));
     const company = join(root, "company");
-    await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
+    await initCompany(company);
     await runCli([
       "customer", "create", "--company", company,
       "--name", "Forget Kunde", "--cvr", "DK33333333",

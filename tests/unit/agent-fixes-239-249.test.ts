@@ -255,6 +255,87 @@ describe("#248 — actor allowlist consistency", () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
+
+  // #248 (follow-up): the allowlist check rejected an EXPLICIT --actor that
+  // only differed from its derived (USER) twin by letter case — even though
+  // both forms normalize to the same identity. Without --actor, the same
+  // derived name slipped through as the audit-trail attribution. That gap is
+  // closed: explicit and derived forms now compare case-insensitively so the
+  // SAME identity is accepted either way, while names that aren't in the
+  // allowlist at all are still rejected.
+  test("explicit --actor matches its derived twin case-insensitively", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-248-case-"));
+    try {
+      const company = join(root, "company");
+      // Init with USER=Mikkel — derived actor user:Mikkel is seeded into the
+      // allowlist verbatim (capitalised).
+      const initProc = run(["init", "--company", company], { USER: "Mikkel" });
+      expect(await initProc.exited).toBe(0);
+      const policy = readFileSync(
+        join(companyPaths(company).config, "policy.yaml"),
+        "utf8",
+      );
+      expect(policy).toContain("user:Mikkel");
+
+      // Running a mutating command WITHOUT --actor used to slip through
+      // unchecked (derived path was lenient). Now it must still succeed —
+      // because USER=Mikkel matches user:Mikkel in the allowlist
+      // case-insensitively — proving the derived path is allowlist-aware.
+      const derivedCreate = run(
+        ["customer", "create", "--company", company, "--name", "Kunde A"],
+        { USER: "mikkel" }, // lowercase — same identity, different case
+      );
+      const derivedStderr = await new Response(derivedCreate.stderr).text();
+      expect({ exitCode: await derivedCreate.exited, stderr: derivedStderr }).toEqual({
+        exitCode: 0,
+        stderr: "",
+      });
+
+      // And the explicit form (user:mikkel) — identical identity to the
+      // derived path, different case from the allowlist entry — is accepted
+      // too. The bug was that this was rejected while the derived twin was
+      // accepted.
+      const explicitCreate = run([
+        "customer", "create", "--company", company,
+        "--name", "Kunde B",
+        "--actor", "user:mikkel",
+      ]);
+      const explicitStderr = await new Response(explicitCreate.stderr).text();
+      expect({ exitCode: await explicitCreate.exited, stderr: explicitStderr }).toEqual({
+        exitCode: 0,
+        stderr: "",
+      });
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  // #248 (follow-up): tightening the derived path is only safe if names that
+  // aren't in the allowlist AT ALL are still rejected. A derived USER that
+  // doesn't appear in the allowlist (under any case) must be refused with the
+  // same clear hint as the explicit path — no silent slip-through.
+  test("a derived actor that isn't in the allowlist is rejected", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-248-derived-reject-"));
+    try {
+      const company = join(root, "company");
+      // Seed only user:freja into the allowlist.
+      const initProc = run(["init", "--company", company, "--actor", "user:freja"]);
+      expect(await initProc.exited).toBe(0);
+
+      // Now run a mutating command with NO --actor and USER=intruder —
+      // the derived path must NOT silently accept this.
+      const proc = run(
+        ["customer", "create", "--company", company, "--name", "Kunde X"],
+        { USER: "intruder", LOGNAME: "", OPENCLAW_AGENT: "", RENTEMESTER_AGENT: "", RENTEMESTER_USER: "" },
+      );
+      const stderr = await new Response(proc.stderr).text();
+      expect(await proc.exited).toBe(2);
+      expect(stderr).toContain("is not in config/policy.yaml actor_allowlist");
+      expect(stderr).toContain("user:intruder");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("#249 — chart of accounts includes owner's draw and a tax account", () => {

@@ -136,6 +136,39 @@ export function loadActorAllowlist(root: string): Set<string> {
   return allowlist;
 }
 
+/**
+ * #248 (follow-up): the allowlist comparison normalises case + surrounding
+ * whitespace so that an explicit `--actor` form and its derived (USER) twin
+ * — two spellings of the same identity — produce the same allowlist hit. On
+ * macOS/Linux usernames are case-sensitive, but on a CLI the difference
+ * between `--actor user:Mikkel` and a USER=mikkel environment is purely
+ * incidental: the audit-trail identity is the same person. Without
+ * normalisation the explicit path rejected `user:mikkel` while the derived
+ * path silently accepted `user:Mikkel`, breaking the allowlist's central
+ * promise that one rule applies to both forms.
+ *
+ * The normalisation is matching-only: the original spelling (whatever the
+ * caller passed) is still what flows into `RENTEMESTER_ACTOR` and the audit
+ * log, so the ledger keeps an honest record of what was typed. This is also
+ * NOT a relaxation of security — a name that has no case-insensitive twin
+ * in the allowlist is still rejected on both paths.
+ */
+function normaliseActorForMatching(actor: string): string {
+  return actor.trim().toLowerCase();
+}
+
+export function actorMatchesAllowlist(
+  actor: string,
+  allowlist: Set<string>,
+): boolean {
+  if (allowlist.has(actor)) return true;
+  const normalised = normaliseActorForMatching(actor);
+  for (const entry of allowlist) {
+    if (normaliseActorForMatching(entry) === normalised) return true;
+  }
+  return false;
+}
+
 export function inferredMutationActor(): string | null {
   return (
     trimToNull(process.env.OPENCLAW_AGENT ? `agent:${process.env.OPENCLAW_AGENT}` : null) ??
@@ -197,7 +230,7 @@ export function enforceMutationActorPolicy(
       return;
     }
     const allowlist = loadActorAllowlist(root);
-    if (!allowlist.has(explicitActor)) {
+    if (!actorMatchesAllowlist(explicitActor, allowlist)) {
       fatal(
         `actor '${explicitActor}' is not in config/policy.yaml actor_allowlist. ` +
           howToAddActorHint(explicitActor),
@@ -210,17 +243,31 @@ export function enforceMutationActorPolicy(
     return;
   }
   // No explicit --actor: the entry is attributed to a derived actor (OS
-  // username / agent env var). #248: onboarding (`init` / `company add`) seeds
-  // this derived actor into config/policy.yaml's actor_allowlist, so for the
-  // person who set the company up the derived actor and an explicit `--actor`
-  // with the same id behave identically — the allowlist is consistent. The
-  // derived fallback itself stays lenient (it is the no-friction default for
-  // scripts and agents); when the derived actor differs from what onboarding
-  // seeded, `howToAddActorHint` on the explicit path explains how to add it.
+  // username / agent env var). #248: the allowlist is consistent — the
+  // derived path is held to the SAME rule as an explicit `--actor`. The
+  // person who runs onboarding (`init` / `company add`) is seeded into the
+  // allowlist automatically, so on the happy path no friction is added. An
+  // un-seeded derived actor now gets the same clear hint as an unseeded
+  // explicit one, instead of silently slipping through and writing an actor
+  // to the audit trail that the same rule would have rejected if stated
+  // explicitly.
   const derivedActor = inferredMutationActor();
   if (!derivedActor) {
     fatal(
       "actor required for mutations: pass --actor <user:...|agent:...|system:...> or run with USER/LOGNAME/OPENCLAW_AGENT set",
+    );
+  }
+  const allowlist = loadActorAllowlist(root);
+  // An EMPTY allowlist means there is no policy file (no `config/policy.yaml`)
+  // — this happens e.g. when a mutating command runs from a path that has not
+  // yet been initialised. There is nothing to enforce against, so the existing
+  // command-specific error (missing ledger / missing config) speaks for itself
+  // and we don't pile on with an allowlist hint that wouldn't make sense.
+  if (allowlist.size === 0) return;
+  if (!actorMatchesAllowlist(derivedActor, allowlist)) {
+    fatal(
+      `actor '${derivedActor}' is not in config/policy.yaml actor_allowlist. ` +
+        howToAddActorHint(derivedActor),
     );
   }
 }
