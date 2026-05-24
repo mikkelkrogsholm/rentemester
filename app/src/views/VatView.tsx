@@ -271,6 +271,113 @@ export function VatView() {
  * The card must therefore NOT claim its figures match that command — instead
  * it marks them provisional and says a closed period is the prerequisite.
  */
+/**
+ * Format a kroner amount as a raw TastSelv-compatible number string: NO
+ * thousand separator, NO currency suffix. Decimal øre — if any — are emitted
+ * with a comma (the Danish convention TastSelv accepts). Whole-kroner amounts
+ * are emitted as plain integers ("4457", not "4457,00") — that's exactly what
+ * the owner needs to type into TastSelv Erhverv.
+ *
+ * #401: this is the load-bearing function for the rubrikker Kopier-buttons.
+ * The formatted, display-only `formatKroner` output (`52.317,00 kr.`) must
+ * NEVER end up on the clipboard — the `.` thousand separator would corrupt
+ * the TastSelv field.
+ */
+function tastSelvNumber(kroner: number): string {
+  // Round to 2 decimals to avoid floating-point noise like 4456.9999999.
+  const rounded = Math.round(kroner * 100) / 100;
+  if (Number.isInteger(rounded)) return String(rounded);
+  // Two-decimal form with a comma separator (no thousand separator).
+  const [intPart, fracPart = ""] = rounded.toFixed(2).split(".");
+  return `${intPart},${fracPart}`;
+}
+
+/** All rubrikker as label/raw-number pairs, in the order shown in the UI. */
+function rubrikkerCsvRows(
+  rubrikker: VatRubrikker,
+): Array<[string, string]> {
+  const owedPositive = rubrikker.momstilsvar >= 0;
+  return [
+    ["Salgsmoms", tastSelvNumber(rubrikker.salgsmoms)],
+    [
+      "Moms af varekøb i udlandet",
+      tastSelvNumber(rubrikker.momsAfVarekobUdland),
+    ],
+    [
+      "Moms af ydelseskøb i udlandet",
+      tastSelvNumber(rubrikker.momsAfYdelseskobUdland),
+    ],
+    ["Købsmoms", tastSelvNumber(rubrikker.kobsmoms)],
+    [
+      owedPositive ? "Momstilsvar" : "Negativt momstilsvar",
+      tastSelvNumber(rubrikker.momstilsvar),
+    ],
+    [
+      "Rubrik A - varer og ydelser købt i udlandet",
+      tastSelvNumber(rubrikker.rubrikA),
+    ],
+    [
+      "Rubrik B - varer og ydelser solgt til udlandet",
+      tastSelvNumber(rubrikker.rubrikB),
+    ],
+    ["Rubrik C - øvrige momsfrie salg", tastSelvNumber(rubrikker.rubrikC)],
+  ];
+}
+
+/**
+ * One row's Kopier-button. Copies ONLY the raw TastSelv-format number (no
+ * thousand separator, no "kr.") to the clipboard, then briefly shows
+ * "Kopieret" without stealing focus. For a provisional (open-period) row the
+ * button is disabled with a title explaining why — the owner must not paste
+ * foreløbige tal into a real momsangivelse.
+ */
+function CopyRubrikButton({
+  rawValue,
+  label,
+  provisional,
+  onCopied,
+  copied,
+}: {
+  rawValue: string;
+  label: string;
+  provisional: boolean;
+  onCopied: () => void;
+  copied: boolean;
+}) {
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(rawValue);
+      onCopied();
+    } catch {
+      // Clipboard write can fail (insecure context, permission denied) —
+      // silently ignore: the owner can still read the figure on screen.
+    }
+  }
+  return (
+    <span className="rubrik-copy">
+      {copied && (
+        <span className="rubrik-copy-feedback" aria-live="polite">
+          Kopieret
+        </span>
+      )}
+      <button
+        type="button"
+        className="rubrik-copy-btn"
+        onClick={handleCopy}
+        disabled={provisional}
+        aria-label={`Kopier ${label}`}
+        title={
+          provisional
+            ? "Periode ikke lukket — luk først for at få endelige tal"
+            : `Kopier ${label} til udklipsholderen`
+        }
+      >
+        Kopier
+      </button>
+    </span>
+  );
+}
+
 function RubrikkerCard({
   rubrikker,
   currency,
@@ -281,13 +388,65 @@ function RubrikkerCard({
   provisional: boolean;
 }) {
   const owedPositive = rubrikker.momstilsvar >= 0;
+  // The label of the row most recently copied — drives the "Kopieret"
+  // confirmation, scoped per row so two adjacent buttons don't share state.
+  const [copiedLabel, setCopiedLabel] = useState<string | null>(null);
+  // Cleared after a short interval so the confirmation does not linger.
+  function markCopied(label: string) {
+    setCopiedLabel(label);
+    setTimeout(() => {
+      setCopiedLabel((current) => (current === label ? null : current));
+    }, 1500);
+  }
+  async function copyAllAsCsv() {
+    const rows = rubrikkerCsvRows(rubrikker);
+    const csv = rows.map(([label, value]) => `${label};${value}`).join("\n");
+    try {
+      await navigator.clipboard.writeText(csv);
+      markCopied("__csv__");
+    } catch {
+      // ignore — see CopyRubrikButton.
+    }
+  }
+  function rubrikRow(label: string, value: number, extraClass?: string) {
+    return (
+      <tr className={extraClass}>
+        <td>{label}</td>
+        <td className="num">
+          <span className="rubrik-num">{formatKroner(value, currency)}</span>
+          <CopyRubrikButton
+            rawValue={tastSelvNumber(value)}
+            label={label}
+            provisional={provisional}
+            onCopied={() => markCopied(label)}
+            copied={copiedLabel === label}
+          />
+        </td>
+      </tr>
+    );
+  }
   return (
     <div className="card statement-card">
-      <h3 className="statement-subhead">
-        {provisional
-          ? "SKAT-rubrikker (foreløbige — åben periode)"
-          : "SKAT-rubrikker (momsangivelse)"}
-      </h3>
+      <div className="statement-card-head">
+        <h3 className="statement-subhead">
+          {provisional
+            ? "SKAT-rubrikker (foreløbige — åben periode)"
+            : "SKAT-rubrikker (momsangivelse)"}
+        </h3>
+        <button
+          type="button"
+          className="rubrik-copy-csv"
+          onClick={copyAllAsCsv}
+          disabled={provisional}
+          title={
+            provisional
+              ? "Periode ikke lukket — luk først for at få endelige tal"
+              : "Kopier alle rubrikker som CSV (label;beløb) til regneark"
+          }
+        >
+          {copiedLabel === "__csv__" ? "Kopieret" : "Kopier alle som CSV"}
+        </button>
+      </div>
       <p className="muted statement-note">
         {provisional ? (
           <>
@@ -306,64 +465,34 @@ function RubrikkerCard({
       </p>
       <table className="data statement-table">
         <tbody>
-          <tr>
-            <td>Salgsmoms</td>
-            <td className="num">
-              {formatKroner(rubrikker.salgsmoms, currency)}
-            </td>
-          </tr>
-          <tr>
-            <td>Moms af varekøb i udlandet (både EU og lande uden for EU)</td>
-            <td className="num">
-              {formatKroner(rubrikker.momsAfVarekobUdland, currency)}
-            </td>
-          </tr>
-          <tr>
-            <td>
-              Moms af ydelseskøb i udlandet med omvendt betalingspligt
-            </td>
-            <td className="num">
-              {formatKroner(rubrikker.momsAfYdelseskobUdland, currency)}
-            </td>
-          </tr>
-          <tr>
-            <td>Købsmoms</td>
-            <td className="num">
-              {formatKroner(rubrikker.kobsmoms, currency)}
-            </td>
-          </tr>
-          <tr
-            className={`statement-result ${
-              owedPositive ? "positive" : "negative"
-            }`}
-          >
-            <td>{owedPositive ? "Momstilsvar" : "Negativt momstilsvar"}</td>
-            <td className="num">
-              {formatKroner(rubrikker.momstilsvar, currency)}
-            </td>
-          </tr>
+          {rubrikRow("Salgsmoms", rubrikker.salgsmoms)}
+          {rubrikRow(
+            "Moms af varekøb i udlandet (både EU og lande uden for EU)",
+            rubrikker.momsAfVarekobUdland,
+          )}
+          {rubrikRow(
+            "Moms af ydelseskøb i udlandet med omvendt betalingspligt",
+            rubrikker.momsAfYdelseskobUdland,
+          )}
+          {rubrikRow("Købsmoms", rubrikker.kobsmoms)}
+          {rubrikRow(
+            owedPositive ? "Momstilsvar" : "Negativt momstilsvar",
+            rubrikker.momstilsvar,
+            `statement-result ${owedPositive ? "positive" : "negative"}`,
+          )}
         </tbody>
       </table>
       <table className="data statement-table">
         <tbody>
-          <tr>
-            <td>Rubrik A — varer og ydelser købt i udlandet</td>
-            <td className="num">
-              {formatKroner(rubrikker.rubrikA, currency)}
-            </td>
-          </tr>
-          <tr>
-            <td>Rubrik B — varer og ydelser solgt til udlandet</td>
-            <td className="num">
-              {formatKroner(rubrikker.rubrikB, currency)}
-            </td>
-          </tr>
-          <tr>
-            <td>Rubrik C — øvrige momsfrie salg</td>
-            <td className="num">
-              {formatKroner(rubrikker.rubrikC, currency)}
-            </td>
-          </tr>
+          {rubrikRow(
+            "Rubrik A — varer og ydelser købt i udlandet",
+            rubrikker.rubrikA,
+          )}
+          {rubrikRow(
+            "Rubrik B — varer og ydelser solgt til udlandet",
+            rubrikker.rubrikB,
+          )}
+          {rubrikRow("Rubrik C — øvrige momsfrie salg", rubrikker.rubrikC)}
         </tbody>
       </table>
     </div>

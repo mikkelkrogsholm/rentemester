@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { VatView } from "./VatView";
@@ -334,5 +334,87 @@ describe("VatView — Moms", () => {
     expect(
       await screen.findByText(/Momsperioden er lukket/i),
     ).toBeInTheDocument();
+  });
+
+  // #401: every rubric value needs a "Kopier"-button that copies ONLY the raw
+  // number in TastSelv format (no thousand separators, no "kr."), so the owner
+  // can paste it straight into TastSelv Erhverv without strip-formatting by
+  // hand. The formatted text (with `.` separators) MUST NOT end on the
+  // clipboard.
+  test("rubrikker rows have a Kopier button that copies the raw TastSelv number", async () => {
+    mockFetch(route({ periodStatus: "closed", momsangivelseReady: true }));
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    renderView();
+    // The Salgsmoms row's Kopier-button copies the raw integer (52317 kr in
+    // the fixture closed-period vat() — momstilsvar is 3621, salgsmoms 5621
+    // — we read the actual fixture's salgsmoms below).
+    const salgsmomsRow = (
+      await screen.findByText(/^Salgsmoms$/)
+    ).closest("tr")!;
+    const copyBtn = within(salgsmomsRow as HTMLElement).getByRole("button", {
+      name: /Kopier/i,
+    });
+    expect(copyBtn).not.toBeDisabled();
+    await userEvent.click(copyBtn);
+    expect(writeText).toHaveBeenCalledTimes(1);
+    const pasted = writeText.mock.calls[0][0] as string;
+    // The pasted text is the raw TastSelv number — no thousand separators,
+    // no "kr." suffix. It may carry a decimal comma for øre, but never `.`.
+    expect(pasted).not.toMatch(/\./);
+    expect(pasted).not.toMatch(/kr/i);
+    expect(pasted).toMatch(/^-?\d+(,\d{2})?$/);
+    // Visual feedback after a successful copy.
+    expect(
+      await within(salgsmomsRow as HTMLElement).findByText(/Kopieret/i),
+    ).toBeInTheDocument();
+  });
+
+  test("Kopier-knappen er deaktiveret for en åben (provisorisk) periode", async () => {
+    mockFetch(route({ periodStatus: "open", momsangivelseReady: false }));
+    renderView();
+    const salgsmomsRow = (
+      await screen.findByText(/^Salgsmoms$/)
+    ).closest("tr")!;
+    const copyBtn = within(salgsmomsRow as HTMLElement).getByRole("button", {
+      name: /Kopier/i,
+    });
+    expect(copyBtn).toBeDisabled();
+    // The disabled button explains why via its title attribute.
+    expect(copyBtn).toHaveAttribute(
+      "title",
+      expect.stringMatching(/Periode ikke lukket|luk først/i),
+    );
+  });
+
+  test("rubrikker-kortet har en 'Kopier alle som CSV'-knap der kopierer label;beløb-par", async () => {
+    mockFetch(route({ periodStatus: "closed", momsangivelseReady: true }));
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    renderView();
+    const heading = await screen.findByText(
+      /SKAT-rubrikker \(momsangivelse\)/i,
+    );
+    const card = heading.closest(".statement-card") as HTMLElement;
+    const csvBtn = within(card).getByRole("button", {
+      name: /Kopier alle som CSV/i,
+    });
+    await userEvent.click(csvBtn);
+    expect(writeText).toHaveBeenCalledTimes(1);
+    const pasted = writeText.mock.calls[0][0] as string;
+    // Semicolon-separated label;beløb pairs, one per line — no thousand
+    // separators, no "kr." suffix in the numeric column.
+    expect(pasted).toMatch(/Salgsmoms;/);
+    expect(pasted).toMatch(/Momstilsvar;/);
+    expect(pasted).toMatch(/Rubrik A/);
+    // No tusindtalsseparator-punktum and no "kr." anywhere in the CSV.
+    expect(pasted).not.toMatch(/\./);
+    expect(pasted).not.toMatch(/kr/i);
   });
 });

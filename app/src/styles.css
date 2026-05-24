@@ -1316,6 +1316,64 @@ table.statement-table td.num.muted {
   padding: 0 var(--space-md);
 }
 
+/* #401: header row inside the SKAT-rubrikker card — holds the subhead on the
+   left and the "Kopier alle som CSV"-button on the right. */
+.statement-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding-right: var(--space-md);
+}
+.statement-card-head .statement-subhead {
+  padding-right: 0;
+}
+
+/* #401: per-row "Kopier"-button + the brief "Kopieret"-confirmation. The
+   button is a small ghost button that sits to the right of the formatted
+   number; the formatted number is read-only and the button copies the raw
+   TastSelv-format figure to the clipboard. */
+.rubrik-num {
+  display: inline-block;
+  margin-right: var(--space-xs);
+}
+.rubrik-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+.rubrik-copy-feedback {
+  font-size: var(--text-size-xs);
+  color: var(--color-success);
+  font-weight: var(--text-weight-semibold);
+}
+.rubrik-copy-btn,
+.rubrik-copy-csv {
+  font-size: var(--text-size-xs);
+  font-weight: var(--text-weight-semibold);
+  padding: 2px var(--space-xs);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.rubrik-copy-btn:hover:not(:disabled),
+.rubrik-copy-csv:hover:not(:disabled) {
+  background: var(--surface-hover, var(--surface));
+  border-color: var(--text);
+}
+.rubrik-copy-btn:focus-visible,
+.rubrik-copy-csv:focus-visible {
+  outline: 2px solid var(--color-accent, var(--text));
+  outline-offset: 2px;
+}
+.rubrik-copy-btn:disabled,
+.rubrik-copy-csv:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .statement-check {
   font-size: var(--text-size-sm);
   margin: var(--space-sm) 0 0;
