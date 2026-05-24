@@ -65,6 +65,7 @@ import {
   handleDataImport,
   handleDocumentIngest,
   handleGenerateRecurringInvoice,
+  handleInvoiceCreditNote,
   handleInvoiceIssue,
   handleInvoicePost,
   handleInvoiceSettle,
@@ -829,6 +830,17 @@ export async function handleRequest(
       if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
       const slug = decodeURIComponent(invoiceSettleMatch[1]!);
       return await handleInvoiceSettle(config, request, slug);
+    }
+
+    // Bookkeeping write route (#412): credit an issued invoice. The Cockpit
+    // becomes a third caller of `issueCreditNote`, alongside the CLI's
+    // `invoice credit-note` command and the MCP tool.
+    const invoiceCreditMatch =
+      /^\/api\/companies\/([^/]+)\/invoices\/credit-note$/.exec(path);
+    if (invoiceCreditMatch) {
+      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      const slug = decodeURIComponent(invoiceCreditMatch[1]!);
+      return await handleInvoiceCreditNote(config, request, slug);
     }
 
     // Bookkeeping write route (#287): close an accounting period — the

@@ -539,6 +539,33 @@ export const api = {
         }),
       },
     ).then((r) => r.settlement),
+
+  /**
+   * Issues a credit note for an already-issued sales invoice (#412). The
+   * human supplies the source invoice + a mandatory reason; Rentemester
+   * computes the credit amount from the original gross unless `grossAmount`
+   * is given. Write-irreversible (it inserts a credit-note document AND
+   * appends a reversal journal entry), so the body carries `confirm: true`.
+   */
+  creditInvoice: (slug: string, input: InvoiceCreditNoteInput) =>
+    request<{ ok: true; creditNote: InvoiceCreditNoteSummary }>(
+      `/api/companies/${encodeURIComponent(slug)}/invoices/credit-note`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          invoiceDocumentId: input.invoiceDocumentId,
+          issueDate: input.issueDate,
+          reason: input.reason,
+          ...(input.grossAmount !== undefined
+            ? { grossAmount: input.grossAmount }
+            : {}),
+          ...(input.creditNoteNumber
+            ? { creditNoteNumber: input.creditNoteNumber }
+            : {}),
+          confirm: true,
+        }),
+      },
+    ).then((r) => r.creditNote),
 };
 
 /** A single invoice line as the human enters it — Rentemester computes totals. */
@@ -596,6 +623,25 @@ export type InvoiceSettleSummary = {
   claimAmount: number;
   invoiceNumber: string | null;
   openBalance: number | null;
+};
+
+/** Input for `api.creditInvoice` (#412). */
+export type InvoiceCreditNoteInput = {
+  invoiceDocumentId: number;
+  issueDate: string;
+  reason: string;
+  /** Optional partial credit. When omitted, the remaining gross is credited. */
+  grossAmount?: number;
+  creditNoteNumber?: string;
+};
+
+/** The credit-note result the server echoes back. */
+export type InvoiceCreditNoteSummary = {
+  documentId: number | null;
+  creditNoteNumber: string | null;
+  originalInvoiceNumber: string | null;
+  journalEntryId: number | null;
+  journalEntryNo: string | null;
 };
 
 /** Input for `api.importBank` — the CSV text plus optional account/profile. */

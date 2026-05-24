@@ -179,4 +179,86 @@ describe("InvoicesView — write actions", () => {
     // (openBalance 6250) — so exactly one "Afstem" button is rendered.
     expect(screen.getAllByRole("button", { name: "Afstem" })).toHaveLength(1);
   });
+
+  // --------------------------------------------------------------------------
+  // #412 — Krediter (issue credit note) from the row.
+  // --------------------------------------------------------------------------
+
+  test("Krediter is offered on creditable rows but never on already-credited ones", async () => {
+    const statuses: Array<
+      "open" | "paid" | "credited" | "refunded" | "overpaid" | "written_off" | "overdue"
+    > = ["open", "paid", "credited", "refunded", "overpaid", "written_off", "overdue"];
+    mockFetch(
+      route({
+        invoices: statuses.map((status, idx) => ({
+          documentId: idx + 1,
+          invoiceNo: `2026-${String(idx + 1).padStart(5, "0")}`,
+          invoiceDate: "2026-03-15",
+          customerName: `Kunde ${idx + 1}`,
+          grossAmount: 1000,
+          openBalance: status === "paid" || status === "written_off" ? 0 : 1000,
+          currency: "DKK",
+          status,
+          effectiveDueDate: "2026-04-14",
+          overdueDays: status === "overdue" ? 21 : 0,
+        })),
+      }),
+    );
+    renderView();
+    await screen.findByRole("heading", { name: "Acme ApS" });
+    // Krediter is hidden for credited / refunded / written_off — those three
+    // are non-creditable terminal states. Four rows remain (open, paid,
+    // overpaid, overdue) where the action is offered.
+    expect(screen.getAllByRole("button", { name: "Krediter" })).toHaveLength(4);
+  });
+
+  test("Krediter is hidden for an archived year (no live ledger)", async () => {
+    mockFetch(route({ archived: true, selectedYear: "2025", invoices: [] }));
+    renderView();
+    await screen.findByText(/Fakturaer er ikke tilgængelige for 2025/);
+    expect(
+      screen.queryByRole("button", { name: "Krediter" }),
+    ).not.toBeInTheDocument();
+  });
+
+  test("Krediter posts a credit note with the reason as begrundelse", async () => {
+    mockFetch({
+      "GET /api/companies/acme-aps/invoices": { invoices: invoices() },
+      "POST /api/companies/acme-aps/invoices/credit-note": {
+        creditNote: {
+          documentId: 99,
+          creditNoteNumber: "CN-2026-0001",
+          originalInvoiceNumber: "2026-00001",
+          journalEntryId: 42,
+          journalEntryNo: "J-2026-0042",
+        },
+      },
+    });
+    renderView();
+    await screen.findByRole("heading", { name: "Acme ApS" });
+    // Both fixture invoices are creditable; click the first Krediter button.
+    await userEvent.click(screen.getAllByRole("button", { name: "Krediter" })[0]!);
+    await userEvent.type(
+      screen.getByLabelText("Begrundelse"),
+      "Aftale annulleret",
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Udsted kreditnota" }),
+    );
+
+    await waitFor(() => {
+      const calls = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls;
+      const creditCall = calls.find((c) =>
+        String(c[0]).includes("/invoices/credit-note"),
+      );
+      expect(creditCall).toBeDefined();
+      const sent = JSON.parse(String((creditCall![1] as RequestInit).body));
+      // The clicked row (paid invoice, fixture order) has documentId 1.
+      expect(sent.invoiceDocumentId).toBe(1);
+      expect(sent.reason).toBe("Aftale annulleret");
+      expect(typeof sent.issueDate).toBe("string");
+      // Write-irreversible — the body must carry confirm: true.
+      expect(sent.confirm).toBe(true);
+    });
+  });
 });

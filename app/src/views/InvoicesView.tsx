@@ -61,6 +61,8 @@ export function InvoicesView() {
   const [issuing, setIssuing] = useState(false);
   // The invoice row whose "Afstem" ConfirmDialog is open, if any.
   const [settling, setSettling] = useState<CompanyInvoiceRow | null>(null);
+  // The invoice row whose "Krediter" ConfirmDialog is open, if any (#412).
+  const [crediting, setCrediting] = useState<CompanyInvoiceRow | null>(null);
 
   if (state.loading && !state.data)
     return <Loading label="Henter fakturaer…" />;
@@ -144,6 +146,44 @@ export function InvoicesView() {
         />
       )}
 
+      {/* #412: the Krediter ConfirmDialog. A credit note appends a reversing
+          journal entry (and a new credit-note document), so the action is
+          write-irreversible. A begrundelse is required for the audit trail —
+          a blank value blocks the call before it reaches the server. */}
+      {crediting && (
+        <ConfirmDialog
+          title="Udsted kreditnota"
+          body={
+            <p>
+              Krediter faktura <strong>{crediting.invoiceNo}</strong>. En
+              kreditnota bogføres som modgående postering med eget nummer fra
+              kreditnota-serien. Handlingen kan ikke fortrydes og kræver en
+              begrundelse til revisionssporet.
+            </p>
+          }
+          confirmLabel="Udsted kreditnota"
+          confirmKind="danger"
+          noteLabel="Begrundelse"
+          notePlaceholder="Hvorfor krediteres fakturaen?"
+          onConfirm={async (reason) => {
+            if (!reason.trim()) {
+              throw {
+                code: "bad_request",
+                message:
+                  "Angiv en begrundelse for kreditnotaen — den indgår i revisionssporet.",
+              };
+            }
+            await api.creditInvoice(slug, {
+              invoiceDocumentId: crediting.documentId,
+              issueDate: new Date().toISOString().slice(0, 10),
+              reason: reason.trim(),
+            });
+            state.reload();
+          }}
+          onClose={() => setCrediting(null)}
+        />
+      )}
+
       {inv.archived ? (
         <ArchivedNotice year={inv.selectedYear} />
       ) : inv.invoices.length === 0 ? (
@@ -207,6 +247,16 @@ export function InvoicesView() {
                   const meta = STATUS_META[row.status];
                   // Settlement only makes sense while a balance is open.
                   const canSettle = row.openBalance > 0;
+                  // #412: Krediter is offered for any posted invoice that has
+                  // not already been written off / refunded / fully credited.
+                  // A partial credit reduces the open balance but leaves the
+                  // source invoice in its open/paid/overdue state, so those
+                  // remain creditable until the core refuses on "already fully
+                  // credited" (mapped to a 409 by the mutation pipeline).
+                  const canCredit =
+                    row.status !== "credited" &&
+                    row.status !== "refunded" &&
+                    row.status !== "written_off";
                   return (
                     <tr key={row.documentId}>
                       <td className="account-no">{row.invoiceNo}</td>
@@ -252,6 +302,19 @@ export function InvoicesView() {
                               onClick={() => setSettling(row)}
                             >
                               Afstem
+                            </button>
+                          )}
+                          {/* #412: per-row Krediter button. The action is
+                              hidden for an archived (read-only) year — every
+                              write-action in this view is — and for rows
+                              already credited/refunded/written off. */}
+                          {!inv.archived && canCredit && (
+                            <button
+                              type="button"
+                              className="btn secondary"
+                              onClick={() => setCrediting(row)}
+                            >
+                              Krediter
                             </button>
                           )}
                         </div>

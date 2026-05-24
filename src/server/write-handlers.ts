@@ -46,6 +46,7 @@ import {
 import { issueInvoice } from "../core/issued-invoices";
 import { postIssuedInvoiceToLedger } from "../core/invoice-booking";
 import { settleInvoiceFromBank } from "../core/invoice-settlement";
+import { issueCreditNote } from "../core/credit-notes";
 import {
   getCompanySettings,
   resolveCompanyPaymentDetails,
@@ -938,6 +939,77 @@ export async function handleInvoiceSettle(
       claimAmount: result.claimAmount ?? 0,
       invoiceNumber: result.invoiceNumber ?? null,
       openBalance: result.openBalance ?? null,
+    },
+  });
+}
+
+/**
+ * POST /api/companies/:slug/invoices/credit-note — issues a credit note for an
+ * already-issued sales invoice (#412).
+ *
+ * Body: `{ invoiceDocumentId: number, issueDate: string, reason: string,
+ * grossAmount?: number, creditNoteNumber?: string, confirm: true }`. Calls the
+ * SAME `issueCreditNote` core function the CLI's `invoice credit-note` command
+ * uses, so the Cockpit and the terminal produce byte-identical credit notes
+ * and identical journal reversals.
+ *
+ * Write-irreversible — it inserts a credit-note document AND appends a
+ * reversal journal entry — so `requireConfirm` is set. Re-crediting an already
+ * fully credited invoice is refused by core (`invoice X is already fully
+ * credited`); the `already` heuristic in `withCompanyMutation` maps that to a
+ * 409, and a missing source invoice (`invoice document N does not exist`) to a
+ * 409 as well. A blank reason or non-positive amount is rejected before core
+ * is reached and surfaces as a 400.
+ */
+export async function handleInvoiceCreditNote(
+  config: ServerConfig,
+  request: Request,
+  slug: string,
+): Promise<Response> {
+  const result = await withCompanyMutation(
+    request,
+    config,
+    slug,
+    (ctx, body) => {
+      const invoiceDocumentId = requireBodyPositiveInt(body, "invoiceDocumentId");
+      const issueDate = requireBodyString(body, "issueDate");
+      const reason = requireBodyString(body, "reason");
+      const grossAmount = optionalBodyNumber(body, "grossAmount");
+      const creditNoteNumber = optionalBodyString(body, "creditNoteNumber");
+      const credited = issueCreditNote(
+        ctx.db,
+        ctx.companyRoot,
+        withCockpitActor(
+          {
+            originalInvoiceDocumentId: invoiceDocumentId,
+            issueDate,
+            reason,
+            ...(grossAmount !== undefined ? { grossAmount } : {}),
+            ...(creditNoteNumber ? { creditNoteNumber } : {}),
+          },
+          ctx.actor,
+        ),
+      );
+      return {
+        ok: credited.ok,
+        errors: credited.errors,
+        documentId: credited.documentId,
+        creditNoteNumber: credited.creditNoteNumber,
+        originalInvoiceNumber: credited.originalInvoiceNumber,
+        journalEntryId: credited.journalEntryId,
+        journalEntryNo: credited.journalEntryNo,
+      };
+    },
+    { requireConfirm: true },
+  );
+
+  return okResponse({
+    creditNote: {
+      documentId: result.documentId ?? null,
+      creditNoteNumber: result.creditNoteNumber ?? null,
+      originalInvoiceNumber: result.originalInvoiceNumber ?? null,
+      journalEntryId: result.journalEntryId ?? null,
+      journalEntryNo: result.journalEntryNo ?? null,
     },
   });
 }
