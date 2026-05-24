@@ -88,5 +88,22 @@
     "url": "https://www.retsinformation.dk/eli/lta/2024/1140",
     "xmlUrl": "https://www.retsinformation.dk/eli/lta/2024/1140/xml",
     "notes": "Annual-report law; source for regnskabsklasse B (micro/small) årsrapport content and the iXBRL/XBRL digital-submission requirement to Erhvervsstyrelsen."
+  },
+  {
+    "id": "EU-GDPR-2016-679",
+    "title": "Regulation (EU) 2016/679 (GDPR)",
+    "authority": "Europa-Parlamentet og Rådet",
+    "category": "data_protection",
+    "url": "https://eur-lex.europa.eu/eli/reg/2016/679/oj",
+    "notes": "Direkte gældende i Danmark. Cited for the data-subject access (art. 15) and right-to-erasure (art. 17) flows. Article 17 stk. 3 lit. b/e gives the legal-obligation and public-interest defences Rentemester relies on when refusing to erase bookkeeping material during the 5-year retention window."
+  },
+  {
+    "id": "DK-OFFENTLIGE-BETALINGER-2007-798",
+    "title": "Bekendtgørelse af lov om offentlige betalinger m.v.",
+    "authority": "Finansministeriet",
+    "category": "public_payments",
+    "url": "https://www.retsinformation.dk/eli/lta/2007/798",
+    "xmlUrl": "https://www.retsinformation.dk/eli/lta/2007/798/xml",
+    "notes": "Lovgrundlaget for at offentlige myndigheder skal modtage elektroniske fakturaer. Den tekniske implementering (OIOUBL via NemHandel og PEPPOL) er forankret her — ikke i momsbekendtgørelsen som Rentemester tidligere fejlcite­rede."
   }
 ]

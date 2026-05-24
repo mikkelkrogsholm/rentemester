@@ -30,6 +30,8 @@ Indeks:
   - [3.7 Renteloven (LBK 459/2014)](#37-renteloven-lbk-4592014)
   - [3.8 BEK 105/2013 — Udenretlige inddrivelsesomkostninger (kompensation)](#38-bek-1052013--udenretlige-inddrivelsesomkostninger-kompensation)
   - [3.9 Årsregnskabsloven (LBK 1140/2024)](#39-årsregnskabsloven-lbk-11402024)
+  - [3.10 GDPR (forordning 2016/679)](#310-gdpr-forordning-2016679)
+  - [3.11 Lov om offentlige betalinger (LBK 798/2007)](#311-lov-om-offentlige-betalinger-lbk-7982007)
 - [§ 4. Interne (ikke-lovbestemte) regler](#4-interne-ikke-lovbestemte-regler)
 - [§ 5. Sådan holder du matricen aktuel](#5-sådan-holder-du-matricen-aktuel)
 
@@ -84,6 +86,8 @@ YAML-feltet `severity` på hver rule:
 | `DK-RENTELOVEN-2014-459` | LBK af lov om renter og andre forhold ved forsinket betaling | Justitsministeriet | §§ 1-9b | [retsinformation](https://www.retsinformation.dk/eli/lta/2014/459) | [xml](https://www.retsinformation.dk/eli/lta/2014/459/xml) |
 | `DK-UDENRETLIGE-INDDRIVELSESOMKOSTNINGER-AMEND-2013-105` | BEK om ændring af bek om udenretlige inddrivelsesomkostninger | Justitsministeriet | hele | [retsinformation](https://www.retsinformation.dk/eli/lta/2013/105) | [xml](https://www.retsinformation.dk/eli/lta/2013/105/xml) |
 | `DK-AARSREGNSKABSLOVEN-2024-1140` | LBK af årsregnskabsloven | Erhvervsministeriet | hele | [retsinformation](https://www.retsinformation.dk/eli/lta/2024/1140) | [xml](https://www.retsinformation.dk/eli/lta/2024/1140/xml) |
+| `EU-GDPR-2016-679` | Regulation (EU) 2016/679 (GDPR) | Europa-Parlamentet og Rådet | art. 15, 17 | [eur-lex](https://eur-lex.europa.eu/eli/reg/2016/679/oj) | — |
+| `DK-OFFENTLIGE-BETALINGER-2007-798` | LBK af lov om offentlige betalinger m.v. | Finansministeriet | hele | [retsinformation](https://www.retsinformation.dk/eli/lta/2007/798) | [xml](https://www.retsinformation.dk/eli/lta/2007/798/xml) |
 
 Den maskinlæsbare form af tabellen ligger i
 [`sources/legal-sources.json`](../../sources/legal-sources.json), og
@@ -109,12 +113,12 @@ to filer fødes ind i compliance-rapporteringen via
 | [DK-BANK-BALANCE-CONTINUITY-001](../../rules/dk/bank.yaml#L5) | § 11, stk. 1 | Importerede kontoudtog tjekkes for kontinuitet i løbende saldo (warning, ikke hard_stop). | [`src/core/bank.ts:181`](../../src/core/bank.ts#L181) | kode | — |
 | [DK-BOOKKEEPING-RECONCILIATION-001](../../rules/dk/bookkeeping.yaml#L79) | § 11, stk. 1; § 11, stk. 2 | Bank-afstemning skal vise matchede og umatchede transaktioner i en periode. | [`src/core/reconciliation.ts:65`](../../src/core/reconciliation.ts#L65) | kode | — |
 | [DK-DOCUMENT-INTEGRITY-001](../../rules/dk/documents.yaml#L72) | § 9, stk. 3; § 13, stk. 1 | Originale bilag bevares uden silent overwrite — sha256 content-addressed, append-only audit. | [`src/core/documents.ts:53`](../../src/core/documents.ts#L53) | kode | — |
-| [DK-BOOKKEEPING-RETENTION-001](../../rules/dk/bookkeeping.yaml#L218) | § 12, stk. 1 | Regnskabsmateriale skal kunne identificeres med `retain_until` = regnskabsårets udgang + 5 år. | [`src/core/retention.ts:23`](../../src/core/retention.ts#L23), [`src/core/gdpr.ts:39`](../../src/core/gdpr.ts#L39) | kode | — |
-| [DK-ASSET-DEPR-001](../../rules/dk/bookkeeping.yaml#L236) | (§§ 7, 9 generelt) | Anlægsaktiv-afskrivninger skal posteres som deterministiske, balancerede periode-entries linket til købet. | [`src/core/assets.ts:27`](../../src/core/assets.ts#L27) | kode | — |
-| [DK-ASSET-WRITEOFF-001](../../rules/dk/bookkeeping.yaml#L249) | (§§ 7, 9 generelt) | Straks-afskrivning af småanskaffelser kræver eksplicit bekræftelse + kildebakket tærskel-regel. | [`src/core/assets.ts:28`](../../src/core/assets.ts#L28) | hybrid | — |
-| [DK-BOOKKEEPING-ACCRUAL-001](../../rules/dk/bookkeeping.yaml#L265) | (§§ 7, 9 generelt) | Periodeafgrænsninger: balanceret park-postering + deterministiske balancerede periode-entries der summer eksakt. | [`src/core/accruals.ts:44`](../../src/core/accruals.ts#L44) | kode | — |
-| [DK-PAYABLE-001](../../rules/dk/bookkeeping.yaml#L281) | (§§ 7, 9 generelt) | En registreret leverandørfaktura er en sporbar, balanceret åben kreditorpost. | [`src/core/payables.ts:29`](../../src/core/payables.ts#L29) | kode | — |
-| [DK-PAYABLE-PAYMENT-001](../../rules/dk/bookkeeping.yaml#L296) | (§§ 7, 9 generelt) | Kreditor-betalinger skal anvendes sporbart mod åbne kreditorposter og banktransaktioner. | [`src/core/payables.ts:30`](../../src/core/payables.ts#L30) | kode | — |
+| [DK-BOOKKEEPING-RETENTION-001](../../rules/dk/bookkeeping.yaml#L238) | § 12, stk. 1 | Regnskabsmateriale skal kunne identificeres med `retain_until` = regnskabsårets udgang + 5 år. | [`src/core/retention.ts:23`](../../src/core/retention.ts#L23), [`src/core/gdpr.ts:39`](../../src/core/gdpr.ts#L39) | kode | — |
+| [DK-ASSET-DEPR-001](../../rules/dk/bookkeeping.yaml#L256) | (§§ 7, 9 generelt) | Anlægsaktiv-afskrivninger skal posteres som deterministiske, balancerede periode-entries linket til købet. | [`src/core/assets.ts:27`](../../src/core/assets.ts#L27) | kode | — |
+| [DK-ASSET-WRITEOFF-001](../../rules/dk/bookkeeping.yaml#L269) | (§§ 7, 9 generelt) | Straks-afskrivning af småanskaffelser kræver eksplicit bekræftelse + kildebakket tærskel-regel. | [`src/core/assets.ts:28`](../../src/core/assets.ts#L28) | hybrid | — |
+| [DK-BOOKKEEPING-ACCRUAL-001](../../rules/dk/bookkeeping.yaml#L285) | (§§ 7, 9 generelt) | Periodeafgrænsninger: balanceret park-postering + deterministiske balancerede periode-entries der summer eksakt. | [`src/core/accruals.ts:44`](../../src/core/accruals.ts#L44) | kode | — |
+| [DK-PAYABLE-001](../../rules/dk/bookkeeping.yaml#L301) | (§§ 7, 9 generelt) | En registreret leverandørfaktura er en sporbar, balanceret åben kreditorpost. | [`src/core/payables.ts:29`](../../src/core/payables.ts#L29) | kode | — |
+| [DK-PAYABLE-PAYMENT-001](../../rules/dk/bookkeeping.yaml#L316) | (§§ 7, 9 generelt) | Kreditor-betalinger skal anvendes sporbart mod åbne kreditorposter og banktransaktioner. | [`src/core/payables.ts:30`](../../src/core/payables.ts#L30) | kode | — |
 | [DK-EMAIL-DELIVERY-001](../../rules/dk/email.yaml#L5) | (§ 9 generelt) | Email-afsendelse af faktura/rykker er deterministisk, idempotent, og logges append-only. | [`src/core/email.ts:24`](../../src/core/email.ts#L24) | kode | — |
 | [DK-MAIL-INTAKE-DEDUP-001](../../rules/dk/mail-intake.yaml#L17) | (§§ 7, 9 generelt) | Mail-indtagelse deduplikerer på stabil message-id + attachment-hash. | [`src/core/mail-intake.ts:30`](../../src/core/mail-intake.ts#L30) | kode | — |
 | [DK-MAIL-INTAKE-EXCEPTION-001](../../rules/dk/mail-intake.yaml#L28) | § 1, stk. 1 (1383) | Beskeder uden brugbar vedhæftning eller med tvetydige metadata routes til exception-køen i stedet for at gætte. | [`src/core/mail-intake.ts:31`](../../src/core/mail-intake.ts#L31) | menneske | — |
@@ -138,15 +142,9 @@ bogføringssystem (jf. bogføringslovens § 15-16).
 |---|---|---|---|---|---|
 | [DK-BOOKKEEPING-FX-001](../../rules/dk/bookkeeping.yaml#L97) | § 3, stk. 1, nr. 5 | Ikke-DKK-transaktioner skal persistere valutakode, vekselfaktor pr. transaktionsdag, og DKK-konverteret beløb. | [`src/core/bank.ts:179`](../../src/core/bank.ts#L179), [`src/core/ledger.ts:92`](../../src/core/ledger.ts#L92) | kode | — |
 | [DK-BOOKKEEPING-BACKUP-001](../../rules/dk/bookkeeping.yaml#L113) | § 4, stk. 1 | Mindst ugentlig fuld backup af bogførte transaktioner + bilag, med manifest med timestamp og hashes. | [`src/core/system-backups.ts:10`](../../src/core/system-backups.ts#L10), [`src/core/backup-governance.ts:32`](../../src/core/backup-governance.ts#L32) | hybrid | [backup-destinations.md](backup-destinations.md) |
-| **§ 4, stk. 2** (destinationskrav) | § 4, stk. 2 | Kopien opbevares hos ikke-nærtstående part der formodes at opfylde anerkendte it-sikkerhedsstandarder, på en server i et EU/EØS-land. | [`backup-governance.ts:186`](../../src/core/backup-governance.ts#L186) (`isCompliantDestination`) | **menneske** | [Google Workspace-guide](backup-destinations/google-workspace.md) · [TEMPLATE](backup-destinations/_TEMPLATE.md) |
-| [DK-BOOKKEEPING-BACKUP-KEY-ROTATE-001](../../rules/dk/bookkeeping.yaml#L130) | § 4, stk. 1 | Rotation af Ed25519 backup-signaturnøgle skal være auditerbar og bevare verifikation af ældre backups. | [`src/core/system-backups.ts:566`](../../src/core/system-backups.ts#L566) | menneske | [backup-security.md](../backup-security.md) |
-| [DK-BOOKKEEPING-PERIOD-LOCK-001](../../rules/dk/bookkeeping.yaml#L202) | § 3, stk. 3 | Posteringer må ikke ramme lukkede perioder, og må ikke være fremtidsdaterede. | [`src/core/periods.ts:219`](../../src/core/periods.ts#L219), [`src/core/ledger.ts:93`](../../src/core/ledger.ts#L93) | kode | — |
-
-> **Note:** Selve EU/EØS-destinationskravet er listet som en separat
-> række (uden eget rule_id) fordi det i dag håndhæves via
-> `isCompliantDestination()` i `backup-governance.ts`, ikke som et
-> hard_stop rule_id i `rules/dk/bookkeeping.yaml`. Den menneske-attesterede
-> del af § 4 stk. 2 har sin egen guide.
+| [DK-BOOKKEEPING-BACKUP-DEST-001](../../rules/dk/bookkeeping.yaml#L130) | § 4, stk. 2; § 4, stk. 3 | Backup opbevares hos ikke-nærtstående part der formodes at opfylde anerkendte it-sikkerhedsstandarder, på en server i et EU/EØS-land. Håndhæves som menneske-signeret attestering pr. destination. | [`backup-governance.ts:186`](../../src/core/backup-governance.ts#L186) (`isCompliantDestination`) | **menneske** | [Google Workspace-guide](backup-destinations/google-workspace.md) · [TEMPLATE](backup-destinations/_TEMPLATE.md) |
+| [DK-BOOKKEEPING-BACKUP-KEY-ROTATE-001](../../rules/dk/bookkeeping.yaml#L150) | § 4, stk. 1 | Rotation af Ed25519 backup-signaturnøgle skal være auditerbar og bevare verifikation af ældre backups. | [`src/core/system-backups.ts:566`](../../src/core/system-backups.ts#L566) | menneske | [backup-security.md](../backup-security.md) |
+| [DK-BOOKKEEPING-PERIOD-LOCK-001](../../rules/dk/bookkeeping.yaml#L222) | § 3, stk. 3 | Posteringer må ikke ramme lukkede perioder, og må ikke være fremtidsdaterede. | [`src/core/periods.ts:219`](../../src/core/periods.ts#L219), [`src/core/ledger.ts:93`](../../src/core/ledger.ts#L93) | kode | — |
 
 ### 3.3 BEK 97/2023 — Digitale standardbogføringssystemer (benchmark)
 
@@ -158,9 +156,9 @@ hvis det engang bliver krævet.
 
 | Rule | Paragraf | Hvad kræves | Håndhævelse | Karakter | Guide |
 |---|---|---|---|---|---|
-| [DK-BOOKKEEPING-AUTHORITY-EXPORT-001](../../rules/dk/bookkeeping.yaml#L147) | § 11, stk. 1; § 11, stk. 4 | Bogføringsdata + bilag eksporteres pr. periode i struktureret maskinlæsbar pakke til myndighed. | [`src/core/authority-export.ts:10`](../../src/core/authority-export.ts#L10) | kode | — |
-| [DK-BOOKKEEPING-SAFT-EXPORT-001](../../rules/dk/bookkeeping.yaml#L166) | § 11, stk. 4 | SAF-T export skal være deterministisk, periode-bundet, med manifest-hashes og eksplicitte out-of-scope-sektioner. | [`src/core/saft-export.ts:103`](../../src/core/saft-export.ts#L103) | kode | — |
-| [DK-BOOKKEEPING-RESTORE-001](../../rules/dk/bookkeeping.yaml#L185) | § 10, stk. 1 | Backup-materiale skal kunne restores til et læsbart selskabs-dataset, med manifest- + hash-verifikation først. | [`src/core/system-restore.ts:13`](../../src/core/system-restore.ts#L13) | kode | — |
+| [DK-BOOKKEEPING-AUTHORITY-EXPORT-001](../../rules/dk/bookkeeping.yaml#L167) | § 11, stk. 1; § 11, stk. 4 | Bogføringsdata + bilag eksporteres pr. periode i struktureret maskinlæsbar pakke til myndighed. | [`src/core/authority-export.ts:10`](../../src/core/authority-export.ts#L10) | kode | — |
+| [DK-BOOKKEEPING-SAFT-EXPORT-001](../../rules/dk/bookkeeping.yaml#L186) | § 11, stk. 4 | SAF-T export skal være deterministisk, periode-bundet, med manifest-hashes og eksplicitte out-of-scope-sektioner. | [`src/core/saft-export.ts:103`](../../src/core/saft-export.ts#L103) | kode | — |
+| [DK-BOOKKEEPING-RESTORE-001](../../rules/dk/bookkeeping.yaml#L205) | § 10, stk. 1 | Backup-materiale skal kunne restores til et læsbart selskabs-dataset, med manifest- + hash-verifikation først. | [`src/core/system-restore.ts:13`](../../src/core/system-restore.ts#L13) | kode | — |
 
 ### 3.4 BEK 1383/2023 — Pligt til opbevaring af bilag
 
@@ -202,10 +200,6 @@ hvis det engang bliver krævet.
 | [DK-INVOICE-ARITHMETIC-001](../../rules/dk/invoices.yaml#L127) | § 58, stk. 1, nr. 7, 9 | Faktura-linjesummer og totaler skal stemme aritmetisk før udstedelse. | [`src/core/invoice.ts:63`](../../src/core/invoice.ts#L63) | kode | — |
 | [DK-INVOICE-ISSUE-001](../../rules/dk/invoices.yaml#L146) | § 58, stk. 1, nr. 2 | Udstedte fakturaer skal lagres immutabelt med sekventielle fakturanumre. | [`src/core/invoice-pdf.ts:11`](../../src/core/invoice-pdf.ts#L11), [`src/core/issued-invoices.ts:39`](../../src/core/issued-invoices.ts#L39) | kode | — |
 | [DK-MASTER-DATA-CUSTOMER-001](../../rules/dk/invoices.yaml#L162) | § 58, stk. 1; § 58, stk. 1, nr. 4 | Kunde-stamdata genbrugt på fakturaer skal opløses deterministisk før udstedelse. | [`src/core/master-data.ts:107`](../../src/core/master-data.ts#L107) | kode | — |
-| [DK-INVOICE-PUBLIC-RECIPIENT-001](../../rules/dk/invoices.yaml#L179) | (NemHandel/OIOUBL) | Fakturaer til offentlige modtagere skal bære gyldig EAN/GLN i immutabel buyer-snapshot. | [`src/core/invoice.ts:65`](../../src/core/invoice.ts#L65) | kode | — |
-| [DK-INVOICE-PUBLIC-EXPORT-001](../../rules/dk/invoices.yaml#L193) | (NemHandel/OIOUBL) | Offentlig-fakturas eksport-preview skal være deterministisk og transport-fri handoff. | [`src/core/public-einvoice.ts:9`](../../src/core/public-einvoice.ts#L9) | kode | — |
-| [DK-INVOICE-PUBLIC-OIOUBL-001](../../rules/dk/invoices.yaml#L208) | (NemHandel/OIOUBL) | Offentlig-fakturas OIOUBL-handoff-export er deterministisk, auditerbar, transport-bundet. | [`src/core/public-einvoice.ts:10`](../../src/core/public-einvoice.ts#L10) | kode | — |
-| [DK-PEPPOL-SUBMIT-001](../../rules/dk/peppol.yaml#L5) | (NemHandel + PEPPOL) | PEPPOL-indsendelse er deterministisk, idempotent, baseret på OIOUBL-handoff-artefaktet. | [`src/core/public-einvoice.ts:25`](../../src/core/public-einvoice.ts#L25) | hybrid | [peppol-nemhandel.md](../peppol-nemhandel.md) |
 | [DK-INVOICE-BOOKKEEPING-001](../../rules/dk/invoices.yaml#L380) | § 58, stk. 1, nr. 7, 9 | Udstedte salgsfakturaer skaber én sporbar tilgodehavende-, omsætnings- og moms-journalpostering. | [`src/core/invoice-booking.ts:5`](../../src/core/invoice-booking.ts#L5) | kode | — |
 | [DK-INVOICE-BOOKKEEPING-REVERSE-002](../../rules/dk/invoices.yaml#L399) | § 59, stk. 1; § 60, stk. 1 | Reverse-charge salgsfakturaer og fallback-kreditnotaer posteres uden output-moms-linje. | [`src/core/invoice-booking.ts:6`](../../src/core/invoice-booking.ts#L6), [`src/core/credit-notes.ts:38`](../../src/core/credit-notes.ts#L38) | kode | — |
 | [DK-INVOICE-SETTLEMENT-001](../../rules/dk/invoices.yaml#L417) | (§ 58 kvitterings-spor) | Bank-modtagne kunde-betalinger udligner tilgodehavender med sporbare faktura- og bank-links. | [`src/core/invoice-settlement.ts:7`](../../src/core/invoice-settlement.ts#L7) | kode | — |
@@ -248,6 +242,44 @@ Indfører den faste DKK 310-kompensation for forsinket erhvervsmæssig betaling 
 | [DK-ANNUAL-REPORT-CLASS-B-001](../../rules/dk/annual-report.yaml#L50) | (regnskabsklasse B) | En årsrapport kan kun samles for et fuldt låst regnskabsår med komplette company master data. | [`src/core/annual-report.ts:28`](../../src/core/annual-report.ts#L28) | kode | — |
 | [DK-ANNUAL-REPORT-IXBRL-002](../../rules/dk/annual-report.yaml#L69) | (digital indberetning) | iXBRL-output skal være deterministisk og begrænset til den deklarerede micro/small-taksonomi-subset. | [`src/core/ixbrl.ts:30`](../../src/core/ixbrl.ts#L30) | kode | — |
 | [DK-TAX-RETURN-CORP-001](../../rules/dk/tax-return.yaml#L18) | (skattepligtig indkomst) | Selskabsskattepligtig indkomst forberedes deterministisk fra låst årsrapport; ikke-deterministiske justeringer surfaces som needs-review. | [`src/core/tax-return.ts:36`](../../src/core/tax-return.ts#L36) | advisory | — |
+
+### 3.10 GDPR (forordning 2016/679)
+
+[EUR-Lex](https://eur-lex.europa.eu/eli/reg/2016/679/oj) · in_scope: art. 15, 17
+
+GDPR er direkte gældende i Danmark. Rentemester implementerer to flows:
+indsigt (art. 15) og sletning (art. 17). Art. 17, stk. 3, lit. b og e
+giver det lovgrundlag Rentemester læner sig op af, når sletning af
+regnskabsmateriale afvises inden for bogføringspligtens retention-vindue.
+
+| Rule | Paragraf | Hvad kræves | Håndhævelse | Karakter | Guide |
+|---|---|---|---|---|---|
+| [GDPR-SUBJECT-EXPORT](../../rules/dk/gdpr.yaml#L5) | art. 15 | Et registreret subjekt skal kunne få en struktureret kopi af sine persondata i bogføringssystemet. Tidligere redigerede felter forbliver redigeret. | [`src/core/gdpr.ts:37`](../../src/core/gdpr.ts#L37) | kode | — |
+| [GDPR-RETENTION-BOUNDED-ERASURE](../../rules/dk/gdpr.yaml#L17) | art. 17, stk. 3, lit. b, e | Sletningsanmodninger respekterer bogføringspligtens retention-deadline; afvisning logges som append-only tombstone i `gdpr_erasures`. | [`src/core/gdpr.ts:38`](../../src/core/gdpr.ts#L38) | kode | — |
+
+Begge regler kobler tæt til [DK-BOOKKEEPING-RETENTION-001](#31-bogføringsloven-lov-7002022)
+— retention-deadlinen er det signal, der gør sletning lovlig (eller
+ulovlig på et givet tidspunkt).
+
+### 3.11 Lov om offentlige betalinger (LBK 798/2007)
+
+[ELI](https://www.retsinformation.dk/eli/lta/2007/798) · [XML](https://www.retsinformation.dk/eli/lta/2007/798/xml) · in_scope: hele
+
+Loven der pålægger offentlige myndigheder at modtage elektroniske
+fakturaer. De fire NemHandel-/PEPPOL-regler hørte tidligere fejlagtigt
+under momsbekendtgørelsen, men deres juridiske grundlag er her.
+
+| Rule | Paragraf | Hvad kræves | Håndhævelse | Karakter | Guide |
+|---|---|---|---|---|---|
+| [DK-INVOICE-PUBLIC-RECIPIENT-001](../../rules/dk/invoices.yaml#L179) | (offentlig-modtager-pligt) | Fakturaer til offentlige modtagere skal bære gyldig EAN/GLN i immutabel buyer-snapshot. | [`src/core/invoice.ts:65`](../../src/core/invoice.ts#L65) | kode | — |
+| [DK-INVOICE-PUBLIC-EXPORT-001](../../rules/dk/invoices.yaml#L193) | (offentlig-modtager-pligt) | Offentlig-fakturas eksport-preview skal være deterministisk og transport-fri handoff. | [`src/core/public-einvoice.ts:9`](../../src/core/public-einvoice.ts#L9) | kode | — |
+| [DK-INVOICE-PUBLIC-OIOUBL-001](../../rules/dk/invoices.yaml#L208) | (offentlig-modtager-pligt) | Offentlig-fakturas OIOUBL-handoff-export er deterministisk, auditerbar, transport-bundet. | [`src/core/public-einvoice.ts:10`](../../src/core/public-einvoice.ts#L10) | kode | — |
+| [DK-PEPPOL-SUBMIT-001](../../rules/dk/peppol.yaml#L5) | (offentlig-modtager-pligt) | PEPPOL-indsendelse er deterministisk, idempotent, baseret på OIOUBL-handoff-artefaktet. | [`src/core/public-einvoice.ts:25`](../../src/core/public-einvoice.ts#L25) | hybrid | [peppol-nemhandel.md](../peppol-nemhandel.md) |
+
+> **Note:** Lovgrundlaget mandater pligten til at sende elektronisk;
+> de tekniske formater (OIOUBL, PEPPOL BIS Billing 3) er specificeret i
+> underliggende bekendtgørelser. Den tekniske implementering er dækket
+> separat i [docs/peppol-nemhandel.md](../peppol-nemhandel.md).
 
 ---
 

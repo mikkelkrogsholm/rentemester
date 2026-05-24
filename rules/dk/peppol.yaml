@@ -1,11 +1,11 @@
-version: dk-peppol-v0.0.1
+version: dk-peppol-v0.0.2
 sources:
-  - DK-MOMSBEKENDTGORELSEN-2023-1435
+  - DK-OFFENTLIGE-BETALINGER-2007-798
 rules:
   - rule_id: DK-PEPPOL-SUBMIT-001
     name: Public-recipient PEPPOL submission must be deterministic, idempotent, and built on the OIOUBL handoff artifact
     category: invoice_integrity
-    source_id: DK-MOMSBEKENDTGORELSEN-2023-1435
+    source_id: DK-OFFENTLIGE-BETALINGER-2007-798
     severity: hard_stop
     machine_rule:
       require:

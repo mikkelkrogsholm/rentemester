@@ -342,7 +342,7 @@ selskabs-dataset.
 | Rule | Hvad den dækker | Karakter |
 |---|---|---|
 | [DK-BOOKKEEPING-BACKUP-001](requirements.md#32-bek-2052024--ikke-registrerede-digitale-bogføringssystemer) | Ugentlig fuld backup med manifest + hashes. | hybrid |
-| § 4 stk. 2 destinationskrav (uden eget rule_id) | EU/EØS-server, ikke-nærtstående, formodnings-egnede it-sikkerhedsstandarder. | **menneske** |
+| [DK-BOOKKEEPING-BACKUP-DEST-001](requirements.md#32-bek-2052024--ikke-registrerede-digitale-bogføringssystemer) | EU/EØS-server, ikke-nærtstående, formodnings-egnede it-sikkerhedsstandarder. | **menneske** |
 | [DK-BOOKKEEPING-BACKUP-KEY-ROTATE-001](requirements.md#32-bek-2052024--ikke-registrerede-digitale-bogføringssystemer) | Auditerbar rotation af Ed25519-signaturnøgle. | menneske |
 | [DK-BOOKKEEPING-RESTORE-001](requirements.md#33-bek-972023--digitale-standardbogføringssystemer-benchmark) | Restore til læsbart dataset, manifest- + hash-verifikation først. | kode |
 
@@ -359,18 +359,21 @@ selskabs-dataset.
 ## 14. Opbevaring (retention) og GDPR
 
 **Hvad området skal kunne:** Tagge alt regnskabsmateriale med en
-deterministisk `retain_until` = regnskabsårets udgang + 5 år.
-GDPR-værktøjerne respekterer at bogføringspligten går forud for
-sletteretten.
+deterministisk `retain_until` = regnskabsårets udgang + 5 år. Give et
+registreret subjekt indsigt i sine persondata (GDPR art. 15) og afvise
+sletning af regnskabsmateriale inden for retention-vinduet (GDPR
+art. 17, stk. 3, lit. b og e — bogføringspligten som retlig
+forpligtelse).
 
-**Lovkilder:** Bogføringsloven § 12, stk. 1 + databeskyttelsesforordningen
-(intet rule_id, men implementeret som GDPR-flow).
+**Lovkilder:** Bogføringsloven § 12, stk. 1 + GDPR art. 15, 17.
 
 **Centrale filer:** `src/core/retention.ts`, `src/core/gdpr.ts`.
 
 | Rule | Hvad den dækker |
 |---|---|
 | [DK-BOOKKEEPING-RETENTION-001](requirements.md#31-bogføringsloven-lov-7002022) | `retain_until` på bilag, posteringer, banktransaktioner. |
+| [GDPR-SUBJECT-EXPORT](requirements.md#310-gdpr-forordning-2016679) | Indsigt: struktureret eksport af subjektets persondata. |
+| [GDPR-RETENTION-BOUNDED-ERASURE](requirements.md#310-gdpr-forordning-2016679) | Sletning: afvises inden for retention-vinduet, logges som tombstone. |
 
 Kode-håndhævet. Selve sletteanmodningen er kunde-initieret (CLI/MCP) og
 løsningen blokerer sletning af materiale inden for retention-vinduet.
@@ -403,17 +406,21 @@ Alle kode-håndhævet.
 offentlige modtagere, eksportere den som handoff-pakke, og — når
 PEPPOL-access point er sat op — sende den deterministisk og idempotent.
 
-**Lovkilder:** Momsbekendtgørelsens § 58 (faktura-indhold) + NemHandel/
-PEPPOL-tekniske krav (uden for retsinformation).
+**Lovkilder:** Lov om offentlige betalinger (LBK 798/2007) — pligten
+for offentlige myndigheder til at modtage elektroniske fakturaer.
+Faktura-indholdsfelterne for fakturaer generelt sidder i
+momsbekendtgørelsen § 58 (se [§ 4. Salgsfakturaer — udstedelse](#4-salgsfakturaer--udstedelse)).
+De tekniske formater (OIOUBL, PEPPOL BIS Billing 3) er specificeret i
+underliggende bekendtgørelser.
 
 **Centrale filer:** `src/core/public-einvoice.ts`.
 
 | Rule | Hvad den dækker | Karakter |
 |---|---|---|
-| [DK-INVOICE-PUBLIC-RECIPIENT-001](requirements.md#36-momsbekendtgørelsen-bek-14352023) | EAN/GLN i immutabel buyer-snapshot. | kode |
-| [DK-INVOICE-PUBLIC-EXPORT-001](requirements.md#36-momsbekendtgørelsen-bek-14352023) | Deterministisk eksport-preview, transport-fri handoff. | kode |
-| [DK-INVOICE-PUBLIC-OIOUBL-001](requirements.md#36-momsbekendtgørelsen-bek-14352023) | OIOUBL-handoff-eksport, transport-bundet. | kode |
-| [DK-PEPPOL-SUBMIT-001](requirements.md#36-momsbekendtgørelsen-bek-14352023) | PEPPOL-indsendelse, deterministisk + idempotent. | **hybrid** |
+| [DK-INVOICE-PUBLIC-RECIPIENT-001](requirements.md#311-lov-om-offentlige-betalinger-lbk-7982007) | EAN/GLN i immutabel buyer-snapshot. | kode |
+| [DK-INVOICE-PUBLIC-EXPORT-001](requirements.md#311-lov-om-offentlige-betalinger-lbk-7982007) | Deterministisk eksport-preview, transport-fri handoff. | kode |
+| [DK-INVOICE-PUBLIC-OIOUBL-001](requirements.md#311-lov-om-offentlige-betalinger-lbk-7982007) | OIOUBL-handoff-eksport, transport-bundet. | kode |
+| [DK-PEPPOL-SUBMIT-001](requirements.md#311-lov-om-offentlige-betalinger-lbk-7982007) | PEPPOL-indsendelse, deterministisk + idempotent. | **hybrid** |
 
 **Guide:** [docs/peppol-nemhandel.md](../peppol-nemhandel.md) — selv-hostet
 Oxalis access point, MitID systemcertifikat, NemHandelsRegister-endpoint-

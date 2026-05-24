@@ -1,9 +1,10 @@
-version: dk-invoices-v0.0.6
+version: dk-invoices-v0.0.7
 sources:
   - DK-MOMSBEKENDTGORELSEN-2023-1435
   - DK-MOMSLOVEN-2024-209
   - DK-RENTELOVEN-2014-459
   - DK-UDENRETLIGE-INDDRIVELSESOMKOSTNINGER-AMEND-2013-105
+  - DK-OFFENTLIGE-BETALINGER-2007-798
 rules:
   - rule_id: DK-INVOICE-FULL-001
     name: Full invoice must contain core seller/buyer/date/number/content fields
@@ -179,7 +180,7 @@ rules:
   - rule_id: DK-INVOICE-PUBLIC-RECIPIENT-001
     name: Public-recipient invoices must carry valid EAN/GLN metadata in the immutable buyer snapshot
     category: invoice_validation
-    source_id: DK-MOMSBEKENDTGORELSEN-2023-1435
+    source_id: DK-OFFENTLIGE-BETALINGER-2007-798
     severity: hard_stop
     machine_rule:
       condition: buyer_public_recipient == true or buyer_ean_number_present == true
@@ -193,7 +194,7 @@ rules:
   - rule_id: DK-INVOICE-PUBLIC-EXPORT-001
     name: Public-recipient invoice export preview must be deterministic and clearly scoped as transport-free handoff
     category: invoice_integrity
-    source_id: DK-MOMSBEKENDTGORELSEN-2023-1435
+    source_id: DK-OFFENTLIGE-BETALINGER-2007-798
     severity: hard_stop
     machine_rule:
       require:
@@ -208,7 +209,7 @@ rules:
   - rule_id: DK-INVOICE-PUBLIC-OIOUBL-001
     name: Public-recipient OIOUBL handoff export must be deterministic, auditable, and transport-scoped
     category: invoice_integrity
-    source_id: DK-MOMSBEKENDTGORELSEN-2023-1435
+    source_id: DK-OFFENTLIGE-BETALINGER-2007-798
     severity: hard_stop
     machine_rule:
       require:

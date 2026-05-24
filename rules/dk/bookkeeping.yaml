@@ -1,4 +1,4 @@
-version: dk-bookkeeping-v0.0.5
+version: dk-bookkeeping-v0.0.6
 sources:
   - DK-BOGFORINGSLOVEN-2022-700
   - DK-DIGITAL-BOGFORING-NONREGISTERED-2024-205
@@ -127,6 +127,26 @@ rules:
       forbid:
         - silently_missing_backup_after_more_than_7_days_with_new_activity
     explanation: Rentemester must be able to create a full backup of bookkeeping data and supporting documents and deterministically report when the weekly backup duty has become due because new activity happened after the last backup.
+  - rule_id: DK-BOOKKEEPING-BACKUP-DEST-001
+    name: The weekly backup must be stored with an independent third party on an EU/EEA server
+    category: backup_compliance
+    source_id: DK-DIGITAL-BOGFORING-NONREGISTERED-2024-205
+    provisions:
+      - ref: "§ 4, stk. 2"
+        text_hash: "sha256:b85c8e4e92f71426a4901c2b3db689fb5727c1fbc651341c3754ab414bc2e1c3"
+      - ref: "§ 4, stk. 3"
+        text_hash: "sha256:ac5b673b75c0b10f2bb72e473524974a06bb11ba6a59dd6111233e2a50726752"
+    severity: hard_stop
+    machine_rule:
+      require:
+        - destination_attested_in_eea_or_eu
+        - destination_attested_non_related_party
+        - destination_attested_it_security_standards
+        - destination_attestation_signed_by_human
+      forbid:
+        - placement_to_destination_failing_any_attestation
+        - silent_self_attestation_by_agent
+    explanation: Rentemester cannot itself know in which country a cloud folder physically sits, who the third party is, or whether they meet recognised IT-security standards. § 4 stk. 2 is therefore enforced as a human-signed attestation per destination (regionAttestation.inEeaOrEu, nonRelatedParty, itSecurityAttestation.meetsRecognisedStandards), checked by isCompliantDestination() before a backup placement is allowed. Stk. 3 is acknowledged but Rentemester's segment (non-registered, no other backup-mandate lex specialis) does not currently surface the exception as a setting.
   - rule_id: DK-BOOKKEEPING-BACKUP-KEY-ROTATE-001
     name: Rotation of the Ed25519 backup signing key must be auditable and preserve the verifiability of older backups
     category: backup_compliance

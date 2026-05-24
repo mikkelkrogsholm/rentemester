@@ -30,6 +30,10 @@ import type { BackupComplianceStatus } from "./system-backups";
 import { readTar } from "./tar";
 
 const BACKUP_RULE_ID = "DK-BOOKKEEPING-BACKUP-001";
+// § 4, stk. 2 of BEK 205/2024 — backup must live with a non-related party on
+// an EU/EEA server. Enforced as a human-signed attestation in
+// isCompliantDestination(), not as a machine-checkable predicate.
+const BACKUP_DEST_RULE_ID = "DK-BOOKKEEPING-BACKUP-DEST-001";
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -292,7 +296,10 @@ export function addBackupDestination(
       `attestedBy='${attestedBy}', createdBy=${destination.createdBy}`,
   });
 
-  return { ok: true, destination, appliedRules: [BACKUP_RULE_ID], errors: [] };
+  // The weekly-backup duty (DK-BOOKKEEPING-BACKUP-001) and the
+  // destination-attestation duty (DK-BOOKKEEPING-BACKUP-DEST-001 — BEK
+  // 205/2024 § 4, stk. 2) both apply when a destination is registered.
+  return { ok: true, destination, appliedRules: [BACKUP_RULE_ID, BACKUP_DEST_RULE_ID], errors: [] };
 }
 
 export function listBackupDestinations(companyRoot: string): BackupDestination[] {
