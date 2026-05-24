@@ -908,12 +908,37 @@ export function resolveCompanyIssuedInvoicePdf(
 // Per-company issued invoices (Fakturaer, year-aware) — cockpit-redesign it. 5
 // --------------------------------------------------------------------------
 
+/**
+ * Cockpit-facing PEPPOL/e-faktura status (#428) — verbatim copy of the
+ * core `InvoicePeppolStatus`, exposed so the Cockpit can flag
+ * "Sendt som e-faktura" on a row and gate the send-action.
+ */
+export type CompanyInvoicePeppolStatus = {
+  status: "prepared" | "acknowledged";
+  submissionReference: string;
+  transmissionId: string | null;
+  acknowledgedAt: string | null;
+};
+
 /** One issued invoice — the fields the Fakturaer view renders. */
 export type CompanyInvoiceRow = {
   documentId: number;
   invoiceNo: string;
   invoiceDate: string | null;
   customerName: string | null;
+  /**
+   * Buyer's EAN-number normalised to 13 digits, or `null`. #428: the
+   * Cockpit row offers "Send som e-faktura" only when this is set AND the
+   * buyer is marked as a public recipient.
+   */
+  buyerEanNumber: string | null;
+  /** True when the invoice was issued to a public-recipient buyer. */
+  buyerPublicRecipient: boolean;
+  /**
+   * The most recent recorded PEPPOL submission/transmission status, or
+   * `null` when the invoice has never been sent as an e-faktura.
+   */
+  peppolStatus: CompanyInvoicePeppolStatus | null;
   /** Gross amount inc. VAT, kroner. */
   grossAmount: number;
   /** Still-outstanding balance on the invoice, kroner. */
@@ -969,6 +994,9 @@ export function buildCompanyInvoices(
       invoiceNo: r.invoiceNumber,
       invoiceDate: r.invoiceDate,
       customerName: r.customerName,
+      buyerEanNumber: r.buyerEanNumber,
+      buyerPublicRecipient: r.buyerPublicRecipient,
+      peppolStatus: r.peppolStatus,
       grossAmount: roundKroner(r.grossAmount),
       openBalance: roundKroner(r.openBalance),
       currency: r.currency,

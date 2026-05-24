@@ -566,6 +566,26 @@ export const api = {
         }),
       },
     ).then((r) => r.creditNote),
+
+  /**
+   * #428 — sends an issued invoice as an e-faktura (NemHandel/PEPPOL) via
+   * the cockpit. Third caller of the SAME `submitPublicEInvoicePeppol` core
+   * function the CLI / MCP use; the server loads its access-point config
+   * from `RENTEMESTER_PEPPOL_ACCESS_POINT` so credentials never enter the
+   * body. Write-irreversible (it appends a `peppol_submissions` row + an
+   * `audit_log` entry), so the body carries `confirm: true`.
+   */
+  sendInvoiceAsEInvoice: (slug: string, input: InvoiceSendEInvoiceInput) =>
+    request<{ ok: true; submission: InvoiceSendEInvoiceSummary }>(
+      `/api/companies/${encodeURIComponent(slug)}/invoices/send-public`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          invoiceDocumentId: input.invoiceDocumentId,
+          confirm: true,
+        }),
+      },
+    ).then((r) => r.submission),
 };
 
 /** A single invoice line as the human enters it — Rentemester computes totals. */
@@ -633,6 +653,21 @@ export type InvoiceCreditNoteInput = {
   /** Optional partial credit. When omitted, the remaining gross is credited. */
   grossAmount?: number;
   creditNoteNumber?: string;
+};
+
+/** Input for `api.sendInvoiceAsEInvoice` (#428). */
+export type InvoiceSendEInvoiceInput = {
+  invoiceDocumentId: number;
+};
+
+/** The PEPPOL submission result the server echoes back (#428). */
+export type InvoiceSendEInvoiceSummary = {
+  invoiceNumber: string | null;
+  submissionReference: string | null;
+  status: "prepared" | "acknowledged" | null;
+  duplicate: boolean;
+  envelopeSha256: string | null;
+  oioublSha256: string | null;
 };
 
 /** The credit-note result the server echoes back. */

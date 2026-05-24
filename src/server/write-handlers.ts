@@ -48,6 +48,11 @@ import { postIssuedInvoiceToLedger } from "../core/invoice-booking";
 import { settleInvoiceFromBank } from "../core/invoice-settlement";
 import { issueCreditNote } from "../core/credit-notes";
 import {
+  submitPublicEInvoicePeppol,
+  type PeppolAccessPointConfig,
+} from "../core/public-einvoice";
+import { readFileSync } from "node:fs";
+import {
   getCompanySettings,
   resolveCompanyPaymentDetails,
   setCompanyProfile,
@@ -1010,6 +1015,136 @@ export async function handleInvoiceCreditNote(
       originalInvoiceNumber: result.originalInvoiceNumber ?? null,
       journalEntryId: result.journalEntryId ?? null,
       journalEntryNo: result.journalEntryNo ?? null,
+    },
+  });
+}
+
+// --------------------------------------------------------------------------
+// Send som e-faktura (NemHandel / PEPPOL) — #428.
+//
+// A SMB owner that invoices a public buyer is required by law to deliver the
+// invoice as an e-faktura. Until now the only way to do so from Rentemester
+// was the CLI command `invoice submit-public-peppol`, which most owners never
+// discover. This handler is the Cockpit's third caller of the SAME
+// `submitPublicEInvoicePeppol` core function the CLI/MCP use — so the
+// Cockpit and the terminal produce byte-identical PEPPOL envelopes and
+// identical `peppol_submissions` rows.
+//
+// Access-point CONFIG (non-secret: accessPointId + endpointUrl + sender
+// endpointId) is read from a file referenced by the `RENTEMESTER_PEPPOL_ACCESS_POINT`
+// env var, mirroring how `bun run cli invoice submit-public-peppol` consumes
+// its `--access-point <file.json>`. Credentials never enter the request body
+// nor the server config object. When the env var is not configured, the
+// handler returns a 400 with a clear next-step message — never a 500.
+// --------------------------------------------------------------------------
+
+/**
+ * Loads the non-secret PEPPOL access-point config from a JSON file at the
+ * path in `RENTEMESTER_PEPPOL_ACCESS_POINT`. Returns `null` (not throws) when
+ * the env var is missing — that case is mapped to a 400 with a clear
+ * next-step so the SMB owner knows what to configure. A malformed file is a
+ * 400 with the parse error verbatim.
+ */
+function loadConfiguredPeppolAccessPoint(): PeppolAccessPointConfig {
+  const path = (process.env.RENTEMESTER_PEPPOL_ACCESS_POINT ?? "").trim();
+  if (!path) {
+    throw ApiError.badRequest(
+      "PEPPOL er ikke konfigureret i denne installation. " +
+        "Sæt RENTEMESTER_PEPPOL_ACCESS_POINT til stien for en JSON-fil med " +
+        "{accessPointId, endpointUrl, senderEndpointId} for at sende e-fakturaer.",
+    );
+  }
+  let raw: string;
+  try {
+    raw = readFileSync(path, "utf8");
+  } catch (error) {
+    throw ApiError.badRequest(
+      `PEPPOL access-point-config kunne ikke læses fra ${path}: ${(error as Error).message}`,
+    );
+  }
+  let parsed: {
+    accessPointId?: string;
+    endpointUrl?: string;
+    senderEndpointId?: string;
+  };
+  try {
+    parsed = JSON.parse(raw) as typeof parsed;
+  } catch (error) {
+    throw ApiError.badRequest(
+      `PEPPOL access-point-config er ikke gyldig JSON: ${(error as Error).message}`,
+    );
+  }
+  return {
+    accessPointId: (parsed.accessPointId ?? "").trim(),
+    endpointUrl: (parsed.endpointUrl ?? "").trim(),
+    senderEndpointId: (parsed.senderEndpointId ?? "").trim(),
+  };
+}
+
+/**
+ * POST /api/companies/:slug/invoices/send-public — sends an issued invoice
+ * as a public e-faktura via NemHandel / PEPPOL.
+ *
+ * Body: `{ invoiceDocumentId: number, confirm: true }`. Calls the SAME
+ * `submitPublicEInvoicePeppol` core function the CLI's
+ * `invoice submit-public-peppol` command uses, so the Cockpit and the
+ * terminal produce byte-identical PEPPOL submission envelopes. Idempotent:
+ * a second submission for the same invoice/access-point pair collapses onto
+ * the existing `peppol_submissions` row (the underlying core enforces this
+ * via a derived idempotency key) and the handler echoes `duplicate: true`.
+ *
+ * Write-irreversible (it inserts a `peppol_submissions` row AND appends an
+ * `audit_log` entry — both write-once tables) so `requireConfirm` is set.
+ * Goes through `withCompanyMutation`, so the backup lock, the localhost gate
+ * and actor attribution all apply.
+ *
+ * The access-point CONFIG (non-secret: accessPointId + endpointUrl + sender
+ * endpointId) is loaded from `RENTEMESTER_PEPPOL_ACCESS_POINT`; credentials
+ * are NEVER passed in the request body. A missing/invalid config is a 400.
+ */
+export async function handleInvoiceSendPublic(
+  config: ServerConfig,
+  request: Request,
+  slug: string,
+): Promise<Response> {
+  const accessPoint = loadConfiguredPeppolAccessPoint();
+
+  const result = await withCompanyMutation(
+    request,
+    config,
+    slug,
+    (ctx, body) => {
+      // Touch the resolved actor so the cockpit's submit is attributable in
+      // the audit_log entry the core writes (the core itself records the
+      // submission as the authenticated actor that opened the db).
+      void ctx.actor;
+      const invoiceDocumentId = requireBodyPositiveInt(body, "invoiceDocumentId");
+      const submitted = submitPublicEInvoicePeppol(ctx.db, {
+        invoiceDocumentId,
+        accessPoint,
+      });
+      return {
+        ok: submitted.ok,
+        errors: submitted.errors,
+        invoiceNumber: submitted.invoiceNumber,
+        submissionReference: submitted.submissionReference,
+        status: submitted.status,
+        duplicate: submitted.duplicate,
+        envelopeSha256: submitted.envelopeSha256,
+        oioublSha256: submitted.oioublSha256,
+      };
+    },
+    { requireConfirm: true },
+  );
+
+  return okResponse({
+    submission: {
+      invoiceNumber: result.invoiceNumber ?? null,
+      submissionReference: result.submissionReference ?? null,
+      status: result.status ?? null,
+      duplicate: Boolean(result.duplicate),
+      envelopeSha256: result.envelopeSha256 ?? null,
+      oioublSha256: result.oioublSha256 ?? null,
     },
   });
 }

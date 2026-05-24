@@ -66,6 +66,7 @@ import {
   handleDocumentIngest,
   handleGenerateRecurringInvoice,
   handleInvoiceCreditNote,
+  handleInvoiceSendPublic,
   handleInvoiceIssue,
   handleInvoicePost,
   handleInvoiceSettle,
@@ -186,6 +187,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "POST", pattern: "/api/companies/:slug/invoices/post", summary: "Bogfører en udstedt faktura." },
   { method: "POST", pattern: "/api/companies/:slug/invoices/settle", summary: "Afregner faktura fra bank." },
   { method: "POST", pattern: "/api/companies/:slug/invoices/credit-note", summary: "Udsteder kreditnota." },
+  { method: "POST", pattern: "/api/companies/:slug/invoices/send-public", summary: "Sender faktura som e-faktura (NemHandel/PEPPOL)." },
   { method: "POST", pattern: "/api/companies/:slug/periods/close", summary: "Lukker regnskabsperiode." },
   { method: "POST", pattern: "/api/companies/:slug/periods/reopen", summary: "Genåbner regnskabsperiode (#247-modstykke til CLI-only)." },
 ];
@@ -905,6 +907,20 @@ export async function handleRequest(
       if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
       const slug = decodeURIComponent(invoiceCreditMatch[1]!);
       return await handleInvoiceCreditNote(config, request, slug);
+    }
+
+    // Bookkeeping write route (#428): send an issued invoice as an
+    // e-faktura via NemHandel/PEPPOL. Cockpit becomes a third caller of
+    // `submitPublicEInvoicePeppol`, alongside the CLI's
+    // `invoice submit-public-peppol` command and the MCP tool. Access-point
+    // config is loaded from `RENTEMESTER_PEPPOL_ACCESS_POINT` so credentials
+    // never enter core state or the request body.
+    const invoiceSendPublicMatch =
+      /^\/api\/companies\/([^/]+)\/invoices\/send-public$/.exec(path);
+    if (invoiceSendPublicMatch) {
+      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      const slug = decodeURIComponent(invoiceSendPublicMatch[1]!);
+      return await handleInvoiceSendPublic(config, request, slug);
     }
 
     // Bookkeeping write route (#287): close an accounting period — the

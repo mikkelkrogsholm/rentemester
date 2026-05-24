@@ -221,6 +221,165 @@ describe("InvoicesView — write actions", () => {
     ).not.toBeInTheDocument();
   });
 
+  // --------------------------------------------------------------------------
+  // #428 — Send som e-faktura (NemHandel / PEPPOL) from the row.
+  //
+  // An SMB owner that invoices a public-sector buyer (kommune, region,
+  // statslig institution) is required by law to deliver the invoice as an
+  // e-faktura. Without a Cockpit button the owner has to fall back to the CLI
+  // command `invoice submit-public-peppol`, which most owners never discover.
+  // --------------------------------------------------------------------------
+
+  test("Send som e-faktura is offered only for rows whose buyer has an EAN-number", async () => {
+    mockFetch(
+      route({
+        invoices: [
+          // Private buyer — no EAN, no public-recipient flag. NO send button.
+          {
+            documentId: 1,
+            invoiceNo: "2026-00001",
+            invoiceDate: "2026-03-15",
+            customerName: "Privat Kunde A/S",
+            buyerEanNumber: null,
+            buyerPublicRecipient: false,
+            peppolStatus: null,
+            grossAmount: 1000,
+            openBalance: 0,
+            currency: "DKK",
+            status: "paid",
+            effectiveDueDate: "2026-04-14",
+            overdueDays: 0,
+          },
+          // Public buyer with EAN — Send button MUST appear.
+          {
+            documentId: 2,
+            invoiceNo: "2026-00002",
+            invoiceDate: "2026-03-16",
+            customerName: "Aarhus Kommune",
+            buyerEanNumber: "5790000123456",
+            buyerPublicRecipient: true,
+            peppolStatus: null,
+            grossAmount: 2000,
+            openBalance: 2000,
+            currency: "DKK",
+            status: "open",
+            effectiveDueDate: "2026-04-15",
+            overdueDays: 0,
+          },
+        ],
+      }),
+    );
+    renderView();
+    await screen.findByRole("heading", { name: "Acme ApS" });
+    expect(
+      screen.getAllByRole("button", { name: "Send som e-faktura" }),
+    ).toHaveLength(1);
+  });
+
+  test("Send som e-faktura is hidden once the invoice has been acknowledged by the access point", async () => {
+    mockFetch(
+      route({
+        invoices: [
+          {
+            documentId: 7,
+            invoiceNo: "2026-00007",
+            invoiceDate: "2026-03-15",
+            customerName: "Aarhus Kommune",
+            buyerEanNumber: "5790000123456",
+            buyerPublicRecipient: true,
+            peppolStatus: {
+              status: "acknowledged",
+              submissionReference: "PEPPOL-2026-00007-abc",
+              transmissionId: "tx-1",
+              acknowledgedAt: "2026-03-20T10:00:00Z",
+            },
+            grossAmount: 1000,
+            openBalance: 0,
+            currency: "DKK",
+            status: "paid",
+            effectiveDueDate: "2026-04-14",
+            overdueDays: 0,
+          },
+        ],
+      }),
+    );
+    renderView();
+    await screen.findByRole("heading", { name: "Acme ApS" });
+    expect(
+      screen.queryByRole("button", { name: "Send som e-faktura" }),
+    ).not.toBeInTheDocument();
+    // The "Sendt som e-faktura" status flag MUST be shown instead.
+    expect(screen.getByText("Sendt som e-faktura")).toBeInTheDocument();
+  });
+
+  test("Send som e-faktura is hidden for an archived year (no live ledger)", async () => {
+    mockFetch(route({ archived: true, selectedYear: "2025", invoices: [] }));
+    renderView();
+    await screen.findByText(/Fakturaer er ikke tilgængelige for 2025/);
+    expect(
+      screen.queryByRole("button", { name: "Send som e-faktura" }),
+    ).not.toBeInTheDocument();
+  });
+
+  test("Send som e-faktura posts to the send-public route with confirm: true", async () => {
+    mockFetch({
+      "GET /api/companies/acme-aps/invoices": {
+        invoices: invoices({
+          invoices: [
+            {
+              documentId: 42,
+              invoiceNo: "2026-00042",
+              invoiceDate: "2026-03-15",
+              customerName: "Aarhus Kommune",
+              buyerEanNumber: "5790000123456",
+              buyerPublicRecipient: true,
+              peppolStatus: null,
+              grossAmount: 5000,
+              openBalance: 5000,
+              currency: "DKK",
+              status: "open",
+              effectiveDueDate: "2026-04-14",
+              overdueDays: 0,
+            },
+          ],
+        }),
+      },
+      "POST /api/companies/acme-aps/invoices/send-public": {
+        submission: {
+          invoiceNumber: "2026-00042",
+          submissionReference: "PEPPOL-2026-00042-abc",
+          status: "prepared",
+          duplicate: false,
+          envelopeSha256: "envelope-sha",
+          oioublSha256: "oioubl-sha",
+        },
+      },
+    });
+    renderView();
+    await screen.findByRole("heading", { name: "Acme ApS" });
+    await userEvent.click(
+      screen.getByRole("button", { name: "Send som e-faktura" }),
+    );
+    // Dialog body should surface the EAN and kanal so the owner can verify.
+    expect(screen.getByText("5790000123456")).toBeInTheDocument();
+    expect(screen.getByText(/NemHandel \(PEPPOL\)/)).toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Send e-faktura" }),
+    );
+
+    await waitFor(() => {
+      const calls = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls;
+      const sendCall = calls.find((c) =>
+        String(c[0]).includes("/invoices/send-public"),
+      );
+      expect(sendCall).toBeDefined();
+      const sent = JSON.parse(String((sendCall![1] as RequestInit).body));
+      expect(sent.invoiceDocumentId).toBe(42);
+      // Write-irreversible — body MUST carry confirm: true.
+      expect(sent.confirm).toBe(true);
+    });
+  });
+
   test("Krediter posts a credit note with the reason as begrundelse", async () => {
     mockFetch({
       "GET /api/companies/acme-aps/invoices": { invoices: invoices() },

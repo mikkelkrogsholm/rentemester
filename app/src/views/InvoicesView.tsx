@@ -63,6 +63,8 @@ export function InvoicesView() {
   const [settling, setSettling] = useState<CompanyInvoiceRow | null>(null);
   // The invoice row whose "Krediter" ConfirmDialog is open, if any (#412).
   const [crediting, setCrediting] = useState<CompanyInvoiceRow | null>(null);
+  // The invoice row whose "Send som e-faktura" ConfirmDialog is open (#428).
+  const [sendingPublic, setSendingPublic] = useState<CompanyInvoiceRow | null>(null);
 
   if (state.loading && !state.data)
     return <Loading label="Henter fakturaer…" />;
@@ -184,6 +186,54 @@ export function InvoicesView() {
         />
       )}
 
+      {/* #428: Send som e-faktura ConfirmDialog. The action is only ever
+          offered for rows with an EAN-number on a public-recipient buyer;
+          the dialog shows that EAN + the kanal so the owner can sanity-check
+          who and where the invoice will be transmitted to. Write-irreversible
+          (it records a peppol_submissions row + an audit_log entry), so the
+          server requires `confirm: true` — the dialog's primary button maps
+          to that flag. */}
+      {sendingPublic && (
+        <ConfirmDialog
+          title="Send faktura som e-faktura"
+          body={
+            <div>
+              <p>
+                Send faktura <strong>{sendingPublic.invoiceNo}</strong> til{" "}
+                <strong>{sendingPublic.customerName ?? "modtageren"}</strong> som
+                e-faktura via NemHandel/PEPPOL.
+              </p>
+              <dl className="confirm-meta">
+                <div>
+                  <dt>EAN-nummer</dt>
+                  <dd>{sendingPublic.buyerEanNumber ?? "—"}</dd>
+                </div>
+                <div>
+                  <dt>Kanal</dt>
+                  <dd>NemHandel (PEPPOL)</dd>
+                </div>
+                <div>
+                  <dt>Handling</dt>
+                  <dd>Sendes nu</dd>
+                </div>
+              </dl>
+              <p className="muted">
+                Afsendelsen registreres i revisionssporet og kan ikke fortrydes.
+              </p>
+            </div>
+          }
+          confirmLabel="Send e-faktura"
+          confirmKind="danger"
+          onConfirm={async () => {
+            await api.sendInvoiceAsEInvoice(slug, {
+              invoiceDocumentId: sendingPublic.documentId,
+            });
+            state.reload();
+          }}
+          onClose={() => setSendingPublic(null)}
+        />
+      )}
+
       {inv.archived ? (
         <ArchivedNotice year={inv.selectedYear} />
       ) : inv.invoices.length === 0 ? (
@@ -257,6 +307,18 @@ export function InvoicesView() {
                     row.status !== "credited" &&
                     row.status !== "refunded" &&
                     row.status !== "written_off";
+                  // #428: "Send som e-faktura" appears only when the buyer
+                  // is a public recipient with a valid EAN-number (the
+                  // server-side requirement for a NemHandel/PEPPOL send).
+                  // Hidden once the invoice has been acknowledged by the
+                  // access point — re-sending an already-acknowledged
+                  // invoice would only confuse the owner. A `prepared`
+                  // status (envelope recorded but not acknowledged) still
+                  // allows a retry.
+                  const canSendPublic =
+                    Boolean(row.buyerEanNumber) &&
+                    row.buyerPublicRecipient &&
+                    row.peppolStatus?.status !== "acknowledged";
                   return (
                     <tr key={row.documentId}>
                       <td className="account-no">{row.invoiceNo}</td>
@@ -280,6 +342,27 @@ export function InvoicesView() {
                             ? ` · ${row.overdueDays} dage`
                             : ""}
                         </span>
+                        {/* #428 — surface e-faktura status next to settlement
+                            status so the owner can see at a glance whether
+                            the invoice has been transmitted to NemHandel. */}
+                        {row.peppolStatus && (
+                          <span
+                            className={`flag ${
+                              row.peppolStatus.status === "acknowledged"
+                                ? "ok"
+                                : "neutral"
+                            }`}
+                            title={
+                              row.peppolStatus.acknowledgedAt
+                                ? `Bekræftet ${row.peppolStatus.acknowledgedAt}`
+                                : `Reference ${row.peppolStatus.submissionReference}`
+                            }
+                          >
+                            {row.peppolStatus.status === "acknowledged"
+                              ? "Sendt som e-faktura"
+                              : "E-faktura forberedt"}
+                          </span>
+                        )}
                       </td>
                       <td>
                         <div className="row-actions">
@@ -315,6 +398,23 @@ export function InvoicesView() {
                               onClick={() => setCrediting(row)}
                             >
                               Krediter
+                            </button>
+                          )}
+                          {/* #428 — "Send som e-faktura" is shown ONLY when
+                              the customer has an EAN-number on file (a public
+                              buyer). Hidden for archived years and once the
+                              invoice has been acknowledged by the access
+                              point. The button replaces the missing CLI step
+                              `invoice submit-public-peppol` so SMB owners who
+                              invoice the public sector no longer need a
+                              terminal to get paid. */}
+                          {!inv.archived && canSendPublic && (
+                            <button
+                              type="button"
+                              className="btn secondary"
+                              onClick={() => setSendingPublic(row)}
+                            >
+                              Send som e-faktura
                             </button>
                           )}
                         </div>

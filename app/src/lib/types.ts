@@ -736,11 +736,32 @@ export type InvoiceStatus =
   | "written_off"
   | "overdue";
 
+/**
+ * Cockpit-facing PEPPOL/e-faktura status (#428) — `null` when the invoice
+ * has never been sent as an e-faktura. `prepared` means an envelope has been
+ * recorded; `acknowledged` means the access point confirmed receipt.
+ */
+export type InvoicePeppolStatus = {
+  status: "prepared" | "acknowledged";
+  submissionReference: string;
+  transmissionId: string | null;
+  acknowledgedAt: string | null;
+};
+
 export type CompanyInvoiceRow = {
   documentId: number;
   invoiceNo: string;
   invoiceDate: string | null;
   customerName: string | null;
+  /**
+   * Buyer's EAN-number (13 digits) when set on the invoice payload. The
+   * cockpit row offers "Send som e-faktura" only when this is present.
+   */
+  buyerEanNumber: string | null;
+  /** True when the buyer is marked as a public recipient. */
+  buyerPublicRecipient: boolean;
+  /** Latest PEPPOL submission/transmission, or `null` when never sent. */
+  peppolStatus: InvoicePeppolStatus | null;
   /** Gross amount inc. VAT, kroner. */
   grossAmount: number;
   /** Still-outstanding balance on the invoice, kroner. */
