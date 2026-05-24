@@ -71,7 +71,7 @@ describe("Cockpit write — accountant export (POST .../accountant-export)", () 
       });
       expect(res.status).toBe(400);
       const body = await res.json();
-      expect(body.error.message).toContain("confirm");
+      expect(body.errors[0]).toContain("confirm");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }

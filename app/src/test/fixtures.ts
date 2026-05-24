@@ -759,8 +759,9 @@ export function mockFetch(routes: RouteMap) {
         }) ?? `${method} ${path}`;
       const payload = routes[key];
       if (payload === undefined) {
+        // #368: unified `{ ok:false, errors:[...], code }` envelope.
         return jsonResponse(
-          { ok: false, error: { code: "not_found", message: "no route" } },
+          { ok: false, errors: ["no route"], code: "not_found" },
           404,
         );
       }
@@ -772,7 +773,7 @@ export function mockFetch(routes: RouteMap) {
         const e = (payload as { __error: { code: string; message: string } })
           .__error;
         return jsonResponse(
-          { ok: false, error: e },
+          { ok: false, errors: [e.message], code: e.code },
           e.code === "conflict" ? 409 : 400,
         );
       }

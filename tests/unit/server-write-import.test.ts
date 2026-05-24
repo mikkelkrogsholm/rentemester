@@ -118,8 +118,8 @@ describe("Cockpit write — generic file-import", () => {
         confirm: true,
       });
       expect(res.status).toBe(400);
-      expect(res.body.error.message).toContain("ikke genkendt");
-      expect(res.body.error.message).toContain("Dinero");
+      expect(res.body.errors[0]).toContain("ikke genkendt");
+      expect(res.body.errors[0]).toContain("Dinero");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -133,7 +133,7 @@ describe("Cockpit write — generic file-import", () => {
         content: DINERO_CONTACTS_CSV,
       });
       expect(res.status).toBe(400);
-      expect(res.body.error.message).toContain("confirm");
+      expect(res.body.errors[0]).toContain("confirm");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -148,7 +148,7 @@ describe("Cockpit write — generic file-import", () => {
         confirm: true,
       });
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }

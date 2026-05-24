@@ -4,9 +4,15 @@
 // deliberately as a hand-written copy: the SPA is a separate package and does
 // not import from the backend's TypeScript sources.
 
+/**
+ * #368 — the unified cockpit/MCP/CLI error envelope. `errors[0]` is the
+ * human-readable message; `code` is the discrete enum (`bad_request`,
+ * `conflict`, …) for programmatic branching.
+ */
 export type ApiErrorBody = {
   ok: false;
-  error: { code: string; message: string };
+  errors: string[];
+  code: string;
 };
 
 export type HealthResponse = {

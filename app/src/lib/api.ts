@@ -1,8 +1,9 @@
 // The single HTTP seam between the cockpit SPA and `rentemester serve` (#170).
 //
-// Every backend response is `{ok:true,...}` or `{ok:false,error:{code,message}}`.
-// `request` normalises both into a typed value or a thrown `ApiError`, so views
-// only ever deal with data or a single error type.
+// Every backend response is `{ok:true,...}` or
+// `{ok:false, errors:[...], code:"..."}` — the unified envelope shared with
+// MCP + CLI (#368). `request` normalises both into a typed value or a thrown
+// `ApiError`, so views only ever deal with data or a single error type.
 
 import type {
   ArchiveResponse,
@@ -76,12 +77,17 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   if (body && typeof body === "object" && (body as { ok?: unknown }).ok === false) {
-    const err = (body as { error?: { code?: string; message?: string } }).error;
-    throw new ApiError(
-      err?.code ?? "internal",
-      err?.message ?? "Ukendt serverfejl.",
-      res.status,
-    );
+    // #368: cockpit, MCP and CLI all return the same shape now —
+    // `{ ok:false, errors:[string], code?:string }`. The human-readable
+    // message lives in `errors[0]`; `code` is the discrete enum
+    // (`bad_request`, `conflict`, …) for programmatic branching.
+    const env = body as { errors?: unknown; code?: unknown };
+    const errors = Array.isArray(env.errors)
+      ? env.errors.map((e) => String(e))
+      : [];
+    const code = typeof env.code === "string" ? env.code : "internal";
+    const message = errors[0] ?? "Ukendt serverfejl.";
+    throw new ApiError(code, message, res.status);
   }
   if (!res.ok) {
     throw new ApiError("internal", `HTTP ${res.status}`, res.status);
@@ -389,11 +395,16 @@ export const api = {
       let message = `HTTP ${res.status}`;
       let code = "internal";
       try {
+        // #368: unified envelope — `errors[0]` is the message, `code` is the
+        // top-level enum.
         const body = (await res.json()) as {
-          error?: { code?: string; message?: string };
+          errors?: unknown;
+          code?: unknown;
         };
-        message = body.error?.message ?? message;
-        code = body.error?.code ?? code;
+        if (Array.isArray(body.errors) && body.errors.length > 0) {
+          message = String(body.errors[0]);
+        }
+        if (typeof body.code === "string") code = body.code;
       } catch {}
       throw new ApiError(code, message, res.status);
     }

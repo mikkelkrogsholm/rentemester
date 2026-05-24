@@ -54,17 +54,32 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * The cockpit HTTP error-envelope shape (#368).
+ *
+ * Identical in shape and field names to the MCP/CLI envelope
+ * (`src/mcp/envelope.ts`), so an agent that drives all three write-stacks can
+ * share one error-parser:
+ *
+ *   { ok: false, errors: ["..."], code?: "bad_request" | ... }
+ *
+ * The discrete `code` enum survives at the TOP level — it is still useful for
+ * programmatic branching (`conflict` vs `bad_request`) — but the
+ * human-readable message moved from `error.message` into `errors[0]`. The old
+ * singular `error: { code, message }` object is GONE.
+ */
 export type ApiErrorBody = {
   ok: false;
-  error: { code: ApiErrorCode; message: string };
+  errors: string[];
+  code: ApiErrorCode;
 };
 
 /**
  * Maps any thrown value to a safe `{ status, body }` pair.
  *
- * `ApiError` instances pass their curated message through. Every other error
- * is collapsed to a generic 500 — its real message (which may contain a
- * filesystem path or SQL fragment) is dropped, never serialised.
+ * `ApiError` instances pass their curated message through (as `errors[0]`).
+ * Every other error is collapsed to a generic 500 — its real message (which
+ * may contain a filesystem path or SQL fragment) is dropped, never serialised.
  */
 export function toErrorResponse(err: unknown): {
   status: number;
@@ -73,14 +88,11 @@ export function toErrorResponse(err: unknown): {
   if (err instanceof ApiError) {
     return {
       status: err.status,
-      body: { ok: false, error: { code: err.code, message: err.message } },
+      body: { ok: false, errors: [err.message], code: err.code },
     };
   }
   return {
     status: 500,
-    body: {
-      ok: false,
-      error: { code: "internal", message: "internal server error" },
-    },
+    body: { ok: false, errors: ["internal server error"], code: "internal" },
   };
 }

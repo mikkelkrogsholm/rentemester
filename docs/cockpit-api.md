@@ -77,24 +77,37 @@ Every response is JSON with `content-type: application/json; charset=utf-8`.
 The `<key>` is route-specific (`dashboard`, `invoices`, `import`, `invoice`,
 …) — see each endpoint below.
 
-**Error** — any non-2xx — always has this shape (`src/server/errors.ts`):
+**Error** — any non-2xx — always has this shape (`src/server/errors.ts`,
+unified with MCP + CLI in #368):
 
 ```json
-{ "ok": false, "error": { "code": "<code>", "message": "<safe message>" } }
+{ "ok": false, "errors": ["<safe message>"], "code": "<code>" }
 ```
 
-| `error.code` | HTTP | When |
-|--------------|------|------|
+This is the **same envelope** MCP and CLI return — see
+[`docs/mcp-agent-contract.md`](mcp-agent-contract.md#preconditions-and-errors--where-they-live)
+and [`docs/cli-contract.md`](cli-contract.md). An agent that drives all three
+write-stacks can share a single error-parser: `errors[0]` is the
+human-readable message; `code` is the discrete enum below for programmatic
+branching.
+
+| `code` | HTTP | When |
+|--------|------|------|
 | `bad_request` | 400 | Malformed body, bad/missing field, a core business rejection that is not a conflict. |
 | `unauthorized` | 401 | Missing/invalid bearer token, or a write from a non-loopback host with auth disabled. |
 | `not_found` | 404 | Unknown company slug, company with no ledger, or an unknown endpoint. |
 | `method_not_allowed` | 405 | Right path, wrong HTTP method. |
 | `conflict` | 409 | The backup lock is active, or a state conflict — the target is missing, or the action already happened (e.g. an already-posted invoice, an already-resolved exception). |
-| `internal` | 500 | An unexpected error. The real message is **never** leaked — the body always reads `internal server error`. |
+| `internal` | 500 | An unexpected error. The real message is **never** leaked — `errors[0]` always reads `internal server error`. |
 
 A core business rejection (`ok:false` from a bookkeeping function) is mapped
 to `bad_request` by default, or to `conflict` when the message indicates a
 missing target or an already-done action. It is **never** a `500`.
+
+> **Wire-shape note (#368).** Before #368 the cockpit returned a singular
+> `error: { code, message }` object — the old shape is gone. Any client that
+> still reads `body.error.code` / `body.error.message` must move to
+> `body.code` / `body.errors[0]`.
 
 ## Read endpoints
 

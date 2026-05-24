@@ -85,7 +85,7 @@ describe("cockpit — company management (PATCH /api/companies/:slug)", () => {
         body: JSON.stringify({ name: "X" }),
       });
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -215,7 +215,7 @@ describe("cockpit — static SPA serving", () => {
         "/api/nope",
       );
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
       rmSync(dist, { recursive: true, force: true });

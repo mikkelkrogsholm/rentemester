@@ -99,7 +99,7 @@ describe("cockpit API — auth seam", () => {
       const res = await get(cfg, "/api/health");
       expect(res.status).toBe(401);
       expect(res.body.ok).toBe(false);
-      expect(res.body.error.code).toBe("unauthorized");
+      expect(res.body.code).toBe("unauthorized");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -222,7 +222,7 @@ describe("cockpit API — endpoint contracts", () => {
     try {
       const res = await get(config({ workspaceRoot: ws }), "/api/companies/ghost/dashboard");
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -233,7 +233,7 @@ describe("cockpit API — endpoint contracts", () => {
     try {
       const res = await get(config({ workspaceRoot: ws }), "/api/nope");
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -246,7 +246,7 @@ describe("cockpit API — endpoint contracts", () => {
         method: "DELETE",
       });
       expect(res.status).toBe(405);
-      expect(res.body.error.code).toBe("method_not_allowed");
+      expect(res.body.code).toBe("method_not_allowed");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -257,7 +257,7 @@ describe("cockpit API — endpoint contracts", () => {
     try {
       const res = await get(config({ workspaceRoot: ws }), "/api/portfolio?asOf=not-a-date");
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe("bad_request");
+      expect(res.body.code).toBe("bad_request");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -340,7 +340,7 @@ describe("cockpit API — fiscal years (GET /api/companies/:slug/fiscal-years)",
     try {
       const res = await get(config({ workspaceRoot: ws }), "/api/companies/ghost/fiscal-years");
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -533,7 +533,7 @@ describe("cockpit API — overview (GET /api/companies/:slug/overview)", () => {
         "/api/companies/acme-aps/overview?year=20xx",
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe("bad_request");
+      expect(res.body.code).toBe("bad_request");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -547,7 +547,7 @@ describe("cockpit API — overview (GET /api/companies/:slug/overview)", () => {
         "/api/companies/ghost/overview",
       );
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -681,7 +681,7 @@ describe("cockpit API — income statement (GET .../income-statement)", () => {
         "/api/companies/ghost/income-statement",
       );
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -718,7 +718,7 @@ describe("cockpit API — balance sheet (GET .../balance)", () => {
         "/api/companies/ghost/balance",
       );
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -817,7 +817,7 @@ describe("cockpit API — trial balance (GET .../trial-balance)", () => {
         "/api/companies/acme-aps/trial-balance?year=20xx",
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe("bad_request");
+      expect(res.body.code).toBe("bad_request");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -831,7 +831,7 @@ describe("cockpit API — trial balance (GET .../trial-balance)", () => {
         "/api/companies/ghost/trial-balance",
       );
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -935,7 +935,7 @@ describe("cockpit API — journal (GET .../journal)", () => {
         "/api/companies/ghost/journal",
       );
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -1351,7 +1351,7 @@ describe("cockpit API — bank (GET .../bank)", () => {
         "/api/companies/ghost/bank",
       );
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -1428,7 +1428,7 @@ describe("cockpit API — VAT (GET .../vat)", () => {
         "/api/companies/ghost/vat",
       );
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -1657,7 +1657,7 @@ describe("cockpit API — documents (GET .../documents)", () => {
         "/api/companies/ghost/documents",
       );
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -1753,7 +1753,7 @@ describe("cockpit API — archive (GET .../archive/:year)", () => {
         "/api/companies/acme-aps/archive/2099",
       );
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -1767,7 +1767,7 @@ describe("cockpit API — archive (GET .../archive/:year)", () => {
         "/api/companies/acme-aps/archive/20xx",
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe("bad_request");
+      expect(res.body.code).toBe("bad_request");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -1781,7 +1781,7 @@ describe("cockpit API — archive (GET .../archive/:year)", () => {
         "/api/companies/ghost/archive/2024",
       );
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -1890,7 +1890,7 @@ describe("cockpit API — multi-year (GET .../multi-year)", () => {
         "/api/companies/ghost/multi-year",
       );
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -1989,7 +1989,7 @@ describe("cockpit API — invoices (GET .../invoices)", () => {
         "/api/companies/ghost/invoices",
       );
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -2047,7 +2047,7 @@ describe("cockpit API — contacts (GET .../contacts)", () => {
         "/api/companies/ghost/contacts",
       );
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -2202,7 +2202,7 @@ describe("cockpit API — obligations (GET .../obligations)", () => {
         "/api/companies/ghost/obligations",
       );
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -2290,7 +2290,7 @@ describe("cockpit API — cash flow (GET .../cashflow)", () => {
         "/api/companies/ghost/cashflow",
       );
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -2365,7 +2365,7 @@ describe("cockpit API — company onboarding (POST /api/companies)", () => {
         body: JSON.stringify({}),
       });
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe("bad_request");
+      expect(res.body.code).toBe("bad_request");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -2380,7 +2380,7 @@ describe("cockpit API — company onboarding (POST /api/companies)", () => {
         body: JSON.stringify({ name: "Acme ApS" }),
       });
       expect(res.status).toBe(409);
-      expect(res.body.error.code).toBe("conflict");
+      expect(res.body.code).toBe("conflict");
       expect(JSON.stringify(res.body)).not.toContain(ws);
     } finally {
       rmSync(ws, { recursive: true, force: true });

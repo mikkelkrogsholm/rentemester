@@ -165,8 +165,8 @@ describe("Cockpit write — invoice credit-note (input + gates)", () => {
         },
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe("bad_request");
-      expect(res.body.error.message).toMatch(/confirm/i);
+      expect(res.body.code).toBe("bad_request");
+      expect(res.body.errors[0]).toMatch(/confirm/i);
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -185,7 +185,7 @@ describe("Cockpit write — invoice credit-note (input + gates)", () => {
         },
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.message).toContain("invoiceDocumentId");
+      expect(res.body.errors[0]).toContain("invoiceDocumentId");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -206,7 +206,7 @@ describe("Cockpit write — invoice credit-note (input + gates)", () => {
         },
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.message).toContain("reason");
+      expect(res.body.errors[0]).toContain("reason");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -263,7 +263,7 @@ describe("Cockpit write — invoice credit-note (input + gates)", () => {
       // The core message ("invoice X is already fully credited") matches the
       // `already` heuristic, so this is a 409 conflict, not a 500.
       expect(second.status).toBe(409);
-      expect(second.body.error.message).toMatch(/already fully credited/i);
+      expect(second.body.errors[0]).toMatch(/already fully credited/i);
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
