@@ -204,6 +204,112 @@ describe("DashboardView — Overblik", () => {
 });
 
 // --------------------------------------------------------------------------
+// #395 — "Sådan kommer du i gang" CTA on an empty fresh company
+// --------------------------------------------------------------------------
+
+describe("DashboardView — empty-state next-step CTA (#395)", () => {
+  test("shows the 'Sådan kommer du i gang' card when the company is empty", async () => {
+    mockFetch(
+      overviewRoute({
+        lastPostedDate: null,
+        recentEntries: [],
+        bank: { balance: 0, actualBalance: null, difference: null },
+        profitAndLoss: {
+          omsaetning: 0,
+          udgifter: 0,
+          resultat: 0,
+          months: MONTHS_EMPTY,
+        },
+        receivables: { openCount: 0, openTotal: 0 },
+      }),
+    );
+    renderDashboard();
+    expect(
+      await screen.findByRole("heading", { name: /Sådan kommer du i gang/ }),
+    ).toBeInTheDocument();
+    // Three concrete CTAs with the right routes.
+    const ingest = screen.getByRole("link", { name: /Indlæs dit første bilag/ });
+    expect(ingest).toHaveAttribute("href", "/companies/acme-aps/bilag");
+    const bank = screen.getByRole("link", { name: /Importér bankudtog/ });
+    expect(bank).toHaveAttribute("href", "/companies/acme-aps/bank");
+    const invoice = screen.getByRole("link", { name: /Udsted din første faktura/ });
+    expect(invoice).toHaveAttribute("href", "/companies/acme-aps/fakturaer");
+  });
+
+  test("the CTA disappears as soon as the first entry is booked", async () => {
+    mockFetch(
+      overviewRoute({
+        lastPostedDate: "2026-03-01",
+        recentEntries: [
+          {
+            id: 1,
+            entryNo: "2026-0001",
+            date: "2026-03-01",
+            text: "Første salg",
+            amount: 1000,
+          },
+        ],
+      }),
+    );
+    renderDashboard();
+    await screen.findByText("Første salg");
+    expect(
+      screen.queryByRole("heading", { name: /Sådan kommer du i gang/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  test("the CTA disappears as soon as a bank statement is imported", async () => {
+    mockFetch(
+      overviewRoute({
+        lastPostedDate: null,
+        recentEntries: [],
+        // actualBalance != null ⇒ a statement has been imported.
+        bank: { balance: 0, actualBalance: 12500, difference: -12500 },
+      }),
+    );
+    renderDashboard();
+    await screen.findByRole("heading", { name: "Acme ApS" });
+    expect(
+      screen.queryByRole("heading", { name: /Sådan kommer du i gang/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  test("an archived year never shows the empty-state CTA", async () => {
+    mockFetch(
+      overviewRoute({
+        archived: true,
+        archivedSource: "dinero",
+        selectedYear: "2025",
+        vat: null,
+        lastPostedDate: null,
+        recentEntries: [],
+        bank: { balance: 0, actualBalance: null, difference: null },
+      }),
+    );
+    renderDashboard();
+    await screen.findByText(/Arkiveret regnskabsår 2025/);
+    expect(
+      screen.queryByRole("heading", { name: /Sådan kommer du i gang/ }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+const MONTHS_EMPTY = [
+  { month: 1, label: "jan", income: 0, expense: 0 },
+  { month: 2, label: "feb", income: 0, expense: 0 },
+  { month: 3, label: "mar", income: 0, expense: 0 },
+  { month: 4, label: "apr", income: 0, expense: 0 },
+  { month: 5, label: "maj", income: 0, expense: 0 },
+  { month: 6, label: "jun", income: 0, expense: 0 },
+  { month: 7, label: "jul", income: 0, expense: 0 },
+  { month: 8, label: "aug", income: 0, expense: 0 },
+  { month: 9, label: "sep", income: 0, expense: 0 },
+  { month: 10, label: "okt", income: 0, expense: 0 },
+  { month: 11, label: "nov", income: 0, expense: 0 },
+  { month: 12, label: "dec", income: 0, expense: 0 },
+];
+
+// --------------------------------------------------------------------------
 // #213 slice 1 — the "Løs" write action on open exceptions
 // --------------------------------------------------------------------------
 

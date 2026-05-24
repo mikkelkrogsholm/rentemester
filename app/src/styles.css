@@ -1635,4 +1635,26 @@ table.statement-table td.num.muted {
   .entry-summary .entry-date {
     display: none;
   }
+  .get-started-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* #395 — empty-state next-step CTA on Overblik */
+.get-started-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  border-left: 3px solid var(--accent, #3578e5);
+}
+.get-started-card h3 {
+  margin: 0;
+  font-size: var(--text-size-lg);
+}
+.get-started-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
 }

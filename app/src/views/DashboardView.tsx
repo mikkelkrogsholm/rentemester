@@ -67,6 +67,7 @@ export function DashboardView() {
       {o.archived && (
         <ArchivedBanner year={o.selectedYear} source={o.archivedSource} />
       )}
+      {isFreshEmptyCompany(o) && <GetStartedCard slug={slug} />}
       <p className="period-head muted">
         Regnskabsår {o.selectedYear} ·{" "}
         {o.lastPostedDate
@@ -139,6 +140,47 @@ export function DashboardView() {
         <RecentEntriesCard entries={o.recentEntries} currency={currency} />
       </div>
     </section>
+  );
+}
+
+// --------------------------------------------------------------------------
+// #395 — "Sådan kommer du i gang" empty-state CTA
+// --------------------------------------------------------------------------
+
+/**
+ * A freshly-onboarded company shows zeros across the board: nothing has been
+ * booked, no bank statement imported. We surface a next-step CTA only in that
+ * specific state — and never for an archived (read-only) year. The card is
+ * removed automatically as soon as either the ledger or the bank gains any
+ * data, so it can never become a permanent fixture.
+ */
+function isFreshEmptyCompany(o: CompanyOverview): boolean {
+  if (o.archived) return false;
+  const noEntries = o.lastPostedDate === null && o.recentEntries.length === 0;
+  const noBank = o.bank.actualBalance === null && o.bank.balance === 0;
+  return noEntries && noBank;
+}
+
+function GetStartedCard({ slug }: { slug: string }) {
+  return (
+    <div className="card get-started-card">
+      <h3>Sådan kommer du i gang</h3>
+      <p className="muted">
+        Du er klar til at bogføre din første postering. Vælg én af de tre veje
+        — du kan altid bruge agenten eller kommandolinjen i stedet.
+      </p>
+      <div className="get-started-actions">
+        <Link className="btn primary" to={`/companies/${slug}/bilag`}>
+          Indlæs dit første bilag
+        </Link>
+        <Link className="btn secondary" to={`/companies/${slug}/bank`}>
+          Importér bankudtog
+        </Link>
+        <Link className="btn secondary" to={`/companies/${slug}/fakturaer`}>
+          Udsted din første faktura
+        </Link>
+      </div>
+    </div>
   );
 }
 
