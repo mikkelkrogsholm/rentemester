@@ -2052,7 +2052,120 @@ describe("cockpit API — contacts (GET .../contacts)", () => {
       rmSync(ws, { recursive: true, force: true });
     }
   });
+
+  // #439 — Kontakter-siden skal kunne svare på "hvad skylder den her kunde mig?"
+  // direkte. Server-side aggregerer åbne fakturaer pr. kunde fra den samme
+  // ledger-kilde som /invoices, så hvert ContactCustomerRow får openBalance,
+  // openInvoiceCount og overdueCount. Kunder med forfaldne fakturaer sorteres
+  // øverst (mirrors PortfolioView.sortByAttention).
+  test("aggregates open + overdue invoices per customer (#439)", async () => {
+    const ws = makeWorkspace("con-saldo", ["Acme ApS"]);
+    try {
+      // Tre kunder i kontaktlisten — én uden fakturaer, én med åben (ikke-
+      // forfalden) faktura, én med forfalden faktura. Navn er join-nøglen
+      // mellem invoices og customers (samme regel som "Send på mail"-prefill).
+      const db = openDb(companyPaths(companyRootForSlug(ws, "acme-aps")).db);
+      try {
+        migrate(db);
+        createCustomer(db, { name: "Ingen Skyld ApS" });
+        createCustomer(db, { name: "Åben Saldo ApS" });
+        createCustomer(db, { name: "Forfalden Saldo ApS" });
+      } finally {
+        db.close();
+      }
+      // En faktura med en udstedelsesdato langt tilbage er forfalden i dag.
+      issueTestInvoiceForBuyer(ws, "acme-aps", "Forfalden Saldo ApS", "2020-01-15", 800);
+      // En faktura udstedt i går — antagelig ikke forfalden endnu (30 dages
+      // standard betalingsfrist på dansk faktura). buildInvoiceList vurderer
+      // selv via getInvoiceStatus.
+      const today = new Date();
+      const yyyy = today.getUTCFullYear();
+      const mm = String(today.getUTCMonth() + 1).padStart(2, "0");
+      const dd = String(today.getUTCDate()).padStart(2, "0");
+      issueTestInvoiceForBuyer(ws, "acme-aps", "Åben Saldo ApS", `${yyyy}-${mm}-${dd}`, 1200);
+
+      const res = await get(
+        config({ workspaceRoot: ws }),
+        "/api/companies/acme-aps/contacts",
+      );
+      expect(res.status).toBe(200);
+      const customers = res.body.contacts.customers as Array<{
+        name: string;
+        openBalance: number;
+        openInvoiceCount: number;
+        overdueCount: number;
+      }>;
+      expect(customers.length).toBe(3);
+
+      // Kunden med forfaldne fakturaer ligger øverst.
+      expect(customers[0].name).toBe("Forfalden Saldo ApS");
+      expect(customers[0].overdueCount).toBe(1);
+      expect(customers[0].openInvoiceCount).toBe(1);
+      expect(customers[0].openBalance).toBeGreaterThan(0);
+
+      // Derefter kunden med åben (men ikke forfalden) faktura.
+      expect(customers[1].name).toBe("Åben Saldo ApS");
+      expect(customers[1].overdueCount).toBe(0);
+      expect(customers[1].openInvoiceCount).toBe(1);
+      expect(customers[1].openBalance).toBeGreaterThan(0);
+
+      // Sidst kunden uden udestående.
+      expect(customers[2].name).toBe("Ingen Skyld ApS");
+      expect(customers[2].overdueCount).toBe(0);
+      expect(customers[2].openInvoiceCount).toBe(0);
+      expect(customers[2].openBalance).toBe(0);
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
 });
+
+/**
+ * Like `issueTestInvoice`, but the buyer name is parametrized so a single
+ * workspace can carry invoices for several customers (#439). The seller and
+ * VAT shape stay constant — only the buyer + amount + issue date vary.
+ */
+function issueTestInvoiceForBuyer(
+  ws: string,
+  slug: string,
+  buyerName: string,
+  issueDate: string,
+  net: number,
+) {
+  const companyRoot = companyRootForSlug(ws, slug);
+  const db = openDb(companyPaths(companyRoot).db);
+  try {
+    migrate(db);
+    const vat = net * 0.25;
+    const result = issueInvoice(db, companyRoot, {
+      invoiceType: "full",
+      vatTreatment: "standard",
+      issueDate,
+      seller: {
+        name: "Acme ApS",
+        address: "Testvej 1, 2100 København Ø",
+        vatOrCvr: "DK12345678",
+      },
+      buyer: {
+        name: buyerName,
+        address: "Købervej 9, 8000 Aarhus C",
+      },
+      lines: [
+        {
+          description: "Ydelse",
+          quantity: 1,
+          unitPriceExVat: net,
+          lineTotalExVat: net,
+        },
+      ],
+      totals: { netAmount: net, vatRate: 0.25, vatAmount: vat, grossAmount: net + vat },
+      currency: "DKK",
+    });
+    if (!result.ok) throw new Error("issue failed: " + result.errors.join("; "));
+  } finally {
+    db.close();
+  }
+}
 
 /**
  * Posts a balanced liability accrual into a company's ledger: a credit to a

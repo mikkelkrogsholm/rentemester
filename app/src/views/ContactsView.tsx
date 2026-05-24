@@ -17,6 +17,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
+import { formatKroner } from "../lib/format";
 import type {
   CompanyContacts,
   ContactCustomerRow,
@@ -287,13 +288,14 @@ function CustomerTable({
             <th>E-mail</th>
             <th>Valuta</th>
             <th className="num">Betalingsfrist</th>
+            <th className="num">Udestående</th>
             <th aria-label="Handlinger" />
           </tr>
         </thead>
         <tbody>
           {customers.length === 0 ? (
             <tr>
-              <td colSpan={6} className="empty-inline">
+              <td colSpan={7} className="empty-inline">
                 Ingen kunder registreret.
               </td>
             </tr>
@@ -305,6 +307,30 @@ function CustomerTable({
                 <td>{row.email ?? "—"}</td>
                 <td>{row.defaultCurrency}</td>
                 <td className="num">{row.paymentTermsDays} dage</td>
+                <td className="num">
+                  {row.openInvoiceCount === 0 ? (
+                    <span className="muted">—</span>
+                  ) : (
+                    <>
+                      <span
+                        className={
+                          row.overdueCount > 0 ? "status-alert" : undefined
+                        }
+                      >
+                        {formatKroner(row.openBalance, row.defaultCurrency)}
+                      </span>
+                      {row.overdueCount > 0 && (
+                        <>
+                          {" "}
+                          <span className="flag critical">
+                            {row.overdueCount} forfalden
+                            {row.overdueCount === 1 ? "" : "e"}
+                          </span>
+                        </>
+                      )}
+                    </>
+                  )}
+                </td>
                 <td className="num row-actions">
                   <button
                     type="button"

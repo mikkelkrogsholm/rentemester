@@ -857,6 +857,19 @@ export type ContactCustomerRow = {
   website: string | null;
   eanNumber: string | null;
   notes: string | null;
+  /**
+   * #439 — aggregated åbent tilgodehavende på tværs af alle år, kroner.
+   * Server-side derivat fra samme ledger-kilde som `/invoices`-endpointet.
+   * `0` når kunden ingen åbne fakturaer har.
+   */
+  openBalance: number;
+  /** #439 — antal åbne (endnu ikke fuldt betalte) fakturaer for kunden. */
+  openInvoiceCount: number;
+  /**
+   * #439 — antal af kundens åbne fakturaer der er løbet over forfaldsdato.
+   * `> 0` udløser den røde flag-styling i Kontakter-tabellen.
+   */
+  overdueCount: number;
 };
 
 export type ContactVendorRow = {
