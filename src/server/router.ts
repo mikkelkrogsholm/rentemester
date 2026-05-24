@@ -34,6 +34,7 @@ import {
   buildCompanyContacts,
   buildCompanyDashboardData,
   buildCompanyDocuments,
+  buildDocumentBookingOptions,
   buildCompanyFiscalYears,
   buildCompanyIncomeStatement,
   buildCompanyInvoices,
@@ -63,6 +64,7 @@ import {
   handleCreateVendor,
   handleCvrLookup,
   handleDataImport,
+  handleDocumentBookExpense,
   handleDocumentIngest,
   handleGenerateRecurringInvoice,
   handleInvoiceCreditNote,
@@ -161,6 +163,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "GET", pattern: "/api/companies/:slug/vat", summary: "Momsoplysninger." },
   { method: "GET", pattern: "/api/companies/:slug/documents", summary: "Bilagsliste." },
   { method: "GET", pattern: "/api/companies/:slug/documents/:id/file", summary: "Henter et bilag." },
+  { method: "GET", pattern: "/api/companies/:slug/documents/:id/booking-options", summary: "Forslagsdata til bogføring af et bilag." },
   { method: "GET", pattern: "/api/companies/:slug/recurring-invoices", summary: "Gentagende fakturaer." },
   { method: "POST", pattern: "/api/companies/:slug/recurring-invoices/:id/generate", summary: "Materialiserer en gentagende faktura." },
   { method: "GET", pattern: "/api/companies/:slug/archive/:year", summary: "Arkiveret regnskabsår." },
@@ -183,6 +186,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "POST", pattern: "/api/companies/:slug/import", summary: "Generel data-import." },
   { method: "POST", pattern: "/api/companies/:slug/accountant-export", summary: "Revisor-eksport (.tar)." },
   { method: "POST", pattern: "/api/companies/:slug/documents/ingest", summary: "Modtager et bilag." },
+  { method: "POST", pattern: "/api/companies/:slug/documents/book-expense", summary: "Bogfører et bilag som udgift mod en banktransaktion." },
   { method: "POST", pattern: "/api/companies/:slug/invoices/issue", summary: "Udsteder en faktura." },
   { method: "POST", pattern: "/api/companies/:slug/invoices/post", summary: "Bogfører en udstedt faktura." },
   { method: "POST", pattern: "/api/companies/:slug/invoices/settle", summary: "Afregner faktura fra bank." },
@@ -313,6 +317,26 @@ function handleCompanyVat(
 function handleCompanyDocuments(config: ServerConfig, slug: string): Response {
   const data = buildCompanyDocuments(config.workspaceRoot, slug);
   return okResponse({ documents: data });
+}
+
+/**
+ * GET /api/companies/:slug/documents/:id/booking-options — the read-side data
+ * the Bogfør-bilag modal needs (#407): the document fields to prefill, the
+ * bookable expense accounts, and the unmatched outgoing bank transactions the
+ * owner can pair the bilag with. A read route, so it bypasses the mutation
+ * pipeline; an unknown company / ledger / document is a 404.
+ */
+function handleCompanyDocumentBookingOptions(
+  config: ServerConfig,
+  slug: string,
+  idRaw: string,
+): Response {
+  const id = Number(idRaw);
+  if (!Number.isInteger(id) || id <= 0) {
+    throw ApiError.badRequest("document id must be a positive integer");
+  }
+  const data = buildDocumentBookingOptions(config.workspaceRoot, slug, id);
+  return okResponse({ options: data });
 }
 
 function handleCompanyRecurringInvoices(
@@ -676,6 +700,19 @@ export async function handleRequest(
       return handleCompanyDocumentFile(config, slug, documentFileMatch[2]!);
     }
 
+    // The Bogfør-bilag modal pulls its picker rows from this endpoint (#407).
+    const documentBookingOptionsMatch =
+      /^\/api\/companies\/([^/]+)\/documents\/(\d+)\/booking-options$/.exec(path);
+    if (documentBookingOptionsMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(documentBookingOptionsMatch[1]!);
+      return handleCompanyDocumentBookingOptions(
+        config,
+        slug,
+        documentBookingOptionsMatch[2]!,
+      );
+    }
+
     const recurringInvoicesMatch =
       /^\/api\/companies\/([^/]+)\/recurring-invoices$/.exec(path);
     if (recurringInvoicesMatch) {
@@ -869,6 +906,18 @@ export async function handleRequest(
       if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
       const slug = decodeURIComponent(documentIngestMatch[1]!);
       return await handleDocumentIngest(config, request, slug);
+    }
+
+    // Bookkeeping write route (#407): book an ingested purchase document
+    // (bilag) against an unmatched outgoing bank transaction. Third caller
+    // of `bookExpenseFromBank` alongside the CLI's `expense book` and the
+    // MCP tool.
+    const documentBookExpenseMatch =
+      /^\/api\/companies\/([^/]+)\/documents\/book-expense$/.exec(path);
+    if (documentBookExpenseMatch) {
+      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      const slug = decodeURIComponent(documentBookExpenseMatch[1]!);
+      return await handleDocumentBookExpense(config, request, slug);
     }
 
     // Bookkeeping write route (#213, slice 4): issue a sales invoice.

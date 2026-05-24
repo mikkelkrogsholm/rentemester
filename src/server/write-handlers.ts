@@ -39,6 +39,10 @@ import { generateRecurringInvoice } from "../core/recurring-invoices";
 import { ingestDocument, type DocumentMetadata } from "../core/documents";
 import { resolveDocumentMasterData, resolveInvoiceMasterData } from "../core/master-data";
 import {
+  bookExpenseFromBank,
+  type ExpenseVatTreatment,
+} from "../core/expense-booking";
+import {
   computeInvoiceAmounts,
   type InvoiceLineInput,
   type InvoicePayload,
@@ -612,6 +616,95 @@ export async function handleDocumentIngest(
     document: {
       id: result.documentId ?? null,
       documentNo: result.documentNo ?? null,
+    },
+  });
+}
+
+/**
+ * POST /api/companies/:slug/documents/book-expense — books an ingested
+ * purchase document (bilag) against an unmatched outgoing bank transaction
+ * (#407). The Cockpit becomes a third caller of `bookExpenseFromBank`,
+ * alongside the CLI's `expense book` command and the MCP tool.
+ *
+ * Body: `{ documentId: number, bankTransactionId: number,
+ * expenseAccountNo: string, vatTreatment?: 'standard'|'reverse_charge'|
+ * 'representation'|'exempt', paymentAccountNo?: string, transactionDate?:
+ * string, text?: string, confirm: true }`.
+ *
+ * Write-irreversible (it appends a journal entry that links both the
+ * document and the bank transaction) so `requireConfirm` is set. The same
+ * conflict heuristic in `withCompanyMutation` maps core's "already linked"
+ * rejection (a double-book attempt) to a 409.
+ */
+export async function handleDocumentBookExpense(
+  config: ServerConfig,
+  request: Request,
+  slug: string,
+): Promise<Response> {
+  const result = await withCompanyMutation(
+    request,
+    config,
+    slug,
+    (ctx, body) => {
+      const documentId = requireBodyPositiveInt(body, "documentId");
+      const bankTransactionId = requireBodyPositiveInt(body, "bankTransactionId");
+      const expenseAccountNo = requireBodyString(body, "expenseAccountNo");
+      const vatTreatmentRaw = optionalBodyString(body, "vatTreatment");
+      let vatTreatment: ExpenseVatTreatment | undefined;
+      if (vatTreatmentRaw !== undefined) {
+        if (
+          !["standard", "reverse_charge", "representation", "exempt"].includes(
+            vatTreatmentRaw,
+          )
+        ) {
+          throw ApiError.badRequest(
+            "'vatTreatment' must be one of standard, reverse_charge, representation, exempt",
+          );
+        }
+        vatTreatment = vatTreatmentRaw as ExpenseVatTreatment;
+      }
+      const paymentAccountNo = optionalBodyString(body, "paymentAccountNo");
+      const transactionDate = optionalBodyString(body, "transactionDate");
+      const text = optionalBodyString(body, "text");
+      const booked = bookExpenseFromBank(
+        ctx.db,
+        withCockpitActor(
+          {
+            documentId,
+            bankTransactionId,
+            expenseAccountNo,
+            ...(vatTreatment ? { vatTreatment } : {}),
+            ...(paymentAccountNo ? { paymentAccountNo } : {}),
+            ...(transactionDate ? { transactionDate } : {}),
+            ...(text ? { text } : {}),
+          },
+          ctx.actor,
+        ),
+      );
+      return {
+        ok: booked.ok,
+        errors: booked.errors,
+        entryId: booked.entryId,
+        documentId: booked.documentId,
+        bankTransactionId: booked.bankTransactionId,
+        grossAmount: booked.grossAmount,
+        netAmount: booked.netAmount,
+        vatAmount: booked.vatAmount,
+        vatTreatment: booked.vatTreatment,
+      };
+    },
+    { requireConfirm: true },
+  );
+
+  return okResponse({
+    booking: {
+      entryId: result.entryId ?? null,
+      documentId: result.documentId ?? null,
+      bankTransactionId: result.bankTransactionId ?? null,
+      grossAmount: result.grossAmount ?? null,
+      netAmount: result.netAmount ?? null,
+      vatAmount: result.vatAmount ?? null,
+      vatTreatment: result.vatTreatment ?? null,
     },
   });
 }

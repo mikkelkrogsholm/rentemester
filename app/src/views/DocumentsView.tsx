@@ -15,6 +15,7 @@ import type { CompanyDocuments, FiscalYearEntry } from "../lib/types";
 import { ErrorState, Loading } from "../components/Feedback";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { DocumentIngestModal } from "../components/DocumentIngestModal";
+import { DocumentBookExpenseModal } from "../components/DocumentBookExpenseModal";
 
 type DocumentsPage = {
   documents: CompanyDocuments;
@@ -41,6 +42,10 @@ export function DocumentsView() {
   );
   // True while the document-intake modal (#213, slice 3) is open.
   const [ingesting, setIngesting] = useState(false);
+  // Holds the bilag id whose Bogfør-modal is open (#407); null when none.
+  const [bookingDocumentId, setBookingDocumentId] = useState<number | null>(
+    null,
+  );
 
   if (state.loading && !state.data) return <Loading label="Henter bilag…" />;
   if (state.error)
@@ -96,6 +101,15 @@ export function DocumentsView() {
           slug={slug}
           onIngested={state.reload}
           onClose={() => setIngesting(false)}
+        />
+      )}
+
+      {bookingDocumentId !== null && (
+        <DocumentBookExpenseModal
+          slug={slug}
+          documentId={bookingDocumentId}
+          onBooked={state.reload}
+          onClose={() => setBookingDocumentId(null)}
         />
       )}
 
@@ -158,7 +172,18 @@ export function DocumentsView() {
                         ) : null}
                       </div>
                     ) : (
-                      <span className="flag warning">Ikke bogført</span>
+                      <div className="doc-posting">
+                        <span className="flag warning">Ikke bogført</span>
+                        {!selectedYearArchived && (
+                          <button
+                            type="button"
+                            className="btn small"
+                            onClick={() => setBookingDocumentId(doc.id)}
+                          >
+                            Bogfør bilag
+                          </button>
+                        )}
+                      </div>
                     )}
                   </td>
                   <td>

@@ -586,6 +586,112 @@ export const api = {
         }),
       },
     ).then((r) => r.submission),
+
+  /**
+   * #407 — read-side data backing the Bogfør-bilag modal: the bilag's fields
+   * to prefill, the bookable expense accounts and the unmatched outgoing
+   * bank transactions the owner can pair the bilag with.
+   */
+  documentBookingOptions: (slug: string, documentId: number) =>
+    request<{ ok: true; options: DocumentBookingOptions }>(
+      `/api/companies/${encodeURIComponent(slug)}/documents/${documentId}/booking-options`,
+    ).then((r) => r.options),
+
+  /**
+   * #407 — books an ingested purchase document (bilag) as an expense against
+   * an unmatched outgoing bank transaction. Third caller of the SAME
+   * `bookExpenseFromBank` core function the CLI's `expense book` and the MCP
+   * tool use. Write-irreversible (it appends a journal entry that links both
+   * the document and the bank transaction), so the body carries
+   * `confirm: true`.
+   */
+  bookDocumentExpense: (slug: string, input: DocumentBookExpenseInput) =>
+    request<{ ok: true; booking: DocumentBookExpenseSummary }>(
+      `/api/companies/${encodeURIComponent(slug)}/documents/book-expense`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          documentId: input.documentId,
+          bankTransactionId: input.bankTransactionId,
+          expenseAccountNo: input.expenseAccountNo,
+          ...(input.vatTreatment ? { vatTreatment: input.vatTreatment } : {}),
+          ...(input.paymentAccountNo
+            ? { paymentAccountNo: input.paymentAccountNo }
+            : {}),
+          ...(input.transactionDate
+            ? { transactionDate: input.transactionDate }
+            : {}),
+          ...(input.text ? { text: input.text } : {}),
+          confirm: true,
+        }),
+      },
+    ).then((r) => r.booking),
+};
+
+/** Wire type for one bookable expense account (#407). */
+export type ExpenseAccountOption = {
+  accountNo: string;
+  name: string;
+  defaultVatCode: string | null;
+};
+
+/** Wire type for one unmatched outgoing bank transaction (#407). */
+export type UnmatchedBankOption = {
+  id: number;
+  date: string;
+  text: string;
+  amount: number;
+  currency: string;
+  reference: string | null;
+};
+
+/** Wire type for the bilag fields the modal prefills its form from (#407). */
+export type DocumentBookingOptionsDocument = {
+  id: number;
+  documentNo: string | null;
+  documentType: string;
+  invoiceNo: string | null;
+  invoiceDate: string | null;
+  supplierName: string | null;
+  amountIncVat: number | null;
+  vatAmount: number | null;
+  currency: string;
+};
+
+/** Combined read-side response for the Bogfør-bilag modal (#407). */
+export type DocumentBookingOptions = {
+  document: DocumentBookingOptionsDocument;
+  expenseAccounts: ExpenseAccountOption[];
+  unmatchedOutgoingBank: UnmatchedBankOption[];
+};
+
+/** Allowed VAT treatments for an expense booking (#407). */
+export type ExpenseVatTreatment =
+  | "standard"
+  | "reverse_charge"
+  | "representation"
+  | "exempt";
+
+/** Input for `api.bookDocumentExpense` (#407). */
+export type DocumentBookExpenseInput = {
+  documentId: number;
+  bankTransactionId: number;
+  expenseAccountNo: string;
+  vatTreatment?: ExpenseVatTreatment;
+  paymentAccountNo?: string;
+  transactionDate?: string;
+  text?: string;
+};
+
+/** The booking result the server echoes back (#407). */
+export type DocumentBookExpenseSummary = {
+  entryId: number | null;
+  documentId: number | null;
+  bankTransactionId: number | null;
+  grossAmount: number | null;
+  netAmount: number | null;
+  vatAmount: number | null;
+  vatTreatment: string | null;
 };
 
 /** A single invoice line as the human enters it — Rentemester computes totals. */
