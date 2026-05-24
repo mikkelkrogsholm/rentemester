@@ -137,6 +137,41 @@ describe("BankImportModal", () => {
     expect(await screen.findByText("Ugyldig CSV.")).toBeInTheDocument();
   });
 
+  test("lists supported bank profiles before upload (#422)", () => {
+    render(
+      <BankImportModal slug="acme-aps" onImported={noop} onClose={noop} />,
+    );
+    // The owner can see what is supported before guessing a profile name.
+    expect(
+      screen.getByText(/Understøttede bankprofiler/i),
+    ).toBeInTheDocument();
+    // The Danske Bank profile is registered in the core, so it must show.
+    expect(screen.getByText(/danske-bank/)).toBeInTheDocument();
+  });
+
+  test("shows hints for the Bankkonto and Importprofil fields (#422)", () => {
+    render(
+      <BankImportModal slug="acme-aps" onImported={noop} onClose={noop} />,
+    );
+    // Bankkonto hint avoids the "slug" jargon and explains when it matters.
+    expect(
+      screen.getByText(/flere bankkonti/i),
+    ).toBeInTheDocument();
+    // Importprofil hint explains auto-detection when the field is empty.
+    expect(
+      screen.getByText(/auto-detekterer formatet/i),
+    ).toBeInTheDocument();
+  });
+
+  test("links to the bank-import documentation page (#422)", () => {
+    render(
+      <BankImportModal slug="acme-aps" onImported={noop} onClose={noop} />,
+    );
+    const link = screen.getByRole("link", { name: /CSV-format|guide|læs mere/i });
+    expect(link).toBeInTheDocument();
+    expect(link.getAttribute("href")).toBeTruthy();
+  });
+
   test("Annullér closes the modal without importing", async () => {
     const onClose = vi.fn();
     render(

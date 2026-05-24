@@ -18,6 +18,21 @@ import { LockBanner } from "./LockBanner";
 /** Shape of the API error the cockpit's `api.ts` throws. */
 type MaybeApiError = { code?: string; message?: string };
 
+/**
+ * Bank profiles registered in the core (`src/core/bank-profiles.ts`).
+ *
+ * Listed inline so the owner can see — before uploading — which exports the
+ * importer knows by name. The generic CSV parser still auto-detects standard
+ * UTF-8 CSVs with Danish column-name aliases when no profile is given, so the
+ * "Importprofil" field is genuinely optional; the list is a hint, not a gate.
+ *
+ * Keep this in sync with `listBankProfileNames()` in the core. When a new
+ * profile is added, append it here so the cockpit explains what is supported.
+ */
+const SUPPORTED_BANK_PROFILES: ReadonlyArray<{ name: string; label: string }> = [
+  { name: "danske-bank", label: "Danske Bank (semikolon-CSV, UTF-8)" },
+];
+
 export type BankImportModalProps = {
   /** Company slug the import targets. */
   slug: string;
@@ -156,6 +171,30 @@ export function BankImportModal({ slug, onImported, onClose }: BankImportModalPr
                 springes automatisk over. Uafstemte transaktioner bliver til
                 opgaver.
               </p>
+              <p className="muted" style={{ marginTop: "0.5rem" }}>
+                Eksportér som CSV fra netbanken med standardindstillinger.
+                Filen må gerne være UTF-8 eller Latin-1; importeren forsøger
+                begge og auto-detekterer komma, semikolon og tabulator.{" "}
+                <a
+                  href="https://rentemester.dk/docs/bank-import"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  Læs mere om CSV-formatet
+                </a>
+                .
+              </p>
+              <p className="muted" style={{ marginTop: "0.5rem" }}>
+                <strong>Understøttede bankprofiler:</strong>{" "}
+                {SUPPORTED_BANK_PROFILES.map((p, i) => (
+                  <span key={p.name}>
+                    {i > 0 ? ", " : ""}
+                    <code>{p.name}</code> ({p.label})
+                  </span>
+                ))}
+                . Andre danske banker virker ofte uden profil — importeren
+                læser standard-CSV med danske kolonnenavne.
+              </p>
             </div>
 
             {locked && <LockBanner message={locked} />}
@@ -181,10 +220,15 @@ export function BankImportModal({ slug, onImported, onClose }: BankImportModalPr
               <input
                 type="text"
                 value={account}
-                placeholder="Konto-id eller slug"
+                placeholder="fx hovedkonto eller 1234-5678901234"
                 onChange={(e) => setAccount(e.target.value)}
                 disabled={busy}
               />
+              <span className="field-hint">
+                Kun nødvendigt hvis virksomheden har flere bankkonti og du vil
+                styre præcis hvilken konto transaktionerne lægges på. Lad
+                feltet stå tomt for at bruge standardkontoen.
+              </span>
             </label>
 
             <label className="modal-field">
@@ -196,6 +240,11 @@ export function BankImportModal({ slug, onImported, onClose }: BankImportModalPr
                 onChange={(e) => setProfile(e.target.value)}
                 disabled={busy}
               />
+              <span className="field-hint">
+                Lad feltet stå tomt — importeren auto-detekterer formatet for
+                de fleste danske bank-CSV'er. Angiv kun et profilnavn (se
+                listen ovenfor) hvis auto-detektionen fejler.
+              </span>
             </label>
 
             <div className="modal-actions">
