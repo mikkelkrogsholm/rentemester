@@ -3,7 +3,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BankView } from "./BankView";
 import { renderAt } from "../test/render";
-import { bank, mockFetch } from "../test/fixtures";
+import { bank, invoices, mockFetch } from "../test/fixtures";
 
 function route(over = {}) {
   return {
@@ -108,5 +108,43 @@ describe("BankView — Bank", () => {
     expect(
       screen.getByRole("dialog", { name: "Importér kontoudtog" }),
     ).toBeInTheDocument();
+  });
+
+  // #365 — the cockpit-driven settlement of an unmatched bank row.
+
+  test("each Uafstemt row offers a Bogfør action so the owner can post from the cockpit", async () => {
+    mockFetch(route());
+    renderView();
+    await screen.findByText("Indbetaling faktura 1001");
+    // The unmatched row (the gebyr) has a Bogfør button; the matched one
+    // does not — only un-reconciled lines need the action.
+    expect(
+      screen.getAllByRole("button", { name: "Bogfør" }).length,
+    ).toBe(1);
+  });
+
+  test("clicking Bogfør opens the bank-reconcile modal seeded with the row", async () => {
+    mockFetch({
+      ...route(),
+      "GET /api/companies/acme-aps/invoices": { invoices: invoices() },
+    });
+    renderView();
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Bogfør" }),
+    );
+    expect(
+      screen.getByRole("dialog", { name: "Bogfør banktransaktion" }),
+    ).toBeInTheDocument();
+    // The bank-row's description is rendered in the modal as context.
+    expect(screen.getAllByText(/Gebyr/).length).toBeGreaterThan(0);
+  });
+
+  test("an archived year shows no Bogfør action — there is no live ledger to post into", async () => {
+    mockFetch(route({ archived: true, selectedYear: "2025" }));
+    renderView();
+    await screen.findByText(/2025 er et arkiveret regnskabsår/);
+    expect(
+      screen.queryByRole("button", { name: "Bogfør" }),
+    ).not.toBeInTheDocument();
   });
 });

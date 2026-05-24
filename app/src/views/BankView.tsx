@@ -15,6 +15,10 @@ import type { CompanyBank } from "../lib/types";
 import { ErrorState, Loading } from "../components/Feedback";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { BankImportModal } from "../components/BankImportModal";
+import {
+  BankReconcileModal,
+  type BankReconcileTransaction,
+} from "../components/BankReconcileModal";
 
 export function BankView() {
   const { slug = "" } = useParams();
@@ -22,6 +26,10 @@ export function BankView() {
   const state = useAsync<CompanyBank>(() => api.bank(slug, year), [slug, year]);
   // True while the bank-CSV-import modal (#213, slice 2) is open.
   const [importing, setImporting] = useState(false);
+  // The unmatched row currently being settled from the cockpit (#365). Null
+  // while no settle-modal is open.
+  const [reconciling, setReconciling] =
+    useState<BankReconcileTransaction | null>(null);
 
   if (state.loading && !state.data) return <Loading label="Henter bank…" />;
   if (state.error)
@@ -70,6 +78,15 @@ export function BankView() {
           slug={slug}
           onImported={state.reload}
           onClose={() => setImporting(false)}
+        />
+      )}
+
+      {reconciling && (
+        <BankReconcileModal
+          slug={slug}
+          transaction={reconciling}
+          onReconciled={state.reload}
+          onClose={() => setReconciling(null)}
         />
       )}
 
@@ -166,7 +183,24 @@ export function BankView() {
                               : ""}
                           </span>
                         ) : (
-                          <span className="flag warning">Uafstemt</span>
+                          <div className="row-actions">
+                            <span className="flag warning">Uafstemt</span>
+                            <button
+                              type="button"
+                              className="btn secondary"
+                              onClick={() =>
+                                setReconciling({
+                                  id: tx.id,
+                                  date: tx.date,
+                                  text: tx.text,
+                                  amount: tx.amount,
+                                  currency,
+                                })
+                              }
+                            >
+                              Bogfør
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>
