@@ -52,23 +52,28 @@ export function HelpView() {
               — overblik over hvad cockpittet kan.
             </li>
             <li>
-              <ExternalLink href={`${DOCS_BASE}/docs/`}>
+              <ExternalLink href={`${DOCS_BASE}/docs/installation`}>
                 Brugerguide
               </ExternalLink>{" "}
-              — uddybende vejledninger og FAQ.
+              — kom-i-gang-vejledning fra installation til første postering.
             </li>
           </ul>
         </article>
 
         <article className="card">
           <h3>Kom i gang</h3>
-          <p className="muted">Fire trin fra installeret cockpit til moms:</p>
+          <p className="muted">Fem trin fra installeret cockpit til moms:</p>
           <ol>
             <li>Opret virksomheden under “Tilføj virksomhed”.</li>
             <li>Importér kontoudtog under “Bank”.</li>
-            <li>Bogfør bilag og bank-bevægelser under “Posteringer”.</li>
+            <li>Indlæs og bogfør bilag under “Bilag”.</li>
+            <li>Afstem bank-bevægelser under “Bank”.</li>
             <li>Generér momsangivelse under “Moms” når perioden er slut.</li>
           </ol>
+          <p className="muted">
+            “Posteringer” er en visning over alt der allerede er bogført —
+            ikke et bogføringssted.
+          </p>
         </article>
 
         <article className="card">
