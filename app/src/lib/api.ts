@@ -20,6 +20,7 @@ import type {
   CreateCompanyInput,
   CustomerInput,
   CvrLookupResult,
+  CvrSystemStatusResponse,
   DashboardResponse,
   DocumentsResponse,
   FiscalYearsResponse,
@@ -278,6 +279,16 @@ export const api = {
       `/api/companies/${encodeURIComponent(slug)}/sync-cvr`,
       { method: "POST" },
     ).then((r) => r.sync),
+
+  /**
+   * #402 — whether the server has CVR_USERNAME/CVR_PASSWORD set, so the
+   * cockpit can disable "Hent fra CVR" with a friendly note instead of
+   * letting the owner trigger a silent failure.
+   */
+  cvrStatus: () =>
+    request<CvrSystemStatusResponse>("/api/system/cvr-status").then(
+      (r) => r.cvrStatus,
+    ),
 
   /**
    * Closes an accounting period (#287) — the prerequisite for a momsangivelse.

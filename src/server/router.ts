@@ -146,6 +146,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
 }> = [
   { method: "GET", pattern: "/api", summary: "Sundhedstjek + rute-katalog." },
   { method: "GET", pattern: "/api/health", summary: "Alias for GET /api." },
+  { method: "GET", pattern: "/api/system/cvr-status", summary: "Er CVR-login konfigureret på serveren? (#402)" },
   { method: "GET", pattern: "/api/portfolio", summary: "Workspace-portfolio." },
   { method: "GET", pattern: "/api/companies", summary: "Lister virksomheder i workspacet." },
   { method: "POST", pattern: "/api/companies", summary: "Opretter virksomhed i workspacet." },
@@ -199,6 +200,21 @@ function handleHealth(config: ServerConfig): Response {
     authRequired: config.authRequired,
     routes: ROUTE_CATALOG,
   });
+}
+
+/**
+ * #402 — tells the cockpit whether the CVR-register login (`CVR_USERNAME`
+ * / `CVR_PASSWORD`) is configured on the server. The cockpit reads this
+ * *before* it shows the "Hent fra CVR" button so the owner sees a friendly
+ * "log ind med dit virk.dk-login" message instead of clicking a button that
+ * fails silently or returns a raw API error.
+ *
+ * The endpoint deliberately returns only a boolean — never the credential
+ * values themselves — so it stays safe to call from the browser.
+ */
+function handleSystemCvrStatus(): Response {
+  const configured = Boolean(process.env.CVR_USERNAME && process.env.CVR_PASSWORD);
+  return okResponse({ cvrStatus: { configured } });
 }
 
 function handlePortfolio(config: ServerConfig, url: URL): Response {
@@ -583,6 +599,14 @@ export async function handleRequest(
     if (path === "/api" || path === "/api/health") {
       if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
       return handleHealth(config);
+    }
+
+    // #402 — CVR-login status, so the cockpit can offer a friendly path
+    // through "Hent fra CVR" instead of letting the owner click a button
+    // that fails silently when the credentials are missing.
+    if (path === "/api/system/cvr-status") {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      return handleSystemCvrStatus();
     }
 
     if (path === "/api/portfolio") {

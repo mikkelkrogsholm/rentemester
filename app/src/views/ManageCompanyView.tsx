@@ -4,7 +4,7 @@
 // Strictly non-destructive: there is intentionally no delete of ledger data.
 // Archiving only flips a manifest flag; the ledger stays on disk untouched.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
@@ -370,8 +370,35 @@ function CvrCard({ slug, initial }: { slug: string; initial: CompanySettings }) 
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [fiscalWarning, setFiscalWarning] = useState<string | null>(null);
+  // #402 — `null` = "we haven't checked yet", so we don't flicker the
+  // "CVR-login mangler"-banner during the initial fetch.
+  const [cvrLoginConfigured, setCvrLoginConfigured] = useState<boolean | null>(
+    null,
+  );
 
   const hasCvr = Boolean(settings.cvr);
+  const loginMissing = cvrLoginConfigured === false;
+
+  // #402 — find out if the server has CVR_USERNAME / CVR_PASSWORD before the
+  // owner clicks anything. An owner who lacks the login should *see* that fact
+  // — and the path to fix it — instead of clicking a button that throws a raw
+  // 401 their way and leaves them guessing.
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .cvrStatus()
+      .then((status) => {
+        if (!cancelled) setCvrLoginConfigured(status.configured);
+      })
+      .catch(() => {
+        // A failure to *check* status shouldn't block the owner from trying —
+        // treat it as "unknown" and let the sync call surface any real issue.
+        if (!cancelled) setCvrLoginConfigured(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function sync() {
     setBusy(true);
@@ -381,7 +408,7 @@ function CvrCard({ slug, initial }: { slug: string; initial: CompanySettings }) 
     try {
       const result = await api.syncCvr(slug);
       if (!result.ok) {
-        setError(result.errors[0] ?? "CVR-opslaget mislykkedes.");
+        setError(translateCvrError(result.errors[0]));
         return;
       }
       const fresh = await api.companySettings(slug);
@@ -401,11 +428,22 @@ function CvrCard({ slug, initial }: { slug: string; initial: CompanySettings }) 
         );
       }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Kunne ikke hente fra CVR.");
+      setError(
+        err instanceof ApiError
+          ? translateCvrError(err.message)
+          : "Kunne ikke hente fra CVR.",
+      );
     } finally {
       setBusy(false);
     }
   }
+
+  const buttonDisabled = busy || !hasCvr || loginMissing;
+  const buttonTitle = loginMissing
+    ? "CVR-login mangler på serveren — se forklaringen ovenfor."
+    : !hasCvr
+      ? "Tilføj først et CVR-nummer på virksomheden."
+      : undefined;
 
   return (
     <div className="card" style={{ marginTop: 24, maxWidth: 460 }}>
@@ -414,6 +452,23 @@ function CvrCard({ slug, initial }: { slug: string; initial: CompanySettings }) 
       {error && <Banner kind="error">{error}</Banner>}
       {notice && <Banner kind="success">{notice}</Banner>}
       {fiscalWarning && <Banner kind="warning">{fiscalWarning}</Banner>}
+
+      {/*
+        #402 — Owner-facing explanation when the server has no virk.dk-login.
+        We say *what* is missing and *how* to fix it, in plain Danish, without
+        sending the owner to the terminal for an environment variable they
+        won't recognise.
+      */}
+      {loginMissing && (
+        <Banner kind="warning">
+          Cockpittet mangler dit virk.dk-login. Indtil det er sat op, kan
+          stamdata ikke hentes automatisk fra CVR. Se{" "}
+          <a href="/docs/cvr-opsaetning" target="_blank" rel="noreferrer">
+            CVR-opsætningsguiden
+          </a>{" "}
+          for hvordan du konfigurerer det.
+        </Banner>
+      )}
 
       {!hasCvr && (
         <p className="muted">
@@ -453,15 +508,44 @@ function CvrCard({ slug, initial }: { slug: string; initial: CompanySettings }) 
         </dl>
       )}
 
-      <button className="btn secondary" onClick={sync} disabled={busy || !hasCvr}>
+      <button
+        className="btn secondary"
+        onClick={sync}
+        disabled={buttonDisabled}
+        title={buttonTitle}
+      >
         {busy ? "Henter…" : "Hent fra CVR"}
       </button>
       <p className="field-hint">
-        Kræver at serveren har CVR_USERNAME og CVR_PASSWORD sat. Regnskabsåret
-        ændres aldrig automatisk.
+        Kræver dit virk.dk-login. Konfigurér det én gang under CVR-login —{" "}
+        regnskabsåret ændres aldrig automatisk.
       </p>
     </div>
   );
+}
+
+/**
+ * #402 — Map raw CVR-register error messages to something an owner can act
+ * on. The CVR core surfaces "kræver miljøvariablerne CVR_USERNAME og
+ * CVR_PASSWORD" when credentials are missing; that's developer-speak, so we
+ * translate it into a plain-Danish call to action. Everything else passes
+ * through verbatim.
+ */
+function translateCvrError(raw: string | undefined): string {
+  const fallback = "CVR-opslaget mislykkedes.";
+  if (!raw) return fallback;
+  const lower = raw.toLowerCase();
+  if (
+    lower.includes("cvr_username") ||
+    lower.includes("cvr_password") ||
+    lower.includes("http 401")
+  ) {
+    return (
+      "Cockpittet mangler CVR-login. Konfigurér dit virk.dk-login (se " +
+      "CVR-opsætningsguiden under /docs/cvr-opsaetning) og prøv igen."
+    );
+  }
+  return raw;
 }
 
 /**

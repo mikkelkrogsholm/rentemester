@@ -16,6 +16,17 @@ export type HealthResponse = {
   authRequired: boolean;
 };
 
+/**
+ * #402 — wire shape for GET /api/system/cvr-status. `configured` is true when
+ * the server has both CVR_USERNAME and CVR_PASSWORD set, so the cockpit can
+ * tell the owner whether "Hent fra CVR" will actually work before they click.
+ */
+export type CvrSystemStatus = { configured: boolean };
+export type CvrSystemStatusResponse = {
+  ok: true;
+  cvrStatus: CvrSystemStatus;
+};
+
 export type CompanyEntry = {
   slug: string;
   name: string;
