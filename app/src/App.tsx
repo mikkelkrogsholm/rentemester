@@ -34,6 +34,7 @@ import { BalanceView } from "./views/BalanceView";
 import { TrialBalanceView } from "./views/TrialBalanceView";
 import { ObligationsView } from "./views/ObligationsView";
 import { LiquidityView } from "./views/LiquidityView";
+import { BudgetView } from "./views/BudgetView";
 import { JournalView } from "./views/JournalView";
 import { BankView } from "./views/BankView";
 import { VatView } from "./views/VatView";
@@ -86,6 +87,10 @@ export function App() {
           <Route
             path="/companies/:slug/likviditet"
             element={<LiquidityView />}
+          />
+          <Route
+            path="/companies/:slug/budget"
+            element={<BudgetView />}
           />
           <Route
             path="/companies/:slug/posteringer"

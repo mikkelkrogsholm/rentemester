@@ -38,6 +38,8 @@ import {
   buildCompanyAssets,
   buildCompanyBalance,
   buildCompanyBank,
+  buildCompanyBudget,
+  buildCompanyBudgetVsActual,
   buildCompanyCashflow,
   buildCompanyContacts,
   buildCompanyDashboardData,
@@ -96,6 +98,7 @@ import {
   handleReopenPeriod,
   handleResolveException,
   handleRetireRecurringInvoiceTemplate,
+  handleSetBudget,
   handleUpdateCustomer,
   handleUpdateVendor,
 } from "./write-handlers";
@@ -210,6 +213,9 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "POST", pattern: "/api/companies/:slug/sync-cvr", summary: "Synkroniserer stamdata fra CVR." },
   { method: "GET", pattern: "/api/companies/:slug/obligations", summary: "Frister og forpligtelser." },
   { method: "GET", pattern: "/api/companies/:slug/cashflow", summary: "Likviditetsprognose." },
+  { method: "GET", pattern: "/api/companies/:slug/budget", summary: "Budget pr. konto pr. måned (#339)." },
+  { method: "GET", pattern: "/api/companies/:slug/budget-vs-actual", summary: "Budget vs. faktisk for året (#339)." },
+  { method: "POST", pattern: "/api/companies/:slug/budget", summary: "Sætter (append-only revision) en budgetlinje (#339)." },
   { method: "POST", pattern: "/api/companies/:slug/exceptions/:id/resolve", summary: "Løser en exception." },
   { method: "POST", pattern: "/api/companies/:slug/bank/import", summary: "Importerer bank-CSV." },
   { method: "POST", pattern: "/api/companies/:slug/import", summary: "Generel data-import." },
@@ -611,6 +617,37 @@ function handleCompanyMileage(
   const year = resolveYearParam(url.searchParams.get("year"));
   const data = buildCompanyMileage(config.workspaceRoot, slug, year);
   return okResponse({ mileage: data });
+}
+
+/**
+ * GET /api/companies/:slug/budget?year= — the effective (latest-revision)
+ * budget lines for one fiscal year (#339). Drives the Budget input grid in
+ * the cockpit; latest-revision-wins is owned by `core/budget.ts#listBudget`.
+ */
+function handleCompanyBudget(
+  config: ServerConfig,
+  slug: string,
+  url: URL,
+): Response {
+  const year = resolveYearParam(url.searchParams.get("year"));
+  const data = buildCompanyBudget(config.workspaceRoot, slug, year);
+  return okResponse({ budget: data });
+}
+
+/**
+ * GET /api/companies/:slug/budget-vs-actual?year= — the budget-vs-faktisk
+ * comparison for one fiscal year (#339). Third caller of the same
+ * `buildBudgetVsActual` core the CLI report uses, so every surface gets the
+ * same numbers and the same sign convention.
+ */
+function handleCompanyBudgetVsActual(
+  config: ServerConfig,
+  slug: string,
+  url: URL,
+): Response {
+  const year = resolveYearParam(url.searchParams.get("year"));
+  const data = buildCompanyBudgetVsActual(config.workspaceRoot, slug, year);
+  return okResponse({ budgetVsActual: data });
 }
 
 /**
@@ -1107,6 +1144,24 @@ export async function handleRequest(
       const slug = decodeURIComponent(mileageMatch[1]!);
       if (method === "GET") return handleCompanyMileage(config, slug, url);
       if (method === "POST") return await handleMileageCreate(config, request, slug);
+      throw ApiError.methodNotAllowed("GET or POST required");
+    }
+
+    // Budget endpoints (#339). The longer `/budget-vs-actual` route MUST come
+    // before `/budget` so the shorter pattern does not shadow it.
+    const budgetVsActualMatch =
+      /^\/api\/companies\/([^/]+)\/budget-vs-actual$/.exec(path);
+    if (budgetVsActualMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(budgetVsActualMatch[1]!);
+      return handleCompanyBudgetVsActual(config, slug, url);
+    }
+
+    const budgetMatch = /^\/api\/companies\/([^/]+)\/budget$/.exec(path);
+    if (budgetMatch) {
+      const slug = decodeURIComponent(budgetMatch[1]!);
+      if (method === "GET") return handleCompanyBudget(config, slug, url);
+      if (method === "POST") return await handleSetBudget(config, request, slug);
       throw ApiError.methodNotAllowed("GET or POST required");
     }
 

@@ -69,6 +69,8 @@ const TAB_GROUPS: { name: string; tabs: NavTab[] }[] = [
       { to: "saldobalance", label: "Saldobalance" },
       { to: "forpligtelser", label: "Forpligtelser" },
       { to: "likviditet", label: "Likviditet" },
+      // #339: budget plan vs. faktiske bevægelser, side-om-side i en knap.
+      { to: "budget", label: "Budget" },
     ],
   },
   {

@@ -141,6 +141,8 @@ when omitted.
 | `GET /api/companies/:slug/company` | `company` | Company settings / master data. |
 | `GET /api/companies/:slug/obligations?year=` | `obligations` | Statutory obligations + deadlines. |
 | `GET /api/companies/:slug/cashflow?year=` | `cashflow` | Cash-flow view. |
+| `GET /api/companies/:slug/budget?year=` | `budget` | Effective (latest-revision) budget lines for one fiscal year (#339). |
+| `GET /api/companies/:slug/budget-vs-actual?year=` | `budgetVsActual` | Budget-vs-faktisk comparison for one fiscal year (#339). |
 
 The detailed object shape of each read payload is the corresponding
 `build*` function's return type in `src/server/data.ts`.
@@ -256,6 +258,21 @@ Settles an issued invoice against a bank payment.
   to `409`.
 - Response key `settlement`:
   `{ entryId, paymentId, principalAmount, claimAmount, invoiceNumber, openBalance }`.
+
+### `POST /api/companies/:slug/budget`
+
+Appends a budget revision for one (account, period) cell (#339). The core is
+append-only: a second call for the same pair inserts a new revision and the
+latest wins, so re-saving the grid is always safe and the full history is
+audit-logged.
+
+- Body: `{ accountNo: string, period: 'YYYY-MM', amount: number, notes?: string }`.
+- No `confirm` required — append-only and reversible by appending another
+  revision; the cockpit modal/form is the consent (mirrors contact writes).
+- An unknown account / malformed period is reported as `400` (or `409` when
+  the conflict heuristic in `withCompanyMutation` matches the core's
+  "does not exist" message).
+- Response key `budget`: `{ id, accountNo, period, amount }`.
 
 ## Actor attribution
 

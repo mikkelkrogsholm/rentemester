@@ -92,6 +92,18 @@ export type {
   PayableVendorOption,
 } from "./data/payables-view";
 
+// --- data/budget.ts --------------------------------------------------------
+export {
+  buildCompanyBudget,
+  buildCompanyBudgetVsActual,
+} from "./data/budget";
+export type {
+  CompanyBudgetLine,
+  CompanyBudget,
+  CompanyBudgetVsActualLine,
+  CompanyBudgetVsActual,
+} from "./data/budget";
+
 // --- data/company-views.ts -------------------------------------------------
 export {
   buildCompanySettings,

@@ -6,6 +6,8 @@ import type {
   CompanyAssets,
   CompanyBalance,
   CompanyBank,
+  CompanyBudget,
+  CompanyBudgetVsActual,
   CompanyCashflow,
   CompanyContacts,
   CompanyDashboard,
@@ -411,6 +413,86 @@ export function vat(over: Partial<CompanyVat> = {}): CompanyVat {
       rubrikB: 0,
       rubrikC: 0,
     },
+    ...over,
+  };
+}
+
+const FY2026_PERIODS = [
+  "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06",
+  "2026-07", "2026-08", "2026-09", "2026-10", "2026-11", "2026-12",
+];
+
+export function budget(over: Partial<CompanyBudget> = {}): CompanyBudget {
+  return {
+    slug: "acme-aps",
+    selectedYear: "2026",
+    archived: false,
+    company: STATEMENT_COMPANY,
+    fiscalYears: STATEMENT_FISCAL_YEARS,
+    periodStart: "2026-01",
+    periodEnd: "2026-12",
+    periods: FY2026_PERIODS,
+    lines: [
+      {
+        id: 1,
+        accountNo: "2200",
+        accountName: "Markedsføring",
+        period: "2026-06",
+        amount: 5000,
+        notes: null,
+        createdAt: "2026-05-01T08:00:00.000Z",
+      },
+      {
+        id: 2,
+        accountNo: "2200",
+        accountName: "Markedsføring",
+        period: "2026-07",
+        amount: 7000,
+        notes: null,
+        createdAt: "2026-05-01T08:00:00.000Z",
+      },
+    ],
+    totalBudget: 12000,
+    ...over,
+  };
+}
+
+export function budgetVsActual(
+  over: Partial<CompanyBudgetVsActual> = {},
+): CompanyBudgetVsActual {
+  return {
+    slug: "acme-aps",
+    selectedYear: "2026",
+    archived: false,
+    company: STATEMENT_COMPANY,
+    fiscalYears: STATEMENT_FISCAL_YEARS,
+    periodStart: "2026-01",
+    periodEnd: "2026-12",
+    lines: [
+      {
+        accountNo: "2200",
+        accountName: "Markedsføring",
+        accountType: "expense",
+        period: "2026-06",
+        budget: 5000,
+        actual: 4000,
+        variance: 1000,
+        variancePercent: 0.2,
+      },
+      {
+        accountNo: "2200",
+        accountName: "Markedsføring",
+        accountType: "expense",
+        period: "2026-07",
+        budget: 7000,
+        actual: 8500,
+        variance: -1500,
+        variancePercent: -1500 / 7000,
+      },
+    ],
+    totalBudget: 12000,
+    totalActual: 12500,
+    totalVariance: 500,
     ...over,
   };
 }
