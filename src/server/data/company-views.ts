@@ -135,6 +135,15 @@ export type JournalEntry = {
   /** Sum of the debit side — the entry total, kroner. */
   total: number;
   lines: JournalLine[];
+  /**
+   * #379 — the linked document's id (kvittering/faktura/kontoudtog) so the
+   * cockpit can take the owner from an entry straight to its bilag, instead
+   * of forcing them to guess from the text field. `null` when the entry has
+   * no underlying document (manuel kassekladdepost).
+   */
+  documentId: number | null;
+  /** The linked document's `document_no` for display. `null` when not linked. */
+  documentNo: string | null;
 };
 
 export type CompanyJournal = ReturnType<typeof buildCompanyJournal>;
@@ -248,6 +257,11 @@ export function buildCompanyJournal(
             text,
             total,
             lines,
+            // #379 — arkiverede Posteringer har ingen bilag-linkage; det
+            // arkiverede materiale lever uden for `documents`/`journal_entries`
+            // og kan ikke resolves til en åbnbar fil.
+            documentId: null,
+            documentNo: null,
           };
         });
 
@@ -309,13 +323,24 @@ export function buildCompanyJournal(
       accountEntryIds = new Set(idRows.map((r) => r.id));
     }
 
+    // #379 — pull the linked bilag (document) onto each entry via the direct
+    // `journal_entries.document_id` foreign key, with `import_document_links`
+    // as a fall-back for legacy posts where the documents/journal-entries were
+    // wired only through the import-link table. The LEFT JOINs keep entries
+    // without a document (manuel kassekladde) on the result, with `documentId`
+    // and `documentNo` returned as null.
     const entryRows = ctx.db
       .query(
         `SELECT je.id          AS id,
                 je.entry_no    AS entryNo,
                 je.transaction_date AS date,
-                je.text        AS text
+                je.text        AS text,
+                COALESCE(je.document_id, idl.document_id) AS documentId,
+                d.document_no  AS documentNo
            FROM journal_entries je
+           LEFT JOIN import_document_links idl ON idl.journal_entry_id = je.id
+           LEFT JOIN documents d
+             ON d.id = COALESCE(je.document_id, idl.document_id)
           WHERE je.status = 'posted'
             AND je.transaction_date >= ? AND je.transaction_date <= ?
           ORDER BY je.transaction_date DESC, je.id DESC`,
@@ -325,6 +350,8 @@ export function buildCompanyJournal(
       entryNo: string;
       date: string;
       text: string;
+      documentId: number | null;
+      documentNo: string | null;
     }>;
 
     const lineRows = ctx.db
@@ -381,6 +408,8 @@ export function buildCompanyJournal(
         text: e.text,
         total,
         lines,
+        documentId: e.documentId ?? null,
+        documentNo: e.documentNo ?? null,
       };
     });
 

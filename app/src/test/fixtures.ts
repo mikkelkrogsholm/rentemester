@@ -288,6 +288,8 @@ export function journal(over: Partial<CompanyJournal> = {}): CompanyJournal {
             text: null,
           },
         ],
+        documentId: 7,
+        documentNo: "BIL-2026-0001",
       },
     ],
     accountFilter: null,

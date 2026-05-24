@@ -302,6 +302,107 @@ describe("JournalView — #396 filter-bar", () => {
     expect(screen.queryByText("Internet abonnement")).not.toBeInTheDocument();
   });
 
+  test("#379 — en entry med documentId viser et 'Åbn bilag'-link der peger på file-routen", async () => {
+    mockFetch(route());
+    renderView();
+    const summary = await screen.findByRole("button", {
+      name: /Salg af ydelse/,
+    });
+    await userEvent.click(summary);
+    const link = await screen.findByRole("link", { name: /Åbn bilag/ });
+    expect(link).toHaveAttribute(
+      "href",
+      "/api/companies/acme-aps/documents/7/file",
+    );
+    expect(link).toHaveAttribute("target", "_blank");
+    // Documentnummeret vises sammen med linket, så ejeren kan genkende bilaget.
+    expect(screen.getByText(/BIL-2026-0001/)).toBeInTheDocument();
+  });
+
+  test("#379 — en entry uden documentId viser 'Intet bilag' og intet klikbart link", async () => {
+    mockFetch(
+      route({
+        entries: [
+          {
+            id: 9,
+            entryNo: "B-2026-0099",
+            date: "2026-04-01",
+            text: "Manuel kassekladde",
+            total: 100,
+            lines: [
+              {
+                accountNo: "55000",
+                accountName: "Bank",
+                debit: 100,
+                credit: 0,
+                text: null,
+              },
+              {
+                accountNo: "1000",
+                accountName: "Omsætning",
+                debit: 0,
+                credit: 100,
+                text: null,
+              },
+            ],
+            documentId: null,
+            documentNo: null,
+          },
+        ],
+      }),
+    );
+    renderView();
+    const summary = await screen.findByRole("button", {
+      name: /Manuel kassekladde/,
+    });
+    await userEvent.click(summary);
+    expect(await screen.findByText("Intet bilag")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /Åbn bilag/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  test("#379 — arkiveret år crasher ikke og viser 'Intet bilag' selv hvis documentId er sat", async () => {
+    mockFetch(
+      route({
+        archived: true,
+        archivedSource: "dinero",
+        selectedYear: "2025",
+        entries: [
+          {
+            id: 1,
+            entryNo: "A-100",
+            date: "2025-06-01",
+            text: "Arkiveret bilag",
+            total: 312,
+            lines: [
+              {
+                accountNo: "2750",
+                accountName: "Telefon",
+                debit: 312,
+                credit: 0,
+                text: null,
+              },
+            ],
+            // Arkiverede entries skal ikke resolves selv hvis et id var sat —
+            // filen lever ikke i `documents`-tabellen for det arkiverede år.
+            documentId: 42,
+            documentNo: "ARK-42",
+          },
+        ],
+      }),
+    );
+    renderView();
+    const summary = await screen.findByRole("button", {
+      name: /Arkiveret bilag/,
+    });
+    await userEvent.click(summary);
+    expect(await screen.findByText("Intet bilag")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /Åbn bilag/ }),
+    ).not.toBeInTheDocument();
+  });
+
   test("Ryd filtre-knap nulstiller alle filtre", async () => {
     mockFetch(multiEntryJournal());
     renderView();

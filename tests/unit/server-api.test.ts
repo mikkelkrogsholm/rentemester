@@ -838,6 +838,35 @@ describe("cockpit API — journal (GET .../journal)", () => {
     }
   });
 
+  test("#379 — each entry carries its linked documentId and documentNo so the cockpit can link from posting to bilag", async () => {
+    const ws = makeWorkspace("jrn-doc", ["Acme ApS"]);
+    try {
+      // postPnlEntry ingester et bilag og bogfører posten med `documentId`
+      // sat, så journal-endpointet skal returnere `documentId` !== null og
+      // `documentNo` matching `OV-<dato>`.
+      postPnlEntry(ws, "acme-aps", "2026-03-15", 1000, 400);
+      const res = await get(
+        config({ workspaceRoot: ws }),
+        "/api/companies/acme-aps/journal?year=2026",
+      );
+      expect(res.status).toBe(200);
+      const entries = res.body.journal.entries as Array<{
+        documentId: number | null;
+        documentNo: string | null;
+        text: string;
+      }>;
+      expect(entries.length).toBe(2);
+      for (const entry of entries) {
+        expect(entry).toHaveProperty("documentId");
+        expect(entry).toHaveProperty("documentNo");
+        // postPnlEntry sætter documentId på begge posts.
+        expect(entry.documentId).not.toBeNull();
+      }
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
   test("journal for an unknown slug is a safe 404", async () => {
     const ws = makeWorkspace("jrn-404", ["Acme ApS"]);
     try {

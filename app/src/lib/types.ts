@@ -455,6 +455,14 @@ export type JournalEntry = {
   /** Sum of the debit side — the entry total, kroner. */
   total: number;
   lines: JournalLine[];
+  /**
+   * #379 — the id of the document (bilag) backing this entry, when one is
+   * linked. `null` when the entry has no underlying document (e.g. a manual
+   * kassekladde-post). Used by the UI to surface an "Åbn bilag" link.
+   */
+  documentId: number | null;
+  /** The linked document's `document_no` for display next to the link. */
+  documentNo: string | null;
 };
 
 export type CompanyJournal = {

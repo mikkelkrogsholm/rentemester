@@ -14,6 +14,7 @@ import { useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { formatKroner } from "../lib/format";
+// #379 — the EntryRow needs the slug to build the bilag-file URL on the fly.
 import { useAsync } from "../lib/useAsync";
 import type { CompanyJournal, JournalEntry } from "../lib/types";
 import { ErrorState, Loading } from "../components/Feedback";
@@ -218,7 +219,13 @@ export function JournalView() {
       ) : (
         <ul className="entry-list">
           {filteredEntries.map((entry) => (
-            <EntryRow key={entry.id} entry={entry} currency={currency} />
+            <EntryRow
+              key={entry.id}
+              entry={entry}
+              currency={currency}
+              slug={slug}
+              archived={j.archived}
+            />
           ))}
         </ul>
       )}
@@ -240,11 +247,23 @@ function entryMatchesText(entry: JournalEntry, needle: string): boolean {
 function EntryRow({
   entry,
   currency,
+  slug,
+  archived,
 }: {
   entry: JournalEntry;
   currency: string;
+  slug: string;
+  /**
+   * #379 — arkiverede regnskabsår har ingen bilag-linkage; vis "Intet bilag"
+   * også når posten i teorien havde en `documentId`, sådan at vi aldrig
+   * sender ejeren mod en route der ikke kan resolves.
+   */
+  archived: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  // #379 — en post har et bilag når både linkage og fil-route er meningsfulde.
+  // Arkiverede år vises altid som "Intet bilag" (filen er ikke i `documents`).
+  const hasDocument = !archived && entry.documentId !== null;
   return (
     <li className={`entry-item${open ? " open" : ""}`}>
       <button
@@ -294,6 +313,23 @@ function EntryRow({
               ))}
             </tbody>
           </table>
+          <div className="entry-bilag">
+            {hasDocument ? (
+              <a
+                className="entry-bilag-link"
+                href={api.documentFileUrl(slug, entry.documentId!)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Åbn bilag
+                {entry.documentNo ? (
+                  <span className="muted"> · {entry.documentNo}</span>
+                ) : null}
+              </a>
+            ) : (
+              <span className="muted entry-bilag-empty">Intet bilag</span>
+            )}
+          </div>
         </div>
       )}
     </li>
