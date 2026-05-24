@@ -1,25 +1,67 @@
-# Compliance-guides
+# Compliance
 
-Praktiske, kildehenviste guides til hvordan en konkret opsætning lever op
-til de regler Rentemester håndhæver. Hver guide tager udgangspunkt i:
+Materialet i denne mappe binder dansk bogførings-, moms-, rente- og
+årsregnskabsret sammen med konkret Rentemester-implementering — i to
+retninger:
 
-1. **Hvilken regel** (lov + paragraf + Rentemester-regelid)
-2. **Hvad reglen kræver** ordret eller parafraseret
-3. **Hvordan en konkret opsætning opfylder kravet**
-4. **Hvilke CLI-/MCP-kald** der attesterer det i Rentemester
-5. **Hvad der kan vælte attesteringen senere** (kontroltjek)
+- **Lov → kode → guide**: når du vil vide hvilken paragraf en regel
+  kommer fra og hvor den håndhæves i `src/`.
+- **System-område → krav**: når du arbejder i en konkret del af systemet
+  og vil vide hvilke compliance-krav der rammer den.
 
-Rentemester selv kan ikke vide hvor en cloud-mappe fysisk ligger, hvilken
-plan en SaaS-konto er på, eller om en udbyder har skiftet datacenter.
-Disse guides er rygdækningen for de menneskeskabte attestationer som
-agenten kan stole på.
+Plus konkrete, kildehenviste opskrifter for de dele som *ikke* kan
+løses i kode (fx attestering af en backup-destination i EU/EØS).
 
 ## Indhold
 
+### Reference
+
+- **[requirements.md](requirements.md)** — Komplet compliance-matrix.
+  Én række pr. krav, mappet til lovkilde (med ELI- og XML-link til
+  retsinformation), Rentemester rule_id, håndhævelse i `src/`, og evt.
+  guide. Den primære kilde til "hvad skal systemet leve op til, og
+  hvor er det implementeret?"
+- **[requirements-by-area.md](requirements-by-area.md)** — Samme krav,
+  men grupperet efter system-område (hovedbog, salgsfakturaer, moms,
+  backup, …). Brug denne når du arbejder i en konkret del af koden.
+
+### Guides
+
+Rentemester selv kan ikke vide hvor en cloud-mappe fysisk ligger, hvilken
+plan en SaaS-konto er på, eller om en udbyder har skiftet datacenter.
+Disse guides er rygdækningen for de menneske-attesterede dele af
+compliance — den agenten ikke selv kan afgøre.
+
 - [Backup-destinationer (BEK 205/2024 § 4)](backup-destinations.md) —
-  hvor og hvordan den ugentlige fulde backup må opbevares.
+  master-guide til hvor og hvordan den ugentlige fulde backup må
+  opbevares.
   - [Google Workspace (Data Regions = Europa)](backup-destinations/google-workspace.md)
   - [Skabelon for nye udbydere](backup-destinations/_TEMPLATE.md)
+
+## Sådan opdaterer du dokumentationen, når en regel ændres
+
+Når der lægges en ny rule_id til, eller en eksisterende ændrer paragraf-
+reference, skal følgende holdes i sync:
+
+1. `rules/dk/<emne>.yaml` — selve reglen med `source_id`, `provisions[]`,
+   `severity`, `machine_rule`.
+2. `src/core/<modul>.ts` — `const RULE_ID = "DK-…"` så grep let finder
+   håndhævelses-punktet.
+3. [requirements.md](requirements.md) — tabelrækken i den relevante
+   kildesektion + opdater paragrafkolonnen hvis det er en ny henvisning.
+4. [requirements-by-area.md](requirements-by-area.md) — tilføj til det
+   relevante område-afsnit (eller opret et nyt afsnit hvis emnet er
+   nyt).
+5. Hvis reglen kræver en menneskelig handling, lav (eller udvid) en
+   guide her under `docs/compliance/`.
+
+Når der tilføjes en ny lovkilde (ny LOV/BEK), skal også:
+
+6. [`sources/legal-sources.json`](../../sources/legal-sources.json) —
+   tilføj source med `id`, `title`, `url`, `xmlUrl`, `notes`.
+7. [`sources/scope.yaml`](../../sources/scope.yaml) — sæt `in_scope`-
+   rangen for de paragrafer Rentemester implementerer.
+8. Tilføj en ny § X-sektion i [requirements.md § 3](requirements.md#3-matricen-pr-lovkilde).
 
 ## Sådan tilføjer du en ny guide
 
