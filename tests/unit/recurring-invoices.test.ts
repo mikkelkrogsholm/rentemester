@@ -10,6 +10,7 @@ import {
   generateRecurringInvoice,
   listRecurringInvoiceGenerations,
   listRecurringInvoiceTemplates,
+  retireRecurringInvoiceTemplate,
 } from "../../src/core/recurring-invoices";
 
 function baseTemplateInput(overrides: Record<string, unknown> = {}) {
@@ -287,6 +288,91 @@ describe("recurring invoice generation", () => {
     expect(q2.periodIndex).toBe(1);
     // Month-end clamps deterministically: Jan 31 + 3 months -> Apr 30.
     expect(q2.issueDate).toBe("2026-04-30");
+
+    db.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  test("retires an active template and blocks generation afterwards", () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-recurring-retire-"));
+    const db = openDb(ensureCompanyDirs(root).db);
+    migrate(db);
+
+    const created = createRecurringInvoiceTemplate(db, baseTemplateInput());
+    expect(created.ok).toBe(true);
+    const templateId = created.templateId!;
+
+    const retired = retireRecurringInvoiceTemplate(db, {
+      templateId,
+      reason: "Customer cancelled subscription",
+      createdBy: "user:test",
+      createdByProgram: "cockpit",
+    });
+    expect(retired.ok).toBe(true);
+    expect(retired.appliedRules).toContain("DK-RECURRING-INVOICE-TEMPLATE-001");
+
+    // Template must show up as inactive in the list-with-inactive view.
+    const listed = listRecurringInvoiceTemplates(db, { includeInactive: true });
+    const row = listed.rows.find((r) => r.id === templateId);
+    expect(row?.active).toBe(false);
+
+    // Generation must refuse a retired template.
+    const gen = generateRecurringInvoice(db, root, {
+      templateId,
+      asOfDate: "2026-02-15",
+    });
+    expect(gen.ok).toBe(false);
+    expect(gen.errors.join(" ")).toContain("inactive");
+
+    // Audit log must record the retirement.
+    const auditRows = db
+      .query(
+        `SELECT event_type, entity_id, message FROM audit_log
+           WHERE entity_type = 'recurring_invoice_template' AND event_type = 'recurring_invoice_template_retire'`,
+      )
+      .all() as { event_type: string; entity_id: string | number; message: string }[];
+    expect(auditRows.length).toBe(1);
+    expect(String(auditRows[0]!.entity_id)).toBe(String(templateId));
+    expect(auditRows[0]!.message).toContain("Customer cancelled subscription");
+
+    db.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  test("retiring a non-existent template is an error", () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-recurring-retire-missing-"));
+    const db = openDb(ensureCompanyDirs(root).db);
+    migrate(db);
+
+    const retired = retireRecurringInvoiceTemplate(db, { templateId: 9999 });
+    expect(retired.ok).toBe(false);
+    expect(retired.errors[0]).toContain("does not exist");
+
+    db.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  test("retiring an already-retired template is idempotent (no-op success)", () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-recurring-retire-idempotent-"));
+    const db = openDb(ensureCompanyDirs(root).db);
+    migrate(db);
+
+    const created = createRecurringInvoiceTemplate(db, baseTemplateInput());
+    const templateId = created.templateId!;
+
+    const first = retireRecurringInvoiceTemplate(db, { templateId });
+    expect(first.ok).toBe(true);
+    const second = retireRecurringInvoiceTemplate(db, { templateId });
+    expect(second.ok).toBe(true);
+
+    // Only one audit log row even after two retire calls.
+    const auditRows = db
+      .query(
+        `SELECT event_type FROM audit_log
+           WHERE entity_type = 'recurring_invoice_template' AND event_type = 'recurring_invoice_template_retire'`,
+      )
+      .all() as { event_type: string }[];
+    expect(auditRows.length).toBe(1);
 
     db.close();
     rmSync(root, { recursive: true, force: true });

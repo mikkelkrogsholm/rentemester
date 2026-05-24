@@ -78,6 +78,7 @@ import {
   handleInvoiceSettle,
   handleReopenPeriod,
   handleResolveException,
+  handleRetireRecurringInvoiceTemplate,
   handleUpdateCustomer,
   handleUpdateVendor,
 } from "./write-handlers";
@@ -763,6 +764,25 @@ export async function handleRequest(
         request,
         slug,
         recurringInvoiceGenerateMatch[2]!,
+      );
+    }
+
+    // Cockpit write route (#435) — deactivate (retire) a recurring-invoice
+    // template so it stops suggesting itself when the underlying contract has
+    // ended. Templates are append-only by schema: the trigger forbids
+    // unretiring, and identity/payload columns cannot be mutated. Owners who
+    // need to change terms create a new template that supersedes the retired
+    // one — historical generations on the old template stay intact.
+    const recurringInvoiceRetireMatch =
+      /^\/api\/companies\/([^/]+)\/recurring-invoices\/(\d+)\/retire$/.exec(path);
+    if (recurringInvoiceRetireMatch) {
+      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      const slug = decodeURIComponent(recurringInvoiceRetireMatch[1]!);
+      return await handleRetireRecurringInvoiceTemplate(
+        config,
+        request,
+        slug,
+        recurringInvoiceRetireMatch[2]!,
       );
     }
 

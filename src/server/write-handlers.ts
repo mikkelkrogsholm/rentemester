@@ -37,7 +37,10 @@ import { lookupCvrCompany } from "../core/cvr";
 import { detectImportSource } from "../core/import/source-detect";
 import { exportAuthorityPackage } from "../core/authority-export";
 import { createTar, dirToTarEntries } from "../core/tar";
-import { generateRecurringInvoice } from "../core/recurring-invoices";
+import {
+  generateRecurringInvoice,
+  retireRecurringInvoiceTemplate,
+} from "../core/recurring-invoices";
 import { ingestDocument, type DocumentMetadata } from "../core/documents";
 import { resolveDocumentMasterData, resolveInvoiceMasterData } from "../core/master-data";
 import {
@@ -466,6 +469,60 @@ export async function handleGenerateRecurringInvoice(
   );
 
   return okResponse({ generation: result.generation });
+}
+
+/**
+ * POST /api/companies/:slug/recurring-invoices/:id/retire — deactivates a
+ * recurring-invoice template (#435).
+ *
+ * Templates are append-only by schema: identity columns and the embedded
+ * payload are guarded by a trigger, and a retired (active = 0) template
+ * cannot be unretired. This handler is the cockpit's deactivation surface so
+ * an owner does not have to drop to the CLI to stop a now-irrelevant template
+ * from suggesting itself in the cockpit.
+ *
+ * Generation refuses an inactive template (the core `generateRecurringInvoice`
+ * already returns an error in that case), so a retired template can never
+ * issue another invoice — past generations stay untouched on `documents`.
+ *
+ * Goes through `withCompanyMutation` (backup lock, localhost gate, actor
+ * attribution). `requireConfirm: true` matches the surrounding write-routes.
+ */
+export async function handleRetireRecurringInvoiceTemplate(
+  config: ServerConfig,
+  request: Request,
+  slug: string,
+  templateIdRaw: string,
+): Promise<Response> {
+  const templateId = Number(templateIdRaw);
+  if (!Number.isInteger(templateId) || templateId <= 0) {
+    throw ApiError.badRequest("template id must be a positive integer");
+  }
+  const result = await withCompanyMutation(
+    request,
+    config,
+    slug,
+    (ctx, body) => {
+      const reason = optionalBodyString(body, "reason");
+      const retired = retireRecurringInvoiceTemplate(ctx.db, {
+        templateId,
+        reason,
+        createdBy: ctx.actor.createdBy,
+        createdByProgram: ctx.actor.createdByProgram,
+      });
+      return {
+        ok: retired.ok,
+        errors: retired.errors,
+        template: {
+          id: retired.templateId ?? templateId,
+          retired: retired.ok,
+        },
+      };
+    },
+    { requireConfirm: true },
+  );
+
+  return okResponse({ template: result.template });
 }
 
 /**

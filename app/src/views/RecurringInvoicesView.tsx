@@ -1,12 +1,18 @@
 // Faktura-skabeloner — the cockpit surface for recurring-invoice templates.
 //
-// The deterministic core (createRecurringInvoiceTemplate / generateRecurringInvoice)
-// is already in place — this view lists the templates, surfaces their next-issue
-// date, and lets a human generate the next invoice with one click. Generation
-// is idempotent, so re-clicking is safe.
+// The deterministic core (createRecurringInvoiceTemplate / generateRecurringInvoice
+// / retireRecurringInvoiceTemplate) is already in place — this view lists the
+// templates, surfaces their next-issue date, lets a human generate the next
+// invoice with one click, and lets the owner retire a template that should no
+// longer suggest itself (#435). Generation is idempotent, so re-clicking is
+// safe.
 //
-// Templates are currently created via the CLI (`rentemester recurring-invoice
-// create`); the in-cockpit creation form is a follow-up.
+// Templates are append-only by schema: a retired template cannot be
+// reactivated, and identity/payload columns cannot be mutated. When an owner
+// needs to change terms (price, frequency, customer), they retire the old
+// template and create a new one — past generations stay on the original
+// template's history. Creation from the cockpit is tracked separately (#386);
+// today the create-flow lives in the CLI.
 
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -132,7 +138,7 @@ export function RecurringInvoicesView() {
   );
 }
 
-/** One template's card — header, generate action, and its past generations. */
+/** One template's card — header, generate action, retire action, and history. */
 function TemplateCard({
   template,
   slug,
@@ -144,6 +150,7 @@ function TemplateCard({
 }) {
   const [asOfDate, setAsOfDate] = useState(template.nextIssueDate);
   const [busy, setBusy] = useState(false);
+  const [retireBusy, setRetireBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -175,6 +182,47 @@ function TemplateCard({
     }
   }
 
+  /**
+   * Retire (deactivate) the template. Templates are append-only by schema:
+   * once retired they cannot be reactivated and identity/payload columns
+   * cannot be mutated. To change terms, the owner creates a new template
+   * — historical generations on the old template are preserved untouched.
+   */
+  async function retire() {
+    // eslint-disable-next-line no-alert
+    const confirmed = window.confirm(
+      `Deaktivér skabelonen "${template.name}"?\n\n` +
+        "En deaktiveret skabelon kan ikke generere flere fakturaer og kan ikke " +
+        "genaktiveres (skabeloner er append-only). Tidligere genererede fakturaer " +
+        "ændres ikke. Hvis kunden bare har ændret beløb/frekvens: deaktivér her " +
+        "og opret en ny skabelon med de rette vilkår.",
+    );
+    if (!confirmed) return;
+    setRetireBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      // eslint-disable-next-line no-alert
+      const reason =
+        window.prompt(
+          "Kort årsag (valgfri — vises i revisionssporet):",
+          "",
+        ) ?? undefined;
+      await api.retireRecurringInvoiceTemplate(
+        slug,
+        template.id,
+        reason && reason.trim().length > 0 ? reason.trim() : undefined,
+      );
+      setNotice(`Skabelonen "${template.name}" er deaktiveret.`);
+      onReload();
+    } catch (err) {
+      const e = err as { message?: string };
+      setError(e?.message ?? "Skabelonen kunne ikke deaktiveres.");
+    } finally {
+      setRetireBusy(false);
+    }
+  }
+
   return (
     <div className="card" style={{ marginBottom: 16 }}>
       <h4 style={{ marginTop: 0 }}>
@@ -196,18 +244,34 @@ function TemplateCard({
               type="date"
               value={asOfDate}
               onChange={(e) => setAsOfDate(e.target.value)}
-              disabled={busy}
+              disabled={busy || retireBusy}
             />
           </label>
           <button
             className="btn"
             onClick={generate}
-            disabled={busy || asOfDate.length !== 10}
+            disabled={busy || retireBusy || asOfDate.length !== 10}
             type="button"
           >
             {busy ? "Genererer…" : "Generér"}
           </button>
+          <button
+            className="btn secondary"
+            onClick={retire}
+            disabled={busy || retireBusy}
+            type="button"
+            aria-label={`Deaktivér skabelonen ${template.name}`}
+          >
+            {retireBusy ? "Deaktiverer…" : "Deaktivér"}
+          </button>
         </div>
+      )}
+
+      {!template.active && (
+        <p className="muted" style={{ fontStyle: "italic" }}>
+          Skabelonen er deaktiveret og kan ikke længere generere fakturaer.
+          Tidligere genererede fakturaer (nedenfor) er bevaret uændret.
+        </p>
       )}
 
       {error && <Banner kind="error">{error}</Banner>}

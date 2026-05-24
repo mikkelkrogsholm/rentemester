@@ -208,6 +208,29 @@ export const api = {
       },
     ).then((r) => r.generation),
 
+  /**
+   * Retires (deactivates) a recurring-invoice template (#435). Templates are
+   * append-only by schema, so this flips `active` from 1 -> 0 and audit-logs
+   * the change; the cockpit hides the generate button on retired templates.
+   * The trigger forbids reactivation — an owner who needs to change terms
+   * creates a new template that supersedes the retired one.
+   */
+  retireRecurringInvoiceTemplate: (
+    slug: string,
+    templateId: number,
+    reason?: string,
+  ) =>
+    request<{ ok: true; template: { id: number; retired: boolean } }>(
+      `/api/companies/${encodeURIComponent(slug)}/recurring-invoices/${templateId}/retire`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          confirm: true,
+          ...(reason ? { reason } : {}),
+        }),
+      },
+    ).then((r) => r.template),
+
   archive: (slug: string, year: string) =>
     request<ArchiveResponse>(
       `/api/companies/${encodeURIComponent(slug)}/archive/${encodeURIComponent(

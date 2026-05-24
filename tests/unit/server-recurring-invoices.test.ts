@@ -189,4 +189,101 @@ describe("cockpit API — recurring invoices", () => {
       rmSync(ws, { recursive: true, force: true });
     }
   });
+
+  // #435 — cockpit can retire a recurring-invoice template so it stops
+  // suggesting itself. Schema trigger forbids unretiring; retired templates
+  // refuse generation. The retire route exposes that behaviour over HTTP.
+  test("POST .../retire deactivates an active template and blocks future generation", async () => {
+    const { root: ws, slug } = makeWorkspace("rec-retire");
+    try {
+      const templateId = seedTemplate(ws, slug);
+      const retire = await post(
+        config(ws),
+        `/api/companies/${slug}/recurring-invoices/${templateId}/retire`,
+        { confirm: true, reason: "Kunde opsagt aftalen" },
+      );
+      expect(retire.status).toBe(200);
+      expect(retire.body.ok).toBe(true);
+      expect(retire.body.template.id).toBe(templateId);
+      expect(retire.body.template.retired).toBe(true);
+
+      // The list now shows the template as inactive.
+      const listed = await getJson(
+        config(ws),
+        `/api/companies/${slug}/recurring-invoices`,
+      );
+      const row = listed.body.recurringInvoices.templates.find(
+        (t: { id: number }) => t.id === templateId,
+      );
+      expect(row.active).toBe(false);
+
+      // Generation refuses a retired template.
+      const gen = await post(
+        config(ws),
+        `/api/companies/${slug}/recurring-invoices/${templateId}/generate`,
+        { asOfDate: "2026-02-15", confirm: true },
+      );
+      expect(gen.body.ok).toBe(false);
+      expect(JSON.stringify(gen.body)).toContain("inactive");
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
+  test("POST .../retire without confirm is refused (400)", async () => {
+    const { root: ws, slug } = makeWorkspace("rec-retire-noconfirm");
+    try {
+      const templateId = seedTemplate(ws, slug);
+      const res = await post(
+        config(ws),
+        `/api/companies/${slug}/recurring-invoices/${templateId}/retire`,
+        {},
+      );
+      expect(res.status).toBe(400);
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
+  test("POST .../retire is idempotent — a second retire is still ok", async () => {
+    const { root: ws, slug } = makeWorkspace("rec-retire-idempotent");
+    try {
+      const templateId = seedTemplate(ws, slug);
+      const first = await post(
+        config(ws),
+        `/api/companies/${slug}/recurring-invoices/${templateId}/retire`,
+        { confirm: true },
+      );
+      expect(first.status).toBe(200);
+      const second = await post(
+        config(ws),
+        `/api/companies/${slug}/recurring-invoices/${templateId}/retire`,
+        { confirm: true },
+      );
+      expect(second.status).toBe(200);
+      expect(second.body.ok).toBe(true);
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
+  test("POST .../retire for an unknown template surfaces an error", async () => {
+    const { root: ws, slug } = makeWorkspace("rec-retire-404");
+    try {
+      const res = await post(
+        config(ws),
+        `/api/companies/${slug}/recurring-invoices/99999/retire`,
+        { confirm: true },
+      );
+      // The handler echoes core errors inside an ok-envelope; the surface is
+      // a 200 with ok:false. Either shape is acceptable here.
+      if (res.status === 200) {
+        expect(res.body.ok).toBe(false);
+      } else {
+        expect([400, 404, 409]).toContain(res.status);
+      }
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
 });
