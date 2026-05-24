@@ -193,6 +193,43 @@ export const api = {
     ).then((r) => r.recurringInvoices),
 
   /**
+   * Creates a recurring-invoice template from the cockpit (#386). Mirrors the
+   * CLI's `recurring-invoice create` — Rentemester computes every line total,
+   * the human never writes an amount. Creating a template appends master-data
+   * (no journal entry), so no `confirm` is required.
+   */
+  createRecurringInvoiceTemplate: (
+    slug: string,
+    input: RecurringInvoiceTemplateInput,
+  ) =>
+    request<{ ok: true; template: { id: number | null } }>(
+      `/api/companies/${encodeURIComponent(slug)}/recurring-invoices`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          name: input.name,
+          interval: input.interval,
+          firstIssueDate: input.firstIssueDate,
+          lines: input.lines,
+          ...(input.vatRatePercent !== undefined
+            ? { vatRatePercent: input.vatRatePercent }
+            : {}),
+          ...(input.paymentTermsDays !== undefined
+            ? { paymentTermsDays: input.paymentTermsDays }
+            : {}),
+          ...(input.deliveryPeriodMode
+            ? { deliveryPeriodMode: input.deliveryPeriodMode }
+            : {}),
+          ...(input.currency ? { currency: input.currency } : {}),
+          ...(input.notes ? { notes: input.notes } : {}),
+          ...(input.customerId ? { customerId: input.customerId } : {}),
+          ...(input.seller ? { seller: input.seller } : {}),
+          ...(input.buyer ? { buyer: input.buyer } : {}),
+        }),
+      },
+    ).then((r) => r.template),
+
+  /**
    * Generates the next invoice from a template for the given `asOfDate`. The
    * core is idempotent: a second call for the same period returns the existing
    * generation with `created: false`. Write-irreversible (issues an invoice
@@ -596,6 +633,23 @@ export type InvoiceSettleSummary = {
   claimAmount: number;
   invoiceNumber: string | null;
   openBalance: number | null;
+};
+
+/** Input for `api.createRecurringInvoiceTemplate` (#386). */
+export type RecurringInvoiceTemplateInput = {
+  name: string;
+  interval: "monthly" | "quarterly" | "yearly";
+  /** ISO date — when the first invoice from this template should be issued. */
+  firstIssueDate: string;
+  lines: InvoiceLineInput[];
+  vatRatePercent?: number;
+  paymentTermsDays?: number;
+  deliveryPeriodMode?: "issue_month" | "interval_window" | "none";
+  currency?: string;
+  notes?: string;
+  customerId?: number;
+  seller?: InvoicePartyInput;
+  buyer?: InvoicePartyInput;
 };
 
 /** Input for `api.importBank` — the CSV text plus optional account/profile. */

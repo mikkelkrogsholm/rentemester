@@ -35,7 +35,12 @@ import { lookupCvrCompany } from "../core/cvr";
 import { detectImportSource } from "../core/import/source-detect";
 import { exportAuthorityPackage } from "../core/authority-export";
 import { createTar, dirToTarEntries } from "../core/tar";
-import { generateRecurringInvoice } from "../core/recurring-invoices";
+import {
+  createRecurringInvoiceTemplate,
+  generateRecurringInvoice,
+  type DeliveryPeriodMode,
+  type RecurringInterval,
+} from "../core/recurring-invoices";
 import { ingestDocument, type DocumentMetadata } from "../core/documents";
 import { resolveDocumentMasterData, resolveInvoiceMasterData } from "../core/master-data";
 import {
@@ -443,6 +448,128 @@ export async function handleGenerateRecurringInvoice(
   );
 
   return okResponse({ generation: result.generation });
+}
+
+const ALLOWED_INTERVALS: ReadonlySet<RecurringInterval> = new Set([
+  "monthly",
+  "quarterly",
+  "yearly",
+]);
+const ALLOWED_DELIVERY_MODES: ReadonlySet<DeliveryPeriodMode> = new Set([
+  "issue_month",
+  "interval_window",
+  "none",
+]);
+
+/**
+ * POST /api/companies/:slug/recurring-invoices — creates a recurring-invoice
+ * template (#386).
+ *
+ * The cockpit's owner fills the same minimal fields the CLI accepts — the
+ * server runs `computeInvoiceAmounts` on the line items so the stored payload
+ * carries the totals Rentemester computes, and `createRecurringInvoiceTemplate`
+ * is the single source of truth for persistence + validation. Creating a
+ * template appends master-data rows (no journal entry yet — the actual
+ * invoices are materialized by `generateRecurringInvoice`), so the action is
+ * NOT marked `requireConfirm`: the multi-field modal IS the human's consent.
+ */
+export async function handleCreateRecurringInvoiceTemplate(
+  config: ServerConfig,
+  request: Request,
+  slug: string,
+): Promise<Response> {
+  const result = await withCompanyMutation(
+    request,
+    config,
+    slug,
+    (ctx, body) => {
+      const name = requireBodyString(body, "name");
+      const intervalRaw = requireBodyString(body, "interval");
+      if (!ALLOWED_INTERVALS.has(intervalRaw as RecurringInterval)) {
+        throw ApiError.badRequest(
+          "'interval' must be one of monthly, quarterly, yearly",
+        );
+      }
+      const interval = intervalRaw as RecurringInterval;
+      const firstIssueDate = requireBodyString(body, "firstIssueDate");
+      const lines = parseInvoiceLines(body.lines);
+      const vatRatePercent = optionalBodyNumber(body, "vatRatePercent") ?? 25;
+      const paymentTermsDays = optionalBodyNumber(body, "paymentTermsDays");
+      const currency = optionalBodyString(body, "currency");
+      const notes = optionalBodyString(body, "notes");
+      const customerId = optionalBodyPositiveInt(body, "customerId");
+      const deliveryModeRaw = optionalBodyString(body, "deliveryPeriodMode");
+      let deliveryPeriodMode: DeliveryPeriodMode | undefined;
+      if (deliveryModeRaw !== undefined) {
+        if (!ALLOWED_DELIVERY_MODES.has(deliveryModeRaw as DeliveryPeriodMode)) {
+          throw ApiError.badRequest(
+            "'deliveryPeriodMode' must be one of issue_month, interval_window, none",
+          );
+        }
+        deliveryPeriodMode = deliveryModeRaw as DeliveryPeriodMode;
+      }
+
+      const buyer = parseInvoiceParty(body.buyer, "buyer");
+      const seller = parseInvoiceParty(body.seller, "seller");
+
+      // Rentemester computes every derived amount — the human never does
+      // invoice arithmetic. A compute rejection surfaces as a 400.
+      const computed = computeInvoiceAmounts(lines, vatRatePercent);
+      if (!computed.ok) {
+        return { ok: false, errors: computed.errors };
+      }
+
+      const invoicePayload: InvoicePayload = {
+        invoiceType: "full",
+        vatTreatment: "standard",
+        // The probe issue date used by `createRecurringInvoiceTemplate` is
+        // stripped from the stored payload — we pass `firstIssueDate` so the
+        // up-front structural validation has something to chew on.
+        issueDate: firstIssueDate,
+        seller,
+        buyer,
+        lines: computed.lines,
+        totals: {
+          netAmount: computed.totals.netAmount,
+          vatRate: computed.totals.vatRate,
+          vatAmount: computed.totals.vatAmount,
+          grossAmount: computed.totals.grossAmount,
+        },
+        currency: currency ?? "DKK",
+      };
+
+      // Master-data resolution mirrors `invoice create` — a stored customer id
+      // back-fills the buyer name/address/VAT from the registered customer.
+      const resolved = resolveInvoiceMasterData(ctx.db, invoicePayload, {
+        customerId,
+      });
+      if (!resolved.ok) {
+        return {
+          ok: false,
+          errors: resolved.errors ?? ["master-data resolution failed"],
+        };
+      }
+
+      const created = createRecurringInvoiceTemplate(ctx.db, {
+        name,
+        interval,
+        firstIssueDate,
+        invoice: resolved.payload,
+        ...(paymentTermsDays !== undefined ? { paymentTermsDays } : {}),
+        ...(deliveryPeriodMode ? { deliveryPeriodMode } : {}),
+        ...(notes ? { notes } : {}),
+        createdBy: ctx.actor.createdBy,
+        createdByProgram: ctx.actor.createdByProgram,
+      });
+      return {
+        ok: created.ok,
+        errors: created.errors,
+        templateId: created.templateId ?? null,
+      };
+    },
+  );
+
+  return okResponse({ template: { id: result.templateId } });
 }
 
 /**

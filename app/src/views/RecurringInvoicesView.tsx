@@ -5,8 +5,10 @@
 // date, and lets a human generate the next invoice with one click. Generation
 // is idempotent, so re-clicking is safe.
 //
-// Templates are currently created via the CLI (`rentemester recurring-invoice
-// create`); the in-cockpit creation form is a follow-up.
+// #386: creating a template is now a cockpit write-action ("Opret skabelon"
+// in the page-head opens a real form), so the SMB owner never has to drop
+// into the terminal for daily invoice work. The button is hidden on an
+// archived (read-only) year, like the other write-actions in the cockpit.
 
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -19,6 +21,7 @@ import type {
 } from "../lib/types";
 import { Banner, ErrorState, Loading } from "../components/Feedback";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
+import { RecurringInvoiceTemplateModal } from "../components/RecurringInvoiceTemplateModal";
 
 type Page = {
   recurringInvoices: CompanyRecurringInvoices;
@@ -34,6 +37,8 @@ const INTERVAL_LABELS: Record<RecurringInvoiceTemplateRow["interval"], string> =
 export function RecurringInvoicesView() {
   const { slug = "" } = useParams();
   const { year, setYear } = useCompanyYear();
+  // #386: true while the "Opret skabelon" modal is open.
+  const [creating, setCreating] = useState(false);
   const state = useAsync<Page>(
     async () => {
       const [recurringInvoices, fiscalYears] = await Promise.all([
@@ -56,6 +61,13 @@ export function RecurringInvoicesView() {
     fiscalYears.find((y) => y.source === "live")?.label ??
     fiscalYears[0]?.label ??
     String(new Date().getFullYear());
+  // #386: the write-actions are hidden when the cockpit shows an archived
+  // (read-only) year — same rule as Udsted faktura / Indlæs bilag. A workspace
+  // with no live year at all is treated as read-only too.
+  const hasLiveYear = fiscalYears.some((y) => y.source === "live");
+  const selectedYearEntry = fiscalYears.find((y) => y.label === selectedYear);
+  const isArchivedYear =
+    !hasLiveYear || selectedYearEntry?.source === "archive";
   const active = r.templates.filter((t) => t.active);
   const retired = r.templates.filter((t) => !t.active);
 
@@ -70,9 +82,23 @@ export function RecurringInvoicesView() {
             udsteder ikke en ny faktura.
           </p>
         </div>
-        <Link className="btn secondary" to={`/companies/${slug}/fakturaer`}>
-          Tilbage til fakturaer
-        </Link>
+        <div className="row-actions">
+          {/* #386: the create write-action — hidden for an archived
+              (read-only) year, where no live ledger is available to add a
+              template into. */}
+          {!isArchivedYear && (
+            <button
+              type="button"
+              className="btn"
+              onClick={() => setCreating(true)}
+            >
+              Opret skabelon
+            </button>
+          )}
+          <Link className="btn secondary" to={`/companies/${slug}/fakturaer`}>
+            Tilbage til fakturaer
+          </Link>
+        </div>
       </div>
 
       <CompanyNav
@@ -82,17 +108,22 @@ export function RecurringInvoicesView() {
         onYearChange={setYear}
       />
 
+      {creating && (
+        <RecurringInvoiceTemplateModal
+          slug={slug}
+          onCreated={state.reload}
+          onClose={() => setCreating(false)}
+        />
+      )}
+
       {r.templates.length === 0 ? (
         <div className="card archived-notice">
           <h3>Ingen skabeloner endnu</h3>
           <p className="muted">
-            Der er ikke oprettet nogen faktura-skabeloner for denne
-            virksomhed. Opret en med CLI'en:
+            {isArchivedYear
+              ? "Der er ikke oprettet nogen faktura-skabeloner for denne virksomhed. Arkiverede regnskabsår er skrivebeskyttede, så vælg et levende år for at oprette en skabelon."
+              : "Der er ikke oprettet nogen faktura-skabeloner endnu. Klik på “Opret skabelon” for at sætte en op — fx en månedlig faktura til en fast kunde."}
           </p>
-          <pre className="code-block">
-            rentemester recurring-invoice create --company &lt;path&gt; --input
-            template.json
-          </pre>
         </div>
       ) : (
         <>

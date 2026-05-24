@@ -64,6 +64,7 @@ import {
   handleCvrLookup,
   handleDataImport,
   handleDocumentIngest,
+  handleCreateRecurringInvoiceTemplate,
   handleGenerateRecurringInvoice,
   handleInvoiceIssue,
   handleInvoicePost,
@@ -612,9 +613,13 @@ export async function handleRequest(
     const recurringInvoicesMatch =
       /^\/api\/companies\/([^/]+)\/recurring-invoices$/.exec(path);
     if (recurringInvoicesMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
       const slug = decodeURIComponent(recurringInvoicesMatch[1]!);
-      return handleCompanyRecurringInvoices(config, slug);
+      if (method === "GET") return handleCompanyRecurringInvoices(config, slug);
+      // Cockpit write route (#386): create a recurring-invoice template so
+      // the SMB owner no longer has to drop into the CLI for this action.
+      if (method === "POST")
+        return await handleCreateRecurringInvoiceTemplate(config, request, slug);
+      throw ApiError.methodNotAllowed("GET or POST required");
     }
 
     const recurringInvoiceGenerateMatch =
