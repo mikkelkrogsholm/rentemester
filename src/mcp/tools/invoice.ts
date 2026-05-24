@@ -534,14 +534,62 @@ export function registerInvoiceTools(server: McpServer): void {
     "invoice_find",
     {
       title: "Find invoices",
-      description: "Søger fakturaer på nummer, kunde eller beløb. Read-only.",
+      description:
+        "Søger udstedte fakturaer på nummer, kunde eller beløb. Read-only. " +
+        "Med flere filtre kombineres alle som AND. Kald uden filtre returnerer alle udstedte fakturaer. " +
+        "Bemærk: 'amount' er eksakt match — brug minAmount/maxAmount til range-søgning " +
+        "(fx bank-afstemning, hvor øre-afvigelser er normale).",
       inputSchema: {
         company: z.string().min(1),
-        query: z.string().optional(),
-        customer: z.string().optional(),
-        invoiceNumber: z.string().optional(),
-        amount: z.number().optional(),
-        asOf: z.string().optional(),
+        query: z
+          .string()
+          .optional()
+          .describe(
+            "Fritekst-delstreng (substring, case-insensitive) der matches mod både " +
+              "fakturanummer OG kundenavn. Ikke regex, ikke LIKE-wildcards.",
+          ),
+        customer: z
+          .string()
+          .optional()
+          .describe("Delstreng (substring, case-insensitive) der matches mod kundenavnet."),
+        invoiceNumber: z
+          .string()
+          .optional()
+          .describe(
+            "Delstreng (substring, case-insensitive) der matches mod fakturanummeret, fx '2026-001'. " +
+              "Bemærk: substring, ikke eksakt — '001' matcher både '2026-001' og '2026-0010'.",
+          ),
+        amount: z
+          .number()
+          .optional()
+          .describe(
+            "Eksakt bruttobeløb i DKK med 2 decimaler (fx 10000.00). " +
+              "Internt sættes både minAmount og maxAmount til denne værdi, så 10000 matcher KUN " +
+              "fakturaer hvor brutto er præcis 10.000,00. Til bank-afstemning eller andre flows " +
+              "med øre-afvigelser: brug minAmount/maxAmount i stedet.",
+          ),
+        minAmount: z
+          .number()
+          .optional()
+          .describe(
+            "Kun fakturaer med bruttobeløb på eller over dette beløb (DKK, 2 decimaler). " +
+              "Kombinér med maxAmount for range-søgning. Ignoreres hvis 'amount' også er sat.",
+          ),
+        maxAmount: z
+          .number()
+          .optional()
+          .describe(
+            "Kun fakturaer med bruttobeløb på eller under dette beløb (DKK, 2 decimaler). " +
+              "Kombinér med minAmount for range-søgning. Ignoreres hvis 'amount' også er sat.",
+          ),
+        asOf: z
+          .string()
+          .optional()
+          .describe(
+            "Skæringsdato (YYYY-MM-DD) brugt til status- og saldoberegning på de returnerede fakturaer. " +
+              "Påvirker IKKE hvilke fakturaer der returneres (ingen dato-filter på udstedelse), " +
+              "kun deres status/restbeløb. Default: i dag.",
+          ),
       },
       outputSchema: envelopeShape,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
@@ -552,14 +600,17 @@ export function registerInvoiceTools(server: McpServer): void {
       customer?: string;
       invoiceNumber?: string;
       amount?: number;
+      minAmount?: number;
+      maxAmount?: number;
       asOf?: string;
     }>(server, ({ db, args }) => {
+      const exact = args.amount;
       const result = findInvoices(db, {
         query: args.query,
         customer: args.customer,
         invoiceNumber: args.invoiceNumber,
-        minAmount: args.amount,
-        maxAmount: args.amount,
+        minAmount: exact !== undefined ? exact : args.minAmount,
+        maxAmount: exact !== undefined ? exact : args.maxAmount,
         asOfDate: args.asOf,
       });
       return wrapCoreResult(result);

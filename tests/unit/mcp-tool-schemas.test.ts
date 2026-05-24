@@ -785,6 +785,37 @@ describe("#294 — scalar-flag tools carry field descriptions and the documentId
     expect(recon.to?.description).toContain("YYYY-MM-DD");
   });
 
+  test("#388 — invoice_find: all fields have describe, amount semantics is documented, and range filters exist", () => {
+    const props = schemaOf("invoice_find").properties ?? {};
+
+    // Every searchable field must have a non-empty describe so an agent
+    // knows exactly what to send.
+    for (const field of ["query", "customer", "invoiceNumber", "asOf"]) {
+      const desc: string = props[field]?.description ?? "";
+      expect(typeof props[field]?.description, `invoice_find.${field}`).toBe("string");
+      expect(desc.length, `invoice_find.${field} non-empty`).toBeGreaterThan(0);
+    }
+
+    // The shape of `query` must be unambiguous: which fields does it hit,
+    // and is it substring or exact? Without that an agent guesses.
+    const queryDesc: string = props.query?.description ?? "";
+    expect(queryDesc.toLowerCase()).toMatch(/substring|delstreng|like/);
+
+    // `asOf` must state YYYY-MM-DD so dates aren't sent in the wrong format.
+    expect(props.asOf?.description).toContain("YYYY-MM-DD");
+
+    // The exact-match semantics of `amount` MUST be stated explicitly —
+    // otherwise an agent using `amount: 10000` to find an invoice around
+    // 10,000 kr. gets back an empty list in good faith (silent failure).
+    const amountDesc: string = props.amount?.description ?? "";
+    expect(amountDesc.toLowerCase()).toMatch(/eksakt|exact/);
+
+    // And the tool MUST expose minAmount/maxAmount for range search so
+    // bank-reconciliation flows (where øre-deviations are normal) actually work.
+    expect(typeof props.minAmount?.description, "invoice_find.minAmount").toBe("string");
+    expect(typeof props.maxAmount?.description, "invoice_find.maxAmount").toBe("string");
+  });
+
   test("#387 — vat_report / vat_eu_sales_list / vat_oss_report from+to carry YYYY-MM-DD describes", () => {
     for (const name of ["vat_report", "vat_eu_sales_list", "vat_oss_report"]) {
       const props = schemaOf(name).properties ?? {};
