@@ -235,4 +235,20 @@ describe("ManageCompanyView", () => {
       await screen.findByText(/uden betalingsoplysninger/i),
     ).toBeInTheDocument();
   });
+
+  // #373 — Revisor-eksport must stay reachable from Administrér; we only
+  // added discoverability on Overblik, we did NOT move the action away.
+  test("keeps Revisor-eksport on Administrér (not moved away — #373)", async () => {
+    mockFetch(companiesRoute());
+    renderAt(<ManageCompanyView />, {
+      route: "/companies/acme-aps/manage",
+      path: "/companies/:slug/manage",
+    });
+    expect(
+      await screen.findByRole("heading", { name: /Revisor-eksport/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Generér og download/i }),
+    ).toBeInTheDocument();
+  });
 });

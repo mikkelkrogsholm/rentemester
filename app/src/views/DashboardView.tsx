@@ -23,6 +23,7 @@ import { ArchivedBanner } from "../components/ArchivedBanner";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { PnlChart } from "../components/PnlChart";
+import { AccountantExportCard } from "../components/AccountantExportCard";
 
 export function DashboardView() {
   const { slug = "" } = useParams();
@@ -139,6 +140,18 @@ export function DashboardView() {
         )}
         <RecentEntriesCard entries={o.recentEntries} currency={currency} />
       </div>
+
+      {/* #373 — Revisor-eksport is one of the headline year-end actions; it
+          lives here on Overblik so the owner can find it without digging
+          through "Administrér virksomhed". The card stays on the Administrér
+          page too — this is purely about discoverability. Hidden for an
+          archived (read-only) year, since the export reads the live ledger. */}
+      {!o.archived && (
+        <div className="section">
+          <h3>Eksport til revisor</h3>
+          <AccountantExportCard slug={slug} />
+        </div>
+      )}
     </section>
   );
 }

@@ -463,3 +463,42 @@ describe("DashboardView — resolve exception (#213)", () => {
     ).not.toBeInTheDocument();
   });
 });
+
+// --------------------------------------------------------------------------
+// #373 — Revisor-eksport is surfaced from Overblik, not only from Administrér
+// --------------------------------------------------------------------------
+
+describe("DashboardView — revisor-eksport discoverable (#373)", () => {
+  test("shows the Revisor-eksport card on Overblik for a live year", async () => {
+    mockFetch(overviewRoute());
+    renderDashboard();
+    // Wait for the page to load.
+    await screen.findByRole("heading", { name: "Acme ApS" });
+    // The card surfaces a clear heading and the "Generér og download" button.
+    expect(
+      screen.getByRole("heading", { name: /Revisor-eksport/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Generér og download/i }),
+    ).toBeInTheDocument();
+  });
+
+  test("an archived year does not offer the Revisor-eksport (live-only)", async () => {
+    mockFetch(
+      overviewRoute({
+        archived: true,
+        archivedSource: "dinero",
+        selectedYear: "2025",
+        vat: null,
+      }),
+    );
+    renderDashboard();
+    await screen.findByText(/Arkiveret regnskabsår 2025/);
+    expect(
+      screen.queryByRole("heading", { name: /Revisor-eksport/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Generér og download/i }),
+    ).not.toBeInTheDocument();
+  });
+});
