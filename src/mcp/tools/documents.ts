@@ -135,7 +135,12 @@ export function registerDocumentTools(server: McpServer): void {
       title: "Ingest document",
       description:
         "Indlæser og hash-lagrer et bilag med metadata. Kræver confirm:true. " +
-        "Skriver en exception hvis ingest blokeres (fx duplicate). " +
+        "BIVIRKNING ved fejl: hver gang ingest blokeres (fx duplicate, manglende " +
+        "fil, valideringsfejl) skrives en `DOCUMENT_INGEST_BLOCKED` exception-række. " +
+        "Skrivningen er idempotent på (type, filePath, requiredAction): gentagne " +
+        "retries af præcis samme fejlende input opretter IKKE duplikat-exceptions " +
+        "— de matcher den eksisterende åbne række og no-op'er. Brug `exceptions_list` " +
+        "for at se de afledte exceptions agenten har efterladt. " +
         "VIGTIGT: filePath er en sti på MCP-serverens eget filsystem — bilaget skal allerede " +
         "ligge på serveren. Klienten/agenten kan IKKE uploade en fil her, og der findes (i " +
         "modsætning til bank_import's csvContent) ingen inline-content-variant: filen kan kun " +

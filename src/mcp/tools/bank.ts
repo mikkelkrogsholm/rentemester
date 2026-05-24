@@ -9,7 +9,7 @@
 
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -260,6 +260,11 @@ export function registerBankTools(server: McpServer): void {
       description:
         "Importerer banktransaktioner fra CSV. Kræver confirm:true. " +
         "Send enten csvPath (absolut sti) eller csvContent (rå CSV-tekst). " +
+        "BIVIRKNING ved csvContent: indholdet skrives midlertidigt til en " +
+        "tmpdir under os.tmpdir() (mønster `rentemester-mcp-bank-*`). " +
+        "Den tmpdir slettes altid før kaldet returnerer — både ved success og " +
+        "ved fejl/exception — så agenten kan retry'e uden at efterlade spor " +
+        "uden for virksomhedsmappen. " +
         "write-reversible.",
       inputSchema: {
         company: z.string().min(1),
@@ -318,17 +323,27 @@ export function registerBankTools(server: McpServer): void {
           path = join(tmpDir, "bank-import.csv");
           writeFileSync(path, args.csvContent, "utf8");
         }
-        const result = importBankCsv(db, args.company, path, {
-          account: args.account && args.account.trim() !== "" ? args.account : undefined,
-          profile: args.profile && args.profile.trim() !== "" ? args.profile : undefined,
-        });
-        const sync = result.ok
-          ? syncUnmatchedBankTransactionExceptions(db)
-          : { ok: true, created: 0, errors: [] };
-        return wrapCoreResult({
-          ...(result as Record<string, unknown>),
-          exceptionsCreated: sync.created,
-        } as unknown as BankImportResult & { exceptionsCreated: number });
+        // The tmpdir created for the inline csvContent variant is a write
+        // side-effect *outside* the company directory. The annotation says
+        // destructiveHint:false, so we MUST guarantee the side-effect is
+        // reverted on every path (success, ok:false from importBankCsv, AND
+        // unexpected throws) — otherwise an agent retrying a failing import
+        // would pile up tmp files it cannot see. (#383)
+        try {
+          const result = importBankCsv(db, args.company, path, {
+            account: args.account && args.account.trim() !== "" ? args.account : undefined,
+            profile: args.profile && args.profile.trim() !== "" ? args.profile : undefined,
+          });
+          const sync = result.ok
+            ? syncUnmatchedBankTransactionExceptions(db)
+            : { ok: true, created: 0, errors: [] };
+          return wrapCoreResult({
+            ...(result as Record<string, unknown>),
+            exceptionsCreated: sync.created,
+          } as unknown as BankImportResult & { exceptionsCreated: number });
+        } finally {
+          if (tmpDir) rmSync(tmpDir, { recursive: true, force: true });
+        }
       },
     ),
   );
