@@ -64,7 +64,7 @@ import {
   type InvoiceLineInput,
   type InvoicePayload,
 } from "../core/invoice";
-import { issueInvoice } from "../core/issued-invoices";
+import { issueInvoice, previewIssuedInvoicePdf } from "../core/issued-invoices";
 import { postIssuedInvoiceToLedger } from "../core/invoice-booking";
 import { settleInvoiceFromBank } from "../core/invoice-settlement";
 import {
@@ -105,6 +105,12 @@ import {
   createMileageEntry,
   type CreateMileageEntryInput,
 } from "../core/mileage";
+import { migrate, openDb } from "../core/db";
+import {
+  companyRootForSlug,
+  findWorkspaceCompany,
+} from "../core/workspace";
+import { authMiddleware } from "./auth";
 
 /**
  * Max request-body size for the file-upload routes (#213, slices 2-3). A bank
@@ -1125,6 +1131,146 @@ export async function handleInvoiceIssue(
       lines: result.computed?.lines ?? [],
     },
   });
+}
+
+/**
+ * POST /api/companies/:slug/invoices/preview — render an invoice PDF without
+ * writing anything to the ledger (#440).
+ *
+ * Body: identical shape to `handleInvoiceIssue` (issueDate, lines, vatRatePercent,
+ * customerId, buyer, seller, ...). Runs the SAME compute + validate + enrich
+ * + buyer-master-data resolution as `issueInvoice`, then calls
+ * `previewIssuedInvoicePdf` instead — no document row, no audit_log, no
+ * sequence draw. Returns the raw PDF bytes with Content-Type application/pdf,
+ * exactly like `GET .../invoices/:id/pdf`.
+ *
+ * Does NOT go through `withCompanyMutation`: this is a pure read+render. The
+ * backup-lock gate and the confirm gate are irrelevant — nothing is mutated —
+ * and the audit-log actor attribution is similarly irrelevant. The localhost
+ * hard-gate IS still enforced (Phase-1 trust); the company-resolution +
+ * db-open pattern is the same shape as the mutation pipeline, minus those
+ * gates.
+ */
+export async function handleInvoicePreview(
+  config: ServerConfig,
+  request: Request,
+  slug: string,
+): Promise<Response> {
+  // Phase-1 localhost trust + the auth seam — kept identical to the write
+  // pipeline so the preview cannot be probed by a non-loopback client.
+  authMiddleware(request, config);
+  if (!config.authRequired) {
+    const hostHeader = (request.headers.get("host") ?? "").trim().toLowerCase();
+    const host = hostHeader.startsWith("[")
+      ? hostHeader.slice(
+          1,
+          hostHeader.indexOf("]") === -1 ? undefined : hostHeader.indexOf("]"),
+        )
+      : (hostHeader.split(":")[0] ?? "");
+    const isLoopback =
+      host === "127.0.0.1" ||
+      host === "localhost" ||
+      host === "::1" ||
+      host === "0:0:0:0:0:0:0:1";
+    if (!isLoopback) {
+      throw ApiError.unauthorized(
+        "Forhåndsvisning fra Cockpit er kun tilladt fra localhost, " +
+          "medmindre godkendelse er slået til.",
+      );
+    }
+  }
+
+  if (!findWorkspaceCompany(config.workspaceRoot, slug)) {
+    throw ApiError.notFound(`no company with slug '${slug}' in the workspace`);
+  }
+  const companyRoot = companyRootForSlug(config.workspaceRoot, slug);
+  const dbPath = companyPaths(companyRoot).db;
+  if (!existsSync(dbPath)) {
+    throw ApiError.notFound(`company '${slug}' has no ledger`);
+  }
+
+  const raw = await request.text();
+  let body: Record<string, unknown>;
+  if (raw.trim().length === 0) {
+    body = {};
+  } else {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      throw ApiError.badRequest("request body must be valid JSON");
+    }
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw ApiError.badRequest("request body must be a JSON object");
+    }
+    body = parsed as Record<string, unknown>;
+  }
+
+  const issueDate = requireBodyString(body, "issueDate");
+  const lines = parseInvoiceLines(body.lines);
+  const vatRatePercent = optionalBodyNumber(body, "vatRatePercent") ?? 25;
+  const customerId = optionalBodyPositiveInt(body, "customerId");
+  const invoiceNumber = optionalBodyString(body, "invoiceNumber");
+  const dueDate = optionalBodyString(body, "dueDate");
+  const currency = optionalBodyString(body, "currency");
+  const buyer = parseInvoiceParty(body.buyer, "buyer");
+  const seller = parseInvoiceParty(body.seller, "seller");
+
+  const computed = computeInvoiceAmounts(lines, vatRatePercent);
+  if (!computed.ok) {
+    throw ApiError.badRequest(computed.errors.join("; "));
+  }
+
+  const payload: InvoicePayload = {
+    invoiceType: "full",
+    vatTreatment: "standard",
+    issueDate,
+    ...(invoiceNumber ? { invoiceNumber } : {}),
+    seller,
+    buyer,
+    lines: computed.lines,
+    totals: {
+      netAmount: computed.totals.netAmount,
+      vatRate: computed.totals.vatRate,
+      vatAmount: computed.totals.vatAmount,
+      grossAmount: computed.totals.grossAmount,
+    },
+    currency: currency ?? "DKK",
+    ...(dueDate ? { dueDate } : {}),
+  };
+
+  const db = openDb(dbPath);
+  try {
+    migrate(db);
+    const resolved = resolveInvoiceMasterData(db, payload, { customerId });
+    if (!resolved.ok) {
+      const message = (resolved.errors ?? ["master-data resolution failed"]).join("; ");
+      if (/does not exist|findes ikke|not found|allerede|already/i.test(message)) {
+        throw ApiError.conflict(message);
+      }
+      throw ApiError.badRequest(message);
+    }
+    const preview = previewIssuedInvoicePdf(db, resolved.payload);
+    if (!preview.ok) {
+      throw ApiError.badRequest(preview.errors.join("; "));
+    }
+    // PDF bytes inline — same Content-Type / cache headers as the real
+    // `GET .../invoices/:id/pdf` route so the cockpit can open the response
+    // in a new tab via window.open()/URL.createObjectURL.
+    return new Response(preview.pdfBytes, {
+      status: 200,
+      headers: {
+        "content-type": "application/pdf",
+        "content-disposition": `inline; filename*=UTF-8''${encodeURIComponent(
+          `${preview.invoiceNumber}.pdf`,
+        )}`,
+        "x-content-type-options": "nosniff",
+        "cache-control": "private, no-store",
+      },
+    });
+  } finally {
+    db.close();
+  }
 }
 
 /**

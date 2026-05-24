@@ -168,6 +168,84 @@ function nextIssuedInvoiceNumber(db: Database, issueDate: string) {
   return canonicalInvoiceNumber(scope, nextValue);
 }
 
+/**
+ * Result of a dry-run invoice render (#440). The bytes are the customer-facing
+ * PDF — identical to what `issueInvoice` produces for the same input — but
+ * NOTHING is written to the ledger: no document row, no audit_log entry, no
+ * sequence draw, no file written to disk. The `invoiceNumber` is a non-binding
+ * preview tag (`<scope>-UDKAST`) so the owner sees a fakturanummer placeholder
+ * without burning a number from the fortløbende serie.
+ */
+export type PreviewIssuedInvoicePdfResult =
+  | { ok: true; pdfBytes: Uint8Array; invoiceNumber: string; appliedRules: string[]; errors: [] }
+  | { ok: false; pdfBytes?: undefined; invoiceNumber?: undefined; appliedRules: string[]; errors: string[] };
+
+/**
+ * Render the customer-facing invoice PDF without writing anything to the
+ * ledger (#440). The owner sees exactly the same layout, amounts and payment
+ * details the real `issueInvoice` call would produce, but the fortløbende-
+ * nummer-sekvens is untouched and no audit_log / documents row is created.
+ *
+ * Determinism: identical to `issueInvoice` for the same input — same enrich
+ * step (company master data), same validator, same `buildIssuedInvoicePdf`
+ * renderer, same payment-details resolution. Only the invoice number differs
+ * (a placeholder `<scope>-UDKAST`), because drawing the real next number from
+ * the sequence would create a hole in the serie if the owner closed the
+ * preview without issuing.
+ */
+export function previewIssuedInvoicePdf(
+  db: Database,
+  rawPayload: InvoicePayload,
+): PreviewIssuedInvoicePdfResult {
+  const PREVIEW_RULE_ID = "DK-INVOICE-PREVIEW-001";
+  const payload = enrichInvoiceFromCompany(db, rawPayload);
+  const validation = validateInvoice(payload);
+  const appliedRules = [...new Set([...(validation.appliedRules ?? []), PREVIEW_RULE_ID])];
+  if (!validation.ok) {
+    return { ok: false, appliedRules, errors: validation.errors };
+  }
+
+  // Compute the preview fakturanummer placeholder. The scope is the current
+  // fiscal-year label, exactly as `issueInvoice` would use, so the preview's
+  // header reads `<scope>-UDKAST` — clearly NOT a finalised number. Falls back
+  // to a plain "UDKAST" if the fiscal-year scope cannot be resolved (older
+  // ledgers / missing companies row).
+  let previewNumber = payload.invoiceNumber?.trim() || "UDKAST";
+  if (!payload.invoiceNumber?.trim()) {
+    try {
+      if (payload.issueDate) {
+        const scope = fiscalYearLabelFromDate(db, payload.issueDate);
+        previewNumber = `${scope}-UDKAST`;
+      }
+    } catch {
+      // keep "UDKAST" fallback
+    }
+  }
+
+  const invoiceCurrency = (payload.currency ?? "DKK").trim().toUpperCase();
+  let paymentDetails: ReturnType<typeof resolveCompanyPaymentDetails> | undefined;
+  try {
+    paymentDetails = resolveCompanyPaymentDetails(db, invoiceCurrency);
+  } catch {
+    paymentDetails = undefined;
+  }
+
+  const pdfBytes = buildIssuedInvoicePdf({
+    ...payload,
+    invoiceNumber: previewNumber,
+    status: "preview",
+    ...(paymentDetails ? { payment: paymentDetails } : {}),
+  });
+
+  return {
+    ok: true,
+    pdfBytes,
+    invoiceNumber: previewNumber,
+    appliedRules,
+    errors: [],
+  };
+}
+
 export function issueInvoice(db: Database, companyRoot: string, rawPayload: InvoicePayload): IssueInvoiceResult {
   // #221: fill the seller identity + due date from the stored company profile
   // before validation, so the owner never re-types their own master data.

@@ -91,6 +91,7 @@ import {
   handleInvoiceIssue,
   handleInvoicePost,
   handleCreateRecurringInvoiceTemplate,
+  handleInvoicePreview,
   handleInvoiceSettle,
   handleMileageCreate,
   handlePayablePay,
@@ -223,6 +224,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "POST", pattern: "/api/companies/:slug/documents/ingest", summary: "Modtager et bilag." },
   { method: "POST", pattern: "/api/companies/:slug/documents/book-expense", summary: "Bogfører et bilag som udgift mod en banktransaktion." },
   { method: "POST", pattern: "/api/companies/:slug/invoices/issue", summary: "Udsteder en faktura." },
+  { method: "POST", pattern: "/api/companies/:slug/invoices/preview", summary: "Forhåndsviser en faktura-PDF uden at udstede." },
   { method: "POST", pattern: "/api/companies/:slug/invoices/post", summary: "Bogfører en udstedt faktura." },
   { method: "POST", pattern: "/api/companies/:slug/invoices/settle", summary: "Afregner faktura fra bank." },
   { method: "POST", pattern: "/api/companies/:slug/invoices/credit-note", summary: "Udsteder kreditnota." },
@@ -1231,6 +1233,20 @@ export async function handleRequest(
       if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
       const slug = decodeURIComponent(invoiceIssueMatch[1]!);
       return await handleInvoiceIssue(config, request, slug);
+    }
+
+    // Cockpit read+render route (#440): forhåndsvis en faktura — render the
+    // customer-facing PDF without writing anything to the ledger so the owner
+    // can verify layout/amounts/customer-address BEFORE the irreversible
+    // posting. Same body shape as `invoices/issue`; the response is the raw
+    // PDF bytes (Content-Type application/pdf). NO sequence draw, NO documents
+    // row, NO audit_log entry — the preview is read-only.
+    const invoicePreviewMatch =
+      /^\/api\/companies\/([^/]+)\/invoices\/preview$/.exec(path);
+    if (invoicePreviewMatch) {
+      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      const slug = decodeURIComponent(invoicePreviewMatch[1]!);
+      return await handleInvoicePreview(config, request, slug);
     }
 
     // Bookkeeping write route (#213, slice 4): post an issued invoice.
