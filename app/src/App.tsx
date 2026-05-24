@@ -18,6 +18,7 @@
 //   /companies/:slug/fakturaer          Fakturaer (issued invoices)
 //   /companies/:slug/kontakter          Kontakter (customers + vendors)
 //   /companies/:slug/manage             rename / archive
+//   /help                                hjælp og support (#421)
 //
 // The per-company views share a sub-navigation and a fiscal-year selector
 // (`CompanyNav`); the chosen year is carried in the URL as `?year=`.
@@ -41,6 +42,7 @@ import { InvoicesView } from "./views/InvoicesView";
 import { RecurringInvoicesView } from "./views/RecurringInvoicesView";
 import { ContactsView } from "./views/ContactsView";
 import { ManageCompanyView } from "./views/ManageCompanyView";
+import { HelpView } from "./views/HelpView";
 
 export function App() {
   return (
@@ -54,6 +56,7 @@ export function App() {
             Portefølje
           </NavLink>
           <NavLink to="/companies/new">Tilføj virksomhed</NavLink>
+          <NavLink to="/help">Hjælp</NavLink>
         </nav>
       </header>
 
@@ -107,6 +110,7 @@ export function App() {
             path="/companies/:slug/manage"
             element={<ManageCompanyView />}
           />
+          <Route path="/help" element={<HelpView />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

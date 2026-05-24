@@ -1658,3 +1658,26 @@ table.statement-table td.num.muted {
   flex-wrap: wrap;
   gap: var(--space-sm);
 }
+
+/* ---- help view (#421) ---- */
+.help-view .help-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+.help-view .help-grid .card {
+  padding: var(--space-md);
+}
+.help-view .help-grid .card h3 {
+  margin-top: 0;
+  font-size: var(--text-size-lg);
+}
+.help-view .help-grid ul,
+.help-view .help-grid ol {
+  margin: 0;
+  padding-left: var(--space-md);
+}
+.help-view .help-grid li + li {
+  margin-top: var(--space-xs);
+}
