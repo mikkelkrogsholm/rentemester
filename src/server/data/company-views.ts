@@ -25,6 +25,7 @@ import { buildInvoiceList } from "../../core/invoice-list";
 import { listCustomers, listVendors } from "../../core/master-data";
 import { listBankAccounts } from "../../core/bank";
 import { resolveDocumentFile } from "../../core/documents";
+import { renderIssuedInvoicePdf } from "../../core/invoice-pdf";
 import {
   listRecurringInvoiceGenerations,
   listRecurringInvoiceTemplates,
@@ -825,6 +826,50 @@ export function resolveCompanyDocumentFile(
       throw ApiError.notFound(resolved.error);
     }
     return resolved.file;
+  } finally {
+    db.close();
+  }
+}
+
+/**
+ * Resolves an issued-invoice document into the on-disk PDF the cockpit can
+ * serve to the owner. The same `renderIssuedInvoicePdf` core that the CLI's
+ * `invoice render` command uses is called — re-rendering is idempotent: when
+ * the payload has not changed since issuance, the existing PDF row is returned
+ * unchanged; if it has, the row is updated in place. The thrown shapes match
+ * `resolveCompanyDocumentFile` so the route handler can rely on the same
+ * not-found mapping. (#378)
+ */
+export function resolveCompanyIssuedInvoicePdf(
+  workspaceRoot: string,
+  slug: string,
+  invoiceDocumentId: number,
+): { path: string; mimeType: string; filename: string } {
+  const entry = findWorkspaceCompany(workspaceRoot, slug);
+  if (!entry) {
+    throw ApiError.notFound(`no company with slug '${slug}' in the workspace`);
+  }
+  const companyRoot = companyRootForSlug(workspaceRoot, slug);
+  const dbPath = companyPaths(companyRoot).db;
+  if (!existsSync(dbPath)) {
+    throw ApiError.notFound(`company '${slug}' has no ledger`);
+  }
+
+  const db = openDb(dbPath);
+  try {
+    migrate(db);
+    const result = renderIssuedInvoicePdf(db, companyRoot, {
+      invoiceDocumentId,
+    });
+    if (!result.ok || !result.storedPath || !result.invoiceNumber) {
+      const reason = result.errors[0] ?? "issued invoice PDF could not be rendered";
+      throw ApiError.notFound(reason);
+    }
+    return {
+      path: result.storedPath,
+      mimeType: "application/pdf",
+      filename: `${result.invoiceNumber}.pdf`,
+    };
   } finally {
     db.close();
   }

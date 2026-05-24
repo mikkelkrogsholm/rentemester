@@ -48,6 +48,7 @@ import {
   buildPortfolioOverview,
   resolveAsOfDate,
   resolveCompanyDocumentFile,
+  resolveCompanyIssuedInvoicePdf,
   resolvePathYear,
   resolveYearParam,
   syncCompanyCvr,
@@ -275,6 +276,32 @@ function handleCompanyDocumentFile(
     headers: {
       "content-type": file.mimeType,
       "content-disposition": `${inline ? "inline" : "attachment"}; filename*=UTF-8''${encodeURIComponent(file.filename)}`,
+      "x-content-type-options": "nosniff",
+      "cache-control": "private, no-store",
+    },
+  });
+}
+
+/**
+ * GET /api/companies/:slug/invoices/:id/pdf — serves the issued-invoice PDF so
+ * the owner can download or forward it without leaving the cockpit (#378). The
+ * bytes come from the same `renderIssuedInvoicePdf` core the CLI uses, so the
+ * PDF is byte-identical to `bun run cli invoice render <id>`.
+ */
+function handleCompanyInvoicePdf(
+  config: ServerConfig,
+  slug: string,
+  idRaw: string,
+): Response {
+  const id = Number(idRaw);
+  if (!Number.isInteger(id) || id <= 0) {
+    throw ApiError.badRequest("invoice id must be a positive integer");
+  }
+  const file = resolveCompanyIssuedInvoicePdf(config.workspaceRoot, slug, id);
+  return new Response(Bun.file(file.path), {
+    headers: {
+      "content-type": file.mimeType,
+      "content-disposition": `inline; filename*=UTF-8''${encodeURIComponent(file.filename)}`,
       "x-content-type-options": "nosniff",
       "cache-control": "private, no-store",
     },
@@ -619,6 +646,17 @@ export async function handleRequest(
       if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
       const slug = decodeURIComponent(invoicesMatch[1]!);
       return handleCompanyInvoices(config, slug, url);
+    }
+
+    // Cockpit read route (#378): serve the issued-invoice PDF so the owner
+    // can download/forward it without leaving the browser. Re-uses the same
+    // `renderIssuedInvoicePdf` core the CLI runs — no new rendering path.
+    const invoicePdfMatch =
+      /^\/api\/companies\/([^/]+)\/invoices\/(\d+)\/pdf$/.exec(path);
+    if (invoicePdfMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(invoicePdfMatch[1]!);
+      return handleCompanyInvoicePdf(config, slug, invoicePdfMatch[2]!);
     }
 
     const contactsMatch = /^\/api\/companies\/([^/]+)\/contacts$/.exec(path);

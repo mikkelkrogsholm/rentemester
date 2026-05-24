@@ -154,6 +154,23 @@ describe("InvoicesView — write actions", () => {
     });
   });
 
+  // #378 — the row's primary action is the PDF download. Without it, the
+  // owner has to open the CLI to send the invoice to the customer.
+  test("each invoice row offers Hent PDF pointing at the cockpit PDF route", async () => {
+    mockFetch(route());
+    renderView();
+    await screen.findByRole("heading", { name: "Acme ApS" });
+    const links = screen.getAllByRole("link", { name: "Hent PDF" });
+    // The default fixture renders two invoices.
+    expect(links.length).toBeGreaterThanOrEqual(2);
+    for (const link of links) {
+      expect(link.getAttribute("href")).toMatch(
+        /^\/api\/companies\/acme-aps\/invoices\/\d+\/pdf$/,
+      );
+      expect(link.getAttribute("target")).toBe("_blank");
+    }
+  });
+
   test("Afstem is offered only for invoices with an open balance", async () => {
     mockFetch(route());
     renderView();

@@ -232,8 +232,20 @@ export function InvoicesView() {
                         </span>
                       </td>
                       <td>
-                        {canSettle ? (
-                          <div className="row-actions">
+                        <div className="row-actions">
+                          {/* #378: the PDF link is the primary action — the
+                              whole point of issuing an invoice is to send it
+                              to the customer. `target="_blank"` so the browser
+                              opens it inline without losing the table view. */}
+                          <a
+                            className="btn secondary"
+                            href={api.invoicePdfUrl(slug, row.documentId)}
+                            target="_blank"
+                            rel="noopener"
+                          >
+                            Hent PDF
+                          </a>
+                          {canSettle && (
                             <button
                               type="button"
                               className="btn secondary"
@@ -241,10 +253,8 @@ export function InvoicesView() {
                             >
                               Afstem
                             </button>
-                          </div>
-                        ) : (
-                          "—"
-                        )}
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

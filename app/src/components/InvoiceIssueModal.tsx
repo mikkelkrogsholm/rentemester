@@ -253,6 +253,21 @@ export function InvoiceIssueModal({
               </tbody>
             </table>
             <div className="modal-actions">
+              {/* #378: the owner just registered the invoice — the next thing
+                  she needs is the file to send to the customer. Surfaced
+                  immediately here so she does not have to find the row in the
+                  table first. Hidden if the issue summary lacks a document id
+                  (defensive: the summary always carries one for a real issue). */}
+              {done.documentId !== null && (
+                <a
+                  className="btn secondary"
+                  href={api.invoicePdfUrl(slug, done.documentId)}
+                  target="_blank"
+                  rel="noopener"
+                >
+                  Hent PDF
+                </a>
+              )}
               <button
                 type="button"
                 className="btn"

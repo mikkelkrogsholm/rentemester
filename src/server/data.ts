@@ -91,6 +91,7 @@ export {
   buildCompanyVat,
   buildCompanyDocuments,
   resolveCompanyDocumentFile,
+  resolveCompanyIssuedInvoicePdf,
   buildCompanyInvoices,
   buildCompanyContacts,
   buildCompanyObligations,

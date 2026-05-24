@@ -175,6 +175,14 @@ export const api = {
   documentFileUrl: (slug: string, id: number) =>
     `/api/companies/${encodeURIComponent(slug)}/documents/${id}/file`,
 
+  /**
+   * URL of an issued invoice's PDF — opened directly in a new browser tab so
+   * the owner can download or forward it. URL builder rather than a fetch:
+   * the server serves the file inline (#378).
+   */
+  invoicePdfUrl: (slug: string, id: number) =>
+    `/api/companies/${encodeURIComponent(slug)}/invoices/${id}/pdf`,
+
   /** Recurring-invoice templates + their past generations for a company. */
   recurringInvoices: (slug: string) =>
     request<RecurringInvoicesResponse>(
