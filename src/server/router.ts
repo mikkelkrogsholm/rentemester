@@ -34,6 +34,7 @@ import {
 } from "./data/statement-exports";
 import {
   buildAssetNextDepreciationPeriod,
+  buildCompanyAgentSuggestions,
   buildCompanyArchiveYear,
   buildCompanyAssets,
   buildCompanyBalance,
@@ -69,6 +70,7 @@ import {
 import { serveStatic } from "./static";
 import {
   handleAccountantExport,
+  handleApproveAgentSuggestion,
   handleAssetDepreciate,
   handleAssetRegister,
   handleAssetWriteOff,
@@ -96,6 +98,7 @@ import {
   handleMileageCreate,
   handlePayablePay,
   handlePayableRegister,
+  handleRejectAgentSuggestion,
   handleReopenPeriod,
   handleResolveException,
   handleRetireRecurringInvoiceTemplate,
@@ -243,6 +246,9 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "GET", pattern: "/api/companies/:slug/payables", summary: "Leverandørfaktura-arbejdsbord — kreditorliste + modal-data (#340)." },
   { method: "POST", pattern: "/api/companies/:slug/payables", summary: "Registrerer et bilag som leverandørfaktura (#340)." },
   { method: "POST", pattern: "/api/companies/:slug/payables/:id/pay", summary: "Markerer leverandørfaktura betalt fra bankpost (#340)." },
+  { method: "GET", pattern: "/api/companies/:slug/agent-suggestions", summary: "Agent-forslag i kø — afventer ejerens godkendelse (#346)." },
+  { method: "POST", pattern: "/api/companies/:slug/agent-suggestions/:id/approve", summary: "Ejer godkender agent-forslag — løser undtagelsen med 'Godkendt'-note (#346)." },
+  { method: "POST", pattern: "/api/companies/:slug/agent-suggestions/:id/reject", summary: "Ejer afviser agent-forslag — løser undtagelsen med 'Afvist'-note (#346)." },
 ];
 
 function handleHealth(config: ServerConfig): Response {
@@ -781,6 +787,20 @@ function handleCompanyPayables(
   const asOf = url.searchParams.get("asOf");
   const data = buildCompanyPayables(config.workspaceRoot, slug, status, asOf);
   return okResponse({ payables: data });
+}
+
+/**
+ * GET /api/companies/:slug/agent-suggestions — the agent-forslag-kø (#346):
+ * every open `AGENT_*` exception, enriched with the agent's rule id, rationale
+ * and audit attribution. The cockpit's Agent-forslag view drives off this
+ * payload; approve/reject lives in the matching write routes.
+ */
+function handleCompanyAgentSuggestions(
+  config: ServerConfig,
+  slug: string,
+): Response {
+  const data = buildCompanyAgentSuggestions(config.workspaceRoot, slug);
+  return okResponse({ agentSuggestions: data });
 }
 
 // --------------------------------------------------------------------------
@@ -1407,6 +1427,52 @@ export async function handleRequest(
         slug,
         assetDepreciateMatch[2]!,
       );
+    }
+
+    // Agent-forslag → menneskelig godkendelse (#346). The agent loop and the
+    // exception sync functions in `core/exceptions.ts` produce open `AGENT_*`
+    // rows whenever a deterministic agent run needs a human decision; this
+    // surface lists them, approves them, or rejects them. Write routes go
+    // through `withCompanyMutation`, so the backup-lock, the localhost gate
+    // and actor attribution all apply. Match the per-id /approve and /reject
+    // routes BEFORE the bare /agent-suggestions route so the shorter pattern
+    // does not consume them.
+    const agentSuggestionApproveMatch =
+      /^\/api\/companies\/([^/]+)\/agent-suggestions\/(\d+)\/approve$/.exec(
+        path,
+      );
+    if (agentSuggestionApproveMatch) {
+      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      const slug = decodeURIComponent(agentSuggestionApproveMatch[1]!);
+      return await handleApproveAgentSuggestion(
+        config,
+        request,
+        slug,
+        agentSuggestionApproveMatch[2]!,
+      );
+    }
+
+    const agentSuggestionRejectMatch =
+      /^\/api\/companies\/([^/]+)\/agent-suggestions\/(\d+)\/reject$/.exec(
+        path,
+      );
+    if (agentSuggestionRejectMatch) {
+      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      const slug = decodeURIComponent(agentSuggestionRejectMatch[1]!);
+      return await handleRejectAgentSuggestion(
+        config,
+        request,
+        slug,
+        agentSuggestionRejectMatch[2]!,
+      );
+    }
+
+    const agentSuggestionsMatch =
+      /^\/api\/companies\/([^/]+)\/agent-suggestions$/.exec(path);
+    if (agentSuggestionsMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(agentSuggestionsMatch[1]!);
+      return handleCompanyAgentSuggestions(config, slug);
     }
 
     const companyMatch = /^\/api\/companies\/([^/]+)$/.exec(path);

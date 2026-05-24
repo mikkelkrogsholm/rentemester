@@ -1719,3 +1719,60 @@ export type AssetWriteOffSummary = {
   cost: number | null;
   thresholdDkk: number | null;
 };
+
+// ---------------------------------------------------------------------------
+// Agent-forslag → menneskelig godkendelse (#346)
+// ---------------------------------------------------------------------------
+
+/**
+ * One agent suggestion waiting on the owner's approve/reject decision. Mirrors
+ * `AgentSuggestionRow` in `src/server/data/agent-suggestions.ts` — the cockpit
+ * never re-derives the rule id, severity or kind label.
+ */
+export type AgentSuggestionRow = {
+  exceptionId: number;
+  type: string;
+  kindLabel: string;
+  severity: "low" | "medium" | "high";
+  rationale: string;
+  requiredAction: string | null;
+  ruleId: string | null;
+  sourceEvidence: unknown;
+  postingPreview: unknown;
+  agentActor: string | null;
+  agentProgram: string | null;
+  createdAt: string;
+  relatedDocumentId: number | null;
+  relatedBankTransactionId: number | null;
+  /** Cockpit deep-link target ("anlaeg", "leverandoerfaktura", …); may be null. */
+  link: string | null;
+};
+
+export type CompanyAgentSuggestions = {
+  slug: string;
+  company: StatementCompany;
+  rows: AgentSuggestionRow[];
+  count: number;
+  bySeverity: {
+    high: number;
+    medium: number;
+    low: number;
+  };
+};
+
+export type AgentSuggestionsResponse = {
+  ok: true;
+  agentSuggestions: CompanyAgentSuggestions;
+};
+
+/** Result of an approve/reject decision — the resolved-id pair the cockpit echoes. */
+export type AgentSuggestionDecisionResult = {
+  id: number;
+  decision: "approved" | "rejected";
+  resolved: boolean;
+};
+
+export type AgentSuggestionDecisionResponse = {
+  ok: true;
+  suggestion: AgentSuggestionDecisionResult;
+};

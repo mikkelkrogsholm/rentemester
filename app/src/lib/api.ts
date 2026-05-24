@@ -1109,6 +1109,42 @@ export const api = {
         }),
       },
     ).then((r) => r.payment),
+
+  // --- Agent-forslag → menneskelig godkendelse (#346) ----------------------
+  //
+  // The agent loop + the exception sync functions raise `AGENT_*` exceptions
+  // whenever a deterministic agent run needs a human decision. These API
+  // methods drive the dedicated cockpit view that lists them, approves them,
+  // or rejects them. Approve/reject NEVER post on their own — they only
+  // resolve the underlying exception with a Danish decision note, so the
+  // audit trail records WHO decided and WHY. The actual ledger action
+  // (e.g. "Beregn afskrivning", "payable pay") lives on the deep-linked view.
+
+  /** GET /api/companies/:slug/agent-suggestions — the open agent-forslag queue. */
+  agentSuggestions: (slug: string) =>
+    request<import("./types").AgentSuggestionsResponse>(
+      `/api/companies/${encodeURIComponent(slug)}/agent-suggestions`,
+    ).then((r) => r.agentSuggestions),
+
+  /** POST .../agent-suggestions/:id/approve — owner accepts the suggestion. */
+  approveAgentSuggestion: (slug: string, exceptionId: number, note?: string) =>
+    request<import("./types").AgentSuggestionDecisionResponse>(
+      `/api/companies/${encodeURIComponent(slug)}/agent-suggestions/${exceptionId}/approve`,
+      {
+        method: "POST",
+        body: JSON.stringify(note ? { note } : {}),
+      },
+    ).then((r) => r.suggestion),
+
+  /** POST .../agent-suggestions/:id/reject — owner declines the suggestion. */
+  rejectAgentSuggestion: (slug: string, exceptionId: number, note?: string) =>
+    request<import("./types").AgentSuggestionDecisionResponse>(
+      `/api/companies/${encodeURIComponent(slug)}/agent-suggestions/${exceptionId}/reject`,
+      {
+        method: "POST",
+        body: JSON.stringify(note ? { note } : {}),
+      },
+    ).then((r) => r.suggestion),
 };
 
 /** Wire type for one bookable expense account (#407). */

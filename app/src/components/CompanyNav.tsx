@@ -83,6 +83,11 @@ const TAB_GROUPS: { name: string; tabs: NavTab[] }[] = [
       { to: "anlaeg", label: "Anlæg" },
       { to: "moms", label: "Moms" },
       { to: "koersel", label: "Kørsel" },
+      // Agent-forslag → menneskelig godkendelse (#346). Lever i Bogføring-
+      // gruppen fordi en godkendelse her er sidste mile før en konkret
+      // postering — selve den deterministiske postering laves derefter på
+      // den linkede side (Anlæg, Leverandørfaktura, Posteringer, …).
+      { to: "agent-forslag", label: "Agent-forslag" },
     ],
   },
   {

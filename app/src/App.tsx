@@ -47,6 +47,7 @@ import { RecurringInvoicesView } from "./views/RecurringInvoicesView";
 import { ContactsView } from "./views/ContactsView";
 import { MileageView } from "./views/MileageView";
 import { AssetsView } from "./views/AssetsView";
+import { SuggestionsView } from "./views/SuggestionsView";
 import { ManageCompanyView } from "./views/ManageCompanyView";
 import { HelpView } from "./views/HelpView";
 
@@ -127,6 +128,10 @@ export function App() {
           <Route
             path="/companies/:slug/anlaeg"
             element={<AssetsView />}
+          />
+          <Route
+            path="/companies/:slug/agent-forslag"
+            element={<SuggestionsView />}
           />
           <Route
             path="/companies/:slug/manage"

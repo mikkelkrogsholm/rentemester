@@ -40,6 +40,13 @@ export type {
 // --- data/exceptions.ts ----------------------------------------------------
 export type { ExceptionGroup } from "./data/exceptions";
 
+// --- data/agent-suggestions.ts ---------------------------------------------
+export { buildCompanyAgentSuggestions } from "./data/agent-suggestions";
+export type {
+  AgentSuggestionRow,
+  CompanyAgentSuggestions,
+} from "./data/agent-suggestions";
+
 // --- data/vat.ts -----------------------------------------------------------
 export type { VatPosition, VatRubrikker } from "./data/vat";
 
