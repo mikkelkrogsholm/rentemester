@@ -75,7 +75,11 @@ describe("MultiYearView — Flerårsoversigt", () => {
     await screen.findByRole("heading", { name: "Acme ApS" });
     const rows = sectionRows(/Nøgletal pr. regnskabsår/);
     expect(rows).toHaveLength(5);
-    expect(screen.getByText("Bruttomargin")).toBeInTheDocument();
+    expect(screen.getByText("Overskudsgrad")).toBeInTheDocument();
+    expect(screen.queryByText("Bruttomargin")).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/Overskudsgrad er resultat ÷ omsætning/),
+    ).toBeInTheDocument();
     expect(screen.getByText("Egenkapitalandel")).toBeInTheDocument();
     // 2023: bruttomargin 22000/31000 ≈ 71 %.
     const row2023 = rows.find((r) => r.textContent?.includes("2023"))!;

@@ -171,7 +171,7 @@ export function MultiYearView() {
           <div className="section">
             <h3>Nøgletal pr. regnskabsår</h3>
             <p className="muted">
-              Bruttomargin er resultat ÷ omsætning; egenkapitalandel er
+              Overskudsgrad er resultat ÷ omsætning; egenkapitalandel er
               egenkapital ÷ balancesum. Et bindestreg betyder, at nøgletallet
               ikke kan beregnes (nævneren er nul).
             </p>
@@ -180,7 +180,7 @@ export function MultiYearView() {
                 <thead>
                   <tr>
                     <th>Regnskabsår</th>
-                    <th className="num">Bruttomargin</th>
+                    <th className="num">Overskudsgrad</th>
                     <th className="num">Egenkapitalandel</th>
                   </tr>
                 </thead>
