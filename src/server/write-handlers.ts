@@ -50,6 +50,10 @@ import {
 import { issueInvoice } from "../core/issued-invoices";
 import { postIssuedInvoiceToLedger } from "../core/invoice-booking";
 import { settleInvoiceFromBank } from "../core/invoice-settlement";
+import {
+  postInvoiceReminderToLedger,
+  registerInvoiceReminder,
+} from "../core/invoice-reminders";
 import { issueCreditNote } from "../core/credit-notes";
 import {
   submitPublicEInvoicePeppol,
@@ -749,6 +753,19 @@ function requireBodyPositiveInt(
   return value;
 }
 
+/** Reads an optional boolean body field, mapping a bad value to a 400 (#434). */
+function optionalBodyBoolean(
+  body: Record<string, unknown>,
+  key: string,
+): boolean | undefined {
+  const value = body[key];
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== "boolean") {
+    throw ApiError.badRequest(`'${key}' must be a boolean when present`);
+  }
+  return value;
+}
+
 /** Reads an optional finite-number body field, mapping a bad value to a 400. */
 function optionalBodyNumber(
   body: Record<string, unknown>,
@@ -1383,6 +1400,154 @@ export async function handleInvoiceSendEmail(
       invoiceNumber: result.invoiceNumber ?? null,
       recipient: result.recipient ?? null,
       subject: result.subject ?? null,
+      messageId: result.messageId ?? null,
+      duplicate: Boolean(result.duplicate),
+    },
+  });
+}
+
+// --------------------------------------------------------------------------
+// Send rykker (betalingspaamindelse) (#434).
+//
+// Before this route the cockpit could show a row as "Forfalden · 47 dage"
+// and surface the customer's e-mail, but there was no way to actually send
+// the rykker — the owner had to download the PDF, open the mail client and
+// type the reminder by hand, and the cockpit had no record that the rykker
+// went out. This handler combines THREE existing core calls in a single
+// mutation so the cockpit's "Send rykker" button is a one-click write:
+//
+//   1. `registerInvoiceReminder` — registers the reminder + statutory fee
+//      (max 100 kr/reminder, max 3 reminders per rentel. § 9b),
+//   2. (when `bookFee` is true) `postInvoiceReminderToLedger` — journals
+//      the fee against the customer receivable so it shows up on the
+//      claim balance,
+//   3. `sendInvoiceEmail` with `kind: 'reminder'` — same SMTP transport as
+//      "Send på mail" (#429), so the message is byte-identical to a CLI
+//      send.
+//
+// Write-irreversible (insert into `invoice_reminders` + optional journal
+// entry + always-on `email_send_log` and `audit_log` rows), so the route
+// requires `confirm: true`. The SMTP config (non-secret host/port/from +
+// optional credentials) is read from `config/smtp.json` inside the company
+// directory — credentials never enter the request body.
+// --------------------------------------------------------------------------
+
+/**
+ * POST /api/companies/:slug/invoices/send-reminder — registers a payment
+ * reminder for an overdue issued invoice and sends it on e-mail.
+ *
+ * Body: `{ invoiceDocumentId: number, to: string, bookFee: boolean,
+ * feeAmount?: number, confirm: true }`. `bookFee=true` also journals the
+ * statutory reminder fee (defaults to 100 kr). The core registration step
+ * enforces the rentel. § 9b limits — a 4th reminder, a fee above 100 kr or
+ * a reminder less than 10 days after the previous one is rejected by the
+ * core with a clear message that the handler echoes back as a 400.
+ *
+ * The handler is intentionally compound (3 core calls) but stays a thin
+ * shell — every business rule remains in the core functions the CLI's
+ * `invoice remind` / `invoice post-reminder` / `invoice send --kind
+ * reminder` commands already exercise. The cockpit becomes a third caller
+ * of the SAME functions, never a parallel implementation.
+ */
+export async function handleInvoiceSendReminder(
+  config: ServerConfig,
+  request: Request,
+  slug: string,
+): Promise<Response> {
+  const result = await withCompanyMutation(
+    request,
+    config,
+    slug,
+    (ctx, body) => {
+      void ctx.actor;
+      const invoiceDocumentId = requireBodyPositiveInt(body, "invoiceDocumentId");
+      const to = requireBodyString(body, "to");
+      const bookFee = optionalBodyBoolean(body, "bookFee") ?? true;
+      const feeAmount = optionalBodyNumber(body, "feeAmount");
+
+      // Reminder date is "today" in ISO form (UTC slice) — the core enforces
+      // the "10 days since previous reminder" rule and refuses anything that
+      // would breach the statutory series.
+      const reminderDate = new Date().toISOString().slice(0, 10);
+
+      // (1) Register the reminder + fee. The core enforces:
+      //     - the invoice must exist and be an issued_invoice,
+      //     - currency must be DKK,
+      //     - the invoice must be overdue with a positive open balance,
+      //     - fee <= 100 kr,
+      //     - <= 3 reminders per invoice,
+      //     - >= 10 days since the previous reminder.
+      const registered = registerInvoiceReminder(ctx.db, {
+        invoiceDocumentId,
+        reminderDate,
+        feeAmount,
+      });
+      if (!registered.ok) {
+        throw ApiError.badRequest(
+          registered.errors[0] ?? "Reminder could not be registered.",
+        );
+      }
+
+      // (2) Optionally journal the fee — the standard owner intent. The
+      //     core uses the same receivable/income accounts as the CLI's
+      //     `invoice post-reminder` command, so the journal entry is
+      //     byte-identical no matter which surface the owner uses.
+      let journalEntryNo: string | null = null;
+      let feeBooked = false;
+      if (bookFee) {
+        const posted = postInvoiceReminderToLedger(ctx.db, {
+          invoiceDocumentId,
+          reminderId: registered.reminderId,
+        });
+        if (!posted.ok) {
+          throw ApiError.badRequest(
+            posted.errors?.[0] ?? "Reminder fee could not be booked.",
+          );
+        }
+        journalEntryNo = posted.entryNo ?? null;
+        feeBooked = true;
+      }
+
+      // (3) Send the reminder e-mail. SAME core function as "Send på mail"
+      //     (#429), with `kind: 'reminder'` so the subject + body match
+      //     what `invoice send --kind reminder` produces from the CLI.
+      const smtp = loadConfiguredSmtp(ctx.companyRoot);
+      const sent = sendInvoiceEmail(ctx.db, ctx.companyRoot, {
+        invoiceDocumentId,
+        kind: "reminder",
+        to,
+        smtp,
+        transport: createSmtpTransport(smtp),
+      });
+      if (!sent.ok) {
+        throw ApiError.badRequest(
+          sent.errors?.[0] ?? "Reminder e-mail could not be sent.",
+        );
+      }
+
+      return {
+        ok: true as const,
+        invoiceNumber: registered.invoiceNumber ?? sent.invoiceNumber ?? null,
+        recipient: sent.recipient ?? to,
+        reminderSequence: registered.reminderSequence ?? null,
+        feeAmount: registered.feeAmount ?? null,
+        feeBooked,
+        journalEntryNo,
+        messageId: sent.messageId ?? null,
+        duplicate: Boolean(sent.duplicate),
+      };
+    },
+    { requireConfirm: true },
+  );
+
+  return okResponse({
+    reminder: {
+      invoiceNumber: result.invoiceNumber ?? null,
+      recipient: result.recipient ?? null,
+      reminderSequence: result.reminderSequence ?? null,
+      feeAmount: result.feeAmount ?? null,
+      feeBooked: Boolean(result.feeBooked),
+      journalEntryNo: result.journalEntryNo ?? null,
       messageId: result.messageId ?? null,
       duplicate: Boolean(result.duplicate),
     },

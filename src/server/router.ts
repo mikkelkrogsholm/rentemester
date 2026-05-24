@@ -70,6 +70,7 @@ import {
   handleInvoiceCreditNote,
   handleInvoiceSendPublic,
   handleInvoiceSendEmail,
+  handleInvoiceSendReminder,
   handleInvoiceIssue,
   handleInvoicePost,
   handleInvoiceSettle,
@@ -195,6 +196,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "POST", pattern: "/api/companies/:slug/invoices/credit-note", summary: "Udsteder kreditnota." },
   { method: "POST", pattern: "/api/companies/:slug/invoices/send-public", summary: "Sender faktura som e-faktura (NemHandel/PEPPOL)." },
   { method: "POST", pattern: "/api/companies/:slug/invoices/send-email", summary: "Sender faktura til kundens e-mail med PDF vedhæftet." },
+  { method: "POST", pattern: "/api/companies/:slug/invoices/send-reminder", summary: "Registrerer rykker (rentel. § 9b) og sender den på e-mail." },
   { method: "POST", pattern: "/api/companies/:slug/periods/close", summary: "Lukker regnskabsperiode." },
   { method: "POST", pattern: "/api/companies/:slug/periods/reopen", summary: "Genåbner regnskabsperiode (#247-modstykke til CLI-only)." },
 ];
@@ -1010,6 +1012,21 @@ export async function handleRequest(
       if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
       const slug = decodeURIComponent(invoiceSendEmailMatch[1]!);
       return await handleInvoiceSendEmail(config, request, slug);
+    }
+
+    // Bookkeeping write route (#434): register + send a payment reminder
+    // (rykker) for an overdue invoice. Combines three existing core calls
+    // (`registerInvoiceReminder`, `postInvoiceReminderToLedger`,
+    // `sendInvoiceEmail` with `kind: 'reminder'`) so the cockpit's
+    // "Send rykker" button is a one-click write. Statutory rentel. § 9b
+    // limits (max 100 kr/reminder, max 3 reminders, >= 10 days apart) are
+    // enforced by the core; a violation is mapped to a 400.
+    const invoiceSendReminderMatch =
+      /^\/api\/companies\/([^/]+)\/invoices\/send-reminder$/.exec(path);
+    if (invoiceSendReminderMatch) {
+      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      const slug = decodeURIComponent(invoiceSendReminderMatch[1]!);
+      return await handleInvoiceSendReminder(config, request, slug);
     }
 
     // Bookkeeping write route (#287): close an accounting period — the

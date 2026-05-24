@@ -1142,6 +1142,19 @@ export type CompanyInvoiceRow = {
    * surface "Sendt {dato}" beside the settlement status.
    */
   lastEmailedAt: string | null;
+  /**
+   * Timestamp (ISO-8601) of the most recently registered payment reminder
+   * for the invoice (#434), or `null` when no reminder has been registered.
+   * Surfaced so the cockpit can show "{n}. rykker sendt {dato}" and gate the
+   * "Send rykker" action against the 3-reminder cap (rentel. § 9b).
+   */
+  lastReminderAt: string | null;
+  /**
+   * Count of registered reminders for the invoice (#434). 0 when no reminder
+   * has been sent. The cockpit hides the "Send rykker" action once this
+   * reaches 3.
+   */
+  lastReminderSequence: number;
   /** Gross amount inc. VAT, kroner. */
   grossAmount: number;
   /** Still-outstanding balance on the invoice, kroner. */
@@ -1231,6 +1244,39 @@ export function buildCompanyInvoices(
     } catch {
       // email_send_log not migrated — no rows to surface.
     }
+    // #434 — surface the most recent registered reminder per invoice so the
+    // cockpit row can flag "{n}. rykker sendt {dato}" and decide whether the
+    // statutory cap of 3 reminders has been reached. The table is append-only;
+    // an older db without the migration is treated as "no reminders".
+    const reminderInfoById = new Map<
+      number,
+      { lastAt: string; sequence: number }
+    >();
+    try {
+      const reminderRows = ctx.db
+        .query(
+          `SELECT invoice_document_id,
+                  COUNT(*) AS sequence,
+                  MAX(COALESCE(created_at, reminder_date)) AS last_at
+           FROM invoice_reminders
+           GROUP BY invoice_document_id`,
+        )
+        .all() as Array<{
+          invoice_document_id: number;
+          sequence: number;
+          last_at: string | null;
+        }>;
+      for (const row of reminderRows) {
+        if (row.last_at && Number.isFinite(row.sequence)) {
+          reminderInfoById.set(row.invoice_document_id, {
+            lastAt: row.last_at,
+            sequence: Number(row.sequence),
+          });
+        }
+      }
+    } catch {
+      // invoice_reminders not migrated — no rows to surface.
+    }
     const invoices: CompanyInvoiceRow[] = list.rows.map((r) => ({
       documentId: r.documentId,
       invoiceNo: r.invoiceNumber,
@@ -1243,6 +1289,9 @@ export function buildCompanyInvoices(
       buyerPublicRecipient: r.buyerPublicRecipient,
       peppolStatus: r.peppolStatus,
       lastEmailedAt: lastEmailedAtById.get(r.documentId) ?? null,
+      lastReminderAt: reminderInfoById.get(r.documentId)?.lastAt ?? null,
+      lastReminderSequence:
+        reminderInfoById.get(r.documentId)?.sequence ?? 0,
       grossAmount: roundKroner(r.grossAmount),
       openBalance: roundKroner(r.openBalance),
       currency: r.currency,

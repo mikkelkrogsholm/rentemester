@@ -607,6 +607,36 @@ export const api = {
     ).then((r) => r.delivery),
 
   /**
+   * #434 — sends a payment reminder (betalingspaamindelse) for an overdue
+   * issued invoice. Single endpoint that combines three core calls so the
+   * cockpit's "Send rykker" action is a one-click write:
+   *   1. `registerInvoiceReminder` — records the reminder + statutory fee
+   *      (max 100 kr/reminder, max 3 reminders per rentel. § 9b),
+   *   2. (optional, when `bookFee` is true) `postInvoiceReminderToLedger` —
+   *      journals the fee against the customer receivable,
+   *   3. `sendInvoiceEmail` with `kind: 'reminder'` — same SMTP transport as
+   *      "Send på mail", so the message is byte-identical to a CLI send.
+   *
+   * Write-irreversible (it inserts an `invoice_reminders` row, may append a
+   * journal entry, and always appends an `email_send_log` + `audit_log`
+   * row), so the body carries `confirm: true`.
+   */
+  sendInvoiceReminder: (slug: string, input: InvoiceSendReminderInput) =>
+    request<{ ok: true; reminder: InvoiceSendReminderSummary }>(
+      `/api/companies/${encodeURIComponent(slug)}/invoices/send-reminder`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          invoiceDocumentId: input.invoiceDocumentId,
+          to: input.to,
+          bookFee: input.bookFee,
+          ...(input.feeAmount !== undefined ? { feeAmount: input.feeAmount } : {}),
+          confirm: true,
+        }),
+      },
+    ).then((r) => r.reminder),
+
+  /**
    * #428 — sends an issued invoice as an e-faktura (NemHandel/PEPPOL) via
    * the cockpit. Third caller of the SAME `submitPublicEInvoicePeppol` core
    * function the CLI / MCP use; the server loads its access-point config
@@ -822,6 +852,38 @@ export type InvoiceSendEmailInput = {
   to: string;
   /** What to send (#429): the invoice itself or a payment reminder. */
   kind?: "invoice" | "reminder";
+};
+
+/** Input for `api.sendInvoiceReminder` (#434). */
+export type InvoiceSendReminderInput = {
+  invoiceDocumentId: number;
+  /** Recipient email address — prefilled from the customer but editable. */
+  to: string;
+  /**
+   * Whether to also book the statutory reminder fee (max 100 kr) against the
+   * receivable account. When false the reminder is only registered + emailed.
+   */
+  bookFee: boolean;
+  /** Optional override of the default 100 kr reminder fee. */
+  feeAmount?: number;
+};
+
+/** The reminder-send result the server echoes back (#434). */
+export type InvoiceSendReminderSummary = {
+  invoiceNumber: string | null;
+  recipient: string | null;
+  /** 1, 2 or 3 — which reminder in the statutory series this one was. */
+  reminderSequence: number | null;
+  /** Fee amount registered (kroner). */
+  feeAmount: number | null;
+  /** True when the fee was also booked to the receivable. */
+  feeBooked: boolean;
+  /** Journal entry number when the fee was booked, else null. */
+  journalEntryNo: string | null;
+  /** Message-id of the reminder e-mail. */
+  messageId: string | null;
+  /** True when this is a re-send that collapsed onto an existing send-log row. */
+  duplicate: boolean;
 };
 
 /** The email-delivery result the server echoes back (#429). */

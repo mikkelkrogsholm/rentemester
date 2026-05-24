@@ -800,6 +800,19 @@ export type CompanyInvoiceRow = {
    * settlement status.
    */
   lastEmailedAt: string | null;
+  /**
+   * Timestamp (ISO-8601) of the most recently registered payment reminder
+   * (#434), or `null` when no reminder has been sent yet. Surfaced so the row
+   * can show "{n}. rykker sendt {dato}" under the status flag and the
+   * "Send rykker" action knows whether further reminders are still allowed.
+   */
+  lastReminderAt: string | null;
+  /**
+   * Count of reminders that have been registered against the invoice (#434).
+   * 0 when no reminder has been sent. The cockpit hides the "Send rykker"
+   * action once this reaches the statutory cap of 3 (rentel. § 9b).
+   */
+  lastReminderSequence: number;
   /** Gross amount inc. VAT, kroner. */
   grossAmount: number;
   /** Still-outstanding balance on the invoice, kroner. */

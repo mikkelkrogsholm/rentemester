@@ -331,9 +331,13 @@ describe("InvoicesView — write actions", () => {
               invoiceNo: "2026-00042",
               invoiceDate: "2026-03-15",
               customerName: "Aarhus Kommune",
+              customerEmail: null,
               buyerEanNumber: "5790000123456",
               buyerPublicRecipient: true,
               peppolStatus: null,
+              lastEmailedAt: null,
+              lastReminderAt: null,
+              lastReminderSequence: 0,
               grossAmount: 5000,
               openBalance: 5000,
               currency: "DKK",
@@ -492,6 +496,8 @@ describe("InvoicesView — write actions", () => {
               buyerPublicRecipient: false,
               peppolStatus: null,
               lastEmailedAt: null,
+              lastReminderAt: null,
+              lastReminderSequence: 0,
               grossAmount: 5000,
               openBalance: 5000,
               currency: "DKK",
@@ -532,6 +538,214 @@ describe("InvoicesView — write actions", () => {
       const sent = JSON.parse(String((sendCall![1] as RequestInit).body));
       expect(sent.invoiceDocumentId).toBe(42);
       expect(sent.to).toBe("faktura@beta.dk");
+      // Write-irreversibel — body MUST carry confirm: true.
+      expect(sent.confirm).toBe(true);
+    });
+  });
+
+  // --------------------------------------------------------------------------
+  // #434 — Send rykker (betalingspaamindelse) fra fakturarækken.
+  //
+  // En forfalden faktura kan ses i cockpittet, men uden en "Send rykker"-knap
+  // er ejeren tvunget til at åbne sit mailprogram og selv finde teksten frem.
+  // Cockpittet kender allerede modtagerens e-mail (kontaktkortet), antallet
+  // af dage forfalden og hvilken rykker det er nummer; én knap + én
+  // ConfirmDialog gør handlingen mulig fra row-actions, registrerer rykkeren
+  // i ledgeren (rentel. § 9b, maks 100 kr/rykker, maks 3 rykkere) og sender
+  // e-mailen via samme `sendInvoiceEmail` core funktion som "Send på mail".
+  // --------------------------------------------------------------------------
+
+  test("Send rykker is offered only for overdue rows with a customer email", async () => {
+    mockFetch(
+      route({
+        invoices: [
+          // Overdue uden e-mail — INGEN "Send rykker"-knap (intet at sende til).
+          {
+            documentId: 1,
+            invoiceNo: "2026-00001",
+            invoiceDate: "2026-03-15",
+            customerName: "Privat Kunde A/S",
+            customerEmail: null,
+            buyerEanNumber: null,
+            buyerPublicRecipient: false,
+            peppolStatus: null,
+            lastEmailedAt: null,
+            lastReminderAt: null,
+            lastReminderSequence: 0,
+            grossAmount: 1000,
+            openBalance: 1000,
+            currency: "DKK",
+            status: "overdue",
+            effectiveDueDate: "2026-04-14",
+            overdueDays: 47,
+          },
+          // Open (ikke overdue) med e-mail — INGEN "Send rykker"-knap.
+          {
+            documentId: 2,
+            invoiceNo: "2026-00002",
+            invoiceDate: "2026-04-01",
+            customerName: "Beta ApS",
+            customerEmail: "faktura@beta.dk",
+            buyerEanNumber: null,
+            buyerPublicRecipient: false,
+            peppolStatus: null,
+            lastEmailedAt: null,
+            lastReminderAt: null,
+            lastReminderSequence: 0,
+            grossAmount: 2000,
+            openBalance: 2000,
+            currency: "DKK",
+            status: "open",
+            effectiveDueDate: "2026-04-30",
+            overdueDays: 0,
+          },
+          // Overdue MED e-mail — "Send rykker" MÅ vises.
+          {
+            documentId: 3,
+            invoiceNo: "2026-00003",
+            invoiceDate: "2026-03-01",
+            customerName: "Gamma ApS",
+            customerEmail: "faktura@gamma.dk",
+            buyerEanNumber: null,
+            buyerPublicRecipient: false,
+            peppolStatus: null,
+            lastEmailedAt: null,
+            lastReminderAt: null,
+            lastReminderSequence: 0,
+            grossAmount: 5000,
+            openBalance: 5000,
+            currency: "DKK",
+            status: "overdue",
+            effectiveDueDate: "2026-04-01",
+            overdueDays: 47,
+          },
+        ],
+      }),
+    );
+    renderView();
+    await screen.findByRole("heading", { name: "Acme ApS" });
+    expect(
+      screen.getAllByRole("button", { name: "Send rykker" }),
+    ).toHaveLength(1);
+  });
+
+  test("Send rykker is hidden for an archived year (no live ledger)", async () => {
+    mockFetch(route({ archived: true, selectedYear: "2025", invoices: [] }));
+    renderView();
+    await screen.findByText(/Fakturaer er ikke tilgængelige for 2025/);
+    expect(
+      screen.queryByRole("button", { name: "Send rykker" }),
+    ).not.toBeInTheDocument();
+  });
+
+  test("Send rykker is hidden once the maximum of 3 reminders has been sent", async () => {
+    mockFetch(
+      route({
+        invoices: [
+          {
+            documentId: 9,
+            invoiceNo: "2026-00009",
+            invoiceDate: "2026-01-15",
+            customerName: "Gamma ApS",
+            customerEmail: "faktura@gamma.dk",
+            buyerEanNumber: null,
+            buyerPublicRecipient: false,
+            peppolStatus: null,
+            lastEmailedAt: null,
+            lastReminderAt: "2026-04-30T09:00:00Z",
+            lastReminderSequence: 3,
+            grossAmount: 5000,
+            openBalance: 5000,
+            currency: "DKK",
+            status: "overdue",
+            effectiveDueDate: "2026-02-14",
+            overdueDays: 100,
+          },
+        ],
+      }),
+    );
+    renderView();
+    await screen.findByRole("heading", { name: "Acme ApS" });
+    expect(
+      screen.queryByRole("button", { name: "Send rykker" }),
+    ).not.toBeInTheDocument();
+    // Badge MUST show the latest reminder count + date so the owner knows
+    // hvor i rykkerforløbet han er.
+    expect(screen.getByText(/3\. rykker sendt 2026-04-30/)).toBeInTheDocument();
+  });
+
+  test("Send rykker posts to send-reminder with the reminder number, fee and confirm: true", async () => {
+    mockFetch({
+      "GET /api/companies/acme-aps/invoices": {
+        invoices: invoices({
+          invoices: [
+            {
+              documentId: 42,
+              invoiceNo: "2026-00042",
+              invoiceDate: "2026-01-15",
+              customerName: "Gamma ApS",
+              customerEmail: "faktura@gamma.dk",
+              buyerEanNumber: null,
+              buyerPublicRecipient: false,
+              peppolStatus: null,
+              lastEmailedAt: null,
+              lastReminderAt: null,
+              lastReminderSequence: 0,
+              grossAmount: 5000,
+              openBalance: 5000,
+              currency: "DKK",
+              status: "overdue",
+              effectiveDueDate: "2026-02-14",
+              overdueDays: 47,
+            },
+          ],
+        }),
+      },
+      "POST /api/companies/acme-aps/invoices/send-reminder": {
+        reminder: {
+          invoiceNumber: "2026-00042",
+          recipient: "faktura@gamma.dk",
+          reminderSequence: 1,
+          feeAmount: 100,
+          feeBooked: true,
+          journalEntryNo: "J-2026-0100",
+          messageId: "<rem@rentemester.local>",
+          duplicate: false,
+        },
+      },
+    });
+    renderView();
+    await screen.findByRole("heading", { name: "Acme ApS" });
+    await userEvent.click(
+      screen.getByRole("button", { name: "Send rykker" }),
+    );
+    // Dialog body skal vise dage forfalden, modtager-e-mail og rykker-nr.
+    const dialog = screen.getByRole("dialog", {
+      name: "Send rykker til kunden",
+    });
+    expect(dialog).toHaveTextContent(/47 dage/);
+    expect(dialog).toHaveTextContent(/faktura@gamma\.dk/);
+    expect(dialog).toHaveTextContent(/1\. rykker/);
+    // Bogfør-rykkergebyr checkbox SKAL være til stede og default-ON.
+    const bookCheckbox = screen.getByRole("checkbox", {
+      name: /Bogfør rykkergebyr/,
+    }) as HTMLInputElement;
+    expect(bookCheckbox.checked).toBe(true);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Send rykker nu" }),
+    );
+
+    await waitFor(() => {
+      const calls = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls;
+      const sendCall = calls.find((c) =>
+        String(c[0]).includes("/invoices/send-reminder"),
+      );
+      expect(sendCall).toBeDefined();
+      const sent = JSON.parse(String((sendCall![1] as RequestInit).body));
+      expect(sent.invoiceDocumentId).toBe(42);
+      expect(sent.to).toBe("faktura@gamma.dk");
+      expect(sent.bookFee).toBe(true);
       // Write-irreversibel — body MUST carry confirm: true.
       expect(sent.confirm).toBe(true);
     });

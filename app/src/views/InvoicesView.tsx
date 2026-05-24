@@ -67,6 +67,12 @@ export function InvoicesView() {
   const [sendingPublic, setSendingPublic] = useState<CompanyInvoiceRow | null>(null);
   // The invoice row whose "Send på mail" ConfirmDialog is open (#429).
   const [sendingEmail, setSendingEmail] = useState<CompanyInvoiceRow | null>(null);
+  // The invoice row whose "Send rykker" ConfirmDialog is open (#434).
+  const [sendingReminder, setSendingReminder] = useState<CompanyInvoiceRow | null>(null);
+  // Whether the rykker dialog's "Bogfør rykkergebyr nu"-checkbox is on (#434).
+  // Default ON because the typical SMB owner WANTS the fee booked — it's the
+  // whole point of having a registered reminder for the legal trail.
+  const [reminderBookFee, setReminderBookFee] = useState(true);
 
   if (state.loading && !state.data)
     return <Loading label="Henter fakturaer…" />;
@@ -296,6 +302,94 @@ export function InvoicesView() {
         />
       )}
 
+      {/* #434 — Send rykker ConfirmDialog. Only ever rendered when the row's
+          state allows it: overdue, has a customer e-mail, and fewer than 3
+          reminders already registered. The body surfaces (a) days overdue,
+          (b) the recipient's e-mail, (c) which reminder this is (1./2./3.),
+          (d) the fee (100 kr — statutory cap per rentel. § 9b), and (e) a
+          checkbox so the owner can opt out of the auto-booking of the fee.
+          The recipient is editable so the owner can override the stored
+          e-mail. Write-irreversible (registers a reminder, optionally
+          appends a journal entry, always appends an `email_send_log` +
+          `audit_log` row) — `confirm: true` is set by the API client. */}
+      {sendingReminder && (() => {
+        const nextSeq = (sendingReminder.lastReminderSequence ?? 0) + 1;
+        const ord = nextSeq === 1 ? "1." : nextSeq === 2 ? "2." : "3.";
+        return (
+          <ConfirmDialog
+            title="Send rykker til kunden"
+            body={
+              <div>
+                <p>
+                  Send <strong>{ord} rykker</strong> for faktura{" "}
+                  <strong>{sendingReminder.invoiceNo}</strong> til{" "}
+                  <strong>
+                    {sendingReminder.customerName ?? "modtageren"}
+                  </strong>
+                  .
+                </p>
+                <dl className="confirm-meta">
+                  <div>
+                    <dt>Dage forfalden</dt>
+                    <dd>{sendingReminder.overdueDays} dage</dd>
+                  </div>
+                  <div>
+                    <dt>Modtager</dt>
+                    <dd>{sendingReminder.customerEmail ?? "—"}</dd>
+                  </div>
+                  <div>
+                    <dt>Rykkernummer</dt>
+                    <dd>{ord} rykker (af maks. 3)</dd>
+                  </div>
+                  <div>
+                    <dt>Rykkergebyr</dt>
+                    <dd>100,00 kr (rentel. § 9b)</dd>
+                  </div>
+                </dl>
+                <label className="modal-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={reminderBookFee}
+                    onChange={(e) => setReminderBookFee(e.target.checked)}
+                  />{" "}
+                  Bogfør rykkergebyr (100 kr) i ledgeren nu
+                </label>
+                <p className="muted">
+                  Modtageren kan ændres herunder. Afsendelsen registreres i
+                  revisionssporet og kan ikke fortrydes.
+                </p>
+              </div>
+            }
+            confirmLabel="Send rykker nu"
+            confirmKind="danger"
+            noteLabel="Modtager"
+            notePlaceholder="kunde@eksempel.dk"
+            noteInitialValue={sendingReminder.customerEmail ?? ""}
+            noteInputType="email"
+            onConfirm={async (recipient) => {
+              const trimmed = recipient.trim();
+              if (!trimmed) {
+                throw {
+                  code: "bad_request",
+                  message:
+                    "Angiv modtagerens e-mailadresse — rykkeren kan ikke sendes uden.",
+                };
+              }
+              await api.sendInvoiceReminder(slug, {
+                invoiceDocumentId: sendingReminder.documentId,
+                to: trimmed,
+                bookFee: reminderBookFee,
+              });
+              state.reload();
+            }}
+            onClose={() => {
+              setSendingReminder(null);
+              setReminderBookFee(true);
+            }}
+          />
+        );
+      })()}
+
       {inv.archived ? (
         <ArchivedNotice year={inv.selectedYear} />
       ) : inv.invoices.length === 0 ? (
@@ -387,6 +481,16 @@ export function InvoicesView() {
                   // body asks the cockpit to hide the action instead of
                   // surfacing an empty form.
                   const canSendEmail = Boolean(row.customerEmail);
+                  // #434: "Send rykker" appears only when the row is
+                  // overdue AND a customer e-mail is on file AND the
+                  // statutory cap of 3 reminders has not been reached
+                  // (rentel. § 9b). Hidden for archived years (no live
+                  // ledger to register the reminder into).
+                  const reminderSeq = row.lastReminderSequence ?? 0;
+                  const canSendReminder =
+                    row.status === "overdue" &&
+                    Boolean(row.customerEmail) &&
+                    reminderSeq < 3;
                   return (
                     <tr key={row.documentId}>
                       <td className="account-no">{row.invoiceNo}</td>
@@ -422,6 +526,19 @@ export function InvoicesView() {
                             title={`Sendt på mail ${row.lastEmailedAt}`}
                           >
                             Sendt {row.lastEmailedAt.slice(0, 10)}
+                          </span>
+                        )}
+                        {/* #434 — surface the reminder sequence + date once
+                            a rykker has been sent, so the owner can see at
+                            a glance hvor i rykkerforløbet han er (1., 2., 3.
+                            rykker) without re-reading the audit log. */}
+                        {row.lastReminderAt && row.lastReminderSequence > 0 && (
+                          <span
+                            className="flag warning"
+                            title={`Rykker registreret ${row.lastReminderAt}`}
+                          >
+                            {row.lastReminderSequence}. rykker sendt{" "}
+                            {row.lastReminderAt.slice(0, 10)}
                           </span>
                         )}
                         {/* #428 — surface e-faktura status next to settlement
@@ -513,6 +630,23 @@ export function InvoicesView() {
                               onClick={() => setSendingEmail(row)}
                             >
                               Send på mail
+                            </button>
+                          )}
+                          {/* #434 — "Send rykker" is shown ONLY for overdue
+                              rows where the customer has an e-mail AND the
+                              statutory 3-reminder cap (rentel. § 9b) has
+                              not been reached. Hidden for archived years
+                              (no live ledger). One click opens the
+                              ConfirmDialog with the recipient, days
+                              overdue, reminder number and a fee-booking
+                              checkbox. */}
+                          {!inv.archived && canSendReminder && (
+                            <button
+                              type="button"
+                              className="btn secondary"
+                              onClick={() => setSendingReminder(row)}
+                            >
+                              Send rykker
                             </button>
                           )}
                         </div>
