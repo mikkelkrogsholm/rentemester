@@ -39,6 +39,7 @@ import {
   buildCompanyIncomeStatement,
   buildCompanyInvoices,
   buildCompanyJournal,
+  buildCompanyMileage,
   buildCompanyMultiYear,
   buildCompanyObligations,
   buildCompanyOverview,
@@ -76,6 +77,7 @@ import {
   handleInvoiceIssue,
   handleInvoicePost,
   handleInvoiceSettle,
+  handleMileageCreate,
   handleReopenPeriod,
   handleResolveException,
   handleUpdateCustomer,
@@ -203,6 +205,8 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "POST", pattern: "/api/companies/:slug/invoices/send-reminder", summary: "Registrerer rykker (rentel. § 9b) og sender den på e-mail." },
   { method: "POST", pattern: "/api/companies/:slug/periods/close", summary: "Lukker regnskabsperiode." },
   { method: "POST", pattern: "/api/companies/:slug/periods/reopen", summary: "Genåbner regnskabsperiode (#247-modstykke til CLI-only)." },
+  { method: "GET", pattern: "/api/companies/:slug/mileage", summary: "Kørselsregister for valgt regnskabsår (#335)." },
+  { method: "POST", pattern: "/api/companies/:slug/mileage", summary: "Registrerer en kørsel (#335)." },
 ];
 
 function handleHealth(config: ServerConfig): Response {
@@ -494,6 +498,22 @@ function handleCompanyCashflow(
   const year = resolveYearParam(url.searchParams.get("year"));
   const data = buildCompanyCashflow(config.workspaceRoot, slug, year);
   return okResponse({ cashflow: data });
+}
+
+/**
+ * GET /api/companies/:slug/mileage[?year=] — the cockpit Kørsel view (#335).
+ * Re-uses the SAME mileage core (`buildMileagePeriodReport`) the CLI's
+ * `mileage report` command runs; the server just opens the ledger and shapes
+ * the JSON.
+ */
+function handleCompanyMileage(
+  config: ServerConfig,
+  slug: string,
+  url: URL,
+): Response {
+  const year = resolveYearParam(url.searchParams.get("year"));
+  const data = buildCompanyMileage(config.workspaceRoot, slug, year);
+  return okResponse({ mileage: data });
 }
 
 /**
@@ -911,6 +931,17 @@ export async function handleRequest(
       if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
       const slug = decodeURIComponent(cashflowMatch[1]!);
       return handleCompanyCashflow(config, slug, url);
+    }
+
+    // Kørsel (#335). GET lists the register for the selected fiscal year; POST
+    // registers one mileage entry through the SAME `createMileageEntry` core
+    // function the CLI's `mileage add` and the MCP tool use.
+    const mileageMatch = /^\/api\/companies\/([^/]+)\/mileage$/.exec(path);
+    if (mileageMatch) {
+      const slug = decodeURIComponent(mileageMatch[1]!);
+      if (method === "GET") return handleCompanyMileage(config, slug, url);
+      if (method === "POST") return await handleMileageCreate(config, request, slug);
+      throw ApiError.methodNotAllowed("GET or POST required");
     }
 
     // Bookkeeping write route (#213, slice 1): resolve an open exception.

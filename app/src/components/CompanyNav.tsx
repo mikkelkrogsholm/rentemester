@@ -78,6 +78,7 @@ const TAB_GROUPS: { name: string; tabs: NavTab[] }[] = [
       { to: "bilag", label: "Bilag" },
       { to: "bank", label: "Bank" },
       { to: "moms", label: "Moms" },
+      { to: "koersel", label: "Kørsel" },
     ],
   },
   {

@@ -98,6 +98,7 @@ export {
   buildCompanyObligations,
   buildCompanyCashflow,
   buildCompanyRecurringInvoices,
+  buildCompanyMileage,
 } from "./data/company-views";
 export type {
   CompanySettingsView,
@@ -126,4 +127,7 @@ export type {
   RecurringInvoiceGenerationRow,
   RecurringInvoiceTemplateRow,
   CompanyRecurringInvoices,
+  MileageEntryRow,
+  MileageMonthRow,
+  CompanyMileage,
 } from "./data/company-views";
