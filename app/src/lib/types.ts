@@ -771,6 +771,12 @@ export type ContactCustomerRow = {
   email: string | null;
   paymentTermsDays: number;
   defaultCurrency: string;
+  // #390 — full stamdata so the edit-modal can prefill without another fetch.
+  address: string | null;
+  phone: string | null;
+  website: string | null;
+  eanNumber: string | null;
+  notes: string | null;
 };
 
 export type ContactVendorRow = {
@@ -779,6 +785,56 @@ export type ContactVendorRow = {
   vatOrCvr: string | null;
   defaultExpenseAccount: string | null;
   defaultVatTreatment: string | null;
+  // #390 — full stamdata so the edit-modal can prefill without another fetch.
+  address: string | null;
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  notes: string | null;
+};
+
+// --- contact create/update payloads (#390) ----------------------------------
+
+export type CustomerInput = {
+  name: string;
+  address?: string | null;
+  vatOrCvr?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  eanNumber?: string | null;
+  paymentTermsDays?: number;
+  defaultCurrency?: string;
+  notes?: string | null;
+};
+
+export type VendorInput = {
+  name: string;
+  address?: string | null;
+  vatOrCvr?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  defaultExpenseAccount?: string | null;
+  defaultVatTreatment?: string | null;
+  notes?: string | null;
+};
+
+/** CVR-lookup result the cockpit modal uses to prefill name + address. */
+export type CvrLookupResult = {
+  ok: boolean;
+  cached: boolean;
+  company: {
+    cvr: string;
+    name: string;
+    address?: string | null;
+    postalCode?: string | null;
+    city?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    website?: string | null;
+  } | null;
+  errors: string[];
 };
 
 export type CompanyContacts = {

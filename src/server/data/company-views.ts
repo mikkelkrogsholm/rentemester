@@ -993,6 +993,13 @@ export type ContactCustomerRow = {
   email: string | null;
   paymentTermsDays: number;
   defaultCurrency: string;
+  // #390 — surface the remaining stamdata fields so the Cockpit edit-modal can
+  // prefill them without a second round-trip.
+  address: string | null;
+  phone: string | null;
+  website: string | null;
+  eanNumber: string | null;
+  notes: string | null;
 };
 
 /** One vendor (supplier) in the master data. */
@@ -1002,6 +1009,13 @@ export type ContactVendorRow = {
   vatOrCvr: string | null;
   defaultExpenseAccount: string | null;
   defaultVatTreatment: string | null;
+  // #390 — surface the remaining stamdata fields so the Cockpit edit-modal can
+  // prefill them without a second round-trip.
+  address: string | null;
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  notes: string | null;
 };
 
 export type CompanyContacts = ReturnType<typeof buildCompanyContacts>;
@@ -1039,6 +1053,11 @@ export function buildCompanyContacts(workspaceRoot: string, slug: string) {
       email: c.email,
       paymentTermsDays: c.paymentTermsDays,
       defaultCurrency: c.defaultCurrency,
+      address: c.address,
+      phone: c.phone,
+      website: c.website,
+      eanNumber: c.eanNumber,
+      notes: c.notes,
     }));
     const vendors: ContactVendorRow[] = listVendors(db).rows.map((v) => ({
       id: v.id,
@@ -1046,6 +1065,11 @@ export function buildCompanyContacts(workspaceRoot: string, slug: string) {
       vatOrCvr: v.vatOrCvr,
       defaultExpenseAccount: v.defaultExpenseAccount,
       defaultVatTreatment: v.defaultVatTreatment,
+      address: v.address,
+      email: v.email,
+      phone: v.phone,
+      website: v.website,
+      notes: v.notes,
     }));
 
     return {

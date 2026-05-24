@@ -7,6 +7,11 @@
 // it follows the user across views — the fiscal years for the selector are
 // fetched from the response. A company with no contacts shows a graceful
 // empty state.
+//
+// #390: the page is now ALSO the daily-maintenance surface. The page-head
+// exposes a primary "Tilføj kunde" + "Tilføj leverandør" action; each row in
+// either table is clickable and opens the same modal in edit-mode. The
+// Importér button remains for one-off CSV migrations.
 
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -20,6 +25,10 @@ import type {
 import { ErrorState, Loading } from "../components/Feedback";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { ImportModal } from "../components/ImportModal";
+import {
+  ContactFormModal,
+  type ContactKind,
+} from "../components/ContactFormModal";
 
 /** VAT-treatment codes from the ledger, mapped to a Danish label. */
 const VAT_TREATMENT_LABELS: Record<string, string> = {
@@ -28,6 +37,11 @@ const VAT_TREATMENT_LABELS: Record<string, string> = {
   foreign_reverse_charge: "Omvendt betalingspligt (udland)",
   exempt: "Momsfritaget",
 };
+
+/** Local UI state when the create/edit modal is open. */
+type ModalState =
+  | { kind: "customer"; row?: ContactCustomerRow }
+  | { kind: "vendor"; row?: ContactVendorRow };
 
 export function ContactsView() {
   const { slug = "" } = useParams();
@@ -38,6 +52,8 @@ export function ContactsView() {
   );
   // True while the generic file-import modal is open.
   const [importing, setImporting] = useState(false);
+  // The create/edit modal — undefined when closed.
+  const [modal, setModal] = useState<ModalState | undefined>(undefined);
 
   if (state.loading && !state.data)
     return <Loading label="Henter kontakter…" />;
@@ -53,6 +69,18 @@ export function ContactsView() {
     String(new Date().getFullYear());
   const total = c.customers.length + c.vendors.length;
 
+  function openCreate(kind: ContactKind) {
+    setModal({ kind } as ModalState);
+  }
+
+  function openEditCustomer(row: ContactCustomerRow) {
+    setModal({ kind: "customer", row });
+  }
+
+  function openEditVendor(row: ContactVendorRow) {
+    setModal({ kind: "vendor", row });
+  }
+
   return (
     <section className="statement">
       <div className="page-head">
@@ -67,6 +95,20 @@ export function ContactsView() {
           <button
             type="button"
             className="btn"
+            onClick={() => openCreate("customer")}
+          >
+            Tilføj kunde
+          </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => openCreate("vendor")}
+          >
+            Tilføj leverandør
+          </button>
+          <button
+            type="button"
+            className="btn secondary"
             onClick={() => setImporting(true)}
           >
             Importér
@@ -92,14 +134,42 @@ export function ContactsView() {
         />
       )}
 
+      {modal && (
+        <ContactFormModal
+          slug={slug}
+          kind={modal.kind}
+          customer={modal.kind === "customer" ? modal.row : undefined}
+          vendor={modal.kind === "vendor" ? modal.row : undefined}
+          onSaved={state.reload}
+          onClose={() => setModal(undefined)}
+        />
+      )}
+
       {total === 0 ? (
         <div className="card archived-notice">
           <h3>Ingen kontakter endnu</h3>
           <p className="muted">
             Der er ingen registrerede kunder eller leverandører for denne
-            virksomhed. Brug «Importér» ovenfor til at hente kontakter fra et
-            tidligere bogføringssystem — eller opret dem som stamdata.
+            virksomhed. Brug «Tilføj kunde» eller «Tilføj leverandør» ovenfor
+            for at oprette stamdata — eller «Importér» til at hente kontakter
+            fra et tidligere bogføringssystem.
           </p>
+          <div className="row-actions" style={{ marginTop: "1rem" }}>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => openCreate("customer")}
+            >
+              Tilføj kunde
+            </button>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => openCreate("vendor")}
+            >
+              Tilføj leverandør
+            </button>
+          </div>
         </div>
       ) : (
         <>
@@ -112,12 +182,15 @@ export function ContactsView() {
 
           <div className="section">
             <h3>Kunder</h3>
-            <CustomerTable customers={c.customers} />
+            <CustomerTable
+              customers={c.customers}
+              onEdit={openEditCustomer}
+            />
           </div>
 
           <div className="section">
             <h3>Leverandører</h3>
-            <VendorTable vendors={c.vendors} />
+            <VendorTable vendors={c.vendors} onEdit={openEditVendor} />
           </div>
         </>
       )}
@@ -125,7 +198,13 @@ export function ContactsView() {
   );
 }
 
-function CustomerTable({ customers }: { customers: ContactCustomerRow[] }) {
+function CustomerTable({
+  customers,
+  onEdit,
+}: {
+  customers: ContactCustomerRow[];
+  onEdit: (row: ContactCustomerRow) => void;
+}) {
   return (
     <div className="card statement-card table-scroll">
       <table className="data statement-table">
@@ -136,12 +215,13 @@ function CustomerTable({ customers }: { customers: ContactCustomerRow[] }) {
             <th>E-mail</th>
             <th>Valuta</th>
             <th className="num">Betalingsfrist</th>
+            <th aria-label="Handlinger" />
           </tr>
         </thead>
         <tbody>
           {customers.length === 0 ? (
             <tr>
-              <td colSpan={5} className="empty-inline">
+              <td colSpan={6} className="empty-inline">
                 Ingen kunder registreret.
               </td>
             </tr>
@@ -153,6 +233,16 @@ function CustomerTable({ customers }: { customers: ContactCustomerRow[] }) {
                 <td>{row.email ?? "—"}</td>
                 <td>{row.defaultCurrency}</td>
                 <td className="num">{row.paymentTermsDays} dage</td>
+                <td className="num">
+                  <button
+                    type="button"
+                    className="btn secondary"
+                    onClick={() => onEdit(row)}
+                    aria-label={`Redigér ${row.name}`}
+                  >
+                    Redigér
+                  </button>
+                </td>
               </tr>
             ))
           )}
@@ -162,7 +252,13 @@ function CustomerTable({ customers }: { customers: ContactCustomerRow[] }) {
   );
 }
 
-function VendorTable({ vendors }: { vendors: ContactVendorRow[] }) {
+function VendorTable({
+  vendors,
+  onEdit,
+}: {
+  vendors: ContactVendorRow[];
+  onEdit: (row: ContactVendorRow) => void;
+}) {
   return (
     <div className="card statement-card table-scroll">
       <table className="data statement-table">
@@ -172,12 +268,13 @@ function VendorTable({ vendors }: { vendors: ContactVendorRow[] }) {
             <th>CVR / moms-nr.</th>
             <th>Standard udgiftskonto</th>
             <th>Momsbehandling</th>
+            <th aria-label="Handlinger" />
           </tr>
         </thead>
         <tbody>
           {vendors.length === 0 ? (
             <tr>
-              <td colSpan={4} className="empty-inline">
+              <td colSpan={5} className="empty-inline">
                 Ingen leverandører registreret.
               </td>
             </tr>
@@ -194,6 +291,16 @@ function VendorTable({ vendors }: { vendors: ContactVendorRow[] }) {
                     ? VAT_TREATMENT_LABELS[row.defaultVatTreatment] ??
                       row.defaultVatTreatment
                     : "—"}
+                </td>
+                <td className="num">
+                  <button
+                    type="button"
+                    className="btn secondary"
+                    onClick={() => onEdit(row)}
+                    aria-label={`Redigér ${row.name}`}
+                  >
+                    Redigér
+                  </button>
                 </td>
               </tr>
             ))

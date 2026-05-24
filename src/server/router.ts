@@ -59,6 +59,9 @@ import {
   handleBankImport,
   handleClosePeriod,
   handleCompanyProfile,
+  handleCreateCustomer,
+  handleCreateVendor,
+  handleCvrLookup,
   handleDataImport,
   handleDocumentIngest,
   handleGenerateRecurringInvoice,
@@ -67,6 +70,8 @@ import {
   handleInvoiceSettle,
   handleReopenPeriod,
   handleResolveException,
+  handleUpdateCustomer,
+  handleUpdateVendor,
 } from "./write-handlers";
 
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
@@ -664,6 +669,59 @@ export async function handleRequest(
       if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
       const slug = decodeURIComponent(contactsMatch[1]!);
       return handleCompanyContacts(config, slug);
+    }
+
+    // Cockpit write routes for contacts (#390) — create + edit kunder/leverandører
+    // from the Kontakter page instead of the CLI.
+    const createCustomerMatch =
+      /^\/api\/companies\/([^/]+)\/customers$/.exec(path);
+    if (createCustomerMatch) {
+      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      const slug = decodeURIComponent(createCustomerMatch[1]!);
+      return await handleCreateCustomer(config, request, slug);
+    }
+
+    const updateCustomerMatch =
+      /^\/api\/companies\/([^/]+)\/customers\/(\d+)$/.exec(path);
+    if (updateCustomerMatch) {
+      if (method !== "PATCH") throw ApiError.methodNotAllowed("PATCH required");
+      const slug = decodeURIComponent(updateCustomerMatch[1]!);
+      return await handleUpdateCustomer(
+        config,
+        request,
+        slug,
+        updateCustomerMatch[2]!,
+      );
+    }
+
+    const createVendorMatch =
+      /^\/api\/companies\/([^/]+)\/vendors$/.exec(path);
+    if (createVendorMatch) {
+      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      const slug = decodeURIComponent(createVendorMatch[1]!);
+      return await handleCreateVendor(config, request, slug);
+    }
+
+    const updateVendorMatch =
+      /^\/api\/companies\/([^/]+)\/vendors\/(\d+)$/.exec(path);
+    if (updateVendorMatch) {
+      if (method !== "PATCH") throw ApiError.methodNotAllowed("PATCH required");
+      const slug = decodeURIComponent(updateVendorMatch[1]!);
+      return await handleUpdateVendor(
+        config,
+        request,
+        slug,
+        updateVendorMatch[2]!,
+      );
+    }
+
+    // CVR lookup helper for the Kontakter modal (#390) — read-only enrichment.
+    const cvrLookupMatch =
+      /^\/api\/companies\/([^/]+)\/cvr-lookup$/.exec(path);
+    if (cvrLookupMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(cvrLookupMatch[1]!);
+      return await handleCvrLookup(config, request, slug);
     }
 
     const companySettingsMatch = /^\/api\/companies\/([^/]+)\/company$/.exec(path);

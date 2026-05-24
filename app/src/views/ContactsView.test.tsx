@@ -67,4 +67,75 @@ describe("ContactsView — Kontakter", () => {
       screen.getByRole("dialog", { name: "Importér fil" }),
     ).toBeInTheDocument();
   });
+
+  // #390 — the cockpit's daily-maintenance surface.
+  test("offers a Tilføj kunde and Tilføj leverandør action", async () => {
+    mockFetch(route());
+    renderView();
+    await screen.findByRole("heading", { name: "Acme ApS" });
+    expect(
+      screen.getByRole("button", { name: "Tilføj kunde" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Tilføj leverandør" }),
+    ).toBeInTheDocument();
+  });
+
+  test("clicking Tilføj kunde opens the contact form modal", async () => {
+    mockFetch(route());
+    renderView();
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Tilføj kunde" }),
+    );
+    expect(
+      screen.getByRole("dialog", { name: "Tilføj kunde" }),
+    ).toBeInTheDocument();
+  });
+
+  test("clicking Tilføj leverandør opens the vendor form modal", async () => {
+    mockFetch(route());
+    renderView();
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Tilføj leverandør" }),
+    );
+    expect(
+      screen.getByRole("dialog", { name: "Tilføj leverandør" }),
+    ).toBeInTheDocument();
+  });
+
+  test("each customer row has a Redigér action that opens the edit modal", async () => {
+    mockFetch(route());
+    renderView();
+    const editButton = await screen.findByRole("button", {
+      name: "Redigér Kunde A/S",
+    });
+    await userEvent.click(editButton);
+    expect(
+      screen.getByRole("dialog", { name: "Redigér kunde" }),
+    ).toBeInTheDocument();
+  });
+
+  test("each vendor row has a Redigér action that opens the edit modal", async () => {
+    mockFetch(route());
+    renderView();
+    const editButton = await screen.findByRole("button", {
+      name: "Redigér Leverandør ApS",
+    });
+    await userEvent.click(editButton);
+    expect(
+      screen.getByRole("dialog", { name: "Redigér leverandør" }),
+    ).toBeInTheDocument();
+  });
+
+  test("empty state surfaces oprettelses-knapper, not only Importér", async () => {
+    mockFetch(route({ customers: [], vendors: [] }));
+    renderView();
+    await screen.findByText(/Ingen kontakter endnu/);
+    // Both buttons should appear inside the empty-state card as well, so a
+    // brand-new owner sees a clear "create stamdata" call-to-action.
+    const addCustomerButtons = screen.getAllByRole("button", {
+      name: "Tilføj kunde",
+    });
+    expect(addCustomerButtons.length).toBeGreaterThanOrEqual(1);
+  });
 });
