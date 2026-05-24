@@ -187,25 +187,53 @@ export function balance(over: Partial<CompanyBalance> = {}): CompanyBalance {
     fiscalYears: STATEMENT_FISCAL_YEARS,
     asOfDate: "2026-12-31",
     assets: {
-      lines: [{ accountNo: "55000", name: "Bank", amount: 41388.03 }],
+      lines: [
+        {
+          accountNo: "55000",
+          name: "Bank",
+          amount: 41388.03,
+          priorAmount: 32000,
+        },
+      ],
       total: 41388.03,
+      priorTotal: 32000,
     },
     liabilities: {
-      lines: [{ accountNo: "64000", name: "Salgsmoms", amount: 3371 }],
+      lines: [
+        {
+          accountNo: "64000",
+          name: "Salgsmoms",
+          amount: 3371,
+          priorAmount: 2500,
+        },
+      ],
       total: 3371,
+      priorTotal: 2500,
     },
     equity: {
       // The period result is folded in as an "Årets resultat" line, so the
       // section total is the equity accounts (24782.21) plus the result.
       lines: [
-        { accountNo: "51000", name: "Selskabskapital", amount: 24782.21 },
-        { accountNo: "—", name: "Årets resultat", amount: 13234.82 },
+        {
+          accountNo: "51000",
+          name: "Selskabskapital",
+          amount: 24782.21,
+          priorAmount: 24782.21,
+        },
+        {
+          accountNo: "—",
+          name: "Årets resultat",
+          amount: 13234.82,
+          priorAmount: 4717.79,
+        },
       ],
       total: 38017.03,
+      priorTotal: 29500,
     },
     periodResult: 13234.82,
     totalAssets: 41388.03,
     totalLiabilitiesAndEquity: 41388.03,
+    priorTotalLiabilitiesAndEquity: 32000,
     balanced: true,
     ...over,
   };

@@ -365,11 +365,19 @@ export type BalanceLine = {
   accountNo: string;
   name: string;
   amount: number;
+  /**
+   * The same account's balance one fiscal year earlier, kroner. `null` when
+   * there is no prior year in the ledger — the view renders «—». ÅRL § 24
+   * kræver sammenligningstal på balancen for regnskabsklasse B.
+   */
+  priorAmount: number | null;
 };
 
 export type BalanceSection = {
   lines: BalanceLine[];
   total: number;
+  /** The section total one fiscal year earlier, kroner. `null` when none. */
+  priorTotal: number | null;
 };
 
 export type CompanyBalance = {
@@ -394,6 +402,12 @@ export type CompanyBalance = {
   periodResult: number;
   totalAssets: number;
   totalLiabilitiesAndEquity: number;
+  /**
+   * The prior year's `totalLiabilitiesAndEquity`, kroner. `null` when no
+   * prior year is available — the view renders «—» in that cell. Mirrors the
+   * resultatopgørelsens prior-year footer.
+   */
+  priorTotalLiabilitiesAndEquity: number | null;
   balanced: boolean;
 };
 

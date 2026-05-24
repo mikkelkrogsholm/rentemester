@@ -5,6 +5,11 @@
 // year's result is folded into the equity section as an "Årets resultat" line
 // so `equity.total` is the equity an owner reads and the sheet balances
 // (assets = liabilities + equity). All money fields are kroner.
+//
+// Sammenligningstal (#400 / ÅRL § 24): every line and every section total
+// also carries the prior year's figure, so the balance fulfils the same
+// regnskabskrav as resultatopgørelsen. When the ledger has no foregående
+// regnskabsår, the prior column shows «—» rather than 0.
 
 import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
@@ -18,6 +23,12 @@ import {
   accountPostingsTo,
   useCompanyYear,
 } from "../components/CompanyNav";
+
+/** Render a prior-year amount cell — «—» when no prior year exists. */
+function priorCell(amount: number | null, currency: string) {
+  if (amount === null) return "—";
+  return formatKroner(amount, currency);
+}
 
 export function BalanceView() {
   const { slug = "" } = useParams();
@@ -33,6 +44,7 @@ export function BalanceView() {
 
   const b = state.data!;
   const currency = b.company.currency || "DKK";
+  const priorYear = String(parseInt(b.selectedYear, 10) - 1);
 
   return (
     <section className="statement">
@@ -68,13 +80,15 @@ export function BalanceView() {
             <tr>
               <th>Konto</th>
               <th>Navn</th>
-              <th className="num">Beløb</th>
+              <th className="num">Pr. {b.asOfDate}</th>
+              <th className="num">Pr. {priorYear}-12-31</th>
             </tr>
           </thead>
           <BalanceSection
             heading="Aktiver"
             lines={b.assets.lines}
             total={b.assets.total}
+            priorTotal={b.assets.priorTotal}
             totalLabel="Aktiver i alt"
             currency={currency}
             slug={slug}
@@ -84,6 +98,7 @@ export function BalanceView() {
             heading="Passiver"
             lines={b.liabilities.lines}
             total={b.liabilities.total}
+            priorTotal={b.liabilities.priorTotal}
             totalLabel="Gæld i alt"
             currency={currency}
             slug={slug}
@@ -93,6 +108,7 @@ export function BalanceView() {
             heading="Egenkapital"
             lines={b.equity.lines}
             total={b.equity.total}
+            priorTotal={b.equity.priorTotal}
             totalLabel="Egenkapital i alt"
             currency={currency}
             slug={slug}
@@ -103,6 +119,9 @@ export function BalanceView() {
               <td colSpan={2}>Passiver og egenkapital i alt</td>
               <td className="num">
                 {formatKroner(b.totalLiabilitiesAndEquity, currency)}
+              </td>
+              <td className="num muted">
+                {priorCell(b.priorTotalLiabilitiesAndEquity, currency)}
               </td>
             </tr>
           </tbody>
@@ -117,6 +136,7 @@ function BalanceSection({
   heading,
   lines,
   total,
+  priorTotal,
   totalLabel,
   currency,
   slug,
@@ -125,6 +145,7 @@ function BalanceSection({
   heading: string;
   lines: BalanceLine[];
   total: number;
+  priorTotal: number | null;
   totalLabel: string;
   currency: string;
   slug: string;
@@ -133,11 +154,11 @@ function BalanceSection({
   return (
     <tbody>
       <tr className="statement-section-head">
-        <th colSpan={3}>{heading}</th>
+        <th colSpan={4}>{heading}</th>
       </tr>
       {lines.length === 0 ? (
         <tr>
-          <td colSpan={3} className="empty-inline">
+          <td colSpan={4} className="empty-inline">
             Ingen konti.
           </td>
         </tr>
@@ -160,12 +181,16 @@ function BalanceSection({
             </td>
             <td>{line.name}</td>
             <td className="num">{formatKroner(line.amount, currency)}</td>
+            <td className="num muted">
+              {priorCell(line.priorAmount, currency)}
+            </td>
           </tr>
         ))
       )}
       <tr className="statement-subtotal">
         <td colSpan={2}>{totalLabel}</td>
         <td className="num">{formatKroner(total, currency)}</td>
+        <td className="num muted">{priorCell(priorTotal, currency)}</td>
       </tr>
     </tbody>
   );
