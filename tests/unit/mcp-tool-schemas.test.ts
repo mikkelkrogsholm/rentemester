@@ -816,6 +816,45 @@ describe("#294 — scalar-flag tools carry field descriptions and the documentId
     expect(typeof props.maxAmount?.description, "invoice_find.maxAmount").toBe("string");
   });
 
+  test("#389 — bank_suggest_matches: inputs describe semantics and description documents matching/confidence/truncation", () => {
+    const tool = tools.find((t) => t.name === "bank_suggest_matches");
+    expect(tool, "bank_suggest_matches not found").toBeDefined();
+    const props = schemaOf("bank_suggest_matches").properties ?? {};
+
+    // Both inputs must carry .describe() text with concrete semantics.
+    const txDesc: string = props.bankTransactionId?.description ?? "";
+    expect(typeof props.bankTransactionId?.description, "bankTransactionId description").toBe(
+      "string",
+    );
+    expect(txDesc.length, "bankTransactionId description non-empty").toBeGreaterThan(20);
+    // It must state what happens when omitted, so an agent can decide.
+    expect(txDesc.toLowerCase()).toMatch(/omit|udelad/);
+
+    const maxDesc: string = props.max?.description ?? "";
+    expect(typeof props.max?.description, "max description").toBe("string");
+    expect(maxDesc.length, "max description non-empty").toBeGreaterThan(20);
+    // The default value must be stated so an agent can plan around truncation.
+    expect(maxDesc.toLowerCase()).toContain("default");
+    // The per-transaction vs total scope must be unambiguous.
+    expect(maxDesc.toLowerCase()).toMatch(
+      /per[- ](bank )?transaction|per[- ]?tx|per transaktion|not total/,
+    );
+
+    // The tool description must spell out matching rules + confidence scale +
+    // truncation so an agent can set a safe auto-apply threshold.
+    const desc: string = (tool.description ?? "").toLowerCase();
+    // Confidence scale (0..1, threshold ~0.5) must be visible.
+    expect(desc).toContain("confidence");
+    expect(desc).toMatch(/0\.\.1|0-1|0 to 1/);
+    // The matching signals (amount / invoice number / counterparty name) must be named.
+    expect(desc).toContain("amount");
+    expect(desc).toMatch(/invoice number|invoice no|fakturanummer/);
+    // Ordering of the returned unmatched transactions must be stated.
+    expect(desc).toMatch(/order|sorter|sorted|rækkefølge/);
+    // Truncation semantics from `max` (jf. #381) must be stated.
+    expect(desc).toMatch(/truncat|afkort|begræns/);
+  });
+
   test("#387 — vat_report / vat_eu_sales_list / vat_oss_report from+to carry YYYY-MM-DD describes", () => {
     for (const name of ["vat_report", "vat_eu_sales_list", "vat_oss_report"]) {
       const props = schemaOf(name).properties ?? {};

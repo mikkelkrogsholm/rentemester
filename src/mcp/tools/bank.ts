@@ -112,11 +112,61 @@ export function registerBankTools(server: McpServer): void {
     {
       title: "Suggest bank-transaction matches",
       description:
-        "Foreslår deterministiske match mellem uafstemte banktransaktioner og fakturaer/bilag. Read-only.",
+        "Foreslår deterministiske match mellem uafstemte banktransaktioner og fakturaer/bilag. " +
+        "Read-only.\n\n" +
+        "Matching-signaler (deterministiske, kombineres til en konfidens-score): " +
+        "(1) eksakt beløb i øre mod åben saldo (issued invoice), gross-beløb (purchase_sale, " +
+        "credit_note_refund) eller delvist refunderet beløb (supplier_credit_refund); " +
+        "(2) invoice number / kreditnota-nummer / krediteret fakturanummer fundet som " +
+        "substring i bank-tekst/reference/counterparty/message (case-insensitive); " +
+        "(3) navne-tokens overlappende mellem bank-tekst og kunde-/leverandørnavn " +
+        "(stop-ord som ApS/A/S/DKK fjernes); (4) dato-nærhed (faktura: 7 dage, " +
+        "kreditnota: 14 dage); plus for supplier_credit_refund kræves et eksplicit " +
+        "refund-cue (KREDIT/KREDITNOTA/REFUSION/REFUND/TILBAGEBETALING/CREDIT).\n\n" +
+        "Confidence-skala: float i intervallet 0..1. Forslag under 0.5 returneres ikke. " +
+        "Et match der kun bygger på beløb (uden invoice-nummer eller stærk navne-match " +
+        "med ≥2 tokens) kappes til 0.45 og dukker derfor ikke op — dvs. enhver " +
+        "returneret confidence ≥ 0.5 har altid mindst én identificerende corroboration. " +
+        "Typiske intervaller: 0.50–0.65 svag/usikker, 0.65–0.80 god, ≥ 0.80 stærk. " +
+        "En sikker auto-godkendelses-grænse er typisk ≥ 0.80.\n\n" +
+        "Returnerer en envelope med data.rows: en række per uafstemt banktransaktion, " +
+        "hver med felterne bankTransactionId, date, text, amount (DKK), currency, " +
+        "reference og suggestions[]. Hver suggestion har { kind: 'issued_invoice' | " +
+        "'purchase_sale' | 'credit_note_refund' | 'supplier_credit_refund', documentId, " +
+        "invoiceNo, customerName?, supplierName?, confidence, reasons[] } sorteret efter " +
+        "confidence faldende, derefter documentId stigende (deterministisk).\n\n" +
+        "Rækkefølge på uafstemte transaktioner: transaction_date DESC, id DESC " +
+        "(nyeste først, deterministisk). " +
+        "Suggestions-listen pr. række er truncated til `max` (default 5); selve `rows` " +
+        "er IKKE truncated af `max` (én række pr. uafstemt transaktion i scope, jf. #381).",
       inputSchema: {
         company: z.string().min(1),
-        bankTransactionId: z.number().int().positive().optional(),
-        max: z.number().int().positive().optional(),
+        bankTransactionId: z
+          .number()
+          .int()
+          .positive()
+          .optional()
+          .describe(
+            "Optional id of a single unmatched bank transaction to suggest matches for. " +
+              "When omitted, ALL unmatched bank transactions are scored (ordered by " +
+              "transaction_date DESC, id DESC) — no implicit pagination is applied at " +
+              "this level. Use this to target a single transaction, e.g. after a partial " +
+              "import or when reviewing one row in the UI.",
+          ),
+        max: z
+          .number()
+          .int()
+          .positive()
+          .optional()
+          .describe(
+            "Maximum number of match suggestions returned PER bank transaction (not " +
+              "total). Default: 5. Suggestions are sorted by confidence DESC, then " +
+              "documentId ASC, then truncated. The result's `rows` array itself is NOT " +
+              "truncated by `max` — every unmatched bank transaction in scope produces " +
+              "exactly one row (with up to `max` suggestions); if you need to limit the " +
+              "number of rows, target a single transaction via bankTransactionId, or " +
+              "narrow the bank import. See #381 for the related pagination contract.",
+          ),
       },
       outputSchema: envelopeShape,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
