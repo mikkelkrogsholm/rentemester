@@ -83,31 +83,36 @@ describe("InvoicesView — write actions", () => {
     ).not.toBeInTheDocument();
   });
 
-  test("Bogfør posts the invoice via the post route", async () => {
-    mockFetch({
-      "GET /api/companies/acme-aps/invoices": { invoices: invoices() },
-      "POST /api/companies/acme-aps/invoices/post": {
-        posting: { entryId: 12, entryNo: "2026-0012" },
-      },
-    });
+  // Issue #385 — every invoice in this view is already posted (the
+  // `InvoiceStatus` union has no `draft` and the empty-state copy says
+  // "Udstedte fakturaer vises her, så snart de er bogført"). Showing a
+  // "Bogfør" button on already-posted rows tempts the owner into a
+  // double-post — the cockpit must never render it from this view.
+  test("Bogfør is never offered from this view (all rows are already posted)", async () => {
+    const allStatuses: Array<
+      "open" | "paid" | "credited" | "refunded" | "overpaid" | "written_off" | "overdue"
+    > = ["open", "paid", "credited", "refunded", "overpaid", "written_off", "overdue"];
+    mockFetch(
+      route({
+        invoices: allStatuses.map((status, idx) => ({
+          documentId: idx + 1,
+          invoiceNo: `2026-${String(idx + 1).padStart(5, "0")}`,
+          invoiceDate: "2026-03-15",
+          customerName: `Kunde ${idx + 1}`,
+          grossAmount: 1000,
+          openBalance: status === "paid" || status === "written_off" ? 0 : 1000,
+          currency: "DKK",
+          status,
+          effectiveDueDate: "2026-04-14",
+          overdueDays: status === "overdue" ? 21 : 0,
+        })),
+      }),
+    );
     renderView();
     await screen.findByRole("heading", { name: "Acme ApS" });
-    // The first invoice row's "Bogfør" button.
-    await userEvent.click(screen.getAllByRole("button", { name: "Bogfør" })[0]!);
-    await userEvent.click(
-      screen.getByRole("button", { name: "Bogfør faktura" }),
-    );
-
-    await waitFor(() => {
-      const calls = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls;
-      const postCall = calls.find((c) =>
-        String(c[0]).includes("/invoices/post"),
-      );
-      expect(postCall).toBeDefined();
-      const sent = JSON.parse(String((postCall![1] as RequestInit).body));
-      expect(sent.invoiceDocumentId).toBe(1);
-      expect(sent.confirm).toBe(true);
-    });
+    expect(
+      screen.queryAllByRole("button", { name: "Bogfør" }),
+    ).toHaveLength(0);
   });
 
   test("Afstem settles the invoice against a bank reference", async () => {

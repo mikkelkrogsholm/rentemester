@@ -462,19 +462,6 @@ export const api = {
     ).then((r) => r.invoice),
 
   /**
-   * Posts an issued invoice to the ledger (#213, slice 4). Write-irreversible
-   * (it appends a journal entry), so the body carries `confirm: true`.
-   */
-  postInvoice: (slug: string, invoiceDocumentId: number) =>
-    request<{
-      ok: true;
-      posting: { entryId: number | null; entryNo: string | null };
-    }>(`/api/companies/${encodeURIComponent(slug)}/invoices/post`, {
-      method: "POST",
-      body: JSON.stringify({ invoiceDocumentId, confirm: true }),
-    }).then((r) => r.posting),
-
-  /**
    * Settles an issued invoice against a bank payment (#213, slice 4). The
    * human identifies the bank receipt by its transaction id or reference.
    * Write-irreversible, so the body carries `confirm: true`.

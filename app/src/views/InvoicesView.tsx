@@ -10,10 +10,16 @@
 //
 // Slice 4 makes the view write-capable for the human-mode invoice actions:
 //   - "Udsted faktura" (page action) opens the multi-line InvoiceIssueModal;
-//   - per row, "Bogfør" posts an issued invoice to the ledger and "Afstem"
-//     settles it against a bank payment — both via a ConfirmDialog because
-//     the postings are write-irreversible.
+//   - per row, "Afstem" settles an issued invoice against a bank payment via
+//     a ConfirmDialog because the posting is write-irreversible.
 // Every write action is hidden for an archived (read-only) year.
+//
+// Issue #385: a per-row "Bogfør" action used to live here too. Every row in
+// this list is already posted (the `InvoiceStatus` union has no "draft" and
+// the empty state copy reads "Udstedte fakturaer vises her, så snart de er
+// bogført"), so re-offering "Bogfør" only tempted the owner into a
+// double-post. The action was removed from the cockpit; ledger reposting
+// remains available via `invoice post` in the CLI for the rare repair case.
 
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -53,8 +59,7 @@ export function InvoicesView() {
   );
   // True while the invoice-issue modal (#213, slice 4) is open.
   const [issuing, setIssuing] = useState(false);
-  // The invoice row whose "Bogfør" / "Afstem" ConfirmDialog is open, if any.
-  const [posting, setPosting] = useState<CompanyInvoiceRow | null>(null);
+  // The invoice row whose "Afstem" ConfirmDialog is open, if any.
   const [settling, setSettling] = useState<CompanyInvoiceRow | null>(null);
 
   if (state.loading && !state.data)
@@ -105,26 +110,6 @@ export function InvoicesView() {
           slug={slug}
           onIssued={state.reload}
           onClose={() => setIssuing(false)}
-        />
-      )}
-
-      {posting && (
-        <ConfirmDialog
-          title="Bogfør faktura"
-          body={
-            <p>
-              Bogfør faktura <strong>{posting.invoiceNo}</strong> til
-              regnskabet. Bogføringen lægger en postering i kassekladden og
-              kan ikke fortrydes.
-            </p>
-          }
-          confirmLabel="Bogfør faktura"
-          confirmKind="danger"
-          onConfirm={async () => {
-            await api.postInvoice(slug, posting.documentId);
-            state.reload();
-          }}
-          onClose={() => setPosting(null)}
         />
       )}
 
@@ -247,15 +232,8 @@ export function InvoicesView() {
                         </span>
                       </td>
                       <td>
-                        <div className="row-actions">
-                          <button
-                            type="button"
-                            className="btn secondary"
-                            onClick={() => setPosting(row)}
-                          >
-                            Bogfør
-                          </button>
-                          {canSettle && (
+                        {canSettle ? (
+                          <div className="row-actions">
                             <button
                               type="button"
                               className="btn secondary"
@@ -263,8 +241,10 @@ export function InvoicesView() {
                             >
                               Afstem
                             </button>
-                          )}
-                        </div>
+                          </div>
+                        ) : (
+                          "—"
+                        )}
                       </td>
                     </tr>
                   );
