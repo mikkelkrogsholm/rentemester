@@ -190,6 +190,46 @@ describe("Dinero archive: the roll-forward consistency check", () => {
     }
   });
 
+  test("P&L accounts non-zero at close do NOT produce false breaks (#198)", () => {
+    // En realistisk Dinero-eksport beholder P&L-konti i SaldoBalance med deres
+    // pre-close-saldo (fx 1000 Salg = -154375,64), mens næste års
+    // Primobeholdning kun har balance-sheet-rækker. En naiv 'closing ==
+    // opening'-check vil tolke det som et brud — det er korrekt regnskab.
+    const { root, db } = freshCompany("rentemester-dinero-rollfwd-pl-");
+    const tampered = copyFixture("rentemester-dinero-rollfwd-pl-fix-");
+    try {
+      // Tilføj P&L-konti til 2024's SaldoBalance — 1000 (income) og 3000
+      // (expense) er seedet med korrekt type i kontoplanen, så accountTypeOf
+      // klassificerer dem som P&L og skipper dem.
+      writeFileSync(
+        join(tampered, "2024", "SaldoBalance.csv"),
+        [
+          "Konto;Kontonavn;Beløb",
+          "1000;Omsætning, ydelser;-154375,64",
+          "3000;Software og SaaS;42000,00",
+          "5500;Driftsmidler;65000,00",
+          "5510;Bankkonto;88200,50",
+          "5520;Tilgodehavender fra salg;42000,00",
+          "55000;Skyldig moms;-31000,00",
+          "55010;Anden gæld;-12000,00",
+          "60000;Registreret kapital mv.;-40000,00",
+          "60010;Overført resultat fra tidligere år;-87200,50",
+          "60040;Udbytte;-25000,00",
+          "",
+        ].join("\n"),
+      );
+      archiveDineroYears(db, resolveSource(tampered));
+      const result = checkRollForward(db, resolveSource(tampered));
+      // ZERO false breaks selv om P&L-konti har closing != 0 og opening 0.
+      expect(result.breaks).toEqual([]);
+      expect(result.ok).toBe(true);
+    } finally {
+      db.close();
+      rmSync(root, { recursive: true, force: true });
+      rmSync(tampered, { recursive: true, force: true });
+    }
+  });
+
   test("flags an injected break: a tampered 2024 SaldoBalance closing amount", () => {
     const { root, db } = freshCompany("rentemester-dinero-rollfwd-break-");
     const tampered = copyFixture("rentemester-dinero-rollfwd-break-fix-");

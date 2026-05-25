@@ -539,16 +539,29 @@ export type RollForwardResult = {
  *
  * An account present on one side and absent on the other is a break unless its
  * amount is zero — a zero-balance account need not be carried forward.
+ *
+ * #198 — kun BALANCE-SHEET-konti (asset/liability/vat) ruller forward. Income
+ * og expense lukkes til nul ved årsafslutning og deres netto-resultat overføres
+ * til 'Overført resultat' (equity); en P&L-konto med closing != 0 og opening 0
+ * er korrekt regnskab, ikke et brud. Equity-konti (især retained-earnings)
+ * skifter også legitimt år for år. `accountTypeOf` slår account_type op i
+ * `accounts`-tabellen (Dinero parseren reconcilerer typerne dér via #193);
+ * ukendte konti behandles konservativt som balance-sheet, så et reelt brud
+ * stadig flagges hvis kontoen ikke er seedet endnu.
  */
 function compareRollForward(
   fromYear: number,
   toYear: number,
   closing: Map<string, number>,
   opening: Map<string, number>,
+  accountTypeOf: (accountNo: string) => string | null,
 ): RollForwardBreak[] {
   const breaks: RollForwardBreak[] = [];
   const accounts = new Set<string>([...closing.keys(), ...opening.keys()]);
   for (const accountNo of [...accounts].sort()) {
+    const type = accountTypeOf(accountNo);
+    // P&L og equity ruller IKKE forward — skip dem.
+    if (type === "income" || type === "expense" || type === "equity") continue;
     const closingAmount = closing.get(accountNo) ?? 0;
     const openingAmount = opening.get(accountNo) ?? 0;
     if (toOreInt(closingAmount) !== toOreInt(openingAmount)) {
@@ -610,6 +623,21 @@ export function checkRollForward(db: Database, input: MultiArtifactSource): Roll
     if (file) openingByYear.set(year, primobeholdningOf(file.text));
   }
 
+  // #198 — slå konto-type op én gang og giv det videre til compareRollForward.
+  // `accounts`-tabellen er authoritative efter Dinero-parseren har reconcileret
+  // chart-of-accounts (#193). Ukendte konti (ikke endnu seedet) returnerer
+  // null, og compareRollForward behandler dem som balance-sheet (konservativt:
+  // hellere false-positivt advare end at gemme et reelt brud).
+  const accountTypes = new Map<string, string>();
+  const typeRows = db
+    .query("SELECT account_no AS accountNo, type AS type FROM accounts")
+    .all() as Array<{ accountNo: string; type: string }>;
+  for (const row of typeRows) {
+    accountTypes.set(row.accountNo, row.type);
+  }
+  const accountTypeOf = (accountNo: string): string | null =>
+    accountTypes.get(accountNo) ?? null;
+
   const steps: RollForwardStep[] = [];
   const allBreaks: RollForwardBreak[] = [];
   // Roll each archived year's closing balance into the next year's opening.
@@ -628,7 +656,7 @@ export function checkRollForward(db: Database, input: MultiArtifactSource): Roll
       errors.push(`fiscal year ${toYear} has no Posteringer.csv — cannot read its opening balance`);
       continue;
     }
-    const breaks = compareRollForward(fromYear, toYear, closing, opening);
+    const breaks = compareRollForward(fromYear, toYear, closing, opening, accountTypeOf);
     steps.push({
       fromYear,
       toYear,
