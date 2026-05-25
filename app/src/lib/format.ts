@@ -90,6 +90,12 @@ export type AttentionLevel = "critical" | "warning" | "ok";
 export type AttentionFlag = {
   level: Exclude<AttentionLevel, "ok">;
   label: string;
+  /**
+   * Optional cockpit-route the owner can click through to (#420). When set,
+   * the CompanyCard renders the flag as a link so a critical warning is
+   * never a dead-end — the owner has a concrete next step.
+   */
+  to?: string;
 };
 
 /** A VAT deadline within this many days counts as "soon" — a warning. */
@@ -109,7 +115,14 @@ export function attentionFlags(c: CompanySummary): AttentionFlag[] {
     return flags;
   }
   if (!c.auditChainOk) {
-    flags.push({ level: "critical", label: "Revisionskæde brudt" });
+    // #420 — flaget skal ikke være en blind alarm. Klikket fører til
+    // Integritet-viewet (#333) hvor brudet er forklaret med entry-nr og
+    // ejeren får et konkret næste skridt (kontakt revisor / genskab backup).
+    flags.push({
+      level: "critical",
+      label: "Revisionskæde brudt",
+      to: `/companies/${c.slug}/integritet`,
+    });
   }
   if (c.resultat < 0) {
     flags.push({ level: "critical", label: "Negativt resultat" });

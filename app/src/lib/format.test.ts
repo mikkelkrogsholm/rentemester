@@ -35,6 +35,27 @@ describe("attentionFlags", () => {
     expect(attentionLevel(summary({ auditChainOk: false }))).toBe("critical");
   });
 
+  test("a broken audit chain flag links to /integritet (#420)", () => {
+    // #420 — flaget skal ikke være en dødvej. Det skal pege på Integritet-
+    // viewet (#333) hvor afvigelsen er forklaret med entry-nr + et konkret
+    // næste skridt.
+    const flags = attentionFlags(
+      summary({ slug: "acme-aps", auditChainOk: false }),
+    );
+    const chainFlag = flags.find((f) => f.label === "Revisionskæde brudt");
+    expect(chainFlag).toBeDefined();
+    expect(chainFlag?.to).toBe("/companies/acme-aps/integritet");
+  });
+
+  test("non-critical-chain flags do not get a `to`-link (default)", () => {
+    // Vi vil ikke pr. uagtsomhed linke andre flags. Kun audit-chain-flaget er
+    // klikbart i denne PR.
+    const flags = attentionFlags(summary({ resultat: -100, openTaskCount: 3 }));
+    for (const f of flags) {
+      expect(f.to).toBeUndefined();
+    }
+  });
+
   test("a negative result is critical", () => {
     expect(attentionLevel(summary({ resultat: -500 }))).toBe("critical");
   });
