@@ -144,6 +144,57 @@ function loadErasures(db: Database): Map<string, Set<string>> {
   return map;
 }
 
+export type GdprDiscoveryRow = {
+  source: GdprExportRecord["source"];
+  sourceRowId: number;
+  label: string | null;
+  personalData: GdprPersonalData;
+  retainUntil: string | null;
+};
+
+export type GdprDiscoveryResult = {
+  ok: boolean;
+  subject: { cvr: string | null; name: string | null };
+  rows: GdprDiscoveryRow[];
+  byTable: Record<GdprExportRecord["source"], number>;
+  errors: string[];
+};
+
+/**
+ * Subject-discovery på tværs af tabeller (#353). Wrapper omkring den interne
+ * `collectSourceRows` så CLI'ens \`gdpr discover\` og cockpit-views kan kalde
+ * den uden at gå gennem export-pipelinen. Read-only.
+ */
+export function findGdprSubject(
+  db: Database,
+  key: GdprSubjectKey,
+): GdprDiscoveryResult {
+  const subject = resolveSubject(key);
+  if (!subject.cvr && !subject.name) {
+    return {
+      ok: false,
+      subject,
+      rows: [],
+      byTable: {
+        customers: 0,
+        vendors: 0,
+        documents: 0,
+        bank_transactions: 0,
+      },
+      errors: ["a GDPR subject must be identified by cvr or name"],
+    };
+  }
+  const rows = collectSourceRows(db, subject);
+  const byTable: Record<GdprExportRecord["source"], number> = {
+    customers: 0,
+    vendors: 0,
+    documents: 0,
+    bank_transactions: 0,
+  };
+  for (const r of rows) byTable[r.source] += 1;
+  return { ok: true, subject, rows, byTable, errors: [] };
+}
+
 /**
  * Collects the raw source rows that mention the data subject across the
  * master-data and document-metadata layers (never the ledger itself).

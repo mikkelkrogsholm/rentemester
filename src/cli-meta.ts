@@ -776,6 +776,17 @@ export const COMMAND_SPECS: CommandSpec[] = [
   // ===== END EMAIL DELIVERY (#180) =====
   // ===== GDPR (#184) =====
   {
+    key: "gdpr discover",
+    usage: "gdpr discover --company <path> (--cvr <DK...> | --subject <id> | --name <text>) [--as-of <YYYY-MM-DD>]",
+    description: "Subject-discovery: lister hvor en data-subject optræder pr. tabel (kunder, leverandører, bilag, banktransaktioner). Hurtigere end 'gdpr export' fordi den ikke beriger med retention-status. Read-only.",
+    allowedFlags: ["--company", "--cvr", "--subject", "--name", "--as-of"],
+    inputNotes: [
+      "Den registrerede identificeres med --cvr/--subject og/eller --name",
+      "Output er deterministisk og audit-loggable: byTable-tæller + rækker pr. tabel",
+      "--json/--format json-outputtets feltliste er dokumenteret i docs/cli-contract.md afsnit 3 og docs/mcp-tool-surface.md — slå skemaet op dér før maskinel parsing.",
+    ],
+  },
+  {
     key: "gdpr export",
     usage: "gdpr export --company <path> (--cvr <DK...> | --subject <id> | --name <text>) [--as-of <YYYY-MM-DD>] [--out <dir>]",
     description: "Samler alle persondata Rentemester har om en kunde/leverandør i én indsigtsrapport med opbevaringsvurdering. Read-only.",

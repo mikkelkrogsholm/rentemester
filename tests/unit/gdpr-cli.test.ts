@@ -68,6 +68,41 @@ describe("GDPR CLI", () => {
     expect(reExportJson.records[0].personalData.email).toBeNull();
   });
 
+  test("discover lists rows pr. tabel for et subject (#353)", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-cli-discover-"));
+    const company = join(root, "company");
+
+    await initCompany(company);
+    const created = await runCli([
+      "customer", "create", "--company", company,
+      "--name", "Discover Kunde", "--cvr", "DK77777777",
+      "--email", "discover@example.com",
+    ]);
+    expect(created.exitCode).toBe(0);
+
+    const discovered = await runCli([
+      "gdpr", "discover", "--company", company, "--cvr", "DK77777777",
+    ]);
+    expect(discovered.exitCode).toBe(0);
+    const result = JSON.parse(discovered.stdout);
+    expect(result.ok).toBe(true);
+    expect(result.subject.cvr).toBe("DK77777777");
+    // Mindst customers-tabellen skal pege på kunden.
+    expect(result.byTable.customers).toBeGreaterThanOrEqual(1);
+    expect(result.rows.length).toBeGreaterThanOrEqual(1);
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  test("discover uden subject afvises", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-cli-discover-nosubj-"));
+    const company = join(root, "company");
+    await initCompany(company);
+    const discovered = await runCli(["gdpr", "discover", "--company", company]);
+    rmSync(root, { recursive: true, force: true });
+    expect(discovered.exitCode).toBe(1);
+    expect(JSON.parse(discovered.stdout)).toMatchObject({ ok: false });
+  });
+
   test("export requires a subject identifier", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-cli-nosubj-"));
     const company = join(root, "company");

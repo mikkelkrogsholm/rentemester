@@ -24,7 +24,11 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { migrate } from "../core/db";
-import { buildGdprSubjectExport, eraseGdprSubject } from "../core/gdpr";
+import {
+  buildGdprSubjectExport,
+  eraseGdprSubject,
+  findGdprSubject,
+} from "../core/gdpr";
 import { openCommandDb } from "../cli-dispatch";
 import type { CommandContext, CommandDispatch } from "../cli-dispatch";
 
@@ -70,6 +74,19 @@ export function register(dispatch: CommandDispatch): void {
         ? ({ ...result, outPath } as unknown as Record<string, unknown>)
         : (result as unknown as Record<string, unknown>),
     );
+    db.close();
+    if (!result.ok) process.exit(1);
+  });
+
+  // `gdpr discover` — subject-discovery på tværs af tabeller (#353).
+  // Hurtigere end \`gdpr export\` fordi den ikke beriger med retention-status —
+  // den lister bare hvor subject'et findes. Bruges når en agent eller en
+  // ejer skal verificere "har vi overhovedet data om denne person?"
+  dispatch.on("gdpr", "discover", (ctx) => {
+    const db = openCommandDb(ctx);
+    migrate(db);
+    const result = findGdprSubject(db, readSubject(ctx));
+    ctx.emitResult(result as unknown as Record<string, unknown>);
     db.close();
     if (!result.ok) process.exit(1);
   });
