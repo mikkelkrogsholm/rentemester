@@ -56,6 +56,7 @@ import { IntegrityView } from "./views/IntegrityView";
 import { AccountsView } from "./views/AccountsView";
 import { ExceptionsView } from "./views/ExceptionsView";
 import { PeriodsView } from "./views/PeriodsView";
+import { BankAccountsView } from "./views/BankAccountsView";
 
 export function App() {
   return (
@@ -165,6 +166,10 @@ export function App() {
           <Route
             path="/companies/:slug/periodelas"
             element={<PeriodsView />}
+          />
+          <Route
+            path="/companies/:slug/bankkonti"
+            element={<BankAccountsView />}
           />
           <Route path="*" element={<NotFound />} />
         </Routes>

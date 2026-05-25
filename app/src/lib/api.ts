@@ -58,6 +58,7 @@ import type {
   RecurringInvoicesResponse,
   SetBudgetInput,
   AccountsResponse,
+  BankAccountsResponse,
   ExceptionsResponse,
   IntegrityResponse,
   PeriodsResponse,
@@ -183,6 +184,39 @@ export const api = {
    * POST /api/companies/:slug/exceptions/:id/resolve — closes an open
    * exception. Returns `{ resolved: boolean }`.
    */
+  /**
+   * #345 — Bankkonti + CSV-mapping-profiler (read).
+   */
+  bankAccounts: (slug: string) =>
+    request<BankAccountsResponse>(
+      `/api/companies/${encodeURIComponent(slug)}/bank-accounts`,
+    ).then((r) => r.bankAccounts),
+
+  /**
+   * #345 — Opretter en bankkonto.
+   */
+  createBankAccount: (
+    slug: string,
+    body: {
+      name: string;
+      slug?: string;
+      bankName?: string;
+      registrationNo?: string;
+      accountNo?: string;
+      iban?: string;
+      currency?: string;
+      ledgerAccountNo?: string;
+    },
+  ) =>
+    request<{ ok: true; bankAccount: { id: number; slug: string } }>(
+      `/api/companies/${encodeURIComponent(slug)}/bank-accounts`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      },
+    ).then((r) => r.bankAccount),
+
   /**
    * #342 — Periodelås-liste (read).
    */

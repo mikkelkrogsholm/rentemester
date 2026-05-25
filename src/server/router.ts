@@ -33,6 +33,7 @@ import { buildCompanyIntegrity } from "./data/integrity-view";
 import { buildCompanyAccounts } from "./data/accounts-view";
 import { buildCompanyExceptions } from "./data/exceptions-list";
 import { buildCompanyPeriods } from "./data/periods-view";
+import { buildCompanyBankAccounts } from "./data/bank-accounts-view";
 import type { ServerConfig } from "./config";
 import { authMiddleware } from "./auth";
 import { ApiError, toErrorResponse } from "./errors";
@@ -87,6 +88,7 @@ import {
   handleAssetWriteOff,
   handleBankImport,
   handleClosePeriod,
+  handleCreateBankAccount,
   handleCompanyProfile,
   handleCreateCustomer,
   handleCreateVendor,
@@ -239,6 +241,8 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "GET", pattern: "/api/companies/:slug/exceptions", summary: "Exceptions queue — undtagelser, filtrerbar pr. status (#332)." },
   { method: "POST", pattern: "/api/companies/:slug/exceptions/:id/resolve", summary: "Løser en exception." },
   { method: "GET", pattern: "/api/companies/:slug/periods", summary: "Periodelås-liste med effective status (#342)." },
+  { method: "GET", pattern: "/api/companies/:slug/bank-accounts", summary: "Registrerede bankkonti + CSV-mapping-profiler (#345)." },
+  { method: "POST", pattern: "/api/companies/:slug/bank-accounts", summary: "Opretter en bankkonto (#345)." },
   { method: "POST", pattern: "/api/companies/:slug/bank/import", summary: "Importerer bank-CSV." },
   { method: "POST", pattern: "/api/companies/:slug/import", summary: "Generel data-import." },
   { method: "POST", pattern: "/api/companies/:slug/accountant-export", summary: "Revisor-eksport (.tar)." },
@@ -417,6 +421,18 @@ function handleCompanyPeriods(
 ): Response {
   const data = buildCompanyPeriods(config.workspaceRoot, slug);
   return okResponse({ periods: data });
+}
+
+/**
+ * GET /api/companies/:slug/bank-accounts — Bankkonti + CSV-mapping-profiler
+ * (#345). Read-only. POST på samme path opretter en konto.
+ */
+function handleCompanyBankAccounts(
+  config: ServerConfig,
+  slug: string,
+): Response {
+  const data = buildCompanyBankAccounts(config.workspaceRoot, slug);
+  return okResponse({ bankAccounts: data });
 }
 
 /**
@@ -1397,6 +1413,16 @@ export async function handleRequest(
       if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
       const slug = decodeURIComponent(periodsListMatch[1]!);
       return handleCompanyPeriods(config, slug);
+    }
+
+    // Bank-accounts list + create (#345).
+    const bankAccountsMatch = /^\/api\/companies\/([^/]+)\/bank-accounts$/.exec(path);
+    if (bankAccountsMatch) {
+      const slug = decodeURIComponent(bankAccountsMatch[1]!);
+      if (method === "GET") return handleCompanyBankAccounts(config, slug);
+      if (method === "POST")
+        return await handleCreateBankAccount(config, request, slug);
+      throw ApiError.methodNotAllowed("GET or POST required");
     }
 
     // Bookkeeping write route (#213, slice 1): resolve an open exception.

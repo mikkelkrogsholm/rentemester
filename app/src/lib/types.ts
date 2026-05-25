@@ -2019,3 +2019,47 @@ export type PeriodsResponse = {
   ok: true;
   periods: CompanyPeriods;
 };
+
+// ---------------------------------------------------------------------------
+// #345 — Bankkonti + CSV-mapping-profiler.
+// ---------------------------------------------------------------------------
+
+export type BankAccount = {
+  id: number;
+  slug: string;
+  name: string;
+  bankName: string | null;
+  registrationNo: string | null;
+  accountNo: string | null;
+  iban: string | null;
+  currency: string;
+  ledgerAccountNo: string | null;
+  active: boolean;
+  createdAt: string;
+};
+
+export type BankImportProfile = {
+  name: string;
+  bankName?: string;
+  separator?: string;
+  encoding?: string;
+  dateOrder?: "dmy" | "mdy" | "ymd" | "iso";
+  columns?: Record<string, string>;
+};
+
+export type CompanyBankAccounts = {
+  slug: string;
+  company: {
+    name: string;
+    cvr: string | null;
+    country: string;
+    currency: string;
+  };
+  accounts: BankAccount[];
+  profiles: BankImportProfile[];
+};
+
+export type BankAccountsResponse = {
+  ok: true;
+  bankAccounts: CompanyBankAccounts;
+};

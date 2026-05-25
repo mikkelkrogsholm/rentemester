@@ -24,7 +24,7 @@ import {
   postDepreciationPeriod,
   postImmediateWriteOff,
 } from "../core/assets";
-import { importBankCsv } from "../core/bank";
+import { addBankAccount, importBankCsv } from "../core/bank";
 import { importDineroContacts } from "../core/import/dinero-contacts";
 import {
   createCustomer,
@@ -3280,4 +3280,51 @@ export async function handleSetBudget(
       amount: result.amount,
     },
   });
+}
+
+/**
+ * POST /api/companies/:slug/bank-accounts — opretter en bankkonto (#345).
+ *
+ * Body: `{ name, slug?, bankName?, registrationNo?, accountNo?, iban?,
+ * currency?, ledgerAccountNo? }`. Wrapper omkring `addBankAccount` fra
+ * kernen. Backup-lock + actor-attribution sker via `withCompanyMutation`.
+ */
+export async function handleCreateBankAccount(
+  config: ServerConfig,
+  request: Request,
+  slug: string,
+): Promise<Response> {
+  const result = await withCompanyMutation(
+    request,
+    config,
+    slug,
+    (ctx, body) => {
+      const name = requireBodyString(body, "name");
+      const accSlug = optionalBodyString(body, "slug");
+      const bankName = optionalBodyString(body, "bankName");
+      const registrationNo = optionalBodyString(body, "registrationNo");
+      const accountNo = optionalBodyString(body, "accountNo");
+      const iban = optionalBodyString(body, "iban");
+      const currency = optionalBodyString(body, "currency");
+      const ledgerAccountNo = optionalBodyString(body, "ledgerAccountNo");
+      const created = addBankAccount(ctx.db, {
+        name,
+        ...(accSlug ? { slug: accSlug } : {}),
+        ...(bankName ? { bankName } : {}),
+        ...(registrationNo ? { registrationNo } : {}),
+        ...(accountNo ? { accountNo } : {}),
+        ...(iban ? { iban } : {}),
+        ...(currency ? { currency } : {}),
+        ...(ledgerAccountNo ? { ledgerAccountNo } : {}),
+      });
+      // Marker actor på audit-log'en (write går gennem withCompanyMutation,
+      // som sørger for at append-only audit-log fanger den).
+      void ctx.actor;
+      if (!created.ok) {
+        return { ok: false, account: null, errors: created.errors };
+      }
+      return { ok: true, account: created.account, errors: [] as string[] };
+    },
+  );
+  return okResponse({ bankAccount: result.account });
 }

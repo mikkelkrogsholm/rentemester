@@ -92,6 +92,8 @@ const TAB_GROUPS: { name: string; tabs: NavTab[] }[] = [
       { to: "undtagelser", label: "Undtagelser" },
       // #342 — Periodelås: close/reopen audit-loggede regnskabsperioder.
       { to: "periodelas", label: "Periodelås" },
+      // #345 — Bankkonti + CSV-mapping-profiler.
+      { to: "bankkonti", label: "Bankkonti" },
     ],
   },
   {
