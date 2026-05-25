@@ -57,6 +57,7 @@ import type {
   RecurringInvoiceTemplateInput,
   RecurringInvoicesResponse,
   SetBudgetInput,
+  RulesResponse,
   SyncCvrResponse,
   TrialBalanceResponse,
   UpdateCompanyInput,
@@ -124,6 +125,14 @@ export const api = {
     request<PortfolioResponse>(
       `/api/portfolio${asOf ? `?asOf=${encodeURIComponent(asOf)}` : ""}`,
     ).then((r) => r.portfolio),
+
+  /**
+   * #347 — Lovgrundlag-viewer. Henter alle aktive regler i `rules/dk/*.yaml`
+   * sammen med deres SHA-256-citationer og legal-sources, så cockpittet kan
+   * vise SMB-ejeren hvilke regler der styrer bogføringen og hvor de er hentet
+   * fra.
+   */
+  rules: () => request<RulesResponse>("/api/rules"),
 
   companies: () =>
     request<CompanyListResponse>("/api/companies").then((r) => r.companies),

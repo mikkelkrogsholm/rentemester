@@ -23,6 +23,11 @@ import {
   setWorkspaceCompanyArchived,
 } from "../core/workspace";
 import { discoverWorkspaceCompanies } from "./discovery";
+import {
+  readLegalSources,
+  readRuleBundleMetadata,
+  readRuleMetadata,
+} from "../core/rules-metadata";
 import type { ServerConfig } from "./config";
 import { authMiddleware } from "./auth";
 import { ApiError, toErrorResponse } from "./errors";
@@ -178,6 +183,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
 }> = [
   { method: "GET", pattern: "/api", summary: "Sundhedstjek + rute-katalog." },
   { method: "GET", pattern: "/api/health", summary: "Alias for GET /api." },
+  { method: "GET", pattern: "/api/rules", summary: "Lovgrundlag — bundler, regler og SHA-256-citationer (#347)." },
   { method: "GET", pattern: "/api/system/cvr-status", summary: "Er CVR-login konfigureret på serveren? (#402)" },
   { method: "GET", pattern: "/api/portfolio", summary: "Workspace-portfolio." },
   { method: "GET", pattern: "/api/companies", summary: "Lister virksomheder i workspacet." },
@@ -275,6 +281,38 @@ function handleHealth(config: ServerConfig): Response {
 function handleSystemCvrStatus(): Response {
   const configured = Boolean(process.env.CVR_USERNAME && process.env.CVR_PASSWORD);
   return okResponse({ cvrStatus: { configured } });
+}
+
+/**
+ * GET /api/rules — Lovgrundlag-viewer (#347).
+ *
+ * Eksponerer rules/dk-bundlerne + tilhørende retsinformation-citationer så
+ * cockpittet kan vise SMB-ejeren *hvilke regler* der styrer bogføringen og
+ * *hvor* de er hentet fra. Read-only: regler kan kun ændres via PR i
+ * `rules/dk/`. Bundler, regler og legal-sources hentes via de eksisterende
+ * helpers (`readRuleBundleMetadata`, `readRuleMetadata`, `readLegalSources`)
+ * så der ikke er duplikeret parsing.
+ */
+function handleRules(): Response {
+  const bundles = readRuleBundleMetadata().map((b) => ({
+    name: b.name,
+    version: b.version,
+    ruleCount: b.ruleIds.length,
+    sources: b.declaredSources,
+    vatCodes: b.vatCodes,
+  }));
+  const rules = readRuleMetadata().map((r) => ({
+    ruleId: r.ruleId,
+    bundle: r.bundle,
+    sourceId: r.sourceId,
+    name: r.name,
+    explanation: r.explanation,
+    severity: r.severity,
+    category: r.category,
+    provisions: r.provisions,
+  }));
+  const sources = readLegalSources();
+  return okResponse({ ruleBundles: bundles, rules, legalSources: sources });
 }
 
 function handlePortfolio(config: ServerConfig, url: URL): Response {
@@ -874,6 +912,11 @@ export async function handleRequest(
     if (path === "/api/portfolio") {
       if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
       return handlePortfolio(config, url);
+    }
+
+    if (path === "/api/rules") {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      return handleRules();
     }
 
     if (path === "/api/companies") {

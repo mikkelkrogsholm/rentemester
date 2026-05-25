@@ -50,6 +50,7 @@ import { AssetsView } from "./views/AssetsView";
 import { SuggestionsView } from "./views/SuggestionsView";
 import { ManageCompanyView } from "./views/ManageCompanyView";
 import { HelpView } from "./views/HelpView";
+import { RulesView } from "./views/RulesView";
 
 export function App() {
   return (
@@ -63,6 +64,7 @@ export function App() {
             Portefølje
           </NavLink>
           <NavLink to="/companies/new">Tilføj virksomhed</NavLink>
+          <NavLink to="/lovgrundlag">Lovgrundlag</NavLink>
           <NavLink to="/help">Hjælp</NavLink>
         </nav>
       </header>
@@ -138,6 +140,7 @@ export function App() {
             element={<ManageCompanyView />}
           />
           <Route path="/help" element={<HelpView />} />
+          <Route path="/lovgrundlag" element={<RulesView />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
