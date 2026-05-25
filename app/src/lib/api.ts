@@ -60,6 +60,7 @@ import type {
   AccountsResponse,
   ExceptionsResponse,
   IntegrityResponse,
+  PeriodsResponse,
   RetentionResponse,
   RulesResponse,
   SyncCvrResponse,
@@ -182,6 +183,58 @@ export const api = {
    * POST /api/companies/:slug/exceptions/:id/resolve — closes an open
    * exception. Returns `{ resolved: boolean }`.
    */
+  /**
+   * #342 — Periodelås-liste (read).
+   */
+  periods: (slug: string) =>
+    request<PeriodsResponse>(
+      `/api/companies/${encodeURIComponent(slug)}/periods`,
+    ).then((r) => r.periods),
+
+  /**
+   * #342 — close a period. Body shape matches CLI's `period close`.
+   */
+  closePeriod: (
+    slug: string,
+    body: {
+      periodStart: string;
+      periodEnd: string;
+      kind: "vat_quarter" | "fiscal_year" | "custom";
+      status?: "closed" | "reported";
+      reference?: string;
+    },
+  ) =>
+    request<{ ok: true; period: { id: number; effectiveStatus?: string } }>(
+      `/api/companies/${encodeURIComponent(slug)}/periods/close`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      },
+    ).then((r) => r.period),
+
+  /**
+   * #342 — reopen a closed period; `reason` is mandatory and recorded verbatim
+   * in the audit log.
+   */
+  reopenPeriod: (
+    slug: string,
+    body: {
+      periodStart: string;
+      periodEnd: string;
+      kind: "vat_quarter" | "fiscal_year" | "custom";
+      reason: string;
+    },
+  ) =>
+    request<{ ok: true; period: { id: number; effectiveStatus?: string } }>(
+      `/api/companies/${encodeURIComponent(slug)}/periods/reopen`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      },
+    ).then((r) => r.period),
+
   resolveException: (
     slug: string,
     id: number,

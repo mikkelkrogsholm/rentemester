@@ -90,6 +90,8 @@ const TAB_GROUPS: { name: string; tabs: NavTab[] }[] = [
       { to: "agent-forslag", label: "Agent-forslag" },
       // #332 — Undtagelses-kø (unmatched bank-rows, blokerede write-flows).
       { to: "undtagelser", label: "Undtagelser" },
+      // #342 — Periodelås: close/reopen audit-loggede regnskabsperioder.
+      { to: "periodelas", label: "Periodelås" },
     ],
   },
   {

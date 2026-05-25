@@ -1983,3 +1983,39 @@ export type ExceptionsResponse = {
   ok: true;
   exceptions: CompanyExceptions;
 };
+
+// ---------------------------------------------------------------------------
+// #342 — Periodelås.
+// ---------------------------------------------------------------------------
+
+export type AccountingPeriodKind = "vat_quarter" | "fiscal_year" | "custom";
+export type AccountingPeriodStatus = "open" | "closed" | "reported";
+
+export type AccountingPeriodRow = {
+  id: number;
+  periodStart: string;
+  periodEnd: string;
+  kind: AccountingPeriodKind;
+  rowStatus: AccountingPeriodStatus;
+  effectiveStatus: AccountingPeriodStatus;
+  closedAt: string | null;
+  closedBy: string | null;
+  reference: string | null;
+};
+
+export type CompanyPeriods = {
+  slug: string;
+  company: {
+    name: string;
+    cvr: string | null;
+    country: string;
+    currency: string;
+  };
+  periods: AccountingPeriodRow[];
+  byStatus: { open: number; closed: number; reported: number };
+};
+
+export type PeriodsResponse = {
+  ok: true;
+  periods: CompanyPeriods;
+};

@@ -55,6 +55,7 @@ import { RetentionView } from "./views/RetentionView";
 import { IntegrityView } from "./views/IntegrityView";
 import { AccountsView } from "./views/AccountsView";
 import { ExceptionsView } from "./views/ExceptionsView";
+import { PeriodsView } from "./views/PeriodsView";
 
 export function App() {
   return (
@@ -160,6 +161,10 @@ export function App() {
           <Route
             path="/companies/:slug/undtagelser"
             element={<ExceptionsView />}
+          />
+          <Route
+            path="/companies/:slug/periodelas"
+            element={<PeriodsView />}
           />
           <Route path="*" element={<NotFound />} />
         </Routes>

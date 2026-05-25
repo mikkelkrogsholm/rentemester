@@ -32,6 +32,7 @@ import { buildCompanyRetention } from "./data/retention-view";
 import { buildCompanyIntegrity } from "./data/integrity-view";
 import { buildCompanyAccounts } from "./data/accounts-view";
 import { buildCompanyExceptions } from "./data/exceptions-list";
+import { buildCompanyPeriods } from "./data/periods-view";
 import type { ServerConfig } from "./config";
 import { authMiddleware } from "./auth";
 import { ApiError, toErrorResponse } from "./errors";
@@ -237,6 +238,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "POST", pattern: "/api/companies/:slug/budget", summary: "Sætter (append-only revision) en budgetlinje (#339)." },
   { method: "GET", pattern: "/api/companies/:slug/exceptions", summary: "Exceptions queue — undtagelser, filtrerbar pr. status (#332)." },
   { method: "POST", pattern: "/api/companies/:slug/exceptions/:id/resolve", summary: "Løser en exception." },
+  { method: "GET", pattern: "/api/companies/:slug/periods", summary: "Periodelås-liste med effective status (#342)." },
   { method: "POST", pattern: "/api/companies/:slug/bank/import", summary: "Importerer bank-CSV." },
   { method: "POST", pattern: "/api/companies/:slug/import", summary: "Generel data-import." },
   { method: "POST", pattern: "/api/companies/:slug/accountant-export", summary: "Revisor-eksport (.tar)." },
@@ -402,6 +404,19 @@ function handleCompanyAccounts(
 ): Response {
   const data = buildCompanyAccounts(config.workspaceRoot, slug);
   return okResponse({ accounts: data });
+}
+
+/**
+ * GET /api/companies/:slug/periods — Periodelås-liste (#342).
+ *
+ * Read-only. Wrapper omkring accounting_periods + effectivePeriodState.
+ */
+function handleCompanyPeriods(
+  config: ServerConfig,
+  slug: string,
+): Response {
+  const data = buildCompanyPeriods(config.workspaceRoot, slug);
+  return okResponse({ periods: data });
 }
 
 /**
@@ -1373,6 +1388,15 @@ export async function handleRequest(
       if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
       const slug = decodeURIComponent(exceptionsListMatch[1]!);
       return handleCompanyExceptions(config, slug, url);
+    }
+
+    // Periods read endpoint (#342). Close/reopen er dækket separat længere nede.
+    const periodsListMatch =
+      /^\/api\/companies\/([^/]+)\/periods$/.exec(path);
+    if (periodsListMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(periodsListMatch[1]!);
+      return handleCompanyPeriods(config, slug);
     }
 
     // Bookkeeping write route (#213, slice 1): resolve an open exception.
