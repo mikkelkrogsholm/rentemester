@@ -34,6 +34,7 @@ import { buildCompanyAccounts } from "./data/accounts-view";
 import { buildCompanyExceptions } from "./data/exceptions-list";
 import { buildCompanyPeriods } from "./data/periods-view";
 import { buildCompanyBankAccounts } from "./data/bank-accounts-view";
+import { buildCompanyGdprExport } from "./data/gdpr-view";
 import type { ServerConfig } from "./config";
 import { authMiddleware } from "./auth";
 import { ApiError, toErrorResponse } from "./errors";
@@ -89,6 +90,7 @@ import {
   handleBankImport,
   handleClosePeriod,
   handleCreateBankAccount,
+  handleGdprErase,
   handleCompanyProfile,
   handleCreateCustomer,
   handleCreateVendor,
@@ -243,6 +245,8 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "GET", pattern: "/api/companies/:slug/periods", summary: "Periodelås-liste med effective status (#342)." },
   { method: "GET", pattern: "/api/companies/:slug/bank-accounts", summary: "Registrerede bankkonti + CSV-mapping-profiler (#345)." },
   { method: "POST", pattern: "/api/companies/:slug/bank-accounts", summary: "Opretter en bankkonto (#345)." },
+  { method: "GET", pattern: "/api/companies/:slug/gdpr/export", summary: "GDPR-indsigt — finder personoplysninger for en data-subject (#334)." },
+  { method: "POST", pattern: "/api/companies/:slug/gdpr/erase", summary: "GDPR-anonymisering — append-only tombstones (#334)." },
   { method: "POST", pattern: "/api/companies/:slug/bank/import", summary: "Importerer bank-CSV." },
   { method: "POST", pattern: "/api/companies/:slug/import", summary: "Generel data-import." },
   { method: "POST", pattern: "/api/companies/:slug/accountant-export", summary: "Revisor-eksport (.tar)." },
@@ -433,6 +437,28 @@ function handleCompanyBankAccounts(
 ): Response {
   const data = buildCompanyBankAccounts(config.workspaceRoot, slug);
   return okResponse({ bankAccounts: data });
+}
+
+/**
+ * GET /api/companies/:slug/gdpr/export?cvr=&name=&asOf= — GDPR-indsigt (#334).
+ *
+ * Wrapper omkring buildGdprSubjectExport. Read-only: en indsigtsrapport
+ * over de personoplysninger en data-subject findes med pr. en given dato.
+ */
+function handleCompanyGdprExport(
+  config: ServerConfig,
+  slug: string,
+  url: URL,
+): Response {
+  const cvr = url.searchParams.get("cvr") ?? undefined;
+  const name = url.searchParams.get("name") ?? undefined;
+  const asOf = url.searchParams.get("asOf") ?? undefined;
+  const data = buildCompanyGdprExport(config.workspaceRoot, slug, {
+    cvr: cvr || undefined,
+    name: name || undefined,
+    asOf: asOf || undefined,
+  });
+  return okResponse({ gdpr: data });
 }
 
 /**
@@ -1423,6 +1449,21 @@ export async function handleRequest(
       if (method === "POST")
         return await handleCreateBankAccount(config, request, slug);
       throw ApiError.methodNotAllowed("GET or POST required");
+    }
+
+    // GDPR export (read) + erase (write) (#334).
+    const gdprExportMatch = /^\/api\/companies\/([^/]+)\/gdpr\/export$/.exec(path);
+    if (gdprExportMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(gdprExportMatch[1]!);
+      return handleCompanyGdprExport(config, slug, url);
+    }
+
+    const gdprEraseMatch = /^\/api\/companies\/([^/]+)\/gdpr\/erase$/.exec(path);
+    if (gdprEraseMatch) {
+      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      const slug = decodeURIComponent(gdprEraseMatch[1]!);
+      return await handleGdprErase(config, request, slug);
     }
 
     // Bookkeeping write route (#213, slice 1): resolve an open exception.

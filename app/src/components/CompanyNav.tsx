@@ -94,6 +94,8 @@ const TAB_GROUPS: { name: string; tabs: NavTab[] }[] = [
       { to: "periodelas", label: "Periodelås" },
       // #345 — Bankkonti + CSV-mapping-profiler.
       { to: "bankkonti", label: "Bankkonti" },
+      // #334 — GDPR-indsigt + anonymisering.
+      { to: "gdpr", label: "GDPR" },
     ],
   },
   {
