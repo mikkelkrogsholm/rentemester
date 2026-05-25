@@ -23,6 +23,10 @@ import {
 } from "./statements";
 import { buildCompanyJournal } from "./company-views";
 import { roundKroner } from "./shared";
+import {
+  buildStatementPdf,
+  type StatementPdfRow,
+} from "./statement-pdf";
 
 /** CRLF per RFC 4180 — Excel på Windows insisterer. */
 const CRLF = "\r\n";
@@ -384,4 +388,175 @@ function metadataBlock(
   lines.push(csvRow(["Kilde", "Rentemester"]));
   lines.push(CRLF);
   return lines.join("");
+}
+
+/** En kr-format der bruger danske decimalkommer + tusind-punkter. */
+function formatAmountDa(value: number): string {
+  const rounded = roundKroner(value);
+  const fixed = rounded.toFixed(2); // e.g. "1234567.89"
+  const [intPart, fracPart] = fixed.split(".");
+  // Sæt tusind-separator (punktum) ind: 1234567 → 1.234.567
+  const withSep = (intPart ?? "0").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${withSep},${fracPart ?? "00"}`;
+}
+
+function pdfDateOf(opts: StatementCsvOptions): string {
+  if (opts.generatedAtIsoDate) return opts.generatedAtIsoDate;
+  const today = new Date();
+  const y = today.getUTCFullYear();
+  const m = String(today.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(today.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+/**
+ * #463 — Deterministisk PDF-eksport af Resultatopgørelsen. Samme tal som
+ * CSV-eksporten, ren printbar PDF (uden cockpit-chrome) til bank/revisor.
+ */
+export function exportIncomeStatementPdf(
+  workspaceRoot: string,
+  slug: string,
+  year: number | null,
+  opts: StatementCsvOptions = {},
+): { content: Buffer; filename: string } {
+  const s = buildCompanyIncomeStatement(workspaceRoot, slug, year);
+  const rows: StatementPdfRow[] = [];
+  rows.push({ kind: "section", label: "Indtægter" });
+  for (const line of s.income as IncomeStatementLine[]) {
+    rows.push({
+      kind: "line",
+      label: `${line.accountNo} ${line.name}`,
+      amount: formatAmountDa(line.amount),
+    });
+  }
+  rows.push({
+    kind: "total",
+    label: "Indtægter i alt",
+    amount: formatAmountDa(s.totalIncome),
+  });
+  rows.push({ kind: "section", label: "Udgifter" });
+  for (const line of s.expense as IncomeStatementLine[]) {
+    rows.push({
+      kind: "line",
+      label: `${line.accountNo} ${line.name}`,
+      amount: formatAmountDa(line.amount),
+    });
+  }
+  rows.push({
+    kind: "total",
+    label: "Udgifter i alt",
+    amount: formatAmountDa(s.totalExpense),
+  });
+  rows.push({
+    kind: "total",
+    label: "Årets resultat",
+    amount: formatAmountDa(s.result),
+  });
+  const content = buildStatementPdf({
+    title: "Resultatopgørelse",
+    company: {
+      name: s.company.name,
+      cvr: s.company.cvr,
+      currency: s.company.currency ?? "DKK",
+    },
+    yearLabel: s.selectedYear,
+    generatedAtIsoDate: pdfDateOf(opts),
+    rows,
+  });
+  const filename = `resultatopgorelse-${safeFilenameSegment(slug)}-${s.selectedYear}.pdf`;
+  return { content, filename };
+}
+
+/** #463 — Balance som PDF. */
+export function exportBalancePdf(
+  workspaceRoot: string,
+  slug: string,
+  year: number | null,
+  opts: StatementCsvOptions = {},
+): { content: Buffer; filename: string } {
+  const b = buildCompanyBalance(workspaceRoot, slug, year);
+  const rows: StatementPdfRow[] = [];
+  const writeSection = (
+    heading: string,
+    lines: BalanceLine[],
+    total: number,
+    totalLabel: string,
+  ) => {
+    rows.push({ kind: "section", label: heading });
+    for (const line of lines) {
+      rows.push({
+        kind: "line",
+        label: `${line.accountNo === "—" ? "" : line.accountNo} ${line.name}`.trim(),
+        amount: formatAmountDa(line.amount),
+      });
+    }
+    rows.push({
+      kind: "total",
+      label: totalLabel,
+      amount: formatAmountDa(total),
+    });
+  };
+  writeSection("Aktiver", b.assets.lines, b.assets.total, "Aktiver i alt");
+  writeSection("Passiver", b.liabilities.lines, b.liabilities.total, "Gæld i alt");
+  writeSection("Egenkapital", b.equity.lines, b.equity.total, "Egenkapital i alt");
+  rows.push({
+    kind: "total",
+    label: "Passiver og egenkapital i alt",
+    amount: formatAmountDa(b.totalLiabilitiesAndEquity),
+  });
+  const content = buildStatementPdf({
+    title: "Balance",
+    company: {
+      name: b.company.name,
+      cvr: b.company.cvr,
+      currency: b.company.currency ?? "DKK",
+    },
+    yearLabel: b.selectedYear,
+    generatedAtIsoDate: pdfDateOf(opts),
+    rows,
+  });
+  const filename = `balance-${safeFilenameSegment(slug)}-${b.selectedYear}.pdf`;
+  return { content, filename };
+}
+
+/** #463 — Saldobalance som PDF. */
+export function exportTrialBalancePdf(
+  workspaceRoot: string,
+  slug: string,
+  year: number | null,
+  opts: StatementCsvOptions = {},
+): { content: Buffer; filename: string } {
+  const t = buildCompanyTrialBalance(workspaceRoot, slug, year);
+  const rows: StatementPdfRow[] = [];
+  rows.push({ kind: "section", label: "Konto · Saldo" });
+  for (const row of t.rows as TrialBalanceRow[]) {
+    rows.push({
+      kind: "line",
+      label: `${row.accountNo} ${row.name}`,
+      amount: formatAmountDa(row.balance),
+    });
+  }
+  rows.push({
+    kind: "total",
+    label: "Debet i alt",
+    amount: formatAmountDa(t.totalDebit),
+  });
+  rows.push({
+    kind: "total",
+    label: "Kredit i alt",
+    amount: formatAmountDa(t.totalCredit),
+  });
+  const content = buildStatementPdf({
+    title: "Saldobalance",
+    company: {
+      name: t.company.name,
+      cvr: t.company.cvr,
+      currency: t.company.currency ?? "DKK",
+    },
+    yearLabel: t.selectedYear,
+    generatedAtIsoDate: pdfDateOf(opts),
+    rows,
+  });
+  const filename = `saldobalance-${safeFilenameSegment(slug)}-${t.selectedYear}.pdf`;
+  return { content, filename };
 }

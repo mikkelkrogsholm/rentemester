@@ -57,13 +57,20 @@ export function BalanceView() {
           </p>
         </div>
         <div className="row-actions">
-          {/* #372 — "Hent CSV" download. Samme tal som tabellen viser. */}
+          {/* #372 — "Hent CSV". #463 — "Hent PDF" som ren printbar version. */}
           <a
             className="btn secondary"
             href={api.statementCsvUrl(slug, "balance", b.selectedYear)}
             download
           >
             Hent CSV
+          </a>
+          <a
+            className="btn secondary"
+            href={api.statementPdfUrl(slug, "balance", b.selectedYear)}
+            download
+          >
+            Hent PDF
           </a>
           <Link className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér

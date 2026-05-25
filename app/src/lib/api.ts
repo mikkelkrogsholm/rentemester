@@ -445,6 +445,20 @@ export const api = {
   },
 
   /**
+   * #463 — Statement PDF download URL. Samme endpoint som CSV, bare med
+   * format=pdf. Deterministisk Helvetica/WinAnsi PDF.
+   */
+  statementPdfUrl: (
+    slug: string,
+    report: "income-statement" | "balance" | "trial-balance",
+    year?: string,
+  ) => {
+    const params = new URLSearchParams({ format: "pdf" });
+    if (year) params.set("year", year);
+    return `/api/companies/${encodeURIComponent(slug)}/${report}/export?${params.toString()}`;
+  },
+
+  /**
    * Posteringer (kassekladde) som CSV-download (#465). Samme deterministiske
    * UTF-8 BOM + semikolon-CSV som de tre kerne-rapporter; et valgfrit
    * `account` filtrerer drilldown'et til netop den konto.

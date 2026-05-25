@@ -42,9 +42,12 @@ import { authMiddleware } from "./auth";
 import { ApiError, toErrorResponse } from "./errors";
 import {
   exportBalanceCsv,
+  exportBalancePdf,
   exportIncomeStatementCsv,
+  exportIncomeStatementPdf,
   exportJournalCsv,
   exportTrialBalanceCsv,
+  exportTrialBalancePdf,
   type StatementCsvExport,
 } from "./data/statement-exports";
 import {
@@ -587,17 +590,32 @@ function handleCompanyStatementExport(
   kind: "income-statement" | "balance" | "trial-balance",
 ): Response {
   const format = (url.searchParams.get("format") ?? "csv").toLowerCase();
-  if (format !== "csv") {
-    if (format === "pdf") {
-      throw ApiError.badRequest(
-        "PDF-eksport er endnu ikke understøttet — brug format=csv (PDF følger i et opfølger-issue til #372).",
-      );
-    }
+  if (format !== "csv" && format !== "pdf") {
     throw ApiError.badRequest(
-      `format=${format} understøttes ikke — kun csv er gyldig i denne version.`,
+      `format=${format} understøttes ikke — kun csv og pdf er gyldige.`,
     );
   }
   const year = resolveYearParam(url.searchParams.get("year"));
+  if (format === "pdf") {
+    // #463 — PDF-slice. Deterministisk Helvetica/WinAnsi PDF uden
+    // browser-print-chrome; samme tal som CSV-eksporten.
+    let pdfExport: { content: Buffer; filename: string };
+    if (kind === "income-statement") {
+      pdfExport = exportIncomeStatementPdf(config.workspaceRoot, slug, year);
+    } else if (kind === "balance") {
+      pdfExport = exportBalancePdf(config.workspaceRoot, slug, year);
+    } else {
+      pdfExport = exportTrialBalancePdf(config.workspaceRoot, slug, year);
+    }
+    return new Response(pdfExport.content, {
+      headers: {
+        "content-type": "application/pdf",
+        "content-disposition": `attachment; filename*=UTF-8''${encodeURIComponent(pdfExport.filename)}`,
+        "x-content-type-options": "nosniff",
+        "cache-control": "private, no-store",
+      },
+    });
+  }
   let exported: StatementCsvExport;
   if (kind === "income-statement") {
     exported = exportIncomeStatementCsv(config.workspaceRoot, slug, year);

@@ -167,16 +167,23 @@ describe("#372 — Resultatopgørelse CSV-eksport (GET …/income-statement/expo
     }
   });
 
-  test("format=pdf afvises med en 400 og en dansk hint indtil PDF-slice'n lander", async () => {
-    const ws = makeWorkspace("ie-pdf-reject", ["Acme ApS"]);
+  test("format=pdf returnerer en application/pdf-attachment (#463)", async () => {
+    const ws = makeWorkspace("ie-pdf", ["Acme ApS"]);
     try {
+      postPnlEntry(ws, "acme-aps", "2026-03-15", 1000, 400);
       const res = await fetchRaw(
         config(ws),
-        "/api/companies/acme-aps/income-statement/export?format=pdf",
+        "/api/companies/acme-aps/income-statement/export?format=pdf&year=2026",
       );
-      expect(res.status).toBe(400);
-      const body = (await res.json()) as { errors: string[]; code: string };
-      expect(body.errors[0]).toContain("PDF");
+      expect(res.status).toBe(200);
+      expect(res.headers.get("content-type")).toBe("application/pdf");
+      const cd = res.headers.get("content-disposition") ?? "";
+      expect(cd).toContain("attachment");
+      expect(cd).toContain(".pdf");
+      const bytes = await res.arrayBuffer();
+      const head = Buffer.from(bytes).slice(0, 5).toString("ascii");
+      // %PDF- header skal være først.
+      expect(head).toBe("%PDF-");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -301,7 +308,7 @@ describe("#465 — Posteringer CSV-eksport (GET …/journal/export)", () => {
     }
   });
 
-  test("format=pdf afvises med en 400 og en dansk hint", async () => {
+  test("format=pdf afvises på journal — kun csv understøttes", async () => {
     const ws = makeWorkspace("jrn-pdf-reject", ["Acme ApS"]);
     try {
       const res = await fetchRaw(

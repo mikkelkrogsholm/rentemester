@@ -45,13 +45,20 @@ export function TrialBalanceView() {
           </p>
         </div>
         <div className="row-actions">
-          {/* #372 — "Hent CSV" download. Samme tal som tabellen viser. */}
+          {/* #372 — "Hent CSV". #463 — "Hent PDF" som printbar version. */}
           <a
             className="btn secondary"
             href={api.statementCsvUrl(slug, "trial-balance", t.selectedYear)}
             download
           >
             Hent CSV
+          </a>
+          <a
+            className="btn secondary"
+            href={api.statementPdfUrl(slug, "trial-balance", t.selectedYear)}
+            download
+          >
+            Hent PDF
           </a>
           <Link className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
