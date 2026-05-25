@@ -57,6 +57,7 @@ import type {
   RecurringInvoiceTemplateInput,
   RecurringInvoicesResponse,
   SetBudgetInput,
+  AccountsResponse,
   IntegrityResponse,
   RetentionResponse,
   RulesResponse,
@@ -153,6 +154,15 @@ export const api = {
     request<IntegrityResponse>(
       `/api/companies/${encodeURIComponent(slug)}/integrity`,
     ).then((r) => r.integrity),
+
+  /**
+   * #344 — kontoplan (read-only). Bygger på den eksisterende `accounts`-tabel
+   * som seedAccounts + reconcileChartOfAccounts populerer.
+   */
+  accounts: (slug: string) =>
+    request<AccountsResponse>(
+      `/api/companies/${encodeURIComponent(slug)}/accounts`,
+    ).then((r) => r.accounts),
 
   companies: () =>
     request<CompanyListResponse>("/api/companies").then((r) => r.companies),

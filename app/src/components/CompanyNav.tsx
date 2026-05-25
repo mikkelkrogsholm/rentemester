@@ -109,6 +109,8 @@ const TAB_GROUPS: { name: string; tabs: NavTab[] }[] = [
       // #333 — Integritet & backup: hash-kæde-status, backup-compliance og
       // backup-destinationer.
       { to: "integritet", label: "Integritet" },
+      // #344 — Kontoplan: read-only liste over konti med søg + type-filter.
+      { to: "kontoplan", label: "Kontoplan" },
     ],
   },
 ];

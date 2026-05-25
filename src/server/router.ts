@@ -30,6 +30,7 @@ import {
 } from "../core/rules-metadata";
 import { buildCompanyRetention } from "./data/retention-view";
 import { buildCompanyIntegrity } from "./data/integrity-view";
+import { buildCompanyAccounts } from "./data/accounts-view";
 import type { ServerConfig } from "./config";
 import { authMiddleware } from "./auth";
 import { ApiError, toErrorResponse } from "./errors";
@@ -204,6 +205,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "GET", pattern: "/api/companies/:slug/journal/export", summary: "Posteringer (kassekladde) som CSV-download (#465)." },
   { method: "GET", pattern: "/api/companies/:slug/retention", summary: "5-års retention-status pr. data-domæne (#343)." },
   { method: "GET", pattern: "/api/companies/:slug/integrity", summary: "Audit chain + backup status panel (#333)." },
+  { method: "GET", pattern: "/api/companies/:slug/accounts", summary: "Kontoplan — read-only liste (#344)." },
   { method: "GET", pattern: "/api/companies/:slug/bank", summary: "Bank-transaktioner." },
   { method: "GET", pattern: "/api/companies/:slug/vat", summary: "Momsoplysninger." },
   { method: "GET", pattern: "/api/companies/:slug/documents", summary: "Bilagsliste." },
@@ -384,6 +386,20 @@ function handleCompanyIntegrity(
 ): Response {
   const data = buildCompanyIntegrity(config.workspaceRoot, slug);
   return okResponse({ integrity: data });
+}
+
+/**
+ * GET /api/companies/:slug/accounts — Kontoplan-view (#344).
+ *
+ * Read-only liste over kontoplanen. Cockpittet kan vise hvilke konti der
+ * er seedet og hvilke der har bogføringslinjer.
+ */
+function handleCompanyAccounts(
+  config: ServerConfig,
+  slug: string,
+): Response {
+  const data = buildCompanyAccounts(config.workspaceRoot, slug);
+  return okResponse({ accounts: data });
 }
 
 function handleCompanyOverview(
@@ -991,6 +1007,13 @@ export async function handleRequest(
       if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
       const slug = decodeURIComponent(integrityMatch[1]!);
       return handleCompanyIntegrity(config, slug);
+    }
+
+    const accountsMatch = /^\/api\/companies\/([^/]+)\/accounts$/.exec(path);
+    if (accountsMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(accountsMatch[1]!);
+      return handleCompanyAccounts(config, slug);
     }
 
     const incomeStatementExportMatch =

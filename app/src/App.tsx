@@ -53,6 +53,7 @@ import { HelpView } from "./views/HelpView";
 import { RulesView } from "./views/RulesView";
 import { RetentionView } from "./views/RetentionView";
 import { IntegrityView } from "./views/IntegrityView";
+import { AccountsView } from "./views/AccountsView";
 
 export function App() {
   return (
@@ -150,6 +151,10 @@ export function App() {
           <Route
             path="/companies/:slug/integritet"
             element={<IntegrityView />}
+          />
+          <Route
+            path="/companies/:slug/kontoplan"
+            element={<AccountsView />}
           />
           <Route path="*" element={<NotFound />} />
         </Routes>
