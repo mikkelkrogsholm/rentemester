@@ -29,6 +29,7 @@ import {
   readRuleMetadata,
 } from "../core/rules-metadata";
 import { buildCompanyRetention } from "./data/retention-view";
+import { buildCompanyIntegrity } from "./data/integrity-view";
 import type { ServerConfig } from "./config";
 import { authMiddleware } from "./auth";
 import { ApiError, toErrorResponse } from "./errors";
@@ -202,6 +203,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "GET", pattern: "/api/companies/:slug/journal", summary: "Journalposter." },
   { method: "GET", pattern: "/api/companies/:slug/journal/export", summary: "Posteringer (kassekladde) som CSV-download (#465)." },
   { method: "GET", pattern: "/api/companies/:slug/retention", summary: "5-års retention-status pr. data-domæne (#343)." },
+  { method: "GET", pattern: "/api/companies/:slug/integrity", summary: "Audit chain + backup status panel (#333)." },
   { method: "GET", pattern: "/api/companies/:slug/bank", summary: "Bank-transaktioner." },
   { method: "GET", pattern: "/api/companies/:slug/vat", summary: "Momsoplysninger." },
   { method: "GET", pattern: "/api/companies/:slug/documents", summary: "Bilagsliste." },
@@ -367,6 +369,21 @@ function handleCompanyRetention(
 ): Response {
   const data = buildCompanyRetention(config.workspaceRoot, slug);
   return okResponse({ retention: data });
+}
+
+/**
+ * GET /api/companies/:slug/integrity — Audit chain + backup status panel (#333).
+ *
+ * Idempotent — `verifyAuditChain` er read-only og kan kaldes så ofte cockpittet
+ * ønsker uden side-effekter. Genbruger `getBackupComplianceStatus` +
+ * `listBackupDestinations` så cockpittet ikke duplikerer kerne-logik.
+ */
+function handleCompanyIntegrity(
+  config: ServerConfig,
+  slug: string,
+): Response {
+  const data = buildCompanyIntegrity(config.workspaceRoot, slug);
+  return okResponse({ integrity: data });
 }
 
 function handleCompanyOverview(
@@ -967,6 +984,13 @@ export async function handleRequest(
       if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
       const slug = decodeURIComponent(retentionMatch[1]!);
       return handleCompanyRetention(config, slug);
+    }
+
+    const integrityMatch = /^\/api\/companies\/([^/]+)\/integrity$/.exec(path);
+    if (integrityMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(integrityMatch[1]!);
+      return handleCompanyIntegrity(config, slug);
     }
 
     const incomeStatementExportMatch =

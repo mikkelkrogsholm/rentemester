@@ -106,6 +106,9 @@ const TAB_GROUPS: { name: string; tabs: NavTab[] }[] = [
       // #343 — 5-års retention-status pr. data-domæne, så ejeren kan se hvad
       // der nærmer sig udløb af bogføringspligten.
       { to: "retention", label: "Retention" },
+      // #333 — Integritet & backup: hash-kæde-status, backup-compliance og
+      // backup-destinationer.
+      { to: "integritet", label: "Integritet" },
     ],
   },
 ];

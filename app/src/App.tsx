@@ -52,6 +52,7 @@ import { ManageCompanyView } from "./views/ManageCompanyView";
 import { HelpView } from "./views/HelpView";
 import { RulesView } from "./views/RulesView";
 import { RetentionView } from "./views/RetentionView";
+import { IntegrityView } from "./views/IntegrityView";
 
 export function App() {
   return (
@@ -145,6 +146,10 @@ export function App() {
           <Route
             path="/companies/:slug/retention"
             element={<RetentionView />}
+          />
+          <Route
+            path="/companies/:slug/integritet"
+            element={<IntegrityView />}
           />
           <Route path="*" element={<NotFound />} />
         </Routes>
