@@ -58,6 +58,7 @@ import type {
   RecurringInvoicesResponse,
   SetBudgetInput,
   AccountsResponse,
+  ExceptionsResponse,
   IntegrityResponse,
   RetentionResponse,
   RulesResponse,
@@ -163,6 +164,37 @@ export const api = {
     request<AccountsResponse>(
       `/api/companies/${encodeURIComponent(slug)}/accounts`,
     ).then((r) => r.accounts),
+
+  /**
+   * #332 — Exceptions queue list. Default status er 'open' så cockpittet
+   * altid starter på det aktive arbejde.
+   */
+  exceptions: (slug: string, status?: "open" | "resolved" | "all") => {
+    const params = new URLSearchParams();
+    if (status) params.set("status", status);
+    const qs = params.toString();
+    return request<ExceptionsResponse>(
+      `/api/companies/${encodeURIComponent(slug)}/exceptions${qs ? `?${qs}` : ""}`,
+    ).then((r) => r.exceptions);
+  },
+
+  /**
+   * POST /api/companies/:slug/exceptions/:id/resolve — closes an open
+   * exception. Returns `{ resolved: boolean }`.
+   */
+  resolveException: (
+    slug: string,
+    id: number,
+    body: { note?: string } = {},
+  ) =>
+    request<{ ok: true; exception: { id: number; resolved: boolean } }>(
+      `/api/companies/${encodeURIComponent(slug)}/exceptions/${id}/resolve`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      },
+    ).then((r) => r.exception),
 
   companies: () =>
     request<CompanyListResponse>("/api/companies").then((r) => r.companies),

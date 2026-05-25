@@ -1942,3 +1942,44 @@ export type AccountsResponse = {
   ok: true;
   accounts: CompanyAccounts;
 };
+
+// ---------------------------------------------------------------------------
+// #332 — Exceptions queue (read-only liste).
+// ---------------------------------------------------------------------------
+
+export type ExceptionRow = {
+  id: number;
+  type: string;
+  severity: "low" | "medium" | "high";
+  status: "open" | "resolved";
+  relatedBankTransactionId: number | null;
+  relatedDocumentId: number | null;
+  message: string;
+  requiredAction: string | null;
+  sourceEvidence: unknown;
+  postingPreview: unknown;
+  createdAt: string;
+  resolvedAt: string | null;
+  resolvedBy: string | null;
+  resolutionNote: string | null;
+  archived: boolean;
+};
+
+export type CompanyExceptions = {
+  slug: string;
+  company: {
+    name: string;
+    cvr: string | null;
+    country: string;
+    currency: string;
+  };
+  status: "open" | "resolved" | "all";
+  rows: ExceptionRow[];
+  bySeverity: { high: number; medium: number; low: number };
+  count: number;
+};
+
+export type ExceptionsResponse = {
+  ok: true;
+  exceptions: CompanyExceptions;
+};

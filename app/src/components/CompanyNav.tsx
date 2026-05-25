@@ -88,6 +88,8 @@ const TAB_GROUPS: { name: string; tabs: NavTab[] }[] = [
       // postering — selve den deterministiske postering laves derefter på
       // den linkede side (Anlæg, Leverandørfaktura, Posteringer, …).
       { to: "agent-forslag", label: "Agent-forslag" },
+      // #332 — Undtagelses-kø (unmatched bank-rows, blokerede write-flows).
+      { to: "undtagelser", label: "Undtagelser" },
     ],
   },
   {

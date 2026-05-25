@@ -31,6 +31,7 @@ import {
 import { buildCompanyRetention } from "./data/retention-view";
 import { buildCompanyIntegrity } from "./data/integrity-view";
 import { buildCompanyAccounts } from "./data/accounts-view";
+import { buildCompanyExceptions } from "./data/exceptions-list";
 import type { ServerConfig } from "./config";
 import { authMiddleware } from "./auth";
 import { ApiError, toErrorResponse } from "./errors";
@@ -234,6 +235,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "GET", pattern: "/api/companies/:slug/budget", summary: "Budget pr. konto pr. måned (#339)." },
   { method: "GET", pattern: "/api/companies/:slug/budget-vs-actual", summary: "Budget vs. faktisk for året (#339)." },
   { method: "POST", pattern: "/api/companies/:slug/budget", summary: "Sætter (append-only revision) en budgetlinje (#339)." },
+  { method: "GET", pattern: "/api/companies/:slug/exceptions", summary: "Exceptions queue — undtagelser, filtrerbar pr. status (#332)." },
   { method: "POST", pattern: "/api/companies/:slug/exceptions/:id/resolve", summary: "Løser en exception." },
   { method: "POST", pattern: "/api/companies/:slug/bank/import", summary: "Importerer bank-CSV." },
   { method: "POST", pattern: "/api/companies/:slug/import", summary: "Generel data-import." },
@@ -400,6 +402,30 @@ function handleCompanyAccounts(
 ): Response {
   const data = buildCompanyAccounts(config.workspaceRoot, slug);
   return okResponse({ accounts: data });
+}
+
+/**
+ * GET /api/companies/:slug/exceptions[?status=open|resolved|all] — Exceptions
+ * queue (#332). Read-only liste; POST .../exceptions/:id/resolve er en
+ * separat write-handler.
+ */
+function handleCompanyExceptions(
+  config: ServerConfig,
+  slug: string,
+  url: URL,
+): Response {
+  const raw = (url.searchParams.get("status") ?? "open").toLowerCase();
+  if (raw !== "open" && raw !== "resolved" && raw !== "all") {
+    throw ApiError.badRequest(
+      `status='${raw}' understøttes ikke — brug open, resolved eller all.`,
+    );
+  }
+  const data = buildCompanyExceptions(
+    config.workspaceRoot,
+    slug,
+    raw as "open" | "resolved" | "all",
+  );
+  return okResponse({ exceptions: data });
 }
 
 function handleCompanyOverview(
@@ -1338,6 +1364,15 @@ export async function handleRequest(
       if (method === "GET") return handleCompanyBudget(config, slug, url);
       if (method === "POST") return await handleSetBudget(config, request, slug);
       throw ApiError.methodNotAllowed("GET or POST required");
+    }
+
+    // Exceptions queue read endpoint (#332).
+    const exceptionsListMatch =
+      /^\/api\/companies\/([^/]+)\/exceptions$/.exec(path);
+    if (exceptionsListMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(exceptionsListMatch[1]!);
+      return handleCompanyExceptions(config, slug, url);
     }
 
     // Bookkeeping write route (#213, slice 1): resolve an open exception.
