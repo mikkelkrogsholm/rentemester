@@ -98,6 +98,8 @@ const TAB_GROUPS: { name: string; tabs: NavTab[] }[] = [
       { to: "gdpr", label: "GDPR" },
       // #337 — Periodiseringsregister.
       { to: "periodisering", label: "Periodisering" },
+      // #338 — Årsrapport-builder.
+      { to: "aarsrapport", label: "Årsrapport" },
     ],
   },
   {

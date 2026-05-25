@@ -36,6 +36,7 @@ import { buildCompanyPeriods } from "./data/periods-view";
 import { buildCompanyBankAccounts } from "./data/bank-accounts-view";
 import { buildCompanyGdprExport } from "./data/gdpr-view";
 import { buildCompanyAccruals } from "./data/accruals-view";
+import { buildCompanyAnnualReport } from "./data/annual-report-view";
 import type { ServerConfig } from "./config";
 import { authMiddleware } from "./auth";
 import { ApiError, toErrorResponse } from "./errors";
@@ -249,6 +250,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "GET", pattern: "/api/companies/:slug/gdpr/export", summary: "GDPR-indsigt — finder personoplysninger for en data-subject (#334)." },
   { method: "POST", pattern: "/api/companies/:slug/gdpr/erase", summary: "GDPR-anonymisering — append-only tombstones (#334)." },
   { method: "GET", pattern: "/api/companies/:slug/accruals", summary: "Periodiseringsregister (#337)." },
+  { method: "GET", pattern: "/api/companies/:slug/annual-report", summary: "Årsrapport-builder (regnskabsklasse-B) (#338)." },
   { method: "POST", pattern: "/api/companies/:slug/bank/import", summary: "Importerer bank-CSV." },
   { method: "POST", pattern: "/api/companies/:slug/import", summary: "Generel data-import." },
   { method: "POST", pattern: "/api/companies/:slug/accountant-export", summary: "Revisor-eksport (.tar)." },
@@ -474,6 +476,31 @@ function handleCompanyAccruals(
 ): Response {
   const data = buildCompanyAccruals(config.workspaceRoot, slug);
   return okResponse({ accruals: data });
+}
+
+/**
+ * GET /api/companies/:slug/annual-report?fiscalYearStart=&fiscalYearEnd= —
+ * Årsrapport-builder (#338). Read-only.
+ */
+function handleCompanyAnnualReport(
+  config: ServerConfig,
+  slug: string,
+  url: URL,
+): Response {
+  const fiscalYearStart = url.searchParams.get("fiscalYearStart");
+  const fiscalYearEnd = url.searchParams.get("fiscalYearEnd");
+  if (!fiscalYearStart || !fiscalYearEnd) {
+    throw ApiError.badRequest(
+      "fiscalYearStart og fiscalYearEnd (YYYY-MM-DD) er begge påkrævet.",
+    );
+  }
+  const data = buildCompanyAnnualReport(
+    config.workspaceRoot,
+    slug,
+    fiscalYearStart,
+    fiscalYearEnd,
+  );
+  return okResponse({ annualReport: data });
 }
 
 /**
@@ -1487,6 +1514,14 @@ export async function handleRequest(
       if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
       const slug = decodeURIComponent(accrualsMatch[1]!);
       return handleCompanyAccruals(config, slug);
+    }
+
+    // Annual-report builder read endpoint (#338).
+    const annualReportMatch = /^\/api\/companies\/([^/]+)\/annual-report$/.exec(path);
+    if (annualReportMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(annualReportMatch[1]!);
+      return handleCompanyAnnualReport(config, slug, url);
     }
 
     // Bookkeeping write route (#213, slice 1): resolve an open exception.
