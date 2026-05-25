@@ -78,10 +78,87 @@ describe("ObligationsView — Forpligtelser", () => {
       within(annualRow as HTMLElement).getByText("2027-05-01"),
     ).toBeInTheDocument();
     // … and no kroner amount — it is a deadline, not a debt. The amount
-    // cell (last td) shows a dash rather than "0,00 kr.".
+    // sits in the 5. kolonne (index 4): Forpligtelse, Konto, Frist, Status,
+    // Beløb, Handlinger (#391). Den skal vise en bindestreg, ikke "0,00 kr.".
     const cells = within(annualRow as HTMLElement).getAllByRole("cell");
-    expect(cells[cells.length - 1]).toHaveTextContent("—");
-    expect(cells[cells.length - 1]).not.toHaveTextContent(/0,00/);
+    expect(cells[4]).toHaveTextContent("—");
+    expect(cells[4]).not.toHaveTextContent(/0,00/);
+  });
+
+  // #391 — Forpligtelser-rækken skal være en handlingsbar bro videre til
+  // den officielle indberetnings-portal og en hurtig 'Kopiér beløb'.
+  test("vat-rækken har et eksternt skat.dk-link (#391)", async () => {
+    mockFetch(route());
+    renderView();
+    const vatRow = (
+      await screen.findByText(/Moms — Q2 2026/)
+    ).closest("tr")!;
+    const link = within(vatRow as HTMLElement).getByRole("link", {
+      name: /skat\.dk/i,
+    });
+    expect(link).toHaveAttribute("href", expect.stringContaining("skat.dk"));
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  test("annual-report-rækken har et eksternt virk.dk-link (#391)", async () => {
+    mockFetch(route());
+    renderView();
+    const annualRow = (
+      await screen.findByText(/Årsrapport — regnskabsår 2026/)
+    ).closest("tr")!;
+    const link = within(annualRow as HTMLElement).getByRole("link", {
+      name: /virk\.dk/i,
+    });
+    expect(link).toHaveAttribute("href", expect.stringContaining("virk.dk"));
+  });
+
+  test("corporation-tax-rækken har et eksternt selskabsskat-link (#391)", async () => {
+    mockFetch(route());
+    renderView();
+    const taxRow = (
+      await screen.findByText(/Skyldig selskabsskat/)
+    ).closest("tr")!;
+    const link = within(taxRow as HTMLElement).getByRole("link", {
+      name: /skat\.dk/i,
+    });
+    expect(link).toHaveAttribute(
+      "href",
+      expect.stringContaining("selskabsskat"),
+    );
+  });
+
+  test("vat-rækken krydslinker til Moms-viewet (#391)", async () => {
+    mockFetch(route());
+    renderView();
+    const vatRow = (
+      await screen.findByText(/Moms — Q2 2026/)
+    ).closest("tr")!;
+    const link = within(vatRow as HTMLElement).getByRole("link", {
+      name: /SKAT-rubrikker/,
+    });
+    expect(link).toHaveAttribute("href", "/companies/acme-aps/moms");
+  });
+
+  test("hver gæld-række har en 'Kopiér beløb'-knap; annual-report har ikke (#391)", async () => {
+    mockFetch(route());
+    renderView();
+    const vatRow = (
+      await screen.findByText(/Moms — Q2 2026/)
+    ).closest("tr")!;
+    expect(
+      within(vatRow as HTMLElement).getByRole("button", { name: /Kopiér beløb/ }),
+    ).toBeInTheDocument();
+
+    // Annual-report har intet beløb at kopiere.
+    const annualRow = (
+      await screen.findByText(/Årsrapport — regnskabsår 2026/)
+    ).closest("tr")!;
+    expect(
+      within(annualRow as HTMLElement).queryByRole("button", {
+        name: /Kopiér beløb/,
+      }),
+    ).not.toBeInTheDocument();
   });
 
   test("an archived year shows an honest 'not available' state", async () => {

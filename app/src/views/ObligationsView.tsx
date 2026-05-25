@@ -100,6 +100,7 @@ export function ObligationsView() {
                   <th>Frist</th>
                   <th>Status</th>
                   <th className="num">Skyldigt beløb</th>
+                  <th>Handlinger</th>
                 </tr>
               </thead>
               <tbody>
@@ -118,6 +119,13 @@ export function ObligationsView() {
                         ? "—"
                         : formatKroner(row.amount, currency)}
                     </td>
+                    <td>
+                      <ObligationActions
+                        row={row}
+                        slug={slug}
+                        currency={currency}
+                      />
+                    </td>
                   </tr>
                 ))}
                 <tr className="statement-result negative">
@@ -125,6 +133,7 @@ export function ObligationsView() {
                   <td className="num">
                     {formatKroner(o.totalOwed, currency)}
                   </td>
+                  <td></td>
                 </tr>
               </tbody>
             </table>
@@ -167,6 +176,85 @@ function DeadlineFlag({ row }: { row: ObligationRow }) {
     <span className={`flag ${tone}`}>
       {days} {days === 1 ? "dag" : "dage"} tilbage
     </span>
+  );
+}
+
+/**
+ * Pr-række handlinger til Forpligtelser (#391):
+ *
+ * - Eksterne handoff-links til den officielle indberetnings-portal (skat.dk,
+ *   indberet.virk.dk) så ejeren ikke skal google sig frem.
+ * - 'Kopiér beløb' så ejeren ikke skal taste fx 47.310,00 manuelt ind i
+ *   sin bank-app.
+ * - Krydslink til Moms-viewet for vat-rækken, så ejeren kan se SKAT-
+ *   rubrikkerne ved siden af.
+ *
+ * Note: 'Markér som betalt'-flowet (#391 acceptkriterium 4) er ikke
+ * implementeret her — det er et write-flow med actor + audit-event og
+ * spores som follow-up.
+ */
+const EXTERNAL_LINK: Partial<Record<ObligationRow["kind"], { href: string; label: string }>> = {
+  vat: {
+    href: "https://www.skat.dk/erhverv/moms",
+    label: "Indberet på skat.dk",
+  },
+  "corporation-tax": {
+    href: "https://www.skat.dk/erhverv/selskabsskat",
+    label: "Selskabsskat på skat.dk",
+  },
+  "annual-report": {
+    href: "https://indberet.virk.dk",
+    label: "Indberet på virk.dk",
+  },
+};
+
+function ObligationActions({
+  row,
+  slug,
+  currency,
+}: {
+  row: ObligationRow;
+  slug: string;
+  currency: string;
+}) {
+  const external = EXTERNAL_LINK[row.kind];
+  const copyAmount = async () => {
+    if (row.kind === "annual-report") return;
+    const text = String(row.amount.toFixed(2)).replace(".", ",");
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // Clipboard API may be blocked (Safari permission, http) — silent fail.
+    }
+  };
+  return (
+    <div className="row-actions inline-actions">
+      {external && (
+        <a
+          className="btn small secondary"
+          href={external.href}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {external.label}
+        </a>
+      )}
+      {row.kind === "vat" && (
+        <Link className="btn small secondary" to={`/companies/${slug}/moms`}>
+          SKAT-rubrikker
+        </Link>
+      )}
+      {row.kind !== "annual-report" && (
+        <button
+          type="button"
+          className="btn small secondary"
+          onClick={copyAmount}
+          aria-label={`Kopiér beløb (${formatKroner(row.amount, currency)})`}
+        >
+          Kopiér beløb
+        </button>
+      )}
+    </div>
   );
 }
 
