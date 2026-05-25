@@ -459,6 +459,17 @@ export const api = {
   },
 
   /**
+   * Moms-rapport som PDF-download (#464). Indeholder SKAT-rubrikker
+   * (salgsmoms, købsmoms, momstilsvar, A/B/C), periode-bounds og
+   * betalingsfristen — én printbar arbejdsudskrift.
+   */
+  vatPdfUrl: (slug: string, year?: string) => {
+    const params = new URLSearchParams({ format: "pdf" });
+    if (year) params.set("year", year);
+    return `/api/companies/${encodeURIComponent(slug)}/vat/export?${params.toString()}`;
+  },
+
+  /**
    * Posteringer (kassekladde) som CSV-download (#465). Samme deterministiske
    * UTF-8 BOM + semikolon-CSV som de tre kerne-rapporter; et valgfrit
    * `account` filtrerer drilldown'et til netop den konto.

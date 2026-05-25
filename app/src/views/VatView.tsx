@@ -80,6 +80,14 @@ export function VatView() {
               Genåbn momsperiode
             </button>
           )}
+          {/* #464 — moms-rapport som printbar PDF inkl. SKAT-rubrikker + frist. */}
+          <a
+            className="btn secondary"
+            href={api.vatPdfUrl(slug, v.selectedYear)}
+            download
+          >
+            Hent PDF
+          </a>
           <Link className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
           </Link>

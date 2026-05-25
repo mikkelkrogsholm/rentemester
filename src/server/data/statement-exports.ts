@@ -21,7 +21,7 @@ import {
   type IncomeStatementLine,
   type TrialBalanceRow,
 } from "./statements";
-import { buildCompanyJournal } from "./company-views";
+import { buildCompanyJournal, buildCompanyVat } from "./company-views";
 import { roundKroner } from "./shared";
 import {
   buildStatementPdf,
@@ -558,5 +558,103 @@ export function exportTrialBalancePdf(
     rows,
   });
   const filename = `saldobalance-${safeFilenameSegment(slug)}-${t.selectedYear}.pdf`;
+  return { content, filename };
+}
+
+/**
+ * #464 — Moms-rapport som PDF inkl. SKAT-rubrikker + periode + frist.
+ *
+ * Bygger en printbar momsangivelse for den valgte momsperiode med samme
+ * tal cockpittet viser på Moms-viewet: salgsmoms, købsmoms, momstilsvar,
+ * rubrikkerne A/B/C og betalingsfristen. PDF-en er bevidst en arbejds-
+ * udskrift — det formelle indberetningsdokument ligger stadig hos SKAT
+ * TastSelv Erhverv (#436).
+ */
+export function exportVatPdf(
+  workspaceRoot: string,
+  slug: string,
+  year: number | null,
+  opts: StatementCsvOptions = {},
+): { content: Buffer; filename: string } {
+  const v = buildCompanyVat(workspaceRoot, slug, year);
+  const rows: StatementPdfRow[] = [];
+  rows.push({ kind: "section", label: `Periode: ${v.periodLabel}` });
+  rows.push({
+    kind: "line",
+    label: `Periode-start`,
+    amount: v.periodStart,
+  });
+  rows.push({
+    kind: "line",
+    label: `Periode-slut`,
+    amount: v.periodEnd,
+  });
+  rows.push({
+    kind: "line",
+    label: "Betalingsfrist (SKAT)",
+    amount: v.deadline ?? "—",
+  });
+  rows.push({
+    kind: "line",
+    label: "Status",
+    amount: v.momsangivelseReady ? "Klar til indberetning" : "Foreløbig",
+  });
+
+  rows.push({ kind: "section", label: "SKAT-rubrikker" });
+  rows.push({
+    kind: "line",
+    label: "Salgsmoms",
+    amount: formatAmountDa(v.rubrikker.salgsmoms),
+  });
+  rows.push({
+    kind: "line",
+    label: "Moms af varekøb i udlandet",
+    amount: formatAmountDa(v.rubrikker.momsAfVarekobUdland),
+  });
+  rows.push({
+    kind: "line",
+    label: "Moms af ydelseskøb i udlandet",
+    amount: formatAmountDa(v.rubrikker.momsAfYdelseskobUdland),
+  });
+  rows.push({
+    kind: "line",
+    label: "Købsmoms",
+    amount: formatAmountDa(v.rubrikker.kobsmoms),
+  });
+  rows.push({
+    kind: "total",
+    label: "Momstilsvar",
+    amount: formatAmountDa(v.rubrikker.momstilsvar),
+  });
+
+  rows.push({ kind: "section", label: "Yderligere rubrikker" });
+  rows.push({
+    kind: "line",
+    label: "Rubrik A (varekøb fra udlandet)",
+    amount: formatAmountDa(v.rubrikker.rubrikA),
+  });
+  rows.push({
+    kind: "line",
+    label: "Rubrik B (varesalg til udlandet)",
+    amount: formatAmountDa(v.rubrikker.rubrikB),
+  });
+  rows.push({
+    kind: "line",
+    label: "Rubrik C (momsfritaget salg)",
+    amount: formatAmountDa(v.rubrikker.rubrikC),
+  });
+
+  const content = buildStatementPdf({
+    title: "Momsangivelse",
+    company: {
+      name: v.company.name,
+      cvr: v.company.cvr,
+      currency: v.company.currency ?? "DKK",
+    },
+    yearLabel: `${v.selectedYear} · ${v.periodLabel}`,
+    generatedAtIsoDate: pdfDateOf(opts),
+    rows,
+  });
+  const filename = `moms-${safeFilenameSegment(slug)}-${v.selectedYear}-${safeFilenameSegment(v.periodLabel)}.pdf`;
   return { content, filename };
 }

@@ -48,6 +48,7 @@ import {
   exportJournalCsv,
   exportTrialBalanceCsv,
   exportTrialBalancePdf,
+  exportVatPdf,
   type StatementCsvExport,
 } from "./data/statement-exports";
 import {
@@ -214,6 +215,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "GET", pattern: "/api/companies/:slug/trial-balance/export", summary: "Saldobalance som CSV-download (#372)." },
   { method: "GET", pattern: "/api/companies/:slug/journal", summary: "Journalposter." },
   { method: "GET", pattern: "/api/companies/:slug/journal/export", summary: "Posteringer (kassekladde) som CSV-download (#465)." },
+  { method: "GET", pattern: "/api/companies/:slug/vat/export", summary: "Moms-rapport som PDF-download m. SKAT-rubrikker + frist (#464)." },
   { method: "GET", pattern: "/api/companies/:slug/retention", summary: "5-års retention-status pr. data-domæne (#343)." },
   { method: "GET", pattern: "/api/companies/:slug/integrity", summary: "Audit chain + backup status panel (#333)." },
   { method: "GET", pattern: "/api/companies/:slug/accounts", summary: "Kontoplan — read-only liste (#344)." },
@@ -642,6 +644,34 @@ function handleCompanyStatementExport(
  * statement-eksporterne (#372/#462): kun `format=csv` understøttes; et
  * valgfrit `account=<kontonr>` filtrerer til drilldown på en konto.
  */
+/**
+ * GET /api/companies/:slug/vat/export?format=pdf — Moms-rapport som PDF
+ * (#464). Kun PDF understøttes; CSV-eksport af Moms er ikke en separat
+ * use case — momsangivelsens form er stabil og bedst som PDF.
+ */
+function handleCompanyVatExport(
+  config: ServerConfig,
+  slug: string,
+  url: URL,
+): Response {
+  const format = (url.searchParams.get("format") ?? "pdf").toLowerCase();
+  if (format !== "pdf") {
+    throw ApiError.badRequest(
+      `format=${format} understøttes ikke — kun pdf er gyldig for moms-eksport.`,
+    );
+  }
+  const year = resolveYearParam(url.searchParams.get("year"));
+  const exported = exportVatPdf(config.workspaceRoot, slug, year);
+  return new Response(exported.content, {
+    headers: {
+      "content-type": "application/pdf",
+      "content-disposition": `attachment; filename*=UTF-8''${encodeURIComponent(exported.filename)}`,
+      "x-content-type-options": "nosniff",
+      "cache-control": "private, no-store",
+    },
+  });
+}
+
 function handleCompanyJournalExport(
   config: ServerConfig,
   slug: string,
@@ -1210,6 +1240,13 @@ export async function handleRequest(
       if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
       const slug = decodeURIComponent(journalExportMatch[1]!);
       return handleCompanyJournalExport(config, slug, url);
+    }
+
+    const vatExportMatch = /^\/api\/companies\/([^/]+)\/vat\/export$/.exec(path);
+    if (vatExportMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(vatExportMatch[1]!);
+      return handleCompanyVatExport(config, slug, url);
     }
 
     const journalMatch = /^\/api\/companies\/([^/]+)\/journal$/.exec(path);
