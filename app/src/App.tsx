@@ -51,6 +51,7 @@ import { SuggestionsView } from "./views/SuggestionsView";
 import { ManageCompanyView } from "./views/ManageCompanyView";
 import { HelpView } from "./views/HelpView";
 import { RulesView } from "./views/RulesView";
+import { RetentionView } from "./views/RetentionView";
 
 export function App() {
   return (
@@ -141,6 +142,10 @@ export function App() {
           />
           <Route path="/help" element={<HelpView />} />
           <Route path="/lovgrundlag" element={<RulesView />} />
+          <Route
+            path="/companies/:slug/retention"
+            element={<RetentionView />}
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

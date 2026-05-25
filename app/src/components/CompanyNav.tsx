@@ -103,6 +103,9 @@ const TAB_GROUPS: { name: string; tabs: NavTab[] }[] = [
     tabs: [
       { to: "arkiv", label: "Arkiv" },
       { to: "fleraar", label: "Flerår" },
+      // #343 — 5-års retention-status pr. data-domæne, så ejeren kan se hvad
+      // der nærmer sig udløb af bogføringspligten.
+      { to: "retention", label: "Retention" },
     ],
   },
 ];

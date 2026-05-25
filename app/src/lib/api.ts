@@ -57,6 +57,7 @@ import type {
   RecurringInvoiceTemplateInput,
   RecurringInvoicesResponse,
   SetBudgetInput,
+  RetentionResponse,
   RulesResponse,
   SyncCvrResponse,
   TrialBalanceResponse,
@@ -133,6 +134,14 @@ export const api = {
    * fra.
    */
   rules: () => request<RulesResponse>("/api/rules"),
+
+  /**
+   * #343 — 5-års retention-status pr. data-domæne for én virksomhed.
+   */
+  retention: (slug: string) =>
+    request<RetentionResponse>(
+      `/api/companies/${encodeURIComponent(slug)}/retention`,
+    ).then((r) => r.retention),
 
   companies: () =>
     request<CompanyListResponse>("/api/companies").then((r) => r.companies),

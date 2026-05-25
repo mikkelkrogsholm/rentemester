@@ -28,6 +28,7 @@ import {
   readRuleBundleMetadata,
   readRuleMetadata,
 } from "../core/rules-metadata";
+import { buildCompanyRetention } from "./data/retention-view";
 import type { ServerConfig } from "./config";
 import { authMiddleware } from "./auth";
 import { ApiError, toErrorResponse } from "./errors";
@@ -200,6 +201,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "GET", pattern: "/api/companies/:slug/trial-balance/export", summary: "Saldobalance som CSV-download (#372)." },
   { method: "GET", pattern: "/api/companies/:slug/journal", summary: "Journalposter." },
   { method: "GET", pattern: "/api/companies/:slug/journal/export", summary: "Posteringer (kassekladde) som CSV-download (#465)." },
+  { method: "GET", pattern: "/api/companies/:slug/retention", summary: "5-års retention-status pr. data-domæne (#343)." },
   { method: "GET", pattern: "/api/companies/:slug/bank", summary: "Bank-transaktioner." },
   { method: "GET", pattern: "/api/companies/:slug/vat", summary: "Momsoplysninger." },
   { method: "GET", pattern: "/api/companies/:slug/documents", summary: "Bilagsliste." },
@@ -351,6 +353,20 @@ function handleCompanyDashboard(
 function handleCompanyFiscalYears(config: ServerConfig, slug: string): Response {
   const data = buildCompanyFiscalYears(config.workspaceRoot, slug);
   return okResponse({ fiscalYears: data });
+}
+
+/**
+ * GET /api/companies/:slug/retention — Retention status view (#343).
+ *
+ * Genbruger `buildRetentionStatusReport` fra kernen og wrapper den i en
+ * cockpit-venlig payload med company-block + dansk rule-citation. Read-only.
+ */
+function handleCompanyRetention(
+  config: ServerConfig,
+  slug: string,
+): Response {
+  const data = buildCompanyRetention(config.workspaceRoot, slug);
+  return okResponse({ retention: data });
 }
 
 function handleCompanyOverview(
@@ -944,6 +960,13 @@ export async function handleRequest(
       if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
       const slug = decodeURIComponent(overviewMatch[1]!);
       return handleCompanyOverview(config, slug, url);
+    }
+
+    const retentionMatch = /^\/api\/companies\/([^/]+)\/retention$/.exec(path);
+    if (retentionMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(retentionMatch[1]!);
+      return handleCompanyRetention(config, slug);
     }
 
     const incomeStatementExportMatch =
