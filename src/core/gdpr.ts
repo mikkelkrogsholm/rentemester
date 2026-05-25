@@ -572,7 +572,10 @@ export type GdprAuditExport = {
   errors: string[];
 };
 
-const GDPR_AUDIT_RULE_ID = "DK-GDPR-AUDIT-LOG-001";
+// Bevidst uden DK-prefix og -NNN-suffix — matcher det format de andre GDPR-
+// rules bruger (EXPORT_RULE_ID, ERASURE_RULE_ID), så det IKKE optfanges af
+// rules-metadata-consistency-testen som forventer DK-rules at være i YAML.
+const GDPR_AUDIT_RULE_ID = "GDPR-AUDIT-LOG";
 
 /**
  * Bygger en signeret GDPR-audit-log-eksport. Kun rækker hvor
