@@ -174,8 +174,8 @@ describe("#372 — Resultatopgørelse CSV-eksport (GET …/income-statement/expo
         "/api/companies/acme-aps/income-statement/export?format=pdf",
       );
       expect(res.status).toBe(400);
-      const body = (await res.json()) as { error: { message: string } };
-      expect(body.error.message).toContain("PDF");
+      const body = (await res.json()) as { errors: string[]; code: string };
+      expect(body.errors[0]).toContain("PDF");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
