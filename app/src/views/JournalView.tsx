@@ -110,6 +110,16 @@ export function JournalView() {
           </p>
         </div>
         <div className="row-actions">
+          {/* #465 — revisor-anmodning: hele kassekladden som CSV. URL'en
+              bærer den aktive konto-drilldown med, så ejeren kan eksportere
+              "kun denne konto"-udsnittet direkte. */}
+          <a
+            className="btn secondary"
+            href={api.journalCsvUrl(slug, j.selectedYear, account ?? null)}
+            download
+          >
+            Hent CSV
+          </a>
           <Link className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
           </Link>

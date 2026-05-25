@@ -232,6 +232,18 @@ export const api = {
     return `/api/companies/${encodeURIComponent(slug)}/${report}/export?${params.toString()}`;
   },
 
+  /**
+   * Posteringer (kassekladde) som CSV-download (#465). Samme deterministiske
+   * UTF-8 BOM + semikolon-CSV som de tre kerne-rapporter; et valgfrit
+   * `account` filtrerer drilldown'et til netop den konto.
+   */
+  journalCsvUrl: (slug: string, year?: string, account?: string | null) => {
+    const params = new URLSearchParams({ format: "csv" });
+    if (year) params.set("year", year);
+    if (account) params.set("account", account);
+    return `/api/companies/${encodeURIComponent(slug)}/journal/export?${params.toString()}`;
+  },
+
   /** Recurring-invoice templates + their past generations for a company. */
   recurringInvoices: (slug: string) =>
     request<RecurringInvoicesResponse>(

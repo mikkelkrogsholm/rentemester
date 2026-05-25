@@ -29,6 +29,7 @@ import { ApiError, toErrorResponse } from "./errors";
 import {
   exportBalanceCsv,
   exportIncomeStatementCsv,
+  exportJournalCsv,
   exportTrialBalanceCsv,
   type StatementCsvExport,
 } from "./data/statement-exports";
@@ -192,6 +193,7 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "GET", pattern: "/api/companies/:slug/trial-balance", summary: "Saldobalance." },
   { method: "GET", pattern: "/api/companies/:slug/trial-balance/export", summary: "Saldobalance som CSV-download (#372)." },
   { method: "GET", pattern: "/api/companies/:slug/journal", summary: "Journalposter." },
+  { method: "GET", pattern: "/api/companies/:slug/journal/export", summary: "Posteringer (kassekladde) som CSV-download (#465)." },
   { method: "GET", pattern: "/api/companies/:slug/bank", summary: "Bank-transaktioner." },
   { method: "GET", pattern: "/api/companies/:slug/vat", summary: "Momsoplysninger." },
   { method: "GET", pattern: "/api/companies/:slug/documents", summary: "Bilagsliste." },
@@ -395,6 +397,37 @@ function handleCompanyStatementExport(
   return new Response(exported.content, {
     headers: {
       // text/csv per RFC 4180; charset=utf-8 fordi vi præfikser med en BOM.
+      "content-type": "text/csv; charset=utf-8",
+      "content-disposition": `attachment; filename*=UTF-8''${encodeURIComponent(exported.filename)}`,
+      "x-content-type-options": "nosniff",
+      "cache-control": "private, no-store",
+    },
+  });
+}
+
+/**
+ * GET /api/companies/:slug/journal/export
+ *
+ * #465 — Posteringer (kassekladde) som CSV-download. Samme mønster som
+ * statement-eksporterne (#372/#462): kun `format=csv` understøttes; et
+ * valgfrit `account=<kontonr>` filtrerer til drilldown på en konto.
+ */
+function handleCompanyJournalExport(
+  config: ServerConfig,
+  slug: string,
+  url: URL,
+): Response {
+  const format = (url.searchParams.get("format") ?? "csv").toLowerCase();
+  if (format !== "csv") {
+    throw ApiError.badRequest(
+      `format=${format} understøttes ikke — kun csv er gyldig for posteringer-eksport.`,
+    );
+  }
+  const year = resolveYearParam(url.searchParams.get("year"));
+  const account = url.searchParams.get("account");
+  const exported = exportJournalCsv(config.workspaceRoot, slug, year, account);
+  return new Response(exported.content, {
+    headers: {
       "content-type": "text/csv; charset=utf-8",
       "content-disposition": `attachment; filename*=UTF-8''${encodeURIComponent(exported.filename)}`,
       "x-content-type-options": "nosniff",
@@ -914,6 +947,13 @@ export async function handleRequest(
       if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
       const slug = decodeURIComponent(trialBalanceMatch[1]!);
       return handleCompanyTrialBalance(config, slug, url);
+    }
+
+    const journalExportMatch = /^\/api\/companies\/([^/]+)\/journal\/export$/.exec(path);
+    if (journalExportMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(journalExportMatch[1]!);
+      return handleCompanyJournalExport(config, slug, url);
     }
 
     const journalMatch = /^\/api\/companies\/([^/]+)\/journal$/.exec(path);

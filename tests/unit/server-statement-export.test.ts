@@ -25,6 +25,7 @@ import { ingestDocument } from "../../src/core/documents";
 import {
   exportBalanceCsv,
   exportIncomeStatementCsv,
+  exportJournalCsv,
   exportTrialBalanceCsv,
 } from "../../src/server/data/statement-exports";
 
@@ -249,6 +250,87 @@ describe("#372 — Saldobalance CSV-eksport (GET …/trial-balance/export)", () 
   });
 });
 
+describe("#465 — Posteringer CSV-eksport (GET …/journal/export)", () => {
+  test("returnerer en CSV med dansk header-række og en linje pr. konto-bevægelse", async () => {
+    const ws = makeWorkspace("jrn-csv", ["Acme ApS"]);
+    try {
+      postPnlEntry(ws, "acme-aps", "2026-03-15", 1000, 400);
+      const res = await fetchRaw(
+        config(ws),
+        "/api/companies/acme-aps/journal/export?format=csv&year=2026",
+      );
+      expect(res.status).toBe(200);
+      expect(res.headers.get("content-type")).toContain("text/csv");
+      const cd = res.headers.get("content-disposition") ?? "";
+      expect(cd).toContain("attachment");
+      expect(cd).toContain("posteringer-acme-aps-2026.csv");
+      const body = await res.text();
+      // BOM + sep=; preamble for Excel.
+      expect(body.charCodeAt(0)).toBe(0xfeff);
+      expect(body).toContain("sep=;");
+      expect(body).toContain("Rapport;Posteringer");
+      expect(body).toContain("Dato;Bilag;Konto;Kontonavn;Tekst;Debet;Kredit");
+      // Salgs- og købsposterne berører de seedede konti.
+      expect(body).toContain("2000");
+      expect(body).toContain("1000");
+      expect(body).toContain("3000");
+      // Total-linjen lukker filen.
+      expect(body).toContain("I alt");
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
+  test("account=<kontonr> filtrerer til posteringer der rør den konto", async () => {
+    const ws = makeWorkspace("jrn-csv-acc", ["Acme ApS"]);
+    try {
+      postPnlEntry(ws, "acme-aps", "2026-03-15", 1000, 0); // kun salg
+      postPnlEntry(ws, "acme-aps", "2026-03-16", 0, 400); // kun køb
+      const res = await fetchRaw(
+        config(ws),
+        "/api/companies/acme-aps/journal/export?format=csv&year=2026&account=3000",
+      );
+      expect(res.status).toBe(200);
+      const body = await res.text();
+      expect(body).toContain("Kontofilter;3000");
+      // Salget berørte ikke 3000 (det er en udgiftskonto) — det skal være væk.
+      expect(body).toContain("3000");
+      expect(body).not.toContain("Salg");
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
+  test("format=pdf afvises med en 400 og en dansk hint", async () => {
+    const ws = makeWorkspace("jrn-pdf-reject", ["Acme ApS"]);
+    try {
+      const res = await fetchRaw(
+        config(ws),
+        "/api/companies/acme-aps/journal/export?format=pdf",
+      );
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { errors: string[]; code: string };
+      expect(body.errors[0]).toContain("pdf");
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
+  test("eksporteren er deterministisk", () => {
+    const ws = makeWorkspace("jrn-det", ["Acme ApS"]);
+    try {
+      postPnlEntry(ws, "acme-aps", "2026-03-15", 1000, 400);
+      const opts = { generatedAtIsoDate: "2026-05-24" };
+      const a = exportJournalCsv(ws, "acme-aps", 2026, null, opts);
+      const b = exportJournalCsv(ws, "acme-aps", 2026, null, opts);
+      expect(a.content).toBe(b.content);
+      expect(a.filename).toBe(b.filename);
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+});
+
 describe("#372 — CSV-builderne er deterministiske", () => {
   test("samme ledger + samme udtrækningsdato giver byte-identisk CSV", () => {
     const ws = makeWorkspace("det", ["Acme ApS"]);
@@ -285,6 +367,7 @@ describe("#372 — CSV-builderne er deterministiske", () => {
       );
       expect(patterns).toContain("/api/companies/:slug/balance/export");
       expect(patterns).toContain("/api/companies/:slug/trial-balance/export");
+      expect(patterns).toContain("/api/companies/:slug/journal/export");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }

@@ -21,6 +21,7 @@ import {
   type IncomeStatementLine,
   type TrialBalanceRow,
 } from "./statements";
+import { buildCompanyJournal } from "./company-views";
 import { roundKroner } from "./shared";
 
 /** CRLF per RFC 4180 — Excel på Windows insisterer. */
@@ -271,6 +272,82 @@ export function exportTrialBalanceCsv(
   // engelske Office-installationer; ignoreres af Numbers/Sheets uden skade.
   const content = BOM + `sep=${SEP}` + CRLF + sections.join("");
   const filename = `saldobalance-${safeFilenameSegment(slug)}-${currentYear}.csv`;
+  return { content, filename };
+}
+
+/**
+ * CSV-eksport af Posteringer (kassekladde) for et regnskabsår (#465).
+ *
+ * Én række pr. konto-linje på en posteret entry — så CSV'en er flad og
+ * direkte importerbar i Excel/revisors værktøjer. Kolonner:
+ * Dato, Bilag, Konto, Kontonavn, Tekst, Debet, Kredit. Når et entry har
+ * flere linjer, gentages Dato/Bilag/Tekst på hver linje (klassisk
+ * kassekladde-layout). En total-linje afslutter filen og er "balanceret"
+ * når debet i alt = kredit i alt.
+ *
+ * Når `account` er givet, filtreres til entries der rør den konto — samme
+ * drill-down som cockpittets posteringer-view bruger.
+ */
+export function exportJournalCsv(
+  workspaceRoot: string,
+  slug: string,
+  year: number | null,
+  account: string | null = null,
+  opts: StatementCsvOptions = {},
+): StatementCsvExport {
+  const j = buildCompanyJournal(workspaceRoot, slug, year, account);
+  const currentYear = j.selectedYear;
+
+  const sections: string[] = [];
+  sections.push(metadataBlock("Posteringer", j.company, currentYear, opts));
+  if (j.accountFilter) {
+    sections.push(
+      csvRow([
+        "Kontofilter",
+        `${j.accountFilter.accountNo} ${j.accountFilter.name}`,
+      ]),
+    );
+    sections.push(CRLF);
+  }
+  sections.push(
+    csvRow(["Dato", "Bilag", "Konto", "Kontonavn", "Tekst", "Debet", "Kredit"]),
+  );
+
+  let totalDebit = 0;
+  let totalCredit = 0;
+  // Stabil rækkefølge for deterministisk output: ældste først, så entry-nr,
+  // så linjernes oprindelige rækkefølge. Det modsatte af cockpit-visningen
+  // (newest first), men det er CSV-konventionen revisorer forventer.
+  const sortedEntries = [...j.entries].sort((a, b) =>
+    a.date !== b.date
+      ? a.date.localeCompare(b.date)
+      : a.entryNo.localeCompare(b.entryNo),
+  );
+  for (const entry of sortedEntries) {
+    for (const line of entry.lines) {
+      sections.push(
+        csvRow([
+          entry.date,
+          entry.entryNo,
+          line.accountNo,
+          line.accountName,
+          line.text ?? entry.text,
+          line.debit > 0 ? line.debit : "",
+          line.credit > 0 ? line.credit : "",
+        ]),
+      );
+      totalDebit += line.debit;
+      totalCredit += line.credit;
+    }
+  }
+  sections.push(
+    csvRow(["", "I alt", "", "", "", roundKroner(totalDebit), roundKroner(totalCredit)]),
+  );
+
+  // `sep=;` preamble lader Excel auto-detektere semicolon-separator selv på
+  // engelske Office-installationer; ignoreres af Numbers/Sheets uden skade.
+  const content = BOM + `sep=${SEP}` + CRLF + sections.join("");
+  const filename = `posteringer-${safeFilenameSegment(slug)}-${currentYear}.csv`;
   return { content, filename };
 }
 
