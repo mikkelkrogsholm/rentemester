@@ -96,6 +96,8 @@ const TAB_GROUPS: { name: string; tabs: NavTab[] }[] = [
       { to: "bankkonti", label: "Bankkonti" },
       // #334 — GDPR-indsigt + anonymisering.
       { to: "gdpr", label: "GDPR" },
+      // #337 — Periodiseringsregister.
+      { to: "periodisering", label: "Periodisering" },
     ],
   },
   {

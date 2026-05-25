@@ -58,6 +58,7 @@ import { ExceptionsView } from "./views/ExceptionsView";
 import { PeriodsView } from "./views/PeriodsView";
 import { BankAccountsView } from "./views/BankAccountsView";
 import { GdprView } from "./views/GdprView";
+import { AccrualsView } from "./views/AccrualsView";
 
 export function App() {
   return (
@@ -175,6 +176,10 @@ export function App() {
           <Route
             path="/companies/:slug/gdpr"
             element={<GdprView />}
+          />
+          <Route
+            path="/companies/:slug/periodisering"
+            element={<AccrualsView />}
           />
           <Route path="*" element={<NotFound />} />
         </Routes>

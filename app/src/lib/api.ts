@@ -59,6 +59,7 @@ import type {
   SetBudgetInput,
   AccountsResponse,
   BankAccountsResponse,
+  CompanyAccrualsResponse,
   ExceptionsResponse,
   GdprErasureResult,
   GdprResponse,
@@ -186,6 +187,14 @@ export const api = {
    * POST /api/companies/:slug/exceptions/:id/resolve — closes an open
    * exception. Returns `{ resolved: boolean }`.
    */
+  /**
+   * #337 — Periodiseringsregister (read).
+   */
+  accruals: (slug: string) =>
+    request<CompanyAccrualsResponse>(
+      `/api/companies/${encodeURIComponent(slug)}/accruals`,
+    ).then((r) => r.accruals),
+
   /**
    * #334 — GDPR-indsigt (read). cvr ELLER name skal sættes.
    */
