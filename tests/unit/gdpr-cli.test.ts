@@ -68,6 +68,34 @@ describe("GDPR CLI", () => {
     expect(reExportJson.records[0].personalData.email).toBeNull();
   });
 
+  test("audit-log eksporterer GDPR-handlinger med deterministisk fingerprint (#355)", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-cli-audit-"));
+    const company = join(root, "company");
+    await initCompany(company);
+    // Skab GDPR-events: opret en kunde + kør discover så audit-log'en får
+    // mindst én gdpr_discover-række. Vi behøver ikke en eksport her —
+    // discover er nok til at vise at audit-log'en filtrerer rigtigt.
+    await runCli([
+      "customer", "create", "--company", company,
+      "--name", "Audit Kunde", "--cvr", "DK55555555",
+    ]);
+    await runCli([
+      "gdpr", "discover", "--company", company, "--cvr", "DK55555555",
+    ]);
+    const audit = await runCli([
+      "gdpr", "audit-log", "--company", company,
+    ]);
+    expect(audit.exitCode).toBe(0);
+    const result = JSON.parse(audit.stdout);
+    expect(result.ok).toBe(true);
+    expect(result.events.length).toBeGreaterThanOrEqual(1);
+    // fingerprint er sha256: præfikset
+    expect(result.fingerprint).toMatch(/^sha256:[a-f0-9]{64}$/);
+    // ingen signature uden --sign-with-ed25519
+    expect(result.signature).toBeUndefined();
+    rmSync(root, { recursive: true, force: true });
+  });
+
   test("discover lists rows pr. tabel for et subject (#353)", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-cli-discover-"));
     const company = join(root, "company");

@@ -25,6 +25,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { migrate } from "../core/db";
 import {
+  buildGdprAuditExport,
   buildGdprSubjectExport,
   eraseGdprSubject,
   findGdprSubject,
@@ -87,6 +88,36 @@ export function register(dispatch: CommandDispatch): void {
     migrate(db);
     const result = findGdprSubject(db, readSubject(ctx));
     ctx.emitResult(result as unknown as Record<string, unknown>);
+    db.close();
+    if (!result.ok) process.exit(1);
+  });
+
+  // `gdpr audit-log` — signeret GDPR-audit-log eksport (#355).
+  // Genbruger den eksisterende audit_log-tabel og filtrerer til `gdpr_*`-
+  // events. Med `--sign-with-ed25519` signeres pakken med samme nøgle som
+  // backup-systemet (verificerbar uden Rentemester installeret).
+  dispatch.on("gdpr", "audit-log", (ctx) => {
+    const db = openCommandDb(ctx);
+    migrate(db);
+    const companyRoot = ctx.arg("--company");
+    const signWithEd25519 = ctx.hasFlag("--sign-with-ed25519");
+    const result = buildGdprAuditExport(db, {
+      since: ctx.arg("--since") ?? null,
+      until: ctx.arg("--until") ?? null,
+      asOf: ctx.arg("--as-of") ?? null,
+      signWithEd25519,
+      companyRoot: companyRoot ?? undefined,
+    });
+    const outPath = ctx.trimToNull(ctx.arg("--out"));
+    if (outPath && result.ok) {
+      mkdirSync(join(outPath, ".."), { recursive: true });
+      writeFileSync(outPath, JSON.stringify(result, null, 2));
+    }
+    ctx.emitResult(
+      outPath
+        ? ({ ...result, outPath } as unknown as Record<string, unknown>)
+        : (result as unknown as Record<string, unknown>),
+    );
     db.close();
     if (!result.ok) process.exit(1);
   });

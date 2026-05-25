@@ -776,6 +776,17 @@ export const COMMAND_SPECS: CommandSpec[] = [
   // ===== END EMAIL DELIVERY (#180) =====
   // ===== GDPR (#184) =====
   {
+    key: "gdpr audit-log",
+    usage: "gdpr audit-log --company <path> [--since <YYYY-MM-DD>] [--until <YYYY-MM-DD>] [--as-of <YYYY-MM-DD>] [--out <file>] [--sign-with-ed25519]",
+    description: "Eksporterer alle GDPR-handlinger (export, discover, erasure) som signed JSON-pakke. Genbruger backup-systemets Ed25519-nøgle så pakken kan verificeres uden Rentemester installeret.",
+    allowedFlags: ["--company", "--since", "--until", "--as-of", "--out", "--sign-with-ed25519"],
+    inputNotes: [
+      "Filtrerer audit_log-tabellen til event_type LIKE 'gdpr_%' (export, discover, erasure)",
+      "fingerprint er sha256 af det deterministiske JSON-output uden signature-feltet selv",
+      "--sign-with-ed25519 kræver at backup-nøgleparret er genereret én gang via 'system backup --sign-with-ed25519'",
+    ],
+  },
+  {
     key: "gdpr discover",
     usage: "gdpr discover --company <path> (--cvr <DK...> | --subject <id> | --name <text>) [--as-of <YYYY-MM-DD>]",
     description: "Subject-discovery: lister hvor en data-subject optræder pr. tabel (kunder, leverandører, bilag, banktransaktioner). Hurtigere end 'gdpr export' fordi den ikke beriger med retention-status. Read-only.",
