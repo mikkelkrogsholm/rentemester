@@ -206,10 +206,14 @@ describe("system backups", () => {
     const backup = createSystemBackup(db, companyRoot, { createdAt: oldBackupAt });
     expect(backup.ok).toBe(true);
 
+    // The post-backup transaction must have a date AFTER the backup timestamp.
+    // Use a date derived from statusCheckAt (today) so the comparison is stable
+    // regardless of when the test runs.
+    const postBackupDate = statusCheckAt.slice(0, 10);
     db.run(
       "INSERT INTO bank_transactions (transaction_date, booking_date, text, amount, currency, reference, import_batch_id, source_file_hash, transaction_hash) VALUES (?, ?, ?, ?, 'DKK', ?, ?, ?, ?)",
-      "2026-05-17",
-      "2026-05-17",
+      postBackupDate,
+      postBackupDate,
       "Late customer payment",
       500,
       "REF-2",
