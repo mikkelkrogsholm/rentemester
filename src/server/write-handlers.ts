@@ -1322,12 +1322,12 @@ export async function handleInvoicePreview(
   }
 
   if (!findWorkspaceCompany(config.workspaceRoot, slug)) {
-    throw ApiError.notFound(`no company with slug '${slug}' in the workspace`);
+    throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
   const companyRoot = companyRootForSlug(config.workspaceRoot, slug);
   const dbPath = companyPaths(companyRoot).db;
   if (!existsSync(dbPath)) {
-    throw ApiError.notFound(`company '${slug}' has no ledger`);
+    throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
   const raw = await request.text();
@@ -2690,14 +2690,14 @@ export async function handleCvrLookup(
     "../core/workspace"
   );
   if (!findWorkspaceCompany(config.workspaceRoot, slug)) {
-    throw ApiError.notFound(`no company with slug '${slug}' in the workspace`);
+    throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
   const companyRoot = companyRootForSlug(config.workspaceRoot, slug);
   const { companyPaths } = await import("../core/paths");
   const dbPath = companyPaths(companyRoot).db;
   const { existsSync } = await import("node:fs");
   if (!existsSync(dbPath)) {
-    throw ApiError.notFound(`company '${slug}' has no ledger`);
+    throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
   const { openDb, migrate } = await import("../core/db");
   const db = openDb(dbPath);

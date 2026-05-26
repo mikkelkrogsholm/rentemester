@@ -737,12 +737,12 @@ export type CompanyDocuments = ReturnType<typeof buildCompanyDocuments>;
 export function buildCompanyDocuments(workspaceRoot: string, slug: string) {
   const entry = findWorkspaceCompany(workspaceRoot, slug);
   if (!entry) {
-    throw ApiError.notFound(`no company with slug '${slug}' in the workspace`);
+    throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
   const companyRoot = companyRootForSlug(workspaceRoot, slug);
   const dbPath = companyPaths(companyRoot).db;
   if (!existsSync(dbPath)) {
-    throw ApiError.notFound(`company '${slug}' has no ledger`);
+    throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
   const db = openDb(dbPath);
@@ -862,12 +862,12 @@ export function resolveCompanyDocumentFile(
 ): { path: string; mimeType: string; filename: string } {
   const entry = findWorkspaceCompany(workspaceRoot, slug);
   if (!entry) {
-    throw ApiError.notFound(`no company with slug '${slug}' in the workspace`);
+    throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
   const companyRoot = companyRootForSlug(workspaceRoot, slug);
   const dbPath = companyPaths(companyRoot).db;
   if (!existsSync(dbPath)) {
-    throw ApiError.notFound(`company '${slug}' has no ledger`);
+    throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
   const db = openDb(dbPath);
@@ -953,12 +953,12 @@ export function buildDocumentBookingOptions(
   }
   const entry = findWorkspaceCompany(workspaceRoot, slug);
   if (!entry) {
-    throw ApiError.notFound(`no company with slug '${slug}' in the workspace`);
+    throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
   const companyRoot = companyRootForSlug(workspaceRoot, slug);
   const dbPath = companyPaths(companyRoot).db;
   if (!existsSync(dbPath)) {
-    throw ApiError.notFound(`company '${slug}' has no ledger`);
+    throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
   const db = openDb(dbPath);
   try {
@@ -1076,12 +1076,12 @@ export function resolveCompanyIssuedInvoicePdf(
 ): { path: string; mimeType: string; filename: string } {
   const entry = findWorkspaceCompany(workspaceRoot, slug);
   if (!entry) {
-    throw ApiError.notFound(`no company with slug '${slug}' in the workspace`);
+    throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
   const companyRoot = companyRootForSlug(workspaceRoot, slug);
   const dbPath = companyPaths(companyRoot).db;
   if (!existsSync(dbPath)) {
-    throw ApiError.notFound(`company '${slug}' has no ledger`);
+    throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
   const db = openDb(dbPath);
@@ -1404,12 +1404,12 @@ export type CompanyContacts = ReturnType<typeof buildCompanyContacts>;
 export function buildCompanyContacts(workspaceRoot: string, slug: string) {
   const entry = findWorkspaceCompany(workspaceRoot, slug);
   if (!entry) {
-    throw ApiError.notFound(`no company with slug '${slug}' in the workspace`);
+    throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
   const companyRoot = companyRootForSlug(workspaceRoot, slug);
   const dbPath = companyPaths(companyRoot).db;
   if (!existsSync(dbPath)) {
-    throw ApiError.notFound(`company '${slug}' has no ledger`);
+    throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
   const years = buildCompanyFiscalYears(workspaceRoot, slug).years;
@@ -1949,12 +1949,12 @@ export function buildCompanyRecurringInvoices(
 ): CompanyRecurringInvoices {
   const entry = findWorkspaceCompany(workspaceRoot, slug);
   if (!entry) {
-    throw ApiError.notFound(`no company with slug '${slug}' in the workspace`);
+    throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
   const companyRoot = companyRootForSlug(workspaceRoot, slug);
   const dbPath = companyPaths(companyRoot).db;
   if (!existsSync(dbPath)) {
-    throw ApiError.notFound(`company '${slug}' has no ledger`);
+    throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
   const db = openDb(dbPath);
@@ -2243,12 +2243,12 @@ export function buildCompanyAssets(
 ): CompanyAssets {
   const entry = findWorkspaceCompany(workspaceRoot, slug);
   if (!entry) {
-    throw ApiError.notFound(`no company with slug '${slug}' in the workspace`);
+    throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
   const companyRoot = companyRootForSlug(workspaceRoot, slug);
   const dbPath = companyPaths(companyRoot).db;
   if (!existsSync(dbPath)) {
-    throw ApiError.notFound(`company '${slug}' has no ledger`);
+    throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
   const db = openDb(dbPath);

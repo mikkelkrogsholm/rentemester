@@ -1051,7 +1051,7 @@ async function handleCompanyUpdate(
   request: Request,
 ): Promise<Response> {
   if (!findWorkspaceCompany(config.workspaceRoot, slug)) {
-    throw ApiError.notFound(`no company with slug '${slug}' in the workspace`);
+    throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
   const body = await readJsonBody(request);
   const name = optionalString(body, "name");
@@ -1142,7 +1142,7 @@ export async function handleRequest(
     const method = request.method.toUpperCase();
 
     if (path === "/api" || path === "/api/health") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       return handleHealth(config);
     }
 
@@ -1150,64 +1150,64 @@ export async function handleRequest(
     // through "Hent fra CVR" instead of letting the owner click a button
     // that fails silently when the credentials are missing.
     if (path === "/api/system/cvr-status") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       return handleSystemCvrStatus();
     }
 
     if (path === "/api/portfolio") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       return handlePortfolio(config, url);
     }
 
     if (path === "/api/rules") {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       return handleRules();
     }
 
     if (path === "/api/companies") {
       if (method === "GET") return handleCompanyList(config);
       if (method === "POST") return await handleCompanyCreate(config, request);
-      throw ApiError.methodNotAllowed("GET or POST required");
+      throw ApiError.methodNotAllowed("kun GET eller POST er understøttet på denne rute");
     }
 
     const dashboardMatch = /^\/api\/companies\/([^/]+)\/dashboard$/.exec(path);
     if (dashboardMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(dashboardMatch[1]!);
       return handleCompanyDashboard(config, slug, url);
     }
 
     const fiscalYearsMatch = /^\/api\/companies\/([^/]+)\/fiscal-years$/.exec(path);
     if (fiscalYearsMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(fiscalYearsMatch[1]!);
       return handleCompanyFiscalYears(config, slug);
     }
 
     const overviewMatch = /^\/api\/companies\/([^/]+)\/overview$/.exec(path);
     if (overviewMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(overviewMatch[1]!);
       return handleCompanyOverview(config, slug, url);
     }
 
     const retentionMatch = /^\/api\/companies\/([^/]+)\/retention$/.exec(path);
     if (retentionMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(retentionMatch[1]!);
       return handleCompanyRetention(config, slug);
     }
 
     const integrityMatch = /^\/api\/companies\/([^/]+)\/integrity$/.exec(path);
     if (integrityMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(integrityMatch[1]!);
       return handleCompanyIntegrity(config, slug);
     }
 
     const accountsMatch = /^\/api\/companies\/([^/]+)\/accounts$/.exec(path);
     if (accountsMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(accountsMatch[1]!);
       return handleCompanyAccounts(config, slug);
     }
@@ -1215,7 +1215,7 @@ export async function handleRequest(
     const incomeStatementExportMatch =
       /^\/api\/companies\/([^/]+)\/income-statement\/export$/.exec(path);
     if (incomeStatementExportMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(incomeStatementExportMatch[1]!);
       return handleCompanyStatementExport(config, slug, url, "income-statement");
     }
@@ -1223,21 +1223,21 @@ export async function handleRequest(
     const incomeStatementMatch =
       /^\/api\/companies\/([^/]+)\/income-statement$/.exec(path);
     if (incomeStatementMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(incomeStatementMatch[1]!);
       return handleCompanyIncomeStatement(config, slug, url);
     }
 
     const balanceExportMatch = /^\/api\/companies\/([^/]+)\/balance\/export$/.exec(path);
     if (balanceExportMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(balanceExportMatch[1]!);
       return handleCompanyStatementExport(config, slug, url, "balance");
     }
 
     const balanceMatch = /^\/api\/companies\/([^/]+)\/balance$/.exec(path);
     if (balanceMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(balanceMatch[1]!);
       return handleCompanyBalance(config, slug, url);
     }
@@ -1245,7 +1245,7 @@ export async function handleRequest(
     const trialBalanceExportMatch =
       /^\/api\/companies\/([^/]+)\/trial-balance\/export$/.exec(path);
     if (trialBalanceExportMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(trialBalanceExportMatch[1]!);
       return handleCompanyStatementExport(config, slug, url, "trial-balance");
     }
@@ -1253,49 +1253,49 @@ export async function handleRequest(
     const trialBalanceMatch =
       /^\/api\/companies\/([^/]+)\/trial-balance$/.exec(path);
     if (trialBalanceMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(trialBalanceMatch[1]!);
       return handleCompanyTrialBalance(config, slug, url);
     }
 
     const journalExportMatch = /^\/api\/companies\/([^/]+)\/journal\/export$/.exec(path);
     if (journalExportMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(journalExportMatch[1]!);
       return handleCompanyJournalExport(config, slug, url);
     }
 
     const vatExportMatch = /^\/api\/companies\/([^/]+)\/vat\/export$/.exec(path);
     if (vatExportMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(vatExportMatch[1]!);
       return handleCompanyVatExport(config, slug, url);
     }
 
     const journalMatch = /^\/api\/companies\/([^/]+)\/journal$/.exec(path);
     if (journalMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(journalMatch[1]!);
       return handleCompanyJournal(config, slug, url);
     }
 
     const bankMatch = /^\/api\/companies\/([^/]+)\/bank$/.exec(path);
     if (bankMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(bankMatch[1]!);
       return handleCompanyBank(config, slug, url);
     }
 
     const vatMatch = /^\/api\/companies\/([^/]+)\/vat$/.exec(path);
     if (vatMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(vatMatch[1]!);
       return handleCompanyVat(config, slug, url);
     }
 
     const documentsMatch = /^\/api\/companies\/([^/]+)\/documents$/.exec(path);
     if (documentsMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(documentsMatch[1]!);
       return handleCompanyDocuments(config, slug);
     }
@@ -1303,7 +1303,7 @@ export async function handleRequest(
     const documentFileMatch =
       /^\/api\/companies\/([^/]+)\/documents\/(\d+)\/file$/.exec(path);
     if (documentFileMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(documentFileMatch[1]!);
       return handleCompanyDocumentFile(config, slug, documentFileMatch[2]!);
     }
@@ -1312,7 +1312,7 @@ export async function handleRequest(
     const documentBookingOptionsMatch =
       /^\/api\/companies\/([^/]+)\/documents\/(\d+)\/booking-options$/.exec(path);
     if (documentBookingOptionsMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(documentBookingOptionsMatch[1]!);
       return handleCompanyDocumentBookingOptions(
         config,
@@ -1332,13 +1332,13 @@ export async function handleRequest(
       // attribution, requireConfirm) — see `handleCreateRecurringInvoiceTemplate`.
       if (method === "POST")
         return await handleCreateRecurringInvoiceTemplate(config, request, slug);
-      throw ApiError.methodNotAllowed("GET or POST required");
+      throw ApiError.methodNotAllowed("kun GET eller POST er understøttet på denne rute");
     }
 
     const recurringInvoiceGenerateMatch =
       /^\/api\/companies\/([^/]+)\/recurring-invoices\/(\d+)\/generate$/.exec(path);
     if (recurringInvoiceGenerateMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(recurringInvoiceGenerateMatch[1]!);
       return await handleGenerateRecurringInvoice(
         config,
@@ -1357,7 +1357,7 @@ export async function handleRequest(
     const recurringInvoiceRetireMatch =
       /^\/api\/companies\/([^/]+)\/recurring-invoices\/(\d+)\/retire$/.exec(path);
     if (recurringInvoiceRetireMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(recurringInvoiceRetireMatch[1]!);
       return await handleRetireRecurringInvoiceTemplate(
         config,
@@ -1370,7 +1370,7 @@ export async function handleRequest(
     const archiveMatch =
       /^\/api\/companies\/([^/]+)\/archive\/([^/]+)$/.exec(path);
     if (archiveMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(archiveMatch[1]!);
       const year = decodeURIComponent(archiveMatch[2]!);
       return handleCompanyArchiveYear(config, slug, year);
@@ -1378,14 +1378,14 @@ export async function handleRequest(
 
     const multiYearMatch = /^\/api\/companies\/([^/]+)\/multi-year$/.exec(path);
     if (multiYearMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(multiYearMatch[1]!);
       return handleCompanyMultiYear(config, slug);
     }
 
     const invoicesMatch = /^\/api\/companies\/([^/]+)\/invoices$/.exec(path);
     if (invoicesMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(invoicesMatch[1]!);
       return handleCompanyInvoices(config, slug, url);
     }
@@ -1396,14 +1396,14 @@ export async function handleRequest(
     const invoicePdfMatch =
       /^\/api\/companies\/([^/]+)\/invoices\/(\d+)\/pdf$/.exec(path);
     if (invoicePdfMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(invoicePdfMatch[1]!);
       return handleCompanyInvoicePdf(config, slug, invoicePdfMatch[2]!);
     }
 
     const contactsMatch = /^\/api\/companies\/([^/]+)\/contacts$/.exec(path);
     if (contactsMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(contactsMatch[1]!);
       return handleCompanyContacts(config, slug);
     }
@@ -1413,7 +1413,7 @@ export async function handleRequest(
     const createCustomerMatch =
       /^\/api\/companies\/([^/]+)\/customers$/.exec(path);
     if (createCustomerMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(createCustomerMatch[1]!);
       return await handleCreateCustomer(config, request, slug);
     }
@@ -1438,13 +1438,13 @@ export async function handleRequest(
           customerByIdMatch[2]!,
         );
       }
-      throw ApiError.methodNotAllowed("PATCH or DELETE required");
+      throw ApiError.methodNotAllowed("kun PATCH eller DELETE er understøttet på denne rute");
     }
 
     const createVendorMatch =
       /^\/api\/companies\/([^/]+)\/vendors$/.exec(path);
     if (createVendorMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(createVendorMatch[1]!);
       return await handleCreateVendor(config, request, slug);
     }
@@ -1469,14 +1469,14 @@ export async function handleRequest(
           vendorByIdMatch[2]!,
         );
       }
-      throw ApiError.methodNotAllowed("PATCH or DELETE required");
+      throw ApiError.methodNotAllowed("kun PATCH eller DELETE er understøttet på denne rute");
     }
 
     // CVR lookup helper for the Kontakter modal (#390) — read-only enrichment.
     const cvrLookupMatch =
       /^\/api\/companies\/([^/]+)\/cvr-lookup$/.exec(path);
     if (cvrLookupMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(cvrLookupMatch[1]!);
       return await handleCvrLookup(config, request, slug);
     }
@@ -1489,12 +1489,14 @@ export async function handleRequest(
       if (method === "PATCH") {
         return await handleCompanyProfile(config, request, slug);
       }
-      throw ApiError.methodNotAllowed("GET or PATCH required");
+      throw ApiError.methodNotAllowed(
+        "kun GET eller PATCH er understøttet på denne rute",
+      );
     }
 
     const syncCvrMatch = /^\/api\/companies\/([^/]+)\/sync-cvr$/.exec(path);
     if (syncCvrMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(syncCvrMatch[1]!);
       return await handleCompanySyncCvr(config, slug);
     }
@@ -1502,14 +1504,14 @@ export async function handleRequest(
     const obligationsMatch =
       /^\/api\/companies\/([^/]+)\/obligations$/.exec(path);
     if (obligationsMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(obligationsMatch[1]!);
       return handleCompanyObligations(config, slug, url);
     }
 
     const cashflowMatch = /^\/api\/companies\/([^/]+)\/cashflow$/.exec(path);
     if (cashflowMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(cashflowMatch[1]!);
       return handleCompanyCashflow(config, slug, url);
     }
@@ -1522,7 +1524,7 @@ export async function handleRequest(
       const slug = decodeURIComponent(mileageMatch[1]!);
       if (method === "GET") return handleCompanyMileage(config, slug, url);
       if (method === "POST") return await handleMileageCreate(config, request, slug);
-      throw ApiError.methodNotAllowed("GET or POST required");
+      throw ApiError.methodNotAllowed("kun GET eller POST er understøttet på denne rute");
     }
 
     // Budget endpoints (#339). The longer `/budget-vs-actual` route MUST come
@@ -1530,7 +1532,7 @@ export async function handleRequest(
     const budgetVsActualMatch =
       /^\/api\/companies\/([^/]+)\/budget-vs-actual$/.exec(path);
     if (budgetVsActualMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(budgetVsActualMatch[1]!);
       return handleCompanyBudgetVsActual(config, slug, url);
     }
@@ -1540,14 +1542,14 @@ export async function handleRequest(
       const slug = decodeURIComponent(budgetMatch[1]!);
       if (method === "GET") return handleCompanyBudget(config, slug, url);
       if (method === "POST") return await handleSetBudget(config, request, slug);
-      throw ApiError.methodNotAllowed("GET or POST required");
+      throw ApiError.methodNotAllowed("kun GET eller POST er understøttet på denne rute");
     }
 
     // Exceptions queue read endpoint (#332).
     const exceptionsListMatch =
       /^\/api\/companies\/([^/]+)\/exceptions$/.exec(path);
     if (exceptionsListMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(exceptionsListMatch[1]!);
       return handleCompanyExceptions(config, slug, url);
     }
@@ -1556,7 +1558,7 @@ export async function handleRequest(
     const periodsListMatch =
       /^\/api\/companies\/([^/]+)\/periods$/.exec(path);
     if (periodsListMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(periodsListMatch[1]!);
       return handleCompanyPeriods(config, slug);
     }
@@ -1568,20 +1570,20 @@ export async function handleRequest(
       if (method === "GET") return handleCompanyBankAccounts(config, slug);
       if (method === "POST")
         return await handleCreateBankAccount(config, request, slug);
-      throw ApiError.methodNotAllowed("GET or POST required");
+      throw ApiError.methodNotAllowed("kun GET eller POST er understøttet på denne rute");
     }
 
     // GDPR export (read) + erase (write) (#334).
     const gdprExportMatch = /^\/api\/companies\/([^/]+)\/gdpr\/export$/.exec(path);
     if (gdprExportMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(gdprExportMatch[1]!);
       return handleCompanyGdprExport(config, slug, url);
     }
 
     const gdprEraseMatch = /^\/api\/companies\/([^/]+)\/gdpr\/erase$/.exec(path);
     if (gdprEraseMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(gdprEraseMatch[1]!);
       return await handleGdprErase(config, request, slug);
     }
@@ -1589,7 +1591,7 @@ export async function handleRequest(
     // Accruals (periodiseringsregister) read endpoint (#337).
     const accrualsMatch = /^\/api\/companies\/([^/]+)\/accruals$/.exec(path);
     if (accrualsMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(accrualsMatch[1]!);
       return handleCompanyAccruals(config, slug);
     }
@@ -1597,7 +1599,7 @@ export async function handleRequest(
     // Annual-report builder read endpoint (#338).
     const annualReportMatch = /^\/api\/companies\/([^/]+)\/annual-report$/.exec(path);
     if (annualReportMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(annualReportMatch[1]!);
       return handleCompanyAnnualReport(config, slug, url);
     }
@@ -1605,7 +1607,7 @@ export async function handleRequest(
     // Bilagsmail read endpoint (#348/#350/#351).
     const bilagsmailMatch = /^\/api\/companies\/([^/]+)\/bilagsmail$/.exec(path);
     if (bilagsmailMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(bilagsmailMatch[1]!);
       return handleCompanyBilagsmail(config, slug);
     }
@@ -1619,14 +1621,14 @@ export async function handleRequest(
         return await handleSaveBilagsmailImapConfig(config, request, slug);
       if (method === "DELETE")
         return await handleDeleteBilagsmailImapConfig(config, request, slug);
-      throw ApiError.methodNotAllowed("POST or DELETE required");
+      throw ApiError.methodNotAllowed("kun POST eller DELETE er understøttet på denne rute");
     }
 
     // Bilagsmail alias write (#350).
     const bilagsmailAliasMatch =
       /^\/api\/companies\/([^/]+)\/bilagsmail\/alias$/.exec(path);
     if (bilagsmailAliasMatch) {
-      if (method !== "PATCH") throw ApiError.methodNotAllowed("PATCH required");
+      if (method !== "PATCH") throw ApiError.methodNotAllowed("kun PATCH er understøttet på denne rute");
       const slug = decodeURIComponent(bilagsmailAliasMatch[1]!);
       return await handleSetBilagsmailAlias(config, request, slug);
     }
@@ -1635,7 +1637,7 @@ export async function handleRequest(
     const resolveExceptionMatch =
       /^\/api\/companies\/([^/]+)\/exceptions\/([^/]+)\/resolve$/.exec(path);
     if (resolveExceptionMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(resolveExceptionMatch[1]!);
       const id = decodeURIComponent(resolveExceptionMatch[2]!);
       return await handleResolveException(config, request, slug, id);
@@ -1645,7 +1647,7 @@ export async function handleRequest(
     const bankImportMatch =
       /^\/api\/companies\/([^/]+)\/bank\/import$/.exec(path);
     if (bankImportMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(bankImportMatch[1]!);
       return await handleBankImport(config, request, slug);
     }
@@ -1654,7 +1656,7 @@ export async function handleRequest(
     // an export file came from and routes it to the matching core importer.
     const dataImportMatch = /^\/api\/companies\/([^/]+)\/import$/.exec(path);
     if (dataImportMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(dataImportMatch[1]!);
       return await handleDataImport(config, request, slug);
     }
@@ -1664,7 +1666,7 @@ export async function handleRequest(
     const accountantExportMatch =
       /^\/api\/companies\/([^/]+)\/accountant-export$/.exec(path);
     if (accountantExportMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(accountantExportMatch[1]!);
       return await handleAccountantExport(config, request, slug);
     }
@@ -1673,7 +1675,7 @@ export async function handleRequest(
     const documentIngestMatch =
       /^\/api\/companies\/([^/]+)\/documents\/ingest$/.exec(path);
     if (documentIngestMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(documentIngestMatch[1]!);
       return await handleDocumentIngest(config, request, slug);
     }
@@ -1685,7 +1687,7 @@ export async function handleRequest(
     const documentBookExpenseMatch =
       /^\/api\/companies\/([^/]+)\/documents\/book-expense$/.exec(path);
     if (documentBookExpenseMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(documentBookExpenseMatch[1]!);
       return await handleDocumentBookExpense(config, request, slug);
     }
@@ -1694,7 +1696,7 @@ export async function handleRequest(
     const invoiceIssueMatch =
       /^\/api\/companies\/([^/]+)\/invoices\/issue$/.exec(path);
     if (invoiceIssueMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(invoiceIssueMatch[1]!);
       return await handleInvoiceIssue(config, request, slug);
     }
@@ -1708,7 +1710,7 @@ export async function handleRequest(
     const invoicePreviewMatch =
       /^\/api\/companies\/([^/]+)\/invoices\/preview$/.exec(path);
     if (invoicePreviewMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(invoicePreviewMatch[1]!);
       return await handleInvoicePreview(config, request, slug);
     }
@@ -1717,7 +1719,7 @@ export async function handleRequest(
     const invoicePostMatch =
       /^\/api\/companies\/([^/]+)\/invoices\/post$/.exec(path);
     if (invoicePostMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(invoicePostMatch[1]!);
       return await handleInvoicePost(config, request, slug);
     }
@@ -1726,7 +1728,7 @@ export async function handleRequest(
     const invoiceSettleMatch =
       /^\/api\/companies\/([^/]+)\/invoices\/settle$/.exec(path);
     if (invoiceSettleMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(invoiceSettleMatch[1]!);
       return await handleInvoiceSettle(config, request, slug);
     }
@@ -1737,7 +1739,7 @@ export async function handleRequest(
     const invoiceCreditMatch =
       /^\/api\/companies\/([^/]+)\/invoices\/credit-note$/.exec(path);
     if (invoiceCreditMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(invoiceCreditMatch[1]!);
       return await handleInvoiceCreditNote(config, request, slug);
     }
@@ -1751,7 +1753,7 @@ export async function handleRequest(
     const invoiceSendPublicMatch =
       /^\/api\/companies\/([^/]+)\/invoices\/send-public$/.exec(path);
     if (invoiceSendPublicMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(invoiceSendPublicMatch[1]!);
       return await handleInvoiceSendPublic(config, request, slug);
     }
@@ -1765,7 +1767,7 @@ export async function handleRequest(
     const invoiceSendEmailMatch =
       /^\/api\/companies\/([^/]+)\/invoices\/send-email$/.exec(path);
     if (invoiceSendEmailMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(invoiceSendEmailMatch[1]!);
       return await handleInvoiceSendEmail(config, request, slug);
     }
@@ -1780,7 +1782,7 @@ export async function handleRequest(
     const invoiceSendReminderMatch =
       /^\/api\/companies\/([^/]+)\/invoices\/send-reminder$/.exec(path);
     if (invoiceSendReminderMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(invoiceSendReminderMatch[1]!);
       return await handleInvoiceSendReminder(config, request, slug);
     }
@@ -1790,7 +1792,7 @@ export async function handleRequest(
     const payablePayMatch =
       /^\/api\/companies\/([^/]+)\/payables\/(\d+)\/pay$/.exec(path);
     if (payablePayMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(payablePayMatch[1]!);
       return await handlePayablePay(config, request, slug, payablePayMatch[2]!);
     }
@@ -1802,7 +1804,7 @@ export async function handleRequest(
       if (method === "POST") {
         return await handlePayableRegister(config, request, slug);
       }
-      throw ApiError.methodNotAllowed("GET or POST required");
+      throw ApiError.methodNotAllowed("kun GET eller POST er understøttet på denne rute");
     }
 
     // Bookkeeping write route (#287): close an accounting period — the
@@ -1810,7 +1812,7 @@ export async function handleRequest(
     const periodCloseMatch =
       /^\/api\/companies\/([^/]+)\/periods\/close$/.exec(path);
     if (periodCloseMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(periodCloseMatch[1]!);
       return await handleClosePeriod(config, request, slug);
     }
@@ -1820,7 +1822,7 @@ export async function handleRequest(
     const periodReopenMatch =
       /^\/api\/companies\/([^/]+)\/periods\/reopen$/.exec(path);
     if (periodReopenMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(periodReopenMatch[1]!);
       return await handleReopenPeriod(config, request, slug);
     }
@@ -1837,13 +1839,13 @@ export async function handleRequest(
       if (method === "GET") return handleCompanyAssets(config, slug);
       if (method === "POST")
         return await handleAssetRegister(config, request, slug);
-      throw ApiError.methodNotAllowed("GET or POST required");
+      throw ApiError.methodNotAllowed("kun GET eller POST er understøttet på denne rute");
     }
 
     const assetWriteOffMatch =
       /^\/api\/companies\/([^/]+)\/assets\/write-off$/.exec(path);
     if (assetWriteOffMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(assetWriteOffMatch[1]!);
       return await handleAssetWriteOff(config, request, slug);
     }
@@ -1851,7 +1853,7 @@ export async function handleRequest(
     const assetNextDepreciationMatch =
       /^\/api\/companies\/([^/]+)\/assets\/(\d+)\/next-depreciation$/.exec(path);
     if (assetNextDepreciationMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(assetNextDepreciationMatch[1]!);
       return handleAssetNextDepreciation(
         config,
@@ -1863,7 +1865,7 @@ export async function handleRequest(
     const assetDepreciateMatch =
       /^\/api\/companies\/([^/]+)\/assets\/(\d+)\/depreciate$/.exec(path);
     if (assetDepreciateMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(assetDepreciateMatch[1]!);
       return await handleAssetDepreciate(
         config,
@@ -1886,7 +1888,7 @@ export async function handleRequest(
         path,
       );
     if (agentSuggestionApproveMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(agentSuggestionApproveMatch[1]!);
       return await handleApproveAgentSuggestion(
         config,
@@ -1901,7 +1903,7 @@ export async function handleRequest(
         path,
       );
     if (agentSuggestionRejectMatch) {
-      if (method !== "POST") throw ApiError.methodNotAllowed("POST required");
+      if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");
       const slug = decodeURIComponent(agentSuggestionRejectMatch[1]!);
       return await handleRejectAgentSuggestion(
         config,
@@ -1914,7 +1916,7 @@ export async function handleRequest(
     const agentSuggestionsMatch =
       /^\/api\/companies\/([^/]+)\/agent-suggestions$/.exec(path);
     if (agentSuggestionsMatch) {
-      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(agentSuggestionsMatch[1]!);
       return handleCompanyAgentSuggestions(config, slug);
     }
@@ -1923,7 +1925,7 @@ export async function handleRequest(
     if (companyMatch) {
       const slug = decodeURIComponent(companyMatch[1]!);
       if (method === "PATCH") return await handleCompanyUpdate(config, slug, request);
-      throw ApiError.methodNotAllowed("PATCH required");
+      throw ApiError.methodNotAllowed("kun PATCH er understøttet på denne rute");
     }
 
     // Anything under /api that did not match a route is a JSON 404. Any other

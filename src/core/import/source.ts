@@ -65,7 +65,31 @@ function isZipPath(path: string): boolean {
  */
 function unzipToTempDir(zipPath: string): string {
   const dest = mkdtempSync(join(tmpdir(), "rentemester-import-"));
-  const result = spawnSync("unzip", ["-q", "-o", zipPath, "-d", dest], { encoding: "utf8" });
+  // #199 — Dinero-exports carry some entry names i CP437 (legacy DOS-encoding),
+  // især `Ikke-bogførte-bilag/`-mappen. På Info-ZIP-builds (Linux) tager
+  // `-O CP437` flaget den encoding og transcoder til filesystem-locale — så
+  // de danske tegn overlever som UTF-8. På BSD unzip (macOS) eksisterer
+  // flaget ikke; vi falder tilbage til plain unzip og tolerer at de få
+  // entries med ikke-UTF-8 navne droppes (#192's eksisterende mitigation).
+  const tryWithCharset = spawnSync(
+    "unzip",
+    ["-q", "-O", "CP437", "-o", zipPath, "-d", dest],
+    { encoding: "utf8" },
+  );
+  const charsetSupported =
+    !tryWithCharset.error &&
+    readdirSync(dest).length > 0 &&
+    !/invalid option|unknown option/i.test(tryWithCharset.stderr ?? "");
+  let result = tryWithCharset;
+  if (!charsetSupported) {
+    // BSD unzip rejects -O — reset dest så et halvt-pakket træ fra forsøget
+    // ikke smelter ind i fallback'en, og kør så plain unzip.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require("node:fs") as typeof import("node:fs");
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    result = spawnSync("unzip", ["-q", "-o", zipPath, "-d", dest], { encoding: "utf8" });
+  }
   if (result.error) {
     throw new Error(`failed to run 'unzip' for '${zipPath}': ${result.error.message}`);
   }

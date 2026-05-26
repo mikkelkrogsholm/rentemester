@@ -38,12 +38,12 @@ export function buildCompanyBankAccounts(
 ): CompanyBankAccountsView {
   const entry = findWorkspaceCompany(workspaceRoot, slug);
   if (!entry) {
-    throw ApiError.notFound(`no company with slug '${slug}' in the workspace`);
+    throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
   const companyRoot = companyRootForSlug(workspaceRoot, slug);
   const dbPath = companyPaths(companyRoot).db;
   if (!existsSync(dbPath)) {
-    throw ApiError.notFound(`company '${slug}' has no ledger`);
+    throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
   const db = openDb(dbPath);
   try {
