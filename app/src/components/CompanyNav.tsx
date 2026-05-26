@@ -100,6 +100,8 @@ const TAB_GROUPS: { name: string; tabs: NavTab[] }[] = [
       { to: "periodisering", label: "Periodisering" },
       // #338 — Årsrapport-builder.
       { to: "aarsrapport", label: "Årsrapport" },
+      // #348-#352 — Bilagsmail: IMAP-config, mail-alias, inbox.
+      { to: "bilagsmail", label: "Bilagsmail" },
     ],
   },
   {

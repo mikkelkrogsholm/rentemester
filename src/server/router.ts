@@ -37,6 +37,7 @@ import { buildCompanyBankAccounts } from "./data/bank-accounts-view";
 import { buildCompanyGdprExport } from "./data/gdpr-view";
 import { buildCompanyAccruals } from "./data/accruals-view";
 import { buildCompanyAnnualReport } from "./data/annual-report-view";
+import { buildCompanyBilagsmail } from "./data/bilagsmail-view";
 import type { ServerConfig } from "./config";
 import { authMiddleware } from "./auth";
 import { ApiError, toErrorResponse } from "./errors";
@@ -96,7 +97,10 @@ import {
   handleBankImport,
   handleClosePeriod,
   handleCreateBankAccount,
+  handleDeleteBilagsmailImapConfig,
   handleGdprErase,
+  handleSaveBilagsmailImapConfig,
+  handleSetBilagsmailAlias,
   handleCompanyProfile,
   handleCreateCustomer,
   handleCreateVendor,
@@ -254,6 +258,10 @@ export const ROUTE_CATALOG: ReadonlyArray<{
   { method: "POST", pattern: "/api/companies/:slug/bank-accounts", summary: "Opretter en bankkonto (#345)." },
   { method: "GET", pattern: "/api/companies/:slug/gdpr/export", summary: "GDPR-indsigt — finder personoplysninger for en data-subject (#334)." },
   { method: "POST", pattern: "/api/companies/:slug/gdpr/erase", summary: "GDPR-anonymisering — append-only tombstones (#334)." },
+  { method: "GET", pattern: "/api/companies/:slug/bilagsmail", summary: "Bilagsmail-status: IMAP-config, alias, inbox (#348/#350/#351)." },
+  { method: "POST", pattern: "/api/companies/:slug/bilagsmail/imap-config", summary: "Gemmer IMAP-config til config/imap.json (#348)." },
+  { method: "DELETE", pattern: "/api/companies/:slug/bilagsmail/imap-config", summary: "Sletter den gemte IMAP-config (#348)." },
+  { method: "PATCH", pattern: "/api/companies/:slug/bilagsmail/alias", summary: "Sætter eller rydder mail-alias (#350)." },
   { method: "GET", pattern: "/api/companies/:slug/accruals", summary: "Periodiseringsregister (#337)." },
   { method: "GET", pattern: "/api/companies/:slug/annual-report", summary: "Årsrapport-builder (regnskabsklasse-B) (#338)." },
   { method: "POST", pattern: "/api/companies/:slug/bank/import", summary: "Importerer bank-CSV." },
@@ -487,6 +495,21 @@ function handleCompanyAccruals(
  * GET /api/companies/:slug/annual-report?fiscalYearStart=&fiscalYearEnd= —
  * Årsrapport-builder (#338). Read-only.
  */
+/**
+ * GET /api/companies/:slug/bilagsmail — Bilagsmail-status (#348/#350/#351).
+ *
+ * Read-only: returnerer IMAP-config-status (uden password), mail-alias, og
+ * inbox-listen over mail-drop-dokumenter. Write-handlers ligger på de
+ * separate /imap-config + /alias paths.
+ */
+function handleCompanyBilagsmail(
+  config: ServerConfig,
+  slug: string,
+): Response {
+  const data = buildCompanyBilagsmail(config.workspaceRoot, slug);
+  return okResponse({ bilagsmail: data });
+}
+
 function handleCompanyAnnualReport(
   config: ServerConfig,
   slug: string,
@@ -1577,6 +1600,35 @@ export async function handleRequest(
       if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
       const slug = decodeURIComponent(annualReportMatch[1]!);
       return handleCompanyAnnualReport(config, slug, url);
+    }
+
+    // Bilagsmail read endpoint (#348/#350/#351).
+    const bilagsmailMatch = /^\/api\/companies\/([^/]+)\/bilagsmail$/.exec(path);
+    if (bilagsmailMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("GET required");
+      const slug = decodeURIComponent(bilagsmailMatch[1]!);
+      return handleCompanyBilagsmail(config, slug);
+    }
+
+    // Bilagsmail IMAP-config write (#348).
+    const imapConfigMatch =
+      /^\/api\/companies\/([^/]+)\/bilagsmail\/imap-config$/.exec(path);
+    if (imapConfigMatch) {
+      const slug = decodeURIComponent(imapConfigMatch[1]!);
+      if (method === "POST")
+        return await handleSaveBilagsmailImapConfig(config, request, slug);
+      if (method === "DELETE")
+        return await handleDeleteBilagsmailImapConfig(config, request, slug);
+      throw ApiError.methodNotAllowed("POST or DELETE required");
+    }
+
+    // Bilagsmail alias write (#350).
+    const bilagsmailAliasMatch =
+      /^\/api\/companies\/([^/]+)\/bilagsmail\/alias$/.exec(path);
+    if (bilagsmailAliasMatch) {
+      if (method !== "PATCH") throw ApiError.methodNotAllowed("PATCH required");
+      const slug = decodeURIComponent(bilagsmailAliasMatch[1]!);
+      return await handleSetBilagsmailAlias(config, request, slug);
     }
 
     // Bookkeeping write route (#213, slice 1): resolve an open exception.

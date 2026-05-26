@@ -60,6 +60,7 @@ import { BankAccountsView } from "./views/BankAccountsView";
 import { GdprView } from "./views/GdprView";
 import { AccrualsView } from "./views/AccrualsView";
 import { AnnualReportView } from "./views/AnnualReportView";
+import { BilagsmailView } from "./views/BilagsmailView";
 
 export function App() {
   return (
@@ -185,6 +186,10 @@ export function App() {
           <Route
             path="/companies/:slug/aarsrapport"
             element={<AnnualReportView />}
+          />
+          <Route
+            path="/companies/:slug/bilagsmail"
+            element={<BilagsmailView />}
           />
           <Route path="*" element={<NotFound />} />
         </Routes>

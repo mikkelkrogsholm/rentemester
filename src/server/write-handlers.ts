@@ -26,6 +26,12 @@ import {
 } from "../core/assets";
 import { addBankAccount, importBankCsv } from "../core/bank";
 import { eraseGdprSubject } from "../core/gdpr";
+import {
+  deleteBilagsmailImapConfig,
+  saveBilagsmailImapConfig,
+  setCompanyMailAlias,
+  type BilagsmailImapConfig,
+} from "../core/bilagsmail";
 import { importDineroContacts } from "../core/import/dinero-contacts";
 import {
   createCustomer,
@@ -3365,4 +3371,82 @@ export async function handleGdprErase(
     },
   );
   return okResponse({ gdprErasure: result });
+}
+
+/**
+ * POST /api/companies/:slug/bilagsmail/imap-config — Saves the IMAP config to
+ * `config/imap.json` (0600). Body: `{ host, port, username, password, secure?,
+ * mailbox? }`. Credentials never enter the ledger — they live as a per-company
+ * config-file (#348).
+ */
+export async function handleSaveBilagsmailImapConfig(
+  config: ServerConfig,
+  request: Request,
+  slug: string,
+): Promise<Response> {
+  await withCompanyMutation(request, config, slug, (ctx, body) => {
+    const host = requireBodyString(body, "host");
+    const port = body["port"];
+    if (typeof port !== "number" || !Number.isInteger(port) || port <= 0) {
+      throw ApiError.badRequest("'port' must be a positive integer");
+    }
+    const username = requireBodyString(body, "username");
+    const password = requireBodyString(body, "password");
+    const secure = body["secure"] !== false; // default true
+    const mailbox = optionalBodyString(body, "mailbox") ?? "INBOX";
+    const imapConfig: BilagsmailImapConfig = {
+      host,
+      port,
+      username,
+      password,
+      secure,
+      mailbox,
+    };
+    saveBilagsmailImapConfig(ctx.companyRoot, imapConfig);
+    void ctx.actor;
+    return { ok: true, errors: [] as string[] };
+  });
+  return okResponse({ imapConfig: { ok: true } });
+}
+
+/**
+ * DELETE /api/companies/:slug/bilagsmail/imap-config — Removes the stored
+ * IMAP config from disk (#348).
+ */
+export async function handleDeleteBilagsmailImapConfig(
+  config: ServerConfig,
+  request: Request,
+  slug: string,
+): Promise<Response> {
+  await withCompanyMutation(request, config, slug, (ctx) => {
+    deleteBilagsmailImapConfig(ctx.companyRoot);
+    void ctx.actor;
+    return { ok: true, errors: [] as string[] };
+  });
+  return okResponse({ imapConfig: { ok: true, removed: true } });
+}
+
+/**
+ * PATCH /api/companies/:slug/bilagsmail/alias — Sets or clears the per-company
+ * mail alias used as the localpart in the bilagsmail address (#350).
+ * Body: `{ alias: string | null }`.
+ */
+export async function handleSetBilagsmailAlias(
+  config: ServerConfig,
+  request: Request,
+  slug: string,
+): Promise<Response> {
+  await withCompanyMutation(request, config, slug, (ctx, body) => {
+    const raw = body["alias"];
+    const alias =
+      raw === null || raw === undefined
+        ? null
+        : typeof raw === "string"
+          ? raw
+          : null;
+    setCompanyMailAlias(ctx.db, alias);
+    void ctx.actor;
+    return { ok: true, errors: [] as string[] };
+  });
+  return okResponse({ mailAlias: { ok: true } });
 }

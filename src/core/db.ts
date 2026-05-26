@@ -58,6 +58,11 @@ export function migrate(db: Database) {
   // to due date. Captured once on the company profile so every invoice inherits
   // it instead of the owner re-typing it. Older ledgers predate the column.
   if (!hasColumn(db, "companies", "payment_terms_days")) db.exec("ALTER TABLE companies ADD COLUMN payment_terms_days INTEGER NOT NULL DEFAULT 14 CHECK(payment_terms_days BETWEEN 0 AND 365);");
+  // #350 — Per-virksomhed mail-alias: hash-friendly identifier brugt som
+  // localpart i bilagsmail-adressen (fx "<alias>@bilag.rentemester.dk").
+  // Cockpit/CLI håndhæver unicitet før den skrives; her er det nullbart fordi
+  // ikke alle virksomheder har et alias konfigureret.
+  if (!hasColumn(db, "companies", "mail_alias")) db.exec("ALTER TABLE companies ADD COLUMN mail_alias TEXT;");
   // Contact-detail columns on customers/vendors — older ledgers predate the
   // Dinero contacts import + CVR enrichment.
   if (!hasColumn(db, "customers", "phone")) db.exec("ALTER TABLE customers ADD COLUMN phone TEXT;");
