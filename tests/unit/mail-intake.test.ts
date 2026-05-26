@@ -310,4 +310,61 @@ describe("ingestMailDrop", () => {
     rmSync(companyRoot, { recursive: true, force: true });
     rmSync(dropRoot, { recursive: true, force: true });
   });
+
+  test("parseEml extracts Reply-To and X-Forwarded-For for forwarded mails (#352)", () => {
+    const raw = [
+      "From: forwarder@example.com",
+      "Reply-To: original-sender@example.com",
+      "X-Forwarded-For: original-sender@example.com",
+      "Subject: Fwd: Faktura",
+      "Message-ID: <fwd-1@example.com>",
+      "Date: Mon, 01 Jan 2026 10:00:00 +0100",
+      "Content-Type: text/plain; charset=utf-8",
+      "",
+      "Forwarded message …",
+      "",
+    ].join("\r\n");
+    const parsed = parseEml(raw);
+    expect(parsed.replyTo).toBe("original-sender@example.com");
+    expect(parsed.forwardedFrom).toBe("original-sender@example.com");
+    expect(parsed.from).toBe("forwarder@example.com");
+    expect(parsed.rawByteSize).toBeGreaterThan(0);
+  });
+
+  test("ingestMailDrop refuses oversize EMLs with a MAIL_INTAKE_TOO_LARGE exception (#352)", () => {
+    const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-maildrop-toobig-"));
+    const dropRoot = mkdtempSync(join(tmpdir(), "rentemester-maildrop-toobig-eml-"));
+    const emlPath = join(dropRoot, "huge.eml");
+    // Build a single-attachment EML der er > maxEmlSizeBytes (her sat lavt
+    // til 4 KB så testen er hurtig).
+    const bigBytes = Buffer.from("X".repeat(8 * 1024));
+    writeFileSync(
+      emlPath,
+      buildEml({
+        messageId: "<too-big@example.com>",
+        attachmentBytes: bigBytes,
+      }),
+    );
+
+    const db = openDb(ensureCompanyDirs(companyRoot).db);
+    migrate(db);
+
+    const result = ingestMailDrop(db, companyRoot, emlPath, {
+      metadata: baseMetadata,
+      maxEmlSizeBytes: 4 * 1024,
+    });
+    expect(result.attachmentsIngested).toBe(0);
+    expect(result.exceptionsCreated).toBe(1);
+
+    const ex = listExceptions(db, { status: "open" });
+    expect(ex.ok).toBe(true);
+    expect(ex.rows[0]!.type).toBe("MAIL_INTAKE_TOO_LARGE");
+    expect((ex.rows[0]!.sourceEvidence as any).rawByteSize).toBeGreaterThan(
+      4 * 1024,
+    );
+
+    db.close();
+    rmSync(companyRoot, { recursive: true, force: true });
+    rmSync(dropRoot, { recursive: true, force: true });
+  });
 });
