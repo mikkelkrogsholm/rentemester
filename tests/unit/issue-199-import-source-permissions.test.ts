@@ -20,6 +20,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { resolveSource } from "../../src/core/import/source";
 
+import { cleanupDir } from "../helpers/cleanup";
 /** Builds a `.zip` of `srcDir`'s contents and returns its path. */
 function zipDir(srcDir: string): string {
   const zipPath = join(mkdtempSync(join(tmpdir(), "rm-perm-zip-")), "export.zip");
@@ -54,8 +55,8 @@ describe("#199 fallback path — temp dir preserves mkdtempSync's 0o700 mode", (
       expect(mode).toBe(0o700);
     } finally {
       process.umask(previousUmask);
-      rmSync(src, { recursive: true, force: true });
-      rmSync(zipPath, { recursive: true, force: true });
+      cleanupDir(src);
+      cleanupDir(zipPath);
     }
   });
 });

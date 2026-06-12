@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { config, get, makeWorkspace, postPnlEntry, rmSync } from "./_shared";
+import { config, get, makeWorkspace, postPnlEntry } from "./_shared";
 
+import { cleanupDir } from "../../helpers/cleanup";
 describe("cockpit API — documents (GET .../documents)", () => {
   test("returns ingested documents with their link state", async () => {
     const ws = makeWorkspace("doc-live", ["Acme ApS"]);
@@ -24,7 +25,7 @@ describe("cockpit API — documents (GET .../documents)", () => {
       expect(d.documents[0]).toHaveProperty("journalEntryText");
       expect(d.documents[0]).toHaveProperty("journalEntryTotal");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -38,7 +39,7 @@ describe("cockpit API — documents (GET .../documents)", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

@@ -1,11 +1,12 @@
 // Tests: src/cli/customer.ts, src/cli/vendor.ts, src/cli.ts (customer/vendor master-data CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { companyPaths } from "../../src/core/paths";
 import { migrate, openDb } from "../../src/core/db";
 
+import { cleanupDir } from "../helpers/cleanup";
 async function runCli(args: string[]) {
   const proc = Bun.spawn(["bun", "run", "src/cli.ts", ...args], {
     cwd: process.cwd(),
@@ -60,7 +61,7 @@ describe("master-data CLI", () => {
     const payload = JSON.parse(row.payload_json);
     db.close();
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(payload.buyer).toEqual({
       name: "Kunde A/S",
       address: "Købervej 9, 8000 Aarhus C",
@@ -78,7 +79,7 @@ describe("master-data CLI", () => {
     await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
     const created = await runCli(["customer", "create", "--company", company, "--name", "Kunde A/S", "--ean", "57900012"]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(created.exitCode).toBe(1);
     expect(JSON.parse(created.stdout)).toMatchObject({
       ok: false,
@@ -127,7 +128,7 @@ describe("master-data CLI", () => {
     const row = db.query("SELECT sender_name, sender_address, sender_vat_cvr FROM documents WHERE id = ?").get(ingestedJson.documentId) as { sender_name: string; sender_address: string; sender_vat_cvr: string };
     db.close();
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(row).toEqual({
       sender_name: "Leverandør ApS",
       sender_address: "Sælgervej 1, 2100 København Ø",

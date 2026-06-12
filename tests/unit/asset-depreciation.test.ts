@@ -1,6 +1,6 @@
 // Tests: src/core/assets.ts (#124 fixed-asset depreciation workflow)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -8,6 +8,7 @@ import { openDb, migrate } from "../../src/core/db";
 import { seedAccounts } from "../../src/core/ledger";
 import { sumDkk } from "../../src/core/money";
 import { ingestDocument } from "../../src/core/documents";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   registerAsset,
   computeDepreciationSchedule,
@@ -38,8 +39,8 @@ function setup(label: string) {
   expect(doc.ok).toBe(true);
   const cleanup = () => {
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   };
   return { root, db, documentId: doc.documentId!, cleanup };
 }

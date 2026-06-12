@@ -1,12 +1,13 @@
 // Tests: src/cli/init.ts, src/cli.ts (init CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { openDb, migrate } from "../../src/core/db";
 import { companyPaths } from "../../src/core/paths";
 import { loadActorAllowlist } from "../../src/cli-actor";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("init CLI", () => {
   test("stores fiscal-year and CVR company configuration", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-init-cli-"));
@@ -45,7 +46,7 @@ describe("init CLI", () => {
     });
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("registers an init-created company in the workspace so the Cockpit sees it (#216)", async () => {
@@ -94,7 +95,7 @@ describe("init CLI", () => {
       await listProc.exited;
       expect(JSON.parse(listStdout).count).toBe(1);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -119,8 +120,8 @@ describe("init CLI", () => {
       // The workspace manifest is untouched (not created by this init).
       expect(JSON.parse(stdout).workspaceSlug).toBeUndefined();
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(elsewhere, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(elsewhere);
     }
   });
 
@@ -145,7 +146,7 @@ describe("init CLI", () => {
       // A clear next-steps path.
       expect(stdout).toContain("Næste skridt");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -169,7 +170,7 @@ describe("init CLI", () => {
       // #289: vatPeriod is the canonical period-type value; quarterly default.
       expect(result.vatPeriod).toBe("quarter");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -197,7 +198,7 @@ describe("init CLI", () => {
       // An actor that was never seeded is still rejected.
       expect(allowlist.has("agent:freja")).toBe(false);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -235,7 +236,7 @@ describe("init CLI", () => {
       expect(row.vat_period_type).toBe("half-year");
       db.close();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -252,7 +253,7 @@ describe("init CLI", () => {
       expect(exitCode).toBe(0);
       expect(JSON.parse(stdout).vatPeriod).toBe("quarter");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -277,7 +278,7 @@ describe("init CLI", () => {
       // The advice is now actionable: it names the flag that changes it.
       expect(stdout).toContain("--vat-period");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -318,6 +319,6 @@ describe("init CLI", () => {
     expect(html).toContain("CVR DK12345678");
     expect(html).not.toContain("DKDK");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

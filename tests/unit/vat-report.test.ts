@@ -1,6 +1,6 @@
 // Tests: src/core/vat.ts (VAT report)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -9,6 +9,7 @@ import { ingestDocument } from "../../src/core/documents";
 import { buildVatReport, vatFilingDeadline } from "../../src/core/vat";
 import { postJournalEntry, reverseJournalEntry, seedAccounts } from "../../src/core/ledger";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("vatFilingDeadline (#236)", () => {
   test("returns the 1st of the third month after the period ends", () => {
     // Q1 ends 31-03 → due 1 June.
@@ -113,8 +114,8 @@ describe("vat report", () => {
     expect(june.totalLinesConsidered).toBe(3);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("does not warn on aggregate-vs-per-line rounding of correctly-booked odd-ore VAT (#142)", () => {
@@ -166,8 +167,8 @@ describe("vat report", () => {
     expect(report.warnings).toEqual([]);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("warns when VAT base and booked VAT do not reconcile and distinguishes reversed entries in-period", () => {
@@ -241,7 +242,7 @@ describe("vat report", () => {
     expect(report.warnings).toContain("input VAT mismatch: booked 0, expected from base × rate 250");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });

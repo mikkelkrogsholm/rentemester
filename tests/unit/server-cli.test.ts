@@ -1,12 +1,13 @@
 // Tests: src/cli/serve.ts — the `rentemester serve` command boots Bun.serve
 // on the config-driven bind address and serves the workspace API.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createCompany } from "../../src/core/company";
 import { initWorkspace } from "../../src/core/workspace";
 
+import { cleanupDir } from "../helpers/cleanup";
 function tmpRoot(label: string) {
   return mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
 }
@@ -56,7 +57,7 @@ describe("serve CLI", () => {
     } finally {
       proc.kill();
       await proc.exited;
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   }, 15000);
 

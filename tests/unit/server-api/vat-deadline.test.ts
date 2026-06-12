@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { config, get, makeWorkspace, postPnlEntry, rmSync } from "./_shared";
+import { config, get, makeWorkspace, postPnlEntry } from "./_shared";
 
+import { cleanupDir } from "../../helpers/cleanup";
 describe("cockpit API — VAT deadline (GET .../vat & .../overview)", () => {
   test("vat carries the statutory filing deadline and a countdown", async () => {
     const ws = makeWorkspace("vat-deadline", ["Acme ApS"]);
@@ -15,7 +16,7 @@ describe("cockpit API — VAT deadline (GET .../vat & .../overview)", () => {
       expect(res.body.vat.deadline).toBe("2026-06-01");
       expect(typeof res.body.vat.daysRemaining).toBe("number");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -36,7 +37,7 @@ describe("cockpit API — VAT deadline (GET .../vat & .../overview)", () => {
         openTotal: 0,
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

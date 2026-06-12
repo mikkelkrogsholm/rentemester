@@ -1,9 +1,10 @@
 // Tests: src/cli/mail-intake.ts, src/cli.ts (bilagsmail intake CLI — #122)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 function buildEml(messageId: string, opts: { noAttachment?: boolean } = {}): string {
   const headers = [
     "From: Leverandør ApS <faktura@leverandor.dk>",
@@ -80,7 +81,7 @@ describe("mail-intake ingest CLI", () => {
     expect(secondParsed.attachmentsIngested).toBe(0);
     expect(secondParsed.attachmentsSkipped).toBe(1);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("routes a no-attachment message to the exception queue (exit 0)", async () => {
@@ -111,6 +112,6 @@ describe("mail-intake ingest CLI", () => {
     await exProc.exited;
     expect(exStdout).toContain("MAIL_INTAKE_NO_ATTACHMENT");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

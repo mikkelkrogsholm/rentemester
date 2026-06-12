@@ -1,6 +1,6 @@
 // Tests: src/core/vat.ts (VAT representation)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -9,6 +9,7 @@ import { ingestDocument } from "../../src/core/documents";
 import { seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 import { buildVatReport, postRepresentationPurchase } from "../../src/core/vat";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("representation VAT", () => {
   test("posts a representation purchase with only 25 percent deductible input VAT", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-repr-"));
@@ -65,7 +66,7 @@ describe("representation VAT", () => {
     expect(chain.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });

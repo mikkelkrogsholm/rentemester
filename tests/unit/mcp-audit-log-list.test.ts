@@ -14,7 +14,7 @@
 // All assertions fail BEFORE the new tool ships.
 
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -24,6 +24,7 @@ import { seedAccounts } from "../../src/core/ledger";
 import { insertAuditLog } from "../../src/core/actor";
 import { registerAuditTools } from "../../src/mcp/tools/audit";
 
+import { cleanupDir } from "../helpers/cleanup";
 type StructuredEnv = {
   ok: boolean;
   data?: Record<string, unknown> & {
@@ -96,7 +97,7 @@ beforeAll(() => {
 });
 
 afterAll(() => {
-  rmSync(companyRoot, { recursive: true, force: true });
+  cleanupDir(companyRoot);
 });
 
 async function call(args: Record<string, unknown>): Promise<StructuredEnv> {

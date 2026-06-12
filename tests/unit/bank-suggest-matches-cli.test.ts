@@ -1,6 +1,6 @@
 // Tests: src/cli/bank.ts, src/cli.ts (bank suggest-matches CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -10,6 +10,7 @@ import { issueInvoice } from "../../src/core/issued-invoices";
 import { ingestDocument } from "../../src/core/documents";
 import { importBankCsv } from "../../src/core/bank";
 
+import { cleanupDir } from "../helpers/cleanup";
 function invoicePayload(overrides: Record<string, unknown> = {}) {
   return {
     invoiceType: "full",
@@ -101,8 +102,8 @@ describe("bank suggest-matches CLI", () => {
     const listed = await runCli(["bank", "suggest-matches", "--company", root, "--format", "json"]);
     const filtered = await runCli(["bank", "suggest-matches", "--company", root, "--bank-transaction-id", String(invoiceBank.id), "--max", "1", "--format", "json"]);
 
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
 
     expect(listed.exitCode).toBe(0);
     expect(listed.stderr).toBe("");
@@ -169,7 +170,7 @@ describe("bank suggest-matches CLI", () => {
     db.close();
 
     const listed = await runCli(["bank", "suggest-matches", "--company", root, "--format", "json"]);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(listed.exitCode).toBe(0);
     expect(listed.stderr).toBe("");
@@ -202,7 +203,7 @@ describe("bank suggest-matches CLI", () => {
     db.close();
 
     const listed = await runCli(["bank", "suggest-matches", "--company", root, "--format", "json"]);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(listed.exitCode).toBe(0);
     expect(listed.stderr).toBe("");
@@ -242,7 +243,7 @@ describe("bank suggest-matches CLI", () => {
     db.close();
 
     const listed = await runCli(["bank", "suggest-matches", "--company", root, "--format", "json"]);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(listed.exitCode).toBe(0);
     expect(listed.stderr).toBe("");

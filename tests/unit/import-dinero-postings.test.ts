@@ -10,7 +10,7 @@
 // Tests run against the synthetic fixture in examples/import-dinero/ — the real
 // Dinero export is private and is never committed.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -25,6 +25,7 @@ import {
 import { runImport, runImportFromSource } from "../../src/core/import/framework";
 import { buildTrialBalance } from "../../src/core/financial-statements";
 
+import { cleanupDir } from "../helpers/cleanup";
 const FIXTURE = join(import.meta.dir, "../../examples/import-dinero");
 
 function freshCompany(prefix: string) {
@@ -111,7 +112,7 @@ describe("Dinero import: year-to-date postings via runImport", () => {
       expect(verifyAuditChain(db).ok).toBe(true);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -131,7 +132,7 @@ describe("Dinero import: year-to-date postings via runImport", () => {
       }
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -155,7 +156,7 @@ describe("Dinero import: year-to-date postings via runImport", () => {
       expect(bankLine.credit).toBe(0);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -179,7 +180,7 @@ describe("Dinero import: year-to-date postings via runImport", () => {
       expect(acct("1000").credit - acct("1000").debit).toBeCloseTo(12500, 6);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -197,7 +198,7 @@ describe("Dinero import: year-to-date postings via runImport", () => {
       expect(verifyAuditChain(db).ok).toBe(true);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -215,7 +216,7 @@ describe("Dinero import: year-to-date postings via runImport", () => {
       expect(count.n).toBe(0);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });

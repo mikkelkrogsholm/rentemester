@@ -1,12 +1,13 @@
 // Tests: src/core/bank.ts (bank CSV import)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { importBankCsv } from "../../src/core/bank";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("bank import", () => {
   test("stores null FX columns for DKK-only rows and skips deterministic duplicates", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-bank-"));
@@ -41,7 +42,7 @@ describe("bank import", () => {
     expect(rows[1].fx_rate_to_dkk).toBeNull();
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("imports non-DKK rows when DKK amount and FX rate are supplied", () => {
@@ -62,7 +63,7 @@ describe("bank import", () => {
     expect(rows[0]).toEqual({ currency: "EUR", amount: 100, amount_dkk: 746, fx_rate_to_dkk: 7.46 });
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects impossible calendar dates in bank rows", () => {
@@ -81,7 +82,7 @@ describe("bank import", () => {
     expect(result.errors).toContain("rows[0].bookingDate must be YYYY-MM-DD when present");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("imports quoted fields with commas and escaped quotes", () => {
@@ -101,7 +102,7 @@ describe("bank import", () => {
     expect(row).toEqual({ text: "Nordea, faktura \"A-42\"", amount: -1250 });
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("imports Danish bank headers with semicolon delimiter and European amounts", () => {
@@ -121,7 +122,7 @@ describe("bank import", () => {
     expect(row).toEqual({ transaction_date: "2026-05-17", booking_date: "2026-05-16", text: "Kunde, faktura 100", amount: 1234.56, reference: "N-100" });
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("returns header and row-shape errors close to the CSV root cause", () => {
@@ -140,7 +141,7 @@ describe("bank import", () => {
     expect(result.errors).toContain("CSV row 2 has 4 fields, header has 3");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("parses Danish thousands-only amounts as whole kroner (issue #130)", () => {
@@ -159,7 +160,7 @@ describe("bank import", () => {
     expect(row.amount).toBe(1234);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects hex and scientific-notation amounts (issue #130)", () => {
@@ -178,7 +179,7 @@ describe("bank import", () => {
       expect(result.errors.some((e) => e.includes("amount"))).toBe(true);
 
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -197,7 +198,7 @@ describe("bank import", () => {
     expect(result.errors.some((e) => e.includes("transactionDate"))).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("keeps reformatting unambiguous DD-MM-YYYY dates (issue #137)", () => {
@@ -216,7 +217,7 @@ describe("bank import", () => {
     expect(row).toEqual({ transaction_date: "2026-05-17", booking_date: "2026-05-16" });
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects CSV with duplicate canonical headers (issue #150)", () => {
@@ -235,7 +236,7 @@ describe("bank import", () => {
     expect(result.errors.some((e) => e.includes("duplicate canonical column: transaction_date"))).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("imports two legitimately-distinct identical same-day fees, still dedups re-import (issue #155)", () => {
@@ -263,7 +264,7 @@ describe("bank import", () => {
     expect((second.skippedDuplicateRows ?? []).length).toBe(2);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects malformed bank rows", () => {
@@ -284,6 +285,6 @@ describe("bank import", () => {
     expect(result.errors.some((e) => e.includes("fxRateToDkk"))).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

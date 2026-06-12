@@ -7,7 +7,7 @@
 // destinationer er konfigureret. Endpointet er idempotent — verifikationen
 // er read-only.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -15,6 +15,7 @@ import { type ServerConfig } from "../../src/server/config";
 import { createCompany } from "../../src/core/company";
 import { initWorkspace } from "../../src/core/workspace";
 
+import { cleanupDir } from "../helpers/cleanup";
 function makeWorkspace(label: string, companyNames: string[] = []) {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
   initWorkspace(root);
@@ -80,7 +81,7 @@ describe("#333 — GET /api/companies/:slug/integrity", () => {
       );
       expect(body.integrity.legalCitation.note).toContain("§ 14");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -95,7 +96,7 @@ describe("#333 — GET /api/companies/:slug/integrity", () => {
       }>(config(ws), "/api/companies/acme-aps/integrity");
       expect(a.integrity.auditChain).toEqual(b.integrity.auditChain);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -108,7 +109,7 @@ describe("#333 — GET /api/companies/:slug/integrity", () => {
       );
       expect(res.status).toBe(404);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -123,7 +124,7 @@ describe("#333 — GET /api/companies/:slug/integrity", () => {
       );
       expect(res.status).toBe(405);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -136,7 +137,7 @@ describe("#333 — GET /api/companies/:slug/integrity", () => {
       const patterns = body.routes.map((r) => r.pattern);
       expect(patterns).toContain("/api/companies/:slug/integrity");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

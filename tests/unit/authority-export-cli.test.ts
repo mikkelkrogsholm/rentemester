@@ -1,9 +1,10 @@
 // Tests: src/cli/system.ts, src/cli.ts (system export-package CLI)
 import { describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("authority export CLI", () => {
   test("exports a period package for authority handover", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-authority-export-cli-"));
@@ -48,7 +49,7 @@ describe("authority export CLI", () => {
     expect(manifest.files.auditLog).toBe("machine-readable/audit-log.json");
     expect(manifest.appliedRules).toContain("DK-BOOKKEEPING-AUTHORITY-EXPORT-001");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("exports a deterministic accountant handoff package with explicit trust boundaries", async () => {
@@ -102,6 +103,6 @@ describe("authority export CLI", () => {
     // name (`revisor-eksport-…`) instead of the misleading `authority-export-…`.
     expect(parsed.exportDir).toMatch(/\/revisor-eksport-/);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

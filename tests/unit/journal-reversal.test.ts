@@ -1,6 +1,6 @@
 // Tests: src/core/ledger.ts (journal entry reversal)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -8,6 +8,7 @@ import { openDb, migrate } from "../../src/core/db";
 import { ingestDocument } from "../../src/core/documents";
 import { postJournalEntry, reverseJournalEntry, seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("journal reversal", () => {
   test("can reverse an imported-historical income/expense voucher that has no document", () => {
     // A replayed migration posting (#195) may carry income/expense lines and no
@@ -44,7 +45,7 @@ describe("journal reversal", () => {
     expect(verifyAuditChain(db).ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("creates one linked reversal entry with mirrored lines and blocks a second reversal", () => {
@@ -129,7 +130,7 @@ describe("journal reversal", () => {
     expect(chain.entries).toBe(2);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });

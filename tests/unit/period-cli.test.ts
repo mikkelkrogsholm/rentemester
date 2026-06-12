@@ -1,9 +1,10 @@
 // Tests: src/cli/period.ts, src/cli.ts (period CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("period close CLI", () => {
   test("closes a period and blocks later journal posting inside that period", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-periodcli-"));
@@ -41,7 +42,7 @@ describe("period close CLI", () => {
     const postStderr = await new Response(postProc.stderr).text();
     const postExitCode = await postProc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect({ closeExitCode, closeStderr }).toEqual({ closeExitCode: 0, closeStderr: "" });
     const closed = JSON.parse(closeStdout);
@@ -115,7 +116,7 @@ describe("period reopen CLI (#247)", () => {
     expect(postExit).toBe(0);
     expect(JSON.parse(postStdout).ok).toBe(true);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("refuses to reopen without a reason", async () => {
@@ -134,6 +135,6 @@ describe("period reopen CLI (#247)", () => {
     expect(exit).toBe(2);
     expect(stderr).toContain("Missing required --reason");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

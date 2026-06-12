@@ -1,13 +1,14 @@
 // Tests: src/core/ledger.ts (journal entry validation, balancing, entry numbering, transactions)
 // Companion of journal-post-fx.test.ts and ledger-hardening.test.ts.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { postJournalEntry, reverseJournalEntry, seedAccounts } from "../../src/core/ledger";
 
+import { cleanupDir } from "../helpers/cleanup";
 function failingJournalInsertDb(realDb: any) {
   return new Proxy(realDb, {
     get(target, prop, receiver) {
@@ -46,7 +47,7 @@ describe("journal posting", () => {
     expect(result.errors).toContain("journal entry must balance: debit 1000 != credit 900");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects journal lines with negative debit or credit amounts", () => {
@@ -78,7 +79,7 @@ describe("journal posting", () => {
     expect(positive.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("numbers journal entries from transaction year and resets per year", () => {
@@ -117,7 +118,7 @@ describe("journal posting", () => {
     expect(first2025.entryNo).toBe("2025-00001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("uses configured fiscal year labels for journal entry numbers", () => {
@@ -160,7 +161,7 @@ describe("journal posting", () => {
     expect(next.entryNo).toBe("2026-00001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("respects the highest existing journal number when a stale sequence row lags behind", () => {
@@ -193,7 +194,7 @@ describe("journal posting", () => {
     expect(posted.entryNo).toBe("2026-00006");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("does not burn a journal number when insert fails after allocation", () => {
@@ -227,7 +228,7 @@ describe("journal posting", () => {
     expect(posted.entryNo).toBe("2026-00001");
 
     realDb.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("uses immediate transactions for journal writes and reversals", () => {
@@ -269,6 +270,6 @@ describe("journal posting", () => {
     expect(seenOptions.filter((options) => options?.immediate === true)).toHaveLength(2);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

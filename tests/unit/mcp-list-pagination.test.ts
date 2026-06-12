@@ -16,13 +16,14 @@
 //   - sammenkædning af `nextOffset` → `offset` returnerer resten
 
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, existsSync } from "node:fs";
+import { mkdtempSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { seedAccounts } from "../../src/core/ledger";
 import { createCustomer, createVendor } from "../../src/core/master-data";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   applyPagination,
   DEFAULT_PAGE_LIMIT,
@@ -128,7 +129,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await client.close();
   if (companyRoot && existsSync(companyRoot)) {
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   }
 });
 

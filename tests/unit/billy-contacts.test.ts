@@ -1,5 +1,5 @@
 import { expect, test, describe } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { Database } from "bun:sqlite";
@@ -12,6 +12,7 @@ import {
 } from "../../src/core/import/billy-contacts";
 import { listCustomers, listVendors } from "../../src/core/master-data";
 
+import { cleanupDir } from "../helpers/cleanup";
 function freshCompany(): { root: string; db: Database } {
   const root = mkdtempSync(join(tmpdir(), "rentemester-billy-contacts-"));
   initialiseCompanyVolume(root, {});
@@ -96,7 +97,7 @@ describe("Billy contacts import", () => {
 
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
     }
   });
 
@@ -117,7 +118,7 @@ describe("Billy contacts import", () => {
       expect(listCustomers(db).rows.length).toBe(1);
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
     }
   });
 
@@ -136,7 +137,7 @@ describe("Billy contacts import", () => {
       expect(result.summary.archivedSkipped).toBe(1);
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
     }
   });
 
@@ -153,7 +154,7 @@ describe("Billy contacts import", () => {
       expect(result.summary.vendorsCreated).toBe(0);
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
     }
   });
 
@@ -172,7 +173,7 @@ describe("Billy contacts import", () => {
       expect(result.errors.length).toBe(2);
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
     }
   });
 });

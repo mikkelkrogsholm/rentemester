@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
+import { cleanupDir } from "../../helpers/cleanup";
 import {
   config,
   get,
   loadWorkspaceManifest,
   makeWorkspace,
-  rmSync,
   saveWorkspaceManifest,
 } from "./_shared";
 
@@ -16,7 +16,7 @@ describe("cockpit API — endpoint contracts", () => {
       expect(res.status).toBe(200);
       expect(res.body).toMatchObject({ ok: true, service: "rentemester-cockpit" });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -29,7 +29,7 @@ describe("cockpit API — endpoint contracts", () => {
       const slugs = res.body.companies.map((c: any) => c.slug).sort();
       expect(slugs).toEqual(["acme-aps", "beta-ivs"]);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -57,7 +57,7 @@ describe("cockpit API — endpoint contracts", () => {
         "acme-aps",
       ]);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -73,7 +73,7 @@ describe("cockpit API — endpoint contracts", () => {
       expect(res.body.portfolio.companyCount).toBe(1);
       expect(res.body.portfolio.companies[0].slug).toBe("acme-aps");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -88,7 +88,7 @@ describe("cockpit API — endpoint contracts", () => {
       expect(res.body.dashboard).toHaveProperty("vat");
       expect(res.body.dashboard).toHaveProperty("audit");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -99,7 +99,7 @@ describe("cockpit API — endpoint contracts", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -110,7 +110,7 @@ describe("cockpit API — endpoint contracts", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -123,7 +123,7 @@ describe("cockpit API — endpoint contracts", () => {
       expect(res.status).toBe(405);
       expect(res.body.code).toBe("method_not_allowed");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -134,7 +134,7 @@ describe("cockpit API — endpoint contracts", () => {
       expect(res.status).toBe(400);
       expect(res.body.code).toBe("bad_request");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -145,7 +145,7 @@ describe("cockpit API — endpoint contracts", () => {
       expect(JSON.stringify(res.body)).not.toContain(ws);
       expect(JSON.stringify(res.body)).not.toContain("/");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

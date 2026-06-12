@@ -4,11 +4,12 @@
 // TransactionDate replays that lifecycle; a reopened period accepts postings
 // again, and a re-close locks it once more.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   closeAccountingPeriod,
   reopenAccountingPeriod,
@@ -74,7 +75,7 @@ describe("period reopen (#247)", () => {
     expect(audit.actor).toContain("user:ejer");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a re-close locks the reopened period again", () => {
@@ -112,7 +113,7 @@ describe("period reopen (#247)", () => {
     expect(events.map((e) => e.event_type)).toEqual(["period_close", "period_reopen", "period_close"]);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("refuses to reopen a reported period (already submitted to the authority)", () => {
@@ -137,7 +138,7 @@ describe("period reopen (#247)", () => {
     expect(result.errors[0]).toContain("cannot be reopened");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("requires a reason and rejects unknown / already-open periods", () => {
@@ -183,6 +184,6 @@ describe("period reopen (#247)", () => {
     expect(again.errors[0]).toContain("already open");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

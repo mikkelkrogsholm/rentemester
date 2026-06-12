@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
+import { cleanupDir } from "../../helpers/cleanup";
 import {
   config,
   get,
   makeWorkspace,
   postLiability,
   postPnlEntry,
-  rmSync,
-} from "./_shared";
+  } from "./_shared";
 
 describe("cockpit API — obligations (GET .../obligations)", () => {
   test("surfaces VAT with its statutory deadline and liability payables", async () => {
@@ -38,7 +38,7 @@ describe("cockpit API — obligations (GET .../obligations)", () => {
       // Sorted soonest-first: dated rows before the dateless creditor row.
       expect(o.obligations[o.obligations.length - 1].kind).toBe("creditors");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -86,7 +86,7 @@ describe("cockpit API — obligations (GET .../obligations)", () => {
       // Pre-fix this was 4519.75 + 4457.25 + 62.50 (gross leaking) + 264.
       expect(o.totalOwed).toBe(4783.75);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -108,7 +108,7 @@ describe("cockpit API — obligations (GET .../obligations)", () => {
       expect(rows[0].amount).toBe(0);
       expect(rows[0].dueDate).toBe("2027-05-01");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -122,7 +122,7 @@ describe("cockpit API — obligations (GET .../obligations)", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

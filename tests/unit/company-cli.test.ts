@@ -1,10 +1,11 @@
 // Tests: src/cli/company.ts, src/cli.ts (company add/list CLI + slug resolution)
 import { describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { companyPaths } from "../../src/core/paths";
 
+import { cleanupDir } from "../helpers/cleanup";
 function tmpRoot(label: string) {
   return mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
 }
@@ -38,7 +39,7 @@ describe("company CLI", () => {
       expect(existsSync(companyPaths(join(ws, "acme-aps")).db)).toBe(true);
       expect(existsSync(join(ws, "workspace.json"))).toBe(true);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -52,7 +53,7 @@ describe("company CLI", () => {
       expect(res.stdout).toContain("acme-aps");
       expect(res.stdout).toContain("beta-ivs");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -66,7 +67,7 @@ describe("company CLI", () => {
       expect(res.exitCode).toBe(0);
       expect(res.stdout).toContain("OK ledger");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -90,7 +91,7 @@ describe("company CLI", () => {
       expect(hcRes.exitCode).toBe(0);
       expect(hcRes.stdout).toContain("OK ledger");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -104,7 +105,7 @@ describe("company CLI", () => {
       expect(res.exitCode).toBe(2);
       expect(res.stderr.toLowerCase()).toContain("ghost");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -132,7 +133,7 @@ describe("company CLI", () => {
       expect(repeat.exitCode).not.toBe(0);
       expect(`${repeat.stdout}${repeat.stderr}`).toContain("a company already exists at");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -182,7 +183,7 @@ describe("company CLI", () => {
       expect(res.exitCode).toBe(2);
       expect(`${res.stdout}${res.stderr}`).toContain("Unknown flag --bank-naem");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 

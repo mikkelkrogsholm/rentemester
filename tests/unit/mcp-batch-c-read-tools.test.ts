@@ -12,7 +12,7 @@
 // Both are read-only; both reuse existing core helpers.
 
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -25,6 +25,7 @@ import { initWorkspace } from "../../src/core/workspace";
 import { registerBankTools } from "../../src/mcp/tools/bank";
 import { registerCompanyProfileTools } from "../../src/mcp/tools/company";
 
+import { cleanupDir } from "../helpers/cleanup";
 type StructuredEnv = {
   ok: boolean;
   data?: Record<string, unknown>;
@@ -87,7 +88,7 @@ beforeAll(() => {
 });
 
 afterAll(() => {
-  rmSync(workspaceRoot, { recursive: true, force: true });
+  cleanupDir(workspaceRoot);
 });
 
 async function call(

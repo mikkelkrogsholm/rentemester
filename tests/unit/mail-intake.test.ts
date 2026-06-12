@@ -1,6 +1,6 @@
 // Tests: src/core/mail-intake.ts (deterministic bilagsmail intake — #122)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -8,6 +8,7 @@ import { openDb, migrate } from "../../src/core/db";
 import { parseEml, ingestMailDrop } from "../../src/core/mail-intake";
 import { listExceptions } from "../../src/core/exceptions";
 
+import { cleanupDir } from "../helpers/cleanup";
 /**
  * Builds a minimal multipart/mixed MIME message with a single base64
  * attachment. Kept inline so fixtures stay deterministic and explicit.
@@ -127,8 +128,8 @@ describe("ingestMailDrop", () => {
     expect(docCount.n).toBe(1);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(dropRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(dropRoot);
   });
 
   test("rerunning the same maildrop creates no duplicate documents (dedup stable)", () => {
@@ -155,8 +156,8 @@ describe("ingestMailDrop", () => {
     expect(docCount.n).toBe(1);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(dropRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(dropRoot);
   });
 
   test("routes a message with no usable attachment into the exception queue", () => {
@@ -178,8 +179,8 @@ describe("ingestMailDrop", () => {
     expect(exceptions.rows[0]!.type).toBe("MAIL_INTAKE_NO_ATTACHMENT");
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(dropRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(dropRoot);
   });
 
   test("routes a message with no Message-ID into the exception queue as ambiguous", () => {
@@ -203,8 +204,8 @@ describe("ingestMailDrop", () => {
     expect(exceptions.rows[0]!.type).toBe("MAIL_INTAKE_AMBIGUOUS_METADATA");
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(dropRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(dropRoot);
   });
 
   test("re-routing an ambiguous/no-attachment message does not duplicate the exception", () => {
@@ -223,8 +224,8 @@ describe("ingestMailDrop", () => {
     expect(exceptions.count).toBe(1);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(dropRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(dropRoot);
   });
 
   test("processes a maildrop directory deterministically and dedups across messages", () => {
@@ -265,8 +266,8 @@ describe("ingestMailDrop", () => {
     expect(docCount.n).toBe(2);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(dropRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(dropRoot);
   });
 
   test("ingests the committed examples/bilagsmail-faktura.eml fixture", () => {
@@ -286,7 +287,7 @@ describe("ingestMailDrop", () => {
     expect(rerun.attachmentsSkipped).toBe(1);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   });
 
   test("records dedup rows in mail_intake_messages keyed on message-id + attachment hash", () => {
@@ -307,8 +308,8 @@ describe("ingestMailDrop", () => {
     expect(row.document_id).toBeGreaterThan(0);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(dropRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(dropRoot);
   });
 
   test("parseEml extracts Reply-To and X-Forwarded-For for forwarded mails (#352)", () => {
@@ -364,7 +365,7 @@ describe("ingestMailDrop", () => {
     );
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(dropRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(dropRoot);
   });
 });

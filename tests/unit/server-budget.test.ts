@@ -10,7 +10,7 @@
 // on the HTTP envelope, the route catalog entry, and the actor attribution —
 // they do not re-test core's budget math (covered by tests/unit/budget.test.ts).
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest, ROUTE_CATALOG } from "../../src/server/router";
@@ -25,6 +25,7 @@ import { openDb, migrate } from "../../src/core/db";
 import { postJournalEntry } from "../../src/core/ledger";
 import { setBudget } from "../../src/core/budget";
 
+import { cleanupDir } from "../helpers/cleanup";
 function tmpRoot(label: string) {
   return mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
 }
@@ -200,7 +201,7 @@ describe("GET /api/companies/:slug/budget", () => {
       expect(june.amount).toBe(5500);
       expect(b.totalBudget).toBe(12500);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -215,7 +216,7 @@ describe("GET /api/companies/:slug/budget", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -230,7 +231,7 @@ describe("GET /api/companies/:slug/budget", () => {
       expect(res.status).toBe(400);
       expect(res.body.code).toBe("bad_request");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -268,7 +269,7 @@ describe("GET /api/companies/:slug/budget-vs-actual", () => {
       // variancePercent = 1000 / 5000 = 0.2.
       expect(line.variancePercent).toBeCloseTo(0.2, 6);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -291,7 +292,7 @@ describe("GET /api/companies/:slug/budget-vs-actual", () => {
       );
       expect(line.variancePercent).toBeNull();
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -323,7 +324,7 @@ describe("POST /api/companies/:slug/budget", () => {
       expect(list.body.budget.lines.length).toBe(1);
       expect(list.body.budget.lines[0].notes).toBe("Plan for sommeren");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -352,7 +353,7 @@ describe("POST /api/companies/:slug/budget", () => {
       expect(list.body.budget.lines.length).toBe(1);
       expect(list.body.budget.lines[0].amount).toBe(5500);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -372,7 +373,7 @@ describe("POST /api/companies/:slug/budget", () => {
       expect(res.body.code).toBe("conflict");
       expect((res.body.errors?.[0] ?? "")).toContain("999999");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -386,7 +387,7 @@ describe("POST /api/companies/:slug/budget", () => {
       expect(res.status).toBe(400);
       expect(res.body.code).toBe("bad_request");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -402,7 +403,7 @@ describe("POST /api/companies/:slug/budget", () => {
       expect(res.status).toBe(400);
       expect(res.body.code).toBe("bad_request");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -418,7 +419,7 @@ describe("POST /api/companies/:slug/budget", () => {
       expect(res.status).toBe(400);
       expect(res.body.code).toBe("bad_request");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -434,7 +435,7 @@ describe("POST /api/companies/:slug/budget", () => {
       expect(res.status).toBe(400);
       expect(res.body.code).toBe("bad_request");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -444,7 +445,7 @@ describe("POST /api/companies/:slug/budget", () => {
       const res = await call(config(ws), "DELETE", "/api/companies/acme-aps/budget");
       expect(res.status).toBe(405);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

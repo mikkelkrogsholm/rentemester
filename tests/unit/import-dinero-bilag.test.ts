@@ -14,7 +14,7 @@
 // Tests run against the synthetic fixture in examples/import-dinero/ — the real
 // Dinero export is private and is never committed.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -26,6 +26,7 @@ import { runImportFromSource } from "../../src/core/import/framework";
 import { ingestDineroBilag, UNBOOKED_RECEIPT_EXCEPTION } from "../../src/core/import/dinero-bilag";
 import { listExceptions } from "../../src/core/exceptions";
 
+import { cleanupDir } from "../helpers/cleanup";
 const FIXTURE = join(import.meta.dir, "../../examples/import-dinero");
 
 function freshCompany(prefix: string) {
@@ -57,7 +58,7 @@ describe("Dinero bilag ingest (#196)", () => {
       }
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -93,7 +94,7 @@ describe("Dinero bilag ingest (#196)", () => {
       expect(verifyAuditChain(db).ok).toBe(true);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -132,7 +133,7 @@ describe("Dinero bilag ingest (#196)", () => {
       ).toBe(exAfterFirst);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -160,7 +161,7 @@ describe("Dinero bilag ingest (#196)", () => {
       expect(doc.sha256_hash).toMatch(/^[0-9a-f]{64}$/);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -179,7 +180,7 @@ describe("Dinero bilag ingest (#196)", () => {
       ).toThrow();
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -203,7 +204,7 @@ describe("Dinero bilag ingest (#196)", () => {
       expect(bilag.duplicates).toContain("2025/Bilag/2025-Bilag-5.pdf");
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });

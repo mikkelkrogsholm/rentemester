@@ -1,12 +1,13 @@
 // Tests: src/core/documents.ts (document ingestion)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync, existsSync } from "node:fs";
+import { mkdtempSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { ingestDocument, validateDocumentMetadata } from "../../src/core/documents";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("document ingest", () => {
   test("rejects purchase/sale document metadata missing statutory fields", () => {
     const result = validateDocumentMetadata({
@@ -86,8 +87,8 @@ describe("document ingest", () => {
     expect(row.vat_amount).toBeNull();
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(inboxRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(inboxRoot);
   });
 
   test("accepts foreign physical-only receipts outside Denmark with original EUR currency preserved", () => {
@@ -123,8 +124,8 @@ describe("document ingest", () => {
     expect(row.vat_amount).toBeNull();
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(inboxRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(inboxRoot);
   });
 
   test("numbers ingested documents by metadata year and resets per year", () => {
@@ -165,8 +166,8 @@ describe("document ingest", () => {
     expect(second.documentNo).toBe("DOC-2025-000001");
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(inboxRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(inboxRoot);
   });
 
   test("uses configured fiscal year labels for document numbers", () => {
@@ -211,8 +212,8 @@ describe("document ingest", () => {
     expect(second.documentNo).toBe("DOC-2027-28-000001");
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(inboxRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(inboxRoot);
   });
 
   test("rejects a file whose bytes contradict its .pdf extension", () => {
@@ -241,8 +242,8 @@ describe("document ingest", () => {
     expect(result.errors?.[0]).toContain("content does not match");
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(inboxRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(inboxRoot);
   });
 
   test("ingests a real PDF when the bytes match the .pdf extension", () => {
@@ -271,8 +272,8 @@ describe("document ingest", () => {
     expect(row.mime_type).toBe("application/pdf");
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(inboxRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(inboxRoot);
   });
 
   test("ingests a compliant supporting document and blocks duplicate logical supplier invoices unless forced", () => {
@@ -354,7 +355,7 @@ describe("document ingest", () => {
     expect(forcedLogicalDup.documentId).toBeDefined();
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(inboxRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(inboxRoot);
   });
 });

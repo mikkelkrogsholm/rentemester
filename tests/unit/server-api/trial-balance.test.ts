@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { config, get, makeWorkspace, postPnlEntry, rmSync } from "./_shared";
+import { config, get, makeWorkspace, postPnlEntry } from "./_shared";
 
+import { cleanupDir } from "../../helpers/cleanup";
 describe("cockpit API — trial balance (GET .../trial-balance)", () => {
   test("lists every moved account with debit, credit and balance", async () => {
     const ws = makeWorkspace("tb-live", ["Acme ApS"]);
@@ -21,7 +22,7 @@ describe("cockpit API — trial balance (GET .../trial-balance)", () => {
       expect(tb.rows[0]).toHaveProperty("credit");
       expect(tb.rows[0]).toHaveProperty("balance");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -35,7 +36,7 @@ describe("cockpit API — trial balance (GET .../trial-balance)", () => {
       expect(res.status).toBe(400);
       expect(res.body.code).toBe("bad_request");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -49,7 +50,7 @@ describe("cockpit API — trial balance (GET .../trial-balance)", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

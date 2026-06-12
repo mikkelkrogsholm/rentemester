@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
+import { cleanupDir } from "../../helpers/cleanup";
 import {
   config,
   get,
   makeWorkspace,
   postPnlEntry,
-  rmSync,
   seedArchiveYear,
   seedBankTransaction,
 } from "./_shared";
@@ -27,7 +27,7 @@ describe("cockpit API — bank (GET .../bank)", () => {
       expect(b.unmatchedCount).toBe(1);
       expect(b).toHaveProperty("bookedBalance");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -48,7 +48,7 @@ describe("cockpit API — bank (GET .../bank)", () => {
       expect(b.actualBalance).toBe(500);
       expect(b.difference).toBe(250);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -62,7 +62,7 @@ describe("cockpit API — bank (GET .../bank)", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -91,7 +91,7 @@ describe("cockpit API — bank (GET .../bank)", () => {
       // The statement's own running balance is valid for an archived year.
       expect(b.actualBalance).toBe(5400);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

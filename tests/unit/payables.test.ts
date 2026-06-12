@@ -1,6 +1,6 @@
 // Tests: src/core/payables.ts
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -8,6 +8,7 @@ import { openDb, migrate } from "../../src/core/db";
 import { seedAccounts } from "../../src/core/ledger";
 import { importBankCsv } from "../../src/core/bank";
 import { ingestDocument } from "../../src/core/documents";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   registerPayable,
   payPayableFromBank,
@@ -88,8 +89,8 @@ describe("payables (kreditorstyring)", () => {
     expect(status.status).toBe("open");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("matches an outgoing bank payment against a payable and closes it", () => {
@@ -135,8 +136,8 @@ describe("payables (kreditorstyring)", () => {
     expect(status.status).toBe("paid");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("rejects a payment that exceeds the open payable balance", () => {
@@ -165,8 +166,8 @@ describe("payables (kreditorstyring)", () => {
     expect(paid.errors.join(" ")).toContain("exceeds");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("rejects a second registration of the same purchase document", () => {
@@ -180,8 +181,8 @@ describe("payables (kreditorstyring)", () => {
     expect(second.errors.join(" ")).toContain("already registered");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("builds a kreditorliste with forfaldne / ikke-forfaldne aging buckets", () => {
@@ -219,8 +220,8 @@ describe("payables (kreditorstyring)", () => {
     expect(onlyOverdue.rows[0]!.billNo).toBe("V-1001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("defaulter asOfDate til i dag når den udelades — så overdue ikke skjules", () => {
@@ -249,7 +250,7 @@ describe("payables (kreditorstyring)", () => {
     expect(overdue.rows[0]!.billNo).toBe("V-2001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });

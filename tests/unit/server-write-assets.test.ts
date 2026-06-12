@@ -12,7 +12,7 @@
 // register/write-off aggregation.
 
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -23,6 +23,7 @@ import { companyPaths } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { ingestDocument } from "../../src/core/documents";
 
+import { cleanupDir } from "../helpers/cleanup";
 function makeWorkspace(label: string) {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
   initWorkspace(root);
@@ -96,7 +97,7 @@ function seedPurchaseDocument(
     return doc.documentId;
   } finally {
     db.close();
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(inbox);
   }
 }
 
@@ -115,7 +116,7 @@ describe("Cockpit Anlæg routes (#336)", () => {
       expect(res.body.assets.totals.fullyDepreciatedCount).toBe(0);
       expect(res.body.assets.totals.writeOffCount).toBe(0);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -162,7 +163,7 @@ describe("Cockpit Anlæg routes (#336)", () => {
       expect(list.body.assets.totals.cost).toBe(48000);
       expect(list.body.assets.totals.activeCount).toBe(1);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -182,7 +183,7 @@ describe("Cockpit Anlæg routes (#336)", () => {
       expect(res.status).toBe(400);
       expect(res.body.ok).toBe(false);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -241,7 +242,7 @@ describe("Cockpit Anlæg routes (#336)", () => {
       expect(nextAfter.body.nextDepreciation.postedPeriods).toBe(1);
       expect(nextAfter.body.nextDepreciation.nextPeriodIndex).toBe(2);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -269,7 +270,7 @@ describe("Cockpit Anlæg routes (#336)", () => {
       expect(res.status).toBe(400);
       expect(res.body.ok).toBe(false);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -308,7 +309,7 @@ describe("Cockpit Anlæg routes (#336)", () => {
       expect(list.body.assets.totals.writeOffCount).toBe(1);
       expect(list.body.assets.totals.writeOffTotal).toBe(8000);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -330,7 +331,7 @@ describe("Cockpit Anlæg routes (#336)", () => {
       expect(res.status).toBe(400);
       expect(res.body.ok).toBe(false);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -352,7 +353,7 @@ describe("Cockpit Anlæg routes (#336)", () => {
       expect([400, 409]).toContain(res.status);
       expect(res.body.ok).toBe(false);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -372,7 +373,7 @@ describe("Cockpit Anlæg routes (#336)", () => {
         "/api/companies/:slug/assets/:id/next-depreciation",
       );
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

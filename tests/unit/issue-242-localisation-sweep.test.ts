@@ -9,7 +9,7 @@
 // Every assertion below would have failed before the fix.
 
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -22,6 +22,7 @@ import { resolveCompanyArg } from "../../src/mcp/tool-runtime";
 import { handleRequest } from "../../src/server/router";
 import type { ServerConfig } from "../../src/server/config";
 
+import { cleanupDir } from "../helpers/cleanup";
 function tmpRoot(label: string) {
   return mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
 }
@@ -57,7 +58,7 @@ describe("#242 sweep — workspace.ts danish error strings", () => {
         renameWorkspaceCompany(ws, "acme-aps", "   "),
       ).toThrow(/firmanavn må ikke være tomt/i);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -68,7 +69,7 @@ describe("#242 sweep — workspace.ts danish error strings", () => {
         renameWorkspaceCompany(ws, "ghost", "X"),
       ).toThrow(/ingen virksomhed med slug 'ghost' findes i workspacet/);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -79,7 +80,7 @@ describe("#242 sweep — workspace.ts danish error strings", () => {
         setWorkspaceCompanyArchived(ws, "ghost", true),
       ).toThrow(/ingen virksomhed med slug 'ghost' findes i workspacet/);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -94,7 +95,7 @@ describe("#242 sweep — router catch-all 404 is in Danish", () => {
       expect(res.body.errors?.[0] ?? "").not.toMatch(/no such endpoint/i);
       expect(res.body.errors?.[0] ?? "").toMatch(/ukendt endpoint/i);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -116,7 +117,7 @@ describe("#242 sweep — MCP resolveCompanyArg is in Danish", () => {
     } finally {
       if (prev === undefined) delete process.env.RENTEMESTER_WORKSPACE;
       else process.env.RENTEMESTER_WORKSPACE = prev;
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

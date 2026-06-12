@@ -5,7 +5,7 @@
 // registration and the SMTP-config trust boundary are both covered.
 
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -14,6 +14,7 @@ import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { issueInvoice } from "../../src/core/issued-invoices";
 
+import { cleanupDir } from "../helpers/cleanup";
 function harness() {
   const server = new McpServer({ name: "email-test", version: "0.0.0" });
   registerEmailTools(server);
@@ -66,7 +67,7 @@ describe("invoice_send_email MCP tool (#180)", () => {
       invoiceNumber: "2026-0001",
       to: "kunde@example.test",
     });
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(env.ok).toBe(false);
     expect(env.errors.join(" ")).toContain("confirm");
   });
@@ -81,7 +82,7 @@ describe("invoice_send_email MCP tool (#180)", () => {
       to: "kunde@example.test",
       confirm: true,
     });
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(env.ok).toBe(false);
     expect(env.errors.join(" ")).toContain("smtp");
   });
@@ -118,7 +119,7 @@ describe("invoice_send_email MCP tool (#180)", () => {
       kind: string;
     }>;
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(rows).toEqual([{ recipient: "kunde@example.test", kind: "invoice" }]);
   });
 });

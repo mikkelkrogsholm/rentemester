@@ -1,7 +1,7 @@
 // Tests: src/server/router.ts, src/server/data.ts — the CVR cockpit endpoints
 // GET /api/companies/:slug/company and POST /api/companies/:slug/sync-cvr.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -9,6 +9,7 @@ import type { ServerConfig } from "../../src/server/config";
 import { createCompany } from "../../src/core/company";
 import { initWorkspace } from "../../src/core/workspace";
 
+import { cleanupDir } from "../helpers/cleanup";
 function config(workspaceRoot: string): ServerConfig {
   return { host: "127.0.0.1", port: 0, authRequired: false, authToken: null, workspaceRoot };
 }
@@ -33,7 +34,7 @@ describe("cockpit API — CVR endpoints", () => {
     expect(body.company.address).toBeNull();
     expect(body.company.cvrSyncedAt).toBeNull();
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("GET .../company for an unknown slug is a safe 404", async () => {
@@ -42,7 +43,7 @@ describe("cockpit API — CVR endpoints", () => {
     const { status, body } = await call(config(root), "/api/companies/ghost/company");
     expect(status).toBe(404);
     expect(body.ok).toBe(false);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a GET on the sync-cvr route is 405 — it is POST-only", async () => {
@@ -51,7 +52,7 @@ describe("cockpit API — CVR endpoints", () => {
     createCompany(root, { name: "Acme" });
     const { status } = await call(config(root), "/api/companies/acme/sync-cvr");
     expect(status).toBe(405);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("POST .../sync-cvr without a registered CVR reports the failure inside sync.ok", async () => {
@@ -68,7 +69,7 @@ describe("cockpit API — CVR endpoints", () => {
     expect(body.sync.ok).toBe(false);
     expect(body.sync.errors[0]).toContain("CVR-nummer");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   // #402 — the cockpit needs a way to tell the owner whether the CVR
@@ -103,6 +104,6 @@ describe("cockpit API — CVR endpoints", () => {
       else process.env.CVR_PASSWORD = prevPass;
     }
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

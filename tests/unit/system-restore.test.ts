@@ -1,6 +1,6 @@
 // Tests: src/core/system-restore.ts
 import { describe, expect, test } from "bun:test";
-import { copyFileSync, existsSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createHash, createHmac } from "node:crypto";
@@ -11,6 +11,7 @@ import { ingestDocument } from "../../src/core/documents";
 import { backupManifestKeyPath, createSystemBackup } from "../../src/core/system-backups";
 import { restoreSystemBackup } from "../../src/core/system-restore";
 
+import { cleanupDir } from "../helpers/cleanup";
 function sha256File(path: string) {
   return createHash("sha256").update(readFileSync(path)).digest("hex");
 }
@@ -75,7 +76,7 @@ describe("system restore", () => {
     expect(restoreEvent?.actor).toBe("user:mikkel via restore-cli");
     expect(restoreEvent?.message).toContain("backup-20260517T023900Z");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects a manifest path that escapes the backup directory", () => {
@@ -110,7 +111,7 @@ describe("system restore", () => {
     expect(restored.ok).toBe(false);
     expect(restored.errors[0]).toContain("manifest path escapes backup dir");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects a backup whose files and manifest are rewritten without a valid manifest signature", () => {
@@ -146,7 +147,7 @@ describe("system restore", () => {
     expect(restored.ok).toBe(false);
     expect(restored.errors[0]).toContain("authenticity");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects a backup whose snapshot passes file hash checks but fails audit validation", () => {
@@ -183,7 +184,7 @@ describe("system restore", () => {
     expect(restored.ok).toBe(false);
     expect(restored.errors[0]).toContain("broken audit chain");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("issue #139: a failed restore leaves the target with no clobbered ledger or document files", () => {
@@ -227,6 +228,6 @@ describe("system restore", () => {
     const leakedDocs = existsSync(docsDir) ? readdirSync(docsDir) : [];
     expect(leakedDocs).toEqual([]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

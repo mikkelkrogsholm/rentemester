@@ -2,7 +2,7 @@
 //   - PATCH /api/companies/:slug — rename + archive (non-destructive)
 //   - static serving of the built React app (with the index.html fallback)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -10,6 +10,7 @@ import type { ServerConfig } from "../../src/server/config";
 import { createCompany } from "../../src/core/company";
 import { initWorkspace, listWorkspaceCompanies } from "../../src/core/workspace";
 
+import { cleanupDir } from "../helpers/cleanup";
 function tmpRoot(label: string) {
   return mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
 }
@@ -56,7 +57,7 @@ describe("cockpit — company management (PATCH /api/companies/:slug)", () => {
       const entry = listWorkspaceCompanies(ws).find((c) => c.slug === "acme-aps");
       expect(entry?.name).toBe("Acme Holding ApS");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -73,7 +74,7 @@ describe("cockpit — company management (PATCH /api/companies/:slug)", () => {
       const dash = await json(config({ workspaceRoot: ws }), "/api/companies/acme-aps/dashboard");
       expect(dash.status).toBe(200);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -87,7 +88,7 @@ describe("cockpit — company management (PATCH /api/companies/:slug)", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -100,7 +101,7 @@ describe("cockpit — company management (PATCH /api/companies/:slug)", () => {
       });
       expect(res.status).toBe(400);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -112,7 +113,7 @@ describe("cockpit — company management (PATCH /api/companies/:slug)", () => {
       });
       expect(res.status).toBe(405);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -136,8 +137,8 @@ describe("cockpit — static SPA serving", () => {
       expect(res.headers.get("content-type")).toContain("text/html");
       expect(await res.text()).toContain("id=root");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(dist, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(dist);
     }
   });
 
@@ -152,8 +153,8 @@ describe("cockpit — static SPA serving", () => {
       expect(res.status).toBe(200);
       expect(res.headers.get("content-type")).toContain("javascript");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(dist, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(dist);
     }
   });
 
@@ -168,8 +169,8 @@ describe("cockpit — static SPA serving", () => {
       expect(res.status).toBe(200);
       expect(await res.text()).toContain("id=root");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(dist, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(dist);
     }
   });
 
@@ -185,8 +186,8 @@ describe("cockpit — static SPA serving", () => {
       const text = await res.text();
       expect(text).not.toContain("root:");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(dist, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(dist);
     }
   });
 
@@ -201,8 +202,8 @@ describe("cockpit — static SPA serving", () => {
       expect(res.status).toBe(200);
       expect(res.body.count).toBe(1);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(dist, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(dist);
     }
   });
 
@@ -217,8 +218,8 @@ describe("cockpit — static SPA serving", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(dist, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(dist);
     }
   });
 });

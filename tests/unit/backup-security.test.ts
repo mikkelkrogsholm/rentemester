@@ -1,6 +1,6 @@
 // Tests: src/core/system-backups.ts, src/core/system-restore.ts (backup security)
 import { describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -9,6 +9,7 @@ import { ingestDocument } from "../../src/core/documents";
 import { backupManifestKeyPath, createSystemBackup } from "../../src/core/system-backups";
 import { verifyBackupSignature } from "../../src/core/system-restore";
 
+import { cleanupDir } from "../helpers/cleanup";
 // These tests lock in the threat-model assumptions documented in
 // docs/backup-security.md. If any of them fail, the audit document is no
 // longer accurate and must be revisited (likely together with the chain
@@ -74,8 +75,8 @@ describe("backup signing chain-of-trust (issue #87)", () => {
     expect(leaked).toEqual([]);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(inboxRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(inboxRoot);
   });
 
   test("HMAC signature file ships with the backup but the verifying key does not", () => {
@@ -99,7 +100,7 @@ describe("backup signing chain-of-trust (issue #87)", () => {
     expect(keyFiles).toEqual([]);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   });
 
   test("issue #131: HMAC-only verification is reported as integrity-only, not third-party authenticity", () => {
@@ -123,6 +124,6 @@ describe("backup signing chain-of-trust (issue #87)", () => {
     expect(verify.trustLevel).toBe("integrity-only");
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   });
 });

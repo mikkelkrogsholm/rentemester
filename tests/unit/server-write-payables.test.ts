@@ -9,7 +9,7 @@
 // duplicate-registration and double-pay 409 conflicts.
 
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -21,6 +21,7 @@ import { openDb, migrate } from "../../src/core/db";
 import { importBankCsv } from "../../src/core/bank";
 import { ingestDocument } from "../../src/core/documents";
 
+import { cleanupDir } from "../helpers/cleanup";
 function tmpRoot(label: string) {
   return mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
 }
@@ -187,7 +188,7 @@ describe("Cockpit read — leverandørfaktura-arbejdsbordet", () => {
       // surfaced by default — the same default as the CLI's `payable list`.
       expect(view.status).toBe("open");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -250,8 +251,8 @@ describe("Cockpit read — leverandørfaktura-arbejdsbordet", () => {
       expect(view.rows[0].openBalance).toBe(1250);
       expect(view.rows[0].status).toBe("open");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(inbox, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(inbox);
     }
   });
 
@@ -264,7 +265,7 @@ describe("Cockpit read — leverandørfaktura-arbejdsbordet", () => {
       );
       expect(res.status).toBe(404);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -280,7 +281,7 @@ describe("Cockpit read — leverandørfaktura-arbejdsbordet", () => {
       );
       expect(res.status).toBe(405);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -334,8 +335,8 @@ describe("Cockpit write — payable register", () => {
         expect(row.n).toBe(1);
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(inbox, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(inbox);
     }
   });
 
@@ -372,8 +373,8 @@ describe("Cockpit write — payable register", () => {
         expect(row.n).toBe(0);
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(inbox, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(inbox);
     }
   });
 
@@ -393,7 +394,7 @@ describe("Cockpit write — payable register", () => {
       expect(res.status).toBe(400);
       expect((res.body.errors?.[0] ?? "")).toContain("documentId");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -425,8 +426,8 @@ describe("Cockpit write — payable register", () => {
       expect(res.status).toBe(400);
       expect((res.body.errors?.[0] ?? "")).toContain("vatTreatment");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(inbox, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(inbox);
     }
   });
 
@@ -461,8 +462,8 @@ describe("Cockpit write — payable register", () => {
       });
       expect(second.status).toBe(409);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(inbox, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(inbox);
     }
   });
 
@@ -494,8 +495,8 @@ describe("Cockpit write — payable register", () => {
       expect(res.status).toBe(401);
       expect(res.body.code).toBe("unauthorized");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(inbox, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(inbox);
     }
   });
 });
@@ -560,8 +561,8 @@ describe("Cockpit write — payable pay", () => {
       expect(list.rows[0].status).toBe("paid");
       expect(list.rows[0].openBalance).toBe(0);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(inbox, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(inbox);
     }
   });
 
@@ -609,8 +610,8 @@ describe("Cockpit write — payable pay", () => {
         expect(row.n).toBe(0);
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(inbox, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(inbox);
     }
   });
 
@@ -644,8 +645,8 @@ describe("Cockpit write — payable pay", () => {
       expect(pay.status).toBe(400);
       expect((pay.body.errors?.[0] ?? "")).toContain("bankTransactionId");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(inbox, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(inbox);
     }
   });
 
@@ -692,8 +693,8 @@ describe("Cockpit write — payable pay", () => {
       );
       expect(second.status).toBe(409);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(inbox, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(inbox);
     }
   });
 
@@ -707,7 +708,7 @@ describe("Cockpit write — payable pay", () => {
       );
       expect(res.status).toBe(400);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

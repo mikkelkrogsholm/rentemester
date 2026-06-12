@@ -1,12 +1,13 @@
 // Tests: src/core/bank-profiles.ts, src/core/bank.ts (Danske Bank CSV profile, #186)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { importBankCsv } from "../../src/core/bank";
 
+import { cleanupDir } from "../helpers/cleanup";
 function setup() {
   const root = mkdtempSync(join(tmpdir(), "rentemester-bankprofile-"));
   const db = openDb(ensureCompanyDirs(root).db);
@@ -45,7 +46,7 @@ describe("Danske Bank CSV profile (#186)", () => {
     expect(rows[1].transaction_date).toBe("2026-05-07");
     expect(rows[1].amount).toBe(-200);
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("the same ambiguous file is rejected WITHOUT the profile", () => {
@@ -57,7 +58,7 @@ describe("Danske Bank CSV profile (#186)", () => {
     expect(result.ok).toBe(false);
     expect(result.errors.some((e) => e.includes("transactionDate"))).toBe(true);
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects an unknown profile name", () => {
@@ -68,7 +69,7 @@ describe("Danske Bank CSV profile (#186)", () => {
     expect(result.ok).toBe(false);
     expect(result.errors.some((e) => e.includes("unknown bank import profile"))).toBe(true);
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("imports the committed synthetic Danske Bank sample", () => {
@@ -77,6 +78,6 @@ describe("Danske Bank CSV profile (#186)", () => {
     expect(result.ok).toBe(true);
     expect((result.imported ?? 0)).toBeGreaterThan(0);
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

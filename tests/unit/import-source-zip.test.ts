@@ -8,11 +8,12 @@
 
 import { describe, test, expect } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { resolveSource } from "../../src/core/import/source";
 
+import { cleanupDir } from "../helpers/cleanup";
 /** Builds a `.zip` of `srcDir`'s contents and returns its path. */
 function zipDir(srcDir: string): string {
   const zipPath = join(mkdtempSync(join(tmpdir(), "rm-zip-")), "export.zip");
@@ -39,8 +40,8 @@ describe("resolveSource — .zip export extraction (#192)", () => {
     expect(resolved.files["Firmaoplysninger.csv"]!.text).toContain("Test ApS");
     expect(resolved.files["2025/Kontoplan.csv"]!.text).toContain("1000;Salg");
 
-    rmSync(src, { recursive: true, force: true });
-    rmSync(zipPath, { recursive: true, force: true });
+    cleanupDir(src);
+    cleanupDir(zipPath);
   });
 
   test("a nested receipt directory survives the round-trip as a binary artifact", () => {
@@ -54,7 +55,7 @@ describe("resolveSource — .zip export extraction (#192)", () => {
     expect(receipt).toBeDefined();
     expect(receipt!.bytes.length).toBeGreaterThan(0);
 
-    rmSync(src, { recursive: true, force: true });
-    rmSync(zipPath, { recursive: true, force: true });
+    cleanupDir(src);
+    cleanupDir(zipPath);
   });
 });

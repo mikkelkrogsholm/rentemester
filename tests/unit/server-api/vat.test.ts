@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { config, get, makeWorkspace, postPnlEntry, rmSync } from "./_shared";
+import { config, get, makeWorkspace, postPnlEntry } from "./_shared";
 
+import { cleanupDir } from "../../helpers/cleanup";
 describe("cockpit API — VAT (GET .../vat)", () => {
   test("returns the output/input/payable VAT for the period", async () => {
     const ws = makeWorkspace("vat-live", ["Acme ApS"]);
@@ -30,7 +31,7 @@ describe("cockpit API — VAT (GET .../vat)", () => {
       expect(v.rubrikker.rubrikB).toBe(0);
       expect(v.rubrikker.rubrikC).toBe(0);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -44,7 +45,7 @@ describe("cockpit API — VAT (GET .../vat)", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

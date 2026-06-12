@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { cleanupDir } from "../../helpers/cleanup";
 import {
   companyPaths,
   companyRootForSlug,
@@ -10,8 +11,7 @@ import {
   makeWorkspace,
   migrate,
   openDb,
-  rmSync,
-} from "./_shared";
+  } from "./_shared";
 
 describe("cockpit API — contacts (GET .../contacts)", () => {
   test("returns customers and vendors from the master data", async () => {
@@ -37,7 +37,7 @@ describe("cockpit API — contacts (GET .../contacts)", () => {
       expect(c.vendors.length).toBe(1);
       expect(c.vendors[0].name).toBe("Leverandør ApS");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -52,7 +52,7 @@ describe("cockpit API — contacts (GET .../contacts)", () => {
       expect(res.body.contacts.customers).toEqual([]);
       expect(res.body.contacts.vendors).toEqual([]);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -66,7 +66,7 @@ describe("cockpit API — contacts (GET .../contacts)", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -132,7 +132,7 @@ describe("cockpit API — contacts (GET .../contacts)", () => {
       expect(customers[2].openInvoiceCount).toBe(0);
       expect(customers[2].openBalance).toBe(0);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

@@ -14,6 +14,7 @@ import { postJournalEntry } from "../../src/core/ledger";
 import { ingestDocument } from "../../src/core/documents";
 import { recordException } from "../../src/core/exceptions";
 
+import { cleanupDir } from "../helpers/cleanup";
 function tmpRoot(label: string) {
   return mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
 }
@@ -139,7 +140,7 @@ describe("portfolio aggregation", () => {
       expect(overview.totals.openInvoiceCount).toBe(0);
       expect(overview.totals.openInvoiceTotal).toBe(0);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -160,7 +161,7 @@ describe("portfolio aggregation", () => {
         expect(c).toHaveProperty("auditChainOk");
       }
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -176,7 +177,7 @@ describe("portfolio aggregation", () => {
       const vatSum = overview.companies.reduce((a, c) => a + c.netVatPayable, 0);
       expect(overview.totals.netVatPayable).toBeCloseTo(vatSum, 6);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -197,7 +198,7 @@ describe("portfolio aggregation", () => {
       expect(c.vat?.deadline).toBe("2026-06-01");
       expect(c.netVatPayable).toBe(150);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -211,7 +212,7 @@ describe("portfolio aggregation", () => {
       // Output VAT booked on account 1200 (250) with no input → payable 250.
       expect(overview.companies[0]!.vat?.payable).toBe(250);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -226,7 +227,7 @@ describe("portfolio aggregation", () => {
       const overview = buildPortfolioOverview(ws, "2026-05-20");
       expect(overview.companies[0]!.actualBankBalance).toBe(500);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -246,7 +247,7 @@ describe("portfolio aggregation", () => {
       expect(bank?.count).toBe(2);
       expect(bank?.label).toBe("2 banktransaktioner mangler afstemning");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -267,7 +268,7 @@ describe("portfolio aggregation", () => {
       expect(overview.rollup.vatPayable).toBe(525);
       expect(overview.rollup.openTaskCount).toBe(1);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -285,7 +286,7 @@ describe("portfolio aggregation", () => {
       expect(c.vat).toBeNull();
       expect(c.actualBankBalance).toBeNull();
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -305,7 +306,7 @@ describe("portfolio aggregation", () => {
       expect(body.portfolio.asOf).toBe("2026-05-20");
       expect(body.portfolio.companies[0].slug).toBe("acme-aps");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

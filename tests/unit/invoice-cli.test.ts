@@ -1,9 +1,10 @@
 // Tests: src/cli/invoice.ts, src/cli.ts (invoice CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("invoice validate CLI", () => {
   test("returns exit code 0 for valid invoice input", async () => {
     const dir = mkdtempSync(join(tmpdir(), "rentemester-invoice-"));
@@ -29,7 +30,7 @@ describe("invoice validate CLI", () => {
     const stderr = await new Response(proc.stderr).text();
     const exitCode = await proc.exited;
 
-    rmSync(dir, { recursive: true, force: true });
+    cleanupDir(dir);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);

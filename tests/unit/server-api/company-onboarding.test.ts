@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { config, get, makeWorkspace, rmSync } from "./_shared";
+import { config, get, makeWorkspace } from "./_shared";
 
+import { cleanupDir } from "../../helpers/cleanup";
 describe("cockpit API — company onboarding (POST /api/companies)", () => {
   test("creates a new company in the workspace", async () => {
     const ws = makeWorkspace("add-create");
@@ -16,7 +17,7 @@ describe("cockpit API — company onboarding (POST /api/companies)", () => {
       const list = await get(config({ workspaceRoot: ws }), "/api/companies");
       expect(list.body.companies.map((c: any) => c.slug)).toContain("gamma-aps");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -31,7 +32,7 @@ describe("cockpit API — company onboarding (POST /api/companies)", () => {
       expect(res.status).toBe(400);
       expect(res.body.code).toBe("bad_request");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -47,7 +48,7 @@ describe("cockpit API — company onboarding (POST /api/companies)", () => {
       expect(res.body.code).toBe("conflict");
       expect(JSON.stringify(res.body)).not.toContain(ws);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -61,7 +62,7 @@ describe("cockpit API — company onboarding (POST /api/companies)", () => {
       });
       expect(res.status).toBe(400);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -76,7 +77,7 @@ describe("cockpit API — company onboarding (POST /api/companies)", () => {
       });
       expect(res.status).toBe(401);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

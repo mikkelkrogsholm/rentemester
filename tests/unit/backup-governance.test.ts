@@ -1,11 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import type { Database } from "bun:sqlite";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { migrate, openDb } from "../../src/core/db";
 import { createSystemBackup, packBackupArchive } from "../../src/core/system-backups";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   addBackupDestination,
   confirmBackupPlacement,
@@ -28,7 +29,7 @@ function withCompany(fn: (db: Database, companyRoot: string) => void): void {
     fn(db, companyRoot);
   } finally {
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   }
 }
 
@@ -147,7 +148,7 @@ describe("backup placement", () => {
         const stored = listBackupDestinations(companyRoot)[0]!;
         expect(stored.placements).toHaveLength(1);
       } finally {
-        rmSync(folder, { recursive: true, force: true });
+        cleanupDir(folder);
       }
     });
   });
@@ -197,7 +198,7 @@ describe("backup placement", () => {
         expect(confirmed.ok).toBe(false);
         expect(confirmed.errors.join(" ")).toContain("could not be confirmed");
       } finally {
-        rmSync(folder, { recursive: true, force: true });
+        cleanupDir(folder);
       }
     });
   });
@@ -281,7 +282,7 @@ describe("backup governance status", () => {
         expect(status.latestBackupPlacementCount).toBe(1);
         expect(status.ok).toBe(true);
       } finally {
-        rmSync(folder, { recursive: true, force: true });
+        cleanupDir(folder);
       }
     });
   });

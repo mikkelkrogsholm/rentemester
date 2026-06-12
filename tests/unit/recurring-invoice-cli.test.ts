@@ -1,9 +1,10 @@
 // Tests: src/cli/recurring-invoice.ts, src/cli.ts (recurring-invoice CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 const TEMPLATE_INPUT = {
   name: "Monthly retainer",
   interval: "monthly",
@@ -105,6 +106,6 @@ describe("recurring-invoice CLI", () => {
     expect(listedJson.ok).toBe(true);
     expect(listedJson.count).toBe(1);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

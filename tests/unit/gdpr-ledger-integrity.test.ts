@@ -1,6 +1,6 @@
 // Tests: src/core/gdpr.ts (GDPR erasure never breaks the audit chain — #184)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -10,6 +10,7 @@ import { ingestDocument } from "../../src/core/documents";
 import { createCustomer, createVendor } from "../../src/core/master-data";
 import { eraseGdprSubject } from "../../src/core/gdpr";
 
+import { cleanupDir } from "../helpers/cleanup";
 function freshCompany(prefix: string) {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${prefix}-`));
   const company = join(root, "company");
@@ -75,7 +76,7 @@ describe("GDPR erasure keeps the ledger and audit chain verifiable", () => {
     expect(entryCount).toBeGreaterThan(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a refused erasure leaves the audit chain intact and writes no tombstones", () => {
@@ -114,7 +115,7 @@ describe("GDPR erasure keeps the ledger and audit chain verifiable", () => {
     const chain = verifyAuditChain(db);
     const tombstones = (db.query("SELECT COUNT(*) AS n FROM gdpr_erasures").get() as { n: number }).n;
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(chain.ok).toBe(true);
     expect(tombstones).toBe(0);

@@ -1,9 +1,10 @@
 // Tests: src/cli/invoice.ts, src/cli.ts (credit-note CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("credit note CLI", () => {
   test("issues a credit note for an issued invoice", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-credit-cli-"));
@@ -27,7 +28,7 @@ describe("credit note CLI", () => {
     const stderr = await new Response(proc.stderr).text();
     const exitCode = await proc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);

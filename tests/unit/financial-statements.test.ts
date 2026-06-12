@@ -2,13 +2,14 @@
 // Trial balance (saldobalance), profit & loss (resultatopgørelse) and
 // balance sheet (balance) computed deterministically from the ledger.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { ingestDocument } from "../../src/core/documents";
 import { postJournalEntry, reverseJournalEntry, seedAccounts } from "../../src/core/ledger";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   buildBalanceSheet,
   buildProfitAndLoss,
@@ -109,8 +110,8 @@ describe("trial balance (saldobalance)", () => {
     expect(tb.balanced).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("excludes accounts with no movement in the period and only lists touched accounts", () => {
@@ -121,8 +122,8 @@ describe("trial balance (saldobalance)", () => {
     // Accounts are sorted by account_no ascending.
     expect(tb.accounts.map((a) => a.accountNo)).toEqual(["1000", "1200", "2000", "3000", "4000"]);
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("rejects an inverted period and an invalid date", () => {
@@ -134,8 +135,8 @@ describe("trial balance (saldobalance)", () => {
     const bad = buildTrialBalance(db, "not-a-date", "2026-05-31");
     expect(bad.ok).toBe(false);
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });
 
@@ -168,8 +169,8 @@ describe("period boundary filtering", () => {
     expect(empty.balanced).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });
 
@@ -190,8 +191,8 @@ describe("profit & loss (resultatopgørelse)", () => {
     expect(pl.expense.find((l) => l.accountNo === "2000")).toBeUndefined();
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("a second sale produces a positive result equal to income minus expense", () => {
@@ -214,8 +215,8 @@ describe("profit & loss (resultatopgørelse)", () => {
     expect(pl.result).toBe(2000);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });
 
@@ -236,8 +237,8 @@ describe("balance sheet (balance)", () => {
     expect(bs.totalAssets).toBe(bs.totalLiabilitiesAndEquity);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("a retained-earnings posting still balances and exposes the result line", () => {
@@ -263,8 +264,8 @@ describe("balance sheet (balance)", () => {
     expect(bs.periodResult).toBe(5000);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("rejects an invalid as-of date", () => {
@@ -273,8 +274,8 @@ describe("balance sheet (balance)", () => {
     expect(bad.ok).toBe(false);
     expect(bad.errors.length).toBeGreaterThan(0);
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });
 
@@ -300,7 +301,7 @@ describe("reversal handling", () => {
     expect(pl.income.find((l) => l.accountNo === "1000")!.amount).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });

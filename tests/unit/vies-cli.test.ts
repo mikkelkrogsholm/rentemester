@@ -1,10 +1,11 @@
 // Tests: src/cli/customer.ts, src/cli.ts (VIES validation CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   validateVatAgainstVies,
   lookupCachedViesValidation,
@@ -34,7 +35,7 @@ describe("#293 — the missing-VIES error is surface-neutral", () => {
     expect(message).toContain("customer_validate_vat");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });
 
@@ -60,7 +61,7 @@ describe("VIES malformed-response handling", () => {
     expect(lookupCachedViesValidation(db, "DE123456789")).toBeNull();
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("caches an unambiguous boolean VIES response (#144)", async () => {
@@ -81,7 +82,7 @@ describe("VIES malformed-response handling", () => {
     expect(lookupCachedViesValidation(db, "DE999999999")?.valid).toBe(false);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });
 
@@ -110,7 +111,7 @@ describe("customer validate-vat CLI", () => {
     const exitCode = await proc.exited;
 
     server.stop(true);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);

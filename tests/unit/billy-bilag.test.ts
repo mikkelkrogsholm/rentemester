@@ -1,5 +1,5 @@
 import { expect, test, describe } from "bun:test";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { Database } from "bun:sqlite";
@@ -9,6 +9,7 @@ import { initialiseCompanyVolume } from "../../src/core/company";
 import { ingestBillyBilag } from "../../src/core/import/billy-bilag";
 import type { ImportResult } from "../../src/core/import/types";
 
+import { cleanupDir } from "../helpers/cleanup";
 function freshCompany(): { root: string; db: Database } {
   const root = mkdtempSync(join(tmpdir(), "rentemester-billy-bilag-"));
   initialiseCompanyVolume(root, {});
@@ -63,8 +64,8 @@ describe("Billy bilag ingest", () => {
       expect(result.auditTrail[0]).toContain("No bill-transaction-map.json");
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
-      try { rmSync(exportDir, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
+      try { cleanupDir(exportDir); } catch {}
     }
   });
 
@@ -81,8 +82,8 @@ describe("Billy bilag ingest", () => {
       expect(result.linked.length).toBe(0);
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
-      try { rmSync(exportDir, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
+      try { cleanupDir(exportDir); } catch {}
     }
   });
 
@@ -122,8 +123,8 @@ describe("Billy bilag ingest", () => {
       expect(result.linked[0]!.journalEntryNo).toBe("2026-00001");
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
-      try { rmSync(exportDir, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
+      try { cleanupDir(exportDir); } catch {}
     }
   });
 
@@ -151,8 +152,8 @@ describe("Billy bilag ingest", () => {
       expect(result.unmatched[0]!.billId).toBe("unknown-bill");
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
-      try { rmSync(exportDir, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
+      try { cleanupDir(exportDir); } catch {}
     }
   });
 
@@ -190,8 +191,8 @@ describe("Billy bilag ingest", () => {
       expect(second.duplicates.length).toBe(1);
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
-      try { rmSync(exportDir, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
+      try { cleanupDir(exportDir); } catch {}
     }
   });
 
@@ -207,8 +208,8 @@ describe("Billy bilag ingest", () => {
       expect(result.errors[0]).toContain("invalid JSON");
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
-      try { rmSync(exportDir, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
+      try { cleanupDir(exportDir); } catch {}
     }
   });
 });

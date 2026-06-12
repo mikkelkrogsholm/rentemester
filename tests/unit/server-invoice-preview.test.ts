@@ -11,7 +11,7 @@
 // the cockpit can pipe them straight into URL.createObjectURL(); the tests
 // inspect the response bytes + headers and verify the ledger is untouched.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -21,6 +21,7 @@ import { initWorkspace, companyRootForSlug } from "../../src/core/workspace";
 import { companyPaths } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 
+import { cleanupDir } from "../helpers/cleanup";
 function tmpRoot(label: string) {
   return mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
 }
@@ -131,7 +132,7 @@ describe("Cockpit read+render — invoice preview (happy path)", () => {
       );
       expect(magic).toBe("%PDF");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -186,7 +187,7 @@ describe("Cockpit read+render — invoice preview (happy path)", () => {
       expect(after.audit).toBe(before.audit);
       expect(after.seq).toBe(before.seq);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -218,7 +219,7 @@ describe("Cockpit read+render — invoice preview (happy path)", () => {
       // previews must not have left a hole.
       expect(issueBody.invoice.invoiceNumber).toMatch(/-0001$/);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -241,7 +242,7 @@ describe("Cockpit read+render — invoice preview (input + gates)", () => {
       expect(body.code).toBe("bad_request");
       expect((body.errors?.[0] ?? "")).toContain("issueDate");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -257,7 +258,7 @@ describe("Cockpit read+render — invoice preview (input + gates)", () => {
       const body = await res.json();
       expect((body.errors?.[0] ?? "")).toContain("lines");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -275,7 +276,7 @@ describe("Cockpit read+render — invoice preview (input + gates)", () => {
       const body = await res.json();
       expect((body.errors?.[0] ?? "")).toContain("quantity");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -292,7 +293,7 @@ describe("Cockpit read+render — invoice preview (input + gates)", () => {
       expect(body.code).toBe("bad_request");
       expect((body.errors?.[0] ?? "")).toContain("buyer");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -308,7 +309,7 @@ describe("Cockpit read+render — invoice preview (input + gates)", () => {
       const body = await res.json();
       expect((body.errors?.[0] ?? "")).toContain("customer");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -322,7 +323,7 @@ describe("Cockpit read+render — invoice preview (input + gates)", () => {
       );
       expect(res.status).toBe(404);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -338,7 +339,7 @@ describe("Cockpit read+render — invoice preview (input + gates)", () => {
       );
       expect(res.status).toBe(405);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -353,7 +354,7 @@ describe("Cockpit read+render — invoice preview (input + gates)", () => {
       );
       expect(res.status).toBe(401);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

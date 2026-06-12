@@ -1,9 +1,10 @@
 // Tests: src/cli/invoice.ts, src/cli.ts (invoice list CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 function invoicePayload(overrides: Record<string, unknown> = {}) {
   return {
     invoiceType: "full",
@@ -83,7 +84,7 @@ describe("invoice list/find/overdue CLI", () => {
     const listed = await runCli(["invoice", "list", "--company", company, "--status", "open", "--as-of", "2026-06-20"]);
     const found = await runCli(["invoice", "find", "--company", company, "--customer", "kunde", "--as-of", "2026-06-20"]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(listed.exitCode).toBe(0);
     expect(listed.stderr).toBe("");
@@ -131,7 +132,7 @@ describe("invoice list/find/overdue CLI", () => {
 
     const proc = await runCli(["invoice", "overdue", "--company", company, "--as-of", "2026-06-20", "--min-days", "5", "--format", "human"]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(proc.exitCode).toBe(0);
     expect(proc.stderr).toBe("");

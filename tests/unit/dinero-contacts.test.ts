@@ -1,11 +1,12 @@
 // Tests: src/core/import/dinero-contacts.ts — Dinero Kontakter.csv import.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { listCustomers, listVendors } from "../../src/core/master-data";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   parseDineroContactsCsv,
   classifyContactRoles,
@@ -126,7 +127,7 @@ describe("importDineroContacts", () => {
     expect(listVendors(db).count).toBe(4);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a plain import without --enrich-cvr makes no network call", async () => {
@@ -140,7 +141,7 @@ describe("importDineroContacts", () => {
     expect(result.summary.enriched).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("--enrich-cvr fills empty fields from CVR while CSV values win", async () => {
@@ -167,6 +168,6 @@ describe("importDineroContacts", () => {
     expect(vendor.name).toBe("Leverandør ApS");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

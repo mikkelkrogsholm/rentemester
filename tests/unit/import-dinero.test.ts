@@ -12,7 +12,7 @@
 // Tests run against the synthetic fixture in examples/import-dinero/ — the real
 // Dinero export is private and is never committed.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -22,6 +22,7 @@ import { resolveSource } from "../../src/core/import/source";
 import { dineroParser } from "../../src/core/import/dinero";
 import { reconcileChartOfAccounts, reconcileCompanyMasterData } from "../../src/core/import/reconcile";
 
+import { cleanupDir } from "../helpers/cleanup";
 const FIXTURE = join(import.meta.dir, "../../examples/import-dinero");
 
 function freshCompany(prefix: string) {
@@ -49,7 +50,7 @@ describe("Dinero parser: multi-file export -> normalised source", () => {
       expect(parsed.ok).toBe(false);
       expect(parsed.errors.join(" ")).toContain("Firmaoplysninger.csv");
     } finally {
-      rmSync(dir, { recursive: true, force: true });
+      cleanupDir(dir);
     }
   });
 
@@ -130,7 +131,7 @@ describe("Dinero reconciliation into the live ledger", () => {
       expect(verifyAuditChain(db).ok).toBe(true);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -165,7 +166,7 @@ describe("Dinero reconciliation into the live ledger", () => {
       expect(verifyAuditChain(db).ok).toBe(true);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -200,7 +201,7 @@ describe("Dinero reconciliation into the live ledger", () => {
       expect(verifyAuditChain(db).ok).toBe(true);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -212,7 +213,7 @@ describe("Dinero reconciliation into the live ledger", () => {
       expect(result.unmappedVatCodes.length).toBeGreaterThan(0);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -234,7 +235,7 @@ describe("Dinero reconciliation into the live ledger", () => {
       expect(second.notes.join(" ")).toContain("name");
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });

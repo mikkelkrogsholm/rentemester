@@ -1,11 +1,12 @@
 // Tests: src/core/public-einvoice.ts
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { issueInvoice } from "../../src/core/issued-invoices";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   exportPublicEInvoiceOioUbl,
   exportPublicEInvoicePreview,
@@ -76,7 +77,7 @@ describe("public e-invoice preview export", () => {
     expect(first.xml).toContain("<Transport>out_of_scope_peppol_access_point_required</Transport>");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects export for invoices that are not marked as public-recipient invoices", () => {
@@ -103,7 +104,7 @@ describe("public e-invoice preview export", () => {
     expect(exported.errors).toContain("invoice 2026-0001 is not marked as a public-recipient e-invoice");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("exports a deterministic OIOUBL handoff artifact and records audit metadata", () => {
@@ -170,7 +171,7 @@ describe("public e-invoice preview export", () => {
     });
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("renders a 100% VAT rate as cbc:Percent 100, not the old heuristic's 1", () => {
@@ -207,7 +208,7 @@ describe("public e-invoice preview export", () => {
     expect(exported.xml).not.toContain("<cbc:Percent>1</cbc:Percent>");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects OIOUBL export when required public-recipient handoff metadata is missing", () => {
@@ -240,7 +241,7 @@ describe("public e-invoice preview export", () => {
     expect(exported.errors).toContain("invoice 2026-0001 is missing dueDate required for OIOUBL handoff");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });
 
@@ -276,7 +277,7 @@ describe("public e-invoice PEPPOL submission", () => {
     expect(first.appliedRules).toContain("DK-PEPPOL-SUBMIT-001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("is idempotent: a duplicate submission reuses the existing attempt record", () => {
@@ -308,7 +309,7 @@ describe("public e-invoice PEPPOL submission", () => {
     expect(rows).toHaveLength(1);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("records an audit event linking invoice to submission attempt", () => {
@@ -337,7 +338,7 @@ describe("public e-invoice PEPPOL submission", () => {
     expect(auditRows[0]!.message).toContain(result.submissionReference!);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("fails clearly when access-point config is missing", () => {
@@ -357,7 +358,7 @@ describe("public e-invoice PEPPOL submission", () => {
     expect(result.errors.join(" ")).toContain("access-point");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("fails clearly when required public-recipient OIOUBL metadata is missing", () => {
@@ -382,7 +383,7 @@ describe("public e-invoice PEPPOL submission", () => {
     expect(rows).toHaveLength(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("records a transport acknowledgement when one is supplied", () => {
@@ -409,7 +410,7 @@ describe("public e-invoice PEPPOL submission", () => {
     expect(row.transmission_id).toBe("tx-9001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });
 
@@ -461,7 +462,7 @@ describe("public e-invoice PEPPOL transmission", () => {
     expect(audit[0]!.message).toContain("tx-test-0001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("is idempotent: an already-transmitted invoice is not transmitted again", async () => {
@@ -498,7 +499,7 @@ describe("public e-invoice PEPPOL transmission", () => {
     expect(rows).toHaveLength(1);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("records a failed transmission in the audit log without writing a submission row", async () => {
@@ -527,7 +528,7 @@ describe("public e-invoice PEPPOL transmission", () => {
     expect(audit[0]!.message).toContain("failed");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a failed transmission can be retried and reach acknowledged", async () => {
@@ -557,7 +558,7 @@ describe("public e-invoice PEPPOL transmission", () => {
     expect(rows[0]!.status).toBe("acknowledged");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("surfaces OIOUBL validation errors without calling the transmitter", async () => {
@@ -586,7 +587,7 @@ describe("public e-invoice PEPPOL transmission", () => {
     expect(calls).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("treats a thrown transmitter error as a failed transmission", async () => {
@@ -613,6 +614,6 @@ describe("public e-invoice PEPPOL transmission", () => {
     expect(rows).toHaveLength(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

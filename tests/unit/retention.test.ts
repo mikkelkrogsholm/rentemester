@@ -1,6 +1,6 @@
 // Tests: src/core/retention.ts
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -11,6 +11,7 @@ import { importBankCsv } from "../../src/core/bank";
 import { buildRetentionStatusReport, retainUntilForDate } from "../../src/core/retention";
 import { exportAuthorityPackage } from "../../src/core/authority-export";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("retention tracking", () => {
   test("computes retain_until from fiscal year end plus five years", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-retention-"));
@@ -22,7 +23,7 @@ describe("retention tracking", () => {
     expect(retainUntilForDate(db, "2027-06-30")).toBe("2032-06-30");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("runtime migrate tolerates legacy journal rows with NULL retain_until under append-only triggers", () => {
@@ -67,7 +68,7 @@ describe("retention tracking", () => {
     expect(exportedJournal[0].retainUntil).toBe("2031-06-30");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("stores and reports retention deadlines for documents journals and bank transactions", () => {
@@ -130,6 +131,6 @@ describe("retention tracking", () => {
     ]);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

@@ -1,9 +1,10 @@
 // Tests: src/cli/import.ts, src/cli.ts (import framework CLI, #185)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync, copyFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync, copyFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 function runCli(args: string[]) {
   return Bun.spawn(["bun", "run", "src/cli.ts", ...args], {
     cwd: process.cwd(),
@@ -33,7 +34,7 @@ describe("import run CLI", () => {
     const stderr = await new Response(proc.stderr).text();
     const exitCode = await proc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);
@@ -69,7 +70,7 @@ describe("import run CLI", () => {
     const stdout = await new Response(proc.stdout).text();
     const exitCode = await proc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(exitCode).toBe(1);
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(false);
@@ -104,7 +105,7 @@ describe("import run CLI", () => {
     const stderr = await new Response(proc.stderr).text();
     const exitCode = await proc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);

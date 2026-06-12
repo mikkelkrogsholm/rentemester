@@ -1,9 +1,10 @@
 // Tests: src/cli/invoice.ts, src/cli.ts (invoice interest CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("invoice interest CLI", () => {
   test("posts a registered overdue late-interest claim to the ledger", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-invoice-interest-post-cli-"));
@@ -31,7 +32,7 @@ describe("invoice interest CLI", () => {
     const stderr = await new Response(proc.stderr).text();
     const exitCode = await proc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);
@@ -65,7 +66,7 @@ describe("invoice interest CLI", () => {
     const stderr = await new Response(proc.stderr).text();
     const exitCode = await proc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);
@@ -99,7 +100,7 @@ describe("invoice interest CLI", () => {
     const stderr = await new Response(proc.stderr).text();
     const exitCode = await proc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);
@@ -137,7 +138,7 @@ describe("invoice interest CLI", () => {
     const postOut = await new Response(postProc.stdout).text();
     const postExit = await postProc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(postExit).toBe(0);
     const correction = JSON.parse(postOut);
     expect(correction.ok).toBe(true);
@@ -172,7 +173,7 @@ describe("invoice interest CLI", () => {
     const stderr = await new Response(proc.stderr).text();
     const exitCode = await proc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);

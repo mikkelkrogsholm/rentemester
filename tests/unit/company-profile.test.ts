@@ -2,7 +2,7 @@
 // src/cli/init.ts, src/cli/company.ts — #221 captures the company's own
 // identity + payment details once so they flow onto every issued invoice.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs, companyPaths } from "../../src/core/paths";
@@ -15,6 +15,7 @@ import {
 import { issueInvoice } from "../../src/core/issued-invoices";
 import { readIssuedInvoicePdfText } from "../../src/core/invoice-pdf";
 
+import { cleanupDir } from "../helpers/cleanup";
 /** Extract every PDF literal-string draw operation `( ... ) Tj` so a test can
  *  assert on the rendered text regardless of positioning. */
 function pdfStrings(pdf: Uint8Array | Buffer): string[] {
@@ -87,7 +88,7 @@ describe("company profile — captured once, flows onto every invoice (#221)", (
 
       db.close();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -121,7 +122,7 @@ describe("company profile — captured once, flows onto every invoice (#221)", (
       });
       db.close();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -171,7 +172,7 @@ describe("company profile — captured once, flows onto every invoice (#221)", (
 
       db.close();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -205,7 +206,7 @@ describe("company profile — captured once, flows onto every invoice (#221)", (
 
       db.close();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -227,7 +228,7 @@ describe("company profile — captured once, flows onto every invoice (#221)", (
       expect(getCompanySettings(db).cvr).toBeNull();
       db.close();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -262,7 +263,7 @@ describe("company profile — captured once, flows onto every invoice (#221)", (
       expect(bank.account_no).toBe("0001234567");
       db.close();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -309,7 +310,7 @@ describe("company profile — captured once, flows onto every invoice (#221)", (
       expect(strings).toContain("BETALING");
       expect(strings).toContain("Jyske Bank");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });

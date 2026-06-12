@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { config, get, makeWorkspace, postPnlEntry, rmSync } from "./_shared";
+import { config, get, makeWorkspace, postPnlEntry } from "./_shared";
 
+import { cleanupDir } from "../../helpers/cleanup";
 describe("cockpit API — balance sheet (GET .../balance)", () => {
   test("returns asset/liability/equity sections that balance", async () => {
     const ws = makeWorkspace("bal-live", ["Acme ApS"]);
@@ -19,7 +20,7 @@ describe("cockpit API — balance sheet (GET .../balance)", () => {
       expect(b.assets).toHaveProperty("lines");
       expect(b.assets).toHaveProperty("total");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -33,7 +34,7 @@ describe("cockpit API — balance sheet (GET .../balance)", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -67,7 +68,7 @@ describe("cockpit API — balance sheet (GET .../balance)", () => {
       expect(aretsResultat).toBeTruthy();
       expect(aretsResultat.priorAmount).toBeCloseTo(800, 2);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -93,7 +94,7 @@ describe("cockpit API — balance sheet (GET .../balance)", () => {
       // The balanced-flag only covers the current year — see acceptkriterier.
       expect(b.balanced).toBe(true);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

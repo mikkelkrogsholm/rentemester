@@ -5,7 +5,7 @@
 // INVENTED sample (examples/import-synthetic.csv), so the framework has a
 // deterministic test even before the real e-conomic/Billy parsers exist.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -15,6 +15,7 @@ import { getOpeningBalance } from "../../src/core/opening-balance";
 import { runImport } from "../../src/core/import/framework";
 import { syntheticCsvParser } from "../../src/core/import/synthetic-csv";
 
+import { cleanupDir } from "../helpers/cleanup";
 const SAMPLE_PATH = join(import.meta.dir, "../../examples/import-synthetic.csv");
 
 function freshCompany(prefix: string) {
@@ -67,11 +68,11 @@ describe("synthetic-CSV example parser", () => {
         expect(result2.auditTrail).toEqual(result.auditTrail);
       } finally {
         db2.close();
-        rmSync(root2, { recursive: true, force: true });
+        cleanupDir(root2);
       }
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -98,7 +99,7 @@ describe("synthetic-CSV example parser", () => {
       expect(getOpeningBalance(db)).toBeNull();
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 

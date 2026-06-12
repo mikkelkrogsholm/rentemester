@@ -1,9 +1,10 @@
 // Tests: src/cli/vat.ts (vat eu-sales-list, vat oss-report CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 async function run(args: string[]) {
   const proc = Bun.spawn(["bun", "run", "src/cli.ts", ...args], {
     cwd: process.cwd(),
@@ -44,7 +45,7 @@ describe("vat eu-sales-list CLI", () => {
     const { stdout, stderr, exitCode } = await run([
       "vat", "eu-sales-list", "--company", company, "--from", "2026-05-01", "--to", "2026-05-31",
     ]);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
@@ -66,7 +67,7 @@ describe("vat oss-report CLI", () => {
     const { stdout, stderr, exitCode } = await run([
       "vat", "oss-report", "--company", company, "--from", "2026-05-01", "--to", "2026-05-31",
     ]);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);

@@ -6,7 +6,7 @@
 // trail. Per-system parsers (e-conomic, Billy, Dinero #173) plug into the
 // `SourceParser` contract; the framework itself is parser-agnostic.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -16,6 +16,7 @@ import { getOpeningBalance, OPENING_BALANCE_TEXT } from "../../src/core/opening-
 import { runImport } from "../../src/core/import/framework";
 import type { ImportSource } from "../../src/core/import/types";
 
+import { cleanupDir } from "../helpers/cleanup";
 function freshCompany(prefix: string) {
   const root = mkdtempSync(join(tmpdir(), prefix));
   const db = openDb(ensureCompanyDirs(root).db);
@@ -64,7 +65,7 @@ describe("import framework: normalised source -> primobalance", () => {
       expect(marker!.cutOverDate).toBe("2026-01-01");
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -85,7 +86,7 @@ describe("import framework: normalised source -> primobalance", () => {
       expect(count.n).toBe(0);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -103,7 +104,7 @@ describe("import framework: normalised source -> primobalance", () => {
       expect(getOpeningBalance(db)).toBeNull();
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -121,7 +122,7 @@ describe("import framework: normalised source -> primobalance", () => {
       expect(getOpeningBalance(db)).toBeNull();
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -135,7 +136,7 @@ describe("import framework: normalised source -> primobalance", () => {
       expect(result.errors.join(" ").toLowerCase()).toContain("cut-over");
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -149,7 +150,7 @@ describe("import framework: normalised source -> primobalance", () => {
       expect(result.errors.length).toBeGreaterThan(0);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -167,8 +168,8 @@ describe("import framework: normalised source -> primobalance", () => {
     } finally {
       dbA.close();
       dbB.close();
-      rmSync(rootA, { recursive: true, force: true });
-      rmSync(rootB, { recursive: true, force: true });
+      cleanupDir(rootA);
+      cleanupDir(rootB);
     }
   });
 
@@ -184,7 +185,7 @@ describe("import framework: normalised source -> primobalance", () => {
       expect(count.n).toBe(1);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });

@@ -6,7 +6,7 @@
 // finde personoplysninger for en data-subject (CVR eller navn) og
 // derefter anonymisere data via en separat write-handler.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -14,6 +14,7 @@ import { type ServerConfig } from "../../src/server/config";
 import { createCompany } from "../../src/core/company";
 import { initWorkspace } from "../../src/core/workspace";
 
+import { cleanupDir } from "../helpers/cleanup";
 function makeWorkspace(label: string, companyNames: string[] = []) {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
   initWorkspace(root);
@@ -46,7 +47,7 @@ describe("#334 — GDPR-view", () => {
       );
       expect(res.status).toBe(400);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -77,7 +78,7 @@ describe("#334 — GDPR-view", () => {
       // appliedRules skal komme fra rules/dk pipelinen
       expect(body.gdpr.export.appliedRules.length).toBeGreaterThan(0);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -98,7 +99,7 @@ describe("#334 — GDPR-view", () => {
       );
       expect(res.status).toBe(400);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -112,7 +113,7 @@ describe("#334 — GDPR-view", () => {
       expect(patterns).toContain("GET /api/companies/:slug/gdpr/export");
       expect(patterns).toContain("POST /api/companies/:slug/gdpr/erase");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

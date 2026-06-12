@@ -1,6 +1,6 @@
 // Tests: src/core/invoice-refunds.ts
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -14,6 +14,7 @@ import { issueCreditNote } from "../../src/core/credit-notes";
 import { refundInvoiceToBank } from "../../src/core/invoice-refunds";
 import { getInvoiceStatus } from "../../src/core/invoice-payments";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("invoice refunds", () => {
   test("requires explicit bank transaction selection for refunds", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-invoice-refund-explicit-bank-"));
@@ -59,7 +60,7 @@ describe("invoice refunds", () => {
     expect(refund.errors[0]).toBe("bankTransactionId or bankTransactionReference is required");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("refunds a paid-and-credited invoice from an outgoing bank transaction", () => {
@@ -120,6 +121,6 @@ describe("invoice refunds", () => {
     expect(chain.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

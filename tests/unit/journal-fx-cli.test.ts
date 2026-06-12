@@ -1,9 +1,10 @@
 // Tests: src/cli/journal.ts, src/cli.ts (journal FX CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("journal FX CLI", () => {
   test("posts a foreign-currency journal entry when FX basis is present", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-journalfxcli-"));
@@ -21,7 +22,7 @@ describe("journal FX CLI", () => {
     const stderr = await new Response(proc.stderr).text();
     const exitCode = await proc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);

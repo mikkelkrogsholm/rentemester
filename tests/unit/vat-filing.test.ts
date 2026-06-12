@@ -1,6 +1,6 @@
 // Tests: src/core/vat-filing.ts (momsangivelse / SKAT VAT return)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -10,6 +10,7 @@ import { buildVatFiling } from "../../src/core/vat-filing";
 import { closeAccountingPeriod } from "../../src/core/periods";
 import { postJournalEntry, seedAccounts } from "../../src/core/ledger";
 
+import { cleanupDir } from "../helpers/cleanup";
 function newCompany(prefix: string) {
   const root = mkdtempSync(join(tmpdir(), prefix));
   const inbox = mkdtempSync(join(tmpdir(), `${prefix}inbox-`));
@@ -94,8 +95,8 @@ describe("vat momsangivelse (filing)", () => {
     expect(filing.rubrikker.rubrikC).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("maps EU service reverse charge into ydelseskob-udland and rubrik A", () => {
@@ -143,8 +144,8 @@ describe("vat momsangivelse (filing)", () => {
     expect(filing.rubrikker.rubrikA).toBe(1000);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("filters postings by VAT period", () => {
@@ -192,8 +193,8 @@ describe("vat momsangivelse (filing)", () => {
     expect(filing.rubrikker.momstilsvar).toBe(250);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("fails clearly when the VAT period is still open (not closed/reported)", () => {
@@ -220,8 +221,8 @@ describe("vat momsangivelse (filing)", () => {
     expect(filing.errors.some((e) => e.toLowerCase().includes("open") || e.toLowerCase().includes("not closed"))).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("fails when the period does not exactly match a closed accounting period", () => {
@@ -243,8 +244,8 @@ describe("vat momsangivelse (filing)", () => {
     expect(filing.errors.length).toBeGreaterThan(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("rejects invalid period dates", () => {
@@ -253,7 +254,7 @@ describe("vat momsangivelse (filing)", () => {
     expect(filing.ok).toBe(false);
     expect(filing.errors.length).toBeGreaterThan(0);
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });

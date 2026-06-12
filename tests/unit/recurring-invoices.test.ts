@@ -1,10 +1,11 @@
 // Tests: src/core/recurring-invoices.ts
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   createRecurringInvoiceTemplate,
   generateRecurringInvoice,
@@ -52,7 +53,7 @@ describe("recurring invoice templates", () => {
     expect(listed.rows[0]!.nextIssueDate).toBe("2026-01-15");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects an unknown interval", () => {
@@ -68,7 +69,7 @@ describe("recurring invoice templates", () => {
     expect(created.errors[0]).toContain("interval");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects a template whose embedded invoice payload is invalid", () => {
@@ -95,7 +96,7 @@ describe("recurring invoice templates", () => {
     expect(created.errors.join(" ")).toContain("grossAmount");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });
 
@@ -121,7 +122,7 @@ describe("recurring invoice generation", () => {
     expect(result.appliedRules).toContain("DK-RECURRING-INVOICE-GENERATE-001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("does not regenerate the same template/period on rerun (idempotent)", () => {
@@ -158,7 +159,7 @@ describe("recurring invoice generation", () => {
     expect(genCount.n).toBe(1);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("advances period index deterministically across intervals", () => {
@@ -190,7 +191,7 @@ describe("recurring invoice generation", () => {
     expect(mar.deliveryPeriodEnd).toBe("2026-03-31");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("generates only one invoice per period even when as-of skips ahead", () => {
@@ -213,7 +214,7 @@ describe("recurring invoice generation", () => {
     expect(docCount.n).toBe(1);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("refuses to generate before the first issue date", () => {
@@ -230,7 +231,7 @@ describe("recurring invoice generation", () => {
     expect(result.errors.join(" ")).toContain("not yet due");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("records an audit link from generated invoice back to the template", () => {
@@ -262,7 +263,7 @@ describe("recurring invoice generation", () => {
     expect(auditRow!.message).toContain(result.invoiceNumber!);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("quarterly interval advances three months per period", () => {
@@ -290,7 +291,7 @@ describe("recurring invoice generation", () => {
     expect(q2.issueDate).toBe("2026-04-30");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("retires an active template and blocks generation afterwards", () => {
@@ -336,7 +337,7 @@ describe("recurring invoice generation", () => {
     expect(auditRows[0]!.message).toContain("Customer cancelled subscription");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("retiring a non-existent template is an error", () => {
@@ -349,7 +350,7 @@ describe("recurring invoice generation", () => {
     expect(retired.errors[0]).toContain("does not exist");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("retiring an already-retired template is idempotent (no-op success)", () => {
@@ -375,6 +376,6 @@ describe("recurring invoice generation", () => {
     expect(auditRows.length).toBe(1);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

@@ -1,12 +1,13 @@
 // Tests: src/core/company.ts (syncCompanyFromCvr)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { initialiseCompanyVolume, getCompanySettings, syncCompanyFromCvr } from "../../src/core/company";
 import { openDb } from "../../src/core/db";
 import { companyPaths } from "../../src/core/paths";
 
+import { cleanupDir } from "../helpers/cleanup";
 const ENTITY = {
   cvrNummer: 12345678,
   reklamebeskyttet: false,
@@ -73,7 +74,7 @@ describe("syncCompanyFromCvr", () => {
     expect(audit.n).toBe(1);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("fails clearly when the company has no CVR number", async () => {
@@ -86,6 +87,6 @@ describe("syncCompanyFromCvr", () => {
     expect(result.errors[0]).toContain("CVR-nummer");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

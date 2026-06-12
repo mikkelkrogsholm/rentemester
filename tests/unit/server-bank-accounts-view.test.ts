@@ -6,7 +6,7 @@
 // og de indbyggede mapping-profiler (Lunar, Danske Bank, …) som
 // BankImportModal genbruger.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -14,6 +14,7 @@ import { type ServerConfig } from "../../src/server/config";
 import { createCompany } from "../../src/core/company";
 import { initWorkspace } from "../../src/core/workspace";
 
+import { cleanupDir } from "../helpers/cleanup";
 function makeWorkspace(label: string, companyNames: string[] = []) {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
   initWorkspace(root);
@@ -59,7 +60,7 @@ describe("#345 — GET /api/companies/:slug/bank-accounts", () => {
       const profileNames = body.bankAccounts.profiles.map((p) => p.name);
       expect(profileNames.length).toBeGreaterThan(0);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -73,7 +74,7 @@ describe("#345 — GET /api/companies/:slug/bank-accounts", () => {
       expect(patterns).toContain("GET /api/companies/:slug/bank-accounts");
       expect(patterns).toContain("POST /api/companies/:slug/bank-accounts");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -86,7 +87,7 @@ describe("#345 — GET /api/companies/:slug/bank-accounts", () => {
       );
       expect(res.status).toBe(404);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

@@ -1,6 +1,6 @@
 // Tests: src/core/invoice-payments.ts
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -12,6 +12,7 @@ import { issueCreditNote } from "../../src/core/credit-notes";
 import { postIssuedInvoiceToLedger } from "../../src/core/invoice-booking";
 import { writeOffInvoiceBadDebt } from "../../src/core/invoice-bad-debt";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("invoice payments", () => {
   test("applies payment to issued invoice and tracks open balance without over-application", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-invoicepay-"));
@@ -78,7 +79,7 @@ describe("invoice payments", () => {
     expect(status2.payments).toHaveLength(2);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("defaults invoice status comparisons to persisted invoice dates instead of wall-clock time", () => {
@@ -108,7 +109,7 @@ describe("invoice payments", () => {
     expect(status.overdueDays).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects direct invoice payment inserts without journal evidence and ignores orphaned rows in status", () => {
@@ -162,7 +163,7 @@ describe("invoice payments", () => {
     expect(chain.errors.some((error) => error.includes("invoice payment") && error.includes("missing journal evidence"))).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("reduces open balance by linked credit notes before accepting payment", () => {
@@ -226,7 +227,7 @@ describe("invoice payments", () => {
     expect(payment.appliedRules).toContain("DK-INVOICE-CORRECTION-BALANCE-001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("labels a part-paid then fully written-off invoice as written_off, not paid", () => {
@@ -269,7 +270,7 @@ describe("invoice payments", () => {
     expect(status.status).toBe("written_off");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("labels a refunded zero-balance invoice as refunded even without a credit note", () => {
@@ -323,6 +324,6 @@ describe("invoice payments", () => {
     expect(status.status).toBe("refunded");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

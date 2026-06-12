@@ -1,6 +1,6 @@
 // Tests: src/core/bank.ts (running-balance continuity, #189)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -8,6 +8,7 @@ import { openDb, migrate } from "../../src/core/db";
 import { importBankCsv } from "../../src/core/bank";
 import { listExceptions } from "../../src/core/exceptions";
 
+import { cleanupDir } from "../helpers/cleanup";
 function setup() {
   const root = mkdtempSync(join(tmpdir(), "rentemester-bankbal-"));
   const db = openDb(ensureCompanyDirs(root).db);
@@ -41,7 +42,7 @@ describe("running-balance continuity (#189)", () => {
     expect(exceptions.rows.some((e) => e.type === "BANK_BALANCE_GAP")).toBe(false);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a statement with a removed row is flagged as a balance gap", () => {
@@ -62,7 +63,7 @@ describe("running-balance continuity (#189)", () => {
     expect(gap).toBeDefined();
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   // A real Danske Bank export is ordered newest-first: the latest transaction
@@ -99,7 +100,7 @@ describe("running-balance continuity (#189)", () => {
     expect(exceptions.rows.some((e) => e.type === "BANK_BALANCE_GAP")).toBe(false);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a newest-first export with a removed same-day row is still flagged (#191)", () => {
@@ -123,7 +124,7 @@ describe("running-balance continuity (#189)", () => {
     expect(exceptions.rows.some((e) => e.type === "BANK_BALANCE_GAP")).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a generic CSV without a balance column is not balance-checked", () => {
@@ -140,6 +141,6 @@ describe("running-balance continuity (#189)", () => {
     expect(result.firstBalance).toBeUndefined();
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

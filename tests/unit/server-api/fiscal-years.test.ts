@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { config, get, makeWorkspace, postEntry, rmSync } from "./_shared";
+import { config, get, makeWorkspace, postEntry } from "./_shared";
 
+import { cleanupDir } from "../../helpers/cleanup";
 describe("cockpit API — fiscal years (GET /api/companies/:slug/fiscal-years)", () => {
   test("an empty ledger has no fiscal years", async () => {
     const ws = makeWorkspace("fy-empty", ["Acme ApS"]);
@@ -10,7 +11,7 @@ describe("cockpit API — fiscal years (GET /api/companies/:slug/fiscal-years)",
       expect(res.body.fiscalYears.slug).toBe("acme-aps");
       expect(res.body.fiscalYears.years).toEqual([]);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -24,7 +25,7 @@ describe("cockpit API — fiscal years (GET /api/companies/:slug/fiscal-years)",
         { label: "2026", start: "2026-01-01", end: "2026-12-31", source: "live" },
       ]);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -36,7 +37,7 @@ describe("cockpit API — fiscal years (GET /api/companies/:slug/fiscal-years)",
       const res = await get(config({ workspaceRoot: ws }), "/api/companies/acme-aps/fiscal-years");
       expect(res.body.fiscalYears.years.map((y: any) => y.label)).toEqual(["2026", "2025"]);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -47,7 +48,7 @@ describe("cockpit API — fiscal years (GET /api/companies/:slug/fiscal-years)",
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

@@ -1,11 +1,12 @@
 import { expect, test, describe } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { Database } from "bun:sqlite";
 import { migrate } from "../../src/core/db";
 import { postJournalEntry, seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 import { initialiseCompanyVolume } from "../../src/core/company";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   findUnlinkedSyncEntries,
   ingestSyncBilagFile,
@@ -57,7 +58,7 @@ describe("ingestSyncBilagFile", () => {
       expect(result.deduped).toBe(false);
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
     }
   });
 
@@ -73,7 +74,7 @@ describe("ingestSyncBilagFile", () => {
       expect(second.documentId).toBe(first.documentId);
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
     }
   });
 
@@ -87,7 +88,7 @@ describe("ingestSyncBilagFile", () => {
       expect(result.errors.length).toBeGreaterThan(0);
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
     }
   });
 });
@@ -112,7 +113,7 @@ describe("linkBilagDocument", () => {
       expect(rows.n).toBe(1);
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
     }
   });
 });
@@ -130,7 +131,7 @@ describe("findUnlinkedSyncEntries", () => {
       expect(entries[0]!.totalDebitOre).toBe(25000n);
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
     }
   });
 
@@ -164,7 +165,7 @@ describe("findUnlinkedSyncEntries", () => {
       expect(findUnlinkedSyncEntries(db).length).toBe(0);
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
     }
   });
 });
@@ -239,7 +240,7 @@ describe("audit waiver for billy-sync", () => {
       expect(evidenceErrors).toEqual([]);
       db.close();
     } finally {
-      try { rmSync(root, { recursive: true, force: true }); } catch {}
+      try { cleanupDir(root); } catch {}
     }
   });
 });

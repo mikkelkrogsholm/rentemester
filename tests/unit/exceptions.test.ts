@@ -1,6 +1,6 @@
 // Tests: src/core/exceptions.ts
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -9,6 +9,7 @@ import { seedAccounts } from "../../src/core/ledger";
 import { importBankCsv } from "../../src/core/bank";
 import { listExceptions, recordException, resolveOpenExceptionsForBankTransaction, syncUnmatchedBankTransactionExceptions } from "../../src/core/exceptions";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("exceptions workflow", () => {
   test("syncs unmatched bank transactions once and resolves them without creating duplicates", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-exceptions-"));
@@ -43,7 +44,7 @@ describe("exceptions workflow", () => {
     expect(after.rows[0].resolvedBy).toBe("agent:test");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   // #237: the unmatched-bank exception text must be sign-aware. A money-IN
@@ -71,7 +72,7 @@ describe("exceptions workflow", () => {
     expect(row.requiredAction).not.toContain("momsen ikke fratrækkes");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   // #237: a money-OUT line stays expense-shaped and keeps the momsfradrag text.
@@ -93,7 +94,7 @@ describe("exceptions workflow", () => {
     expect(row.requiredAction).toContain("momsen ikke fratrækkes");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   // #237: when a matching bilag IS ingested, the text must name the real
@@ -125,7 +126,7 @@ describe("exceptions workflow", () => {
     expect(row.relatedDocumentId).toBeGreaterThan(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   // #264: re-running the sync after a matching bilag was ingested must not
@@ -178,7 +179,7 @@ describe("exceptions workflow", () => {
     expect(listExceptions(db, { status: "open" }).count).toBe(1);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   // #269: a non-DKK bank line must show its amount in its own currency
@@ -206,7 +207,7 @@ describe("exceptions workflow", () => {
     expect(row.message).not.toContain("kr. EUR");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("records generic blocked-work exceptions with evidence", () => {
@@ -233,6 +234,6 @@ describe("exceptions workflow", () => {
     expect(listed.rows[0].sourceEvidence.errors[0]).toContain("sender.name");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

@@ -1,7 +1,7 @@
 // Tests: src/core/ledger.ts (foreign-currency posting, actor attribution, period locks, document evidence)
 // Companion of journal-post.test.ts and ledger-hardening.test.ts.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -10,6 +10,7 @@ import { ingestDocument } from "../../src/core/documents";
 import { postJournalEntry, seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 import { closeAccountingPeriod } from "../../src/core/periods";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("journal posting — FX, attribution & period locks", () => {
   test("supports foreign-currency journal entries with stored FX basis", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-journal-fx-"));
@@ -70,8 +71,8 @@ describe("journal posting — FX, attribution & period locks", () => {
     expect(entry).toEqual({ currency: "EUR", amount_foreign: 100, amount_dkk: 746, fx_rate_to_dkk: 7.46 });
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("normalizes FX payloads before persistence so audit verification reads the same rounded values", () => {
@@ -119,8 +120,8 @@ describe("journal posting — FX, attribution & period locks", () => {
     expect(verifyAuditChain(db).ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("records actor attribution from environment for direct journal posts", () => {
@@ -153,7 +154,7 @@ describe("journal posting — FX, attribution & period locks", () => {
       if (prevActor === undefined) delete process.env.RENTEMESTER_ACTOR; else process.env.RENTEMESTER_ACTOR = prevActor;
       if (prevVia === undefined) delete process.env.RENTEMESTER_ACTOR_VIA; else process.env.RENTEMESTER_ACTOR_VIA = prevVia;
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -204,7 +205,7 @@ describe("journal posting — FX, attribution & period locks", () => {
     expect(correction.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("requires document evidence for expense or income postings and hashes lines into the audit chain", () => {
@@ -271,7 +272,7 @@ describe("journal posting — FX, attribution & period locks", () => {
     expect(lines[0].vat_code).toBe("DK_PURCHASE_25");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });

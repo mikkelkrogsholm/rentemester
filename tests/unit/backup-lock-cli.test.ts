@@ -1,10 +1,11 @@
 // Tests: src/cli.ts (opt-in backup lock guard)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { migrate, openDb } from "../../src/core/db";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("backup lock CLI guard", () => {
   test("blocks bookkeeping mutations when enforced and overdue, but never system commands", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-lock-cli-"));
@@ -56,7 +57,7 @@ describe("backup lock CLI guard", () => {
       expect(backupExit).toBe(0);
       expect(JSON.parse(backupOut).ok).toBe(true);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });

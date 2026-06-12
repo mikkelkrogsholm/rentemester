@@ -11,6 +11,7 @@
 // step 0, before any write; these tests pin that.
 import { mkdirSync } from "node:fs";
 import { describe, expect, test } from "bun:test";
+import { cleanupDir } from "../../helpers/cleanup";
 import {
   config,
   makeWorkspace,
@@ -21,7 +22,6 @@ import {
   issueTestInvoice,
   writeFileSync,
   join,
-  rmSync,
   type ServerConfig,
 } from "./_shared";
 
@@ -96,7 +96,7 @@ describe("cockpit API — send-reminder commits nothing when the send cannot hap
     });
     expect(status).toBe(400);
     expect(ledgerWrites(companyRoot)).toEqual({ reminders: 0, journal: 0 });
-    rmSync(ws, { recursive: true, force: true });
+    cleanupDir(ws);
   });
 
   test("present-but-invalid SMTP content (empty host) → 400 and no reminder/journal row", async () => {
@@ -113,7 +113,7 @@ describe("cockpit API — send-reminder commits nothing when the send cannot hap
     });
     expect(status).toBe(400);
     expect(ledgerWrites(companyRoot)).toEqual({ reminders: 0, journal: 0 });
-    rmSync(ws, { recursive: true, force: true });
+    cleanupDir(ws);
   });
 
   test("a valid SMTP config but an invalid recipient → 400 and no reminder/journal row", async () => {
@@ -133,6 +133,6 @@ describe("cockpit API — send-reminder commits nothing when the send cannot hap
     });
     expect(status).toBe(400);
     expect(ledgerWrites(companyRoot)).toEqual({ reminders: 0, journal: 0 });
-    rmSync(ws, { recursive: true, force: true });
+    cleanupDir(ws);
   });
 });

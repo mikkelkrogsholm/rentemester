@@ -1,6 +1,6 @@
 // Tests: src/core/gdpr.ts (GDPR data-subject export — #184)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -10,6 +10,7 @@ import { ingestDocument } from "../../src/core/documents";
 import { createCustomer, createVendor } from "../../src/core/master-data";
 import { buildGdprSubjectExport } from "../../src/core/gdpr";
 
+import { cleanupDir } from "../helpers/cleanup";
 function freshCompany() {
   const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-export-"));
   const company = join(root, "company");
@@ -37,7 +38,7 @@ describe("GDPR data-subject export", () => {
 
     const report = buildGdprSubjectExport(db, { cvr: "DK55667788" });
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(report.ok).toBe(true);
     expect(report.subject.cvr).toBe("DK55667788");
@@ -87,7 +88,7 @@ describe("GDPR data-subject export", () => {
 
     const report = buildGdprSubjectExport(db, { name: "Leverandør Lind" });
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(report.ok).toBe(true);
     const sources = new Set(report.records.map((r) => r.source));
@@ -103,7 +104,7 @@ describe("GDPR data-subject export", () => {
     const { root, db } = freshCompany();
     const report = buildGdprSubjectExport(db, { cvr: "DK99999999" });
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(report.ok).toBe(true);
     expect(report.records.length).toBe(0);
@@ -139,7 +140,7 @@ describe("GDPR data-subject export", () => {
 
     const report = buildGdprSubjectExport(db, { cvr: "DK22334455", asOf: "2027-01-01" });
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     const docRecord = report.records.find((r) => r.source === "documents");
     expect(docRecord).toBeDefined();

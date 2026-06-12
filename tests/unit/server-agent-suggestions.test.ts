@@ -9,7 +9,7 @@
 // e.g. "Beregn afskrivning" on the Anlæg view).
 
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -20,6 +20,7 @@ import { companyPaths } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { recordException } from "../../src/core/exceptions";
 
+import { cleanupDir } from "../helpers/cleanup";
 function tmpRoot(label: string): string {
   return mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
 }
@@ -155,7 +156,7 @@ describe("Agent-forslag — read (#346)", () => {
       expect(first.rationale).toContain("er overforfalden");
       expect(first.requiredAction).toContain("Betal kreditorposten");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -181,7 +182,7 @@ describe("Agent-forslag — read (#346)", () => {
         "AGENT_POSSIBLE_FIXED_ASSET",
       );
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -202,7 +203,7 @@ describe("Agent-forslag — read (#346)", () => {
       const res = await get(config(ws), `/api/companies/${slug}/agent-suggestions`);
       expect(res.body.agentSuggestions.count).toBe(0);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -220,7 +221,7 @@ describe("Agent-forslag — read (#346)", () => {
         low: 0,
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -234,7 +235,7 @@ describe("Agent-forslag — read (#346)", () => {
       expect(Array.isArray(res.body.errors)).toBe(true);
       expect(res.body.errors.length).toBeGreaterThan(0);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -281,7 +282,7 @@ describe("Agent-forslag — godkend (#346)", () => {
         expect(row.resolved_by).toBe("system:cockpit");
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -304,7 +305,7 @@ describe("Agent-forslag — godkend (#346)", () => {
         expect(row.resolution_note).toBe("Godkendt af ejer i cockpit");
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -330,7 +331,7 @@ describe("Agent-forslag — godkend (#346)", () => {
       expect(second.body.code).toBe("conflict");
       expect(second.body.errors[0]).toContain("allerede");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -353,7 +354,7 @@ describe("Agent-forslag — godkend (#346)", () => {
       expect(res.body.code).toBe("bad_request");
       expect(res.body.errors[0]).toContain("ikke et agent-forslag");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -369,7 +370,7 @@ describe("Agent-forslag — godkend (#346)", () => {
       expect(res.body.code).toBe("conflict");
       expect(res.body.errors[0]).toContain("findes ikke");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -387,7 +388,7 @@ describe("Agent-forslag — godkend (#346)", () => {
       // handles a non-numeric segment.
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -425,7 +426,7 @@ describe("Agent-forslag — afvis (#346)", () => {
         expect(row.resolution_note).toContain("forbrugsmateriale");
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -449,7 +450,7 @@ describe("Agent-forslag — afvis (#346)", () => {
       expect(second.status).toBe(409);
       expect(second.body.code).toBe("conflict");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { config, get, makeWorkspace, postPnlEntry, rmSync } from "./_shared";
+import { config, get, makeWorkspace, postPnlEntry } from "./_shared";
 
+import { cleanupDir } from "../../helpers/cleanup";
 describe("cockpit API — income statement (GET .../income-statement)", () => {
   test("returns grouped income/expense lines and the result for the year", async () => {
     const ws = makeWorkspace("is-live", ["Acme ApS"]);
@@ -21,7 +22,7 @@ describe("cockpit API — income statement (GET .../income-statement)", () => {
       expect(is.income[0]).toMatchObject({ amount: 1000, priorAmount: 0 });
       expect(is.expense[0]).toMatchObject({ amount: 400, priorAmount: 0 });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -39,7 +40,7 @@ describe("cockpit API — income statement (GET .../income-statement)", () => {
       expect(res.body.incomeStatement.income[0].priorAmount).toBe(800);
       expect(res.body.incomeStatement.priorTotalIncome).toBe(800);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -53,7 +54,7 @@ describe("cockpit API — income statement (GET .../income-statement)", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

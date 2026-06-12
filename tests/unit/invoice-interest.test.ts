@@ -1,6 +1,6 @@
 // Tests: src/core/invoice-interest.ts
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -15,6 +15,7 @@ import { settleInvoiceFromBank } from "../../src/core/invoice-settlement";
 import { settleInvoiceClaimsFromBank } from "../../src/core/invoice-claim-settlement";
 import { seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 
+import { cleanupDir } from "../helpers/cleanup";
 function failingInterestPostingDb(realDb: any) {
   let failed = false;
   return new Proxy(realDb, {
@@ -74,7 +75,7 @@ describe("invoice late interest", () => {
     expect(interest.appliedRules).toContain("DK-INVOICE-LATE-INTEREST-001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("registers immutable late-interest claims and surfaces them in claim balance", () => {
@@ -132,7 +133,7 @@ describe("invoice late interest", () => {
     expect(duplicate.errors[0]).toContain("already registered");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a second claim at a later date bills ONLY the incremental period, never re-billing days an earlier claim already covered", () => {
@@ -198,7 +199,7 @@ describe("invoice late interest", () => {
     expect(status.claimOpenBalance).toBe(252.45);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a second claim registered AFTER the first is POSTED also bills only the incremental period (regression: posted double-charge)", () => {
@@ -253,7 +254,7 @@ describe("invoice late interest", () => {
     expect(status.totalInterestClaims).toBe(1643.84);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("posts a registered late-interest claim once to receivables and non-VAT claim income", () => {
@@ -315,7 +316,7 @@ describe("invoice late interest", () => {
     expect(chain.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rolls back the journal entry if interest posting link creation fails", () => {
@@ -362,7 +363,7 @@ describe("invoice late interest", () => {
     expect(realDb.query("SELECT COUNT(*) AS n FROM invoice_interest_postings").get()).toEqual({ n: 1 });
 
     realDb.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("returns zero interest for non-overdue or fully settled invoices", () => {
@@ -395,7 +396,7 @@ describe("invoice late interest", () => {
     expect(interest.accruedInterestAmount).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("staged claims sum to a single round-once calculation — no per-segment øre over-charge", () => {
@@ -437,7 +438,7 @@ describe("invoice late interest", () => {
     expect(status.totalInterestClaims).toBe(1.01);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("calculating at an as-of date BEFORE the latest claim reports interest only through that date (no over-report, no future from-date)", () => {
@@ -474,7 +475,7 @@ describe("invoice late interest", () => {
     expect(back.totalInterestToDate).toBe(1.75);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("date-aware accrual: a partial payment splits the later window — days before the payment accrue on the full principal, days after on the reduced one", () => {
@@ -521,7 +522,7 @@ describe("invoice late interest", () => {
     expect(status.totalInterestClaims).toBe(1402.74);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("date-aware accrual also reflects a CREDIT NOTE (not just payments) by its effective date", () => {
@@ -559,7 +560,7 @@ describe("invoice late interest", () => {
     expect(c2.totalInterestToDate).toBe(1402.74);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a BACK-DATED payment (effective before an existing claim) does not stack a new over-charge — it clamps to 0 and surfaces overClaimedInterest", () => {
@@ -610,7 +611,7 @@ describe("invoice late interest", () => {
     expect(status.totalInterestClaims).toBe(1616.44); // only claim 1; nothing stacked
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a back-dated over-claim can be proposed and booked as a correcting reversal, netting the interest-claim balance", () => {
@@ -681,7 +682,7 @@ describe("invoice late interest", () => {
     expect(verifyAuditChain(db).ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a later interest claim after a correction re-bills the corrected period — the reversed amount is not permanently lost", () => {
@@ -725,7 +726,7 @@ describe("invoice late interest", () => {
     expect(proposeInterestCorrection(db, { invoiceDocumentId: issued.documentId! }).hasProposal).toBe(false);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("proposeInterestCorrection measures each POSTED claim against its OWN window, so a later posted claim with an earlier UNPOSTED one is not masked", () => {
@@ -771,7 +772,7 @@ describe("invoice late interest", () => {
     expect(proposal.requiresRefund).toBe(false);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("postInterestCorrection REFUSES when the over-claimed interest was already settled in cash (a refund, not a receivable credit, is required)", () => {
@@ -828,7 +829,7 @@ describe("invoice late interest", () => {
     expect(verifyAuditChain(db).ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("proposeInterestCorrection finds nothing to correct on a clean forward-ordered invoice", () => {
@@ -859,7 +860,7 @@ describe("invoice late interest", () => {
     expect(proposal.overClaimedAmount).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("the default post path books the oldest UNPOSTED claim, so a second claim is postable after the first is posted", () => {
@@ -902,6 +903,6 @@ describe("invoice late interest", () => {
     expect(p3.errors[0]).toContain("already posted");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

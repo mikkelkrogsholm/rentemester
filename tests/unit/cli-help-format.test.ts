@@ -1,9 +1,10 @@
 // Tests: src/cli-meta.ts, src/cli.ts (CLI help formatting)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("CLI help, examples, and human formatting", () => {
   test("prints per-command help for invoice issue", async () => {
     const proc = Bun.spawn(["bun", "run", "src/cli.ts", "invoice", "issue", "--help"], {
@@ -105,7 +106,7 @@ describe("CLI help, examples, and human formatting", () => {
     const stderr = await new Response(proc.stderr).text();
     const exitCode = await proc.exited;
 
-    rmSync(dir, { recursive: true, force: true });
+    cleanupDir(dir);
     expect(exitCode).toBe(1);
     expect(stdout).toBe("");
     expect(stderr).toContain("Fakturaen er IKKE gyldig");
@@ -305,7 +306,7 @@ describe("CLI help, examples, and human formatting", () => {
       expect(parsed.rows.length).toBeGreaterThan(0);
       expect(parsed.rows[0]).toHaveProperty("account_no");
     } finally {
-      rmSync(dir, { recursive: true, force: true });
+      cleanupDir(dir);
     }
   });
 

@@ -2,7 +2,7 @@
 // customers/vendors) and the matching routes in src/server/router.ts.
 
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -12,6 +12,7 @@ import { initWorkspace, companyRootForSlug } from "../../src/core/workspace";
 import { companyPaths } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 
+import { cleanupDir } from "../helpers/cleanup";
 function makeWorkspace(label: string) {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
   initWorkspace(root);
@@ -62,7 +63,7 @@ describe("Cockpit write — contacts (#390)", () => {
       const customers = list.body.contacts.customers as Array<{ name: string }>;
       expect(customers.some((c) => c.name === "Ny Kunde A/S")).toBe(true);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -88,7 +89,7 @@ describe("Cockpit write — contacts (#390)", () => {
       expect(row).toBeDefined();
       expect(row!.defaultExpenseAccount).toBe("3000");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -122,7 +123,7 @@ describe("Cockpit write — contacts (#390)", () => {
       expect(row?.paymentTermsDays).toBe(7);
       expect(row?.email).toBe("ny@kunde.dk");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -153,7 +154,7 @@ describe("Cockpit write — contacts (#390)", () => {
       expect(row?.defaultExpenseAccount).toBe("3100");
       expect(row?.defaultVatTreatment).toBe("exempt");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -167,7 +168,7 @@ describe("Cockpit write — contacts (#390)", () => {
       expect(res.status).toBe(400);
       expect(res.body.ok).toBe(false);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -184,7 +185,7 @@ describe("Cockpit write — contacts (#390)", () => {
       expect(res.status).toBe(409);
       expect(res.body.ok).toBe(false);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -206,7 +207,7 @@ describe("Cockpit write — contacts (#390)", () => {
       expect(res.body.cvr.ok).toBe(false);
       expect(Array.isArray(res.body.cvr.errors)).toBe(true);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

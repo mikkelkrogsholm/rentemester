@@ -1,6 +1,6 @@
 // Tests: src/core/invoice-bad-debt.ts
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -12,6 +12,7 @@ import { writeOffInvoiceBadDebt } from "../../src/core/invoice-bad-debt";
 import { buildVatReport } from "../../src/core/vat";
 import { seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("invoice bad debt", () => {
   test("writes off an unpaid standard-rated invoice and reduces output VAT deterministically", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-bad-debt-"));
@@ -71,7 +72,7 @@ describe("invoice bad debt", () => {
 
     expect(verifyAuditChain(db).ok).toBe(true);
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("writes off a non-DKK invoice using stored DKK totals for ledger relief", () => {
@@ -125,7 +126,7 @@ describe("invoice bad debt", () => {
 
     expect(verifyAuditChain(db).ok).toBe(true);
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("blocks bad-debt write-off above open principal balance", () => {
@@ -158,6 +159,6 @@ describe("invoice bad debt", () => {
     expect(writeOff.errors[0]).toContain("exceeds open principal balance");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

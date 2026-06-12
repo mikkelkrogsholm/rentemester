@@ -15,12 +15,13 @@
 //      `errors` mention `invoice_post` — not just a downstream balance error.
 
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createCompany } from "../../src/core/company";
 import { initWorkspace, companyRootForSlug } from "../../src/core/workspace";
 
+import { cleanupDir } from "../helpers/cleanup";
 const SERVER_PATH = new URL("../../src/mcp/server.ts", import.meta.url).pathname;
 
 type JsonRpcResponse = {
@@ -150,7 +151,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await client.close();
-  if (workspaceRoot) rmSync(workspaceRoot, { recursive: true, force: true });
+  if (workspaceRoot) cleanupDir(workspaceRoot);
 });
 
 function descriptionOf(name: string): string {

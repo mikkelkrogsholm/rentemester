@@ -1,9 +1,10 @@
 // Tests: src/cli/exceptions.ts, src/cli.ts (exceptions CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("exceptions CLI", () => {
   test("lists and resolves unmatched-bank exceptions created during bank import", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-exceptions-cli-"));
@@ -56,7 +57,7 @@ describe("exceptions CLI", () => {
     expect(resolvedParsed.count).toBe(1);
     expect(resolvedParsed.rows[0].resolutionNote).toBe("Handled manually");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("records a blocked document-ingest exception when metadata validation fails", async () => {
@@ -100,6 +101,6 @@ describe("exceptions CLI", () => {
     expect(blocked.sourceEvidence.file).toBe(file);
     expect(blocked.sourceEvidence.errors.some((entry: string) => entry.includes("sender.name is required"))).toBe(true);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

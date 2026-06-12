@@ -2,7 +2,7 @@
 // Both extend buildVatReport (src/core/vat.ts) and buildVatFiling
 // (src/core/vat-filing.ts) with new VAT codes.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -15,6 +15,7 @@ import { buildOssReport } from "../../src/core/vat-oss";
 import { closeAccountingPeriod } from "../../src/core/periods";
 import { postJournalEntry, seedAccounts } from "../../src/core/ledger";
 
+import { cleanupDir } from "../helpers/cleanup";
 function newCompany(prefix: string) {
   const root = mkdtempSync(join(tmpdir(), prefix));
   const inbox = mkdtempSync(join(tmpdir(), `${prefix}inbox-`));
@@ -72,8 +73,8 @@ describe("OSS first slice (digital services to EU consumers)", () => {
     expect(report.salesBase25).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("buildVatFiling keeps OSS sales out of the standard rubrikker", () => {
@@ -119,8 +120,8 @@ describe("OSS first slice (digital services to EU consumers)", () => {
     expect(filing.rubrikker.rubrikC).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("buildOssReport produces a per-period OSS skeleton from real data", () => {
@@ -146,8 +147,8 @@ describe("OSS first slice (digital services to EU consumers)", () => {
     expect(report.appliedRules).toContain("DK-VAT-OSS-001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });
 
@@ -177,8 +178,8 @@ describe("rubrik C — VAT-exempt sales", () => {
     expect(report.salesBase25).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("buildVatFiling computes rubrik C from exempt sales instead of hardcoded zero", () => {
@@ -212,8 +213,8 @@ describe("rubrik C — VAT-exempt sales", () => {
     expect(filing.rubrikker.salgsmoms).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("cockpit vatRubrikkerForPeriod reports rubrik C from exempt sales (CLI parity, not hardcoded 0)", () => {
@@ -249,8 +250,8 @@ describe("rubrik C — VAT-exempt sales", () => {
     expect(cockpit.rubrikC).toBe(filing.rubrikker.rubrikC);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("rubrik C stays 0 when there are no exempt sales", () => {
@@ -282,7 +283,7 @@ describe("rubrik C — VAT-exempt sales", () => {
     expect(filing.rubrikker.rubrikC).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });

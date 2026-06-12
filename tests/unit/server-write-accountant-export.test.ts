@@ -3,7 +3,7 @@
 // package the CLI's `system export-accountant` produces, packed into one
 // downloadable .tar so a human can hand it off in one click.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -12,6 +12,7 @@ import { createCompany } from "../../src/core/company";
 import { initWorkspace } from "../../src/core/workspace";
 import { readTar } from "../../src/core/tar";
 
+import { cleanupDir } from "../helpers/cleanup";
 function makeWorkspace(label: string) {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
   initWorkspace(root);
@@ -58,7 +59,7 @@ describe("Cockpit write — accountant export (POST .../accountant-export)", () 
       const names = entries.map((e) => e.path);
       expect(names.some((n) => n.endsWith("manifest.json"))).toBe(true);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -73,7 +74,7 @@ describe("Cockpit write — accountant export (POST .../accountant-export)", () 
       const body = await res.json();
       expect(body.errors[0]).toContain("confirm");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -87,7 +88,7 @@ describe("Cockpit write — accountant export (POST .../accountant-export)", () 
       });
       expect(res.status).toBe(400);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -101,7 +102,7 @@ describe("Cockpit write — accountant export (POST .../accountant-export)", () 
       });
       expect(res.status).toBe(404);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

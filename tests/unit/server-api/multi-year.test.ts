@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
+import { cleanupDir } from "../../helpers/cleanup";
 import {
   config,
   get,
   makeWorkspace,
   postPnlEntry,
-  rmSync,
   seedArchiveYear,
 } from "./_shared";
 
@@ -38,7 +38,7 @@ describe("cockpit API — multi-year (GET .../multi-year)", () => {
       expect(y2026.udgifter).toBe(400);
       expect(y2026.resultat).toBe(600);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -66,7 +66,7 @@ describe("cockpit API — multi-year (GET .../multi-year)", () => {
       expect(y2025.bruttomargin).toBeCloseTo(0.75, 5);
       expect(y2025.egenkapitalandel).toBeCloseTo(900 / 700, 5);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -84,7 +84,7 @@ describe("cockpit API — multi-year (GET .../multi-year)", () => {
       expect(y2025.bruttomargin).toBeNull();
       expect(y2025.egenkapitalandel).toBeNull();
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -98,7 +98,7 @@ describe("cockpit API — multi-year (GET .../multi-year)", () => {
       expect(res.status).toBe(200);
       expect(res.body.multiYear.years).toEqual([]);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -112,7 +112,7 @@ describe("cockpit API — multi-year (GET .../multi-year)", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

@@ -10,7 +10,7 @@
 // tool use. The owner picks an expense account + an unmatched outgoing bank
 // transaction in the modal, and the existing core posts the journal entry.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -22,6 +22,7 @@ import { openDb, migrate } from "../../src/core/db";
 import { ingestDocument } from "../../src/core/documents";
 import { seedAccounts } from "../../src/core/ledger";
 
+import { cleanupDir } from "../helpers/cleanup";
 function tmpRoot(label: string) {
   return mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
 }
@@ -91,8 +92,8 @@ function makeFixture(label: string) {
     ) as { id: number };
   db.close();
   const cleanup = () => {
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   };
   return { root, slug, documentId, bankTransactionId: bankRow.id, cleanup };
 }

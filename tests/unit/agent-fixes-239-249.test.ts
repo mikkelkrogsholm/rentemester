@@ -68,7 +68,7 @@ describe("#241 — init/company add warn when no payment details are set", () =>
       // …and never leaks into stdout, where the human onboarding block lives.
       expect(stdout).not.toContain("ADVARSEL");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -344,7 +344,7 @@ describe("#248 — actor allowlist consistency", () => {
         stderr: "",
       });
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -371,7 +371,7 @@ describe("#248 — actor allowlist consistency", () => {
       expect(stderr).toContain("is not in config/policy.yaml actor_allowlist");
       expect(stderr).toContain("user:intruder");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });

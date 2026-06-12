@@ -2,7 +2,7 @@
 // functions that wire accruals / payables / tax-return into the exception
 // queue (the islands → control-surfaces wiring).
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -13,6 +13,7 @@ import { registerPayable, payPayableFromBank } from "../../src/core/payables";
 import { importBankCsv } from "../../src/core/bank";
 import { registerAccrual, recognizeAccrualPeriod } from "../../src/core/accruals";
 import { closeAccountingPeriod } from "../../src/core/periods";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   listExceptions,
   syncOverduePayableExceptions,
@@ -89,8 +90,8 @@ describe("syncOverduePayableExceptions", () => {
     expect(again.created).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("does not raise an exception for a payable that is not yet due", () => {
@@ -106,8 +107,8 @@ describe("syncOverduePayableExceptions", () => {
     expect(sync.created).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   // #cockpit-wiring-review-1: the agent loop runs daily with a moving --as-of.
@@ -136,8 +137,8 @@ describe("syncOverduePayableExceptions", () => {
     expect(payableExceptions.length).toBe(1);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("resolves the exception once the payable is fully paid", () => {
@@ -172,8 +173,8 @@ describe("syncOverduePayableExceptions", () => {
     ).toBe(false);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });
 
@@ -213,8 +214,8 @@ describe("syncAccrualRecognitionDueExceptions", () => {
     expect(afterPost.created).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   // #cockpit-wiring-review-1: idempotent across moving as-of dates.
@@ -250,8 +251,8 @@ describe("syncAccrualRecognitionDueExceptions", () => {
     expect(accrualExceptions.length).toBe(2);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("resolves the exception once the recognition period is posted", () => {
@@ -285,8 +286,8 @@ describe("syncAccrualRecognitionDueExceptions", () => {
     ).toBe(false);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });
 
@@ -338,7 +339,7 @@ describe("syncTaxReturnReviewExceptions", () => {
     expect(afterClose.errors).toEqual([]);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });

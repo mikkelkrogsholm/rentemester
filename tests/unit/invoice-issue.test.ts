@@ -1,6 +1,6 @@
 // Tests: src/core/issued-invoices.ts
 import { describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs, companyPaths } from "../../src/core/paths";
@@ -10,6 +10,7 @@ import { issueCreditNote } from "../../src/core/credit-notes";
 import { storeViesValidation } from "../../src/core/vies";
 import { readIssuedInvoicePdfText, renderIssuedInvoicePdf } from "../../src/core/invoice-pdf";
 
+import { cleanupDir } from "../helpers/cleanup";
 function failingDocumentInsertDb(realDb: any) {
   return new Proxy(realDb, {
     get(target, prop, receiver) {
@@ -56,7 +57,7 @@ describe("invoice issue", () => {
     expect(row.currency).toBe("DKK");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("issues a validated invoice as immutable persisted snapshot", () => {
@@ -114,7 +115,7 @@ describe("invoice issue", () => {
     expect(() => db.run("UPDATE documents SET status = 'changed' WHERE id = ?", result.documentId!)).toThrow();
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("persists non-DKK issued invoices with deterministic DKK totals in the snapshot payload", () => {
@@ -142,7 +143,7 @@ describe("invoice issue", () => {
     expect(JSON.parse(row.payload_json).totals.grossAmountDkk).toBe(932.5);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("requires cached VIES validation for foreign reverse-charge invoices", () => {
@@ -201,7 +202,7 @@ describe("invoice issue", () => {
     expect(JSON.parse(row.payload_json).viesValidation.normalized).toBe("DE123456789");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("stores structured delivery and reverse-charge basis fields on issued invoices", () => {
@@ -240,7 +241,7 @@ describe("invoice issue", () => {
     expect(JSON.parse(row.payload_json).deliveryPeriodEnd).toBe("2026-05-15");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("auto-generates invoice numbers from issue year and resets per year", () => {
@@ -284,7 +285,7 @@ describe("invoice issue", () => {
     expect(first2025.invoiceNumber).toBe("2025-0001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("uses configured fiscal year labels for invoice numbers", () => {
@@ -332,7 +333,7 @@ describe("invoice issue", () => {
     expect(next.invoiceNumber).toBe("2028-0001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   // #251: a manual invoice number that matches the next sequence value is
@@ -380,7 +381,7 @@ describe("invoice issue", () => {
     expect(second.invoiceNumber).toBe("2026-0002");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   // #251: `invoice issue` (manual, from example JSON) and `invoice create`
@@ -401,7 +402,7 @@ describe("invoice issue", () => {
       currency: "DKK"
     });
     autoDb.close();
-    rmSync(autoRoot, { recursive: true, force: true });
+    cleanupDir(autoRoot);
 
     const manualRoot = mkdtempSync(join(tmpdir(), "rentemester-issue-manual-fmt-"));
     const manualDb = openDb(ensureCompanyDirs(manualRoot).db);
@@ -418,7 +419,7 @@ describe("invoice issue", () => {
       currency: "DKK"
     });
     manualDb.close();
-    rmSync(manualRoot, { recursive: true, force: true });
+    cleanupDir(manualRoot);
 
     expect(auto.ok).toBe(true);
     expect(manual.ok).toBe(true);
@@ -447,7 +448,7 @@ describe("invoice issue", () => {
     expect(result.errors[0]).toContain("næste fortløbende nummer 2026-0001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("routes non-five-digit manual invoice numbers through sequence reservation", () => {
@@ -500,7 +501,7 @@ describe("invoice issue", () => {
     expect(duplicate.ok).toBe(false);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects manual invoice numbers that are not <scope>-<digits>", () => {
@@ -523,7 +524,7 @@ describe("invoice issue", () => {
     expect(result.errors[0]).toContain("INV-A");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects canonical manual invoice numbers from the wrong fiscal scope", () => {
@@ -547,7 +548,7 @@ describe("invoice issue", () => {
     expect(result.errors[0]).toContain("does not match current fiscal scope 2026");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("does not burn an auto-numbered invoice sequence when insert fails", () => {
@@ -585,7 +586,7 @@ describe("invoice issue", () => {
     expect(retried.invoiceNumber).toBe("2026-0001");
 
     realDb.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("does not leave an orphan invoice file when document insert fails", () => {
@@ -609,7 +610,7 @@ describe("invoice issue", () => {
     expect(readdirSync(companyPaths(root).invoicesIssued)).toEqual([]);
 
     realDb.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("does not leave an orphan credit-note file when document insert fails", () => {
@@ -643,6 +644,6 @@ describe("invoice issue", () => {
     expect(readdirSync(companyPaths(root).invoicesIssued).sort()).toEqual(["2026-0001.json", "2026-0001.pdf"].sort());
 
     realDb.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

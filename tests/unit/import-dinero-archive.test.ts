@@ -10,7 +10,7 @@
 // (a 2024/ pre-cut-over folder + the existing 2025/ cut-over year). The real
 // Dinero export is private and is never committed.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync, cpSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, cpSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -19,6 +19,7 @@ import { seedAccounts } from "../../src/core/ledger";
 import { resolveSource } from "../../src/core/import/source";
 import { dineroParser } from "../../src/core/import/dinero";
 import { runImportFromSource } from "../../src/core/import/framework";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   parseArchiveYears,
   archiveDineroYears,
@@ -87,7 +88,7 @@ describe("Dinero archive: persisting to import_archive_* tables", () => {
       expect(after.n).toBe(before.n);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -105,7 +106,7 @@ describe("Dinero archive: persisting to import_archive_* tables", () => {
       expect(count.n).toBe(1);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -117,7 +118,7 @@ describe("Dinero archive: persisting to import_archive_* tables", () => {
       expect(() => db.run("DELETE FROM import_archive_postings")).toThrow();
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });
@@ -135,7 +136,7 @@ describe("Dinero archive: the read path", () => {
       expect(result.years[0]!.postings).toBeUndefined();
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -152,7 +153,7 @@ describe("Dinero archive: the read path", () => {
       expect(bank.amount).toBe(88200.5);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -165,7 +166,7 @@ describe("Dinero archive: the read path", () => {
       expect(result.errors.join(" ")).toContain("1999");
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });
@@ -186,7 +187,7 @@ describe("Dinero archive: the roll-forward consistency check", () => {
       expect(result.steps[0]!.toIsCutOver).toBe(true);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -225,8 +226,8 @@ describe("Dinero archive: the roll-forward consistency check", () => {
       expect(result.ok).toBe(true);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
-      rmSync(tampered, { recursive: true, force: true });
+      cleanupDir(root);
+      cleanupDir(tampered);
     }
   });
 
@@ -264,8 +265,8 @@ describe("Dinero archive: the roll-forward consistency check", () => {
       expect(brk.openingAmount).toBe(88200.5);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
-      rmSync(tampered, { recursive: true, force: true });
+      cleanupDir(root);
+      cleanupDir(tampered);
     }
   });
 });
@@ -295,7 +296,7 @@ describe("Dinero import flow: archiving wired into runImportFromSource", () => {
       expect(trail.toLowerCase()).toContain("roll-forward");
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -312,8 +313,8 @@ describe("Dinero import flow: archiving wired into runImportFromSource", () => {
       expect(queryArchive(db).years).toEqual([]);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
-      rmSync(single, { recursive: true, force: true });
+      cleanupDir(root);
+      cleanupDir(single);
     }
   });
 });

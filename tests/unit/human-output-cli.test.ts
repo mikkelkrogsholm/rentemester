@@ -3,11 +3,12 @@
 // The read/report commands render Danish kroner-og-øre text under
 // `--format human`, while `--format json` stays byte-stable for agents.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { formatKroner } from "../../src/cli-format";
 
+import { cleanupDir } from "../helpers/cleanup";
 async function runCli(args: string[]) {
   const proc = Bun.spawn(["bun", "run", "src/cli.ts", ...args], {
     cwd: process.cwd(),
@@ -56,7 +57,7 @@ describe("vat report human output (#211)", () => {
       "--format", "json",
     ]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(human.exitCode).toBe(0);
     expect(human.stderr).toBe("");
@@ -98,7 +99,7 @@ describe("invoice status human output (#211)", () => {
       "--format", "json",
     ]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(human.exitCode).toBe(0);
     expect(human.stderr).toBe("");
@@ -133,7 +134,7 @@ describe("profit-loss human output (#225)", () => {
       "--format", "human",
     ]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(human.exitCode).toBe(0);
     expect(human.stdout).toContain("Periodens resultat:");
@@ -165,7 +166,7 @@ describe("vat momsangivelse human output (#235, #236)", () => {
       "--format", "json",
     ]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(human.exitCode).toBe(0);
     expect(human.stderr).toBe("");
@@ -209,7 +210,7 @@ describe("vat report shows the SKAT deadline (#236)", () => {
       "--format", "human",
     ]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(human.exitCode).toBe(0);
     // Q2 ends 30-06 → deadline 1 September, not the period-end date.
@@ -261,8 +262,8 @@ describe("report annual human output (#235)", () => {
       "--format", "json",
     ]);
 
-    rmSync(root, { recursive: true, force: true });
-    rmSync(journalDir, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(journalDir);
 
     expect(human.exitCode).toBe(0);
     expect(human.stderr).toBe("");
@@ -297,7 +298,7 @@ describe("system backup-status human output (#240)", () => {
       "--format", "human",
     ]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(human.exitCode).toBe(0);
     expect(human.stderr).toBe("");
@@ -322,7 +323,7 @@ describe("system backup-status human output (#240)", () => {
       "--format", "human",
     ]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     // backupDue makes ok:false, so exit 1 — but the output is still a useful
     // status, not the generic "fejlede uden en specifik fejlbesked" template.
@@ -362,7 +363,7 @@ describe("invoice interest human output (#250)", () => {
       "--format", "json",
     ]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(human.exitCode).toBe(0);
     expect(human.stderr).toBe("");
@@ -410,7 +411,7 @@ describe("invoice interest human output (#250)", () => {
       "--format", "human",
     ]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(human.exitCode).toBe(0);
     expect(human.stderr).toBe("");
@@ -452,7 +453,7 @@ describe("invoice compensation human output (#250)", () => {
       "--format", "json",
     ]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(human.exitCode).toBe(0);
     expect(human.stderr).toBe("");
@@ -492,7 +493,7 @@ describe("invoice validate human output (#250)", () => {
     const human = await runCli(["invoice", "validate", "--input", file, "--format", "human"]);
     const jsonRun = await runCli(["invoice", "validate", "--input", file, "--format", "json"]);
 
-    rmSync(dir, { recursive: true, force: true });
+    cleanupDir(dir);
 
     expect(human.exitCode).toBe(0);
     expect(human.stderr).toBe("");
@@ -526,7 +527,7 @@ describe("invoice validate human output (#250)", () => {
     const human = await runCli(["invoice", "validate", "--input", file, "--format", "human"]);
     const jsonRun = await runCli(["invoice", "validate", "--input", file, "--format", "json"]);
 
-    rmSync(dir, { recursive: true, force: true });
+    cleanupDir(dir);
 
     // An invalid payload is a business rejection — exit 1 — but the output is a
     // useful verdict, not the generic "fejlede uden en specifik fejlbesked".
@@ -554,7 +555,7 @@ describe("accounts list human output (#246)", () => {
 
     const human = await runCli(["accounts", "list", "--company", company, "--format", "human"]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(human.exitCode).toBe(0);
     expect(human.stdout).toContain("Kontoplan");
@@ -586,7 +587,7 @@ describe("invoice create human output (#266, #268)", () => {
       "--seller-vat", "DK12345678",
       "--format", format,
     ]);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     return out;
   }
 
@@ -657,7 +658,7 @@ describe("momsangivelse prerequisite guidance (#227)", () => {
       "--format", "human",
     ]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     // A momsangivelse on an open period fails as a business error.
     expect(human.exitCode).toBe(1);

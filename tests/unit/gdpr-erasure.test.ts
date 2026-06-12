@@ -1,6 +1,6 @@
 // Tests: src/core/gdpr.ts (GDPR retention-respecting erasure — #184)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -10,6 +10,7 @@ import { ingestDocument } from "../../src/core/documents";
 import { createCustomer, createVendor } from "../../src/core/master-data";
 import { buildGdprSubjectExport, eraseGdprSubject } from "../../src/core/gdpr";
 
+import { cleanupDir } from "../helpers/cleanup";
 function freshCompany(prefix: string) {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${prefix}-`));
   const company = join(root, "company");
@@ -55,7 +56,7 @@ describe("GDPR erasure respects bookkeeping retention", () => {
     // asOf well inside the ~5-year retention window.
     const result = eraseGdprSubject(db, { cvr: "DK33445566", asOf: "2027-06-01" });
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(result.ok).toBe(true);
     expect(result.erasedCount).toBe(0);
@@ -88,7 +89,7 @@ describe("GDPR erasure respects bookkeeping retention", () => {
     // After erasure, the export no longer exposes the personal fields.
     const report = buildGdprSubjectExport(db, { cvr: "DK44556677", asOf: "2099-01-01" });
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     const customerRecord = report.records.find((r) => r.source === "customers");
     expect(customerRecord).toBeDefined();
@@ -108,7 +109,7 @@ describe("GDPR erasure respects bookkeeping retention", () => {
 
     const second = eraseGdprSubject(db, { cvr: "DK66778899", asOf: "2099-01-01" });
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(second.ok).toBe(true);
     expect(second.erasedCount).toBe(0);

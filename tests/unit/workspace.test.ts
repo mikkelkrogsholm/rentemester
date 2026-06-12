@@ -1,6 +1,6 @@
 // Tests: src/core/workspace.ts, src/core/company.ts (workspace model + createCompany)
 import { describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, mkdirSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -20,6 +20,7 @@ import { createCompany, initialiseCompanyVolume } from "../../src/core/company";
 import { companyPaths } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 
+import { cleanupDir } from "../helpers/cleanup";
 function tmpRoot(label: string) {
   return mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
 }
@@ -32,7 +33,7 @@ describe("workspace model", () => {
       initWorkspace(root);
       expect(workspaceExists(root)).toBe(true);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -44,7 +45,7 @@ describe("workspace model", () => {
       const manifest = loadWorkspaceManifest(root);
       expect(manifest.companies).toEqual([]);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -62,7 +63,7 @@ describe("workspace model", () => {
       saveWorkspaceManifest(root, manifest);
       expect(loadWorkspaceManifest(root)).toEqual(manifest);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -96,7 +97,7 @@ describe("createCompany", () => {
       expect(company.cvr).toBe("DK12345678");
       db.close();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -110,7 +111,7 @@ describe("createCompany", () => {
       expect(companies[0]!.name).toBe("Acme ApS");
       expect(companies[0]!.archived).toBe(false);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -121,7 +122,7 @@ describe("createCompany", () => {
       createCompany(root, { name: "Acme ApS" });
       expect(() => createCompany(root, { slug: "acme-aps", name: "Other" })).toThrow();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -144,7 +145,7 @@ describe("createCompany", () => {
       expect(row).toEqual({ m: 7, s: "span" });
       db.close();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });
@@ -159,7 +160,7 @@ describe("slug resolution", () => {
       expect(resolved).toBe(created.companyRoot);
       expect(resolved).toBe(join(root, "acme-aps"));
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -169,7 +170,7 @@ describe("slug resolution", () => {
       initWorkspace(root);
       expect(resolveWorkspaceSlug(root, "ghost")).toBeNull();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });
@@ -193,7 +194,7 @@ describe("adoption of an unlisted company directory", () => {
       expect(adopted.slug).toBe("orphan-co");
       expect(listWorkspaceCompanies(root).map((c) => c.slug)).toEqual(["orphan-co"]);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -204,7 +205,7 @@ describe("adoption of an unlisted company directory", () => {
       mkdirSync(join(root, "not-a-company"), { recursive: true });
       expect(() => adoptCompanyDir(root, "not-a-company")).toThrow();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });
@@ -218,7 +219,7 @@ describe("registerCompanyDirIntoWorkspace (#216 init/cockpit unification)", () =
       expect(isCompanyInsideWorkspace(ws, ws)).toBe(false);
       expect(isCompanyInsideWorkspace(ws, "/tmp/some-other-place")).toBe(false);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -238,7 +239,7 @@ describe("registerCompanyDirIntoWorkspace (#216 init/cockpit unification)", () =
       expect(listed.map((c) => c.slug)).toEqual(["acme-aps"]);
       expect(listed[0]?.name).toBe("Acme ApS");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -254,7 +255,7 @@ describe("registerCompanyDirIntoWorkspace (#216 init/cockpit unification)", () =
       });
       expect(listWorkspaceCompanies(ws)).toHaveLength(1);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -270,8 +271,8 @@ describe("registerCompanyDirIntoWorkspace (#216 init/cockpit unification)", () =
       });
       expect(listWorkspaceCompanies(ws)).toEqual([]);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
-      rmSync(elsewhere, { recursive: true, force: true });
+      cleanupDir(ws);
+      cleanupDir(elsewhere);
     }
   });
 });

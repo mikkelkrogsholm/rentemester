@@ -1,6 +1,6 @@
 // Tests: src/core/invoice-settlement.ts
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -15,6 +15,7 @@ import { registerInvoiceLateCompensation, postInvoiceLateCompensationToLedger } 
 import { registerInvoiceLateInterest, postInvoiceLateInterestToLedger } from "../../src/core/invoice-interest";
 import { seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("invoice bank settlement", () => {
   test("settles an issued invoice from an imported bank receipt and clears receivables", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-settle-"));
@@ -68,7 +69,7 @@ describe("invoice bank settlement", () => {
     expect(chain.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("settles a non-DKK issued invoice from an imported FX bank receipt using DKK ledger amounts", () => {
@@ -120,7 +121,7 @@ describe("invoice bank settlement", () => {
     ]);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("blocks combined settlement until included claims are ledger-posted", () => {
@@ -159,7 +160,7 @@ describe("invoice bank settlement", () => {
     expect(db.query("SELECT COUNT(*) AS n FROM invoice_claim_payments").get()).toEqual({ n: 0 });
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("settles principal and booked claim balance from one combined bank receipt", () => {
@@ -224,7 +225,7 @@ describe("invoice bank settlement", () => {
     ]);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("requires explicit bank transaction selection for settlement", () => {
@@ -256,6 +257,6 @@ describe("invoice bank settlement", () => {
     expect(settled.errors[0]).toBe("bankTransactionId or bankTransactionReference is required");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });
