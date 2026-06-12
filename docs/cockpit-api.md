@@ -77,24 +77,37 @@ Every response is JSON with `content-type: application/json; charset=utf-8`.
 The `<key>` is route-specific (`dashboard`, `invoices`, `import`, `invoice`,
 …) — see each endpoint below.
 
-**Error** — any non-2xx — always has this shape (`src/server/errors.ts`):
+**Error** — any non-2xx — always has this shape (`src/server/errors.ts`,
+unified with MCP + CLI in #368):
 
 ```json
-{ "ok": false, "error": { "code": "<code>", "message": "<safe message>" } }
+{ "ok": false, "errors": ["<safe message>"], "code": "<code>" }
 ```
 
-| `error.code` | HTTP | When |
-|--------------|------|------|
+This is the **same envelope** MCP and CLI return — see
+[`docs/mcp-agent-contract.md`](mcp-agent-contract.md#preconditions-and-errors--where-they-live)
+and [`docs/cli-contract.md`](cli-contract.md). An agent that drives all three
+write-stacks can share a single error-parser: `errors[0]` is the
+human-readable message; `code` is the discrete enum below for programmatic
+branching.
+
+| `code` | HTTP | When |
+|--------|------|------|
 | `bad_request` | 400 | Malformed body, bad/missing field, a core business rejection that is not a conflict. |
 | `unauthorized` | 401 | Missing/invalid bearer token, or a write from a non-loopback host with auth disabled. |
 | `not_found` | 404 | Unknown company slug, company with no ledger, or an unknown endpoint. |
 | `method_not_allowed` | 405 | Right path, wrong HTTP method. |
 | `conflict` | 409 | The backup lock is active, or a state conflict — the target is missing, or the action already happened (e.g. an already-posted invoice, an already-resolved exception). |
-| `internal` | 500 | An unexpected error. The real message is **never** leaked — the body always reads `internal server error`. |
+| `internal` | 500 | An unexpected error. The real message is **never** leaked — `errors[0]` always reads `internal server error`. |
 
 A core business rejection (`ok:false` from a bookkeeping function) is mapped
 to `bad_request` by default, or to `conflict` when the message indicates a
 missing target or an already-done action. It is **never** a `500`.
+
+> **Wire-shape note (#368).** Before #368 the cockpit returned a singular
+> `error: { code, message }` object — the old shape is gone. Any client that
+> still reads `body.error.code` / `body.error.message` must move to
+> `body.code` / `body.errors[0]`.
 
 ## Read endpoints
 
@@ -105,15 +118,18 @@ when omitted.
 
 | Method + path | Response key | Purpose |
 |---|---|---|
-| `GET /api` or `GET /api/health` | `service`, `workspace`, `authRequired` | Health probe + server identity. |
+| `GET /api` or `GET /api/health` | `service`, `workspace`, `authRequired`, `routes` | Health probe + server identity + route-catalog (#376). `routes` is a machine-readable list of every HTTP endpoint with `{ method, pattern, summary }` so an agent can enumerate the surface without reading source. The catalog is the same `ROUTE_CATALOG` exported from `src/server/router.ts`. |
 | `GET /api/portfolio?asOf=` | `portfolio` | Cross-company portfolio overview. |
 | `GET /api/companies` | `workspace`, `count`, `companies[]` | List workspace companies (`{slug,name,createdAt,archived}`). Discovers and adopts an unlisted-but-present company directory before listing. |
 | `GET /api/companies/:slug/dashboard?asOf=` | `dashboard` | The company dashboard data. |
 | `GET /api/companies/:slug/fiscal-years` | `fiscalYears` | The company's fiscal years. |
 | `GET /api/companies/:slug/overview?year=` | `overview` | Per-year overview. |
 | `GET /api/companies/:slug/income-statement?year=` | `incomeStatement` | Income statement (resultatopgørelse). |
+| `GET /api/companies/:slug/income-statement/export?format=csv&year=` | _binary CSV_ | #372 — Resultatopgørelse som CSV-download (text/csv attachment, dansk semikolon-separator + UTF-8 BOM, byte-deterministic for samme ledger). PDF følger i et opfølger-issue. |
 | `GET /api/companies/:slug/balance?year=` | `balance` | Balance sheet (balance). |
+| `GET /api/companies/:slug/balance/export?format=csv&year=` | _binary CSV_ | #372 — Balance som CSV-download. |
 | `GET /api/companies/:slug/trial-balance?year=` | `trialBalance` | Trial balance (saldobalance). |
+| `GET /api/companies/:slug/trial-balance/export?format=csv&year=` | _binary CSV_ | #372 — Saldobalance som CSV-download. |
 | `GET /api/companies/:slug/journal?year=&account=` | `journal` | Journal entries, optionally filtered by account. |
 | `GET /api/companies/:slug/bank?year=` | `bank` | Bank transactions. |
 | `GET /api/companies/:slug/vat?year=` | `vat` | VAT report (momsopgørelse). |
@@ -125,6 +141,8 @@ when omitted.
 | `GET /api/companies/:slug/company` | `company` | Company settings / master data. |
 | `GET /api/companies/:slug/obligations?year=` | `obligations` | Statutory obligations + deadlines. |
 | `GET /api/companies/:slug/cashflow?year=` | `cashflow` | Cash-flow view. |
+| `GET /api/companies/:slug/budget?year=` | `budget` | Effective (latest-revision) budget lines for one fiscal year (#339). |
+| `GET /api/companies/:slug/budget-vs-actual?year=` | `budgetVsActual` | Budget-vs-faktisk comparison for one fiscal year (#339). |
 
 The detailed object shape of each read payload is the corresponding
 `build*` function's return type in `src/server/data.ts`.
@@ -152,6 +170,14 @@ requires `"confirm": true` in the body; without it the call is rejected with
 core runs. The two non-irreversible writes (`exceptions/:id/resolve`,
 `invoices/issue`) do **not** require `confirm` — the cockpit modal is the
 human's consent.
+
+> **Cross-stack opslag.** Cockpittets confirm-regel er **anderledes** end
+> MCP's (som kræver `confirm: true` på *alle* writes) og CLI's (som bruger
+> `--confirm yes` kun på destruktive kommandoer). Den fulde tabel pr.
+> business-operation står i [`docs/confirm-contract.md`](confirm-contract.md).
+> Samme operation kan have modsat regel — fx kræver `invoice_issue` på MCP
+> `confirm: true`, mens `POST /invoices/issue` på cockpittet ikke gør.
+> Afvigelsen er bevidst (modalen er samtykket) og forklaret i opslaget.
 
 **The backup-lock gate.** When the workspace owner has opted into the
 BEK 205/2024 §4 backup lock and a weekly backup is overdue past the grace
@@ -233,6 +259,21 @@ Settles an issued invoice against a bank payment.
 - Response key `settlement`:
   `{ entryId, paymentId, principalAmount, claimAmount, invoiceNumber, openBalance }`.
 
+### `POST /api/companies/:slug/budget`
+
+Appends a budget revision for one (account, period) cell (#339). The core is
+append-only: a second call for the same pair inserts a new revision and the
+latest wins, so re-saving the grid is always safe and the full history is
+audit-logged.
+
+- Body: `{ accountNo: string, period: 'YYYY-MM', amount: number, notes?: string }`.
+- No `confirm` required — append-only and reversible by appending another
+  revision; the cockpit modal/form is the consent (mirrors contact writes).
+- An unknown account / malformed period is reported as `400` (or `409` when
+  the conflict heuristic in `withCompanyMutation` matches the core's
+  "does not exist" message).
+- Response key `budget`: `{ id, accountNo, period, amount }`.
+
 ## Actor attribution
 
 Every Cockpit write is attributed: `withCompanyMutation` resolves a
@@ -254,7 +295,7 @@ a friendly health probe and any other non-`/api` path is a JSON `404`.
 |---|---|---|---|
 | Driver | The cockpit SPA / any HTTP client | An external MCP client/agent | The in-process `runAgentLoop()` |
 | Scope | A whole workspace; company by slug | One company per call; slug or path | One company, one run |
-| Surface | A small REST-ish route set | 81 loose tools | A single fixed loop |
+| Surface | A small REST-ish route set | 101 loose tools | A single fixed loop |
 | Writes | 6 `POST` routes via `withCompanyMutation` | Write tools with `confirm` | The loop books deterministically |
 
 All four rest on the same `src/core/`, the same rules and the same

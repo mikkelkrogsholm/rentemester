@@ -104,11 +104,24 @@ export function CompanyCard({ company }: { company: CompanySummary }) {
         {flags.length === 0 ? (
           <span className="flag ok">Sund drift</span>
         ) : (
-          flags.map((f) => (
-            <span key={f.label} className={`flag ${f.level}`}>
-              {f.label}
-            </span>
-          ))
+          flags.map((f) =>
+            // #420 — flag med et `to`-felt er klikbare: ejeren får et konkret
+            // næste skridt (fx Integritet-viewet) i stedet for et skræmmende
+            // dødt label.
+            f.to ? (
+              <Link
+                key={f.label}
+                to={f.to}
+                className={`flag flag-link ${f.level}`}
+              >
+                {f.label}
+              </Link>
+            ) : (
+              <span key={f.label} className={`flag ${f.level}`}>
+                {f.label}
+              </span>
+            ),
+          )
         )}
       </div>
     </article>

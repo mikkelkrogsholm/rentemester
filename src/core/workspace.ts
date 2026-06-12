@@ -214,7 +214,7 @@ export function registerWorkspaceCompany(
   assertValidSlug(entry.slug);
   const manifest = loadWorkspaceManifest(workspaceRoot);
   if (manifest.companies.some((c) => c.slug === entry.slug)) {
-    throw new Error(`company slug '${entry.slug}' is already registered in the workspace`);
+    throw new Error(`virksomheden med slug '${entry.slug}' er allerede registreret i workspacet`);
   }
   manifest.companies.push(entry);
   saveWorkspaceManifest(workspaceRoot, manifest);
@@ -302,13 +302,13 @@ export function adoptCompanyDir(
 ): WorkspaceCompanyEntry {
   assertValidSlug(slug);
   if (findWorkspaceCompany(workspaceRoot, slug)) {
-    throw new Error(`company slug '${slug}' is already in the workspace manifest`);
+    throw new Error(`virksomheden med slug '${slug}' er allerede registreret i workspacet`);
   }
   const companyRoot = companyRootForSlug(workspaceRoot, slug);
   const p = companyPaths(companyRoot);
   if (!existsSync(p.db)) {
     throw new Error(
-      `cannot adopt '${slug}': no ledger found at ${p.db} — not a company directory`,
+      `kan ikke adoptere '${slug}': ingen ledger fundet — mappen er ikke en virksomhed`,
     );
   }
   const name = options?.name ?? readCompanyName(p.db) ?? slug;
@@ -332,12 +332,12 @@ export function renameWorkspaceCompany(
 ): WorkspaceCompanyEntry {
   const trimmed = name.trim();
   if (trimmed.length === 0) {
-    throw new Error("company display name must not be empty");
+    throw new Error("firmanavn må ikke være tomt");
   }
   const manifest = loadWorkspaceManifest(workspaceRoot);
   const entry = manifest.companies.find((c) => c.slug === slug);
   if (!entry) {
-    throw new Error(`no company with slug '${slug}' in the workspace`);
+    throw new Error(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
   entry.name = trimmed;
   saveWorkspaceManifest(workspaceRoot, manifest);
@@ -358,7 +358,7 @@ export function setWorkspaceCompanyArchived(
   const manifest = loadWorkspaceManifest(workspaceRoot);
   const entry = manifest.companies.find((c) => c.slug === slug);
   if (!entry) {
-    throw new Error(`no company with slug '${slug}' in the workspace`);
+    throw new Error(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
   entry.archived = archived;
   saveWorkspaceManifest(workspaceRoot, manifest);

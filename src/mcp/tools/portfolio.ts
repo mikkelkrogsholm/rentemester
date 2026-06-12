@@ -216,7 +216,10 @@ export function registerPortfolioTools(server: McpServer): void {
       // (#252)
       if (args.confirm !== true) {
         return envelopeToCallResult(
-          errorEnvelope("confirm: true required for write tool company_add"),
+          errorEnvelope(
+            "confirm: true required for write tool company_add",
+            { code: "CONFIRM_REQUIRED" },
+          ),
         );
       }
       const ws = resolvePortfolioWorkspace(args.workspace);

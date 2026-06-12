@@ -283,3 +283,67 @@ export function ingestDocument(db: Database, companyRoot: string, filePath: stri
     throw error;
   }
 }
+
+/** A stored bilag file resolved for read-only serving. */
+export type ResolvedDocumentFile = {
+  /** Absolute path to the file on disk. */
+  path: string;
+  /** Stored MIME type, or a safe default when none was recorded. */
+  mimeType: string;
+  /** A human-friendly download name. */
+  filename: string;
+};
+
+/**
+ * Resolves the stored file of an ingested document so a caller (the cockpit's
+ * read route) can serve it back to a human.
+ *
+ * The file is resolved by its basename inside THIS company's
+ * `documents/originals` store — robust if the workspace directory moved since
+ * ingest, and inherently free of path traversal because a basename cannot
+ * carry a directory separator. Returns an error (never throws) when the
+ * document is unknown, never had a stored file, or the file is gone from disk.
+ */
+export function resolveDocumentFile(
+  db: Database,
+  companyRoot: string,
+  documentId: number,
+):
+  | { ok: true; file: ResolvedDocumentFile }
+  | { ok: false; error: string } {
+  const row = db
+    .query(
+      `SELECT stored_path AS storedPath, mime_type AS mimeType,
+              original_filename AS filename, document_no AS documentNo
+         FROM documents WHERE id = ?`,
+    )
+    .get(documentId) as
+    | {
+        storedPath: string | null;
+        mimeType: string | null;
+        filename: string | null;
+        documentNo: string | null;
+      }
+    | null;
+  if (!row) {
+    return { ok: false, error: `document ${documentId} does not exist` };
+  }
+  if (!row.storedPath) {
+    return { ok: false, error: `document ${documentId} has no stored file` };
+  }
+  const path = join(
+    companyPaths(companyRoot).documentsOriginals,
+    basename(row.storedPath),
+  );
+  if (!existsSync(path)) {
+    return { ok: false, error: `document ${documentId} file is missing on disk` };
+  }
+  return {
+    ok: true,
+    file: {
+      path,
+      mimeType: row.mimeType ?? "application/octet-stream",
+      filename: row.filename ?? row.documentNo ?? `bilag-${documentId}`,
+    },
+  };
+}

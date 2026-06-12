@@ -5,6 +5,7 @@ import {
   exportBackupPublicKey,
   getBackupComplianceStatus,
   packBackupArchive,
+  rotateBackupKeypair,
 } from "../core/system-backups";
 import { restoreSystemBackup, verifyBackupSignature } from "../core/system-restore";
 import {
@@ -294,6 +295,25 @@ export function register(dispatch: CommandDispatch): void {
       verificationKeyPath: ctx.arg("--verify-key") ?? undefined,
     });
     ctx.emitResult(result as Record<string, unknown>);
+  });
+
+  // `system rotate-backup-keypair` — generate a fresh Ed25519 signing keypair,
+  // archive the old one with its fingerprint, and audit-log the rotation.
+  dispatch.on("system", "rotate-backup-keypair", (ctx) => {
+    const reason = ctx.arg("--reason");
+    if (!reason || reason.trim().length === 0) {
+      console.error('Missing required --reason "<text>"');
+      process.exit(2);
+    }
+    const db = openCommandDb(ctx);
+    migrate(db);
+    const result = rotateBackupKeypair(db, ctx.companyRoot(), {
+      reason,
+      rotatedAt: ctx.arg("--at") ?? undefined,
+    });
+    ctx.emitResult(result as Record<string, unknown>);
+    db.close();
+    if (!result.ok) process.exit(1);
   });
 
   dispatch.on("system", "backup-status", (ctx) => {

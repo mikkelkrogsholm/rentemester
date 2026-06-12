@@ -1,5 +1,9 @@
 import type { Database } from "bun:sqlite";
 import { formatKronerDa, normalizeCurrency } from "./money";
+import { isValidIsoDate as looksLikeIsoDate } from "./dates";
+import { buildPayablesList } from "./payables";
+import { listDueAccrualRecognitionPeriods } from "./accruals";
+import { buildTaxReturn } from "./tax-return";
 
 export type ExceptionSeverity = "low" | "medium" | "high";
 export type ExceptionStatus = "open" | "resolved" | "all";
@@ -508,4 +512,283 @@ export function syncUnmatchedBankTransactionExceptions(db: Database) {
   }
 
   return { ok: true, created, refreshed, resolvedStale, errors: [] };
+}
+
+// ---------------------------------------------------------------------------
+// Recurring-feature exception sync (#: islands → control surfaces)
+//
+// The accruals / payables / tax-return features were merged in isolation and
+// never reached the exception queue. These sync functions close that gap: each
+// surfaces the work that the recurring deterministic features generate, with
+// the same `recordException` shape and `AGENT_*` type naming the agent loop
+// already uses for `AGENT_POSSIBLE_FIXED_ASSET` etc. They never post and never
+// guess — an overdue obligation is *surfaced*, the human acts.
+//
+// Each sync follows the `syncUnmatchedBankTransactionExceptions` discipline:
+//   - dedup keys on a STABLE row identity (the payable id / the accrual period
+//     / the fiscal-year + needs-review-kind) carried in `source_evidence` — NOT
+//     on the message, which carries a volatile "N dage overforfalden pr.
+//     <as-of>" that moves every run. The agent loop runs daily with a moving
+//     `--as-of`; a message-keyed dedup would create ~30 duplicate rows a month.
+//   - a resolve-stale path: when the underlying item is no longer overdue/due
+//     (the bill is paid, the period is posted, the year-end figure is no longer
+//     flagged), the open exception is resolved.
+//
+// NOTE on the import cycle: `exceptions.ts` imports `payables.ts`,
+// `accruals.ts` and `tax-return.ts`; `tax-return.ts` → `assets.ts` →
+// `exceptions.ts` closes a cycle. This is deliberate and safe ONLY because
+// every cross-import is used lazily inside a function body — there is no
+// module-init-time call — so ESM's hoisted bindings are fully resolved by the
+// time any of these functions runs.
+// ---------------------------------------------------------------------------
+
+export type SyncExceptionResult = {
+  ok: boolean;
+  /** Newly-opened exceptions this run. */
+  created: number;
+  /** Exceptions resolved because their underlying item is no longer pending. */
+  resolvedStale: number;
+  errors: string[];
+};
+
+/**
+ * Open exceptions of `type`, paired with their `source_evidence` JSON so a
+ * caller can match them to a stable subject identity and decide create vs.
+ * leave vs. resolve-stale.
+ */
+function openExceptionsByType(
+  db: Database,
+  type: string,
+): Array<{ id: number; sourceEvidence: any }> {
+  const rows = db
+    .query(
+      `SELECT id, source_evidence FROM exceptions WHERE status = 'open' AND type = ?`,
+    )
+    .all(type) as Array<{ id: number; source_evidence: string | null }>;
+  return rows.map((r) => ({ id: r.id, sourceEvidence: parseJson(r.source_evidence) }));
+}
+
+/**
+ * Surfaces every open creditor item (payable) that is past its due date as an
+ * `AGENT_PAYABLE_OVERDUE` exception, and resolves the exception once the bill
+ * is paid (no longer overdue).
+ *
+ * Idempotent across a moving `asOfDate`: the message is STABLE (no overdue-day
+ * count, no as-of date — those live in `source_evidence`), so `recordException`
+ * dedups a re-run on the same payable. A re-run on a later date never creates a
+ * duplicate. Read-only against the ledger — it never pays the bill.
+ */
+export function syncOverduePayableExceptions(db: Database, asOfDate: string): SyncExceptionResult {
+  if (!looksLikeIsoDate(asOfDate)) {
+    return { ok: false, created: 0, resolvedStale: 0, errors: ["asOfDate must be YYYY-MM-DD"] };
+  }
+  const overdue = buildPayablesList(db, { status: "overdue", asOfDate });
+  if (!overdue.ok) return { ok: false, created: 0, resolvedStale: 0, errors: overdue.errors };
+
+  const stillOverdueIds = new Set(overdue.rows.map((r) => r.payableId));
+
+  // Resolve-stale: an open AGENT_PAYABLE_OVERDUE whose payable is no longer in
+  // the overdue list (paid, or otherwise settled) is resolved.
+  let resolvedStale = 0;
+  for (const ex of openExceptionsByType(db, "AGENT_PAYABLE_OVERDUE")) {
+    const payableId = ex.sourceEvidence?.payableId;
+    if (typeof payableId === "number" && !stillOverdueIds.has(payableId)) {
+      resolveException(db, {
+        id: ex.id,
+        note: "Erstattet automatisk: kreditorposten er ikke længere overforfalden (betalt eller udlignet)",
+        resolvedBy: "system:sync-overdue-payables",
+      });
+      resolvedStale += 1;
+    }
+  }
+
+  let created = 0;
+  for (const row of overdue.rows) {
+    const supplier = row.supplierName ?? "ukendt leverandør";
+    const billRef = row.billNo ? `kreditorpost ${row.billNo}` : `kreditorpost #${row.payableId}`;
+    const res = recordException(db, {
+      type: "AGENT_PAYABLE_OVERDUE",
+      // The aging bucket is a stable band, so a re-key on a later as-of date
+      // with the same bucket still dedups. The exact day count lives in
+      // `source_evidence` (volatile, not in the dedup key).
+      severity: row.overdueDays >= 30 ? "high" : "medium",
+      relatedDocumentId: row.documentId,
+      // STABLE message — no overdue-day count, no as-of date.
+      message:
+        `${billRef} til ${supplier} på ${formatKronerDa(row.openBalance)} med forfald ${row.dueDate} ` +
+        `er overforfalden og endnu ikke betalt.`,
+      requiredAction:
+        "Betal kreditorposten, og afstem den udgående bankbetaling mod den med 'payable pay'.",
+      sourceEvidence: {
+        rule: "DK-PAYABLE-001",
+        payableId: row.payableId,
+        dueDate: row.dueDate,
+        overdueDays: row.overdueDays,
+        openBalance: row.openBalance,
+        agingBucket: row.agingBucket,
+        asOfDate,
+      },
+    });
+    if (res.ok && !res.duplicate) created += 1;
+  }
+  return { ok: true, created, resolvedStale, errors: [] };
+}
+
+/**
+ * Surfaces every accrual recognition period that is due/overdue as of `asOfDate`
+ * and not yet posted, as an `AGENT_ACCRUAL_RECOGNITION_DUE` exception, and
+ * resolves the exception once the period is posted.
+ *
+ * IMPORTANT — this never posts the recognition entry. Choosing the posting date
+ * is the owner's decision; the exception just makes the pending periodisering
+ * visible, exactly as the agent loop surfaces (rather than auto-posts) a
+ * possible fixed-asset purchase.
+ *
+ * Idempotent across a moving `asOfDate`: the dedup key is the stable
+ * `(accrualId, periodIndex)` pair carried in the STABLE message + evidence.
+ */
+export function syncAccrualRecognitionDueExceptions(
+  db: Database,
+  asOfDate: string,
+): SyncExceptionResult {
+  if (!looksLikeIsoDate(asOfDate)) {
+    return { ok: false, created: 0, resolvedStale: 0, errors: ["asOfDate must be YYYY-MM-DD"] };
+  }
+  const due = listDueAccrualRecognitionPeriods(db, asOfDate);
+  if (!due.ok) return { ok: false, created: 0, resolvedStale: 0, errors: due.errors };
+
+  // Stable key for a recognition period: `${accrualId}:${periodIndex}`.
+  const stillDueKeys = new Set(due.periods.map((p) => `${p.accrualId}:${p.periodIndex}`));
+
+  // Resolve-stale: an open exception whose period is no longer due (it has
+  // been posted) is resolved.
+  let resolvedStale = 0;
+  for (const ex of openExceptionsByType(db, "AGENT_ACCRUAL_RECOGNITION_DUE")) {
+    const accrualId = ex.sourceEvidence?.accrualId;
+    const periodIndex = ex.sourceEvidence?.periodIndex;
+    if (typeof accrualId === "number" && typeof periodIndex === "number") {
+      if (!stillDueKeys.has(`${accrualId}:${periodIndex}`)) {
+        resolveException(db, {
+          id: ex.id,
+          note: "Erstattet automatisk: periodeafgrænsnings-perioden er bogført",
+          resolvedBy: "system:sync-accrual-recognition-due",
+        });
+        resolvedStale += 1;
+      }
+    }
+  }
+
+  let created = 0;
+  for (const period of due.periods) {
+    const res = recordException(db, {
+      type: "AGENT_ACCRUAL_RECOGNITION_DUE",
+      severity: period.overdueDays >= 30 ? "high" : "medium",
+      // STABLE message — the period and its scheduled date are stable; the
+      // overdue-day count and as-of date live in `source_evidence`.
+      message:
+        `Periodeafgrænsningspost "${period.description}" — periode ${period.periodIndex}/${period.totalPeriods} ` +
+        `(${formatKronerDa(period.amount)}) med planlagt bogføringsdato ${period.recognitionDate} ` +
+        `er forfalden og endnu ikke bogført.`,
+      requiredAction:
+        `Bogfør periode ${period.periodIndex} af periodeafgrænsningsposten med 'accrual recognize'.`,
+      sourceEvidence: {
+        rule: "DK-BOOKKEEPING-ACCRUAL-001",
+        accrualId: period.accrualId,
+        accrualType: period.accrualType,
+        periodIndex: period.periodIndex,
+        recognitionDate: period.recognitionDate,
+        amount: period.amount,
+        overdueDays: period.overdueDays,
+        asOfDate,
+      },
+    });
+    if (res.ok && !res.duplicate) created += 1;
+  }
+  return { ok: true, created, resolvedStale, errors: [] };
+}
+
+/**
+ * Surfaces the corporate tax-return needs-review flags for a fiscal year as
+ * `AGENT_TAX_RETURN_NEEDS_REVIEW` exceptions — **only when the fiscal year is
+ * closed**. A still-open year has no final result to file from, so raising a
+ * tax exception then would be a guess at a moving figure; the loop refuses.
+ *
+ * Idempotent: the dedup key is the stable `(fiscalYear, needsReviewKind)` pair.
+ * Resolve-stale: a needs-review flag that no longer fires (the figure has been
+ * resolved) resolves its open exception.
+ *
+ * Returns `{ ok: true, created: 0, resolvedStale: 0 }` when the year is not
+ * closed or the tax-return preparation itself fails its prerequisites.
+ */
+export function syncTaxReturnReviewExceptions(
+  db: Database,
+  fiscalYearStart: string,
+  fiscalYearEnd: string,
+): SyncExceptionResult {
+  if (!looksLikeIsoDate(fiscalYearStart) || !looksLikeIsoDate(fiscalYearEnd)) {
+    return {
+      ok: false,
+      created: 0,
+      resolvedStale: 0,
+      errors: ["fiscalYearStart and fiscalYearEnd must be YYYY-MM-DD"],
+    };
+  }
+
+  // A tax exception is only meaningful once the fiscal year is locked. The
+  // taxable income rests on a final result — an open year has none.
+  const period = db
+    .query(
+      `SELECT status FROM accounting_periods
+        WHERE kind = 'fiscal_year' AND period_start = ? AND period_end = ?
+        ORDER BY id DESC LIMIT 1`,
+    )
+    .get(fiscalYearStart, fiscalYearEnd) as { status: string } | null;
+  const yearClosed = period?.status === "closed" || period?.status === "reported";
+  if (!yearClosed) return { ok: true, created: 0, resolvedStale: 0, errors: [] };
+
+  const taxReturn = buildTaxReturn(db, fiscalYearStart, fiscalYearEnd);
+  if (!taxReturn.ok) return { ok: true, created: 0, resolvedStale: 0, errors: [] };
+
+  // Stable key for a needs-review flag: `${fiscalYearStart}..${fiscalYearEnd}:${kind}`.
+  const stillFlagged = new Set(
+    taxReturn.needsReview.map((i) => `${fiscalYearStart}..${fiscalYearEnd}:${i.kind}`),
+  );
+
+  // Resolve-stale: a flag that no longer fires for this year resolves.
+  let resolvedStale = 0;
+  for (const ex of openExceptionsByType(db, "AGENT_TAX_RETURN_NEEDS_REVIEW")) {
+    const evFyStart = ex.sourceEvidence?.fiscalYearStart;
+    const evFyEnd = ex.sourceEvidence?.fiscalYearEnd;
+    const evKind = ex.sourceEvidence?.needsReviewKind;
+    // Only touch exceptions for the same fiscal year.
+    if (evFyStart !== fiscalYearStart || evFyEnd !== fiscalYearEnd) continue;
+    if (typeof evKind === "string" && !stillFlagged.has(`${fiscalYearStart}..${fiscalYearEnd}:${evKind}`)) {
+      resolveException(db, {
+        id: ex.id,
+        note: "Erstattet automatisk: needs-review-punktet udløser ikke længere for regnskabsåret",
+        resolvedBy: "system:sync-tax-return-review",
+      });
+      resolvedStale += 1;
+    }
+  }
+
+  let created = 0;
+  for (const item of taxReturn.needsReview) {
+    const res = recordException(db, {
+      type: "AGENT_TAX_RETURN_NEEDS_REVIEW",
+      severity: "medium",
+      message:
+        `Oplysningsskema for regnskabsår ${fiscalYearStart}..${fiscalYearEnd}: ${item.label}. ` +
+        `Dette tal beregner Rentemester ikke deterministisk og skal afklares før indberetning.`,
+      requiredAction: item.requiredAction,
+      sourceEvidence: {
+        rule: "DK-TAX-RETURN-CORP-001",
+        fiscalYearStart,
+        fiscalYearEnd,
+        needsReviewKind: item.kind,
+      },
+    });
+    if (res.ok && !res.duplicate) created += 1;
+  }
+  return { ok: true, created, resolvedStale, errors: [] };
 }

@@ -125,7 +125,7 @@ async function readMutationBody(
     const declared = Number(request.headers.get("content-length") ?? "");
     if (Number.isFinite(declared) && declared > maxBodyBytes) {
       throw ApiError.badRequest(
-        `request body exceeds the ${maxBodyBytes}-byte limit`,
+        `request-body overskrider grænsen på ${maxBodyBytes} bytes`,
       );
     }
   }
@@ -134,7 +134,7 @@ async function readMutationBody(
     const actual = Buffer.byteLength(raw, "utf8");
     if (actual > maxBodyBytes) {
       throw ApiError.badRequest(
-        `request body exceeds the ${maxBodyBytes}-byte limit`,
+        `request-body overskrider grænsen på ${maxBodyBytes} bytes`,
       );
     }
   }
@@ -188,12 +188,12 @@ export async function withCompanyMutation<T extends CoreResult>(
   // (2) Company resolution. A registered slug whose ledger is missing on disk
   // is a 404 — the same shape the read routes return.
   if (!findWorkspaceCompany(config.workspaceRoot, slug)) {
-    throw ApiError.notFound(`no company with slug '${slug}' in the workspace`);
+    throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
   const companyRoot = companyRootForSlug(config.workspaceRoot, slug);
   const dbPath = companyPaths(companyRoot).db;
   if (!existsSync(dbPath)) {
-    throw ApiError.notFound(`company '${slug}' has no ledger`);
+    throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
   const body = await readMutationBody(request, options.maxBodyBytes);
@@ -202,6 +202,9 @@ export async function withCompanyMutation<T extends CoreResult>(
   if (options.requireConfirm && body.confirm !== true) {
     throw ApiError.badRequest(
       "denne handling er irreversibel og kræver 'confirm: true'",
+      // Stable, cross-surface code so an agent driving HTTP gets the
+      // same machine-readable marker the MCP envelope sets. (Batch F-1)
+      { subcode: "CONFIRM_REQUIRED" },
     );
   }
 

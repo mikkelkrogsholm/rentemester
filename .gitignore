@@ -15,6 +15,8 @@ graphify-out/manifest.json
 graphify-out/cost.json
 graphify-out/GRAPH_REPORT.md
 graphify-out/.graphify_labels.json
+# graphify run rooted at the app/ subproject — generated artifact, never committed
+app/graphify-out/
 
 # Cockpit SPA (#171) — build output + installed deps
 app/node_modules/
@@ -26,3 +28,6 @@ app/dist/
 
 # Local scratch — private migration data, kept out of git
 helheim/
+
+# Private noter (møder, samtaler, research) — ikke i git
+notes/

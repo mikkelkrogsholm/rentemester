@@ -66,6 +66,25 @@ export function readLegalSourceIds() {
   return sources.map((source) => source.id);
 }
 
+export type LegalSource = {
+  id: string;
+  title: string;
+  authority: string;
+  category: string;
+  url: string;
+  xmlUrl?: string;
+  notes?: string;
+};
+
+/**
+ * Reads the full legal-source catalog used as citation targets. Used by the
+ * Lovgrundlag-viewer (#347) so the cockpit can link each rule's citation to
+ * the authoritative retsinformation.dk URL.
+ */
+export function readLegalSources(): LegalSource[] {
+  return JSON.parse(readFileSync(legalSourcesPath, "utf8")) as LegalSource[];
+}
+
 export type RuleProvisionCitation = {
   ref: string;
   textHash: string;

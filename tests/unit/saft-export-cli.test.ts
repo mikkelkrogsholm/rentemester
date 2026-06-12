@@ -40,7 +40,7 @@ describe("SAF-T export CLI", () => {
     const manifest = JSON.parse(readFileSync(parsed.manifestPath, "utf8"));
     expect(manifest.packageType).toBe("saft_export");
     // ===== Second slice profile/version regression (#127) =====
-    expect(manifest.profileId).toBe("rentemester-dk-saft-v2-ledger-sales-purchases");
+    expect(manifest.profileId).toBe("rentemester-dk-saft-v3-ledger-sales-purchases-masterfiles");
     expect(manifest.counts.salesInvoices).toBe(1);
     expect(manifest.counts.purchaseInvoices).toBe(0);
     expect(manifest.counts).toHaveProperty("vatSummaryCodes");

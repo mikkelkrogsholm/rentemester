@@ -10,7 +10,7 @@
 // so the resulting `files` map and any derived ordering is reproducible.
 
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ImportArtifact, MultiArtifactSource } from "./types";
@@ -52,6 +52,20 @@ function isZipPath(path: string): boolean {
 }
 
 /**
+ * Strips ASCII/C0 control bytes (incl. ANSI escape, NUL, CR/LF) and C1 control
+ * bytes from a string destined for an Error message. A malicious zip filename
+ * or a hostile unzip stderr line can otherwise inject terminal escape
+ * sequences (clear-screen, fake hyperlinks via OSC, ...) into CLI output that
+ * gets echoed verbatim by the default Node uncaughtException printer. We
+ * collapse the stripped runs into single spaces so the message stays readable
+ * and single-line.
+ */
+function sanitizeForErrorMessage(s: string): string {
+  // eslint-disable-next-line no-control-regex
+  return s.replace(/[\u0000-\u001f\u007f-\u009f]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+/**
  * Extracts a `.zip` export into a fresh temporary directory and returns it.
  *
  * Uses the system `unzip` (dependency-free, present on macOS and Linux). A real
@@ -65,19 +79,96 @@ function isZipPath(path: string): boolean {
  */
 function unzipToTempDir(zipPath: string): string {
   const dest = mkdtempSync(join(tmpdir(), "rentemester-import-"));
-  const result = spawnSync("unzip", ["-q", "-o", zipPath, "-d", dest], { encoding: "utf8" });
-  if (result.error) {
-    throw new Error(`failed to run 'unzip' for '${zipPath}': ${result.error.message}`);
-  }
-  if (readdirSync(dest).length === 0) {
-    const detail = (result.stderr || "").trim().split(/\r?\n/)[0] ?? "";
-    throw new Error(
-      `unzip extracted nothing from '${zipPath}'` +
-        (typeof result.status === "number" ? ` (exit ${result.status})` : "") +
-        (detail ? `: ${detail}` : ""),
+  // Sanitize the user-controlled zipPath once: every error message below
+  // interpolates the safe variant so a malicious filename cannot inject
+  // ANSI/OSC terminal escapes (or newlines) into CLI output.
+  const safeZipPath = sanitizeForErrorMessage(zipPath);
+  try {
+    // #199 — Dinero-exports carry some entry names i CP437 (legacy DOS-encoding),
+    // især `Ikke-bogførte-bilag/`-mappen. På Info-ZIP-builds (Linux) tager
+    // `-O CP437` flaget den encoding og transcoder til filesystem-locale — så
+    // de danske tegn overlever som UTF-8. På BSD unzip / Apple's Info-ZIP build
+    // honorerer flaget ikke (empirisk: exit 10 med usage-banner, ingen
+    // udpakning); vi falder tilbage til plain unzip og tolerer at de få entries
+    // med ikke-UTF-8 navne droppes (#192's eksisterende mitigation).
+    //
+    // Detektering: hvis CP437-forsøget producerede et tomt dest, kører
+    // fallback'en. Hvis det producerede indhold, beholder vi det (selv om
+    // unzip ekstrahere "uden transcoding", er det funktionelt det samme som
+    // fallback'en ville give — plus eventuelt korrekt-transcodede navne på
+    // platforme hvor -O virker).
+    const tryWithCharset = spawnSync(
+      "unzip",
+      ["-q", "-O", "CP437", "-o", zipPath, "-d", dest],
+      { encoding: "utf8" },
     );
+    const cp437Stderr = (tryWithCharset.stderr ?? "").trim();
+    const charsetExtractedSomething =
+      !tryWithCharset.error && readdirSync(dest).length > 0;
+    let result = tryWithCharset;
+    if (!charsetExtractedSomething) {
+      // CP437-forsøget gav et tomt dest — vi kører fallback'en. Tøm dest IN-PLACE
+      // (ikke rm-and-mkdir) for at bevare mkdtempSync's 0o700-mode og undgå
+      // TOCTOU-vindue på shared /tmp. I praksis er dest tomt her (verificeret
+      // empirisk på macOS), men vi rydder defensivt for at undgå at lade et
+      // halvt-pakket træ fra et fremtidigt unzip-build forurene fallback'en.
+      // ENOENT (dest racing with an external tmp cleaner) is swallowed to
+      // match the old `rmSync(force:true)` semantics — the fallback spawn
+      // below will fail clearly if dest is truly gone.
+      try {
+        for (const entry of readdirSync(dest)) {
+          rmSync(join(dest, entry), { recursive: true, force: true });
+        }
+      } catch (err) {
+        const code = (err as NodeJS.ErrnoException | undefined)?.code;
+        if (code !== "ENOENT") {
+          const detail = sanitizeForErrorMessage(
+            err instanceof Error ? err.message : String(err),
+          );
+          throw new Error(
+            `failed to prepare fallback directory for '${safeZipPath}': ${detail}`,
+          );
+        }
+      }
+      result = spawnSync("unzip", ["-q", "-o", zipPath, "-d", dest], { encoding: "utf8" });
+    }
+    if (result.error) {
+      throw new Error(
+        `failed to run 'unzip' for '${safeZipPath}': ${sanitizeForErrorMessage(result.error.message)}`,
+      );
+    }
+    if (readdirSync(dest).length === 0) {
+      const fallbackDetailRaw = (result.stderr || "").trim().split(/\r?\n/)[0] ?? "";
+      // Begge forsøg fejlede — surface både CP437- og fallback-stderr så
+      // operatøren kan diagnosticere root cause uden at miste den ene.
+      const cp437DetailRaw = cp437Stderr ? (cp437Stderr.split(/\r?\n/)[0] ?? "") : "";
+      const fallbackDetail = sanitizeForErrorMessage(fallbackDetailRaw);
+      const cp437Detail = sanitizeForErrorMessage(cp437DetailRaw);
+      const detail = [
+        fallbackDetail,
+        cp437Detail && cp437Detail !== fallbackDetail ? `cp437 attempt: ${cp437Detail}` : "",
+      ]
+        .filter(Boolean)
+        .join("; ");
+      throw new Error(
+        `unzip extracted nothing from '${safeZipPath}'` +
+          (typeof result.status === "number" ? ` (exit ${result.status})` : "") +
+          (detail ? `: ${detail}` : ""),
+      );
+    }
+    return dest;
+  } catch (err) {
+    // Clean up the mkdtempSync directory on every failure path so a long-
+    // running cockpit/bilagsmail server doesn't leak `/tmp/rentemester-import-*`
+    // trees full of partially-extracted Dinero receipts across days. The
+    // success path returns above without entering this catch.
+    try {
+      rmSync(dest, { recursive: true, force: true });
+    } catch {
+      // Swallow cleanup failures — we're already throwing the primary error.
+    }
+    throw err;
   }
-  return dest;
 }
 
 /**

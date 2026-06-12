@@ -1,0 +1,35 @@
+version: dk-gdpr-v0.0.1
+sources:
+  - EU-GDPR-2016-679
+  - DK-BOGFORINGSLOVEN-2022-700
+rules:
+  - rule_id: GDPR-SUBJECT-EXPORT
+    name: A data subject must be able to obtain a structured copy of their personal data held by the bookkeeping system
+    category: data_protection
+    source_id: EU-GDPR-2016-679
+    severity: hard_stop
+    machine_rule:
+      require:
+        - subject_identified_by_cvr_or_name
+        - deterministic_export_of_personal_fields
+        - export_overlays_already_redacted_records
+      forbid:
+        - export_without_subject_identification
+        - export_that_re_exposes_already_redacted_fields
+    explanation: Rentemester implements GDPR article 15 (right of access) by assembling a deterministic export of all personal-data fields tied to a named subject (cvr or natural-person name), with previously-redacted fields kept redacted so an erasure request stays effective in subsequent exports. The flow lives in src/core/gdpr.ts and is rule_id GDPR-SUBJECT-EXPORT in the audit log.
+  - rule_id: GDPR-RETENTION-BOUNDED-ERASURE
+    name: Erasure requests must respect the bookkeeping retention deadline before redacting personal data in regnskabsmateriale
+    category: data_protection
+    source_id: EU-GDPR-2016-679
+    severity: hard_stop
+    machine_rule:
+      require:
+        - subject_identified_by_cvr_or_name
+        - retain_until_evaluated_per_record
+        - erasure_refused_when_record_inside_retention_window
+        - append_only_tombstone_in_gdpr_erasures
+        - audit_log_entry_for_each_erasure_decision
+      forbid:
+        - delete_or_update_of_master_data_or_ledger_rows
+        - silent_acceptance_of_erasure_inside_retention_window
+    explanation: GDPR article 17, stk. 3, lit. b og e tillader at retten til sletning fraviges når behandlingen er nødvendig for at overholde en retlig forpligtelse eller udføres i offentlighedens interesse. Bogføringspligten (LOV 700/2022 § 12 — 5 års opbevaring fra regnskabsårets udgang) er sådan en retlig forpligtelse. Rentemester nægter derfor sletning af regnskabsmateriale inden for retention-vinduet, gemmer afgørelsen som append-only tombstone i gdpr_erasures, og lader retention-deadlinen (DK-BOOKKEEPING-RETENTION-001) styre hvornår en senere sletning bliver lovlig. Flowet ligger i src/core/gdpr.ts og er rule_id GDPR-RETENTION-BOUNDED-ERASURE i audit-loggen.

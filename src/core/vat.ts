@@ -24,6 +24,21 @@ export type VatPeriodReport = {
   reverseChargePurchaseBase: number;
   representationPurchaseBase: number;
   badDebtReliefBase25: number;
+  /**
+   * Value of VAT-exempt domestic sales (momsloven §13 — vat_code
+   * DK_SALE_EXEMPT). These carry no output VAT and feed rubrik C of the
+   * momsangivelse; they are kept out of the standard 25% sales base.
+   */
+  exemptSalesBase: number;
+  /**
+   * Value of digital-service sales to EU consumers handled under the OSS
+   * scheme (vat_code OSS_EU_CONSUMER). These carry no Danish output VAT and
+   * are reported via a separate OSS return — they are kept out of every
+   * standard momsangivelse rubrik. See src/core/vat-oss.ts.
+   */
+  ossConsumerSalesBase: number;
+  /** Number of journal entries that include an OSS_EU_CONSUMER line. */
+  ossConsumerSalesEntryCount: number;
   journalEntryCount: number;
   reversedJournalEntryCount: number;
   reversalJournalEntryCount: number;
@@ -221,6 +236,9 @@ export function buildVatReport(db: Database, periodStart: string, periodEnd: str
       reverseChargePurchaseBase: 0,
       representationPurchaseBase: 0,
       badDebtReliefBase25: 0,
+      exemptSalesBase: 0,
+      ossConsumerSalesBase: 0,
+      ossConsumerSalesEntryCount: 0,
       journalEntryCount: 0,
       reversedJournalEntryCount: 0,
       reversalJournalEntryCount: 0,
@@ -260,6 +278,11 @@ export function buildVatReport(db: Database, periodStart: string, periodEnd: str
   let reverseChargePurchaseBase = 0;
   let representationPurchaseBase = 0;
   let badDebtReliefBase25 = 0;
+  let exemptSalesBase = 0;
+  let ossConsumerSalesBase = 0;
+  // OSS sales are counted per *entry*, not per line, so a multi-line OSS
+  // invoice still counts as one entry.
+  const ossConsumerSalesEntryIds = new Set<number>();
   // Count VAT-bearing base lines per category. 25% of a period-summed base is
   // not equal to the sum of per-line 25%-rounded VAT when amounts have odd
   // øre, so each base line can drift the aggregate by up to 1 øre. We allow a
@@ -306,6 +329,15 @@ export function buildVatReport(db: Database, periodStart: string, periodEnd: str
     }
     if (row.vat_code === "REPRESENTATION_SPECIAL") { representationPurchaseBase += debit - credit; inputVatBaseLines += 1; }
     if (row.vat_code === "DK_BAD_DEBT_25") { badDebtReliefBase25 += debit - credit; outputVatBaseLines += 1; }
+    // VAT-exempt domestic sales (momsloven §13) and OSS consumer sales carry
+    // NO Danish output VAT, so they are tracked in their own bases and are
+    // deliberately NOT added to outputVatBaseLines (the output-VAT
+    // reconciliation must not expect 25% of them).
+    if (row.vat_code === "DK_SALE_EXEMPT") exemptSalesBase += credit - debit;
+    if (row.vat_code === "OSS_EU_CONSUMER") {
+      ossConsumerSalesBase += credit - debit;
+      ossConsumerSalesEntryIds.add(row.entry_id);
+    }
   }
 
   outputVat = roundDkk(outputVat);
@@ -316,6 +348,8 @@ export function buildVatReport(db: Database, periodStart: string, periodEnd: str
   reverseChargePurchaseBase = roundDkk(reverseChargePurchaseBase);
   representationPurchaseBase = roundDkk(representationPurchaseBase);
   badDebtReliefBase25 = roundDkk(badDebtReliefBase25);
+  exemptSalesBase = roundDkk(exemptSalesBase);
+  ossConsumerSalesBase = roundDkk(ossConsumerSalesBase);
 
   const expectedOutputVat = subtractDkk(addDkk(percentOfDkk(salesBase25, 25), percentOfDkk(reverseChargePurchaseBase, 25)), percentOfDkk(badDebtReliefBase25, 25));
   const expectedInputVat = addDkk(addDkk(percentOfDkk(purchaseBase25, 25), percentOfDkk(reverseChargePurchaseBase, 25)), percentOfDkk(percentOfDkk(representationPurchaseBase, 25), 25));
@@ -348,6 +382,9 @@ export function buildVatReport(db: Database, periodStart: string, periodEnd: str
     reverseChargePurchaseBase,
     representationPurchaseBase,
     badDebtReliefBase25,
+    exemptSalesBase,
+    ossConsumerSalesBase,
+    ossConsumerSalesEntryCount: ossConsumerSalesEntryIds.size,
     journalEntryCount: activeEntryIds.size,
     reversedJournalEntryCount: reversedEntryIds.size,
     reversalJournalEntryCount: reversalEntryIds.size,

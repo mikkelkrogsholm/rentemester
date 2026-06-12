@@ -127,6 +127,15 @@ export function settleInvoiceFromBank(db: Database, input: SettleInvoiceFromBank
       if (amount > claimOpenBalance) {
         throw new Error(JSON.stringify({ appliedRules: [isCombined ? COMBINED_RULE_ID : RULE_ID], errors: [`settlement amount ${amount} exceeds invoice claim open balance ${claimOpenBalance}`] }));
       }
+      // Combined principal+claim settlement assumes a single currency: it credits
+      // 1100 by the whole receipt at the payment-date rate and mixes a foreign
+      // principal with DKK-denominated claims (interest/compensation), which both
+      // strands the realised exchange difference and confuses units (adversarial
+      // #1/#5/#9). Require foreign principal and DKK claims to be settled in
+      // separate receipts, each well-defined.
+      if (isCombined && invoiceCurrency !== "DKK") {
+        throw new Error(JSON.stringify({ appliedRules: [COMBINED_RULE_ID], errors: ["kombineret afregning af principal og krav i ét beløb understøttes ikke for fakturaer i fremmed valuta — afregn principal og krav hver for sig (combined principal + claim settlement is not supported for foreign-currency invoices)"] }));
+      }
       if (isCombined && countUnpostedClaims(db, input.invoiceDocumentId) > 0) {
         throw new Error(JSON.stringify({ appliedRules: [COMBINED_RULE_ID], errors: ["combined settlement requires all included claims to be ledger-posted first"] }));
       }

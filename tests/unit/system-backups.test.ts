@@ -189,10 +189,21 @@ describe("system backups", () => {
     const db = openDb(paths.db);
     migrate(db);
 
+    // Dato-relativ til "now" — så testen ikke flagre med kalenderdrift når
+    // kør-datoen passerer de hardkodede fixture-datoer. Den gamle backup
+    // ligger 8 dage tilbage; den tidlige transaktion ligger 10 dage tilbage
+    // (FØR backuppen); den sene transaktion ligger 5 dage tilbage (EFTER
+    // backuppen). På den måde er "hasActivitySinceBackup" altid sand.
+    const now = new Date();
+    const isoDateAt = (offsetDays: number) => {
+      const d = new Date(now.getTime() - offsetDays * 24 * 60 * 60 * 1000);
+      return d.toISOString().slice(0, 10);
+    };
+
     db.run(
       "INSERT INTO bank_transactions (transaction_date, booking_date, text, amount, currency, reference, import_batch_id, source_file_hash, transaction_hash) VALUES (?, ?, ?, ?, 'DKK', ?, ?, ?, ?)",
-      "2026-05-16",
-      "2026-05-16",
+      isoDateAt(10),
+      isoDateAt(10),
       "Customer payment",
       1250,
       "REF-1",
@@ -201,15 +212,15 @@ describe("system backups", () => {
       "tx-1",
     );
 
-    const oldBackupAt = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
-    const statusCheckAt = new Date().toISOString();
+    const oldBackupAt = new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000).toISOString();
+    const statusCheckAt = now.toISOString();
     const backup = createSystemBackup(db, companyRoot, { createdAt: oldBackupAt });
     expect(backup.ok).toBe(true);
 
     db.run(
       "INSERT INTO bank_transactions (transaction_date, booking_date, text, amount, currency, reference, import_batch_id, source_file_hash, transaction_hash) VALUES (?, ?, ?, ?, 'DKK', ?, ?, ?, ?)",
-      "2026-05-17",
-      "2026-05-17",
+      isoDateAt(5),
+      isoDateAt(5),
       "Late customer payment",
       500,
       "REF-2",

@@ -1,0 +1,102 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/PageHero.astro";
+import { SITE } from "../../consts";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  name: "Kør din momsangivelse med Rentemester",
+  inLanguage: "da",
+  totalTime: "PT15M",
+  step: [
+    { "@type": "HowToStep", position: 1, name: "Luk perioden", text: "Luk momsperioden så ingen nye posteringer kan bogføres bagud." },
+    { "@type": "HowToStep", position: 2, name: "Generér rapport", text: "Kør vat report eller åbn Moms-siden i cockpittet." },
+    { "@type": "HowToStep", position: 3, name: "Læs rubrikker", text: "Notér rubrikkernes beløb og kontrollér mod bilag." },
+    { "@type": "HowToStep", position: 4, name: "Indberet i TastSelv", text: "Indtast tallene i skat.dk og bogfør tilsvaret." },
+  ],
+};
+---
+
+<BaseLayout
+  title="Kør din momsangivelse med Rentemester"
+  description="Generér momsrapport, læs SKAT-rubrikker, indberet i TastSelv og bogfør momstilsvaret i Rentemester. Cockpit eller CLI."
+  pathname="/docs/momsangivelse"
+  pageType="Article"
+  datePublished="2026-05-24"
+  dateModified="2026-05-24"
+  jsonLd={jsonLd}
+>
+  <PageHero
+    eyebrow="Dokumentation"
+    title="Din momsangivelse"
+    lead="Fra lukket periode til indberettet og bogført moms — uden at gætte på en eneste rubrik."
+  />
+
+  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
+    <h2>Til hvem</h2>
+    <p>Til dig der står med en momsfrist og skal angive moms for en lukket periode. Guiden dækker en almindelig dansk momsangivelse — kvartal eller halvår — med indenlandsk salg og køb. EU-servicekøb, repræsentation og omvendt betalingspligt har deres egne flows og er noteret kort i bunden.</p>
+
+    <h2>Forudsætninger</h2>
+    <ul>
+      <li>Du har bogført alle bilag og fakturaer for perioden (<a href="/docs/foerste-faktura">se faktura-guiden</a>).</li>
+      <li>Du har importeret og afstemt bankudtoget for perioden (<a href="/docs/bank-import">se bank-import</a>).</li>
+      <li>Du ved hvilken momsperiode du skal angive — kvartalsvis (Q1 / Q2 / Q3 / Q4) eller halvårligt. Det blev fastsat ved virksomhedens init.</li>
+    </ul>
+
+    <h2>1. Luk perioden</h2>
+    <p>Inden du angiver moms, skal du lukke perioden — så ingen agent eller bogholder ved et uheld kan bogføre bagud i en allerede angivet måned. Bogføringsloven § 7 kræver løbende registrering; periodelukning er måden Rentemester håndhæver det på.</p>
+    <pre><code>bun run src/cli.ts period close \
+  --company ./min-virksomhed \
+  --to 2026-06-30</code></pre>
+    <p>I cockpittet ligger lukke-knappen på <em>Forpligtelser → Moms</em>. Fra det øjeblik perioden er lukket, afviser ledgeren posteringer med dato i den.</p>
+
+    <h2>2. Generér momsrapporten</h2>
+    <p><strong>Cockpit:</strong> <em>Moms → Vælg periode → Generér</em>. Rapporten viser alle SKAT-rubrikker med tilhørende posteringsgrundlag.</p>
+    <p><strong>CLI:</strong></p>
+    <pre><code>bun run src/cli.ts vat report \
+  --company ./min-virksomhed \
+  --from 2026-04-01 \
+  --to 2026-06-30</code></pre>
+    <p>Rapporten er <strong>deterministisk</strong>: samme periode → samme tal. Den bygger på <code>rules/dk/vat-codes.json</code> og er testet i smoke-flowet.</p>
+
+    <h2>3. Læs rubrikkerne</h2>
+    <p>En almindelig dansk momsangivelse har disse hovedrubrikker:</p>
+    <ul>
+      <li><strong>Salgsmoms</strong> — moms af alt indenlandsk salg i perioden.</li>
+      <li><strong>Moms af køb af ydelser i udlandet med omvendt betalingspligt</strong> — EU-servicekøb hvor du selv beregner og fradrager dansk moms.</li>
+      <li><strong>Købsmoms</strong> — fradragsberettiget moms af køb (inkl. delvist fradrag for repræsentation).</li>
+      <li><strong>EU-salg uden moms</strong> — salg af varer/ydelser til momsregistrerede EU-kunder.</li>
+      <li><strong>Rubrik A — varer / Rubrik A — ydelser / Rubrik B</strong> — informationsfelter til værdier af EU-køb og -salg.</li>
+    </ul>
+    <p>Rentemesters rapport viser hver rubrik med <em>kilden</em>: hvilke posteringer der ligger til grund. Klik på et beløb i cockpittet for at se den underliggende bevægelse — eller åbn JSON-rapporten på disken hvis du brugte CLI'en.</p>
+
+    <h2>4. Indberet i TastSelv</h2>
+    <p>Rentemester indberetter <strong>ikke</strong> automatisk til SKAT. Du eller din revisor skal selv logge ind på <a href="https://skat.dk" rel="noopener" target="_blank">skat.dk → TastSelv Erhverv</a> og indtaste tallene fra rapporten.</p>
+    <p>Tjek datoen for momsfristen — den står på din rapport. Som hovedregel er kvartalsmoms forfalden første dag i tredje måned efter periodens udløb (fx Q2 forfaldsdag 1. september).</p>
+
+    <h2>5. Bogfør momstilsvaret</h2>
+    <p>Når du har indberettet, skal momstilsvaret bogføres i ledgeren — så salgsmoms og købsmoms nulstilles, og restbeløbet (tilsvaret) lægges på kontoen <em>Skyldig moms</em>.</p>
+    <pre><code>bun run src/cli.ts vat post-settlement \
+  --company ./min-virksomhed \
+  --from 2026-04-01 \
+  --to 2026-06-30</code></pre>
+    <p>Når du så betaler momsen fra erhvervskontoen, importerer du bankposten og afstemmer mod <em>Skyldig moms</em>.</p>
+
+    <h2>Særlige situationer</h2>
+    <ul>
+      <li><strong>EU-servicekøb (reverse charge):</strong> bogføres via <code>vat post-eu-service-purchase</code>. VIES-validér leverandørens momsnummer først (<code>bun run src/cli.ts vat validate-vies --vat DE123456789</code>).</li>
+      <li><strong>Repræsentation:</strong> delvis momsfradrag (25 % af 25 %). Brug <code>vat post-representation-purchase</code> — reglen ligger i <code>rules/dk/</code>.</li>
+      <li><strong>EU-salg af ydelser:</strong> husk EU-salgslisten ved siden af selve momsangivelsen.</li>
+    </ul>
+
+    <h2>Fejlfinding</h2>
+    <ul>
+      <li><strong>"period already closed"</strong> — du har allerede lukket perioden. Det er det vi ville. Generér rapporten direkte.</li>
+      <li><strong>Rubrikkerne stemmer ikke med banken</strong> — der ligger sandsynligvis et bilag i exception-køen. Tjek <em>Forpligtelser</em> i cockpittet eller <code>exceptions list</code> i CLI'en.</li>
+      <li><strong>"missing reverse charge entry"</strong> — du har et EU-servicekøb der ikke er bogført med omvendt betalingspligt. Brug <code>vat post-eu-service-purchase</code>.</li>
+    </ul>
+
+    <p><a href="/docs">← Tilbage til docs-oversigten</a></p>
+  </article>
+</BaseLayout>

@@ -15,7 +15,7 @@ export function registerRetentionTools(server: McpServer): void {
       title: "Retention status report",
       description: "Viser opbevaringsfrister og udløbet materiale. Read-only.",
       inputSchema: {
-        company: z.string().min(1),
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         asOf: z.string().optional(),
       },
       outputSchema: envelopeShape,

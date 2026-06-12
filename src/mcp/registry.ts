@@ -1,10 +1,11 @@
 /**
  * Central tools-registrering for Rentemester-MCP-serveren.
  *
- * `registerAllTools` registrerer hele tool-surface'en — 81 tools fordelt
+ * `registerAllTools` registrerer hele tool-surface'en — 101 tools fordelt
  * på de domæne-funktioner der kaldes herunder. Den autoritative liste
  * (klassifikation, inputs, CLI-mapping) står i docs/mcp-tool-surface.md;
  * driv en kørende server med `tools/list` for den faktiske, aktuelle liste.
+ * Tæl-konsistens er bevogtet af tests/unit/mcp-tool-count-docs.test.ts (#367).
  *
  * Sikkerhedsklasser:
  *  - read              — bivirkningsfrie; må kaldes frit og parallelt.
@@ -16,9 +17,17 @@
  *                        `confirmText`.
  *
  * Hver `register*Tools(server)`-funktion lever i `src/mcp/tools/<area>.ts`
- * og tilføjer kun sit eget domæne. Det holder hver fil overskuelig og
- * tool-surface'en tæt på 1:1 med `src/cli-meta.ts` (kendte afvigelser er
- * dokumenteret i docs/mcp-tool-surface.md).
+ * og tilføjer kun sit eget domæne. Tool-surface'en er IKKE 1:1 med
+ * `src/cli-meta.ts`: der er mindst 10 dokumenterede afvigelser fordelt på
+ * en MCP-only-liste (fx `cvr`, `peppol`, `portfolio`, `period_list`) og en
+ * CLI-only-liste (fx `agent`, `annual-report`, `dashboard`,
+ * `opening-balance`, `reg`, `report`, `serve`, `bank-account`, `init`,
+ * `gdpr`). Den maskinlæsbare diff vedligeholdes pr. fil i
+ * `docs/mcp-tool-surface.md`-sektionerne "MCP-only — tools uden
+ * CLI-pendant" og "CLI-only — kommandoer uden MCP-pendant", og
+ * `tests/unit/surface-diff-discoverable.test.ts` (#376) fejler, hvis en ny
+ * `src/cli/<x>.ts` eller `src/mcp/tools/<x>.ts` tilføjes uden at blive
+ * listet der.
  */
 
 import { existsSync } from "node:fs";
@@ -65,6 +74,24 @@ import { registerEmailTools } from "./tools/email";
 // ===== IMPORT ARCHIVE (#197) =====
 import { registerImportTools } from "./tools/import";
 // ===== END IMPORT ARCHIVE (#197) =====
+// ===== TAX RETURN PREPARATION =====
+import { registerTaxTools } from "./tools/tax";
+// ===== END TAX RETURN PREPARATION =====
+// ===== ACCRUALS / PERIODEAFGRÆNSNINGSPOSTER =====
+import { registerAccrualTools } from "./tools/accrual";
+// ===== END ACCRUALS / PERIODEAFGRÆNSNINGSPOSTER =====
+// ===== BUDGET + LIQUIDITY FORECAST =====
+import { registerBudgetTools } from "./tools/budget";
+// ===== END BUDGET + LIQUIDITY FORECAST =====
+// ===== PAYABLES / KREDITORSTYRING =====
+import { registerPayableTools } from "./tools/payable";
+// ===== END PAYABLES / KREDITORSTYRING =====
+// ===== COMPANY PROFILE READ =====
+import { registerCompanyProfileTools } from "./tools/company";
+// ===== END COMPANY PROFILE READ =====
+// ===== META / SERVER ABOUT =====
+import { registerMetaTools } from "./tools/meta";
+// ===== END META / SERVER ABOUT =====
 
 // Wraps a write tool's callback with the opt-in backup lock. The MCP tool
 // files are not uniform — some use the withCompanyDbConfirmed helper, some
@@ -88,8 +115,10 @@ function lockGuardedCallback(
             return envelopeToCallResult(
               errorEnvelope(
                 `Bogføring er låst (${toolName}): ${lock.reason}. ` +
-                  "Kør system_backup med archive:true for at låse op; placér derefter " +
-                  "kopien på en EU/EØS-destination med system_backup_place.",
+                  "Diagnosticér med system_backup_status; kør derefter system_backup " +
+                  "med archive:true for at låse op og placér kopien på en EU/EØS-" +
+                  "destination med system_backup_place.",
+                { code: "BACKUP_LOCKED" },
               ),
             );
           }
@@ -162,4 +191,22 @@ export function registerAllTools(server: McpServer): void {
   // ===== IMPORT ARCHIVE (#197) =====
   registerImportTools(server);
   // ===== END IMPORT ARCHIVE (#197) =====
+  // ===== TAX RETURN PREPARATION =====
+  registerTaxTools(server);
+  // ===== END TAX RETURN PREPARATION =====
+  // ===== ACCRUALS / PERIODEAFGRÆNSNINGSPOSTER =====
+  registerAccrualTools(server);
+  // ===== END ACCRUALS / PERIODEAFGRÆNSNINGSPOSTER =====
+  // ===== BUDGET + LIQUIDITY FORECAST =====
+  registerBudgetTools(server);
+  // ===== END BUDGET + LIQUIDITY FORECAST =====
+  // ===== PAYABLES / KREDITORSTYRING =====
+  registerPayableTools(server);
+  // ===== END PAYABLES / KREDITORSTYRING =====
+  // ===== COMPANY PROFILE READ =====
+  registerCompanyProfileTools(server);
+  // ===== END COMPANY PROFILE READ =====
+  // ===== META / SERVER ABOUT =====
+  registerMetaTools(server);
+  // ===== END META / SERVER ABOUT =====
 }

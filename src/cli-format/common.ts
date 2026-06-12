@@ -106,6 +106,11 @@ function appendPeriodCloseGuidance(lines: string[], errors: string[]): void {
  * `humanizeKey` ("Invoice Number", "Document Id"); for a Danish-facing tool
  * that is wrong. Any key without an entry here keeps the humanized form, but
  * the common write-result fields are now translated. (#268)
+ *
+ * Round-2 review (Batch E-1) expanded the set so read commands that return
+ * single objects (audit verify, company profile, gdpr export/forget,
+ * customer create, invoice post) actually render meaningful content under
+ * `--format human` instead of just echoing the command description.
  */
 const WRITE_RESULT_LABEL_DA: Record<string, string> = {
   message: "Besked",
@@ -125,7 +130,55 @@ const WRITE_RESULT_LABEL_DA: Record<string, string> = {
   totalCount: "I alt",
   storedPath: "Gemt fil",
   pdfStoredPath: "PDF-fil",
+  // Batch E-1: read-command friendly labels.
+  entries: "Posteringer kontrolleret",
+  chainOk: "Kæden er hel",
+  erasedCount: "Anonymiseret",
+  skippedCount: "Sprunget over",
+  alreadyErasedCount: "Allerede anonymiseret",
+  recordCount: "Rækker fundet",
+  count: "Antal",
+  total: "I alt",
+  // Profile / contact fields (company profile, customer/vendor create).
+  name: "Navn",
+  cvr: "CVR",
+  email: "E-mail",
+  address: "Adresse",
+  postalCode: "Postnummer",
+  city: "By",
+  country: "Land",
+  currency: "Valuta",
+  paymentTermsDays: "Betalingsfrist (dage)",
+  vatPeriodType: "Momsperiode",
+  companyForm: "Selskabsform",
+  industryText: "Branche",
+  cvrStatus: "CVR-status",
+  auditWaived: "Revision fravalgt",
+  fiscalYearStartMonth: "Regnskabsår starter (måned)",
+  customerId: "Kunde-id",
+  vendorId: "Leverandør-id",
+  slug: "Slug",
 };
+
+/**
+ * Top-level keys whose VALUE is a nested object that should be drilled into
+ * — every scalar field inside becomes its own labelled line. Lets commands
+ * like `company profile` (returns `{ ok, profile: {...} }`) emit each profile
+ * field without per-command renderers. Batch E-1.
+ */
+const NESTED_DRILL_KEYS = new Set<string>([
+  "profile",
+  "customer",
+  "vendor",
+  "company",
+  "settings",
+  "depreciation",
+  "writeOff",
+  "reminder",
+  "credit",
+  "suggestion",
+  "summary",
+]);
 
 function collectSummaryLines(result: Record<string, unknown>) {
   const preferredKeys = [
@@ -144,15 +197,61 @@ function collectSummaryLines(result: Record<string, unknown>) {
     "latestBackupId",
     "expiredCount",
     "totalCount",
+    "entries",
+    "chainOk",
+    "erasedCount",
+    "skippedCount",
+    "alreadyErasedCount",
+    "recordCount",
+    "count",
+    "total",
+    "name",
+    "cvr",
+    "email",
+    "address",
+    "postalCode",
+    "city",
+    "country",
+    "currency",
+    "paymentTermsDays",
+    "vatPeriodType",
+    "companyForm",
+    "industryText",
+    "cvrStatus",
+    "auditWaived",
+    "fiscalYearStartMonth",
+    "customerId",
+    "vendorId",
+    "slug",
   ];
   const lines: string[] = [];
+  const seen = new Set<string>();
   for (const key of preferredKeys) {
+    if (seen.has(key)) continue;
     const value = result[key];
     const rendered = renderScalar(value);
     if (rendered === null) continue;
     // #268: never emit an English key on a Danish-facing tool — use the Danish
     // label when one exists, falling back to the humanized form otherwise.
     lines.push(`${WRITE_RESULT_LABEL_DA[key] ?? humanizeKey(key)}: ${rendered}`);
+    seen.add(key);
+  }
+  // Batch E-1: drill one level into well-known nested-object keys. Lets
+  // `company profile` (returns `{ ok, profile: {...} }`) actually render
+  // each profile field instead of showing only "✔ <command description>".
+  for (const [key, value] of Object.entries(result)) {
+    if (!NESTED_DRILL_KEYS.has(key)) continue;
+    if (value == null || typeof value !== "object" || Array.isArray(value)) continue;
+    const inner = value as Record<string, unknown>;
+    for (const [innerKey, innerValue] of Object.entries(inner)) {
+      if (seen.has(innerKey)) continue;
+      const rendered = renderScalar(innerValue);
+      if (rendered === null) continue;
+      lines.push(
+        `${WRITE_RESULT_LABEL_DA[innerKey] ?? humanizeKey(innerKey)}: ${rendered}`,
+      );
+      seen.add(innerKey);
+    }
   }
   return lines;
 }

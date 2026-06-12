@@ -11,6 +11,10 @@ import { emitHumanReport } from "../cli-format";
 // ===== VAT FILING (#178) =====
 import { buildVatFiling } from "../core/vat-filing";
 // ===== END VAT FILING (#178) =====
+// ===== EU SALES LIST + OSS =====
+import { buildViesRecapitulativeStatement } from "../core/vat-vies-list";
+import { buildOssReport } from "../core/vat-oss";
+// ===== END EU SALES LIST + OSS =====
 
 export function register(dispatch: CommandDispatch): void {
   dispatch.on("vat", "report", (ctx) => {
@@ -87,4 +91,40 @@ export function register(dispatch: CommandDispatch): void {
   dispatch.on("vat", "momsangivelse", emitVatFiling);
   dispatch.on("vat", "filing", emitVatFiling);
   // ===== END VAT FILING (#178) =====
+
+  // ===== EU SALES LIST + OSS =====
+  // `vat eu-sales-list`: produce the EU-salg uden moms-liste (VIES
+  // recapitulative statement) — a per-customer listing of cross-border B2B
+  // sales without Danish VAT for the period. This is a separate mandatory
+  // filing, distinct from the momsangivelse. Read-only.
+  dispatch.on("vat", "eu-sales-list", (ctx) => {
+    const from = ctx.arg("--from");
+    const to = ctx.arg("--to");
+    if (!from || !to) {
+      console.error("Missing required --from <YYYY-MM-DD> or --to <YYYY-MM-DD>");
+      process.exit(2);
+    }
+    const db = openCommandDb(ctx);
+    migrate(db);
+    const result = buildViesRecapitulativeStatement(db, from, to);
+    ctx.emitResult(result as Record<string, unknown>);
+    db.close();
+  });
+
+  // `vat oss-report`: a deterministic OSS (One Stop Shop) first-slice report
+  // — the OSS consumer-sales base for the period. Not an OSS filing to SKAT.
+  dispatch.on("vat", "oss-report", (ctx) => {
+    const from = ctx.arg("--from");
+    const to = ctx.arg("--to");
+    if (!from || !to) {
+      console.error("Missing required --from <YYYY-MM-DD> or --to <YYYY-MM-DD>");
+      process.exit(2);
+    }
+    const db = openCommandDb(ctx);
+    migrate(db);
+    const result = buildOssReport(db, from, to);
+    ctx.emitResult(result as Record<string, unknown>);
+    db.close();
+  });
+  // ===== END EU SALES LIST + OSS =====
 }

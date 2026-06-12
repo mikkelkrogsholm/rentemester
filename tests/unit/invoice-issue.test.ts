@@ -29,6 +29,36 @@ function failingDocumentInsertDb(realDb: any) {
 }
 
 describe("invoice issue", () => {
+  test("persists the currency in canonical form even when given lower-case", () => {
+    // validateInvoice only checks the currency after normalize(), so 'dkk'
+    // passes. The persisted documents.currency must be the canonical 'DKK' so
+    // downstream raw-string guards (e.g. the reminder flow's DKK check) do not
+    // wrongly reject a legitimate DKK invoice.
+    const root = mkdtempSync(join(tmpdir(), "rentemester-issue-currency-"));
+    const db = openDb(ensureCompanyDirs(root).db);
+    migrate(db);
+
+    const result = issueInvoice(db, root, {
+      invoiceType: "full",
+      vatTreatment: "standard",
+      issueDate: "2026-05-16",
+      invoiceNumber: "2026-0001",
+      seller: { name: "Rentemester ApS", address: "Testvej 1", vatOrCvr: "DK12345678" },
+      buyer: { name: "Kunde A/S", address: "Købervej 9" },
+      lines: [{ description: "Bogføring", quantity: 1, unitPriceExVat: 1000, lineTotalExVat: 1000 }],
+      totals: { netAmount: 1000, vatRate: 0.25, vatAmount: 250, grossAmount: 1250 },
+      currency: "dkk",
+    });
+    expect(result.errors).toEqual([]);
+    expect(result.ok).toBe(true);
+
+    const row = db.query("SELECT currency FROM documents WHERE id = ?").get(result.documentId!) as { currency: string };
+    expect(row.currency).toBe("DKK");
+
+    db.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+
   test("issues a validated invoice as immutable persisted snapshot", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-issue-"));
     const db = openDb(ensureCompanyDirs(root).db);

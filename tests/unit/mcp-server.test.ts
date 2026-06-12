@@ -239,6 +239,15 @@ describe("MCP server scaffold", () => {
       const blockedStructured = blocked.result?.structuredContent;
       expect(blockedStructured?.ok).toBe(false);
       expect(blockedStructured?.errors?.some((m: string) => m.includes("låst"))).toBe(true);
+      // #375 — stable machine-readable marker so agents don't have to parse
+      // free-form Danish text to detect the backup lock.
+      expect(blockedStructured?.code).toBe("BACKUP_LOCKED");
+      // #375 — the recovery path must be named explicitly. system_backup_status
+      // is the first stop (read-only diagnosis) before the agent has to commit
+      // to a write (system_backup / system_backup_place).
+      expect(
+        blockedStructured?.errors?.some((m: string) => m.includes("system_backup_status")),
+      ).toBe(true);
 
       // system_backup is exempt — backing up is the way out of the lock.
       const backup = await client.send("tools/call", {
@@ -273,6 +282,7 @@ describe("MCP tools full surface (#78)", () => {
     "invoice_overdue",
     "invoice_status",
     "invoice_validate",
+    "journal_dry_run",
     "journal_list",
     "period_list",
     "reconcile_bank",

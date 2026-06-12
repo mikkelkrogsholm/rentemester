@@ -53,3 +53,16 @@ sources:
   # Late-payment compensation amendment — small order, whole subject in scope.
   DK-UDENRETLIGE-INDDRIVELSESOMKOSTNINGER-AMEND-2013-105:
     in_scope: all
+  # Lov om offentlige betalinger — the legal basis for the B2G electronic
+  # invoice obligation that Rentemester's OIOUBL/PEPPOL flow targets.
+  DK-OFFENTLIGE-BETALINGER-2007-798:
+    in_scope: all
+# Sources intentionally omitted from this manifest because their scope cannot be
+# expressed as Danish `§`-paragrafs:
+#   - EU-GDPR-2016-679: the GDPR uses `art. <n>` not `§ <n>`. The scope.yaml
+#     parser is paragraf-aware and does not model EU regulation articles.
+#     Rentemester implements art. 15 (right of access) and art. 17 (right to
+#     erasure, with stk. 3 lit. b/e as the bookkeeping-retention defence) — see
+#     `rules/dk/gdpr.yaml`. The regulatory-coverage report therefore does not
+#     measure GDPR coverage; the GDPR rules are still cited as `source_id:
+#     EU-GDPR-2016-679` and remain in `sources/legal-sources.json`.

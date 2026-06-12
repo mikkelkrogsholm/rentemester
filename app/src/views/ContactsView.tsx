@@ -7,10 +7,17 @@
 // it follows the user across views — the fiscal years for the selector are
 // fetched from the response. A company with no contacts shows a graceful
 // empty state.
+//
+// #390: the page is now ALSO the daily-maintenance surface. The page-head
+// exposes a primary "Tilføj kunde" + "Tilføj leverandør" action; each row in
+// either table is clickable and opens the same modal in edit-mode. The
+// Importér button remains for one-off CSV migrations.
 
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
+import { formatKroner } from "../lib/format";
 import type {
   CompanyContacts,
   ContactCustomerRow,
@@ -18,14 +25,35 @@ import type {
 } from "../lib/types";
 import { ErrorState, Loading } from "../components/Feedback";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
+import { ImportModal } from "../components/ImportModal";
+import { ConfirmDialog } from "../components/ConfirmDialog";
+import {
+  ContactFormModal,
+  type ContactKind,
+} from "../components/ContactFormModal";
 
 /** VAT-treatment codes from the ledger, mapped to a Danish label. */
 const VAT_TREATMENT_LABELS: Record<string, string> = {
   standard: "Standardmoms",
   domestic_reverse_charge: "Omvendt betalingspligt (DK)",
-  foreign_reverse_charge: "Omvendt betalingspligt (udland)",
+  foreign_reverse_charge: "Omvendt betalingspligt (EU-tjenester)",
   exempt: "Momsfritaget",
 };
+
+/** Local UI state when the create/edit modal is open. */
+type ModalState =
+  | { kind: "customer"; row?: ContactCustomerRow }
+  | { kind: "vendor"; row?: ContactVendorRow };
+
+/**
+ * #430 — pending delete-bekræftelse. Når den er sat, viser cockpittet en
+ * `ConfirmDialog` med en menneske-læselig beskrivelse af konsekvenserne;
+ * `onConfirm` kalder `api.deleteCustomer` / `api.deleteVendor` som server-
+ * side blokerer hvis kontakten er i brug på en åben faktura/gæld.
+ */
+type DeleteState =
+  | { kind: "customer"; row: ContactCustomerRow }
+  | { kind: "vendor"; row: ContactVendorRow };
 
 export function ContactsView() {
   const { slug = "" } = useParams();
@@ -33,6 +61,15 @@ export function ContactsView() {
   const state = useAsync<CompanyContacts>(
     () => api.contacts(slug),
     [slug],
+  );
+  // True while the generic file-import modal is open.
+  const [importing, setImporting] = useState(false);
+  // The create/edit modal — undefined when closed.
+  const [modal, setModal] = useState<ModalState | undefined>(undefined);
+  // #430 — pending delete-bekræftelse (kunde eller leverandør). Undefined når
+  // ingen dialog er åben.
+  const [pendingDelete, setPendingDelete] = useState<DeleteState | undefined>(
+    undefined,
   );
 
   if (state.loading && !state.data)
@@ -49,6 +86,26 @@ export function ContactsView() {
     String(new Date().getFullYear());
   const total = c.customers.length + c.vendors.length;
 
+  function openCreate(kind: ContactKind) {
+    setModal({ kind } as ModalState);
+  }
+
+  function openEditCustomer(row: ContactCustomerRow) {
+    setModal({ kind: "customer", row });
+  }
+
+  function openEditVendor(row: ContactVendorRow) {
+    setModal({ kind: "vendor", row });
+  }
+
+  function openDeleteCustomer(row: ContactCustomerRow) {
+    setPendingDelete({ kind: "customer", row });
+  }
+
+  function openDeleteVendor(row: ContactVendorRow) {
+    setPendingDelete({ kind: "vendor", row });
+  }
+
   return (
     <section className="statement">
       <div className="page-head">
@@ -60,6 +117,27 @@ export function ContactsView() {
           </p>
         </div>
         <div className="row-actions">
+          <button
+            type="button"
+            className="btn"
+            onClick={() => openCreate("customer")}
+          >
+            Tilføj kunde
+          </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => openCreate("vendor")}
+          >
+            Tilføj leverandør
+          </button>
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={() => setImporting(true)}
+          >
+            Importér
+          </button>
           <Link className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
           </Link>
@@ -73,13 +151,91 @@ export function ContactsView() {
         onYearChange={setYear}
       />
 
+      {importing && (
+        <ImportModal
+          slug={slug}
+          onImported={state.reload}
+          onClose={() => setImporting(false)}
+        />
+      )}
+
+      {modal && (
+        <ContactFormModal
+          slug={slug}
+          kind={modal.kind}
+          customer={modal.kind === "customer" ? modal.row : undefined}
+          vendor={modal.kind === "vendor" ? modal.row : undefined}
+          onSaved={state.reload}
+          onClose={() => setModal(undefined)}
+        />
+      )}
+
+      {pendingDelete && (
+        <ConfirmDialog
+          title={
+            pendingDelete.kind === "customer"
+              ? `Slet kunde ${pendingDelete.row.name}?`
+              : `Slet leverandør ${pendingDelete.row.name}?`
+          }
+          body={
+            <>
+              <p>
+                {pendingDelete.kind === "customer"
+                  ? "Kunden fjernes fra dine fremtidige fakturaer og dropdowns."
+                  : "Leverandøren fjernes fra dine fremtidige bilag og dropdowns."}
+              </p>
+              <p>
+                Allerede bogførte fakturaer og posteringer beholder
+                navnet som det var på bogføringstidspunktet — historikken
+                og revisor-eksporten er ikke påvirket.
+              </p>
+              <p className="muted">
+                {pendingDelete.kind === "customer"
+                  ? "Hvis kunden er i brug på en åben (ikke-betalt) faktura, bliver sletningen blokeret med et henvisning til fakturanummeret."
+                  : "Hvis leverandøren har en åben gæld der ikke er betalt endnu, bliver sletningen blokeret med en henvisning til regningen."}
+              </p>
+            </>
+          }
+          confirmLabel="Slet"
+          confirmKind="danger"
+          onConfirm={async () => {
+            if (pendingDelete.kind === "customer") {
+              await api.deleteCustomer(slug, pendingDelete.row.id);
+            } else {
+              await api.deleteVendor(slug, pendingDelete.row.id);
+            }
+            // Reload so the deleted row disappears immediately.
+            state.reload();
+          }}
+          onClose={() => setPendingDelete(undefined)}
+        />
+      )}
+
       {total === 0 ? (
         <div className="card archived-notice">
           <h3>Ingen kontakter endnu</h3>
           <p className="muted">
             Der er ingen registrerede kunder eller leverandører for denne
-            virksomhed. Kontakter oprettes som stamdata og vises her.
+            virksomhed. Brug «Tilføj kunde» eller «Tilføj leverandør» ovenfor
+            for at oprette stamdata — eller «Importér» til at hente kontakter
+            fra et tidligere bogføringssystem.
           </p>
+          <div className="row-actions" style={{ marginTop: "1rem" }}>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => openCreate("customer")}
+            >
+              Tilføj kunde
+            </button>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => openCreate("vendor")}
+            >
+              Tilføj leverandør
+            </button>
+          </div>
         </div>
       ) : (
         <>
@@ -92,12 +248,20 @@ export function ContactsView() {
 
           <div className="section">
             <h3>Kunder</h3>
-            <CustomerTable customers={c.customers} />
+            <CustomerTable
+              customers={c.customers}
+              onEdit={openEditCustomer}
+              onDelete={openDeleteCustomer}
+            />
           </div>
 
           <div className="section">
             <h3>Leverandører</h3>
-            <VendorTable vendors={c.vendors} />
+            <VendorTable
+              vendors={c.vendors}
+              onEdit={openEditVendor}
+              onDelete={openDeleteVendor}
+            />
           </div>
         </>
       )}
@@ -105,7 +269,15 @@ export function ContactsView() {
   );
 }
 
-function CustomerTable({ customers }: { customers: ContactCustomerRow[] }) {
+function CustomerTable({
+  customers,
+  onEdit,
+  onDelete,
+}: {
+  customers: ContactCustomerRow[];
+  onEdit: (row: ContactCustomerRow) => void;
+  onDelete: (row: ContactCustomerRow) => void;
+}) {
   return (
     <div className="card statement-card table-scroll">
       <table className="data statement-table">
@@ -116,12 +288,14 @@ function CustomerTable({ customers }: { customers: ContactCustomerRow[] }) {
             <th>E-mail</th>
             <th>Valuta</th>
             <th className="num">Betalingsfrist</th>
+            <th className="num">Udestående</th>
+            <th aria-label="Handlinger" />
           </tr>
         </thead>
         <tbody>
           {customers.length === 0 ? (
             <tr>
-              <td colSpan={5} className="empty-inline">
+              <td colSpan={7} className="empty-inline">
                 Ingen kunder registreret.
               </td>
             </tr>
@@ -133,6 +307,48 @@ function CustomerTable({ customers }: { customers: ContactCustomerRow[] }) {
                 <td>{row.email ?? "—"}</td>
                 <td>{row.defaultCurrency}</td>
                 <td className="num">{row.paymentTermsDays} dage</td>
+                <td className="num">
+                  {row.openInvoiceCount === 0 ? (
+                    <span className="muted">—</span>
+                  ) : (
+                    <>
+                      <span
+                        className={
+                          row.overdueCount > 0 ? "status-alert" : undefined
+                        }
+                      >
+                        {formatKroner(row.openBalance, row.defaultCurrency)}
+                      </span>
+                      {row.overdueCount > 0 && (
+                        <>
+                          {" "}
+                          <span className="flag critical">
+                            {row.overdueCount} forfalden
+                            {row.overdueCount === 1 ? "" : "e"}
+                          </span>
+                        </>
+                      )}
+                    </>
+                  )}
+                </td>
+                <td className="num row-actions">
+                  <button
+                    type="button"
+                    className="btn secondary"
+                    onClick={() => onEdit(row)}
+                    aria-label={`Redigér ${row.name}`}
+                  >
+                    Redigér
+                  </button>
+                  <button
+                    type="button"
+                    className="btn danger"
+                    onClick={() => onDelete(row)}
+                    aria-label={`Slet ${row.name}`}
+                  >
+                    Slet
+                  </button>
+                </td>
               </tr>
             ))
           )}
@@ -142,7 +358,15 @@ function CustomerTable({ customers }: { customers: ContactCustomerRow[] }) {
   );
 }
 
-function VendorTable({ vendors }: { vendors: ContactVendorRow[] }) {
+function VendorTable({
+  vendors,
+  onEdit,
+  onDelete,
+}: {
+  vendors: ContactVendorRow[];
+  onEdit: (row: ContactVendorRow) => void;
+  onDelete: (row: ContactVendorRow) => void;
+}) {
   return (
     <div className="card statement-card table-scroll">
       <table className="data statement-table">
@@ -152,12 +376,13 @@ function VendorTable({ vendors }: { vendors: ContactVendorRow[] }) {
             <th>CVR / moms-nr.</th>
             <th>Standard udgiftskonto</th>
             <th>Momsbehandling</th>
+            <th aria-label="Handlinger" />
           </tr>
         </thead>
         <tbody>
           {vendors.length === 0 ? (
             <tr>
-              <td colSpan={4} className="empty-inline">
+              <td colSpan={5} className="empty-inline">
                 Ingen leverandører registreret.
               </td>
             </tr>
@@ -174,6 +399,24 @@ function VendorTable({ vendors }: { vendors: ContactVendorRow[] }) {
                     ? VAT_TREATMENT_LABELS[row.defaultVatTreatment] ??
                       row.defaultVatTreatment
                     : "—"}
+                </td>
+                <td className="num row-actions">
+                  <button
+                    type="button"
+                    className="btn secondary"
+                    onClick={() => onEdit(row)}
+                    aria-label={`Redigér ${row.name}`}
+                  >
+                    Redigér
+                  </button>
+                  <button
+                    type="button"
+                    className="btn danger"
+                    onClick={() => onDelete(row)}
+                    aria-label={`Slet ${row.name}`}
+                  >
+                    Slet
+                  </button>
                 </td>
               </tr>
             ))

@@ -190,8 +190,8 @@ describe("Cockpit write — invoice issue (input + gates)", () => {
         issueBody({ issueDate: undefined }),
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe("bad_request");
-      expect(res.body.error.message).toContain("issueDate");
+      expect(res.body.code).toBe("bad_request");
+      expect(res.body.errors[0]).toContain("issueDate");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -206,7 +206,7 @@ describe("Cockpit write — invoice issue (input + gates)", () => {
         issueBody({ lines: [] }),
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.message).toContain("lines");
+      expect(res.body.errors[0]).toContain("lines");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -223,7 +223,7 @@ describe("Cockpit write — invoice issue (input + gates)", () => {
         }),
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.message).toContain("quantity");
+      expect(res.body.errors[0]).toContain("quantity");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -240,8 +240,8 @@ describe("Cockpit write — invoice issue (input + gates)", () => {
         issueBody({ buyer: undefined }),
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe("bad_request");
-      expect(res.body.error.message).toContain("buyer");
+      expect(res.body.code).toBe("bad_request");
+      expect(res.body.errors[0]).toContain("buyer");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -256,7 +256,7 @@ describe("Cockpit write — invoice issue (input + gates)", () => {
         issueBody({ customerId: 9999 }),
       );
       expect(res.status).toBe(409);
-      expect(res.body.error.message).toContain("customer");
+      expect(res.body.errors[0]).toContain("customer");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -301,7 +301,7 @@ describe("Cockpit write — invoice issue (input + gates)", () => {
         { host: "cockpit.example.com" },
       );
       expect(res.status).toBe(401);
-      expect(res.body.error.code).toBe("unauthorized");
+      expect(res.body.code).toBe("unauthorized");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -332,7 +332,7 @@ describe("Cockpit write — invoice issue (input + gates)", () => {
         issueBody(),
       );
       expect(res.status).toBe(409);
-      expect(res.body.error.message).toContain("Bogføring er låst");
+      expect(res.body.errors[0]).toContain("Bogføring er låst");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -389,7 +389,7 @@ describe("Cockpit write — invoice post", () => {
         invoiceDocumentId: documentId,
       });
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe("bad_request");
+      expect(res.body.code).toBe("bad_request");
       // Nothing was posted.
       withLedger(ws, slug, (db) => {
         const row = db
@@ -411,7 +411,7 @@ describe("Cockpit write — invoice post", () => {
         { confirm: true },
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.message).toContain("invoiceDocumentId");
+      expect(res.body.errors[0]).toContain("invoiceDocumentId");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -426,7 +426,7 @@ describe("Cockpit write — invoice post", () => {
         { invoiceDocumentId: 4242, confirm: true },
       );
       expect(res.status).toBe(409);
-      expect(res.body.error.message).toContain("does not exist");
+      expect(res.body.errors[0]).toContain("does not exist");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -452,8 +452,8 @@ describe("Cockpit write — invoice post", () => {
         confirm: true,
       });
       expect(second.status).toBe(409);
-      expect(second.body.error.code).toBe("conflict");
-      expect(second.body.error.message).toContain("already");
+      expect(second.body.code).toBe("conflict");
+      expect(second.body.errors[0]).toContain("already");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -486,7 +486,7 @@ describe("Cockpit write — invoice post", () => {
         confirm: true,
       });
       expect(res.status).toBe(409);
-      expect(res.body.error.message).toContain("Bogføring er låst");
+      expect(res.body.errors[0]).toContain("Bogføring er låst");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -541,7 +541,7 @@ describe("Cockpit write — invoice settle", () => {
         bankTransactionId: txId,
       });
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe("bad_request");
+      expect(res.body.code).toBe("bad_request");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -558,7 +558,7 @@ describe("Cockpit write — invoice settle", () => {
         confirm: true,
       });
       expect(res.status).toBe(400);
-      expect(res.body.error.message).toContain("bankTransaction");
+      expect(res.body.errors[0]).toContain("bankTransaction");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -580,7 +580,7 @@ describe("Cockpit write — invoice settle", () => {
         confirm: true,
       });
       expect(res.status).toBe(409);
-      expect(res.body.error.message).toContain("does not exist");
+      expect(res.body.errors[0]).toContain("does not exist");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -612,7 +612,7 @@ describe("Cockpit write — invoice settle", () => {
         confirm: true,
       });
       expect(second.status).toBe(409);
-      expect(second.body.error.code).toBe("conflict");
+      expect(second.body.code).toBe("conflict");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -651,7 +651,7 @@ describe("Cockpit write — invoice settle", () => {
         confirm: true,
       });
       expect(res.status).toBe(409);
-      expect(res.body.error.message).toContain("Bogføring er låst");
+      expect(res.body.errors[0]).toContain("Bogføring er låst");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }

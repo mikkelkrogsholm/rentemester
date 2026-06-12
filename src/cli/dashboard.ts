@@ -24,10 +24,23 @@ import { listRecentAuditLog } from "../core/audit-log";
 import { verifyAuditChain } from "../core/ledger";
 import type { Database } from "bun:sqlite";
 import { currentRuleBundleVersion } from "../core/rules-metadata";
+import { buildPayablesList } from "../core/payables";
+import {
+  buildAccrualRegisterReport,
+  listDueAccrualRecognitionPeriods,
+} from "../core/accruals";
+import { buildBudgetVsActual } from "../core/budget";
+import { buildLiquidityForecast } from "../core/liquidity-forecast";
+import { buildTaxReturn } from "../core/tax-return";
+import { buildViesRecapitulativeStatement } from "../core/vat-vies-list";
+import { buildOssReport } from "../core/vat-oss";
+import { fiscalYearForDate } from "../core/fiscal-year";
 import {
   renderDashboard,
   type DashboardInput,
   type DashboardExceptionsResult,
+  type DashboardTaxStatus,
+  type DashboardEuSalesOssStatus,
 } from "../core/dashboard";
 import { writeTempFileFor, promoteTempFile, removeIfExists } from "../core/atomic-file";
 import type { CommandDispatch } from "../cli-dispatch";
@@ -180,6 +193,81 @@ function openInBrowser(path: string): void {
   }
 }
 
+/**
+ * The first day of the calendar month after the one containing `asOfDate` —
+ * the liquidity forecast starts from the *coming* months, not the current one.
+ */
+function firstOfNextMonth(asOfDate: string): string {
+  const year = Number(asOfDate.slice(0, 4));
+  const month = Number(asOfDate.slice(5, 7)); // 1-based
+  const nextMonthZero = month; // month index (0-based) of the next month
+  const targetYear = year + Math.floor(nextMonthZero / 12);
+  const targetMonth = nextMonthZero % 12; // 0-based
+  return `${targetYear}-${String(targetMonth + 1).padStart(2, "0")}-01`;
+}
+
+/**
+ * Whether the fiscal year `start`..`end` is closed or reported — the tax
+ * return can only be prepared once the year is locked.
+ */
+function fiscalYearIsClosed(db: Database, start: string, end: string): boolean {
+  const row = db
+    .query(
+      `SELECT status FROM accounting_periods
+        WHERE kind = 'fiscal_year' AND period_start = ? AND period_end = ?
+        ORDER BY id DESC LIMIT 1`,
+    )
+    .get(start, end) as { status: string } | undefined;
+  return row?.status === "closed" || row?.status === "reported";
+}
+
+/**
+ * Builds the dashboard Tax card status for the fiscal year that `asOfDate`
+ * falls in. The card shows estimated selskabsskat once that year is closed,
+ * otherwise the "preparation available once the year is closed" state.
+ */
+function buildTaxStatus(
+  db: Database,
+  asOfDate: string,
+  company: { fiscalYearStartMonth: number; fiscalYearLabelStrategy: any },
+): DashboardTaxStatus {
+  const fy = fiscalYearForDate(asOfDate, company.fiscalYearStartMonth, company.fiscalYearLabelStrategy);
+  if (!fiscalYearIsClosed(db, fy.start, fy.end)) {
+    return { fiscalYearLabel: fy.displayLabel, available: false };
+  }
+  const taxReturn = buildTaxReturn(db, fy.start, fy.end);
+  if (!taxReturn.ok) {
+    // The year is closed but the tax return's other prerequisites are not met
+    // (e.g. unbalanced books) — keep the card honest, not a fake figure.
+    return { fiscalYearLabel: fy.displayLabel, available: false };
+  }
+  return {
+    fiscalYearLabel: fy.displayLabel,
+    available: true,
+    corporateTax: taxReturn.corporateTax,
+    bookkeptResult: taxReturn.bookkeptResult,
+    needsReviewCount: taxReturn.needsReview.length,
+  };
+}
+
+/**
+ * Builds the light EU sales / OSS indicator from the VAT period the dashboard
+ * is already showing. Both figures are derived from real ledger data.
+ */
+function buildEuSalesOssStatus(
+  db: Database,
+  periodStart: string,
+  periodEnd: string,
+): DashboardEuSalesOssStatus {
+  const vies = buildViesRecapitulativeStatement(db, periodStart, periodEnd);
+  const oss = buildOssReport(db, periodStart, periodEnd);
+  return {
+    euSalesValue: vies.ok ? vies.totalValue : 0,
+    euCustomerCount: vies.ok ? vies.customers.length : 0,
+    ossConsumerSalesBase: oss.ok ? oss.ossConsumerSalesBase : 0,
+  };
+}
+
 function buildExceptionsForDashboard(
   result: ReturnType<typeof listExceptions>,
 ): DashboardExceptionsResult {
@@ -232,6 +320,22 @@ export function register(dispatch: CommandDispatch): void {
     const backup = getBackupComplianceStatus(db, companyRoot, asOfDate);
     const auditResult = verifyAuditChain(db);
 
+    // Recurring-feature inputs (#islands → control surfaces). The render-engine
+    // stays pure; all real-world data is gathered here.
+    const payables = buildPayablesList(db, { status: "open", asOfDate });
+    const accrualRegister = buildAccrualRegisterReport(db);
+    const accrualsDue = listDueAccrualRecognitionPeriods(db, asOfDate);
+    // Budget-vs-actual for the calendar month the as-of date falls in.
+    const currentMonth = asOfDate.slice(0, 7);
+    const budgetVsActual = buildBudgetVsActual(db, currentMonth, currentMonth);
+    // Liquidity forecast for the three months following the as-of month.
+    const liquidity = buildLiquidityForecast(db, {
+      startDate: firstOfNextMonth(asOfDate),
+      months: 3,
+    });
+    const tax = buildTaxStatus(db, asOfDate, company);
+    const euSalesOss = buildEuSalesOssStatus(db, period.start, period.end);
+
     const generatedAt = new Date().toISOString();
     const ruleBundleVersion = (() => {
       try {
@@ -261,6 +365,13 @@ export function register(dispatch: CommandDispatch): void {
         entryCount: auditResult.entries,
         firstError: auditResult.errors[0],
       },
+      payables,
+      accrualRegister,
+      accrualsDue,
+      budgetVsActual,
+      liquidity,
+      tax,
+      euSalesOss,
     };
 
     const startNs =

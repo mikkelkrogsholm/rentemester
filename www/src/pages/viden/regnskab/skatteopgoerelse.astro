@@ -1,0 +1,64 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import PageHero from "../../../components/PageHero.astro";
+import SeoEvidence from "../../../components/SeoEvidence.astro";
+import { SITE } from "../../../consts";
+---
+
+<BaseLayout
+  title="Skatteopgørelse og review-flow"
+  description="Skatteopgørelse i Rentemester: selskabsskattegrundlag fra låst årsrapport, needs-review flags og hvorfor indberetning stadig kræver ejer eller revisor."
+  pathname="/viden/regnskab/skatteopgoerelse"
+  pageType="Article"
+  datePublished="2026-05-24"
+  dateModified="2026-05-24"
+  reviewedBy={SITE.author}
+>
+  <PageHero
+    eyebrow="Regnskab"
+    title="Skat skal forberedes deterministisk og reviewes menneskeligt"
+    lead="Rentemester kan udlede et selskabsskattegrundlag fra et låst regnskabsår, men skatteopgørelsen er et review-flow. Ikke en automatisk indberetning."
+  />
+
+  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
+    <p>
+      Når året er lukket, skal virksomheden kunne se et klart udgangspunkt for skat. Det kræver at årsrapporten bygger på balancerede bøger, at korrektioner ikke skjules, og at poster med faglig usikkerhed bliver markeret til gennemgang.
+    </p>
+
+    <SeoEvidence
+      updated="2026-05-24"
+      status="QA-gennemgået mod tax-return-kode, årsrapport-flow og tests."
+      sources={[
+        { href: `${SITE.github}/blob/main/src/core/tax-return.ts`, label: "tax-return.ts", external: true },
+        { href: `${SITE.github}/blob/main/tests/unit/tax-return.test.ts`, label: "Tax return tests", external: true },
+        { href: `${SITE.github}/blob/main/tests/unit/tax-return-cli.test.ts`, label: "Tax return CLI tests", external: true },
+        { href: `${SITE.github}/blob/main/docs/compliance/requirements-by-area.md#17-aarsrapport-ixbrl-og-skatteopgoerelse`, label: "Compliance: årsrapport og skatteopgørelse", external: true },
+      ]}
+      related={[
+        { href: "/viden/regnskab/aarsrapport", label: "Årsrapport og iXBRL" },
+        { href: "/viden/myndigheder/revisor-handoff", label: "Revisor-handoff" },
+        { href: "/viden/myndigheder/regnskabsmateriale", label: "Regnskabsmateriale" },
+      ]}
+    />
+
+    <h2>Hvad systemet kan forberede</h2>
+    <p>
+      Rentemester kan bygge et deterministisk skattegrundlag fra et låst regnskabsår og den årsrapport, der er samlet fra ledgeren. Det giver et stabilt udgangspunkt for ejer eller revisor, fordi tallene kan spores tilbage til bogføringen.
+    </p>
+
+    <h2>Needs-review er en feature</h2>
+    <p>
+      Ikke alle skattemæssige justeringer bør afgøres automatisk. Poster med usikker behandling skal markeres som needs-review, så de bliver vurderet eksplicit i stedet for at blive indregnet som om systemet kendte svaret.
+    </p>
+
+    <h2>Eksempel</h2>
+    <p>
+      Hvis årsrapporten viser et resultat før skat, kan Rentemester forberede selskabsskattegrundlaget og samtidig markere poster, hvor fradrag, skattemæssig periodisering eller klassifikation kræver gennemgang. Outputtet er et review-grundlag, ikke en færdig selvangivelse.
+    </p>
+
+    <h2>Begrænsning</h2>
+    <p>
+      Rentemester indberetter ikke skat for dig og erstatter ikke revisor eller skatterådgiver. Skatteopgørelsen må kun bruges som kontrollerbart forarbejde, hvor de usikre dele er synlige og kan behandles fagligt.
+    </p>
+  </article>
+</BaseLayout>

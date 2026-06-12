@@ -93,8 +93,27 @@ describe("report annual CLI", () => {
     expect(parsed.ok).toBe(true);
     expect(parsed.ixbrl.path).toBe(out1);
     expect(typeof parsed.ixbrl.sha256).toBe("string");
+    // #177 expansion: the result surfaces the versioned taxonomy subset.
+    expect(typeof parsed.ixbrl.taxonomy.name).toBe("string");
+    expect(parsed.ixbrl.taxonomy.version).toMatch(/^\d+\.\d+\.\d+$/);
 
     rmSync(root, { recursive: true, force: true });
+  });
+
+  test("prints the bounded iXBRL taxonomy subset with --ixbrl-taxonomy", async () => {
+    // Introspection mode: no ledger access, no --from/--to/--company required.
+    const res = await run(["report", "annual", "--ixbrl-taxonomy", "--format", "json"]);
+    expect({ exitCode: res.exitCode, stderr: res.stderr }).toEqual({ exitCode: 0, stderr: "" });
+    const parsed = JSON.parse(res.stdout);
+    expect(parsed.ok).toBe(true);
+    expect(parsed.version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(parsed.elementCount).toBe(parsed.elements.length);
+    expect(parsed.elementCount).toBeGreaterThan(0);
+    // The four class-B sections are all represented.
+    const sections = new Set(parsed.elements.map((e: { section: string }) => e.section));
+    for (const required of ["income-statement", "balance-sheet", "management-statement", "accounting-policies"]) {
+      expect(sections.has(required)).toBe(true);
+    }
   });
 
   test("fails with exit code 2 when a required flag is missing", async () => {

@@ -7,6 +7,8 @@ const BOOLEAN_FLAGS = new Set([
   "--archive",
   "--enrich-cvr",
   "--include-archived",
+  "--ixbrl-taxonomy",
+  "--after-retention-expiry",
 ]);
 
 export type ParsedCliArgs = {

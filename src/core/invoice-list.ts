@@ -1,5 +1,6 @@
 import type { Database } from "bun:sqlite";
 import { getInvoiceStatus } from "./invoice-payments";
+import { normalizeEanNumber } from "./ean";
 
 export type InvoiceQueryStatus = "open" | "paid" | "credited" | "refunded" | "overpaid" | "written_off" | "overdue" | "all";
 
@@ -17,12 +18,51 @@ export type InvoiceListFilters = {
   minDays?: number;
 };
 
+/**
+ * E-faktura/PEPPOL-status for an issued invoice, derived from the
+ * append-only `peppol_submissions` table populated by
+ * `submitPublicEInvoicePeppol` / `transmitPublicEInvoicePeppol` (#128).
+ *
+ * `null` when the invoice has never been submitted/transmitted as a public
+ * e-faktura. When present, `status` is `"prepared"` once a submission
+ * envelope has been recorded and `"acknowledged"` once the access point has
+ * confirmed receipt. The Cockpit row uses this both to flag "Sendt som
+ * e-faktura" and to suppress a duplicate-send button when the invoice has
+ * already been transmitted.
+ */
+export type InvoicePeppolStatus = {
+  status: "prepared" | "acknowledged";
+  submissionReference: string;
+  transmissionId: string | null;
+  acknowledgedAt: string | null;
+};
+
 export type InvoiceListRow = {
   documentId: number;
   invoiceNumber: string;
   invoiceDate: string | null;
   customerName: string | null;
   customerCvr: string | null;
+  /**
+   * Buyer's EAN-number when set on the invoice payload, normalised to 13
+   * digits. Surfaced here so the Cockpit can render a "Send som e-faktura"
+   * action only on rows whose recipient is a public (EAN) buyer — the
+   * normalisation lives in `core/ean.ts`.
+   */
+  buyerEanNumber: string | null;
+  /**
+   * `true` when the invoice payload marks the buyer as a public-recipient
+   * (offentlig kunde), independent of whether an EAN-number was supplied.
+   * Used together with `buyerEanNumber` so the cockpit shows the e-faktura
+   * action only when both signals are present.
+   */
+  buyerPublicRecipient: boolean;
+  /**
+   * The most recent PEPPOL submission/transmission status for this invoice,
+   * or `null` when none exists. Derived from the append-only
+   * `peppol_submissions` table.
+   */
+  peppolStatus: InvoicePeppolStatus | null;
   grossAmount: number;
   currency: string;
   openBalance: number;
@@ -96,6 +136,8 @@ export function buildInvoiceList(db: Database, filters: InvoiceListFilters = {})
     const payload = doc.payload_json ? JSON.parse(doc.payload_json) : null;
     const customerName = normalizeText(payload?.buyer?.name) || null;
     const customerCvr = normalizeCode(payload?.buyer?.vatOrCvr);
+    const buyerEanNumber = normalizeEanNumber(payload?.buyer?.eanNumber);
+    const buyerPublicRecipient = payload?.buyer?.publicRecipient === true || Boolean(buyerEanNumber);
     if (normalizedCustomerCvr && customerCvr !== normalizedCustomerCvr) continue;
     if (!includesFolded(customerName, filters.customer)) continue;
     if (normalizedQuery && !includesFolded(doc.invoice_no, normalizedQuery) && !includesFolded(customerName, normalizedQuery)) continue;
@@ -105,12 +147,17 @@ export function buildInvoiceList(db: Database, filters: InvoiceListFilters = {})
     if (filters.minAmount !== undefined && Number(invoiceStatus.grossAmount ?? 0) < filters.minAmount) continue;
     if (filters.maxAmount !== undefined && Number(invoiceStatus.grossAmount ?? 0) > filters.maxAmount) continue;
 
+    const peppolStatus = loadLatestPeppolStatus(db, doc.id);
+
     const row: InvoiceListRow = {
       documentId: doc.id,
       invoiceNumber: doc.invoice_no,
       invoiceDate: doc.invoice_date,
       customerName,
       customerCvr,
+      buyerEanNumber,
+      buyerPublicRecipient,
+      peppolStatus,
       grossAmount: Number(invoiceStatus.grossAmount ?? 0),
       currency: doc.currency ?? "DKK",
       openBalance: Number(invoiceStatus.openBalance ?? 0),
@@ -150,6 +197,45 @@ export function buildInvoiceList(db: Database, filters: InvoiceListFilters = {})
     rows,
     errors: [],
   };
+}
+
+/**
+ * Returns the most recent PEPPOL submission/transmission row for an invoice,
+ * preferring an `acknowledged` row over a `prepared` one (because an
+ * acknowledged transmission is the stronger "sent" signal). Returns `null`
+ * when the invoice has never been submitted/transmitted as an e-faktura, or
+ * when the `peppol_submissions` table is missing (older db not yet
+ * migrated). Pure read; no side effects on the ledger.
+ */
+function loadLatestPeppolStatus(db: Database, invoiceDocumentId: number): InvoicePeppolStatus | null {
+  try {
+    const row = db
+      .query(
+        `SELECT status, submission_reference, transmission_id, acknowledged_at
+         FROM peppol_submissions
+         WHERE invoice_document_id = ?
+         ORDER BY CASE status WHEN 'acknowledged' THEN 0 ELSE 1 END, id DESC
+         LIMIT 1`,
+      )
+      .get(invoiceDocumentId) as
+      | {
+          status: "prepared" | "acknowledged";
+          submission_reference: string;
+          transmission_id: string | null;
+          acknowledged_at: string | null;
+        }
+      | null;
+    if (!row) return null;
+    return {
+      status: row.status,
+      submissionReference: row.submission_reference,
+      transmissionId: row.transmission_id,
+      acknowledgedAt: row.acknowledged_at,
+    };
+  } catch {
+    // Table not migrated yet (older fixture/db) → treat as "never sent".
+    return null;
+  }
 }
 
 export function findInvoices(db: Database, filters: Omit<InvoiceListFilters, "status" | "minDays"> = {}) {

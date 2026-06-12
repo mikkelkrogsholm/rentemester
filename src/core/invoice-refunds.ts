@@ -51,9 +51,17 @@ export function refundInvoiceToBank(db: Database, input: RefundInvoiceToBankInpu
   const bank = selected.bank!;
   if (Number(bank.amount) >= 0) return { ok: false, appliedRules: [RULE_ID], errors: [`bank transaction ${bank.id} is not an outgoing customer refund`] };
 
-  const invoice = db.query(`SELECT id, invoice_no, document_type FROM documents WHERE id = ?`).get(input.invoiceDocumentId) as { id: number; invoice_no: string; document_type: string } | null;
+  const invoice = db.query(`SELECT id, invoice_no, document_type, currency FROM documents WHERE id = ?`).get(input.invoiceDocumentId) as { id: number; invoice_no: string; document_type: string; currency: string | null } | null;
   if (!invoice) return { ok: false, appliedRules: [RULE_ID], errors: [`invoice document ${input.invoiceDocumentId} does not exist`] };
   if (invoice.document_type !== "issued_invoice") return { ok: false, appliedRules: [RULE_ID], errors: [`document ${input.invoiceDocumentId} is not an issued invoice`] };
+  // The refund path posts a plain DKK 1100 line and caps the refund against a
+  // foreign-unit credit balance read as DKK — it is not currency-aware, so for a
+  // foreign-currency invoice it would strand the rate difference on the
+  // receivable. Refuse until the refund path handles FX explicitly (mirrors the
+  // combined-settlement guard in invoice-settlement.ts; adversarial re-review #3).
+  if ((invoice.currency ?? "DKK").trim().toUpperCase() !== "DKK") {
+    return { ok: false, appliedRules: [RULE_ID], errors: [`refusion af faktura ${invoice.invoice_no} i fremmed valuta understøttes ikke endnu — refusionsstien er ikke valuta-bevidst (foreign-currency invoice refunds are not supported)`] };
+  }
 
   const existingJournal = db.query(`SELECT id FROM journal_entries WHERE source_bank_transaction_id = ? LIMIT 1`).get(bank.id) as { id: number } | null;
   if (existingJournal) return { ok: false, appliedRules: [RULE_ID], errors: [`bank transaction ${bank.id} is already linked to journal entry ${existingJournal.id}`] };

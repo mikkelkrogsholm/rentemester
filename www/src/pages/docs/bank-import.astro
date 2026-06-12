@@ -1,0 +1,79 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/PageHero.astro";
+import { SITE } from "../../consts";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  name: "Importér bankudtog i Rentemester",
+  inLanguage: "da",
+  totalTime: "PT10M",
+  step: [
+    { "@type": "HowToStep", position: 1, name: "Hent CSV", text: "Eksportér transaktioner fra din netbank som CSV." },
+    { "@type": "HowToStep", position: 2, name: "Importér", text: "Kør bank import-kommandoen eller upload i cockpittet." },
+    { "@type": "HowToStep", position: 3, name: "Afstem", text: "Match bankposter mod bilag og fakturaer." },
+  ],
+};
+---
+
+<BaseLayout
+  title="Importér dit bankudtog i Rentemester"
+  description="Importér CSV fra din danske netbank, og afstem bankposter mod bilag og fakturaer. Cockpit eller CLI, deterministiske match-forslag."
+  pathname="/docs/bank-import"
+  pageType="Article"
+  datePublished="2026-05-24"
+  dateModified="2026-05-24"
+  jsonLd={jsonLd}
+>
+  <PageHero
+    eyebrow="Dokumentation"
+    title="Importér dit bankudtog"
+    lead="Hent CSV fra netbanken, importér den i Rentemester, og lad systemet foreslå match mod bilag og fakturaer."
+  />
+
+  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
+    <h2>Til hvem</h2>
+    <p>Til dig der laver løbende bogføring og skal have ugens eller månedens bevægelser fra erhvervskontoen ind i Rentemester. Guiden virker for danske banker (Danske Bank, Nordea, Jyske Bank, Sydbank, Lunar, Mybanker m.fl.) — CSV-formaterne varierer, men kolonnerne er de samme: <em>dato, tekst, beløb</em>.</p>
+
+    <h2>Forudsætninger</h2>
+    <ul>
+      <li>Du har en initialiseret virksomhed (se <a href="/docs/installation">installation</a>).</li>
+      <li>Du har eksportadgang til din netbank, eller du kan tage et udtræk fra din bogholders portal.</li>
+      <li>Bankkontoen findes som en bank-konto i Rentemester. Kør <code>bun run src/cli.ts bank-account add --help</code> hvis du ikke har oprettet den endnu.</li>
+    </ul>
+
+    <h2>1. Hent CSV fra netbanken</h2>
+    <p>I de fleste danske netbanker ligger eksporten under <em>Konti → Transaktioner → Eksportér</em>. Vælg en periode (fx den seneste måned), formatet <strong>CSV</strong>, og gem filen lokalt — fx <code>~/Downloads/bank-2026-05.csv</code>.</p>
+    <p>Hvis banken tilbyder semikolon eller komma som separator, vælg komma. Hvis den tilbyder dansk eller engelsk talformat, vælg dansk (komma som decimaltegn) — Rentemester normaliserer begge dele.</p>
+
+    <h2>2. Importér i Rentemester</h2>
+    <p><strong>Cockpit:</strong> Gå til <em>Bank → Importér CSV</em>, vælg bankkontoen, og træk filen ind. Cockpittet viser hvor mange linjer der blev læst, og om nogen blev afvist.</p>
+    <p><strong>CLI:</strong></p>
+    <pre><code>bun run src/cli.ts bank import \
+  --company ./min-virksomhed \
+  --file ~/Downloads/bank-2026-05.csv</code></pre>
+    <p>Importen er <strong>idempotent</strong>: kører du samme fil to gange, springer Rentemester de allerede importerede linjer over. Hash på (dato + tekst + beløb) afgør om en linje er ny.</p>
+
+    <h2>3. Få match-forslag</h2>
+    <p>Når banklinjerne ligger i ledgeren, kører du afstemningen. Rentemester sammenholder bankposter med åbne fakturaer, debitorer, kreditorer og bilag — og giver deterministiske forslag (ingen AI-gæt).</p>
+    <pre><code>bun run src/cli.ts reconcile bank \
+  --company ./min-virksomhed \
+  --from 2026-05-01 \
+  --to 2026-05-31</code></pre>
+    <p>I cockpittet ligger forslagene på <em>Bank-siden</em> som en liste af par: bankpost ↔ bilag/faktura. Du bekræfter eller afviser hvert match — afvisninger lander i exception-køen.</p>
+
+    <h2>4. Udenlandske konti og valuta</h2>
+    <p>Importerer du et CSV fra en EUR- eller USD-konto, kræver Rentemester en kolonne for DKK-modværdi (eller en kurs). Eksemplet i <a href={`${SITE.github}/blob/main/examples/bank-transactions-eur.csv`} rel="noopener" target="_blank">examples/bank-transactions-eur.csv ↗</a> viser formatet. Både originalbeløbet og DKK-beløbet gemmes, så momsgrundlaget altid er korrekt.</p>
+
+    <h2>Fejlfinding</h2>
+    <ul>
+      <li><strong>"CSV header not recognised"</strong> — banken har skiftet kolonnenavne. Kør <code>bun run src/cli.ts bank import --file ... --dry-run</code> for at se hvad Rentemester læser, og åbn et issue med headeren hvis den ikke matcher.</li>
+      <li><strong>"duplicate transaction"</strong> — du har importeret denne periode før. Det er normalt; Rentemester springer dubletter over.</li>
+      <li><strong>"unknown bank account"</strong> — opret kontoen med <code>bank-account add</code> først.</li>
+      <li><strong>Ingen match-forslag</strong> — kontrollér at de relevante fakturaer er udstedt og bogført (<code>invoice post</code>), og at bilagene er ingestet.</li>
+    </ul>
+
+    <p><a href="/docs">← Tilbage til docs-oversigten</a></p>
+  </article>
+</BaseLayout>

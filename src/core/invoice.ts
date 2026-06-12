@@ -231,6 +231,42 @@ export function validateInvoice(payload: InvoicePayload): InvoiceValidationResul
     }
   }
 
+  // A simplified standard-VAT invoice normally omits totals.netAmount, so the
+  // gross = net + vat cross-check above is skipped and an internally
+  // impossible vatAmount (e.g. 999 on a 1.000 kr gross) would otherwise be
+  // accepted and booked verbatim as output VAT. When an explicit vatAmount is
+  // given, derive the implied net (gross − vat) and require the VAT to be
+  // consistent with the declared rate, so a nonsensical figure is rejected
+  // before it ever reaches the ledger. (A basis-only simplified invoice with
+  // VAT_20_OF_GROSS and no explicit vatAmount computes its VAT downstream and
+  // cannot be inconsistent, so it is left untouched.)
+  if (
+    vatTreatment === "standard" &&
+    invoiceType === "simplified" &&
+    payload.totals?.netAmount === undefined &&
+    hasPositiveNumber(payload.totals?.vatAmount)
+  ) {
+    const vatRate = roundRate6(Number(payload.totals?.vatRate ?? 0));
+    if (!(grossAmount > vatAmount)) {
+      errors.push("totals.vatAmount must be less than totals.grossAmount");
+    } else if (vatRate > 0) {
+      // The VAT CONTAINED in a gross-inclusive amount is `gross * rate/(1+rate)`
+      // (= 20% of gross at the 25% rate — exactly the VAT_20_OF_GROSS basis a
+      // forenklet faktura uses), NOT `(gross − vat) * rate`. The net-first
+      // round-trip double-rounds and wrongly rejects ~20% of legitimate
+      // simplified invoices at the øre boundary (e.g. gross 100,07 → correct
+      // VAT 20,01). Accept any vatAmount within one øre of the canonical
+      // figure; a nonsensical VAT (e.g. 999 on a 1.000 gross) is still far
+      // outside the tolerance and rejected.
+      const expectedVat = roundDkk((grossAmount * vatRate) / (1 + vatRate));
+      if (roundDkk(Math.abs(vatAmount - expectedVat)) > 0.01) {
+        errors.push(
+          `totals.vatAmount must be the VAT contained in totals.grossAmount at totals.vatRate (≈ ${expectedVat})`,
+        );
+      }
+    }
+  }
+
   if ((vatTreatment === "domestic_reverse_charge" || vatTreatment === "foreign_reverse_charge") && payload.totals?.netAmount !== undefined) {
     if (grossAmount !== netAmount) {
       errors.push(`reverse-charge invoices must have totals.grossAmount equal totals.netAmount (${netAmount})`);

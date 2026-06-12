@@ -44,15 +44,47 @@ depend on an earlier one's output.
      the agent will not guess an account.
    - `AGENT_BOOKING_BLOCKED` — the ledger refused the posting (a guardrail
      fired, e.g. a missing VIES validation); the agent obeys.
-4. **reconcile** — sync every bank transaction with no posted journal entry
+4. **payables** — settle the **unambiguous creditor payments** and surface the
+   overdue ones. An outgoing DKK bank line auto-settles a payable only when
+   **both** hold: (a) its absolute amount equals the open balance of *exactly
+   one* open payable, **and** (b) the bank line strongly corroborates that
+   payable — its free text / counterparty name / reference names the supplier
+   or carries the bill number. An **amount-only** match is *not* enough: an
+   owner draw, salary or tax payment can coincidentally equal a creditor's
+   balance, and auto-settling it would be a wrong write to the append-only
+   ledger. When the amount matches but corroboration is weak, the agent
+   **surfaces it as an `AGENT_PAYABLE_MATCH_UNCERTAIN` exception — it does not
+   post** (the same "surface, never guess" stance as the accrual-recognition
+   and fixed-asset paths). Zero candidates or more than one ⇒ ambiguous; the
+   line stays for the reconcile phase. Every open creditor item past its due
+   date is escalated as an `AGENT_PAYABLE_OVERDUE` exception. The agent
+   **never** forces a settlement the ledger refuses.
+5. **reconcile** — sync every bank transaction with no posted journal entry
    into the exception queue (`UNMATCHED_BANK_TRANSACTION`), via the shared
-   reconciliation function.
-5. **deadlines** — check the VAT-quarter and fiscal-year (årsrapport)
+   reconciliation function. It runs *after* the payables phase so a creditor
+   item just settled is no longer unmatched.
+6. **deadlines** — check the VAT-quarter and fiscal-year (årsrapport)
    deadlines relative to `--as-of`. A VAT period that is still open and
    whose filing deadline is near (or past) is escalated as an
-   `AGENT_VAT_DEADLINE_OPEN` exception.
-6. **report** — produce the end-of-run report: what was booked, what was
-   left in exceptions, which deadlines are near.
+   `AGENT_VAT_DEADLINE_OPEN` exception. The phase also **surfaces** every
+   accrual recognition period whose schedule date has arrived and that is not
+   yet posted, as an `AGENT_ACCRUAL_RECOGNITION_DUE` exception. Like a
+   possible fixed-asset purchase, the agent **surfaces — it does not auto-post**
+   the recognition entry: choosing the posting date stays with the human.
+   Finally, when the *previous* fiscal year is closed, the slice's
+   tax-return needs-review flags are surfaced as
+   `AGENT_TAX_RETURN_NEEDS_REVIEW` exceptions.
+7. **report** — produce the end-of-run report: what was booked, what creditor
+   items were settled, what was left in exceptions, which deadlines are near.
+
+> **Idempotency of the surfacing syncs.** The overdue-payable, due-accrual and
+> tax-needs-review syncs run every loop with a moving `--as-of`. They dedup on
+> a **stable row identity** (the payable id / the `(accrual, period)` pair /
+> the `(fiscal-year, needs-review-kind)` pair) — never on the message, which
+> would otherwise carry a volatile "N dage overforfalden pr. \<date\>" and
+> create a fresh duplicate every run. Each sync also **resolves** its exception
+> once the underlying item is no longer pending (the bill is paid, the period
+> is posted, the flag no longer fires).
 
 ## Hard boundaries — the guardrails
 
@@ -129,11 +161,13 @@ A single run produces one `AgentRunReport` object. Top-level fields:
 | `actor` | `string` | The canonical actor id every mutation in this run was booked under (the fixed agent actor). |
 | `asOf` | `string` | `YYYY-MM-DD` — the explicit run date echoed back; the agent's only clock. |
 | `company` | `string` | Absolute path to the company directory the run operated on. |
-| `phases` | `string[]` | The phases the loop executed, in order: `ingest`, `book`, `route`, `reconcile`, `deadlines`, `report`. A run that aborts early lists only the phases reached. |
+| `phases` | `string[]` | The phases the loop executed, in order: `ingest`, `book`, `route`, `payables`, `reconcile`, `deadlines`, `report`. A run that aborts early lists only the phases reached. |
 | `documentsIngested` | `number` | Count of bilag from `--inbox` successfully ingested into the ledger this run. |
 | `documentsRejected` | `number` | Count of bilag the ledger refused (rules rejection or duplicate). A non-duplicate rejection also lands in `openExceptions`. |
 | `bankTransactionsImported` | `number` | Count of rows imported from `--bank-csv` (`0` when no `--bank-csv` was given). |
 | `expensesBooked` | `BookedExpense[]` | The expenses the agent booked automatically — confident bank-match **and** a single deterministic account rule. See below. |
+| `payablesMatched` | `PayableMatch[]` | The creditor items the agent settled automatically — an unmatched outgoing bank payment whose amount exactly matches exactly one open payable's open balance. Additive field; empty on a run with no payables. See below. |
+| `accrualRecognitionsDue` | `number` | Count of accrual recognition periods that are due/overdue as of `asOf` and not yet posted. Each is also surfaced as an `AGENT_ACCRUAL_RECOGNITION_DUE` exception. The agent never posts the recognition entry. |
 | `openExceptions` | `RoutedException[]` | Exceptions still open at end of run — the human's work list. See below. |
 | `upcomingDeadlines` | `DeadlineNotice[]` | VAT-quarter and fiscal-year deadlines relative to `asOf`. See below. |
 | `summary` | `string[]` | Plain-language (Danish) lines describing what was done and what needs the human. |
@@ -154,12 +188,23 @@ A single run produces one `AgentRunReport` object. Top-level fields:
 | `label` | `string` | Human label of the supplier-rule category. |
 | `journalEntryNo` | `string \| null` | The posted journal entry number, or `null` if unavailable. |
 
+`payablesMatched[]` — one `PayableMatch` per auto-settled creditor item:
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `payableId` | `number` | The creditor item (payable) id that was settled. |
+| `documentId` | `number` | The underlying supplier-bill document id. |
+| `bankTransactionId` | `number` | The outgoing bank transaction the payment matched. |
+| `supplier` | `string` | Supplier name (`"ukendt"` when unknown). |
+| `amount` | `number` | The settled amount (the payable's open balance). |
+| `journalEntryNo` | `string \| null` | The settlement journal entry number, or `null` if unavailable. |
+
 `openExceptions[]` — one `RoutedException` per open exception:
 
 | Field | Type | Meaning |
 |-------|------|---------|
 | `exceptionId` | `number` | The exception row id (use it with `exception resolve`). |
-| `type` | `string` | The exception type, e.g. `AGENT_DOCUMENT_REJECTED`, `AGENT_LOW_CONFIDENCE_MATCH`, `AGENT_NO_ACCOUNT_RULE`, `AGENT_POSSIBLE_FIXED_ASSET`, `AGENT_BOOKING_BLOCKED`, `AGENT_VAT_DEADLINE_OPEN`. |
+| `type` | `string` | The exception type, e.g. `AGENT_DOCUMENT_REJECTED`, `AGENT_LOW_CONFIDENCE_MATCH`, `AGENT_NO_ACCOUNT_RULE`, `AGENT_POSSIBLE_FIXED_ASSET`, `AGENT_BOOKING_BLOCKED`, `AGENT_VAT_DEADLINE_OPEN`, `AGENT_PAYABLE_OVERDUE`, `AGENT_PAYABLE_MATCH_UNCERTAIN`, `AGENT_ACCRUAL_RECOGNITION_DUE`, `AGENT_TAX_RETURN_NEEDS_REVIEW`. |
 | `severity` | `string` | `low` / `medium` / `high`. |
 | `message` | `string` | Human-readable description of what the agent could not resolve. |
 | `requiredAction` | `string \| null` | The concrete next step for the human, or `null`. |

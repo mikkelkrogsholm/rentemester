@@ -1,4 +1,4 @@
-version: dk-bookkeeping-v0.0.5
+version: dk-bookkeeping-v0.0.7
 sources:
   - DK-BOGFORINGSLOVEN-2022-700
   - DK-DIGITAL-BOGFORING-NONREGISTERED-2024-205
@@ -8,6 +8,9 @@ rules:
     name: Double-entry postings must balance
     category: ledger_validation
     source_id: DK-BOGFORINGSLOVEN-2022-700
+    provisions:
+      - ref: "§ 7, stk. 1"
+        text_hash: "sha256:1094e0af03f6b6383aee9c5bbc46f629ab94d04b2f949d01621ad54195f1b744"
     severity: hard_stop
     machine_rule:
       require: debit_sum_equals_credit_sum
@@ -127,6 +130,43 @@ rules:
       forbid:
         - silently_missing_backup_after_more_than_7_days_with_new_activity
     explanation: Rentemester must be able to create a full backup of bookkeeping data and supporting documents and deterministically report when the weekly backup duty has become due because new activity happened after the last backup.
+  - rule_id: DK-BOOKKEEPING-BACKUP-DEST-001
+    name: The weekly backup must be stored with an independent third party on an EU/EEA server
+    category: backup_compliance
+    source_id: DK-DIGITAL-BOGFORING-NONREGISTERED-2024-205
+    provisions:
+      - ref: "§ 4, stk. 2"
+        text_hash: "sha256:b85c8e4e92f71426a4901c2b3db689fb5727c1fbc651341c3754ab414bc2e1c3"
+      - ref: "§ 4, stk. 3"
+        text_hash: "sha256:ac5b673b75c0b10f2bb72e473524974a06bb11ba6a59dd6111233e2a50726752"
+    severity: hard_stop
+    machine_rule:
+      require:
+        - destination_attested_in_eea_or_eu
+        - destination_attested_non_related_party
+        - destination_attested_it_security_standards
+        - destination_attestation_signed_by_human
+      forbid:
+        - placement_to_destination_failing_any_attestation
+        - silent_self_attestation_by_agent
+    explanation: Rentemester cannot itself know in which country a cloud folder physically sits, who the third party is, or whether they meet recognised IT-security standards. § 4 stk. 2 is therefore enforced as a human-signed attestation per destination (regionAttestation.inEeaOrEu, nonRelatedParty, itSecurityAttestation.meetsRecognisedStandards), checked by isCompliantDestination() before a backup placement is allowed. Stk. 3 is acknowledged but Rentemester's segment (non-registered, no other backup-mandate lex specialis) does not currently surface the exception as a setting.
+  - rule_id: DK-BOOKKEEPING-BACKUP-KEY-ROTATE-001
+    name: Rotation of the Ed25519 backup signing key must be auditable and preserve the verifiability of older backups
+    category: backup_compliance
+    source_id: DK-DIGITAL-BOGFORING-NONREGISTERED-2024-205
+    provisions:
+      - ref: "§ 4, stk. 1"
+        text_hash: "sha256:96235d331f5562c3334b1ae7b4cf25a44ed1593abcdb75808c9c896b4709c7e2"
+    severity: hard_stop
+    machine_rule:
+      require:
+        - explicit_reason_for_each_key_rotation
+        - audit_log_entry_naming_old_and_new_public_key_fingerprints
+        - archived_old_keypair_preserved_so_older_backups_remain_verifiable
+      forbid:
+        - silent_overwrite_of_the_existing_signing_key
+        - rotation_without_a_recorded_reason
+    explanation: When the backup signing key is rotated, Rentemester archives the old keypair under a fingerprint-named filename, writes a fresh keypair to the live path, and audit-logs both fingerprints together with the operator's reason — so an auditor can always reconstruct which key signed a given older backup and why the rotation happened.
   - rule_id: DK-BOOKKEEPING-AUTHORITY-EXPORT-001
     name: Bookkeeping data and vouchers must be exportable by period in a structured machine-readable package
     category: authority_access
@@ -220,6 +260,11 @@ rules:
     name: Fixed-asset depreciation must post deterministic, balanced period entries linked to the purchase
     category: ledger_validation
     source_id: DK-BOGFORINGSLOVEN-2022-700
+    provisions:
+      - ref: "§ 7, stk. 1"
+        text_hash: "sha256:1094e0af03f6b6383aee9c5bbc46f629ab94d04b2f949d01621ad54195f1b744"
+      - ref: "§ 9, stk. 1"
+        text_hash: "sha256:75acd88eca28d81d86de2d14ed3c3871304f3e4da3cffc0920be43322a96153a"
     severity: hard_stop
     machine_rule:
       require:
@@ -233,6 +278,9 @@ rules:
     name: Immediate small-asset write-off requires explicit confirmation and source-backed rule metadata
     category: ledger_validation
     source_id: DK-BOGFORINGSLOVEN-2022-700
+    provisions:
+      - ref: "§ 9, stk. 1"
+        text_hash: "sha256:75acd88eca28d81d86de2d14ed3c3871304f3e4da3cffc0920be43322a96153a"
     severity: hard_stop
     machine_rule:
       require:
@@ -244,3 +292,63 @@ rules:
         - immediate_writeoff_without_confirmation
         - immediate_writeoff_when_eligibility_uncertain_without_exception
     explanation: Rentemester assists the straksafskrivning workflow by booking a balanced write-off entry only when the user/advisor explicitly confirms it and supplies a source for the applied threshold rule; when documentation is missing or eligibility is uncertain it raises an exception instead of posting, and the user/advisor owns the tax treatment.
+  # ===== ACCRUALS / PERIODEAFGRÆNSNINGSPOSTER =====
+  - rule_id: DK-BOOKKEEPING-ACCRUAL-001
+    name: Accruals must register a balanced parking entry and recognise it through deterministic balanced period entries
+    category: ledger_validation
+    source_id: DK-BOGFORINGSLOVEN-2022-700
+    provisions:
+      - ref: "§ 7, stk. 1"
+        text_hash: "sha256:1094e0af03f6b6383aee9c5bbc46f629ab94d04b2f949d01621ad54195f1b744"
+    severity: hard_stop
+    machine_rule:
+      require:
+        - balanced_accrual_registration_entry
+        - deterministic_even_period_recognition_schedule
+        - balanced_recognition_journal_entry_per_period
+        - recognition_schedule_sums_exactly_to_registered_amount
+      forbid:
+        - duplicate_period_recognition_posting
+        - recognition_total_exceeding_registered_accrual_amount
+    explanation: Rentemester assists the periodeafgrænsning workflow by parking a prepaid/accrued cost or deferred revenue on a balance-sheet accrual account with one balanced registration entry, then recognising it onto the income statement through deterministic, balanced per-period entries that split the amount evenly (the final period carries the øre remainder) so the schedule reconciles exactly to the registered amount; every entry stays append-only and a wrong accrual is corrected by reversal, while the user/advisor owns the choice of period split and accounts.
+  # ===== PAYABLES / KREDITORSTYRING =====
+  - rule_id: DK-PAYABLE-001
+    name: A registered supplier bill must be a traceable, balanced open creditor item
+    category: ledger_validation
+    source_id: DK-BOGFORINGSLOVEN-2022-700
+    provisions:
+      - ref: "§ 9, stk. 1"
+        text_hash: "sha256:75acd88eca28d81d86de2d14ed3c3871304f3e4da3cffc0920be43322a96153a"
+      - ref: "§ 9, stk. 2"
+        text_hash: "sha256:74176e8a44dc7c34034445ee127cbace3ee8a739c979ab4473b0696e62e17c24"
+    severity: hard_stop
+    machine_rule:
+      require:
+        - purchase_document_reference
+        - bill_date_and_due_date
+        - balanced_creditor_recognition_journal_entry
+        - trade_creditor_liability_credited
+      forbid:
+        - duplicate_payable_for_same_purchase_document
+        - payable_recognition_without_purchase_document
+    explanation: Rentemester registers a booked supplier bill as an open creditor item by posting a balanced recognition entry (debit expense plus deductible input VAT, credit the trade-creditor liability account), keyed one-to-one to the underlying purchase document so the same bill is never registered twice.
+  - rule_id: DK-PAYABLE-PAYMENT-001
+    name: Payable payments must be traceably applied against open creditor items and bank transactions
+    category: ledger_validation
+    source_id: DK-BOGFORINGSLOVEN-2022-700
+    provisions:
+      - ref: "§ 9, stk. 1"
+        text_hash: "sha256:75acd88eca28d81d86de2d14ed3c3871304f3e4da3cffc0920be43322a96153a"
+      - ref: "§ 11, stk. 1"
+        text_hash: "sha256:8a1a2a31b9b0c4e29a1b74f5433907f26f276c95348950c907dc5e8f758f1eea"
+    severity: hard_stop
+    machine_rule:
+      require:
+        - open_payable_reference
+        - outgoing_bank_transaction_reference
+        - balanced_settlement_journal_entry
+        - immutable_payment_application
+      forbid:
+        - payment_application_above_open_payable_balance
+        - reuse_of_already_applied_bank_transaction
+    explanation: Rentemester settles an open creditor item by matching one outgoing bank transaction, posting a balanced settlement entry (debit the trade-creditor liability account, credit the bank account) and recording an immutable payment application that never exceeds the payable's open balance.

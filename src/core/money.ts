@@ -145,13 +145,18 @@ export function formatDkk(value: number | string | bigint | null | undefined, cu
 export function formatKronerDa(value: unknown): string {
   const num = typeof value === "number" ? value : Number(value);
   if (value == null || value === "" || !Number.isFinite(num)) return "—";
-  const negative = num < 0;
-  const cents = Math.round(Math.abs(num) * 100);
-  const whole = Math.floor(cents / 100);
-  const fraction = (cents % 100).toString().padStart(2, "0");
-  const wholeText = whole
-    .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  // Round through integer øre (the same half-up BigInt path as `formatAmount`
+  // and `roundDkk`) rather than float `Math.round(num * 100)`, which drifts one
+  // øre on exact halves (1.005 → "1,00" instead of "1,01"). The sign is taken
+  // from the ROUNDED øre, so a sub-øre negative that rounds to zero renders
+  // "0,00 kr." and never a misleading "-0,00 kr.". The browser copy in
+  // app/src/lib/format.ts mirrors this with its own BigInt rounding. (#314)
+  const ore = toOre(num);
+  const negative = ore < 0n;
+  const abs = negative ? -ore : ore;
+  const whole = abs / 100n;
+  const fraction = (abs % 100n).toString().padStart(2, "0");
+  const wholeText = whole.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   return `${negative ? "-" : ""}${wholeText},${fraction} kr.`;
 }
 
@@ -221,6 +226,31 @@ export function accrueInterestDkk(principalAmount: number, annualRatePercent: nu
   const principalOre = toOre(principalAmount);
   const basisPoints = scaledInt(annualRatePercent, 2);
   return fromOre(roundDiv(principalOre * basisPoints * BigInt(days), 10000n * 365n));
+}
+
+/**
+ * Cumulative statutory late interest across one or more contiguous accrual
+ * segments, rounded to øre exactly ONCE.
+ *
+ * Each segment is principaløre × basisPoints × days, and the denominator
+ * (10000 × 365) is identical for every segment, so we sum the integer numerators
+ * and round a single time. This avoids the drift from summing independently
+ * rounded accrueInterestDkk() segments (a sum of rounded values is not the
+ * rounded sum): staged interest claims never over- or under-charge relative to a
+ * single continuous calculation over the same window, while each segment still
+ * carries its own principal and rate (partial payments, half-yearly
+ * reference-rate changes).
+ */
+export function cumulativeInterestDkk(
+  segments: Array<{ principalAmount: number; annualRatePercent: number; days: number }>,
+): number {
+  let numerator = 0n;
+  for (const s of segments) {
+    if (!Number.isInteger(s.days) || s.days <= 0) continue;
+    if (!(s.principalAmount > 0)) continue;
+    numerator += toOre(s.principalAmount) * scaledInt(s.annualRatePercent, 2) * BigInt(s.days);
+  }
+  return fromOre(roundDiv(numerator, 10000n * 365n));
 }
 
 export function roundDiv(numerator: bigint, denominator: bigint) {

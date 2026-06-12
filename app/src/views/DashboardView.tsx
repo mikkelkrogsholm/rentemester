@@ -23,6 +23,7 @@ import { ArchivedBanner } from "../components/ArchivedBanner";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { PnlChart } from "../components/PnlChart";
+import { AccountantExportCard } from "../components/AccountantExportCard";
 
 export function DashboardView() {
   const { slug = "" } = useParams();
@@ -67,6 +68,7 @@ export function DashboardView() {
       {o.archived && (
         <ArchivedBanner year={o.selectedYear} source={o.archivedSource} />
       )}
+      {isFreshEmptyCompany(o) && <GetStartedCard slug={slug} />}
       <p className="period-head muted">
         Regnskabsår {o.selectedYear} ·{" "}
         {o.lastPostedDate
@@ -138,7 +140,60 @@ export function DashboardView() {
         )}
         <RecentEntriesCard entries={o.recentEntries} currency={currency} />
       </div>
+
+      {/* #373 — Revisor-eksport is one of the headline year-end actions; it
+          lives here on Overblik so the owner can find it without digging
+          through "Administrér virksomhed". The card stays on the Administrér
+          page too — this is purely about discoverability. Hidden for an
+          archived (read-only) year, since the export reads the live ledger. */}
+      {!o.archived && (
+        <div className="section">
+          <h3>Eksport til revisor</h3>
+          <AccountantExportCard slug={slug} />
+        </div>
+      )}
     </section>
+  );
+}
+
+// --------------------------------------------------------------------------
+// #395 — "Sådan kommer du i gang" empty-state CTA
+// --------------------------------------------------------------------------
+
+/**
+ * A freshly-onboarded company shows zeros across the board: nothing has been
+ * booked, no bank statement imported. We surface a next-step CTA only in that
+ * specific state — and never for an archived (read-only) year. The card is
+ * removed automatically as soon as either the ledger or the bank gains any
+ * data, so it can never become a permanent fixture.
+ */
+function isFreshEmptyCompany(o: CompanyOverview): boolean {
+  if (o.archived) return false;
+  const noEntries = o.lastPostedDate === null && o.recentEntries.length === 0;
+  const noBank = o.bank.actualBalance === null && o.bank.balance === 0;
+  return noEntries && noBank;
+}
+
+function GetStartedCard({ slug }: { slug: string }) {
+  return (
+    <div className="card get-started-card">
+      <h3>Sådan kommer du i gang</h3>
+      <p className="muted">
+        Du er klar til at bogføre din første postering. Vælg én af de tre veje
+        — du kan altid bruge agenten eller kommandolinjen i stedet.
+      </p>
+      <div className="get-started-actions">
+        <Link className="btn primary" to={`/companies/${slug}/bilag`}>
+          Indlæs dit første bilag
+        </Link>
+        <Link className="btn secondary" to={`/companies/${slug}/bank`}>
+          Importér bankudtog
+        </Link>
+        <Link className="btn secondary" to={`/companies/${slug}/fakturaer`}>
+          Udsted din første faktura
+        </Link>
+      </div>
+    </div>
   );
 }
 
@@ -329,8 +384,10 @@ function VatCard({
 }) {
   // VAT is a live-ledger figure — never rendered for an archived year.
   if (vat === null) return null;
-  // The quarterly momsangivelse is easy to forget — surface the statutory
-  // filing/payment deadline and a "X dage tilbage" countdown right on the card.
+  // The momsangivelse is easy to forget — surface it right on the card. Two
+  // dates that an owner must not conflate: the VAT period's own span, and the
+  // SKAT filing/payment deadline (the 1st of the third month AFTER the period
+  // ends). The countdown targets the deadline, so the card spells both out.
   const days = vat.daysRemaining;
   const countdown =
     days < 0
@@ -347,10 +404,11 @@ function VatCard({
         {formatKroner(vat.payable, currency)}
       </div>
       <p className="muted status-note">
-        {vat.periodLabel} · {vat.payable >= 0 ? "at betale" : "tilgode"}
+        Momsperiode {vat.periodLabel} ({vat.periodStart} – {vat.periodEnd}) ·{" "}
+        {vat.payable >= 0 ? "at betale" : "tilgode"}
       </p>
       <p className="muted status-note">
-        Frist {vat.deadline} ·{" "}
+        Indberettes og betales til SKAT senest {vat.deadline} ·{" "}
         <span className={`bank-diff ${tone === "ok" ? "ok" : "alert"}`}>
           {countdown}
         </span>

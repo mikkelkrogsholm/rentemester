@@ -94,24 +94,26 @@ export type ExportSaftPackageResult = {
   journalEntryCount?: number;
   salesInvoiceCount?: number;
   purchaseInvoiceCount?: number;
+  customerCount?: number;
+  supplierCount?: number;
   appliedRules: string[];
   errors: string[];
 };
 
 const RULE_ID = "DK-BOOKKEEPING-SAFT-EXPORT-001";
 
-// ===== Second deterministic slice: purchase records, VAT summary, document references (#127) =====
-// The export covers ledger + sales (slice 1) plus purchase-side invoices, a
-// VAT-summary section aggregated from journal-line tax codes, and document
-// references linking ledger transactions to their source document. The profile
-// identifier is bumped to v2 and remains explicit so the export is never
-// mistaken for a complete/generic SAF-T implementation.
-const PROFILE_ID = "rentemester-dk-saft-v2-ledger-sales-purchases";
-const AUDIT_FILE_VERSION = "2.0";
+// ===== Third deterministic slice: customer + supplier master files =====
+// Built on top of slice 2 (ledger + sales + purchases + VAT summary +
+// document references). Slice 3 adds the MasterFiles/Customers and
+// MasterFiles/Suppliers sections from the company's own customer/vendor
+// stamdata, so a SAF-T reader can resolve a TaxRegistrationNumber on a
+// purchase or sales invoice back to a master record. The profile identifier
+// is bumped to v3 and stays explicit so the export is never mistaken for a
+// complete/generic SAF-T implementation.
+const PROFILE_ID = "rentemester-dk-saft-v3-ledger-sales-purchases-masterfiles";
+const AUDIT_FILE_VERSION = "3.0";
 const OUT_OF_SCOPE = [
   "bank_statement_transport",
-  "supplier_master_files",
-  "customer_master_files",
   "payments_collections",
   "fixed_assets",
   "stock_movements",
@@ -135,6 +137,28 @@ type VatSummaryRow = {
   debitAmount: number;
   creditAmount: number;
   lineCount: number;
+};
+
+type CustomerRow = {
+  customerId: number;
+  name: string;
+  vatOrCvr: string | null;
+  address: string | null;
+  email: string | null;
+  phone: string | null;
+  defaultCurrency: string;
+  paymentTermsDays: number;
+};
+
+type SupplierRow = {
+  supplierId: number;
+  name: string;
+  vatOrCvr: string | null;
+  address: string | null;
+  email: string | null;
+  phone: string | null;
+  defaultExpenseAccount: string | null;
+  defaultVatTreatment: string | null;
 };
 
 function resolveIsoDateTime(value?: string) {
@@ -325,6 +349,42 @@ function fetchPurchaseInvoices(db: Database, periodStart: string, periodEnd: str
   });
 }
 
+// ===== Customer + supplier master files for the third slice =====
+// Both tables are read in full (active + archived), so a SAF-T reader can
+// resolve every TaxRegistrationNumber referenced by a sales or purchase
+// invoice in the period, not only the still-active parties.
+function fetchCustomers(db: Database): CustomerRow[] {
+  return (db.query(
+    `SELECT id, name, vat_or_cvr, address, email, phone, default_currency, payment_terms_days
+     FROM customers ORDER BY id ASC`,
+  ).all() as any[]).map((row) => ({
+    customerId: Number(row.id),
+    name: row.name,
+    vatOrCvr: row.vat_or_cvr ?? null,
+    address: row.address ?? null,
+    email: row.email ?? null,
+    phone: row.phone ?? null,
+    defaultCurrency: row.default_currency ?? "DKK",
+    paymentTermsDays: Number(row.payment_terms_days ?? 30),
+  }));
+}
+
+function fetchSuppliers(db: Database): SupplierRow[] {
+  return (db.query(
+    `SELECT id, name, vat_or_cvr, address, email, phone, default_expense_account, default_vat_treatment
+     FROM vendors ORDER BY id ASC`,
+  ).all() as any[]).map((row) => ({
+    supplierId: Number(row.id),
+    name: row.name,
+    vatOrCvr: row.vat_or_cvr ?? null,
+    address: row.address ?? null,
+    email: row.email ?? null,
+    phone: row.phone ?? null,
+    defaultExpenseAccount: row.default_expense_account ?? null,
+    defaultVatTreatment: row.default_vat_treatment ?? null,
+  }));
+}
+
 // ===== VAT summary aggregated from deterministic journal-line tax codes (#127) =====
 function summarizeVat(journalEntries: JournalEntryRow[]): VatSummaryRow[] {
   const byCode = new Map<string, VatSummaryRow>();
@@ -343,7 +403,7 @@ function summarizeVat(journalEntries: JournalEntryRow[]): VatSummaryRow[] {
 
 function buildReadme(input: { periodStart: string; periodEnd: string; generatedAt: string }) {
   return [
-    "Rentemester SAF-T export (second deterministic slice)",
+    "Rentemester SAF-T export (third deterministic slice)",
     "",
     "This is a bounded, profile-scoped export. It is NOT a complete or generic",
     "SAF-T implementation and must not be treated as one. See ProfileID below.",
@@ -383,6 +443,8 @@ function fetchDocumentNumbers(db: Database, ids: number[]): Map<number, string> 
 function renderSaftXml(input: {
   company: CompanyRow;
   accounts: AccountRow[];
+  customers: CustomerRow[];
+  suppliers: SupplierRow[];
   journalEntries: JournalEntryRow[];
   salesInvoices: SalesInvoiceRow[];
   purchaseInvoices: PurchaseInvoiceRow[];
@@ -427,7 +489,12 @@ function renderSaftXml(input: {
       "        <Line>",
       xmlTag("LineNumber", index + 1, "          "),
       xmlTag("Description", line.description ?? null, "          "),
-      xmlTag("Quantity", formatAmount(line.quantity), "          "),
+      // Quantity is NOT a monetary amount — render it as-is, never through the
+      // 2-decimal øre money formatter (which would turn 3 into "3.00" and round
+      // a fractional 1.005 to "1.01"). Only a real number is emitted (mirroring
+      // the Peppol sibling's `typeof === "number"` guard), so a malformed
+      // non-number from a hand-edited payload cannot leak into the export.
+      xmlTag("Quantity", typeof line.quantity === "number" ? line.quantity : null, "          "),
       xmlTag("UnitPrice", formatAmount(line.unitPriceExVat), "          "),
       xmlTag("CreditAmount", formatAmount(line.lineTotalExVat), "          "),
       "        </Line>",
@@ -506,6 +573,34 @@ function renderSaftXml(input: {
       "      </Account>",
     ].filter(Boolean).join("\n")),
     "    </GeneralLedgerAccounts>",
+    "    <Customers>",
+    ...input.customers.map((customer) => [
+      "      <Customer>",
+      xmlTag("CustomerID", customer.customerId, "        "),
+      xmlTag("CustomerName", customer.name, "        "),
+      xmlTag("CustomerTaxID", customer.vatOrCvr, "        "),
+      xmlTag("Address", customer.address, "        "),
+      xmlTag("Email", customer.email, "        "),
+      xmlTag("Telephone", customer.phone, "        "),
+      xmlTag("DefaultCurrencyCode", customer.defaultCurrency, "        "),
+      xmlTag("PaymentTermsDays", customer.paymentTermsDays, "        "),
+      "      </Customer>",
+    ].filter(Boolean).join("\n")),
+    "    </Customers>",
+    "    <Suppliers>",
+    ...input.suppliers.map((supplier) => [
+      "      <Supplier>",
+      xmlTag("SupplierID", supplier.supplierId, "        "),
+      xmlTag("SupplierName", supplier.name, "        "),
+      xmlTag("SupplierTaxID", supplier.vatOrCvr, "        "),
+      xmlTag("Address", supplier.address, "        "),
+      xmlTag("Email", supplier.email, "        "),
+      xmlTag("Telephone", supplier.phone, "        "),
+      xmlTag("DefaultExpenseAccount", supplier.defaultExpenseAccount, "        "),
+      xmlTag("DefaultVatTreatment", supplier.defaultVatTreatment, "        "),
+      "      </Supplier>",
+    ].filter(Boolean).join("\n")),
+    "    </Suppliers>",
     "  </MasterFiles>",
     "  <GeneralLedgerEntries>",
     "    <Journal>",
@@ -582,6 +677,10 @@ export function exportSaftPackage(db: Database, companyRoot: string, input: Expo
     [...new Set(journalEntries.map((entry) => entry.documentId).filter((id): id is number => id != null))],
   );
 
+  // ===== Third slice: customer + supplier master files =====
+  const customers = fetchCustomers(db);
+  const suppliers = fetchSuppliers(db);
+
   const exportDir = join(input.outputDir, packageName(input.periodStart, input.periodEnd, generatedAt));
   mkdirSync(exportDir, { recursive: true });
 
@@ -593,6 +692,8 @@ export function exportSaftPackage(db: Database, companyRoot: string, input: Expo
   const xml = renderSaftXml({
     company: company!,
     accounts,
+    customers,
+    suppliers,
     journalEntries,
     salesInvoices,
     purchaseInvoices,
@@ -626,6 +727,9 @@ export function exportSaftPackage(db: Database, companyRoot: string, input: Expo
       purchaseInvoices: purchaseInvoices.length,
       vatSummaryCodes: vatSummary.length,
       documentReferences: documentNumbersById.size,
+      // ===== Third slice manifest counts (master files) =====
+      customers: customers.length,
+      suppliers: suppliers.length,
     },
     outOfScope: [...OUT_OF_SCOPE],
     outputs,
@@ -650,6 +754,8 @@ export function exportSaftPackage(db: Database, companyRoot: string, input: Expo
     journalEntryCount: journalEntries.length,
     salesInvoiceCount: salesInvoices.length,
     purchaseInvoiceCount: purchaseInvoices.length,
+    customerCount: customers.length,
+    supplierCount: suppliers.length,
     appliedRules: [RULE_ID],
     errors: [],
   };

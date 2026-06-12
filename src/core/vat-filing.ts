@@ -156,8 +156,12 @@ export function buildVatFiling(db: Database, periodStart: string, periodEnd: str
   const rubrikA = vatReport.reverseChargePurchaseBase;
   // Rubrik B: value of goods/services sold abroad without Danish VAT.
   const rubrikB = vatReport.reverseChargeSalesBase;
-  // Rubrik C: other VAT-exempt sales — no dedicated code today.
-  const rubrikC = 0;
+  // Rubrik C: value of other VAT-exempt sales (momsloven §13), now derived
+  // from real ledger data — revenue lines booked with the DK_SALE_EXEMPT VAT
+  // code. OSS consumer sales (OSS_EU_CONSUMER) are deliberately NOT part of
+  // rubrik C: they belong on the separate OSS return, so buildVatReport keeps
+  // them in their own base and they never reach this momsangivelse.
+  const rubrikC = vatReport.exemptSalesBase;
 
   return {
     ok: true,

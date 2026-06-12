@@ -86,18 +86,23 @@ export function CompanyForm({
         />
       </label>
 
-      <label>
-        Slug (valgfrit)
-        <input
-          name="slug"
-          value={slug}
-          onChange={(e) => setSlug(e.target.value)}
-          placeholder="udledes-af-navnet"
-        />
-        <span className="field-hint">
-          Mappenavnet for regnskabet. Udledes automatisk hvis tomt.
-        </span>
-      </label>
+      <details className="advanced-fold">
+        <summary>Avancerede indstillinger</summary>
+        <label>
+          Slug (valgfrit)
+          <input
+            name="slug"
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+            placeholder="udledes-af-navnet"
+          />
+          <span className="field-hint">
+            Mappenavnet for regnskabet på disk. Udledes automatisk fra
+            navnet ovenfor hvis du lader feltet stå tomt — du behøver
+            sjældent at angive det selv.
+          </span>
+        </label>
+      </details>
 
       <label>
         CVR-nummer (valgfrit)
@@ -105,7 +110,7 @@ export function CompanyForm({
           name="cvr"
           value={cvr}
           onChange={(e) => setCvr(e.target.value)}
-          placeholder="DK12345678"
+          placeholder="12345678"
         />
       </label>
 
@@ -144,7 +149,7 @@ export function CompanyForm({
       </label>
 
       <label>
-        Pengeinstitut (valgfrit)
+        Bank (valgfrit)
         <input
           name="bankName"
           value={bankName}

@@ -27,7 +27,9 @@ export function registerMileageTools(server: McpServer): void {
     "mileage_list",
     {
       title: "List mileage entries",
-      description: "Lister registrerede kørselsposter (kørselsregnskab). Read-only.",
+      description:
+        "Lister registrerede kørselsposter (kørselsregnskab). Read-only. " +
+        "Rækkefølge: travel_date DESC, id DESC (nyeste først, deterministisk).",
       inputSchema: {
         company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
       },

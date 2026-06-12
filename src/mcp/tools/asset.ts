@@ -15,6 +15,7 @@ import {
   postImmediateWriteOff,
   buildAssetRegisterReport,
 } from "../../core/assets";
+import { withActor } from "../actor";
 import { envelopeShape, wrapCoreResult } from "../envelope";
 import { withCompanyDb, withCompanyDbConfirmed, confirmField } from "../tool-runtime";
 
@@ -75,19 +76,27 @@ export function registerAssetTools(server: McpServer): void {
       accumulatedAccount?: string;
       note?: string;
       confirm?: boolean;
-    }>(server, "asset_register", ({ db, args }) => {
-      const result = registerAsset(db, {
-        name: args.name,
-        category: args.category,
-        acquisitionDate: args.acquisitionDate,
-        cost: args.cost,
-        usefulLifeMonths: args.usefulLifeMonths,
-        purchaseDocumentId: args.documentId,
-        assetAccountNo: args.assetAccount,
-        depreciationExpenseAccountNo: args.depreciationAccount,
-        accumulatedDepreciationAccountNo: args.accumulatedAccount,
-        note: args.note,
-      });
+    }>(server, "asset_register", ({ db, actor, args }) => {
+      // Actor-invariant (#63/#76): attribute the asset-acquisition posting to
+      // the booking agent in the hash chain + audit_log, not the OS user.
+      const result = registerAsset(
+        db,
+        withActor(
+          {
+            name: args.name,
+            category: args.category,
+            acquisitionDate: args.acquisitionDate,
+            cost: args.cost,
+            usefulLifeMonths: args.usefulLifeMonths,
+            purchaseDocumentId: args.documentId,
+            assetAccountNo: args.assetAccount,
+            depreciationExpenseAccountNo: args.depreciationAccount,
+            accumulatedDepreciationAccountNo: args.accumulatedAccount,
+            note: args.note,
+          },
+          actor,
+        ),
+      );
       return wrapCoreResult(result);
     }),
   );
@@ -122,12 +131,20 @@ export function registerAssetTools(server: McpServer): void {
       period: number;
       date: string;
       confirm?: boolean;
-    }>(server, "asset_depreciate", ({ db, args }) => {
-      const result = postDepreciationPeriod(db, {
-        assetId: args.assetId,
-        periodIndex: args.period,
-        transactionDate: args.date,
-      });
+    }>(server, "asset_depreciate", ({ db, actor, args }) => {
+      // Actor-invariant (#63/#76): attribute the depreciation posting to the
+      // booking agent in the hash chain + audit_log, not the OS user.
+      const result = postDepreciationPeriod(
+        db,
+        withActor(
+          {
+            assetId: args.assetId,
+            periodIndex: args.period,
+            transactionDate: args.date,
+          },
+          actor,
+        ),
+      );
       return wrapCoreResult(result);
     }),
   );
@@ -194,20 +211,28 @@ export function registerAssetTools(server: McpServer): void {
       paymentAccount?: string;
       note?: string;
       confirm?: boolean;
-    }>(server, "asset_write_off", ({ db, args }) => {
-      const result = postImmediateWriteOff(db, {
-        name: args.name,
-        category: args.category,
-        acquisitionDate: args.acquisitionDate,
-        cost: args.cost,
-        purchaseDocumentId: args.documentId,
-        expenseAccountNo: args.expenseAccount,
-        transactionDate: args.date,
-        confirmImmediateWriteOff: args.confirmImmediateWriteOff,
-        thresholdRuleSource: args.thresholdRuleSource,
-        paymentAccountNo: args.paymentAccount,
-        note: args.note,
-      });
+    }>(server, "asset_write_off", ({ db, actor, args }) => {
+      // Actor-invariant (#63/#76): attribute the straksafskrivning posting to
+      // the booking agent in the hash chain + audit_log, not the OS user.
+      const result = postImmediateWriteOff(
+        db,
+        withActor(
+          {
+            name: args.name,
+            category: args.category,
+            acquisitionDate: args.acquisitionDate,
+            cost: args.cost,
+            purchaseDocumentId: args.documentId,
+            expenseAccountNo: args.expenseAccount,
+            transactionDate: args.date,
+            confirmImmediateWriteOff: args.confirmImmediateWriteOff,
+            thresholdRuleSource: args.thresholdRuleSource,
+            paymentAccountNo: args.paymentAccount,
+            note: args.note,
+          },
+          actor,
+        ),
+      );
       return wrapCoreResult(result);
     }),
   );

@@ -542,3 +542,104 @@ export function packBackupArchive(
     errors: [],
   };
 }
+
+/** Operator input for `rotateBackupKeypair`. */
+export type RotateBackupKeypairInput = {
+  /** Human-readable reason recorded in the audit log; required. */
+  reason: string;
+  /** Override clock (ISO timestamp). Defaults to `new Date().toISOString()`. */
+  rotatedAt?: string;
+};
+
+/** Outcome of a successful key rotation, plus the locations of both old and new files. */
+export type RotateBackupKeypairResult = {
+  ok: boolean;
+  errors: string[];
+  oldPublicKeyHint?: string;
+  newPublicKeyHint?: string;
+  archivedPrivateKeyPath?: string;
+  archivedPublicKeyPath?: string;
+  newPrivateKeyPath?: string;
+  newPublicKeyPath?: string;
+};
+
+const ROTATE_KEY_RULE_ID = "DK-BOOKKEEPING-BACKUP-KEY-ROTATE-001";
+
+/**
+ * Rotates the Ed25519 backup signing keypair: the existing pair is archived
+ * under `backup-keys-archive/<timestamp>-<old-fingerprint>.*.pem`, and a fresh
+ * keypair takes its place at the standard locations. The rotation is recorded
+ * in the audit log together with the operator's `reason`.
+ *
+ * After rotation, newly created backups sign with the new key; older backups
+ * verify using the archived public key that was active at the time of signing,
+ * which the verifier supplies out-of-band as before.
+ *
+ * Refuses to run if no live keypair exists (bootstrap via
+ * `system backup --sign-with-ed25519` first), and if `reason` is empty —
+ * an unattributed rotation defeats the point of the audit trail.
+ */
+export function rotateBackupKeypair(
+  db: Database,
+  companyRoot: string,
+  input: RotateBackupKeypairInput,
+): RotateBackupKeypairResult {
+  const reason = (input.reason ?? "").trim();
+  if (reason.length === 0) {
+    return { ok: false, errors: ["reason is required for backup key rotation"] };
+  }
+  const rotatedAt = (input.rotatedAt ?? new Date().toISOString()).trim();
+  const privPath = backupEd25519PrivateKeyPath(companyRoot);
+  const pubPath = backupEd25519PublicKeyPath(companyRoot);
+  if (!existsSync(privPath) || !existsSync(pubPath)) {
+    return {
+      ok: false,
+      errors: [
+        "no existing ed25519 keypair to rotate — run 'system backup --sign-with-ed25519' first to bootstrap one",
+      ],
+    };
+  }
+
+  const oldPrivPem = readFileSync(privPath, "utf8");
+  const oldPubPem = readFileSync(pubPath, "utf8");
+  const oldHint = publicKeyHint(oldPubPem);
+
+  // Archive the old pair side-by-side. The fingerprint of the OLD public key
+  // goes in the filename so a verifier presented with an older backup can
+  // recognise which archived key signed it.
+  const archiveDir = join(companyRoot, "backup-keys-archive");
+  mkdirSync(archiveDir, { recursive: true });
+  const stamp = rotatedAt.replace(/[^0-9A-Za-z]/g, "");
+  const archivedPrivPath = join(archiveDir, `${stamp}-${oldHint}.key.pem`);
+  const archivedPubPath = join(archiveDir, `${stamp}-${oldHint}.pub.pem`);
+  writeFileSync(archivedPrivPath, oldPrivPem, { mode: 0o600 });
+  writeFileSync(archivedPubPath, oldPubPem);
+
+  const { publicKey, privateKey } = generateKeyPairSync("ed25519");
+  const newPrivPem = privateKey.export({ type: "pkcs8", format: "pem" }).toString();
+  const newPubPem = publicKey.export({ type: "spki", format: "pem" }).toString();
+  writeFileSync(privPath, newPrivPem, { mode: 0o600 });
+  writeFileSync(pubPath, newPubPem);
+  const newHint = publicKeyHint(newPubPem);
+
+  insertAuditLog(db, {
+    eventType: "backup_keypair_rotated",
+    entityType: "backup",
+    entityId: newHint,
+    message:
+      `Ed25519 backup signing key rotated. Old fingerprint ${oldHint}, ` +
+      `new fingerprint ${newHint}. Reason: ${reason}. ` +
+      `(rule ${ROTATE_KEY_RULE_ID})`,
+  });
+
+  return {
+    ok: true,
+    errors: [],
+    oldPublicKeyHint: oldHint,
+    newPublicKeyHint: newHint,
+    archivedPrivateKeyPath: archivedPrivPath,
+    archivedPublicKeyPath: archivedPubPath,
+    newPrivateKeyPath: privPath,
+    newPublicKeyPath: pubPath,
+  };
+}

@@ -19,6 +19,15 @@ export type Envelope<TData = Record<string, unknown>> = {
   data?: TData;
   errors: string[];
   appliedRules?: string[];
+  /**
+   * Stable, machine-readable error marker for cross-cutting preconditions
+   * (`BACKUP_LOCKED`, …). Sættes kun ved `ok=false` og kun for fejl der
+   * lever uden for det enkelte tools forretningslogik — så en agent kan
+   * branche uden at parse dansk fri-tekst i `errors[]`. Per-tool
+   * forretningsfejl bærer ikke `code` og forbliver kun beskrevet i
+   * `errors[]`.
+   */
+  code?: string;
 };
 
 /**
@@ -64,6 +73,16 @@ export const envelopeShape = {
       "Regel-id'er der fyrede for denne handling (sporbarhed). Sættes for " +
         "bogførings-tools; udeladt ellers.",
     ),
+  code: z
+    .string()
+    .optional()
+    .describe(
+      "Stabil maskinlæsbar fejl-markør for cross-cutting preconditions " +
+        "(fx \"BACKUP_LOCKED\"). Sættes kun ved ok=false og kun for fejl der " +
+        "lever uden for det enkelte tools forretningslogik — agenten kan " +
+        "branche på `code` uden at parse fri-tekst i `errors[]`. Udeladt " +
+        "ved per-tool forretningsfejl.",
+    ),
 } as const;
 
 /**
@@ -104,11 +123,16 @@ export function wrapCoreResult<T extends { ok: boolean; errors?: unknown }>(
  * Bruges fx når confirm-flag mangler, eller når input-validering fejler
  * før vi overhovedet rammer database/ledger.
  */
-export function errorEnvelope(errors: string[] | string): Envelope {
-  return {
+export function errorEnvelope(
+  errors: string[] | string,
+  options?: { code?: string },
+): Envelope {
+  const envelope: Envelope = {
     ok: false,
     errors: normalizeErrors(errors),
   };
+  if (options?.code) envelope.code = options.code;
+  return envelope;
 }
 
 /**

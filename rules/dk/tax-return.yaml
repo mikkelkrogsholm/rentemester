@@ -1,0 +1,33 @@
+version: dk-tax-return-v0.0.1
+# Corporate tax return preparation (oplysningsskema) for a Danish micro-ApS.
+# This bundle declares a deliberately NARROW, deterministic FIRST SLICE: it
+# governs HOW Rentemester prepares the corporate taxable income from the
+# bookkept årets resultat, NOT a full corporate-tax computation.
+#
+# The taxable income rests on the locked annual report (#177), so this bundle
+# cites årsregnskabsloven as its source. It is a workflow-guardrail rule, not a
+# rule keyed against a single statutory provision — it therefore carries no
+# `provisions:` block (it is an uncited rule in the regulatory-coverage metric,
+# exactly like DK-ANNUAL-REPORT-CLASS-B-001). The 22% selskabsskat rate is a
+# documented assist constant in src/core/tax-return.ts; anything that cannot be
+# derived deterministically from the ledger is surfaced as a needs-review item
+# rather than computed.
+sources:
+  - DK-AARSREGNSKABSLOVEN-2024-1140
+rules:
+  - rule_id: DK-TAX-RETURN-CORP-001
+    name: Corporate taxable income is prepared deterministically from a locked annual report; non-deterministic adjustments are surfaced as needs-review
+    category: tax_return
+    source_id: DK-AARSREGNSKABSLOVEN-2024-1140
+    severity: advisory
+    machine_rule:
+      require:
+        - locked_annual_report
+        - company_cvr
+        - books_balanced
+        - bookkept_result
+      forbid:
+        - tax_return_for_open_or_partially_locked_fiscal_year
+        - guessing_tax_depreciation_or_loss_carry_forward
+        - corporate_tax_for_company_form_outside_micro_aps
+    explanation: Rentemester prepares the corporate taxable income (skattepligtig indkomst) for the oplysningsskema only from a fully locked annual report plus the skattemæssige reguleringer it can see deterministically (the non-deductible representation VAT add-back), and computes the 22% selskabsskat for a micro-ApS; tax depreciation, loss carry-forward and other company forms are surfaced as needs-review items, never guessed, and the owner or advisor reviews the figures and files via TastSelv Erhverv.

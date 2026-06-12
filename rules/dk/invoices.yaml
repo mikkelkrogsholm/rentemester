@@ -1,9 +1,10 @@
-version: dk-invoices-v0.0.6
+version: dk-invoices-v0.0.11
 sources:
   - DK-MOMSBEKENDTGORELSEN-2023-1435
   - DK-MOMSLOVEN-2024-209
   - DK-RENTELOVEN-2014-459
   - DK-UDENRETLIGE-INDDRIVELSESOMKOSTNINGER-AMEND-2013-105
+  - DK-OFFENTLIGE-BETALINGER-2007-798
 rules:
   - rule_id: DK-INVOICE-FULL-001
     name: Full invoice must contain core seller/buyer/date/number/content fields
@@ -179,7 +180,7 @@ rules:
   - rule_id: DK-INVOICE-PUBLIC-RECIPIENT-001
     name: Public-recipient invoices must carry valid EAN/GLN metadata in the immutable buyer snapshot
     category: invoice_validation
-    source_id: DK-MOMSBEKENDTGORELSEN-2023-1435
+    source_id: DK-OFFENTLIGE-BETALINGER-2007-798
     severity: hard_stop
     machine_rule:
       condition: buyer_public_recipient == true or buyer_ean_number_present == true
@@ -193,7 +194,7 @@ rules:
   - rule_id: DK-INVOICE-PUBLIC-EXPORT-001
     name: Public-recipient invoice export preview must be deterministic and clearly scoped as transport-free handoff
     category: invoice_integrity
-    source_id: DK-MOMSBEKENDTGORELSEN-2023-1435
+    source_id: DK-OFFENTLIGE-BETALINGER-2007-798
     severity: hard_stop
     machine_rule:
       require:
@@ -208,7 +209,7 @@ rules:
   - rule_id: DK-INVOICE-PUBLIC-OIOUBL-001
     name: Public-recipient OIOUBL handoff export must be deterministic, auditable, and transport-scoped
     category: invoice_integrity
-    source_id: DK-MOMSBEKENDTGORELSEN-2023-1435
+    source_id: DK-OFFENTLIGE-BETALINGER-2007-798
     severity: hard_stop
     machine_rule:
       require:
@@ -257,9 +258,12 @@ rules:
         - reference_rate_input
         - annual_rate_equals_reference_rate_plus_8pct_points
         - daily_interest_from_overdue_days
+        - incremental_accrual_anchored_at_last_registered_claim
+        - date_aware_accrual_on_outstanding_balance_per_day
       forbid:
         - late_interest_on_non_overdue_or_nonpositive_balance
-    explanation: Rentemester must be able to calculate statutory delay interest on overdue collectible balances using the renteloven formula and an explicit reference rate for the relevant half-year.
+        - re_billing_a_period_already_covered_by_an_earlier_claim
+    explanation: Rentemester must be able to calculate statutory delay interest on overdue collectible balances using the renteloven formula and an explicit reference rate for the relevant half-year. Interest is simple interest on the amount outstanding at any given time (renteloven § 5, stk. 1 — "det til enhver tid skyldige beløb"), accruing continuously from the due date (§ 3): each day accrues on the open balance as of that day, reconstructed from payments and credit notes by effective date. A later calculation bills only the incremental period since the last registered claim, so no day is ever charged twice.
   - rule_id: DK-INVOICE-LATE-INTEREST-REGISTER-001
     name: A late-interest claim may only be registered from a deterministic calculation and must remain traceable in the claim balance
     category: invoice_lifecycle
@@ -274,9 +278,11 @@ rules:
         - immutable_interest_claim_record
         - unique_interest_claim_per_invoice_date_and_reference_rate
         - claim_balance_includes_registered_interest
+        - registered_amount_is_incremental_interest_since_last_claim
       forbid:
         - interest_registration_without_positive_accrued_interest
-    explanation: Rentemester must only register late interest from a deterministic statutory calculation, keep each registered interest claim immutable and traceable, and surface the accumulated registered interest in the invoice claim balance.
+        - double_charge_of_a_period_already_covered_by_an_earlier_claim
+    explanation: Rentemester must only register late interest from a deterministic statutory calculation, keep each registered interest claim immutable and traceable, and surface the accumulated registered interest in the invoice claim balance. Each registered claim records only the incremental interest for the period since the previous claim, so progressively registering interest (e.g. with each reminder) never re-bills a period an earlier claim already covered.
   - rule_id: DK-INVOICE-LATE-INTEREST-BOOKKEEPING-001
     name: Registered late-interest claims must be bookable once to receivables and non-VAT claim income
     category: invoice_accounting
@@ -335,7 +341,10 @@ rules:
   - rule_id: DK-INVOICE-LATE-COMPENSATION-001
     name: Overdue commercial invoices must support deterministic assessment of the fixed compensation claim
     category: invoice_lifecycle
-    source_id: DK-UDENRETLIGE-INDDRIVELSESOMKOSTNINGER-AMEND-2013-105
+    source_id: DK-RENTELOVEN-2014-459
+    provisions:
+      - ref: "§ 9a, stk. 3"
+        text_hash: "sha256:95574e5d4b20f2400b9187fff377ddb513eb287f5126fcddde9f7afcd3dc2869"
     severity: hard_stop
     machine_rule:
       require:
@@ -348,7 +357,10 @@ rules:
   - rule_id: DK-INVOICE-LATE-COMPENSATION-REGISTER-001
     name: A fixed compensation claim may only be registered once per overdue commercial invoice and must stay traceable in the claim balance
     category: invoice_lifecycle
-    source_id: DK-UDENRETLIGE-INDDRIVELSESOMKOSTNINGER-AMEND-2013-105
+    source_id: DK-RENTELOVEN-2014-459
+    provisions:
+      - ref: "§ 9a, stk. 3"
+        text_hash: "sha256:95574e5d4b20f2400b9187fff377ddb513eb287f5126fcddde9f7afcd3dc2869"
     severity: hard_stop
     machine_rule:
       require:
@@ -417,7 +429,10 @@ rules:
   - rule_id: DK-INVOICE-SETTLEMENT-001
     name: Bank-settled customer payments must clear receivables with traceable invoice and bank links
     category: invoice_lifecycle
-    source_id: DK-MOMSBEKENDTGORELSEN-2023-1435
+    source_id: DK-BOGFORINGSLOVEN-2022-700
+    provisions:
+      - ref: "§ 9, stk. 1"
+        text_hash: "sha256:75acd88eca28d81d86de2d14ed3c3871304f3e4da3cffc0920be43322a96153a"
     severity: hard_stop
     machine_rule:
       require:
@@ -433,6 +448,9 @@ rules:
     name: Bank-settled invoice claim receipts must clear booked claim receivables with traceable invoice and bank links
     category: invoice_lifecycle
     source_id: DK-BOGFORINGSLOVEN-2022-700
+    provisions:
+      - ref: "§ 9, stk. 1"
+        text_hash: "sha256:75acd88eca28d81d86de2d14ed3c3871304f3e4da3cffc0920be43322a96153a"
     severity: hard_stop
     machine_rule:
       require:
@@ -451,6 +469,9 @@ rules:
     name: A single incoming bank receipt may settle principal and booked claims in one deterministic application
     category: invoice_lifecycle
     source_id: DK-BOGFORINGSLOVEN-2022-700
+    provisions:
+      - ref: "§ 9, stk. 1"
+        text_hash: "sha256:75acd88eca28d81d86de2d14ed3c3871304f3e4da3cffc0920be43322a96153a"
     severity: hard_stop
     machine_rule:
       require:
@@ -467,7 +488,10 @@ rules:
   - rule_id: DK-INVOICE-PAYMENT-001
     name: Invoice payments must be traceably applied against issued invoices and bank transactions
     category: invoice_lifecycle
-    source_id: DK-MOMSBEKENDTGORELSEN-2023-1435
+    source_id: DK-BOGFORINGSLOVEN-2022-700
+    provisions:
+      - ref: "§ 9, stk. 1"
+        text_hash: "sha256:75acd88eca28d81d86de2d14ed3c3871304f3e4da3cffc0920be43322a96153a"
     severity: hard_stop
     machine_rule:
       require:
@@ -478,10 +502,28 @@ rules:
       forbid:
         - payment_application_above_open_balance
     explanation: Rentemester must track which issued invoice a payment settles, how much was applied, and whether any balance remains open.
+  - rule_id: DK-INVOICE-FX-REALISED-001
+    name: Realised exchange gain or loss on a foreign-currency settlement must reach the result, not strand on the receivable
+    category: invoice_lifecycle
+    source_id: DK-BOGFORINGSLOVEN-2022-700
+    provisions:
+      - ref: "§ 9, stk. 1"
+        text_hash: "sha256:75acd88eca28d81d86de2d14ed3c3871304f3e4da3cffc0920be43322a96153a"
+    severity: hard_stop
+    machine_rule:
+      require:
+        - receivable_relieved_at_invoice_date_rate
+        - realised_fx_difference_booked_to_result
+      forbid:
+        - residual_fx_difference_stranded_on_receivable
+    explanation: When a foreign-currency invoice is settled at a payment-date rate that differs from the invoice-date rate, Rentemester must relieve the receivable at the rate it was booked at and book the difference versus the DKK actually received as a realised exchange gain (account 1020) or loss (account 3320), so the receivable nets to zero per invoice and the exchange difference reaches the result.
   - rule_id: DK-INVOICE-CORRECTION-BALANCE-001
     name: Open invoice balance must reflect linked credit notes as well as payments
     category: invoice_lifecycle
     source_id: DK-MOMSBEKENDTGORELSEN-2023-1435
+    provisions:
+      - ref: "§ 58, stk. 2"
+        text_hash: "sha256:7491f9df0204116cdee57939d3765170ba8de20a2188e6cc807fded3d7f64227"
     severity: hard_stop
     machine_rule:
       require:
@@ -516,6 +558,11 @@ rules:
     name: Customer refunds after credit notes must be traceably settled against the bank and corrected invoice balance
     category: invoice_lifecycle
     source_id: DK-MOMSBEKENDTGORELSEN-2023-1435
+    provisions:
+      - ref: "§ 58, stk. 2"
+        text_hash: "sha256:7491f9df0204116cdee57939d3765170ba8de20a2188e6cc807fded3d7f64227"
+      - ref: "§ 66, stk. 1, nr. 6"
+        text_hash: "sha256:5708034ac432b9bee2826945ba679fca8327f0e328a999268d84e9f256d96248"
     severity: hard_stop
     machine_rule:
       require:
@@ -560,6 +607,24 @@ rules:
       forbid: [modify_issued_invoice, delete_issued_invoice]
       require: credit_note_for_correction
     explanation: Corrections to issued invoices are handled via credit note and new invoice, not mutation.
+  - rule_id: DK-INVOICE-PREVIEW-001
+    name: Invoice preview must render the issued-invoice PDF without mutating the ledger
+    category: invoice_integrity
+    source_id: DK-MOMSBEKENDTGORELSEN-2023-1435
+    provisions:
+      - ref: "§ 58, stk. 1, nr. 2"
+        text_hash: "sha256:9908ba73ceb7a4bae7d4b0b205d2bc1d4f96ee8618ecc0487ea8822872e9c0a6"
+    severity: soft_warn
+    machine_rule:
+      require:
+        - same_validator_as_issue
+        - same_renderer_as_issue
+        - draft_invoice_number_placeholder
+      forbid:
+        - sequence_draw_during_preview
+        - documents_row_during_preview
+        - audit_log_entry_during_preview
+    explanation: Rentemester's "Forhåndsvis"-flow (#440) must run the same validator + renderer as the irreversible issue path so the owner sees the exact PDF the customer will receive, but without drawing a fortløbende invoice number, without writing a documents row, and without appending to audit_log — a closed preview must leave the ledger and sequence-serie untouched.
   # ===== RECURRING INVOICES (#118) =====
   - rule_id: DK-RECURRING-INVOICE-TEMPLATE-001
     name: Recurring invoice templates store an immutable, pre-validated invoice specification
@@ -580,6 +645,9 @@ rules:
     name: Recurring invoice generation is explicit, deterministic and idempotent per template period
     category: invoice_lifecycle
     source_id: DK-MOMSBEKENDTGORELSEN-2023-1435
+    provisions:
+      - ref: "§ 58, stk. 1"
+        text_hash: "sha256:04629844bae235a49e49aaa95f21e625e1a8bbca1c51bccc0604cc20a3bdb97a"
     severity: hard_stop
     machine_rule:
       require:

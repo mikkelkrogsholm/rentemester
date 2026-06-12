@@ -141,12 +141,12 @@ export function buildCompanyFiscalYears(
 ): CompanyFiscalYears {
   const entry = findWorkspaceCompany(workspaceRoot, slug);
   if (!entry) {
-    throw ApiError.notFound(`no company with slug '${slug}' in the workspace`);
+    throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
   const companyRoot = companyRootForSlug(workspaceRoot, slug);
   const dbPath = companyPaths(companyRoot).db;
   if (!existsSync(dbPath)) {
-    throw ApiError.notFound(`company '${slug}' has no ledger`);
+    throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
   const db = openDb(dbPath);
@@ -224,12 +224,12 @@ export function resolveStatementContext(
 } {
   const entry = findWorkspaceCompany(workspaceRoot, slug);
   if (!entry) {
-    throw ApiError.notFound(`no company with slug '${slug}' in the workspace`);
+    throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
   const companyRoot = companyRootForSlug(workspaceRoot, slug);
   const dbPath = companyPaths(companyRoot).db;
   if (!existsSync(dbPath)) {
-    throw ApiError.notFound(`company '${slug}' has no ledger`);
+    throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
   const years = buildCompanyFiscalYears(workspaceRoot, slug).years;
@@ -277,11 +277,11 @@ export function statementCompanyBlock(
 /** Resolve a slug to its ledger db path, asserting the company + ledger exist. */
 export function requireCompanyDbPath(workspaceRoot: string, slug: string): string {
   if (!findWorkspaceCompany(workspaceRoot, slug)) {
-    throw ApiError.notFound(`no company with slug '${slug}' in the workspace`);
+    throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   }
   const dbPath = companyPaths(companyRootForSlug(workspaceRoot, slug)).db;
   if (!existsSync(dbPath)) {
-    throw ApiError.notFound(`company '${slug}' has no ledger`);
+    throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
   return dbPath;
 }

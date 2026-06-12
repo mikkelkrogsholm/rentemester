@@ -9,6 +9,44 @@ import { ingestDocument } from "../../src/core/documents";
 import { postJournalEntry, reverseJournalEntry, seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 
 describe("journal reversal", () => {
+  test("can reverse an imported-historical income/expense voucher that has no document", () => {
+    // A replayed migration posting (#195) may carry income/expense lines and no
+    // Rentemester document yet (#196 attaches the bilag later). Reversing it
+    // must succeed AND keep the audit chain valid — the reversal inherits the
+    // import exemption so it is not rejected for missing document evidence.
+    const root = mkdtempSync(join(tmpdir(), "rentemester-reversal-import-"));
+    const db = openDb(ensureCompanyDirs(root).db);
+    migrate(db);
+    seedAccounts(db);
+
+    const posted = postJournalEntry(db, {
+      transactionDate: "2026-05-16",
+      text: "Imported historical expense",
+      createdByProgram: "rentemester-import-postings",
+      importedHistorical: true,
+      lines: [
+        { accountNo: "3000", debitAmount: 100, text: "Historisk udgift" },
+        { accountNo: "2000", creditAmount: 100, text: "Bank" },
+      ],
+    });
+    expect(posted.ok).toBe(true);
+
+    const reversed = reverseJournalEntry(db, {
+      entryId: posted.entryId!,
+      transactionDate: "2026-05-17",
+      reason: "Forkert migreringspostering",
+    });
+    expect(reversed.errors).toEqual([]);
+    expect(reversed.ok).toBe(true);
+
+    // The whole ledger — original imported voucher + its reversal — still
+    // verifies clean (neither is flagged for missing document evidence).
+    expect(verifyAuditChain(db).ok).toBe(true);
+
+    db.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+
   test("creates one linked reversal entry with mirrored lines and blocks a second reversal", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-reversal-"));
     const inbox = mkdtempSync(join(tmpdir(), "rentemester-reversal-inbox-"));

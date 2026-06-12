@@ -2,6 +2,8 @@
  * MCP-tools for moms.
  *
  *  - `vat_report` (read)
+ *  - `vat_eu_sales_list` (read)
+ *  - `vat_oss_report` (read)
  *  - `vat_post_eu_service_purchase` (write-irreversible)
  *  - `vat_post_representation_purchase` (write-irreversible)
  */
@@ -15,6 +17,9 @@ import {
   type ReverseChargePurchaseInput,
   type RepresentationPurchaseInput,
 } from "../../core/vat";
+import { buildViesRecapitulativeStatement } from "../../core/vat-vies-list";
+import { buildOssReport } from "../../core/vat-oss";
+import { withActor } from "../actor";
 import { envelopeShape, wrapCoreResult } from "../envelope";
 import { withCompanyDb, withCompanyDbConfirmed, confirmField } from "../tool-runtime";
 
@@ -130,15 +135,75 @@ export function registerVatTools(server: McpServer): void {
       title: "VAT period report",
       description: "Bygger momsrapport for perioden. Read-only.",
       inputSchema: {
-        company: z.string().min(1),
-        from: z.string().min(1),
-        to: z.string().min(1),
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
+        from: z
+          .string()
+          .min(1)
+          .describe("Period start, YYYY-MM-DD (inclusive). The day itself is included in the report."),
+        to: z
+          .string()
+          .min(1)
+          .describe(
+            "Period end, YYYY-MM-DD (inclusive — the last day of the period is included). " +
+              "Pass e.g. '2026-03-31' for Q1 2026, not '2026-04-01'.",
+          ),
       },
       outputSchema: envelopeShape,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },
     withCompanyDb<{ company: string; from: string; to: string }>(server, ({ db, args }) => {
       const result = buildVatReport(db, args.from, args.to);
+      return wrapCoreResult(result);
+    }),
+  );
+
+  server.registerTool(
+    "vat_eu_sales_list",
+    {
+      title: "EU sales list (EU-salg uden moms)",
+      description:
+        "Bygger EU-salg uden moms-listen (VIES recapitulative statement) for perioden: " +
+        "en liste pr. kunde med EU-momsnummer og samlet værdi af grænseoverskridende " +
+        "B2B-salg uden dansk moms. En selvstændig indberetning ved siden af momsangivelsen. " +
+        "Read-only.",
+      inputSchema: {
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
+        from: z.string().min(1).describe("Period start, YYYY-MM-DD (inclusive)."),
+        to: z
+          .string()
+          .min(1)
+          .describe("Period end, YYYY-MM-DD (inclusive — the last day of the period is included)."),
+      },
+      outputSchema: envelopeShape,
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    },
+    withCompanyDb<{ company: string; from: string; to: string }>(server, ({ db, args }) => {
+      const result = buildViesRecapitulativeStatement(db, args.from, args.to);
+      return wrapCoreResult(result);
+    }),
+  );
+
+  server.registerTool(
+    "vat_oss_report",
+    {
+      title: "OSS report (One Stop Shop, first slice)",
+      description:
+        "Bygger en deterministisk OSS-rapport (One Stop Shop, første slice): det samlede " +
+        "grundlag for digitale ydelser solgt til EU-forbrugere bogført med momskoden " +
+        "OSS_EU_CONSUMER. Bevidst smal — ikke en OSS-indberetning til SKAT. Read-only.",
+      inputSchema: {
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
+        from: z.string().min(1).describe("Period start, YYYY-MM-DD (inclusive)."),
+        to: z
+          .string()
+          .min(1)
+          .describe("Period end, YYYY-MM-DD (inclusive — the last day of the period is included)."),
+      },
+      outputSchema: envelopeShape,
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    },
+    withCompanyDb<{ company: string; from: string; to: string }>(server, ({ db, args }) => {
+      const result = buildOssReport(db, args.from, args.to);
       return wrapCoreResult(result);
     }),
   );
@@ -152,7 +217,7 @@ export function registerVatTools(server: McpServer): void {
         "Hvis payload.invoiceNo er sat, slås documentId op automatisk. " +
         "payload.netAmount er i kroner (decimal DKK, ikke øre). write-irreversible.",
       inputSchema: {
-        company: z.string().min(1),
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         payload: euServicePurchasePayloadSchema,
         confirm: confirmField,
       },
@@ -163,7 +228,7 @@ export function registerVatTools(server: McpServer): void {
       company: string;
       payload: ReverseChargePurchaseInput & { invoiceNo?: string };
       confirm?: boolean;
-    }>(server, "vat_post_eu_service_purchase", ({ db, args }) => {
+    }>(server, "vat_post_eu_service_purchase", ({ db, actor, args }) => {
       const payload = { ...(args.payload as Record<string, unknown>) };
       const invoiceNo =
         typeof payload.invoiceNo === "string" ? (payload.invoiceNo as string).trim() : "";
@@ -180,7 +245,12 @@ export function registerVatTools(server: McpServer): void {
         }
         payload.documentId = row.id;
       }
-      const result = postEuServiceReverseChargePurchase(db, payload as ReverseChargePurchaseInput);
+      // Actor-invariant (#63/#76): attribute the reverse-charge posting to the
+      // booking agent in the hash chain + audit_log, not the OS user.
+      const result = postEuServiceReverseChargePurchase(
+        db,
+        withActor(payload as ReverseChargePurchaseInput, actor),
+      );
       return wrapCoreResult(result);
     }),
   );
@@ -193,7 +263,7 @@ export function registerVatTools(server: McpServer): void {
         "Bogfører repræsentationsudgift med delvis momsfradrag. " +
         "payload.netAmount er i kroner (decimal DKK, ikke øre). write-irreversible.",
       inputSchema: {
-        company: z.string().min(1),
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         payload: representationPurchasePayloadSchema,
         confirm: confirmField,
       },
@@ -204,8 +274,10 @@ export function registerVatTools(server: McpServer): void {
       company: string;
       payload: RepresentationPurchaseInput;
       confirm?: boolean;
-    }>(server, "vat_post_representation_purchase", ({ db, args }) => {
-      const result = postRepresentationPurchase(db, args.payload);
+    }>(server, "vat_post_representation_purchase", ({ db, actor, args }) => {
+      // Actor-invariant (#63/#76): attribute the representation posting to the
+      // booking agent in the hash chain + audit_log, not the OS user.
+      const result = postRepresentationPurchase(db, withActor(args.payload, actor));
       return wrapCoreResult(result);
     }),
   );

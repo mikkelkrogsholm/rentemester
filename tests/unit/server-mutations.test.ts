@@ -180,9 +180,9 @@ describe("Cockpit write — backup-lock gate", () => {
       const res = await post(config({ workspaceRoot: ws }), `/api/companies/${slug}/exceptions/${id}/resolve`);
       expect(res.status).toBe(409);
       expect(res.body.ok).toBe(false);
-      expect(res.body.error.code).toBe("conflict");
-      expect(res.body.error.message).toContain("Bogføring er låst");
-      expect(res.body.error.message).toContain("BEK 205/2024");
+      expect(res.body.code).toBe("conflict");
+      expect(res.body.errors[0]).toContain("Bogføring er låst");
+      expect(res.body.errors[0]).toContain("BEK 205/2024");
 
       // The exception must remain open — the locked write did nothing.
       withLedger(ws, slug, (db) => {
@@ -219,7 +219,7 @@ describe("Cockpit write — input + routing errors", () => {
     try {
       const res = await post(config({ workspaceRoot: ws }), `/api/companies/${slug}/exceptions/9999/resolve`);
       expect(res.status).toBe(409);
-      expect(res.body.error.code).toBe("conflict");
+      expect(res.body.code).toBe("conflict");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -230,7 +230,7 @@ describe("Cockpit write — input + routing errors", () => {
     try {
       const res = await post(config({ workspaceRoot: ws }), `/api/companies/${slug}/exceptions/abc/resolve`);
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe("bad_request");
+      expect(res.body.code).toBe("bad_request");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -241,7 +241,7 @@ describe("Cockpit write — input + routing errors", () => {
     try {
       const res = await post(config({ workspaceRoot: ws }), `/api/companies/nope-aps/exceptions/1/resolve`);
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -291,7 +291,7 @@ describe("Cockpit write — localhost hard-gate", () => {
         { host: "cockpit.example.com" },
       );
       expect(res.status).toBe(401);
-      expect(res.body.error.code).toBe("unauthorized");
+      expect(res.body.code).toBe("unauthorized");
       // The exception must remain open.
       withLedger(ws, slug, (db) => {
         const row = db.query("SELECT status FROM exceptions WHERE id = ?").get(id) as { status: string };

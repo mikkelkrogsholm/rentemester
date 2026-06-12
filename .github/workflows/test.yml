@@ -14,7 +14,10 @@ jobs:
   test:
     name: test
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    # The suite (258 files, 1600+ tests) takes ~295s on ubuntu-latest, so a
+    # 5-minute budget cancelled an otherwise-passing run during post-cleanup.
+    # Match the smoke job's headroom.
+    timeout-minutes: 10
 
     steps:
       - name: Checkout

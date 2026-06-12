@@ -76,9 +76,10 @@ export function ArchiveView() {
             <span className="flag warning">Arkiveret</span>
             <p>
               <strong>Det arkiverede regnskab er skrivebeskyttet.</strong> De
-              arkiverede år blev importeret fra en Dinero-eksport (#197) — fuld
-              saldobalance og alle posteringer pr. år. Tallene ligger uden for
-              den aktive ledger og kan ikke redigeres.
+              arkiverede år blev importeret fra virksomhedens tidligere
+              Dinero-regnskab — fuld saldobalance og alle posteringer pr. år.
+              Tallene ligger uden for den aktive bogføring og kan ikke
+              redigeres.
             </p>
           </div>
 
@@ -107,7 +108,7 @@ export function ArchiveView() {
                         {y.label}
                         <span className="flag warning archive-tag">arkiv</span>
                       </td>
-                      <td>Dinero-import (#197)</td>
+                      <td>Importeret fra Dinero</td>
                       <td>Skrivebeskyttet</td>
                       <td>
                         <Link

@@ -1,4 +1,5 @@
 import type { Database } from "bun:sqlite";
+import { readFileSync } from "node:fs";
 import type { ParsedCliArgs } from "./cli-args";
 import type { OutputFormat } from "./cli-format";
 import { printStructuredResult } from "./cli-format";
@@ -35,6 +36,50 @@ export type CommandHandler = (ctx: CommandContext) => void | Promise<void>;
  */
 export function openCommandDb(ctx: CommandContext): Database {
   return openDb(companyPaths(ctx.companyRoot()).db);
+}
+
+/**
+ * Læs + parse en JSON-input-fil for et CLI-kald. Erstatter den copy-paste'ede
+ * `JSON.parse(readFileSync(input, "utf8"))`-linje i CLI-handlerne, som
+ * tidligere kastede rå Node-`ENOENT`-stack traces (eller `SyntaxError`) på
+ * almindelige bruger-fejl: glemt sti, forkert sti, ikke-JSON fil. Round-2
+ * review flagede dette som "ligner softwarefejl, ikke brugerfejl".
+ *
+ * Funktionen kalder selv `ctx.fatal(...)` (exit 2 = parse-fejl) med en kort,
+ * dansk fejl-besked og returnerer aldrig på fejl — så callers kan bruge den
+ * synkront uden try/catch:
+ *
+ *     const payload = readJsonCliInput(ctx, input, "--input");
+ *     postJournalEntry(db, payload);
+ */
+export function readJsonCliInput(
+  ctx: CommandContext,
+  path: string,
+  flagName: string,
+): unknown {
+  let raw: string;
+  try {
+    raw = readFileSync(path, "utf8");
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException | undefined)?.code;
+    if (code === "ENOENT") {
+      ctx.fatal(`filen findes ikke: '${path}' — angiv en eksisterende fil med ${flagName}`);
+    }
+    if (code === "EACCES" || code === "EPERM") {
+      ctx.fatal(`ingen læseadgang til '${path}' (${code}) — tjek fil-rettigheder eller kør med en bruger der må læse filen`);
+    }
+    if (code === "EISDIR") {
+      ctx.fatal(`'${path}' er en mappe, ikke en fil — ${flagName} skal pege på en konkret .json-fil`);
+    }
+    const detail = err instanceof Error ? err.message : String(err);
+    ctx.fatal(`kunne ikke læse '${path}': ${detail}`);
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    ctx.fatal(`'${path}' er ikke gyldig JSON (${detail}) — tjek for kommafejl, manglende parenteser, eller om filen er gemt i et andet format`);
+  }
 }
 
 export class CommandDispatch {

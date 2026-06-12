@@ -77,6 +77,7 @@ describe("ManageCompanyView", () => {
   test("syncs CVR stamdata and reports the updated fields", async () => {
     mockFetch({
       ...companiesRoute(),
+      "GET /api/system/cvr-status": { cvrStatus: { configured: true } },
       "POST /api/companies/acme-aps/sync-cvr": {
         sync: {
           ok: true,
@@ -97,6 +98,38 @@ describe("ManageCompanyView", () => {
     expect(
       await screen.findByText(/Opdaterede felter: address, city/i),
     ).toBeInTheDocument();
+  });
+
+  // #402 — when the server has no CVR-login the owner must see a friendly
+  // explanation up front; the "Hent fra CVR" button must be disabled instead
+  // of failing silently when clicked. The hint must avoid "miljøvariabel"
+  // and similar developer-speak.
+  test("disables Hent fra CVR and explains in plain Danish when CVR-login is missing", async () => {
+    mockFetch({
+      ...companiesRoute(),
+      "GET /api/system/cvr-status": { cvrStatus: { configured: false } },
+    });
+    renderAt(<ManageCompanyView />, {
+      route: "/companies/acme-aps/manage",
+      path: "/companies/:slug/manage",
+    });
+    const button = (await screen.findByRole("button", {
+      name: /Hent fra CVR/i,
+    })) as HTMLButtonElement;
+    // The status fetch resolves on the microtask queue — wait for the warning
+    // banner before asserting the button is disabled.
+    expect(
+      await screen.findByText(/Cockpittet mangler dit virk.dk-login/i),
+    ).toBeInTheDocument();
+    expect(button.disabled).toBe(true);
+    // The owner-facing hint must speak the owner's language.
+    expect(
+      screen.getByText(/Kræver dit virk\.dk-login/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/CVR_USERNAME/i),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/miljøvariabel/i)).not.toBeInTheDocument();
   });
 
   // #284 — the Cockpit owner must be able to set bank/payment details so
@@ -200,6 +233,22 @@ describe("ManageCompanyView", () => {
     });
     expect(
       await screen.findByText(/uden betalingsoplysninger/i),
+    ).toBeInTheDocument();
+  });
+
+  // #373 — Revisor-eksport must stay reachable from Administrér; we only
+  // added discoverability on Overblik, we did NOT move the action away.
+  test("keeps Revisor-eksport on Administrér (not moved away — #373)", async () => {
+    mockFetch(companiesRoute());
+    renderAt(<ManageCompanyView />, {
+      route: "/companies/acme-aps/manage",
+      path: "/companies/:slug/manage",
+    });
+    expect(
+      await screen.findByRole("heading", { name: /Revisor-eksport/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Generér og download/i }),
     ).toBeInTheDocument();
   });
 });

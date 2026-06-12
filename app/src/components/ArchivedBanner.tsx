@@ -20,8 +20,11 @@ export function ArchivedBanner({
       <span className="flag warning">Arkiveret</span>
       <p>
         <strong>Arkiveret regnskabsår {year} — skrivebeskyttet.</strong>{" "}
-        Tallene er beregnet ud fra {source ? `en ${source}-eksport` : "et arkiv"}{" "}
-        (#197) og ligger uden for den aktive ledger. De kan ikke redigeres.
+        Tallene er importeret fra{" "}
+        {source
+          ? `virksomhedens tidligere ${source}-regnskab`
+          : "et tidligere regnskab"}{" "}
+        og ligger uden for den aktive bogføring. De kan ikke redigeres.
       </p>
     </div>
   );

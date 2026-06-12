@@ -1,0 +1,63 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import PageHero from "../../../components/PageHero.astro";
+import SeoEvidence from "../../../components/SeoEvidence.astro";
+import { SITE } from "../../../consts";
+---
+
+<BaseLayout
+  title="Kreditorer og leverandørfakturaer"
+  description="Kreditorer i Rentemester: registrér leverandørfakturaer som åbne poster, betal dem fra banken og bevar auditspor fra faktura til udligning."
+  pathname="/viden/regnskab/kreditorer"
+  pageType="Article"
+  datePublished="2026-05-24"
+  dateModified="2026-05-24"
+  reviewedBy={SITE.author}
+>
+  <PageHero
+    eyebrow="Regnskab"
+    title="Kreditorer skal være åbne poster, ikke løse banklinjer"
+    lead="En leverandørfaktura er først under kontrol, når den er registreret som en sporbar kreditorpost og senere udlignet mod den konkrete bankbetaling."
+  />
+
+  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
+    <p>
+      Kreditorstyring handler om de penge virksomheden skylder leverandører. Hvis en leverandørfaktura bare bogføres som en udgift, når pengene forlader banken, mister du overblik over forfald, delbetalinger, åbne poster og hvad der faktisk er betalt.
+    </p>
+
+    <SeoEvidence
+      updated="2026-05-24"
+      status="QA-gennemgået mod payables-kode, compliance-matrix og unit tests."
+      sources={[
+        { href: `${SITE.github}/blob/main/src/core/payables.ts`, label: "payables.ts", external: true },
+        { href: `${SITE.github}/blob/main/tests/unit/payables.test.ts`, label: "Payables tests", external: true },
+        { href: `${SITE.github}/blob/main/docs/compliance/requirements-by-area.md#7-indkobsfakturaer--kreditorer`, label: "Compliance: indkøbsfakturaer og kreditorer", external: true },
+      ]}
+      related={[
+        { href: "/viden/saadan-bogfoerer-du/leverandoerfaktura", label: "Bogfør leverandørfaktura" },
+        { href: "/viden/saadan-bogfoerer-du/bankafstemning", label: "Bankafstemning" },
+        { href: "/viden/begreber/afstemning", label: "Afstemning" },
+      ]}
+    />
+
+    <h2>Hvad en kreditorpost skal kunne</h2>
+    <p>
+      En god kreditorpost binder leverandør, fakturanummer, forfaldsdato, beløb, moms, dokumentation og status sammen. Den skal kunne vises som åben, delvist betalt, betalt eller forfalden, uden at bankimporten bliver den eneste kilde til sandhed.
+    </p>
+
+    <h2>Sådan håndterer Rentemester det</h2>
+    <p>
+      Rentemesters payables-kerne registrerer en leverandørfaktura som en balanceret åben kreditorpost. Når betalingen findes i banken, udlignes den mod den konkrete post, så forbindelsen mellem bilag, gæld og bankbevægelse bevares.
+    </p>
+
+    <h2>Eksempel</h2>
+    <p>
+      En hostingfaktura på 1.250 kr. med forfald 15. juni registreres som åben kreditor. Når banken senere viser en betaling på 1.250 kr. til samme leverandør, kan Rentemester udligne posten. Hvis beløbet eller leverandørteksten ikke passer klart, bør sagen blive en exception i stedet for en automatisk udligning.
+    </p>
+
+    <h2>Begrænsning</h2>
+    <p>
+      Kreditorstyring erstatter ikke faglig vurdering af konto, moms eller periodisering. Hvis fakturaen dækker flere måneder, et anlægsaktiv eller en usikker momsbehandling, skal den behandles mere eksplicit end en simpel betalingsudligning.
+    </p>
+  </article>
+</BaseLayout>

@@ -70,4 +70,39 @@ describe("cockpit API — CVR endpoints", () => {
 
     rmSync(root, { recursive: true, force: true });
   });
+
+  // #402 — the cockpit needs a way to tell the owner whether the CVR
+  // credentials are configured *before* they click "Hent fra CVR" and get a
+  // silent failure. The cockpit reads this endpoint and disables the button
+  // (and hides the developer-language hint) when `configured` is false.
+  test("GET /api/system/cvr-status reflects env credentials", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-srv-cvr-status-"));
+    initWorkspace(root);
+    const cfg = config(root);
+
+    const prevUser = process.env.CVR_USERNAME;
+    const prevPass = process.env.CVR_PASSWORD;
+    try {
+      delete process.env.CVR_USERNAME;
+      delete process.env.CVR_PASSWORD;
+      const missing = await call(cfg, "/api/system/cvr-status");
+      expect(missing.status).toBe(200);
+      expect(missing.body.ok).toBe(true);
+      expect(missing.body.cvrStatus.configured).toBe(false);
+
+      process.env.CVR_USERNAME = "u";
+      process.env.CVR_PASSWORD = "p";
+      const present = await call(cfg, "/api/system/cvr-status");
+      expect(present.status).toBe(200);
+      expect(present.body.ok).toBe(true);
+      expect(present.body.cvrStatus.configured).toBe(true);
+    } finally {
+      if (prevUser === undefined) delete process.env.CVR_USERNAME;
+      else process.env.CVR_USERNAME = prevUser;
+      if (prevPass === undefined) delete process.env.CVR_PASSWORD;
+      else process.env.CVR_PASSWORD = prevPass;
+    }
+
+    rmSync(root, { recursive: true, force: true });
+  });
 });

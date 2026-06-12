@@ -663,6 +663,17 @@ td.num,
 .modal-field-grid .modal-field {
   min-width: 0;
 }
+/* A single checkbox option inside a modal — a row, not the stacked
+   label-over-input of a text field. */
+.modal-checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-xs);
+}
+.modal-checkbox input {
+  width: auto;
+  padding: 0;
+}
 /* One editable line-item row in the invoice-issue modal (#213, slice 4) —
    description / quantity / unit price, plus an optional Fjern button. */
 .invoice-line-row {
@@ -1305,6 +1316,64 @@ table.statement-table td.num.muted {
   padding: 0 var(--space-md);
 }
 
+/* #401: header row inside the SKAT-rubrikker card — holds the subhead on the
+   left and the "Kopier alle som CSV"-button on the right. */
+.statement-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding-right: var(--space-md);
+}
+.statement-card-head .statement-subhead {
+  padding-right: 0;
+}
+
+/* #401: per-row "Kopier"-button + the brief "Kopieret"-confirmation. The
+   button is a small ghost button that sits to the right of the formatted
+   number; the formatted number is read-only and the button copies the raw
+   TastSelv-format figure to the clipboard. */
+.rubrik-num {
+  display: inline-block;
+  margin-right: var(--space-xs);
+}
+.rubrik-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+.rubrik-copy-feedback {
+  font-size: var(--text-size-xs);
+  color: var(--color-success);
+  font-weight: var(--text-weight-semibold);
+}
+.rubrik-copy-btn,
+.rubrik-copy-csv {
+  font-size: var(--text-size-xs);
+  font-weight: var(--text-weight-semibold);
+  padding: 2px var(--space-xs);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.rubrik-copy-btn:hover:not(:disabled),
+.rubrik-copy-csv:hover:not(:disabled) {
+  background: var(--surface-hover, var(--surface));
+  border-color: var(--text);
+}
+.rubrik-copy-btn:focus-visible,
+.rubrik-copy-csv:focus-visible {
+  outline: 2px solid var(--color-accent, var(--text));
+  outline-offset: 2px;
+}
+.rubrik-copy-btn:disabled,
+.rubrik-copy-csv:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .statement-check {
   font-size: var(--text-size-sm);
   margin: var(--space-sm) 0 0;
@@ -1624,4 +1693,49 @@ table.statement-table td.num.muted {
   .entry-summary .entry-date {
     display: none;
   }
+  .get-started-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* #395 — empty-state next-step CTA on Overblik */
+.get-started-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  border-left: 3px solid var(--accent, #3578e5);
+}
+.get-started-card h3 {
+  margin: 0;
+  font-size: var(--text-size-lg);
+}
+.get-started-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+/* ---- help view (#421) ---- */
+.help-view .help-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+.help-view .help-grid .card {
+  padding: var(--space-md);
+}
+.help-view .help-grid .card h3 {
+  margin-top: 0;
+  font-size: var(--text-size-lg);
+}
+.help-view .help-grid ul,
+.help-view .help-grid ol {
+  margin: 0;
+  padding-left: var(--space-md);
+}
+.help-view .help-grid li + li {
+  margin-top: var(--space-xs);
 }

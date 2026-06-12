@@ -29,8 +29,9 @@ export const AGENT_LOOP_PHASES = [
   "ingest", // bilagsmail / maildrop -> documents
   "book", // book the unambiguous expenses
   "route", // route the uncertain to the exception queue
+  "payables", // settle the unambiguous creditor payments, surface overdue ones
   "reconcile", // sync unmatched bank transactions into exceptions
-  "deadlines", // check VAT / accounting-period / year-end deadlines
+  "deadlines", // check VAT / accounting-period / year-end deadlines + accruals
   "report", // produce the end-of-run report
 ] as const;
 

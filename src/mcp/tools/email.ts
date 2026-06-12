@@ -20,7 +20,12 @@ import { z } from "zod";
 import { companyPaths } from "../../core/paths";
 import { createSmtpTransport, sendInvoiceEmail, type SmtpConfig } from "../../core/email";
 import { envelopeShape, errorEnvelope, wrapCoreResult } from "../envelope";
-import { withCompanyDbConfirmed, resolveIssuedInvoiceDocumentId, confirmField } from "../tool-runtime";
+import {
+  withCompanyDbConfirmed,
+  resolveIssuedInvoiceDocumentId,
+  invoiceNotFoundEnvelope,
+  confirmField,
+} from "../tool-runtime";
 
 function loadSmtpConfig(
   companyRoot: string,
@@ -111,11 +116,7 @@ export function registerEmailTools(server: McpServer): void {
       confirm?: boolean;
     }>(server, "invoice_send_email", ({ db, args }) => {
       const id = resolveIssuedInvoiceDocumentId(db, args);
-      if (!id) {
-        return errorEnvelope(
-          `Could not resolve invoice: provide documentId or invoiceNumber (got documentId=${args.documentId ?? "-"}, invoiceNumber='${args.invoiceNumber ?? ""}')`,
-        );
-      }
+      if (!id) return invoiceNotFoundEnvelope(args);
       const smtp = loadSmtpConfig(args.company);
       if (!smtp.ok) return errorEnvelope(smtp.error);
       const result = sendInvoiceEmail(db, args.company, {

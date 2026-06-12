@@ -290,4 +290,96 @@ describe("generateIxbrl (deterministic iXBRL, micro/small subset)", () => {
       expect(element.name.length).toBeGreaterThan(0);
     }
   });
+
+  // #177 expansion: the subset is explicitly versioned so it never looks like
+  // a finished full Erhvervsstyrelsen taxonomy.
+  test("is clearly versioned and named as a partial subset", () => {
+    expect(typeof IXBRL_TAXONOMY_SUBSET.name).toBe("string");
+    expect(IXBRL_TAXONOMY_SUBSET.name.length).toBeGreaterThan(0);
+    // A semantic-ish version string, e.g. "0.2.0".
+    expect(IXBRL_TAXONOMY_SUBSET.version).toMatch(/^\d+\.\d+\.\d+$/);
+    // The name signals it is bounded/partial, not the full taxonomy.
+    expect(IXBRL_TAXONOMY_SUBSET.name).toMatch(/subset|udsnit|partial|bounded/i);
+  });
+
+  // #177 expansion: every element is assigned to one of the four class-B
+  // statement sections so the document is grouped, not a flat list.
+  test("covers the four regnskabsklasse-B sections with grouped elements", () => {
+    const sections = new Set(IXBRL_TAXONOMY_SUBSET.elements.map((e) => e.section));
+    for (const required of [
+      "income-statement",
+      "balance-sheet",
+      "management-statement",
+      "accounting-policies",
+    ] as const) {
+      expect(sections.has(required)).toBe(true);
+    }
+    // Each section carries at least one element.
+    for (const element of IXBRL_TAXONOMY_SUBSET.elements) {
+      expect(typeof element.section).toBe("string");
+    }
+  });
+
+  test("element names are unique across the whole subset", () => {
+    const names = IXBRL_TAXONOMY_SUBSET.elements.map((e) => e.name);
+    expect(new Set(names).size).toBe(names.length);
+  });
+
+  // GOLDEN TEST: the generated iXBRL must be structurally valid (well-formed
+  // XML, balanced ix tags, every fact in the declared subset) and must
+  // round-trip — re-parsing the document recovers every declared fact value.
+  test("generated iXBRL is structurally valid and round-trips every fact", () => {
+    const { root, inbox, db } = newCompany("rentemester-ixbrl-golden-");
+    postYear(db, root, inbox);
+    lockYear(db);
+    const report = buildAnnualReport(db, "2025-01-01", "2025-12-31");
+    expect(report.ok).toBe(true);
+
+    const ixbrl = generateIxbrl(report);
+    expect(ixbrl.ok).toBe(true);
+
+    // 1. Well-formed XML: every opened tag is closed. A loose well-formedness
+    //    check — count opening vs closing tags for the ix elements.
+    const xhtml = ixbrl.xhtml;
+    const countOpen = (re: RegExp) => (xhtml.match(re) ?? []).length;
+    expect(countOpen(/<ix:nonFraction\b/g)).toBe(countOpen(/<\/ix:nonFraction>/g));
+    expect(countOpen(/<ix:nonNumeric\b/g)).toBe(countOpen(/<\/ix:nonNumeric>/g));
+    expect(countOpen(/<xbrli:context\b/g)).toBe(countOpen(/<\/xbrli:context>/g));
+    // Both context dimensions present: a duration (P&L) and an instant (balance).
+    expect(xhtml).toContain('id="duration"');
+    expect(xhtml).toContain('id="instant"');
+
+    // 2. Every declared element is emitted exactly once as an ix fact.
+    for (const element of IXBRL_TAXONOMY_SUBSET.elements) {
+      const occurrences = xhtml.split(`name="${element.name}"`).length - 1;
+      expect(occurrences).toBe(1);
+    }
+
+    // 3. No element outside the declared subset is emitted.
+    const declared = new Set(IXBRL_TAXONOMY_SUBSET.elements.map((e) => e.name));
+    for (const match of xhtml.matchAll(
+      /<ix:(?:nonFraction|nonNumeric)[^>]*\bname="([^"]+)"/g,
+    )) {
+      expect(declared.has(match[1])).toBe(true);
+    }
+
+    // 4. ROUND-TRIP: re-extract every fact from the rendered XHTML and confirm
+    //    the value matches what generateIxbrl resolved (exposed via .facts).
+    expect(ixbrl.facts.length).toBe(IXBRL_TAXONOMY_SUBSET.elements.length);
+    for (const fact of ixbrl.facts) {
+      const tag = fact.element.kind === "monetary" ? "nonFraction" : "nonNumeric";
+      const re = new RegExp(
+        `<ix:${tag}[^>]*\\bname="${fact.element.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"[^>]*>([^<]*)</ix:${tag}>`,
+      );
+      const m = xhtml.match(re);
+      expect(m).not.toBeNull();
+      // The rendered value is XML-escaped; the resolved value is raw. For the
+      // deterministic test inputs there are no XML-special characters, so a
+      // direct compare is a true round-trip.
+      expect(m![1]).toBe(fact.value);
+    }
+
+    db.close();
+    cleanup(root, inbox);
+  });
 });

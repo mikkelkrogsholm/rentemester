@@ -8,9 +8,20 @@ import { formatAmount } from "./money";
 
 const RULE_ID = "DK-INVOICE-PUBLIC-EXPORT-001";
 const OIOUBL_RULE_ID = "DK-INVOICE-PUBLIC-OIOUBL-001";
+
+// The public-recipient handoff document is a Peppol BIS Billing 3.0 invoice
+// (UBL 2.1). Denmark's national OIOUBL 3.0 format was cancelled in January
+// 2026; Peppol BIS Billing 3.0 is accepted by every Danish public authority
+// and is the format NemHandel itself is migrating onto. The surrounding
+// "OioUbl" function/CLI names are kept for interface stability.
 const OIOUBL_UBL_VERSION = "2.1";
-const OIOUBL_CUSTOMIZATION_ID = "urn:fdc:oioubl.dk:trns:billing:invoice:3.0";
-const OIOUBL_PROFILE_ID = "urn:fdc:oioubl.dk:bis:billing_with_response:3";
+const PEPPOL_BIS_CUSTOMIZATION_ID =
+  "urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0";
+const PEPPOL_BIS_PROFILE_ID = "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0";
+// Peppol participant identifier schemes (ISO 6523): 0088 = GLN/EAN for the
+// buying public authority, 0184 = Danish CVR for the selling company.
+const BUYER_ENDPOINT_SCHEME_ID = "0088";
+const SELLER_ENDPOINT_SCHEME_ID = "0184";
 const PEPPOL_SUBMIT_RULE_ID = "DK-PEPPOL-SUBMIT-001";
 const PEPPOL_ENVELOPE_VERSION = "rentemester:dk:peppol-submission:v1";
 
@@ -71,16 +82,33 @@ function hasText(value: string | null | undefined): value is string {
 
 function formatVatPercent(value: number | null | undefined) {
   if (typeof value !== "number" || !Number.isFinite(value) || value < 0) return null;
-  return Number.isInteger(value) ? String(value) : String(value <= 1 ? value * 100 : value);
+  // `totals.vatRate` is the canonical 0..1 fraction everywhere else (invoice.ts,
+  // invoice-pdf.ts unconditionally multiplies by 100), so do the same here. The
+  // old `value <= 1 ? value*100 : value` heuristic rendered a 1.0 (100%) rate as
+  // "1" and passed a stray percent-form value straight through, making the
+  // transmitted cbc:Percent disagree with the PDF/TaxAmount on the same invoice.
+  const pct = value * 100;
+  // An integer rate renders plainly ("25"); a fractional rate keeps up to two
+  // decimals, rounded via integer math so a float artifact (e.g. 20.0000000004)
+  // never leaks into the transmitted cbc:Percent.
+  return Number.isInteger(pct) ? String(pct) : String(Math.round(pct * 100) / 100);
 }
 
-function buildAddressXml(tagName: string, address: string | null | undefined, indent = "") {
+function buildAddressXml(
+  tagName: string,
+  address: string | null | undefined,
+  indent = "",
+  countryCode = "DK",
+) {
   if (!hasText(address)) return "";
   return [
     `${indent}<${tagName}>`,
     `${indent}  <cac:AddressLine>`,
     xmlTag("cbc:Line", address.trim(), `${indent}    `),
     `${indent}  </cac:AddressLine>`,
+    `${indent}  <cac:Country>`,
+    xmlTag("cbc:IdentificationCode", countryCode, `${indent}    `),
+    `${indent}  </cac:Country>`,
     `${indent}</${tagName}>`,
   ].join("\n");
 }
@@ -197,8 +225,8 @@ function buildPublicEInvoiceOioUblXml(invoiceNumber: string, payload: InvoicePay
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">',
     xmlTag("cbc:UBLVersionID", OIOUBL_UBL_VERSION, "  "),
-    xmlTag("cbc:CustomizationID", OIOUBL_CUSTOMIZATION_ID, "  "),
-    xmlTag("cbc:ProfileID", OIOUBL_PROFILE_ID, "  "),
+    xmlTag("cbc:CustomizationID", PEPPOL_BIS_CUSTOMIZATION_ID, "  "),
+    xmlTag("cbc:ProfileID", PEPPOL_BIS_PROFILE_ID, "  "),
     xmlTag("cbc:ID", invoiceNumber, "  "),
     xmlTag("cbc:IssueDate", payload.issueDate, "  "),
     xmlTag("cbc:DueDate", payload.dueDate, "  "),
@@ -206,6 +234,7 @@ function buildPublicEInvoiceOioUblXml(invoiceNumber: string, payload: InvoicePay
     xmlTag("cbc:DocumentCurrencyCode", currency, "  "),
     "  <cac:AccountingSupplierParty>",
     "    <cac:Party>",
+    xmlTagWithAttrs("cbc:EndpointID", { schemeID: SELLER_ENDPOINT_SCHEME_ID }, payload.seller?.vatOrCvr, "      "),
     "      <cac:PartyName>",
     xmlTag("cbc:Name", payload.seller?.name, "        "),
     "      </cac:PartyName>",
@@ -224,11 +253,14 @@ function buildPublicEInvoiceOioUblXml(invoiceNumber: string, payload: InvoicePay
     "  </cac:AccountingSupplierParty>",
     "  <cac:AccountingCustomerParty>",
     "    <cac:Party>",
-    xmlTagWithAttrs("cbc:EndpointID", { schemeID: "0188" }, payload.buyer?.eanNumber, "      "),
+    xmlTagWithAttrs("cbc:EndpointID", { schemeID: BUYER_ENDPOINT_SCHEME_ID }, payload.buyer?.eanNumber, "      "),
     "      <cac:PartyName>",
     xmlTag("cbc:Name", payload.buyer?.name, "        "),
     "      </cac:PartyName>",
     buildAddressXml("cac:PostalAddress", payload.buyer?.address, "      "),
+    "      <cac:PartyLegalEntity>",
+    xmlTag("cbc:RegistrationName", payload.buyer?.name, "        "),
+    "      </cac:PartyLegalEntity>",
     "    </cac:Party>",
     "  </cac:AccountingCustomerParty>",
     "  <cac:TaxTotal>",
@@ -453,6 +485,8 @@ export type SubmitPublicEInvoicePeppolResult = {
   /** True when an existing submission record was reused (idempotent re-run). */
   duplicate?: boolean;
   outPath?: string;
+  /** Transport transmission id, set once the invoice has actually been transmitted. */
+  transmissionId?: string;
   appliedRules: string[];
   errors: string[];
 };
@@ -507,8 +541,8 @@ function buildPeppolSubmissionEnvelope(args: {
     xmlTag("Status", args.status, "  "),
     "  <Document>",
     xmlTag("InvoiceNumber", args.invoiceNumber, "    "),
-    xmlTag("Format", "OIOUBL", "    "),
-    xmlTag("Profile", OIOUBL_CUSTOMIZATION_ID, "    "),
+    xmlTag("Format", "PEPPOL-BIS-3.0", "    "),
+    xmlTag("Profile", PEPPOL_BIS_CUSTOMIZATION_ID, "    "),
     xmlTag("HandoffArtifactSha256", args.oioublSha256, "    "),
     "  </Document>",
     "  <AccessPoint>",
@@ -551,6 +585,38 @@ function rowToSubmissionResult(
     appliedRules: [PEPPOL_SUBMIT_RULE_ID],
     errors: [],
   };
+}
+
+/**
+ * Derive the stable identity of a public-invoice submission shared by the
+ * submission and transmission paths: the invoice number, the receiver
+ * participant id (read back from the OIOUBL EndpointID so it stays consistent
+ * with the validated handoff) and the idempotency key.
+ */
+function deriveSubmissionIdentity(
+  oioubl: ExportPublicEInvoiceResult,
+  invoiceDocumentId: number,
+  accessPoint: PeppolAccessPointConfig,
+) {
+  const invoiceNumber = oioubl.invoiceNumber ?? String(invoiceDocumentId);
+  const endpointMatch = oioubl.xml?.match(
+    new RegExp(`<cbc:EndpointID schemeID="${BUYER_ENDPOINT_SCHEME_ID}">([^<]+)</cbc:EndpointID>`),
+  );
+  const receiver = endpointMatch
+    ? `${BUYER_ENDPOINT_SCHEME_ID}:${endpointMatch[1]}`
+    : `${BUYER_ENDPOINT_SCHEME_ID}:unknown`;
+  const idempotencyKey = createHash("sha256")
+    .update(
+      [
+        invoiceNumber,
+        oioubl.sha256 ?? "",
+        accessPoint.accessPointId.trim(),
+        accessPoint.senderEndpointId.trim(),
+        receiver,
+      ].join("|"),
+    )
+    .digest("hex");
+  return { invoiceNumber, receiver, idempotencyKey };
 }
 
 /**
@@ -599,24 +665,11 @@ export function submitPublicEInvoicePeppol(
     };
   }
 
-  const invoiceNumber = oioubl.invoiceNumber ?? String(input.invoiceDocumentId);
-
-  // Derive the receiver endpoint id from the OIOUBL artifact (EndpointID),
-  // so the submission envelope stays consistent with the validated handoff.
-  const endpointMatch = oioubl.xml?.match(/<cbc:EndpointID schemeID="0188">([^<]+)<\/cbc:EndpointID>/);
-  const receiver = endpointMatch ? `0188:${endpointMatch[1]}` : "0188:unknown";
-
-  const idempotencyKey = createHash("sha256")
-    .update(
-      [
-        invoiceNumber,
-        oioubl.sha256,
-        input.accessPoint.accessPointId.trim(),
-        input.accessPoint.senderEndpointId.trim(),
-        receiver,
-      ].join("|"),
-    )
-    .digest("hex");
+  const { invoiceNumber, receiver, idempotencyKey } = deriveSubmissionIdentity(
+    oioubl,
+    input.invoiceDocumentId,
+    input.accessPoint,
+  );
 
   // Idempotent fast-path: an identical submission already exists.
   const existing = db
@@ -691,4 +744,147 @@ export function submitPublicEInvoicePeppol(
     appliedRules: [PEPPOL_SUBMIT_RULE_ID],
     errors: [],
   };
+}
+
+// ============================================================================
+// PEPPOL transmission
+//
+// One step beyond the #128 submission envelope: hand the OIOUBL invoice to a
+// transport that actually delivers it through an access point, and record the
+// outcome.
+//
+// The transport itself is an INJECTED dependency (`PeppolTransmitter`) so this
+// orchestration stays deterministic and unit-testable. The production
+// transmitter drives the self-hosted NemHandel eDelivery access point
+// (Oxalis); it is wired in separately once an access point and a MitID system
+// certificate are available, and its credentials never enter core state.
+//
+// A successful transmission is recorded as an `acknowledged` peppol_submissions
+// row (reusing submitPublicEInvoicePeppol's acknowledgement path). A failed
+// attempt is recorded only in the append-only audit log — no submission row is
+// written, so a later retry can still reach `acknowledged`.
+// ============================================================================
+
+/** Outcome of one transport attempt through an access point. */
+export type PeppolTransmissionOutcome =
+  | { ok: true; transmissionId: string; transmittedAt: string }
+  | { ok: false; error: string };
+
+/**
+ * Performs the actual AS4 transport of an OIOUBL invoice through an access
+ * point. Injected so the orchestration here stays deterministic and testable.
+ */
+export type PeppolTransmitter = (input: {
+  oioublXml: string;
+  oioublSha256: string;
+  receiverEndpointId: string;
+  accessPoint: PeppolAccessPointConfig;
+}) => Promise<PeppolTransmissionOutcome> | PeppolTransmissionOutcome;
+
+export type TransmitPublicEInvoicePeppolInput = {
+  invoiceDocumentId: number;
+  accessPoint: PeppolAccessPointConfig;
+};
+
+/**
+ * Transmits a public-recipient invoice through an access point and records the
+ * outcome.
+ *
+ * Idempotent: when the invoice was already transmitted (an `acknowledged`
+ * submission row exists for the derived idempotency key) the transmitter is
+ * not invoked again. A failed attempt is recorded in the audit log only, so a
+ * subsequent retry can still succeed and produce the `acknowledged` record.
+ */
+export async function transmitPublicEInvoicePeppol(
+  db: Database,
+  input: TransmitPublicEInvoicePeppolInput,
+  transmitter: PeppolTransmitter,
+): Promise<SubmitPublicEInvoicePeppolResult> {
+  const configErrors = validateAccessPointConfig(input.accessPoint);
+  if (configErrors.length > 0) {
+    return { ok: false, appliedRules: [PEPPOL_SUBMIT_RULE_ID], errors: configErrors };
+  }
+
+  // Reuse the shipped OIOUBL handoff slice as the validated transport payload;
+  // its own validation surfaces missing public-recipient metadata.
+  const oioubl = exportPublicEInvoiceOioUbl(db, { invoiceDocumentId: input.invoiceDocumentId });
+  if (!oioubl.ok || !oioubl.sha256 || !oioubl.xml) {
+    return {
+      ok: false,
+      invoiceNumber: oioubl.invoiceNumber,
+      appliedRules: [PEPPOL_SUBMIT_RULE_ID, ...oioubl.appliedRules],
+      errors:
+        oioubl.errors.length > 0
+          ? oioubl.errors
+          : ["PEPPOL transmission could not generate the required OIOUBL handoff artifact"],
+    };
+  }
+
+  const { invoiceNumber, receiver, idempotencyKey } = deriveSubmissionIdentity(
+    oioubl,
+    input.invoiceDocumentId,
+    input.accessPoint,
+  );
+
+  // Idempotent fast-path: this invoice was already transmitted successfully.
+  const existing = db
+    .query(
+      `SELECT id, invoice_document_id, invoice_no, idempotency_key, submission_reference,
+              access_point_id, receiver_endpoint_id, oioubl_sha256, envelope_sha256,
+              envelope_xml, status, transmission_id, acknowledged_at
+       FROM peppol_submissions WHERE idempotency_key = ? LIMIT 1`,
+    )
+    .get(idempotencyKey) as PeppolSubmissionRow | null;
+  if (existing && existing.status === "acknowledged") {
+    return {
+      ...rowToSubmissionResult(existing, invoiceNumber, true),
+      transmissionId: existing.transmission_id ?? undefined,
+    };
+  }
+
+  // Perform the transport. A thrown error is treated as a failed attempt.
+  let outcome: PeppolTransmissionOutcome;
+  try {
+    outcome = await transmitter({
+      oioublXml: oioubl.xml,
+      oioublSha256: oioubl.sha256,
+      receiverEndpointId: receiver,
+      accessPoint: input.accessPoint,
+    });
+  } catch (error) {
+    outcome = { ok: false, error: error instanceof Error ? error.message : String(error) };
+  }
+
+  if (!outcome.ok) {
+    insertAuditLog(db, {
+      eventType: "public_einvoice_peppol_transmission",
+      entityType: "document",
+      entityId: input.invoiceDocumentId,
+      message:
+        `PEPPOL transmission failed for invoice ${invoiceNumber} ` +
+        `via access point ${input.accessPoint.accessPointId.trim()}: ${outcome.error}`,
+    });
+    return {
+      ok: false,
+      invoiceNumber,
+      appliedRules: [PEPPOL_SUBMIT_RULE_ID],
+      errors: [`PEPPOL transmission failed: ${outcome.error}`],
+    };
+  }
+
+  // Success: record the submission as acknowledged with the transmission id.
+  const submitted = submitPublicEInvoicePeppol(db, {
+    invoiceDocumentId: input.invoiceDocumentId,
+    accessPoint: input.accessPoint,
+    acknowledgement: { transmissionId: outcome.transmissionId, acknowledgedAt: outcome.transmittedAt },
+  });
+  insertAuditLog(db, {
+    eventType: "public_einvoice_peppol_transmission",
+    entityType: "document",
+    entityId: input.invoiceDocumentId,
+    message:
+      `Transmitted invoice ${invoiceNumber} via access point ${input.accessPoint.accessPointId.trim()} ` +
+      `(transmission ${outcome.transmissionId}, status ${submitted.status})`,
+  });
+  return { ...submitted, transmissionId: outcome.transmissionId };
 }

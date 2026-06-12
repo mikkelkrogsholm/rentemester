@@ -132,21 +132,41 @@ export function renderInvoiceInterest(result: Record<string, unknown>): string {
   lines.push("");
 
   const overdueDays = asCount(result.overdueDays);
+  const claimableDays = asCount(result.claimableDays);
   const interest =
     typeof result.accruedInterestAmount === "number"
       ? result.accruedInterestAmount
       : Number(result.accruedInterestAmount);
+  const prior =
+    typeof result.priorClaimedInterest === "number"
+      ? result.priorClaimedInterest
+      : Number(result.priorClaimedInterest);
+  const hasPrior = Number.isFinite(prior) && prior > 0;
   const registered = result.claimId != null;
 
   if (overdueDays > 0 && Number.isFinite(interest) && interest > 0) {
-    lines.push(
-      `Fakturaen er ${overdueDays} dage forfalden — der er påløbet ${formatKroner(interest)} i morarente.`,
-    );
+    if (hasPrior) {
+      // A later claim: pair the AMOUNT with the incremental day-count it covers,
+      // never the full overdue window (which would imply a wrong daily rate).
+      lines.push(
+        `Fakturaen er ${overdueDays} dage forfalden. Ny morarente for de ${claimableDays} dage siden sidste krav (fra ${asText(result.interestFromDate)}): ${formatKroner(interest)}.`,
+      );
+    } else {
+      lines.push(
+        `Fakturaen er ${overdueDays} dage forfalden — der er påløbet ${formatKroner(interest)} i morarente.`,
+      );
+    }
   } else if (overdueDays > 0) {
-    lines.push(
-      `Fakturaen er ${overdueDays} dage forfalden, men der er ingen morarente at opkræve` +
-        " (ingen åben saldo at forrente).",
-    );
+    if (hasPrior) {
+      lines.push(
+        `Fakturaen er ${overdueDays} dage forfalden. Der er ingen ny morarente at opkræve — renten er allerede opgjort til og med ${asText(result.interestFromDate)}.`,
+      );
+    } else {
+      lines.push(
+        `Fakturaen er ${overdueDays} dage forfalden, men der er ingen morarente at opkræve` +
+          " (ingen åben saldo at forrente).",
+      );
+    }
   } else {
     lines.push("Fakturaen er ikke forfalden — der er ingen morarente at opkræve.");
   }
@@ -161,6 +181,38 @@ export function renderInvoiceInterest(result: Record<string, unknown>): string {
     `  Morarentesats (reference + 8 %): ${formatPercent(result.annualInterestRatePercent)}`,
   );
   lines.push(`  Påløbet morarente:             ${formatKroner(result.accruedInterestAmount)}`);
+
+  // When an earlier claim already exists, the figure above is the INCREMENTAL
+  // interest for the period since that claim (renteloven § 3, § 5: no day is
+  // billed twice). Show the breakdown so the cumulative total is never hidden.
+  if (hasPrior) {
+    lines.push(
+      `  Dage i dette krav (siden ${asText(result.interestFromDate)}): ${claimableDays}`,
+    );
+    lines.push(
+      `  Allerede registreret morarente: ${formatKroner(result.priorClaimedInterest)}`,
+    );
+    lines.push(
+      `  Morarente i alt til dato:      ${formatKroner(result.totalInterestToDate)}`,
+    );
+  }
+
+  // A back-dated balance reduction can leave already-issued (immutable) claims
+  // exceeding the now-lawful interest. Surface it so a correcting credit can be
+  // considered — never silently buried.
+  const overClaimed =
+    typeof result.overClaimedInterest === "number"
+      ? result.overClaimedInterest
+      : Number(result.overClaimedInterest);
+  if (Number.isFinite(overClaimed) && overClaimed > 0) {
+    lines.push("");
+    lines.push(
+      `  OBS: tidligere rentekrav overstiger den nu lovlige rente med ${formatKroner(result.overClaimedInterest)}`,
+    );
+    lines.push(
+      "       (en bagud-dateret betaling/kreditnota har sænket saldoen) — overvej en korrektions-kreditnota.",
+    );
+  }
 
   if (registered) {
     lines.push("");

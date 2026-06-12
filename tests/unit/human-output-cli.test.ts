@@ -385,6 +385,43 @@ describe("invoice interest human output (#250)", () => {
     expect(parsed.annualInterestRatePercent).toBe(10.2);
     expect(parsed.accruedInterestAmount).toBe(0.35);
   });
+
+  test("a second claim renders the incremental breakdown (days since last claim, already-claimed, cumulative)", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-interest-human-incr-"));
+    const company = join(root, "company");
+    const paymentInput = join(root, "partial-payment.json");
+
+    writeFileSync(paymentInput, JSON.stringify({
+      invoiceDocumentId: 1,
+      paymentDate: "2026-05-20",
+      amount: 1000,
+      note: "Partial payment",
+    }, null, 2));
+
+    await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
+    await Bun.$`bun run src/cli.ts invoice issue --company ${company} --input examples/full-invoice.dk.json`.quiet();
+    await Bun.$`bun run src/cli.ts invoice apply-payment --company ${company} --input ${paymentInput}`.quiet();
+    // First claim covers the first 5 overdue days (→ 0,35 kr).
+    await Bun.$`bun run src/cli.ts invoice claim-interest --company ${company} --invoice-number 2026-0001 --as-of 2026-06-20 --reference-rate 2.2`.quiet();
+
+    const human = await runCli([
+      "invoice", "interest", "--company", company,
+      "--invoice-number", "2026-0001", "--as-of", "2026-07-20", "--reference-rate", "2.2",
+      "--format", "human",
+    ]);
+
+    rmSync(root, { recursive: true, force: true });
+
+    expect(human.exitCode).toBe(0);
+    expect(human.stderr).toBe("");
+    // The headline pairs the incremental amount with the incremental days, not
+    // the full overdue window, and the breakdown shows already-claimed + total.
+    expect(human.stdout).toContain("Ny morarente for de 30 dage siden sidste krav");
+    expect(human.stdout).toContain("Dage i dette krav (siden 2026-06-20): 30");
+    expect(human.stdout).toContain("Allerede registreret morarente: 0,35 kr.");
+    expect(human.stdout).toContain("Morarente i alt til dato:");
+    expect(human.stdout).toContain("2,45 kr.");
+  });
 });
 
 describe("invoice compensation human output (#250)", () => {

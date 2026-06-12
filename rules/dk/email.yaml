@@ -1,4 +1,4 @@
-version: dk-email-v0.0.1
+version: dk-email-v0.0.2
 sources:
   - DK-BOGFORINGSLOVEN-2022-700
 rules:
@@ -6,6 +6,11 @@ rules:
     name: Emailing an invoice or reminder must be deterministic, idempotent, and recorded in an append-only send log
     category: invoice_integrity
     source_id: DK-BOGFORINGSLOVEN-2022-700
+    provisions:
+      - ref: "§ 7, stk. 1"
+        text_hash: "sha256:1094e0af03f6b6383aee9c5bbc46f629ab94d04b2f949d01621ad54195f1b744"
+      - ref: "§ 9, stk. 1"
+        text_hash: "sha256:75acd88eca28d81d86de2d14ed3c3871304f3e4da3cffc0920be43322a96153a"
     severity: hard_stop
     machine_rule:
       require:

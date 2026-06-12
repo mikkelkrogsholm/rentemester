@@ -106,6 +106,39 @@ describe("regulatory coverage", () => {
     expect(coverage.uncitedRules).toEqual(expectedUncited);
   });
 
+  test("uncited rules match the documented allowlist", () => {
+    // CI gate: any rule landing without a `provisions:` block must be on this
+    // allowlist, with a one-line explanation of why it is intentionally
+    // uncited. Two valid reasons:
+    //   1. Workflow-guardrail rule that is not keyed to a single statutory
+    //      provision (see the rule's own YAML comment).
+    //   2. Source not yet ingestable into the corpus — either the URL on
+    //      retsinformation.dk is wrong/historic (NemHandel, PEPPOL public
+    //      payments), or the source is an EU regulation that the paragraf-
+    //      aware extractor does not model (GDPR uses `art.` not `§`).
+    // Removing a rule from this list requires either citing it or moving
+    // the source into `sources/downloaded/` and `sources/scope.yaml`.
+    const allowedUncited = [
+      // Workflow-guardrail (no single statutory hook):
+      "DK-ANNUAL-REPORT-CLASS-B-001",
+      "DK-ANNUAL-REPORT-IXBRL-002",
+      "DK-TAX-RETURN-CORP-001",
+      // Deliberately out of declared legal scope:
+      "DK-VAT-OSS-001",
+      // Source not yet ingested (DK-OFFENTLIGE-BETALINGER-2007-798 is
+      // historic; needs the current LBK):
+      "DK-INVOICE-PUBLIC-EXPORT-001",
+      "DK-INVOICE-PUBLIC-OIOUBL-001",
+      "DK-INVOICE-PUBLIC-RECIPIENT-001",
+      "DK-PEPPOL-SUBMIT-001",
+      // EU regulation; paragraf-aware extractor does not model `art.`:
+      "GDPR-RETENTION-BOUNDED-ERASURE",
+      "GDPR-SUBJECT-EXPORT",
+    ].sort();
+    const coverage = computeRegulatoryCoverage();
+    expect(coverage.uncitedRules).toEqual(allowedUncited);
+  });
+
   test("the reverse map carries code and test files for every cited rule", () => {
     const coverage = computeRegulatoryCoverage();
     expect(coverage.reverseMap.length).toBeGreaterThan(0);

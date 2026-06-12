@@ -33,7 +33,12 @@ import {
   recordException,
   listExceptions,
   syncUnmatchedBankTransactionExceptions,
+  syncOverduePayableExceptions,
+  syncAccrualRecognitionDueExceptions,
+  syncTaxReturnReviewExceptions,
 } from "../core/exceptions";
+import { buildPayablesList, payPayableFromBank } from "../core/payables";
+import { listDueAccrualRecognitionPeriods } from "../core/accruals";
 import { buildVatReport, vatFilingDeadline } from "../core/vat";
 import { buildVatFiling } from "../core/vat-filing";
 import { fiscalYearForDate } from "../core/fiscal-year";
@@ -107,6 +112,20 @@ export type DeadlineNotice = {
   note: string;
 };
 
+/**
+ * A creditor item the agent settled automatically — an unmatched outgoing bank
+ * payment whose amount exactly equals exactly one open payable's open balance.
+ */
+export type PayableMatch = {
+  payableId: number;
+  documentId: number;
+  bankTransactionId: number;
+  supplier: string;
+  amount: number;
+  /** The settlement journal entry number, or `null` if unavailable. */
+  journalEntryNo: string | null;
+};
+
 export type AgentRunReport = {
   ok: boolean;
   /** Canonical actor the agent booked under. */
@@ -119,6 +138,17 @@ export type AgentRunReport = {
   documentsRejected: number;
   bankTransactionsImported: number;
   expensesBooked: BookedExpense[];
+  /**
+   * Creditor items the agent settled automatically from an exact-match
+   * outgoing bank payment. Additive field — empty on a run with no payables.
+   */
+  payablesMatched: PayableMatch[];
+  /**
+   * Count of accrual recognition periods that are due/overdue and not yet
+   * posted, surfaced as `AGENT_ACCRUAL_RECOGNITION_DUE` exceptions. The agent
+   * never posts the recognition entry — it surfaces the pending work.
+   */
+  accrualRecognitionsDue: number;
   /** Exceptions left open at end of run — the human's work list. */
   openExceptions: RoutedException[];
   upcomingDeadlines: DeadlineNotice[];
@@ -194,6 +224,8 @@ export function runAgentLoop(input: AgentRunInput): AgentRunReport {
     documentsRejected: 0,
     bankTransactionsImported: 0,
     expensesBooked: [],
+    payablesMatched: [],
+    accrualRecognitionsDue: 0,
     openExceptions: [],
     upcomingDeadlines: [],
     summary: [],
@@ -424,10 +456,17 @@ function runPhases(db: Database, input: AgentRunInput, report: AgentRunReport): 
     }
   }
 
+  // ---- Phase: payables --------------------------------------------------
+  // Settle the unambiguous creditor payments and surface the overdue ones.
+  report.phases.push("payables");
+  matchPayables(db, report);
+  syncOverduePayableExceptions(db, input.asOf);
+
   // ---- Phase 4: reconcile -----------------------------------------------
   // Any bank transaction with no posted journal entry is surfaced as an
   // exception by the shared reconciliation sync — the agent calls the
-  // existing core function rather than reimplementing it.
+  // existing core function rather than reimplementing it. It runs AFTER the
+  // payables phase so a creditor item just settled is no longer unmatched.
   report.phases.push("reconcile");
   syncUnmatchedBankTransactionExceptions(db);
 
@@ -476,6 +515,167 @@ function routeException(
   });
   if (!res.ok) {
     report.errors.push(`failed to record exception (${input.type}): ${res.errors.join("; ")}`);
+  }
+}
+
+// Company-form / currency tokens that carry no identifying signal — two
+// unrelated "… ApS" creditors both contain APS. Mirrors the STOP_TOKENS in
+// `bank-suggest-matches.ts`; kept local so `matchPayables` stays self-contained.
+const PAYABLE_MATCH_STOP_TOKENS = new Set([
+  "APS", "A/S", "AS", "IVS", "P/S", "PS", "K/S", "KS", "I/S", "IS",
+  "AMBA", "FMBA", "SMBA", "GMBH", "LTD", "INC", "PLC", "LLC", "AB", "OY",
+  "DKK", "EUR", "USD", "SEK", "NOK", "GBP",
+  "FOR", "OG", "THE", "AND", "VED", "MED", "TIL", "FRA", "DEN", "DET",
+]);
+
+/** Identifying tokens of a name/text — upper-cased, ≥3 chars, stop-words dropped. */
+function payableMatchTokens(value: string | null | undefined): string[] {
+  return Array.from(
+    new Set(
+      (value ?? "")
+        .toUpperCase()
+        .split(/[^\p{L}\p{N}-]+/u)
+        .map((t) => t.trim())
+        .filter((t) => t.length >= 3)
+        .filter((t) => !PAYABLE_MATCH_STOP_TOKENS.has(t)),
+    ),
+  );
+}
+
+/**
+ * Whether a bank line strongly corroborates a payable beyond the amount.
+ *
+ * An amount-only match is unsafe: an owner draw / salary / tax payment with no
+ * bilag can equal a creditor's open balance by coincidence. The agent only
+ * auto-settles when the bank line's identifying text (free text, counterparty
+ * name, reference, message) shares an identifying token with the supplier
+ * name, OR carries the bill number. Otherwise the match is uncertain.
+ */
+function bankLineCorroboratesPayable(
+  bank: { text: string | null; counterparty_name: string | null; reference: string | null; message: string | null },
+  payable: { supplierName: string | null; billNo: string | null },
+): boolean {
+  const combined = [bank.text, bank.counterparty_name, bank.reference, bank.message]
+    .filter((p): p is string => typeof p === "string" && p.trim().length > 0)
+    .join(" ");
+  // The bill number appearing verbatim in the bank text is strong evidence.
+  if (payable.billNo && combined.toUpperCase().includes(payable.billNo.toUpperCase())) {
+    return true;
+  }
+  // Otherwise require an identifying-token overlap with the supplier name.
+  const supplierTokens = new Set(payableMatchTokens(payable.supplierName));
+  if (supplierTokens.size === 0) return false;
+  return payableMatchTokens(combined).some((t) => supplierTokens.has(t));
+}
+
+/**
+ * Settles the unambiguous creditor payments — and ONLY the unambiguous ones.
+ *
+ * A bank transaction auto-settles a payable only when BOTH hold:
+ *  1. its absolute amount equals the open balance of EXACTLY ONE open payable
+ *     (zero or more than one ⇒ ambiguous), AND
+ *  2. the bank line strongly corroborates that payable — its text /
+ *     counterparty / reference names the supplier or carries the bill number.
+ *
+ * An amount-only match is NOT enough: an owner draw, salary or tax payment can
+ * coincidentally equal a creditor's balance, and auto-settling it would be a
+ * wrong write to the append-only ledger. When the amount matches but
+ * corroboration is weak, the agent SURFACES it as an `AGENT_PAYABLE_MATCH_UNCERTAIN`
+ * exception for the human — it never posts. (Same "surface, never guess"
+ * stance as the accrual-recognition and fixed-asset paths.)
+ *
+ * Settlement goes through the existing `payPayableFromBank` feature, so the
+ * ledger still has the final word, and every mutation is attributed to the
+ * agent's canonical actor.
+ */
+function matchPayables(db: Database, report: AgentRunReport): void {
+  const openPayables = buildPayablesList(db, { status: "open" });
+  if (!openPayables.ok || openPayables.rows.length === 0) return;
+
+  // Unmatched outgoing DKK bank lines — no POSTED journal entry, negative
+  // amount. The `je.status = 'posted'` filter matches reconciliation.ts and
+  // syncUnmatchedBankTransactionExceptions: a reversed settlement entry must
+  // NOT keep its bank line excluded. Stable order: ascending id, replayable.
+  const bankRows = db.query(
+    `SELECT bt.id, bt.amount, bt.currency, bt.text, bt.reference, bt.counterparty_name, bt.message
+       FROM bank_transactions bt
+       LEFT JOIN journal_entries je
+         ON je.source_bank_transaction_id = bt.id
+        AND je.status = 'posted'
+      WHERE je.id IS NULL
+        AND bt.amount < 0
+      ORDER BY bt.id ASC`,
+  ).all() as Array<{
+    id: number;
+    amount: number;
+    currency: string;
+    text: string | null;
+    reference: string | null;
+    counterparty_name: string | null;
+    message: string | null;
+  }>;
+
+  for (const bank of bankRows) {
+    if ((bank.currency ?? "DKK").trim().toUpperCase() !== "DKK") continue;
+    const absOre = Math.round(Math.abs(Number(bank.amount)) * 100);
+    // Exactly-one-candidate rule: the open balance must match precisely.
+    const candidates = openPayables.rows.filter(
+      (p) => Math.round(p.openBalance * 100) === absOre,
+    );
+    if (candidates.length !== 1) continue; // 0 or >1 ⇒ ambiguous, never guessed
+    const payable = candidates[0]!;
+
+    // An amount-only match without supplier corroboration is NOT auto-settled.
+    // Surface it for the human instead — never guess a ledger write.
+    if (!bankLineCorroboratesPayable(bank, payable)) {
+      const supplier = payable.supplierName ?? "ukendt leverandør";
+      routeException(db, report, {
+        type: "AGENT_PAYABLE_MATCH_UNCERTAIN",
+        severity: "medium",
+        message:
+          `Banktransaktion ${bank.id} "${(bank.text ?? "").trim() || "(ingen tekst)"}" på ` +
+          `${Math.abs(Number(bank.amount)).toLocaleString("da-DK")} kr. har samme beløb som ` +
+          `kreditorpost #${payable.payableId} til ${supplier}, men banklinjens tekst nævner ` +
+          `hverken leverandøren eller bilagsnummeret — agenten afregner den ikke automatisk, ` +
+          `da et beløbssammenfald alene ikke er sikkert nok.`,
+        requiredAction:
+          `Kontroller om banktransaktionen rent faktisk er betalingen af kreditorpost ` +
+          `#${payable.payableId}, og afregn den i så fald manuelt med 'payable pay'.`,
+        relatedBankTransactionId: bank.id,
+        relatedDocumentId: payable.documentId,
+        sourceEvidence: {
+          rule: AGENT_RULE_ID,
+          bankTransactionId: bank.id,
+          payableId: payable.payableId,
+          openBalance: payable.openBalance,
+          reason: "amount-only match, no supplier/bill-no corroboration",
+        },
+      });
+      continue;
+    }
+
+    const paid = payPayableFromBank(db, {
+      payableId: payable.payableId,
+      bankTransactionId: bank.id,
+      createdBy: AGENT_ACTOR_ID,
+      createdByProgram: AGENT_PROGRAM,
+    });
+    if (paid.ok) {
+      report.payablesMatched.push({
+        payableId: payable.payableId,
+        documentId: payable.documentId,
+        bankTransactionId: bank.id,
+        supplier: payable.supplierName ?? "ukendt",
+        amount: payable.openBalance,
+        journalEntryNo: paid.journalEntryId != null ? String(paid.journalEntryId) : null,
+      });
+      // A payable just settled is no longer an open candidate for a later
+      // bank line in the same run.
+      const idx = openPayables.rows.indexOf(payable);
+      if (idx >= 0) openPayables.rows.splice(idx, 1);
+    }
+    // A failed settlement is left unmatched — the reconcile/route phases and
+    // the overdue-payable sync still surface it. The agent never forces it.
   }
 }
 
@@ -596,6 +796,30 @@ function checkDeadlines(db: Database, asOf: string, report: AgentRunReport): voi
         ? `Årsrapport for regnskabsår ${fy.displayLabel} nærmer sig — forbered med 'report annual'.`
         : `Regnskabsår ${fy.displayLabel} løber — årsrapport forfalder ${fyDueDate}.`,
   });
+
+  // --- Accrual recognition periods due ---
+  // A periodeafgrænsningspost recognition is a recurring, dated obligation
+  // like a VAT period. The loop SURFACES every recognition period whose
+  // schedule date has arrived and that is not yet posted — it does NOT post
+  // the recognition entry itself, exactly as it surfaces (never auto-posts) a
+  // possible fixed-asset purchase. Choosing the posting date is the human's.
+  const due = listDueAccrualRecognitionPeriods(db, asOf);
+  if (due.ok) {
+    report.accrualRecognitionsDue = due.periods.length;
+    syncAccrualRecognitionDueExceptions(db, asOf);
+  }
+
+  // --- Closed-year tax-return needs-review ---
+  // The corporate tax return rests on a CLOSED fiscal year, so the relevant
+  // year is the one BEFORE the current (open) one — one day before `fy.start`
+  // lands inside the previous fiscal year. `syncTaxReturnReviewExceptions`
+  // itself no-ops unless that year is actually closed/reported.
+  const previousFy = fiscalYearForDate(
+    addDays(fy.start, -1),
+    settings.fiscalYearStartMonth,
+    settings.fiscalYearLabelStrategy,
+  );
+  syncTaxReturnReviewExceptions(db, previousFy.start, previousFy.end);
 }
 
 /** Builds the plain-language end-of-run summary lines. */
@@ -607,6 +831,14 @@ function buildSummary(report: AgentRunReport): void {
   );
   lines.push(`${report.bankTransactionsImported} banktransaktioner importeret`);
   lines.push(`${report.expensesBooked.length} udgifter bogført automatisk af agenten`);
+  lines.push(
+    `${report.payablesMatched.length} kreditorposter afregnet automatisk fra banken`,
+  );
+  if (report.accrualRecognitionsDue > 0) {
+    lines.push(
+      `${report.accrualRecognitionsDue} periodeafgrænsnings-perioder forfaldne — kræver bogføring`,
+    );
+  }
   lines.push(
     `${report.openExceptions.length} i exception-kø — kræver et menneske` +
       (report.openExceptions.length === 0 ? " (intet)" : ""),

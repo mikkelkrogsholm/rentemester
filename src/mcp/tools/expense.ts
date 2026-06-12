@@ -8,6 +8,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { bookExpenseFromBank } from "../../core/expense-booking";
+import { withActor } from "../actor";
 import { envelopeShape, wrapCoreResult } from "../envelope";
 import { withCompanyDbConfirmed, confirmField } from "../tool-runtime";
 
@@ -33,7 +34,7 @@ export function registerExpenseTools(server: McpServer): void {
       description:
         "Bogfører leverandørudgift fra bilag + bankpost i ét tag. write-irreversible.",
       inputSchema: {
-        company: z.string().min(1),
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         documentId: z
           .number()
           .int()
@@ -91,16 +92,26 @@ export function registerExpenseTools(server: McpServer): void {
       date?: string;
       text?: string;
       confirm?: boolean;
-    }>(server, "expense_book", ({ db, args }) => {
-      const result = bookExpenseFromBank(db, {
-        documentId: args.documentId,
-        bankTransactionId: args.bankTransactionId,
-        expenseAccountNo: args.expenseAccount,
-        vatTreatment: args.vatTreatment,
-        paymentAccountNo: args.paymentAccount,
-        transactionDate: args.date,
-        text: args.text,
-      });
+    }>(server, "expense_book", ({ db, actor, args }) => {
+      // Actor-invariant (#63/#76): thread the MCP-client identity into the
+      // hash-chained ledger so created_by/created_by_program + audit_log.actor
+      // are attributed to the booking agent, not the OS user (resolveActor's
+      // process.env.USER fallback). withActor never overwrites explicit values.
+      const result = bookExpenseFromBank(
+        db,
+        withActor(
+          {
+            documentId: args.documentId,
+            bankTransactionId: args.bankTransactionId,
+            expenseAccountNo: args.expenseAccount,
+            vatTreatment: args.vatTreatment,
+            paymentAccountNo: args.paymentAccount,
+            transactionDate: args.date,
+            text: args.text,
+          },
+          actor,
+        ),
+      );
       return wrapCoreResult(result);
     }),
   );

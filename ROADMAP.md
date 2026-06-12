@@ -15,7 +15,7 @@ Hele den deterministiske kerne er på plads og dækket af tests. Det her er det 
 - **Bank**: CSV-import med kolonne-mapping, suggest-matches, reconciliation, settlement (inkl. kombineret principal + rykker/rente).
 - **Bilag**: ingest med SHA-256, leverandør-stamdata, expense-bogføring, VIES-validering af EU-numre og fremmedvaluta-køb med DKK-bankafregning.
 - **Moms**: rapport, EU reverse charge, repræsentation, bad-debt relief, TastSelv-rubrik-mapping.
-- **System**: signed backups (HMAC + opt-in ed25519 til 3.-parts revisor-verifikation), restore med audit-chain-verifikation, periodelås, 5-års retention, myndighedseksport, første deterministiske SAF-T-slice og deterministisk lokal bogholder-/revisor-handoff-pakke.
+- **System**: signed backups (HMAC + opt-in ed25519 til 3.-parts revisor-verifikation), restore med audit-chain-verifikation, periodelås, 5-års retention, myndighedseksport, første deterministiske SAF-T-slice, deterministisk lokal bogholder-/revisor-handoff-pakke og en byte-deterministisk compliance-rapport (`compliance report`) med sha256-fingerprint som revisor kan re-køre for at bekræfte uændret tilstand.
 - **Agent-grænseflade**: MCP-server med 81 tools, agent-agnostisk (Claude, Mistral, Ollama lokalt, eller intet).
 - **Dashboard**: statisk HTML, deterministisk, bygger på DESIGN.md-tokens.
 - **CI**: `bun test` + `bun run smoke` håndhævet på hver PR.
@@ -77,11 +77,11 @@ CSV-import virker, men friktionen forsvinder først når bank-transaktioner kan 
 
 Skal designes så Rentemester aldrig opbevarer bank-credentials i klartekst — kun OAuth-tokens med refresh.
 
-### PEPPOL / OIOUBL
+### E-faktura til det offentlige (PEPPOL)
 
-Første slices er nu landet som deterministisk EAN/GLN preview-eksport og et deterministisk OIOUBL-handoff-artifact for offentlige kunder: fakturaen kan markeres med public-recipient metadata, eksporteres som stabil preview og materialiseres som OIOUBL til videre handoff.
+Fakturaer til offentlige kunder kan markeres med public-recipient metadata og eksporteres som et gyldigt **Peppol BIS Billing 3.0**-dokument. Transport-sømmen (`transmitPublicEInvoicePeppol`) er på plads: en injiceret transmitter afleverer dokumentet, og udfaldet registreres idempotent og auditbart.
 
-Det næste trin er direkte PEPPOL-transport via access point. Det er ikke teknisk svært, men det kræver registrering hos et access point og en skarp trust-boundary omkring selve submission-leddet.
+Det sidste trin er den ægte transport via et selv-hostet access point (Oxalis). Det kræver et MitID systemcertifikat og en endpoint-registrering i NemHandelsRegistret, som kun virksomhedsejeren kan skaffe — ikke en kommerciel tredjepart. Hele opsætningen er dokumenteret i [docs/peppol-nemhandel.md](docs/peppol-nemhandel.md).
 
 Relevant når der er brugere der har offentlige kunder.
 

@@ -202,6 +202,15 @@ export type CloseAccountingPeriodInput = {
   reference?: string;
   createdBy?: string;
   createdByProgram?: string;
+  /**
+   * Per round-2 review: closing a period with open high/medium exceptions
+   * silently hides them — the default `exceptions list` filter no longer
+   * includes them, so a user can lukke en periode og glemme to åbne
+   * bankposter. The close call now refuses if any open high/medium
+   * exception has a date inside the period. Set `force: true` to bypass
+   * (the bypass + the open-exception count is logged to the audit chain).
+   */
+  force?: boolean;
 };
 
 export type CloseAccountingPeriodResult = {
@@ -348,6 +357,42 @@ export function closeAccountingPeriod(db: Database, input: CloseAccountingPeriod
   if (!PERIOD_STATUSES.has(status)) errors.push("status must be closed or reported");
 
   if (errors.length > 0) return { ok: false, appliedRules, errors };
+
+  // Round-2 review: refuse to silently hide open high/medium exceptions
+  // by closing the period they fall in. The bypass is `force: true`.
+  if (!input.force) {
+    const open = db.query(
+      `SELECT e.id, e.type, e.severity
+         FROM exceptions e
+         LEFT JOIN bank_transactions bt ON bt.id = e.related_bank_transaction_id
+         LEFT JOIN documents d ON d.id = e.related_document_id
+        WHERE e.status = 'open'
+          AND e.severity IN ('high', 'medium')
+          AND (
+            (bt.transaction_date BETWEEN ? AND ?)
+            OR (d.invoice_date BETWEEN ? AND ?)
+          )
+        ORDER BY e.id ASC`,
+    ).all(periodStart, periodEnd, periodStart, periodEnd) as Array<{
+      id: number;
+      type: string;
+      severity: "high" | "medium";
+    }>;
+    if (open.length > 0) {
+      const summary = open
+        .slice(0, 5)
+        .map((e) => `#${e.id} (${e.severity}, ${e.type})`)
+        .join(", ");
+      const more = open.length > 5 ? `, +${open.length - 5} more` : "";
+      return {
+        ok: false,
+        appliedRules,
+        errors: [
+          `${open.length} åbne high/medium-undtagelser i ${kind} ${periodStart}..${periodEnd}: ${summary}${more}. Løs dem først eller send force:true for at lukke alligevel (bypass logges).`,
+        ],
+      };
+    }
+  }
 
   const overlap = db.query(
     `SELECT id, period_start, period_end, kind, status

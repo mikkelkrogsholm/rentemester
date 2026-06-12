@@ -45,7 +45,7 @@ export function registerMailIntakeTools(server: McpServer): void {
         "med tvetydig metadata routes til exception-køen. Kræver confirm:true. " +
         "write-reversible.",
       inputSchema: {
-        company: z.string().min(1),
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         source: z.string().min(1).describe("Sti til en .eml-fil eller en maildrop-mappe"),
         metadata: metadataSchema.optional(),
         metadataPerMessage: z

@@ -58,6 +58,32 @@ export type JournalReverseResult = JournalPostResult & {
   originalEntryId?: JournalEntryId;
 };
 
+// The signed effect a dry-run posting would have on one account. `balanceBefore`
+// and `balanceAfter` are the running debit-minus-credit net (the saldobalance
+// convention) — credit-normal accounts therefore read negative.
+export type JournalDryRunAccountEffect = {
+  accountNo: string;
+  accountName: string;
+  balanceBefore: number;
+  balanceAfter: number;
+  delta: number;
+};
+
+// A non-binding preview of postJournalEntry. The entry/hash/effects describe
+// what *would* be written if the same payload were posted right now — they are
+// not a reservation: the entry number, previous hash and balances can all move
+// if another entry is posted between the dry run and the real post.
+export type JournalDryRunResult = {
+  ok: boolean;
+  appliedRules: string[];
+  errors: string[];
+  entryId?: JournalEntryId;
+  entryNo?: string;
+  previousHash?: string;
+  entryHash?: string;
+  accountEffects?: JournalDryRunAccountEffect[];
+};
+
 const LEDGER_RULES = {
   BALANCED: "DK-BOOKKEEPING-BALANCED-001",
   APPEND_ONLY: "DK-BOOKKEEPING-APPEND-ONLY-001",
@@ -83,8 +109,16 @@ export function seedAccounts(db: Database) {
     // --- Income (1xxx) ---
     ["1000", "Omsætning, ydelser", "income", "credit", null],
     ["1010", "Gebyr- og kompensationsindtægter", "income", "credit", null],
+    // Realiseret valutakursgevinst på debitorer/kreditorer i fremmed valuta:
+    // når en fordring/gæld indfries til en anden kurs end den, den blev bogført
+    // til, er forskellen en finansiel gevinst (kredit) — modposten til 3320.
+    ["1020", "Valutakursgevinst (realiseret)", "income", "credit", null],
     ["1100", "Debitorer", "asset", "debit", null],
     ["1200", "Salgsmoms", "vat", "credit", null],
+    // Periodeafgrænsningspost: forudbetalte omkostninger (asset). A prepaid
+    // expense already paid that belongs to a later period is parked here until
+    // it is recognised period by period.
+    ["1300", "Forudbetalte omkostninger", "asset", "debit", null],
     // --- Bank (2xxx) ---
     ["2000", "Bank", "asset", "debit", null],
     // --- External operating expenses (3xxx, 3000-3399) ---
@@ -108,6 +142,10 @@ export function seedAccounts(db: Database) {
     ["3200", "Porto og fragt", "expense", "debit", "DK_PURCHASE_25"],
     ["3300", "Gebyrer, bank og betalingskort", "expense", "debit", null],
     ["3310", "Renteudgifter", "expense", "debit", null],
+    // Realiseret valutakurstab på debitorer/kreditorer i fremmed valuta — det
+    // finansielle modstykke til 1020. Bogføres når en fordring/gæld indfries
+    // til en ringere kurs end bogføringskursen.
+    ["3320", "Valutakurstab (realiseret)", "expense", "debit", null],
     // --- Staff costs (3xxx, 3500-3599) ---
     ["3500", "Lønninger", "expense", "debit", null],
     ["3510", "Pension", "expense", "debit", null],
@@ -139,7 +177,14 @@ export function seedAccounts(db: Database) {
     // Tax payable / skattekonto (#249): the everyday account for tax owed to
     // SKAT — B-skat / restskat for an enkeltmandsvirksomhed, selskabsskat for
     // an ApS. Credit-normal short-term liability, alongside the payroll gæld.
-    ["7200", "Skyldig skat (skattekonto)", "liability", "credit", null]
+    ["7200", "Skyldig skat (skattekonto)", "liability", "credit", null],
+    // Periodeafgrænsningsposter på passivsiden. 7300 holds accrued expenses
+    // (skyldige omkostninger): a cost that belongs to the period but is not yet
+    // paid. 7310 holds deferred revenue (forudbetalt indtægt): cash received
+    // for a service not yet delivered. Both are credit-normal liabilities that
+    // unwind period by period as the cost/revenue is recognised.
+    ["7300", "Skyldige omkostninger", "liability", "credit", null],
+    ["7310", "Forudbetalt indtægt (udskudt omsætning)", "liability", "credit", null]
   ];
   const insert = db.prepare("INSERT OR IGNORE INTO accounts (account_no,name,type,normal_balance,default_vat_code) VALUES (?,?,?,?,?)");
   db.transaction(() => rows.forEach((r) => insert.run(...r)))();
@@ -290,103 +335,210 @@ export function validateJournalEntry(db: Database, payload: JournalEntryInput) {
   return { ok: errors.length === 0, appliedRules, errors };
 }
 
+// Inserts a validated entry into the append-only chain: journal row, lines,
+// audit log and any bank-exception resolution. MUST run inside a db transaction
+// — postJournalEntry commits it, dryRunJournalEntry rolls it back. The caller is
+// responsible for having run validateJournalEntry first.
+function applyJournalEntry(
+  db: Database,
+  payload: JournalEntryInput,
+  accounts: ReturnType<typeof accountMap>,
+): { entryId: JournalEntryId; entryNo: string; previousHash: string; entryHash: string } {
+  const entryId = nextEntryId(db);
+  const entryNo = nextEntryNo(db, payload.transactionDate);
+  const prevHash = previousHash(db);
+  const actor = resolveActor({ createdBy: payload.createdBy, createdByProgram: payload.createdByProgram });
+  const canonicalLines = payload.lines.map((line) => ({
+    account_no: line.accountNo,
+    debit_amount: normalizeAmount(line.debitAmount),
+    credit_amount: normalizeAmount(line.creditAmount),
+    vat_code: line.vatCode ?? null,
+    text: line.text ?? null,
+  }));
+  const entryDraft = {
+    id: entryId,
+    entry_no: entryNo,
+    transaction_date: payload.transactionDate,
+    text: payload.text,
+    source_bank_transaction_id: payload.sourceBankTransactionId ?? null,
+    document_id: payload.documentId ?? null,
+    currency: (payload.currency ?? 'DKK').trim().toUpperCase(),
+    amount_foreign: payload.amountForeign == null ? null : roundDkk(payload.amountForeign),
+    amount_dkk: payload.amountDkk == null ? null : roundDkk(payload.amountDkk),
+    fx_rate_to_dkk: payload.fxRateToDkk == null ? null : roundRate6(payload.fxRateToDkk),
+    rule_version: RULE_VERSION,
+    created_by: actor.createdBy,
+    created_by_program: actor.createdByProgram,
+    status: 'posted',
+    reversal_of_entry_id: null,
+  };
+  const entryHash = hashEntry(canonicalEntryData(entryDraft, canonicalLines), prevHash);
+
+  const insertEntry = db.query(
+    `INSERT INTO journal_entries (
+      id, entry_no, transaction_date, text, source_bank_transaction_id, document_id,
+      currency, amount_foreign, amount_dkk, fx_rate_to_dkk,
+      rule_version, created_by, created_by_program, status, previous_hash, entry_hash, retain_until
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'posted', ?, ?, ?)
+    RETURNING id, entry_no`
+  );
+
+  const entry = insertEntry.get(
+    entryId,
+    entryNo,
+    payload.transactionDate,
+    payload.text,
+    payload.sourceBankTransactionId ?? null,
+    payload.documentId ?? null,
+    (payload.currency ?? 'DKK').trim().toUpperCase(),
+    payload.amountForeign == null ? null : roundDkk(payload.amountForeign),
+    payload.amountDkk == null ? null : roundDkk(payload.amountDkk),
+    payload.fxRateToDkk == null ? null : roundRate6(payload.fxRateToDkk),
+    RULE_VERSION,
+    actor.createdBy,
+    actor.createdByProgram,
+    prevHash,
+    entryHash,
+    retainUntilForDate(db, payload.transactionDate),
+  ) as any;
+
+  const insertLine = db.prepare(
+    `INSERT INTO journal_lines (journal_entry_id, account_id, debit_amount, credit_amount, vat_code, currency, text)
+     VALUES (?, ?, ?, ?, ?, 'DKK', ?)`
+  );
+
+  canonicalLines.forEach((line) => {
+    const account = accounts.get(line.account_no)!;
+    insertLine.run(entry.id, account.id, line.debit_amount, line.credit_amount, line.vat_code, line.text);
+  });
+
+  insertAuditLog(db, {
+    eventType: "journal_post",
+    entityType: "journal_entry",
+    entityId: entry.id,
+    message: `Posted journal entry ${entry.entry_no}`,
+    createdBy: actor.createdBy,
+    createdByProgram: actor.createdByProgram,
+  });
+
+  if (payload.sourceBankTransactionId) {
+    resolveOpenExceptionsForBankTransaction(
+      db,
+      payload.sourceBankTransactionId,
+      `Resolved automatically by posted journal entry ${entry.entry_no}`,
+      actor.createdBy,
+    );
+  }
+
+  return { entryId: asJournalEntryId(entry.id), entryNo: entry.entry_no, previousHash: prevHash, entryHash };
+}
+
 export function postJournalEntry(db: Database, payload: JournalEntryInput): JournalPostResult {
   const validation = validateJournalEntry(db, payload);
   if (!validation.ok) return { ok: false, appliedRules: validation.appliedRules, errors: validation.errors };
 
   const accounts = accountMap(db);
 
-  const result = db.transaction(() => {
-    const entryId = nextEntryId(db);
-    const entryNo = nextEntryNo(db, payload.transactionDate);
-    const prevHash = previousHash(db);
-    const actor = resolveActor({ createdBy: payload.createdBy, createdByProgram: payload.createdByProgram });
-    const canonicalLines = payload.lines.map((line) => ({
-      account_no: line.accountNo,
-      debit_amount: normalizeAmount(line.debitAmount),
-      credit_amount: normalizeAmount(line.creditAmount),
-      vat_code: line.vatCode ?? null,
-      text: line.text ?? null,
-    }));
-    const entryDraft = {
-      id: entryId,
-      entry_no: entryNo,
-      transaction_date: payload.transactionDate,
-      text: payload.text,
-      source_bank_transaction_id: payload.sourceBankTransactionId ?? null,
-      document_id: payload.documentId ?? null,
-      currency: (payload.currency ?? 'DKK').trim().toUpperCase(),
-      amount_foreign: payload.amountForeign == null ? null : roundDkk(payload.amountForeign),
-      amount_dkk: payload.amountDkk == null ? null : roundDkk(payload.amountDkk),
-      fx_rate_to_dkk: payload.fxRateToDkk == null ? null : roundRate6(payload.fxRateToDkk),
-      rule_version: RULE_VERSION,
-      created_by: actor.createdBy,
-      created_by_program: actor.createdByProgram,
-      status: 'posted',
-      reversal_of_entry_id: null,
-    };
-    const entryHash = hashEntry(canonicalEntryData(entryDraft, canonicalLines), prevHash);
-
-    const insertEntry = db.query(
-      `INSERT INTO journal_entries (
-        id, entry_no, transaction_date, text, source_bank_transaction_id, document_id,
-        currency, amount_foreign, amount_dkk, fx_rate_to_dkk,
-        rule_version, created_by, created_by_program, status, previous_hash, entry_hash, retain_until
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'posted', ?, ?, ?)
-      RETURNING id, entry_no`
-    );
-
-    const entry = insertEntry.get(
-      entryId,
-      entryNo,
-      payload.transactionDate,
-      payload.text,
-      payload.sourceBankTransactionId ?? null,
-      payload.documentId ?? null,
-      (payload.currency ?? 'DKK').trim().toUpperCase(),
-      payload.amountForeign == null ? null : roundDkk(payload.amountForeign),
-      payload.amountDkk == null ? null : roundDkk(payload.amountDkk),
-      payload.fxRateToDkk == null ? null : roundRate6(payload.fxRateToDkk),
-      RULE_VERSION,
-      actor.createdBy,
-      actor.createdByProgram,
-      prevHash,
-      entryHash,
-      retainUntilForDate(db, payload.transactionDate),
-    ) as any;
-
-    const insertLine = db.prepare(
-      `INSERT INTO journal_lines (journal_entry_id, account_id, debit_amount, credit_amount, vat_code, currency, text)
-       VALUES (?, ?, ?, ?, ?, 'DKK', ?)`
-    );
-
-    canonicalLines.forEach((line) => {
-      const account = accounts.get(line.account_no)!;
-      insertLine.run(entry.id, account.id, line.debit_amount, line.credit_amount, line.vat_code, line.text);
-    });
-
-    insertAuditLog(db, {
-      eventType: "journal_post",
-      entityType: "journal_entry",
-      entityId: entry.id,
-      message: `Posted journal entry ${entry.entry_no}`,
-      createdBy: actor.createdBy,
-      createdByProgram: actor.createdByProgram,
-    });
-
-    if (payload.sourceBankTransactionId) {
-      resolveOpenExceptionsForBankTransaction(
-        db,
-        payload.sourceBankTransactionId,
-        `Resolved automatically by posted journal entry ${entry.entry_no}`,
-        actor.createdBy,
-      );
-    }
-
-    return { entryId: asJournalEntryId(entry.id), entryNo: entry.entry_no, entryHash };
-  }, { immediate: true })();
+  const { previousHash: _previousHash, ...result } = db.transaction(
+    () => applyJournalEntry(db, payload, accounts),
+    { immediate: true },
+  )();
 
   return { ok: true, appliedRules: validation.appliedRules, errors: [], ...result };
+}
+
+// Thrown to unwind a dry-run transaction once its effects have been captured.
+// Identity is checked so a genuine failure inside applyJournalEntry still
+// propagates instead of being swallowed as an intentional rollback.
+class DryRunRollback extends Error {
+  constructor() {
+    super("dry-run rollback");
+    this.name = "DryRunRollback";
+  }
+}
+
+// Running debit-minus-credit balance, in øre, for each given account, summed
+// per line in bigint to stay exact (no float drift from a SQL SUM).
+function accountBalanceSnapshot(
+  db: Database,
+  accountNos: string[],
+): Map<string, { name: string; balanceOre: bigint }> {
+  const nameStmt = db.query("SELECT name FROM accounts WHERE account_no = ?");
+  const lineStmt = db.query(
+    `SELECT jl.debit_amount AS debit, jl.credit_amount AS credit
+       FROM journal_lines jl
+       JOIN accounts a ON a.id = jl.account_id
+      WHERE a.account_no = ?`,
+  );
+  const out = new Map<string, { name: string; balanceOre: bigint }>();
+  for (const accountNo of accountNos) {
+    // accountNos come from a payload validateJournalEntry has already accepted,
+    // so every account is guaranteed to exist.
+    const nameRow = nameStmt.get(accountNo) as { name: string };
+    let balanceOre = 0n;
+    for (const line of lineStmt.all(accountNo) as Array<{ debit: number; credit: number }>) {
+      balanceOre += toOre(Number(line.debit ?? 0)) - toOre(Number(line.credit ?? 0));
+    }
+    out.set(accountNo, { name: nameRow.name, balanceOre });
+  }
+  return out;
+}
+
+// Non-binding preview of postJournalEntry. Validates the payload, then runs the
+// exact same insert path inside a transaction that is always rolled back, so it
+// can report the entry number, hash-chain continuation and per-account balance
+// effect *without* writing anything — not even the allocated sequence number.
+export function dryRunJournalEntry(db: Database, payload: JournalEntryInput): JournalDryRunResult {
+  const validation = validateJournalEntry(db, payload);
+  if (!validation.ok) return { ok: false, appliedRules: validation.appliedRules, errors: validation.errors };
+
+  const accounts = accountMap(db);
+  const accountNos = [...new Set(payload.lines.map((line) => line.accountNo))].sort();
+
+  let preview:
+    | { applied: ReturnType<typeof applyJournalEntry>; effects: JournalDryRunAccountEffect[] }
+    | undefined;
+  const rollback = new DryRunRollback();
+  try {
+    db.transaction(() => {
+      const before = accountBalanceSnapshot(db, accountNos);
+      const applied = applyJournalEntry(db, payload, accounts);
+      const after = accountBalanceSnapshot(db, accountNos);
+      const effects = accountNos.map((accountNo) => {
+        const beforeOre = before.get(accountNo)!.balanceOre;
+        const afterSnapshot = after.get(accountNo)!;
+        return {
+          accountNo,
+          accountName: afterSnapshot.name,
+          balanceBefore: fromOre(beforeOre),
+          balanceAfter: fromOre(afterSnapshot.balanceOre),
+          delta: fromOre(afterSnapshot.balanceOre - beforeOre),
+        };
+      });
+      preview = { applied, effects };
+      // Unwinds the transaction: the journal rows, audit log, any resolved bank
+      // exceptions and the allocated journal number are all discarded.
+      throw rollback;
+    }, { immediate: true })();
+  } catch (error) {
+    if (error !== rollback) throw error;
+  }
+
+  // The transaction body always sets `preview` before throwing `rollback`; a
+  // genuine failure is re-thrown above. Guard the invariant explicitly so a
+  // future change cannot silently produce an undefined preview.
+  if (!preview) throw new Error("dry run completed without capturing a preview");
+  const { applied, effects } = preview;
+  return {
+    ok: true,
+    appliedRules: validation.appliedRules,
+    errors: [],
+    entryId: applied.entryId,
+    entryNo: applied.entryNo,
+    previousHash: applied.previousHash,
+    entryHash: applied.entryHash,
+    accountEffects: effects,
+  };
 }
 
 export function reverseJournalEntry(db: Database, input: { entryId: JournalEntryId; transactionDate: string; reason: string; createdBy?: string; createdByProgram?: string; }): JournalReverseResult {
@@ -421,6 +573,21 @@ export function reverseJournalEntry(db: Database, input: { entryId: JournalEntry
     return { ok: false, appliedRules, errors: [`journal entry ${input.entryId} has no lines to reverse`] };
   }
 
+  // Reversing an imported-historical voucher (#195) that has no Rentemester
+  // document yet (#196 attaches the bilag later): the reversal copies the same
+  // document-less income/expense lines, so it must inherit the SAME exemption
+  // the original carries — otherwise validateJournalEntry rejects it with
+  // "documentId is required when posting expense or income lines" and a
+  // legitimately posted imported voucher could never be corrected. We mark the
+  // reversal `importedHistorical` (so the post-time DOCUMENT waiver applies)
+  // AND stamp it with the original's import `created_by_program` (so
+  // verifyAuditChain, which keys the same waiver off the program, also exempts
+  // it). When the original DID carry a document, the reversal copies that
+  // document and needs no exemption.
+  const fromImport =
+    IMPORTED_HISTORICAL_PROGRAMS.has(original.created_by_program) &&
+    original.document_id == null;
+
   const reversalPayload: JournalEntryInput = {
     transactionDate: input.transactionDate,
     text: `Reversal of ${original.entry_no}: ${input.reason.trim()}`,
@@ -431,7 +598,8 @@ export function reverseJournalEntry(db: Database, input: { entryId: JournalEntry
     amountDkk: original.amount_dkk ?? undefined,
     fxRateToDkk: original.fx_rate_to_dkk ?? undefined,
     createdBy: input.createdBy,
-    createdByProgram: input.createdByProgram,
+    createdByProgram: fromImport ? original.created_by_program : input.createdByProgram,
+    importedHistorical: fromImport ? true : undefined,
     lines: originalLines.map((line) => ({
       accountNo: line.account_no,
       debitAmount: normalizeAmount(line.credit_amount) || undefined,

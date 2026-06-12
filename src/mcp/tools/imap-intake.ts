@@ -51,7 +51,7 @@ export function registerImapIntakeTools(server: McpServer): void {
         "og RENTEMESTER_IMAP_PASSWORD i miljøet, aldrig fra ledger'en. Kræver confirm:true. " +
         "write-reversible.",
       inputSchema: {
-        company: z.string().min(1),
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         imapHost: z.string().min(1).optional().describe("IMAP-host; standard RENTEMESTER_IMAP_HOST"),
         imapPort: z.number().int().positive().optional().describe("IMAP-port; standard 993 (TLS)"),
         imapUsername: z.string().min(1).optional().describe("IMAP-brugernavn; standard RENTEMESTER_IMAP_USERNAME"),

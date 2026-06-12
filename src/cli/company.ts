@@ -21,6 +21,7 @@ import {
 } from "../core/workspace";
 import { openCommandDb } from "../cli-dispatch";
 import { inferredMutationActor } from "../cli-actor";
+import { buildPaymentDetailsWarningLines } from "./init";
 import type { CommandContext, CommandDispatch } from "../cli-dispatch";
 
 /**
@@ -105,23 +106,15 @@ export function register(dispatch: CommandDispatch): void {
       hasPaymentDetails: summary.hasPaymentDetails,
     });
 
-    // The structured JSON above stays machine-stable; the payment-details
-    // warning is human-output only, mirroring `init`.
-    if (ctx.outputFormat === "human" && !summary.hasPaymentDetails) {
-      console.log("");
-      console.log("ADVARSEL — ingen betalingsoplysninger:");
-      console.log(
-        "  Du har ikke angivet bank/IBAN. Fakturaer udstedt nu får INGEN",
-      );
-      console.log(
-        "  betalingsanvisning (BETALING-blok) på PDF'en — kunden kan ikke se,",
-      );
-      console.log(
-        "  hvor pengene skal hen. Sæt dem med 'rentemester company set-profile'",
-      );
-      console.log(
-        "  (--bank-name --bank-reg --bank-account --iban), før du sender fakturaer.",
-      );
+    // #241: warn loudly on stderr when no bank/IBAN is set — issued invoices
+    // would otherwise have no BETALING block and become unpayable. stderr
+    // keeps stdout machine-clean (so JSON consumers parse cleanly) and the
+    // warning survives `company add > log.txt` redirection. The command still
+    // succeeds; this is advisory, mirroring `init`.
+    if (!summary.hasPaymentDetails) {
+      for (const line of buildPaymentDetailsWarningLines()) {
+        console.error(line);
+      }
     }
   });
 

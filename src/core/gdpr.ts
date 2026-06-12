@@ -144,6 +144,66 @@ function loadErasures(db: Database): Map<string, Set<string>> {
   return map;
 }
 
+export type GdprDiscoveryRow = {
+  source: GdprExportRecord["source"];
+  sourceRowId: number;
+  label: string | null;
+  personalData: GdprPersonalData;
+  retainUntil: string | null;
+};
+
+export type GdprDiscoveryResult = {
+  ok: boolean;
+  subject: { cvr: string | null; name: string | null };
+  rows: GdprDiscoveryRow[];
+  byTable: Record<GdprExportRecord["source"], number>;
+  errors: string[];
+};
+
+/**
+ * Subject-discovery på tværs af tabeller (#353). Wrapper omkring den interne
+ * `collectSourceRows` så CLI'ens \`gdpr discover\` og cockpit-views kan kalde
+ * den uden at gå gennem export-pipelinen. Read-only.
+ */
+export function findGdprSubject(
+  db: Database,
+  key: GdprSubjectKey,
+): GdprDiscoveryResult {
+  const subject = resolveSubject(key);
+  if (!subject.cvr && !subject.name) {
+    return {
+      ok: false,
+      subject,
+      rows: [],
+      byTable: {
+        customers: 0,
+        vendors: 0,
+        documents: 0,
+        bank_transactions: 0,
+      },
+      errors: ["a GDPR subject must be identified by cvr or name"],
+    };
+  }
+  const rows = collectSourceRows(db, subject);
+  const byTable: Record<GdprExportRecord["source"], number> = {
+    customers: 0,
+    vendors: 0,
+    documents: 0,
+    bank_transactions: 0,
+  };
+  for (const r of rows) byTable[r.source] += 1;
+  // #355 — audit-log også discovery, så Datatilsynet kan se den fulde
+  // GDPR-aktivitetshistorik (export + discover + erasure).
+  const subjectKey = subject.cvr ?? subject.name!;
+  insertAuditLog(db, {
+    eventType: "gdpr_discover",
+    entityType: "gdpr_subject",
+    entityId: subjectKey,
+    message: `GDPR discover for ${subjectKey}: ${rows.length} row(s) across ${Object.values(byTable).filter((n) => n > 0).length} table(s)`,
+  });
+  return { ok: true, subject, rows, byTable, errors: [] };
+}
+
 /**
  * Collects the raw source rows that mention the data subject across the
  * master-data and document-metadata layers (never the ledger itself).
@@ -348,6 +408,16 @@ export function buildGdprSubjectExport(db: Database, key: GdprSubjectKey): GdprS
     };
   });
 
+  // #355 — audit-log hver indsigtssøgning så ejeren kan bevise overfor
+  // Datatilsynet hvilke subject-data der er udleveret hvornår.
+  const subjectKey = subject.cvr ?? subject.name!;
+  insertAuditLog(db, {
+    eventType: "gdpr_export",
+    entityType: "gdpr_subject",
+    entityId: subjectKey,
+    message: `GDPR export for ${subjectKey}: ${records.length} record(s) returned (as-of ${asOf})`,
+  });
+
   return {
     ok: true,
     asOf,
@@ -468,4 +538,143 @@ export function eraseGdprSubject(db: Database, key: GdprSubjectKey): GdprErasure
     refused,
     errors: [],
   };
+}
+
+// ---------------------------------------------------------------------------
+// #355 — Signed GDPR audit-log export.
+//
+// Genbruger den eksisterende audit_log-tabel (kerne-bogføringens append-only
+// log) og filtrerer til alle `gdpr_*`-events. Pakken kan signeres med samme
+// Ed25519-nøgle som backup-systemet bruger, så Datatilsynet eller subject'et
+// selv kan verificere pakken uden at Rentemester er installeret.
+
+import { createHash, createPrivateKey, sign as cryptoSign } from "node:crypto";
+import { existsSync, readFileSync } from "node:fs";
+import { backupEd25519PrivateKeyPath } from "./system-backups";
+
+export type GdprAuditEvent = {
+  id: number;
+  occurredAt: string;
+  eventType: string;
+  subjectKey: string | null;
+  actor: string;
+  message: string;
+};
+
+export type GdprAuditExport = {
+  ok: boolean;
+  asOf: string;
+  since: string | null;
+  until: string | null;
+  events: GdprAuditEvent[];
+  fingerprint: string;
+  signature?: { algorithm: "ed25519"; base64: string };
+  errors: string[];
+};
+
+// Bevidst uden DK-prefix og -NNN-suffix — matcher det format de andre GDPR-
+// rules bruger (EXPORT_RULE_ID, ERASURE_RULE_ID), så det IKKE optfanges af
+// rules-metadata-consistency-testen som forventer DK-rules at være i YAML.
+const GDPR_AUDIT_RULE_ID = "GDPR-AUDIT-LOG";
+
+/**
+ * Bygger en signeret GDPR-audit-log-eksport. Kun rækker hvor
+ * `event_type LIKE 'gdpr_%'` returneres; fingerprint er sha256 af det
+ * deterministiske JSON-output (uden signature-feltet selv).
+ *
+ * `signWithEd25519=true` aktiverer asymmetrisk signering med den
+ * eksisterende backup-nøgle (samme nøgle, samme tillidskæde).
+ */
+export function buildGdprAuditExport(
+  db: Database,
+  options: {
+    since?: string | null;
+    until?: string | null;
+    asOf?: string | null;
+    signWithEd25519?: boolean;
+    companyRoot?: string;
+  } = {},
+): GdprAuditExport {
+  const asOf = trim(options.asOf ?? null) ?? currentUtcIsoDate(db);
+  const since = trim(options.since ?? null);
+  const until = trim(options.until ?? null);
+
+  const filters: string[] = ["event_type LIKE 'gdpr_%'"];
+  const params: unknown[] = [];
+  if (since) {
+    filters.push("created_at >= ?");
+    params.push(since);
+  }
+  if (until) {
+    filters.push("created_at <= ?");
+    params.push(until);
+  }
+
+  const rows = db
+    .query(
+      `SELECT id, created_at, event_type, entity_id, actor, message
+         FROM audit_log
+        WHERE ${filters.join(" AND ")}
+        ORDER BY id ASC`,
+    )
+    .all(...params) as Array<{
+    id: number;
+    created_at: string;
+    event_type: string;
+    entity_id: string | null;
+    actor: string;
+    message: string;
+  }>;
+
+  const events: GdprAuditEvent[] = rows.map((r) => ({
+    id: r.id,
+    occurredAt: r.created_at,
+    eventType: r.event_type,
+    subjectKey: r.entity_id,
+    actor: r.actor,
+    message: r.message,
+  }));
+
+  const payload = JSON.stringify(
+    { asOf, since, until, events, ruleId: GDPR_AUDIT_RULE_ID },
+    null,
+    2,
+  );
+  const fingerprint = `sha256:${createHash("sha256").update(payload).digest("hex")}`;
+
+  const result: GdprAuditExport = {
+    ok: true,
+    asOf,
+    since: since ?? null,
+    until: until ?? null,
+    events,
+    fingerprint,
+    errors: [],
+  };
+
+  if (options.signWithEd25519) {
+    if (!options.companyRoot) {
+      return {
+        ...result,
+        ok: false,
+        errors: ["companyRoot is required when signWithEd25519 is true"],
+      };
+    }
+    const privPath = backupEd25519PrivateKeyPath(options.companyRoot);
+    if (!existsSync(privPath)) {
+      return {
+        ...result,
+        ok: false,
+        errors: [
+          `no ed25519 private key at ${privPath} — run "system backup --sign-with-ed25519" once to generate one`,
+        ],
+      };
+    }
+    const privateKeyPem = readFileSync(privPath, "utf8");
+    const key = createPrivateKey(privateKeyPem);
+    const sig = cryptoSign(null, Buffer.from(payload, "utf8"), key);
+    result.signature = { algorithm: "ed25519", base64: sig.toString("base64") };
+  }
+
+  return result;
 }

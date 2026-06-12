@@ -487,6 +487,306 @@ describe("renderDashboard — structure", () => {
 });
 
 // --------------------------------------------------------------------------
+// Recurring-feature cards (#islands → control surfaces)
+// --------------------------------------------------------------------------
+
+/** A fixture extended with the recurring-feature inputs. */
+function fixtureWithRecurringFeatures(): DashboardInput {
+  return {
+    ...buildFixture(),
+    payables: {
+      ok: true,
+      count: 2,
+      status: "open",
+      asOfDate: "2026-05-17",
+      totalOpenBalance: 6750,
+      overdueOpenBalance: 2500,
+      notYetDueOpenBalance: 4250,
+      errors: [],
+      rows: [
+        {
+          payableId: 1,
+          documentId: 501,
+          billNo: "V-2026-0007",
+          billDate: "2026-03-01",
+          dueDate: "2026-03-31",
+          supplierName: "Leverandør A ApS",
+          vendorId: null,
+          grossAmount: 2500,
+          currency: "DKK",
+          paidAmount: 0,
+          openBalance: 2500,
+          status: "open",
+          isOverdue: true,
+          overdueDays: 47,
+          agingBucket: "31-60",
+        },
+        {
+          payableId: 2,
+          documentId: 502,
+          billNo: "V-2026-0009",
+          billDate: "2026-05-01",
+          dueDate: "2026-06-15",
+          supplierName: "Leverandør B I/S",
+          vendorId: null,
+          grossAmount: 4250,
+          currency: "DKK",
+          paidAmount: 0,
+          openBalance: 4250,
+          status: "open",
+          isOverdue: false,
+          overdueDays: 0,
+          agingBucket: "not-due",
+        },
+      ],
+    },
+    accrualRegister: {
+      ok: true,
+      accruals: [
+        {
+          accrualId: 1,
+          accrualType: "prepaid_expense",
+          description: "Forsikring helår",
+          totalAmount: 12000,
+          recognitionPeriods: 12,
+          recognizedPeriods: 4,
+          recognizedAmount: 4000,
+          remainingAmount: 8000,
+          fullyRecognized: false,
+          balanceAccountNo: "1300",
+          resultAccountNo: "3150",
+          firstRecognitionDate: "2026-01-31",
+          periodStepMonths: 1,
+        },
+      ],
+      totals: { totalAmount: 12000, recognizedAmount: 4000, remainingAmount: 8000 },
+      errors: [],
+    },
+    accrualsDue: {
+      ok: true,
+      asOfDate: "2026-05-17",
+      totalDueAmount: 1000,
+      errors: [],
+      periods: [
+        {
+          accrualId: 1,
+          accrualType: "prepaid_expense",
+          description: "Forsikring helår",
+          periodIndex: 5,
+          totalPeriods: 12,
+          recognitionDate: "2026-05-31",
+          amount: 1000,
+          overdueDays: 0,
+        },
+      ],
+    },
+    // An UNDER-budget expense month, consistent with real buildBudgetVsActual
+    // output: for an expense line variance = budget − actual = +800
+    // (favourable), while the aggregate totalVariance = totalActual −
+    // totalBudget = −800. The pill must be derived from the per-line variance,
+    // not the raw aggregate (whose sign depends on account mix).
+    budgetVsActual: {
+      ok: true,
+      appliedRules: ["budget:vs-actual"],
+      periodStart: "2026-05",
+      periodEnd: "2026-05",
+      lines: [
+        {
+          accountNo: "3000",
+          accountName: "Software",
+          accountType: "expense",
+          period: "2026-05",
+          budget: 5000,
+          actual: 4200,
+          variance: 800,
+        },
+      ],
+      totalBudget: 5000,
+      totalActual: 4200,
+      totalVariance: -800,
+      errors: [],
+    },
+    liquidity: {
+      ok: true,
+      appliedRules: ["liquidity-forecast"],
+      startDate: "2026-06-01",
+      months: 3,
+      openingBalance: 25000,
+      closingBalance: 31000,
+      errors: [],
+      periods: [
+        { period: "2026-06", openingBalance: 25000, invoiceInflow: 12500, recurringInflow: 0, budgetedCostOutflow: 5000, netChange: 7500, closingBalance: 32500 },
+        { period: "2026-07", openingBalance: 32500, invoiceInflow: 0, recurringInflow: 0, budgetedCostOutflow: 5000, netChange: -5000, closingBalance: 27500 },
+        { period: "2026-08", openingBalance: 27500, invoiceInflow: 8500, recurringInflow: 0, budgetedCostOutflow: 5000, netChange: 3500, closingBalance: 31000 },
+      ],
+    },
+    tax: {
+      fiscalYearLabel: "2025",
+      available: true,
+      corporateTax: 13200,
+      bookkeptResult: 60000,
+      needsReviewCount: 1,
+    },
+    euSalesOss: {
+      euSalesValue: 18000,
+      euCustomerCount: 2,
+      ossConsumerSalesBase: 4500,
+    },
+  };
+}
+
+describe("renderDashboard — recurring-feature cards", () => {
+  test("the historical fixture (no new fields) renders identically", () => {
+    // Additive guarantee: a DashboardInput without the new fields is the
+    // unchanged historical dashboard — same snapshot as before.
+    const html = renderDashboard(buildFixture());
+    const expected = readFileSync(SNAPSHOT_PATH, "utf8");
+    expect(html).toBe(expected);
+  });
+
+  test("renders a creditor (payables) card with open and overdue balances", () => {
+    const html = renderDashboard(fixtureWithRecurringFeatures());
+    expect(html).toContain("Åbne kreditorposter");
+    expect(html).toContain("Leverandør A ApS");
+    expect(html).toContain("V-2026-0007");
+    // Overdue creditor item shows a danger pill with the overdue days.
+    expect(html).toContain("forfalden (47 d)");
+    // The summary line carries the total + overdue split.
+    expect(html).toContain("Åben kreditorgæld i alt");
+  });
+
+  test("renders an accruals card with exposure and due recognition periods", () => {
+    const html = renderDashboard(fixtureWithRecurringFeatures());
+    expect(html).toContain("Periodeafgrænsningsposter");
+    expect(html).toContain("Resterende balanceeksponering");
+    // One due recognition period of 1.000,00 kr.
+    expect(html).toContain("Recognition-perioder der skal bogføres");
+    expect(html).toContain("1 forfalden");
+  });
+
+  test("renders a budget & liquidity card", () => {
+    const html = renderDashboard(fixtureWithRecurringFeatures());
+    expect(html).toContain("Budget &amp; likviditet");
+    expect(html).toContain("Budget vs. faktisk");
+    expect(html).toContain("Likviditetsprognose");
+    // 3-month forecast, final projected balance 31.000,00 kr.
+    expect(html).toContain("31.000,00 kr.");
+  });
+
+  // #cockpit-wiring-review-4: the under-budget expense month must read calm.
+  test("the budget pill reads favourable for an under-budget expense month", () => {
+    // The fixture is an under-budget expense: per-line variance +800 (good),
+    // raw totalVariance −800. The pill must reflect the favourable per-line
+    // variance, not the negative aggregate.
+    const html = renderDashboard(fixtureWithRecurringFeatures());
+    expect(html).toContain("budget overholdt");
+    expect(html).not.toContain("budgetafvigelse");
+  });
+
+  // #cockpit-wiring-review-4: the bug. An OVER-budget expense month has a
+  // positive raw totalVariance (totalActual − totalBudget > 0) — keying the
+  // pill off that shows a green "budget overholdt" pill for overspending, the
+  // opposite of reality. The pill must come from the per-line signed variance.
+  test("the budget pill reads UNFAVOURABLE for an over-budget expense month", () => {
+    const overBudget: DashboardInput = {
+      ...fixtureWithRecurringFeatures(),
+      budgetVsActual: {
+        ok: true,
+        appliedRules: ["budget:vs-actual"],
+        periodStart: "2026-05",
+        periodEnd: "2026-05",
+        lines: [
+          {
+            accountNo: "3000",
+            accountName: "Software",
+            accountType: "expense",
+            period: "2026-05",
+            budget: 5000,
+            // Overspent: actual 7000 > budget 5000. For an expense line the
+            // real buildBudgetVsActual yields variance = budget − actual =
+            // −2000 (unfavourable). The raw totalVariance = totalActual −
+            // totalBudget = +2000 (which naively looks "good").
+            actual: 7000,
+            variance: -2000,
+          },
+        ],
+        totalBudget: 5000,
+        totalActual: 7000,
+        totalVariance: 2000,
+        errors: [],
+      },
+    };
+    const html = renderDashboard(overBudget);
+    // The pill must NOT be the green "budget overholdt" — overspending is
+    // unfavourable.
+    expect(html).toContain("budgetafvigelse");
+    expect(html).not.toContain("budget overholdt");
+  });
+
+  test("renders the tax card with estimated corporate tax for a closed year", () => {
+    const html = renderDashboard(fixtureWithRecurringFeatures());
+    expect(html).toContain("Estimeret selskabsskat");
+    expect(html).toContain("regnskabsår 2025");
+    expect(html).toContain("13.200,00 kr.");
+    // One needs-review item is surfaced.
+    expect(html).toContain("1 til gennemgang");
+  });
+
+  test("the tax card shows the awaiting-year-end state for an open year", () => {
+    const input: DashboardInput = {
+      ...fixtureWithRecurringFeatures(),
+      tax: { fiscalYearLabel: "2026", available: false },
+    };
+    const html = renderDashboard(input);
+    expect(html).toContain("Forberedelse er klar, når regnskabsåret er lukket");
+    expect(html).toContain("afventer årsafslutning");
+    // No corporate-tax figure is shown for an open year.
+    expect(html).not.toContain("Estimeret selskabsskat");
+  });
+
+  test("the EU sales / OSS indicator surfaces only when there is activity", () => {
+    const withActivity = renderDashboard(fixtureWithRecurringFeatures());
+    expect(withActivity).toContain("EU-salg &amp; OSS");
+    expect(withActivity).toContain("EU-salg uden moms (VIES)");
+    expect(withActivity).toContain("OSS — salg til EU-forbrugere");
+
+    // Zero cross-border activity ⇒ the section is omitted entirely.
+    const noActivity: DashboardInput = {
+      ...fixtureWithRecurringFeatures(),
+      euSalesOss: { euSalesValue: 0, euCustomerCount: 0, ossConsumerSalesBase: 0 },
+    };
+    const html = renderDashboard(noActivity);
+    expect(html).not.toContain("EU-salg &amp; OSS");
+  });
+
+  test("the new cards keep the document valid and deterministic", () => {
+    const a = renderDashboard(fixtureWithRecurringFeatures());
+    const b = renderDashboard(fixtureWithRecurringFeatures());
+    expect(a).toBe(b);
+    expect(a.startsWith("<!DOCTYPE html>")).toBe(true);
+    expect(a.trimEnd().endsWith("</html>")).toBe(true);
+    // Section open/close tags stay balanced with the extra sections.
+    for (const tag of ["section", "table", "thead", "tbody", "tr"]) {
+      const open = (a.match(new RegExp(`<${tag}(\\s|>)`, "g")) ?? []).length;
+      const close = (a.match(new RegExp(`</${tag}>`, "g")) ?? []).length;
+      expect(open, `unbalanced <${tag}>`).toBe(close);
+    }
+  });
+
+  test("an empty payables/accruals input renders empty-state text, not a crash", () => {
+    const input: DashboardInput = {
+      ...buildFixture(),
+      payables: { ok: true, count: 0, status: "open", asOfDate: "2026-05-17", totalOpenBalance: 0, overdueOpenBalance: 0, notYetDueOpenBalance: 0, rows: [], errors: [] },
+      accrualRegister: { ok: true, accruals: [], totals: { totalAmount: 0, recognizedAmount: 0, remainingAmount: 0 }, errors: [] },
+      accrualsDue: { ok: true, asOfDate: "2026-05-17", totalDueAmount: 0, periods: [], errors: [] },
+    };
+    const html = renderDashboard(input);
+    expect(html).toContain("Ingen åbne kreditorposter");
+    expect(html).toContain("Ingen periodeafgrænsningsposter");
+  });
+});
+
+// --------------------------------------------------------------------------
 // Determinism
 // --------------------------------------------------------------------------
 

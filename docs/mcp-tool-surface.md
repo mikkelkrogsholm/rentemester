@@ -101,7 +101,7 @@ selv ændres ikke.
 
 ## Resultat-shapes (`outputSchema`)
 
-**Alle 81 tools deklarerer et `outputSchema`** (#202). Det er det samme
+**Alle 101 tools deklarerer et `outputSchema`** (#202). Det er det samme
 delte schema for hver tool — konvolutten — så en agent kan læse
 resultat-kontrakten fra `tools/list` *uden* at kalde tool'et først.
 Schemaet er defineret én gang i `src/mcp/envelope.ts` (`envelopeShape`).
@@ -114,12 +114,29 @@ Konvolutten (`structuredContent` på et `tools/call`-svar):
 | `data` | `object` | Kun ved `ok:true`. Kerne-resultatet. Udeladt ved `ok:false`. |
 | `errors` | `string[]` | Altid. Tom ved `ok:true`; ikke-tom ved `ok:false`. |
 | `appliedRules` | `string[]` | Valgfri. Regel-id'er der fyrede (sættes for bogførings-tools). |
+| `code` | `string` | Valgfri. Stabil maskinlæsbar fejl-markør for cross-cutting preconditions (fx `"BACKUP_LOCKED"`) — se "Cross-cutting preconditions" nedenfor. Sættes kun ved `ok:false`; udeladt for per-tool forretningsfejl. |
 
 `outputSchema` typer bevidst `data` som et **åbent objekt** (`passthrough`):
 den konkrete feltliste i `data` varierer pr. tool, og MCP-SDK'en validerer
 kun `structuredContent` mod schemaet for *succes*-svar (`isError:false`) —
 fejl-envelopes springes over. De per-tool `data`-felter er ikke hånd-typet
-81 gange; de er dokumenteret nedenfor og i tool-brief'ene.
+101 gange; de er dokumenteret nedenfor og i tool-brief'ene.
+
+### Cross-cutting preconditions (envelope-`code`)
+
+Visse forudsætninger gælder *på tværs* af tool-surfacen og lever derfor uden
+for det enkelte tools `inputSchema`. Når en sådan precondition slår til,
+fejler tool'et med en konvolut der bærer en **stabil `code`-markør** så en
+agent kan branche uden at parse `errors[]`-strengen.
+
+| `code` | Trigger | Hvilke tools rammes | Recovery |
+|---|---|---|---|
+| `BACKUP_LOCKED` | Backup-pligten er forsømt og `system_backup_lock` er sat til `enforced:true` med overskredet grace-periode. | **Alle** skrive-tools (`write-reversible` + `write-irreversible`) bortset fra `system_*`-familien. Read-tools og `system_*`-tools er aldrig lås-gated — at låse op kræver `system_backup`, så det skal altid kunne kaldes. | 1) `system_backup_status` for at se hvor langt forsinkelsen er. 2) `system_backup` (med `archive:true`) for at producere arkivet og frigøre låsen. 3) `system_backup_place` for at placere arkivet på en EU/EØS-attesteret destination. |
+
+`errors[]` på en `BACKUP_LOCKED`-konvolut indeholder en dansk forklaring +
+det tool-navn der blev afvist, og nævner eksplicit `system_backup_status`
+som første næste-skridt. Maskinlæsbar branching skal dog ske på `code`, ikke
+på fri-tekst.
 
 ### `data`-felter pr. tool — det der har betydning
 
@@ -129,12 +146,13 @@ fejl-envelopes springes over. De per-tool `data`-felter er ikke hånd-typet
 |---|---|
 | `accounts_list` | `{ accounts: [{ accountNo, name, type, defaultVatCode }], count }` |
 | `journal_list` | `{ entries: [{ id, entryNo, transactionDate, text, currency, amountForeign, amountDkk, fxRateToDkk, documentId, sourceBankTransactionId, status, reversalOfEntryId }], count }` |
+| `journal_dry_run` | `{ entryId, entryNo, previousHash, entryHash, accountEffects: [{ accountNo, accountName, balanceBefore, balanceAfter, delta }] }` — ikke-bindende forhåndsvisning af `journal_post`: felterne beskriver hvad posteringen *ville* få. `accountEffects` lister saldo før/efter pr. berørt konto (debet-minus-kredit-netto, i kroner). Ved en ugyldig payload er konvolutten `ok=false` med `errors[]`, og `data` mangler. |
 | `bank_list` | `{ rows: [...], count }` |
 | `invoice_list` | `{ invoices: [...], count }` |
 | `exceptions_list` | `{ exceptions: [...], count }` |
 | `period_list` | `{ periods: [{ id, periodStart, periodEnd, kind, status, reference, createdAt }], count }` — `kind` er `"vat_quarter" \| "fiscal_year" \| "custom"`; `status` er `"open" \| "closed" \| "reported"`; `reference` kan være `null`. |
 | `audit_verify` | `{ entries: <number> }` — kun antallet af verificerede posteringer. Integritets-verdikten læses fra **konvolutten**: `ok=true` (+ tom `errors[]`) ⇒ kæden er intakt; `ok=false` ⇒ `errors[]` lister bruddene. Der er hverken `ok` eller `errors` *inde i* `data`. |
-| `invoice_status` | `{ invoiceDocumentId, invoiceNumber, grossAmount, creditedAmount, paidAmount, openBalance, claimOpenBalance, asOfDate, dueDate, effectiveDueDate, isOverdue, overdueDays, status, payments[], creditNotes[], refunds[], claimPayments[], badDebtWriteOffs[], reminders[], compensationClaims[], interestClaims[], totalReminderFees, totalCompensationClaims, totalInterestClaims, totalClaimPayments, totalBadDebtWrittenOff }` — feltet hedder `invoiceDocumentId` (ikke `documentId`), `invoiceNumber` (ikke `invoiceNo`) og `overdueDays` (ikke `daysOverdue`). `status` er `"open" \| "paid" \| "credited" \| "refunded" \| "overpaid" \| "written_off"`. Den fulde typedefinition er `InvoiceStatusResult` i `src/core/invoice-payments.ts`. |
+| `invoice_status` | `{ invoiceDocumentId, invoiceNumber, grossAmount, creditedAmount, paidAmount, openBalance, claimOpenBalance, asOfDate, dueDate, effectiveDueDate, isOverdue, overdueDays, status, payments[], creditNotes[], refunds[], claimPayments[], badDebtWriteOffs[], reminders[], compensationClaims[], interestClaims[], interestCorrections[], totalReminderFees, totalCompensationClaims, totalInterestClaims, totalInterestCorrections, totalClaimPayments, totalBadDebtWrittenOff }` — feltet hedder `invoiceDocumentId` (ikke `documentId`), `invoiceNumber` (ikke `invoiceNo`) og `overdueDays` (ikke `daysOverdue`). `status` er `"open" \| "paid" \| "credited" \| "refunded" \| "overpaid" \| "written_off"`. Den fulde typedefinition er `InvoiceStatusResult` i `src/core/invoice-payments.ts`. |
 
 `write`-tools returnerer id'er + hashes på den nyligt oprettede entitet:
 
@@ -164,23 +182,31 @@ fejl-envelopes springes over. De per-tool `data`-felter er ikke hånd-typet
 
 Tallene gælder en kørende `src/mcp/server.ts` (verificeret via `tools/list`).
 
-- **Read-tools**: 33
-- **Write-reversible**: 10
-- **Write-irreversible**: 37
+- **Read-tools**: 46
+- **Write-reversible**: 11
+- **Write-irreversible**: 41
 - **Destructive**: 1 (`system_restore_backup`)
-- **Total**: **81**
+- **Total**: **101**
 
 ## Read-tools
 
-33 tools. Ingen state-bivirkninger; må kaldes frit og parallelt.
+46 tools. Ingen state-bivirkninger; må kaldes frit og parallelt.
 
 | Tool | CLI-ækvivalent | Input | Brief |
 |---|---|---|---|
 | `accounts_list` | `accounts list` | `{ company }` | Lister kontoplanen. |
+| `accrual_register_report` | `accrual register-report` | `{ company }` | Register af periodeafgrænsningsposter med bogførte perioder, periodiseret beløb og resterende balanceeksponering. |
 | `asset_register_report` | `asset register-report` | `{ company }` | Aktivregister med akkumulerede afskrivninger og bogført værdi. |
+| `audit_log_list` | `gdpr audit-log` (delvis) | `{ company, fromDate?, toDate?, eventTypeLike?, actorLike?, limit?, offset? }` | Filtreret, pagineret read af audit_log — den menneskelæsbare revisionsspor over hvad agenten/cockpittet/CLI'en har gjort. Append-only på server-siden. |
 | `audit_verify` | `audit verify` | `{ company }` | Verificerer hash-chain og bogføringsintegritet. |
+| `bank_account_list` | `bank-account list` | `{ company, includeInactive? }` | Lister registrerede bankkonti (slug, navn, valuta, IBAN, aktiv). Den slug, der returneres her, er den værdi en agent kan sende som `account` til `bank_import` og `bank_list`. |
 | `bank_list` | `bank list` | `{ company, status?, from?, to?, textMatch?, amount?, account? }` | Lister importerede banktransaktioner med filtre. |
 | `bank_suggest_matches` | `bank suggest-matches` | `{ company, bankTransactionId?, max? }` | Foreslår deterministiske match mellem uafstemte bank-poster og bilag. |
+| `company_profile_get` | `company profile` | `{ company }` | Henter virksomhedens gemte profil-stamdata (navn, CVR, valuta, land, adresse, regnskabsår-start, betalingsfrist, momsperiode). Hver fakturering, momsrapport og årsrapport bygger på disse felter. |
+| `meta_about` | (ingen — kun MCP) | `{}` | Server-identifikation: serverName, serverVersion, antallet af registrerede tools, rules-bundle-versionen og repo-relative stier til kontrakt-dokumenter. Bruges af agenten lige efter `initialize` for at verificere identitet/version. |
+| `budget_forecast` | `budget forecast` | `{ company, startDate, months }` | Likviditetsprognose: fremskriver banksaldoen måned for måned ud fra primosaldo, åbne fakturaer der forfalder, planlagte gentagne fakturaer og budgetterede omkostninger. Rent deterministisk. |
+| `budget_list` | `budget list` | `{ company, period?, accountNo? }` | Lister de gældende (seneste-revision) budgetlinjer. |
+| `budget_vs_actual` | `budget vs-actual` | `{ company, from, to }` | Sammenligner budget mod faktisk bogføring pr. konto pr. måned. |
 | `customer_list` | `customer list` | `{ company, archived? }` | Lister kendte kunder. |
 | `customer_validate_vat` | `customer validate-vat` | `{ company, cvr }` | Validerer EU-VAT via VIES og opdaterer en lokal validerings-cache. Klassificeret `read` (se note nedenfor): den skriver kun en gennemsigtig opslags-cache, ingen bogførings-/stamdata-state, og kræver ikke `confirm`. |
 | `cvr_lookup` | `customer cvr-lookup` | `{ company, cvr }` | Slår en dansk virksomhed op i CVR-registret. Kræver `CVR_USERNAME`/`CVR_PASSWORD`. |
@@ -190,14 +216,17 @@ Tallene gælder en kørende `src/mcp/server.ts` (verificeret via `tools/list`).
 | `import_archive_year` | (afledt af `import archive`)¹ | `{ company, fiscalYear, sourceSystem? }` | Henter ét arkiveret regnskabsårs fulde posteringer + saldobalance. |
 | `invoice_compensation_calc` | `invoice compensation` | `{ company, documentId? \| invoiceNumber?, asOf, amountDkk? }` | Beregner kompensationskrav (uden at registrere). |
 | `invoice_find` | `invoice find` | `{ company, query?, customer?, invoiceNumber?, amount?, asOf? }` | Søger fakturaer på nummer, kunde eller beløb. |
-| `invoice_interest_calc` | `invoice interest` | `{ company, documentId? \| invoiceNumber?, asOf, referenceRate }` | Beregner morarente (uden at registrere). |
+| `invoice_interest_calc` | `invoice interest` | `{ company, documentId? \| invoiceNumber?, asOf, referenceRate }` | Beregner morarente (uden at registrere). `accruedInterestAmount` er den **inkrementelle** rente der kan opkræves nu (perioden siden sidste registrerede krav, eller fra forfald hvis ingen). Ekstra felter: `priorClaimedInterest`, `totalInterestToDate`, `claimableDays`, `interestFromDate`. |
+| `invoice_interest_correction_calc` | `invoice interest-correction` | `{ company, documentId? \| invoiceNumber? }` | Foreslår en korrektion af for meget opkrævet morarente (read-only). Opstår når en betaling/kreditnota er registreret med virkningsdato inde i et allerede bogført rentekravs vindue. Felter: `hasProposal`, `overClaimedAmount`, `postedInterest`, `lawfulInterest`, `alreadyCorrected`, `throughDate`. |
 | `invoice_list` | `invoice list` | `{ company, status?, from?, to?, customerCvr?, customer?, invoiceNumber?, minAmount?, maxAmount?, asOf? }` | Lister udstedte fakturaer med filtre. |
 | `invoice_overdue` | `invoice overdue` | `{ company, asOf?, minDays? }` | Lister forfaldne, ikke fuldt afregnede fakturaer. |
 | `invoice_status` | `invoice status` | `{ company, documentId? \| invoiceNumber?, asOf? }` | Viser åben saldo og status på en faktura. |
 | `invoice_validate` | `invoice validate` | `{ payload: InvoicePayload }` | Validerer faktura-payload uden at gemme. |
+| `journal_dry_run` | `journal dry-run` | `{ company, payload: JournalEntryInput }` | Forhåndsviser hvad `journal_post` ville gøre — uden at skrive. Intet journalnummer forbruges. |
 | `journal_list` | `journal list` | `{ company }` | Lister finansposteringer. |
 | `mileage_list` | `mileage list` | `{ company }` | Lister registrerede kørselsposter. |
 | `mileage_report` | `mileage report` | `{ company, from, to }` | Deterministisk periode-rapport over kilometer og beløbsgrundlag. |
+| `payable_list` | `payable list` | `{ company, status?, asOf? (legacy alias: asOfDate), supplier?, vendorId?, from?, to?, minDays? }` | Bygger kreditorlisten: åbne leverandørposter med åben saldo og forfaldsintervaller (forfaldne/ikke-forfaldne). |
 | `period_list` | (ingen — kun MCP)² | `{ company }` | Lister regnskabsperioder (open/closed/reported). |
 | `portfolio_overview` | `dashboard` (delvist) | `{ workspace, asOf? }` | Status side om side for hver virksomhed i workspace'et. Intet konsolideres. |
 | `reconcile_bank` | `reconcile bank` | `{ company, from, to, status?, textMatch?, amount?, account? }` | Bygger bank-afstemningsrapport for periode. |
@@ -207,6 +236,9 @@ Tallene gælder en kørende `src/mcp/server.ts` (verificeret via `tools/list`).
 | `system_backup_governance` | `system backup-governance` | `{ company, asOf? }` | Samlet backup-status: forfald, lås, destinationer, sikker placering. |
 | `system_backup_status` | `system backup-status` | `{ company, asOf? }` | Tjekker om backup-pligten er opfyldt. |
 | `system_healthcheck` | `system healthcheck` | `{ company }` | Tjekker virksomhedsmappens integritet. |
+| `tax_return_prepare` | `report tax` | `{ company, from, to }` | Forbereder selskabets skattepligtige indkomst (oplysningsskema) for et lukket regnskabsår: årets resultat + deterministiske skattemæssige reguleringer + 22% selskabsskat (kun ApS). Ikke-deterministiske poster markeres som needs-review. |
+| `vat_eu_sales_list` | `vat eu-sales-list` | `{ company, from, to }` | EU-salg uden moms-liste (VIES recapitulative statement): værdien af grænseoverskridende B2B-salg uden dansk moms grupperet pr. køber-VAT-nummer. |
+| `vat_oss_report` | `vat oss-report` | `{ company, from, to }` | OSS-rapportskelet (One Stop Shop, første slice): grundlaget for digitale ydelser solgt til EU-forbrugere. Ikke en OSS-indberetning til SKAT. |
 | `vat_report` | `vat report` | `{ company, from, to }` | Bygger momsrapport for perioden. |
 | `vendor_list` | `vendor list` | `{ company, archived? }` | Lister kendte leverandører. |
 
@@ -255,12 +287,13 @@ uden at kernen kaldes.
 
 ### write-reversible
 
-10 tools. Opretter state der kan tilbageføres/arkiveres uden at røre den
+11 tools. Opretter state der kan tilbageføres/arkiveres uden at røre den
 append-only finanskæde.
 
 | Tool | CLI-ækvivalent | Input | Brief |
 |---|---|---|---|
 | `bank_import` | `bank import` | `{ company, csvPath \| csvContent, account?, profile?, confirm }` | Importerer banktransaktioner fra CSV. Deterministisk via `sourceFileHash`. |
+| `budget_set` | `budget set` | `{ company, accountNo, period, amount, notes?, confirm }` | Sætter et budget for én konto i én kalendermåned. Append-only revisioner — seneste vinder. |
 | `company_sync_cvr` | `company sync-cvr` | `{ company, confirm }` | Henter virksomhedens stamdata fra CVR og opdaterer companies-rækken. Regnskabsåret røres ikke. |
 | `customer_create` | `customer create` | `{ company, input: CreateCustomerInput, fromCvr?, confirm }` | Opretter append-only kundepost. Kan arkiveres. |
 | `documents_ingest` | `documents ingest` | `{ company, filePath, metadata: DocumentMetadata, vendorId?, force?, confirm }` | Indlæser og hash-lagrer et bilag. |
@@ -273,35 +306,40 @@ append-only finanskæde.
 
 ### write-irreversible
 
-37 tools. Bogfører i den append-only hash-kæde eller skriver
+41 tools. Bogfører i den append-only hash-kæde eller skriver
 revisionsklare/eksterne artefakter; kan kun "rulles tilbage" via en
 modpostering.
 
 | Tool | CLI-ækvivalent | Input | Brief |
 |---|---|---|---|
+| `accrual_recognize` | `accrual recognize` | `{ company, accrualId, period, date?, settlementAccountNo?, confirm }` | Indtægts-/omkostningsfører én periode af en periodeafgrænsningspost. |
+| `accrual_register` | `accrual register` | `{ company, accrualType, description, totalAmount, recognitionPeriods, firstRecognitionDate, resultAccountNo, registrationDate?, periodStepMonths?, balanceAccountNo?, settlementAccountNo?, documentId?, note?, confirm }` | Registrerer en periodeafgrænsningspost og bogfører registreringsposteringen. |
 | `asset_depreciate` | `asset depreciate` | `{ company, assetId, period, date, confirm }` | Bogfører en periodes afskrivning. |
 | `asset_register` | `asset register` | `{ company, name, category, acquisitionDate, cost, usefulLifeMonths, documentId, assetAccount, depreciationAccount, accumulatedAccount, note?, confirm }` | Registrerer et aktiv med lineær afskrivningsplan. |
 | `asset_write_off` | `asset write-off` | `{ company, name, category, acquisitionDate, cost, documentId, expenseAccount, date, thresholdRuleSource, confirmImmediateWriteOff, paymentAccount?, note?, confirm }` | Bogfører straksafskrivning af et mindre aktiv. |
 | `company_add` | `company add` | `{ workspace?, name, slug?, cvr?, fiscalYearStartMonth?, fiscalYearLabelStrategy?, confirm }` | Opretter en ny virksomhed under `<workspace>/<slug>/` og initialiserer ledgeren. Som ethvert write-tool kræver det `confirm: true` — uden flaget returneres `{ ok:false, errors:["confirm: true required for write tool company_add"] }` uden at noget oprettes. Udelades `workspace`, bruges miljøvariablen `RENTEMESTER_WORKSPACE` på MCP-serverens host; er den heller ikke sat, afvises kaldet med `no workspace given: pass 'workspace' or set RENTEMESTER_WORKSPACE`. **Ikke idempotent (`idempotentHint: false`):** et gentaget kald med samme `name`/`slug` *afvises* — det overskriver ALDRIG en eksisterende virksomhed. Findes der allerede en ledger på `<workspace>/<slug>/` fejler kaldet med `a company already exists at <sti>`, og et slug der allerede står i workspace-manifestet afvises ligeledes med en `ok:false`-envelope. For at oprette endnu en virksomhed med samme navn skal et nyt, unikt `slug` angives eksplicit. |
 | `expense_book` | `expense book` | `{ company, documentId, bankTransactionId, expenseAccount, vatTreatment?, paymentAccount?, date?, text?, confirm }` | Bogfører leverandørudgift fra bilag + bankpost. |
-| `invoice_apply_payment` | `invoice apply-payment` | `{ company, payload: InvoicePaymentPayload, confirm }` | Registrerer fakturabetaling fra payload. |
-| `invoice_claim_compensation` | `invoice claim-compensation` | `{ company, documentId? \| invoiceNumber?, asOf, amountDkk?, note?, confirm }` | Registrerer kompensationskrav. |
-| `invoice_claim_interest` | `invoice claim-interest` | `{ company, documentId? \| invoiceNumber?, asOf, referenceRate, note?, confirm }` | Registrerer morarentekrav. |
-| `invoice_credit_note` | `invoice credit-note` | `{ company, payload: CreditNotePayload, confirm }` | Udsteder kreditnota mod eksisterende faktura. |
-| `invoice_issue` | `invoice issue` | `{ company, payload: InvoicePayload, customerId?, confirm }` | Udsteder kundefaktura + immutable snapshot. |
-| `invoice_post` | `invoice post` | `{ company, documentId? \| invoiceNumber?, confirm }` | Bogfører udstedt faktura i finansen. |
-| `invoice_post_compensation` | `invoice post-compensation` | `{ company, documentId? \| invoiceNumber?, date?, confirm }` | Bogfører registreret kompensation. |
-| `invoice_post_interest` | `invoice post-interest` | `{ company, documentId? \| invoiceNumber?, claimId?, date?, confirm }` | Bogfører registreret morarentekrav. |
-| `invoice_post_reminder` | `invoice post-reminder` | `{ company, documentId? \| invoiceNumber?, reminderId?, date?, confirm }` | Bogfører registreret rykker. |
-| `invoice_refund_bank` | `invoice refund-bank` | `{ company, payload: RefundPayload, confirm }` | Bogfører refundering til kunde fra banken. |
-| `invoice_remind` | `invoice remind` | `{ company, documentId? \| invoiceNumber?, date, fee?, note?, confirm }` | Registrerer rykker på forfalden faktura. |
-| `invoice_render` | `invoice render` | `{ company, documentId? \| invoiceNumber?, confirm }` | Renderer (eller genskaber) deterministisk PDF. Idempotent. |
+| `invoice_apply_payment` | `invoice apply-payment` | `{ company, payload: InvoicePaymentPayload, confirm }` | Registrerer fakturabetaling fra payload. Forudsætning: `invoice_post`. |
+| `invoice_claim_compensation` | `invoice claim-compensation` | `{ company, documentId? \| invoiceNumber?, asOf, amountDkk?, note?, confirm }` | Registrerer kompensationskrav. Forudsætning: `invoice_post` (fakturaen skal være bogført og forfalden). |
+| `invoice_claim_interest` | `invoice claim-interest` | `{ company, documentId? \| invoiceNumber?, asOf, referenceRate, note?, confirm }` | Registrerer morarentekrav. Forudsætning: `invoice_post` (fakturaen skal være bogført og forfalden). Et nyt krav opkræver kun renten for perioden siden sidste krav (inkrementelt — ingen dobbelt-opkrævning), så rente kan registreres ad flere omgange. |
+| `invoice_credit_note` | `invoice credit-note` | `{ company, payload: CreditNotePayload, confirm }` | Udsteder kreditnota mod eksisterende faktura. Forudsætning: den oprindelige faktura er udstedt med `invoice_issue` og bogført med `invoice_post`. |
+| `invoice_issue` | `invoice issue` | `{ company, payload: InvoicePayload, customerId?, confirm }` | Udsteder kundefaktura + immutable snapshot. Startpunktet for invoice-livscyklen. |
+| `invoice_post` | `invoice post` | `{ company, documentId? \| invoiceNumber?, confirm }` | Bogfører udstedt faktura i finansen. Forudsætning: `invoice_issue`. |
+| `invoice_post_compensation` | `invoice post-compensation` | `{ company, documentId? \| invoiceNumber?, date?, confirm }` | Bogfører registreret kompensation. Forudsætning: `invoice_claim_compensation`. |
+| `invoice_post_interest` | `invoice post-interest` | `{ company, documentId? \| invoiceNumber?, claimId?, date?, confirm }` | Bogfører registreret morarentekrav. Uden `claimId` bogføres det ældste endnu ikke bogførte krav (kronologisk). Forudsætning: `invoice_claim_interest`. |
+| `invoice_post_interest_correction` | `invoice post-interest-correction` | `{ company, documentId? \| invoiceNumber?, date?, reason?, confirm }` | Bogfører en korrektion af for meget opkrævet morarente (debiterer renteindtægt, krediterer tilgodehavende). Forudsætning: `invoice_interest_correction_calc` viser `hasProposal: true`. |
+| `invoice_post_reminder` | `invoice post-reminder` | `{ company, documentId? \| invoiceNumber?, reminderId?, date?, confirm }` | Bogfører registreret rykker. Forudsætning: `invoice_remind`. |
+| `invoice_refund_bank` | `invoice refund-bank` | `{ company, payload: RefundPayload, confirm }` | Bogfører refundering til kunde fra banken. Forudsætning: `invoice_post`. |
+| `invoice_remind` | `invoice remind` | `{ company, documentId? \| invoiceNumber?, date, fee?, note?, confirm }` | Registrerer rykker på forfalden faktura. Forudsætning: `invoice_post` (fakturaen skal være bogført og forfalden). |
+| `invoice_render` | `invoice render` | `{ company, documentId? \| invoiceNumber?, confirm }` | Renderer (eller genskaber) deterministisk PDF. Idempotent. Forudsætning: `invoice_issue`. |
 | `invoice_send_email` | `invoice send` | `{ company, documentId? \| invoiceNumber?, kind?, to?, confirm }` | Sender faktura/rykker via SMTP med PDF vedhæftet. Idempotent. SMTP-config læses fra `config/smtp.json` i virksomhedsmappen — påkrævede felter: `host`, `port`, `fromAddress`; valgfri: `fromName`, `username`, `password`, `dryRun`. Mangler filen ⇒ `{ ok:false, errors:["missing SMTP config: ..."] }`. Den indbyggede transport kører **kun** i dry-run: `dryRun:true` registrerer afsendelsen uden netværkskald (`ok:true`); uden `dryRun:true` fejler et rigtigt send med en `ok:false`-envelope. |
-| `invoice_settle_bank` | `invoice settle-bank` | `{ company, payload: SettlementPayload, confirm }` | Matcher bankbetaling mod faktura. |
-| `invoice_settle_claim_bank` | `invoice settle-claim-bank` | `{ company, payload: ClaimSettlementPayload, confirm }` | Matcher bankbetaling mod fakturakrav. |
-| `invoice_write_off_bad_debt` | `invoice write-off-bad-debt` | `{ company, payload: BadDebtPayload, confirm }` | Bogfører tab på debitor. |
+| `invoice_settle_bank` | `invoice settle-bank` | `{ company, payload: SettlementPayload, confirm }` | Matcher bankbetaling mod faktura. Forudsætning: `invoice_post`. |
+| `invoice_settle_claim_bank` | `invoice settle-claim-bank` | `{ company, payload: ClaimSettlementPayload, confirm }` | Matcher bankbetaling mod fakturakrav. Forudsætning: `invoice_post` + relevant `invoice_post_reminder` / `invoice_post_interest` / `invoice_post_compensation`. |
+| `invoice_write_off_bad_debt` | `invoice write-off-bad-debt` | `{ company, payload: BadDebtPayload, confirm }` | Bogfører tab på debitor. Forudsætning: `invoice_post`. |
 | `journal_post` | `journal post` | `{ company, payload: JournalEntryInput, confirm }` | Bogfører manuel finanspostering. |
 | `journal_reverse` | `journal reverse` | `{ company, entryId? \| entryNo? \| matchText?, matchDate?, matchDocumentId?, date, reason, confirm }` | Tilbagefører bogført finanspostering ved at oprette modpost. |
+| `payable_pay` | `payable pay` | `{ company, payableId, bankTransactionId, amount?, date?, paymentAccount?, note?, confirm }` | Matcher en udgående bankbetaling mod en åben kreditorpost (debit 7000 Leverandørgæld, credit bank). |
+| `payable_register` | `payable register` | `{ company, documentId, billDate, dueDate, expenseAccount, vatTreatment?, vendorId?, note?, confirm }` | Registrerer et bogført leverandørbilag som en åben kreditorpost (debit udgift + købsmoms, credit 7000 Leverandørgæld). |
 | `peppol_submit_public_invoice` | `invoice submit-public-peppol` | `{ company, documentId? \| invoiceNumber?, accessPoint, acknowledgement?, confirm }` | Bygger en idempotent PEPPOL-submission-envelope og registrerer forsøget. |
 | `period_close` | `period close` | `{ company, from, to, kind?, status?, reference?, confirm }` | Lukker eller markerer regnskabsperiode. |
 | `recurring_invoice_create` | `recurring-invoice create` | `{ company, name, interval, firstIssueDate, invoice: InvoicePayload, paymentTermsDays?, deliveryPeriodMode?, notes?, confirm }` | Opretter en gentagende fakturaskabelon. `invoice` er en typet `InvoicePayload` (samme form som `invoice_issue`) — men dato-/nummerfelter (`invoiceNumber`, `issueDate`, `dueDate`, leveringsdatoer) sættes IKKE her; `recurring_invoice_generate` udleder dem pr. periode. |
@@ -323,6 +361,71 @@ modpostering.
 > klassificeres her som `write-irreversible` fordi de er
 > `confirm`-gatede writes, men de oprettede records (destinationer,
 > placeringsregistreringer, lås-konfiguration) kan rettes ved nye kald.
+
+### Invoice lifecycle (#374)
+
+`invoice_*`-familien er en **sekvens**. Hvert downstream-tool kræver at
+en bestemt forrige tool er kørt — ellers afvises kaldet med en envelope-
+fejl der starter med `Forudsætning ikke opfyldt:` og navngiver det
+manglende forrige tool. En agent kan altså opdage rækkefølgen ud fra
+tools/list (`description` indeholder en `Forudsætning:`-linje) og uden
+at læse kildekoden.
+
+**Happy path — én faktura fra udstedelse til lukning:**
+
+```
+invoice_issue                                  (opretter document_type='issued_invoice')
+   │
+   ├──► invoice_render                         (PDF; idempotent)
+   │
+   └──► invoice_post                           (debit 1100 Debitorer, credit 1000 + udgående moms)
+            │
+            ├──► invoice_settle_bank           (matcher bankbetaling mod tilgodehavende)
+            │
+            ├──► invoice_apply_payment         (lukker betaling uden bank-match)
+            │
+            ├──► invoice_refund_bank           (refundering — typisk efter kreditnota)
+            │
+            ├──► invoice_credit_note           (kreditnota mod den bogførte faktura)
+            │
+            └──► invoice_write_off_bad_debt    (afskriv tab på debitor)
+```
+
+**Forfaldne-fakturaer-grenen** (rykker + morarente + kompensation —
+hver gren er to skridt: registrér først, bogfør derefter):
+
+```
+invoice_post (faktura forfalden)
+   │
+   ├──► invoice_remind ────────► invoice_post_reminder
+   │
+   ├──► invoice_claim_interest ─► invoice_post_interest
+   │
+   └──► invoice_claim_compensation ─► invoice_post_compensation
+            │
+            └──► invoice_settle_claim_bank     (kombineret eller separat bank-match
+                                                af de bogførte krav)
+```
+
+**Fejlmønster en agent skal kunne genkende.** Hvis fx
+`invoice_settle_bank` kaldes på en udstedt-men-ikke-bogført faktura,
+returneres:
+
+```json
+{
+  "ok": false,
+  "errors": [
+    "Forudsætning ikke opfyldt: faktura 2026-001 (documentId=42) er udstedt men ikke bogført. Kald invoice_post på fakturaen før invoice_settle_bank."
+  ]
+}
+```
+
+Beskeden er stabil i form: `Forudsætning ikke opfyldt:` + sætning der
+slutter med `Kald <forrige-tool> ... før <nuværende-tool>`. Det samme
+gælder for `invoice_post_reminder`/`invoice_post_interest`/
+`invoice_post_compensation` der kræver at det tilhørende krav først er
+registreret med `invoice_remind`/`invoice_claim_interest`/
+`invoice_claim_compensation`.
 
 ## System-tools
 
@@ -347,8 +450,120 @@ Felt-detaljer for `system_restore_backup`:
 
 ## CLI/MCP-mapping
 
-MCP-surface'en er *tæt på* 1:1 med CLI'en, men ikke fuldstændig. Kendte
-afvigelser pr. denne revision:
+MCP-surface'en er *tæt på* 1:1 med CLI'en, men **ikke fuldstændig**: der er
+mindst 10 dokumenterede afvigelser fordelt på en CLI-only-liste og en
+MCP-only-liste (se nedenfor). En agent der vælger MCP som primær overflade
+finder altså IKKE alle CLI-only-funktionerne i `tools/list` — og omvendt.
+Sektionerne nedenfor er maskinlæsbart udgivet: hver post navngiver den
+underliggende kildefil i `src/cli/<x>.ts` eller `src/mcp/tools/<x>.ts`, så en
+agent kan krydsverificere uden at læse kildekoden. Et CI-check
+(`tests/unit/surface-diff-discoverable.test.ts`) fejler, hvis en ny
+`src/cli/<x>.ts` eller `src/mcp/tools/<x>.ts` tilføjes uden at blive nævnt i
+mapping-doc'en — `tæt på 1:1` er altså ikke længere et løst løfte, men en
+konkret diff, der vedligeholdes pr. fil.
+
+### MCP-only — tools uden CLI-pendant
+
+MCP-tools, der ikke findes på CLI'en (`src/mcp/tools/<filename>.ts` ⇒ intet
+modsvar i `src/cli/`). En agent, der CLI-fortrinsstiller, vil aldrig opdage
+disse uden at læse mapping-doc'en:
+
+- `src/mcp/tools/cvr.ts` — `cvr_lookup` (CVR-opslag mod virk.dk). CLI'en har
+  kun `customer cvr-lookup` (knyttet til `src/cli/customer.ts`); der findes
+  ingen selvstændig `cvr`-kommando.
+- `src/mcp/tools/peppol.ts` — `peppol_submit_public_invoice` (PEPPOL-submission
+  af bogført faktura). CLI'en har `invoice submit-public-peppol`
+  (`src/cli/invoice.ts`), men den er filtmæssigt en del af `invoice`-domænet
+  — ikke en selvstændig `peppol`-CLI.
+- `src/mcp/tools/portfolio.ts` — `portfolio_overview` (workspace-vid
+  porteføljeoversigt). CLI'en har kun `dashboard` (`src/cli/dashboard.ts`),
+  der er virksomheds-scopet og kun delvist overlapper.
+- `src/mcp/tools/period.ts` — `period_list` (lister regnskabsperioder).
+  CLI'en har kun `period close`/`period reopen` (`src/cli/period.ts`) — der
+  er ingen `period list`-kommando.
+
+### CLI-only-kommandoer uden MCP-pendant
+
+CLI-kommandoer, der ikke har et MCP-tool (`src/cli/<filename>.ts` ⇒ intet
+modsvar i `src/mcp/tools/`). En agent, der MCP-fortrinsstiller, vil aldrig
+opdage disse uden at læse mapping-doc'en. Genåbning af en lukket
+regnskabsperiode (`period reopen`) er fx CLI-only — se også underafsnittet
+"Andre kendte mikro-afvigelser" længere nede:
+
+- `src/cli/agent.ts` — `agent run` (den pakkede runtime-agent-loop; egen
+  kontrakt i `runtime-agent-contract.md`). Ingen `agent_*`-MCP-tools.
+- `src/cli/annual-report.ts` — `report annual` og afledte årsrapport-flows.
+  Ingen `annual_report_*`-MCP-tools.
+- `src/cli/dashboard.ts` — `dashboard` (virksomheds-scopet nøgletal). MCP
+  har det workspace-scopede `portfolio_overview` i stedet (se MCP-only
+  ovenfor) — ikke et 1:1-modstykke.
+- `src/cli/opening-balance.ts` — `opening-balance post` (etablerer
+  primosaldo). Ingen `opening_balance_*`-MCP-tools.
+- `src/cli/reg.ts` — `reg coverage` og `reg citations` (regulatorisk
+  dækningsrapport + paragrafhenvisninger). Ingen `reg_*`-MCP-tools.
+- `src/cli/compliance.ts` — `compliance report` (genererer en
+  deterministisk, byte-stabil HTML-rapport til revisor eller myndighed
+  med audit-kæde, backup-status, retention, GDPR, regulatorisk dækning
+  og hele regel→paragraf-mappingen). Ingen `compliance_*`-MCP-tools.
+- `src/cli/report.ts` — `report balance`, `report profit-loss`,
+  `report trial-balance`, `report tax`. MCP har kun `tax_return_prepare`;
+  resten er CLI-only.
+- `src/cli/serve.ts` — `serve` (starter cockpit HTTP-API'en). Det er en
+  proces-host og giver ikke mening som MCP-tool.
+- `src/cli/bank-account.ts` — `bank-account add`/`bank-account list`
+  (registrér/lis bankkonti for FX-bogføring). Ingen `bank_account_*`-MCP-tools.
+- `src/cli/init.ts` — `init` (initialisér en virksomhed). MCP eksponerer
+  `company_add` (`src/mcp/tools/system.ts`) i stedet, ikke `init` direkte.
+- `src/cli/gdpr.ts` — `gdpr export`/`gdpr erase`/`gdpr forget`. Ingen
+  `gdpr_*`-MCP-tools — bevidst CLI-gatet for actor-attribution.
+
+> **Andre kendte mikro-afvigelser (samme filnavn, divergent klassifikation
+> eller ergonomi):**
+>
+> - **`import_archive_year` har ingen selvstændig CLI-kommando.** Den henter
+>   fra samme arkiv-artefakt som `import archive` skriver/lister
+>   (`src/cli/import.ts`).
+> - **`period reopen` er CLI-only.** En for tidligt lukket regnskabsperiode kan
+>   kun genåbnes via CLI-kommandoen `period reopen` (en kontrolleret, fuldt
+>   revisionssporet handling, #247) — der findes *ingen* `period_reopen`
+>   MCP-tool. MCP-surface'en eksponerer `period_list` (read) og `period_close`
+>   (write-irreversible), men ikke en genåbning. En agent der over MCP rammer
+>   en lukket-periode-afvisning kan altså ikke selv genåbne perioden; den må
+>   henvise mennesket til `rentemester period reopen`. HTTP-laget har
+>   derimod `POST /api/companies/:slug/periods/reopen` — så cockpittet er
+>   ikke begrænset på samme måde.
+> - **`invoice create` er CLI-only — den ergonomiske CLI-vej til at fakturere.**
+>   `invoice create` udsteder en kundefaktura uden at man selv skriver JSON eller
+>   regner moms (linjer som `"beskrivelse|antal|stykpris"`, satsen i procent).
+>   Den har *ingen* MCP-tool: MCP-pendanten er det typede `invoice_issue`, der
+>   tager en fuld `InvoicePayload` med færdigberegnede totaler. En agent over MCP
+>   bruger altså `invoice_issue` (typet payload) — `invoice create` er
+>   CLI-ergonomien for et menneske.
+> - **`invoice export-public` og `invoice export-public-oioubl` er CLI-only.**
+>   De skriver deterministiske handoff-artefakter til offentlig e-faktura
+>   (henholdsvis et EAN/GLN-preview og et OIOUBL-handoff) uden PEPPOL-transport.
+>   Der findes ingen `*_export_public*` MCP-tools — MCP-surface'en eksponerer kun
+>   `peppol_submit_public_invoice` til den egentlige PEPPOL-submission.
+> - **`portfolio_overview`** dækker delvist det CLI'en eksponerer som
+>   `dashboard`, men er et workspace-tool (`workspace`-parameter, ikke
+>   `company`).
+> - **`customer_validate_vat` (MCP) vs. `customer validate-vat` (CLI)** —
+>   MCP-tool'et er `read` (ikke confirm-gatet, ingen actor); CLI-kommandoen er
+>   `actor`-gatet via `MUTATING_COMMANDS`. Se "Read-tools"-sektionen for den
+>   bevidste divergens i governance-klasse.
+>
+> ### Den oprindelige løse note (for historisk reference)
+>
+> Flere CLI-kommandoer eksponeres ikke som tools, fx `init`, `serve`,
+> `report *`, `vat momsangivelse`/`vat filing`, `period reopen`,
+> `gdpr export`/`gdpr erase`, `opening-balance post`, `bank-account add`/`list`,
+> `import run`/`systems`/`contacts`, `agent run`, `reg coverage`/`reg citations`,
+> `invoice create`, `invoice export-public`/`invoice export-public-oioubl` og
+> diverse `system export-*`/`verify-*`-kommandoer. Disse driver lokale
+> workflows eller hører til den indbyggede `agent run`-loop og er bevidst
+> holdt uden for den løse agent-surface.
+
+### Historiske afvigelser (samlet i den nye liste ovenfor)
 
 - **`period_list` har ingen CLI-kommando.** Tool'et `period_list` lister
   regnskabsperioder over MCP, men CLI'en har kun `period close` — der er
@@ -357,40 +572,9 @@ afvigelser pr. denne revision:
   bygget. MCP-tool'et læser `accounting_periods` direkte.) Vil man genskabe
   1:1-mappingen skal en `period list`-CLI-kommando tilføjes — ellers er
   dette en bevidst, dokumenteret afvigelse.
-- **`import_archive_year` har ingen selvstændig CLI-kommando.** Den henter
-  fra samme arkiv-artefakt som `import archive` skriver/lister.
-- **`portfolio_overview`** dækker delvist det CLI'en eksponerer som
-  `dashboard`, men er et workspace-tool (`workspace`-parameter, ikke
-  `company`).
-- **`period reopen` er CLI-only.** En for tidligt lukket regnskabsperiode kan
-  kun genåbnes via CLI-kommandoen `period reopen` (en kontrolleret, fuldt
-  revisionssporet handling, #247) — der findes *ingen* `period_reopen`
-  MCP-tool. MCP-surface'en eksponerer `period_list` (read) og `period_close`
-  (write-irreversible), men ikke en genåbning. En agent der over MCP rammer
-  en lukket-periode-afvisning kan altså ikke selv genåbne perioden; den må
-  henvise mennesket til `rentemester period reopen`.
-- **`invoice create` er CLI-only — den ergonomiske CLI-vej til at fakturere.**
-  `invoice create` udsteder en kundefaktura uden at man selv skriver JSON eller
-  regner moms (linjer som `"beskrivelse|antal|stykpris"`, satsen i procent).
-  Den har *ingen* MCP-tool: MCP-pendanten er det typede `invoice_issue`, der
-  tager en fuld `InvoicePayload` med færdigberegnede totaler. En agent over MCP
-  bruger altså `invoice_issue` (typet payload) — `invoice create` er
-  CLI-ergonomien for et menneske.
-- **`invoice export-public` og `invoice export-public-oioubl` er CLI-only.**
-  De skriver deterministiske handoff-artefakter til offentlig e-faktura
-  (henholdsvis et EAN/GLN-preview og et OIOUBL-handoff) uden PEPPOL-transport.
-  Der findes ingen `*_export_public*` MCP-tools — MCP-surface'en eksponerer kun
-  `peppol_submit_public_invoice` til den egentlige PEPPOL-submission.
-- **CLI-only-kommandoer uden MCP-tool.** Flere CLI-kommandoer eksponeres
-  ikke som tools, fx `init`, `serve`, `report *`, `vat momsangivelse`/
-  `vat filing`, `period reopen`, `gdpr export`/`gdpr erase`,
-  `opening-balance post`, `bank-account add`/`list`,
-  `import run`/`systems`/`contacts`, `agent run`,
-  `reg coverage`/`reg citations`, `invoice create`,
-  `invoice export-public`/`invoice export-public-oioubl` og diverse
-  `system export-*`/`verify-*`-kommandoer. Disse driver lokale workflows
-  eller hører til den indbyggede `agent run`-loop og er bevidst holdt uden
-  for den løse agent-surface.
+_(De oprindelige løse notater er nu listet eksplicit pr. fil i sektionerne
+"MCP-only — tools uden CLI-pendant" og "CLI-only — kommandoer uden
+MCP-pendant" ovenfor.)_
 
 ## Eksempel-handshakes
 

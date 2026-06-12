@@ -36,6 +36,10 @@ export type RegisterInvoiceLateCompensationInput = {
   asOfDate: string;
   compensationAmountDkk?: number;
   note?: string;
+  // Actor attribution for the registration audit_log row (the post step already
+  // threads these; the register step must too, or the row leaks the OS user).
+  createdBy?: string;
+  createdByProgram?: string;
 };
 
 export type RegisterInvoiceLateCompensationResult = CalculateInvoiceLateCompensationResult & {
@@ -170,6 +174,8 @@ export function registerInvoiceLateCompensation(db: Database, input: RegisterInv
     entityType: "invoice_compensation_claim",
     entityId: inserted.id,
     message: `Registered compensation claim ${roundDkk(Number(assessment.compensationAmountDkk))} on invoice ${assessment.invoiceNumber}`,
+    createdBy: input.createdBy,
+    createdByProgram: input.createdByProgram,
   });
 
   const statusAfter = getInvoiceStatus(db, input.invoiceDocumentId, input.asOfDate);

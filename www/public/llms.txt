@@ -113,6 +113,10 @@ Rentemester is open source bookkeeping for small Danish businesses: an AI agent 
 - Fixed assets and depreciation: https://rentemester.dk/viden/anlaegsaktiver/afskrivning
 - Annual report and iXBRL: https://rentemester.dk/viden/regnskab/aarsrapport
 - Multiple companies and cockpit: https://rentemester.dk/viden/regnskab/flere-virksomheder
+- Payables and supplier invoices: https://rentemester.dk/viden/regnskab/kreditorer
+- Accruals and period cutoffs: https://rentemester.dk/viden/regnskab/periodeafgraensning
+- Budget and liquidity forecasting: https://rentemester.dk/viden/regnskab/budget-likviditet
+- Tax return review flow: https://rentemester.dk/viden/regnskab/skatteopgoerelse
 - VAT calculator: https://rentemester.dk/vaerktoej/momsberegner
 - Invoice template checklist: https://rentemester.dk/vaerktoej/fakturaskabelon
 - Installation: https://rentemester.dk/docs/installation

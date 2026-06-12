@@ -1,0 +1,90 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/PageHero.astro";
+import { SITE } from "../../consts";
+
+const guides = [
+  {
+    href: "/docs/installation",
+    title: "Installation",
+    lead: "Fra et tomt repo til en kørende demo-virksomhed med Bun, git og smoke-flow.",
+    audience: "Til dig der lige har klonet repoet og vil køre Rentemester første gang.",
+  },
+  {
+    href: "/docs/foerste-faktura",
+    title: "Din første faktura",
+    lead: "Udsted og send en dansk faktura — enten i cockpittet eller fra terminalen. Med moms, PDF og e-mail.",
+    audience: "Til dig der har installeret Rentemester og skal sende en rigtig faktura til din første kunde.",
+  },
+  {
+    href: "/docs/bank-import",
+    title: "Importér dit bankudtog",
+    lead: "Hent en CSV fra din danske netbank, importér den og afstem mod bilag og fakturaer.",
+    audience: "Til dig der laver løbende bogføring og skal have ugens eller månedens bevægelser ind.",
+  },
+  {
+    href: "/docs/momsangivelse",
+    title: "Kør din momsangivelse",
+    lead: "Generér rapporten, læs rubrikkerne, indberet i TastSelv og bogfør momsen i ledgeren.",
+    audience: "Til dig der står med en momsfrist og skal angive moms for en lukket periode.",
+  },
+];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "Rentemester docs",
+  inLanguage: "da",
+  hasPart: guides.map((g) => ({
+    "@type": "WebPage",
+    name: g.title,
+    url: `https://rentemester.dk${g.href}`,
+    description: g.lead,
+  })),
+};
+---
+
+<BaseLayout
+  title="Docs — kom i gang og brug Rentemester i hverdagen"
+  description="Korte how-to-guides til Rentemester: installation, første faktura, bank-import og momsangivelse. Cockpit og CLI side om side."
+  pathname="/docs"
+  pageType="Article"
+  datePublished="2026-05-24"
+  dateModified="2026-05-24"
+  jsonLd={jsonLd}
+>
+  <PageHero
+    eyebrow="Dokumentation"
+    title="Docs"
+    lead="Korte, konkrete guides til hverdagen i Rentemester. Hver guide kan løses enten via cockpittet (klik) eller via CLI (kommando) — vælg det der passer dig."
+  />
+
+  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
+    <p>
+      Rentemester har to flader — et lokalt web-cockpit og en kommandolinje — der skriver til den samme ledger og er underlagt de samme danske regler i <code>rules/dk/</code>. Du kan vælge cockpit-vejen til daglig drift og dykke ned i CLI'en når du har brug for at automatisere eller forklare hvad der skete.
+    </p>
+
+    <h2>Guider</h2>
+    <ul>
+      {guides.map((g) => (
+        <li class="mb-6">
+          <a href={g.href}><strong>{g.title}</strong></a>
+          <br />
+          <span class="text-on-surface-variant">{g.audience}</span>
+          <br />
+          <span>{g.lead}</span>
+        </li>
+      ))}
+    </ul>
+
+    <h2>Bag enhver guide: reglerne</h2>
+    <p>
+      Når en guide siger "vælg momskode 21" eller "luk perioden", er det ikke en mening — det er en regel i <a href={`${SITE.github}/tree/main/rules/dk`} rel="noopener" target="_blank">rules/dk ↗</a>. Reglerne er kode, kan testes, og kan udfordres i et issue. Det betyder også at en guide ikke kan tale dig udenom en regel: hvis en postering ikke balancerer eller en faktura mangler moms, stopper systemet — uanset om du klikkede eller skrev kommandoen.
+    </p>
+
+    <h2>Mangler der en guide?</h2>
+    <p>
+      Hvis du står med et flow der ikke er dækket her — lønudbetaling, anlægsaktiv, EU-servicekøb med reverse charge, kreditnota til en kunde der allerede har betalt — så åbn et <a href={`${SITE.github}/issues`} rel="noopener" target="_blank">issue ↗</a> og beskriv hvad du forsøger at gøre. Vi prioriterer guides efter hvor mange der spørger om dem.
+    </p>
+  </article>
+</BaseLayout>

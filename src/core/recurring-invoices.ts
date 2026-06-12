@@ -347,6 +347,83 @@ export function listRecurringInvoiceGenerations(db: Database, templateId: number
   };
 }
 
+export type RetireRecurringInvoiceTemplateInput = {
+  templateId: number;
+  /** Optional human-supplied reason; recorded on the audit log entry. */
+  reason?: string;
+  createdBy?: string;
+  createdByProgram?: string;
+};
+
+export type RetireRecurringInvoiceTemplateResult = {
+  ok: boolean;
+  templateId?: number;
+  appliedRules: string[];
+  errors: string[];
+};
+
+// Retire shares the template lifecycle rule (DK-RECURRING-INVOICE-TEMPLATE-001);
+// it is the same append-only contract — only the `active` column may flip 1->0.
+const RETIRE_RULE_ID = TEMPLATE_RULE_ID;
+
+/**
+ * Retire (deactivate) a recurring invoice template — sets `active = 0`.
+ *
+ * Retiring is the cockpit-facing maintenance action for templates whose
+ * underlying contract has ended or changed. The append-only schema trigger
+ * (`recurring_invoice_templates_guard_update`) forbids unretiring (0 -> 1) and
+ * forbids mutating the immutable identity columns — that is by design: a
+ * retired template's historical generations remain intact, and a new template
+ * is created when terms change (see issue #435).
+ *
+ * Idempotent: retiring an already-retired template is a no-op success.
+ */
+export function retireRecurringInvoiceTemplate(
+  db: Database,
+  input: RetireRecurringInvoiceTemplateInput,
+): RetireRecurringInvoiceTemplateResult {
+  const appliedRules = [RETIRE_RULE_ID];
+
+  if (!Number.isInteger(input.templateId) || input.templateId <= 0) {
+    return { ok: false, appliedRules, errors: ["templateId must be a positive integer"] };
+  }
+
+  const template = db.query(
+    `SELECT id, name, active FROM recurring_invoice_templates WHERE id = ? LIMIT 1`,
+  ).get(input.templateId) as { id: number; name: string; active: number } | null;
+
+  if (!template) {
+    return {
+      ok: false,
+      appliedRules,
+      errors: [`recurring invoice template ${input.templateId} does not exist`],
+    };
+  }
+
+  if (!template.active) {
+    // Idempotent: already retired.
+    return { ok: true, templateId: template.id, appliedRules, errors: [] };
+  }
+
+  db.transaction(() => {
+    db.run(
+      `UPDATE recurring_invoice_templates SET active = 0 WHERE id = ?`,
+      template.id,
+    );
+    const reasonSuffix = hasText(input.reason) ? ` — ${input.reason!.trim()}` : "";
+    insertAuditLog(db, {
+      eventType: "recurring_invoice_template_retire",
+      entityType: "recurring_invoice_template",
+      entityId: template.id,
+      message: `Retired recurring invoice template ${template.id} ${template.name}${reasonSuffix}`,
+      createdBy: input.createdBy,
+      createdByProgram: input.createdByProgram,
+    });
+  }, { immediate: true })();
+
+  return { ok: true, templateId: template.id, appliedRules, errors: [] };
+}
+
 export function generateRecurringInvoice(
   db: Database,
   companyRoot: string,

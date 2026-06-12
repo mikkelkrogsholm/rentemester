@@ -5,11 +5,12 @@ import type { CompanySummary } from "./types";
 /**
  * The single canonical Danish display formatter for a kroner amount — a thin
  * browser-local copy of `core/money.ts#formatKronerDa` (browser code cannot
- * import from `src/core`). It MUST emit the byte-identical string: period
- * thousands separator, comma decimal separator, exactly two decimals, a
- * regular-space `" kr."` suffix and a minus prefix for negatives, e.g.
- * `1234.5` → `"1.234,50 kr."`. Non-finite / null / undefined / empty input
- * yields `"—"`.
+ * import from `src/core`). For every realistic amount (any finite value JS
+ * renders in fixed, non-exponential notation) it emits the byte-identical
+ * string: period thousands separator, comma decimal separator, exactly two
+ * decimals, a regular-space `" kr."` suffix and a minus prefix for negatives,
+ * e.g. `1234.5` → `"1.234,50 kr."`. Non-finite / null / undefined / empty
+ * input yields `"—"`.
  *
  * #314: this replaces the divergent `Intl.NumberFormat({style:"currency"})`
  * rendering, which used a non-breaking space before the suffix and so drifted
@@ -18,11 +19,33 @@ import type { CompanySummary } from "./types";
 function formatKronerDa(value: unknown): string {
   const num = typeof value === "number" ? value : Number(value);
   if (value == null || value === "" || !Number.isFinite(num)) return "—";
-  const negative = num < 0;
-  const cents = Math.round(Math.abs(num) * 100);
-  const whole = Math.floor(cents / 100);
-  const fraction = (cents % 100).toString().padStart(2, "0");
-  const wholeText = whole.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  const abs = Math.abs(num);
+  const s = abs.toString();
+  if (s.includes("e") || s.includes("E")) {
+    // Exponential notation: only astronomically large (≥ 1e21) or vanishingly
+    // small (< 1e-6) magnitudes, neither of which occurs in real bookkeeping.
+    // Render without a BigInt-parse crash; byte-identity with the server
+    // formatter is not promised at this (impossible) scale.
+    if (abs < 0.005) return "0,00 kr.";
+    const whole = BigInt(Math.round(abs))
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return `${num < 0 ? "-" : ""}${whole},00 kr.`;
+  }
+  // Single half-up round to øre from the FULL decimal string — mirrors core's
+  // toOre/scaledInt over String(num). NOT a toFixed(3) pre-round, which would
+  // double-round inputs carrying >2 decimals (1.0049 → "1,01" vs core "1,00").
+  // "first dropped digit ≥ 5 ⇒ round up" is exactly round-half-up. The sign is
+  // taken from the ROUNDED øre, so a sub-øre negative renders "0,00 kr.".
+  const dot = s.indexOf(".");
+  const whole = dot === -1 ? s : s.slice(0, dot);
+  const frac = dot === -1 ? "" : s.slice(dot + 1);
+  let ore = BigInt(whole) * 100n + BigInt(frac.slice(0, 2).padEnd(2, "0"));
+  if ((frac[2] ?? "0") >= "5") ore += 1n;
+  const negative = num < 0 && ore > 0n;
+  const wholeOre = ore / 100n;
+  const fraction = (ore % 100n).toString().padStart(2, "0");
+  const wholeText = wholeOre.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   return `${negative ? "-" : ""}${wholeText},${fraction} kr.`;
 }
 
@@ -90,6 +113,12 @@ export type AttentionLevel = "critical" | "warning" | "ok";
 export type AttentionFlag = {
   level: Exclude<AttentionLevel, "ok">;
   label: string;
+  /**
+   * Optional cockpit-route the owner can click through to (#420). When set,
+   * the CompanyCard renders the flag as a link so a critical warning is
+   * never a dead-end — the owner has a concrete next step.
+   */
+  to?: string;
 };
 
 /** A VAT deadline within this many days counts as "soon" — a warning. */
@@ -109,18 +138,30 @@ export function attentionFlags(c: CompanySummary): AttentionFlag[] {
     return flags;
   }
   if (!c.auditChainOk) {
-    flags.push({ level: "critical", label: "Revisionskæde brudt" });
+    // #420 — flaget skal ikke være en blind alarm. Klikket fører til
+    // Integritet-viewet (#333) hvor brudet er forklaret med entry-nr og
+    // ejeren får et konkret næste skridt (kontakt revisor / genskab backup).
+    flags.push({
+      level: "critical",
+      label: "Revisionskæde brudt",
+      to: `/companies/${c.slug}/integritet`,
+    });
   }
   if (c.resultat < 0) {
     flags.push({ level: "critical", label: "Negativt resultat" });
   }
   if (c.vat && c.vat.payable > 0) {
+    // The countdown targets the SKAT filing/payment deadline — NOT the end of
+    // the VAT period, which is an earlier date. The flag says "Momsfrist" so
+    // an owner does not read it as the current period ending.
     if (c.vat.daysRemaining < 0) {
-      flags.push({ level: "critical", label: "Moms overskredet" });
+      flags.push({ level: "critical", label: "Momsfrist overskredet" });
     } else if (c.vat.daysRemaining <= VAT_DEADLINE_SOON_DAYS) {
+      // Reuse `formatDeadline` for correct Danish inflection — a bare
+      // "om N dage" reads "om 1 dage" / "om 0 dage", which is wrong grammar.
       flags.push({
         level: "warning",
-        label: `Moms om ${c.vat.daysRemaining} dage`,
+        label: `Momsfrist ${formatDeadline(c.vat.daysRemaining)}`,
       });
     }
   }

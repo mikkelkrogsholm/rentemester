@@ -26,7 +26,7 @@ export function registerImportTools(server: McpServer): void {
       description:
         "Lister de pre-cut-over regnskabsår der er arkiveret fra et flerårigt eksport. Read-only referencedata uden for hovedbogen.",
       inputSchema: {
-        company: z.string().min(1),
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         sourceSystem: z.string().min(1).optional(),
       },
       outputSchema: envelopeShape,
@@ -50,7 +50,7 @@ export function registerImportTools(server: McpServer): void {
       description:
         "Henter ét arkiveret regnskabsårs fulde Posteringer og SaldoBalance som audit- og matchnings-kontekst. Read-only.",
       inputSchema: {
-        company: z.string().min(1),
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         fiscalYear: z.number().int(),
         sourceSystem: z.string().min(1).optional(),
       },

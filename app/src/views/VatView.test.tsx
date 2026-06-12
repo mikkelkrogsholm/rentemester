@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { VatView } from "./VatView";
@@ -212,6 +212,40 @@ describe("VatView — Moms", () => {
     ).not.toBeInTheDocument();
   });
 
+  // #413: the rubrics explanation must not leak CLI jargon ("vat momsangivelse",
+  // "i terminalen") to the SMB owner. The cockpit is the authoritative surface;
+  // referring to a terminal command undermines trust and confuses non-technical
+  // owners. Both the open- and closed-period notes must be CLI-free.
+  test("rubrics explanation does not leak CLI jargon to the SMB owner (closed period)", async () => {
+    mockFetch(route({ periodStatus: "closed", momsangivelseReady: true }));
+    renderView();
+    const heading = await screen.findByText(
+      /SKAT-rubrikker \(momsangivelse\)/i,
+    );
+    const card = heading.closest(".statement-card") as HTMLElement;
+    expect(card).not.toBeNull();
+    expect(card.textContent ?? "").not.toMatch(/vat momsangivelse/i);
+    expect(card.textContent ?? "").not.toMatch(/i terminalen/i);
+    // The replacement text reassures the owner without jargon.
+    expect(card.textContent ?? "").toMatch(/skat\.dk/i);
+    expect(card.textContent ?? "").toMatch(/TastSelv Erhverv/i);
+  });
+
+  test("rubrics explanation does not leak CLI jargon (open period)", async () => {
+    mockFetch(route({ periodStatus: "open", momsangivelseReady: false }));
+    renderView();
+    const heading = await screen.findByText(
+      /SKAT-rubrikker \(foreløbige — åben periode\)/i,
+    );
+    const card = heading.closest(".statement-card") as HTMLElement;
+    expect(card).not.toBeNull();
+    expect(card.textContent ?? "").not.toMatch(/vat momsangivelse/i);
+    expect(card.textContent ?? "").not.toMatch(/i terminalen/i);
+    // The replacement text explains provisional-vs-final without jargon.
+    expect(card.textContent ?? "").toMatch(/foreløbige/i);
+    expect(card.textContent ?? "").toMatch(/lukket|endelige/i);
+  });
+
   // #301: a closed period can be reopened from the cockpit — the controlled,
   // audit-logged recovery path for a period closed too early.
   test("offers a reopen action for a closed period and reopens it", async () => {
@@ -300,5 +334,87 @@ describe("VatView — Moms", () => {
     expect(
       await screen.findByText(/Momsperioden er lukket/i),
     ).toBeInTheDocument();
+  });
+
+  // #401: every rubric value needs a "Kopier"-button that copies ONLY the raw
+  // number in TastSelv format (no thousand separators, no "kr."), so the owner
+  // can paste it straight into TastSelv Erhverv without strip-formatting by
+  // hand. The formatted text (with `.` separators) MUST NOT end on the
+  // clipboard.
+  test("rubrikker rows have a Kopier button that copies the raw TastSelv number", async () => {
+    mockFetch(route({ periodStatus: "closed", momsangivelseReady: true }));
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    renderView();
+    // The Salgsmoms row's Kopier-button copies the raw integer (52317 kr in
+    // the fixture closed-period vat() — momstilsvar is 3621, salgsmoms 5621
+    // — we read the actual fixture's salgsmoms below).
+    const salgsmomsRow = (
+      await screen.findByText(/^Salgsmoms$/)
+    ).closest("tr")!;
+    const copyBtn = within(salgsmomsRow as HTMLElement).getByRole("button", {
+      name: /Kopier/i,
+    });
+    expect(copyBtn).not.toBeDisabled();
+    await userEvent.click(copyBtn);
+    expect(writeText).toHaveBeenCalledTimes(1);
+    const pasted = writeText.mock.calls[0][0] as string;
+    // The pasted text is the raw TastSelv number — no thousand separators,
+    // no "kr." suffix. It may carry a decimal comma for øre, but never `.`.
+    expect(pasted).not.toMatch(/\./);
+    expect(pasted).not.toMatch(/kr/i);
+    expect(pasted).toMatch(/^-?\d+(,\d{2})?$/);
+    // Visual feedback after a successful copy.
+    expect(
+      await within(salgsmomsRow as HTMLElement).findByText(/Kopieret/i),
+    ).toBeInTheDocument();
+  });
+
+  test("Kopier-knappen er deaktiveret for en åben (provisorisk) periode", async () => {
+    mockFetch(route({ periodStatus: "open", momsangivelseReady: false }));
+    renderView();
+    const salgsmomsRow = (
+      await screen.findByText(/^Salgsmoms$/)
+    ).closest("tr")!;
+    const copyBtn = within(salgsmomsRow as HTMLElement).getByRole("button", {
+      name: /Kopier/i,
+    });
+    expect(copyBtn).toBeDisabled();
+    // The disabled button explains why via its title attribute.
+    expect(copyBtn).toHaveAttribute(
+      "title",
+      expect.stringMatching(/Periode ikke lukket|luk først/i),
+    );
+  });
+
+  test("rubrikker-kortet har en 'Kopier alle som CSV'-knap der kopierer label;beløb-par", async () => {
+    mockFetch(route({ periodStatus: "closed", momsangivelseReady: true }));
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    renderView();
+    const heading = await screen.findByText(
+      /SKAT-rubrikker \(momsangivelse\)/i,
+    );
+    const card = heading.closest(".statement-card") as HTMLElement;
+    const csvBtn = within(card).getByRole("button", {
+      name: /Kopier alle som CSV/i,
+    });
+    await userEvent.click(csvBtn);
+    expect(writeText).toHaveBeenCalledTimes(1);
+    const pasted = writeText.mock.calls[0][0] as string;
+    // Semicolon-separated label;beløb pairs, one per line — no thousand
+    // separators, no "kr." suffix in the numeric column.
+    expect(pasted).toMatch(/Salgsmoms;/);
+    expect(pasted).toMatch(/Momstilsvar;/);
+    expect(pasted).toMatch(/Rubrik A/);
+    // No tusindtalsseparator-punktum and no "kr." anywhere in the CSV.
+    expect(pasted).not.toMatch(/\./);
+    expect(pasted).not.toMatch(/kr/i);
   });
 });

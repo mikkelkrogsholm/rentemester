@@ -152,6 +152,43 @@ Målet er ikke at fjerne ansvar. Målet er at fjerne gentagelser, rod og unødig
 
 ---
 
+## Cockpittet — den grafiske brugerflade
+
+Rentemester har et **lokalt web-baseret kontrolpanel** — *cockpittet* — der ligger oven på samme ledger, regler og API som CLI'en. Hvis du ikke har lyst til at leve i terminalen, er det her du skal være.
+
+Cockpittet giver dig en visuel hverdag:
+
+- **Overblik** med likviditet, åbne fakturaer, exceptions og næste momsfrist
+- **Resultatopgørelse, balance, saldobalance** og flerårig sammenligning
+- **Bilag** — søg, filtrér og åbn dokumenter direkte
+- **Bank** — importér CSV, se transaktioner og match mod bilag/fakturaer
+- **Posteringer (journal)** og **forpligtelser** (moms, A-skat, frister)
+- **Fakturaer** — udsted, send på e-mail, registrér rykker/betaling, kreditnota
+- **Kontakter** — kunder og leverandører med CVR-opslag
+- **Hjælp** — indbygget guide til de almindelige flows
+
+### Sådan starter du cockpittet
+
+I én terminal — start API'en (samme kerne som CLI'en bruger):
+
+```bash
+bun run src/cli.ts serve --workspace ./min-workspace
+# Cockpit backend listening on http://127.0.0.1:4319
+```
+
+I en anden terminal — start cockpit-UI'en:
+
+```bash
+cd app && bun install && bun run dev
+# Vite-dev-server på http://localhost:5319
+```
+
+Åbn `http://localhost:5319` i en browser. Vite proxer `/api`-kald videre til backend på port 4319, så cockpittet og CLI'en altid arbejder på den samme ledger.
+
+> Alt cockpittet kan, kan CLI'en også — og omvendt. Samme regler, samme audit-trail, samme append-only historik. Cockpittet er en blødere indgang; CLI'en er en hårdere én.
+
+---
+
 ## Se det virke
 
 Et eksekverbart eksempel ligger i [`examples/agent-demo/`](examples/agent-demo/) — det viser én månedes bogføring fra ende til ende over Rentemesters MCP-overflade.
@@ -203,7 +240,7 @@ Rentemester er stadig under udvikling og bør endnu ikke være din eneste kilde 
 - automatisk bogføring af fakturaer til debitorer, omsætning og salgsmoms
 - følg forfald, og beregn og bogfør lovbestemt morarente, rykkergebyrer og kompensationsbeløb ved for sen betaling
 - afskriv tab på en kunde der ikke betaler, med korrekt momsregulering
-- forbered e-faktura til offentlige kunder: EAN/GLN-eksport, et OIOUBL-handoff-dokument og en PEPPOL-forsendelseskuvert
+- forbered e-faktura til offentlige kunder: EAN/GLN-eksport og et gyldigt Peppol BIS Billing 3.0-dokument, klar til forsendelse via et access point
 
 **Moms og rapporter**
 
@@ -213,6 +250,7 @@ Rentemester er stadig under udvikling og bør endnu ikke være din eneste kilde 
 - regnskabsrapporter: saldobalance, resultatopgørelse og balance
 - en årsrapport for regnskabsklasse B, der kan skrive en iXBRL-fil — Rentemester forbereder, du og din revisor gennemgår og indberetter
 - et statisk HTML-dashboard over virksomhedens aktuelle status
+- en deterministisk **compliance-rapport** du kan udlevere til revisor eller myndighed: audit-kæde-status, backup-status, retention, GDPR, regulatorisk dækning og hele regel→paragraf-mappingen i ét printbart HTML-dokument med sha256-fingerprint
 
 **Sikkerhed, backup og udlevering**
 

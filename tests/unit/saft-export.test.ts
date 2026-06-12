@@ -10,6 +10,7 @@ import { issueInvoice } from "../../src/core/issued-invoices";
 import { postIssuedInvoiceToLedger } from "../../src/core/invoice-booking";
 import { seedAccounts } from "../../src/core/ledger";
 import { exportSaftPackage } from "../../src/core/saft-export";
+import { createCustomer, createVendor } from "../../src/core/master-data";
 
 function sha256(path: string) {
   return createHash("sha256").update(readFileSync(path)).digest("hex");
@@ -56,7 +57,7 @@ describe("SAF-T export", () => {
 
     const manifest = JSON.parse(readFileSync(first.manifestPath!, "utf8"));
     expect(manifest.packageType).toBe("saft_export");
-    expect(manifest.profileId).toBe("rentemester-dk-saft-v2-ledger-sales-purchases");
+    expect(manifest.profileId).toBe("rentemester-dk-saft-v3-ledger-sales-purchases-masterfiles");
     expect(manifest.counts.journalEntries).toBe(1);
     expect(manifest.counts.salesInvoices).toBe(1);
     expect(manifest.files.saftXml).toBe("saft.xml");
@@ -64,11 +65,15 @@ describe("SAF-T export", () => {
 
     const xml = readFileSync(first.saftXmlPath!, "utf8");
     expect(xml).toContain("<AuditFile");
-    expect(xml).toContain("<ProfileID>rentemester-dk-saft-v2-ledger-sales-purchases</ProfileID>");
+    expect(xml).toContain("<ProfileID>rentemester-dk-saft-v3-ledger-sales-purchases-masterfiles</ProfileID>");
     expect(xml).toContain("<RegistrationNumber>DK12345678</RegistrationNumber>");
     expect(xml).toContain("<AccountID>1000</AccountID>");
     expect(xml).toContain("<TransactionID>2026-00001</TransactionID>");
     expect(xml).toContain("<InvoiceNo>2026-0001</InvoiceNo>");
+    // Quantity is a plain count, not a money value: integer 1 renders as "1",
+    // never the 2-decimal "1.00" the øre money formatter would emit.
+    expect(xml).toContain("<Quantity>1</Quantity>");
+    expect(xml).not.toContain("<Quantity>1.00</Quantity>");
 
     db.close();
     rmSync(root, { recursive: true, force: true });
@@ -187,15 +192,15 @@ describe("SAF-T export second slice (purchases, VAT summary, document references
     expect(result.purchaseInvoiceCount).toBe(1);
 
     const manifest = JSON.parse(readFileSync(result.manifestPath!, "utf8"));
-    expect(manifest.profileId).toBe("rentemester-dk-saft-v2-ledger-sales-purchases");
+    expect(manifest.profileId).toBe("rentemester-dk-saft-v3-ledger-sales-purchases-masterfiles");
     expect(manifest.counts.purchaseInvoices).toBe(1);
     expect(manifest.counts.vatSummaryCodes).toBeGreaterThan(0);
     // purchase_documents must no longer be advertised as out of scope
     expect(manifest.outOfScope).not.toContain("purchase_documents");
 
     const xml = readFileSync(result.saftXmlPath!, "utf8");
-    expect(xml).toContain("<ProfileID>rentemester-dk-saft-v2-ledger-sales-purchases</ProfileID>");
-    expect(xml).toContain("<AuditFileVersion>2.0</AuditFileVersion>");
+    expect(xml).toContain("<ProfileID>rentemester-dk-saft-v3-ledger-sales-purchases-masterfiles</ProfileID>");
+    expect(xml).toContain("<AuditFileVersion>3.0</AuditFileVersion>");
     expect(xml).toContain("<PurchaseInvoices>");
     expect(xml).toContain("<InvoiceNo>LEV-1001</InvoiceNo>");
     expect(xml).toContain("<SupplierName>Leverandør ApS</SupplierName>");
@@ -290,6 +295,48 @@ describe("SAF-T export second slice (purchases, VAT summary, document references
     expect(result.ok).toBe(false);
     expect(result.errors.some((e) => e.includes("DOC-2026-000002"))).toBe(true);
     expect(result.errors.some((e) => e.includes("supplier"))).toBe(true);
+
+    db.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  // ===== Third slice (master files): customers + suppliers in MasterFiles =====
+  test("emits Customers and Suppliers under MasterFiles and counts them in the manifest", () => {
+    const { root, companyRoot, exportRoot, db } = setupCompanyWithSalesAndPurchase();
+    createCustomer(db, {
+      name: "Master Kunde A/S",
+      vatOrCvr: "DK11111111",
+      email: "kunde@example.com",
+      address: "Kundevej 1, 1000 København K",
+    });
+    createVendor(db, {
+      name: "Master Leverandør ApS",
+      vatOrCvr: "DK22222222",
+      email: "lev@example.com",
+      address: "Leverandørvej 2, 8000 Aarhus",
+    });
+
+    const result = exportSaftPackage(db, companyRoot, {
+      periodStart: "2026-05-01",
+      periodEnd: "2026-05-31",
+      outputDir: exportRoot,
+      generatedAt: "2026-05-17T02:24:00.000Z",
+    });
+    expect(result.ok).toBe(true);
+    expect(result.customerCount).toBe(1);
+    expect(result.supplierCount).toBe(1);
+
+    const xml = readFileSync(result.saftXmlPath!, "utf8");
+    expect(xml).toContain("<Customers>");
+    expect(xml).toContain("<CustomerName>Master Kunde A/S</CustomerName>");
+    expect(xml).toContain("<CustomerTaxID>DK11111111</CustomerTaxID>");
+    expect(xml).toContain("<Suppliers>");
+    expect(xml).toContain("<SupplierName>Master Leverandør ApS</SupplierName>");
+    expect(xml).toContain("<SupplierTaxID>DK22222222</SupplierTaxID>");
+
+    const manifest = JSON.parse(readFileSync(result.manifestPath!, "utf8"));
+    expect(manifest.counts.customers).toBe(1);
+    expect(manifest.counts.suppliers).toBe(1);
 
     db.close();
     rmSync(root, { recursive: true, force: true });

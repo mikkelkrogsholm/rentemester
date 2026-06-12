@@ -12,6 +12,7 @@ import { resolveDocumentMasterData } from "../../core/master-data";
 import { recordException } from "../../core/exceptions";
 import { envelopeShape, errorEnvelope, successEnvelope, wrapCoreResult } from "../envelope";
 import { withCompanyDb, withCompanyDbConfirmed, confirmField } from "../tool-runtime";
+import { applyPagination, paginationFields, paginationDescriptionSuffix } from "../pagination";
 
 const documentPartySchema = z.object({
   name: z.string().optional().describe("Party name."),
@@ -85,12 +86,18 @@ export function registerDocumentTools(server: McpServer): void {
     "documents_list",
     {
       title: "List documents",
-      description: "Lister gemte bilag i virksomhedsmappen. Read-only.",
-      inputSchema: { company: z.string().min(1) },
+      description:
+        "Lister gemte bilag i virksomhedsmappen. Read-only. " +
+        "Rækkefølge: id DESC (nyeste først, deterministisk)." +
+        paginationDescriptionSuffix,
+      inputSchema: {
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
+        ...paginationFields,
+      },
       outputSchema: envelopeShape,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },
-    withCompanyDb<{ company: string }>(server, ({ db }) => {
+    withCompanyDb<{ company: string; limit?: number; offset?: number }>(server, ({ db, args }) => {
       const rows = db
         .query(
           `SELECT id, document_no, source, original_filename, invoice_date, amount_inc_vat,
@@ -109,20 +116,19 @@ export function registerDocumentTools(server: McpServer): void {
           status: string;
           stored_path: string | null;
         }>;
-      return successEnvelope({
-        documents: rows.map((row) => ({
-          id: row.id,
-          documentNo: row.document_no,
-          source: row.source,
-          originalFilename: row.original_filename,
-          invoiceDate: row.invoice_date,
-          amountIncVat: row.amount_inc_vat,
-          currency: row.currency,
-          status: row.status,
-          storedPath: row.stored_path,
-        })),
-        count: rows.length,
-      });
+      const mapped = rows.map((row) => ({
+        id: row.id,
+        documentNo: row.document_no,
+        source: row.source,
+        originalFilename: row.original_filename,
+        invoiceDate: row.invoice_date,
+        amountIncVat: row.amount_inc_vat,
+        currency: row.currency,
+        status: row.status,
+        storedPath: row.stored_path,
+      }));
+      const { pageRows, meta } = applyPagination(mapped, { limit: args.limit, offset: args.offset });
+      return successEnvelope({ documents: pageRows, ...meta });
     }),
   );
 
@@ -132,14 +138,19 @@ export function registerDocumentTools(server: McpServer): void {
       title: "Ingest document",
       description:
         "Indlæser og hash-lagrer et bilag med metadata. Kræver confirm:true. " +
-        "Skriver en exception hvis ingest blokeres (fx duplicate). " +
+        "BIVIRKNING ved fejl: hver gang ingest blokeres (fx duplicate, manglende " +
+        "fil, valideringsfejl) skrives en `DOCUMENT_INGEST_BLOCKED` exception-række. " +
+        "Skrivningen er idempotent på (type, filePath, requiredAction): gentagne " +
+        "retries af præcis samme fejlende input opretter IKKE duplikat-exceptions " +
+        "— de matcher den eksisterende åbne række og no-op'er. Brug `exceptions_list` " +
+        "for at se de afledte exceptions agenten har efterladt. " +
         "VIGTIGT: filePath er en sti på MCP-serverens eget filsystem — bilaget skal allerede " +
         "ligge på serveren. Klienten/agenten kan IKKE uploade en fil her, og der findes (i " +
         "modsætning til bank_import's csvContent) ingen inline-content-variant: filen kan kun " +
         "angives via sti. Alle beløb i metadata er i kroner (decimal DKK, ikke øre). " +
         "write-reversible.",
       inputSchema: {
-        company: z.string().min(1),
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         filePath: z
           .string()
           .min(1)

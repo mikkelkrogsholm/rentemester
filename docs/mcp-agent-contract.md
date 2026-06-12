@@ -2,7 +2,7 @@
 
 This is the operating contract for an **external agent** (Claude Desktop,
 Cursor, Claude Code, Codex, …) that drives Rentemester through the **MCP
-server's 81 loose tools**.
+server's 101 loose tools**.
 
 It is the sibling of [`docs/runtime-agent-contract.md`](runtime-agent-contract.md),
 which covers the *packaged* `agent run` loop — a deterministic, replayable
@@ -18,7 +18,7 @@ form. The authoritative tool catalogue is
 
 ## What the surface is
 
-Rentemester exposes its bookkeeping core as **81 MCP tools** over stdio
+Rentemester exposes its bookkeeping core as **101 MCP tools** over stdio
 (`src/mcp/server.ts`, registered by `src/mcp/registry.ts`). Each tool maps
 to a single core operation — issue an invoice, post a journal entry, list
 bank transactions, take a backup, and so on.
@@ -61,6 +61,14 @@ classes (full table in `docs/mcp-tool-surface.md`):
 | `destructive` | `annotations.destructiveHint: true` (`system_restore_backup`) | Pass `confirm: true` **and** `confirmText: "RESTORE <targetCompany>"`. |
 
 ### The confirm convention
+
+> **Cross-stack opslag.** Den fulde tabel pr. business-operation —
+> "hvilke MCP-tools, cockpit-routes og CLI-kommandoer kræver confirm, og
+> i hvilken syntax" — står i
+> [`docs/confirm-contract.md`](confirm-contract.md). Samme operation kan
+> have **modsat regel** på cockpit (`POST /invoices/issue` kræver det
+> ikke; `invoice_issue` her gør) — afvigelsen er bevidst og forklaret
+> dér.
 
 Write tools refuse to run unless the arguments contain `confirm: true`.
 Without it the server returns

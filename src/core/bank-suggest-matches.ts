@@ -1,6 +1,6 @@
 import type { Database } from "bun:sqlite";
 import { getInvoiceStatus } from "./invoice-payments";
-import { roundDkk, equalsDkk } from "./money";
+import { normalizeCurrency, roundDkk, equalsDkk } from "./money";
 import { daysBetween } from "./dates";
 
 export type BankMatchSuggestion = {
@@ -153,7 +153,7 @@ function openPurchaseDocuments(db: Database) {
 // against these.
 function creditNoteDocuments(db: Database) {
   return db.query(
-    `SELECT id, invoice_no, invoice_date, amount_inc_vat, recipient_name, payment_details
+    `SELECT id, invoice_no, invoice_date, amount_inc_vat, recipient_name, payment_details, currency
      FROM documents
      WHERE document_type = 'credit_note'
      ORDER BY id ASC`
@@ -164,6 +164,7 @@ function creditNoteDocuments(db: Database) {
     amount_inc_vat: number | null;
     recipient_name: string | null;
     payment_details: string | null;
+    currency: string | null;
   }>;
 }
 
@@ -202,6 +203,13 @@ function invoiceSuggestion(db: Database, bank: ReturnType<typeof unmatchedBankTr
   if (!(claimOpenBalance > 0)) return null;
 
   const payload = doc.payload_json ? JSON.parse(doc.payload_json) : null;
+  // Currency guard (#: bank/suggest cross-currency): the open balance is in the
+  // invoice's own currency, and equalsDkk compares raw amounts currency-blind,
+  // so a 100 EUR bank row would otherwise "match" a 100,00 DKK invoice. The
+  // apply path (applyBankPaymentToInvoice) hard-rejects a currency mismatch, so
+  // a cross-currency suggestion is always unactionable — never surface it.
+  const invoiceCurrency = normalizeCurrency(typeof payload?.currency === "string" ? payload.currency : "DKK");
+  if (normalizeCurrency(bank.currency) !== invoiceCurrency) return null;
   const customerName = typeof payload?.buyer?.name === "string" ? payload.buyer.name : null;
   const bankText = combinedBankText(bank);
   let confidence = 0;
@@ -269,6 +277,10 @@ function purchaseSuggestion(bank: ReturnType<typeof unmatchedBankTransactions>[n
   // matched against the purchase it reverses by supplierCreditRefundSuggestion
   // (#182), a separate matching direction.
   if (!(Number(bank.amount) < 0)) return null;
+  // Purchase documents are DKK-only (openPurchaseDocuments filters currency =
+  // 'DKK'), so a non-DKK bank row can never be a real match — its raw amount is
+  // a foreign figure that equalsDkk would compare currency-blind. (#bank/suggest)
+  if (normalizeCurrency(bank.currency) !== "DKK") return null;
   const grossAmount = roundDkk(Number(doc.amount_inc_vat ?? 0));
   if (!(grossAmount > 0)) return null;
   const paymentAmount = Math.abs(Number(bank.amount));
@@ -345,6 +357,10 @@ function purchaseSuggestion(bank: ReturnType<typeof unmatchedBankTransactions>[n
  */
 function creditNoteRefundSuggestion(bank: ReturnType<typeof unmatchedBankTransactions>[number], doc: ReturnType<typeof creditNoteDocuments>[number]): BankMatchSuggestion | null {
   if (!(Number(bank.amount) < 0)) return null;
+  // Only match a refund row against a credit note of the same currency — the
+  // gross is in the credit note's currency and equalsDkk is currency-blind.
+  // (#bank/suggest cross-currency)
+  if (normalizeCurrency(bank.currency) !== normalizeCurrency(doc.currency)) return null;
   const grossAmount = roundDkk(Number(doc.amount_inc_vat ?? 0));
   if (!(grossAmount > 0)) return null;
   const refundAmount = Math.abs(Number(bank.amount));
@@ -416,6 +432,9 @@ function creditNoteRefundSuggestion(bank: ReturnType<typeof unmatchedBankTransac
  */
 function supplierCreditRefundSuggestion(bank: ReturnType<typeof unmatchedBankTransactions>[number], doc: ReturnType<typeof allPurchaseDocuments>[number]): BankMatchSuggestion | null {
   if (!(Number(bank.amount) > 0)) return null;
+  // allPurchaseDocuments is DKK-only, so a non-DKK bank row cannot be a real
+  // supplier-refund match. (#bank/suggest cross-currency)
+  if (normalizeCurrency(bank.currency) !== "DKK") return null;
   const grossAmount = roundDkk(Number(doc.amount_inc_vat ?? 0));
   if (!(grossAmount > 0)) return null;
   const refundAmount = Number(bank.amount);

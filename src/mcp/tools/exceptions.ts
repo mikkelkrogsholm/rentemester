@@ -21,9 +21,10 @@ export function registerExceptionTools(server: McpServer): void {
     {
       title: "List exceptions",
       description:
-        "Lister exceptions-køen. Filtrér på status: open|resolved|all. Exceptions i arkiverede/lukkede perioder udelades som standard — sæt includeArchived:true for at vise dem. Read-only.",
+        "Lister exceptions-køen. Filtrér på status: open|resolved|all. Exceptions i arkiverede/lukkede perioder udelades som standard — sæt includeArchived:true for at vise dem. Read-only. " +
+        "Rækkefølge: id DESC (nyeste først, deterministisk).",
       inputSchema: {
-        company: z.string().min(1),
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         status: z.enum(["open", "resolved", "all"]).optional(),
         includeArchived: z.boolean().optional(),
       },
@@ -50,7 +51,7 @@ export function registerExceptionTools(server: McpServer): void {
         "Markerer en exception som løst. Kræver confirm:true. " +
         "Kan ikke gen-åbnes manuelt. write-reversible.",
       inputSchema: {
-        company: z.string().min(1),
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         id: z.number().int().positive(),
         note: z.string().optional(),
         confirm: confirmField,

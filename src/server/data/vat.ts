@@ -302,7 +302,13 @@ export function vatRubrikkerForPeriod(
     momstilsvar,
     rubrikA: report.reverseChargePurchaseBase,
     rubrikB: report.reverseChargeSalesBase,
-    rubrikC: 0,
+    // Rubrik C — value of VAT-exempt domestic sales (momsloven §13). Derived
+    // from the same `exemptSalesBase` the CLI's `vat momsangivelse` uses
+    // (core/vat-filing.ts), so the cockpit and the terminal report the
+    // identical rubrik C and an owner can file straight from either surface.
+    // A stale hardcoded 0 here understated rubrik C for any period with
+    // §13-exempt sales.
+    rubrikC: report.exemptSalesBase,
   };
 }
 

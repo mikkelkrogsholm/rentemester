@@ -1,4 +1,4 @@
-version: dk-mail-intake-v0.0.2
+version: dk-mail-intake-v0.0.3
 sources:
   - DK-BOGFORINGSLOVEN-2022-700
   - DK-BILAG-OPBEVARING-2023-1383
@@ -7,6 +7,9 @@ rules:
     name: The first supported bilagsmail transport is a local maildrop directory or EML file, not a hosted mailbox
     category: document_intake
     source_id: DK-BILAG-OPBEVARING-2023-1383
+    provisions:
+      - ref: "§ 1, stk. 1"
+        text_hash: "sha256:49dadebd50b1808ba13994dabd4f95ce514f0d3e4e72044f3ac311979edd8c7a"
     severity: advisory
     machine_rule:
       require:
@@ -18,6 +21,9 @@ rules:
     name: Mail intake must deduplicate on stable message-id plus attachment hash so reruns create no duplicate documents
     category: document_integrity
     source_id: DK-BOGFORINGSLOVEN-2022-700
+    provisions:
+      - ref: "§ 9, stk. 1"
+        text_hash: "sha256:75acd88eca28d81d86de2d14ed3c3871304f3e4da3cffc0920be43322a96153a"
     severity: hard_stop
     machine_rule:
       require:

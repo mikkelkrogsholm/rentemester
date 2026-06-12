@@ -2,8 +2,17 @@
 import { describe, expect, test } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { registerAllTools } from "../../src/mcp/registry";
 
 const DOC_PATH = join(process.cwd(), "docs/mcp-tool-surface.md");
+
+/** Count the tools `registerAllTools` actually registers on a fresh server. */
+function actualToolCount(): number {
+  const server = new McpServer({ name: "rentemester-test", version: "0.0.0" });
+  registerAllTools(server);
+  return Object.keys((server as unknown as { _registeredTools: Record<string, unknown> })._registeredTools).length;
+}
 
 const REQUIRED_SECTIONS = [
   "Designprincipper",
@@ -61,11 +70,17 @@ describe("docs/mcp-tool-surface.md", () => {
     expect(content).toContain("`destructive`");
   });
 
-  test("documents the real tool total of 81 — not a stale count", () => {
+  test("documents the real tool total — not a stale count", () => {
     // #217 — the doc previously said "Total: 50" while the server exposed
-    // 81 tools. Guard against the count drifting out of sync again.
+    // more tools. Guard against the count drifting out of sync again by
+    // checking the documented total against the tools `registerAllTools`
+    // actually registers, instead of a hard-coded number that goes stale
+    // every time a new tool lands.
     const content = readFileSync(DOC_PATH, "utf8");
-    expect(content).toMatch(/\*\*?Total\*\*?\s*[:|]\s*\*\*?81\*\*?/);
+    const match = content.match(/\*\*?Total\*\*?\s*[:|]\s*\*\*?(\d+)\*\*?/);
+    expect(match, "the surface doc must state a **Total**: <n>").not.toBeNull();
+    const documentedTotal = Number(match![1]);
+    expect(documentedTotal).toBe(actualToolCount());
     expect(content).not.toContain("Total**: 50");
   });
 

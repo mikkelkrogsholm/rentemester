@@ -18,7 +18,9 @@ export function registerAccountsTools(server: McpServer): void {
     "accounts_list",
     {
       title: "List chart of accounts",
-      description: "Lister kontoplanen for virksomheden. Read-only.",
+      description:
+        "Lister kontoplanen for virksomheden. Read-only. " +
+        "Rækkefølge: account_no ASC (deterministisk).",
       inputSchema,
       outputSchema: envelopeShape,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },

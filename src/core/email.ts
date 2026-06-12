@@ -102,7 +102,7 @@ function hasText(value: string | null | undefined): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
-function looksLikeEmail(value: string): boolean {
+export function looksLikeEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
@@ -117,7 +117,7 @@ function wrapBase64(value: string): string {
   return value.replace(/.{1,76}/g, "$&\r\n").trimEnd();
 }
 
-function validateSmtpConfig(smtp: SmtpConfig | undefined): string[] {
+export function validateSmtpConfig(smtp: SmtpConfig | undefined): string[] {
   const errors: string[] = [];
   if (!smtp) {
     errors.push("SMTP config is required (host, port, fromAddress)");

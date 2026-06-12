@@ -169,11 +169,11 @@ function resolveExportProfile(profile: ExportAuthorityPackageInput["packageProfi
     return {
       packageType: "accountant_handoff_export",
       auditEventType: "accountant_handoff_export",
-      readmeTitle: "Rentemester accountant handoff package",
+      readmeTitle: "Rentemester — revisor-eksportpakke",
       readmeScopeLines: [
-        "Primary handoff model: local export package.",
-        "Access model: no runtime access to the live company dataset.",
-        "Out of scope: hosted reviewer/accountant access, role-based write access, and real-time collaboration.",
+        "Primær overdragelsesmodel: lokal eksportpakke (local export package).",
+        "Adgangsmodel: ingen direkte adgang til virksomhedens kørende data (no runtime access).",
+        "Uden for omfang: hosted revisor-/bogholder-adgang, rolle-baseret skriveadgang og samarbejde i realtid (out of scope: hosted reviewer/accountant access, role-based write access, real-time collaboration).",
       ],
       manifestExtras: {
         handoffModel: "local_export_package",
@@ -189,7 +189,7 @@ function resolveExportProfile(profile: ExportAuthorityPackageInput["packageProfi
   return {
     packageType: "authority_export",
     auditEventType: "authority_export",
-    readmeTitle: "Rentemester authority export package",
+    readmeTitle: "Rentemester — myndighedseksportpakke",
     readmeScopeLines: [],
   };
 }
@@ -205,8 +205,21 @@ function normalizeExportTimestamp(periodEnd: string) {
   return `${periodEnd}T23:59:59.000Z`;
 }
 
-function packageName(periodStart: string, periodEnd: string, generatedAt: string) {
-  return `authority-export-${periodStart}_${periodEnd}_${generatedAt.replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z")}`;
+function packageName(
+  periodStart: string,
+  periodEnd: string,
+  generatedAt: string,
+  profile?: ExportAuthorityPackageInput["packageProfile"],
+) {
+  // Per round-2 review: the accountant profile previously produced a
+  // directory named `authority-export-…`, which a Danish revisor opening
+  // the .tar saw as "myndighedseksport" — wrong recipient label. Use a
+  // recipient-correct Danish prefix per profile so the directory name
+  // alone tells you who the bundle is for.
+  const prefix =
+    profile === "accountant_handoff" ? "revisor-eksport" : "myndigheds-eksport";
+  const stamp = generatedAt.replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+  return `${prefix}-${periodStart}_${periodEnd}_${stamp}`;
 }
 
 function canonicalize(value: unknown): CanonicalJson {
@@ -457,27 +470,30 @@ function buildExportReadme(input: {
   generatedAt: string;
   deadlineAt: string | null;
 }) {
+  // Frame text on Danish (revisor / SKAT læser pakken). Field-key og
+  // file-stier holdes engelske fordi de mirror'er manifest.json's JSON-felter
+  // og er stabile mod tværsprogede consumers (test-scripts, agent-tools).
   return [
     input.title,
     "",
-    `Period: ${input.periodStart}..${input.periodEnd}`,
-    `Requester: ${input.requester ?? "unknown"}`,
-    `Requested at: ${input.requestedAt ?? "not provided"}`,
-    `Generated at: ${input.generatedAt}`,
-    `Deadline at: ${input.deadlineAt ?? "not applicable"}`,
+    `Periode: ${input.periodStart}..${input.periodEnd}`,
+    `Rekvirent: ${input.requester ?? "ikke angivet"}`,
+    `Anmodet: ${input.requestedAt ?? "ikke angivet"}`,
+    `Genereret: ${input.generatedAt}`,
+    `Frist: ${input.deadlineAt ?? "ikke relevant"}`,
     ...(input.scopeLines.length > 0 ? ["", ...input.scopeLines] : []),
     "",
-    "Files:",
-    "- machine-readable/journal-entries.json — journal entries with lines for the period",
-    "- machine-readable/documents.json — linked or issued documents plus exported readable-path references",
-    "- machine-readable/bank-transactions.json — linked or period bank transactions",
-    "- machine-readable/audit-log.json — audit events in the period",
-    "- machine-readable/exceptions.json — period exceptions plus earlier still-open exceptions",
-    "- machine-readable/accounts.json — full chart of accounts context",
-    "- machine-readable/companies.json — company metadata",
-    "- machine-readable/schema-migrations.json — applied schema migrations",
-    "- documents-readable/* — copied readable voucher files included in this package",
-    "- manifest.json — package metadata plus output hashes",
+    "Filer i pakken:",
+    "- machine-readable/journal-entries.json — finansposteringer (alle linjer) i perioden",
+    "- machine-readable/documents.json — knyttede eller udstedte bilag plus stier til de eksporterede læselige filer",
+    "- machine-readable/bank-transactions.json — knyttede eller periodefiltrerede banktransaktioner",
+    "- machine-readable/audit-log.json — revisionsspor (audit-events) i perioden",
+    "- machine-readable/exceptions.json — undtagelser i perioden plus tidligere stadig-åbne undtagelser",
+    "- machine-readable/accounts.json — fuld kontoplan-kontekst",
+    "- machine-readable/companies.json — virksomheds-stamdata",
+    "- machine-readable/schema-migrations.json — anvendte schema-migrationer",
+    "- documents-readable/* — kopierede læselige bilagsfiler inkluderet i pakken",
+    "- manifest.json — pakke-metadata plus hashes for hver outputfil",
     "",
   ].join("\n");
 }
@@ -496,7 +512,10 @@ export function exportAuthorityPackage(db: Database, companyRoot: string, input:
 
   const profile = resolveExportProfile(input.packageProfile);
   const deadlineAt = requestedAt ? new Date(new Date(requestedAt).getTime() + FOUR_WEEKS_MS).toISOString() : null;
-  const exportDir = join(input.outputDir, packageName(input.periodStart, input.periodEnd, generatedAt));
+  const exportDir = join(
+    input.outputDir,
+    packageName(input.periodStart, input.periodEnd, generatedAt, input.packageProfile),
+  );
   const machineReadableDir = join(exportDir, "machine-readable");
   const documentsDir = join(exportDir, "documents-readable");
   mkdirSync(machineReadableDir, { recursive: true });

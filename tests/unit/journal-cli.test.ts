@@ -64,7 +64,10 @@ describe("journal post CLI", () => {
 
     await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
     writeFileSync(join(companyPaths(company).config, "policy.yaml"), `company_policy:\n  country: DK\n  currency: DKK\n  allow_direct_sql_write: false\n  block_if_uncertain: true\nactor_allowlist:\n  agents:\n    - freja\n`);
-    await Bun.$`bun run src/cli.ts documents ingest --company ${company} --file examples/vendor-invoice.txt --metadata examples/vendor-invoice.metadata.json`.quiet();
+    // #248: the seeded init user was overwritten above, so the derived OS
+    // actor is no longer in the allowlist — the ingest must use the explicit
+    // agent:freja actor (the only one this rewritten allowlist permits).
+    await Bun.$`bun run src/cli.ts documents ingest --company ${company} --file examples/vendor-invoice.txt --metadata examples/vendor-invoice.metadata.json --actor agent:freja`.quiet();
 
     const proc = Bun.spawn([
       "bun", "run", "src/cli.ts", "journal", "post",
@@ -126,5 +129,48 @@ describe("journal post CLI", () => {
     expect(exitCode).toBe(2);
     expect(stdout).toBe("");
     expect(stderr).toContain("actor required for mutations");
+  });
+});
+
+describe("journal dry-run CLI", () => {
+  test("previews an entry without writing it to the ledger", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-journaldryrun-cli-"));
+    const company = join(root, "company");
+
+    await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
+
+    const payloadPath = join(root, "entry.json");
+    writeFileSync(
+      payloadPath,
+      JSON.stringify({
+        transactionDate: "2026-05-16",
+        text: "Owner contribution",
+        lines: [
+          { accountNo: "2000", debitAmount: 1000 },
+          { accountNo: "5020", creditAmount: 1000 },
+        ],
+      }),
+    );
+
+    const proc = Bun.spawn(
+      ["bun", "run", "src/cli.ts", "journal", "dry-run", "--company", company, "--input", payloadPath],
+      { cwd: process.cwd(), stdout: "pipe", stderr: "pipe" },
+    );
+    const stdout = await new Response(proc.stdout).text();
+    const stderr = await new Response(proc.stderr).text();
+    const exitCode = await proc.exited;
+
+    expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
+    const parsed = JSON.parse(stdout);
+    expect(parsed.ok).toBe(true);
+    expect(parsed.entryNo).toBe("2026-00001");
+    expect(parsed.accountEffects).toHaveLength(2);
+
+    // The dry run must not have written anything: the ledger is still empty.
+    const db = openDb(companyPaths(company).db);
+    const count = db.query("SELECT COUNT(*) AS n FROM journal_entries").get() as { n: number };
+    db.close();
+    rmSync(root, { recursive: true, force: true });
+    expect(count.n).toBe(0);
   });
 });

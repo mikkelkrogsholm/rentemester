@@ -91,7 +91,7 @@ export function resolveCompanyArg(raw: string): CompanyArgResolution {
       if (fromSlug) return { ok: true, companyRoot: fromSlug };
       return {
         ok: false,
-        error: `no company with slug '${raw}' in the configured workspace`,
+        error: `ingen virksomhed med slug '${raw}' findes i det konfigurerede workspace`,
       };
     }
     // No workspace configured: fall through and treat the value as a path.
@@ -129,6 +129,36 @@ export const confirmField = z
     "Must be set to true to acknowledge the write side effects of this tool. " +
       "Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope " +
       "rather than performing the write.",
+  );
+
+/**
+ * Delt `idempotencyKey`-felt for irreversible-write-tools (Batch F-3).
+ *
+ * **Currently RESERVED — not yet enforced server-side.** Adding the schema
+ * field NOW (forward-compatible surface) lets an agent code its retry
+ * pipeline against a stable contract while the actual dedup-cache lands in a
+ * later release. The server presently logs the key into the audit chain so
+ * an operator can correlate retries, but a duplicate call with the same
+ * `idempotencyKey` will STILL double-book until the cache ships.
+ *
+ * Recommended shape: any caller-generated unique string (UUIDv4, ULID,
+ * `<tool>:<biz-key>:<attempt>`, …) ≤ 128 chars. The key only needs to be
+ * unique per `(company, tool)`; agents can use the same key on retries of
+ * the SAME logical operation to deduplicate.
+ */
+export const idempotencyKeyField = z
+  .string()
+  .min(1)
+  .max(128)
+  .optional()
+  .describe(
+    "RESERVED: caller-generated unique key (UUID, ULID, or any ≤128-char " +
+      "string) for write-deduplication on retry. The MCP server records the " +
+      "key in the audit log NOW so retries are correlatable, but the actual " +
+      "server-side dedup cache is not yet active — a duplicate call with the " +
+      "same key currently STILL double-books. Add the key on every retry of " +
+      "the same logical write; the dedup cache will be activated in a later " +
+      "release without breaking the schema contract.",
   );
 
 /**
@@ -193,8 +223,15 @@ export function withCompanyDbConfirmed<TArgs extends { company: string; confirm?
 ): (args: TArgs) => Promise<ReturnType<typeof envelopeToCallResult>> {
   return async (args) => {
     if (args?.confirm !== true) {
+      // The machine-readable `code: "CONFIRM_REQUIRED"` lets an agent branch
+      // on the missing-confirm precondition without parsing the free-text
+      // message. The message text itself stays stable for callers that pin
+      // the docs-published string (`docs/confirm-contract.md`).
       return envelopeToCallResult(
-        errorEnvelope(`confirm: true required for write tool ${toolName}`),
+        errorEnvelope(
+          `confirm: true required for write tool ${toolName}`,
+          { code: "CONFIRM_REQUIRED" },
+        ),
       );
     }
     return withCompanyDb(server, handler)(args);
@@ -225,7 +262,10 @@ export function withDestructiveConfirm<TArgs extends { confirm?: boolean; confir
   return async (args) => {
     if (args?.confirm !== true) {
       return envelopeToCallResult(
-        errorEnvelope(`confirm: true required for destructive tool ${toolName}`),
+        errorEnvelope(
+          `confirm: true required for destructive tool ${toolName}`,
+          { code: "CONFIRM_REQUIRED" },
+        ),
       );
     }
     const expected = expectedText(args);
@@ -234,7 +274,10 @@ export function withDestructiveConfirm<TArgs extends { confirm?: boolean; confir
     const provided = typeof args?.confirmText === "string" ? args.confirmText : "";
     if (provided !== expected) {
       return envelopeToCallResult(
-        errorEnvelope(`confirmText must match '${expected}' exactly (got: '${provided}')`),
+        errorEnvelope(
+          `confirmText must match '${expected}' exactly (got: '${provided}')`,
+          { code: "CONFIRMTEXT_MISMATCH" },
+        ),
       );
     }
     try {
@@ -264,6 +307,22 @@ export function resolveIssuedInvoiceDocumentId(
     .query(`SELECT id FROM documents WHERE document_type = 'issued_invoice' AND invoice_no = ? LIMIT 1`)
     .get(value) as { id: number } | null;
   return row?.id == null ? null : asDocumentId(row.id);
+}
+
+/**
+ * Shared error envelope for the "{documentId|invoiceNumber} did not resolve
+ * to an issued invoice" case. Three MCP tools (`invoice_*`, `peppol_*`,
+ * `invoice_send_email`) hit the same selector; the wording must stay
+ * identical so a string-matching agent only needs one matcher. Extracted
+ * here in round-2 review's Batch D so the family doesn't drift again.
+ */
+export function invoiceNotFoundEnvelope(args: {
+  documentId?: number | null;
+  invoiceNumber?: string | null;
+}): Envelope {
+  return errorEnvelope(
+    `Could not resolve invoice: provide documentId or invoiceNumber (got documentId=${args.documentId ?? "-"}, invoiceNumber='${args.invoiceNumber ?? ""}')`,
+  );
 }
 
 /**

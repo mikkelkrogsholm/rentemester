@@ -15,6 +15,7 @@ import {
   listRecurringInvoiceTemplates,
   type RecurringInvoiceTemplateInput,
 } from "../../core/recurring-invoices";
+import { withActor } from "../actor";
 import { envelopeShape, wrapCoreResult } from "../envelope";
 import { withCompanyDb, withCompanyDbConfirmed, confirmField } from "../tool-runtime";
 
@@ -167,16 +168,24 @@ export function registerRecurringInvoiceTools(server: McpServer): void {
       deliveryPeriodMode?: "issue_month" | "interval_window" | "none";
       notes?: string;
       confirm?: boolean;
-    }>(server, "recurring_invoice_create", ({ db, args }) => {
-      const result = createRecurringInvoiceTemplate(db, {
-        name: args.name,
-        interval: args.interval,
-        firstIssueDate: args.firstIssueDate,
-        invoice: args.invoice as RecurringInvoiceTemplateInput["invoice"],
-        paymentTermsDays: args.paymentTermsDays,
-        deliveryPeriodMode: args.deliveryPeriodMode,
-        notes: args.notes,
-      });
+    }>(server, "recurring_invoice_create", ({ db, actor, args }) => {
+      // Actor-invariant (#63/#76): attribute the template-creation audit entry
+      // to the booking agent in the append-only audit_log, not the OS user.
+      const result = createRecurringInvoiceTemplate(
+        db,
+        withActor(
+          {
+            name: args.name,
+            interval: args.interval,
+            firstIssueDate: args.firstIssueDate,
+            invoice: args.invoice as RecurringInvoiceTemplateInput["invoice"],
+            paymentTermsDays: args.paymentTermsDays,
+            deliveryPeriodMode: args.deliveryPeriodMode,
+            notes: args.notes,
+          },
+          actor,
+        ),
+      );
       return wrapCoreResult(result);
     }),
   );
@@ -212,11 +221,21 @@ export function registerRecurringInvoiceTools(server: McpServer): void {
       templateId: number;
       asOfDate: string;
       confirm?: boolean;
-    }>(server, "recurring_invoice_generate", ({ db, args }) => {
-      const result = generateRecurringInvoice(db, args.company, {
-        templateId: args.templateId,
-        asOfDate: args.asOfDate,
-      });
+    }>(server, "recurring_invoice_generate", ({ db, actor, args }) => {
+      // Actor-invariant (#63/#76): attribute the materialised invoice's ledger
+      // posting to the booking agent in the hash chain + audit_log, not the OS
+      // user. The input payload is the 3rd arg (companyRoot is the 2nd).
+      const result = generateRecurringInvoice(
+        db,
+        args.company,
+        withActor(
+          {
+            templateId: args.templateId,
+            asOfDate: args.asOfDate,
+          },
+          actor,
+        ),
+      );
       return wrapCoreResult(result);
     }),
   );

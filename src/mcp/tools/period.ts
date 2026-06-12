@@ -22,7 +22,9 @@ export function registerPeriodTools(server: McpServer): void {
     "period_list",
     {
       title: "List accounting periods",
-      description: "Lister regnskabsperioder (open/closed/reported). Read-only.",
+      description:
+        "Lister regnskabsperioder (open/closed/reported). Read-only. " +
+        "Rækkefølge: period_end DESC, id DESC (nyeste først, deterministisk).",
       inputSchema: {
         company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
       },
@@ -96,6 +98,15 @@ export function registerPeriodTools(server: McpServer): void {
           .string()
           .optional()
           .describe("Optional external reference for the closure, e.g. a VAT-return receipt number."),
+        force: z
+          .boolean()
+          .optional()
+          .describe(
+            "When true, bypass the open-high/medium-exceptions safety check " +
+              "(Batch D-7). The default (false) rejects the close with a clear " +
+              "error listing the open exception IDs that fall inside the period, " +
+              "so the owner cannot silently hide outstanding items by closing.",
+          ),
         confirm: confirmField,
       },
       outputSchema: envelopeShape,
@@ -108,6 +119,7 @@ export function registerPeriodTools(server: McpServer): void {
       kind?: AccountingPeriodKind;
       status?: "closed" | "reported";
       reference?: string;
+      force?: boolean;
       confirm?: boolean;
     }>(server, "period_close", ({ db, args }) => {
       const result = closeAccountingPeriod(db, {
@@ -116,6 +128,7 @@ export function registerPeriodTools(server: McpServer): void {
         kind: args.kind,
         status: args.status,
         reference: args.reference,
+        force: args.force,
       });
       return wrapCoreResult(result);
     }),

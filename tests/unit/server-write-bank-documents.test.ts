@@ -174,7 +174,7 @@ describe("Cockpit write — bank import (gates + input errors)", () => {
         { csvContent: BANK_CSV },
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe("bad_request");
+      expect(res.body.code).toBe("bad_request");
       // Nothing was imported.
       withLedger(ws, slug, (db) => {
         const row = db
@@ -196,7 +196,7 @@ describe("Cockpit write — bank import (gates + input errors)", () => {
         { confirm: true },
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe("bad_request");
+      expect(res.body.code).toBe("bad_request");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -211,8 +211,8 @@ describe("Cockpit write — bank import (gates + input errors)", () => {
         { csvContent: BANK_CSV, profile: "no-such-bank", confirm: true },
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe("bad_request");
-      expect(res.body.error.message).toContain("no-such-bank");
+      expect(res.body.code).toBe("bad_request");
+      expect(res.body.errors[0]).toContain("no-such-bank");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -234,8 +234,10 @@ describe("Cockpit write — bank import (gates + input errors)", () => {
         config({ workspaceRoot: ws }),
       );
       expect(res.status).toBe(400);
-      const body = (await res.json()) as { error: { message: string } };
-      expect(body.error.message).toContain("limit");
+      const body = (await res.json()) as { errors: string[] };
+      // Post-#242 the size-guard message is in Danish ("…overskrider grænsen…").
+      // The previous assertion pinned the English token "limit".
+      expect(body.errors[0]).toMatch(/overskrider grænsen|bytes/i);
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -250,7 +252,7 @@ describe("Cockpit write — bank import (gates + input errors)", () => {
         { csvContent: BANK_CSV, confirm: true },
       );
       expect(res.status).toBe(404);
-      expect(res.body.error.code).toBe("not_found");
+      expect(res.body.code).toBe("not_found");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -297,8 +299,8 @@ describe("Cockpit write — bank import (backup lock + localhost gate)", () => {
         { csvContent: BANK_CSV, confirm: true },
       );
       expect(res.status).toBe(409);
-      expect(res.body.error.code).toBe("conflict");
-      expect(res.body.error.message).toContain("Bogføring er låst");
+      expect(res.body.code).toBe("conflict");
+      expect(res.body.errors[0]).toContain("Bogføring er låst");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -314,7 +316,7 @@ describe("Cockpit write — bank import (backup lock + localhost gate)", () => {
         { host: "cockpit.example.com" },
       );
       expect(res.status).toBe(401);
-      expect(res.body.error.code).toBe("unauthorized");
+      expect(res.body.code).toBe("unauthorized");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -377,7 +379,7 @@ describe("Cockpit write — document ingest (gates + input errors)", () => {
         receiptBody({ confirm: undefined }),
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe("bad_request");
+      expect(res.body.code).toBe("bad_request");
       withLedger(ws, slug, (db) => {
         const row = db
           .query("SELECT COUNT(*) AS n FROM documents")
@@ -398,7 +400,7 @@ describe("Cockpit write — document ingest (gates + input errors)", () => {
         receiptBody({ fileBase64: undefined }),
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe("bad_request");
+      expect(res.body.code).toBe("bad_request");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -413,7 +415,7 @@ describe("Cockpit write — document ingest (gates + input errors)", () => {
         receiptBody({ metadata: { documentType: "cash_register_receipt" } }),
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.message).toContain("source");
+      expect(res.body.errors[0]).toContain("source");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -431,8 +433,8 @@ describe("Cockpit write — document ingest (gates + input errors)", () => {
         }),
       );
       expect(res.status).toBe(400);
-      expect(res.body.error.code).toBe("bad_request");
-      expect(res.body.error.message).toContain("required");
+      expect(res.body.code).toBe("bad_request");
+      expect(res.body.errors[0]).toContain("required");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -447,7 +449,7 @@ describe("Cockpit write — document ingest (gates + input errors)", () => {
         receiptBody({ vendorId: 9999 }),
       );
       expect(res.status).toBe(409);
-      expect(res.body.error.message).toContain("vendor");
+      expect(res.body.errors[0]).toContain("vendor");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -463,7 +465,7 @@ describe("Cockpit write — document ingest (gates + input errors)", () => {
         { host: "cockpit.example.com" },
       );
       expect(res.status).toBe(401);
-      expect(res.body.error.code).toBe("unauthorized");
+      expect(res.body.code).toBe("unauthorized");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -493,7 +495,7 @@ describe("Cockpit write — document ingest (gates + input errors)", () => {
         receiptBody(),
       );
       expect(res.status).toBe(409);
-      expect(res.body.error.message).toContain("Bogføring er låst");
+      expect(res.body.errors[0]).toContain("Bogføring er låst");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }

@@ -63,7 +63,40 @@ Praktisk for en agent:
 Resultatet skrives altid til stdout (JSON med `--format json`/`--json`).
 Parse-/brugsfejl (`exit 2`) skrives til stderr.
 
-## 3. Output-felter ved succes
+## 3. Confirm-flag
+
+CLI'ens `confirm`-konvention er **anderledes** end MCP's og cockpit's, men
+ækvivalent i intention. Slå op i [`docs/confirm-contract.md`](confirm-contract.md)
+for den tabel der pr. business-operation viser hvilke stakke der kræver hvad.
+
+**Reglen for CLI:**
+
+- CLI'ens cli-args-parser har et **append-only `BOOLEAN_FLAGS`-sæt** (i
+  `src/cli-args.ts`) der ikke må udvides. `--confirm` er derfor en **valued**
+  flag — ikke en bar boolean — og værdien skal være den eksakte streng
+  `yes` (`--confirm yes`). Andre værdier (`true`, `1`, tom, mangler)
+  behandles som "ikke bekræftet".
+- `--confirm yes` er ækvivalent med MCP's `confirm: true` og cockpit's
+  `"confirm": true` i request-body. Samme intention — eksplicit samtykke
+  fra agenten/operatøren før en destruktiv handling — anden syntax.
+- CLI bruger `--confirm yes` på **destruktive** kommandoer, ikke på
+  almindelige writes — `--actor` er allerede den eksplicitte beslutning
+  for daglige bogføringer.
+
+**Kommandoer der kræver `--confirm yes`:**
+
+| Kommando | Hvad det gater | Fejl uden flaget |
+|----------|----------------|------------------|
+| `system restore-backup` | Overskriver filer i `--target-company` | Exit `1`. `errors[]` slutter med `Re-run with --confirm yes to proceed.` |
+| `asset write-off` | Straksafskriver et aktiv (modposterer cost) | Exit `1`. Resultatet er `{ok:false, errors:[…]}` fra core'en. |
+
+Alle andre muterende kommandoer (faktura-bogføring, journal-postering,
+bank-import, periode-luk, …) kræver **ikke** `--confirm yes` — `--actor`
+er kontrakten. Det modsatte gælder for samme operation på MCP (alle writes
+kræver `confirm: true`); afvigelsen er bevidst og forklaret i
+[`docs/confirm-contract.md`](confirm-contract.md).
+
+## 4. Output-felter ved succes
 
 Den enkelte kommandos `--help` dækker exit-koder og — ved fejl — `errors[]`,
 men *ikke* hvilke felter `--json`-succes-outputtet indeholder. Den kontrakt

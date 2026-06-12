@@ -69,6 +69,8 @@ const TAB_GROUPS: { name: string; tabs: NavTab[] }[] = [
       { to: "saldobalance", label: "Saldobalance" },
       { to: "forpligtelser", label: "Forpligtelser" },
       { to: "likviditet", label: "Likviditet" },
+      // #339: budget plan vs. faktiske bevægelser, side-om-side i en knap.
+      { to: "budget", label: "Budget" },
     ],
   },
   {
@@ -76,14 +78,37 @@ const TAB_GROUPS: { name: string; tabs: NavTab[] }[] = [
     tabs: [
       { to: "posteringer", label: "Posteringer" },
       { to: "bilag", label: "Bilag" },
+      { to: "leverandoerfaktura", label: "Leverandørfaktura" },
       { to: "bank", label: "Bank" },
+      { to: "anlaeg", label: "Anlæg" },
       { to: "moms", label: "Moms" },
+      { to: "koersel", label: "Kørsel" },
+      // Agent-forslag → menneskelig godkendelse (#346). Lever i Bogføring-
+      // gruppen fordi en godkendelse her er sidste mile før en konkret
+      // postering — selve den deterministiske postering laves derefter på
+      // den linkede side (Anlæg, Leverandørfaktura, Posteringer, …).
+      { to: "agent-forslag", label: "Agent-forslag" },
+      // #332 — Undtagelses-kø (unmatched bank-rows, blokerede write-flows).
+      { to: "undtagelser", label: "Undtagelser" },
+      // #342 — Periodelås: close/reopen audit-loggede regnskabsperioder.
+      { to: "periodelas", label: "Periodelås" },
+      // #345 — Bankkonti + CSV-mapping-profiler.
+      { to: "bankkonti", label: "Bankkonti" },
+      // #334 — GDPR-indsigt + anonymisering.
+      { to: "gdpr", label: "GDPR" },
+      // #337 — Periodiseringsregister.
+      { to: "periodisering", label: "Periodisering" },
+      // #338 — Årsrapport-builder.
+      { to: "aarsrapport", label: "Årsrapport" },
+      // #348-#352 — Bilagsmail: IMAP-config, mail-alias, inbox.
+      { to: "bilagsmail", label: "Bilagsmail" },
     ],
   },
   {
     name: "Salg",
     tabs: [
       { to: "fakturaer", label: "Fakturaer" },
+      { to: "faktura-skabeloner", label: "Skabeloner" },
       { to: "kontakter", label: "Kontakter" },
     ],
   },
@@ -92,6 +117,14 @@ const TAB_GROUPS: { name: string; tabs: NavTab[] }[] = [
     tabs: [
       { to: "arkiv", label: "Arkiv" },
       { to: "fleraar", label: "Flerår" },
+      // #343 — 5-års retention-status pr. data-domæne, så ejeren kan se hvad
+      // der nærmer sig udløb af bogføringspligten.
+      { to: "retention", label: "Retention" },
+      // #333 — Integritet & backup: hash-kæde-status, backup-compliance og
+      // backup-destinationer.
+      { to: "integritet", label: "Integritet" },
+      // #344 — Kontoplan: read-only liste over konti med søg + type-filter.
+      { to: "kontoplan", label: "Kontoplan" },
     ],
   },
 ];

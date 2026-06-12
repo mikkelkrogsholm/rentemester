@@ -36,6 +36,36 @@ function setup(prefix: string) {
   return { root, db };
 }
 
+describe("cross-currency suggestion guard", () => {
+  test("a foreign-currency bank row does not match a same-amount DKK invoice", () => {
+    const { root, db } = setup("rentemester-suggest-fx-");
+    const invoice = issueInvoice(db, root, invoicePayload({ invoiceNumber: "2026-0001" }));
+    expect(invoice.ok).toBe(true);
+
+    // An incoming bank row of 1250 — but in EUR, not DKK. The amount coincides
+    // with the DKK invoice gross (1250) and the text names the invoice, so
+    // WITHOUT the currency guard equalsDkk(1250, 1250) would surface a confident
+    // but unactionable suggestion (the apply path rejects a currency mismatch).
+    const csv = join(root, "fx.csv");
+    writeFileSync(
+      csv,
+      [
+        "transaction_date,booking_date,text,amount,currency,reference,fx_rate_to_dkk,amount_dkk",
+        "2026-05-22,2026-05-22,Betaling 2026-0001 Kunde A/S,1250,EUR,FX-1,7.46,9325",
+      ].join("\n"),
+    );
+    expect(importBankCsv(db, root, csv).ok).toBe(true);
+
+    const result = suggestBankMatches(db, {});
+    const row = result.rows.find((r) => r.reference === "FX-1")!;
+    expect(row).toBeDefined();
+    expect(row.suggestions.some((s) => s.kind === "issued_invoice")).toBe(false);
+
+    db.close();
+    rmSync(root, { recursive: true, force: true });
+  });
+});
+
 describe("refund / credit-note matching (#182)", () => {
   test("an outgoing customer-refund bank row matches its credit note", () => {
     const { root, db } = setup("rentemester-refund-cn-");

@@ -1,0 +1,60 @@
+import type { CompanyInvoices } from "../../lib/types";
+import { STATEMENT_COMPANY, STATEMENT_FISCAL_YEARS } from "./_shared";
+
+export function invoices(
+  over: Partial<CompanyInvoices> = {},
+): CompanyInvoices {
+  return {
+    slug: "acme-aps",
+    selectedYear: "2026",
+    archived: false,
+    company: STATEMENT_COMPANY,
+    fiscalYears: STATEMENT_FISCAL_YEARS,
+    periodStart: "2026-01-01",
+    periodEnd: "2026-12-31",
+    invoices: [
+      {
+        documentId: 1,
+        invoiceNo: "2026-00001",
+        invoiceDate: "2026-03-15",
+        customerName: "Kunde A/S",
+        customerEmail: "faktura@kunde.dk",
+        buyerEanNumber: null,
+        buyerPublicRecipient: false,
+        peppolStatus: null,
+        lastEmailedAt: null,
+        lastReminderAt: null,
+        lastReminderSequence: 0,
+        grossAmount: 12500,
+        openBalance: 0,
+        currency: "DKK",
+        status: "paid",
+        effectiveDueDate: "2026-04-14",
+        overdueDays: 0,
+      },
+      {
+        documentId: 2,
+        invoiceNo: "2026-00002",
+        invoiceDate: "2026-04-01",
+        customerName: "Beta ApS",
+        customerEmail: "faktura@beta.dk",
+        buyerEanNumber: null,
+        buyerPublicRecipient: false,
+        peppolStatus: null,
+        lastEmailedAt: null,
+        lastReminderAt: null,
+        lastReminderSequence: 0,
+        grossAmount: 6250,
+        openBalance: 6250,
+        currency: "DKK",
+        status: "overdue",
+        effectiveDueDate: "2026-04-30",
+        overdueDays: 21,
+      },
+    ],
+    totalGross: 18750,
+    totalOpen: 6250,
+    overdueCount: 1,
+    ...over,
+  };
+}

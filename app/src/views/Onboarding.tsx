@@ -15,8 +15,8 @@ export function Onboarding({
         <div>
           <h2>Velkommen til Rentemester</h2>
           <p className="muted">
-            Dit arbejdsområde er tomt. Opret din første virksomhed for at
-            komme i gang.
+            Du har endnu ikke oprettet nogen virksomheder. Opret din første for
+            at komme i gang.
           </p>
         </div>
       </div>
@@ -25,8 +25,10 @@ export function Onboarding({
         <p className="muted" style={{ marginTop: 0 }}>
           Cockpittet er dit kontrolpanel: du opretter og overvåger virksomheder
           her. Du kan også bogføre direkte i cockpittet — udstede fakturaer,
-          importere bankudtog (CSV) og indlæse bilag. Mere avancerede opgaver
-          klares fortsat via agenten og kommandolinjen.
+          importere bankudtog (CSV) og indlæse bilag. Et par mere tekniske
+          opgaver — fx lønhåndtering, opsætning af backup-destinationer og
+          start-saldi ved migrering — håndteres stadig via kommandolinjen
+          indtil videre.
         </p>
       </div>
 

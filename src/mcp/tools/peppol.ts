@@ -20,7 +20,12 @@ import {
   type PeppolTransportAcknowledgement,
 } from "../../core/public-einvoice";
 import { envelopeShape, errorEnvelope, wrapCoreResult } from "../envelope";
-import { withCompanyDbConfirmed, resolveIssuedInvoiceDocumentId, confirmField } from "../tool-runtime";
+import {
+  withCompanyDbConfirmed,
+  resolveIssuedInvoiceDocumentId,
+  invoiceNotFoundEnvelope,
+  confirmField,
+} from "../tool-runtime";
 
 const accessPointSchema = z
   .object({
@@ -48,7 +53,7 @@ export function registerPeppolTools(server: McpServer): void {
         "OIOUBL-handoff-artifaktet og registrerer submission-forsøget. " +
         "Access-point-credentials gemmes aldrig i bogføringstilstanden. write-irreversible.",
       inputSchema: {
-        company: z.string().min(1),
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         documentId: z.number().int().positive().optional(),
         invoiceNumber: z.string().optional(),
         accessPoint: accessPointSchema,
@@ -72,11 +77,7 @@ export function registerPeppolTools(server: McpServer): void {
       confirm?: boolean;
     }>(server, "peppol_submit_public_invoice", ({ db, args }) => {
       const id = resolveIssuedInvoiceDocumentId(db, args);
-      if (!id) {
-        return errorEnvelope(
-          `Could not resolve invoice: provide documentId or invoiceNumber (got documentId=${args.documentId ?? "-"}, invoiceNumber='${args.invoiceNumber ?? ""}')`,
-        );
-      }
+      if (!id) return invoiceNotFoundEnvelope(args);
       const result = submitPublicEInvoicePeppol(db, {
         invoiceDocumentId: id,
         accessPoint: args.accessPoint,

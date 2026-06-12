@@ -66,6 +66,19 @@ export function formatRunReport(report: AgentRunReport): string {
   }
 
   lines.push("");
+  lines.push("— Kreditorposter afregnet automatisk —");
+  if (report.payablesMatched.length === 0) {
+    lines.push("  (ingen)");
+  } else {
+    for (const p of report.payablesMatched) {
+      lines.push(
+        `  ✓ ${p.supplier} ${formatKronerDa(p.amount)} → kreditorpost #${p.payableId}` +
+          (p.journalEntryNo ? ` [${p.journalEntryNo}]` : ""),
+      );
+    }
+  }
+
+  lines.push("");
   lines.push("— Exception-kø (kræver et menneske) —");
   if (report.openExceptions.length === 0) {
     lines.push("  ✓ ingen åbne exceptions");

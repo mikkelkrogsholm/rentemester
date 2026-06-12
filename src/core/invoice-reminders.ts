@@ -16,6 +16,12 @@ export type RegisterInvoiceReminderInput = {
   reminderDate: string;
   feeAmount?: number;
   note?: string;
+  // Actor attribution for the registration audit_log row — the MCP/CLI caller
+  // threads these so the row is stamped with the booking agent, not the OS
+  // user that resolveActor would otherwise infer. The post step already
+  // forwards them; the register step must too.
+  createdBy?: string;
+  createdByProgram?: string;
 };
 
 export type RegisterInvoiceReminderResult = {
@@ -103,6 +109,8 @@ export function registerInvoiceReminder(db: Database, input: RegisterInvoiceRemi
     entityType: "invoice_reminder",
     entityId: inserted.id,
     message: `Registered reminder fee ${feeAmount} on invoice ${invoice.invoice_no}`,
+    createdBy: input.createdBy,
+    createdByProgram: input.createdByProgram,
   });
 
   const totalReminderFees = roundDkk(reminders.reduce((sum, reminder) => sum + Number(reminder.fee_amount), 0) + feeAmount);

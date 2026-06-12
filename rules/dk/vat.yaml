@@ -28,6 +28,16 @@ vat_codes:
     rate: 0.25
     reverse_charge: false
     deductible_percentage: 1.0
+  - code: DK_SALE_EXEMPT
+    type: sale
+    rate: 0.0
+    reverse_charge: false
+    deductible_percentage: 1.0
+  - code: OSS_EU_CONSUMER
+    type: sale
+    rate: 0.0
+    reverse_charge: false
+    deductible_percentage: 1.0
 rules:
   - rule_id: DK-VAT-SEPARATE-AMOUNT-001
     name: Danish VAT deduction requires stated VAT amount
@@ -140,3 +150,41 @@ rules:
       forbid:
         - momsangivelse_for_open_or_incomplete_vat_period
     explanation: A momsangivelse must only be produced for a closed or reported vat_quarter period and must deterministically map the VAT settlement data into the standard SKAT rubrikker so the business can file via TastSelv with traceable numbers.
+  - rule_id: DK-VAT-EU-SALES-LIST-001
+    name: Cross-border B2B sales without Danish VAT must be listed per customer VAT number for the EU sales list
+    category: vat_reporting
+    source_id: DK-MOMSLOVEN-2024-209
+    provisions:
+      - ref: "§ 54, stk. 1"
+        text_hash: "sha256:38b51c5c3a1c17e1333f1f0563101382f65a0b77999852a1f948640278a2c385"
+    severity: hard_stop
+    machine_rule:
+      require:
+        - period_start
+        - period_end
+        - customer_vat_number_per_line
+        - total_value_per_customer
+      forbid:
+        - domestic_or_standard_vat_sale_on_the_eu_sales_list
+    explanation: Rentemester must deterministically derive the EU sales list (EU-salg uden moms) by grouping cross-border B2B sales without Danish VAT per customer VAT number, so the business can file the separate recapitulative statement alongside the momsangivelse.
+  - rule_id: DK-VAT-OSS-001
+    name: Digital-service sales to EU consumers under the OSS scheme must be kept out of the standard momsangivelse
+    category: vat_reporting
+    severity: hard_stop
+    machine_rule:
+      condition: vat_code == 'OSS_EU_CONSUMER'
+      require:
+        - oss_consumer_sales_base_tracked_separately
+      forbid:
+        - danish_output_vat_on_oss_consumer_sale
+        - oss_consumer_sale_in_standard_momsangivelse_rubrik
+    explanation: >-
+      OSS first slice. Selling digital services to private consumers in other EU
+      member states is settled via a separate OSS return, not the Danish
+      momsangivelse. Rentemester must recognise revenue booked with the
+      OSS_EU_CONSUMER VAT code as OSS sales, track their base separately and keep
+      them out of every standard momsangivelse rubrik. This rule is a deliberately
+      narrow slice: it does not split the base per destination member state or
+      rate, and Rentemester does not transmit an OSS return to SKAT — that
+      remains the business's responsibility. The rule is uncited because the OSS
+      provisions of momsloven fall outside the project's declared legal scope.

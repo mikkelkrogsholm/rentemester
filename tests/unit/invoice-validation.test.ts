@@ -91,6 +91,63 @@ describe("invoice validator", () => {
     expect(result.appliedRules).toContain("DK-INVOICE-SIMPLIFIED-001");
   });
 
+  test("rejects a simplified standard-VAT invoice with an impossible vatAmount", () => {
+    // gross 1.000, vatAmount 999 implies a net of 1 kr — a VAT of 999 on it is
+    // impossible at 25%. Without the implied-net check this slipped through
+    // (no totals.netAmount) and got booked verbatim as output VAT.
+    const result = validateInvoice({
+      invoiceType: "simplified",
+      vatTreatment: "standard",
+      issueDate: "2026-05-16",
+      invoiceNumber: "2026-0045",
+      seller: { name: "Rentemester ApS", address: "Testvej 1, 2100 København Ø", vatOrCvr: "DK12345678" },
+      lines: [{ description: "Kontant salg" }],
+      totals: { grossAmount: 1000, vatRate: 0.25, vatAmount: 999 },
+      currency: "DKK",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(
+      result.errors.some((e) => e.includes("VAT contained in")),
+    ).toBe(true);
+  });
+
+  test("accepts a simplified standard-VAT invoice with a consistent explicit vatAmount", () => {
+    // gross 1.000, VAT 200 = 20% of gross (the VAT contained at 25%). Consistent.
+    const result = validateInvoice({
+      invoiceType: "simplified",
+      vatTreatment: "standard",
+      issueDate: "2026-05-16",
+      invoiceNumber: "2026-0046",
+      seller: { name: "Rentemester ApS", address: "Testvej 1, 2100 København Ø", vatOrCvr: "DK12345678" },
+      lines: [{ description: "Kontant salg" }],
+      totals: { grossAmount: 1000, vatRate: 0.25, vatAmount: 200 },
+      currency: "DKK",
+    });
+
+    expect(result.ok).toBe(true);
+  });
+
+  test("accepts a simplified invoice whose canonical 20%-of-gross VAT lands on an øre-rounding boundary", () => {
+    // gross 100,07 incl. 25% VAT — the VAT contained is roundDkk(100,07 × 0,20)
+    // = 20,01. A net-first round-trip (roundDkk((gross−vat) × 0,25)) double-
+    // rounds to 20,02 and WRONGLY rejected this (and ~20% of all simplified
+    // invoices). The gross-inclusive check accepts the correct figure.
+    const result = validateInvoice({
+      invoiceType: "simplified",
+      vatTreatment: "standard",
+      issueDate: "2026-05-16",
+      invoiceNumber: "2026-0047",
+      seller: { name: "Rentemester ApS", address: "Testvej 1, 2100 København Ø", vatOrCvr: "DK12345678" },
+      lines: [{ description: "Kontant salg" }],
+      totals: { grossAmount: 100.07, vatRate: 0.25, vatAmount: 20.01 },
+      currency: "DKK",
+    });
+
+    expect(result.errors).toEqual([]);
+    expect(result.ok).toBe(true);
+  });
+
   test("rejects invoice with inconsistent line and gross totals", () => {
     const result = validateInvoice({
       invoiceType: "full",

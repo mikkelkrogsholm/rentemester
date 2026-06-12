@@ -1,5 +1,5 @@
 import { type OutputFormat, buildHumanError, printStructuredResult } from "./common";
-import { renderVatReport, renderVatFiling, renderAnnualReport } from "./vat";
+import { renderVatReport, renderVatFiling, renderAnnualReport, renderTaxReturn } from "./vat";
 import {
   renderInvoiceStatus,
   renderInvoiceInterest,
@@ -33,6 +33,7 @@ export type HumanReportKind =
   | "vat-report"
   | "vat-filing"
   | "report-annual"
+  | "report-tax"
   | "invoice-status"
   | "invoice-interest"
   | "invoice-compensation"
@@ -43,7 +44,10 @@ export type HumanReportKind =
   | "report-balance"
   | "retention-status"
   | "reconcile-bank"
-  | "backup-status";
+  | "backup-status"
+  // #177: `report annual --ixbrl-taxonomy` prints the bounded iXBRL subset.
+  // No dedicated renderer — it falls back to the generic structured output.
+  | "report-annual-ixbrl-taxonomy";
 
 /**
  * Render a read/report `result` payload as Danish human-readable text.
@@ -81,6 +85,8 @@ export function renderHumanReport(
       return renderVatFiling(result);
     case "report-annual":
       return renderAnnualReport(result);
+    case "report-tax":
+      return renderTaxReturn(result);
     case "invoice-status":
       return renderInvoiceStatus(result);
     case "invoice-interest":
@@ -142,6 +148,8 @@ function humanReportTitle(kind: HumanReportKind): string {
       return "Momsangivelse";
     case "report-annual":
       return "Årsrapport";
+    case "report-tax":
+      return "Skattemæssig indkomst";
     case "invoice-status":
       return "Fakturastatus";
     case "invoice-interest":
@@ -164,6 +172,8 @@ function humanReportTitle(kind: HumanReportKind): string {
       return "Bankafstemning";
     case "backup-status":
       return "Backup-status";
+    case "report-annual-ixbrl-taxonomy":
+      return "iXBRL-taksonomi (afgrænset udsnit)";
   }
 }
 

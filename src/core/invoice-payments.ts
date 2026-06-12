@@ -104,9 +104,16 @@ export type InvoiceStatusResult = {
     note: string | null;
     journalEntryId: number | null;
   }>;
+  interestCorrections?: Array<{
+    correctionId: number;
+    correctionDate: string;
+    amountDkk: number;
+    journalEntryId: number;
+  }>;
   totalReminderFees?: number;
   totalCompensationClaims?: number;
   totalInterestClaims?: number;
+  totalInterestCorrections?: number;
   totalClaimPayments?: number;
   totalBadDebtWrittenOff?: number;
   errors: string[];
@@ -115,6 +122,71 @@ export type InvoiceStatusResult = {
 const RULE_ID = "DK-INVOICE-PAYMENT-001";
 const CORRECTION_BALANCE_RULE_ID = "DK-INVOICE-CORRECTION-BALANCE-001";
 const DUE_DATE_RULE_ID = "DK-INVOICE-DUE-DATE-001";
+const FX_REALISED_RULE_ID = "DK-INVOICE-FX-REALISED-001";
+
+// Realised exchange gain/loss accounts (seedAccounts): the receivable is
+// relieved at the invoice-date rate, and the difference vs the DKK actually
+// received lands here.
+const FX_GAIN_ACCOUNT_NO = "1020"; // Valutakursgevinst (income, credit)
+const FX_LOSS_ACCOUNT_NO = "3320"; // Valutakurstab (expense, debit)
+
+type JournalLineInput = { accountNo: string; debitAmount?: number; creditAmount?: number; text?: string };
+
+// For a foreign-currency invoice payment, relieve the receivable (1100) at the
+// rate the invoice was BOOKED at — never the payment-date rate. The relief for
+// this payment is the share of the booked receivable DKK (grossAmountDkk,
+// rounded ONCE at booking) that corresponds to the foreign balance this payment
+// settles, computed as the DIFFERENCE of two cumulative proportional figures
+// (relief on the open balance before vs after the payment). Computing it that
+// way makes the per-payment reliefs TELESCOPE: across any split of the foreign
+// amount they sum to exactly grossAmountDkk, so 1100 nets to zero with no
+// per-partial rounding residue (adversarial re-review #1/#2). The foreign open
+// balance already nets credit notes (which relieve 1100 at the invoice rate via
+// creditNoteLinesFromOriginalJournal), so their relief is accounted for
+// automatically. The difference between the DKK actually received
+// (paymentAmountDkk, at the payment-date rate) and the relieved receivable is
+// the realised exchange gain/loss line, which makes the entry balance and routes
+// the rate drift to the result. (An earlier snap-to-remainder design anchored on
+// the gross receivable and reconstructed prior relief from payments only — it
+// double-counted credit-note relief and drove 1100 negative; adversarial
+// findings #4/#6/#7/#8. Foreign-currency REFUNDS are refused upstream because
+// that path is not yet currency-aware — see invoice-refunds.ts.)
+function buildForeignPaymentLines(args: {
+  payloadJson: string | null;
+  invoiceNo: string;
+  amountForeign: number;
+  grossForeign: number;
+  openForeignBefore: number;
+  paymentAmountDkk: number;
+  bankAccountNo?: string;
+  receivableAccountNo?: string;
+}): { lines: JournalLineInput[]; fxApplied: boolean } {
+  const payload = args.payloadJson ? JSON.parse(args.payloadJson) : null;
+  const invoiceRate = Number(payload?.totals?.fxRateToDkk ?? 0);
+  const grossAmountDkk = roundDkk(Number(payload?.totals?.grossAmountDkk ?? 0));
+
+  let receivableReliefDkk: number;
+  if (args.grossForeign > 0 && grossAmountDkk > 0) {
+    const openAfter = subtractDkk(args.openForeignBefore, args.amountForeign);
+    const cumulativeReliefBefore = roundDkk((grossAmountDkk * args.openForeignBefore) / args.grossForeign);
+    const cumulativeReliefAfter = roundDkk((grossAmountDkk * openAfter) / args.grossForeign);
+    receivableReliefDkk = subtractDkk(cumulativeReliefBefore, cumulativeReliefAfter);
+  } else {
+    receivableReliefDkk = roundDkk(args.amountForeign * invoiceRate);
+  }
+
+  const lines: JournalLineInput[] = [
+    { accountNo: args.bankAccountNo ?? "2000", debitAmount: args.paymentAmountDkk, text: `Payment receipt ${args.invoiceNo}` },
+    { accountNo: args.receivableAccountNo ?? "1100", creditAmount: receivableReliefDkk, text: `Receivable settlement ${args.invoiceNo}` },
+  ];
+  const fxDelta = roundDkk(subtractDkk(args.paymentAmountDkk, receivableReliefDkk));
+  if (fxDelta > 0) {
+    lines.push({ accountNo: FX_GAIN_ACCOUNT_NO, creditAmount: fxDelta, text: `Realiseret valutakursgevinst ${args.invoiceNo}` });
+  } else if (fxDelta < 0) {
+    lines.push({ accountNo: FX_LOSS_ACCOUNT_NO, debitAmount: roundDkk(-fxDelta), text: `Realiseret valutakurstab ${args.invoiceNo}` });
+  }
+  return { lines, fxApplied: fxDelta !== 0 };
+}
 
 function defaultComparisonDate(invoiceDate?: string, effectiveDueDate?: string) {
   return effectiveDueDate ?? invoiceDate ?? "1970-01-01";
@@ -185,13 +257,22 @@ export function getInvoiceStatus(db: Database, invoiceDocumentId: number, asOfDa
      WHERE c.invoice_document_id = ? ORDER BY c.claim_date ASC, c.id ASC`
   ).all(invoiceDocumentId) as Array<{ id: number; claim_date: string; amount_dkk: number; reference_rate_percent: number; annual_interest_rate_percent: number; overdue_days: number; note: string | null; journal_entry_id: number | null }>;
 
+  // Correcting reversals of over-claimed late interest (back-dated balance
+  // reductions); they net DOWN the interest-claim balance.
+  const interestCorrections = db.query(
+    `SELECT id, correction_date, amount_dkk, journal_entry_id
+     FROM invoice_interest_corrections
+     WHERE invoice_document_id = ? ORDER BY id ASC`
+  ).all(invoiceDocumentId) as Array<{ id: number; correction_date: string; amount_dkk: number; journal_entry_id: number }>;
+
   const grossAmount = roundDkk(Number(invoice.amount_inc_vat ?? 0));
   const creditedAmount = sumDkk(creditNotes.map((c) => Number(c.amount_inc_vat ?? 0)));
   const paidAmount = sumDkk(payments.map((p) => Number(p.amount)));
   const refundedAmount = sumDkk(refunds.map((r) => Number(r.amount)));
   const totalReminderFees = sumDkk(reminders.map((r) => Number(r.fee_amount)));
   const totalCompensationClaims = sumDkk(compensationClaims.map((c) => Number(c.amount_dkk)));
-  const totalInterestClaims = sumDkk(interestClaims.map((c) => Number(c.amount_dkk)));
+  const totalInterestCorrections = sumDkk(interestCorrections.map((c) => Number(c.amount_dkk)));
+  const totalInterestClaims = subtractDkk(sumDkk(interestClaims.map((c) => Number(c.amount_dkk))), totalInterestCorrections);
   const totalClaimPayments = sumDkk(claimPayments.map((p) => Number(p.amount)));
   const totalBadDebtWrittenOff = sumDkk(badDebtWriteOffs.map((w) => Number(w.gross_amount)));
   const openBalance = subtractDkk(addDkk(subtractDkk(grossAmount, creditedAmount, paidAmount), refundedAmount), totalBadDebtWrittenOff);
@@ -249,9 +330,11 @@ export function getInvoiceStatus(db: Database, invoiceDocumentId: number, asOfDa
       note: c.note,
       journalEntryId: c.journal_entry_id == null ? null : Number(c.journal_entry_id),
     })),
+    interestCorrections: interestCorrections.map((c) => ({ correctionId: c.id, correctionDate: c.correction_date, amountDkk: roundDkk(Number(c.amount_dkk)), journalEntryId: Number(c.journal_entry_id) })),
     totalReminderFees,
     totalCompensationClaims,
     totalInterestClaims,
+    totalInterestCorrections,
     totalClaimPayments,
     totalBadDebtWrittenOff,
     errors: [],
@@ -289,8 +372,15 @@ export function applyInvoicePayment(db: Database, input: ApplyInvoicePaymentInpu
     if (alreadyLinked) return { ok: false, appliedRules: [RULE_ID], errors: [`bank transaction ${input.bankTransactionId} is already applied to an invoice payment`] };
   }
 
-  if (invoiceCurrency !== "DKK" && input.journalEntryId === undefined && !bank) {
-    return { ok: false, appliedRules: [RULE_ID], errors: ["non-DKK invoice payments require a bankTransactionId or existing journalEntryId"] };
+  // A foreign-currency payment must post its OWN journal so the realised
+  // exchange gain/loss is booked here (buildForeignPaymentLines). A caller-
+  // provided journalEntryId would bypass that and could strand the rate drift on
+  // the receivable (adversarial #2), so it is refused for non-DKK invoices.
+  if (invoiceCurrency !== "DKK" && input.journalEntryId !== undefined) {
+    return { ok: false, appliedRules: [RULE_ID, FX_REALISED_RULE_ID], errors: ["betaling i fremmed valuta kan ikke genbruge en forud-leveret journalEntryId — den realiserede valutakursdifference skal bogføres her (foreign-currency payment cannot reuse a caller-provided journalEntryId)"] };
+  }
+  if (invoiceCurrency !== "DKK" && !bank) {
+    return { ok: false, appliedRules: [RULE_ID], errors: ["non-DKK invoice payments require a bankTransactionId"] };
   }
 
   const status = getInvoiceStatus(db, input.invoiceDocumentId);
@@ -301,6 +391,7 @@ export function applyInvoicePayment(db: Database, input: ApplyInvoicePaymentInpu
     return { ok: false, appliedRules: [RULE_ID, CORRECTION_BALANCE_RULE_ID], errors: [`payment amount ${amount} exceeds open invoice balance ${openBalance}`] };
   }
 
+  let fxRealisedApplied = false;
   try {
     const result = db.transaction(() => {
       let journalEntryId = input.journalEntryId;
@@ -309,6 +400,26 @@ export function applyInvoicePayment(db: Database, input: ApplyInvoicePaymentInpu
         const paymentAmountDkk = invoiceCurrency === "DKK"
           ? amount
           : roundDkk(amount * Number(bank?.fx_rate_to_dkk ?? 0));
+        let lines: JournalLineInput[];
+        if (invoiceCurrency === "DKK") {
+          lines = [
+            { accountNo: input.bankAccountNo ?? "2000", debitAmount: paymentAmountDkk, text: `Payment receipt ${invoice.invoice_no}` },
+            { accountNo: input.receivableAccountNo ?? "1100", creditAmount: paymentAmountDkk, text: `Receivable settlement ${invoice.invoice_no}` },
+          ];
+        } else {
+          const built = buildForeignPaymentLines({
+            payloadJson: invoice.payload_json,
+            invoiceNo: invoice.invoice_no,
+            amountForeign: amount,
+            grossForeign: roundDkk(Number(invoice.amount_inc_vat ?? 0)),
+            openForeignBefore: openBalance,
+            paymentAmountDkk,
+            bankAccountNo: input.bankAccountNo,
+            receivableAccountNo: input.receivableAccountNo,
+          });
+          lines = built.lines;
+          fxRealisedApplied = built.fxApplied;
+        }
         const journal = postJournalEntry(db, {
           transactionDate: input.paymentDate,
           text: input.bankTransactionId !== undefined ? `Customer payment for invoice ${invoice.invoice_no}` : `Manual invoice payment for invoice ${invoice.invoice_no}`,
@@ -320,10 +431,7 @@ export function applyInvoicePayment(db: Database, input: ApplyInvoicePaymentInpu
           fxRateToDkk: invoiceCurrency === "DKK" ? undefined : Number(bank?.fx_rate_to_dkk ?? undefined),
           createdBy: input.createdBy,
           createdByProgram: input.createdByProgram,
-          lines: [
-            { accountNo: input.bankAccountNo ?? "2000", debitAmount: paymentAmountDkk, text: `Payment receipt ${invoice.invoice_no}` },
-            { accountNo: input.receivableAccountNo ?? "1100", creditAmount: paymentAmountDkk, text: `Receivable settlement ${invoice.invoice_no}` },
-          ],
+          lines,
         });
         if (!journal.ok || journal.entryId == null) throw new Error(JSON.stringify({ appliedRules: journal.appliedRules, errors: journal.errors }));
         journalEntryId = journal.entryId;
@@ -367,7 +475,9 @@ export function applyInvoicePayment(db: Database, input: ApplyInvoicePaymentInpu
         invoiceDocumentId: input.invoiceDocumentId,
         invoiceNumber: invoice.invoice_no,
         openBalance: after.openBalance,
-        appliedRules: [RULE_ID, CORRECTION_BALANCE_RULE_ID],
+        appliedRules: fxRealisedApplied
+          ? [RULE_ID, CORRECTION_BALANCE_RULE_ID, FX_REALISED_RULE_ID]
+          : [RULE_ID, CORRECTION_BALANCE_RULE_ID],
         errors: [],
       } satisfies ApplyInvoicePaymentResult;
     })();

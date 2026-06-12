@@ -40,6 +40,7 @@ import { register as registerExpense } from "./cli/expense";
 import { register as registerRetention } from "./cli/retention";
 import { register as registerPeriod } from "./cli/period";
 import { register as registerDashboard } from "./cli/dashboard";
+import { register as registerCompliance } from "./cli/compliance";
 // ===== RECURRING INVOICES (#118) =====
 import { register as registerRecurringInvoice } from "./cli/recurring-invoice";
 // ===== END RECURRING INVOICES (#118) =====
@@ -79,6 +80,18 @@ import { register as registerAgent } from "./cli/agent";
 // ===== REGULATORY COVERAGE =====
 import { register as registerReg } from "./cli/reg";
 // ===== END REGULATORY COVERAGE =====
+// ===== ACCRUALS / PERIODEAFGRÆNSNINGSPOSTER =====
+import { register as registerAccrual } from "./cli/accrual";
+// ===== END ACCRUALS / PERIODEAFGRÆNSNINGSPOSTER =====
+// ===== TAX RETURN PREPARATION =====
+import { register as registerTax } from "./cli/tax";
+// ===== END TAX RETURN PREPARATION =====
+// ===== BUDGET + LIQUIDITY FORECAST =====
+import { register as registerBudget } from "./cli/budget";
+// ===== END BUDGET + LIQUIDITY FORECAST =====
+// ===== PAYABLES / KREDITORSTYRING =====
+import { register as registerPayable } from "./cli/payable";
+// ===== END PAYABLES / KREDITORSTYRING =====
 import {
   isValidSlug,
   resolveConfiguredWorkspaceRoot,
@@ -261,7 +274,20 @@ for (const registerFn of [
   // ===== END RUNTIME AGENT (#183) =====
   // ===== REGULATORY COVERAGE =====
   registerReg,
+  registerCompliance,
   // ===== END REGULATORY COVERAGE =====
+  // ===== TAX RETURN PREPARATION =====
+  registerTax,
+  // ===== END TAX RETURN PREPARATION =====
+  // ===== ACCRUALS / PERIODEAFGRÆNSNINGSPOSTER =====
+  registerAccrual,
+  // ===== END ACCRUALS / PERIODEAFGRÆNSNINGSPOSTER =====
+  // ===== BUDGET + LIQUIDITY FORECAST =====
+  registerBudget,
+  // ===== END BUDGET + LIQUIDITY FORECAST =====
+  // ===== PAYABLES / KREDITORSTYRING =====
+  registerPayable,
+  // ===== END PAYABLES / KREDITORSTYRING =====
 ]) {
   registerFn(dispatch);
 }

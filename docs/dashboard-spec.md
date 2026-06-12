@@ -271,6 +271,78 @@ DESC`.
 **Tokens:** `success` / `danger` (pill-baggrund), `mono-family` (entry-tal),
 `alert-danger` (komponent-token) hvis fejl, `body-family` (fejlbesked).
 
+### 8a. Åbne kreditorposter (creditor card)
+
+**Kerne-API:** `buildPayablesList(db, { status: 'open', asOfDate })`
+(`src/core/payables.ts`).
+
+Den kreditor-side pendant til "Åbne fakturaer" (debitor). Viser de åbne
+leverandørposter med åben saldo, forfaldsdato og en status-pill, plus en
+sammenfatningslinje med samlet åben kreditorgæld og — hvis relevant — den
+overforfaldne andel.
+
+**Kolonner:** Bilagsnr. (mono), Leverandør, Åben saldo (højre, mono), Forfald
+(højre, mono `DD-MM`), Status (`åben` / `forfalden (N d)`).
+
+**Max rækker:** 10, `buildPayablesList` sorterer mest overforfaldne først;
+overskydende vises som "… og N yderligere".
+
+**Edge-cases:** ingen kreditorposter → tom-state "Ingen åbne kreditorposter".
+
+**Tokens:** samme som "Åbne fakturaer" — `dash-table`, `amount-cell`,
+`badge-status-*`.
+
+### 8b. Periodeafgrænsningsposter (accruals card)
+
+**Kerne-API:** `buildAccrualRegisterReport(db)` +
+`listDueAccrualRecognitionPeriods(db, asOfDate)` (`src/core/accruals.ts`).
+
+To status-rækker: (1) resterende balanceeksponering = summen af endnu ikke
+indtægts-/omkostningsførte beløb, med antal aktive periodeafgrænsningsposter;
+(2) recognition-perioder der er forfaldne (`recognitionDate <= asOfDate`) og
+ikke bogført — et antal og det samlede beløb der skal periodiseres.
+
+**Edge-cases:** ingen periodeafgrænsningsposter → tom-state.
+
+**Tokens:** `status-row`, `amount-lg`, `success`/`danger`-pill.
+
+### 8c. Budget & likviditet (budget & liquidity card)
+
+**Kerne-API:** `buildBudgetVsActual(db, currentMonth, currentMonth)`
+(`src/core/budget.ts`) + `buildLiquidityForecast(db, { startDate, months: 3 })`
+(`src/core/liquidity-forecast.ts`). CLI'en udregner `currentMonth` som
+`asOfDate`'s kalendermåned og likviditets-`startDate` som den 1. i den
+efterfølgende måned.
+
+To status-rækker: budget-vs-faktisk for den aktuelle måned (budget, faktisk,
+afvigelse), og likviditetsprognosen for de kommende måneder (projiceret
+slutsaldo + laveste saldo hvis den dykker negativt). En negativ projiceret
+likviditet markeres med en `danger`-pill.
+
+**Edge-cases:** intet budget / ingen prognosedata → en neutral "—"-pill med
+forklarende tekst.
+
+### 8d. Skat (tax card)
+
+**Kerne-API:** `buildTaxReturn(db, fyStart, fyEnd)` (`src/core/tax-return.ts`)
+for det regnskabsår `asOfDate` falder i — kun når året er lukket/indberettet
+(`accounting_periods.kind = 'fiscal_year'`).
+
+To tilstande: er regnskabsåret lukket vises estimeret selskabsskat, årets
+resultat og antallet af needs-review-punkter; ellers vises "Forberedelse er
+klar, når regnskabsåret er lukket" med en neutral pill.
+
+### 8e. EU-salg & OSS (light indicator)
+
+**Kerne-API:** `buildViesRecapitulativeStatement(db, periodStart, periodEnd)`
+(`src/core/vat-vies-list.ts`) + `buildOssReport(db, periodStart, periodEnd)`
+(`src/core/vat-oss.ts`) for den viste momsperiode.
+
+En **let** indikator: sektionen rendres KUN når der er grænseoverskridende
+B2B-salg uden moms eller OSS-klassificeret forbrugersalg i perioden — altså
+noget der kræver en separat indberetning. Er begge tal 0, udelades sektionen
+helt.
+
 ### 8. Footer
 
 **Kerne-API:** `currentRuleBundleVersion()` (`src/core/rules-metadata.ts`).

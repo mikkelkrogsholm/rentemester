@@ -49,6 +49,16 @@ describe("TrialBalanceView — Saldobalance", () => {
     expect(screen.getByText(/Saldobalancen stemmer/)).toBeInTheDocument();
   });
 
+  test("#372 — 'Hent CSV' links to the trial-balance CSV export endpoint", async () => {
+    mockFetch(route());
+    renderView();
+    const link = await screen.findByRole("link", { name: "Hent CSV" });
+    const href = link.getAttribute("href") ?? "";
+    expect(href).toContain("/api/companies/acme-aps/trial-balance/export");
+    expect(href).toContain("format=csv");
+    expect(link.hasAttribute("download")).toBe(true);
+  });
+
   test("an archived year renders the archived rows under a read-only banner", async () => {
     mockFetch(
       route({ archived: true, archivedSource: "dinero", selectedYear: "2025" }),

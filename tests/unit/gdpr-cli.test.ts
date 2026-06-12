@@ -1,6 +1,6 @@
 // Tests: src/cli/gdpr.ts, src/cli.ts (GDPR export/erase CLI — #184)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -17,12 +17,21 @@ async function runCli(args: string[]) {
   return { stdout, stderr, exitCode };
 }
 
+// #248: init seeds the OS-derived actor into the allowlist. Use the same
+// USER for init as runCli does for follow-on mutating commands so the
+// derived actor on both calls is the same identity.
+async function initCompany(company: string): Promise<void> {
+  await Bun.$`bun run src/cli.ts init --company ${company}`
+    .env({ ...process.env, USER: "gdpr-test" })
+    .quiet();
+}
+
 describe("GDPR CLI", () => {
   test("exports a customer's personal data and then erases it once unretained", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-cli-"));
     const company = join(root, "company");
 
-    await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
+    await initCompany(company);
     const created = await runCli([
       "customer", "create", "--company", company,
       "--name", "GDPR Kunde", "--cvr", "DK90909090",
@@ -59,14 +68,143 @@ describe("GDPR CLI", () => {
     expect(reExportJson.records[0].personalData.email).toBeNull();
   });
 
+  test("audit-log eksporterer GDPR-handlinger med deterministisk fingerprint (#355)", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-cli-audit-"));
+    const company = join(root, "company");
+    await initCompany(company);
+    // Skab GDPR-events: opret en kunde + kør discover så audit-log'en får
+    // mindst én gdpr_discover-række. Vi behøver ikke en eksport her —
+    // discover er nok til at vise at audit-log'en filtrerer rigtigt.
+    await runCli([
+      "customer", "create", "--company", company,
+      "--name", "Audit Kunde", "--cvr", "DK55555555",
+    ]);
+    await runCli([
+      "gdpr", "discover", "--company", company, "--cvr", "DK55555555",
+    ]);
+    const audit = await runCli([
+      "gdpr", "audit-log", "--company", company,
+    ]);
+    expect(audit.exitCode).toBe(0);
+    const result = JSON.parse(audit.stdout);
+    expect(result.ok).toBe(true);
+    expect(result.events.length).toBeGreaterThanOrEqual(1);
+    // fingerprint er sha256: præfikset
+    expect(result.fingerprint).toMatch(/^sha256:[a-f0-9]{64}$/);
+    // ingen signature uden --sign-with-ed25519
+    expect(result.signature).toBeUndefined();
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  test("discover lists rows pr. tabel for et subject (#353)", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-cli-discover-"));
+    const company = join(root, "company");
+
+    await initCompany(company);
+    const created = await runCli([
+      "customer", "create", "--company", company,
+      "--name", "Discover Kunde", "--cvr", "DK77777777",
+      "--email", "discover@example.com",
+    ]);
+    expect(created.exitCode).toBe(0);
+
+    const discovered = await runCli([
+      "gdpr", "discover", "--company", company, "--cvr", "DK77777777",
+    ]);
+    expect(discovered.exitCode).toBe(0);
+    const result = JSON.parse(discovered.stdout);
+    expect(result.ok).toBe(true);
+    expect(result.subject.cvr).toBe("DK77777777");
+    // Mindst customers-tabellen skal pege på kunden.
+    expect(result.byTable.customers).toBeGreaterThanOrEqual(1);
+    expect(result.rows.length).toBeGreaterThanOrEqual(1);
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  test("discover uden subject afvises", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-cli-discover-nosubj-"));
+    const company = join(root, "company");
+    await initCompany(company);
+    const discovered = await runCli(["gdpr", "discover", "--company", company]);
+    rmSync(root, { recursive: true, force: true });
+    expect(discovered.exitCode).toBe(1);
+    expect(JSON.parse(discovered.stdout)).toMatchObject({ ok: false });
+  });
+
   test("export requires a subject identifier", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-cli-nosubj-"));
     const company = join(root, "company");
-    await Bun.$`bun run src/cli.ts init --company ${company}`.quiet();
+    await initCompany(company);
 
     const exported = await runCli(["gdpr", "export", "--company", company]);
     rmSync(root, { recursive: true, force: true });
     expect(exported.exitCode).toBe(1);
     expect(JSON.parse(exported.stdout)).toMatchObject({ ok: false });
+  });
+
+  test("export --out writes the insight report as one JSON file", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-cli-out-"));
+    const company = join(root, "company");
+    const outDir = join(root, "export");
+
+    await initCompany(company);
+    await runCli([
+      "customer", "create", "--company", company,
+      "--name", "Out Kunde", "--cvr", "DK11111111",
+      "--email", "out@example.com",
+    ]);
+
+    const exported = await runCli([
+      "gdpr", "export", "--company", company,
+      "--subject", "DK11111111", "--out", outDir,
+    ]);
+    expect(exported.exitCode).toBe(0);
+    const payload = JSON.parse(exported.stdout);
+    expect(payload.outPath).toBeDefined();
+    expect(existsSync(payload.outPath)).toBe(true);
+    const onDisk = JSON.parse(readFileSync(payload.outPath, "utf8"));
+    expect(onDisk.ok).toBe(true);
+    expect(onDisk.subject.cvr).toBe("DK11111111");
+    expect(onDisk.records[0].personalData.email).toBe("out@example.com");
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  test("forget without --after-retention-expiry is refused", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-cli-forget-no-"));
+    const company = join(root, "company");
+    await initCompany(company);
+    await runCli([
+      "customer", "create", "--company", company,
+      "--name", "Forget Kunde", "--cvr", "DK22222222",
+    ]);
+
+    const refused = await runCli([
+      "gdpr", "forget", "--company", company, "--subject", "DK22222222",
+    ]);
+    rmSync(root, { recursive: true, force: true });
+    expect(refused.exitCode).toBe(2);
+    expect(refused.stderr).toContain("--after-retention-expiry");
+  });
+
+  test("forget --after-retention-expiry runs and redacts unretained personal data", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-gdpr-cli-forget-ok-"));
+    const company = join(root, "company");
+    await initCompany(company);
+    await runCli([
+      "customer", "create", "--company", company,
+      "--name", "Forget Kunde", "--cvr", "DK33333333",
+      "--email", "forget@example.com",
+    ]);
+
+    const forgotten = await runCli([
+      "gdpr", "forget", "--company", company, "--subject", "DK33333333",
+      "--as-of", "2099-01-01", "--after-retention-expiry",
+    ]);
+    expect(forgotten.exitCode).toBe(0);
+    const payload = JSON.parse(forgotten.stdout);
+    expect(payload.ok).toBe(true);
+    expect(payload.erasedCount).toBeGreaterThan(0);
+    expect(payload.refusedCount).toBe(0);
+    rmSync(root, { recursive: true, force: true });
   });
 });

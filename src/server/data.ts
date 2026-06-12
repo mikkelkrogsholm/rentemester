@@ -40,6 +40,13 @@ export type {
 // --- data/exceptions.ts ----------------------------------------------------
 export type { ExceptionGroup } from "./data/exceptions";
 
+// --- data/agent-suggestions.ts ---------------------------------------------
+export { buildCompanyAgentSuggestions } from "./data/agent-suggestions";
+export type {
+  AgentSuggestionRow,
+  CompanyAgentSuggestions,
+} from "./data/agent-suggestions";
+
 // --- data/vat.ts -----------------------------------------------------------
 export type { VatPosition, VatRubrikker } from "./data/vat";
 
@@ -82,6 +89,28 @@ export type {
   CompanyMultiYear,
 } from "./data/statements";
 
+// --- data/payables-view.ts -------------------------------------------------
+export { buildCompanyPayables } from "./data/payables-view";
+export type {
+  CompanyPayables,
+  CompanyPayableRow,
+  UnregisteredPurchaseDocumentRow,
+  PayableExpenseAccountOption,
+  PayableVendorOption,
+} from "./data/payables-view";
+
+// --- data/budget.ts --------------------------------------------------------
+export {
+  buildCompanyBudget,
+  buildCompanyBudgetVsActual,
+} from "./data/budget";
+export type {
+  CompanyBudgetLine,
+  CompanyBudget,
+  CompanyBudgetVsActualLine,
+  CompanyBudgetVsActual,
+} from "./data/budget";
+
 // --- data/company-views.ts -------------------------------------------------
 export {
   buildCompanySettings,
@@ -90,10 +119,17 @@ export {
   buildCompanyBank,
   buildCompanyVat,
   buildCompanyDocuments,
+  buildDocumentBookingOptions,
+  resolveCompanyDocumentFile,
+  resolveCompanyIssuedInvoicePdf,
   buildCompanyInvoices,
   buildCompanyContacts,
   buildCompanyObligations,
   buildCompanyCashflow,
+  buildCompanyRecurringInvoices,
+  buildCompanyMileage,
+  buildCompanyAssets,
+  buildAssetNextDepreciationPeriod,
 } from "./data/company-views";
 export type {
   CompanySettingsView,
@@ -105,6 +141,10 @@ export type {
   CompanyVat,
   DocumentRow,
   CompanyDocuments,
+  DocumentBookingOptions,
+  DocumentBookingOptionsDocument,
+  ExpenseAccountOption,
+  UnmatchedBankOption,
   CompanyInvoiceRow,
   CompanyInvoices,
   ContactCustomerRow,
@@ -115,4 +155,14 @@ export type {
   CashflowMonth,
   CashflowBalancePoint,
   CompanyCashflow,
+  RecurringInvoiceGenerationRow,
+  RecurringInvoiceTemplateRow,
+  CompanyRecurringInvoices,
+  MileageEntryRow,
+  MileageMonthRow,
+  CompanyMileage,
+  AssetRow,
+  AssetWriteOffRow,
+  CompanyAssets,
+  NextDepreciationPeriodView,
 } from "./data/company-views";

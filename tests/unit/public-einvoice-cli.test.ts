@@ -152,8 +152,10 @@ describe("public e-invoice CLI", () => {
     expect(JSON.parse(exportStdout).sha256).toBe(JSON.parse(rerunStdout).sha256);
     expect(rerunExitCode).toBe(0);
     expect(firstXml).toBe(secondXml);
-    expect(firstXml).toContain("<cbc:CustomizationID>urn:fdc:oioubl.dk:trns:billing:invoice:3.0</cbc:CustomizationID>");
-    expect(firstXml).toContain('<cbc:EndpointID schemeID="0188">5790000000001</cbc:EndpointID>');
+    expect(firstXml).toContain(
+      "<cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0</cbc:CustomizationID>",
+    );
+    expect(firstXml).toContain('<cbc:EndpointID schemeID="0088">5790000000001</cbc:EndpointID>');
     rmSync(root, { recursive: true, force: true });
   });
 

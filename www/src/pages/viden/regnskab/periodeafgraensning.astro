@@ -1,0 +1,63 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import PageHero from "../../../components/PageHero.astro";
+import SeoEvidence from "../../../components/SeoEvidence.astro";
+import { SITE } from "../../../consts";
+---
+
+<BaseLayout
+  title="Periodeafgrænsning i bogføring"
+  description="Periodeafgrænsning i Rentemester: forudbetalinger, deferred revenue, balancekonto, deterministisk indregning og auditspor."
+  pathname="/viden/regnskab/periodeafgraensning"
+  pageType="Article"
+  datePublished="2026-05-24"
+  dateModified="2026-05-24"
+  reviewedBy={SITE.author}
+>
+  <PageHero
+    eyebrow="Regnskab"
+    title="Udgifter og indtægter skal lande i den rigtige periode"
+    lead="Periodeafgrænsning flytter ikke penge. Den flytter regnskabseffekten, så en forudbetaling eller forudfaktureret indtægt indregnes over de perioder den faktisk vedrører."
+  />
+
+  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
+    <p>
+      Mange små virksomheder betaler software, forsikring eller hosting for flere måneder ad gangen. Hvis hele beløbet rammer resultatet på betalingsdagen, kan måneds- og kvartalsrapporter blive misvisende. Periodeafgrænsning parkerer beløbet på balancen og indregner det gradvist.
+    </p>
+
+    <SeoEvidence
+      updated="2026-05-24"
+      status="QA-gennemgået mod accruals-kode, compliance-matrix og unit tests."
+      sources={[
+        { href: `${SITE.github}/blob/main/src/core/accruals.ts`, label: "accruals.ts", external: true },
+        { href: `${SITE.github}/blob/main/tests/unit/accruals.test.ts`, label: "Accrual tests", external: true },
+        { href: `${SITE.github}/blob/main/docs/compliance/requirements-by-area.md#11-periodeafgraensning-accruals`, label: "Compliance: periodeafgrænsning", external: true },
+      ]}
+      related={[
+        { href: "/viden/regnskab/aarsrapport", label: "Årsrapport og iXBRL" },
+        { href: "/viden/begreber/debet-kredit", label: "Debet og kredit" },
+        { href: "/viden/anlaegsaktiver/afskrivning", label: "Anlægsaktiver og afskrivning" },
+      ]}
+    />
+
+    <h2>Hvornår bruges det?</h2>
+    <p>
+      Typiske cases er årsabonnementer, forsikringer, husleje betalt forud eller indtægter der faktureres før ydelsen leveres. Pointen er at rapporten for hver periode skal vise den del af udgiften eller indtægten, der hører til perioden.
+    </p>
+
+    <h2>Sådan håndterer Rentemester det</h2>
+    <p>
+      Rentemester opretter først en balanceret park-postering på en balancekonto. Derefter kan systemet indregne faste perioder deterministisk, så delbeløbene summerer præcist til totalen. Eventuelle øreafrundinger lander i sidste periode i stedet for at skabe skjulte differencer.
+    </p>
+
+    <h2>Eksempel</h2>
+    <p>
+      En softwarelicens på 12.000 kr. dækker januar til december. I stedet for at belaste januar med hele udgiften, kan Rentemester parkere beløbet og indregne 1.000 kr. pr. måned. Hver indregning er en selvstændig postering med auditspor.
+    </p>
+
+    <h2>Begrænsning</h2>
+    <p>
+      Systemet kan lave den deterministiske fordeling, men det skal stadig afgøres om en konkret faktura faktisk skal periodiseres. Det valg bør være eksplicit, især ved blandede ydelser, delperioder eller beløb hvor væsentlighed er en faglig vurdering.
+    </p>
+  </article>
+</BaseLayout>

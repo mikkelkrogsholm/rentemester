@@ -77,6 +77,18 @@ describe("IncomeStatementView — Resultatopgørelse", () => {
     );
   });
 
+  test("#372 — 'Hent CSV' links to the income-statement CSV export endpoint", async () => {
+    mockFetch(route());
+    renderView();
+    const link = await screen.findByRole("link", { name: "Hent CSV" });
+    const href = link.getAttribute("href") ?? "";
+    expect(href).toContain("/api/companies/acme-aps/income-statement/export");
+    expect(href).toContain("format=csv");
+    expect(href).toContain("year=2026");
+    // The browser triggers a download from the link rather than a navigation.
+    expect(link.hasAttribute("download")).toBe(true);
+  });
+
   test("an archived year renders the statement under a read-only banner", async () => {
     mockFetch(
       route({ archived: true, archivedSource: "dinero", selectedYear: "2024" }),

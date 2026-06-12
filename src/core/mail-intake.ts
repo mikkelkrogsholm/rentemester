@@ -45,10 +45,30 @@ export type MailAttachment = {
 export type ParsedEml = {
   messageId: string | null;
   from: string | null;
+  /** #352 — Reply-To bevarer ofte den oprindelige afsender på en forwardet mail. */
+  replyTo: string | null;
+  /**
+   * #352 — X-Forwarded-For (eller den klassiske "Resent-From") afslører at
+   * mailen er forwardet; cockpittet kan vise det som "videresendt fra <x>".
+   */
+  forwardedFrom: string | null;
   subject: string | null;
   date: string | null;
+  /**
+   * #352 — Den samlede rå-størrelse i bytes inden parsing. Bruges af
+   * MAX_EML_SIZE_BYTES-checket så vi kan rejse en eksception før vi parser
+   * et helt 200 MB attached-PDF-monster.
+   */
+  rawByteSize: number;
   attachments: MailAttachment[];
 };
+
+/**
+ * #352 — Default maks-størrelse for en enkelt mail (rå bytes). Mails der
+ * overskrider grænsen får en MAIL_INTAKE_TOO_LARGE-eksception i stedet for
+ * at blive forsøgt parset. Kan overstyres via IngestMailDropOptions.
+ */
+export const DEFAULT_MAX_EML_SIZE_BYTES = 25 * 1024 * 1024;
 
 export type MailIntakeMetadataInput = Omit<DocumentMetadata, "source">;
 
@@ -59,6 +79,12 @@ export type IngestMailDropOptions = {
   metadataPerMessage?: Record<string, MailIntakeMetadataInput>;
   /** Forwarded to ingestDocument for forced logical-duplicate scans. */
   ingestOptions?: IngestDocumentOptions;
+  /**
+   * #352 — Maks-størrelse pr. eml-fil i bytes. Default
+   * `DEFAULT_MAX_EML_SIZE_BYTES`. Mails over grænsen får en
+   * MAIL_INTAKE_TOO_LARGE-eksception i stedet for at blive parset.
+   */
+  maxEmlSizeBytes?: number;
 };
 
 export type IngestMailDropResult = {
@@ -224,6 +250,8 @@ function extensionForMime(mimeType: string): string {
  */
 export function parseEml(raw: Buffer | string): ParsedEml {
   const text = typeof raw === "string" ? raw : raw.toString("binary");
+  const rawByteSize =
+    typeof raw === "string" ? Buffer.byteLength(raw, "binary") : raw.length;
   const { headers } = splitHeadersAndBody(text);
   const attachments = collectAttachments(text).sort((a, b) => {
     if (a.filename !== b.filename) return a.filename < b.filename ? -1 : 1;
@@ -232,8 +260,18 @@ export function parseEml(raw: Buffer | string): ParsedEml {
   return {
     messageId: headers.get("message-id") ?? null,
     from: decodeHeaderText(headers.get("from")) ?? null,
+    // #352 — bevar oprindelig afsender på forwardede mails. Reply-To
+    // bruges af de fleste mail-klienter når man trykker "Videresend";
+    // X-Forwarded-For / Resent-From fortæller specifikt at det ER en
+    // videresendt mail.
+    replyTo: decodeHeaderText(headers.get("reply-to")) ?? null,
+    forwardedFrom:
+      decodeHeaderText(headers.get("x-forwarded-for")) ??
+      decodeHeaderText(headers.get("resent-from")) ??
+      null,
     subject: decodeHeaderText(headers.get("subject")) ?? null,
     date: headers.get("date") ?? null,
+    rawByteSize,
     attachments,
   };
 }
@@ -317,9 +355,33 @@ export function ingestMailDrop(
     return { ...result, ok: false, errors: [error instanceof Error ? error.message : String(error)] };
   }
 
+  const maxSize = options.maxEmlSizeBytes ?? DEFAULT_MAX_EML_SIZE_BYTES;
+
   for (const emlFile of emlFiles) {
     result.messagesProcessed += 1;
-    const parsed = parseEml(readFileSync(emlFile));
+    const raw = readFileSync(emlFile);
+    // #352 — refuse over-large mails BEFORE we parse them. A 200 MB
+    // ".eml" is almost always a bug (giant signed-image attachment, or a
+    // dump-of-everything) and parsing it can OOM the daemon.
+    if (raw.length > maxSize) {
+      const ex = recordException(db, {
+        type: "MAIL_INTAKE_TOO_LARGE",
+        severity: "medium",
+        message: `Mail message in ${emlFile} is ${raw.length} bytes (> ${maxSize}); refused to parse`,
+        requiredAction:
+          "Forward only the receipt itself or raise the maxEmlSizeBytes limit.",
+        sourceEvidence: {
+          rule: MAIL_INTAKE_RULES.EXCEPTION,
+          file: emlFile,
+          rawByteSize: raw.length,
+          maxEmlSizeBytes: maxSize,
+        },
+        postingPreview: { nextStep: "documents ingest" },
+      });
+      if (ex.ok && !ex.duplicate) result.exceptionsCreated += 1;
+      continue;
+    }
+    const parsed = parseEml(raw);
 
     // Ambiguous metadata: without a stable message-id we cannot dedup.
     if (!parsed.messageId || parsed.messageId.trim().length === 0) {

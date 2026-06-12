@@ -3,6 +3,7 @@ import { closeAccountingPeriod, reopenAccountingPeriod } from "../core/periods";
 import { openCommandDb } from "../cli-dispatch";
 import type { CommandContext, CommandDispatch } from "../cli-dispatch";
 import {
+  actorMatchesAllowlist,
   inferredMutationActor,
   isCanonicalActorId,
   loadActorAllowlist,
@@ -25,7 +26,10 @@ function enforceReopenActor(ctx: CommandContext, root: string): void {
       ctx.fatal("explicit actor must use canonical format user:<id>, agent:<id>, or system:<id>");
     }
     const allowlist = loadActorAllowlist(root);
-    if (!allowlist.has(explicitActor)) {
+    // #248: case-insensitive match — an explicit `--actor user:mikkel` and a
+    // derived USER=Mikkel are the same identity; the allowlist must not reject
+    // one form while letting the other through.
+    if (!actorMatchesAllowlist(explicitActor, allowlist)) {
       ctx.fatal(
         `actor '${explicitActor}' is not in config/policy.yaml actor_allowlist; add it or run without --actor`,
       );
@@ -59,6 +63,9 @@ export function register(dispatch: CommandDispatch): void {
       kind: (ctx.arg("--kind") as any) ?? undefined,
       status: (ctx.arg("--status") as any) ?? undefined,
       reference: ctx.arg("--reference") ?? undefined,
+      // Bypass the open-high/medium-exceptions safety guard (Batch D-7).
+      // The bypass itself is visible in the close result + audit log.
+      force: ctx.arg("--force") === "yes" || ctx.arg("--force") === "true",
     });
     ctx.emitResult(result as Record<string, unknown>);
     db.close();

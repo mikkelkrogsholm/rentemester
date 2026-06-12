@@ -16,11 +16,14 @@ import { z } from "zod";
 import {
   postJournalEntry,
   reverseJournalEntry,
+  dryRunJournalEntry,
   type JournalEntryInput,
 } from "../../core/ledger";
 import { withActor } from "../actor";
 import { envelopeShape, errorEnvelope, successEnvelope, wrapCoreResult } from "../envelope";
 import { withCompanyDb, withCompanyDbConfirmed, resolveJournalEntryId, confirmField } from "../tool-runtime";
+import { applyPagination, paginationFields, paginationDescriptionSuffix } from "../pagination";
+import { isValidIsoDate } from "../../core/dates";
 
 const lineSchema = z.object({
   accountNo: z
@@ -109,6 +112,8 @@ export function registerJournalTools(server: McpServer): void {
       description:
         "Bogfører en manuel finanspostering i den append-only kæde. " +
         "Kræver confirm:true. Modposteres via journal_reverse. " +
+        "Kør journal_dry_run med samme payload først for en ikke-bindende " +
+        "forhåndsvisning af postering og kontosaldi. " +
         "Alle beløb er i kroner (decimal DKK, 2 decimaler — ikke øre). " +
         "payload.documentId er påkrævet hvis nogen linje bogfører på en udgifts- eller " +
         "indtægtskonto; valgfri kun for posteringer der udelukkende rører balancekonti. " +
@@ -141,6 +146,42 @@ export function registerJournalTools(server: McpServer): void {
   );
 
   server.registerTool(
+    "journal_dry_run",
+    {
+      title: "Dry-run journal entry",
+      description:
+        "Forhåndsviser hvad journal_post ville gøre med præcis samme payload — UDEN at " +
+        "skrive noget. Posteringen køres mod den append-only kæde i en transaktion der " +
+        "altid rulles tilbage: intet journalnummer forbruges, intet bilag bogføres. " +
+        "Svaret rummer det entryNo og entryHash posteringen ville få, den nuværende " +
+        "previousHash, samt accountEffects: saldo før/efter pr. berørt konto opgjort " +
+        "som debet-minus-kredit-netto i kroner — kreditnormale konti (indtægt, moms, " +
+        "egenkapital, gæld) står derfor negative. " +
+        "VIGTIGT: resultatet er ikke-bindende — entryNo, previousHash og saldi kan " +
+        "ændre sig hvis en anden postering bogføres inden journal_post kaldes. " +
+        "Read-only; intet confirm påkrævet.",
+      inputSchema: {
+        company: z.string().min(1, "company path is required"),
+        payload: payloadSchema,
+      },
+      outputSchema: envelopeShape,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    withCompanyDb<{
+      company: string;
+      payload: z.infer<typeof payloadSchema>;
+    }>(server, ({ db, actor, args }) => {
+      const entry: JournalEntryInput = withActor(args.payload as JournalEntryInput, actor);
+      return wrapCoreResult(dryRunJournalEntry(db, entry));
+    }),
+  );
+
+  server.registerTool(
     "journal_reverse",
     {
       title: "Reverse journal entry",
@@ -149,7 +190,7 @@ export function registerJournalTools(server: McpServer): void {
         "Identificér posten via entryId, entryNo eller matchText (+ valgfri matchDate/matchDocumentId). " +
         "write-irreversible.",
       inputSchema: {
-        company: z.string().min(1),
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         entryId: z
           .number()
           .int()
@@ -237,20 +278,60 @@ export function registerJournalTools(server: McpServer): void {
     "journal_list",
     {
       title: "List journal entries",
-      description: "Lister finansposteringer i append-only kæden. Read-only.",
-      inputSchema: { company: z.string().min(1) },
+      description:
+        "Lister finansposteringer i append-only kæden med valgfri filtre på status og datointerval. Read-only." +
+        paginationDescriptionSuffix,
+      inputSchema: {
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
+        from: z
+          .string()
+          .optional()
+          .describe("Only entries with transaction_date on or after this date (YYYY-MM-DD)."),
+        to: z
+          .string()
+          .optional()
+          .describe("Only entries with transaction_date on or before this date (YYYY-MM-DD)."),
+        status: z
+          .enum(["all", "posted", "reversed"])
+          .optional()
+          .describe(
+            "Filter by entry status: 'all' (default), 'posted' (active entries) or 'reversed' " +
+              "(entries that have been modposteret).",
+          ),
+        ...paginationFields,
+      },
       outputSchema: envelopeShape,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },
-    withCompanyDb<{ company: string }>(server, ({ db }) => {
+    withCompanyDb<{
+      company: string;
+      from?: string;
+      to?: string;
+      status?: "all" | "posted" | "reversed";
+      limit?: number;
+      offset?: number;
+    }>(server, ({ db, args }) => {
+      const errors: string[] = [];
+      if (args.from && !isValidIsoDate(args.from)) errors.push("from must be YYYY-MM-DD when present");
+      if (args.to && !isValidIsoDate(args.to)) errors.push("to must be YYYY-MM-DD when present");
+      if (errors.length > 0) return errorEnvelope(errors);
+
+      const status = args.status ?? "all";
       const rows = db
         .query(
           `SELECT id, entry_no, transaction_date, text, currency, amount_foreign, amount_dkk,
                   fx_rate_to_dkk, document_id, source_bank_transaction_id, status, reversal_of_entry_id
            FROM journal_entries
+           WHERE (? IS NULL OR transaction_date >= ?)
+             AND (? IS NULL OR transaction_date <= ?)
+             AND (? = 'all' OR status = ?)
            ORDER BY id DESC`,
         )
-        .all() as Array<{
+        .all(
+          args.from ?? null, args.from ?? null,
+          args.to ?? null, args.to ?? null,
+          status, status,
+        ) as Array<{
           id: number;
           entry_no: string;
           transaction_date: string;
@@ -264,23 +345,22 @@ export function registerJournalTools(server: McpServer): void {
           status: string;
           reversal_of_entry_id: number | null;
         }>;
-      return successEnvelope({
-        entries: rows.map((row) => ({
-          id: row.id,
-          entryNo: row.entry_no,
-          transactionDate: row.transaction_date,
-          text: row.text,
-          currency: row.currency,
-          amountForeign: row.amount_foreign,
-          amountDkk: row.amount_dkk,
-          fxRateToDkk: row.fx_rate_to_dkk,
-          documentId: row.document_id,
-          sourceBankTransactionId: row.source_bank_transaction_id,
-          status: row.status,
-          reversalOfEntryId: row.reversal_of_entry_id,
-        })),
-        count: rows.length,
-      });
+      const mapped = rows.map((row) => ({
+        id: row.id,
+        entryNo: row.entry_no,
+        transactionDate: row.transaction_date,
+        text: row.text,
+        currency: row.currency,
+        amountForeign: row.amount_foreign,
+        amountDkk: row.amount_dkk,
+        fxRateToDkk: row.fx_rate_to_dkk,
+        documentId: row.document_id,
+        sourceBankTransactionId: row.source_bank_transaction_id,
+        status: row.status,
+        reversalOfEntryId: row.reversal_of_entry_id,
+      }));
+      const { pageRows, meta } = applyPagination(mapped, { limit: args.limit, offset: args.offset });
+      return successEnvelope({ entries: pageRows, ...meta });
     }),
   );
 }

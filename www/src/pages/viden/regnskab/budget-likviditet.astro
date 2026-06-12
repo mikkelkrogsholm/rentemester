@@ -1,0 +1,64 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import PageHero from "../../../components/PageHero.astro";
+import SeoEvidence from "../../../components/SeoEvidence.astro";
+import { SITE } from "../../../consts";
+---
+
+<BaseLayout
+  title="Budget og likviditetsprognose"
+  description="Budget og likviditet i Rentemester: budget vs. faktisk, åbne fakturaer, gentagne indtægter, bankbalance og forsigtig prognose."
+  pathname="/viden/regnskab/budget-likviditet"
+  pageType="Article"
+  datePublished="2026-05-24"
+  dateModified="2026-05-24"
+  reviewedBy={SITE.author}
+>
+  <PageHero
+    eyebrow="Regnskab"
+    title="Likviditet er ikke det samme som resultat"
+    lead="Et overskud på papiret kan stadig give en presset bankkonto. Rentemester skelner mellem budget, faktisk bogføring og en forsigtig likviditetsprognose."
+  />
+
+  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
+    <p>
+      Små virksomheder styrer ofte efter kontoen i banken. Det er forståeligt, men ikke nok. Budgettet viser forventningen, resultatet viser periodens bogføring, og likviditeten viser om der faktisk er penge til kommende betalinger.
+    </p>
+
+    <SeoEvidence
+      updated="2026-05-24"
+      status="QA-gennemgået mod budget-/liquidity-kode, dashboard-spec og tests."
+      sources={[
+        { href: `${SITE.github}/blob/main/src/core/budget.ts`, label: "budget.ts", external: true },
+        { href: `${SITE.github}/blob/main/src/core/liquidity-forecast.ts`, label: "liquidity-forecast.ts", external: true },
+        { href: `${SITE.github}/blob/main/tests/unit/liquidity-forecast.test.ts`, label: "Liquidity forecast tests", external: true },
+        { href: `${SITE.github}/blob/main/docs/dashboard-spec.md#8c-budget--likviditet-budget--liquidity-card`, label: "Dashboard spec: budget og likviditet", external: true },
+      ]}
+      related={[
+        { href: "/viden/regnskab/flere-virksomheder", label: "Flere virksomheder og cockpit" },
+        { href: "/viden/debitorer/faktura-status", label: "Fakturastatus" },
+        { href: "/viden/fakturering/gentagne-fakturaer", label: "Gentagne fakturaer" },
+      ]}
+    />
+
+    <h2>Hvad prognosen bygger på</h2>
+    <p>
+      En nyttig likviditetsprognose bør starte i den bogførte bankbalance og derefter lægge kendte eller sandsynlige pengestrømme ovenpå. Det kan være åbne kundefakturaer, gentagne fakturaer, budgetterede omkostninger og kendte kreditorbetalinger.
+    </p>
+
+    <h2>Sådan håndterer Rentemester det</h2>
+    <p>
+      Rentemester har budgetlogik og en likviditetsprognose, der kan samle bankbalance, fakturaflow, gentagne indtægter og budgetterede omkostninger. Dashboardet bruger det som et styringssignal, ikke som et løfte om fremtiden.
+    </p>
+
+    <h2>Eksempel</h2>
+    <p>
+      Hvis banken viser 42.000 kr., der ligger to åbne kundefakturaer på 30.000 kr., og der forventes 18.000 kr. i faste omkostninger næste måned, kan prognosen vise et mere praktisk billede end resultatopgørelsen alene.
+    </p>
+
+    <h2>Begrænsning</h2>
+    <p>
+      Prognosen er kun så god som inputtet. Manglende bankimport, uregistrerede kreditorer, usikre betalingsdatoer eller private hævninger kan gøre billedet forkert. Derfor bør likviditet vises med tydelige forudsætninger og ikke som en absolut sandhed.
+    </p>
+  </article>
+</BaseLayout>

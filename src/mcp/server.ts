@@ -26,8 +26,10 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerAllTools } from "./registry";
 
-const SERVER_NAME = "rentemester-mcp";
-const SERVER_VERSION = "0.0.1";
+// Exported so the `system_about` MCP tool can return the live identity
+// without re-declaring it. (Batch F-2)
+export const SERVER_NAME = "rentemester-mcp";
+export const SERVER_VERSION = "0.0.1";
 
 /**
  * Orientering der sendes til agenten i `initialize`-svarets
@@ -47,7 +49,7 @@ const SERVER_INSTRUCTIONS = [
   "",
   "Én svarform er IKKE konvolutten: hvis payload'en er schema-ugyldig (manglende påkrævet felt, forkert type, fx journal_post med færre end 2 linjer), afviser MCP-SDK'ens input-validering kaldet FØR handleren — svaret er da en rå JSON-RPC-fejl med code -32602 (\"Input validation error\"), isError:true og UDEN structuredContent/errors[]. Forgren på isError===true && structuredContent===undefined før du læser errors[]; ret det navngivne felt og kald igen. Den fulde -32602-kontrakt står i docs/mcp-agent-contract.md.",
   "",
-  "Retries: der findes ingen generel idempotency-mekanisme — en gentaget write (fx journal_post) dobbelt-bogfører. Læs tilstanden tilbage (status/list) før du genudsteder en write. Backup-låsen kan blokere bogføring hvis den ugentlige backup er forsømt — kør da system_backup (archive:true) for at låse op.",
+  "Retries: der findes ingen generel idempotency-mekanisme — en gentaget write (fx journal_post) dobbelt-bogfører. Læs tilstanden tilbage (status/list) før du genudsteder en write. Backup-låsen kan blokere bogføring hvis den ugentlige backup er forsømt — den fejler med konvoluttens stabile `code: \"BACKUP_LOCKED\"` (cross-cutting precondition, dokumenteret i docs/mcp-tool-surface.md). Diagnosticér med system_backup_status og kør derefter system_backup (archive:true) for at låse op.",
   "",
   "Den fulde kontrakt — tool-katalog, rækkefølge og konventioner — står i docs/mcp-tool-surface.md og docs/mcp-agent-contract.md.",
 ].join("\n");

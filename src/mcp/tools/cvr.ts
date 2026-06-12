@@ -20,7 +20,7 @@ export function registerCvrTools(server: McpServer): void {
       description:
         "Slår en dansk virksomhed op i CVR-registret via CVR-nummer og cacher snapshottet lokalt. Read-only. Kræver miljøvariablerne CVR_USERNAME/CVR_PASSWORD.",
       inputSchema: {
-        company: z.string().min(1),
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         cvr: z.string().min(1),
       },
       outputSchema: envelopeShape,
@@ -39,7 +39,7 @@ export function registerCvrTools(server: McpServer): void {
       description:
         "Henter virksomhedens egne stamdata fra CVR-registret og opdaterer companies-rækken (navn, adresse, branche, virksomhedsform, status). Kræver confirm:true. Regnskabsåret røres aldrig; et afvigende regnskabsår rapporteres kun. write-reversible.",
       inputSchema: {
-        company: z.string().min(1),
+        company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         confirm: confirmField,
       },
       outputSchema: envelopeShape,

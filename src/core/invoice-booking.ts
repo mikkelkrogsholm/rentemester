@@ -58,7 +58,18 @@ export function postIssuedInvoiceToLedger(db: Database, input: PostIssuedInvoice
 
   const existing = db.query("SELECT id, entry_no FROM journal_entries WHERE document_id = ? AND reversal_of_entry_id IS NULL LIMIT 1").get(input.invoiceDocumentId) as { id: number; entry_no: string } | null;
   if (existing) {
-    return { ok: false, appliedRules: [RULE_ID], errors: [`invoice ${doc.invoice_no} already has journal entry ${existing.entry_no}`] };
+    // Issue #385: lead with a friendly Danish sentence so the cockpit
+    // owner and the CLI user both see plain Danish instead of an internal
+    // English phrase. The English suffix is kept verbatim because the
+    // conflict heuristic in `withCompanyMutation` and several core tests
+    // match on "already has journal entry".
+    return {
+      ok: false,
+      appliedRules: [RULE_ID],
+      errors: [
+        `Faktura ${doc.invoice_no} er allerede bogført som postering ${existing.entry_no} og kan ikke bogføres igen. (invoice ${doc.invoice_no} already has journal entry ${existing.entry_no})`,
+      ],
+    };
   }
 
   const payload = doc.payload_json ? JSON.parse(doc.payload_json) : null;

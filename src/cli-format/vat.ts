@@ -254,6 +254,62 @@ export function renderAnnualReport(result: Record<string, unknown>): string {
   return lines.join("\n");
 }
 
+// --- Corporate tax return (oplysningsskema preparation) --------------------
+
+/**
+ * Render a `report tax` payload as Danish human text — the bookkept result,
+ * the deterministic skattemæssige reguleringer, the skattepligtig indkomst,
+ * the 22% selskabsskat and the needs-review items. The payload is the
+ * `TaxReturn` from `buildTaxReturn`.
+ */
+export function renderTaxReturn(result: Record<string, unknown>): string {
+  const from = asText(result.fiscalYearStart);
+  const to = asText(result.fiscalYearEnd);
+  const lines: string[] = [];
+  lines.push(`Skattemæssig indkomst (oplysningsskema) for regnskabsåret ${from} til ${to}`);
+  lines.push("");
+
+  lines.push(`  Årets resultat (bogført):        ${formatKroner(result.bookkeptResult)}`);
+  lines.push("");
+
+  const adjustments = asArray(result.adjustments);
+  lines.push("Skattemæssige reguleringer:");
+  if (adjustments.length === 0) {
+    lines.push("  (ingen deterministiske reguleringer fundet)");
+  } else {
+    for (const adj of adjustments) {
+      lines.push(`  + ${asText(adj.label)}: ${formatKroner(adj.amount)}`);
+    }
+  }
+  lines.push(`  Reguleringer i alt:              ${formatKroner(result.totalAdjustments)}`);
+  lines.push("");
+
+  lines.push(`  Skattepligtig indkomst:          ${formatKroner(result.taxableIncome)}`);
+  if (result.corporateTax === null || result.corporateTax === undefined) {
+    lines.push("  Selskabsskat (22%):              ikke beregnet (se needs-review)");
+  } else {
+    lines.push(`  Selskabsskat (22%):              ${formatKroner(result.corporateTax)}`);
+  }
+  lines.push("");
+
+  const needsReview = asArray(result.needsReview);
+  if (needsReview.length > 0) {
+    lines.push("Punkter til gennemgang (needs-review) — afklares af ejer eller revisor:");
+    for (const item of needsReview) {
+      lines.push(`  - ${asText(item.label)}`);
+      lines.push(`    ${asText(item.requiredAction)}`);
+    }
+    lines.push("");
+  }
+
+  if (result.disclaimer) {
+    lines.push(asText(result.disclaimer));
+  }
+  appendWarnings(lines, result);
+  if (lines[lines.length - 1] === "") lines.pop();
+  return lines.join("\n");
+}
+
 // --- Balance section helper ------------------------------------------------
 // Shared by the annual report (above) and the balance-sheet renderer.
 
