@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { config, get, makeWorkspace, rmSync, seedBankTransaction } from "./_shared";
+import { config, get, makeWorkspace, seedBankTransaction } from "./_shared";
 
+import { cleanupDir } from "../../helpers/cleanup";
 describe("cockpit API — cash flow (GET .../cashflow)", () => {
   test("computes monthly in/out and the balance trajectory from bank rows", async () => {
     const ws = makeWorkspace("cf-live", ["Acme ApS"]);
@@ -32,7 +33,7 @@ describe("cockpit API — cash flow (GET .../cashflow)", () => {
       expect(cf.balanceSeries.length).toBe(3);
       expect(cf.balanceSeries[cf.balanceSeries.length - 1].balance).toBe(1300);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -51,7 +52,7 @@ describe("cockpit API — cash flow (GET .../cashflow)", () => {
       expect(cf.closingBalance).toBe(1000);
       expect(cf.totalIn).toBe(600);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -70,7 +71,7 @@ describe("cockpit API — cash flow (GET .../cashflow)", () => {
       expect(cf.balanceSeries).toEqual([]);
       expect(cf.months.length).toBe(12);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -84,7 +85,7 @@ describe("cockpit API — cash flow (GET .../cashflow)", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

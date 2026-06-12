@@ -1,9 +1,10 @@
 // Tests: src/cli/invoice.ts, src/cli.ts (public e-invoice CLI)
 import { describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("public e-invoice CLI", () => {
   test("exports a deterministic public-recipient preview artifact", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-public-einvoice-cli-"));
@@ -77,7 +78,7 @@ describe("public e-invoice CLI", () => {
     expect(rerunExitCode).toBe(0);
     expect(firstXml).toBe(secondXml);
     expect(firstXml).toContain("<EanNumber>5790000000001</EanNumber>");
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("exports a deterministic public-recipient OIOUBL handoff artifact", async () => {
@@ -156,7 +157,7 @@ describe("public e-invoice CLI", () => {
       "<cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0</cbc:CustomizationID>",
     );
     expect(firstXml).toContain('<cbc:EndpointID schemeID="0088">5790000000001</cbc:EndpointID>');
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("submits a deterministic, idempotent PEPPOL submission envelope", async () => {
@@ -225,6 +226,6 @@ describe("public e-invoice CLI", () => {
     expect(firstResult.idempotencyKey).toBe(secondResult.idempotencyKey);
     expect(existsSync(outPath)).toBe(true);
     expect(readFileSync(outPath, "utf8")).toContain("ap-nemhandel-test");
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

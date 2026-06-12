@@ -76,9 +76,12 @@ type JsonRpcResponse = {
   error?: { code: number; message: string; data?: unknown };
 };
 
-const SERVER_PATH = new URL("../../src/mcp/server.ts", import.meta.url).pathname;
-const CLI_PATH = new URL("../../src/cli.ts", import.meta.url).pathname;
-const SEED_VIES_PATH = new URL("../../scripts/seed-vies-validation.ts", import.meta.url).pathname;
+import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
+
+const SERVER_PATH = resolve(fileURLToPath(new URL("../../src/mcp/server.ts", import.meta.url)));
+const CLI_PATH = resolve(fileURLToPath(new URL("../../src/cli.ts", import.meta.url)));
+const SEED_VIES_PATH = resolve(fileURLToPath(new URL("../../scripts/seed-vies-validation.ts", import.meta.url)));
 
 class McpClient {
   private proc: ReturnType<typeof Bun.spawn>;

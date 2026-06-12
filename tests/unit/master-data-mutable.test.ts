@@ -2,13 +2,14 @@
 // triggers were removed — they were a self-imposed constraint, not law) and
 // carry the phone/website contact columns.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { createCustomer, createVendor, listCustomers, listVendors } from "../../src/core/master-data";
 
+import { cleanupDir } from "../helpers/cleanup";
 function freshDb() {
   const root = mkdtempSync(join(tmpdir(), "rentemester-md-mut-"));
   const db = openDb(ensureCompanyDirs(root).db);
@@ -32,7 +33,7 @@ describe("customers/vendors are mutable master data", () => {
     expect(db.query("SELECT COUNT(*) AS n FROM customers").get()).toEqual({ n: 0 });
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a vendor row can be UPDATEd and DELETEd", () => {
@@ -45,7 +46,7 @@ describe("customers/vendors are mutable master data", () => {
     expect(() => db.run("DELETE FROM vendors WHERE id = ?", id)).not.toThrow();
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("phone and website round-trip on customers and vendors", () => {
@@ -76,6 +77,6 @@ describe("customers/vendors are mutable master data", () => {
     });
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

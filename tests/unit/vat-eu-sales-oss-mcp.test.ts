@@ -1,6 +1,6 @@
 // Tests: src/mcp/tools/vat.ts (vat_eu_sales_list, vat_oss_report MCP tools)
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, existsSync } from "node:fs";
+import { mkdtempSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -8,6 +8,7 @@ import { openDb, migrate } from "../../src/core/db";
 import { seedAccounts, postJournalEntry } from "../../src/core/ledger";
 import { ingestDocument } from "../../src/core/documents";
 
+import { cleanupDir } from "../helpers/cleanup";
 const SERVER_PATH = new URL("../../src/mcp/server.ts", import.meta.url).pathname;
 
 type JsonRpcResponse = { jsonrpc: "2.0"; id?: number; result?: any; error?: { code: number; message: string } };
@@ -98,7 +99,7 @@ beforeAll(async () => {
     ],
   });
   db.close();
-  rmSync(inbox, { recursive: true, force: true });
+  cleanupDir(inbox);
 
   client = new StdioMcpClient();
   const initResponse = await client.send("initialize", {
@@ -113,7 +114,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await client.close();
   if (companyRoot && existsSync(companyRoot)) {
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   }
 });
 

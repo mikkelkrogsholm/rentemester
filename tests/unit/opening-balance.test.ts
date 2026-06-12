@@ -1,11 +1,12 @@
 // Tests: src/core/opening-balance.ts (primobalance flow, #179)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { seedAccounts, verifyAuditChain } from "../../src/core/ledger";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   postOpeningBalance,
   getOpeningBalance,
@@ -49,7 +50,7 @@ describe("opening balance (primobalance)", () => {
       expect(verifyAuditChain(db).ok).toBe(true);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -72,7 +73,7 @@ describe("opening balance (primobalance)", () => {
       expect(count.n).toBe(0);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -95,7 +96,7 @@ describe("opening balance (primobalance)", () => {
       expect(count.n).toBe(1);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -124,7 +125,7 @@ describe("opening balance (primobalance)", () => {
       expect(marker!.journalEntryId).toBe(result.entryId!);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -145,7 +146,7 @@ describe("opening balance (primobalance)", () => {
       expect(getOpeningBalance(db)).toBeNull();
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -164,7 +165,7 @@ describe("opening balance (primobalance)", () => {
       expect(result.errors.join(" ").toLowerCase()).toContain("cut-over");
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -202,7 +203,7 @@ describe("opening balance (primobalance)", () => {
       expect(equity.net).toBe(75000);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });

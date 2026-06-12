@@ -1,9 +1,10 @@
 // Tests: src/cli/email.ts, src/cli.ts (invoice send CLI, #180)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 const INVOICE = {
   invoiceType: "full",
   vatTreatment: "standard",
@@ -61,7 +62,7 @@ describe("invoice send CLI", () => {
       "kunde@example.test",
     ]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode: result.exitCode, stderr: result.stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(result.stdout);
     expect(parsed.ok).toBe(true);
@@ -90,7 +91,7 @@ describe("invoice send CLI", () => {
       "kunde@example.test",
     ]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(result.exitCode).not.toBe(0);
     expect(result.stderr + result.stdout).toContain("smtp");
   });

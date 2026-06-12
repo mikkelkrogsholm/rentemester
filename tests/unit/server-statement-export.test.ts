@@ -11,7 +11,7 @@
 // - PDF afvises pænt med en 400 og en venlig dansk besked indtil PDF-slice'n
 //   lander i et opfølger-issue.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -22,6 +22,7 @@ import { companyPaths } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { postJournalEntry } from "../../src/core/ledger";
 import { ingestDocument } from "../../src/core/documents";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   exportBalanceCsv,
   exportIncomeStatementCsv,
@@ -148,7 +149,7 @@ describe("#372 — Resultatopgørelse CSV-eksport (GET …/income-statement/expo
       expect(body).toContain("Virksomhed;Acme ApS");
       expect(body).toContain("Rapport;Resultatopgørelse");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -163,7 +164,7 @@ describe("#372 — Resultatopgørelse CSV-eksport (GET …/income-statement/expo
       expect(res.status).toBe(200);
       expect(res.headers.get("content-type")).toContain("text/csv");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -185,7 +186,7 @@ describe("#372 — Resultatopgørelse CSV-eksport (GET …/income-statement/expo
       // %PDF- header skal være først.
       expect(head).toBe("%PDF-");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -198,7 +199,7 @@ describe("#372 — Resultatopgørelse CSV-eksport (GET …/income-statement/expo
       );
       expect(res.status).toBe(404);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -226,7 +227,7 @@ describe("#372 — Balance CSV-eksport (GET …/balance/export)", () => {
       // Ultimo-kolonnen bruger den faktiske ultimo-dato fra builderen.
       expect(body).toContain("Pr. 2026-12-31");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -252,7 +253,7 @@ describe("#372 — Saldobalance CSV-eksport (GET …/trial-balance/export)", () 
       // Bank-kontoen (2000) modtog både salgs- og købs-bevægelser.
       expect(body).toContain("2000");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -284,7 +285,7 @@ describe("#465 — Posteringer CSV-eksport (GET …/journal/export)", () => {
       // Total-linjen lukker filen.
       expect(body).toContain("I alt");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -304,7 +305,7 @@ describe("#465 — Posteringer CSV-eksport (GET …/journal/export)", () => {
       expect(body).toContain("3000");
       expect(body).not.toContain("Salg");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -319,7 +320,7 @@ describe("#465 — Posteringer CSV-eksport (GET …/journal/export)", () => {
       const body = (await res.json()) as { errors: string[]; code: string };
       expect(body.errors[0]).toContain("pdf");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -333,7 +334,7 @@ describe("#465 — Posteringer CSV-eksport (GET …/journal/export)", () => {
       expect(a.content).toBe(b.content);
       expect(a.filename).toBe(b.filename);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -357,7 +358,7 @@ describe("#372 — CSV-builderne er deterministiske", () => {
       const tbB = exportTrialBalanceCsv(ws, "acme-aps", 2026, opts);
       expect(tbA.content).toBe(tbB.content);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -376,7 +377,7 @@ describe("#372 — CSV-builderne er deterministiske", () => {
       expect(patterns).toContain("/api/companies/:slug/trial-balance/export");
       expect(patterns).toContain("/api/companies/:slug/journal/export");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

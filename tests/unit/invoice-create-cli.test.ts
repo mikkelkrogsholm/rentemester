@@ -1,11 +1,12 @@
 // Tests: src/cli/invoice.ts (invoice create — guided path, #212),
 //        src/core/invoice.ts (computeInvoiceAmounts)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { computeInvoiceAmounts } from "../../src/core/invoice";
 
+import { cleanupDir } from "../helpers/cleanup";
 async function run(args: string[]) {
   const proc = Bun.spawn(["bun", "run", "src/cli.ts", ...args], {
     cwd: process.cwd(),
@@ -122,7 +123,7 @@ describe("invoice create CLI (#212 — guided path)", () => {
         { description: "Rådgivning", quantity: 1, unitPriceExVat: 500, lineTotalExVat: 500 },
       ]);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -160,7 +161,7 @@ describe("invoice create CLI (#212 — guided path)", () => {
       expect(parsed.computed.vatAmount).toBe(250);
       expect(parsed.computed.grossAmount).toBe(1250);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -186,7 +187,7 @@ describe("invoice create CLI (#212 — guided path)", () => {
       expect(parsed.ok).toBe(false);
       expect(parsed.errors.join(" ")).toContain("exactly 3 fields");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -208,7 +209,7 @@ describe("invoice create CLI (#212 — guided path)", () => {
       expect(exitCode).toBe(2);
       expect(stderr).toContain("--issue-date");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });
@@ -267,7 +268,7 @@ describe("invoice create actor allowlist (#265)", () => {
       expect(createRun.stderr).toContain("is not in config/policy.yaml actor_allowlist");
       expect(createRun.stderr).toContain("user:anyone");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });

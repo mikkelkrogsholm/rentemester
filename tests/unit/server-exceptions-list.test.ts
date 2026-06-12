@@ -6,7 +6,7 @@
 // (unmatched bank-rows, blokerede write-flows osv.) med filter pr.
 // status (open/resolved/all). POST-resolve er en separat handler.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -17,6 +17,7 @@ import { companyPaths } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { recordException } from "../../src/core/exceptions";
 
+import { cleanupDir } from "../helpers/cleanup";
 function makeWorkspace(label: string, companyNames: string[] = []) {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
   initWorkspace(root);
@@ -98,7 +99,7 @@ describe("#332 — GET /api/companies/:slug/exceptions", () => {
         expect(row.message).toMatch(/synthetic/);
       }
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -114,7 +115,7 @@ describe("#332 — GET /api/companies/:slug/exceptions", () => {
       expect(body.exceptions.status).toBe("all");
       expect(body.exceptions.count).toBe(1);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -129,7 +130,7 @@ describe("#332 — GET /api/companies/:slug/exceptions", () => {
       );
       expect(res.status).toBe(400);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -142,7 +143,7 @@ describe("#332 — GET /api/companies/:slug/exceptions", () => {
       const patterns = body.routes.map((r) => `${r.method} ${r.pattern}`);
       expect(patterns).toContain("GET /api/companies/:slug/exceptions");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

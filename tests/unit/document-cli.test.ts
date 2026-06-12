@@ -1,9 +1,10 @@
 // Tests: src/cli/documents.ts, src/cli.ts (document CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("documents ingest CLI", () => {
   test("returns exit code 0 for valid foreign-currency cash-register receipt metadata", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-doccli-cash-"));
@@ -28,7 +29,7 @@ describe("documents ingest CLI", () => {
     const stderr = await new Response(proc.stderr).text();
     const exitCode = await proc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);
@@ -58,7 +59,7 @@ describe("documents ingest CLI", () => {
     const stderr = await new Response(proc.stderr).text();
     const exitCode = await proc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);
@@ -94,7 +95,7 @@ describe("documents ingest CLI", () => {
     const stderr = await new Response(proc.stderr).text();
     const exitCode = await proc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);
@@ -141,7 +142,7 @@ describe("documents ingest CLI", () => {
     const forcedStdout = await new Response(forced.stdout).text();
     const forcedExitCode = await forced.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(blockedExitCode).toBe(1);
     expect(JSON.parse(blockedStdout).errors[0]).toContain("Use --force to add another scan");
     expect(forcedExitCode).toBe(0);

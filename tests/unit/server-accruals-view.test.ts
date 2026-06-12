@@ -6,7 +6,7 @@
 // omkostninger, skyldige omkostninger, udskudt omsætning) med remaining-
 // balance og recognized-amount.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -14,6 +14,7 @@ import { type ServerConfig } from "../../src/server/config";
 import { createCompany } from "../../src/core/company";
 import { initWorkspace } from "../../src/core/workspace";
 
+import { cleanupDir } from "../helpers/cleanup";
 function makeWorkspace(label: string, companyNames: string[] = []) {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
   initWorkspace(root);
@@ -61,7 +62,7 @@ describe("#337 — GET /api/companies/:slug/accruals", () => {
       expect(body.accruals.report.accruals).toEqual([]);
       expect(body.accruals.report.totals.totalAmount).toBe(0);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -74,7 +75,7 @@ describe("#337 — GET /api/companies/:slug/accruals", () => {
       const patterns = body.routes.map((r) => r.pattern);
       expect(patterns).toContain("/api/companies/:slug/accruals");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -87,7 +88,7 @@ describe("#337 — GET /api/companies/:slug/accruals", () => {
       );
       expect(res.status).toBe(404);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

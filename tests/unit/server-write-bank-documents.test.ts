@@ -8,7 +8,7 @@
 // body size) and the concrete bank-import / document-ingest actions end to
 // end against a real company ledger.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -20,6 +20,7 @@ import { openDb, migrate } from "../../src/core/db";
 import { configureBackupLock } from "../../src/core/backup-governance";
 import { createSystemBackup } from "../../src/core/system-backups";
 
+import { cleanupDir } from "../helpers/cleanup";
 const DAY = 24 * 60 * 60 * 1000;
 
 function tmpRoot(label: string) {
@@ -124,7 +125,7 @@ describe("Cockpit write — bank import (happy path)", () => {
         expect(row.n).toBe(2);
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -144,7 +145,7 @@ describe("Cockpit write — bank import (happy path)", () => {
       expect(res.body.import.imported).toBe(0);
       expect(res.body.import.skippedDuplicates).toBe(2);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -159,7 +160,7 @@ describe("Cockpit write — bank import (happy path)", () => {
       expect(res.status).toBe(200);
       expect(res.body.import.exceptionsCreated).toBe(2);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -183,7 +184,7 @@ describe("Cockpit write — bank import (gates + input errors)", () => {
         expect(row.n).toBe(0);
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -198,7 +199,7 @@ describe("Cockpit write — bank import (gates + input errors)", () => {
       expect(res.status).toBe(400);
       expect(res.body.code).toBe("bad_request");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -214,7 +215,7 @@ describe("Cockpit write — bank import (gates + input errors)", () => {
       expect(res.body.code).toBe("bad_request");
       expect(res.body.errors[0]).toContain("no-such-bank");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -239,7 +240,7 @@ describe("Cockpit write — bank import (gates + input errors)", () => {
       // The previous assertion pinned the English token "limit".
       expect(body.errors[0]).toMatch(/overskrider grænsen|bytes/i);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -254,7 +255,7 @@ describe("Cockpit write — bank import (gates + input errors)", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -269,7 +270,7 @@ describe("Cockpit write — bank import (gates + input errors)", () => {
       );
       expect(res.status).toBe(405);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -302,7 +303,7 @@ describe("Cockpit write — bank import (backup lock + localhost gate)", () => {
       expect(res.body.code).toBe("conflict");
       expect(res.body.errors[0]).toContain("Bogføring er låst");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -318,7 +319,7 @@ describe("Cockpit write — bank import (backup lock + localhost gate)", () => {
       expect(res.status).toBe(401);
       expect(res.body.code).toBe("unauthorized");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -364,7 +365,7 @@ describe("Cockpit write — document ingest (happy path)", () => {
         expect(row.n).toBe(1);
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -387,7 +388,7 @@ describe("Cockpit write — document ingest (gates + input errors)", () => {
         expect(row.n).toBe(0);
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -402,7 +403,7 @@ describe("Cockpit write — document ingest (gates + input errors)", () => {
       expect(res.status).toBe(400);
       expect(res.body.code).toBe("bad_request");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -417,7 +418,7 @@ describe("Cockpit write — document ingest (gates + input errors)", () => {
       expect(res.status).toBe(400);
       expect(res.body.errors[0]).toContain("source");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -436,7 +437,7 @@ describe("Cockpit write — document ingest (gates + input errors)", () => {
       expect(res.body.code).toBe("bad_request");
       expect(res.body.errors[0]).toContain("required");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -451,7 +452,7 @@ describe("Cockpit write — document ingest (gates + input errors)", () => {
       expect(res.status).toBe(409);
       expect(res.body.errors[0]).toContain("vendor");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -467,7 +468,7 @@ describe("Cockpit write — document ingest (gates + input errors)", () => {
       expect(res.status).toBe(401);
       expect(res.body.code).toBe("unauthorized");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -497,7 +498,7 @@ describe("Cockpit write — document ingest (gates + input errors)", () => {
       expect(res.status).toBe(409);
       expect(res.body.errors[0]).toContain("Bogføring er låst");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -512,7 +513,7 @@ describe("Cockpit write — document ingest (gates + input errors)", () => {
       );
       expect(res.status).toBe(405);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

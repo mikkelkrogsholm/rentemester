@@ -3,7 +3,7 @@
 // opening the CLI (#378). The route wraps `renderIssuedInvoicePdf`, so the
 // bytes it serves match what `bun run cli invoice render` would produce.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -14,6 +14,7 @@ import { companyPaths } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { issueInvoice } from "../../src/core/issued-invoices";
 
+import { cleanupDir } from "../helpers/cleanup";
 function makeWorkspace(label: string) {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
   initWorkspace(root);
@@ -89,7 +90,7 @@ describe("cockpit API — issued invoice PDF (GET .../invoices/:id/pdf)", () => 
       const head = new TextDecoder("latin1").decode(body.subarray(0, 5));
       expect(head).toBe("%PDF-");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -102,7 +103,7 @@ describe("cockpit API — issued invoice PDF (GET .../invoices/:id/pdf)", () => 
       );
       expect(res.status).toBe(404);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -115,7 +116,7 @@ describe("cockpit API — issued invoice PDF (GET .../invoices/:id/pdf)", () => 
       );
       expect(res.status).toBe(404);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -131,7 +132,7 @@ describe("cockpit API — issued invoice PDF (GET .../invoices/:id/pdf)", () => 
       );
       expect(res.status).toBe(405);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

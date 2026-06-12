@@ -14,7 +14,7 @@
 //      success AND on failure paths — and the description must announce
 //      the side-effect.
 import { describe, expect, test } from "bun:test";
-import { existsSync, readdirSync, mkdtempSync, rmSync, writeFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, mkdtempSync, writeFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -23,6 +23,7 @@ import { registerBankTools } from "../../src/mcp/tools/bank";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 
+import { cleanupDir } from "../helpers/cleanup";
 function tmpCompany(label: string): string {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
   const paths = ensureCompanyDirs(root);
@@ -98,7 +99,7 @@ describe("documents_ingest exception idempotence (#383)", () => {
         db.close();
       }
     } finally {
-      rmSync(company, { recursive: true, force: true });
+      cleanupDir(company);
     }
   });
 
@@ -134,7 +135,7 @@ describe("bank_import tmpdir hygiene (#383)", () => {
       const after = countMcpBankTmpDirs();
       expect(after).toBe(before);
     } finally {
-      rmSync(company, { recursive: true, force: true });
+      cleanupDir(company);
     }
   });
 
@@ -154,7 +155,7 @@ describe("bank_import tmpdir hygiene (#383)", () => {
       const after = countMcpBankTmpDirs();
       expect(after).toBe(before);
     } finally {
-      rmSync(company, { recursive: true, force: true });
+      cleanupDir(company);
     }
   });
 

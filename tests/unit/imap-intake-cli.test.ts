@@ -6,10 +6,11 @@
 // The poller logic itself is fully covered against an injected fake client
 // in imap-intake.test.ts.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("imap-intake poll CLI", () => {
   test("is a registered command and accepts its flags", async () => {
     const proc = Bun.spawn(
@@ -56,7 +57,7 @@ describe("imap-intake poll CLI", () => {
     expect(parsed.ok).toBe(false);
     expect(JSON.stringify(parsed.errors)).toContain("IMAP host missing");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects an invalid --imap-port without contacting a server", async () => {
@@ -80,6 +81,6 @@ describe("imap-intake poll CLI", () => {
     expect(parsed.ok).toBe(false);
     expect(JSON.stringify(parsed.errors)).toContain("--imap-port");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

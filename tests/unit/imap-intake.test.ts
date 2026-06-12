@@ -1,11 +1,12 @@
 // Tests: src/core/imap-intake.ts (deterministic IMAP bilagsmail transport — #181)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { listExceptions } from "../../src/core/exceptions";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   pollImapMailbox,
   type ImapClient,
@@ -112,7 +113,7 @@ describe("pollImapMailbox", () => {
     expect(docCount.n).toBe(1);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   });
 
   test("a second poll creates no duplicate documents (rerun-stable across polls)", async () => {
@@ -137,7 +138,7 @@ describe("pollImapMailbox", () => {
     expect(docCount.n).toBe(1);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   });
 
   test("routes a message with no attachment into the exception queue", async () => {
@@ -159,7 +160,7 @@ describe("pollImapMailbox", () => {
     expect(exceptions.rows[0]!.type).toBe("MAIL_INTAKE_NO_ATTACHMENT");
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   });
 
   test("re-polling a no-attachment message does not duplicate the exception", async () => {
@@ -177,7 +178,7 @@ describe("pollImapMailbox", () => {
     expect(exceptions.count).toBe(1);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   });
 
   test("processes multiple messages deterministically", async () => {
@@ -202,7 +203,7 @@ describe("pollImapMailbox", () => {
     expect(docCount.n).toBe(2);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   });
 
   test("closes the client even when an empty mailbox is polled", async () => {
@@ -220,6 +221,6 @@ describe("pollImapMailbox", () => {
     expect(client.closes).toBe(1);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   });
 });

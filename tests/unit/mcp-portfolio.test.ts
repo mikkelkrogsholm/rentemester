@@ -10,7 +10,7 @@
 // helper are both covered without spawning a child process.
 
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -21,6 +21,7 @@ import { listWorkspaceCompanies } from "../../src/core/workspace";
 import { companyPaths } from "../../src/core/paths";
 import { existsSync } from "node:fs";
 
+import { cleanupDir } from "../helpers/cleanup";
 function tmpWorkspace(label: string): string {
   return mkdtempSync(join(tmpdir(), `rentemester-mcp-${label}-`));
 }
@@ -81,7 +82,7 @@ describe("portfolio MCP tools (#172)", () => {
       const companies = listWorkspaceCompanies(ws);
       expect(companies.map((c) => c.slug)).toContain("acme-aps");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -98,7 +99,7 @@ describe("portfolio MCP tools (#172)", () => {
       expect(env.ok).toBe(true);
       expect(env.data?.slug).toBe("beta");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -111,7 +112,7 @@ describe("portfolio MCP tools (#172)", () => {
       expect(env.ok).toBe(false);
       expect(env.errors.length).toBeGreaterThan(0);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -142,7 +143,7 @@ describe("portfolio MCP tools (#172)", () => {
       expect(noWorkspace.ok).toBe(false);
       expect(noWorkspace.errors).toContain("confirm: true required for write tool company_add");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -161,7 +162,7 @@ describe("portfolio MCP tools (#172)", () => {
       const companies = listWorkspaceCompanies(ws);
       expect(companies.filter((c) => c.slug === "acme-aps").length).toBe(1);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -189,7 +190,7 @@ describe("portfolio MCP tools (#172)", () => {
       // Not consolidated: there is no single summed total across entities.
       expect(env.data).not.toHaveProperty("consolidatedReceivables");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -202,7 +203,7 @@ describe("portfolio MCP tools (#172)", () => {
       expect(env.data?.companyCount).toBe(0);
       expect(env.data?.companies).toEqual([]);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -216,7 +217,7 @@ describe("portfolio MCP tools (#172)", () => {
         expect(env.ok).toBe(true);
         expect(env.data?.count).toBeGreaterThan(0);
       } finally {
-        rmSync(ws, { recursive: true, force: true });
+        cleanupDir(ws);
       }
     });
 
@@ -233,7 +234,7 @@ describe("portfolio MCP tools (#172)", () => {
       } finally {
         if (prev === undefined) delete process.env.RENTEMESTER_WORKSPACE;
         else process.env.RENTEMESTER_WORKSPACE = prev;
-        rmSync(ws, { recursive: true, force: true });
+        cleanupDir(ws);
       }
     });
 
@@ -249,7 +250,7 @@ describe("portfolio MCP tools (#172)", () => {
       } finally {
         if (prev === undefined) delete process.env.RENTEMESTER_WORKSPACE;
         else process.env.RENTEMESTER_WORKSPACE = prev;
-        rmSync(ws, { recursive: true, force: true });
+        cleanupDir(ws);
       }
     });
   });

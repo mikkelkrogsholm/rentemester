@@ -4,9 +4,10 @@
 // Danish owner reads the posting entry text and the agent exception queue;
 // both must be fully Danish.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { cleanupDir } from "../helpers/cleanup";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { seedAccounts } from "../../src/core/ledger";
@@ -79,8 +80,7 @@ describe("#302 — expense posting text is fully Danish", () => {
       const expenseLine = lines.find((l) => l.account_no === "3000")!;
       expect(expenseLine.text).not.toContain("Expense");
     } finally {
-      rmSync(root, { recursive: true, force: true });
-      rmSync(inbox, { recursive: true, force: true });
+      cleanupDir(root, inbox);
     }
   });
 
@@ -129,8 +129,7 @@ describe("#302 — expense posting text is fully Danish", () => {
       expect(entry.text).not.toContain("from bank transaction");
       expect(entry.text).toContain("Udgift");
     } finally {
-      rmSync(root, { recursive: true, force: true });
-      rmSync(inbox, { recursive: true, force: true });
+      cleanupDir(root, inbox);
     }
   });
 });
@@ -167,7 +166,7 @@ describe("#302 — agent exception messages and the VAT-deadline note are Danish
       expect(vatEx!.message.toLowerCase()).toContain("momsangivelse");
       expect(vatEx!.requiredAction ?? "").toContain("period close");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -183,7 +182,7 @@ describe("#302 — agent exception messages and the VAT-deadline note are Danish
       expect(openQuarter!.note).not.toMatch(/\b(is|not|closed|the)\b/);
       expect(openQuarter!.note).toContain("Momsperioden");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -222,8 +221,7 @@ describe("#302 — agent exception messages and the VAT-deadline note are Danish
       expect(rejectedEx!.requiredAction ?? "").not.toContain("re-ingest");
       expect(rejectedEx!.message.toLowerCase()).toContain("afvist");
     } finally {
-      rmSync(root, { recursive: true, force: true });
-      rmSync(inbox, { recursive: true, force: true });
+      cleanupDir(root, inbox);
     }
   });
 
@@ -271,8 +269,7 @@ describe("#302 — agent exception messages and the VAT-deadline note are Danish
       expect(noRuleEx!.requiredAction ?? "").not.toContain("book the expense manually");
       expect(noRuleEx!.message.toLowerCase()).toContain("kontoregel");
     } finally {
-      rmSync(root, { recursive: true, force: true });
-      rmSync(inbox, { recursive: true, force: true });
+      cleanupDir(root, inbox);
     }
   });
 

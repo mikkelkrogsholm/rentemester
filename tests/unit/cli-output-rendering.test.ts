@@ -1,10 +1,11 @@
 // Tests: src/cli/journal.ts, src/cli/bank.ts, src/cli-format.ts,
 // src/core/invoice-booking.ts (CLI output-rendering bugs #285, #286, #288)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 async function runCli(args: string[]) {
   const proc = Bun.spawn(["bun", "run", "src/cli.ts", ...args], {
     cwd: process.cwd(),
@@ -28,7 +29,7 @@ describe("#285 — journal list shows entry amounts", () => {
 
     const listed = await runCli(["journal", "list", "--company", company, "--format", "human"]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect({ exitCode: listed.exitCode, stderr: listed.stderr }).toEqual({
       exitCode: 0,
@@ -53,7 +54,7 @@ describe("#286 — Danish text on journal + bank surfaces", () => {
 
     const listed = await runCli(["journal", "list", "--company", company, "--format", "json"]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(listed.exitCode).toBe(0);
     const rows = JSON.parse(listed.stdout);
@@ -71,7 +72,7 @@ describe("#286 — Danish text on journal + bank surfaces", () => {
 
     const listed = await runCli(["bank", "suggest-matches", "--company", company, "--format", "human"]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect({ exitCode: listed.exitCode, stderr: listed.stderr }).toEqual({
       exitCode: 0,
@@ -100,7 +101,7 @@ describe("#288 — reconcile bank separates inflows and outflows", () => {
       "--from", "2026-05-01", "--to", "2026-05-31", "--format", "human",
     ]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect({ exitCode: listed.exitCode, stderr: listed.stderr }).toEqual({
       exitCode: 0,
@@ -126,7 +127,7 @@ describe("#288 — reconcile bank separates inflows and outflows", () => {
       "--from", "2026-05-01", "--to", "2026-05-31", "--format", "json",
     ]);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect(listed.exitCode).toBe(0);
     const parsed = JSON.parse(listed.stdout);

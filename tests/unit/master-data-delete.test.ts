@@ -11,11 +11,12 @@
 //   - Sletninger audit-logges (event_type `customer_delete` / `vendor_delete`).
 
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   createCustomer,
   createVendor,
@@ -43,7 +44,7 @@ describe("deleteCustomer / deleteVendor — #430", () => {
     expect(listCustomers(db).rows.find((r) => r.id === id)).toBeUndefined();
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a customer-delete writes an audit_log row", () => {
@@ -66,7 +67,7 @@ describe("deleteCustomer / deleteVendor — #430", () => {
     expect(audit!.message).toContain("Slet-mig A/S");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("deleting a non-existent customer fails with a clear error", () => {
@@ -75,7 +76,7 @@ describe("deleteCustomer / deleteVendor — #430", () => {
     expect(result.ok).toBe(false);
     expect((result as { errors: string[] }).errors[0]).toMatch(/9999/);
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a customer with an open issued invoice cannot be deleted", () => {
@@ -108,7 +109,7 @@ describe("deleteCustomer / deleteVendor — #430", () => {
     expect(message).toContain("F-0001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a customer remains deletable once the invoice has been paid", () => {
@@ -163,7 +164,7 @@ describe("deleteCustomer / deleteVendor — #430", () => {
     expect(result.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a vendor with no open payable can be deleted", () => {
@@ -185,7 +186,7 @@ describe("deleteCustomer / deleteVendor — #430", () => {
     expect(String(audit!.entity_id)).toBe(String(id));
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a vendor referenced by an open payable cannot be deleted", () => {
@@ -229,6 +230,6 @@ describe("deleteCustomer / deleteVendor — #430", () => {
     expect((result as { errors: string[] }).errors.join(" ")).toMatch(/åben|gæld/i);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

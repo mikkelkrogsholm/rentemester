@@ -1,6 +1,6 @@
 // Tests: src/core/invoice-claim-settlement.ts
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -16,6 +16,7 @@ import { registerInvoiceLateCompensation, postInvoiceLateCompensationToLedger } 
 import { registerInvoiceLateInterest, postInvoiceLateInterestToLedger } from "../../src/core/invoice-interest";
 import { seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("invoice claim settlement", () => {
   test("settles booked claim receivables from an imported bank receipt after principal is cleared", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-claim-settle-"));
@@ -85,7 +86,7 @@ describe("invoice claim settlement", () => {
     expect(chain.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("requires explicit bank transaction selection for claim settlement", () => {
@@ -126,7 +127,7 @@ describe("invoice claim settlement", () => {
     expect(settled.errors[0]).toBe("bankTransactionId or bankTransactionReference is required");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("blocks claim settlement before principal is cleared", () => {
@@ -165,6 +166,6 @@ describe("invoice claim settlement", () => {
     expect(settled.errors[0]).toContain("settle principal before claim receipts");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

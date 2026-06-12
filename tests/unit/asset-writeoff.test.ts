@@ -1,6 +1,6 @@
 // Tests: src/core/assets.ts (#125 immediate small-asset write-off / straksafskrivning)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -10,6 +10,7 @@ import { ingestDocument } from "../../src/core/documents";
 import { listExceptions } from "../../src/core/exceptions";
 import { postImmediateWriteOff, STRAKSAFSKRIVNING_THRESHOLD_DKK } from "../../src/core/assets";
 
+import { cleanupDir } from "../helpers/cleanup";
 function setup(label: string, amountIncVat: number, opts: { withDoc?: boolean } = {}) {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
   const inbox = mkdtempSync(join(tmpdir(), `rentemester-${label}-inbox-`));
@@ -37,8 +38,8 @@ function setup(label: string, amountIncVat: number, opts: { withDoc?: boolean } 
   }
   const cleanup = () => {
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   };
   return { root, db, documentId, cleanup };
 }

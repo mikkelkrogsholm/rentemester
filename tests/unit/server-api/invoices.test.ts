@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
+import { cleanupDir } from "../../helpers/cleanup";
 import {
   config,
   get,
   issueTestInvoice,
   makeWorkspace,
   postPnlEntry,
-  rmSync,
-} from "./_shared";
+  } from "./_shared";
 
 describe("cockpit API — invoices (GET .../invoices)", () => {
   test("returns issued invoices with their status for the year", async () => {
@@ -28,7 +28,7 @@ describe("cockpit API — invoices (GET .../invoices)", () => {
       expect(inv.invoices[0].grossAmount).toBe(1250);
       expect(inv.totalGross).toBe(1250);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -45,7 +45,7 @@ describe("cockpit API — invoices (GET .../invoices)", () => {
       expect(res.body.invoices.totalGross).toBe(0);
       expect(res.body.invoices.overdueCount).toBe(0);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -59,7 +59,7 @@ describe("cockpit API — invoices (GET .../invoices)", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

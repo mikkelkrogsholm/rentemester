@@ -1,6 +1,6 @@
 // Tests: src/core/bank.ts (bank accounts as a first-class entity, #187)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -8,6 +8,7 @@ import { openDb, migrate } from "../../src/core/db";
 import { addBankAccount, listBankAccounts, importBankCsv, resolveBankAccount } from "../../src/core/bank";
 import { listBankTransactions, buildBankReconciliationReport } from "../../src/core/reconciliation";
 
+import { cleanupDir } from "../helpers/cleanup";
 function setup() {
   const root = mkdtempSync(join(tmpdir(), "rentemester-bankacct-"));
   const db = openDb(ensureCompanyDirs(root).db);
@@ -36,7 +37,7 @@ describe("bank accounts (#187)", () => {
     expect(resolveBankAccount(db, "driftskonto-dkk")?.id).toBe(result.account!.id);
     expect(resolveBankAccount(db, result.account!.id)?.slug).toBe("driftskonto-dkk");
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects duplicate slugs", () => {
@@ -46,7 +47,7 @@ describe("bank accounts (#187)", () => {
     expect(dup.ok).toBe(false);
     expect(dup.errors.some((e) => e.includes("already exists"))).toBe(true);
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("importing into two accounts keeps rows separated", () => {
@@ -75,7 +76,7 @@ describe("bank accounts (#187)", () => {
     expect(driftRows.rows[0].bankAccountId).toBe(drift.id);
     expect(opsparRows.rows[0].bankAccountId).toBe(opspar.id);
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("re-import into the same account is still deduplicated", () => {
@@ -90,7 +91,7 @@ describe("bank accounts (#187)", () => {
     expect(second.imported).toBe(0);
     expect(second.skippedDuplicates).toBe(1);
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("--account filter scopes list and reconcile bank", () => {
@@ -113,7 +114,7 @@ describe("bank accounts (#187)", () => {
     expect(report.unmatchedCount).toBe(1);
     expect(report.unmatched[0].text).toBe("Opspar deposit");
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("import rejects an unknown account", () => {
@@ -126,6 +127,6 @@ describe("bank accounts (#187)", () => {
     expect(result.ok).toBe(false);
     expect(result.errors.some((e) => e.includes("does not exist"))).toBe(true);
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

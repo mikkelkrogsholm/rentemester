@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { createHash } from "node:crypto";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -13,6 +13,7 @@ import {
 import { restoreSystemBackup } from "../../src/core/system-restore";
 import { verifyAuditChain } from "../../src/core/ledger";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("backup archive", () => {
   test("packs a backup directory into one deterministic .tar with a sha256 sidecar", () => {
     const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-archive-"));
@@ -33,7 +34,7 @@ describe("backup archive", () => {
       expect(readFileSync(packed.sha256Path!, "utf8")).toContain(packed.archiveSha256!);
     } finally {
       db.close();
-      rmSync(companyRoot, { recursive: true, force: true });
+      cleanupDir(companyRoot);
     }
   });
 
@@ -67,8 +68,8 @@ describe("backup archive", () => {
         restoredDb.close();
       }
     } finally {
-      rmSync(companyRoot, { recursive: true, force: true });
-      rmSync(target, { recursive: true, force: true });
+      cleanupDir(companyRoot);
+      cleanupDir(target);
     }
   });
 
@@ -83,7 +84,7 @@ describe("backup archive", () => {
       expect(packed.errors[0]).toContain("no backup found");
     } finally {
       db.close();
-      rmSync(companyRoot, { recursive: true, force: true });
+      cleanupDir(companyRoot);
     }
   });
 });

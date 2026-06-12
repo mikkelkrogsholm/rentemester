@@ -1,6 +1,6 @@
 // Tests: src/core/invoice-booking.ts
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -11,6 +11,7 @@ import { seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 import { buildVatReport } from "../../src/core/vat";
 import { storeViesValidation } from "../../src/core/vies";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("invoice ledger posting", () => {
   test("posts reverse-charge invoice without an output-VAT line", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-invoicebook-reverse-"));
@@ -66,7 +67,7 @@ describe("invoice ledger posting", () => {
     expect(chain.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("posts non-DKK issued invoices to the ledger with stored FX basis and DKK line amounts", () => {
@@ -109,7 +110,7 @@ describe("invoice ledger posting", () => {
     expect(chain.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects an issued invoice whose DKK totals do not satisfy net + vat = gross", () => {
@@ -142,7 +143,7 @@ describe("invoice ledger posting", () => {
     expect(db.query("SELECT COUNT(*) AS n FROM journal_entries").get()).toEqual({ n: 0 });
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("posts issued invoice once to receivables, revenue, and output VAT", () => {
@@ -187,6 +188,6 @@ describe("invoice ledger posting", () => {
     expect(chain.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

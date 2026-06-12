@@ -13,7 +13,7 @@
 // Each assertion fails BEFORE the fix.
 
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, existsSync, mkdirSync } from "node:fs";
+import { mkdtempSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -26,6 +26,7 @@ import { handleRequest } from "../../src/server/router";
 import { toErrorResponse } from "../../src/server/errors";
 import type { ServerConfig } from "../../src/server/config";
 
+import { cleanupDir } from "../helpers/cleanup";
 function tmpRoot(label: string) {
   return mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
 }
@@ -66,7 +67,7 @@ describe("#242 follow-up — router.ts sweep misses", () => {
         /der findes allerede en virksomhed med den slug/i,
       );
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -84,7 +85,7 @@ describe("#242 follow-up — router.ts sweep misses", () => {
       // Danish prose with field tokens kept English (per the schema-contract caveat).
       expect(res.body.errors?.[0] ?? "").toMatch(/angiv 'name' og\/eller 'archived'/i);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -108,7 +109,7 @@ describe("#242 follow-up — workspace.ts sweep misses", () => {
         }),
       ).toThrow(/virksomheden med slug 'acme' er allerede registreret/i);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -119,7 +120,7 @@ describe("#242 follow-up — workspace.ts sweep misses", () => {
         /virksomheden med slug 'acme-aps' er allerede registreret/i,
       );
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -132,7 +133,7 @@ describe("#242 follow-up — workspace.ts sweep misses", () => {
         /kan ikke adoptere 'ghost-aps': ingen ledger fundet/i,
       );
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -166,7 +167,7 @@ describe("#242 follow-up — mutations.ts body-size guard prose", () => {
         expect(msg).toMatch(/request-body overskrider grænsen/i);
       }
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

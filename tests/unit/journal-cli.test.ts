@@ -1,11 +1,12 @@
 // Tests: src/cli/journal.ts, src/cli.ts (journal CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { openDb, migrate } from "../../src/core/db";
 import { companyPaths } from "../../src/core/paths";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("journal post CLI", () => {
   test("posts a valid journal entry against an ingested document", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-journalcli-"));
@@ -23,7 +24,7 @@ describe("journal post CLI", () => {
     const stderr = await new Response(proc.stderr).text();
     const exitCode = await proc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);
@@ -52,7 +53,7 @@ describe("journal post CLI", () => {
     const stderr = await new Response(proc.stderr).text();
     const exitCode = await proc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(exitCode).toBe(2);
     expect(stdout).toBe("");
     expect(stderr).toContain("actor 'agent:freja' is not in config/policy.yaml actor_allowlist");
@@ -89,7 +90,7 @@ describe("journal post CLI", () => {
     const audit = db.query("SELECT actor FROM audit_log WHERE event_type = 'journal_post' ORDER BY id DESC LIMIT 1").get() as any;
     db.close();
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     expect(entry).toEqual({ created_by: "agent:freja", created_by_program: "openclaw" });
     expect(audit.actor).toBe("agent:freja via openclaw");
@@ -125,7 +126,7 @@ describe("journal post CLI", () => {
     const stderr = await new Response(proc.stderr).text();
     const exitCode = await proc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(exitCode).toBe(2);
     expect(stdout).toBe("");
     expect(stderr).toContain("actor required for mutations");
@@ -170,7 +171,7 @@ describe("journal dry-run CLI", () => {
     const db = openDb(companyPaths(company).db);
     const count = db.query("SELECT COUNT(*) AS n FROM journal_entries").get() as { n: number };
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(count.n).toBe(0);
   });
 });

@@ -1,12 +1,13 @@
 // Tests: src/core/ledger.ts (audit-chain verification)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { hashEntry, postJournalEntry, seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 
+import { cleanupDir } from "../helpers/cleanup";
 type ManualLine = {
   account_no: string;
   debit_amount: number;
@@ -120,7 +121,7 @@ describe("audit verify", () => {
     expect(audit.errors.some((error) => error.includes("entry is unbalanced"))).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("flags duplicate use of the same source bank transaction across journal entries", () => {
@@ -164,7 +165,7 @@ describe("audit verify", () => {
     expect(audit.errors.some((error) => error.includes("duplicate source_bank_transaction_id"))).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("detects tail truncation of the most recent journal entries", () => {
@@ -198,7 +199,7 @@ describe("audit verify", () => {
     expect(result.errors.some((error) => error.includes("missing"))).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("binds the row id into the entry hash so swapped rows fail verification", () => {
@@ -242,7 +243,7 @@ describe("audit verify", () => {
     expect(result.errors.some((error) => error.includes("entry_hash mismatch"))).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("allows a reversal pair to share the same source bank transaction without audit failure", () => {
@@ -287,6 +288,6 @@ describe("audit verify", () => {
     expect(audit.errors).toHaveLength(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

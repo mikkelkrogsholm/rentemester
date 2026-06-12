@@ -1,6 +1,6 @@
 // Tests: src/core/invoice-compensation.ts
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -10,6 +10,7 @@ import { applyInvoicePayment, getInvoiceStatus } from "../../src/core/invoice-pa
 import { calculateInvoiceLateCompensation, postInvoiceLateCompensationToLedger, registerInvoiceLateCompensation } from "../../src/core/invoice-compensation";
 import { seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 
+import { cleanupDir } from "../helpers/cleanup";
 function failingCompensationPostingDb(realDb: any) {
   let failed = false;
   return new Proxy(realDb, {
@@ -67,7 +68,7 @@ describe("invoice late compensation", () => {
     expect(result.appliedRules).toContain("DK-INVOICE-LATE-COMPENSATION-001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("posts a registered compensation claim once to receivables and non-VAT claim income", () => {
@@ -128,7 +129,7 @@ describe("invoice late compensation", () => {
     expect(chain.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rolls back the journal entry if compensation posting link creation fails", () => {
@@ -175,7 +176,7 @@ describe("invoice late compensation", () => {
     expect(realDb.query("SELECT COUNT(*) AS n FROM invoice_compensation_postings").get()).toEqual({ n: 1 });
 
     realDb.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("registers one immutable compensation claim and surfaces it in claim balance", () => {
@@ -232,7 +233,7 @@ describe("invoice late compensation", () => {
     expect(second.errors[0]).toContain("already has a registered compensation claim");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects a caller-supplied compensation amount above the statutory DKK 310", () => {
@@ -278,7 +279,7 @@ describe("invoice late compensation", () => {
     expect(db.query("SELECT COUNT(*) AS n FROM invoice_compensation_claims").get()).toEqual({ n: 0 });
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("treats a non-CVR-shaped buyer identifier as a non-commercial transaction", () => {
@@ -309,7 +310,7 @@ describe("invoice late compensation", () => {
     expect(result.eligible).toBe(false);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("does not allow compensation when commercial status is not proven", () => {
@@ -341,7 +342,7 @@ describe("invoice late compensation", () => {
     expect(result.reason).toContain("commercial transaction not proven");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("does not apply the statutory amount to invoices predating 2013-03-01", () => {
@@ -373,6 +374,6 @@ describe("invoice late compensation", () => {
     expect(result.reason).toContain("predates statutory compensation start date 2013-03-01");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

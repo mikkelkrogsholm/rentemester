@@ -11,7 +11,7 @@
 // Tests run against the synthetic fixture in examples/import-dinero/ — the real
 // Dinero export is private and is never committed.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -23,6 +23,7 @@ import { runImport, runImportFromSource } from "../../src/core/import/framework"
 import { getOpeningBalance, OPENING_BALANCE_TEXT } from "../../src/core/opening-balance";
 import { buildTrialBalance } from "../../src/core/financial-statements";
 
+import { cleanupDir } from "../helpers/cleanup";
 const FIXTURE = join(import.meta.dir, "../../examples/import-dinero");
 
 function freshCompany(prefix: string) {
@@ -96,7 +97,7 @@ describe("Dinero import: Posteringer.csv primobalance posted via runImport", () 
       expect(marker!.cutOverDate).toBe("2025-01-01");
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -128,7 +129,7 @@ describe("Dinero import: Posteringer.csv primobalance posted via runImport", () 
       expect(capital.debit_amount).toBe(0);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -151,7 +152,7 @@ describe("Dinero import: Posteringer.csv primobalance posted via runImport", () 
       expect(acct("60000").credit).toBeCloseTo(40000, 6);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -167,7 +168,7 @@ describe("Dinero import: Posteringer.csv primobalance posted via runImport", () 
       expect(getOpeningBalance(db)!.cutOverDate).toBe("2025-01-01");
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -189,7 +190,7 @@ describe("Dinero import: Posteringer.csv primobalance posted via runImport", () 
       expect(count.n).toBe(6);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });

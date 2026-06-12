@@ -1,9 +1,10 @@
 // Tests: src/cli/vat.ts, src/cli.ts (VAT reverse-charge CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("EU service reverse-charge CLI", () => {
   test("posts reverse-charge purchase from input json", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-rc-cli-"));
@@ -38,7 +39,7 @@ describe("EU service reverse-charge CLI", () => {
     const exitCode = await proc.exited;
 
     server.stop(true);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);

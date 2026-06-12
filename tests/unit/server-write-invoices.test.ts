@@ -10,7 +10,7 @@
 // the input/business-rejection error mapping — including the heuristic that
 // classifies an invoice double-post / double-settle as a 409 conflict.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -22,6 +22,7 @@ import { openDb, migrate } from "../../src/core/db";
 import { configureBackupLock } from "../../src/core/backup-governance";
 import { createSystemBackup } from "../../src/core/system-backups";
 
+import { cleanupDir } from "../helpers/cleanup";
 const DAY = 24 * 60 * 60 * 1000;
 
 function tmpRoot(label: string) {
@@ -158,7 +159,7 @@ describe("Cockpit write — invoice issue (happy path)", () => {
         expect(row.n).toBe(1);
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -175,7 +176,7 @@ describe("Cockpit write — invoice issue (happy path)", () => {
       expect(res.status).toBe(200);
       expect(res.body.ok).toBe(true);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -193,7 +194,7 @@ describe("Cockpit write — invoice issue (input + gates)", () => {
       expect(res.body.code).toBe("bad_request");
       expect(res.body.errors[0]).toContain("issueDate");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -208,7 +209,7 @@ describe("Cockpit write — invoice issue (input + gates)", () => {
       expect(res.status).toBe(400);
       expect(res.body.errors[0]).toContain("lines");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -225,7 +226,7 @@ describe("Cockpit write — invoice issue (input + gates)", () => {
       expect(res.status).toBe(400);
       expect(res.body.errors[0]).toContain("quantity");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -243,7 +244,7 @@ describe("Cockpit write — invoice issue (input + gates)", () => {
       expect(res.body.code).toBe("bad_request");
       expect(res.body.errors[0]).toContain("buyer");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -258,7 +259,7 @@ describe("Cockpit write — invoice issue (input + gates)", () => {
       expect(res.status).toBe(409);
       expect(res.body.errors[0]).toContain("customer");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -272,7 +273,7 @@ describe("Cockpit write — invoice issue (input + gates)", () => {
       );
       expect(res.status).toBe(404);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -287,7 +288,7 @@ describe("Cockpit write — invoice issue (input + gates)", () => {
       );
       expect(res.status).toBe(405);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -303,7 +304,7 @@ describe("Cockpit write — invoice issue (input + gates)", () => {
       expect(res.status).toBe(401);
       expect(res.body.code).toBe("unauthorized");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -334,7 +335,7 @@ describe("Cockpit write — invoice issue (input + gates)", () => {
       expect(res.status).toBe(409);
       expect(res.body.errors[0]).toContain("Bogføring er låst");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -375,7 +376,7 @@ describe("Cockpit write — invoice post", () => {
         expect(row.n).toBe(1);
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -398,7 +399,7 @@ describe("Cockpit write — invoice post", () => {
         expect(row.n).toBe(0);
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -413,7 +414,7 @@ describe("Cockpit write — invoice post", () => {
       expect(res.status).toBe(400);
       expect(res.body.errors[0]).toContain("invoiceDocumentId");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -428,7 +429,7 @@ describe("Cockpit write — invoice post", () => {
       expect(res.status).toBe(409);
       expect(res.body.errors[0]).toContain("does not exist");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -455,7 +456,7 @@ describe("Cockpit write — invoice post", () => {
       expect(second.body.code).toBe("conflict");
       expect(second.body.errors[0]).toContain("already");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -488,7 +489,7 @@ describe("Cockpit write — invoice post", () => {
       expect(res.status).toBe(409);
       expect(res.body.errors[0]).toContain("Bogføring er låst");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -521,7 +522,7 @@ describe("Cockpit write — invoice settle", () => {
       expect(res.body.settlement.openBalance).toBe(0);
       expect(typeof res.body.settlement.paymentId).toBe("number");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -543,7 +544,7 @@ describe("Cockpit write — invoice settle", () => {
       expect(res.status).toBe(400);
       expect(res.body.code).toBe("bad_request");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -560,7 +561,7 @@ describe("Cockpit write — invoice settle", () => {
       expect(res.status).toBe(400);
       expect(res.body.errors[0]).toContain("bankTransaction");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -582,7 +583,7 @@ describe("Cockpit write — invoice settle", () => {
       expect(res.status).toBe(409);
       expect(res.body.errors[0]).toContain("does not exist");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -614,7 +615,7 @@ describe("Cockpit write — invoice settle", () => {
       expect(second.status).toBe(409);
       expect(second.body.code).toBe("conflict");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -653,7 +654,7 @@ describe("Cockpit write — invoice settle", () => {
       expect(res.status).toBe(409);
       expect(res.body.errors[0]).toContain("Bogføring er låst");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -668,7 +669,7 @@ describe("Cockpit write — invoice settle", () => {
       );
       expect(res.status).toBe(405);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

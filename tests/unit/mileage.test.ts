@@ -1,6 +1,6 @@
 // Tests: src/core/mileage.ts (mileage log core)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -13,6 +13,7 @@ import {
 } from "../../src/core/mileage";
 import { exportAuthorityPackage } from "../../src/core/authority-export";
 
+import { cleanupDir } from "../helpers/cleanup";
 function freshCompany(prefix: string) {
   const root = mkdtempSync(join(tmpdir(), prefix));
   const companyRoot = join(root, "company");
@@ -74,7 +75,7 @@ describe("mileage log core", () => {
     );
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("creates a mileage entry and lists it back deterministically", () => {
@@ -103,7 +104,7 @@ describe("mileage log core", () => {
     expect(row.rateSource).toBe(validEntry.rateSource);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects an unknown rate currency mismatch and writes append-only entries", () => {
@@ -116,7 +117,7 @@ describe("mileage log core", () => {
     expect(() => db.run("DELETE FROM mileage_entries WHERE id = 1")).toThrow();
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("period report sums kilometers and amount basis deterministically for a date range", () => {
@@ -148,7 +149,7 @@ describe("mileage log core", () => {
     expect(bad.errors).toContain("from cannot be after to");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("mileage entries land in the audit log so they reach the authority export", () => {
@@ -183,7 +184,7 @@ describe("mileage log core", () => {
     expect(auditLog.some((row) => row.eventType === "mileage_entry_create")).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("exportMileageLog produces a deterministic period artifact for review and audit", () => {
@@ -219,6 +220,6 @@ describe("mileage log core", () => {
     expect(readFileSync(result2.jsonPath!, "utf8")).toBe(readFileSync(result.jsonPath!, "utf8"));
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

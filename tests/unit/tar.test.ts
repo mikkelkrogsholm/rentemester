@@ -1,9 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createTar, dirToTarEntries, extractTar, readTar } from "../../src/core/tar";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("tar", () => {
   test("round-trips entries through createTar/readTar", () => {
     const entries = [
@@ -67,7 +68,7 @@ describe("tar", () => {
       evil.write("../escape".padEnd(9, "\0"), 0);
       expect(() => extractTar(evil, dir)).toThrow();
     } finally {
-      rmSync(dir, { recursive: true, force: true });
+      cleanupDir(dir);
     }
   });
 
@@ -102,7 +103,7 @@ describe("tar", () => {
       expect(entries.map((e) => e.path).sort()).toEqual(["config/policy.yaml", "ledger.sqlite"]);
       expect(existsSync(join(dir, "config", "policy.yaml"))).toBe(true);
     } finally {
-      rmSync(dir, { recursive: true, force: true });
+      cleanupDir(dir);
     }
   });
 });

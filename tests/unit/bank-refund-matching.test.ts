@@ -1,6 +1,6 @@
 // Tests: src/core/bank-suggest-matches.ts (refund / credit-note matching, #182)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -12,6 +12,7 @@ import { ingestDocument } from "../../src/core/documents";
 import { importBankCsv } from "../../src/core/bank";
 import { suggestBankMatches } from "../../src/core/bank-suggest-matches";
 
+import { cleanupDir } from "../helpers/cleanup";
 function invoicePayload(overrides: Record<string, unknown> = {}) {
   return {
     invoiceType: "full",
@@ -62,7 +63,7 @@ describe("cross-currency suggestion guard", () => {
     expect(row.suggestions.some((s) => s.kind === "issued_invoice")).toBe(false);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });
 
@@ -97,7 +98,7 @@ describe("refund / credit-note matching (#182)", () => {
     expect(top.confidence).toBeGreaterThanOrEqual(0.5);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("an incoming supplier credit-note refund matches its purchase", () => {
@@ -137,8 +138,8 @@ describe("refund / credit-note matching (#182)", () => {
     expect(top.supplierName).toBe("Stripe Payments Ltd");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("a refund with no corroboration (amount only) yields no crossing-threshold suggestion", () => {
@@ -166,7 +167,7 @@ describe("refund / credit-note matching (#182)", () => {
     expect(row.suggestions).toHaveLength(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a normal incoming customer payment still matches its issued invoice, not a supplier refund", () => {
@@ -187,6 +188,6 @@ describe("refund / credit-note matching (#182)", () => {
     expect(row.suggestions[0].invoiceNo).toBe("2026-0001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

@@ -3,7 +3,7 @@
 // primobalance cut-over date, or inside a closed accounting period, is an
 // archived artifact — not an open task — and must not be counted as one.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -12,6 +12,7 @@ import { seedAccounts } from "../../src/core/ledger";
 import { recordException, listExceptions } from "../../src/core/exceptions";
 import { postOpeningBalance } from "../../src/core/opening-balance";
 
+import { cleanupDir } from "../helpers/cleanup";
 function freshCompany(prefix: string) {
   const root = mkdtempSync(join(tmpdir(), prefix));
   const db = openDb(ensureCompanyDirs(root).db);
@@ -67,7 +68,7 @@ describe("listExceptions — archived periods", () => {
 
       db.close();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -93,7 +94,7 @@ describe("listExceptions — archived periods", () => {
 
       db.close();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -109,7 +110,7 @@ describe("listExceptions — archived periods", () => {
 
       db.close();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });

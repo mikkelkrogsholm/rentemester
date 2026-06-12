@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { config, get, makeWorkspace, rmSync, seedArchiveYear } from "./_shared";
+import { config, get, makeWorkspace, seedArchiveYear } from "./_shared";
 
+import { cleanupDir } from "../../helpers/cleanup";
 describe("cockpit API — archive (GET .../archive/:year)", () => {
   test("returns the archived year's SaldoBalance and posting summary", async () => {
     const ws = makeWorkspace("arc-live", ["Acme ApS"]);
@@ -35,7 +36,7 @@ describe("cockpit API — archive (GET .../archive/:year)", () => {
       expect(a.postings.count).toBe(2);
       expect(a.postings.grossTotal).toBe(6200);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -49,7 +50,7 @@ describe("cockpit API — archive (GET .../archive/:year)", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -63,7 +64,7 @@ describe("cockpit API — archive (GET .../archive/:year)", () => {
       expect(res.status).toBe(400);
       expect(res.body.code).toBe("bad_request");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -77,7 +78,7 @@ describe("cockpit API — archive (GET .../archive/:year)", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

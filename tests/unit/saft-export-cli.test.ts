@@ -1,9 +1,10 @@
 // Tests: src/cli/system.ts, src/cli.ts (SAF-T export CLI)
 import { describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("SAF-T export CLI", () => {
   test("exports a deterministic first-slice SAF-T package", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-saft-export-cli-"));
@@ -45,6 +46,6 @@ describe("SAF-T export CLI", () => {
     expect(manifest.counts.purchaseInvoices).toBe(0);
     expect(manifest.counts).toHaveProperty("vatSummaryCodes");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

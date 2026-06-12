@@ -1,9 +1,10 @@
 // Tests: src/cli/reg.ts, src/cli.ts (regulatory coverage CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 function runCli(args: string[]) {
   return Bun.spawn(["bun", "run", "src/cli.ts", ...args], {
     cwd: process.cwd(),
@@ -69,7 +70,7 @@ describe("reg coverage CLI", () => {
     const second = runCli(["reg", "coverage", "--out", join(dir, "again.md")]);
     await second.exited;
     const again = readFileSync(join(dir, "again.md"), "utf8");
-    rmSync(dir, { recursive: true, force: true });
+    cleanupDir(dir);
     expect(again).toBe(report);
   });
 });

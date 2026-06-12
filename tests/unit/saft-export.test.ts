@@ -1,7 +1,7 @@
 // Tests: src/core/saft-export.ts
 import { describe, expect, test } from "bun:test";
 import { createHash } from "node:crypto";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -12,6 +12,7 @@ import { seedAccounts } from "../../src/core/ledger";
 import { exportSaftPackage } from "../../src/core/saft-export";
 import { createCustomer, createVendor } from "../../src/core/master-data";
 
+import { cleanupDir } from "../helpers/cleanup";
 function sha256(path: string) {
   return createHash("sha256").update(readFileSync(path)).digest("hex");
 }
@@ -76,7 +77,7 @@ describe("SAF-T export", () => {
     expect(xml).not.toContain("<Quantity>1.00</Quantity>");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("fails clearly when required SAF-T source fields are missing", () => {
@@ -100,7 +101,7 @@ describe("SAF-T export", () => {
     expect(result.errors).toContain("company cvr is required for SAF-T export");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });
 
@@ -210,7 +211,7 @@ describe("SAF-T export second slice (purchases, VAT summary, document references
     expect(xml).toContain("<TaxCode>");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("emits document references linking ledger transactions to source documents", () => {
@@ -230,7 +231,7 @@ describe("SAF-T export second slice (purchases, VAT summary, document references
     expect(xml).toContain("<SourceDocumentID>");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("export remains byte-stable across reruns with purchase records", () => {
@@ -267,7 +268,7 @@ describe("SAF-T export second slice (purchases, VAT summary, document references
     expect(sha256(first.saftXmlPath!)).toBe(sha256(second.saftXmlPath!));
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("fails clearly when a purchase document in the period is missing required SAF-T fields", () => {
@@ -297,7 +298,7 @@ describe("SAF-T export second slice (purchases, VAT summary, document references
     expect(result.errors.some((e) => e.includes("supplier"))).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   // ===== Third slice (master files): customers + suppliers in MasterFiles =====
@@ -339,6 +340,6 @@ describe("SAF-T export second slice (purchases, VAT summary, document references
     expect(manifest.counts.suppliers).toBe(1);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

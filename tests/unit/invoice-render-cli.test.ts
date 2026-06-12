@@ -1,6 +1,6 @@
 // Tests: src/cli/invoice.ts, src/cli.ts (invoice render CLI)
 import { describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { buildIssuedInvoicePdf, renderIssuedInvoicePdf } from "../../src/core/invoice-pdf";
@@ -9,6 +9,7 @@ import { openDb, migrate } from "../../src/core/db";
 import { issueInvoice } from "../../src/core/issued-invoices";
 import { addBankAccount } from "../../src/core/bank";
 
+import { cleanupDir } from "../helpers/cleanup";
 /** Extract every PDF literal-string draw operation `( ... ) Tj` from a content
  *  stream so tests can assert on the rendered text regardless of positioning. */
 function pdfStrings(pdf: Uint8Array): string[] {
@@ -214,7 +215,7 @@ describe("renderIssuedInvoicePdf — ledger payment details", () => {
     expect(strings).toContain("IBAN: DK5000400440116243");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });
 
@@ -246,7 +247,7 @@ describe("invoice render CLI", () => {
     const exitCode = await render.exited;
     const rerenderedPdf = readFileSync(issued.pdfStoredPath, "latin1");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);

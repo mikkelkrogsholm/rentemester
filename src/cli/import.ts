@@ -3,6 +3,8 @@ import { migrate } from "../core/db";
 import { runImportFromSource } from "../core/import/framework";
 import { queryArchive } from "../core/import/dinero-archive";
 import { importDineroContacts } from "../core/import/dinero-contacts";
+import { importBillyContacts } from "../core/import/billy-contacts";
+import { ingestBillyBilag } from "../core/import/billy-bilag";
 import { PARSERS } from "../core/import/synthetic-csv";
 import { openCommandDb } from "../cli-dispatch";
 import type { CommandDispatch } from "../cli-dispatch";
@@ -71,6 +73,71 @@ export function register(dispatch: CommandDispatch): void {
       enrichCvr: ctx.hasFlag("--enrich-cvr"),
       defaultRole: defaultRole ?? undefined,
     });
+    ctx.emitResult(result as unknown as Record<string, unknown>);
+    db.close();
+    if (!result.ok) process.exit(1);
+  });
+
+  // `import billy-contacts` — migrates a Billy contacts.json export into the
+  // customer/vendor master data. Similar to `import contacts` (Dinero) but
+  // reads a JSON array from the Billy API export.
+  dispatch.on("import", "billy-contacts", (ctx) => {
+    const file = ctx.arg("--file");
+    if (!file) {
+      console.error("Missing required --file <contacts.json>");
+      process.exit(2);
+    }
+    if (!existsSync(file)) {
+      console.error(`Contacts JSON does not exist: ${file}`);
+      process.exit(2);
+    }
+    const defaultRole = ctx.trimToNull(ctx.arg("--default-role"));
+    if (defaultRole !== null && defaultRole !== "customer" && defaultRole !== "vendor") {
+      console.error("--default-role must be 'customer' or 'vendor'");
+      process.exit(2);
+    }
+
+    const db = openCommandDb(ctx);
+    migrate(db);
+    const result = importBillyContacts(db, readFileSync(file, "utf8"), {
+      defaultRole: defaultRole ?? undefined,
+    });
+    ctx.emitResult(result as unknown as Record<string, unknown>);
+    db.close();
+    if (!result.ok) process.exit(1);
+  });
+
+  // `import billy-bilag` — ingests downloaded Billy attachment files and links
+  // them to their journal entries. Requires a prior `import run --system billy`
+  // that produced historicalEntriesPosted, and a Billy export directory with
+  // bilag/ files and bill-transaction-map.json.
+  dispatch.on("import", "billy-bilag", (ctx) => {
+    const file = ctx.arg("--file");
+    if (!file) {
+      console.error("Missing required --file <billy-export-directory>");
+      process.exit(2);
+    }
+    if (!existsSync(file)) {
+      console.error(`Billy export directory does not exist: ${file}`);
+      process.exit(2);
+    }
+    const resultFile = ctx.arg("--import-result");
+    if (!resultFile || !existsSync(resultFile)) {
+      console.error("Missing required --import-result <import-result.json> (output of `import run`)");
+      process.exit(2);
+    }
+    let importResult;
+    try {
+      importResult = JSON.parse(readFileSync(resultFile, "utf8"));
+    } catch {
+      console.error("--import-result: invalid JSON");
+      process.exit(2);
+    }
+
+    const db = openCommandDb(ctx);
+    migrate(db);
+    const companyRoot = ctx.arg("--company")!;
+    const result = ingestBillyBilag(db, companyRoot, file, importResult);
     ctx.emitResult(result as unknown as Record<string, unknown>);
     db.close();
     if (!result.ok) process.exit(1);

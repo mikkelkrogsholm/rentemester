@@ -7,7 +7,7 @@
 // happy path, and the input/business-rejection error mapping — including the
 // idempotency rejection ("already fully credited") being a 409 conflict.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -20,6 +20,7 @@ import { computeInvoiceAmounts } from "../../src/core/invoice";
 import { issueInvoice } from "../../src/core/issued-invoices";
 import { postIssuedInvoiceToLedger } from "../../src/core/invoice-booking";
 
+import { cleanupDir } from "../helpers/cleanup";
 function tmpRoot(label: string) {
   return mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
 }
@@ -140,7 +141,7 @@ describe("Cockpit write — invoice credit-note (happy path)", () => {
       // A reversal journal entry was appended.
       expect(typeof res.body.creditNote.journalEntryId).toBe("number");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -168,7 +169,7 @@ describe("Cockpit write — invoice credit-note (input + gates)", () => {
       expect(res.body.code).toBe("bad_request");
       expect(res.body.errors[0]).toMatch(/confirm/i);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -187,7 +188,7 @@ describe("Cockpit write — invoice credit-note (input + gates)", () => {
       expect(res.status).toBe(400);
       expect(res.body.errors[0]).toContain("invoiceDocumentId");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -208,7 +209,7 @@ describe("Cockpit write — invoice credit-note (input + gates)", () => {
       expect(res.status).toBe(400);
       expect(res.body.errors[0]).toContain("reason");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -229,7 +230,7 @@ describe("Cockpit write — invoice credit-note (input + gates)", () => {
       // `does not exist` heuristic in `withCompanyMutation`, so this is a 409.
       expect(res.status).toBe(409);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -265,7 +266,7 @@ describe("Cockpit write — invoice credit-note (input + gates)", () => {
       expect(second.status).toBe(409);
       expect(second.body.errors[0]).toMatch(/already fully credited/i);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -284,7 +285,7 @@ describe("Cockpit write — invoice credit-note (input + gates)", () => {
       );
       expect(res.status).toBe(404);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -300,7 +301,7 @@ describe("Cockpit write — invoice credit-note (input + gates)", () => {
       );
       expect(res.status).toBe(405);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

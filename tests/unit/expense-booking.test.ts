@@ -1,6 +1,6 @@
 // Tests: src/core/expense-booking.ts
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -12,6 +12,7 @@ import { buildBankReconciliationReport } from "../../src/core/reconciliation";
 import { bookExpenseFromBank } from "../../src/core/expense-booking";
 import { storeViesValidation } from "../../src/core/vies";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("expense booking", () => {
   test("books a standard vendor expense from document + bank transaction and reconciles it", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-expense-book-"));
@@ -77,8 +78,8 @@ describe("expense booking", () => {
     expect(report.matched[0].bankTransactionId).toBe(bankRow.id);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("rejects a standard expense whose document vat_amount is inconsistent with the 25% rate (#143)", () => {
@@ -127,8 +128,8 @@ describe("expense booking", () => {
     expect(booked.entryId).toBeUndefined();
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("books a foreign-currency purchase settled by a DKK bank transaction and preserves FX basis", () => {
@@ -181,8 +182,8 @@ describe("expense booking", () => {
     expect(entry).toEqual({ currency: "EUR", amount_foreign: 100, amount_dkk: 746, fx_rate_to_dkk: 7.46 });
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("blocks foreign-currency expense booking when the DKK settlement lacks FX basis", () => {
@@ -229,8 +230,8 @@ describe("expense booking", () => {
     expect(booked.errors).toContain("foreign-currency expense booking requires bank fx_rate_to_dkk for DKK-settled payments");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("surfaces an error instead of silently booking an unmapped VAT code as exempt (#153)", () => {
@@ -289,8 +290,8 @@ describe("expense booking", () => {
     expect(explicit.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("uses reverse-charge flow when the expense account defaults to EU reverse charge", () => {
@@ -347,7 +348,7 @@ describe("expense booking", () => {
     expect(report.unmatchedCount).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });

@@ -3,7 +3,7 @@
 // FIRST SLICE that derives skattepligtig indkomst from the bookkept annual
 // result plus the skattemæssige reguleringer the ledger can see deterministically.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -15,6 +15,7 @@ import { postRepresentationPurchase } from "../../src/core/vat";
 import { registerAsset, postDepreciationPeriod } from "../../src/core/assets";
 import { buildTaxReturn } from "../../src/core/tax-return";
 
+import { cleanupDir } from "../helpers/cleanup";
 function newCompany(prefix: string, cvr: string | null = "DK12345678", companyForm = "Anpartsselskab") {
   const root = mkdtempSync(join(tmpdir(), prefix));
   const inbox = mkdtempSync(join(tmpdir(), `${prefix}inbox-`));
@@ -97,7 +98,7 @@ function lockYear(db: ReturnType<typeof openDb>) {
 }
 
 function cleanup(...dirs: string[]) {
-  for (const dir of dirs) rmSync(dir, { recursive: true, force: true });
+  for (const dir of dirs) cleanupDir(dir);
 }
 
 describe("buildTaxReturn (oplysningsskema preparation, micro-ApS)", () => {

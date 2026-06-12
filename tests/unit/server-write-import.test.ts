@@ -2,7 +2,7 @@
 // POST /api/companies/:slug/import route in src/server/router.ts — the
 // cockpit's generic, source-recognising file-import.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -12,6 +12,7 @@ import { initWorkspace, companyRootForSlug } from "../../src/core/workspace";
 import { companyPaths } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 
+import { cleanupDir } from "../helpers/cleanup";
 function makeWorkspace(label: string, companyName = "Acme ApS") {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
   initWorkspace(root);
@@ -82,7 +83,7 @@ describe("Cockpit write — generic file-import", () => {
         db.close();
       }
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -105,7 +106,7 @@ describe("Cockpit write — generic file-import", () => {
       expect(res.body.import.summary.customersCreated).toBe(0);
       expect(res.body.import.summary.skipped).toBe(2);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -121,7 +122,7 @@ describe("Cockpit write — generic file-import", () => {
       expect(res.body.errors[0]).toContain("ikke genkendt");
       expect(res.body.errors[0]).toContain("Dinero");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -135,7 +136,7 @@ describe("Cockpit write — generic file-import", () => {
       expect(res.status).toBe(400);
       expect(res.body.errors[0]).toContain("confirm");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -150,7 +151,7 @@ describe("Cockpit write — generic file-import", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

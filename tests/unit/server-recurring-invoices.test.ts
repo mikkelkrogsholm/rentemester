@@ -2,7 +2,7 @@
 // POST /api/companies/:slug/recurring-invoices/:id/generate — the cockpit
 // surface for the existing recurring-invoice core.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -11,6 +11,7 @@ import { createCompany } from "../../src/core/company";
 import { initWorkspace, companyRootForSlug } from "../../src/core/workspace";
 import { companyPaths } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   createRecurringInvoiceTemplate,
   type RecurringInvoiceTemplateInput,
@@ -106,7 +107,7 @@ describe("cockpit API — recurring invoices", () => {
       expect(res.status).toBe(200);
       expect(res.body.recurringInvoices.templates).toEqual([]);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -127,7 +128,7 @@ describe("cockpit API — recurring invoices", () => {
       expect(Array.isArray(t.generations)).toBe(true);
       expect(t.generations).toEqual([]);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -157,7 +158,7 @@ describe("cockpit API — recurring invoices", () => {
         res.body.generation.invoiceNumber,
       );
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -172,7 +173,7 @@ describe("cockpit API — recurring invoices", () => {
       );
       expect(res.status).toBe(400);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -186,7 +187,7 @@ describe("cockpit API — recurring invoices", () => {
       );
       expect([400, 404, 409]).toContain(res.status);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -226,7 +227,7 @@ describe("cockpit API — recurring invoices", () => {
       expect(gen.body.ok).toBe(false);
       expect(JSON.stringify(gen.body)).toContain("inactive");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -241,7 +242,7 @@ describe("cockpit API — recurring invoices", () => {
       );
       expect(res.status).toBe(400);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -263,7 +264,7 @@ describe("cockpit API — recurring invoices", () => {
       expect(second.status).toBe(200);
       expect(second.body.ok).toBe(true);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -283,7 +284,7 @@ describe("cockpit API — recurring invoices", () => {
         expect([400, 404, 409]).toContain(res.status);
       }
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -350,7 +351,7 @@ describe("cockpit API — recurring invoices", () => {
       expect(row.firstIssueDate).toBe("2026-07-01");
       expect(row.paymentTermsDays).toBe(14);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -370,7 +371,7 @@ describe("cockpit API — recurring invoices", () => {
       );
       expect(res.status).toBe(400);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -391,7 +392,7 @@ describe("cockpit API — recurring invoices", () => {
       );
       expect(res.status).toBe(400);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -418,7 +419,7 @@ describe("cockpit API — recurring invoices", () => {
         expect([400, 409]).toContain(res.status);
       }
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

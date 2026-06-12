@@ -1,10 +1,11 @@
 // Tests: src/core/master-data.ts (customerInputFromCvr / vendorInputFromCvr)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   createCustomer,
   customerInputFromCvr,
@@ -56,7 +57,7 @@ describe("customerInputFromCvr", () => {
     expect(created.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("explicit caller values always win over CVR data", async () => {
@@ -75,7 +76,7 @@ describe("customerInputFromCvr", () => {
     expect(resolved.input.address).toBe("Havnegade 9, 5000 Odense C");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("reports the lookup error when the CVR number is unknown", async () => {
@@ -84,7 +85,7 @@ describe("customerInputFromCvr", () => {
     const resolved = await customerInputFromCvr(db, "99999999", { name: "" }, { fetchImpl: missing, username: "u", password: "p" });
     expect(resolved.ok).toBe(false);
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });
 
@@ -98,6 +99,6 @@ describe("vendorInputFromCvr", () => {
     expect(resolved.input.address).toBe("Havnegade 9, 5000 Odense C");
     expect(resolved.input.vatOrCvr).toBe("DK12345678");
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

@@ -6,7 +6,7 @@
 // a realised exchange gain (1020) or loss (3320). The receivable must net to
 // exactly zero per invoice; the FX difference must reach the P&L.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -21,6 +21,7 @@ import { refundInvoiceToBank } from "../../src/core/invoice-refunds";
 import { registerInvoiceLateCompensation } from "../../src/core/invoice-compensation";
 import { seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 
+import { cleanupDir } from "../helpers/cleanup";
 function netOnAccount(db: any, accountNo: string): number {
   const row = db.query(
     `SELECT COALESCE(SUM(jl.debit_amount), 0) - COALESCE(SUM(jl.credit_amount), 0) AS net
@@ -93,7 +94,7 @@ describe("realised exchange gain/loss on invoice settlement", () => {
     expect(verifyAuditChain(db).ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("EUR weakens between invoice (7.45) and payment (7.44): books a realised exchange LOSS and nets receivable to zero", () => {
@@ -113,7 +114,7 @@ describe("realised exchange gain/loss on invoice settlement", () => {
     expect(verifyAuditChain(db).ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("foreign credit note then closing payment: receivable nets to zero and only the true rate drift hits FX (adversarial #6/#7/#8)", () => {
@@ -135,7 +136,7 @@ describe("realised exchange gain/loss on invoice settlement", () => {
 
     expect(verifyAuditChain(db).ok).toBe(true);
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("many flat-rate partials (no rate movement) manufacture no phantom FX (adversarial #4)", () => {
@@ -158,7 +159,7 @@ describe("realised exchange gain/loss on invoice settlement", () => {
     expect(netOnAccount(db, "3320")).toBe(0);
     expect(getInvoiceStatus(db, invoiceId).status).toBe("paid");
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("combined settlement (principal + claim) of a FOREIGN invoice is rejected, not silently mis-booked (adversarial #1/#5/#9)", () => {
@@ -184,7 +185,7 @@ describe("realised exchange gain/loss on invoice settlement", () => {
     // Nothing partial was booked.
     expect(db.query("SELECT COUNT(*) AS n FROM invoice_claim_payments").get()).toEqual({ n: 0 });
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a foreign invoice payment with a caller-provided journalEntryId is rejected (FX could be unhandled) (adversarial #2)", () => {
@@ -201,7 +202,7 @@ describe("realised exchange gain/loss on invoice settlement", () => {
     expect(res.ok).toBe(false);
     expect(res.errors.join(" ")).toMatch(/fremmed valuta|foreign-currency|journalEntryId/i);
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("awkward-rate multi-partial settlement nets the receivable to EXACTLY zero (adversarial re-review #1/#2)", () => {
@@ -225,7 +226,7 @@ describe("realised exchange gain/loss on invoice settlement", () => {
     expect(getInvoiceStatus(db, invoiceId).status).toBe("paid");
     expect(verifyAuditChain(db).ok).toBe(true);
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("refund of a FOREIGN-currency invoice is rejected (refund path is not currency-aware) (adversarial re-review #3)", () => {
@@ -244,7 +245,7 @@ describe("realised exchange gain/loss on invoice settlement", () => {
     expect(refund.ok).toBe(false);
     expect(refund.errors.join(" ")).toMatch(/fremmed valuta|foreign-currency/i);
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("no rate drift (7.46 == 7.46): no FX line, receivable nets to zero", () => {
@@ -266,6 +267,6 @@ describe("realised exchange gain/loss on invoice settlement", () => {
     expect(lines.map((l) => l.account_no)).toEqual(["2000", "1100"]);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

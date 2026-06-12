@@ -1,6 +1,6 @@
 // Tests: src/core/invoice-reminders.ts
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -10,6 +10,7 @@ import { postInvoiceReminderToLedger, registerInvoiceReminder } from "../../src/
 import { getInvoiceStatus } from "../../src/core/invoice-payments";
 import { seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 
+import { cleanupDir } from "../helpers/cleanup";
 function failingReminderPostingDb(realDb: any) {
   let failed = false;
   return new Proxy(realDb, {
@@ -66,7 +67,7 @@ describe("invoice reminders", () => {
     expect(status.reminders?.[0]?.journalEntryId).toBe(null);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("posts a registered reminder fee once to receivables and non-VAT claim income", () => {
@@ -121,7 +122,7 @@ describe("invoice reminders", () => {
     expect(chain.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rolls back the journal entry if reminder posting link creation fails", () => {
@@ -158,7 +159,7 @@ describe("invoice reminders", () => {
     expect(realDb.query("SELECT COUNT(*) AS n FROM invoice_reminder_postings").get()).toEqual({ n: 1 });
 
     realDb.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("blocks a fourth reminder and reminders sent too close together", () => {
@@ -186,6 +187,6 @@ describe("invoice reminders", () => {
     expect(tooSoon.errors[0]).toContain("at least 10 days");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

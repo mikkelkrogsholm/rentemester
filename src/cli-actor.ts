@@ -176,7 +176,8 @@ export function inferredMutationActor(): string | null {
     trimToNull(process.env.RENTEMESTER_AGENT ? `agent:${process.env.RENTEMESTER_AGENT}` : null) ??
     trimToNull(process.env.RENTEMESTER_USER ? `user:${process.env.RENTEMESTER_USER}` : null) ??
     trimToNull(process.env.USER ? `user:${process.env.USER}` : null) ??
-    trimToNull(process.env.LOGNAME ? `user:${process.env.LOGNAME}` : null)
+    trimToNull(process.env.LOGNAME ? `user:${process.env.LOGNAME}` : null) ??
+    trimToNull(process.env.USERNAME ? `user:${process.env.USERNAME}` : null)
   );
 }
 

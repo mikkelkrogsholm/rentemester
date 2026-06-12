@@ -1,10 +1,11 @@
 // Tests: src/core/bilagsmail.ts — IMAP config store + mail-alias (#348, #350).
 import { describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdtempSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { mkdirSync } from "node:fs";
 import { openDb, migrate } from "../../src/core/db";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   deleteBilagsmailImapConfig,
   getCompanyMailAlias,
@@ -50,7 +51,7 @@ describe("#348 — IMAP config storage in config/imap.json", () => {
       expect(loaded!.secure).toBe(true);
       expect(loaded!.mailbox).toBe("INBOX");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -67,7 +68,7 @@ describe("#348 — IMAP config storage in config/imap.json", () => {
       // mode includes file-type bits; mask to permission bits.
       expect(stat.mode & 0o777).toBe(0o600);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -76,7 +77,7 @@ describe("#348 — IMAP config storage in config/imap.json", () => {
     try {
       expect(loadBilagsmailImapConfig(root)).toBeNull();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -94,7 +95,7 @@ describe("#348 — IMAP config storage in config/imap.json", () => {
       expect(deleted).toBe(true);
       expect(loadBilagsmailImapConfig(root)).toBeNull();
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -134,7 +135,7 @@ describe("#348 — IMAP config storage in config/imap.json", () => {
         }),
       ).toThrow(/password/);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });
@@ -147,7 +148,7 @@ describe("#350 — per-company mail_alias on companies table", () => {
       expect(getCompanyMailAlias(db)).toBe("acme-aps");
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -158,7 +159,7 @@ describe("#350 — per-company mail_alias on companies table", () => {
       expect(getCompanyMailAlias(db)).toBe("acme-aps");
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -170,7 +171,7 @@ describe("#350 — per-company mail_alias on companies table", () => {
       expect(getCompanyMailAlias(db)).toBeNull();
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -183,7 +184,7 @@ describe("#350 — per-company mail_alias on companies table", () => {
       expect(() => setCompanyMailAlias(db, "spaces in name")).toThrow();
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });

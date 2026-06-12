@@ -25,6 +25,7 @@ import {
 } from "../../src/core/system-backups";
 import { restoreSystemBackup, verifyBackupSignature } from "../../src/core/system-restore";
 
+import { cleanupDir } from "../helpers/cleanup";
 // These tests lock in the asymmetric-signature contract from issue #99:
 //  - HMAC remains the default (parallel, never weakened).
 //  - --sign-with-ed25519 adds a 3rd-party-verifiable signature whose public
@@ -72,7 +73,7 @@ describe("asymmetric backup signatures (issue #99)", () => {
     expect(kp2.publicKeyPem).toBe(kp1.publicKeyPem);
     expect(kp2.privateKeyPem).toBe(kp1.privateKeyPem);
 
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   });
 
   test("backup signed with --sign-with-ed25519 ships public key inside backup but never private key", () => {
@@ -114,7 +115,7 @@ describe("asymmetric backup signatures (issue #99)", () => {
     expect(manifest.asymmetricSignature.publicKeyHint).toBe(publicKeyHint(shippedPubText));
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   });
 
   test("a 3rd-party with only the public key can verify the backup end-to-end", () => {
@@ -146,8 +147,8 @@ describe("asymmetric backup signatures (issue #99)", () => {
     expect(verify.errors).toEqual([]);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(auditorRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(auditorRoot);
   });
 
   test("tampering with a backup file is caught even when both signatures are present", () => {
@@ -176,7 +177,7 @@ describe("asymmetric backup signatures (issue #99)", () => {
     expect(verify.errors.some((e) => e.includes("ledger.sqlite"))).toBe(true);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   });
 
   test("tampering with the ed25519 signature itself fails verification", () => {
@@ -206,13 +207,13 @@ describe("asymmetric backup signatures (issue #99)", () => {
     expect(verify.errors.some((e) => /ed25519/i.test(e))).toBe(true);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   });
 
   test("HMAC-only backup (no ed25519 opt-in) still verifies, restore still works", () => {
     const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-ed25519-hmac-only-"));
     const targetRoot = mkdtempSync(join(tmpdir(), "rentemester-ed25519-hmac-target-"));
-    rmSync(targetRoot, { recursive: true, force: true }); // restore wants empty/absent
+    cleanupDir(targetRoot); // restore wants empty/absent
     const paths = ensureCompanyDirs(companyRoot);
     const db = openDb(paths.db);
     migrate(db);
@@ -240,14 +241,14 @@ describe("asymmetric backup signatures (issue #99)", () => {
     expect(restore.ok).toBe(true);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(targetRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(targetRoot);
   });
 
   test("dual-signed backup: restore verifies BOTH HMAC and ed25519", () => {
     const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-ed25519-dual-"));
     const targetRoot = mkdtempSync(join(tmpdir(), "rentemester-ed25519-dual-target-"));
-    rmSync(targetRoot, { recursive: true, force: true });
+    cleanupDir(targetRoot);
     const paths = ensureCompanyDirs(companyRoot);
     const db = openDb(paths.db);
     migrate(db);
@@ -266,8 +267,8 @@ describe("asymmetric backup signatures (issue #99)", () => {
     expect(restore.backupId).toBe(backup.backupId);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(targetRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(targetRoot);
   });
 
   test("issue #132: an ed25519 key resolved from inside the backup is integrity-only, not third-party authenticity", () => {
@@ -293,7 +294,7 @@ describe("asymmetric backup signatures (issue #99)", () => {
     expect(verify.trustLevel).toBe("integrity-only");
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   });
 
   test("issue #132: an out-of-band public key elevates verification to third-party authenticity", () => {
@@ -319,8 +320,8 @@ describe("asymmetric backup signatures (issue #99)", () => {
     expect(verify.trustLevel).toBe("third-party-authenticity");
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(auditorRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
+    cleanupDir(auditorRoot);
   });
 
   test("issue #132: a forged keypair re-signed inside the backup is rejected when the verifier supplies the genuine public-key hint", () => {
@@ -370,7 +371,7 @@ describe("asymmetric backup signatures (issue #99)", () => {
     expect(verify.errors.some((e) => /public.?key/i.test(e) && /hint|mismatch/i.test(e))).toBe(true);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   });
 
   test("issue #132: createSystemBackup refuses to regenerate over a partially-deleted keystate", () => {
@@ -394,7 +395,7 @@ describe("asymmetric backup signatures (issue #99)", () => {
     expect(backup.errors.some((e) => /signing key/i.test(e))).toBe(true);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupDir(companyRoot);
   });
 
   test("verify-backup-signature CLI runs end-to-end with only public key", async () => {
@@ -430,7 +431,7 @@ describe("asymmetric backup signatures (issue #99)", () => {
     const stderr = await new Response(verifyProc.stderr).text();
     const exitCode = await verifyProc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);

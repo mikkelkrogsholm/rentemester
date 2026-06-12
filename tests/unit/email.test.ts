@@ -1,12 +1,13 @@
 // Tests: src/core/email.ts (#180 email delivery)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { issueInvoice } from "../../src/core/issued-invoices";
 import { registerInvoiceReminder } from "../../src/core/invoice-reminders";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   buildInvoiceEmailMessage,
   sendInvoiceEmail,
@@ -148,7 +149,7 @@ describe("sendInvoiceEmail", () => {
     expect(rows[0]!.message_id).toBe(result.messageId!);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("is idempotent — a second identical send reuses the log and does not re-transmit", () => {
@@ -183,7 +184,7 @@ describe("sendInvoiceEmail", () => {
     expect(db.query("SELECT COUNT(*) AS n FROM email_send_log").get()).toEqual({ n: 1 });
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("fails clearly when the recipient email is missing", () => {
@@ -207,7 +208,7 @@ describe("sendInvoiceEmail", () => {
     expect(db.query("SELECT COUNT(*) AS n FROM email_send_log").get()).toEqual({ n: 0 });
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("fails clearly when the SMTP config is missing or incomplete", () => {
@@ -231,7 +232,7 @@ describe("sendInvoiceEmail", () => {
     expect(db.query("SELECT COUNT(*) AS n FROM email_send_log").get()).toEqual({ n: 0 });
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("records a transport failure without writing a success log row", () => {
@@ -258,7 +259,7 @@ describe("sendInvoiceEmail", () => {
     expect(db.query("SELECT COUNT(*) AS n FROM email_send_log").get()).toEqual({ n: 0 });
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("sends a reminder for an overdue invoice and records kind=reminder", () => {
@@ -285,6 +286,6 @@ describe("sendInvoiceEmail", () => {
     expect(row.kind).toBe("reminder");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

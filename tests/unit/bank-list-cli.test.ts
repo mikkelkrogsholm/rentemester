@@ -1,9 +1,10 @@
 // Tests: src/cli/bank.ts, src/cli.ts (bank list CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("bank list CLI", () => {
   test("filters bank transactions by reconciliation status and text", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-bank-list-"));
@@ -32,7 +33,7 @@ describe("bank list CLI", () => {
     const stderr = await new Response(proc.stderr).text();
     const exitCode = await proc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);

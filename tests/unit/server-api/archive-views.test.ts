@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { cleanupDir } from "../../helpers/cleanup";
 import {
   companyPaths,
   companyRootForSlug,
@@ -7,7 +8,6 @@ import {
   makeWorkspace,
   migrate,
   openDb,
-  rmSync,
   seedArchiveYear,
 } from "./_shared";
 
@@ -46,7 +46,7 @@ describe("cockpit API — archive-aware core views (#197)", () => {
       expect(is.totalExpense).toBe(1200);
       expect(is.result).toBe(3800);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -84,7 +84,7 @@ describe("cockpit API — archive-aware core views (#197)", () => {
       expect(b.liabilities.total + b.equity.total).toBe(b.totalAssets);
       expect(b.balanced).toBe(true);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -117,7 +117,7 @@ describe("cockpit API — archive-aware core views (#197)", () => {
       // The Balance view and the Flerårsoversigt agree on equity.
       expect(my2023.egenkapital).toBe(b.equity.total);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -163,7 +163,7 @@ describe("cockpit API — archive-aware core views (#197)", () => {
       expect(my2024.balancesum).toBe(b.totalAssets);
       expect(my2024.egenkapital).toBe(b.equity.total);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -190,7 +190,7 @@ describe("cockpit API — archive-aware core views (#197)", () => {
       expect(t.totalCredit).toBe(5000);
       expect(t.balanced).toBe(true);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -248,7 +248,7 @@ describe("cockpit API — archive-aware core views (#197)", () => {
       expect(filtered.body.journal.entries).toHaveLength(1);
       expect(filtered.body.journal.accountFilter.accountNo).toBe("3000");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -307,7 +307,7 @@ describe("cockpit API — archive-aware core views (#197)", () => {
       expect(o.recentEntries.length).toBeGreaterThan(0);
       expect(o.lastPostedDate).toBe("2024-03-10");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

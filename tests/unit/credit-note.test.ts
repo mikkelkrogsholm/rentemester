@@ -1,6 +1,6 @@
 // Tests: src/core/credit-notes.ts
 import { describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -11,6 +11,7 @@ import { seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 import { postIssuedInvoiceToLedger } from "../../src/core/invoice-booking";
 import { storeViesValidation } from "../../src/core/vies";
 
+import { cleanupDir } from "../helpers/cleanup";
 function failingDocumentInsertDb(realDb: any) {
   return new Proxy(realDb, {
     get(target, prop, receiver) {
@@ -81,7 +82,7 @@ describe("credit notes", () => {
     expect(chain.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects canonical manual credit-note numbers from the wrong fiscal scope", () => {
@@ -114,7 +115,7 @@ describe("credit notes", () => {
     expect(credit.errors[0]).toContain("does not match current fiscal scope 2026");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("does not burn an auto-numbered credit-note sequence when insert fails", () => {
@@ -159,7 +160,7 @@ describe("credit notes", () => {
     expect(retried.creditNoteNumber).toBe("CN-2026-0001");
 
     realDb.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("uses reverse-charge fallback lines when crediting an unposted reverse-charge invoice", () => {
@@ -212,7 +213,7 @@ describe("credit notes", () => {
     expect(chain.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("issues partial credit notes up to the original invoice amount and posts reversing sales lines", () => {
@@ -279,6 +280,6 @@ describe("credit notes", () => {
     expect(chain.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

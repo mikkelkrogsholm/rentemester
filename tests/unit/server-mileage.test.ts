@@ -4,7 +4,7 @@
 // per-month summary card and the rejection of bad inputs.
 
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -12,6 +12,7 @@ import type { ServerConfig } from "../../src/server/config";
 import { createCompany } from "../../src/core/company";
 import { initWorkspace } from "../../src/core/workspace";
 
+import { cleanupDir } from "../helpers/cleanup";
 function makeWorkspace(label: string) {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
   initWorkspace(root);
@@ -82,7 +83,7 @@ describe("Cockpit Kørsel-routes (#335)", () => {
       expect(m.months[0].label).toBe("jan");
       expect(m.months[0].tripCount).toBe(0);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -125,7 +126,7 @@ describe("Cockpit Kørsel-routes (#335)", () => {
       expect(m.months[0].tripCount).toBe(0);
       expect(m.months[11].tripCount).toBe(0);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -144,7 +145,7 @@ describe("Cockpit Kørsel-routes (#335)", () => {
       expect(res.body.ok).toBe(false);
       expect(String(res.body.errors?.[0] ?? "")).toMatch(/confirm/i);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -162,7 +163,7 @@ describe("Cockpit Kørsel-routes (#335)", () => {
       expect(res.body.ok).toBe(false);
       expect(String(res.body.errors?.[0] ?? "")).toMatch(/positive/i);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -192,7 +193,7 @@ describe("Cockpit Kørsel-routes (#335)", () => {
       expect(r2026.body.mileage.entries.length).toBe(1);
       expect(r2026.body.mileage.entries[0].tripDate).toBe("2026-03-15");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -216,7 +217,7 @@ describe("Cockpit Kørsel-routes (#335)", () => {
         ),
       ).toBe(true);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });

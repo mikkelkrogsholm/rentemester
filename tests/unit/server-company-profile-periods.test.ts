@@ -3,7 +3,7 @@
 // endpoint (#287) and the annual-report deadline in the Obligations payload
 // (#290).
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -14,6 +14,7 @@ import { companyPaths } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { postJournalEntry } from "../../src/core/ledger";
 
+import { cleanupDir } from "../helpers/cleanup";
 function tmpRoot(label: string) {
   return mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
 }
@@ -81,7 +82,7 @@ describe("Cockpit company profile / bank details (#284)", () => {
       expect(body.company).toHaveProperty("payment");
       expect(body.company.payment).toBeNull();
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -111,7 +112,7 @@ describe("Cockpit company profile / bank details (#284)", () => {
       expect(fresh.body.company.payment.registrationNo).toBe("1234");
       expect(fresh.body.company.address).toBe("Vej 1");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -122,7 +123,7 @@ describe("Cockpit company profile / bank details (#284)", () => {
       expect(res.status).toBe(400);
       expect(res.body.ok).toBe(false);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -136,7 +137,7 @@ describe("Cockpit company profile / bank details (#284)", () => {
       expect(res.status).toBe(404);
       expect(res.body.ok).toBe(false);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -149,7 +150,7 @@ describe("Cockpit company profile / bank details (#284)", () => {
       expect(res.status).toBe(400);
       expect(res.body.ok).toBe(false);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -187,7 +188,7 @@ describe("Cockpit close period (#287)", () => {
         db.close();
       }
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -201,7 +202,7 @@ describe("Cockpit close period (#287)", () => {
       expect(res.status).toBe(400);
       expect(res.body.ok).toBe(false);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -218,7 +219,7 @@ describe("Cockpit close period (#287)", () => {
       const second = await post(config(ws), `/api/companies/${slug}/periods/close`, body);
       expect(second.status).toBe(409);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -228,7 +229,7 @@ describe("Cockpit close period (#287)", () => {
       const res = await call(config(ws), `/api/companies/${slug}/periods/close`);
       expect(res.status).toBe(405);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -259,7 +260,7 @@ describe("Cockpit obligations — annual report deadline (#290)", () => {
       expect(annual!.dueDate).toBe("2027-05-01");
       expect(annual!.label).toMatch(/[ÅA]rsrapport/);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

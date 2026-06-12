@@ -1,9 +1,10 @@
 // Tests: src/cli/gdpr.ts, src/cli.ts (GDPR export/erase CLI — #184)
 import { describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 async function runCli(args: string[]) {
   const proc = Bun.spawn(["bun", "run", "src/cli.ts", ...args], {
     cwd: process.cwd(),
@@ -61,7 +62,7 @@ describe("GDPR CLI", () => {
     const reExported = await runCli([
       "gdpr", "export", "--company", company, "--cvr", "DK90909090", "--as-of", "2099-01-01",
     ]);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(reExported.exitCode).toBe(0);
     const reExportJson = JSON.parse(reExported.stdout);
     expect(reExportJson.records[0].erased).toBe(true);
@@ -93,7 +94,7 @@ describe("GDPR CLI", () => {
     expect(result.fingerprint).toMatch(/^sha256:[a-f0-9]{64}$/);
     // ingen signature uden --sign-with-ed25519
     expect(result.signature).toBeUndefined();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("discover lists rows pr. tabel for et subject (#353)", async () => {
@@ -118,7 +119,7 @@ describe("GDPR CLI", () => {
     // Mindst customers-tabellen skal pege på kunden.
     expect(result.byTable.customers).toBeGreaterThanOrEqual(1);
     expect(result.rows.length).toBeGreaterThanOrEqual(1);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("discover uden subject afvises", async () => {
@@ -126,7 +127,7 @@ describe("GDPR CLI", () => {
     const company = join(root, "company");
     await initCompany(company);
     const discovered = await runCli(["gdpr", "discover", "--company", company]);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(discovered.exitCode).toBe(1);
     expect(JSON.parse(discovered.stdout)).toMatchObject({ ok: false });
   });
@@ -137,7 +138,7 @@ describe("GDPR CLI", () => {
     await initCompany(company);
 
     const exported = await runCli(["gdpr", "export", "--company", company]);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(exported.exitCode).toBe(1);
     expect(JSON.parse(exported.stdout)).toMatchObject({ ok: false });
   });
@@ -166,7 +167,7 @@ describe("GDPR CLI", () => {
     expect(onDisk.ok).toBe(true);
     expect(onDisk.subject.cvr).toBe("DK11111111");
     expect(onDisk.records[0].personalData.email).toBe("out@example.com");
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("forget without --after-retention-expiry is refused", async () => {
@@ -181,7 +182,7 @@ describe("GDPR CLI", () => {
     const refused = await runCli([
       "gdpr", "forget", "--company", company, "--subject", "DK22222222",
     ]);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(refused.exitCode).toBe(2);
     expect(refused.stderr).toContain("--after-retention-expiry");
   });
@@ -205,6 +206,6 @@ describe("GDPR CLI", () => {
     expect(payload.ok).toBe(true);
     expect(payload.erasedCount).toBeGreaterThan(0);
     expect(payload.refusedCount).toBe(0);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

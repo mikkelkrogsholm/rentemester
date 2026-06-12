@@ -1,6 +1,6 @@
 // Tests: src/cli/retention.ts, src/cli.ts (retention CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -8,6 +8,7 @@ import { openDb, migrate } from "../../src/core/db";
 import { seedAccounts, postJournalEntry } from "../../src/core/ledger";
 import { ingestDocument } from "../../src/core/documents";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("retention status CLI", () => {
   test("reports expired material counts as of a chosen date", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-retention-cli-"));
@@ -59,6 +60,6 @@ describe("retention status CLI", () => {
     expect(parsed.rows.find((row: any) => row.table === "documents").expired).toBe(1);
     expect(parsed.rows.find((row: any) => row.table === "journal_entries").expired).toBe(1);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

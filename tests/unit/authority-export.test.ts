@@ -1,7 +1,7 @@
 // Tests: src/core/authority-export.ts
 import { describe, expect, test } from "bun:test";
 import { createHash } from "node:crypto";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -12,6 +12,7 @@ import { ingestDocument } from "../../src/core/documents";
 import { postJournalEntry, seedAccounts } from "../../src/core/ledger";
 import { exportAuthorityPackage } from "../../src/core/authority-export";
 
+import { cleanupDir } from "../helpers/cleanup";
 function sha256(path: string) {
   return createHash("sha256").update(readFileSync(path)).digest("hex");
 }
@@ -142,7 +143,7 @@ describe("authority export", () => {
     expect(exportedBank.every((row: any) => typeof row.retainUntil === "string")).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("exports an accountant handoff package without implying hosted reviewer access", () => {
@@ -197,6 +198,6 @@ describe("authority export", () => {
     expect(auditRows[0]?.message).toContain("Test accountant");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

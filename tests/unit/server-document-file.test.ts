@@ -1,7 +1,7 @@
 // Tests: GET /api/companies/:slug/documents/:id/file — the cockpit's
 // read route that serves the stored bilag file so a human can open it.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -12,6 +12,7 @@ import { companyPaths } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { ingestDocument } from "../../src/core/documents";
 
+import { cleanupDir } from "../helpers/cleanup";
 function makeWorkspace(label: string) {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
   initWorkspace(root);
@@ -74,7 +75,7 @@ describe("cockpit API — document file (GET .../documents/:id/file)", () => {
       const body = await res.text();
       expect(body).toBe(readFileSync("examples/vendor-invoice.txt", "utf8"));
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -87,7 +88,7 @@ describe("cockpit API — document file (GET .../documents/:id/file)", () => {
       );
       expect(res.status).toBe(404);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -100,7 +101,7 @@ describe("cockpit API — document file (GET .../documents/:id/file)", () => {
       );
       expect(res.status).toBe(404);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -116,7 +117,7 @@ describe("cockpit API — document file (GET .../documents/:id/file)", () => {
       );
       expect(res.status).toBe(405);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -132,7 +133,7 @@ describe("cockpit API — document file (GET .../documents/:id/file)", () => {
       expect(res.headers.get("content-disposition")).toContain("attachment");
       expect(res.headers.get("x-content-type-options")).toBe("nosniff");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

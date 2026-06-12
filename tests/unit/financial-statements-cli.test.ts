@@ -1,9 +1,10 @@
 // Tests: src/cli/report.ts, src/cli.ts (financial statements CLI, #176)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 async function runReport(args: string[]): Promise<{ exitCode: number; stdout: string; stderr: string }> {
   const proc = Bun.spawn(["bun", "run", "src/cli.ts", ...args], {
     cwd: process.cwd(),
@@ -54,7 +55,7 @@ describe("report CLI", () => {
     expect(bsParsed.totalAssets).toBe(bsParsed.totalLiabilitiesAndEquity);
     expect(bsParsed.periodResult).toBe(-1000);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("fails with exit code 2 when a required flag is missing", async () => {
@@ -68,7 +69,7 @@ describe("report CLI", () => {
     const bs = await runReport(["report", "balance", "--company", company]);
     expect(bs.exitCode).toBe(2);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("returns ok:false JSON and exit code 1 for an inverted period", async () => {
@@ -82,6 +83,6 @@ describe("report CLI", () => {
     expect(parsed.ok).toBe(false);
     expect(parsed.errors.length).toBeGreaterThan(0);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

@@ -1,6 +1,6 @@
 // Tests: src/core/vat.ts (VAT reverse charge)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -10,6 +10,7 @@ import { seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 import { buildVatReport, postEuServiceReverseChargePurchase } from "../../src/core/vat";
 import { storeViesValidation, normalizeEuVatNumber } from "../../src/core/vies";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("EU service reverse-charge VAT", () => {
   test("rejects non-EU and domestic VAT numbers as EU reverse-charge sellers (#135)", () => {
     // DE (Germany) is a real EU member state and must remain valid.
@@ -56,8 +57,8 @@ describe("EU service reverse-charge VAT", () => {
     expect(posted.ok).toBe(false);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("requires cached VIES validation before posting reverse-charge purchase", () => {
@@ -113,8 +114,8 @@ describe("EU service reverse-charge VAT", () => {
     expect(posted.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("posts a compliant reverse-charge purchase and reports equal output/input VAT", () => {
@@ -181,7 +182,7 @@ describe("EU service reverse-charge VAT", () => {
     expect(chain.ok).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 });

@@ -1,6 +1,6 @@
 // Tests: src/core/bank.ts, src/core/bank-suggest-matches.ts (extra columns, #188)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -10,6 +10,7 @@ import { issueInvoice } from "../../src/core/issued-invoices";
 import { importBankCsv } from "../../src/core/bank";
 import { suggestBankMatches } from "../../src/core/bank-suggest-matches";
 
+import { cleanupDir } from "../helpers/cleanup";
 function invoicePayload(overrides: Record<string, unknown> = {}) {
   return {
     invoiceType: "full",
@@ -50,7 +51,7 @@ describe("bank import extra columns (#188)", () => {
     expect(JSON.parse(row.raw_json).Tekst).toBe("Overførsel");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("a counterparty/message-identified payment now produces a corroborated suggestion text+reference missed", () => {
@@ -89,7 +90,7 @@ describe("bank import extra columns (#188)", () => {
     expect(top.reasons.some((r: string) => r.includes("low confidence"))).toBe(false);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("extra columns introduce no false positive on an amount-only tie", () => {
@@ -120,6 +121,6 @@ describe("bank import extra columns (#188)", () => {
     expect(result.rows[0].suggestions).toHaveLength(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

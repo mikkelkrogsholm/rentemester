@@ -1,8 +1,9 @@
 // Tests: src/cli/annual-report.ts, src/cli.ts (annual report CLI, #177)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { cleanupDir } from "../helpers/cleanup";
 
 async function run(args: string[]): Promise<{ exitCode: number; stdout: string; stderr: string }> {
   const proc = Bun.spawn(["bun", "run", "src/cli.ts", ...args], {
@@ -71,7 +72,7 @@ describe("report annual CLI", () => {
     expect(parsed.aretsResultat).toBe(1000);
     expect(parsed.company.cvr).toBe("DK12345678");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("writes a deterministic iXBRL file with --ixbrl-out", async () => {
@@ -97,7 +98,7 @@ describe("report annual CLI", () => {
     expect(typeof parsed.ixbrl.taxonomy.name).toBe("string");
     expect(parsed.ixbrl.taxonomy.version).toMatch(/^\d+\.\d+\.\d+$/);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("prints the bounded iXBRL taxonomy subset with --ixbrl-taxonomy", async () => {
@@ -120,7 +121,7 @@ describe("report annual CLI", () => {
     const { root, company } = await preparedCompany("rentemester-annualcli-missing-");
     const res = await run(["report", "annual", "--company", company, "--from", "2025-01-01"]);
     expect(res.exitCode).toBe(2);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("returns ok:false JSON and exit code 1 when the year is not locked", async () => {
@@ -134,6 +135,6 @@ describe("report annual CLI", () => {
     expect(parsed.ok).toBe(false);
     expect(parsed.errors.length).toBeGreaterThan(0);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

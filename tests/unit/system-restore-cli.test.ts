@@ -1,9 +1,10 @@
 // Tests: src/cli/system.ts, src/cli.ts (system restore CLI)
 import { describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("system restore CLI", () => {
   test("restores a created backup into a fresh company folder", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-restore-cli-"));
@@ -31,7 +32,7 @@ describe("system restore CLI", () => {
     expect(parsed.backupId).toBe("backup-20260517T023900Z");
     expect(existsSync(join(restored, "data", "ledger.sqlite"))).toBe(true);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("refuses to restore without --confirm yes and writes nothing", async () => {
@@ -60,7 +61,7 @@ describe("system restore CLI", () => {
     expect(parsed.errors.join(" ")).toContain("--confirm yes");
     expect(existsSync(join(restored, "data", "ledger.sqlite"))).toBe(false);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   // #283: restoring a backup into a brand-new company path is the normal
@@ -109,7 +110,7 @@ describe("system restore CLI", () => {
     expect(parsed.backupId).toBe("backup-20260517T023900Z");
     expect(existsSync(join(restored, "data", "ledger.sqlite"))).toBe(true);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects --confirm with a non-yes value", async () => {
@@ -136,6 +137,6 @@ describe("system restore CLI", () => {
     expect(parsed.ok).toBe(false);
     expect(existsSync(join(restored, "data", "ledger.sqlite"))).toBe(false);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

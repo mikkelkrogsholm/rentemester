@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
+import { cleanupDir } from "../../helpers/cleanup";
 import {
   config,
   get,
   makeWorkspace,
   postBadDebtWriteoff,
   postPnlEntry,
-  rmSync,
-} from "./_shared";
+  } from "./_shared";
 
 // #271: a bad-debt write-off books a debit on the output-VAT account. The
 // cockpit VAT card must not let that debit drag the headline salgsmoms
@@ -37,7 +37,7 @@ describe("cockpit API — VAT bad-debt adjustment (#271)", () => {
       expect(v.payable).toBe(-150);
       expect(v.inputVat).toBe(100);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -53,7 +53,7 @@ describe("cockpit API — VAT bad-debt adjustment (#271)", () => {
       expect(res.body.vat.outputVat).toBe(250);
       expect(res.body.vat.outputVatAdjustment).toBe(0);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

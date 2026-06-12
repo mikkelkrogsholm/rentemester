@@ -1,11 +1,12 @@
 // Tests: src/cli/mileage.ts, src/cli.ts (mileage CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 
+import { cleanupDir } from "../helpers/cleanup";
 async function runCli(args: string[]) {
   const proc = Bun.spawn(["bun", "run", "src/cli.ts", ...args], {
     cwd: process.cwd(),
@@ -69,7 +70,7 @@ describe("mileage CLI", () => {
     expect(reported.totalKilometers).toBe(312.5);
     expect(reported.totalAmountBasis).toBe(1184.38);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects a mileage log call with a missing required field", async () => {
@@ -92,6 +93,6 @@ describe("mileage CLI", () => {
     expect(parsed.ok).toBe(false);
     expect(parsed.errors).toContain("rateBasis is required (user-supplied / source-backed)");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

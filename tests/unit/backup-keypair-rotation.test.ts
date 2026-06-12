@@ -6,13 +6,13 @@ import {
   mkdtempSync,
   readFileSync,
   readdirSync,
-  rmSync,
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   backupEd25519PrivateKeyPath,
   backupEd25519PublicKeyPath,
@@ -78,7 +78,7 @@ describe("rotateBackupKeypair", () => {
       expect(audit!.message).toContain(rotated.newPublicKeyHint!);
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -91,7 +91,7 @@ describe("rotateBackupKeypair", () => {
       expect(result.errors[0]).toContain("reason is required");
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -103,7 +103,7 @@ describe("rotateBackupKeypair", () => {
       expect(result.errors[0]).toContain("no existing ed25519 keypair");
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });
@@ -137,7 +137,7 @@ describe("standalone verify script", () => {
       expect(verify.stdout).toContain("OK:");
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -158,7 +158,7 @@ describe("standalone verify script", () => {
       expect(verify.stderr).toContain("FAIL");
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -180,7 +180,7 @@ describe("standalone verify script", () => {
       expect(verify.stderr).toContain("manifest.json");
     } finally {
       db.close();
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });

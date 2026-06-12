@@ -20,7 +20,7 @@
 // the real registered tool handler and assert the STORED attribution on the new
 // journal entry is `agent:claude-code/9.9.9` (NOT process.env.USER, NOT "system").
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -36,6 +36,7 @@ import { registerPayableTools } from "../../src/mcp/tools/payable";
 import { registerInvoiceSettlementTools } from "../../src/mcp/tools/invoice/settlement";
 import { registerInvoiceReminderTools } from "../../src/mcp/tools/invoice/reminder";
 
+import { cleanupDir } from "../helpers/cleanup";
 const AGENT_NAME = "claude-code";
 const AGENT_VERSION = "9.9.9";
 const EXPECTED_CREATED_BY = `agent:${AGENT_NAME}/${AGENT_VERSION}`;
@@ -127,7 +128,7 @@ describe("MCP write tools attribute the agent actor to the ledger (#63/#76)", ()
     else process.env.USER = savedUser;
     if (savedLogname === undefined) delete process.env.LOGNAME;
     else process.env.LOGNAME = savedLogname;
-    for (const c of companies) rmSync(c, { recursive: true, force: true });
+    for (const c of companies) cleanupDir(c);
     companies = [];
   });
 

@@ -6,13 +6,14 @@
 // *hvor* de er hentet fra. Read-only — regler kan kun ændres via PR i
 // `rules/dk/`.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
 import { type ServerConfig } from "../../src/server/config";
 import { initWorkspace } from "../../src/core/workspace";
 
+import { cleanupDir } from "../helpers/cleanup";
 function makeWorkspace(label: string) {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
   initWorkspace(root);
@@ -84,7 +85,7 @@ describe("#347 — GET /api/rules (Lovgrundlag-viewer)", () => {
         expect(s.title.length).toBeGreaterThan(0);
       }
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -97,7 +98,7 @@ describe("#347 — GET /api/rules (Lovgrundlag-viewer)", () => {
       const patterns = body.routes.map((r) => `${r.method} ${r.pattern}`);
       expect(patterns).toContain("GET /api/rules");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -110,7 +111,7 @@ describe("#347 — GET /api/rules (Lovgrundlag-viewer)", () => {
       );
       expect(res.status).toBe(405);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

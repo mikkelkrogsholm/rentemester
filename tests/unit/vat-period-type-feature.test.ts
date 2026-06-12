@@ -6,7 +6,7 @@
 // `quarter` is the historical default — every quarter assertion below doubles
 // as a byte-identical back-compat check.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -29,6 +29,7 @@ import {
 import { handleRequest } from "../../src/server/router";
 import type { ServerConfig } from "../../src/server/config";
 
+import { cleanupDir } from "../helpers/cleanup";
 function tmpRoot(label: string) {
   return mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
 }
@@ -167,7 +168,7 @@ describe("setCompanyVatPeriodType (#300)", () => {
         db.close();
       }
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -184,7 +185,7 @@ describe("setCompanyVatPeriodType (#300)", () => {
         db.close();
       }
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -203,7 +204,7 @@ describe("static dashboard — VAT period follows the cadence (#299)", () => {
       expect(data.vat.periodStart).toBe("2026-01-01");
       expect(data.vat.periodEnd).toBe("2026-06-30");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -215,7 +216,7 @@ describe("static dashboard — VAT period follows the cadence (#299)", () => {
       expect(data.vat.periodStart).toBe("2026-01-01");
       expect(data.vat.periodEnd).toBe("2026-03-31");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -235,7 +236,7 @@ describe("cockpit VAT card + obligations — cadence-aware (#299)", () => {
       // Filing deadline = 1st of the 3rd month after the half ends.
       expect(vat.deadline).toBe("2026-09-01");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -249,7 +250,7 @@ describe("cockpit VAT card + obligations — cadence-aware (#299)", () => {
       expect(vat.periodEnd).toBe("2026-06-30");
       expect(vat.deadline).toBe("2026-09-01");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -261,7 +262,7 @@ describe("cockpit VAT card + obligations — cadence-aware (#299)", () => {
       const overview = buildCompanyOverview(ws, slug, 2026);
       expect(overview.vat.periodLabel).toBe("1. halvår 2026");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -281,7 +282,7 @@ describe("cockpit VAT card + obligations — cadence-aware (#299)", () => {
       // The half-year filing deadline, not a quarter's.
       expect(vatRows[0]!.dueDate).toBe("2026-09-01");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -297,7 +298,7 @@ describe("cockpit VAT card + obligations — cadence-aware (#299)", () => {
         "Moms — Q2 2026",
       ]);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -314,7 +315,7 @@ describe("cockpit VAT card — open period is provisional (#303)", () => {
       expect(vat.periodStatus).toBe("open");
       expect(vat.momsangivelseReady).toBe(false);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -333,7 +334,7 @@ describe("cockpit VAT card — open period is provisional (#303)", () => {
       expect(vat.periodStatus).toBe("closed");
       expect(vat.momsangivelseReady).toBe(true);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -375,7 +376,7 @@ describe("CLI company set-profile / profile — VAT cadence (#300)", () => {
       // The Danish label is surfaced alongside the canonical value.
       expect(profile.profile.vatPeriodLabel).toBe("halvår");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -395,7 +396,7 @@ describe("CLI company set-profile / profile — VAT cadence (#300)", () => {
       expect(parsed.ok).toBe(false);
       expect(parsed.errors[0]).toContain("month, quarter, half-year");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });
@@ -417,7 +418,7 @@ describe("cockpit PATCH profile — vatPeriodType (#300)", () => {
       const fresh = await call(config(ws), `/api/companies/${slug}/company`);
       expect(fresh.body.company.vatPeriodType).toBe("half-year");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -430,7 +431,7 @@ describe("cockpit PATCH profile — vatPeriodType (#300)", () => {
       expect(res.status).toBe(400);
       expect(res.body.ok).toBe(false);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -470,7 +471,7 @@ describe("cockpit reopen period (#301)", () => {
       expect(vat.periodStatus).toBe("open");
       expect(vat.momsangivelseReady).toBe(false);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -489,7 +490,7 @@ describe("cockpit reopen period (#301)", () => {
       expect(res.status).toBe(400);
       expect(res.body.ok).toBe(false);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -514,7 +515,7 @@ describe("cockpit reopen period (#301)", () => {
       expect(res.body.ok).toBe(false);
       expect(JSON.stringify(res.body)).toContain("no vat_quarter period");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -524,7 +525,7 @@ describe("cockpit reopen period (#301)", () => {
       const res = await call(config(ws), `/api/companies/${slug}/periods/reopen`);
       expect(res.status).toBe(405);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -564,7 +565,7 @@ describe("CLI dashboard — VAT period label follows the cadence (#299)", () => 
       expect(html).toContain("1. halvår 2026");
       expect(html).not.toContain("Q2 2026");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -584,7 +585,7 @@ describe("CLI dashboard — VAT period label follows the cadence (#299)", () => 
       const html = readFileSync(outPath, "utf8");
       expect(html).toContain("Q2 2026");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });

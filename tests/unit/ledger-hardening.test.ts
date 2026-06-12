@@ -1,7 +1,7 @@
 // Tests: src/core/ledger.ts (append-only triggers, mutation protection, audit-chain corruption detection)
 // Companion of journal-post.test.ts and journal-post-fx.test.ts.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -12,6 +12,7 @@ import { issueInvoice } from "../../src/core/issued-invoices";
 import { postIssuedInvoiceToLedger } from "../../src/core/invoice-booking";
 import { closeAccountingPeriod } from "../../src/core/periods";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("ledger hardening", () => {
   test("prevents direct mutation of journal lines after posting", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-ledger-lines-"));
@@ -33,7 +34,7 @@ describe("ledger hardening", () => {
     expect(() => db.run("DELETE FROM journal_lines WHERE journal_entry_id = ?", posted.entryId!)).toThrow("journal_lines are append-only");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("prevents mutation or deletion of purchase documents once linked to a journal entry", () => {
@@ -76,8 +77,8 @@ describe("ledger hardening", () => {
     expect(() => db.run("DELETE FROM documents WHERE id = ?", doc.documentId!)).toThrow("document is linked to a journal entry");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
-    rmSync(inbox, { recursive: true, force: true });
+    cleanupDir(root);
+    cleanupDir(inbox);
   });
 
   test("enforces one posted journal entry per source bank transaction at database level", () => {
@@ -114,7 +115,7 @@ describe("ledger hardening", () => {
     })).toThrow("UNIQUE constraint failed");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("prevents mutation or deletion of referenced bank transactions", () => {
@@ -144,7 +145,7 @@ describe("ledger hardening", () => {
     expect(() => db.run("DELETE FROM bank_transactions WHERE id = ?", bank.id)).toThrow("bank transactions are append-only");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("protects compliance tables against destructive rewrites", () => {
@@ -193,7 +194,7 @@ describe("ledger hardening", () => {
     expect(() => db.run("UPDATE companies SET fiscal_year_start_month = 7 WHERE id = 1")).toThrow("fiscal year configuration is locked after the first journal entry");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("restores dropped and tampered append-only triggers when migrate runs again", () => {
@@ -232,7 +233,7 @@ describe("ledger hardening", () => {
     expect(() => db.run("DELETE FROM journal_lines WHERE journal_entry_id = ?", posted.entryId!)).toThrow("journal_lines are append-only");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("audit verify detects structural ledger corruption beyond hash mismatch", () => {
@@ -260,7 +261,7 @@ describe("ledger hardening", () => {
     expect(result.errors.some((e) => e.includes("foreign key violation"))).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
   test("audit verify cross-checks stored invoice status against ledger balance", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-invoice-status-audit-"));
@@ -291,7 +292,7 @@ describe("ledger hardening", () => {
     expect(result.errors.some((e) => e.includes("stored status paid does not match ledger status open"))).toBe(true);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
 });

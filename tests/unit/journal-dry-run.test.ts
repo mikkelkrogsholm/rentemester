@@ -1,13 +1,14 @@
 // Tests: src/core/ledger.ts (dryRunJournalEntry — non-binding posting preview)
 // Companion of journal-post.test.ts.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { dryRunJournalEntry, postJournalEntry, seedAccounts } from "../../src/core/ledger";
 
+import { cleanupDir } from "../helpers/cleanup";
 function freshDb(label: string) {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
   const db = openDb(ensureCompanyDirs(root).db);
@@ -45,7 +46,7 @@ describe("journal dry run", () => {
     expect(auditCount.n).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("does not burn a journal number — a later real post still gets 2026-00001", () => {
@@ -75,7 +76,7 @@ describe("journal dry run", () => {
     expect(posted.entryNo).toBe("2026-00001");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("reports validation errors for an invalid entry without an entry preview", () => {
@@ -97,7 +98,7 @@ describe("journal dry run", () => {
     expect(preview.accountEffects).toBeUndefined();
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("prediction matches the real post that follows it", () => {
@@ -121,7 +122,7 @@ describe("journal dry run", () => {
     expect(preview.entryHash).toBe(posted.entryHash);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("account effects reflect balances already in the ledger", () => {
@@ -153,6 +154,6 @@ describe("journal dry run", () => {
     ]);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

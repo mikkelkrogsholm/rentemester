@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -8,6 +8,7 @@ import { createSystemBackup } from "../../src/core/system-backups";
 import { getBackupGovernanceStatus } from "../../src/core/backup-governance";
 import { renderBackupGuide } from "../../src/core/backup-guide";
 
+import { cleanupDir } from "../helpers/cleanup";
 describe("backup guide page", () => {
   test("renders the legal rules and is deterministic for the same input", () => {
     const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-guide-"));
@@ -36,7 +37,7 @@ describe("backup guide page", () => {
       expect(renderBackupGuide(input)).toBe(html);
     } finally {
       db.close();
-      rmSync(companyRoot, { recursive: true, force: true });
+      cleanupDir(companyRoot);
     }
   });
 
@@ -56,7 +57,7 @@ describe("backup guide page", () => {
       expect(html).toContain("&lt;script&gt;");
     } finally {
       db.close();
-      rmSync(companyRoot, { recursive: true, force: true });
+      cleanupDir(companyRoot);
     }
   });
 });

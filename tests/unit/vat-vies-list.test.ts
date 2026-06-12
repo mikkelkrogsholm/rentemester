@@ -1,6 +1,6 @@
 // Tests: src/core/vat-vies-list.ts (EU-salg uden moms-liste / VIES recapitulative statement)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -10,6 +10,7 @@ import { issueInvoice } from "../../src/core/issued-invoices";
 import { storeViesValidation } from "../../src/core/vies";
 import { buildViesRecapitulativeStatement } from "../../src/core/vat-vies-list";
 
+import { cleanupDir } from "../helpers/cleanup";
 function newCompany(prefix: string) {
   const root = mkdtempSync(join(tmpdir(), prefix));
   const db = openDb(ensureCompanyDirs(root).db);
@@ -62,7 +63,7 @@ describe("EU-salg uden moms-liste (VIES recapitulative statement)", () => {
     expect(statement.totalValue).toBe(4200);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("only includes invoices issued within the period", () => {
@@ -77,7 +78,7 @@ describe("EU-salg uden moms-liste (VIES recapitulative statement)", () => {
     expect(statement.customers[0]!.totalValue).toBe(1000);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("excludes standard domestic VAT sales from the listing", () => {
@@ -101,7 +102,7 @@ describe("EU-salg uden moms-liste (VIES recapitulative statement)", () => {
     expect(statement.totalValue).toBe(0);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("rejects invalid period dates", () => {
@@ -110,6 +111,6 @@ describe("EU-salg uden moms-liste (VIES recapitulative statement)", () => {
     expect(statement.ok).toBe(false);
     expect(statement.errors.length).toBeGreaterThan(0);
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

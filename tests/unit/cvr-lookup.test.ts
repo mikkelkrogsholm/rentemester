@@ -1,10 +1,11 @@
 // Tests: src/core/cvr.ts (CVR-register lookup, mapping and cache)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
+import { cleanupDir } from "../helpers/cleanup";
 import {
   normalizeCvrNumber,
   mapVirksomhed,
@@ -203,7 +204,7 @@ describe("lookupCvrCompany", () => {
     expect(getCachedCvrLookup(db, "12345678")?.company.fiscalYearStartMonth).toBe(7);
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("fails gracefully without credentials and without a cache", async () => {
@@ -212,7 +213,7 @@ describe("lookupCvrCompany", () => {
     expect(result.ok).toBe(false);
     expect(result.errors[0]).toContain("CVR_USERNAME");
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("reports a clear error when the CVR number is unknown", async () => {
@@ -226,7 +227,7 @@ describe("lookupCvrCompany", () => {
     expect(result.ok).toBe(false);
     expect(result.errors[0]).toContain("87654321");
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("falls back to a stale cache when a refresh fails", async () => {
@@ -256,6 +257,6 @@ describe("lookupCvrCompany", () => {
     expect(result.company?.name).toBe("Testvirksomhed ApS");
 
     db.close();
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

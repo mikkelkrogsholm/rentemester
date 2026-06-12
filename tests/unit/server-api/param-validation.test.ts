@@ -6,8 +6,9 @@
 // destructively CLEARING the company's alias. Both now reject with a 400, like
 // the sibling exceptions list and every other body parser.
 import { describe, expect, test } from "bun:test";
-import { config, makeWorkspace, get, handleRequest, rmSync } from "./_shared";
+import { config, makeWorkspace, get, handleRequest } from "./_shared";
 
+import { cleanupDir } from "../../helpers/cleanup";
 describe("cockpit API — payables filter validation", () => {
   test("an unknown ?status= is a 400, a known one is a 200", async () => {
     const ws = makeWorkspace("payables-validate", ["Acme ApS"]);
@@ -28,7 +29,7 @@ describe("cockpit API — payables filter validation", () => {
     );
     expect(badDate.status).toBe(400);
 
-    rmSync(ws, { recursive: true, force: true });
+    cleanupDir(ws);
   });
 });
 
@@ -58,6 +59,6 @@ describe("cockpit API — bilagsmail alias validation", () => {
     );
     expect(ok.status).toBe(200);
 
-    rmSync(ws, { recursive: true, force: true });
+    cleanupDir(ws);
   });
 });

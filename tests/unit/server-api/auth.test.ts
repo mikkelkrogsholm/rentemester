@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { config, get, makeWorkspace, rmSync } from "./_shared";
+import { config, get, makeWorkspace } from "./_shared";
 
+import { cleanupDir } from "../../helpers/cleanup";
 describe("cockpit API — auth seam", () => {
   test("phase 1 (localhost-trusted) is a pass-through", async () => {
     const ws = makeWorkspace("auth-passthrough");
@@ -9,7 +10,7 @@ describe("cockpit API — auth seam", () => {
       expect(res.status).toBe(200);
       expect(res.body.ok).toBe(true);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -22,7 +23,7 @@ describe("cockpit API — auth seam", () => {
       expect(res.body.ok).toBe(false);
       expect(res.body.code).toBe("unauthorized");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -36,7 +37,7 @@ describe("cockpit API — auth seam", () => {
       expect(res.status).toBe(200);
       expect(res.body.ok).toBe(true);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -49,7 +50,7 @@ describe("cockpit API — auth seam", () => {
       });
       expect(res.status).toBe(401);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

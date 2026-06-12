@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { config, get, makeWorkspace, postPnlEntry, rmSync } from "./_shared";
+import { config, get, makeWorkspace, postPnlEntry } from "./_shared";
 
+import { cleanupDir } from "../../helpers/cleanup";
 describe("cockpit API — journal (GET .../journal)", () => {
   test("returns posted entries for the year, each with its lines", async () => {
     const ws = makeWorkspace("jrn-live", ["Acme ApS"]);
@@ -24,7 +25,7 @@ describe("cockpit API — journal (GET .../journal)", () => {
       expect(entry.lines[0]).toHaveProperty("debit");
       expect(entry.lines[0]).toHaveProperty("credit");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -57,7 +58,7 @@ describe("cockpit API — journal (GET .../journal)", () => {
       expect(all.body.journal.accountFilter).toBeNull();
       expect(all.body.journal.entries.length).toBe(2);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -86,7 +87,7 @@ describe("cockpit API — journal (GET .../journal)", () => {
         expect(entry.documentId).not.toBeNull();
       }
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -100,7 +101,7 @@ describe("cockpit API — journal (GET .../journal)", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

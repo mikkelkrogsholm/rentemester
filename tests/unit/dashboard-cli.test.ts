@@ -1,9 +1,10 @@
 // Tests: src/cli/dashboard.ts, src/cli.ts (dashboard CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, existsSync, statSync, readFileSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, existsSync, statSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 async function runCli(args: string[]) {
   const proc = Bun.spawn(["bun", "run", "src/cli.ts", ...args], {
     cwd: process.cwd(),
@@ -56,7 +57,7 @@ describe("dashboard CLI", () => {
     expect(html).toContain("Audit-chain");
     expect(html.trimEnd().endsWith("</html>")).toBe(true);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("errors when --out is missing", async () => {
@@ -73,7 +74,7 @@ describe("dashboard CLI", () => {
     expect(dash.exitCode).toBe(2);
     expect(dash.stderr).toContain("--out");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("errors on invalid --as-of format", async () => {
@@ -92,7 +93,7 @@ describe("dashboard CLI", () => {
     expect(dash.exitCode).toBe(2);
     expect(dash.stderr).toContain("YYYY-MM-DD");
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   // #281: with booked Q1 2026 output VAT still unreported, the dashboard's
@@ -176,7 +177,7 @@ describe("dashboard CLI", () => {
     expect(cardMatch).not.toBeNull();
     expect(cardMatch![0]).toMatch(/amount-lg">5\.400,00 kr\.</);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 
   test("render wall-clock under 100ms for fresh company", async () => {
@@ -202,6 +203,6 @@ describe("dashboard CLI", () => {
     const renderMs = Number(match![1]);
     expect(renderMs).toBeLessThan(100);
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
   });
 });

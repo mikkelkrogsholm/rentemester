@@ -6,7 +6,7 @@
 // attribution, the localhost hard-gate, and the concrete resolve-exception
 // action end-to-end.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { handleRequest } from "../../src/server/router";
@@ -19,6 +19,7 @@ import { recordException } from "../../src/core/exceptions";
 import { configureBackupLock } from "../../src/core/backup-governance";
 import { createSystemBackup } from "../../src/core/system-backups";
 
+import { cleanupDir } from "../helpers/cleanup";
 const DAY = 24 * 60 * 60 * 1000;
 
 function tmpRoot(label: string) {
@@ -112,7 +113,7 @@ describe("Cockpit write — resolve exception (happy path)", () => {
         expect(row.resolution_note).toBe("Afstemt manuelt");
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -124,7 +125,7 @@ describe("Cockpit write — resolve exception (happy path)", () => {
       expect(res.status).toBe(200);
       expect(res.body.exception.resolved).toBe(true);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -138,7 +139,7 @@ describe("Cockpit write — resolve exception (happy path)", () => {
       expect(res.status).toBe(200);
       expect(res.body.exception.resolved).toBe(false);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -158,7 +159,7 @@ describe("Cockpit write — actor attribution", () => {
         expect(row.resolved_by).toBe("system:cockpit");
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -190,7 +191,7 @@ describe("Cockpit write — backup-lock gate", () => {
         expect(row.status).toBe("open");
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -208,7 +209,7 @@ describe("Cockpit write — backup-lock gate", () => {
       expect(res.status).toBe(200);
       expect(res.body.exception.resolved).toBe(true);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -221,7 +222,7 @@ describe("Cockpit write — input + routing errors", () => {
       expect(res.status).toBe(409);
       expect(res.body.code).toBe("conflict");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -232,7 +233,7 @@ describe("Cockpit write — input + routing errors", () => {
       expect(res.status).toBe(400);
       expect(res.body.code).toBe("bad_request");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -243,7 +244,7 @@ describe("Cockpit write — input + routing errors", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -261,7 +262,7 @@ describe("Cockpit write — input + routing errors", () => {
       );
       expect(res.status).toBe(400);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -274,7 +275,7 @@ describe("Cockpit write — input + routing errors", () => {
       );
       expect(res.status).toBe(405);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -298,7 +299,7 @@ describe("Cockpit write — localhost hard-gate", () => {
         expect(row.status).toBe("open");
       });
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -314,7 +315,7 @@ describe("Cockpit write — localhost hard-gate", () => {
       expect(res.status).toBe(200);
       expect(res.body.exception.resolved).toBe(true);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -328,7 +329,7 @@ describe("Cockpit write — localhost hard-gate", () => {
       });
       expect(res.status).toBe(401);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

@@ -1,12 +1,14 @@
 // Tests: src/core/ledger.ts, src/core/exceptions.ts (end-to-end agent workflow demo)
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdtempSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
+import { fileURLToPath } from "node:url";
 import { openDb, migrate } from "../../src/core/db";
 import { companyPaths } from "../../src/core/paths";
 import { verifyAuditChain } from "../../src/core/ledger";
 import { listExceptions } from "../../src/core/exceptions";
+import { cleanupDir } from "../helpers/cleanup";
 
 /**
  * Integration-test for `examples/agent-demo/run.ts`.
@@ -21,14 +23,14 @@ import { listExceptions } from "../../src/core/exceptions";
  *   4. mindst én journal-entry blev oprettet (auto-bogføring virkede)
  */
 
-const RUNNER_PATH = new URL("../../examples/agent-demo/run.ts", import.meta.url).pathname;
-const DEMO_DIR = new URL("../../examples/agent-demo", import.meta.url).pathname;
+const RUNNER_PATH = resolve(fileURLToPath(new URL("../../examples/agent-demo/run.ts", import.meta.url)));
+const DEMO_DIR = resolve(fileURLToPath(new URL("../../examples/agent-demo", import.meta.url)));
 
 const TMP_ROOT = mkdtempSync(join(tmpdir(), "rentemester-agent-demo-test-"));
 const COMPANY = join(TMP_ROOT, "company");
 
 afterAll(() => {
-  rmSync(TMP_ROOT, { recursive: true, force: true });
+  cleanupDir(TMP_ROOT);
 });
 
 describe("examples/agent-demo/run.ts (rule-based)", () => {

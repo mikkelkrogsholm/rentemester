@@ -1,10 +1,11 @@
 // Tests: src/cli/import.ts, src/cli-args.ts — the `import contacts` CLI
 // command, including the --enrich-cvr boolean flag and CVR enrichment wiring.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
+import { cleanupDir } from "../helpers/cleanup";
 const CSV =
   "Kontaktnavn;Adresse;Postnummer;By;Landekode;CVR-nummer;EAN-nummer;Telefon;E-mail;Att. person;Hjemmeside;Betalings metode;Betalingsfrist i dage;Total salg;Total køb;Kontakttype\n" +
   "CLI Test ApS;Vej 1;8000;Aarhus C;DK;12345678;;;;;;Netto;8;0;1000;Company\n";
@@ -25,7 +26,7 @@ describe("import contacts CLI", () => {
     const stdout = await new Response(proc.stdout).text();
     const exitCode = await proc.exited;
 
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
     expect(exitCode).toBe(0);
     const parsed = JSON.parse(stdout);
     expect(parsed.ok).toBe(true);
@@ -81,7 +82,7 @@ describe("import contacts CLI", () => {
     const exitCode = await proc.exited;
 
     server.stop(true);
-    rmSync(root, { recursive: true, force: true });
+    cleanupDir(root);
 
     // The flag must parse as a boolean — not error "requires a value".
     expect({ exitCode, stderr }).toEqual({ exitCode: 0, stderr: "" });

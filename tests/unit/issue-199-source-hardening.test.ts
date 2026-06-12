@@ -17,7 +17,6 @@ import {
   mkdtempSync,
   mkdirSync,
   readdirSync,
-  rmSync,
   statSync,
   writeFileSync,
 } from "node:fs";
@@ -26,6 +25,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { resolveSource } from "../../src/core/import/source";
 
+import { cleanupDir } from "../helpers/cleanup";
 function zipDir(srcDir: string): string {
   const zipPath = join(mkdtempSync(join(tmpdir(), "rm-harden-zip-")), "export.zip");
   const result = spawnSync("zip", ["-q", "-r", zipPath, "."], { cwd: srcDir });
@@ -68,7 +68,7 @@ function withUnzipStubRejectingO(): { restore: () => void } {
     restore: () => {
       if (originalPath === undefined) delete process.env.PATH;
       else process.env.PATH = originalPath;
-      rmSync(stubDir, { recursive: true, force: true });
+      cleanupDir(stubDir);
     },
   };
 }
@@ -89,8 +89,8 @@ describe("#199 hardening — strict permission preservation", () => {
       expect(mode).toBe(0o700);
     } finally {
       process.umask(previousUmask);
-      rmSync(src, { recursive: true, force: true });
-      rmSync(zipPath, { recursive: true, force: true });
+      cleanupDir(src);
+      cleanupDir(zipPath);
     }
   });
 });
@@ -116,8 +116,8 @@ describe("#199 hardening — fallback path is exercised on every platform", () =
     } finally {
       stub.restore();
       process.umask(previousUmask);
-      rmSync(src, { recursive: true, force: true });
-      rmSync(zipPath, { recursive: true, force: true });
+      cleanupDir(src);
+      cleanupDir(zipPath);
     }
   });
 });
@@ -141,7 +141,7 @@ describe("#199 hardening — temp dir cleanup on failure", () => {
       expect(after.length).toBeLessThanOrEqual(tmpRootSnapshot.length);
     } finally {
       process.umask(previousUmask);
-      rmSync(badZip, { recursive: true, force: true });
+      cleanupDir(badZip);
     }
   });
 });
@@ -166,7 +166,7 @@ describe("#199 hardening — control-character sanitization in error messages", 
       expect(msg).not.toContain("\x1b");
       expect(msg.includes("\n")).toBe(false);
     } finally {
-      rmSync(sneaky, { recursive: true, force: true });
+      cleanupDir(sneaky);
     }
   });
 });

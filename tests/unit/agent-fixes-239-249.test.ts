@@ -2,9 +2,10 @@
 // src/cli-actor.ts, src/core/company.ts, src/core/ledger.ts,
 // src/core/annual-report.ts — covers issues #239, #241, #242, #244, #248, #249.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { cleanupDir } from "../helpers/cleanup";
 import { openDb, migrate } from "../../src/core/db";
 import { seedAccounts } from "../../src/core/ledger";
 import { companyPaths } from "../../src/core/paths";
@@ -67,7 +68,7 @@ describe("#241 — init/company add warn when no payment details are set", () =>
       // …and never leaks into stdout, where the human onboarding block lives.
       expect(stdout).not.toContain("ADVARSEL");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -89,7 +90,7 @@ describe("#241 — init/company add warn when no payment details are set", () =>
       expect(stderr).toContain("ADVARSEL");
       expect(stderr).toContain("ingen betalingsoplysninger");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -108,7 +109,7 @@ describe("#241 — init/company add warn when no payment details are set", () =>
       // With bank details set, stderr stays clean of the warning.
       expect(stderr).not.toContain("ADVARSEL");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -121,7 +122,7 @@ describe("#241 — init/company add warn when no payment details are set", () =>
       expect(await proc.exited).toBe(0);
       expect(JSON.parse(stdout).hasPaymentDetails).toBe(false);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -141,7 +142,7 @@ describe("#241 — init/company add warn when no payment details are set", () =>
       // …and is not duplicated into stdout (which carries the success line).
       expect(stdout).not.toContain("ADVARSEL");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
@@ -168,7 +169,7 @@ describe("#242 — Danish error messages", () => {
       expect(joined).not.toContain("company CVR is missing");
       expect(joined).not.toContain("arsrapport");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });
@@ -241,7 +242,7 @@ describe("#248 — actor allowlist consistency", () => {
       expect(policy).toContain("user:mikkel");
       expect(policy).toContain("user:ejer");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -267,7 +268,7 @@ describe("#248 — actor allowlist consistency", () => {
         stderr: "",
       });
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -289,7 +290,7 @@ describe("#248 — actor allowlist consistency", () => {
       expect(stderr).toContain("actor_allowlist.users");
       expect(stderr).toContain("- user:not-seeded");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -343,7 +344,7 @@ describe("#248 — actor allowlist consistency", () => {
         stderr: "",
       });
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -370,7 +371,7 @@ describe("#248 — actor allowlist consistency", () => {
       expect(stderr).toContain("is not in config/policy.yaml actor_allowlist");
       expect(stderr).toContain("user:intruder");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 });
@@ -412,7 +413,7 @@ describe("#249 — chart of accounts includes owner's draw and a tax account", (
 
       db.close();
     } finally {
-      rmSync(dir, { recursive: true, force: true });
+      cleanupDir(dir);
     }
   });
 });

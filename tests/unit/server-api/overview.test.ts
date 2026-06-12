@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
+import { cleanupDir } from "../../helpers/cleanup";
 import {
   config,
   get,
   makeWorkspace,
   postPnlEntry,
-  rmSync,
   seedBankTransaction,
   seedException,
 } from "./_shared";
@@ -48,7 +48,7 @@ describe("cockpit API — overview (GET /api/companies/:slug/overview)", () => {
         typeof res.body.overview.keyFigures.egenkapitalandel,
       ).toBe("number");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -63,7 +63,7 @@ describe("cockpit API — overview (GET /api/companies/:slug/overview)", () => {
       expect(res.status).toBe(200);
       expect(res.body.overview.selectedYear).toBe("2026");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -77,7 +77,7 @@ describe("cockpit API — overview (GET /api/companies/:slug/overview)", () => {
       expect(res.status).toBe(400);
       expect(res.body.code).toBe("bad_request");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -91,7 +91,7 @@ describe("cockpit API — overview (GET /api/companies/:slug/overview)", () => {
       expect(res.status).toBe(404);
       expect(res.body.code).toBe("not_found");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -113,7 +113,7 @@ describe("cockpit API — overview (GET /api/companies/:slug/overview)", () => {
       expect(bank.actualBalance).toBe(500);
       expect(bank.difference).toBe(250);
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -141,7 +141,7 @@ describe("cockpit API — overview (GET /api/companies/:slug/overview)", () => {
       expect(bankGroup.label).toContain("3 banktransaktioner");
       expect(bankGroup.link).toBe("bank");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -168,7 +168,7 @@ describe("cockpit API — overview (GET /api/companies/:slug/overview)", () => {
         "Find bilaget for indbetalingen og bogfør den som indtægt.",
       );
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });

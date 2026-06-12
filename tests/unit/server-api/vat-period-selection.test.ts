@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
+import { cleanupDir } from "../../helpers/cleanup";
 import {
   config,
   get,
   makeWorkspace,
   postBadDebtWriteoff,
   postPnlEntry,
-  rmSync,
-} from "./_shared";
+  } from "./_shared";
 
 // #272: the cockpit must surface the VAT quarter that is currently due — the
 // one with real activity — not a later, near-empty quarter a bad-debt
@@ -62,7 +62,7 @@ describe("cockpit API — VAT period selection (#272)", () => {
       expect(ovRes.body.overview.vat.periodLabel).toBe("Q2 2026");
       expect(ovRes.body.overview.vat.periodEnd).toBe("2026-06-30");
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -96,7 +96,7 @@ describe("cockpit API — VAT period selection (#272)", () => {
         dashRes.body.dashboard.vat.periodEnd,
       );
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 
@@ -140,7 +140,7 @@ describe("cockpit API — VAT period selection (#272)", () => {
         dashRes.body.dashboard.vat.periodEnd,
       );
     } finally {
-      rmSync(ws, { recursive: true, force: true });
+      cleanupDir(ws);
     }
   });
 });
