@@ -41,9 +41,11 @@ export type JournalEntryInput = {
 };
 
 // `created_by_program` values flagging a journal entry as a replayed import
-// posting (#195). Such entries are exempt from the income/expense
-// document-evidence requirement until #196 attaches the original bilag.
-const IMPORTED_HISTORICAL_PROGRAMS = new Set(["rentemester-import-postings"]);
+// posting (#195) or a Billy mirror posting. Such entries are exempt from the
+// income/expense document-evidence requirement: the historical import gets its
+// bilag attached by #196, and billy-sync entries may be posted before the
+// bilag exists in Billy — later sync runs backfill the link.
+const IMPORTED_HISTORICAL_PROGRAMS = new Set(["rentemester-import-postings", "billy-sync"]);
 
 export type JournalPostResult = {
   ok: boolean;

@@ -22,15 +22,44 @@ import { Database } from "bun:sqlite";
 import { migrate } from "../src/core/db";
 import { postJournalEntry } from "../src/core/ledger";
 import { toOre } from "../src/core/money";
+import {
+  findUnlinkedSyncEntries,
+  ingestSyncBilagFile,
+  linkBilagDocument,
+  matchEntriesToBillyTxns,
+  type BillySyncTxn,
+} from "../src/core/import/billy-sync-bilag";
 
 const API_BASE = "https://api.billysbilling.com/v2";
 const SYNC_PROGRAM = "billy-sync";
+
+type PendingBilag = {
+  txnId: string;
+  entryId: number;
+  entryNo: string;
+  ownerReference: string;
+};
 
 type SyncState = {
   lastSyncDate: string;
   lastPostingIds: string[];
   syncCount: number;
   lastRunAt: string;
+  // Transactions posted without a bilag — retried on every later run until
+  // the attachment shows up in Billy.
+  pendingBilag?: PendingBilag[];
+};
+
+type BillyTransaction = {
+  id: string;
+  originatorReference: string | null;
+  isVoided: boolean;
+};
+
+type BillyAttachment = {
+  id: string;
+  ownerId: string;
+  fileId: string | null;
 };
 
 type BillyPosting = {
@@ -102,6 +131,79 @@ function saveSyncState(company: string, state: SyncState): void {
     JSON.stringify(state, null, 2),
     "utf8",
   );
+}
+
+// Rate-limit: pause between file downloads to avoid 429 responses
+// (same cadence as billy-export.ts).
+let downloadCount = 0;
+async function throttleDownloads(): Promise<void> {
+  downloadCount++;
+  if (downloadCount % 10 === 0) await new Promise((r) => setTimeout(r, 200));
+}
+
+/**
+ * Downloads one Billy attachment to `bilagDir` and returns the file path,
+ * or null when the file is unavailable. Billy's /v2/files returns JSON with
+ * a downloadUrl — not the file itself.
+ */
+async function downloadAttachment(
+  att: BillyAttachment,
+  apiKey: string,
+  bilagDir: string,
+): Promise<string | null> {
+  if (!att.fileId) return null;
+  await throttleDownloads();
+  try {
+    const metaRes = await fetch(`${API_BASE}/files/${att.fileId}`, {
+      headers: { "X-Access-Token": apiKey, Accept: "application/json" },
+    });
+    if (!metaRes.ok) return null;
+    const meta = (await metaRes.json()) as {
+      file?: { downloadUrl?: string; fileType?: string };
+    };
+    const downloadUrl = meta.file?.downloadUrl;
+    if (!downloadUrl) return null;
+    const fileType = (meta.file?.fileType ?? "pdf").toLowerCase();
+    const ext = fileType === "jpg" || fileType === "jpeg" ? ".jpg"
+      : fileType === "png" ? ".png" : ".pdf";
+    const filePath = join(bilagDir, `${att.ownerId}__${att.id}${ext}`);
+    const fileRes = await fetch(downloadUrl);
+    if (!fileRes.ok) return null;
+    const bytes = Buffer.from(await fileRes.arrayBuffer());
+    if (bytes.length === 0) return null;
+    writeFileSync(filePath, bytes);
+    return filePath;
+  } catch {
+    return null;
+  }
+}
+
+/** Extracts the owner id from an originatorReference like `bill:<id>`. */
+function ownerIdOf(originatorReference: string | null): string | null {
+  if (!originatorReference) return null;
+  const idx = originatorReference.indexOf(":");
+  return idx > 0 ? originatorReference.slice(idx + 1) : null;
+}
+
+/**
+ * Downloads and ingests all attachments for an owner. Returns the ingested
+ * document ids (first one is used as the entry's document_id).
+ */
+async function ingestOwnerBilag(
+  db: Database,
+  company: string,
+  apiKey: string,
+  bilagDir: string,
+  attachments: BillyAttachment[],
+): Promise<number[]> {
+  const documentIds: number[] = [];
+  for (const att of attachments) {
+    const filePath = await downloadAttachment(att, apiKey, bilagDir);
+    if (!filePath) continue;
+    const ingest = ingestSyncBilagFile(db, company, filePath);
+    if (ingest.ok && ingest.documentId != null) documentIds.push(ingest.documentId);
+  }
+  return documentIds;
 }
 
 function loadAccountMap(db: Database): Map<string, string> {
@@ -191,14 +293,6 @@ async function main() {
   });
   console.log(`  ${newPostings.length} new postings to sync`);
 
-  if (newPostings.length === 0) {
-    console.log("Nothing to sync.");
-    state.lastRunAt = new Date().toISOString();
-    state.syncCount += 1;
-    saveSyncState(company, state);
-    return;
-  }
-
   // Group by transactionId
   const txnMap = new Map<string, BillyPosting[]>();
   for (const p of newPostings) {
@@ -218,22 +312,60 @@ async function main() {
 
   console.log(`  ${transactions.length} transactions to post`);
 
+  // Transaction → originatorReference (`bill:<id>` etc.) gives a direct link
+  // to the attachment owner — no date/amount heuristics needed.
+  console.log("Fetching transactions and attachments from Billy...");
+  const billyTxns = (await billyGetAll(
+    `/transactions?organizationId=${organizationId}`,
+    apiKey,
+    "transactions",
+  )) as BillyTransaction[];
+  const ownerRefByTxnId = new Map<string, string>();
+  for (const t of billyTxns) {
+    if (!t.isVoided && t.originatorReference) ownerRefByTxnId.set(t.id, t.originatorReference);
+  }
+  const billyAttachments = (await billyGetAll(
+    `/attachments?organizationId=${organizationId}`,
+    apiKey,
+    "attachments",
+  )) as BillyAttachment[];
+  const attachmentsByOwner = new Map<string, BillyAttachment[]>();
+  for (const a of billyAttachments) {
+    if (!attachmentsByOwner.has(a.ownerId)) attachmentsByOwner.set(a.ownerId, []);
+    attachmentsByOwner.get(a.ownerId)!.push(a);
+  }
+  console.log(`  ${billyTxns.length} transactions, ${billyAttachments.length} attachments`);
+
+  const attachmentsForTxn = (txnId: string): BillyAttachment[] => {
+    const ownerId = ownerIdOf(ownerRefByTxnId.get(txnId) ?? null);
+    return ownerId ? (attachmentsByOwner.get(ownerId) ?? []) : [];
+  };
+
   if (dryRun) {
     console.log("\n[DRY RUN] Would post:");
     for (const txn of transactions) {
       const lines = txn.postings
         .map((p) => `  ${billyIdToNo.get(p.accountId) ?? "?"} ${p.side} ${p.amount}`)
         .join("\n");
-      console.log(`  ${txn.date} ${txn.text}\n${lines}`);
+      console.log(`  ${txn.date} ${txn.text} (bilag klar: ${attachmentsForTxn(txn.txnId).length})\n${lines}`);
     }
+    const pendingCount = state.pendingBilag?.length ?? 0;
+    if (pendingCount > 0) console.log(`\n[DRY RUN] ${pendingCount} pending bilag would be retried`);
     return;
   }
+
+  const bilagDir = join(company, "sync", "billy-bilag");
+  mkdirSync(bilagDir, { recursive: true });
 
   // Open Rentemester DB and post
   const db = new Database(dbPath);
   let posted = 0;
   let skipped = 0;
   let errors = 0;
+  let bilagAttached = 0;
+  let backfilled = 0;
+  const pending: PendingBilag[] = [];
+  const stillPending: PendingBilag[] = [];
   // Only track posting IDs for the boundary date — older dates are already
   // excluded by the date filter, so storing their IDs wastes space.
   const postedPostingIds = new Set<string>();
@@ -286,12 +418,22 @@ async function main() {
         continue;
       }
 
+      // Fetch the transaction's bilag BEFORE posting: when it exists, the
+      // entry carries real document evidence instead of relying on the
+      // imported-historical waiver.
+      const txnAttachments = attachmentsForTxn(txn.txnId);
+      const documentIds =
+        txnAttachments.length > 0
+          ? await ingestOwnerBilag(db, company, apiKey, bilagDir, txnAttachments)
+          : [];
+
       const result = postJournalEntry(db, {
         transactionDate: txn.date,
         text: `Billy sync: ${txn.text}`,
         createdBy: actor || undefined,
         createdByProgram: SYNC_PROGRAM,
         importedHistorical: true,
+        documentId: documentIds[0],
         lines,
       });
 
@@ -299,9 +441,101 @@ async function main() {
         posted++;
         for (const p of txn.postings) postedPostingIds.add(p.id);
         if (txn.date > latestDate) latestDate = txn.date;
+
+        const entryId = result.entryId as unknown as number;
+        for (const docId of documentIds.slice(1)) {
+          linkBilagDocument(db, txn.txnId, docId, entryId);
+        }
+        if (documentIds.length > 0) {
+          bilagAttached++;
+        } else {
+          const ownerReference = ownerRefByTxnId.get(txn.txnId);
+          if (ownerReference) {
+            pending.push({ txnId: txn.txnId, entryId, entryNo: result.entryNo!, ownerReference });
+          }
+        }
       } else {
         errors++;
         console.error(`  Failed txn ${txn.txnId}: ${result.errors.join(", ")}`);
+      }
+    }
+
+    // Backfill 1: transactions previously posted without a bilag — link the
+    // attachment as soon as it shows up in Billy.
+    for (const p of state.pendingBilag ?? []) {
+      const ownerId = ownerIdOf(p.ownerReference);
+      const atts = ownerId ? (attachmentsByOwner.get(ownerId) ?? []) : [];
+      if (atts.length === 0) {
+        stillPending.push(p);
+        continue;
+      }
+      const documentIds = await ingestOwnerBilag(db, company, apiKey, bilagDir, atts);
+      if (documentIds.length === 0) {
+        stillPending.push(p);
+        continue;
+      }
+      for (const docId of documentIds) linkBilagDocument(db, p.txnId, docId, p.entryId);
+      backfilled++;
+    }
+
+    // Backfill 2: billy-sync entries posted before bilag support carry no
+    // stored transactionId — reconstruct it from date + amount + text and
+    // link their bilag. Ambiguous matches are reported, never guessed.
+    const pendingEntryIds = new Set([...stillPending, ...pending].map((p) => p.entryId));
+    const unlinked = findUnlinkedSyncEntries(db).filter((e) => !pendingEntryIds.has(e.entryId));
+    if (unlinked.length > 0) {
+      const allTxnMap = new Map<string, BillyPosting[]>();
+      for (const p of allPostings) {
+        if (p.isVoided) continue;
+        if (!allTxnMap.has(p.transactionId)) allTxnMap.set(p.transactionId, []);
+        allTxnMap.get(p.transactionId)!.push(p);
+      }
+      const candidates: BillySyncTxn[] = [];
+      for (const [txnId, group] of allTxnMap) {
+        let totalDebitOre = 0n;
+        for (const p of group) {
+          if (p.side === "debit" && p.amount !== 0) totalDebitOre += toOre(Math.abs(p.amount));
+        }
+        candidates.push({
+          transactionId: txnId,
+          entryDate: group[0]!.entryDate,
+          text:
+            group.find((p) => p.text && p.text.trim().length > 0)?.text ??
+            `Billy txn ${txnId.slice(0, 8)}`,
+          totalDebitOre,
+        });
+      }
+
+      const matchResult = matchEntriesToBillyTxns(unlinked, candidates);
+      for (const m of matchResult.matches) {
+        const ownerReference = ownerRefByTxnId.get(m.transactionId);
+        const ownerId = ownerIdOf(ownerReference ?? null);
+        const atts = ownerId ? (attachmentsByOwner.get(ownerId) ?? []) : [];
+        const documentIds =
+          atts.length > 0 ? await ingestOwnerBilag(db, company, apiKey, bilagDir, atts) : [];
+        if (documentIds.length === 0) {
+          if (ownerReference) {
+            stillPending.push({
+              txnId: m.transactionId,
+              entryId: m.entryId,
+              entryNo: m.entryNo,
+              ownerReference,
+            });
+          }
+          continue;
+        }
+        for (const docId of documentIds) linkBilagDocument(db, m.transactionId, docId, m.entryId);
+        backfilled++;
+      }
+      if (matchResult.ambiguous.length > 0) {
+        console.log(
+          `  Backfill: ${matchResult.ambiguous.length} entry/entries ambiguous, skipped: ${matchResult.ambiguous.join(", ")}`,
+        );
+      }
+      if (matchResult.unmatched.length > 0) {
+        console.log(
+          `  Backfill: ${matchResult.unmatched.length} entry/entries without a Billy match: ${matchResult.unmatched.join(", ")}`,
+        );
       }
     }
   } finally {
@@ -309,14 +543,25 @@ async function main() {
   }
 
   // Update sync state — only keep posting IDs for the latest date boundary.
-  // Postings before lastSyncDate are excluded by the date filter on the next run.
+  // Postings before lastSyncDate are excluded by the date filter on the next
+  // run. When the boundary date did not advance, MERGE with the existing IDs:
+  // replacing them on a run that posted nothing would re-sync the boundary
+  // date's postings next time.
+  if (latestDate > state.lastSyncDate) {
+    state.lastPostingIds = [...postedPostingIds];
+  } else {
+    state.lastPostingIds = [...new Set([...state.lastPostingIds, ...postedPostingIds])];
+  }
   state.lastSyncDate = latestDate;
-  state.lastPostingIds = [...postedPostingIds];
+  state.pendingBilag = [...stillPending, ...pending];
   state.syncCount += 1;
   state.lastRunAt = new Date().toISOString();
   saveSyncState(company, state);
 
-  console.log(`\nSync complete: ${posted} posted, ${skipped} skipped, ${errors} errors`);
+  console.log(
+    `\nSync complete: ${posted} posted (${bilagAttached} with bilag), ${skipped} skipped, ${errors} errors, ` +
+      `${backfilled} bilag backfilled, ${state.pendingBilag.length} pending bilag`,
+  );
 }
 
 main().catch((err) => {
