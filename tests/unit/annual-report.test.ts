@@ -1,9 +1,10 @@
 // Tests: src/core/annual-report.ts, src/core/ixbrl.ts (#177)
 // Year-end close + arsrapport (regnskabsklasse B) + deterministic iXBRL.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { cleanupDir } from "../helpers/cleanup";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { seedAccounts, postJournalEntry } from "../../src/core/ledger";
@@ -97,7 +98,7 @@ function lockYear(db: ReturnType<typeof openDb>) {
 }
 
 function cleanup(...dirs: string[]) {
-  for (const dir of dirs) rmSync(dir, { recursive: true, force: true });
+  cleanupDir(...dirs);
 }
 
 describe("buildAnnualReport (arsrapport, regnskabsklasse B)", () => {

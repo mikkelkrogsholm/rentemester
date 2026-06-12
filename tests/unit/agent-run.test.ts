@@ -8,10 +8,11 @@
 //     exception queue, never guessed into a posting;
 //   - upcoming VAT / year-end deadlines are surfaced.
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { writeFileSync } from "node:fs";
+import { cleanupDir } from "../helpers/cleanup";
 import { initialiseCompanyVolume } from "../../src/core/company";
 import { runAgentLoop } from "../../src/agent/loop";
 import { formatRunReport } from "../../src/agent/run";
@@ -126,7 +127,7 @@ describe("runtime bookkeeper agent — deterministic agent-run (#183)", () => {
       expect(formatted).toContain("Rentemester runtime-agent");
       expect(formatted).toContain(AGENT_ACTOR_ID);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -154,8 +155,7 @@ describe("runtime bookkeeper agent — deterministic agent-run (#183)", () => {
       const textB = formatRunReport(b).replaceAll(rootB, "<root>");
       expect(textA).toBe(textB);
     } finally {
-      rmSync(rootA, { recursive: true, force: true });
-      rmSync(rootB, { recursive: true, force: true });
+      cleanupDir(rootA, rootB);
     }
   });
 
@@ -185,7 +185,7 @@ describe("runtime bookkeeper agent — deterministic agent-run (#183)", () => {
       // The open-exception set is stable across re-runs (dedup holds).
       expect(second.openExceptions.length).toBe(first.openExceptions.length);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -197,7 +197,7 @@ describe("runtime bookkeeper agent — deterministic agent-run (#183)", () => {
       expect(report.errors.join(" ")).toContain("--as-of");
       expect(report.expensesBooked).toEqual([]);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -234,7 +234,7 @@ describe("runtime bookkeeper agent — deterministic agent-run (#183)", () => {
       expect(closedQuarter!.note).toContain("kr.");
       expect(closedQuarter!.note).not.toContain("øre");
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -321,8 +321,7 @@ describe("runtime bookkeeper agent — deterministic agent-run (#183)", () => {
         // The payables phase ran.
         expect(report.phases).toContain("payables");
       } finally {
-        rmSync(root, { recursive: true, force: true });
-        rmSync(inboxDir, { recursive: true, force: true });
+        cleanupDir(root, inboxDir);
       }
     });
 
@@ -393,8 +392,7 @@ describe("runtime bookkeeper agent — deterministic agent-run (#183)", () => {
         after.close();
         expect(settlement.n).toBe(0);
       } finally {
-        rmSync(root, { recursive: true, force: true });
-        rmSync(inboxDir, { recursive: true, force: true });
+        cleanupDir(root, inboxDir);
       }
     });
 
@@ -459,8 +457,7 @@ describe("runtime bookkeeper agent — deterministic agent-run (#183)", () => {
         expect(taxEx).toBeDefined();
         expect(taxEx!.message).toContain("Oplysningsskema");
       } finally {
-        rmSync(root, { recursive: true, force: true });
-        rmSync(inboxDir, { recursive: true, force: true });
+        cleanupDir(root, inboxDir);
       }
     });
 
@@ -523,8 +520,7 @@ describe("runtime bookkeeper agent — deterministic agent-run (#183)", () => {
         afterDb.close();
         expect(afterEntries).toBe(beforeEntries);
       } finally {
-        rmSync(root, { recursive: true, force: true });
-        rmSync(inboxDir, { recursive: true, force: true });
+        cleanupDir(root, inboxDir);
       }
     });
   });
@@ -539,7 +535,7 @@ describe("runtime bookkeeper agent — deterministic agent-run (#183)", () => {
       expect(report.phases).toContain("deadlines");
       expect(report.upcomingDeadlines.length).toBeGreaterThan(0);
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      cleanupDir(root);
     }
   });
 
@@ -560,7 +556,7 @@ describe("runtime bookkeeper agent — deterministic agent-run (#183)", () => {
         expect(current!.periodEnd).toBe("2026-06-30");
         expect(current!.dueDate).toBe("2026-09-01");
       } finally {
-        rmSync(root, { recursive: true, force: true });
+        cleanupDir(root);
       }
     });
 
@@ -585,7 +581,7 @@ describe("runtime bookkeeper agent — deterministic agent-run (#183)", () => {
           ),
         ).toBe(false);
       } finally {
-        rmSync(root, { recursive: true, force: true });
+        cleanupDir(root);
       }
     });
 
@@ -603,7 +599,7 @@ describe("runtime bookkeeper agent — deterministic agent-run (#183)", () => {
         // Filing deadline: 1st of the third month after period end (Sep 1).
         expect(current!.dueDate).toBe("2026-09-01");
       } finally {
-        rmSync(root, { recursive: true, force: true });
+        cleanupDir(root);
       }
     });
 
@@ -619,7 +615,7 @@ describe("runtime bookkeeper agent — deterministic agent-run (#183)", () => {
         expect(vatEx!.message).toContain("Momsmåneden");
         expect(vatEx!.message).not.toContain("Momskvartalet");
       } finally {
-        rmSync(root, { recursive: true, force: true });
+        cleanupDir(root);
       }
     });
   });
