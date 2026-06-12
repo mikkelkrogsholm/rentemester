@@ -91,26 +91,54 @@ function parseArgs() {
   return { company, actor, dryRun };
 }
 
+/**
+ * Fetches every row from a paginated Billy list endpoint.
+ *
+ * Billy's pagination is UNSTABLE without an explicit sortProperty: rows can
+ * repeat on one page and silently vanish from all pages (observed live —
+ * an attachment present in the unpaginated response was missing from every
+ * pageSize=100 page). Always pass a sortProperty the endpoint supports
+ * (postings/transactions: entryDate, attachments/invoices: createdTime),
+ * dedup on id, and verify the collected count against meta.paging.total.
+ */
 async function billyGetAll(
   path: string,
   token: string,
   key: string,
+  sortProperty?: string,
 ): Promise<unknown[]> {
   let page = 1;
-  const pageSize = 100;
+  const pageSize = 1000;
   const all: unknown[] = [];
+  const seen = new Set<string>();
+  let expectedTotal: number | null = null;
+  const sort = sortProperty ? `&sortProperty=${sortProperty}&sortDirection=ASC` : "";
   while (true) {
-    const url = `${API_BASE}${path}${path.includes("?") ? "&" : "?"}pageSize=${pageSize}&page=${page}`;
+    const url = `${API_BASE}${path}${path.includes("?") ? "&" : "?"}pageSize=${pageSize}&page=${page}${sort}`;
     const res = await fetch(url, {
       headers: { "X-Access-Token": token, Accept: "application/json" },
     });
     if (!res.ok) throw new Error(`Billy API ${res.status}: ${await res.text()}`);
     const data = (await res.json()) as Record<string, unknown>;
+    const paging = (data.meta as { paging?: { total?: number } } | undefined)?.paging;
+    if (expectedTotal === null && typeof paging?.total === "number") expectedTotal = paging.total;
     const items = data[key];
     if (!Array.isArray(items) || items.length === 0) break;
-    all.push(...items);
+    for (const item of items) {
+      const id = (item as { id?: string }).id;
+      if (id !== undefined) {
+        if (seen.has(id)) continue; // unstable pagination can repeat rows
+        seen.add(id);
+      }
+      all.push(item);
+    }
     if (items.length < pageSize) break;
     page++;
+  }
+  if (expectedTotal !== null && all.length !== expectedTotal) {
+    console.warn(
+      `  WARNING: ${key} pagination returned ${all.length} of ${expectedTotal} rows — rerun or reduce churn; Billy pagination dropped rows`,
+    );
   }
   return all;
 }
@@ -151,13 +179,13 @@ async function downloadAttachment(
   apiKey: string,
   bilagDir: string,
 ): Promise<string | null> {
-  if (!att.fileId) return null;
+  if (!att.fileId) { console.error(`  [bilag] ${att.id}: no fileId`); return null; }
   await throttleDownloads();
   try {
     const metaRes = await fetch(`${API_BASE}/files/${att.fileId}`, {
       headers: { "X-Access-Token": apiKey, Accept: "application/json" },
     });
-    if (!metaRes.ok) return null;
+    if (!metaRes.ok) { console.error(`  [bilag] ${att.id}: /files ${metaRes.status}`); return null; }
     const meta = (await metaRes.json()) as {
       file?: { downloadUrl?: string; fileType?: string };
     };
@@ -304,6 +332,7 @@ async function main() {
     `/postings?organizationId=${organizationId}`,
     apiKey,
     "postings",
+    "entryDate",
   ) as BillyPosting[];
   console.log(`  ${allPostings.length} total postings`);
 
@@ -343,6 +372,7 @@ async function main() {
     `/transactions?organizationId=${organizationId}`,
     apiKey,
     "transactions",
+    "entryDate",
   )) as BillyTransaction[];
   const ownerRefByTxnId = new Map<string, string>();
   for (const t of billyTxns) {
@@ -352,6 +382,7 @@ async function main() {
     `/attachments?organizationId=${organizationId}`,
     apiKey,
     "attachments",
+    "createdTime",
   )) as BillyAttachment[];
   const attachmentsByOwner = new Map<string, BillyAttachment[]>();
   for (const a of billyAttachments) {
@@ -365,6 +396,7 @@ async function main() {
     `/invoices?organizationId=${organizationId}`,
     apiKey,
     "invoices",
+    "createdTime",
   )) as Array<{ id: string; downloadUrl: string | null }>;
   const invoiceUrlById = new Map<string, string>();
   for (const inv of billyInvoices) {

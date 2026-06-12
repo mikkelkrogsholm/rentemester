@@ -46,22 +46,52 @@ async function billyGet(path: string, token: string): Promise<unknown> {
   return res.json();
 }
 
+// sortProperty per endpoint: Billy's pagination is UNSTABLE without an
+// explicit sort (rows repeat and vanish between pages — observed live).
+// Only endpoints with a verified sortProperty are listed; the rest still get
+// id-dedup and a total-count warning below.
+const SORT_PROPERTY: Record<string, string> = {
+  postings: "entryDate",
+  transactions: "entryDate",
+  bills: "entryDate",
+  invoices: "createdTime",
+  attachments: "createdTime",
+};
+
 async function billyGetAll(
   path: string,
   token: string,
   key: string,
 ): Promise<unknown[]> {
   let page = 1;
-  const pageSize = 100;
+  const pageSize = 1000;
   const all: unknown[] = [];
+  const seen = new Set<string>();
+  let expectedTotal: number | null = null;
+  const sortProperty = SORT_PROPERTY[key];
+  const sort = sortProperty ? `&sortProperty=${sortProperty}&sortDirection=ASC` : "";
   while (true) {
-    const url = `${path}${path.includes("?") ? "&" : "?"}pageSize=${pageSize}&page=${page}`;
+    const url = `${path}${path.includes("?") ? "&" : "?"}pageSize=${pageSize}&page=${page}${sort}`;
     const data = (await billyGet(url, token)) as Record<string, unknown>;
+    const paging = (data.meta as { paging?: { total?: number } } | undefined)?.paging;
+    if (expectedTotal === null && typeof paging?.total === "number") expectedTotal = paging.total;
     const items = data[key];
     if (!Array.isArray(items) || items.length === 0) break;
-    all.push(...items);
+    for (const item of items) {
+      const id = (item as { id?: string }).id;
+      if (id !== undefined) {
+        if (seen.has(id)) continue; // unstable pagination can repeat rows
+        seen.add(id);
+      }
+      all.push(item);
+    }
     if (items.length < pageSize) break;
     page++;
+  }
+  if (expectedTotal !== null && all.length !== expectedTotal) {
+    console.warn(
+      `  WARNING: ${key} pagination returned ${all.length} of ${expectedTotal} rows — Billy pagination dropped rows`,
+    );
   }
   return all;
 }
