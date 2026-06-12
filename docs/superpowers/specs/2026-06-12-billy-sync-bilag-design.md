@@ -67,11 +67,19 @@ attachments[]` — ingen dato+beløb-matching.
 - Tom fil / manglende `downloadUrl`: tælles som fejl, springes over.
 - Backfill-match tvetydig: spring over, rapportér — bogfør aldrig på gæt.
 
+## Salgsfakturaer (tilføjet samme dag)
+
+En salgsfaktura har ingen attachments — dens evidens er den Billy-genererede
+faktura-PDF. `/invoices` leverer en pre-signed `downloadUrl` pr. faktura.
+Når en transaktions owner er `invoice:<id>` og ingen attachments findes,
+hentes faktura-PDF'en og bruges som dokument (samme ingest/link-flow).
+Filnavn: `{invoiceId}__invoice.pdf`.
+
 ## Afgrænsning
 
-- Salgsfakturaers PDF (Billy-genererede) hentes IKKE — kun attachments
-  (typisk udgiftsbilag). Indtægtsentries uden bilag dækkes af waiveren.
-  Kan tilføjes senere hvis ønsket.
+- Billy-evidens ingestes som `cash_register_receipt` uden metadata —
+  konsistent med det historiske bilag-flow. Fuld `purchase_sale`-metadata
+  (CVR, adresser, beløb) ville kræve kontakt-opslag og kan tilføjes senere.
 - Ingen ændring af det historiske import-flow (`billy-bilag.ts`).
 
 ## Test

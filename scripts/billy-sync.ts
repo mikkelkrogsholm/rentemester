@@ -178,6 +178,30 @@ async function downloadAttachment(
   }
 }
 
+/**
+ * Downloads a Billy-generated sales invoice PDF (the evidence for an income
+ * entry — invoices carry no attachment). The downloadUrl is a pre-signed URL
+ * from the invoice object.
+ */
+async function downloadInvoicePdf(
+  invoiceId: string,
+  downloadUrl: string,
+  bilagDir: string,
+): Promise<string | null> {
+  await throttleDownloads();
+  try {
+    const res = await fetch(downloadUrl);
+    if (!res.ok) return null;
+    const bytes = Buffer.from(await res.arrayBuffer());
+    if (bytes.length === 0) return null;
+    const filePath = join(bilagDir, `${invoiceId}__invoice.pdf`);
+    writeFileSync(filePath, bytes);
+    return filePath;
+  } catch {
+    return null;
+  }
+}
+
 /** Extracts the owner id from an originatorReference like `bill:<id>`. */
 function ownerIdOf(originatorReference: string | null): string | null {
   if (!originatorReference) return null;
@@ -334,11 +358,29 @@ async function main() {
     if (!attachmentsByOwner.has(a.ownerId)) attachmentsByOwner.set(a.ownerId, []);
     attachmentsByOwner.get(a.ownerId)!.push(a);
   }
-  console.log(`  ${billyTxns.length} transactions, ${billyAttachments.length} attachments`);
 
-  const attachmentsForTxn = (txnId: string): BillyAttachment[] => {
-    const ownerId = ownerIdOf(ownerRefByTxnId.get(txnId) ?? null);
-    return ownerId ? (attachmentsByOwner.get(ownerId) ?? []) : [];
+  // Sales invoices carry no attachment — their evidence is the
+  // Billy-generated invoice PDF (pre-signed downloadUrl on the invoice).
+  const billyInvoices = (await billyGetAll(
+    `/invoices?organizationId=${organizationId}`,
+    apiKey,
+    "invoices",
+  )) as Array<{ id: string; downloadUrl: string | null }>;
+  const invoiceUrlById = new Map<string, string>();
+  for (const inv of billyInvoices) {
+    if (inv.downloadUrl) invoiceUrlById.set(inv.id, inv.downloadUrl);
+  }
+  console.log(
+    `  ${billyTxns.length} transactions, ${billyAttachments.length} attachments, ${billyInvoices.length} invoices`,
+  );
+
+  const evidenceCountForTxn = (txnId: string): number => {
+    const ownerRef = ownerRefByTxnId.get(txnId) ?? null;
+    const ownerId = ownerIdOf(ownerRef);
+    if (!ownerId) return 0;
+    const attCount = (attachmentsByOwner.get(ownerId) ?? []).length;
+    if (attCount > 0) return attCount;
+    return ownerRef!.startsWith("invoice:") && invoiceUrlById.has(ownerId) ? 1 : 0;
   };
 
   if (dryRun) {
@@ -347,7 +389,7 @@ async function main() {
       const lines = txn.postings
         .map((p) => `  ${billyIdToNo.get(p.accountId) ?? "?"} ${p.side} ${p.amount}`)
         .join("\n");
-      console.log(`  ${txn.date} ${txn.text} (bilag klar: ${attachmentsForTxn(txn.txnId).length})\n${lines}`);
+      console.log(`  ${txn.date} ${txn.text} (bilag klar: ${evidenceCountForTxn(txn.txnId)})\n${lines}`);
     }
     const pendingCount = state.pendingBilag?.length ?? 0;
     if (pendingCount > 0) console.log(`\n[DRY RUN] ${pendingCount} pending bilag would be retried`);
@@ -366,6 +408,27 @@ async function main() {
   let backfilled = 0;
   const pending: PendingBilag[] = [];
   const stillPending: PendingBilag[] = [];
+
+  // Evidence for a transaction: its owner's attachments, or — for a sales
+  // invoice without attachments — the Billy-generated invoice PDF.
+  const ingestEvidence = async (ownerReference: string | null | undefined): Promise<number[]> => {
+    const ownerId = ownerIdOf(ownerReference ?? null);
+    if (!ownerId) return [];
+    const atts = attachmentsByOwner.get(ownerId) ?? [];
+    const documentIds =
+      atts.length > 0 ? await ingestOwnerBilag(db, company, apiKey, bilagDir, atts) : [];
+    if (documentIds.length === 0 && ownerReference!.startsWith("invoice:")) {
+      const url = invoiceUrlById.get(ownerId);
+      if (url) {
+        const filePath = await downloadInvoicePdf(ownerId, url, bilagDir);
+        if (filePath) {
+          const ingest = ingestSyncBilagFile(db, company, filePath);
+          if (ingest.ok && ingest.documentId != null) documentIds.push(ingest.documentId);
+        }
+      }
+    }
+    return documentIds;
+  };
   // Only track posting IDs for the boundary date — older dates are already
   // excluded by the date filter, so storing their IDs wastes space.
   const postedPostingIds = new Set<string>();
@@ -421,11 +484,7 @@ async function main() {
       // Fetch the transaction's bilag BEFORE posting: when it exists, the
       // entry carries real document evidence instead of relying on the
       // imported-historical waiver.
-      const txnAttachments = attachmentsForTxn(txn.txnId);
-      const documentIds =
-        txnAttachments.length > 0
-          ? await ingestOwnerBilag(db, company, apiKey, bilagDir, txnAttachments)
-          : [];
+      const documentIds = await ingestEvidence(ownerRefByTxnId.get(txn.txnId));
 
       const result = postJournalEntry(db, {
         transactionDate: txn.date,
@@ -463,13 +522,7 @@ async function main() {
     // Backfill 1: transactions previously posted without a bilag — link the
     // attachment as soon as it shows up in Billy.
     for (const p of state.pendingBilag ?? []) {
-      const ownerId = ownerIdOf(p.ownerReference);
-      const atts = ownerId ? (attachmentsByOwner.get(ownerId) ?? []) : [];
-      if (atts.length === 0) {
-        stillPending.push(p);
-        continue;
-      }
-      const documentIds = await ingestOwnerBilag(db, company, apiKey, bilagDir, atts);
+      const documentIds = await ingestEvidence(p.ownerReference);
       if (documentIds.length === 0) {
         stillPending.push(p);
         continue;
@@ -509,10 +562,7 @@ async function main() {
       const matchResult = matchEntriesToBillyTxns(unlinked, candidates);
       for (const m of matchResult.matches) {
         const ownerReference = ownerRefByTxnId.get(m.transactionId);
-        const ownerId = ownerIdOf(ownerReference ?? null);
-        const atts = ownerId ? (attachmentsByOwner.get(ownerId) ?? []) : [];
-        const documentIds =
-          atts.length > 0 ? await ingestOwnerBilag(db, company, apiKey, bilagDir, atts) : [];
+        const documentIds = await ingestEvidence(ownerReference);
         if (documentIds.length === 0) {
           if (ownerReference) {
             stillPending.push({
