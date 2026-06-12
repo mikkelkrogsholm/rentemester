@@ -203,9 +203,16 @@ export function matchEntriesToBillyTxns(
       unmatched.push(entry.entryNo);
       continue;
     }
-    const free = candidates.filter((id) => !claimed.has(id));
-    if (candidates.length > 1 || free.length === 0) {
+    if (candidates.length > 1) {
+      // Two Billy transactions share the fingerprint — a true ambiguity.
       ambiguous.push(entry.entryNo);
+      continue;
+    }
+    const free = candidates.filter((id) => !claimed.has(id));
+    if (free.length === 0) {
+      // The only matching transaction was already claimed by another entry —
+      // not an ambiguity in Billy, just no transaction left for this entry.
+      unmatched.push(entry.entryNo);
       continue;
     }
     claimed.add(free[0]!);

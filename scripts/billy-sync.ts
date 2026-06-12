@@ -417,7 +417,7 @@ async function main() {
     const atts = attachmentsByOwner.get(ownerId) ?? [];
     const documentIds =
       atts.length > 0 ? await ingestOwnerBilag(db, company, apiKey, bilagDir, atts) : [];
-    if (documentIds.length === 0 && ownerReference!.startsWith("invoice:")) {
+    if (documentIds.length === 0 && ownerReference?.startsWith("invoice:")) {
       const url = invoiceUrlById.get(ownerId);
       if (url) {
         const filePath = await downloadInvoicePdf(ownerId, url, bilagDir);
@@ -590,23 +590,28 @@ async function main() {
     }
   } finally {
     db.close();
-  }
 
-  // Update sync state — only keep posting IDs for the latest date boundary.
-  // Postings before lastSyncDate are excluded by the date filter on the next
-  // run. When the boundary date did not advance, MERGE with the existing IDs:
-  // replacing them on a run that posted nothing would re-sync the boundary
-  // date's postings next time.
-  if (latestDate > state.lastSyncDate) {
-    state.lastPostingIds = [...postedPostingIds];
-  } else {
-    state.lastPostingIds = [...new Set([...state.lastPostingIds, ...postedPostingIds])];
+    // Persist progress even when a posting or backfill throws: transactions
+    // already posted in this run must never be re-posted by the next run.
+    // Update sync state — only keep posting IDs for the latest date boundary.
+    // Postings before lastSyncDate are excluded by the date filter on the next
+    // run. When the boundary date did not advance, MERGE with the existing
+    // IDs: replacing them on a run that posted nothing would re-sync the
+    // boundary date's postings next time.
+    if (latestDate > state.lastSyncDate) {
+      state.lastPostingIds = [...postedPostingIds];
+    } else {
+      state.lastPostingIds = [...new Set([...state.lastPostingIds, ...postedPostingIds])];
+    }
+    state.lastSyncDate = latestDate;
+    // A crash mid-backfill can drop queue items from pendingBilag — that is
+    // self-healing: any entry still without a document/link is rediscovered
+    // by the reconstruction pass (backfill 2) on the next run.
+    state.pendingBilag = [...stillPending, ...pending];
+    state.syncCount += 1;
+    state.lastRunAt = new Date().toISOString();
+    saveSyncState(company, state);
   }
-  state.lastSyncDate = latestDate;
-  state.pendingBilag = [...stillPending, ...pending];
-  state.syncCount += 1;
-  state.lastRunAt = new Date().toISOString();
-  saveSyncState(company, state);
 
   console.log(
     `\nSync complete: ${posted} posted (${bilagAttached} with bilag), ${skipped} skipped, ${errors} errors, ` +

@@ -215,7 +215,10 @@ describe("matchEntriesToBillyTxns", () => {
       [txn("txn-a", "Software", 1000n)],
     );
     expect(result.matches.length).toBe(1);
-    expect(result.ambiguous).toEqual(["2026-00002"]);
+    // The single transaction is claimed by the first entry; the second is
+    // unmatched (not ambiguous — Billy has no duplicate fingerprint).
+    expect(result.ambiguous).toEqual([]);
+    expect(result.unmatched).toEqual(["2026-00002"]);
   });
 
   test("reports unmatched when no transaction fits", () => {
