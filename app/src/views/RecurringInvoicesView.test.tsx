@@ -11,7 +11,7 @@
 // and refreshes the list on success. The CLI snippet that used to live in
 // the empty-state is gone.
 
-import { describe, expect, test, vi, beforeEach, afterEach } from "vitest";
+import { describe, expect, test, vi, beforeEach, afterEach, type MockInstance } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RecurringInvoicesView } from "./RecurringInvoicesView";
@@ -73,8 +73,8 @@ function renderView() {
 }
 
 describe("RecurringInvoicesView — Faktura-skabeloner", () => {
-  let confirmSpy: ReturnType<typeof vi.spyOn>;
-  let promptSpy: ReturnType<typeof vi.spyOn>;
+  let confirmSpy: MockInstance<typeof window.confirm>;
+  let promptSpy: MockInstance<typeof window.prompt>;
 
   beforeEach(() => {
     confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);

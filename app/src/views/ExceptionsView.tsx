@@ -70,9 +70,7 @@ export function ExceptionsView() {
     setResolveError(null);
     setResolving((s) => new Set([...s, row.id]));
     try {
-      await api.resolveException(slug, row.id, {
-        note: "Markeret som løst fra cockpittet",
-      });
+      await api.resolveException(slug, row.id, "Markeret som løst fra cockpittet");
       setRefresh((n) => n + 1);
     } catch (err) {
       setResolveError(

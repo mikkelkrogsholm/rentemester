@@ -21,6 +21,9 @@ export function contacts(
         website: null,
         eanNumber: null,
         notes: null,
+        openBalance: 0,
+        openInvoiceCount: 0,
+        overdueCount: 0,
       },
     ],
     vendors: [

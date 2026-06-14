@@ -236,7 +236,7 @@ describe("MultiYearView — Flerårsoversigt", () => {
     await screen.findByRole("heading", { name: "Acme ApS" });
     const ratioSection = screen
       .getByRole("heading", { name: /Nøgletal pr. regnskabsår/ })
-      .closest(".section")!;
+      .closest<HTMLElement>(".section")!;
     const headers = within(ratioSection).getAllByRole("columnheader");
     const labels = headers.map((h) => h.textContent ?? "");
     expect(labels.filter((l) => /Δ \(pp\)/.test(l)).length).toBeGreaterThanOrEqual(2);
@@ -253,7 +253,7 @@ describe("MultiYearView — Flerårsoversigt", () => {
     await screen.findByRole("heading", { name: "Acme ApS" });
     const section = screen
       .getByRole("heading", { name: /Balance — balancesum/ })
-      .closest(".section")!;
+      .closest<HTMLElement>(".section")!;
     const headers = within(section).getAllByRole("columnheader");
     const labels = headers.map((h) => h.textContent ?? "");
     expect(labels.filter((l) => /Δ \(kr\)/.test(l)).length).toBeGreaterThanOrEqual(2);

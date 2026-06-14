@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { screen, within } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { RulesView } from "./RulesView";
 import { renderAt } from "../test/render";
 import { mockFetch } from "../test/fixtures";

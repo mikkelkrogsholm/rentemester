@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { screen, within } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ExceptionsView } from "./ExceptionsView";
 import { renderAt } from "../test/render";

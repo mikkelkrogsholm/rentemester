@@ -1,17 +1,15 @@
 // Exceptions queue (#332) + agent-suggestion approval wire types (#346).
-//
-// NOTE on the duplicate `ExceptionRow` declaration: the original
-// `app/src/lib/types.ts` declares `ExceptionRow` twice — once early (a slim
-// dashboard shape) and once later (the full Exceptions-queue row). Splitting
-// them into two files would change the visible duplicate-identifier error
-// surface; both declarations are kept together here in their original order
-// so cockpit-side type resolution stays bit-identical.
 
 import type { StatementCompany } from "./common";
 
-// First declaration — the slim shape consumed by `CompanyDashboard.exceptions.rows`.
-export type ExceptionRow = {
-  id: string | number;
+/**
+ * Slim exception shape returned by `CompanyDashboard.exceptions.rows`
+ * (`/api/companies/:slug/dashboard`). Mirrors the 5-field projection in
+ * `src/server/data/portfolio.ts` (buildCompanyDashboardData). The richer
+ * Exceptions-queue payload uses `ExceptionRow` below.
+ */
+export type DashboardExceptionRow = {
+  id: number;
   type: string;
   severity: string;
   status: string;
@@ -79,9 +77,6 @@ export type AgentSuggestionDecisionResponse = {
 // #332 — Exceptions queue (read-only liste).
 // ---------------------------------------------------------------------------
 
-// Second declaration — preserved verbatim from the original file. TypeScript
-// reports `TS2300: Duplicate identifier 'ExceptionRow'` here today; the split
-// retains the exact same surface.
 export type ExceptionRow = {
   id: number;
   type: string;
