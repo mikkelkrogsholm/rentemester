@@ -1,7 +1,14 @@
 // Dashboard + Overblik wire types.
 
-import type { ExceptionRow } from "./exceptions";
 import type { FiscalYearEntry } from "./common";
+
+export type DashboardExceptionRow = {
+  id: string | number;
+  type: string;
+  severity: string;
+  status: string;
+  message: string;
+};
 
 export type InvoiceRow = {
   invoiceNumber: string;
@@ -34,7 +41,7 @@ export type CompanyDashboard = {
   invoices: { count: number; openTotal: number; rows: InvoiceRow[] };
   overdueInvoices: { count: number; rows: InvoiceRow[] };
   unlinkedBank: { count: number };
-  exceptions: { count: number; rows: ExceptionRow[] };
+  exceptions: { count: number; rows: DashboardExceptionRow[] };
   vat: {
     periodStart: string;
     periodEnd: string;
