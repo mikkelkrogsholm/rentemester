@@ -201,7 +201,8 @@ export function inferredMutationActor(): string | null {
     trimToNull(process.env.RENTEMESTER_AGENT ? `agent:${process.env.RENTEMESTER_AGENT}` : null) ??
     trimToNull(process.env.RENTEMESTER_USER ? `user:${process.env.RENTEMESTER_USER}` : null) ??
     trimToNull(process.env.USER ? `user:${process.env.USER}` : null) ??
-    trimToNull(process.env.LOGNAME ? `user:${process.env.LOGNAME}` : null)
+    trimToNull(process.env.LOGNAME ? `user:${process.env.LOGNAME}` : null) ??
+    trimToNull(process.env.USERNAME ? `user:${process.env.USERNAME}` : null)  // Windows
   );
 }
 
@@ -337,7 +338,7 @@ export function enforceMutationActorPolicy(
   const derivedActor = inferredMutationActor();
   if (!derivedActor) {
     fatal(
-      "actor required for mutations: pass --actor <user:...|agent:...|system:...> or run with USER/LOGNAME/OPENCLAW_AGENT set",
+      "actor required for mutations: pass --actor <user:...|agent:...|system:...> or run with USER/LOGNAME/USERNAME/OPENCLAW_AGENT set",
     );
   }
   // #283 / SEC-3: `system restore-backup` recreates a company from a backup,
