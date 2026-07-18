@@ -1,6 +1,7 @@
 // Tests: src/core/system-backups.ts
 import { describe, expect, test } from "bun:test";
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { cleanupTempDir } from "../helpers/cleanup";
 import { createHmac } from "node:crypto";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -50,8 +51,8 @@ describe("system backups", () => {
     expect(manifest.ledgerStats.documents).toBe(1);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
-    rmSync(inboxRoot, { recursive: true, force: true });
+    cleanupTempDir(companyRoot);
+    cleanupTempDir(inboxRoot);
   });
 
   test("takes a locked snapshot so concurrent writes wait and stay out of the backup", async () => {
@@ -105,7 +106,7 @@ describe("system backups", () => {
     expect(liveCount).toBe(1);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupTempDir(companyRoot);
   });
 
   test("issue #151: backup leaves no half-written temp files and the manifest matches its signature", () => {
@@ -131,7 +132,7 @@ describe("system backups", () => {
     expect(signature).toBe(expected);
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupTempDir(companyRoot);
   });
 
   test("issue #151: writeFileAtomic refuses to follow a pre-planted same-directory symlink", () => {
@@ -151,7 +152,7 @@ describe("system backups", () => {
     expect(readFileSync(victim, "utf8")).toBe("original-victim\n");
     expect(readFileSync(finalPath, "utf8")).toBe("real-content\n");
 
-    rmSync(dir, { recursive: true, force: true });
+    cleanupTempDir(dir);
   });
 
   test("treats same-day bank activity as newer than an earlier same-day backup", () => {
@@ -180,7 +181,7 @@ describe("system backups", () => {
     expect(status.latestBackupId).toBe("backup-20260517T020900Z");
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupTempDir(companyRoot);
   });
 
   test("flags weekly backup duty when activity exists after an old backup", () => {
@@ -236,6 +237,6 @@ describe("system backups", () => {
     expect(status.appliedRules).toContain("DK-BOOKKEEPING-BACKUP-001");
 
     db.close();
-    rmSync(companyRoot, { recursive: true, force: true });
+    cleanupTempDir(companyRoot);
   });
 });
