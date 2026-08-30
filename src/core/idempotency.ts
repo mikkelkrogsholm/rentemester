@@ -11,11 +11,12 @@ export const RETRY_CLASS_BY_OPERATION: Readonly<Record<string, RetryClass>> = Ob
   journal_post: "key-idempotent", journal_reverse: "key-idempotent", expense_book: "key-idempotent", payable_register: "key-idempotent", payable_pay: "key-idempotent",
   bookkeeping_batch_apply: "natural-idempotent", reconcile_bank: "natural-idempotent", bank_import: "natural-idempotent",
   bank_reconciliation_correction_apply: "key-idempotent",
+  direct_bank_purchase_payable_correction_apply: "key-idempotent",
   efaktura_send: "external-provider-reconciled", invoice_send_email: "unsafe-read-back",
 });
 /** Single reviewed retry registry for runtime and agent discovery. */
 export const RETRY_OPERATION_NAMES = Object.freeze({
-  keyIdempotent: new Set(["journal_post", "journal_reverse", "expense_book", "payable_register", "payable_pay", "bank_reconciliation_correction_apply"]),
+  keyIdempotent: new Set(["journal_post", "journal_reverse", "expense_book", "payable_register", "payable_pay", "bank_reconciliation_correction_apply", "direct_bank_purchase_payable_correction_apply"]),
   naturalIdempotent: new Set(["bank_import", "bookkeeping_batch_apply", "bookkeeping_batch_approve", "bookkeeping_batch_dry_run", "bookkeeping_batch_persist", "dimension_budget_apply", "documents_enrich", "documents_extract_invoice", "documents_parse", "documents_parse_pending", "documents_set_company_context", "documents_party_link_apply", "documents_party_link_supersede", "documents_internal_no_external_party", "documents_internal_no_external_party_supersede", "invoice_render", "posting_rule_propose", "recurring_invoice_generate", "recurring_invoice_run_workspace"]),
   externalProviderReconciled: new Set(["efaktura_konfigurer", "efaktura_onboard", "efaktura_registrer", "efaktura_send", "efaktura_modtag", "efaktura_modtag_workspace", "efaktura_status", "peppol_submit_public_invoice", "mail_intake_ingest", "imap_intake_poll", "customer_validate_vat", "cvr_lookup"]),
   naturalIdempotentCli: new Set(["import contacts", "bookkeeping-batch persist", "bookkeeping-batch dry-run", "bookkeeping-batch approve", "bookkeeping-batch apply", "dimensions budget-apply"]),

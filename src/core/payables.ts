@@ -73,6 +73,9 @@ export type PayPayableInput = {
   note?: string;
   createdBy?: string;
   createdByProgram?: string;
+  /** Internal correction workflow only: the direct source being atomically superseded. */
+  allowSupersededDirectBankJournalEntryId?: number;
+  skipBankSourceLink?: boolean;
 };
 
 export type PayPayableResult = {
@@ -534,7 +537,7 @@ export function payPayableFromBank(db: Database, input: PayPayableInput, inCurre
   }
 
   const existingJournal = db.query(`SELECT journal_entry_id AS id FROM bank_journal_reconciliations WHERE bank_transaction_id = ? LIMIT 1`).get(bank.id) as { id: number } | null;
-  if (existingJournal) return { ok: false, appliedRules: [PAYMENT_RULE_ID], errors: [`bank transaction ${bank.id} is already linked to journal entry ${existingJournal.id}`] };
+  if (existingJournal && existingJournal.id !== input.allowSupersededDirectBankJournalEntryId) return { ok: false, appliedRules: [PAYMENT_RULE_ID], errors: [`bank transaction ${bank.id} is already linked to journal entry ${existingJournal.id}`] };
   const existingPayment = db.query(`SELECT id FROM payable_payments WHERE bank_transaction_id = ? LIMIT 1`).get(bank.id) as { id: number } | null;
   if (existingPayment) return { ok: false, appliedRules: [PAYMENT_RULE_ID], errors: [`bank transaction ${bank.id} is already applied to payable payment ${existingPayment.id}`] };
 
@@ -564,7 +567,7 @@ export function payPayableFromBank(db: Database, input: PayPayableInput, inCurre
       const journal = (inCurrentTransaction ? postJournalEntryInCurrentTransaction : postJournalEntry)(db, {
         transactionDate: paymentDate,
         text,
-        sourceBankTransactionId: input.bankTransactionId,
+        sourceBankTransactionId: input.skipBankSourceLink ? undefined : input.bankTransactionId,
         createdBy: input.createdBy,
         createdByProgram: input.createdByProgram,
         lines: [

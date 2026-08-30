@@ -4,6 +4,7 @@ import { resolveOpenExceptionsForBankTransaction } from "./exceptions";
 import { roundDkk } from "./money";
 import { createHash } from "node:crypto";
 import type { StablePrincipal } from "./idempotency";
+import { resolveAccountRole } from "./account-roles";
 
 export const BANK_JOURNAL_RECONCILIATION_RULE = "DK-BOOKKEEPING-RECONCILIATION-001";
 
@@ -74,10 +75,11 @@ function correctionContext(db: Database, input: BankReconciliationCorrectionPlan
     ) candidate WHERE NOT EXISTS (SELECT 1 FROM bank_reconciliation_correction_events event WHERE event.supersedes_reconciliation_id=candidate.reconciliation_id) ORDER BY reconciliation_id LIMIT 2`).all(input.bankTransactionId, input.bankTransactionId, input.bankTransactionId) as Array<{reconciliation_id:string;journal_entry_id:number;journal_entry_no:string}>;
   if (current.length !== 1) return { error: current.length ? "CONFLICTING_CURRENT_RECONCILIATIONS" : "CURRENT_RECONCILIATION_NOT_FOUND" };
   const bank = db.query(`SELECT bt.amount,bt.amount_dkk,bt.currency,ba.ledger_account_no FROM bank_transactions bt JOIN bank_accounts ba ON ba.id=bt.bank_account_id WHERE bt.id=?`).get(input.bankTransactionId) as any;
-  if (!bank?.ledger_account_no) return { error: "BANK_ACCOUNT_MAPPING_REQUIRED" };
+  const mappedBankAccountNo = bank?.ledger_account_no || (resolveAccountRole(db, "bank").ok ? (resolveAccountRole(db, "bank") as any).accountNo : null);
+  if (!mappedBankAccountNo) return { error: "BANK_ACCOUNT_MAPPING_REQUIRED" };
   const old = db.query(`SELECT je.status,je.reversal_of_entry_id,EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=je.id) AS has_reversal FROM journal_entries je WHERE je.id=?`).get(current[0]!.journal_entry_id) as any;
   if (!old || (old.status === "posted" && old.reversal_of_entry_id == null && !Number(old.has_reversal))) return { error: "ACTIVE_OLD_JOURNAL_MUST_BE_REVERSED" };
-  const replacement = db.query(`SELECT je.id,je.entry_no,je.entry_hash,je.status,je.reversal_of_entry_id,je.source_bank_transaction_id,EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=je.id) AS has_reversal,COALESCE(SUM(CASE WHEN a.account_no=? THEN jl.debit_amount-jl.credit_amount ELSE 0 END),0) AS bank_movement FROM journal_entries je LEFT JOIN journal_lines jl ON jl.journal_entry_id=je.id LEFT JOIN accounts a ON a.id=jl.account_id WHERE je.id=? GROUP BY je.id`).get(bank.ledger_account_no,input.replacementJournalEntryId) as any;
+  const replacement = db.query(`SELECT je.id,je.entry_no,je.entry_hash,je.status,je.reversal_of_entry_id,je.source_bank_transaction_id,EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=je.id) AS has_reversal,COALESCE(SUM(CASE WHEN a.account_no=? THEN jl.debit_amount-jl.credit_amount ELSE 0 END),0) AS bank_movement FROM journal_entries je LEFT JOIN journal_lines jl ON jl.journal_entry_id=je.id LEFT JOIN accounts a ON a.id=jl.account_id WHERE je.id=? GROUP BY je.id`).get(mappedBankAccountNo,input.replacementJournalEntryId) as any;
   if (!replacement) return { error: "REPLACEMENT_JOURNAL_NOT_FOUND" };
   if (replacement.status !== "posted" || replacement.reversal_of_entry_id != null || Number(replacement.has_reversal) || replacement.source_bank_transaction_id != null) return { error: "INVALID_REPLACEMENT_JOURNAL" };
   const alreadyUsed = db.query("SELECT 1 FROM bank_journal_reconciliations WHERE journal_entry_id=? LIMIT 1").get(input.replacementJournalEntryId);
@@ -85,7 +87,7 @@ function correctionContext(db: Database, input: BankReconciliationCorrectionPlan
   const amount = String(bank.currency).trim().toUpperCase() === "DKK" ? Number(bank.amount) : Number(bank.amount_dkk);
   if (!Number.isFinite(amount)) return { error: "BANK_AMOUNT_DKK_REQUIRED" };
   if (roundDkk(Number(replacement.bank_movement)) !== roundDkk(amount)) return { error: "REPLACEMENT_BANK_AMOUNT_OR_ACCOUNT_MISMATCH" };
-  return { reconciliationId:current[0]!.reconciliation_id, bankTransactionId:input.bankTransactionId,currentJournalEntryId:Number(current[0]!.journal_entry_id),currentJournalEntryNo:current[0]!.journal_entry_no,replacementJournalEntryId:Number(replacement.id),replacementJournalEntryNo:replacement.entry_no,replacementJournalHash:replacement.entry_hash,bankAccountNo:bank.ledger_account_no,bankAmountDkk:roundDkk(amount),replacementBankMovement:roundDkk(Number(replacement.bank_movement)) };
+  return { reconciliationId:current[0]!.reconciliation_id, bankTransactionId:input.bankTransactionId,currentJournalEntryId:Number(current[0]!.journal_entry_id),currentJournalEntryNo:current[0]!.journal_entry_no,replacementJournalEntryId:Number(replacement.id),replacementJournalEntryNo:replacement.entry_no,replacementJournalHash:replacement.entry_hash,bankAccountNo:mappedBankAccountNo,bankAmountDkk:roundDkk(amount),replacementBankMovement:roundDkk(Number(replacement.bank_movement)) };
 }
 
 /** Read-only, hash-bound correction proposal. It never changes either journal. */
