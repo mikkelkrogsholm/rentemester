@@ -9,6 +9,7 @@ import { openCommandDb, optionalNumberOrFatal } from "../../cli-dispatch";
 import { migrate } from "../../core/db";
 import { getInvoiceStatus } from "../../core/invoice-payments";
 import { buildInvoiceList, buildOverdueInvoiceList, findInvoices } from "../../core/invoice-list";
+import { listImportedReceivables } from "../../core/imported-receivables";
 import { invoiceStatusDa } from "../../core/messages";
 import type { CommandDispatch } from "../../cli-dispatch";
 import { emitHumanReport, formatKroner } from "../../cli-format";
@@ -40,6 +41,11 @@ function renderInvoiceRowsHuman(title: string, rows: any[], emptyMessage: string
 }
 
 export function registerQueryCommands(dispatch: CommandDispatch): void {
+  dispatch.on("invoice", "imported-receivables", (ctx) => {
+    const db = openCommandDb(ctx); migrate(db);
+    const result = listImportedReceivables(db, ctx.arg("--as-of") ?? new Date().toISOString().slice(0,10));
+    ctx.emitResult(result as Record<string, unknown>); db.close();
+  });
   dispatch.on("invoice", "status", (ctx) => {
     const db = openCommandDb(ctx);
     migrate(db);

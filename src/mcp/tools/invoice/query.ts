@@ -16,6 +16,7 @@ import {
   type InvoiceQueryStatus,
 } from "../../../core/invoice-list";
 import { getInvoiceStatus } from "../../../core/invoice-payments";
+import { listImportedReceivables } from "../../../core/imported-receivables";
 import { calculateInvoiceLateInterest, proposeInterestCorrection } from "../../../core/invoice-interest";
 import { calculateInvoiceLateCompensation } from "../../../core/invoice-compensation";
 import { envelopeShape, wrapCoreResult } from "../../envelope";
@@ -34,6 +35,7 @@ const statusEnum = z
   .optional();
 
 export function registerInvoiceQueryTools(server: McpServer): void {
+  server.registerTool("invoice_imported_receivables", { title:"List imported receivables", description:"Lists source-evidenced imported receivables as of a date. These are explicitly not native Rentemester invoices; use invoice_list for native invoices.", inputSchema:{ company:z.string().min(1), asOf:z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }, outputSchema:envelopeShape, annotations:{readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false} }, withCompanyDb<{company:string;asOf:string}>(server,({db,args})=>wrapCoreResult(listImportedReceivables(db,args.asOf))));
   server.registerTool(
     "invoice_validate",
     {

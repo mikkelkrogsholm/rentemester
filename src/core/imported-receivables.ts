@@ -65,3 +65,13 @@ export function importedReceivableBalanceOre(db: Database, cutoff: string, contr
 export function importedScheduleBalanceOre(schedule:ImportedReceivableSchedule,cutoff:string,controlAccountNo:string):bigint {
   return schedule.invoices.filter(invoice=>invoice.controlAccountNo===controlAccountNo&&invoice.invoiceDate<=cutoff).reduce((sum,invoice)=>sum+toOre(invoice.grossAmount)-(invoice.payments??[]).filter(event=>event.paymentDate<=cutoff).reduce((paid,event)=>paid+toOre(event.amount),0n),0n);
 }
+
+/** Read-only canonical imported receivable list. Imported rows remain source
+ * records, never masquerade as Rentemester-issued invoices, and explicitly
+ * expose the archive/cut-over boundary to callers. */
+export function listImportedReceivables(db: Database, asOfDate: string): { ok: boolean; asOfDate: string; boundary: string; count: number; totalOpen: number; rows: Array<Record<string, unknown>>; errors: string[] } {
+  if (!isValidIsoDate(asOfDate)) return { ok:false, asOfDate, boundary:"imported source records only; native invoices are listed separately", count:0,totalOpen:0,rows:[],errors:["as-of date must be YYYY-MM-DD"] };
+  const rows = db.query(`SELECT h.external_invoice_id,h.customer_external_id,h.customer_name,h.invoice_date,h.due_date,h.gross_amount,h.control_account_no,h.source_recognition_ref,h.source_document_hash,h.schedule_hash,COALESCE(SUM(CASE WHEN p.effective_date<=? THEN p.amount ELSE 0 END),0) paid_amount FROM imported_receivable_headers h LEFT JOIN imported_receivable_events p ON p.receivable_id=h.id WHERE h.invoice_date<=? GROUP BY h.id ORDER BY h.invoice_date,h.id`).all(asOfDate,asOfDate) as Array<Record<string,unknown>>;
+  const result = rows.map(row => ({ source:"imported" as const, externalInvoiceId:row.external_invoice_id, customerExternalId:row.customer_external_id, customerName:row.customer_name, invoiceDate:row.invoice_date, dueDate:row.due_date, grossAmount:Number(row.gross_amount), paidAmount:Number(row.paid_amount), openBalance:Number(row.gross_amount)-Number(row.paid_amount), controlAccountNo:row.control_account_no, sourceRecognitionRef:row.source_recognition_ref, sourceDocumentHash:row.source_document_hash, scheduleHash:row.schedule_hash, archiveBoundary:"Imported source record; use invoice list for Rentemester-issued invoices." }));
+  return { ok:true,asOfDate,boundary:"Imported source records only; native Rentemester invoices are deliberately separate to avoid duplicate claims.",count:result.length,totalOpen:result.reduce((sum,row)=>sum+row.openBalance,0),rows:result,errors:[] };
+}
