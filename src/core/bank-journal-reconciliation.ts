@@ -74,7 +74,8 @@ function correctionContext(db: Database, input: BankReconciliationCorrectionPlan
       UNION ALL SELECT 'correction:' || event.id, event.replacement_journal_entry_id, je.entry_no FROM bank_reconciliation_correction_events event JOIN journal_entries je ON je.id=event.replacement_journal_entry_id WHERE event.bank_transaction_id=?
     ) candidate WHERE NOT EXISTS (SELECT 1 FROM bank_reconciliation_correction_events event WHERE event.supersedes_reconciliation_id=candidate.reconciliation_id) ORDER BY reconciliation_id LIMIT 2`).all(input.bankTransactionId, input.bankTransactionId, input.bankTransactionId) as Array<{reconciliation_id:string;journal_entry_id:number;journal_entry_no:string}>;
   if (current.length !== 1) return { error: current.length ? "CONFLICTING_CURRENT_RECONCILIATIONS" : "CURRENT_RECONCILIATION_NOT_FOUND" };
-  const bank = db.query(`SELECT bt.amount,bt.amount_dkk,bt.currency,ba.ledger_account_no FROM bank_transactions bt JOIN bank_accounts ba ON ba.id=bt.bank_account_id WHERE bt.id=?`).get(input.bankTransactionId) as any;
+  const bank = db.query(`SELECT bt.amount,bt.amount_dkk,bt.currency,ba.ledger_account_no FROM bank_transactions bt LEFT JOIN bank_accounts ba ON ba.id=bt.bank_account_id WHERE bt.id=?`).get(input.bankTransactionId) as any;
+  if (!bank) return { error: "BANK_TRANSACTION_NOT_FOUND" };
   const mappedBankAccountNo = bank?.ledger_account_no || (resolveAccountRole(db, "bank").ok ? (resolveAccountRole(db, "bank") as any).accountNo : null);
   if (!mappedBankAccountNo) return { error: "BANK_ACCOUNT_MAPPING_REQUIRED" };
   const old = db.query(`SELECT je.status,je.reversal_of_entry_id,EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=je.id) AS has_reversal FROM journal_entries je WHERE je.id=?`).get(current[0]!.journal_entry_id) as any;

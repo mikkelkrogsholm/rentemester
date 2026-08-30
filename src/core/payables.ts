@@ -265,10 +265,10 @@ export function registerPayable(db: Database, input: RegisterPayableInput, inCur
   // The evidence-bearing document date is the accounting and VAT date. A
   // caller may repeat it for an explicit review, but may never move a bill to
   // another period by supplying a different date.
-  if (!document.invoice_date || !looksLikeIsoDate(document.invoice_date)) {
+  if (document.document_type === "purchase_sale" && (!document.invoice_date || !looksLikeIsoDate(document.invoice_date))) {
     return { ok: false, appliedRules: [RULE_ID], errors: [`document ${input.documentId} has no valid immutable invoice_date`] };
   }
-  if (input.billDate !== document.invoice_date) {
+  if (document.invoice_date && input.billDate !== document.invoice_date) {
     return { ok: false, appliedRules: [RULE_ID], errors: [`billDate ${input.billDate} must match document invoice_date ${document.invoice_date}`] };
   }
   if (document.document_type !== "purchase_sale" && document.document_type !== "cash_register_receipt") {

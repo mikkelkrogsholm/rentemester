@@ -328,7 +328,7 @@ const capabilityTuples: CapabilityTuple[] = [
   ["document-intake", "Document and mail intake", "Store source documents and mail attachments for review.", "documents", ["ingest document", "mail intake", "review invoice extraction"], ["bilag", "imap", "attachment"], "company", ["document-mail-intake"]],
   ["workspace-document-inbox", "Workspace document inbox", "Route immutable incoming evidence to one authorized legal entity without a workspace ledger.", "documents", ["route incoming document", "assign workspace inbox", "review ambiguous company"], ["workspace inbox", "routing", "recipient alias", "buyer VAT"], "workspace", ["workspace-document-inbox"]],
   ["bank-bookkeeping", "Bank reconciliation and bookkeeping batch", "Import activity, review one canonical bank work queue and apply a hash-bound batch.", "bank", ["reconcile bank", "match bank transactions", "bookkeeping workbench", "bookkeeping batch", "correct bank reconciliation"], ["bank import", "workbench", "dry run", "plan hash", "reconciliation correction"], "company", ["bank-reconciliation-batch", "bookkeeping-workbench", "bank-reconciliation-correction"]],
-  ["supplier-purchases", "Supplier expenses and payables", "Book supplier invoices directly or through payable handling.", "purchases", ["book supplier invoice", "pay supplier invoice", "book expense"], ["vendor", "payable", "purchase VAT"], "company", ["supplier-expense-booking", "supplier-payable-handling"]],
+  ["supplier-purchases", "Supplier expenses and payables", "Book supplier invoices directly or through payable handling.", "purchases", ["book supplier invoice", "pay supplier invoice", "book expense"], ["vendor", "payable", "purchase VAT"], "company", ["supplier-expense-booking", "supplier-payable-handling", "direct-bank-purchase-payable-correction"]],
   ["supplier-commitments", "Supplier commitments and 13-week liquidity", "Review recurring supplier commitments and inspect a source-linked cash forecast without generating payments.", "planning", ["track supplier subscription", "forecast cash 13 weeks", "review renewals"], ["commitment", "subscription", "cash forecast", "renewal"], "company", ["supplier-commitment-forecast"]],
   ["customer-invoicing", "Customer invoice lifecycle", "Create customers and handle issue, delivery, payment, reminder and correction.", "sales", ["issue customer invoice", "send invoice", "record payment", "send reminder", "credit note"], ["customer", "invoice", "settlement"], "company", ["customer-invoice-lifecycle"]],
   ["vat", "VAT preparation", "Validate and post supported VAT treatments and prepare evidence.", "vat", ["prepare VAT", "domestic purchase VAT", "reverse charge"], ["moms", "VIES", "input VAT"], "company", ["vat-preparation"]],
@@ -466,9 +466,9 @@ type SurfaceBaseline = { count: number; hash: string };
  */
 export const AGENT_SURFACE_BASELINES: Record<SurfaceName, SurfaceBaseline> = {
   // Public surface changes require an explicit discovery review.
-  mcp: { count: 211, hash: "f50114bb5ca29f8a63b2dcd01dd934ece2745cd58be196f598aeadddbefadd94" },
-  cli: { count: 262, hash: "3e02352798e046ceaf82139cf6776f5e6b6457658ab28394af20dd2e52d1af45" },
-  http: { count: 206, hash: "9bccd1c719c7e39a838fe046518b9261816a8ab61fed11728d260e774add9f91" },
+  mcp: { count: 213, hash: "eb760824036360abc1e32916708c0bad867ce03d802d067011e53fe3f297774a" },
+  cli: { count: 264, hash: "76b6f357fb52c645f1ca2723fcf0af9380ace8db038a1a4034850a56cb7de896" },
+  http: { count: 208, hash: "af44c2c61c50d8a479a02b1d04ce12ba789aafc3699ab81ea98f7ff4a7cb1160" },
 };
 
 const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }> = [

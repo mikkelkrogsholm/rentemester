@@ -119,3 +119,14 @@ export type PayablePaySummary = {
   payableId: number;
   openBalance: number | null;
 };
+
+export type DirectBankPayableCorrectionInput = {
+  documentId: number; bankTransactionId: number; billDate: string; dueDate: string;
+  expenseAccountNo: string; vatTreatment?: "standard" | "exempt" | "non_deductible";
+  vendorId?: number; note?: string;
+};
+
+export type DirectBankPayableCorrectionPlan = DirectBankPayableCorrectionInput & {
+  schemaVersion: string; planHash: string; documentHash: string; originalJournalHash: string;
+  originalJournalEntryId: number; bankDate: string; bankAmount: number;
+};

@@ -14,6 +14,7 @@ import {
   payablePayOperationPayload,
 } from "../../core/payables";
 import type { ServerConfig } from "../config";
+import { planDirectBankPurchasePayableCorrection, applyDirectBankPurchasePayableCorrection } from "../../core/direct-bank-purchase-payable-correction";
 import { ApiError } from "../errors";
 import { withCockpitActor } from "../actor";
 import { withCompanyMutation } from "../mutations";
@@ -192,4 +193,30 @@ export async function handlePayablePay(
       openBalance: result.openBalance ?? null,
     },
   });
+}
+
+function correctionInput(body: Record<string, unknown>) {
+  const vatTreatment = optionalBodyString(body, "vatTreatment") as "standard" | "exempt" | "non_deductible" | undefined;
+  return {
+    documentId: requireBodyPositiveInt(body, "documentId"),
+    bankTransactionId: requireBodyPositiveInt(body, "bankTransactionId"),
+    billDate: requireBodyString(body, "billDate"), dueDate: requireBodyString(body, "dueDate"),
+    expenseAccountNo: requireBodyString(body, "expenseAccountNo"), vatTreatment,
+    vendorId: optionalBodyPositiveInt(body, "vendorId"), note: optionalBodyString(body, "note"),
+  };
+}
+
+export async function handleDirectBankPurchasePayablePlan(config: ServerConfig, request: Request, slug: string): Promise<Response> {
+  const result = await withCompanyMutation(request, config, slug, (ctx, body) => planDirectBankPurchasePayableCorrection(ctx.db, correctionInput(body)));
+  return okResponse({ plan: result.plan });
+}
+
+export async function handleDirectBankPurchasePayableApply(config: ServerConfig, request: Request, slug: string): Promise<Response> {
+  const result = await withCompanyMutation(request, config, slug, (ctx, body) => {
+    const stable = ctx.principal.via === "service-principal"
+      ? (ctx.principal.serviceAccountId ? { kind: "service-account" as const, subjectId: ctx.principal.serviceAccountId } : undefined)
+      : (ctx.principal.userId ? { kind: "user" as const, subjectId: ctx.principal.userId } : undefined);
+    return applyDirectBankPurchasePayableCorrection(ctx.db, { ...correctionInput(body), planHash: requireBodyString(body,"planHash"), reason:requireBodyString(body,"reason"), actor:ctx.actor.createdBy, principal:stable, confirm:true });
+  }, { requireConfirm:true, keyIdempotent:"direct_bank_purchase_payable_correction_apply", requireIdempotencyKey:true });
+  return okResponse({ correction: result, ...("idempotency" in result ? { idempotency: result.idempotency } : {}) });
 }

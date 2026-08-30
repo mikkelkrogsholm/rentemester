@@ -5,6 +5,8 @@ import type {
   PayableRegisterInput,
   PayableRegisterSummary,
   PayablesResponse,
+  DirectBankPayableCorrectionInput,
+  DirectBankPayableCorrectionPlan,
 } from "../types";
 import { request } from "./_shared";
 
@@ -71,4 +73,10 @@ export const payablesApi = {
         }),
       },
     ).then((r) => r.payment),
+
+  planDirectBankPayableCorrection: (slug: string, input: DirectBankPayableCorrectionInput) =>
+    request<{ ok: true; plan: DirectBankPayableCorrectionPlan }>(`/api/companies/${encodeURIComponent(slug)}/payables/direct-bank-correction/plan`, { method:"POST", body:JSON.stringify(input) }).then((r)=>r.plan),
+
+  applyDirectBankPayableCorrection: (slug: string, input: DirectBankPayableCorrectionInput & { planHash:string; reason:string; idempotencyKey:string }) =>
+    request<{ ok:true; correction:Record<string,unknown> }>(`/api/companies/${encodeURIComponent(slug)}/payables/direct-bank-correction/apply`, { method:"POST", headers:{"idempotency-key":input.idempotencyKey}, body:JSON.stringify({...input,confirm:true}) }).then((r)=>r.correction),
 };

@@ -1224,6 +1224,37 @@ export function verifyAuditChain(db: Database, options: VerifyAuditChainOptions 
     const target = `${event.supersedes_kind}:${event.supersedes_id}`;
     if (event.supersedes_reconciliation_id !== target) errors.push(`${label}: typed supersession target is inconsistent`);
   }
+  const hasPurchaseCorrections = db.query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='direct_bank_purchase_payable_corrections'").get();
+  const purchaseCorrections = hasPurchaseCorrections ? db.query(`
+    SELECT correction.*,
+           document.sha256_hash AS current_document_hash,
+           original.entry_hash AS current_original_hash,
+           reversal.reversal_of_entry_id AS reversal_target,
+           payable.document_id AS payable_document_id,
+           payment.payable_id AS payment_payable_id,
+           payment.bank_transaction_id AS payment_bank_id,
+           payment.journal_entry_id AS payment_journal_id,
+           EXISTS(SELECT 1 FROM bank_reconciliation_correction_events event
+                    WHERE event.bank_transaction_id=correction.bank_transaction_id
+                      AND event.replacement_journal_entry_id=correction.settlement_journal_entry_id) AS has_reconciliation_correction,
+           EXISTS(SELECT 1 FROM audit_log audit
+                    WHERE audit.event_type='direct_bank_purchase_payable_corrected'
+                      AND audit.entity_type='bank_transaction'
+                      AND audit.entity_id=CAST(correction.bank_transaction_id AS TEXT)) AS has_audit
+      FROM direct_bank_purchase_payable_corrections correction
+      JOIN documents document ON document.id=correction.document_id
+      JOIN journal_entries original ON original.id=correction.original_journal_entry_id
+      JOIN journal_entries reversal ON reversal.id=correction.reversal_journal_entry_id
+      JOIN payables payable ON payable.id=correction.payable_id
+      JOIN payable_payments payment ON payment.id=correction.payment_id
+     ORDER BY correction.id`).all() as any[] : [];
+  for (const correction of purchaseCorrections) {
+    const label = `direct-bank purchase payable correction ${correction.id}`;
+    if (correction.current_document_hash !== correction.document_hash || correction.current_original_hash !== correction.original_journal_hash) errors.push(`${label}: immutable source hash mismatch`);
+    if (Number(correction.reversal_target) !== Number(correction.original_journal_entry_id)) errors.push(`${label}: reversal linkage is invalid`);
+    if (Number(correction.payable_document_id) !== Number(correction.document_id) || Number(correction.payment_payable_id) !== Number(correction.payable_id) || Number(correction.payment_bank_id) !== Number(correction.bank_transaction_id) || Number(correction.payment_journal_id) !== Number(correction.settlement_journal_entry_id)) errors.push(`${label}: payable/payment linkage is invalid`);
+    if (!Number(correction.has_reconciliation_correction) || !Number(correction.has_audit)) errors.push(`${label}: reconciliation correction or audit evidence is missing`);
+  }
   const badCurrent = db.query(`SELECT bank_transaction_id,COUNT(*) AS count FROM bank_journal_reconciliations GROUP BY bank_transaction_id HAVING COUNT(*)<>1`).all() as Array<{bank_transaction_id:number;count:number}>;
   for (const row of badCurrent) errors.push(`bank transaction ${row.bank_transaction_id}: has ${row.count} effective reconciliations; exactly one is required`);
 

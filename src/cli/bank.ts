@@ -16,6 +16,7 @@ import type { CommandContext, CommandDispatch } from "../cli-dispatch";
 import { linkBankTransactionToJournal, planBankReconciliationCorrection, applyBankReconciliationCorrection, type BankJournalMatchMethod } from "../core/bank-journal-reconciliation";
 import { executeLocalIdempotentMutation, IdempotencyError, validateIdempotencyKey, type StablePrincipal } from "../core/idempotency";
 import { inspectOpenLedger, openLedgerReadOnly } from "../core/ledger-inspection";
+import { planDirectBankPurchasePayableCorrection, applyDirectBankPurchasePayableCorrection } from "../core/direct-bank-purchase-payable-correction";
 
 function correctionPrincipal(ctx: CommandContext): StablePrincipal | undefined {
   const raw = ctx.trimToNull(ctx.arg("--principal"));
@@ -207,6 +208,30 @@ export function register(dispatch: CommandDispatch): void {
     try { const run = executeLocalIdempotentMutation(db, { key: validateIdempotencyKey(key), operation:"bank_reconciliation_correction_apply", principal, payload, actor:{createdBy:ctx.cliActor ?? ctx.inferredMutationActor() ?? "",createdByProgram:"rentemester-cli"}, execute:()=>applyBankReconciliationCorrection(db,{...payload,actor:ctx.cliActor ?? ctx.inferredMutationActor() ?? undefined,principal,confirm:true}) }); result = run.receipt ? {...run.result,idempotency:run.receipt} : run.result; }
     catch (error) { result={ok:false,errors:[error instanceof IdempotencyError ? error.code : String(error)]}; }
     ctx.emitResult(result as Record<string, unknown>); db.close();
+  });
+
+  dispatch.on("bank", "direct-payable-plan", (ctx) => {
+    const db = openLedgerReadOnly(companyPaths(ctx.companyRoot()).db);
+    if (inspectOpenLedger(db).status !== "current") { db.close(); ctx.fatal("bank direct-payable-plan requires a current ledger schema; run a write migration first"); }
+    const result = planDirectBankPurchasePayableCorrection(db, {
+      documentId: requiredNumberOrFatal(ctx, "--document-id"), bankTransactionId: requiredNumberOrFatal(ctx, "--bank-transaction-id"),
+      billDate: ctx.trimToNull(ctx.arg("--bill-date")) ?? "", dueDate: ctx.trimToNull(ctx.arg("--due-date")) ?? "",
+      expenseAccountNo: ctx.trimToNull(ctx.arg("--expense-account")) ?? "", vatTreatment: ctx.arg("--vat-treatment") as any,
+      vendorId: optionalNumberOrFatal(ctx, "--vendor-id"), note: ctx.trimToNull(ctx.arg("--note")) ?? undefined,
+    });
+    ctx.emitResult(result as Record<string, unknown>); db.close();
+  });
+
+  dispatch.on("bank", "direct-payable-apply", (ctx) => {
+    if (ctx.arg("--confirm") !== "yes") ctx.fatal("bank direct-payable-apply requires the exact confirmation --confirm yes");
+    const principal = correctionPrincipal(ctx); const key = ctx.trimToNull(ctx.arg("--idempotency-key"));
+    if (!principal) ctx.fatal("bank direct-payable-apply requires --principal user:<id>|service-account:<id>");
+    if (!key) ctx.fatal("bank direct-payable-apply requires --idempotency-key <key>");
+    const payload = { documentId: requiredNumberOrFatal(ctx,"--document-id"), bankTransactionId: requiredNumberOrFatal(ctx,"--bank-transaction-id"), billDate:ctx.trimToNull(ctx.arg("--bill-date"))??"", dueDate:ctx.trimToNull(ctx.arg("--due-date"))??"", expenseAccountNo:ctx.trimToNull(ctx.arg("--expense-account"))??"", vatTreatment:ctx.arg("--vat-treatment") as any, vendorId:optionalNumberOrFatal(ctx,"--vendor-id"), note:ctx.trimToNull(ctx.arg("--note"))??undefined, planHash:ctx.trimToNull(ctx.arg("--plan-hash"))??"", reason:ctx.trimToNull(ctx.arg("--reason"))??"" };
+    const db=openCommandDb(ctx); migrate(db); let result:Record<string,unknown>;
+    try { const run=executeLocalIdempotentMutation(db,{key:validateIdempotencyKey(key),operation:"direct_bank_purchase_payable_correction_apply",principal,payload,actor:{createdBy:ctx.cliActor??ctx.inferredMutationActor()??"",createdByProgram:"rentemester-cli"},execute:()=>applyDirectBankPurchasePayableCorrection(db,{...payload,actor:ctx.cliActor??ctx.inferredMutationActor()??undefined,principal,confirm:true})}); result=run.receipt?{...run.result,idempotency:run.receipt}:run.result; }
+    catch(error){result={ok:false,errors:[error instanceof IdempotencyError?error.code:String(error)]};}
+    ctx.emitResult(result); db.close();
   });
 
   dispatch.on("reconcile", "bank", (ctx) => {

@@ -69,7 +69,7 @@ describe("payables (kreditorstyring)", () => {
     const direct=postJournalEntry(db,{transactionDate:"2026-06-16",text:"legacy direct bank",documentId:ingested.documentId!,sourceBankTransactionId:bankId,lines:[{accountNo:"3000",debitAmount:344,vatCode:"DK_PURCHASE_25"},{accountNo:"3000",debitAmount:79},{accountNo:"4000",debitAmount:86},{accountNo:"2000",creditAmount:509}]});
     expect(direct.ok).toBe(true);
     const input={documentId:ingested.documentId!,bankTransactionId:bankId,billDate:"2026-06-16",dueDate:"2026-06-30",expenseAccountNo:"3000",vatTreatment:"standard" as const};
-    expect(planDirectBankPurchasePayableCorrection(db,{...input,billDate:"2026-06-17"}).errors).toContain("BILL_DATE_MUST_EQUAL_ORIGINAL_POSTING_DATE");
+    expect(planDirectBankPurchasePayableCorrection(db,{...input,billDate:"2026-06-17"}).errors).toContain("BILL_DATE_MUST_EQUAL_DOCUMENT_INVOICE_DATE");
     const plan=planDirectBankPurchasePayableCorrection(db,input); expect(plan.ok).toBe(true); if(!plan.ok) throw new Error();
     expect(applyDirectBankPurchasePayableCorrection(db,{...input,planHash:"0".repeat(64),reason:"Synthetic timing correction",actor:"agent:test",principal:{kind:"user",subjectId:"synthetic-reviewer"},confirm:true}).errors).toContain("PLAN_HASH_MISMATCH");
     db.close(); rmSync(root,{recursive:true,force:true}); rmSync(inbox,{recursive:true,force:true});
