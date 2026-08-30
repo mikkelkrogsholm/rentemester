@@ -89,6 +89,7 @@ export const MUTATING_COMMANDS = new Set([
   "bank import",
   "bank link-journal",
   "bank correction-apply",
+  "bank direct-payable-apply",
   // ===== BANK CLUSTER (#187) =====
   "bank-account add",
   "bank-account update",

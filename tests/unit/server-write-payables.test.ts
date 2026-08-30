@@ -758,7 +758,7 @@ describe("Cockpit write — payable pay", () => {
         `/api/companies/${slug}/payables/direct-bank-correction/plan`,
         base,
       );
-      expect(plan.status).toBe(400);
+      expect(plan.status).toBe(409);
 
       const noConfirm = await post(
         cfg,

@@ -27,8 +27,12 @@ describe("bank direct-payable CLI surface (#594)", () => {
         "--document-id", "1", "--bank-transaction-id", "1",
         "--bill-date", "2026-01-10", "--due-date", "2026-01-10",
         "--expense-account", "3000", "--plan-hash", "0".repeat(64),
-        "--reason", "synthetic review", "--actor", "agent:codex",
+        "--reason", "synthetic review", "--actor", "user:mikkelfreltoftkrogsholm",
       ];
+
+      const deniedActor = await run([...base.slice(0,-1), "agent:not-allowed"]);
+      expect(deniedActor.exitCode).toBe(2);
+      expect(deniedActor.stderr).toContain("actor_allowlist");
 
       const noConfirm = await run(base);
       expect(noConfirm.exitCode).toBe(2);

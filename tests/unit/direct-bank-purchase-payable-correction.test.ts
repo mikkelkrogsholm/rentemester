@@ -12,6 +12,8 @@ import { bookExpenseFromBank } from "../../src/core/expense-booking";
 import { planDirectBankPurchasePayableCorrection, applyDirectBankPurchasePayableCorrection } from "../../src/core/direct-bank-purchase-payable-correction";
 import { verifyAuditChain } from "../../src/core/ledger";
 import { computePeriodCloseReadiness } from "../../src/core/period-close-readiness";
+import { createSystemBackup } from "../../src/core/system-backups";
+import { restoreSystemBackup } from "../../src/core/system-restore";
 
 function fixture(bankDate = "2026-07-02") {
   const root = mkdtempSync(join(tmpdir(), "rentemester-direct-purchase-payable-"));
@@ -110,6 +112,18 @@ describe("direct-bank purchase payable correction temporal invariants (#594)", (
       expect(f.db.query("SELECT 1 AS present FROM sqlite_master WHERE type='trigger' AND name='bank_reconciliation_correction_events_guard_insert'").get()).toEqual({present:1});
       expect(verifyAuditChain(f.db).ok).toBe(true);
       expect(f.db.query("PRAGMA integrity_check").get()).toEqual({integrity_check:"ok"});
+      const restoredRoot=mkdtempSync(join(tmpdir(),"rentemester-direct-payable-restored-"));
+      try {
+        const backup=createSystemBackup(f.db,f.root,{createdAt:"2026-07-03T02:00:00.000Z"});
+        expect(backup.ok).toBe(true);
+        const restored=restoreSystemBackup({backupDir:backup.backupDir!,targetCompanyRoot:restoredRoot});
+        expect(restored.ok,restored.errors.join("; ")).toBe(true);
+        const restoredDb=openDb(restored.restoredDbPath!);
+        try {
+          expect(restoredDb.query("SELECT document_id,bank_transaction_id,plan_hash FROM direct_bank_purchase_payable_corrections WHERE id=?").get(applied.id)).toMatchObject({document_id:f.documentId,bank_transaction_id:f.bankId,plan_hash:reviewed.plan.planHash});
+          expect(verifyAuditChain(restoredDb,{companyRoot:restoredRoot}).ok).toBe(true);
+        } finally { restoredDb.close(); }
+      } finally { rmSync(restoredRoot,{recursive:true,force:true}); }
     } finally { f.db.close(); rmSync(f.root,{recursive:true,force:true}); rmSync(f.inbox,{recursive:true,force:true}); }
   });
 });

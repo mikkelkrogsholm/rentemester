@@ -18,6 +18,10 @@ import { planDirectBankPurchasePayableCorrection, applyDirectBankPurchasePayable
 import { ApiError } from "../errors";
 import { withCockpitActor } from "../actor";
 import { withCompanyMutation } from "../mutations";
+import { openLedgerReadOnly } from "../../core/ledger-inspection";
+import { companyPaths } from "../../core/paths";
+import { companyRootForSlug } from "../../core/workspace";
+import { readJsonBody } from "../router/_shared";
 import {
   okResponse,
   optionalBodyNumber,
@@ -196,7 +200,11 @@ export async function handlePayablePay(
 }
 
 function correctionInput(body: Record<string, unknown>) {
-  const vatTreatment = optionalBodyString(body, "vatTreatment") as "standard" | "exempt" | "non_deductible" | undefined;
+  const vatTreatmentRaw = optionalBodyString(body, "vatTreatment");
+  if (vatTreatmentRaw !== undefined && !["standard", "exempt", "non_deductible"].includes(vatTreatmentRaw)) {
+    throw ApiError.badRequest("'vatTreatment' must be one of: standard, exempt, non_deductible");
+  }
+  const vatTreatment = vatTreatmentRaw as "standard" | "exempt" | "non_deductible" | undefined;
   return {
     documentId: requireBodyPositiveInt(body, "documentId"),
     bankTransactionId: requireBodyPositiveInt(body, "bankTransactionId"),
@@ -207,8 +215,15 @@ function correctionInput(body: Record<string, unknown>) {
 }
 
 export async function handleDirectBankPurchasePayablePlan(config: ServerConfig, request: Request, slug: string): Promise<Response> {
-  const result = await withCompanyMutation(request, config, slug, (ctx, body) => planDirectBankPurchasePayableCorrection(ctx.db, correctionInput(body)));
-  return okResponse({ plan: result.plan });
+  const body = await readJsonBody(request);
+  const db = openLedgerReadOnly(companyPaths(companyRootForSlug(config.workspaceRoot, slug)).db);
+  try {
+    const result = planDirectBankPurchasePayableCorrection(db, correctionInput(body));
+    if (!result.ok) throw ApiError.conflict(result.errors.join("; "));
+    return okResponse({ plan: result.plan });
+  } finally {
+    db.close();
+  }
 }
 
 export async function handleDirectBankPurchasePayableApply(config: ServerConfig, request: Request, slug: string): Promise<Response> {
