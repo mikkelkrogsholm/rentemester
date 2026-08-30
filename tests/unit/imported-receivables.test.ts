@@ -9,15 +9,15 @@ function db() { const value = new Database(":memory:"); value.exec("PRAGMA forei
 const schedule = { contract:"rentemester-imported-receivables-v1" as const, sourceDocumentHash:hash("d"), invoices:[
   { id:"INV-partial",customerId:"customer-1",customerName:"Synthetic customer",invoiceDate:"2025-01-01",dueDate:"2025-01-15",grossAmount:100,controlAccountNo:"1200",recognitionRef:"opening",documentHash:hash("e"),payments:[{id:"PAY-1",paymentDate:"2025-01-10",amount:25,paymentRef:"voucher-1",documentHash:hash("f")}] },
   { id:"INV-paid",invoiceDate:"2025-01-02",grossAmount:20,controlAccountNo:"1200",recognitionRef:"opening",documentHash:hash("1"),payments:[{id:"PAY-2",paymentDate:"2025-01-03",amount:20,paymentRef:"voucher-2",documentHash:hash("2")}] },
-  { id:"INV-credit",invoiceDate:"2025-01-04",grossAmount:40,controlAccountNo:"1200",recognitionRef:"opening",documentHash:hash("3"),payments:[] },
+  { id:"INV-credit",invoiceDate:"2025-01-04",grossAmount:40,controlAccountNo:"1200",recognitionRef:"opening",documentHash:hash("3"),payments:[{id:"CN-1",eventKind:"credit_note" as const,paymentDate:"2025-01-05",amount:10,paymentRef:"credit-note-1",documentHash:hash("4")}] },
 ] };
 
 describe("imported receivables v36", () => {
   test("keeps source-evidenced imported invoices and payments exact at arbitrary cutoffs", () => {
     const value=db(); expect(recordImportedReceivableSchedule(value,1,schedule)).toMatchObject({ok:true});
     expect(importedReceivableBalanceOre(value,"2025-01-02","1200").total).toBe(12000n);
-    expect(importedReceivableBalanceOre(value,"2025-01-10","1200").total).toBe(11500n);
-    expect(importedReceivableBalanceOre(value,"2025-01-31","1200").total).toBe(11500n);
+    expect(importedReceivableBalanceOre(value,"2025-01-10","1200").total).toBe(10500n);
+    expect(importedReceivableBalanceOre(value,"2025-01-31","1200").total).toBe(10500n);
     const evidence=importedReceivableBalanceOre(value,"2025-01-31","1200").evidence; expect(evidence).toHaveLength(3); expect(evidence[0]).toMatchObject({externalInvoiceId:"INV-partial",customerExternalId:"customer-1",sourceDocumentHash:hash("e")});
     value.close();
   });

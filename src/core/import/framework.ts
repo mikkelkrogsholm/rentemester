@@ -38,7 +38,7 @@ import {
 import { ingestDineroBilag, planDineroBilag } from "./dinero-bilag";
 import { insertAuditLog } from "../actor";
 import { recordMigrationOpenItemBatch } from "../migration-open-items";
-import { recordImportedReceivableSchedule, validateImportedReceivableSchedule } from "../imported-receivables";
+import { importedScheduleBalanceOre, recordImportedReceivableSchedule, validateImportedReceivableSchedule } from "../imported-receivables";
 import type {
   ImportOptions,
   ImportResult,
@@ -505,6 +505,13 @@ function runDineroV4(db: Database, resolved: MultiArtifactSource, source: Import
       if (source.importedReceivableSchedule) {
         const schedule = validateImportedReceivableSchedule(source.importedReceivableSchedule);
         if (!schedule.ok) throw new Error(schedule.errors.join("; "));
+        const receivableControls=openItems.balances.filter(balance=>balance.kind==="receivable");
+        const controlDate=(source.historicalEntries??[]).reduce((latest,entry)=>entry.transactionDate>latest?entry.transactionDate:latest,source.cutOverDate);
+        for (const balance of receivableControls) {
+          if (importedScheduleBalanceOre(schedule.schedule,controlDate,balance.accountNo)!==toOre(balance.amount)) throw new Error(`imported receivable schedule does not reconcile exactly to control ${balance.accountNo} at ${controlDate}`);
+        }
+        const scheduledControls=new Set(schedule.schedule.invoices.map(invoice=>invoice.controlAccountNo));
+        for (const accountNo of scheduledControls) if (!receivableControls.some(balance=>balance.accountNo===accountNo)) throw new Error(`imported receivable schedule control ${accountNo} has no authoritative receivable control balance`);
       }
       if (openItems.balances.length > 0) {
         landed.migrationOpenItems = {

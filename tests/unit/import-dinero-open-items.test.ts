@@ -9,6 +9,7 @@ import { resolveSource } from "../../src/core/import/source";
 import { dineroParser } from "../../src/core/import/dinero";
 import { runImportFromSource } from "../../src/core/import/framework";
 import { getMigrationOpenItems } from "../../src/core/migration-open-items";
+import { importedReceivableBalanceOre } from "../../src/core/imported-receivables";
 
 const FIXTURE = join(import.meta.dir, "../../examples/import-dinero");
 
@@ -31,6 +32,21 @@ function company() {
 }
 
 describe("Dinero aggregate open-item controls", () => {
+  test("lands the explicit invoice/payment/credit-note companion schedule and reconciles it to SaldoBalance", () => {
+    const sourceRoot=exportWithReceivable(); const c=company();
+    try {
+      const h=(letter:string)=>letter.repeat(64);
+      writeFileSync(join(sourceRoot,"Rentemester-modtagerposter-v1.json"),JSON.stringify({contract:"rentemester-imported-receivables-v1",sourceDocumentHash:h("a"),invoices:[
+        {id:"INV-opening",customerId:"C-1",invoiceDate:"2024-12-20",grossAmount:30000,controlAccountNo:"5520",recognitionRef:"opening-debtors",documentHash:h("b"),payments:[{id:"PAY-1",eventKind:"payment",paymentDate:"2025-03-05",amount:30000,paymentRef:"dinero-payment-1",documentHash:h("c")}]},
+        {id:"INV-current",customerId:"C-2",invoiceDate:"2025-03-20",grossAmount:25000,controlAccountNo:"5520",recognitionRef:"dinero-invoice-2",documentHash:h("d"),payments:[{id:"CN-1",eventKind:"credit_note",paymentDate:"2025-03-21",amount:500,paymentRef:"dinero-credit-1",documentHash:h("e")}]}]}));
+      const landed=runImportFromSource(c.db,dineroParser,sourceRoot,{createdBy:"agent:test",companyRoot:c.root});
+      expect(landed.ok,landed.errors.join("; ")).toBe(true);
+      expect(importedReceivableBalanceOre(c.db,"2025-03-31","5520").total).toBe(2_450_000n);
+      expect(c.db.query("SELECT event_kind,amount FROM imported_receivable_events ORDER BY id").all()).toEqual([{event_kind:"payment",amount:30000},{event_kind:"credit_note",amount:500}]);
+      expect(verifyAuditChain(c.db).ok).toBe(true);
+    } finally { c.db.close(); rmSync(c.root,{recursive:true,force:true}); rmSync(sourceRoot,{recursive:true,force:true}); }
+  });
+
   test("parses the latest-year SaldoBalance without claiming item-level evidence", () => {
     const sourceRoot = exportWithReceivable();
     try {

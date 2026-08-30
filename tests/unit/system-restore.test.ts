@@ -83,6 +83,8 @@ import {
   DIRECT_BANK_PURCHASE_PAYABLE_CORRECTIONS_MIGRATION_NAME,
   BANK_RECONCILIATION_ACCOUNT_ROLE_FALLBACK_MIGRATION_CHECKSUM,
   BANK_RECONCILIATION_ACCOUNT_ROLE_FALLBACK_MIGRATION_NAME,
+  IMPORTED_RECEIVABLES_MIGRATION_CHECKSUM,
+  IMPORTED_RECEIVABLES_MIGRATION_NAME,
   CURRENT_SCHEMA_VERSION,
   readSchemaMigrations,
 } from "../../src/core/schema-version";
@@ -258,6 +260,7 @@ describe("system restore", () => {
       expect.objectContaining({ id: 33, name: BANK_RECONCILIATION_CORRECTIONS_MIGRATION_NAME, checksum: BANK_RECONCILIATION_CORRECTIONS_MIGRATION_CHECKSUM, applied_by_version: expect.any(String) }),
       expect.objectContaining({ id: 34, name: DIRECT_BANK_PURCHASE_PAYABLE_CORRECTIONS_MIGRATION_NAME, checksum: DIRECT_BANK_PURCHASE_PAYABLE_CORRECTIONS_MIGRATION_CHECKSUM, applied_by_version: expect.any(String) }),
       expect.objectContaining({ id: 35, name: BANK_RECONCILIATION_ACCOUNT_ROLE_FALLBACK_MIGRATION_NAME, checksum: BANK_RECONCILIATION_ACCOUNT_ROLE_FALLBACK_MIGRATION_CHECKSUM, applied_by_version: expect.any(String) }),
+      expect.objectContaining({ id: 36, name: IMPORTED_RECEIVABLES_MIGRATION_NAME, checksum: IMPORTED_RECEIVABLES_MIGRATION_CHECKSUM, applied_by_version: expect.any(String) }),
     ]);
     expect(manifest.provenance).toEqual(expect.objectContaining({
       product: expect.objectContaining({ version: expect.any(String) }),
