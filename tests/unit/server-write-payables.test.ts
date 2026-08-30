@@ -738,4 +738,45 @@ describe("Cockpit write — payable pay", () => {
       withLedger(ws, slug, (db) => expect((db.query("SELECT COUNT(*) AS n FROM payables").get() as { n: number }).n).toBe(1));
     } finally { rmSync(ws, { recursive: true, force: true }); rmSync(inbox, { recursive: true, force: true }); }
   });
+
+  test("#594 correction routes expose a read-only plan and keep apply behind confirm and idempotency gates", async () => {
+    const { root: ws, slug } = makeWorkspace("direct-payable-correction-http");
+    try {
+      const cfg = config({ workspaceRoot: ws });
+      const base = {
+        documentId: 1,
+        bankTransactionId: 1,
+        billDate: "2026-01-10",
+        dueDate: "2026-01-10",
+        expenseAccountNo: "3000",
+      };
+
+      // Planning deliberately has no confirm/idempotency transport gate. The
+      // core still rejects a missing synthetic target rather than mutating.
+      const plan = await post(
+        cfg,
+        `/api/companies/${slug}/payables/direct-bank-correction/plan`,
+        base,
+      );
+      expect(plan.status).toBe(400);
+
+      const noConfirm = await post(
+        cfg,
+        `/api/companies/${slug}/payables/direct-bank-correction/apply`,
+        { ...base, planHash: "0".repeat(64), reason: "synthetic review" },
+      );
+      expect(noConfirm.status).toBe(400);
+      expect(noConfirm.body.ok).toBe(false);
+
+      const noKey = await post(
+        cfg,
+        `/api/companies/${slug}/payables/direct-bank-correction/apply`,
+        { ...base, planHash: "0".repeat(64), reason: "synthetic review", confirm: true },
+      );
+      expect(noKey.status).toBe(409);
+      expect(noKey.body.ok).toBe(false);
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
 });
