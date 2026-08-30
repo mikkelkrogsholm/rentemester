@@ -7,6 +7,7 @@ import { buildTrialBalance } from "./financial-statements";
 import { buildVatReport } from "./vat";
 import { resolveAccountRole } from "./account-roles";
 import { fromOre, toOre } from "./money";
+import { importedReceivableBalanceOre } from "./imported-receivables";
 
 export type CloseControlStatus = "passed" | "warning" | "blocked" | "unavailable";
 export type CloseReadinessItem = { code: string; status: CloseControlStatus; waivable: boolean; count: number; amount: number; evidence: readonly Record<string, unknown>[]; sourceHash: string };
@@ -119,10 +120,11 @@ function dkkControlAccounts(db: Database, cutoff: string): CloseReadinessItem {
       AND UPPER(p.currency)='DKK'
     GROUP BY p.id,p.journal_entry_id,p.gross_amount ORDER BY p.id`, cutoff, cutoff, cutoff);
   const receivableOre = receivableRows.reduce((sum,row)=>sum + toOre(Number(row.booked_gross_dkk)) - toOre(Number(row.paid_amount)),0n);
+  const importedReceivables = importedReceivableBalanceOre(db, cutoff, debtors.accountNo);
   const payableOpenOre = payableRows.reduce((sum,row)=>sum + toOre(Number(row.gross_amount)) - toOre(Number(row.paid_amount)),0n);
   const sources: DkkControlSource[] = [
     { role:"bank", accountNo:bank.accountNo, ledgerOre:ledger.get("bank")!, sourceOre:bankOre, evidence:bankSource.ok ? bankSource.evidence : [{role:"bank",sourceCount:0,statementBalanceDkk:0}] },
-    { role:"debtors", accountNo:debtors.accountNo, ledgerOre:ledger.get("debtors")!, sourceOre:receivableOre, evidence:receivableRows.map(row=>({role:"debtors",documentId:row.document_id,journalEntryId:row.journal_entry_id,grossDkk:row.booked_gross_dkk,paidDkk:row.paid_amount})) },
+    { role:"debtors", accountNo:debtors.accountNo, ledgerOre:ledger.get("debtors")!, sourceOre:receivableOre + importedReceivables.total, evidence:[...receivableRows.map(row=>({role:"debtors",source:"native",documentId:row.document_id,journalEntryId:row.journal_entry_id,grossDkk:row.booked_gross_dkk,paidDkk:row.paid_amount})), ...importedReceivables.evidence.map(row=>({role:"debtors",...row}))] },
     { role:"creditors", accountNo:creditors.accountNo, ledgerOre:ledger.get("creditors")!, sourceOre:-payableOpenOre, evidence:payableRows.map(row=>({role:"creditors",payableId:row.payable_id,journalEntryId:row.journal_entry_id,grossDkk:row.gross_amount,paidDkk:row.paid_amount})) },
   ];
   const evidence = sources.map(source => ({ role:source.role, accountNo:source.accountNo, ledgerBalanceDkk:fromOre(source.ledgerOre), sourceBalanceDkk:fromOre(source.sourceOre), differenceDkk:fromOre(source.ledgerOre-source.sourceOre), sourceCount:source.evidence.length, sourceIds:source.evidence }));

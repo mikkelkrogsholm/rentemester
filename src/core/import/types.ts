@@ -136,6 +136,8 @@ export type ImportSource = {
   historicalEntries?: ImportHistoricalEntry[];
   /** Aggregate open-item controls when the source has no item-level schedule. */
   openItemControlBalances?: ImportOpenItemControlBalance[];
+  /** Explicit, versioned item-level receivable schedule. Never inferred from postings. */
+  importedReceivableSchedule?: import("../imported-receivables").ImportedReceivableSchedule;
   /** Optional company master data (name, CVR, ...) from the export. */
   companyMasterData?: ImportCompanyMasterData;
   /**

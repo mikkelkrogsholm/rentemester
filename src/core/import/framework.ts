@@ -38,6 +38,7 @@ import {
 import { ingestDineroBilag, planDineroBilag } from "./dinero-bilag";
 import { insertAuditLog } from "../actor";
 import { recordMigrationOpenItemBatch } from "../migration-open-items";
+import { recordImportedReceivableSchedule, validateImportedReceivableSchedule } from "../imported-receivables";
 import type {
   ImportOptions,
   ImportResult,
@@ -501,6 +502,10 @@ function runDineroV4(db: Database, resolved: MultiArtifactSource, source: Import
       if (!landed.ok) throw new ImportRollback(landed);
       const openItems = planMigrationOpenItemControls(db, source);
       if (openItems.errors.length > 0) throw new Error(openItems.errors.join("; "));
+      if (source.importedReceivableSchedule) {
+        const schedule = validateImportedReceivableSchedule(source.importedReceivableSchedule);
+        if (!schedule.ok) throw new Error(schedule.errors.join("; "));
+      }
       if (openItems.balances.length > 0) {
         landed.migrationOpenItems = {
           batchCount: openItems.balances.length,
@@ -527,6 +532,11 @@ function runDineroV4(db: Database, resolved: MultiArtifactSource, source: Import
         landed.bilag = { linkedCount: bilag.linked.length, unmatchedCount: bilag.unmatched.length, duplicateCount: bilag.duplicates.length, unbookedCount: bilag.unbooked.length };
       }
       const provenance = persistDineroEvidence(db, resolved, source, options, "accepted", landed);
+      if (source.importedReceivableSchedule) {
+        const recordedSchedule = recordImportedReceivableSchedule(db, provenance.attemptId, source.importedReceivableSchedule);
+        if (!recordedSchedule.ok) throw new Error(recordedSchedule.errors.join("; "));
+        landed.auditTrail.push(`Recorded immutable imported receivable schedule ${recordedSchedule.scheduleHash}`);
+      }
       for (const balance of openItems.balances) {
         const recorded = recordMigrationOpenItemBatch(db, {
           dineroImportAttemptId: provenance.attemptId,

@@ -27,6 +27,7 @@
 import { requireFile } from "./source";
 import { isValidIsoDate } from "../dates";
 import { parseDineroPostings } from "./dinero-postings";
+import { validateImportedReceivableSchedule, type ImportedReceivableSchedule } from "../imported-receivables";
 import type {
   ImportAccount,
   ImportAccountType,
@@ -46,6 +47,8 @@ const SYSTEM = "dinero";
 const LABEL = "Dinero (data export — chart of accounts, master data & opening balance)";
 
 const FIRMAOPLYSNINGER = "Firmaoplysninger.csv";
+/** Optional companion export authored by the versioned Rentemester adapter. */
+const RECEIVABLE_SCHEDULE = "Rentemester-modtagerposter-v1.json";
 
 // The Dinero marker for an opening-balance row: voucher number 0, voucher text
 // `Primobeholdning`. Such rows carry the fiscal year's opening balance.
@@ -499,6 +502,16 @@ function parseDineroSource(input: MultiArtifactSource): ParseResult {
       }))
     : [];
 
+  let importedReceivableSchedule: ImportedReceivableSchedule | undefined;
+  const scheduleFile = input.files[RECEIVABLE_SCHEDULE];
+  if (scheduleFile) {
+    try {
+      const checked = validateImportedReceivableSchedule(JSON.parse(scheduleFile.text));
+      if (!checked.ok) errors.push(...checked.errors.map(error => `${RECEIVABLE_SCHEDULE}: ${error}`));
+      else importedReceivableSchedule = checked.schedule;
+    } catch { errors.push(`${RECEIVABLE_SCHEDULE}: invalid JSON`); }
+  }
+
   if (errors.length > 0) {
     return { ok: false, errors };
   }
@@ -517,6 +530,7 @@ function parseDineroSource(input: MultiArtifactSource): ParseResult {
       openingBalances,
       ...(historicalEntries.length > 0 ? { historicalEntries } : {}),
       ...(openItemControlBalances.length > 0 ? { openItemControlBalances } : {}),
+      ...(importedReceivableSchedule ? { importedReceivableSchedule } : {}),
       ...(companyMasterData ? { companyMasterData } : {}),
       ...(unmappedVatCodes.length > 0 ? { unmappedVatCodes } : {}),
     },
