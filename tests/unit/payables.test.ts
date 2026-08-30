@@ -34,12 +34,13 @@ function ingestPurchase(
   invoiceNo: string,
   amountIncVat: number,
   vatAmount: number,
+  issueDate = "2026-01-10",
 ) {
   const sourceFile = join(inbox, `${invoiceNo}.txt`);
   writeFileSync(sourceFile, `Invoice ${invoiceNo}\n${amountIncVat} DKK\n`);
   const doc = ingestDocument(db, root, sourceFile, {
     source: "email",
-    issueDate: "2026-01-10",
+    issueDate,
     invoiceNo,
     deliveryDescription: "Leverandørydelse",
     amountIncVat,
@@ -215,7 +216,7 @@ describe("payables (kreditorstyring)", () => {
     registerPayable(db, { documentId: overdueDoc, billDate: "2026-01-10", dueDate: "2026-02-09", expenseAccountNo: "3000" });
 
     // Not-yet-due bill: due 2026-04-01, as-of 2026-03-15 => not overdue.
-    const futureDoc = ingestPurchase(db, root, inbox, "Hosting ApS", "V-1002", 500, 100);
+    const futureDoc = ingestPurchase(db, root, inbox, "Hosting ApS", "V-1002", 500, 100, "2026-03-02");
     registerPayable(db, { documentId: futureDoc, billDate: "2026-03-02", dueDate: "2026-04-01", expenseAccountNo: "3000" });
 
     const list = buildPayablesList(db, { asOfDate: "2026-03-15" });
@@ -250,7 +251,7 @@ describe("payables (kreditorstyring)", () => {
     const inbox = mkdtempSync(join(tmpdir(), "rentemester-payables-default-asof-inbox-"));
 
     // Bill due far in the past — should be overdue against today's date.
-    const overdueDoc = ingestPurchase(db, root, inbox, "Software ApS", "V-2001", 1250, 250);
+    const overdueDoc = ingestPurchase(db, root, inbox, "Software ApS", "V-2001", 1250, 250, "2024-01-10");
     registerPayable(db, { documentId: overdueDoc, billDate: "2024-01-10", dueDate: "2024-02-09", expenseAccountNo: "3000" });
 
     // Must match how buildPayablesList computes its default — todayIsoDate()

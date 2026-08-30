@@ -242,13 +242,14 @@ export function registerPayable(db: Database, input: RegisterPayableInput, inCur
   if (!account.active) return { ok: false, appliedRules: [RULE_ID], errors: [`account ${expenseAccountNo} is inactive`] };
 
   const document = db.query(
-    `SELECT id, document_type, invoice_no, amount_inc_vat, vat_amount, currency, sender_name, payload_json,
+    `SELECT id, document_type, invoice_no, invoice_date, amount_inc_vat, vat_amount, currency, sender_name, payload_json,
             sender_vat_cvr, recipient_vat_cvr, supplier_country_code, supplier_identifier_kind, supplier_identity_status
      FROM documents WHERE id = ?`,
   ).get(input.documentId) as {
     id: number;
     document_type: string;
     invoice_no: string | null;
+    invoice_date: string | null;
     amount_inc_vat: number | null;
     vat_amount: number | null;
     currency: string;
@@ -261,6 +262,15 @@ export function registerPayable(db: Database, input: RegisterPayableInput, inCur
     supplier_identity_status: string | null;
   } | null;
   if (!document) return { ok: false, appliedRules: [RULE_ID], errors: [`document ${input.documentId} does not exist`] };
+  // The evidence-bearing document date is the accounting and VAT date. A
+  // caller may repeat it for an explicit review, but may never move a bill to
+  // another period by supplying a different date.
+  if (!document.invoice_date || !looksLikeIsoDate(document.invoice_date)) {
+    return { ok: false, appliedRules: [RULE_ID], errors: [`document ${input.documentId} has no valid immutable invoice_date`] };
+  }
+  if (input.billDate !== document.invoice_date) {
+    return { ok: false, appliedRules: [RULE_ID], errors: [`billDate ${input.billDate} must match document invoice_date ${document.invoice_date}`] };
+  }
   if (document.document_type !== "purchase_sale" && document.document_type !== "cash_register_receipt") {
     return { ok: false, appliedRules: [RULE_ID], errors: [`document ${input.documentId} is not a purchase document`] };
   }
@@ -452,10 +462,10 @@ export function registerPayableInCurrentTransaction(db: Database, input: Registe
 }
 
 /** Open balance (gross minus applied payments) for a single payable. */
-function openBalanceOf(db: Database, payable: PayableRow): number {
+function openBalanceOf(db: Database, payable: PayableRow, asOfDate?: string): number {
   const payments = db.query(
-    `SELECT amount FROM payable_payments WHERE payable_id = ?`,
-  ).all(payable.id) as Array<{ amount: number }>;
+    `SELECT amount FROM payable_payments WHERE payable_id = ?${asOfDate ? " AND payment_date <= ?" : ""}`,
+  ).all(...(asOfDate ? [payable.id, asOfDate] : [payable.id])) as Array<{ amount: number }>;
   const paid = sumDkk(payments.map((p) => Number(p.amount)));
   return subtractDkk(roundDkk(Number(payable.gross_amount)), paid);
 }
@@ -466,11 +476,15 @@ export function getPayableStatus(db: Database, payableId: number, asOfDate?: str
   }
   const payable = getPayableRow(db, payableId);
   if (!payable) return { ok: false, errors: [`payable ${payableId} does not exist`] };
+  if (asOfDate !== undefined && !looksLikeIsoDate(asOfDate)) return { ok: false, errors: ["asOfDate must be YYYY-MM-DD when present"] };
+  if (asOfDate !== undefined && payable.bill_date > asOfDate) {
+    return { ok: false, errors: [`payable ${payableId} is not effective as of ${asOfDate}`] };
+  }
 
   const payments = db.query(
     `SELECT id, payment_date, amount, bank_transaction_id, journal_entry_id, note
-     FROM payable_payments WHERE payable_id = ? ORDER BY id ASC`,
-  ).all(payableId) as Array<{ id: number; payment_date: string; amount: number; bank_transaction_id: number | null; journal_entry_id: number; note: string | null }>;
+     FROM payable_payments WHERE payable_id = ?${asOfDate ? " AND payment_date <= ?" : ""} ORDER BY id ASC`,
+  ).all(...(asOfDate ? [payableId, asOfDate] : [payableId])) as Array<{ id: number; payment_date: string; amount: number; bank_transaction_id: number | null; journal_entry_id: number; note: string | null }>;
 
   const grossAmount = roundDkk(Number(payable.gross_amount));
   const paidAmount = sumDkk(payments.map((p) => Number(p.amount)));
@@ -554,6 +568,9 @@ export function payPayableFromBank(db: Database, input: PayPayableInput, inCurre
   }
 
   const paymentDate = input.paymentDate ?? bank.transaction_date;
+  if (paymentDate !== bank.transaction_date) {
+    return { ok: false, appliedRules: [PAYMENT_RULE_ID], errors: [`paymentDate ${paymentDate} must match bank transaction date ${bank.transaction_date}`] };
+  }
   const payment = input.paymentAccountNo?.trim() ? { ok: true as const, accountNo: input.paymentAccountNo.trim() } : resolveAccountRole(db, "bank");
   const creditor = resolveAccountRole(db, "creditors");
   if (!payment.ok) return { ok: false, appliedRules: [PAYMENT_RULE_ID], errors: [payment.error] };
@@ -660,13 +677,14 @@ export function buildPayablesList(db: Database, filters: PayablesListFilters = {
 
   const rows: PayablesListRow[] = [];
   for (const payable of payables) {
+    if (payable.bill_date > asOfDate) continue;
     if (filters.from && payable.bill_date < filters.from) continue;
     if (filters.to && payable.bill_date > filters.to) continue;
     if (filters.vendorId !== undefined && payable.vendor_id !== filters.vendorId) continue;
     if (supplierNeedle && !(payable.supplier_name ?? "").toLocaleLowerCase().includes(supplierNeedle)) continue;
 
     const grossAmount = roundDkk(Number(payable.gross_amount));
-    const openBalance = openBalanceOf(db, payable);
+    const openBalance = openBalanceOf(db, payable, asOfDate);
     const itemStatus: PayableStatus = openBalance > 0 ? "open" : "paid";
     const overdueDays = openBalance > 0 ? Math.max(0, diffDays(payable.due_date, asOfDate)) : 0;
     const isOverdue = overdueDays > 0;
