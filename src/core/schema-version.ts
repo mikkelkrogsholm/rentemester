@@ -101,6 +101,8 @@ export const LEGACY_BANK_PAYABLE_BACKFILLS_MIGRATION_CHECKSUM = migration(42).ch
 export const LEGACY_BANK_PAYABLE_BACKFILLS_MIGRATION_NAME = migration(42).name;
 export const VAT_FILING_EVIDENCE_MIGRATION_CHECKSUM = migration(43).checksum;
 export const VAT_FILING_EVIDENCE_MIGRATION_NAME = migration(43).name;
+export const IMPORTED_RECEIVABLE_BANK_SETTLEMENTS_MIGRATION_CHECKSUM = migration(44).checksum;
+export const IMPORTED_RECEIVABLE_BANK_SETTLEMENTS_MIGRATION_NAME = migration(44).name;
 
 export type SupportedSchemaMigration = {
   id: number;

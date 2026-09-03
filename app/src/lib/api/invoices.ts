@@ -21,6 +21,18 @@ export const invoicesApi = {
       `/api/companies/${encodeURIComponent(slug)}/imported-receivables?asOf=${encodeURIComponent(asOf)}`,
     ).then((r) => r.importedReceivables),
 
+  planImportedReceivableSettlement: (slug: string, input: { scheduleHash: string; externalInvoiceId: string; bankTransactionId: number }) =>
+    request<{ ok: true; settlement: { ok: boolean; plan?: { planHash: string } } }>(
+      `/api/companies/${encodeURIComponent(slug)}/imported-receivables/settlement/plan`,
+      { method: "POST", body: JSON.stringify(input) },
+    ).then((r) => r.settlement),
+
+  applyImportedReceivableSettlement: (slug: string, input: { scheduleHash: string; externalInvoiceId: string; bankTransactionId: number; planHash: string; idempotencyKey: string }) =>
+    request<{ ok: true; settlement: { ok: boolean; errors?: string[] } }>(
+      `/api/companies/${encodeURIComponent(slug)}/imported-receivables/settlement/apply`,
+      { method: "POST", body: JSON.stringify({ ...input, confirm: true }) },
+    ).then((r) => r.settlement),
+
   /**
    * URL of an issued invoice's PDF — opened directly in a new browser tab so
    * the owner can download or forward it. URL builder rather than a fetch:

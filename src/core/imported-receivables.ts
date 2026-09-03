@@ -5,6 +5,8 @@ import { isValidIsoDate } from "./dates";
 import { toOre } from "./money";
 import { insertAuditLog } from "./actor";
 import type { StablePrincipal } from "./idempotency";
+import { postJournalEntryInCurrentTransaction } from "./ledger";
+import { resolveSettlementBankAccount } from "./invoice-fx-receivable";
 
 export type ImportedReceivableSchedule = {
   contract: "rentemester-imported-receivables-v1";
@@ -33,6 +35,21 @@ export type LegacyImportedReceivableBackfillInput = {
 };
 
 export type ApplyLegacyImportedReceivableBackfillInput = LegacyImportedReceivableBackfillInput & {
+  planHash: string;
+  idempotencyKey: string;
+  actor?: string;
+  principal?: StablePrincipal;
+  confirm: boolean;
+};
+
+export type ImportedReceivableBankSettlementInput = {
+  scheduleHash: string;
+  externalInvoiceId: string;
+  bankTransactionId: number;
+  bankAccountNo?: string;
+};
+
+export type ApplyImportedReceivableBankSettlementInput = ImportedReceivableBankSettlementInput & {
   planHash: string;
   idempotencyKey: string;
   actor?: string;
@@ -167,6 +184,131 @@ export function applyLegacyImportedReceivableBackfill(db:Database,input:ApplyLeg
     insertAuditLog(db,{eventType:"legacy_imported_receivables_backfilled",entityType:"dinero_import_attempt",entityId:input.dineroImportAttemptId,message:`Appended verified receivable schedule ${recorded.scheduleHash} at ${input.controlDate} without replaying the import`,createdBy:actor,createdByProgram:"legacy-imported-receivables-backfill"});
     return {ok:true as const,id:inserted.id,idempotent:false,planHash:input.planHash,scheduleHash:recorded.scheduleHash,errors:[] as string[]};
   }).immediate();}catch(error){return {ok:false as const,errors:[error instanceof Error?error.message:String(error)]};}
+}
+
+type ImportedReceivableSettlementContext = {
+  errors: string[];
+  state: Record<string, unknown>;
+  header?: { id: number; control_account_no: string; schedule_hash: string; invoice_date: string; gross_amount: number };
+  bank?: { id: number; transaction_date: string; amount: number; currency: string | null; transaction_hash: string };
+  openAmount?: number;
+};
+
+function importedReceivableSettlementContext(
+  db: Database,
+  input: ImportedReceivableBankSettlementInput,
+): ImportedReceivableSettlementContext {
+  const errors: string[] = [];
+  const scheduleHash = text(input.scheduleHash).toLowerCase();
+  const externalInvoiceId = text(input.externalInvoiceId);
+  if (!hash(scheduleHash) || !externalInvoiceId) errors.push("RECEIVABLE_IDENTITY_REQUIRED");
+  if (!Number.isInteger(input.bankTransactionId) || input.bankTransactionId <= 0) errors.push("BANK_TRANSACTION_REQUIRED");
+
+  const header = db.query(`SELECT id, control_account_no, schedule_hash, invoice_date, gross_amount
+      FROM imported_receivable_headers WHERE schedule_hash=? AND external_invoice_id=? LIMIT 2`)
+    .all(scheduleHash, externalInvoiceId) as Array<{ id: number; control_account_no: string; schedule_hash: string; invoice_date: string; gross_amount: number }>;
+  if (header.length !== 1) errors.push("IMPORTED_RECEIVABLE_NOT_UNAMBIGUOUS");
+  const receivable = header[0];
+  const bank = db.query(`SELECT id, transaction_date, amount, currency, transaction_hash
+      FROM bank_transactions WHERE id=?`).get(input.bankTransactionId) as { id: number; transaction_date: string; amount: number; currency: string | null; transaction_hash: string } | null;
+  if (!bank) errors.push("BANK_TRANSACTION_NOT_FOUND");
+  if (bank && ((bank.currency ?? "DKK").trim().toUpperCase() !== "DKK")) errors.push("IMPORTED_RECEIVABLE_CURRENCY_MISMATCH");
+  if (bank && (!(Number(bank.amount) > 0) || !hash(bank.transaction_hash))) errors.push("BANK_TRANSACTION_NOT_SETTLEABLE");
+  if (bank && db.query("SELECT 1 FROM bank_journal_reconciliations WHERE bank_transaction_id=? LIMIT 1").get(bank.id)) errors.push("BANK_TRANSACTION_ALREADY_RECONCILED");
+
+  let openAmount = 0;
+  if (receivable && bank) {
+    const paid = db.query("SELECT COALESCE(SUM(amount),0) AS amount FROM imported_receivable_events WHERE receivable_id=?").get(receivable.id) as { amount: number };
+    openAmount = Number(receivable.gross_amount) - Number(paid.amount);
+    if (bank.transaction_date < receivable.invoice_date) errors.push("SETTLEMENT_BEFORE_RECEIVABLE");
+    if (!(openAmount > 0)) errors.push("IMPORTED_RECEIVABLE_ALREADY_SETTLED");
+    if (Number(bank.amount) > openAmount) errors.push("IMPORTED_RECEIVABLE_OVERPAYMENT");
+    const account = resolveSettlementBankAccount(db, { bankTransactionId: bank.id, requestedAccountNo: input.bankAccountNo });
+    if (!account.ok) errors.push(`BANK_ACCOUNT_INVALID:${account.error}`);
+  }
+
+  const state = {
+    contract: "rentemester-imported-receivable-bank-settlement-plan-v1",
+    scheduleHash,
+    externalInvoiceId,
+    receivableId: receivable?.id ?? null,
+    controlAccountNo: receivable?.control_account_no ?? null,
+    invoiceDate: receivable?.invoice_date ?? null,
+    openAmount,
+    bankTransactionId: bank?.id ?? input.bankTransactionId,
+    bankTransactionHash: bank?.transaction_hash ?? null,
+    bankTransactionDate: bank?.transaction_date ?? null,
+    amount: bank?.amount ?? null,
+    currency: bank?.currency ?? "DKK",
+    ledgerHeadHash: ledgerHead(db),
+    auditHeadHash: auditHead(db),
+  };
+  return { errors, state, header: receivable, bank: bank ?? undefined, openAmount };
+}
+
+/** Read-only, hash-bound plan for settling one imported DKK receivable from one bank receipt. */
+export function planImportedReceivableBankSettlement(db: Database, input: ImportedReceivableBankSettlementInput) {
+  const context = importedReceivableSettlementContext(db, input);
+  if (context.errors.length) return { ok: false as const, errors: context.errors };
+  return { ok: true as const, plan: { ...context.state, planHash: sha(context.state) }, errors: [] as string[] };
+}
+
+/** Atomically posts the bank/control movement and appends its imported payment evidence. */
+export function applyImportedReceivableBankSettlement(db: Database, input: ApplyImportedReceivableBankSettlementInput) {
+  if (!input.confirm) return { ok: false as const, errors: ["CONFIRMATION_REQUIRED"] };
+  const actor = text(input.actor);
+  const principalKind = input.principal?.kind;
+  const principalId = text(input.principal?.subjectId);
+  const key = text(input.idempotencyKey);
+  if (!actor || !principalId || (principalKind !== "user" && principalKind !== "service-account")) return { ok: false as const, errors: ["ACTOR_AND_PRINCIPAL_REQUIRED"] };
+  if (!key || key.length > 128) return { ok: false as const, errors: ["IDEMPOTENCY_KEY_REQUIRED"] };
+  try {
+    return db.transaction(() => {
+      const prior = db.query(`SELECT id, plan_hash, journal_entry_id FROM imported_receivable_bank_settlements
+        WHERE principal_kind=? AND principal_subject_id=? AND idempotency_key=? LIMIT 1`)
+        .get(principalKind, principalId, key) as { id: number; plan_hash: string; journal_entry_id: number } | null;
+      if (prior) return prior.plan_hash === input.planHash
+        ? { ok: true as const, id: prior.id, journalEntryId: prior.journal_entry_id, planHash: prior.plan_hash, idempotent: true, errors: [] as string[] }
+        : { ok: false as const, errors: ["IDEMPOTENCY_CONFLICT"] };
+
+      const proposal = planImportedReceivableBankSettlement(db, input);
+      if (!proposal.ok) return proposal;
+      if (proposal.plan.planHash !== input.planHash) return { ok: false as const, errors: ["PLAN_HASH_MISMATCH"] };
+      const context = importedReceivableSettlementContext(db, input);
+      if (context.errors.length || !context.header || !context.bank) return { ok: false as const, errors: context.errors.length ? context.errors : ["SETTLEMENT_CONTEXT_UNAVAILABLE"] };
+      const bankAccount = resolveSettlementBankAccount(db, { bankTransactionId: context.bank.id, requestedAccountNo: input.bankAccountNo });
+      if (!bankAccount.ok) return { ok: false as const, errors: [`BANK_ACCOUNT_INVALID:${bankAccount.error}`] };
+      const journal = postJournalEntryInCurrentTransaction(db, {
+        transactionDate: context.bank.transaction_date,
+        text: `Imported receivable settlement ${input.externalInvoiceId}`,
+        sourceBankTransactionId: context.bank.id,
+        createdBy: actor,
+        createdByProgram: "imported-receivable-bank-settlement",
+        lines: [
+          { accountNo: bankAccount.accountNo, debitAmount: context.bank.amount, text: `Bank receipt ${context.bank.id}` },
+          { accountNo: context.header.control_account_no, creditAmount: context.bank.amount, text: `Imported receivable ${input.externalInvoiceId}` },
+        ],
+      });
+      if (!journal.ok || journal.entryId == null) return { ok: false as const, errors: journal.errors, appliedRules: journal.appliedRules };
+      const eventId = `bank-settlement:${context.bank.transaction_hash}`;
+      db.query(`INSERT INTO imported_receivable_events(receivable_id,external_event_id,event_kind,effective_date,amount,source_event_ref,source_document_hash,schedule_hash)
+        VALUES(?,?,?,?,?,?,?,?)`).run(context.header.id, eventId, "payment", context.bank.transaction_date, context.bank.amount, `bank_transaction:${context.bank.id}`, context.bank.transaction_hash, context.header.schedule_hash);
+      const inserted = db.query(`INSERT INTO imported_receivable_bank_settlements(receivable_id,bank_transaction_id,bank_transaction_hash,journal_entry_id,schedule_hash,plan_hash,amount,effective_date,actor,principal_kind,principal_subject_id,idempotency_key,created_at)
+        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING id`).get(context.header.id, context.bank.id, context.bank.transaction_hash, journal.entryId, context.header.schedule_hash, input.planHash, context.bank.amount, context.bank.transaction_date, actor, principalKind, principalId, key, new Date().toISOString()) as { id: number };
+      insertAuditLog(db, { eventType: "imported_receivable_bank_settled", entityType: "imported_receivable_bank_settlement", entityId: inserted.id, message: `Settled imported receivable ${input.externalInvoiceId} from bank transaction ${context.bank.id}`, createdBy: actor, createdByProgram: "imported-receivable-bank-settlement" });
+      return { ok: true as const, id: inserted.id, journalEntryId: journal.entryId, planHash: input.planHash, idempotent: false, openBalance: Number(context.openAmount) - Number(context.bank.amount), errors: [] as string[], appliedRules: journal.appliedRules };
+    }).immediate();
+  } catch (error) {
+    return { ok: false as const, errors: [error instanceof Error ? error.message : String(error)] };
+  }
+}
+
+/** Read back an immutable settlement by its selected bank transaction. */
+export function getImportedReceivableBankSettlement(db: Database, bankTransactionId: number) {
+  if (!Number.isInteger(bankTransactionId) || bankTransactionId <= 0) return { ok: false as const, errors: ["BANK_TRANSACTION_REQUIRED"] };
+  const row = db.query(`SELECT s.id,s.bank_transaction_id,s.bank_transaction_hash,s.journal_entry_id,s.schedule_hash,s.plan_hash,s.amount,s.effective_date,s.actor,s.created_at,h.external_invoice_id
+    FROM imported_receivable_bank_settlements s JOIN imported_receivable_headers h ON h.id=s.receivable_id WHERE s.bank_transaction_id=?`).get(bankTransactionId) as Record<string, unknown> | null;
+  return { ok: true as const, settlement: row ?? null, errors: [] as string[] };
 }
 
 /** One authoritative cut-over boundary per imported receivable control. */

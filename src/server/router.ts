@@ -95,6 +95,9 @@ import {
   handleCompanyImportedReceivables,
   handleCompanyImportedReceivablesBackfillApply,
   handleCompanyImportedReceivablesBackfillPlan,
+  handleCompanyImportedReceivableSettlementApply,
+  handleCompanyImportedReceivableSettlementPlan,
+  handleCompanyImportedReceivableSettlementStatus,
   handleCompanyInvoicePdf,
   handleCompanyInvoices,
   handleCompanyRecurringInvoices,
@@ -1081,6 +1084,9 @@ export async function handleRequest(
 
     const importedBackfillMatch=/^\/api\/companies\/([^/]+)\/imported-receivables\/backfill\/(plan|apply)$/.exec(path);
     if(importedBackfillMatch){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");const slug=decodeURIComponent(importedBackfillMatch[1]!);return importedBackfillMatch[2]==="plan"?handleCompanyImportedReceivablesBackfillPlan(config,slug,request):handleCompanyImportedReceivablesBackfillApply(config,slug,request);}
+
+    const importedSettlementMatch=/^\/api\/companies\/([^/]+)\/imported-receivables\/settlement\/(plan|apply|status)$/.exec(path);
+    if(importedSettlementMatch){const slug=decodeURIComponent(importedSettlementMatch[1]!);const action=importedSettlementMatch[2]!;if(action==="status"){if(method!=="GET")throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");return handleCompanyImportedReceivableSettlementStatus(config,slug,url);}if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");return action==="plan"?handleCompanyImportedReceivableSettlementPlan(config,slug,request):handleCompanyImportedReceivableSettlementApply(config,slug,request);}
 
     const invoicesMatch = /^\/api\/companies\/([^/]+)\/invoices$/.exec(path);
     if (invoicesMatch) {

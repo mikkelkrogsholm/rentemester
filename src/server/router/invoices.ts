@@ -15,7 +15,7 @@ import { responseBodyFromBytes } from "../response-body";
 import { openLedgerReadOnly } from "../../core/ledger-inspection";
 import { companyPaths } from "../../core/paths";
 import { companyRootForSlug } from "../../core/workspace";
-import { applyLegacyImportedReceivableBackfill, planLegacyImportedReceivableBackfill } from "../../core/imported-receivables";
+import { applyImportedReceivableBankSettlement, applyLegacyImportedReceivableBackfill, getImportedReceivableBankSettlement, planImportedReceivableBankSettlement, planLegacyImportedReceivableBackfill } from "../../core/imported-receivables";
 import { withCompanyMutation } from "../mutations";
 import { readJsonBody } from "./_shared";
 
@@ -92,4 +92,22 @@ export async function handleCompanyImportedReceivablesBackfillApply(config:Serve
     return applyLegacyImportedReceivableBackfill(ctx.db,{...(body as any),actor:ctx.actor.createdBy,principal,confirm:true});
   },{requireConfirm:true});
   return okResponse({backfill:result});
+}
+
+export async function handleCompanyImportedReceivableSettlementPlan(config:ServerConfig,slug:string,request:Request):Promise<Response>{
+  const body=await readJsonBody(request);const db=openLedgerReadOnly(companyPaths(companyRootForSlug(config.workspaceRoot,slug)).db);
+  try{return okResponse({settlement:planImportedReceivableBankSettlement(db,body as any)});}finally{db.close();}
+}
+
+export async function handleCompanyImportedReceivableSettlementApply(config:ServerConfig,slug:string,request:Request):Promise<Response>{
+  const result=await withCompanyMutation(request,config,slug,(ctx,body)=>{
+    const p=ctx.principal;const principal=p.serviceAccountId?{kind:"service-account" as const,subjectId:p.serviceAccountId}:{kind:"user" as const,subjectId:p.userId??p.id};
+    return applyImportedReceivableBankSettlement(ctx.db,{...(body as any),actor:ctx.actor.createdBy,principal,confirm:true});
+  },{requireConfirm:true});
+  return okResponse({settlement:result});
+}
+
+export function handleCompanyImportedReceivableSettlementStatus(config:ServerConfig,slug:string,url:URL):Response{
+  const id=Number(url.searchParams.get("bankTransactionId"));const db=openLedgerReadOnly(companyPaths(companyRootForSlug(config.workspaceRoot,slug)).db);
+  try{return okResponse({settlement:getImportedReceivableBankSettlement(db,id)});}finally{db.close();}
 }

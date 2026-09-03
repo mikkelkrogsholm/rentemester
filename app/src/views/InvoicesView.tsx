@@ -29,6 +29,7 @@ import { useAsync } from "../lib/useAsync";
 import type {
   CompanyInvoiceRow,
   CompanyInvoices,
+  ImportedReceivableRow,
   InvoiceStatus,
 } from "../lib/types";
 import { ErrorState, Loading } from "../components/Feedback";
@@ -72,6 +73,7 @@ export function InvoicesView() {
   const [issuing, setIssuing] = useState(false);
   // The invoice row whose "Afstem" ConfirmDialog is open, if any.
   const [settling, setSettling] = useState<CompanyInvoiceRow | null>(null);
+  const [settlingImported, setSettlingImported] = useState<ImportedReceivableRow | null>(null);
   // The invoice row whose "Krediter" ConfirmDialog is open, if any (#412).
   const [crediting, setCrediting] = useState<CompanyInvoiceRow | null>(null);
   // The invoice row whose "Send e-faktura" ConfirmDialog is open (#428).
@@ -138,8 +140,8 @@ export function InvoicesView() {
           <strong>{imported.data ? formatKroner(imported.data.totalOpen, currency) : "—"}</strong>
         </div>
         {imported.error ? <p className="muted">Kunne ikke hente importarkivet.</p> : imported.data?.rows.length ? (
-          <div className="table-scroll"><table className="data"><thead><tr><th>Kilde-faktura</th><th>Kunde</th><th>Dato</th><th className="num">Åben saldo</th></tr></thead><tbody>
-            {imported.data.rows.map((row) => <tr key={row.externalInvoiceId}><td>{row.externalInvoiceId}</td><td>{row.customerName ?? "—"}</td><td>{formatDateDa(row.invoiceDate)}</td><td className="num">{formatKroner(row.openBalance, currency)}</td></tr>)}
+          <div className="table-scroll"><table className="data"><thead><tr><th>Kilde-faktura</th><th>Kunde</th><th>Dato</th><th className="num">Åben saldo</th><th>Handling</th></tr></thead><tbody>
+            {imported.data.rows.map((row) => <tr key={`${row.scheduleHash}:${row.externalInvoiceId}`}><td>{row.externalInvoiceId}</td><td>{row.customerName ?? "—"}</td><td>{formatDateDa(row.invoiceDate)}</td><td className="num">{formatKroner(row.openBalance, currency)}</td><td>{row.openBalance > 0 ? <button type="button" className="btn secondary" onClick={() => setSettlingImported(row)}>Afstem bankpost</button> : "—"}</td></tr>)}
           </tbody></table></div>
         ) : <p className="muted">Ingen importerede tilgodehavender i arkivet.</p>}
         <p className="muted">{imported.data?.boundary ?? "Importarkivet holdes adskilt fra nye fakturaer for at undgå dobbelttælling."}</p>
@@ -181,6 +183,28 @@ export function InvoicesView() {
             state.reload();
           }}
           onClose={() => setSettling(null)}
+        />
+      )}
+
+      {settlingImported && (
+        <ConfirmDialog
+          title="Afstem importeret tilgodehavende mod bankpost"
+          body={<p>Afstem kildefaktura <strong>{settlingImported.externalInvoiceId}</strong> mod én indgående DKK-bankpost. Det opretter en append-only postering og kan ikke fortrydes.</p>}
+          confirmLabel="Afstem bankpost"
+          confirmKind="danger"
+          noteLabel="Bankpost-id"
+          notePlaceholder="Det numeriske ID fra bankoversigten"
+          onConfirm={async (value) => {
+            const bankTransactionId = Number(value.trim());
+            if (!Number.isInteger(bankTransactionId) || bankTransactionId <= 0) throw { code: "bad_request", message: "Angiv et gyldigt numerisk bankpost-id." };
+            const input = { scheduleHash: settlingImported.scheduleHash, externalInvoiceId: settlingImported.externalInvoiceId, bankTransactionId };
+            const plan = await api.planImportedReceivableSettlement(slug, input);
+            if (!plan.ok || !plan.plan?.planHash) throw { code: "bad_request", message: "Afregningen blev afvist. Kontrollér bankpost, valuta, beløb og åben saldo." };
+            const result = await api.applyImportedReceivableSettlement(slug, { ...input, planHash: plan.plan.planHash, idempotencyKey: crypto.randomUUID() });
+            if (!result.ok) throw { code: "bad_request", message: result.errors?.join("; ") || "Afregningen blev afvist." };
+            await imported.reload();
+          }}
+          onClose={() => setSettlingImported(null)}
         />
       )}
 

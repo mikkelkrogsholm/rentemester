@@ -9,7 +9,7 @@ import { openCommandDb, optionalNumberOrFatal, readJsonObjectCliInput } from "..
 import { migrate } from "../../core/db";
 import { getInvoiceStatus } from "../../core/invoice-payments";
 import { buildInvoiceList, buildOverdueInvoiceList, findInvoices } from "../../core/invoice-list";
-import { applyLegacyImportedReceivableBackfill, listImportedReceivables, planLegacyImportedReceivableBackfill, type LegacyImportedReceivableBackfillInput } from "../../core/imported-receivables";
+import { applyImportedReceivableBankSettlement, applyLegacyImportedReceivableBackfill, getImportedReceivableBankSettlement, listImportedReceivables, planImportedReceivableBankSettlement, planLegacyImportedReceivableBackfill, type ImportedReceivableBankSettlementInput, type LegacyImportedReceivableBackfillInput } from "../../core/imported-receivables";
 import { openLedgerReadOnly } from "../../core/ledger-inspection";
 import { companyPaths } from "../../core/paths";
 import { invoiceStatusDa } from "../../core/messages";
@@ -43,6 +43,20 @@ function renderInvoiceRowsHuman(title: string, rows: any[], emptyMessage: string
 }
 
 export function registerQueryCommands(dispatch: CommandDispatch): void {
+  dispatch.on("invoice", "imported-receivable-settlement-plan", (ctx) => {
+    const inputPath=ctx.arg("--input") ?? ctx.fatal("Missing required --input <file.json>");
+    const input=readJsonObjectCliInput(ctx,inputPath,"--input") as ImportedReceivableBankSettlementInput;
+    const db=openLedgerReadOnly(companyPaths(ctx.companyRoot()).db); try{ctx.emitResult(planImportedReceivableBankSettlement(db,input));}finally{db.close();}
+  });
+  dispatch.on("invoice", "imported-receivable-settlement-apply", (ctx) => {
+    const inputPath=ctx.arg("--input") ?? ctx.fatal("Missing required --input <file.json>");
+    const input=readJsonObjectCliInput(ctx,inputPath,"--input") as ImportedReceivableBankSettlementInput;
+    const db=openCommandDb(ctx); try{migrate(db);ctx.emitResult(applyImportedReceivableBankSettlement(db,{...input,planHash:ctx.arg("--plan-hash")??"",idempotencyKey:ctx.arg("--idempotency-key")??"",actor:ctx.cliActor??ctx.inferredMutationActor()??undefined,principal:{kind:ctx.arg("--principal-kind") as "user"|"service-account",subjectId:ctx.arg("--principal-subject-id")??""},confirm:ctx.arg("--confirm")==="yes"}));}finally{db.close();}
+  });
+  dispatch.on("invoice", "imported-receivable-settlement-status", (ctx) => {
+    const id=Number(ctx.arg("--bank-transaction-id")); if(!Number.isInteger(id)||id<=0)ctx.fatal("--bank-transaction-id must be a positive integer");
+    const db=openLedgerReadOnly(companyPaths(ctx.companyRoot()).db); try{ctx.emitResult(getImportedReceivableBankSettlement(db,id));}finally{db.close();}
+  });
   dispatch.on("invoice", "imported-receivables-backfill-plan", (ctx) => {
     const inputPath=ctx.arg("--input") ?? ctx.fatal("Missing required --input <file.json>");
     const input=readJsonObjectCliInput(ctx,inputPath,"--input") as unknown as LegacyImportedReceivableBackfillInput;
