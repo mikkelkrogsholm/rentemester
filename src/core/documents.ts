@@ -296,6 +296,10 @@ const ALLOWED_MIME_TYPES = new Set([
   // Received e-invoices (Digisense MODTAG, #efaktura) arrive as UBL XML and are
   // legitimate bilag, so application/xml is ingestable like the other text formats.
   "application/xml",
+  // #566: a supplier can send the order confirmation / simplified receipt only
+  // in the body of an authenticated EML with no attachment. The original EML
+  // bytes are the evidence; ingest stores them immutably, hash-bound.
+  "message/rfc822",
 ]);
 
 const EXTENSION_MIME: Record<string, string> = {
@@ -306,6 +310,7 @@ const EXTENSION_MIME: Record<string, string> = {
   ".txt": "text/plain",
   ".json": "application/json",
   ".xml": "application/xml",
+  ".eml": "message/rfc822",
 };
 
 function startsWithBytes(buf: Buffer, signature: number[]): boolean {
@@ -357,6 +362,16 @@ function detectMimeType(filename: string, bytes: Buffer): string {
     throw new Error(
       `file content does not match its '${ext}' extension (looks like ${sniffed})`,
     );
+  }
+
+  if (expected === "message/rfc822") {
+    // An .eml must open with an RFC 5322 header block ("Field-Name: value"),
+    // so arbitrary text cannot masquerade as e-mail evidence. Field names are
+    // printable ASCII excluding colon (RFC 5322 § 2.2).
+    const firstLine = bytes.toString("utf8", 0, Math.min(bytes.length, 4096)).split(/\r?\n/).find((line) => line.trim() !== "");
+    if (!firstLine || !/^[\x21-\x39\x3b-\x7e]+: /.test(firstLine)) {
+      throw new Error("file content does not look like an RFC 5322 message (no header block)");
+    }
   }
 
   if (!ALLOWED_MIME_TYPES.has(expected)) {

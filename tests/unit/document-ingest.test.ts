@@ -1,6 +1,6 @@
 // Tests: src/core/documents.ts (document ingestion)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync, existsSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -324,6 +324,114 @@ describe("document ingest", () => {
     db.close();
     rmSync(companyRoot, { recursive: true, force: true });
     rmSync(inboxRoot, { recursive: true, force: true });
+  });
+
+  describe("#566 — attachmentless EML as immutable evidence", () => {
+    const EML = [
+      "From: bog@leverandoer.dk",
+      "To: konto@firma.dk",
+      "Subject: Ordrebekraeftigelse ORD-77341",
+      "Date: Sat, 16 May 2026 10:00:00 +0200",
+      "Message-ID: <ord-77341@leverandoer.dk>",
+      "MIME-Version: 1.0",
+      "Content-Type: text/html; charset=utf-8",
+      "",
+      "<html><body><p>Ordre ORD-77341, i alt 1250,00 DKK incl. 250,00 moms.</p></body></html>",
+      "",
+    ].join("\r\n");
+    const metadata = {
+      source: "email",
+      issueDate: "2026-05-16",
+      invoiceNo: "ORD-77341",
+      deliveryDescription: "Kontorartikler",
+      amountIncVat: 1250,
+      currency: "DKK",
+      sender: { name: "Leverandør ApS", address: "Sælgervej 1", vatOrCvr: "DK11223344" },
+      recipient: { name: "Rentemester ApS", address: "Testvej 1", vatOrCvr: "DK12345678" },
+      vatAmount: 250,
+    };
+
+    test("ingests an attachmentless EML as an immutable evidence document", () => {
+      const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-company-eml-"));
+      const inboxRoot = mkdtempSync(join(tmpdir(), "rentemester-inbox-eml-"));
+      const emlFile = join(inboxRoot, "order-confirmation.eml");
+      writeFileSync(emlFile, EML);
+
+      const db = openDb(ensureCompanyDirs(companyRoot).db);
+      migrate(db);
+
+      const result = ingestDocument(db, companyRoot, emlFile, metadata);
+      expect(result.ok).toBe(true);
+      const row = db.query("SELECT mime_type, sha256_hash, stored_path FROM documents WHERE id = ?").get(result.documentId!) as any;
+      expect(row.mime_type).toBe("message/rfc822");
+      expect(row.sha256_hash).toBe(new Bun.CryptoHasher("sha256").update(EML).digest("hex"));
+      expect(existsSync(row.stored_path)).toBe(true);
+      expect(readFileSync(row.stored_path, "utf8")).toBe(EML);
+
+      db.close();
+      rmSync(companyRoot, { recursive: true, force: true });
+      rmSync(inboxRoot, { recursive: true, force: true });
+    });
+
+    test("rejects duplicate intake of the same EML bytes", () => {
+      const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-company-emldup-"));
+      const inboxRoot = mkdtempSync(join(tmpdir(), "rentemester-inbox-emldup-"));
+      const emlFile = join(inboxRoot, "order-confirmation.eml");
+      writeFileSync(emlFile, EML);
+
+      const db = openDb(ensureCompanyDirs(companyRoot).db);
+      migrate(db);
+
+      const first = ingestDocument(db, companyRoot, emlFile, metadata);
+      const second = ingestDocument(db, companyRoot, emlFile, metadata);
+      expect(first.ok).toBe(true);
+      expect(second.ok).toBe(false);
+      expect(second.errors?.[0]).toContain("duplicate");
+
+      db.close();
+      rmSync(companyRoot, { recursive: true, force: true });
+      rmSync(inboxRoot, { recursive: true, force: true });
+    });
+
+    test("rejects an altered EML with the same supplier and invoice identity", () => {
+      const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-company-emlmut-"));
+      const inboxRoot = mkdtempSync(join(tmpdir(), "rentemester-inbox-emlmut-"));
+      const original = join(inboxRoot, "original.eml");
+      const altered = join(inboxRoot, "altered.eml");
+      writeFileSync(original, EML);
+      writeFileSync(altered, EML.replace("1250,00 DKK", "990,00 DKK"));
+
+      const db = openDb(ensureCompanyDirs(companyRoot).db);
+      migrate(db);
+
+      const first = ingestDocument(db, companyRoot, original, metadata);
+      const second = ingestDocument(db, companyRoot, altered, metadata);
+      expect(first.ok).toBe(true);
+      expect(second.ok).toBe(false);
+      expect(second.errors?.[0]).toContain("already ingested");
+
+      db.close();
+      rmSync(companyRoot, { recursive: true, force: true });
+      rmSync(inboxRoot, { recursive: true, force: true });
+    });
+
+    test("rejects a text file masquerading as .eml without an RFC 5322 header block", () => {
+      const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-company-emlfake-"));
+      const inboxRoot = mkdtempSync(join(tmpdir(), "rentemester-inbox-emlfake-"));
+      const fakeEml = join(inboxRoot, "fake.eml");
+      writeFileSync(fakeEml, "not an email, just plain text with a\nfloating colon :\n");
+
+      const db = openDb(ensureCompanyDirs(companyRoot).db);
+      migrate(db);
+
+      const result = ingestDocument(db, companyRoot, fakeEml, metadata);
+      expect(result.ok).toBe(false);
+      expect(result.errors?.[0]).toContain("does not look like an RFC 5322");
+
+      db.close();
+      rmSync(companyRoot, { recursive: true, force: true });
+      rmSync(inboxRoot, { recursive: true, force: true });
+    });
   });
 
   test("ingests a compliant supporting document and blocks duplicate logical supplier invoices unless forced", () => {
