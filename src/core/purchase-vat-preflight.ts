@@ -7,6 +7,7 @@ import {
 } from "./vies";
 import { resolvePersistedSupplierIdentity } from "./supplier-identity";
 import { inspectDocumentInvoiceExtraction } from "./invoice-extraction";
+import { nonEuReverseChargeEvidenceErrors } from "./vat";
 
 /** Evidence is reusable for 90 days. This is deliberately explicit so callers
  * can show when a provider would be contacted without performing I/O. */
@@ -49,7 +50,11 @@ export function inspectPurchaseVatPreflight(db: Database, documentId: number, op
   const now = (options.clock ?? systemVatValidationClock).now().toISOString();
   const facts = classification(supplier(db, documentId));
   const cached = freshEvidence(db, documentId, now, facts.country, facts.identifier);
-  if (facts.classification === "DK" || facts.classification === "NON_EU") return { ok: true, documentId, classification: facts.classification, cached: !!cached, evidenceExpiresAt: cached?.evidence_expires_at ?? null, wouldCallProvider: false, errors: [] };
+  if (facts.classification === "DK") return { ok: true, documentId, classification: facts.classification, cached: !!cached, evidenceExpiresAt: cached?.evidence_expires_at ?? null, wouldCallProvider: false, errors: [] };
+  if (facts.classification === "NON_EU") {
+    const errors = nonEuReverseChargeEvidenceErrors(db, documentId);
+    return { ok: errors.length === 0, documentId, classification: facts.classification, cached: !!cached, evidenceExpiresAt: cached?.evidence_expires_at ?? null, wouldCallProvider: false, errors };
+  }
   if (facts.classification === "CONFLICT") return { ok: false, documentId, classification: "CONFLICT", cached: false, evidenceExpiresAt: null, wouldCallProvider: false, errors: ["documented supplier evidence is incomplete or conflicting; human resolution is required"] };
   return { ok: !!cached, documentId, classification: "EU", cached: !!cached, evidenceExpiresAt: cached?.evidence_expires_at ?? null, wouldCallProvider: !cached, errors: cached ? [] : ["fresh EU VAT validation evidence is required"] };
 }

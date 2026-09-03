@@ -11,6 +11,18 @@ function setup() {
 }
 
 describe("purchase VAT preflight", () => {
+  test("non-EU identity is separate from purchase eligibility and shares booking's evidence gate", () => {
+    const db = new Database(":memory:"); migrate(db);
+    db.run("INSERT INTO companies (id,name,cvr,vat_period_type) VALUES (1,'Synthetic ApS','DK12345678','quarter')");
+    db.run("INSERT INTO documents(id,source,sha256_hash,sender_vat_cvr,supplier_country_code,supplier_identifier_kind,supplier_identity_status,recipient_vat_cvr,payload_json) VALUES(1,'test','non-eu-preflight','US-EIN-12-3456789','US','non_eu','resolved','DK12345678',?)", [JSON.stringify({})]);
+    const missing = inspectPurchaseVatPreflight(db, 1, { clock });
+    expect(missing).toMatchObject({ ok: false, classification: "NON_EU", wouldCallProvider: false });
+    expect(missing.errors.join(" ")).toContain("reverse-charge wording");
+    db.run("UPDATE documents SET payload_json=? WHERE id=1", [JSON.stringify({ reverseChargeWordingEvidence: { excerpt: "Reverse charge", location: "page 1" } })]);
+    expect(inspectPurchaseVatPreflight(db, 1, { clock })).toMatchObject({ ok: true, classification: "NON_EU", errors: [] });
+    db.close();
+  });
+
   test("dry-run is pure, then reuses explicit fresh provider evidence", async () => {
     const db = setup(); let calls = 0;
     const dry = inspectPurchaseVatPreflight(db, 1, { clock });

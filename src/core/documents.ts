@@ -45,8 +45,15 @@ export type DocumentMetadata = {
   /** Human-confirmed invoice evidence required before a non-EU service can be
    * posted with automatic reverse-charge input-VAT deduction. */
   reverseChargeWordingConfirmed?: boolean;
+  /** Verbatim, source-bound evidence of the reverse-charge statement.  The
+   * original source and this payload are both integrity-hashed at ingest; this
+   * is intentionally not an inferred classification. */
+  reverseChargeWordingEvidence?: { excerpt: string; location: string };
   /** Explicit source fact: the issuer supplied a Danish simplified purchase invoice. */
   danishSimplifiedPurchaseInvoice?: boolean;
+  /** Source-preserving intake marker. It permits storage of a standard invoice
+   * with absent buyer fields, but never asserts VAT eligibility. */
+  incompleteStandardPurchaseInvoice?: boolean;
   paymentDetails?: string;
   exemptionCode?: DocumentExemptionCode;
   /** Imported bank row that is the immutable primary evidence for an internal voucher. */
@@ -383,8 +390,20 @@ export function validateDocumentMetadata(metadata: DocumentMetadata): DocumentVa
   if (metadata.reverseChargeWordingConfirmed !== undefined && typeof metadata.reverseChargeWordingConfirmed !== "boolean") {
     errors.push("reverseChargeWordingConfirmed must be a boolean when present");
   }
+  if (metadata.reverseChargeWordingEvidence !== undefined) {
+    const evidence = metadata.reverseChargeWordingEvidence;
+    if (!evidence || typeof evidence !== "object" || !hasText(evidence.excerpt) || !hasText(evidence.location)) {
+      errors.push("reverseChargeWordingEvidence requires non-empty excerpt and location");
+    }
+  }
   if (metadata.danishSimplifiedPurchaseInvoice !== undefined && typeof metadata.danishSimplifiedPurchaseInvoice !== "boolean") {
     errors.push("danishSimplifiedPurchaseInvoice must be a boolean when present");
+  }
+  if (metadata.incompleteStandardPurchaseInvoice !== undefined && typeof metadata.incompleteStandardPurchaseInvoice !== "boolean") {
+    errors.push("incompleteStandardPurchaseInvoice must be a boolean when present");
+  }
+  if (metadata.incompleteStandardPurchaseInvoice === true && metadata.danishSimplifiedPurchaseInvoice === true) {
+    errors.push("incompleteStandardPurchaseInvoice cannot be combined with danishSimplifiedPurchaseInvoice");
   }
   if (metadata.danishSimplifiedPurchaseInvoice === true) {
     appliedRules.splice(appliedRules.length - 1, 0, RULES.SIMPLIFIED_INVOICE);
@@ -435,6 +454,9 @@ export function validateDocumentMetadata(metadata: DocumentMetadata): DocumentVa
     if (metadata.reverseChargeWordingConfirmed !== undefined) {
       errors.push("internal voucher cannot contain reverseChargeWordingConfirmed");
     }
+    if (metadata.reverseChargeWordingEvidence !== undefined) {
+      errors.push("internal voucher cannot contain reverseChargeWordingEvidence");
+    }
     if (metadata.exemptionCode !== undefined && metadata.exemptionCode !== null) {
       errors.push("internal voucher cannot contain exemptionCode");
     }
@@ -461,8 +483,9 @@ export function validateDocumentMetadata(metadata: DocumentMetadata): DocumentVa
     // as supplied; company context is recorded separately after ingestion.
     if (metadata.danishSimplifiedPurchaseInvoice !== true) {
       if (!hasText(metadata.recipient?.name)) errors.push("recipient.name is required");
-      if (!hasText(metadata.recipient?.address)) errors.push("recipient.address is required");
-      if (!hasText(metadata.recipient?.vatOrCvr)) errors.push("recipient.vatOrCvr is required");
+      if (!hasText(metadata.recipient?.address) && metadata.incompleteStandardPurchaseInvoice !== true) errors.push("recipient.address is required");
+      // A buyer registration number is not a universal statutory field on a
+      // full invoice. Preserve its absence rather than fabricating it.
     }
     if (!hasNonNegativeNumber(metadata.vatAmount)) errors.push("vatAmount is required");
   }
@@ -579,7 +602,9 @@ function normalizedEnrichedMetadata(metadata: DocumentMetadata): DocumentMetadat
     vatAmount: metadata.vatAmount,
     purchaseVatLines: metadata.purchaseVatLines,
     reverseChargeWordingConfirmed: metadata.reverseChargeWordingConfirmed,
+    reverseChargeWordingEvidence: metadata.reverseChargeWordingEvidence,
     danishSimplifiedPurchaseInvoice: metadata.danishSimplifiedPurchaseInvoice,
+    incompleteStandardPurchaseInvoice: metadata.incompleteStandardPurchaseInvoice,
     paymentDetails: metadata.paymentDetails,
     exemptionCode: metadata.exemptionCode,
   };

@@ -355,7 +355,10 @@ function documentDanishInputVatSupplierErrors(db: Database, documentId: number):
  * the purchase remains available for human resolution without creating a VAT
  * journal entry.
  */
-function nonEuReverseChargeEvidenceErrors(db: Database, documentId: number): string[] {
+/** Shared documentary gate for both the read-only purchase preflight and
+ * posting. Keep this source-of-truth here: preflight must never present a
+ * green purchase-eligibility result that booking will immediately reject. */
+export function nonEuReverseChargeEvidenceErrors(db: Database, documentId: number): string[] {
   const row = db.query(
     `SELECT sender_vat_cvr, recipient_vat_cvr, payload_json
        FROM documents
@@ -390,17 +393,24 @@ function nonEuReverseChargeEvidenceErrors(db: Database, documentId: number): str
   let wordingConfirmed = false;
   try {
     const payload = row.payload_json ? JSON.parse(row.payload_json) as unknown : null;
+    const record = payload && typeof payload === "object" && !Array.isArray(payload)
+      ? payload as Record<string, unknown>
+      : null;
+    const evidence = record?.reverseChargeWordingEvidence;
+    const sourceEvidence = evidence && typeof evidence === "object" && !Array.isArray(evidence)
+      ? evidence as Record<string, unknown>
+      : null;
     wordingConfirmed = Boolean(
       payload
-      && typeof payload === "object"
-      && !Array.isArray(payload)
-      && (payload as Record<string, unknown>).reverseChargeWordingConfirmed === true,
+      && (record?.reverseChargeWordingConfirmed === true
+        || (typeof sourceEvidence?.excerpt === "string" && sourceEvidence.excerpt.trim()
+          && typeof sourceEvidence.location === "string" && sourceEvidence.location.trim())),
     );
   } catch {
     wordingConfirmed = false;
   }
   if (!wordingConfirmed) {
-    errors.push("non-EU reverse-charge input-VAT deduction requires confirmed reverse-charge wording on the invoice");
+    errors.push("non-EU reverse-charge input-VAT deduction requires confirmed reverse-charge wording evidenced by a source excerpt/location on the invoice");
   }
   return errors;
 }

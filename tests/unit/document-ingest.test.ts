@@ -8,6 +8,14 @@ import { openDb, migrate } from "../../src/core/db";
 import { ingestDocument, validateDocumentMetadata } from "../../src/core/documents";
 
 describe("document ingest", () => {
+  test("stores an incomplete standard invoice without inventing buyer fields", () => {
+    expect(validateDocumentMetadata({
+      source: "email", issueDate: "2026-09-01", deliveryDescription: "Synthetic service", amountIncVat: 100,
+      sender: { name: "Synthetic supplier", address: "Source street", vatOrCvr: "DK12345678" },
+      recipient: { name: "Synthetic buyer" }, vatAmount: 20, incompleteStandardPurchaseInvoice: true,
+    })).toMatchObject({ ok: true });
+  });
+
   test("rejects purchase/sale document metadata missing statutory fields", () => {
     const result = validateDocumentMetadata({
       source: "email",

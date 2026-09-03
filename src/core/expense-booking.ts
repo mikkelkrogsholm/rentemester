@@ -357,6 +357,9 @@ function bookExpenseFromBankInternal(db: Database, input: BookExpenseFromBankInp
   if (vatTreatment === "standard") {
     try {
       const payload = document.payload_json ? JSON.parse(document.payload_json) as Record<string, unknown> : {};
+      if (payload.incompleteStandardPurchaseInvoice === true) {
+        return { ok: false, appliedRules: [], errors: ["incomplete standard invoice is stored truthfully but requires a separate VAT-evidence review before input-VAT deduction"] };
+      }
       const invoiceStatesCompany = typeof document.recipient_vat_cvr === "string" && document.recipient_vat_cvr.trim().length > 0;
       const contextIsValid = payload.danishSimplifiedPurchaseInvoice === true && validSimplifiedPurchaseCompanyContext(db, input.documentId);
       if (document.document_type === "purchase_sale" && !invoiceStatesCompany && !contextIsValid) {
