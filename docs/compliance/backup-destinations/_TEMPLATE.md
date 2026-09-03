@@ -60,7 +60,7 @@ Pr. OS:
 ```bash
 bun run rentemester system backup-add-destination \
   --label "<menneskelæsbart navn>" \
-  --kind <local-folder|dropbox|google-drive|ssh|other> \
+  --kind <local-folder|dropbox|google-drive|ssh|proton-drive|other> \
   --location "<lokal sti>" \
   --region-eu true \
   --region-country <ISO-3166-1 alpha-2 — fx DE, IE, EU> \

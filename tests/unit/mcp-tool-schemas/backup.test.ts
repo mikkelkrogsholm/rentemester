@@ -30,7 +30,7 @@ describe("#275 — system_backup_destination_add documents kind + attestations",
   test("kind is an enum exposing the five valid destination kinds", () => {
     const kind = schemaOf("system_backup_destination_add").properties?.kind;
     expect(Array.isArray(kind?.enum), "kind must be an enum").toBe(true);
-    for (const value of ["local-folder", "dropbox", "google-drive", "ssh", "other"]) {
+    for (const value of ["local-folder", "dropbox", "google-drive", "ssh", "other", "proton-drive"]) {
       expect(kind?.enum, `kind enum missing ${value}`).toContain(value);
     }
     expect(typeof kind?.description).toBe("string");
