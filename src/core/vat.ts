@@ -1,6 +1,7 @@
 import type { Database } from "bun:sqlite";
 import { postJournalEntry, postJournalEntryInCurrentTransaction, type JournalPostResult } from "./ledger";
 import { getCompanySettings } from "./company";
+import { validNonEuReverseChargeReview } from "./document-non-eu-reverse-charge-review";
 import { isValidIsoDate as looksLikeIsoDate } from "./dates";
 import { requireCachedViesValidation, normalizeEuVatNumber } from "./vies";
 import { addDkk, compareDkk, fromOre, percentOfDkk, roundDkk, subtractDkk, sumDkk, toOre } from "./money";
@@ -201,8 +202,11 @@ function postServiceReverseChargeLines(
   ruleId: string,
   sourceLabel: string,
   inCurrentTransaction = false,
+  deductionPercent = 100,
 ): JournalPostResult {
   const vatAmount = percentOfDkk(input.netAmount, 25);
+  const deductibleVat = roundDkk(vatAmount * deductionPercent / 100);
+  const nonDeductibleVat = roundDkk(vatAmount - deductibleVat);
   const inputVat = resolveAccountRole(db, "input_vat");
   const outputVat = resolveAccountRole(db, "reverse_charge_vat");
   const bank = input.paymentAccountNo ? { ok: true as const, accountNo: input.paymentAccountNo } : resolveAccountRole(db, "bank");
@@ -223,7 +227,8 @@ function postServiceReverseChargeLines(
     createdByProgram: input.createdByProgram,
     lines: [
       { accountNo: input.expenseAccountNo, debitAmount: roundDkk(input.netAmount), vatCode, text: `${sourceLabel} service purchase base` },
-      { accountNo: inputVat.accountNo, debitAmount: vatAmount, text: "Deductible reverse-charge input VAT" },
+      ...(nonDeductibleVat > 0 ? [{ accountNo: input.expenseAccountNo, debitAmount: nonDeductibleVat, text: "Non-deductible reverse-charge VAT" }] : []),
+      { accountNo: inputVat.accountNo, debitAmount: deductibleVat, text: "Deductible reverse-charge input VAT" },
       { accountNo: bank.accountNo, creditAmount: roundDkk(input.netAmount), text: "Payment / liability" },
       { accountNo: outputVat.accountNo, creditAmount: vatAmount, text: "Reverse-charge output VAT" },
     ],
@@ -370,6 +375,8 @@ export function nonEuReverseChargeEvidenceErrors(db: Database, documentId: numbe
   } | null;
   if (!row) return [`documentId ${documentId} does not exist`];
 
+  const reviewed = validNonEuReverseChargeReview(db, documentId);
+  if (reviewed) return [];
   const errors: string[] = [];
   if (!row.sender_vat_cvr?.trim()) {
     errors.push("non-EU reverse-charge input-VAT deduction requires the supplier's home-country registration number on the invoice");
@@ -476,7 +483,8 @@ function postNonEuServiceReverseChargePurchaseInternal(db: Database, input: Reve
       errors: ["document requires human resolution before non-EU reverse-charge input-VAT deduction", ...evidenceErrors],
     };
   }
-  return postServiceReverseChargeLines(db, input, "NON_EU_SERVICE_REVERSE_CHARGE", NON_EU_REVERSE_CHARGE_RULE_ID, "Non-EU", inCurrentTransaction);
+  const reviewed = validNonEuReverseChargeReview(db, input.documentId);
+  return postServiceReverseChargeLines(db, input, "NON_EU_SERVICE_REVERSE_CHARGE", NON_EU_REVERSE_CHARGE_RULE_ID, "Non-EU", inCurrentTransaction, reviewed?.deductionPercent ?? 100);
 }
 
 export function postNonEuServiceReverseChargePurchaseInCurrentTransaction(db: Database, input: ReverseChargePurchaseInput): JournalPostResult {

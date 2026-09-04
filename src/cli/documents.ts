@@ -7,6 +7,7 @@ import { PDF_EVIDENCE_TAMPERED, PdfParseError, parseRegisteredPdfBatch, parseReg
 import { enrichDocumentMetadata, ingestDocument, purchaseVatLinesFromPayload } from "../core/documents";
 import { setDocumentCompanyContext } from "../core/document-company-context";
 import { reviewIncompleteStandardPurchaseVatEvidence } from "../core/document-purchase-vat-evidence-review";
+import { reviewNonEuReverseChargeEvidence } from "../core/document-non-eu-reverse-charge-review";
 import { authorizeMcpTool, createMcpSecurityContextFromEnv } from "../mcp/security";
 import { recordException } from "../core/exceptions";
 import { inspectOpenLedger, openLedgerReadOnly } from "../core/ledger-inspection";
@@ -53,6 +54,14 @@ export function register(dispatch: CommandDispatch): void {
     const security=createMcpSecurityContextFromEnv();if(!security)ctx.fatal("documents review-purchase-vat-evidence requires RENTEMESTER_SERVICE_PRINCIPAL_TOKEN and RENTEMESTER_WORKSPACE");
     const authorized=await authorizeMcpTool(security!,"documents_review_purchase_vat_evidence",{company:ctx.companyRoot()});if(!authorized)ctx.fatal("documents review-purchase-vat-evidence requires an active authenticated service principal with company.master-data membership");
     const db=openCommandDb(ctx);migrate(db);try{ctx.emitResult(reviewIncompleteStandardPurchaseVatEvidence(db,{documentId,bankTransactionId,businessEvidenceReference:businessEvidenceReference!,businessEvidenceSha256:businessEvidenceSha256!,rationale:rationale!,supersedesReviewSha256:ctx.arg("--supersedes-review-sha256"),principal:`${authorized!.principal.kind}:${authorized!.principal.subjectId}`,confirm:true,createdBy:ctx.cliActor??ctx.inferredMutationActor()??undefined,createdByProgram:ctx.cliActorVia??"rentemester-cli"}));}finally{db.close();}
+  });
+  dispatch.on("documents", "review-non-eu-reverse-charge-evidence", async (ctx) => {
+    const documentId=Number(ctx.arg("--document-id"));if(!Number.isInteger(documentId)||documentId<=0)ctx.fatal("Missing required --document-id <n>");
+    if(ctx.arg("--confirm")!=="yes")ctx.fatal("documents review-non-eu-reverse-charge-evidence requires the exact confirmation --confirm yes");
+    const security=createMcpSecurityContextFromEnv();if(!security)ctx.fatal("documents review-non-eu-reverse-charge-evidence requires RENTEMESTER_SERVICE_PRINCIPAL_TOKEN and RENTEMESTER_WORKSPACE");
+    const authorized=await authorizeMcpTool(security!,"documents_review_non_eu_reverse_charge_evidence",{company:ctx.companyRoot()});if(!authorized)ctx.fatal("documents review-non-eu-reverse-charge-evidence requires an active authenticated service principal with company.master-data membership");
+    const fields=["--supplier-country-code","--actual-buyer-vat","--tax-period","--deduction-percent","--supplier-evidence-reference","--supplier-evidence-sha256","--buyer-evidence-reference","--buyer-evidence-sha256","--service-evidence-reference","--service-evidence-sha256","--formal-deficiencies","--rationale"];if(fields.some(f=>!ctx.arg(f)))ctx.fatal("Missing non-EU review evidence fields");
+    const db=openCommandDb(ctx);migrate(db);try{ctx.emitResult(reviewNonEuReverseChargeEvidence(db,{documentId,supplierCountryCode:ctx.arg("--supplier-country-code")!,actualBuyerVat:ctx.arg("--actual-buyer-vat")!,taxPeriod:ctx.arg("--tax-period")!,deductionPercent:Number(ctx.arg("--deduction-percent")),supplierEvidenceReference:ctx.arg("--supplier-evidence-reference")!,supplierEvidenceSha256:ctx.arg("--supplier-evidence-sha256")!,buyerEvidenceReference:ctx.arg("--buyer-evidence-reference")!,buyerEvidenceSha256:ctx.arg("--buyer-evidence-sha256")!,serviceEvidenceReference:ctx.arg("--service-evidence-reference")!,serviceEvidenceSha256:ctx.arg("--service-evidence-sha256")!,formalDeficiencies:ctx.arg("--formal-deficiencies")!.split(",").filter(Boolean),rationale:ctx.arg("--rationale")!,foreignVatCharged:false,supersedesReviewSha256:ctx.arg("--supersedes-review-sha256"),confirm:true,principal:`${authorized!.principal.kind}:${authorized!.principal.subjectId}`,createdBy:ctx.cliActor??ctx.inferredMutationActor()??undefined,createdByProgram:ctx.cliActorVia??"rentemester-cli"}));}finally{db.close();}
   });
   dispatch.on("documents", "enrich", (ctx) => {
     const id = Number(ctx.arg("--document-id"));
