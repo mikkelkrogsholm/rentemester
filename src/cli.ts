@@ -200,13 +200,13 @@ function resolveWorkspaceAccessPolicyRoot(): string {
   const workspaceRaw = trimToNull(parsedArgs.flags.get("--workspace") as string | undefined);
   const slug = trimToNull(parsedArgs.flags.get("--company") as string | undefined);
   if (!workspaceRaw || !slug || !isValidSlug(slug)) {
-    fatal("workspace-access bootstrap-first requires --workspace <dir> and a registered --company <slug>");
+    fatal("workspace-access command requires --workspace <dir> and a registered --company <slug>");
   }
   const workspace = resolveWorkspaceRoot(workspaceRaw);
   const target = resolveWorkspaceCompany(workspace, slug, {
     selection: "registered", archived: "allow", ledger: "optional",
   });
-  if (!target.ok) fatal("workspace-access bootstrap-first requires a registered initial company");
+  if (!target.ok) fatal("workspace-access command requires a registered company");
   return target.company.companyRoot;
 }
 
@@ -404,7 +404,7 @@ if (!cmd || cmd === "help") {
       // The workspace handler performs an all-target actor + backup preflight
       // before any network/write. A synthetic --company must not substitute
       // for those actual target ledgers here.
-      : commandKey === "workspace-access bootstrap-first"
+      : commandKey === "workspace-access bootstrap-first" || commandKey === "workspace-access bootstrap-local-service" || commandKey === "workspace-access local-service-rotate" || commandKey === "workspace-access local-service-revoke"
         ? resolveWorkspaceAccessPolicyRoot()
         : commandKey === "workspace snapshot" || commandKey === "workspace restore"
           || commandKey.startsWith("party ") || commandKey.startsWith("corporate-record ")

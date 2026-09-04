@@ -6,6 +6,7 @@ import { createCompany } from "../../src/core/company";
 import { initWorkspace } from "../../src/core/workspace";
 import { workspaceControlPaths } from "../../src/core/workspace-control";
 import { readPrivateWorkspaceBootstrapPassword } from "../../src/cli/workspace-access";
+import { createMcpSecurityContextFromEnv, authorizeMcpTool } from "../../src/mcp/security";
 
 const password = "very-private-bootstrap-password";
 
@@ -17,6 +18,48 @@ async function run(args: string[], env: Record<string, string | undefined> = {})
 }
 
 describe("workspace-access bootstrap-first CLI boundary", () => {
+  test("#620 bootstraps, rotates and revokes a local least-privilege service principal", async () => {
+    const workspace = mkdtempSync(join(tmpdir(), "rentemester-local-service-"));
+    const secretPath = join(workspace, "auth-secret");
+    const authSecret = "I0UjL6i0-ScgvjfIgzMKJxPQyDpPXwg2mMKdLW3Y3WQ";
+    try {
+      initWorkspace(workspace);
+      const company = createCompany(workspace, { name: "Local Service Company", onboardingActor: "agent:codex" });
+      writeFileSync(secretPath, authSecret, { mode: 0o600 }); chmodSync(secretPath, 0o600);
+      const issuedRun = await run([
+        "workspace-access", "bootstrap-local-service", "--workspace", workspace, "--company", company.slug,
+        "--display-name", "Synthetic reviewer", "--company-role", "reviewer", "--auth-secret-file", secretPath,
+        "--confirm", "yes", "--actor", "agent:codex", "--json",
+      ]);
+      expect(issuedRun.exitCode).toBe(0);
+      const issued = JSON.parse(issuedRun.stdout);
+      expect(issued).toMatchObject({ ok: true, companySlug: company.slug, companyRole: "reviewer", workspaceRole: "member" });
+      expect(typeof issued.credential).toBe("string");
+      const security = createMcpSecurityContextFromEnv({ RENTEMESTER_WORKSPACE: workspace, RENTEMESTER_SERVICE_PRINCIPAL_TOKEN: issued.credential });
+      expect(security).not.toBeNull();
+      expect(await authorizeMcpTool(security!, "documents_list", { company: company.slug })).not.toBeNull();
+      expect(await authorizeMcpTool(security!, "journal_post", { company: company.slug })).toBeNull();
+      const rotateRun = await run([
+        "workspace-access", "local-service-rotate", "--workspace", workspace, "--company", company.slug,
+        "--service-account-id", issued.serviceAccountId, "--credential-id", issued.credentialId, "--auth-secret-file", secretPath,
+        "--confirm", "yes", "--actor", "agent:codex", "--json",
+      ]);
+      expect(rotateRun.exitCode).toBe(0);
+      const rotated = JSON.parse(rotateRun.stdout);
+      const oldSecurity = createMcpSecurityContextFromEnv({ RENTEMESTER_WORKSPACE: workspace, RENTEMESTER_SERVICE_PRINCIPAL_TOKEN: issued.credential });
+      const rotatedSecurity = createMcpSecurityContextFromEnv({ RENTEMESTER_WORKSPACE: workspace, RENTEMESTER_SERVICE_PRINCIPAL_TOKEN: rotated.credential });
+      expect(await authorizeMcpTool(oldSecurity!, "documents_list", { company: company.slug })).toBeNull();
+      expect(await authorizeMcpTool(rotatedSecurity!, "documents_list", { company: company.slug })).not.toBeNull();
+      const revokeRun = await run([
+        "workspace-access", "local-service-revoke", "--workspace", workspace, "--company", company.slug,
+        "--service-account-id", issued.serviceAccountId, "--credential-id", rotated.credentialId, "--auth-secret-file", secretPath,
+        "--confirm", "yes", "--actor", "agent:codex", "--json",
+      ]);
+      expect(revokeRun.exitCode).toBe(0);
+      expect(await authorizeMcpTool(rotatedSecurity!, "documents_list", { company: company.slug })).toBeNull();
+    } finally { rmSync(workspace, { recursive: true, force: true }); }
+  });
+
   test("reads only a no-follow, regular, exact-0600, bounded one-line password file", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-bootstrap-password-"));
     try {

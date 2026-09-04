@@ -176,6 +176,27 @@ vælges efter bevis for `bun:sqlite`, migrationsfiler, regler/kilder, cockpit-
 assets, dokumenter, backup/restore og platformssignering. Produktarkitekturen må
 ikke afhænge af, at denne packaging virker.
 
+## Lokal service-adgang
+
+En lokal container bruger samme Better Auth API-key-format og samme
+workspace-/virksomheds-memberships som hosted drift. Den har ikke en implicit
+"lokal administrator-token" og en `actor` giver aldrig adgang alene.
+
+Når et nyt lokalt workspace skal automatiseres, oprettes én servicekonto med
+`workspace-access bootstrap-local-service`. Kommandoen kræver en præcis
+virksomhedsrolle (`reader`, `reviewer`, `bookkeeper` eller `owner`), en
+eksplicit `--confirm yes`, en policy-godkendt audit-actor samt en almindelig
+0600-fil med den canonical base64url Better Auth-secret. Credentialet vises
+kun i det succesfulde output og skal straks flyttes til en ekstern secret
+manager. Det må aldrig skrives i workspace, ledger, image eller log.
+
+`workspace-access local-service-rotate` erstatter én credential og viser den
+nye nøgle én gang. `workspace-access local-service-revoke` deaktiverer den
+valgte credential append-only. Begge kræver den samme lokale fysisk beskyttede
+auth-secret-fil, live servicekonto-id, credential-id, virksomhed og audit-actor.
+Ved hver MCP- eller CLI-write valideres credentialets enabled/expiry-status og
+den konkrete servicekontos aktuelle workspace- og virksomheds-membership.
+
 ## Hosted Better Auth: secrets og rate-limit-proxy
 
 Dette er en opstarts-gate for hosted-profilen. Ingen af værdierne må logges,
