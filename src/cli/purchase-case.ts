@@ -36,4 +36,13 @@ export function register(dispatch: CommandDispatch): void {
     const source = (kind === "document" || kind === "bank_transaction" || kind === "payable") && Number.isInteger(id) && id > 0 ? { kind, id } as PurchaseCaseSource : ctx.fatal("valid --source-kind and --source-id are required");
     const db = openCommandDb(ctx); try { migrate(db); const actor = audit(ctx); const payload = { caseId: ctx.arg("--case-id") ?? null, source, documentationOutcome: ctx.arg("--documentation-outcome") ?? "unresolved", note: ctx.arg("--note") ?? "" }; const run = executeLocalIdempotentMutation(db, { key: validateIdempotencyKey(ctx.arg("--idempotency-key") ?? ctx.fatal("--idempotency-key is required")), operation: "purchase_case_create", principal: await authenticated(ctx, "purchase_case_create"), payload, actor, execute: () => createPurchaseCase(db, { caseId: payload.caseId ?? undefined, source, documentationOutcome: outcome(payload.documentationOutcome) ?? "unresolved", note: payload.note, actor }) }); ctx.emitResult(run.receipt ? { ...run.result, idempotency: run.receipt } : run.result); } finally { db.close(); }
   });
+  dispatch.on("purchase-case", "review", async (ctx) => {
+    if (ctx.arg("--confirm") !== "yes") ctx.fatal("purchase-case review requires --confirm yes");
+    const caseId = ctx.arg("--case-id") ?? ctx.fatal("--case-id is required");
+    const expectedVersion = Number(ctx.arg("--expected-version"));
+    const expectedSourceFingerprint = ctx.arg("--expected-source-fingerprint");
+    const documentationOutcome = outcome(ctx.arg("--documentation-outcome"));
+    if (!Number.isInteger(expectedVersion) || expectedVersion <= 0 || !expectedSourceFingerprint || !/^[a-f0-9]{64}$/.test(expectedSourceFingerprint) || !documentationOutcome) ctx.fatal("valid --expected-version, --expected-source-fingerprint and --documentation-outcome are required");
+    const db = openCommandDb(ctx); try { migrate(db); const actor = audit(ctx); const payload = { caseId, expectedVersion, expectedSourceFingerprint: expectedSourceFingerprint!, documentationOutcome: documentationOutcome!, note: ctx.arg("--note") ?? "" }; const run = executeLocalIdempotentMutation(db, { key: validateIdempotencyKey(ctx.arg("--idempotency-key") ?? ctx.fatal("--idempotency-key is required")), operation: "purchase_case_review", principal: await authenticated(ctx, "purchase_case_review"), payload, actor, execute: () => reviewPurchaseCase(db, { ...payload, actor }) }); ctx.emitResult(run.receipt ? { ...run.result, idempotency: run.receipt } : run.result); } finally { db.close(); }
+  });
 }
