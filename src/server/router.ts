@@ -47,6 +47,7 @@ import {
 } from "./router/bank";
 import { handleBookkeepingBatchApply, handleBookkeepingBatchApprove, handleBookkeepingBatchDryRun, handleBookkeepingBatchPersistDryRun, handleBookkeepingBatchStatus } from "./router/bookkeeping-batch";
 import { handleBookkeepingWorkbench } from "./router/bookkeeping-workbench";
+import { handlePurchaseCaseCreate, handlePurchaseCaseGet, handlePurchaseCaseList, handlePurchaseCaseReview } from "./router/purchase-cases";
 import { handleDimensionAction, handleDimensionAssignments, handleDimensionBudgets, handleDimensionBudgetPlan, handleDimensionDefinitions, handleDimensionMembers, handleDimensionPlan } from "./router/dimensions";
 import {
   handleCompanyAccounts,
@@ -381,6 +382,10 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "company", effect: "read", permission: "company.documents.read", method: "POST", pattern: "/api/companies/:slug/documents/party-links/plan", summary: "Read-only partskoblingsplan (#588)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/bookkeeping-batch", summary: "Read-only batchplan med plan-hash og partitioner." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/bookkeeping-workbench", summary: "Kanonisk, read-only bankarbejdskø med batch- og periodeluk-drilldown." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/purchase-cases", summary: "Kildebundne foreløbige købscases uden ledger-mutation." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/purchase-cases/:caseId", summary: "Aktuel afledt købscase med kilde- og evidensstatus." },
+  { scope: "company", effect: "write", permission: "company.draft.write", method: "POST", pattern: "/api/companies/:slug/purchase-cases", summary: "Opretter append-only foreløbig købscase." },
+  { scope: "company", effect: "write", permission: "company.review", method: "POST", pattern: "/api/companies/:slug/purchase-cases/:caseId/review", summary: "Appender eksakt kildebundet købscase-review." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/dimensions/:journalLineId", summary: "Append-only dimensionshistorik for en journal linje (#589)." },
   { scope: "company", effect: "read", permission: "company.read", method: "POST", pattern: "/api/companies/:slug/dimensions/plan", summary: "Read-only hash-bundet dimensionsplan (#589)." },
   { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/dimensions/define", summary: "Opretter dimensionsdefinition (#589)." },
@@ -796,6 +801,12 @@ export async function handleRequest(
     if (bookkeepingBatchMatch) { if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute"); return handleBookkeepingBatchDryRun(config, decodeURIComponent(bookkeepingBatchMatch[1]!), url); }
     const bookkeepingWorkbenchMatch = /^\/api\/companies\/([^/]+)\/bookkeeping-workbench$/.exec(path);
     if (bookkeepingWorkbenchMatch) { if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute"); return handleBookkeepingWorkbench(config, decodeURIComponent(bookkeepingWorkbenchMatch[1]!), url); }
+    const purchaseCaseReviewMatch=/^\/api\/companies\/([^/]+)\/purchase-cases\/([^/]+)\/review$/.exec(path);
+    if(purchaseCaseReviewMatch){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");return await handlePurchaseCaseReview(config,request,decodeURIComponent(purchaseCaseReviewMatch[1]!),decodeURIComponent(purchaseCaseReviewMatch[2]!));}
+    const purchaseCaseDetailMatch=/^\/api\/companies\/([^/]+)\/purchase-cases\/([^/]+)$/.exec(path);
+    if(purchaseCaseDetailMatch){if(method!=="GET")throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");return handlePurchaseCaseGet(config,decodeURIComponent(purchaseCaseDetailMatch[1]!),decodeURIComponent(purchaseCaseDetailMatch[2]!));}
+    const purchaseCasesMatch=/^\/api\/companies\/([^/]+)\/purchase-cases$/.exec(path);
+    if(purchaseCasesMatch){if(method==="GET")return handlePurchaseCaseList(config,decodeURIComponent(purchaseCasesMatch[1]!));if(method==="POST")return await handlePurchaseCaseCreate(config,request,decodeURIComponent(purchaseCasesMatch[1]!));throw ApiError.methodNotAllowed("kun GET og POST er understøttet på denne rute");}
     const dimensionPlanMatch=/^\/api\/companies\/([^/]+)\/dimensions\/plan$/.exec(path);
     if(dimensionPlanMatch){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");return await handleDimensionPlan(config,decodeURIComponent(dimensionPlanMatch[1]!),request);}
     const dimensionBudgetPlanMatch=/^\/api\/companies\/([^/]+)\/dimensions\/budget-plan$/.exec(path);
