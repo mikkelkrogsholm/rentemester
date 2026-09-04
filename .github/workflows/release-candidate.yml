@@ -93,13 +93,15 @@ jobs:
         run: bun run lint
 
       - name: Refuse vulnerable dependencies
-        run: bun run supply-chain:audit
+        run: bun audit --audit-level=low --json > supply-chain-audit.json
 
       - name: Verify production dependency licenses
         run: bun run supply-chain:licenses
 
       - name: Create lockfile-bound supply-chain evidence
         id: supply_chain
+        env:
+          SUPPLY_CHAIN_AUDIT_REPORT_PATH: supply-chain-audit.json
         run: |
           bun run supply-chain:evidence > supply-chain-evidence.json
           sha256sum supply-chain-evidence.json > supply-chain-evidence.json.sha256

@@ -37,9 +37,19 @@ function runJsonCommand(args: string[]): unknown {
   return JSON.parse(result.stdout.toString());
 }
 
+async function readAuditReport(): Promise<unknown> {
+  const path = process.env.SUPPLY_CHAIN_AUDIT_REPORT_PATH;
+  if (!path) return runJsonCommand(["audit", "--json"]);
+  try {
+    return JSON.parse(await Bun.file(path).text());
+  } catch {
+    throw new Error(`audit report ${path} is unreadable or malformed`);
+  }
+}
+
 if (import.meta.main) {
   const evidence = createSupplyChainEvidence({
-    auditReport: runJsonCommand(["audit", "--json"]),
+    auditReport: await readAuditReport(),
     licenseReport: runJsonCommand(["pm", "licenses", "--prod", "--json"]),
     lockfileBytes: new Uint8Array(await Bun.file("bun.lock").arrayBuffer()),
     bunVersion: Bun.version,

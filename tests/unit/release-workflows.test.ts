@@ -80,7 +80,8 @@ describe("release workflow security contract", () => {
 
   test("blocks advisories and binds audit, licenses and lockfile into release evidence", () => {
     expect(testWorkflow).toContain("run: bun run supply-chain:audit");
-    expect(candidate).toContain("run: bun run supply-chain:audit");
+    expect(candidate).toContain("run: bun audit --audit-level=low --json > supply-chain-audit.json");
+    expect(candidate).toContain("SUPPLY_CHAIN_AUDIT_REPORT_PATH: supply-chain-audit.json");
     expect(candidate).toContain("bun run supply-chain:evidence > supply-chain-evidence.json");
     expect(candidate).toContain("RELEASE_SUPPLY_CHAIN_SHA256");
     expect(candidate).toContain("RELEASE_AGENT_DISCOVERY_SHA256");
