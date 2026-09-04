@@ -13,6 +13,7 @@ import {
 } from "./document-storage";
 import { strengthenGdprErasureAliasesForIdentity } from "./gdpr";
 import { asDocumentId, type DocumentId } from "./ids";
+import { renderEmlEvidence } from "./eml-evidence";
 import { compareDkk, percentOfDkk, roundDkk, sumDkk } from "./money";
 import { companyPaths } from "./paths";
 import { retainUntilForDate } from "./retention";
@@ -874,6 +875,18 @@ function ingestDocumentSnapshot(
       const registered = db.query("SELECT 1 FROM documents WHERE sha256_hash = ?").get(sha256);
       if (!registered) return { ok: false, errors: ["document evidence destination exists without a registered document"] };
       return { ok: false, errors: ["duplicate document content already ingested"] };
+    }
+    if (mimeType === "message/rfc822") {
+      // #566: every EML evidence document carries a deterministic rendering at
+      // <stored_path>.rendered.html so a bookkeeper can read it without a mail
+      // client. Publish with the same create-if-absent discipline; the
+      // rendering bytes are fully re-derivable from the evidence bytes.
+      const rendering = Buffer.from(renderEmlEvidence(snapshot.bytes, sha256), "utf8");
+      const renderingPublication = publishDocumentSnapshot(evidenceStore, `${sha256}${ext}.rendered.html`, {
+        filename: `${sha256}${ext}.rendered.html`,
+        bytes: rendering,
+        sha256: createHash("sha256").update(rendering).digest("hex"),
+      });
     }
     const result = db.transaction(() => {
       const contentDuplicate = db.query("SELECT document_no FROM documents WHERE sha256_hash = ?").get(sha256) as { document_no: string } | null;
