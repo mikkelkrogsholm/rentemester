@@ -7,6 +7,8 @@ import { initWorkspace } from "../../src/core/workspace";
 import { workspaceControlPaths } from "../../src/core/workspace-control";
 import { readPrivateWorkspaceBootstrapPassword } from "../../src/cli/workspace-access";
 import { createMcpSecurityContextFromEnv, authorizeMcpTool } from "../../src/mcp/security";
+import { openWorkspaceControlDb } from "../../src/core/workspace-control";
+import { grantCompanyMembership, revokeCompanyMembership } from "../../src/core/workspace-access";
 
 const password = "very-private-bootstrap-password";
 
@@ -39,6 +41,12 @@ describe("workspace-access bootstrap-first CLI boundary", () => {
       expect(security).not.toBeNull();
       expect(await authorizeMcpTool(security!, "documents_list", { company: company.slug })).not.toBeNull();
       expect(await authorizeMcpTool(security!, "journal_post", { company: company.slug })).toBeNull();
+      const control = openWorkspaceControlDb(workspace);
+      try {
+        revokeCompanyMembership(control, workspace, { userId: issued.serviceAccountId, companySlug: company.slug, createdBy: "agent:codex" });
+        expect(await authorizeMcpTool(security!, "documents_list", { company: company.slug })).toBeNull();
+        grantCompanyMembership(control, workspace, { userId: issued.serviceAccountId, companySlug: company.slug, role: "reviewer", createdBy: "agent:codex" });
+      } finally { control.close(); }
       const rotateRun = await run([
         "workspace-access", "local-service-rotate", "--workspace", workspace, "--company", company.slug,
         "--service-account-id", issued.serviceAccountId, "--credential-id", issued.credentialId, "--auth-secret-file", secretPath,
