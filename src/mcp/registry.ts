@@ -98,6 +98,7 @@ import { registerCompanyProfileTools } from "./tools/company";
 import { registerMetaTools } from "./tools/meta";
 import { registerPostingRuleTools } from "./tools/posting-rules";
 import { registerBookkeepingBatchTools } from "./tools/bookkeeping-batch";
+import { registerPurchaseCaseTools } from "./tools/purchase-cases";
 import { registerBookkeepingWorkbenchTools } from "./tools/bookkeeping-workbench";
 import { registerWorkspaceRegistryTools } from "./tools/workspace-registry";
 import { registerIntercompanyDispositionTools } from "./tools/intercompany-dispositions";
@@ -267,6 +268,7 @@ export function registerAllTools(server: McpServer, security?: McpSecurityContex
   registerMetaTools(server, () => liveTools);
   registerPostingRuleTools(server);
   registerBookkeepingBatchTools(server);
+  registerPurchaseCaseTools(server);
   registerBookkeepingWorkbenchTools(server);
   registerWorkspaceRegistryTools(server);
   registerIntercompanyDispositionTools(server);

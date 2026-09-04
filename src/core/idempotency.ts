@@ -10,6 +10,7 @@ export const IDEMPOTENCY_RETENTION_DAYS = 30;
 export type RetryClass = "safe-read" | "key-idempotent" | "natural-idempotent" | "external-provider-reconciled" | "unsafe-read-back";
 export const RETRY_CLASS_BY_OPERATION: Readonly<Record<string, RetryClass>> = Object.freeze({
   journal_post: "key-idempotent", journal_reverse: "key-idempotent", expense_book: "key-idempotent", payable_register: "key-idempotent", payable_pay: "key-idempotent",
+  purchase_case_create: "key-idempotent", purchase_case_review: "key-idempotent",
   bookkeeping_batch_apply: "natural-idempotent", reconcile_bank: "natural-idempotent", bank_import: "natural-idempotent",
   bank_reconciliation_correction_apply: "key-idempotent",
   direct_bank_purchase_payable_correction_apply: "key-idempotent",

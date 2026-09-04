@@ -1,0 +1,17 @@
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
+import { createPurchaseCase, getPurchaseCase, listPurchaseCases, reviewPurchaseCase } from "../../core/purchase-cases";
+import { envelopeShape, wrapCoreResult } from "../envelope";
+import { confirmField, idempotencyKeyField, withCompanyDb, withCompanyDbConfirmed } from "../tool-runtime";
+
+const source = z.discriminatedUnion("kind", [z.object({ kind:z.literal("document"), id:z.number().int().positive() }),z.object({ kind:z.literal("bank_transaction"), id:z.number().int().positive() }),z.object({ kind:z.literal("payable"), id:z.number().int().positive() })]);
+const outcome=z.enum(["unresolved","ordinary_evidence_sufficient","alternative_evidence_assessed"]);
+const write={company:z.string().min(1),confirm:confirmField,idempotencyKey:idempotencyKeyField};
+export function registerPurchaseCaseTools(server:McpServer){
+ const read={readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false} as const;
+ const mutation={readOnlyHint:false,destructiveHint:false,idempotentHint:true,openWorldHint:false} as const;
+ server.registerTool("purchase_case_create",{title:"Create provisional purchase case",description:"Creates a source-bound append-only purchase case. Never posts a journal or changes VAT. Requires actor attribution and confirm:true; write-reversible.",inputSchema:{...write,caseId:z.string().optional(),source,documentationOutcome:outcome.optional(),note:z.string().max(2000).optional()},outputSchema:envelopeShape,annotations:mutation},withCompanyDbConfirmed<any>(server,"purchase_case_create",({db,args,actor})=>wrapCoreResult(createPurchaseCase(db,{caseId:args.caseId,source:args.source,documentationOutcome:args.documentationOutcome,note:args.note,actor})),{keyIdempotent:"purchase_case_create",requireIdempotencyKey:true}));
+ server.registerTool("purchase_case_review",{title:"Review provisional purchase case",description:"Appends an exact source-bound review. It never posts a journal or changes VAT. Requires actor attribution and confirm:true; write-reversible.",inputSchema:{...write,caseId:z.string(),expectedVersion:z.number().int().positive(),expectedSourceFingerprint:z.string().regex(/^[a-f0-9]{64}$/),documentationOutcome:outcome,note:z.string().max(2000).optional()},outputSchema:envelopeShape,annotations:mutation},withCompanyDbConfirmed<any>(server,"purchase_case_review",({db,args,actor})=>wrapCoreResult(reviewPurchaseCase(db,{caseId:args.caseId,expectedVersion:args.expectedVersion,expectedSourceFingerprint:args.expectedSourceFingerprint,documentationOutcome:args.documentationOutcome,note:args.note,actor})),{keyIdempotent:"purchase_case_review",requireIdempotencyKey:true}));
+ server.registerTool("purchase_case_get",{title:"Read purchase case",description:"Reads the current derived purchase-case projection without mutation.",inputSchema:{company:z.string().min(1),caseId:z.string()},outputSchema:envelopeShape,annotations:read},withCompanyDb<any>(server,({db,args})=>wrapCoreResult({ok:true,purchaseCase:getPurchaseCase(db,args.caseId)})));
+ server.registerTool("purchase_case_list",{title:"List purchase cases",description:"Reads current source-bound purchase-case projections without mutation.",inputSchema:{company:z.string().min(1)},outputSchema:envelopeShape,annotations:read},withCompanyDb<any>(server,({db})=>wrapCoreResult({ok:true,purchaseCases:listPurchaseCases(db)})));
+}
