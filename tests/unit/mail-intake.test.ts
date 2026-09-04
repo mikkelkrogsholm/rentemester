@@ -159,7 +159,7 @@ describe("ingestMailDrop", () => {
     rmSync(dropRoot, { recursive: true, force: true });
   });
 
-  test("routes a message with no usable attachment into the exception queue", () => {
+  test("#566 routes an attachmentless message without metadata to the exception queue", () => {
     const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-mailintake-noatt-"));
     const dropRoot = mkdtempSync(join(tmpdir(), "rentemester-maildrop-noatt-"));
     const emlPath = join(dropRoot, "no-attachment.eml");
@@ -168,14 +168,110 @@ describe("ingestMailDrop", () => {
     const db = openDb(ensureCompanyDirs(companyRoot).db);
     migrate(db);
 
-    const result = ingestMailDrop(db, companyRoot, emlPath, { metadata: baseMetadata });
+    const result = ingestMailDrop(db, companyRoot, emlPath, {});
     expect(result.ok).toBe(true);
     expect(result.attachmentsIngested).toBe(0);
+    expect(result.evidenceIngested).toBe(0);
     expect(result.exceptionsCreated).toBe(1);
 
     const exceptions = listExceptions(db, { status: "open" });
     expect(exceptions.count).toBe(1);
     expect(exceptions.rows[0]!.type).toBe("MAIL_INTAKE_NO_ATTACHMENT");
+
+    db.close();
+    rmSync(companyRoot, { recursive: true, force: true });
+    rmSync(dropRoot, { recursive: true, force: true });
+  });
+
+  test("ingests an attachmentless EML as immutable evidence with metadata (#566 slice 2)", () => {
+    const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-mailintake-emlev-"));
+    const dropRoot = mkdtempSync(join(tmpdir(), "rentemester-maildrop-emlev-"));
+    const emlPath = join(dropRoot, "receipt.eml");
+    const raw = buildEml({ messageId: "<emlev-1@example.com>", noAttachment: true });
+    writeFileSync(emlPath, raw);
+
+    const db = openDb(ensureCompanyDirs(companyRoot).db);
+    migrate(db);
+
+    const result = ingestMailDrop(db, companyRoot, emlPath, { metadata: baseMetadata });
+    expect(result.ok).toBe(true);
+    expect(result.evidenceIngested).toBe(1);
+    expect(result.exceptionsCreated).toBe(0);
+    expect(result.documents).toHaveLength(1);
+    expect(result.documents[0]!.documentNo).toContain("DOC-");
+    expect(result.documents[0]!.sha256).toBe(new Bun.CryptoHasher("sha256").update(raw).digest("hex"));
+
+    const row = db.query("SELECT mime_type, source, sha256_hash FROM documents WHERE sha256_hash = ?").get(result.documents[0]!.sha256) as any;
+    expect(row.mime_type).toBe("message/rfc822");
+    expect(row.source).toBe("mail-intake:<emlev-1@example.com>");
+
+    db.close();
+    rmSync(companyRoot, { recursive: true, force: true });
+    rmSync(dropRoot, { recursive: true, force: true });
+  });
+
+  test("rerunning an attachmentless EML maildrop is idempotent (#566 slice 2)", () => {
+    const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-mailintake-emlevdup-"));
+    const dropRoot = mkdtempSync(join(tmpdir(), "rentemester-maildrop-emlevdup-"));
+    const emlPath = join(dropRoot, "receipt.eml");
+    writeFileSync(emlPath, buildEml({ messageId: "<emlev-2@example.com>", noAttachment: true }));
+
+    const db = openDb(ensureCompanyDirs(companyRoot).db);
+    migrate(db);
+
+    const first = ingestMailDrop(db, companyRoot, emlPath, { metadata: baseMetadata });
+    expect(first.evidenceIngested).toBe(1);
+
+    const second = ingestMailDrop(db, companyRoot, emlPath, { metadata: baseMetadata });
+    expect(second.ok).toBe(true);
+    expect(second.evidenceIngested).toBe(0);
+    expect(second.evidenceSkipped).toBe(1);
+    expect(second.documents).toHaveLength(0);
+    const docCount = db.query("SELECT COUNT(*) AS n FROM documents").get() as { n: number };
+    expect(docCount.n).toBe(1);
+
+    db.close();
+    rmSync(companyRoot, { recursive: true, force: true });
+    rmSync(dropRoot, { recursive: true, force: true });
+  });
+
+  test("attachmentless EML without metadata still routes to the exception queue (fail-closed)", () => {
+    const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-mailintake-emlevnometa-"));
+    const dropRoot = mkdtempSync(join(tmpdir(), "rentemester-maildrop-emlevnometa-"));
+    const emlPath = join(dropRoot, "no-attachment.eml");
+    writeFileSync(emlPath, buildEml({ messageId: "<emlev-3@example.com>", noAttachment: true }));
+
+    const db = openDb(ensureCompanyDirs(companyRoot).db);
+    migrate(db);
+
+    const result = ingestMailDrop(db, companyRoot, emlPath, {});
+    expect(result.ok).toBe(true);
+    expect(result.evidenceIngested).toBe(0);
+    expect(result.exceptionsCreated).toBe(1);
+
+    const exceptions = listExceptions(db, { status: "open" });
+    expect(exceptions.rows[0]!.type).toBe("MAIL_INTAKE_NO_ATTACHMENT");
+
+    db.close();
+    rmSync(companyRoot, { recursive: true, force: true });
+    rmSync(dropRoot, { recursive: true, force: true });
+  });
+
+  test("a message with usable attachments follows the attachment path unchanged (no EML evidence)", () => {
+    const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-mailintake-emlevatt-"));
+    const dropRoot = mkdtempSync(join(tmpdir(), "rentemester-maildrop-emlevatt-"));
+    const emlPath = join(dropRoot, "message.eml");
+    writeFileSync(emlPath, buildEml({ messageId: "<emlev-4@example.com>" }));
+
+    const db = openDb(ensureCompanyDirs(companyRoot).db);
+    migrate(db);
+
+    const result = ingestMailDrop(db, companyRoot, emlPath, { metadata: baseMetadata });
+    expect(result.attachmentsIngested).toBe(1);
+    expect(result.evidenceIngested).toBe(0);
+    const rows = db.query("SELECT mime_type FROM documents").all() as any[];
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.mime_type).toBe("application/pdf");
 
     db.close();
     rmSync(companyRoot, { recursive: true, force: true });
@@ -207,7 +303,7 @@ describe("ingestMailDrop", () => {
     rmSync(dropRoot, { recursive: true, force: true });
   });
 
-  test("re-routing an ambiguous/no-attachment message does not duplicate the exception", () => {
+  test("re-routing an attachmentless message without metadata does not duplicate the exception", () => {
     const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-mailintake-exdup-"));
     const dropRoot = mkdtempSync(join(tmpdir(), "rentemester-maildrop-exdup-"));
     const emlPath = join(dropRoot, "no-attachment.eml");
@@ -216,8 +312,8 @@ describe("ingestMailDrop", () => {
     const db = openDb(ensureCompanyDirs(companyRoot).db);
     migrate(db);
 
-    ingestMailDrop(db, companyRoot, emlPath, { metadata: baseMetadata });
-    ingestMailDrop(db, companyRoot, emlPath, { metadata: baseMetadata });
+    ingestMailDrop(db, companyRoot, emlPath, {});
+    ingestMailDrop(db, companyRoot, emlPath, {});
 
     const exceptions = listExceptions(db, { status: "open" });
     expect(exceptions.count).toBe(1);

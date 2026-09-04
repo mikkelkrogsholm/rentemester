@@ -13,6 +13,7 @@ import {
 } from "./document-storage";
 import { strengthenGdprErasureAliasesForIdentity } from "./gdpr";
 import { asDocumentId, type DocumentId } from "./ids";
+import { renderEmlEvidence } from "./eml-evidence";
 import { compareDkk, percentOfDkk, roundDkk, sumDkk } from "./money";
 import { companyPaths } from "./paths";
 import { retainUntilForDate } from "./retention";
@@ -305,6 +306,10 @@ const ALLOWED_MIME_TYPES = new Set([
   // Received e-invoices (Digisense MODTAG, #efaktura) arrive as UBL XML and are
   // legitimate bilag, so application/xml is ingestable like the other text formats.
   "application/xml",
+  // #566: a supplier can send the order confirmation / simplified receipt only
+  // in the body of an authenticated EML with no attachment. The original EML
+  // bytes are the evidence; ingest stores them immutably, hash-bound.
+  "message/rfc822",
 ]);
 
 const EXTENSION_MIME: Record<string, string> = {
@@ -315,6 +320,7 @@ const EXTENSION_MIME: Record<string, string> = {
   ".txt": "text/plain",
   ".json": "application/json",
   ".xml": "application/xml",
+  ".eml": "message/rfc822",
 };
 
 function startsWithBytes(buf: Buffer, signature: number[]): boolean {
@@ -366,6 +372,16 @@ function detectMimeType(filename: string, bytes: Buffer): string {
     throw new Error(
       `file content does not match its '${ext}' extension (looks like ${sniffed})`,
     );
+  }
+
+  if (expected === "message/rfc822") {
+    // An .eml must open with an RFC 5322 header block ("Field-Name: value"),
+    // so arbitrary text cannot masquerade as e-mail evidence. Field names are
+    // printable ASCII excluding colon (RFC 5322 § 2.2).
+    const firstLine = bytes.toString("utf8", 0, Math.min(bytes.length, 4096)).split(/\r?\n/).find((line) => line.trim() !== "");
+    if (!firstLine || !/^[\x21-\x39\x3b-\x7e]+: /.test(firstLine)) {
+      throw new Error("file content does not look like an RFC 5322 message (no header block)");
+    }
   }
 
   if (!ALLOWED_MIME_TYPES.has(expected)) {
@@ -899,6 +915,18 @@ function ingestDocumentSnapshot(
       const registered = db.query("SELECT 1 FROM documents WHERE sha256_hash = ?").get(sha256);
       if (!registered) return { ok: false, errors: ["document evidence destination exists without a registered document"] };
       return { ok: false, errors: ["duplicate document content already ingested"] };
+    }
+    if (mimeType === "message/rfc822") {
+      // #566: every EML evidence document carries a deterministic rendering at
+      // <stored_path>.rendered.html so a bookkeeper can read it without a mail
+      // client. Publish with the same create-if-absent discipline; the
+      // rendering bytes are fully re-derivable from the evidence bytes.
+      const rendering = Buffer.from(renderEmlEvidence(snapshot.bytes, sha256), "utf8");
+      const renderingPublication = publishDocumentSnapshot(evidenceStore, `${sha256}${ext}.rendered.html`, {
+        filename: `${sha256}${ext}.rendered.html`,
+        bytes: rendering,
+        sha256: createHash("sha256").update(rendering).digest("hex"),
+      });
     }
     const result = db.transaction(() => {
       const contentDuplicate = db.query("SELECT document_no FROM documents WHERE sha256_hash = ?").get(sha256) as { document_no: string } | null;
