@@ -32,6 +32,10 @@ export const documentsApi = {
   confirmInternalNoExternalParty: (slug: string, input: Record<string, unknown>) =>
     request<{ ok: boolean; id?: number; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/internal-no-external-party`, { method: "POST", body: JSON.stringify(input) }),
 
+  /** #618: audited attribution separate from the source invoice and VAT gate. */
+  setDocumentCompanyContext: (slug: string, input: { documentId: number; sourceReference: string; businessUseReason: string }) =>
+    request<{ ok: boolean; applied?: boolean; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/company-context`, { method: "POST", body: JSON.stringify({ ...input, confirm: true }) }),
+
   /**
    * URL of a stored bilag file — opened directly in a new browser tab, so it
    * is a plain URL builder rather than a fetch. The server serves the file

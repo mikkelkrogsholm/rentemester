@@ -142,6 +142,9 @@ export function DocumentsView() {
   const [partyError, setPartyError] = useState<string | null>(null);
   const [partyBusy, setPartyBusy] = useState(false);
   const [partyConfirmed, setPartyConfirmed] = useState(false);
+  const [contextSourceReference, setContextSourceReference] = useState("");
+  const [contextBusinessUseReason, setContextBusinessUseReason] = useState("");
+  const [contextConfirmed, setContextConfirmed] = useState(false);
 
   // --- #433 filter-bar params (client-side; reflected in URL) ---------------
   const q = params.get("q") ?? "";
@@ -277,6 +280,9 @@ export function DocumentsView() {
     setPartyPlan(null);
     setPartyError(null);
     setPartyConfirmed(false);
+    setContextSourceReference("");
+    setContextBusinessUseReason("");
+    setContextConfirmed(false);
     setPartyBusy(true);
     try {
       // This is a membership-scoped search. It is not a match decision.
@@ -352,6 +358,17 @@ export function DocumentsView() {
     setPartyBusy(true); setPartyError(null);
     try { const result = await api.confirmInternalNoExternalParty(slug, { documentId: reviewedDocument.id, reason: "Confirmed in Documents Cockpit", idempotencyKey: `internal-no-party-${reviewedDocument.id}`, confirm: true }); if (!result.ok) { setPartyError(result.errors?.join(", ") ?? "Beslutningen kunne ikke gemmes."); return; } await partyLinks.reload(); setPartyReviewId(null); }
     catch (error) { setPartyError(error instanceof Error ? error.message : "Beslutningen kunne ikke gemmes."); }
+    finally { setPartyBusy(false); }
+  }
+
+  async function recordCompanyContext() {
+    if (!reviewedDocument || reviewedDocument.documentType !== "purchase_sale" || !contextConfirmed || !contextSourceReference.trim() || !contextBusinessUseReason.trim()) return;
+    setPartyBusy(true); setPartyError(null);
+    try {
+      const result = await api.setDocumentCompanyContext(slug, { documentId: reviewedDocument.id, sourceReference: contextSourceReference.trim(), businessUseReason: contextBusinessUseReason.trim() });
+      if (!result.ok) { setPartyError(result.errors?.join(", ") ?? "Virksomhedskonteksten kunne ikke gemmes."); return; }
+      setContextConfirmed(false);
+    } catch (error) { setPartyError(error instanceof Error ? error.message : "Virksomhedskonteksten kunne ikke gemmes."); }
     finally { setPartyBusy(false); }
   }
 
@@ -506,6 +523,7 @@ export function DocumentsView() {
           {partyError && <p className="flag warning" role="alert">{partyError}</p>}
           {partyPlan && <div className="card"><p><strong>Plan klar</strong> — {partyPlan.partySnapshot?.name ?? "Valgt part"}; bevis: {partyPlan.evidence?.kind ?? "exact_identifier"}.</p><p className="muted">Plan-hash: <code>{partyPlan.planHash}</code></p><label><input type="checkbox" checked={partyConfirmed} onChange={(event) => setPartyConfirmed(event.target.checked)} /> Jeg har gennemgået planen og vil oprette den append-only kobling.</label><div className="row-actions"><button type="button" className="btn" disabled={partyBusy || !partyConfirmed} onClick={applyPartyLink}>Bekræft og anvend</button></div></div>}
           {reviewedDocument.documentType === "internal_voucher" && <div className="card"><p className="muted">Interne bilag kan bekræftes uden ekstern part. Beslutningen er append-only og ændrer ikke bilag, moms eller journal.</p><button type="button" className="btn secondary" disabled={partyBusy} onClick={confirmInternalNoParty}>Bekræft ingen ekstern part</button></div>}
+          {reviewedDocument.documentType === "purchase_sale" && <div className="card"><h4>Separat virksomhedskontekst</h4><p className="muted">Brug kun når det oprindelige købsbilag faktisk er ufuldstændigt eller et dansk forenklet bilag. Det ændrer aldrig modtageren på fakturaen og godkender ikke moms.</p><label className="modal-field">Kildereference<input value={contextSourceReference} onChange={(event) => setContextSourceReference(event.target.value)} disabled={partyBusy} /></label><label className="modal-field">Forretningsmæssig begrundelse<input value={contextBusinessUseReason} onChange={(event) => setContextBusinessUseReason(event.target.value)} disabled={partyBusy} /></label><label><input type="checkbox" checked={contextConfirmed} onChange={(event) => setContextConfirmed(event.target.checked)} disabled={partyBusy} /> Jeg har gennemgået den uforanderlige kilde og vil gemme denne attribution append-only.</label><div className="row-actions"><button type="button" className="btn secondary" disabled={partyBusy || !contextConfirmed || !contextSourceReference.trim() || !contextBusinessUseReason.trim()} onClick={recordCompanyContext}>Gem virksomhedskontekst</button></div></div>}
         </section>
       )}
 
