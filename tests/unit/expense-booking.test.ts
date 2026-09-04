@@ -791,7 +791,7 @@ describe("expense booking", () => {
       sender: { name: "US SaaS Inc.", address: "New York", vatOrCvr: "US-EIN-12-3456789", countryCode: "US", identifierKind: "non_eu" },
       recipient: { name: "Another ApS", address: "Anden vej 1", vatOrCvr: "DK87654321" },
       vatAmount: 0,
-      reverseChargeWordingConfirmed: true,
+      reverseChargeWordingEvidence: { excerpt: "Reverse charge", location: "page 1" },
     });
     expect(mismatchedDoc.ok).toBe(true);
     const mismatchedBank = db.query("SELECT id FROM bank_transactions WHERE reference = 'REF-US-RC-MISMATCH'").get() as { id: number };
@@ -810,7 +810,7 @@ describe("expense booking", () => {
       sender: { name: "US SaaS Inc.", address: "New York", vatOrCvr: "US-EIN-12-3456789", countryCode: "US", identifierKind: "non_eu" },
       recipient: { name: "Rentemester ApS", address: "Testvej 1", vatOrCvr: "DK12345678" },
       vatAmount: 0,
-      reverseChargeWordingConfirmed: true,
+      reverseChargeWordingEvidence: { excerpt: "Reverse charge", location: "page 1" },
     });
     expect(evidencedDoc.ok).toBe(true);
     const evidencedBankRow = db.query("SELECT id FROM bank_transactions WHERE reference = 'REF-US-RC-2'").get() as { id: number };

@@ -400,11 +400,13 @@ export function nonEuReverseChargeEvidenceErrors(db: Database, documentId: numbe
     const sourceEvidence = evidence && typeof evidence === "object" && !Array.isArray(evidence)
       ? evidence as Record<string, unknown>
       : null;
+    // A historical boolean may remain in immutable metadata, but it is not
+    // documentary evidence. Only a cited source statement can unlock the
+    // same booking gate that preflight reports.
     wordingConfirmed = Boolean(
       payload
-      && (record?.reverseChargeWordingConfirmed === true
-        || (typeof sourceEvidence?.excerpt === "string" && sourceEvidence.excerpt.trim()
-          && typeof sourceEvidence.location === "string" && sourceEvidence.location.trim())),
+      && typeof sourceEvidence?.excerpt === "string" && sourceEvidence.excerpt.trim()
+      && typeof sourceEvidence.location === "string" && sourceEvidence.location.trim(),
     );
   } catch {
     wordingConfirmed = false;
