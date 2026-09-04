@@ -12,7 +12,7 @@ import { importedReceivableBalanceOre, importedReceivableControlDate } from "./i
 
 export type CloseControlStatus = "passed" | "warning" | "blocked" | "unavailable";
 export type CloseReadinessItem = { code: string; status: CloseControlStatus; waivable: boolean; count: number; amount: number; evidence: readonly Record<string, unknown>[]; sourceHash: string };
-export type CloseReadinessPacket = { version: 3; periodStart: string; periodEnd: string; cutoff: string; controlsRun: readonly string[]; items: readonly CloseReadinessItem[]; blockers: number; warnings: number; hash: string };
+export type CloseReadinessPacket = { version: 4; periodStart: string; periodEnd: string; cutoff: string; controlsRun: readonly string[]; items: readonly CloseReadinessItem[]; blockers: number; warnings: number; hash: string };
 export type CloseReviewPrincipal = { kind: "user" | "service-account" | "local-trusted"; subjectId: string };
 export type PeriodCloseReview = { id: number; packet: CloseReadinessPacket; reviewerActor: string; reviewerPrincipal: CloseReviewPrincipal | null; createdAt: string };
 
@@ -192,6 +192,23 @@ export function computePeriodCloseReadiness(db: Database, input: { periodStart: 
     if (!has(db,"documents","status") || !has(db,"documents","invoice_date")) return unavailable("DOCUMENT_OUTSTANDING","document status/date schema unavailable");
     const evidence=rows(db,"SELECT id,status,invoice_date FROM documents WHERE status IN ('pending','failed','needs_review') AND (invoice_date BETWEEN ? AND ? OR invoice_date IS NULL) ORDER BY id",input.periodStart,cutoff); return control("DOCUMENT_OUTSTANDING",evidence.length?"blocked":"passed",true,evidence);
   }));
+  items.push(protect("PURCHASE_CASE_DOCUMENTATION",()=>{
+    if (!exists(db,"current_purchase_cases") || !has(db,"purchase_case_events","documentation_outcome") || !has(db,"bank_transactions","transaction_date") || !has(db,"documents","invoice_date") || !has(db,"payables","bill_date")) return unavailable("PURCHASE_CASE_DOCUMENTATION","purchase-case documentation schema unavailable");
+    const evidence: Array<Record<string, unknown>>=rows(db,`SELECT c.case_id,c.version,c.source_kind,c.source_id,c.source_fingerprint,c.documentation_outcome,c.actor,c.program,
+      CASE c.source_kind WHEN 'bank_transaction' THEN bt.transaction_date WHEN 'document' THEN d.invoice_date WHEN 'payable' THEN p.bill_date END AS source_date
+      FROM current_purchase_cases c
+      LEFT JOIN bank_transactions bt ON c.source_kind='bank_transaction' AND bt.id=c.source_id
+      LEFT JOIN documents d ON c.source_kind='document' AND d.id=c.source_id
+      LEFT JOIN payables p ON c.source_kind='payable' AND p.id=c.source_id
+      WHERE (CASE c.source_kind WHEN 'bank_transaction' THEN bt.transaction_date WHEN 'document' THEN d.invoice_date WHEN 'payable' THEN p.bill_date END BETWEEN ? AND ?)
+        OR (CASE c.source_kind WHEN 'bank_transaction' THEN bt.transaction_date WHEN 'document' THEN d.invoice_date WHEN 'payable' THEN p.bill_date END IS NULL)
+      ORDER BY c.case_id`,input.periodStart,cutoff).map(row=>({...row,resolutionKey:`purchase-case:${row.case_id}:v${row.version}:${row.source_fingerprint}`,vatEligibility:"separate_vat_preflight_required"}));
+    const unresolved=evidence.filter(row=>row.documentation_outcome==="unresolved");
+    const alternative=evidence.filter(row=>row.documentation_outcome==="alternative_evidence_assessed");
+    // Alternative evidence is an auditable documentation outcome only. It is
+    // intentionally not a VAT approval; VAT_PREFLIGHT remains authoritative.
+    return control("PURCHASE_CASE_DOCUMENTATION",unresolved.length?"blocked":alternative.length?"warning":"passed",false,evidence);
+  }));
   items.push(protect("PAYABLE_OUTSTANDING",()=>{
     if (!has(db,"payables","due_date") || !has(db,"payables","gross_amount") || !has(db,"payable_payments","payable_id") || !has(db,"payable_payments","amount")) return unavailable("PAYABLE_OUTSTANDING","payable/payment schema unavailable");
     const evidence=rows(db,`SELECT p.id,p.due_date,p.gross_amount,COALESCE(SUM(pp.amount),0) AS paid_amount FROM payables p LEFT JOIN payable_payments pp ON pp.payable_id=p.id AND pp.payment_date<=? WHERE p.due_date<=? GROUP BY p.id HAVING COALESCE(SUM(pp.amount),0)<p.gross_amount ORDER BY p.id`,cutoff,cutoff); return control("PAYABLE_OUTSTANDING",evidence.length?"warning":"passed",true,evidence,evidence.reduce((n,r)=>n+Math.abs(Number(r.gross_amount??0)-Number(r.paid_amount??0)),0));
@@ -220,7 +237,7 @@ export function computePeriodCloseReadiness(db: Database, input: { periodStart: 
   items.push(protect("VAT_PREFLIGHT",()=>{const r=buildVatReport(db,input.periodStart,cutoff);return control("VAT_PREFLIGHT",r.ok?"passed":"blocked",false,[...r.errors.map(error=>({error})),{filingReceipt:"not-modelled; this is a calculation/preflight, not evidence of submission"}]);}));
   items.push(protect("SQLITE_INTEGRITY",()=>{const result=db.query("PRAGMA integrity_check").all() as Array<{integrity_check?:string}>;const ok=result.length===1&&result[0]?.integrity_check==="ok";return control("SQLITE_INTEGRITY",ok?"passed":"blocked",false,ok?[]:result.map(row=>({result:row.integrity_check??null})));}));
   const sorted=items.sort((a,b)=>a.code.localeCompare(b.code));
-  const body={version:3 as const,periodStart:input.periodStart,periodEnd:input.periodEnd,cutoff,controlsRun:sorted.map(item=>item.code),items:sorted,blockers:sorted.filter(item=>item.status==="blocked"||item.status==="unavailable").length,warnings:sorted.filter(item=>item.status==="warning").length};
+  const body={version:4 as const,periodStart:input.periodStart,periodEnd:input.periodEnd,cutoff,controlsRun:sorted.map(item=>item.code),items:sorted,blockers:sorted.filter(item=>item.status==="blocked"||item.status==="unavailable").length,warnings:sorted.filter(item=>item.status==="warning").length};
   return {...body,hash:closeReadinessDigest(body)};
 }
 export const createPeriodCloseReadinessPacket=computePeriodCloseReadiness;
