@@ -25,7 +25,9 @@ type Row = { case_id:string; version:number; source_kind:PurchaseCaseSource["kin
 const caseId = /^[a-z][a-z0-9-]{2,63}$/;
 const sha = (value: unknown) => createHash("sha256").update(canonicalJson(value)).digest("hex");
 const failure = (...errors: string[]): PurchaseCaseResult => ({ ok:false, errors });
-const sourceValid = (source: PurchaseCaseSource) => Number.isInteger(source.id) && source.id > 0;
+const sourceValid = (source: PurchaseCaseSource) =>
+  (source.kind === "document" || source.kind === "bank_transaction" || source.kind === "payable") &&
+  Number.isInteger(source.id) && source.id > 0;
 
 /** Canonical, read-only source fingerprint. It is deliberately independent of
  * a case payload, so a source mutation makes an earlier review stale. */
@@ -60,7 +62,8 @@ function vatEvidence(db: Database, source: PurchaseCaseSource): PurchaseCase["va
 
 function fromRow(db: Database, row: Row): PurchaseCase {
   const source = { kind:row.source_kind, id:row.source_id } as PurchaseCaseSource;
-  return { caseId:row.case_id, version:row.version, source, sourceFingerprint:row.source_fingerprint, documentationOutcome:row.documentation_outcome, accountingProgress:booking(db,source) ? "posted" : "unposted", ...(booking(db,source) ? {canonicalBooking:booking(db,source)} : {}), vatEvidence:vatEvidence(db,source), note:row.note, eventHash:row.event_hash, createdAt:row.created_at };
+  const canonicalBooking = booking(db, source);
+  return { caseId:row.case_id, version:row.version, source, sourceFingerprint:row.source_fingerprint, documentationOutcome:row.documentation_outcome, accountingProgress:canonicalBooking ? "posted" : "unposted", ...(canonicalBooking ? {canonicalBooking} : {}), vatEvidence:vatEvidence(db,source), note:row.note, eventHash:row.event_hash, createdAt:row.created_at };
 }
 function current(db: Database, id: string): Row | null { return db.query("SELECT case_id,version,source_kind,source_id,source_fingerprint,documentation_outcome,note,event_hash,created_at FROM current_purchase_cases WHERE case_id=?").get(id) as Row|null; }
 function record(db: Database, input: { caseId:string; version:number; type:"created"|"reviewed"; source:PurchaseCaseSource; fingerprint:string; outcome:DocumentationOutcome; note:string; prior?:string; actor:ActorContext }) {

@@ -199,6 +199,12 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
     write("book-expense", mcp("expense_book"), "Post the reviewed expense and bank reconciliation.", { dependsOn: ["vat-preflight"], boundary: "irreversible", retryClass: "key-idempotent", inputIdentities: ["documentId", "bankTransactionId"], uncertainOutcomeReadBack: mcp("journal_list"), canonicalRecords: ["journal entries", "bank reconciliations", "document posting link"] }),
     read("verify-posting", mcp("journal_list"), "Read back the posting.", { dependsOn: ["book-expense"] }),
   ], relatedWorkflowIds: ["supplier-payable-handling", "vat-preparation"] }),
+  workflow({ id:"purchase-case-lifecycle", capabilityId:"supplier-purchases", title:"Provisional purchase case lifecycle", intendedOutcome:"Record a source-bound provisional purchase case, review exact evidence, then continue only through an existing booking flow.", steps:[
+    write("create",mcp("purchase_case_create"),"Create one append-only case bound to an existing document, bank transaction or payable. This never posts or changes VAT.",{boundary:"review",retryClass:"key-idempotent",inputIdentities:["source.kind","source.id","idempotencyKey"],outputIdentities:["caseId","sourceFingerprint"],canonicalRecords:["purchase case events","audit log"]}),
+    read("inspect",mcp("purchase_case_get"),"Read the derived accounting and VAT evidence state without mutation.",{dependsOn:["create"],inputIdentities:["caseId"]}),
+    write("review",mcp("purchase_case_review"),"Append only a review of the exact case version and source fingerprint.",{dependsOn:["inspect"],boundary:"review",retryClass:"key-idempotent",inputIdentities:["caseId","expectedVersion","expectedSourceFingerprint","idempotencyKey"],uncertainOutcomeReadBack:mcp("purchase_case_get"),canonicalRecords:["purchase case events","audit log"]}),
+    read("readback",mcp("purchase_case_get"),"Read the current case after a retry or review.",{dependsOn:["review"],inputIdentities:["caseId"]}),
+  ],relatedWorkflowIds:["supplier-expense-booking","supplier-payable-handling"],unsupportedBoundaries:["A purchase case is not a ledger, journal, draft, VAT approval or payable.","Booking remains in the existing reviewed supplier expense or payable workflow.","Changing source evidence makes a previous review stale."]}),
   workflow({ id: "supplier-payable-handling", capabilityId: "supplier-purchases", title: "Supplier payable handling", intendedOutcome: "Register a supplier invoice as an open payable and record its later bank payment.", steps: [
     write("register-payable", mcp("payable_register"), "Register reviewed evidence as a payable.", { boundary: "irreversible", retryClass: "key-idempotent", outputIdentities: ["payableId", "journalEntryId"], canonicalRecords: ["payables", "journal entries"] }),
     read("list-payables", mcp("payable_list"), "Read due/open state.", { dependsOn: ["register-payable"] }),
@@ -381,7 +387,7 @@ const capabilityTuples: CapabilityTuple[] = [
   ["non-cash-balance-corrections", "Non-cash balance corrections", "Record one hash-bound DKK correction between eligible balance accounts, including documented legacy opening creditor reclassification.", "ledger", ["correct balance without bank movement", "non-cash balance correction", "legacy opening creditor", "internal balance voucher"], ["balance correction", "internal voucher", "no bank movement", "DKK", "primobalance", "creditor"], "company", ["non-cash-balance-correction","legacy-opening-creditor-reclassification"]],
   ["workspace-document-inbox", "Workspace document inbox", "Route immutable incoming evidence to one authorized legal entity without a workspace ledger.", "documents", ["route incoming document", "assign workspace inbox", "review ambiguous company"], ["workspace inbox", "routing", "recipient alias", "buyer VAT"], "workspace", ["workspace-document-inbox"]],
   ["bank-bookkeeping", "Bank reconciliation and bookkeeping batch", "Import activity, review one canonical bank work queue and apply a hash-bound batch.", "bank", ["reconcile bank", "match bank transactions", "bookkeeping workbench", "bookkeeping batch", "correct bank reconciliation"], ["bank import", "workbench", "dry run", "plan hash", "reconciliation correction"], "company", ["bank-reconciliation-batch", "bookkeeping-workbench", "bank-reconciliation-correction"]],
-  ["supplier-purchases", "Supplier expenses and payables", "Book supplier invoices directly or through payable handling.", "purchases", ["book supplier invoice", "pay supplier invoice", "book expense", "adopt legacy payable"], ["vendor", "payable", "purchase VAT", "legacy backfill"], "company", ["supplier-expense-booking", "supplier-payable-handling", "direct-bank-purchase-payable-correction", "legacy-bank-payable-backfill"]],
+  ["supplier-purchases", "Supplier expenses and payables", "Book supplier invoices directly or through payable handling.", "purchases", ["book supplier invoice", "pay supplier invoice", "book expense", "adopt legacy payable", "provisional purchase case"], ["vendor", "payable", "purchase VAT", "legacy backfill", "purchase case"], "company", ["supplier-expense-booking", "supplier-payable-handling", "purchase-case-lifecycle", "direct-bank-purchase-payable-correction", "legacy-bank-payable-backfill"]],
   ["supplier-commitments", "Supplier commitments and 13-week liquidity", "Review recurring supplier commitments and inspect a source-linked cash forecast without generating payments.", "planning", ["track supplier subscription", "forecast cash 13 weeks", "review renewals"], ["commitment", "subscription", "cash forecast", "renewal"], "company", ["supplier-commitment-forecast"]],
   ["customer-invoicing", "Customer invoice lifecycle", "Create customers and handle issue, delivery, payment, reminder and correction.", "sales", ["issue customer invoice", "send invoice", "record payment", "send reminder", "credit note"], ["customer", "invoice", "settlement"], "company", ["customer-invoice-lifecycle"]],
   ["vat", "VAT preparation", "Validate and post supported VAT treatments and prepare evidence.", "vat", ["prepare VAT", "domestic purchase VAT", "reverse charge"], ["moms", "VIES", "input VAT"], "company", ["vat-preparation"]],
@@ -519,9 +525,9 @@ type SurfaceBaseline = { count: number; hash: string };
  */
 export const AGENT_SURFACE_BASELINES: Record<SurfaceName, SurfaceBaseline> = {
   // Public surface changes require an explicit discovery review.
-  mcp: { count: 227, hash: "e6750126f972127753ada296dedf13ab1921d38593514c410076c7cf6ce70391" },
-  cli: { count: 277, hash: "d19d2b0c94aab649f255f71b5343fdb587d403841cfd5e0ee112bfbdbbe11a5f" },
-  http: { count: 217, hash: "8119e8c28c799a4fc194dd7671dcaf1ce7803a18aeaa9cad9b8c78df924cb5ad" },
+  mcp: { count: 231, hash: "e364da7000eef83a59f020daba9c6ba7cb77e42413a90557a5045037489b84e3" },
+  cli: { count: 281, hash: "806a4416a8955832172a77a66846130cba4963479d6f0d577caf981bc6fc96e4" },
+  http: { count: 221, hash: "824ade2444fe93c2a5495a37ce4b02cea7507d22f1b738973f387e636f465f74" },
 };
 
 const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }> = [
@@ -542,7 +548,7 @@ const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }>
   { capabilityId: "vat", pattern: /(?:vat|moms|oss-report|eu-sales)/ },
   { capabilityId: "bank-bookkeeping", pattern: /(?:bank|reconcile|bookkeeping[_-](?:batch|workbench))/ },
   { capabilityId: "document-intake", pattern: /(?:documents?|mail[_-]intake|imap[_-]intake|bilagsmail)/ },
-  { capabilityId: "supplier-purchases", pattern: /(?:expense|payable|vendor|supplier)/ },
+  { capabilityId: "supplier-purchases", pattern: /(?:expense|payable|vendor|supplier|purchase[_ -]case)/ },
   { capabilityId: "supplier-commitments", pattern: /(?:supplier[_-]commitment|commitment|subscription|liquidity[_-]forecast_13)/ },
   { capabilityId: "customer-invoicing", pattern: /(?:invoice|customer|recurring)/ },
   { capabilityId: "exceptions-corrections", pattern: /(?:exceptions?|journal|accounting-draft|opening-balance)/ },
