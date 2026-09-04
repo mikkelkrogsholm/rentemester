@@ -38,6 +38,7 @@ const DOC_TYPE_LABELS: Record<string, string> = {
   purchase_sale: "Køb/salg",
   cash_register_receipt: "Kassebon",
   internal_voucher: "Internt bilag",
+  external_accounting_evidence: "Eksternt lønbilag",
 };
 
 // #433 — the keys we own in the URL. Listed once so "Ryd filtre" can clear
@@ -45,7 +46,7 @@ const DOC_TYPE_LABELS: Record<string, string> = {
 const FILTER_PARAM_KEYS = ["q", "from", "to", "status", "type", "party"] as const;
 
 type StatusFilter = "all" | "booked" | "unbooked";
-type TypeFilter = "all" | "purchase_sale" | "cash_register_receipt" | "internal_voucher";
+type TypeFilter = "all" | "purchase_sale" | "cash_register_receipt" | "internal_voucher" | "external_accounting_evidence";
 
 type SortKey = "date" | "amount";
 type SortDir = "asc" | "desc";
@@ -67,7 +68,8 @@ function isTypeFilter(v: string): v is TypeFilter {
     v === "all" ||
     v === "purchase_sale" ||
     v === "cash_register_receipt" ||
-    v === "internal_voucher"
+    v === "internal_voucher" ||
+    v === "external_accounting_evidence"
   );
 }
 
@@ -460,6 +462,7 @@ export function DocumentsView() {
             <option value="purchase_sale">Køb/salg</option>
             <option value="cash_register_receipt">Kassebon</option>
             <option value="internal_voucher">Internt bilag</option>
+            <option value="external_accounting_evidence">Eksternt lønbilag</option>
           </select>
         </label>
         {hasActiveFilter && (

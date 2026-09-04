@@ -70,7 +70,8 @@ export function DocumentIngestModal({
   const [recipientName, setRecipientName] = useState("");
   const [recipientAddress, setRecipientAddress] = useState("");
   const [recipientVat, setRecipientVat] = useState("");
-  const [reverseChargeWordingConfirmed, setReverseChargeWordingConfirmed] = useState(false);
+  const [reverseChargeWordingExcerpt, setReverseChargeWordingExcerpt] = useState("");
+  const [reverseChargeWordingLocation, setReverseChargeWordingLocation] = useState("");
   const [purchaseVatLines, setPurchaseVatLines] = useState<EditablePurchaseVatLine[]>([]);
   const [sourceBankTransactionId, setSourceBankTransactionId] = useState("");
   const [internalVoucherKind, setInternalVoucherKind] = useState<"bank_evidenced" | "non_cash_balance_correction">("bank_evidenced");
@@ -206,8 +207,15 @@ export function DocumentIngestModal({
     if (isPurchaseSale && parsedPurchaseVatLines.length > 0) {
       metadata.purchaseVatLines = parsedPurchaseVatLines;
     }
-    if (isPurchaseSale && reverseChargeWordingConfirmed) {
-      metadata.reverseChargeWordingConfirmed = true;
+    if (isPurchaseSale && (reverseChargeWordingExcerpt.trim() || reverseChargeWordingLocation.trim())) {
+      if (!reverseChargeWordingExcerpt.trim() || !reverseChargeWordingLocation.trim()) {
+        setError("Angiv både ordlyd og placering på bilaget for omvendt betalingspligt.");
+        return;
+      }
+      metadata.reverseChargeWordingEvidence = {
+        excerpt: reverseChargeWordingExcerpt.trim(),
+        location: reverseChargeWordingLocation.trim(),
+      };
     }
     if (senderName.trim() || senderAddress.trim() || senderVat.trim() || senderCountryCode.trim() || senderIdentifierKind) {
       metadata.sender = {
@@ -348,7 +356,7 @@ export function DocumentIngestModal({
 
             <div className="modal-field-grid">
               <label className="modal-field">
-                Bilagsdato{isPurchaseSale || isInternalVoucher ? "" : " (valgfri)"}
+                Bilagsdato{isPurchaseSale || isInternalVoucher || isExternalPayroll ? "" : " (valgfri)"}
                 <input
                   type="date"
                   value={issueDate}
@@ -371,6 +379,8 @@ export function DocumentIngestModal({
               <label className="modal-field">
                 {isInternalVoucher
                   ? "Beløb"
+                  : isExternalPayroll
+                    ? "Samlet lønrapport (debet/kredit)"
                   : `Beløb inkl. moms${isPurchaseSale ? "" : " (valgfri)"}`}
                 <input
                   type="number"
@@ -381,14 +391,14 @@ export function DocumentIngestModal({
                 />
               </label>
               <label className="modal-field">
-                Momsbeløb{isInternalVoucher ? " (altid 0)" : isPurchaseSale ? "" : " (valgfri)"}
+                Momsbeløb{isInternalVoucher || isExternalPayroll ? " (altid 0)" : isPurchaseSale ? "" : " (valgfri)"}
                 <input
                   type="number"
                   inputMode="decimal"
                   value={vatAmount}
                   onChange={(e) => setVatAmount(e.target.value)}
-                  disabled={busy || isInternalVoucher}
-                  placeholder={isInternalVoucher ? "0" : undefined}
+                  disabled={busy || isInternalVoucher || isExternalPayroll}
+                  placeholder={isInternalVoucher || isExternalPayroll ? "0" : undefined}
                 />
               </label>
             </div>
@@ -450,7 +460,7 @@ export function DocumentIngestModal({
               </>
             )}
 
-            {isPurchaseSale && (
+            {(isPurchaseSale || isExternalPayroll) && (
               <fieldset className="modal-field">
                 <legend>Momsfordeling (valgfri)</legend>
                 <p className="muted">
@@ -512,7 +522,7 @@ export function DocumentIngestModal({
               </fieldset>
             )}
 
-            {isPurchaseSale && (
+            {(isPurchaseSale || isExternalPayroll) && (
               <>
                 <div className="modal-field-grid">
                   <label className="modal-field">
@@ -584,16 +594,17 @@ export function DocumentIngestModal({
                     disabled={busy}
                   />
                 </label>
-                {senderIdentifierKind === "non_eu" && (
-                  <label className="modal-field checkbox-field">
-                    <input
-                      type="checkbox"
-                      checked={reverseChargeWordingConfirmed}
-                      onChange={(e) => setReverseChargeWordingConfirmed(e.target.checked)}
-                      disabled={busy}
-                    />
-                    Jeg har kontrolleret, at bilaget indeholder ordlyd om omvendt betalingspligt
-                  </label>
+                {isPurchaseSale && senderIdentifierKind === "non_eu" && (
+                  <div className="modal-field-grid">
+                    <label className="modal-field">
+                      Ordlyd om omvendt betalingspligt (valgfri)
+                      <input value={reverseChargeWordingExcerpt} onChange={(e) => setReverseChargeWordingExcerpt(e.target.value)} placeholder="Citat fra bilaget" disabled={busy} />
+                    </label>
+                    <label className="modal-field">
+                      Placering på bilaget
+                      <input value={reverseChargeWordingLocation} onChange={(e) => setReverseChargeWordingLocation(e.target.value)} placeholder="Fx side 1" disabled={busy} />
+                    </label>
+                  </div>
                 )}
               </>
             )}

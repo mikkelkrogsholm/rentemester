@@ -163,22 +163,42 @@ describe("DocumentIngestModal", () => {
     });
   });
 
-  test("#529 submits explicit reverse-charge wording evidence for a non-EU supplier", async () => {
+  test("#619 submits source-cited reverse-charge wording evidence for a non-EU supplier", async () => {
     mockFetch(ingestRoute());
     render(
       <DocumentIngestModal slug="acme-aps" onIngested={noop} onClose={noop} />,
     );
     await userEvent.upload(screen.getByLabelText("Bilagsfil"), receiptFile("us-saas.txt"));
     await userEvent.selectOptions(screen.getByLabelText("Identitetstype"), "non_eu");
-    const evidence = screen.getByLabelText("Jeg har kontrolleret, at bilaget indeholder ordlyd om omvendt betalingspligt");
-    await userEvent.click(evidence);
+    await userEvent.type(screen.getByLabelText("Ordlyd om omvendt betalingspligt (valgfri)"), "Reverse charge applies");
+    await userEvent.type(screen.getByLabelText("Placering på bilaget"), "side 1");
     await userEvent.click(screen.getByRole("button", { name: "Indlæs bilag" }));
     await waitFor(() => {
       const calls = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
       const ingestCall = calls.find((call) => String(call[0]).includes("/documents/ingest"));
       expect(ingestCall).toBeDefined();
       const sent = JSON.parse(String((ingestCall![1] as RequestInit).body));
-      expect(sent.metadata.reverseChargeWordingConfirmed).toBe(true);
+      expect(sent.metadata.reverseChargeWordingEvidence).toEqual({ excerpt: "Reverse charge applies", location: "side 1" });
+    });
+  });
+
+  test("#621 submits a source-linked external payroll report without VAT", async () => {
+    mockFetch(ingestRoute());
+    render(<DocumentIngestModal slug="acme-aps" onIngested={noop} onClose={noop} />);
+    await userEvent.selectOptions(screen.getByLabelText("Bilagstype"), "external_accounting_evidence");
+    await userEvent.upload(screen.getByLabelText("Bilagsfil"), receiptFile("payroll.txt"));
+    await userEvent.type(screen.getByLabelText("Bilagsdato"), "2026-08-31");
+    await userEvent.type(screen.getByLabelText("Samlet lønrapport (debet/kredit)"), "40200");
+    await userEvent.type(screen.getByLabelText("Lønperiode"), "2026-08");
+    await userEvent.type(screen.getByLabelText("Ekstern lønreference"), "PAY-2026-08");
+    await userEvent.type(screen.getByLabelText("Afsender"), "Synthetic Payroll Provider");
+    await userEvent.type(screen.getByLabelText("Modtager"), "Synthetic Company");
+    await userEvent.click(screen.getByRole("button", { name: "Indlæs bilag" }));
+    await waitFor(() => {
+      const calls = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
+      const ingestCall = calls.find((call) => String(call[0]).includes("/documents/ingest"));
+      const sent = JSON.parse(String((ingestCall![1] as RequestInit).body));
+      expect(sent.metadata).toMatchObject({ documentType: "external_accounting_evidence", vatAmount: 0, externalAccountingEvidence: { category: "payroll", accountingPeriod: "2026-08", externalReference: "PAY-2026-08", totals: { debitAmount: 40200, creditAmount: 40200 } } });
     });
   });
 
