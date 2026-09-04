@@ -109,6 +109,7 @@ export const MUTATING_COMMANDS = new Set([
   "bookkeeping-batch apply",
   "purchase-case create",
   "purchase-case review",
+  "purchase-case group-review",
   "party create",
   "party link-role",
   "party propose-merge",

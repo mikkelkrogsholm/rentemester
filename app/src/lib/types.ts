@@ -24,6 +24,7 @@ export * from "./types/obligations";
 export * from "./types/mileage";
 export * from "./types/budget";
 export * from "./types/payables";
+export * from "./types/purchase-cases";
 export * from "./types/assets";
 export * from "./types/rules";
 export * from "./types/retention";

@@ -32,6 +32,7 @@ import { MileageView } from "./views/MileageView";
 import { MultiYearView } from "./views/MultiYearView";
 import { ObligationsView } from "./views/ObligationsView";
 import { PayablesView } from "./views/PayablesView";
+import { PurchaseOverviewView } from "./views/PurchaseOverviewView";
 import { PeriodsView } from "./views/PeriodsView";
 import { PostingRulesView } from "./views/PostingRulesView";
 import { RecurringInvoicesView } from "./views/RecurringInvoicesView";
@@ -77,6 +78,7 @@ export const COMPANY_ROUTE_REGISTRY = [
   { id: "bank", segment: "bank", label: "Bank", area: "bookkeeping", element: <BankView /> },
   { id: "documents", segment: "bilag", label: "Bilag", area: "bookkeeping", element: <DocumentsView /> },
   { id: "payables", segment: "leverandoerfaktura", label: "Leverandørfaktura", area: "bookkeeping", element: <PayablesView /> },
+  { id: "purchase-overview", segment: "koebsoverblik", label: "Købsoverblik", area: "bookkeeping", element: <PurchaseOverviewView /> },
   { id: "mileage", segment: "koersel", label: "Kørsel", area: "bookkeeping", element: <MileageView /> },
   { id: "assets", segment: "anlaeg", label: "Anlæg", area: "bookkeeping", element: <AssetsView /> },
   { id: "suggestions", segment: "agent-forslag", label: "Agent-forslag", area: "bookkeeping", element: <SuggestionsView /> },

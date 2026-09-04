@@ -82,6 +82,7 @@ import { workspaceRegistryApi } from "./api/workspace-registry";
 import { cfoAnalyticsApi } from "./api/cfo-analytics";
 import { supplierCommitmentsApi } from "./api/supplier-commitments";
 import { dimensionsApi } from "./api/dimensions";
+import { purchaseCasesApi } from "./api/purchase-cases";
 
 // One method per key — the earlier legacy `closePeriod` / `reopenPeriod` /
 // `resolveException` duplicates (#UI-9) have been deleted, so no spread-order
@@ -120,4 +121,5 @@ export const api = {
   ...cfoAnalyticsApi,
   ...supplierCommitmentsApi,
   ...dimensionsApi,
+  ...purchaseCasesApi,
 };
