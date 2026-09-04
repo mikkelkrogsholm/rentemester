@@ -33,6 +33,7 @@ import { postingRulesSpecs } from "./cli-meta/posting-rules-specs";
 import { bookkeepingBatchSpecs } from "./cli-meta/bookkeeping-batch-specs";
 import { workspaceRegistrySpecs } from "./cli-meta/workspace-registry-specs";
 import { dimensionsSpecs } from "./cli-meta/dimensions-specs";
+import { purchaseCaseSpecs } from "./cli-meta/purchase-case-specs";
 
 export type { CommandSpec } from "./cli-meta/_shared";
 export {
@@ -69,6 +70,7 @@ export const COMMAND_SPECS: CommandSpec[] = [
   ...invoiceSpecs,
   ...documentsSpecs,
   ...dimensionsSpecs,
+  ...purchaseCaseSpecs,
   ...bankSpecs,
   ...expenseSpecs,
   ...vatSpecs,

@@ -104,6 +104,7 @@ import { register as registerPostingRules } from "./cli/posting-rules";
 import { register as registerBookkeepingBatch } from "./cli/bookkeeping-batch";
 import { register as registerWorkspaceRegistry } from "./cli/workspace-registry";
 import { register as registerDimensions } from "./cli/dimensions";
+import { register as registerPurchaseCase } from "./cli/purchase-case";
 // ===== END PAYABLES / KREDITORSTYRING =====
 import {
   isValidSlug,
@@ -283,6 +284,7 @@ for (const registerFn of [
   registerInvoice,
   registerDocuments,
   registerDimensions,
+  registerPurchaseCase,
   registerBank,
   // ===== BANK CLUSTER (#187) =====
   registerBankAccount,
