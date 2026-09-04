@@ -53,7 +53,7 @@ describe("DocumentsView — Bilag", () => {
     await userEvent.click(screen.getByRole("button", { name: "Vis plan" }));
     expect(await screen.findByText("Plan klar")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Bekræft og anvend" })).toBeDisabled();
-    await userEvent.click(screen.getByRole("checkbox"));
+    await userEvent.click(screen.getByRole("checkbox", { name: "Jeg har gennemgået planen og vil oprette den append-only kobling." }));
     await userEvent.click(screen.getByRole("button", { name: "Bekræft og anvend" }));
     expect(applied).toHaveLength(1);
     expect(applied[0]).toMatchObject({ confirm: true, partyId: "party-1", planHash: "a".repeat(64) });
