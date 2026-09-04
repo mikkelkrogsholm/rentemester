@@ -36,6 +36,9 @@ export const documentsApi = {
   setDocumentCompanyContext: (slug: string, input: { documentId: number; sourceReference: string; businessUseReason: string }) =>
     request<{ ok: boolean; applied?: boolean; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/company-context`, { method: "POST", body: JSON.stringify({ ...input, confirm: true }) }),
 
+  reviewPurchaseVatEvidence: (slug: string, input: { documentId:number; bankTransactionId:number; businessEvidenceReference:string; businessEvidenceSha256:string; rationale:string }) =>
+    request<{ ok:boolean; applied?:boolean; errors?:string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/purchase-vat-evidence-review`, { method:"POST", body:JSON.stringify({ ...input, confirm:true }) }),
+
   /**
    * URL of a stored bilag file — opened directly in a new browser tab, so it
    * is a plain URL builder rather than a fetch. The server serves the file

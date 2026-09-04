@@ -145,6 +145,11 @@ export function DocumentsView() {
   const [contextSourceReference, setContextSourceReference] = useState("");
   const [contextBusinessUseReason, setContextBusinessUseReason] = useState("");
   const [contextConfirmed, setContextConfirmed] = useState(false);
+  const [vatEvidenceBankTransactionId, setVatEvidenceBankTransactionId] = useState("");
+  const [vatEvidenceReference, setVatEvidenceReference] = useState("");
+  const [vatEvidenceSha256, setVatEvidenceSha256] = useState("");
+  const [vatEvidenceRationale, setVatEvidenceRationale] = useState("");
+  const [vatEvidenceConfirmed, setVatEvidenceConfirmed] = useState(false);
 
   // --- #433 filter-bar params (client-side; reflected in URL) ---------------
   const q = params.get("q") ?? "";
@@ -371,6 +376,13 @@ export function DocumentsView() {
     } catch (error) { setPartyError(error instanceof Error ? error.message : "Virksomhedskonteksten kunne ikke gemmes."); }
     finally { setPartyBusy(false); }
   }
+  async function reviewPurchaseVatEvidence() {
+    if (!reviewedDocument || !vatEvidenceConfirmed || !/^\d+$/.test(vatEvidenceBankTransactionId) || !/^[a-fA-F0-9]{64}$/.test(vatEvidenceSha256) || !vatEvidenceReference.trim() || !vatEvidenceRationale.trim()) return;
+    setPartyBusy(true); setPartyError(null);
+    try { const result=await api.reviewPurchaseVatEvidence(slug,{documentId:reviewedDocument.id,bankTransactionId:Number(vatEvidenceBankTransactionId),businessEvidenceReference:vatEvidenceReference.trim(),businessEvidenceSha256:vatEvidenceSha256.toLowerCase(),rationale:vatEvidenceRationale.trim()}); if(!result.ok){setPartyError(result.errors?.join(", ")??"Momsbeviset kunne ikke gennemgås.");return;} setVatEvidenceConfirmed(false); }
+    catch(error){setPartyError(error instanceof Error?error.message:"Momsbeviset kunne ikke gennemgås.");}
+    finally{setPartyBusy(false);}
+  }
 
   return (
     <section className="statement">
@@ -524,6 +536,7 @@ export function DocumentsView() {
           {partyPlan && <div className="card"><p><strong>Plan klar</strong> — {partyPlan.partySnapshot?.name ?? "Valgt part"}; bevis: {partyPlan.evidence?.kind ?? "exact_identifier"}.</p><p className="muted">Plan-hash: <code>{partyPlan.planHash}</code></p><label><input type="checkbox" checked={partyConfirmed} onChange={(event) => setPartyConfirmed(event.target.checked)} /> Jeg har gennemgået planen og vil oprette den append-only kobling.</label><div className="row-actions"><button type="button" className="btn" disabled={partyBusy || !partyConfirmed} onClick={applyPartyLink}>Bekræft og anvend</button></div></div>}
           {reviewedDocument.documentType === "internal_voucher" && <div className="card"><p className="muted">Interne bilag kan bekræftes uden ekstern part. Beslutningen er append-only og ændrer ikke bilag, moms eller journal.</p><button type="button" className="btn secondary" disabled={partyBusy} onClick={confirmInternalNoParty}>Bekræft ingen ekstern part</button></div>}
           {reviewedDocument.documentType === "purchase_sale" && <div className="card"><h4>Separat virksomhedskontekst</h4><p className="muted">Brug kun når det oprindelige købsbilag faktisk er ufuldstændigt eller et dansk forenklet bilag. Det ændrer aldrig modtageren på fakturaen og godkender ikke moms.</p><label className="modal-field">Kildereference<input value={contextSourceReference} onChange={(event) => setContextSourceReference(event.target.value)} disabled={partyBusy} /></label><label className="modal-field">Forretningsmæssig begrundelse<input value={contextBusinessUseReason} onChange={(event) => setContextBusinessUseReason(event.target.value)} disabled={partyBusy} /></label><label><input type="checkbox" checked={contextConfirmed} onChange={(event) => setContextConfirmed(event.target.checked)} disabled={partyBusy} /> Jeg har gennemgået den uforanderlige kilde og vil gemme denne attribution append-only.</label><div className="row-actions"><button type="button" className="btn secondary" disabled={partyBusy || !contextConfirmed || !contextSourceReference.trim() || !contextBusinessUseReason.trim()} onClick={recordCompanyContext}>Gem virksomhedskontekst</button></div></div>}
+          {reviewedDocument.documentType === "purchase_sale" && <div className="card"><h4>Momsbevis ved formel fakturamangel</h4><p className="muted">Kun for et sandfærdigt ufuldstændigt standardbilag. Det er ikke en override: leverandør, 25 % moms, eksakt virksomhedsbetaling og erhvervsbevis skal kunne efterprøves.</p><label className="modal-field">Bankpost-id<input value={vatEvidenceBankTransactionId} onChange={(event)=>setVatEvidenceBankTransactionId(event.target.value)} disabled={partyBusy}/></label><label className="modal-field">Erhvervsbevis – reference<input value={vatEvidenceReference} onChange={(event)=>setVatEvidenceReference(event.target.value)} disabled={partyBusy}/></label><label className="modal-field">Erhvervsbevis – SHA-256<input value={vatEvidenceSha256} onChange={(event)=>setVatEvidenceSha256(event.target.value)} disabled={partyBusy}/></label><label className="modal-field">Review-begrundelse<input value={vatEvidenceRationale} onChange={(event)=>setVatEvidenceRationale(event.target.value)} disabled={partyBusy}/></label><label><input type="checkbox" checked={vatEvidenceConfirmed} onChange={(event)=>setVatEvidenceConfirmed(event.target.checked)} disabled={partyBusy}/> Jeg bekræfter, at dette alene vedrører en formel fakturamangel.</label><div className="row-actions"><button type="button" className="btn secondary" disabled={partyBusy||!vatEvidenceConfirmed||!/^\d+$/.test(vatEvidenceBankTransactionId)||!/^[a-fA-F0-9]{64}$/.test(vatEvidenceSha256)||!vatEvidenceReference.trim()||!vatEvidenceRationale.trim()} onClick={reviewPurchaseVatEvidence}>Gem momsbevis-review</button></div></div>}
         </section>
       )}
 
