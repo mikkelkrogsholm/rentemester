@@ -89,6 +89,7 @@ import {
   handleDocumentPartyLinkPlan,
   handleDocumentPartyLinkAction,
   handleDocumentCompanyContext,
+  handleDocumentPurchaseVatEvidenceReview,
   handleInternalNoExternalParty,
 } from "./router/documents";
 import { handleGroupConsolidatedReport, handleGroupDispositionAction, handleGroupDispositionStatus, handleGroupEliminations, handleGroupOverview, handleGroupReconciliation, handleGroupReportProfiles } from "./router/group";
@@ -457,6 +458,7 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/documents/internal-no-external-party", summary: "Bekræfter hash-bundet intern bilagskontekst uden ekstern part (#588)." },
   { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/documents/internal-no-external-party/supersede", summary: "Supersederer intern no-party-beslutning append-only (#588)." },
   { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/documents/company-context", summary: "Gemmer hash-bundet attribution for forenklet eller ufuldstændigt købsbilag (#618)." },
+  { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/documents/purchase-vat-evidence-review", summary: "Gemmer hash-bundet vurdering af formel fakturamangel; ikke en moms-override (#622)." },
   { scope: "company", effect: "write", permission: "company.ledger.post", method: "POST", pattern: "/api/companies/:slug/documents/book-expense", summary: "Bogfører et bilag som udgift mod en banktransaktion." },
   { scope: "company", effect: "write", permission: "company.draft.write", method: "POST", pattern: "/api/companies/:slug/invoices/issue", summary: "Udsteder en faktura." },
   { scope: "company", effect: "write", permission: "company.draft.write", method: "POST", pattern: "/api/companies/:slug/invoices/preview", summary: "Forhåndsviser en faktura-PDF uden at udstede." },
@@ -1413,6 +1415,8 @@ export async function handleRequest(
     if (internalNoExternalMatch) { if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleInternalNoExternalParty(config,decodeURIComponent(internalNoExternalMatch[1]!),request,Boolean(internalNoExternalMatch[2])); }
     const documentCompanyContextMatch = /^\/api\/companies\/([^/]+)\/documents\/company-context$/.exec(path);
     if (documentCompanyContextMatch) { if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleDocumentCompanyContext(config,decodeURIComponent(documentCompanyContextMatch[1]!),request); }
+    const purchaseVatEvidenceReviewMatch = /^\/api\/companies\/([^/]+)\/documents\/purchase-vat-evidence-review$/.exec(path);
+    if (purchaseVatEvidenceReviewMatch) { if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleDocumentPurchaseVatEvidenceReview(config,decodeURIComponent(purchaseVatEvidenceReviewMatch[1]!),request); }
     const documentParsePendingMatch = /^\/api\/companies\/([^/]+)\/documents\/parse-pending$/.exec(path);
     if (documentParsePendingMatch) { if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleDocumentPdfParsePending(config, request, decodeURIComponent(documentParsePendingMatch[1]!)); }
     const documentParseMatch = /^\/api\/companies\/([^/]+)\/documents\/(\d+)\/parse$/.exec(path);

@@ -22,6 +22,7 @@ import { applyDocumentPartyLink, decideInternalNoExternalParty, inspectDocumentP
 import { openWorkspaceControlDb, openWorkspaceControlReadOnlyDb } from "../../core/workspace-control";
 import { authorizeWorkspaceRoute } from "../../core/workspace-access";
 import { setDocumentCompanyContext } from "../../core/document-company-context";
+import { reviewIncompleteStandardPurchaseVatEvidence } from "../../core/document-purchase-vat-evidence-review";
 
 function partyLinkPrincipal(config: ServerConfig, slug: string) {
   const principal=config.requestPrincipal;
@@ -43,6 +44,7 @@ export async function handleDocumentPartyLinkAction(config:ServerConfig,slug:str
 export async function handleInternalNoExternalParty(config:ServerConfig,slug:string,request:Request,supersede=false):Promise<Response>{const result=await withCompanyMutation(request,config,slug,(ctx,body)=>{const base={documentId:Number(body.documentId),reason:requireString(body,"reason"),confirm:true,actor:ctx.actor.createdBy,principal:partyLinkPrincipal(config,slug)};return supersede?supersedeInternalNoExternalParty(ctx.db,{...base,decisionHash:requireString(body,"decisionHash")}):decideInternalNoExternalParty(ctx.db,{...base,idempotencyKey:typeof body.idempotencyKey==="string"?body.idempotencyKey:undefined});},{requireConfirm:true});return okResponse(result);}
 /** Records reviewed attribution; it cannot alter invoice facts or grant VAT eligibility. */
 export async function handleDocumentCompanyContext(config:ServerConfig,slug:string,request:Request):Promise<Response>{const result=await withCompanyMutation(request,config,slug,(ctx,body)=>setDocumentCompanyContext(ctx.db,{documentId:Number(body.documentId),sourceReference:requireString(body,"sourceReference"),businessUseReason:requireString(body,"businessUseReason"),confirm:true,createdBy:ctx.actor.createdBy,createdByProgram:ctx.actor.createdByProgram}),{requireConfirm:true});return okResponse(result);}
+export async function handleDocumentPurchaseVatEvidenceReview(config:ServerConfig,slug:string,request:Request):Promise<Response>{const result=await withCompanyMutation(request,config,slug,(ctx,body)=>reviewIncompleteStandardPurchaseVatEvidence(ctx.db,{documentId:Number(body.documentId),bankTransactionId:Number(body.bankTransactionId),businessEvidenceReference:requireString(body,"businessEvidenceReference"),businessEvidenceSha256:requireString(body,"businessEvidenceSha256"),rationale:requireString(body,"rationale"),supersedesReviewSha256:typeof body.supersedesReviewSha256==="string"?body.supersedesReviewSha256:undefined,confirm:true,createdBy:ctx.actor.createdBy,createdByProgram:ctx.actor.createdByProgram,principal:partyLinkPrincipal(config,slug)}),{requireConfirm:true});return okResponse(result);}
 
 export function handleCompanyDocuments(config: ServerConfig, slug: string): Response {
   const data = buildCompanyDocuments(config.workspaceRoot, slug);

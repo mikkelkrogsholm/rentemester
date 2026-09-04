@@ -9,6 +9,7 @@ import { setDocumentCompanyContext, validSimplifiedPurchaseCompanyContext } from
 import { seedAccounts, verifyAuditChain } from "../../src/core/ledger";
 import { bookExpenseFromBank } from "../../src/core/expense-booking";
 import { registerPayable } from "../../src/core/payables";
+import { reviewIncompleteStandardPurchaseVatEvidence, validIncompleteStandardPurchaseVatEvidenceReview } from "../../src/core/document-purchase-vat-evidence-review";
 
 const simplifiedMetadata: DocumentMetadata = {
   source: "email",
@@ -166,5 +167,26 @@ describe("auditable company context for simplified Danish purchase invoices (#57
       expect(recordContext(payable).ok).toBe(true);
       expect(registerPayable(payable.db, input).ok).toBe(true);
     } finally { close(payable); }
+  });
+
+  test("#622 allows a formally deficient standard invoice only after hash-bound payment and business-evidence review", () => {
+    const fixture = setup("formal-deficiency-review");
+    try {
+      const metadata: DocumentMetadata = { ...simplifiedMetadata, invoiceNo: "SYN-622-1", amountIncVat: 3750, vatAmount: 750, danishSimplifiedPurchaseInvoice: false, incompleteStandardPurchaseInvoice: true, recipient: { name: "Synthetic Individual", address: "Personal Street 2" } };
+      const file = join(fixture.inbox, "formal-deficiency.txt"); writeFileSync(file, "Synthetic equipment invoice\n3750 DKK\n");
+      const document = ingestDocument(fixture.db, fixture.root, file, metadata, { createdBy: "agent:test", createdByProgram: "test" });
+      const documentId = document.documentId!;
+      const bankId = Number((fixture.db.query(`INSERT INTO bank_transactions(transaction_date,text,amount,currency,transaction_hash,status) VALUES('2026-08-20','Synthetic company card purchase',-3750,'DKK','bank-syn-622','imported') RETURNING id`).get() as { id:number }).id);
+      expect(bookExpenseFromBank(fixture.db, { documentId, bankTransactionId: bankId, expenseAccountNo: "3000", vatTreatment: "standard" }).errors).toContain("incomplete standard invoice requires a valid hash-bound VAT evidence review before input-VAT deduction");
+      expect(setDocumentCompanyContext(fixture.db, { documentId, sourceReference: "supplier-email:SYN-622", businessUseReason: "Synthetic equipment is used in taxable activity", confirm: true, createdBy: "user:reviewer", createdByProgram: "unit-test" }).ok).toBe(true);
+      const input = { documentId, bankTransactionId: bankId, businessEvidenceReference: "purchase-order:SYN-622", businessEvidenceSha256: "a".repeat(64), rationale: "Formal buyer-field deficiency only; payment and business use reviewed", principal: "service-account:synthetic-reviewer", confirm: true, createdBy: "user:reviewer", createdByProgram: "unit-test" };
+      const review = reviewIncompleteStandardPurchaseVatEvidence(fixture.db, input);
+      expect(review).toMatchObject({ ok: true, applied: true });
+      expect(reviewIncompleteStandardPurchaseVatEvidence(fixture.db, input)).toMatchObject({ ok: true, applied: false });
+      expect(validIncompleteStandardPurchaseVatEvidenceReview(fixture.db, documentId)).toBe(true);
+      const booked = bookExpenseFromBank(fixture.db, { documentId, bankTransactionId: bankId, expenseAccountNo: "3000", vatTreatment: "standard" });
+      expect(booked.errors).toEqual([]);
+      expect(booked.ok).toBe(true);
+    } finally { close(fixture); }
   });
 });

@@ -123,7 +123,7 @@ export function setDocumentCompanyContext(db: Database, input: SetDocumentCompan
 }
 
 /** Strict read gate for standard purchase VAT. Any tamper or missing fact fails closed. */
-export function validSimplifiedPurchaseCompanyContext(db: Database, documentId: number): boolean {
+export function validPurchaseCompanyContext(db: Database, documentId: number): boolean {
   const row = db.query(`SELECT d.sha256_hash, d.payload_json, d.document_type, d.amount_inc_vat, d.vat_amount, d.currency,
     d.sender_name, d.sender_address, d.sender_vat_cvr, d.recipient_name, d.recipient_address, d.recipient_vat_cvr,
     d.invoice_date, d.invoice_no, d.delivery_description,
@@ -133,7 +133,10 @@ export function validSimplifiedPurchaseCompanyContext(db: Database, documentId: 
   try {
     const payload = JSON.parse(String(row.payload_json)) as DocumentMetadata;
     const snapshot = JSON.parse(String(row.company_snapshot_json)) as Record<string, unknown>;
-    return validateDanishSimplifiedPurchaseInvoiceMetadata(payload).length === 0
+    const incompleteStandard = payload.incompleteStandardPurchaseInvoice === true
+      && payload.danishSimplifiedPurchaseInvoice !== true
+      && (payload.documentType ?? "purchase_sale") === "purchase_sale";
+    return (incompleteStandard || validateDanishSimplifiedPurchaseInvoiceMetadata(payload).length === 0)
       && persistedFactsMatchPayload(row, payload)
       && row.company_id === snapshot.id
       && typeof snapshot.cvr === "string" && /^DK\d{8}$/.test(snapshot.cvr)
@@ -142,4 +145,11 @@ export function validSimplifiedPurchaseCompanyContext(db: Database, documentId: 
       && row.company_snapshot_sha256 === sha256(canonicalJson(snapshot))
       && row.context_sha256 === sha256(canonicalJson({ documentHash: row.document_sha256, payloadHash: row.payload_sha256, snapshot, sourceReference: row.source_reference, businessUseReason: row.business_use_reason }));
   } catch { return false; }
+}
+
+/** Backwards-compatible narrow name for the simplified-invoice gate. */
+export function validSimplifiedPurchaseCompanyContext(db: Database, documentId: number): boolean {
+  const row = db.query("SELECT payload_json FROM documents WHERE id = ?").get(documentId) as { payload_json: string } | null;
+  try { return Boolean(row) && (JSON.parse(row!.payload_json) as DocumentMetadata).danishSimplifiedPurchaseInvoice === true && validPurchaseCompanyContext(db, documentId); }
+  catch { return false; }
 }

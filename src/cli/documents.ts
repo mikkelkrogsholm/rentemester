@@ -6,6 +6,7 @@ import { migrate, openDb } from "../core/db";
 import { PDF_EVIDENCE_TAMPERED, PdfParseError, parseRegisteredPdfBatch, parseRegisteredPdfDocument, planCurrentPdfParses } from "../core/document-pdf-parser";
 import { enrichDocumentMetadata, ingestDocument, purchaseVatLinesFromPayload } from "../core/documents";
 import { setDocumentCompanyContext } from "../core/document-company-context";
+import { reviewIncompleteStandardPurchaseVatEvidence } from "../core/document-purchase-vat-evidence-review";
 import { recordException } from "../core/exceptions";
 import { inspectOpenLedger, openLedgerReadOnly } from "../core/ledger-inspection";
 import { resolveDocumentMasterData } from "../core/master-data";
@@ -40,6 +41,15 @@ export function register(dispatch: CommandDispatch): void {
     const db = openCommandDb(ctx); migrate(db);
     try { ctx.emitResult(setDocumentCompanyContext(db, { documentId, sourceReference: sourceReference!, businessUseReason: businessUseReason!, confirm: true, createdBy: ctx.cliActor ?? ctx.inferredMutationActor() ?? undefined, createdByProgram: ctx.cliActorVia ?? "rentemester-cli" })); }
     finally { db.close(); }
+  });
+  dispatch.on("documents", "review-purchase-vat-evidence", (ctx) => {
+    const documentId=Number(ctx.arg("--document-id")), bankTransactionId=Number(ctx.arg("--bank-transaction-id"));
+    const businessEvidenceReference=ctx.arg("--business-evidence-reference"), businessEvidenceSha256=ctx.arg("--business-evidence-sha256"), rationale=ctx.arg("--rationale"), principal=ctx.arg("--principal");
+    if(!Number.isInteger(documentId)||documentId<=0)ctx.fatal("Missing required --document-id <n>");
+    if(!Number.isInteger(bankTransactionId)||bankTransactionId<=0)ctx.fatal("Missing required --bank-transaction-id <n>");
+    if(!businessEvidenceReference||!businessEvidenceSha256||!rationale||!principal)ctx.fatal("Missing evidence reference/hash, rationale or --principal");
+    if(ctx.arg("--confirm")!=="yes")ctx.fatal("documents review-purchase-vat-evidence requires the exact confirmation --confirm yes");
+    const db=openCommandDb(ctx);migrate(db);try{ctx.emitResult(reviewIncompleteStandardPurchaseVatEvidence(db,{documentId,bankTransactionId,businessEvidenceReference:businessEvidenceReference!,businessEvidenceSha256:businessEvidenceSha256!,rationale:rationale!,supersedesReviewSha256:ctx.arg("--supersedes-review-sha256"),principal:principal!,confirm:true,createdBy:ctx.cliActor??ctx.inferredMutationActor()??undefined,createdByProgram:ctx.cliActorVia??"rentemester-cli"}));}finally{db.close();}
   });
   dispatch.on("documents", "enrich", (ctx) => {
     const id = Number(ctx.arg("--document-id"));

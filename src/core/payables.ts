@@ -30,6 +30,7 @@ import { resolveAccountRole } from "./account-roles";
 import { parsePurchaseVatLinesPayload } from "./documents";
 import { deductibleDanishPurchaseSupplierErrors } from "./supplier-identity";
 import { validSimplifiedPurchaseCompanyContext } from "./document-company-context";
+import { validIncompleteStandardPurchaseVatEvidenceReview } from "./document-purchase-vat-evidence-review";
 
 const RULE_ID = "DK-PAYABLE-001";
 const PAYMENT_RULE_ID = "DK-PAYABLE-PAYMENT-001";
@@ -321,7 +322,8 @@ export function registerPayable(db: Database, input: RegisterPayableInput, inCur
       const payload = document.payload_json ? JSON.parse(document.payload_json) as Record<string, unknown> : {};
       const invoiceStatesCompany = typeof document.recipient_vat_cvr === "string" && document.recipient_vat_cvr.trim().length > 0;
       const contextIsValid = payload.danishSimplifiedPurchaseInvoice === true && validSimplifiedPurchaseCompanyContext(db, input.documentId);
-      if (document.document_type === "purchase_sale" && !invoiceStatesCompany && !contextIsValid) {
+      const reviewedIncomplete = payload.incompleteStandardPurchaseInvoice === true && validIncompleteStandardPurchaseVatEvidenceReview(db, input.documentId);
+      if (document.document_type === "purchase_sale" && !invoiceStatesCompany && !contextIsValid && !reviewedIncomplete) {
         return { ok: false, appliedRules: [RULE_ID], errors: ["standard purchase VAT requires invoice-stated recipient identity or a valid hash-bound simplified-invoice company context"] };
       }
     } catch { return { ok: false, appliedRules: [RULE_ID], errors: ["document payload_json is not valid JSON"] }; }

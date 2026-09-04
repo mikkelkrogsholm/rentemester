@@ -10,6 +10,7 @@ import { z } from "zod";
 import { PDF_EVIDENCE_TAMPERED, PdfParseError, parseRegisteredPdfBatch, parseRegisteredPdfDocument, planCurrentPdfParses } from "../../core/document-pdf-parser";
 import { type DocumentMetadata, enrichDocumentMetadata, ingestDocument, purchaseVatLinesFromPayload } from "../../core/documents";
 import { setDocumentCompanyContext } from "../../core/document-company-context";
+import { reviewIncompleteStandardPurchaseVatEvidence } from "../../core/document-purchase-vat-evidence-review";
 import { applyDocumentPartyLink, decideInternalNoExternalParty, DOCUMENT_PARTY_ROLES, inspectDocumentPartyLinks, listDocumentPartyLinks, planDocumentPartyLink, supersedeDocumentPartyLink, supersedeInternalNoExternalParty } from "../../core/document-party-links";
 import { openWorkspaceControlDb, openWorkspaceControlReadOnlyDb } from "../../core/workspace-control";
 import { companyRootForSlug, listWorkspaceCompanies, resolveConfiguredWorkspaceRoot } from "../../core/workspace";
@@ -22,6 +23,7 @@ import { documentPdfParsedText, documentPdfParseStatus } from "../../server/rout
 import { envelopeShape, errorEnvelope, successEnvelope, wrapCoreResult } from "../envelope";
 import { applyPagination, paginationDescriptionSuffix, paginationFields } from "../pagination";
 import { confirmField, idempotencyKeyField, withCompanyDb, withCompanyDbConfirmed, withCompanyReadOnlyDb } from "../tool-runtime";
+import { currentMcpAuthenticatedPrincipal } from "../security";
 
 const documentPartyLinkFields = {
   documentId: z.number().int().positive(), role: z.enum(DOCUMENT_PARTY_ROLES), partyId: z.string().min(3).max(64).optional(), jurisdiction: z.string().length(2).optional(), identifierKind: z.enum(["dk_cvr","eu_vat","non_eu"]).optional(), identifier: z.string().min(1).max(160).optional(), legacyKind: z.enum(["customer","vendor"]).optional(), legacyId: z.string().min(1).max(160).optional(), reviewedLegacyReference: z.string().min(1).max(500).optional(),
@@ -153,6 +155,7 @@ export function registerDocumentTools(server: McpServer): void {
     { title: "Record reviewed purchase-document company context", description: "Records append-only, actor-audited and hash-bound business attribution for one Danish simplified purchase invoice or truthfully incomplete standard purchase invoice. It never modifies issuer recipient fields and never grants VAT eligibility. Requires confirm:true. write-reversible.", inputSchema: { company: z.string().min(1), documentId: z.number().int().positive(), sourceReference: z.string().min(1).max(2000), businessUseReason: z.string().min(1).max(2000), confirm: confirmField }, outputSchema: envelopeShape, annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false } },
     withCompanyDbConfirmed<{ company: string; documentId: number; sourceReference: string; businessUseReason: string; confirm?: boolean }>(server, "documents_set_company_context", ({ db, actor, args }) => wrapCoreResult(setDocumentCompanyContext(db, { documentId: args.documentId, sourceReference: args.sourceReference, businessUseReason: args.businessUseReason, confirm: args.confirm === true, createdBy: actor.createdBy, createdByProgram: actor.createdByProgram }))),
   );
+  server.registerTool("documents_review_purchase_vat_evidence", { title:"Review formal purchase-invoice VAT evidence", description:"Records an append-only, hash-bound review for a truthfully incomplete Danish standard invoice. It is not an override: supplier identity, exact company payment and business-use evidence remain mandatory. Requires authenticated principal and confirm:true.", inputSchema:{company:z.string().min(1),documentId:z.number().int().positive(),bankTransactionId:z.number().int().positive(),businessEvidenceReference:z.string().min(1).max(2000),businessEvidenceSha256:z.string().regex(/^[a-fA-F0-9]{64}$/),rationale:z.string().min(1).max(2000),supersedesReviewSha256:z.string().regex(/^[a-fA-F0-9]{64}$/).optional(),confirm:confirmField}, outputSchema:envelopeShape, annotations:{readOnlyHint:false,destructiveHint:false,idempotentHint:true,openWorldHint:false}},withCompanyDbConfirmed<any>(server,"documents_review_purchase_vat_evidence",({db,actor,args})=>{const p=currentMcpAuthenticatedPrincipal();return wrapCoreResult(reviewIncompleteStandardPurchaseVatEvidence(db,{...args,confirm:true,createdBy:actor.createdBy,createdByProgram:actor.createdByProgram,principal:p?`${p.kind}:${p.subjectId}`:undefined}));}));
   server.registerTool(
     "documents_enrich",
     {

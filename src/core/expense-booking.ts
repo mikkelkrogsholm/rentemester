@@ -14,6 +14,7 @@ import { resolveAccountRole } from "./account-roles";
 import { parsePurchaseVatLinesPayload, type PurchaseVatLine } from "./documents";
 import { deductibleDanishPurchaseSupplierErrors } from "./supplier-identity";
 import { validSimplifiedPurchaseCompanyContext } from "./document-company-context";
+import { validIncompleteStandardPurchaseVatEvidenceReview } from "./document-purchase-vat-evidence-review";
 
 /**
  * `non_deductible` (DK-VAT-NON-DEDUCTIBLE-001 / Momsloven § 37) is the
@@ -358,10 +359,11 @@ function bookExpenseFromBankInternal(db: Database, input: BookExpenseFromBankInp
     try {
       const payload = document.payload_json ? JSON.parse(document.payload_json) as Record<string, unknown> : {};
       if (payload.incompleteStandardPurchaseInvoice === true) {
-        return { ok: false, appliedRules: [], errors: ["incomplete standard invoice is stored truthfully but requires a separate VAT-evidence review before input-VAT deduction"] };
+        if (!validIncompleteStandardPurchaseVatEvidenceReview(db, input.documentId)) return { ok: false, appliedRules: [], errors: ["incomplete standard invoice requires a valid hash-bound VAT evidence review before input-VAT deduction"] };
       }
       const invoiceStatesCompany = typeof document.recipient_vat_cvr === "string" && document.recipient_vat_cvr.trim().length > 0;
-      const contextIsValid = payload.danishSimplifiedPurchaseInvoice === true && validSimplifiedPurchaseCompanyContext(db, input.documentId);
+      const contextIsValid = (payload.danishSimplifiedPurchaseInvoice === true && validSimplifiedPurchaseCompanyContext(db, input.documentId))
+        || (payload.incompleteStandardPurchaseInvoice === true && validIncompleteStandardPurchaseVatEvidenceReview(db, input.documentId));
       if (document.document_type === "purchase_sale" && !invoiceStatesCompany && !contextIsValid) {
         return { ok: false, appliedRules: [], errors: ["standard purchase VAT requires invoice-stated recipient identity or a valid hash-bound simplified-invoice company context"] };
       }

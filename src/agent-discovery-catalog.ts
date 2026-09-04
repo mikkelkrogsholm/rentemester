@@ -122,11 +122,12 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
     read("list-documents", mcp("documents_list"), "Read back canonical document state.", { dependsOn: ["ingest-document|ingest-mail|poll-imap"], outputIdentities: ["documentId"] }),
     read("review-extraction", mcp("documents_invoice_extraction"), "Review cited invoice extraction where available.", { dependsOn: ["list-documents"], inputIdentities: ["documentId"] }),
   ], unsupportedBoundaries: ["Extraction is evidence for review, not approval or automatic posting.", "The catalogue contains no mailbox credentials or company routing."] }),
-  workflow({ id: "incomplete-purchase-evidence-review", capabilityId: "document-intake", title: "Incomplete standard purchase evidence review", intendedOutcome: "Preserve an incomplete standard purchase invoice truthfully, record a separate reviewed company attribution, and stop before any unsupported VAT deduction.", steps: [
+  workflow({ id: "incomplete-purchase-evidence-review", capabilityId: "document-intake", title: "Incomplete standard purchase evidence review", intendedOutcome: "Preserve an incomplete standard purchase invoice truthfully and only use input VAT after a source-bound review establishes the material conditions.", steps: [
     write("ingest-source", mcp("documents_ingest"), "Ingest the original invoice with incompleteStandardPurchaseInvoice:true only when the buyer fields are actually absent in the source.", { outputIdentities: ["documentId", "sha256"], canonicalRecords: ["documents", "immutable source bytes"] }),
     write("record-context", mcp("documents_set_company_context"), "Record source reference and business-use evidence append-only. This binds the original and metadata hashes but never rewrites invoice recipient facts or approves VAT.", { dependsOn: ["ingest-source"], expectedIdempotent: true, retryClass: "natural-idempotent", inputIdentities: ["documentId"], canonicalRecords: ["document company contexts", "audit log"] }),
-    read("vat-preflight", mcp("expense_vat_preflight"), "Read the actual booking/VAT gate. Stop if the required invoice or VAT evidence remains incomplete.", { dependsOn: ["record-context"], boundary: "dry-run", inputIdentities: ["documentId"], canonicalRecords: ["purchase VAT preflight"] }),
-  ], unsupportedBoundaries: ["Company context is business-attribution evidence, not a correction to the issuer's invoice.", "This workflow never infers a buyer CVR, treats a missing address as a simplified invoice, or grants VAT deduction automatically.", "If the shared booking gate rejects VAT evidence, record only supported non-VAT accounting or obtain lawful additional evidence before posting."] }),
+    write("review-material-evidence", mcp("documents_review_purchase_vat_evidence"), "Bind an exact matching outgoing company payment and a SHA-256-identified business-use source. A reviewer must explicitly confirm this formal-deficiency-only decision.", { dependsOn: ["record-context"], expectedIdempotent: true, retryClass: "natural-idempotent", inputIdentities: ["documentId", "bankTransactionId", "businessEvidenceSha256"], canonicalRecords: ["purchase VAT evidence review", "audit log"] }),
+    read("vat-preflight", mcp("expense_vat_preflight"), "Read the actual booking/VAT gate after the evidence review.", { dependsOn: ["review-material-evidence"], boundary: "dry-run", inputIdentities: ["documentId"], canonicalRecords: ["purchase VAT preflight"] }),
+  ], unsupportedBoundaries: ["Company context is business-attribution evidence, not a correction to the issuer's invoice.", "This workflow never infers a buyer CVR, treats a missing address as a simplified invoice, or grants VAT deduction automatically.", "The review fails closed if supplier identity, invoice VAT, company payment, source hashes or business use are missing or change."] }),
   workflow({ id: "external-payroll-evidence-journal", capabilityId: "document-intake", title: "External payroll evidence and settlement", intendedOutcome: "Record an external payroll report as source-linked, no-VAT evidence, then separately post the reviewed accrual and the bank settlement.", steps: [
     write("ingest-report", mcp("documents_ingest"), "Ingest external_accounting_evidence with payroll category, report period, external reference, balanced totals and vatAmount:0.", { outputIdentities: ["documentId", "sha256"], canonicalRecords: ["external payroll evidence", "immutable source bytes"] }),
     read("review-report", mcp("documents_list"), "Read the source-linked report back; verify issuer, reported company, period, reference and totals before any journal.", { dependsOn: ["ingest-report"], inputIdentities: ["documentId"], canonicalRecords: ["documents"] }),
@@ -513,9 +514,9 @@ type SurfaceBaseline = { count: number; hash: string };
  */
 export const AGENT_SURFACE_BASELINES: Record<SurfaceName, SurfaceBaseline> = {
   // Public surface changes require an explicit discovery review.
-  mcp: { count: 225, hash: "0e43f7a8509892601eed2dbbb2c764023cff0d35c950adbf72bcff806a8d04ef" },
+  mcp: { count: 226, hash: "a154c5bf495ca77e07110f5118e3d0502984bc70c80276a316c82626c4e76a78" },
   cli: { count: 277, hash: "d19d2b0c94aab649f255f71b5343fdb587d403841cfd5e0ee112bfbdbbe11a5f" },
-  http: { count: 216, hash: "a53dd6b5ed2d603a21e19674275fc60b5372e547f43941f0aee8d757bd41ae15" },
+  http: { count: 217, hash: "8119e8c28c799a4fc194dd7671dcaf1ce7803a18aeaa9cad9b8c78df924cb5ad" },
 };
 
 const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }> = [
