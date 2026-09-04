@@ -63,8 +63,7 @@ function recordContext(fixture: ReturnType<typeof setup>) {
 describe("auditable company context for simplified Danish purchase invoices (#570)", () => {
   test("accepts the reduced field set, preserves the printed recipient and keeps company identity separate", () => {
     expect(validateDocumentMetadata(simplifiedMetadata)).toMatchObject({ ok: true });
-    expect(validateDocumentMetadata({ ...simplifiedMetadata, danishSimplifiedPurchaseInvoice: false }).errors)
-      .toContain("recipient.vatOrCvr is required");
+    expect(validateDocumentMetadata({ ...simplifiedMetadata, danishSimplifiedPurchaseInvoice: false }).ok).toBe(true);
     expect(validateDocumentMetadata({ ...simplifiedMetadata, amountIncVat: 3000.01 }).ok).toBe(false);
     expect(validateDocumentMetadata({ ...simplifiedMetadata, invoiceNo: undefined }).ok).toBe(false);
 
@@ -111,6 +110,18 @@ describe("auditable company context for simplified Danish purchase invoices (#57
       expect(() => fixture.db.run("DELETE FROM document_company_contexts WHERE document_id = ?", fixture.documentId)).toThrow("append-only");
       expect(fixture.db.query("SELECT COUNT(*) AS n FROM document_company_contexts").get()).toEqual({ n: 1 });
       expect(fixture.db.query("SELECT COUNT(*) AS n FROM audit_log WHERE event_type = 'document_company_context_set'").get()).toEqual({ n: 1 });
+    } finally { close(fixture); }
+  });
+
+  test("records company attribution for a truthfully incomplete standard invoice without changing its source facts", () => {
+    const incomplete: DocumentMetadata = { ...simplifiedMetadata, invoiceNo: "SYN-618-1", danishSimplifiedPurchaseInvoice: false, incompleteStandardPurchaseInvoice: true, recipient: { name: "Synthetic Buyer ApS" } };
+    const fixture = setup("incomplete-company-context");
+    try {
+      const file = join(fixture.inbox, "incomplete.txt"); writeFileSync(file, "Synthetic incomplete invoice\n125 DKK\n");
+      const document = ingestDocument(fixture.db, fixture.root, file, incomplete, { createdBy: "agent:test", createdByProgram: "test" });
+      expect(document.ok).toBe(true);
+      expect(setDocumentCompanyContext(fixture.db, { documentId: document.documentId!, sourceReference: "supplier-email:SYN-618", businessUseReason: "Synthetic company purchase", confirm: true, createdBy: "agent:test", createdByProgram: "unit-test" })).toMatchObject({ ok: true, applied: true });
+      expect(fixture.db.query("SELECT recipient_address,recipient_vat_cvr FROM documents WHERE id=?").get(document.documentId!)).toEqual({ recipient_address: null, recipient_vat_cvr: null });
     } finally { close(fixture); }
   });
 

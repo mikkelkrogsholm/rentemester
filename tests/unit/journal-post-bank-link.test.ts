@@ -16,6 +16,7 @@ import { openDb, migrate } from "../../src/core/db";
 import { seedAccounts, postJournalEntry } from "../../src/core/ledger";
 import { importBankCsv } from "../../src/core/bank";
 import { syncUnmatchedBankTransactionExceptions } from "../../src/core/exceptions";
+import { ingestDocument } from "../../src/core/documents";
 
 function makeWorkspace(label: string) {
   const root = mkdtempSync(join(tmpdir(), `rentemester-${label}-`));
@@ -39,6 +40,28 @@ function makeWorkspace(label: string) {
 }
 
 describe("journal post — sourceBankTransactionId", () => {
+  test("posts a source-linked payroll accrual and settles net pay on its actual bank date", () => {
+    const { root, db, bankTransactionId } = makeWorkspace("payroll-evidence");
+    const source = join(root, "payroll-report.txt");
+    writeFileSync(source, "Synthetic payroll report August 2026\n");
+    const document = ingestDocument(db, root, source, {
+      source: "payroll-export", documentType: "external_accounting_evidence", issueDate: "2026-08-31",
+      sender: { name: "Synthetic Payroll Provider" }, recipient: { name: "Example Company ApS" }, vatAmount: 0,
+      externalAccountingEvidence: { category: "payroll", accountingPeriod: "2026-08", externalReference: "PAY-SYN-2026-08", totals: { debitAmount: 40200, creditAmount: 40200 } },
+    });
+    expect(document.ok).toBe(true);
+    const accrual = postJournalEntry(db, { transactionDate: "2026-08-31", text: "Synthetic August payroll accrual", documentId: document.documentId!, lines: [
+      { accountNo: "3500", debitAmount: 40200 }, { accountNo: "7130", creditAmount: 26000 }, { accountNo: "7100", creditAmount: 14000 }, { accountNo: "7120", creditAmount: 200 },
+    ] });
+    expect(accrual.ok).toBe(true);
+    db.run("UPDATE bank_transactions SET transaction_date='2026-08-28', amount=-26000, transaction_hash='payroll-bank-syn' WHERE id=?", [bankTransactionId]);
+    const settlement = postJournalEntry(db, { transactionDate: "2026-08-28", text: "Synthetic net-pay settlement", sourceBankTransactionId: bankTransactionId, lines: [{ accountNo: "7130", debitAmount: 26000 }, { accountNo: "2000", creditAmount: 26000 }] });
+    expect(settlement.ok).toBe(true);
+    expect(db.query("SELECT COALESCE(SUM(debit_amount-credit_amount),0) AS balance FROM journal_lines jl JOIN accounts a ON a.id=jl.account_id WHERE a.account_no='7130'").get()).toEqual({ balance: 0 });
+    expect(db.query("SELECT COALESCE(SUM(debit_amount-credit_amount),0) AS balance FROM journal_lines jl JOIN accounts a ON a.id=jl.account_id WHERE a.account_no='7100'").get()).toEqual({ balance: -14000 });
+    db.close(); rmSync(root, { recursive: true, force: true });
+  });
+
   test("asset-to-asset entry posts, persists the link, and clears UNMATCHED_BANK_TRANSACTION (#520)", () => {
     const { root, db, bankTransactionId } = makeWorkspace("journal-bank-link-happy");
 

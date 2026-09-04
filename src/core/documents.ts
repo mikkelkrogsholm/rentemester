@@ -23,7 +23,8 @@ export type DocumentType =
   | "purchase_sale"
   | "cash_register_receipt"
   | "issued_invoice_pdf"
-  | "internal_voucher";
+  | "internal_voucher"
+  | "external_accounting_evidence";
 export type DocumentExemptionCode = "FOREIGN_PHYSICAL_ONLY" | null;
 export type PurchaseVatClassification = "dk_purchase_25" | "exempt";
 export type PurchaseVatLine = { classification: PurchaseVatClassification; netAmount: number; vatAmount?: number };
@@ -64,6 +65,7 @@ export type DocumentMetadata = {
   legacyOpeningJournalLineId?: number;
   /** Human accounting explanation for why the internal voucher is booked. */
   accountingRationale?: string;
+  externalAccountingEvidence?: { category: "payroll"; accountingPeriod: string; externalReference: string; totals: { debitAmount: number; creditAmount: number } };
 };
 
 export type DocumentValidationResult = {
@@ -461,11 +463,23 @@ export function validateDocumentMetadata(metadata: DocumentMetadata): DocumentVa
       errors.push("internal voucher cannot contain exemptionCode");
     }
   }
+  if (documentType === "external_accounting_evidence") {
+    const evidence = metadata.externalAccountingEvidence;
+    if (!evidence || evidence.category !== "payroll") errors.push("external accounting evidence requires category payroll");
+    if (!evidence || !/^\d{4}-(0[1-9]|1[0-2])$/.test(evidence.accountingPeriod)) errors.push("external accounting evidence requires accountingPeriod YYYY-MM");
+    if (!evidence || !hasText(evidence.externalReference)) errors.push("external accounting evidence requires externalReference");
+    if (!evidence || !hasNonNegativeNumber(evidence.totals?.debitAmount) || !hasNonNegativeNumber(evidence.totals?.creditAmount) || evidence.totals.debitAmount <= 0 || Math.abs(evidence.totals.debitAmount - evidence.totals.creditAmount) > 0.00001) errors.push("external accounting evidence requires balanced positive debitAmount and creditAmount totals");
+    if (!looksLikeIsoDate(metadata.issueDate)) errors.push("external accounting evidence requires issueDate YYYY-MM-DD");
+    if (!hasText(metadata.sender?.name)) errors.push("external accounting evidence requires the external issuer name");
+    if (!hasText(metadata.recipient?.name)) errors.push("external accounting evidence requires the reported company name");
+    if (metadata.vatAmount !== 0) errors.push("external accounting evidence vatAmount must be exactly 0");
+  }
 
   const exemptFromMinimumFields =
     documentType === "cash_register_receipt" ||
     documentType === "issued_invoice_pdf" ||
     documentType === "internal_voucher" ||
+    documentType === "external_accounting_evidence" ||
     exemptionCode === "FOREIGN_PHYSICAL_ONLY";
   if (!exemptFromMinimumFields) {
     if (!looksLikeIsoDate(metadata.issueDate)) errors.push("issueDate must be present in YYYY-MM-DD format");
@@ -607,6 +621,7 @@ function normalizedEnrichedMetadata(metadata: DocumentMetadata): DocumentMetadat
     incompleteStandardPurchaseInvoice: metadata.incompleteStandardPurchaseInvoice,
     paymentDetails: metadata.paymentDetails,
     exemptionCode: metadata.exemptionCode,
+    externalAccountingEvidence: metadata.externalAccountingEvidence,
   };
 }
 

@@ -8,6 +8,14 @@ import { openDb, migrate } from "../../src/core/db";
 import { ingestDocument, validateDocumentMetadata } from "../../src/core/documents";
 
 describe("document ingest", () => {
+  test("accepts truthful external payroll accounting evidence without invoice or VAT fields", () => {
+    expect(validateDocumentMetadata({
+      source: "payroll-export", documentType: "external_accounting_evidence", issueDate: "2026-08-31",
+      sender: { name: "Synthetic Payroll Provider" }, recipient: { name: "Example Company ApS" }, vatAmount: 0,
+      externalAccountingEvidence: { category: "payroll", accountingPeriod: "2026-08", externalReference: "PAY-SYN-2026-08", totals: { debitAmount: 40200, creditAmount: 40200 } },
+    })).toMatchObject({ ok: true });
+  });
+
   test("stores an incomplete standard invoice without inventing buyer fields", () => {
     expect(validateDocumentMetadata({
       source: "email", issueDate: "2026-09-01", deliveryDescription: "Synthetic service", amountIncVat: 100,

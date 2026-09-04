@@ -63,9 +63,10 @@ function persistedFactsMatchPayload(document: Record<string, unknown>, payload: 
 }
 
 /**
- * A context can supplement a *simplified* Danish purchase invoice only. It is
- * intentionally not a document recipient: no company field is copied back to
- * documents.recipient_* or its payload.
+ * A context can supplement a simplified invoice or record independently
+ * reviewed company attribution for a truthfully incomplete standard invoice.
+ * It is intentionally not a document recipient: no company field is copied
+ * back to documents.recipient_* or its payload.
  */
 export function setDocumentCompanyContext(db: Database, input: SetDocumentCompanyContextInput): SetDocumentCompanyContextResult {
   const errors: string[] = [];
@@ -89,13 +90,16 @@ export function setDocumentCompanyContext(db: Database, input: SetDocumentCompan
       let payload: DocumentMetadata;
       try { payload = JSON.parse(String(document.payload_json)) as DocumentMetadata; } catch { return { ok: false, errors: ["document payload_json is not valid JSON"] }; }
       const simplifiedErrors = validateDanishSimplifiedPurchaseInvoiceMetadata(payload);
+      const incompleteStandard = payload.incompleteStandardPurchaseInvoice === true
+        && payload.danishSimplifiedPurchaseInvoice !== true
+        && (payload.documentType ?? "purchase_sale") === "purchase_sale";
       const supplierErrors = deductibleDanishPurchaseSupplierErrors({
         supplierVatOrCvr: document.sender_vat_cvr as string | null,
         supplierCountryCode: document.supplier_country_code as string | null,
         supplierIdentifierKind: document.supplier_identifier_kind as string | null,
         supplierIdentityStatus: document.supplier_identity_status as string | null,
       });
-      if (simplifiedErrors.length || supplierErrors.length || !persistedFactsMatchPayload(document, payload)) return { ok: false, errors: ["document does not independently satisfy Danish simplified purchase invoice facts", ...simplifiedErrors, ...supplierErrors] };
+      if ((!incompleteStandard && simplifiedErrors.length) || supplierErrors.length || !persistedFactsMatchPayload(document, payload)) return { ok: false, errors: [incompleteStandard ? "document is not a valid incomplete standard purchase invoice" : "document does not independently satisfy Danish simplified purchase invoice facts", ...(!incompleteStandard ? simplifiedErrors : []), ...supplierErrors] };
       const company = getCompanySettings(db);
       if (!company.name.trim() || company.country !== "DK" || !company.cvr || !company.address?.trim() || !company.postalCode?.trim() || !company.city?.trim() || company.vatPeriodType === null) {
         return { ok: false, errors: ["a complete VAT-registered Danish company profile is required"] };
@@ -112,7 +116,7 @@ export function setDocumentCompanyContext(db: Database, input: SetDocumentCompan
       const actor = resolveActor({ createdBy: input.createdBy, createdByProgram: input.createdByProgram });
       db.query(`INSERT INTO document_company_contexts (document_id, company_id, document_sha256, payload_sha256, company_snapshot_json, company_snapshot_sha256, source_reference, business_use_reason, context_sha256, actor, program)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(input.documentId, company.id, documentHash, payloadHash, canonicalJson(snapshot), sha256(canonicalJson(snapshot)), sourceReference!, businessUseReason!, contextHash, actor.createdBy, actor.createdByProgram);
-      insertAuditLog(db, { eventType: "document_company_context_set", entityType: "document", entityId: input.documentId, message: `Recorded simplified-invoice company context for document ${input.documentId} (document_sha256=${documentHash}, payload_sha256=${payloadHash})`, createdBy: actor.createdBy, createdByProgram: actor.createdByProgram });
+      insertAuditLog(db, { eventType: "document_company_context_set", entityType: "document", entityId: input.documentId, message: `Recorded ${incompleteStandard ? "incomplete-standard-invoice" : "simplified-invoice"} company context for document ${input.documentId} (document_sha256=${documentHash}, payload_sha256=${payloadHash})`, createdBy: actor.createdBy, createdByProgram: actor.createdByProgram });
       return { ok: true, documentId: input.documentId, applied: true, errors: [] };
     }).immediate();
   } catch (error) { return { ok: false, errors: [error instanceof Error ? error.message : String(error)] }; }

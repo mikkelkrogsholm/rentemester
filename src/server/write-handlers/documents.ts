@@ -162,6 +162,23 @@ function parseDocumentMetadata(raw: unknown): DocumentMetadata {
       return { classification: item.classification as any, netAmount: item.netAmount, ...(item.vatAmount === undefined ? {} : { vatAmount: item.vatAmount as number }) };
     });
   }
+  const rawWordingEvidence = m.reverseChargeWordingEvidence;
+  let reverseChargeWordingEvidence: DocumentMetadata["reverseChargeWordingEvidence"];
+  if (rawWordingEvidence !== undefined) {
+    if (!rawWordingEvidence || typeof rawWordingEvidence !== "object" || Array.isArray(rawWordingEvidence)) throw ApiError.badRequest("metadata.reverseChargeWordingEvidence must be an object");
+    const evidence = rawWordingEvidence as Record<string, unknown>;
+    if (typeof evidence.excerpt !== "string" || typeof evidence.location !== "string") throw ApiError.badRequest("metadata.reverseChargeWordingEvidence requires excerpt and location strings");
+    reverseChargeWordingEvidence = { excerpt: evidence.excerpt, location: evidence.location };
+  }
+  const rawExternalEvidence = m.externalAccountingEvidence;
+  let externalAccountingEvidence: DocumentMetadata["externalAccountingEvidence"];
+  if (rawExternalEvidence !== undefined) {
+    if (!rawExternalEvidence || typeof rawExternalEvidence !== "object" || Array.isArray(rawExternalEvidence)) throw ApiError.badRequest("metadata.externalAccountingEvidence must be an object");
+    const evidence = rawExternalEvidence as Record<string, unknown>;
+    const totals = evidence.totals;
+    if (evidence.category !== "payroll" || typeof evidence.accountingPeriod !== "string" || typeof evidence.externalReference !== "string" || !totals || typeof totals !== "object" || Array.isArray(totals) || typeof (totals as Record<string, unknown>).debitAmount !== "number" || typeof (totals as Record<string, unknown>).creditAmount !== "number") throw ApiError.badRequest("metadata.externalAccountingEvidence requires payroll category, period, reference and numeric totals");
+    externalAccountingEvidence = { category: "payroll", accountingPeriod: evidence.accountingPeriod, externalReference: evidence.externalReference, totals: { debitAmount: (totals as Record<string, number>).debitAmount, creditAmount: (totals as Record<string, number>).creditAmount } };
+  }
 
   return {
     source,
@@ -176,7 +193,9 @@ function parseDocumentMetadata(raw: unknown): DocumentMetadata {
     vatAmount: num("vatAmount"),
     purchaseVatLines,
     reverseChargeWordingConfirmed: bool("reverseChargeWordingConfirmed"),
+    reverseChargeWordingEvidence,
     danishSimplifiedPurchaseInvoice: bool("danishSimplifiedPurchaseInvoice"),
+    incompleteStandardPurchaseInvoice: bool("incompleteStandardPurchaseInvoice"),
     paymentDetails: str("paymentDetails"),
     exemptionCode: (exemptionCode ?? undefined) as DocumentMetadata["exemptionCode"],
     sourceBankTransactionId: num("sourceBankTransactionId"),
@@ -184,6 +203,7 @@ function parseDocumentMetadata(raw: unknown): DocumentMetadata {
     legacyOpeningJournalEntryId: num("legacyOpeningJournalEntryId"),
     legacyOpeningJournalLineId: num("legacyOpeningJournalLineId"),
     accountingRationale: str("accountingRationale"),
+    externalAccountingEvidence,
   };
 }
 

@@ -59,7 +59,7 @@ const documentPartySchema = z.object({
  */
 export const documentMetadataFields = {
   documentType: z
-      .enum(["purchase_sale", "cash_register_receipt", "internal_voucher"])
+      .enum(["purchase_sale", "cash_register_receipt", "internal_voucher", "external_accounting_evidence"])
       .optional()
       .describe("Document type (default 'purchase_sale')."),
     issueDate: z.string().optional().describe("Document/invoice date in YYYY-MM-DD format."),
@@ -91,7 +91,9 @@ export const documentMetadataFields = {
       .boolean()
       .optional()
       .describe("True only when a human has confirmed that the supplier invoice contains reverse-charge wording; required with the other invoice evidence before non-EU input-VAT deduction."),
+    reverseChargeWordingEvidence: z.object({ excerpt: z.string().min(1).max(2000), location: z.string().min(1).max(300) }).optional().describe("Verbatim reverse-charge statement and its source location, e.g. page 1. It is hash-bound to the immutable document metadata."),
     danishSimplifiedPurchaseInvoice: z.boolean().optional().describe("Explicit source fact: this is a Danish simplified purchase invoice. This never changes recipient invoice fields."),
+    incompleteStandardPurchaseInvoice: z.boolean().optional().describe("Truthful intake marker for a standard invoice with absent buyer fields. It never grants VAT eligibility; record company context separately."),
     paymentDetails: z
       .string()
       .optional()
@@ -119,6 +121,7 @@ export const documentMetadataFields = {
       .max(2000)
       .optional()
       .describe("Required for internal_voucher: the accounting reason for the posting."),
+    externalAccountingEvidence: z.object({ category: z.literal("payroll"), accountingPeriod: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/), externalReference: z.string().min(1).max(300), totals: z.object({ debitAmount: z.number().positive(), creditAmount: z.number().positive() }) }).optional().describe("Source facts for an externally issued non-invoice payroll report. It supports ordinary source-linked journals and is never a purchase invoice or VAT evidence."),
 } as const;
 
 /**
