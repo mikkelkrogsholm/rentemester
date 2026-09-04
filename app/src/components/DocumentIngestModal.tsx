@@ -75,6 +75,8 @@ export function DocumentIngestModal({
   const [sourceBankTransactionId, setSourceBankTransactionId] = useState("");
   const [internalVoucherKind, setInternalVoucherKind] = useState<"bank_evidenced" | "non_cash_balance_correction">("bank_evidenced");
   const [accountingRationale, setAccountingRationale] = useState("");
+  const [payrollPeriod, setPayrollPeriod] = useState("");
+  const [payrollReference, setPayrollReference] = useState("");
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -114,6 +116,7 @@ export function DocumentIngestModal({
   // those inputs are only required (and only shown as required) for køb/salg.
   const isPurchaseSale = documentType === "purchase_sale";
   const isInternalVoucher = documentType === "internal_voucher";
+  const isExternalPayroll = documentType === "external_accounting_evidence";
   const isNonCashBalanceCorrection = isInternalVoucher && internalVoucherKind === "non_cash_balance_correction";
 
   async function handleIngest() {
@@ -156,6 +159,10 @@ export function DocumentIngestModal({
       setError("Angiv den regnskabsmæssige begrundelse.");
       return;
     }
+    if (isExternalPayroll && (!issueDate.trim() || !recipientName.trim() || !senderName.trim() || !/^\d{4}-(0[1-9]|1[0-2])$/.test(payrollPeriod) || !payrollReference.trim() || !(Number(amountNum) > 0))) {
+      setError("Eksternt lønbilag kræver rapportdato, udsteder, virksomhed, lønperiode, ekstern reference og samlet beløb.");
+      return;
+    }
     let parsedPurchaseVatLines: NonNullable<DocumentIngestMetadata["purchaseVatLines"]> = [];
     try {
       parsedPurchaseVatLines = isPurchaseSale ? purchaseVatLines.map((line, index) => {
@@ -188,13 +195,14 @@ export function DocumentIngestModal({
     if (deliveryDescription.trim())
       metadata.deliveryDescription = deliveryDescription.trim();
     if (amountNum !== undefined) metadata.amountIncVat = amountNum;
-    if (isInternalVoucher) metadata.vatAmount = 0;
+    if (isInternalVoucher || isExternalPayroll) metadata.vatAmount = 0;
     else if (vatNum !== undefined) metadata.vatAmount = vatNum;
     if (isInternalVoucher) {
       metadata.internalVoucherKind = internalVoucherKind;
       if (!isNonCashBalanceCorrection) metadata.sourceBankTransactionId = bankTransactionId!;
       metadata.accountingRationale = accountingRationale.trim();
     }
+    if (isExternalPayroll) metadata.externalAccountingEvidence = { category: "payroll", accountingPeriod: payrollPeriod, externalReference: payrollReference.trim(), totals: { debitAmount: amountNum!, creditAmount: amountNum! } };
     if (isPurchaseSale && parsedPurchaseVatLines.length > 0) {
       metadata.purchaseVatLines = parsedPurchaseVatLines;
     }
@@ -322,6 +330,7 @@ export function DocumentIngestModal({
                   <option value="purchase_sale">Køb/salg</option>
                   <option value="cash_register_receipt">Kassebon</option>
                   <option value="internal_voucher">Internt bilag</option>
+                  <option value="external_accounting_evidence">Eksternt lønbilag</option>
                 </select>
               </label>
               <label className="modal-field">
@@ -334,6 +343,8 @@ export function DocumentIngestModal({
                 />
               </label>
             </div>
+
+            {isExternalPayroll && <div className="modal-field-grid"><label className="modal-field">Lønperiode<input type="month" value={payrollPeriod} onChange={(e) => setPayrollPeriod(e.target.value)} disabled={busy} /></label><label className="modal-field">Ekstern lønreference<input type="text" value={payrollReference} onChange={(e) => setPayrollReference(e.target.value)} disabled={busy} /></label></div>}
 
             <div className="modal-field-grid">
               <label className="modal-field">

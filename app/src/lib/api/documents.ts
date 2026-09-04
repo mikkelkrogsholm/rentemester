@@ -261,7 +261,7 @@ export type DataImportSummary = {
 /** Document metadata for `api.ingestDocument` — amounts are kroner (decimal DKK). */
 export type DocumentIngestMetadata = {
   source: string;
-  documentType?: "purchase_sale" | "cash_register_receipt" | "internal_voucher";
+  documentType?: "purchase_sale" | "cash_register_receipt" | "internal_voucher" | "external_accounting_evidence";
   internalVoucherKind?: "bank_evidenced" | "non_cash_balance_correction";
   issueDate?: string;
   invoiceNo?: string;
@@ -273,11 +273,14 @@ export type DocumentIngestMetadata = {
   vatAmount?: number;
   purchaseVatLines?: Array<{ classification: "dk_purchase_25" | "exempt"; netAmount: number; vatAmount?: number }>;
   reverseChargeWordingConfirmed?: boolean;
+  reverseChargeWordingEvidence?: { excerpt: string; location: string };
   /** Source fact only; company identity is recorded separately and never copied into recipient. */
   danishSimplifiedPurchaseInvoice?: boolean;
+  incompleteStandardPurchaseInvoice?: boolean;
   paymentDetails?: string;
   sourceBankTransactionId?: number;
   accountingRationale?: string;
+  externalAccountingEvidence?: { category: "payroll"; accountingPeriod: string; externalReference: string; totals: { debitAmount: number; creditAmount: number } };
 };
 
 /** Input for `api.ingestDocument` — the base64 file plus its metadata. */
