@@ -9,7 +9,7 @@ import { buildVatReport } from "./vat";
 import { resolveAccountRole } from "./account-roles";
 import { fromOre, toOre } from "./money";
 import { importedReceivableBalanceOre, importedReceivableControlDate } from "./imported-receivables";
-import { purchaseCaseSourceFingerprint, type PurchaseCaseSource } from "./purchase-cases";
+import { getPurchaseCase, purchaseCaseNeed } from "./purchase-cases";
 
 export type CloseControlStatus = "passed" | "warning" | "blocked" | "unavailable";
 export type CloseReadinessItem = { code: string; status: CloseControlStatus; waivable: boolean; count: number; amount: number; evidence: readonly Record<string, unknown>[]; sourceHash: string };
@@ -203,13 +203,13 @@ export function computePeriodCloseReadiness(db: Database, input: { periodStart: 
       LEFT JOIN payables p ON c.source_kind='payable' AND p.id=c.source_id
       WHERE (CASE c.source_kind WHEN 'bank_transaction' THEN bt.transaction_date WHEN 'document' THEN d.invoice_date WHEN 'payable' THEN p.bill_date END BETWEEN ? AND ?)
         OR (CASE c.source_kind WHEN 'bank_transaction' THEN bt.transaction_date WHEN 'document' THEN d.invoice_date WHEN 'payable' THEN p.bill_date END IS NULL)
-      ORDER BY c.case_id`,input.periodStart,cutoff).map(row=>{const source={kind:row.source_kind,id:Number(row.source_id)} as PurchaseCaseSource;const currentFingerprint=purchaseCaseSourceFingerprint(db,source);const stale=currentFingerprint!==row.source_fingerprint;return {...row,sourceStatus:stale?"stale":"current",currentSourceFingerprint:currentFingerprint,resolutionKey:`purchase-case:${row.case_id}:v${row.version}:${row.source_fingerprint}`,vatEligibility:"separate_vat_preflight_required",need:stale?"The source changed; reassess it against the current evidence before closing the period.":undefined};});
+      ORDER BY c.case_id`,input.periodStart,cutoff).map(row=>{const purchaseCase=getPurchaseCase(db,String(row.case_id));const sourceStatus=purchaseCase?.sourceStatus?.status??"missing";const need=purchaseCase?purchaseCaseNeed(db,purchaseCase):null;return {...row,sourceStatus,currentSourceFingerprint:purchaseCase?.sourceStatus?.currentSourceFingerprint??null,resolutionKey:`purchase-case:${row.case_id}:v${row.version}:${row.source_fingerprint}`,vatEligibility:"separate_vat_preflight_required",need:sourceStatus==="missing"?"The source is unavailable; restore or document it before closing the period.":sourceStatus==="stale"?"The source changed; reassess it against the current evidence before closing the period.":need?.question};});
     const unresolved=evidence.filter(row=>row.documentation_outcome==="unresolved");
     const alternative=evidence.filter(row=>row.documentation_outcome==="alternative_evidence_assessed");
     // Alternative evidence is an auditable documentation outcome only. It is
     // intentionally not a VAT approval; VAT_PREFLIGHT remains authoritative.
-    const stale=evidence.filter(row=>row.sourceStatus==="stale");
-    return control("PURCHASE_CASE_DOCUMENTATION",stale.length||unresolved.length?"blocked":alternative.length?"warning":"passed",false,evidence);
+    const nonCurrent=evidence.filter(row=>row.sourceStatus!=="current");
+    return control("PURCHASE_CASE_DOCUMENTATION",nonCurrent.length||unresolved.length?"blocked":alternative.length?"warning":"passed",false,evidence);
   }));
   items.push(protect("PAYABLE_OUTSTANDING",()=>{
     if (!has(db,"payables","due_date") || !has(db,"payables","gross_amount") || !has(db,"payable_payments","payable_id") || !has(db,"payable_payments","amount")) return unavailable("PAYABLE_OUTSTANDING","payable/payment schema unavailable");

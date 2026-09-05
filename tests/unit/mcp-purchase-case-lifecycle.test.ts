@@ -95,7 +95,7 @@ describe("black-box MCP purchase-case lifecycle (#632)", () => {
     const review = await reviewer.call("tools/call", { name: "purchase_case_review", arguments: { company, caseId: initial.caseId, expectedVersion: initial.version, expectedSourceFingerprint: initial.sourceFingerprint, documentationOutcome: "ordinary_evidence_sufficient", idempotencyKey: "synthetic-review-1", confirm: true } });
     expect(review.result?.structuredContent?.ok, JSON.stringify(review)).toBe(true);
     const readback = await reviewer.call("tools/call", { name: "purchase_case_get", arguments: { company, caseId: initial.caseId } });
-    expect(readback.result?.structuredContent?.data?.purchaseCase).toMatchObject({ caseId: initial.caseId, version: 2, documentationOutcome: "ordinary_evidence_sufficient", accountingProgress: "unposted" });
+    expect(readback.result?.structuredContent?.data?.purchaseCase).toMatchObject({ caseId: initial.caseId, version: 2, documentationOutcome: "ordinary_evidence_sufficient", accountingProgress: "unposted", sourceFact: { date: "2026-01-10", supplier: null, amount: -125, currency: "DKK", documentId: null } });
   });
 
   test("rejects an elevated approval policy with a stable machine-readable code", async () => {

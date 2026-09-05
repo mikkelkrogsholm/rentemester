@@ -712,7 +712,11 @@ ord-for-ord, CLI/MCP-pendanter og er derfor hverken CLI-only eller MCP-only:
 - `src/cli/purchase-case.ts` ↔ `src/mcp/tools/purchase-cases.ts` —
   kildebundne, foreløbige købscases og eksakt review. Flowet bogfører aldrig
   eller ændrer momsstatus; den efterfølgende bogføring følger det eksisterende
-  purchase-/payable-flow.
+  purchase-/payable-flow. Købsoverblikkets bogførte grundlag læses altid fra
+  hovedbogen, også for historiske køb uden case. Aktive accounting drafts i
+  perioden vises som en særskilt foreløbig effekt med deres egen økonomidato;
+  de er synlige med `caseId: null`, hvis ingen case findes, og udløser aldrig
+  automatisk historisk case-backfill.
 
 > **Andre kendte mikro-afvigelser (samme filnavn, divergent klassifikation
 > eller ergonomi):**

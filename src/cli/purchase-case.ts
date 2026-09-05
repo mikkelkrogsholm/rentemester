@@ -3,7 +3,7 @@ import { openLedgerReadOnly } from "../core/ledger-inspection";
 import { companyPaths } from "../core/paths";
 import { getPurchaseCase, listPurchaseCases } from "../core/purchase-cases";
 import { createPurchaseCase, reassessPurchaseCase, reviewPurchaseCase, reviewPurchaseCaseGroup, type DocumentationOutcome, type PurchaseCaseGroupMember, type PurchaseCaseSource } from "../core/purchase-cases";
-import { buildPurchaseOverview } from "../core/purchase-overview";
+import { buildPurchaseOverview, purchaseCaseSourceFact } from "../core/purchase-overview";
 import { openCommandDb } from "../cli-dispatch";
 import { migrate } from "../core/db";
 import { executeLocalIdempotentMutation, validateIdempotencyKey } from "../core/idempotency";
@@ -26,13 +26,13 @@ function approvalContext(ctx:any, principal:{subjectId:string}, expectedPolicyEv
 export function register(dispatch: CommandDispatch): void {
   dispatch.on("purchase-case", "list", (ctx) => {
     const db = openLedgerReadOnly(companyPaths(ctx.companyRoot()).db);
-    try { ctx.emitResult({ ok: true, purchaseCases: listPurchaseCases(db) }); }
+    try { ctx.emitResult({ ok: true, purchaseCases: listPurchaseCases(db).map(purchaseCase=>({...purchaseCase,sourceFact:purchaseCaseSourceFact(db,purchaseCase)})) }); }
     finally { db.close(); }
   });
   dispatch.on("purchase-case", "show", (ctx) => {
     const id = ctx.arg("--case-id") ?? ctx.fatal("--case-id is required");
     const db = openLedgerReadOnly(companyPaths(ctx.companyRoot()).db);
-    try { ctx.emitResult({ ok: true, purchaseCase: getPurchaseCase(db, id) }); }
+    try { const purchaseCase=getPurchaseCase(db,id);ctx.emitResult({ ok: true, purchaseCase:purchaseCase?{...purchaseCase,sourceFact:purchaseCaseSourceFact(db,purchaseCase)}:null }); }
     finally { db.close(); }
   });
   dispatch.on("purchase-case", "overview", (ctx) => {
