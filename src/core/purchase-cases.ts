@@ -116,7 +116,7 @@ export function reviewPurchaseCase(db: Database, input: { caseId:string; expecte
 /** Atomically records one documented shared review and one ordinary case review
  * per exact selected case. It deliberately cannot post, alter VAT, or resolve
  * a booking need: those remain existing canonical flows. */
-export function reviewPurchaseCaseGroup(db: Database, input: { groupId?: string; members: PurchaseCaseGroupMember[]; documentationOutcome: DocumentationOutcome; note?: string; actor: ActorContext }): PurchaseCaseGroupResult {
+export function reviewPurchaseCaseGroup(db: Database, input: { groupId?: string; members: PurchaseCaseGroupMember[]; documentationOutcome: DocumentationOutcome; note?: string; actor: ActorContext; approval?: PurchaseCaseApprovalContext }): PurchaseCaseGroupResult {
   const groupId = input.groupId ?? `purchase-group-${randomUUID()}`;
   const note = input.note ?? "";
   if (!caseId.test(groupId) || input.members.length === 0 || input.members.length > 100 || note.length > 2000) return { ok: false, errors: ["PURCHASE_CASE_GROUP_INVALID"] };
@@ -134,6 +134,7 @@ export function reviewPurchaseCaseGroup(db: Database, input: { groupId?: string;
       const purchaseCase = fromRow(db, row);
       const need = purchaseCaseNeed(db, purchaseCase);
       if (!need || need.key !== "documentation:unresolved") return { ok: false as const, errors: ["PURCHASE_CASE_GROUP_NEED_INCOMPATIBLE"] };
+      try { approval(input.approval, creatorPrincipalId(db, row.case_id)); } catch (error) { return { ok: false as const, errors: [error instanceof Error ? error.message : "PURCHASE_CASE_GROUP_REVIEW_REJECTED"] }; }
       prepared.push({ row, source, fingerprint, purchaseCase, need });
     }
     const needs = new Set(prepared.map(item => item.need.key));
@@ -145,7 +146,8 @@ export function reviewPurchaseCaseGroup(db: Database, input: { groupId?: string;
     try {
       const groupEventId = Number(db.query("INSERT INTO purchase_case_group_events(group_id,need_key,selection_hash,documentation_outcome,note,event_hash,actor,program,created_at) VALUES(?,?,?,?,?,?,?,?,?)").run(groupId, "documentation:unresolved", selectionHash, input.documentationOutcome, note, eventHash, input.actor.createdBy, input.actor.createdByProgram, createdAt).lastInsertRowid);
       const reviewed = prepared.map(item => {
-        record(db, { caseId: item.row.case_id, version: item.row.version + 1, type: "reviewed", source: item.source, fingerprint: item.fingerprint, outcome: input.documentationOutcome, note, prior: item.row.event_hash, actor: input.actor });
+        const approvalPolicyHash=approval(input.approval,creatorPrincipalId(db,item.row.case_id));
+        record(db, { caseId: item.row.case_id, version: item.row.version + 1, type: "reviewed", source: item.source, fingerprint: item.fingerprint, outcome: input.documentationOutcome, note, prior: item.row.event_hash, actor: input.actor, principalId:input.approval?.principalId, approvalPolicyHash:approvalPolicyHash??undefined });
         const updated = fromRow(db, current(db, item.row.case_id)!);
         db.query("INSERT INTO purchase_case_group_members(group_event_id,case_id,case_version,source_fingerprint,case_event_hash) VALUES(?,?,?,?,?)").run(groupEventId, item.row.case_id, item.row.version, item.fingerprint, updated.eventHash);
         return updated;
