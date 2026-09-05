@@ -2,6 +2,7 @@ import type { Database } from "bun:sqlite";
 import { createHash } from "node:crypto";
 import { canonicalJson } from "./canonical-json";
 import { listPurchaseCases, purchaseCaseNeed, type PurchaseCase, type PurchaseCaseNeed } from "./purchase-cases";
+import { listAccountingDrafts } from "./accounting-drafts";
 
 export type PurchaseOverviewFilter = { from: string; to: string; includeProvisional?: boolean };
 type SourceFact = { date: string | null; amount: number | null; currency: string | null };
@@ -46,12 +47,24 @@ export function buildPurchaseOverview(db: Database, input: PurchaseOverviewFilte
     unpostedCaseCount: current.filter(item => item.purchaseCase.accountingProgress === "unposted").length,
     financialAggregation: "not_available_without_double_counting" as const,
   };
+  const activeDrafts = listAccountingDrafts(db).filter(draft => draft.status !== "approved_posted");
+  const provisionalEffects = current.map(({ purchaseCase }) => {
+    if (input.includeProvisional === false || purchaseCase.accountingProgress === "posted") return { caseId: purchaseCase.caseId, status: "excluded" as const, reason: "canonical_booking_exists" };
+    const matches = activeDrafts.filter(draft => draft.payload.documentId === (purchaseCase.source.kind === "document" ? purchaseCase.source.id : undefined) || draft.payload.sourceBankTransactionId === (purchaseCase.source.kind === "bank_transaction" ? purchaseCase.source.id : undefined));
+    if (matches.length !== 1) return { caseId: purchaseCase.caseId, status: "unknown" as const, reason: matches.length ? "multiple_active_drafts" : "no_active_draft" };
+    const draft=matches[0]!; if ((draft.payload.currency ?? "DKK") !== "DKK") return { caseId: purchaseCase.caseId, status: "excluded" as const, reason: "foreign_currency_without_documented_conversion" };
+    const amounts = draft.payload.lines.map(line=>{const account=db.query("SELECT type FROM accounts WHERE account_no=?").get(line.accountNo) as {type:string}|null;return {type:account?.type??null,amount:Number(line.debitAmount??0)-Number(line.creditAmount??0)};});
+    if (amounts.some(line=>line.type===null)) return { caseId: purchaseCase.caseId, status: "unknown" as const, reason: "unknown_account" };
+    return { caseId: purchaseCase.caseId, status: "known" as const, draftId:draft.id, expense:amounts.filter(line=>line.type==="expense").reduce((sum,line)=>sum+line.amount,0), expectedVat:amounts.filter(line=>line.type==="vat").reduce((sum,line)=>sum+line.amount,0) };
+  });
+  const known=provisionalEffects.filter((item):item is Extract<typeof item,{status:"known"}>=>item.status==="known");
   const provisional = {
     included: input.includeProvisional !== false,
     caseCount: input.includeProvisional === false ? 0 : current.length,
     unresolvedDocumentationCount: input.includeProvisional === false ? 0 : current.filter(item => item.purchaseCase.documentationOutcome === "unresolved").length,
     alternativeEvidenceCount: input.includeProvisional === false ? 0 : current.filter(item => item.purchaseCase.documentationOutcome === "alternative_evidence_assessed").length,
     financialAggregation: "not_available_without_double_counting" as const,
+    economicEffect: { status: "projection_not_filing_ready" as const, expense: known.reduce((sum,item)=>sum+item.expense,0), expectedVat: known.reduce((sum,item)=>sum+item.expectedVat,0), effects: provisionalEffects },
   };
   const byNeed = new Map<string, Array<ReturnType<typeof group>>>();
   if (input.includeProvisional !== false) for (const item of current) if (item.need) {
