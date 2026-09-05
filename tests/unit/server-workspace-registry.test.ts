@@ -52,6 +52,9 @@ describe("workspace registry HTTP access projection", () => {
       grantCompanyMembership(db, workspace, { userId: service.serviceAccountId, companySlug: "hidden-aps", role: "reviewer", actor: "user:owner" });
       expect(authorizeWorkspaceRoute(db, workspace, { userId: service.serviceAccountId, companySlug: "allowed-aps", permission: "company.ownership.manage" }).allowed).toBe(true);
       expect(authorizeWorkspaceRoute(db, workspace, { userId: service.serviceAccountId, companySlug: "hidden-aps", permission: "company.ownership.manage" }).allowed).toBe(true);
+      // The HTTP adapter preserves the core confirmation boundary even after
+      // every endpoint permission has been granted.
+      expect((await get(hosted, "/api/companies/allowed-aps/ownership/propose", { method: "POST", headers, body: JSON.stringify({ ...body, confirm: false }) })).status).toBe(400);
       expect((await get(hosted, "/api/companies/allowed-aps/ownership/propose", { method: "POST", headers, body: JSON.stringify(body) })).status).toBe(200);
       verifierRuntime = openWorkspaceBetterAuth(workspace, { secret: SECRET, trustedOrigins: [ORIGIN, "http://localhost"], baseURL: ORIGIN });
       const verifier = createBetterAuthRequestProvider(verifierRuntime.auth);
