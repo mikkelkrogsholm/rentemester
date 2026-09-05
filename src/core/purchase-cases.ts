@@ -19,9 +19,11 @@ export type PurchaseCase = {
   note: string;
   eventHash: string;
   createdAt: string;
+  sourceStatus?: PurchaseCaseSourceStatus;
 };
 export type PurchaseCaseResult = { ok: true; purchaseCase: PurchaseCase } | { ok: false; errors: string[] };
 export type PurchaseCaseNeed = { key: "source:stale" | "documentation:unresolved" | "documentation:alternative_evidence_assessed" | "booking:unposted"; question: string };
+export type PurchaseCaseSourceStatus = { status: "current" | "stale" | "missing"; currentSourceFingerprint: string | null };
 export type PurchaseCaseGroupMember = { caseId: string; expectedVersion: number; expectedSourceFingerprint: string };
 export type PurchaseCaseGroupResult = { ok: true; group: { groupId: string; selectionHash: string; need: PurchaseCaseNeed; caseIds: string[]; eventHash: string }; purchaseCases: PurchaseCase[] } | { ok: false; errors: string[] };
 type Row = { case_id:string; version:number; source_kind:PurchaseCaseSource["kind"]; source_id:number; source_fingerprint:string; documentation_outcome:DocumentationOutcome; note:string; event_hash:string; principal_id:string|null; approval_policy_hash:string|null; created_at:string };
@@ -77,11 +79,16 @@ function vatEvidence(db: Database, source: PurchaseCaseSource): PurchaseCase["va
 function fromRow(db: Database, row: Row): PurchaseCase {
   const source = { kind:row.source_kind, id:row.source_id } as PurchaseCaseSource;
   const canonicalBooking = booking(db, source);
-  return { caseId:row.case_id, version:row.version, source, sourceFingerprint:row.source_fingerprint, documentationOutcome:row.documentation_outcome, accountingProgress:canonicalBooking ? "posted" : "unposted", ...(canonicalBooking ? {canonicalBooking} : {}), vatEvidence:vatEvidence(db,source), note:row.note, eventHash:row.event_hash, createdAt:row.created_at };
+  const purchaseCase = { caseId:row.case_id, version:row.version, source, sourceFingerprint:row.source_fingerprint, documentationOutcome:row.documentation_outcome, accountingProgress:canonicalBooking ? "posted" : "unposted", ...(canonicalBooking ? {canonicalBooking} : {}), vatEvidence:vatEvidence(db,source), note:row.note, eventHash:row.event_hash, createdAt:row.created_at } as PurchaseCase;
+  return { ...purchaseCase, sourceStatus: purchaseCaseSourceStatus(db, purchaseCase) };
+}
+export function purchaseCaseSourceStatus(db: Database, purchaseCase: PurchaseCase): PurchaseCaseSourceStatus {
+  const currentSourceFingerprint = purchaseCaseSourceFingerprint(db, purchaseCase.source);
+  return { status: currentSourceFingerprint === null ? "missing" : currentSourceFingerprint === purchaseCase.sourceFingerprint ? "current" : "stale", currentSourceFingerprint };
 }
 export function purchaseCaseNeed(db: Database, purchaseCase: PurchaseCase): PurchaseCaseNeed | null {
-  const currentFingerprint = purchaseCaseSourceFingerprint(db, purchaseCase.source);
-  if (currentFingerprint !== purchaseCase.sourceFingerprint) return { key: "source:stale", question: "The source changed; inspect its current evidence before review." };
+  const sourceStatus = purchaseCaseSourceStatus(db, purchaseCase);
+  if (sourceStatus.status !== "current") return { key: "source:stale", question: "The source changed or is unavailable; inspect its current evidence before review." };
   if (purchaseCase.documentationOutcome === "unresolved") return { key: "documentation:unresolved", question: "Review whether the documented evidence is sufficient." };
   if (purchaseCase.documentationOutcome === "alternative_evidence_assessed") return { key: "documentation:alternative_evidence_assessed", question: "Review the alternative evidence decision before further accounting." };
   if (purchaseCase.accountingProgress === "unposted") return { key: "booking:unposted", question: "Continue through the existing canonical booking flow." };
@@ -89,11 +96,11 @@ export function purchaseCaseNeed(db: Database, purchaseCase: PurchaseCase): Purc
 }
 function current(db: Database, id: string): Row | null { return db.query("SELECT case_id,version,source_kind,source_id,source_fingerprint,documentation_outcome,note,event_hash,principal_id,approval_policy_hash,created_at FROM current_purchase_cases WHERE case_id=?").get(id) as Row|null; }
 function creatorPrincipalId(db: Database, id: string): string | null { return (db.query("SELECT principal_id FROM purchase_case_events WHERE case_id=? AND event_type='created' ORDER BY version LIMIT 1").get(id) as {principal_id:string|null}|null)?.principal_id ?? null; }
-function record(db: Database, input: { caseId:string; version:number; type:"created"|"reviewed"; source:PurchaseCaseSource; fingerprint:string; outcome:DocumentationOutcome; note:string; prior?:string; actor:ActorContext; principalId?: string; approvalPolicyHash?: string }) {
+function record(db: Database, input: { caseId:string; version:number; type:"created"|"reviewed"; source:PurchaseCaseSource; fingerprint:string; outcome:DocumentationOutcome; note:string; prior?:string; actor:ActorContext; principalId?: string; approvalPolicyHash?: string; auditType?: string; auditMessage?: string }) {
   const createdAt=new Date().toISOString();
   const eventHash=sha({caseId:input.caseId,version:input.version,type:input.type,source:input.source,sourceFingerprint:input.fingerprint,documentationOutcome:input.outcome,note:input.note,priorEventHash:input.prior??null,actor:input.actor.createdBy,program:input.actor.createdByProgram,principalId:input.principalId??null,approvalPolicyHash:input.approvalPolicyHash??null,createdAt});
   db.query("INSERT INTO purchase_case_events(case_id,version,event_type,source_kind,source_id,source_fingerprint,documentation_outcome,note,prior_event_hash,event_hash,actor,program,principal_id,approval_policy_hash,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").run(input.caseId,input.version,input.type,input.source.kind,input.source.id,input.fingerprint,input.outcome,input.note,input.prior??null,eventHash,input.actor.createdBy,input.actor.createdByProgram,input.principalId??null,input.approvalPolicyHash??null,createdAt);
-  insertAuditLog(db,{eventType:`purchase_case_${input.type}`,entityType:"purchase_case",entityId:input.caseId,message:`Recorded purchase case version ${input.version}`,createdBy:input.actor.createdBy,createdByProgram:input.actor.createdByProgram});
+  insertAuditLog(db,{eventType:input.auditType??`purchase_case_${input.type}`,entityType:"purchase_case",entityId:input.caseId,message:input.auditMessage??`Recorded purchase case version ${input.version}`,createdBy:input.actor.createdBy,createdByProgram:input.actor.createdByProgram});
 }
 export function createPurchaseCase(db: Database, input: { caseId?:string; source:PurchaseCaseSource; documentationOutcome?:DocumentationOutcome; note?:string; actor:ActorContext; principalId?: string }): PurchaseCaseResult {
   const id=input.caseId ?? `purchase-${randomUUID()}`; if(!caseId.test(id)) return failure("PURCHASE_CASE_ID_INVALID"); if(!sourceValid(input.source)) return failure("PURCHASE_CASE_SOURCE_INVALID");
@@ -112,6 +119,13 @@ function approval(input: PurchaseCaseApprovalContext | undefined, proposedByPrin
 export function reviewPurchaseCase(db: Database, input: { caseId:string; expectedVersion:number; expectedSourceFingerprint:string; documentationOutcome:DocumentationOutcome; note?:string; actor:ActorContext; approval?: PurchaseCaseApprovalContext }): PurchaseCaseResult {
   const note=input.note??""; if(!Number.isInteger(input.expectedVersion)||note.length>2000)return failure("PURCHASE_CASE_REVIEW_INVALID");
   try { return db.transaction(()=>{ const row=current(db,input.caseId); if(!row)return failure("PURCHASE_CASE_NOT_FOUND"); if(row.version!==input.expectedVersion)return failure("STALE_PURCHASE_CASE_VERSION"); const source={kind:row.source_kind,id:row.source_id} as PurchaseCaseSource; const actual=purchaseCaseSourceFingerprint(db,source); if(!actual)return failure("PURCHASE_CASE_SOURCE_NOT_FOUND"); if(actual!==input.expectedSourceFingerprint || actual!==row.source_fingerprint)return failure("STALE_PURCHASE_CASE_SOURCE"); const approvalPolicyHash=approval(input.approval,creatorPrincipalId(db,row.case_id)); record(db,{caseId:row.case_id,version:row.version+1,type:"reviewed",source,fingerprint:actual,outcome:input.documentationOutcome,note,prior:row.event_hash,actor:input.actor,principalId:input.approval?.principalId,approvalPolicyHash:approvalPolicyHash??undefined}); return {ok:true as const,purchaseCase:fromRow(db,current(db,input.caseId)!)}; }).immediate(); } catch (error) { return failure(error instanceof Error ? error.message : "PURCHASE_CASE_REVIEW_REJECTED"); }
+}
+/** Rebinds a stale case to the exact current source evidence. It is deliberately
+ * separate from ordinary review: a retry cannot turn changed evidence into a
+ * silent approval, and the earlier event remains immutable evidence. */
+export function reassessPurchaseCase(db: Database, input: { caseId:string; expectedVersion:number; expectedSourceFingerprint:string; currentSourceFingerprint:string; documentationOutcome:DocumentationOutcome; reason:string; actor:ActorContext; approval?: PurchaseCaseApprovalContext }): PurchaseCaseResult {
+  if (!Number.isInteger(input.expectedVersion) || !/^[a-f0-9]{64}$/.test(input.expectedSourceFingerprint) || !/^[a-f0-9]{64}$/.test(input.currentSourceFingerprint) || !input.reason.trim() || input.reason.length>2000) return failure("PURCHASE_CASE_REASSESS_INVALID");
+  try { return db.transaction(()=>{ const row=current(db,input.caseId); if(!row)return failure("PURCHASE_CASE_NOT_FOUND"); if(row.version!==input.expectedVersion)return failure("STALE_PURCHASE_CASE_VERSION"); if(row.source_fingerprint!==input.expectedSourceFingerprint)return failure("STALE_PURCHASE_CASE_SOURCE"); const source={kind:row.source_kind,id:row.source_id} as PurchaseCaseSource; const actual=purchaseCaseSourceFingerprint(db,source); if(!actual)return failure("PURCHASE_CASE_SOURCE_NOT_FOUND"); if(actual!==input.currentSourceFingerprint)return failure("STALE_PURCHASE_CASE_CURRENT_SOURCE"); if(actual===row.source_fingerprint)return failure("PURCHASE_CASE_SOURCE_NOT_STALE"); const approvalPolicyHash=approval(input.approval,creatorPrincipalId(db,row.case_id)); record(db,{caseId:row.case_id,version:row.version+1,type:"reviewed",source,fingerprint:actual,outcome:input.documentationOutcome,note:input.reason.trim(),prior:row.event_hash,actor:input.actor,principalId:input.approval?.principalId,approvalPolicyHash:approvalPolicyHash??undefined,auditType:"purchase_case_reassessed",auditMessage:`Reassessed purchase case version ${row.version + 1} against changed source evidence`}); return {ok:true as const,purchaseCase:fromRow(db,current(db,row.case_id)!)}; }).immediate(); } catch(error) { return failure(error instanceof Error?error.message:"PURCHASE_CASE_REASSESS_REJECTED"); }
 }
 /** Atomically records one documented shared review and one ordinary case review
  * per exact selected case. It deliberately cannot post, alter VAT, or resolve

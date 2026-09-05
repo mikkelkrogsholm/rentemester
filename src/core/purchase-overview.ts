@@ -1,7 +1,7 @@
 import type { Database } from "bun:sqlite";
 import { createHash } from "node:crypto";
 import { canonicalJson } from "./canonical-json";
-import { listPurchaseCases, purchaseCaseNeed, purchaseCaseSourceFingerprint, type PurchaseCase, type PurchaseCaseNeed } from "./purchase-cases";
+import { listPurchaseCases, purchaseCaseNeed, type PurchaseCase, type PurchaseCaseNeed } from "./purchase-cases";
 
 export type PurchaseOverviewFilter = { from: string; to: string; includeProvisional?: boolean };
 type SourceFact = { date: string | null; amount: number | null; currency: string | null };
@@ -19,7 +19,7 @@ function sourceFact(db: Database, purchaseCase: PurchaseCase): SourceFact {
 }
 
 function inScope(fact: SourceFact, input: PurchaseOverviewFilter): boolean {
-  return fact.date !== null && fact.date >= input.from && fact.date <= input.to;
+  return fact.date === null || (fact.date >= input.from && fact.date <= input.to);
 }
 
 function group(purchaseCase: PurchaseCase, need: PurchaseCaseNeed) {
@@ -37,8 +37,7 @@ export function buildPurchaseOverview(db: Database, input: PurchaseOverviewFilte
   const all = listPurchaseCases(db);
   const scoped = all.map(purchaseCase => ({ purchaseCase, fact: sourceFact(db, purchaseCase) })).filter(item => inScope(item.fact, input));
   const current = scoped.map(item => {
-    const actualFingerprint = purchaseCaseSourceFingerprint(db, item.purchaseCase.source);
-    const need = actualFingerprint === item.purchaseCase.sourceFingerprint ? purchaseCaseNeed(db, item.purchaseCase) : { key: "source:stale", question: "The source changed; inspect its current evidence before review." } as PurchaseCaseNeed;
+    const need = purchaseCaseNeed(db, item.purchaseCase);
     return { ...item, need };
   });
   const canonical = {
