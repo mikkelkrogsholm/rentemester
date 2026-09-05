@@ -14,6 +14,12 @@ Kilder:
 - En kørende `src/mcp/server.ts` (`tools/list`) — facit for hvilke tools der
   faktisk eksponeres og deres `annotations` (read-only/destructive-hints).
 - `src/mcp/registry.ts` — registrerer hele tool-surface'en pr. domæne.
+
+Legacy kontakt → canonical party mapping: `legacy_party_mapping_plan` og
+`legacy_party_mapping_list` er read-only. `legacy_party_mapping_apply` kræver
+bekræftelse, autentificeret company membership, idempotency key og eksakt
+kontakt-/bilag-/planbinding; `legacy_party_mapping_supersede` er den append-only
+korrektionsvej. En reviewed legacy reference alene opretter aldrig en mapping.
 - `src/cli-meta.ts` — CLI-kommandoerne. MCP-surface'en er *tæt på* 1:1 med
   CLI'en, men ikke fuldstændig — se "CLI/MCP-mapping" nedenfor.
 - `src/core/*.ts` — TypeScript-typer for inputs og resultater (`InvoicePayload`,
@@ -104,7 +110,7 @@ selv ændres ikke.
 
 ## Resultat-shapes (`outputSchema`)
 
-**Alle 236 tools deklarerer et `outputSchema`** (#202). Det er det samme
+**Alle 240 tools deklarerer et `outputSchema`** (#202). Det er det samme
 delte schema for hver tool — konvolutten — så en agent kan læse
 resultat-kontrakten fra `tools/list` *uden* at kalde tool'et først.
 Schemaet er defineret én gang i `src/mcp/envelope.ts` (`envelopeShape`).
@@ -227,10 +233,10 @@ Tallene gælder en kørende `src/mcp/server.ts` (verificeret via `tools/list`).
 Tabellerne nedenfor er den autoritative liste pr. tool — bliver prosa-tal og
 tabel uenige, er det tabellerne (og i sidste ende `tools/list`) der gælder.
 
-- **Read-tools**: 89
-- **Ordinary write-tools**: 120
+- **Read-tools**: 91
+- **Ordinary write-tools**: 122
 - **Destructive**: 1 (`system_restore_backup`)
-- **Total**: **236** (read and write tool counts are verified from the live registry in CI)
+- **Total**: **240** (read and write tool counts are verified from the live registry in CI)
 
 ## Read-tools
 

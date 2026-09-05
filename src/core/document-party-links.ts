@@ -49,9 +49,22 @@ export function planDocumentPartyLink(ledger: Database, registry: Database, inpu
     const legacyId=value(input.legacyId,160)!;
     const reviewedLegacyReference=value(input.reviewedLegacyReference,500);
     if (!reviewedLegacyReference) return fail(DOCUMENT_PARTY_LINK_ERRORS.LEGACY_REFERENCE_UNREVIEWED);
-    const rows=registry.query("SELECT party_id FROM rm_party_legacy_links WHERE company_slug=? AND legacy_kind=? AND legacy_id=? ORDER BY party_id",).all(input.companySlug,input.legacyKind,legacyId) as any[];
-    candidateIds=rows.map(r=>r.party_id); if(!candidateIds.length) return fail(DOCUMENT_PARTY_LINK_ERRORS.NO_IDENTIFIER_EVIDENCE); if(candidateIds.length>1) return fail(DOCUMENT_PARTY_LINK_ERRORS.MULTIPLE_CANDIDATES); if(partyId&&partyId!==candidateIds[0]) return fail(DOCUMENT_PARTY_LINK_ERRORS.IDENTIFIER_CONFLICT);
-    evidence={kind:"reviewed_legacy_reference",legacyKind:input.legacyKind,legacyId,reviewedLegacyReference};
+    const lifecycleCount=(registry.query("SELECT count(*) AS n FROM rm_legacy_party_mapping_events WHERE company_slug=? AND legacy_kind=? AND legacy_id=?")
+      .get(input.companySlug,input.legacyKind,legacyId) as {n:number}).n;
+    if (lifecycleCount > 0) {
+      const mapping=registry.query("SELECT party_id,party_role,evidence_json,event_hash FROM current_legacy_party_mappings WHERE company_slug=? AND legacy_kind=? AND legacy_id=?")
+        .get(input.companySlug,input.legacyKind,legacyId) as {party_id:string;party_role:string;evidence_json:string;event_hash:string}|null;
+      if (!mapping) return fail(DOCUMENT_PARTY_LINK_ERRORS.NO_IDENTIFIER_EVIDENCE);
+      let mappingEvidence:any; try { mappingEvidence=JSON.parse(mapping.evidence_json); } catch { return fail(DOCUMENT_PARTY_LINK_ERRORS.NO_IDENTIFIER_EVIDENCE); }
+      if (mapping.party_role!==input.role || mappingEvidence.reviewedLegacyReference!==reviewedLegacyReference) return fail(DOCUMENT_PARTY_LINK_ERRORS.LEGACY_REFERENCE_UNREVIEWED);
+      candidateIds=[mapping.party_id];
+      evidence={kind:"reviewed_legacy_reference",legacyKind:input.legacyKind,legacyId,reviewedLegacyReference,mappingEventHash:mapping.event_hash,sourceDocumentId:mappingEvidence.documentId,sourceDocumentSha256:mappingEvidence.documentSha256};
+    } else {
+      const rows=registry.query("SELECT party_id FROM rm_party_legacy_links WHERE company_slug=? AND legacy_kind=? AND legacy_id=? ORDER BY party_id").all(input.companySlug,input.legacyKind,legacyId) as any[];
+      candidateIds=rows.map(r=>r.party_id);
+      evidence={kind:"reviewed_legacy_reference",legacyKind:input.legacyKind,legacyId,reviewedLegacyReference};
+    }
+    if(!candidateIds.length) return fail(DOCUMENT_PARTY_LINK_ERRORS.NO_IDENTIFIER_EVIDENCE); if(candidateIds.length>1) return fail(DOCUMENT_PARTY_LINK_ERRORS.MULTIPLE_CANDIDATES); if(partyId&&partyId!==candidateIds[0]) return fail(DOCUMENT_PARTY_LINK_ERRORS.IDENTIFIER_CONFLICT);
   } else return fail(DOCUMENT_PARTY_LINK_ERRORS.NO_IDENTIFIER_EVIDENCE);
   const party=inspectParty(registry,candidateIds[0]!); if(!party) return fail(DOCUMENT_PARTY_LINK_ERRORS.PARTY_NOT_FOUND);
   if (!party.roles.some((r:any)=>r.companySlug===input.companySlug && r.role===input.role)) return fail(DOCUMENT_PARTY_LINK_ERRORS.SCOPE_MISMATCH);

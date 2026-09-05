@@ -304,6 +304,7 @@ export function assertWorkspaceControlPrimitives(db: Database): void {
     "rm_party_alias_assertions",
     "rm_party_field_assertions",
     "rm_party_legacy_links",
+    "rm_legacy_party_mapping_events",
     "rm_corporate_record_events",
     "rm_corporate_record_scope_assertions",
     "rm_company_knowledge_assertions",

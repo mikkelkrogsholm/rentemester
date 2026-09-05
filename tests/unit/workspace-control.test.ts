@@ -558,4 +558,5 @@ describe("workspace control database", () => {
       rmSync(workspace, { recursive: true, force: true });
     }
   });
+
 });

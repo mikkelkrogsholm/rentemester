@@ -116,6 +116,8 @@ export const MUTATING_COMMANDS = new Set([
   "party link-role",
   "party propose-merge",
   "party approve-merge",
+  "legacy-party-mapping apply",
+  "legacy-party-mapping supersede",
   "corporate-record ingest",
   "corporate-record link",
   "corporate-record enrich",

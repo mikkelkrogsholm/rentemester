@@ -67,6 +67,15 @@ export async function dispatchGroupWorkspaceRoute(
   if (partyMerge) return postOnly(method, () => handlers.registryPartyMerge(decodeURIComponent(partyMerge[1]!), partyMerge[2] === "approve"));
   const partyOne = /^\/api\/companies\/([^/]+)\/workspace-parties\/([^/]+)$/.exec(path);
   if (partyOne) return getOnly(method, () => handlers.registryParty(decodeURIComponent(partyOne[1]!), decodeURIComponent(partyOne[2]!)));
+  const legacyMappingAction = /^\/api\/companies\/([^/]+)\/legacy-party-mappings\/(plan|apply|supersede)$/.exec(path);
+  if (legacyMappingAction) {
+    const slug=decodeURIComponent(legacyMappingAction[1]!);
+    if(legacyMappingAction[2]==="plan")return postOnly(method,()=>handlers.legacyPartyMappingPlan(slug));
+    if(legacyMappingAction[2]==="apply")return postOnly(method,()=>handlers.legacyPartyMappingApply(slug));
+    return postOnly(method,()=>handlers.legacyPartyMappingSupersede(slug));
+  }
+  const legacyMappings = /^\/api\/companies\/([^/]+)\/legacy-party-mappings$/.exec(path);
+  if (legacyMappings) return getOnly(method, () => handlers.legacyPartyMappings(decodeURIComponent(legacyMappings[1]!)));
   const recordCollection = /^\/api\/companies\/([^/]+)\/corporate-records$/.exec(path);
   if (recordCollection) return getOrPost(method, () => handlers.registryRecords(decodeURIComponent(recordCollection[1]!)), () => handlers.registryRecordIngest(decodeURIComponent(recordCollection[1]!)));
   const recordAction = /^\/api\/companies\/([^/]+)\/corporate-records\/([^/]+)\/(link|enrich|supersede)$/.exec(path);

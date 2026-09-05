@@ -370,6 +370,12 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
     read("inspect", mcp("corporate_record_inspect"), "Read visible metadata/history."),
     read("download", mcp("corporate_record_download"), "Read verified original bytes only after scope authorization.", { dependsOn:["inspect"] }),
   ], unsupportedBoundaries:["Corporate records are governance evidence, never accounting vouchers or filing actions.", "Original bytes and hashes are never overwritten or deleted."] }),
+  workflow({ id:"legacy-party-mapping", capabilityId:"legacy-party-mapping", title:"Reviewed legacy contact mapping", intendedOutcome:"Map one current customer/vendor contact to its canonical party from an exact reviewed source document, without inventing an identifier or changing accounting facts.", steps:[
+    read("plan",mcp("legacy_party_mapping_plan"),"Produce a deterministic plan bound to the exact contact, canonical party, source-document bytes and review reference."),
+    write("apply",mcp("legacy_party_mapping_apply"),"Confirm and idempotently append only the exact plan.",{dependsOn:["plan"],expectedIdempotent:true,retryClass:"natural-idempotent",inputIdentities:["planHash","idempotencyKey"],canonicalRecords:["legacy party mapping event"]}),
+    write("supersede",mcp("legacy_party_mapping_supersede"),"Append an explicit correction for the current mapping.",{boundary:"review",expectedIdempotent:true,retryClass:"natural-idempotent",inputIdentities:["planHash","idempotencyKey"],canonicalRecords:["legacy party mapping supersession"]}),
+    read("inspect",mcp("legacy_party_mapping_list"),"Read company-scoped append-only mapping history."),
+  ],unsupportedBoundaries:["A reviewed legacy reference alone never creates a mapping.","Mappings never rewrite contacts, documents, journal entries or VAT."]}),
   workflow({ id:"company-knowledge-lifecycle", capabilityId:"company-knowledge", title:"Company operating knowledge", intendedOutcome:"Retrieve or maintain source-backed, effective-dated operating context without changing canonical accounting settings.", steps:[
     read("context",mcp("company_knowledge_context"),"Read compact machine-readable context as of a declared date."),
     write("propose",mcp("company_knowledge_propose"),"Propose one typed, sourced assertion without a ledger effect.",{canonicalRecords:["company knowledge assertion"]}),
@@ -411,6 +417,7 @@ const capabilityTuples: CapabilityTuple[] = [
   ["accounting-dimensions", "Accounting dimensions", "Classify source-linked journal lines by reviewed projects, products, departments or cost centres without changing legal accounting.", "reporting", ["classify project cost", "assign cost centre", "dimension actuals"], ["dimension", "project", "cost centre", "department", "allocation"], "company", ["accounting-dimensions"]],
   ["posting-rules", "Posting rules", "Propose, approve and explain reusable posting rules.", "rules", ["create posting rule", "approve bookkeeping rule"], ["automation", "review separation"], "company", ["posting-rule-review"]],
   ["workspace-parties", "Workspace parties", "Maintain canonical counterparties with isolated company roles and reviewed supersession.", "master data", ["create canonical party", "link company party role", "review duplicate party"], ["party", "counterparty", "identity", "vendor role"], "workspace", ["workspace-party-lifecycle"]],
+  ["legacy-party-mapping", "Legacy contact mapping", "Map existing company contacts to canonical parties with evidence-bound, append-only review.", "master data", ["map legacy vendor", "map legacy customer", "correct legacy party mapping"], ["legacy contact", "vendor mapping", "customer mapping", "party evidence"], "company", ["legacy-party-mapping"]],
   ["document-party-resolution", "Document party resolution", "Resolve a document to canonical party relations, an explicit internal no-party decision, or a bounded unresolved state.", "documents", ["link document party", "confirm internal voucher has no external party", "inspect document party resolution"], ["document party", "issuer", "supplier", "payer", "payment descriptor"], "company", ["document-party-resolution"]],
   ["corporate-records", "Corporate records", "Store immutable corporate and governance evidence with typed, access-controlled links.", "governance", ["ingest corporate record", "link governance evidence", "supersede corporate record"], ["corporate record", "governance", "articles", "ownership evidence"], "workspace", ["corporate-record-lifecycle"]],
   ["ownership-graph", "Ownership and control graph", "Review source-backed, party-aware ownership and control facts without changing legal ledgers or inferring consolidation.", "governance", ["review ownership", "record registry ownership", "query control graph"], ["ownership", "shareholder", "control", "registry diff"], "legal-group", ["ownership-graph-review"]],
@@ -531,9 +538,9 @@ type SurfaceBaseline = { count: number; hash: string };
  */
 export const AGENT_SURFACE_BASELINES: Record<SurfaceName, SurfaceBaseline> = {
   // Public surface changes require an explicit discovery review.
-  mcp: { count: 236, hash: "b505d2218a39a30851550b30f6f1c9b470966b7519b7b1af14b29a5631779859" },
-  cli: { count: 286, hash: "1bcf46508af47da0d1c3afef8856abe2d409f9173dd24e25710911752cd5dbbb" },
-  http: { count: 226, hash: "9bd05a30ef260d84a37cac1a3a5ebe2e1d0556f51c54a14b6fd74292a5c6a7fd" },
+  mcp: { count: 240, hash: "d75049928e48c4b482d56d45403cfc3cef4d96f60944aa1868be9b21b8b50d2a" },
+  cli: { count: 290, hash: "d04cd1220088650a653e44f00b75abeca3663f83866796c060f7addec59439a8" },
+  http: { count: 230, hash: "f1e3d09255a9af63a775c01bdc1bea2800e7dcd6bfbf4c10e72165072932e424" },
 };
 
 const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }> = [
@@ -543,6 +550,7 @@ const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }>
   { capabilityId: "workspace-document-inbox", pattern: /workspace[_-]inbox/ },
   { capabilityId: "corporate-records", pattern: /(?:corporate[_-]record|corporate-record)/ },
   { capabilityId: "workspace-parties", pattern: /(?:workspace[_-]party|^cli:party )/ },
+  { capabilityId: "legacy-party-mapping", pattern: /legacy[_-]party[_-]mapping/ },
   { capabilityId: "document-party-resolution", pattern: /documents?_party|party-link|internal-no-external-party/ },
   { capabilityId: "digisense-nemhandel", pattern: /(?:efaktura|digisense|peppol|send-public)/ },
   { capabilityId: "group-intercompany", pattern: /(?:group|portfolio)/ },

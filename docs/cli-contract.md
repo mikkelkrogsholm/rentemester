@@ -6,6 +6,14 @@ korrekt. Implementeringen ligger i `src/cli-actor.ts` og `src/cli.ts`.
 
 ## 1. Actor-politik for muterende kommandoer
 
+`legacy-party-mapping plan` er read-only. `legacy-party-mapping apply` kræver
+`--confirm yes`, actor, en autentificeret workspace-servicekonto, idempotency
+key, eksakt plan-hash og et eksisterende kildebilag; den er idempotent. Planen
+binder bilagets hash og den gennemgåede reference. En reviewed legacy reference
+alene opretter aldrig en mapping.
+Korrektioner sker kun med `legacy-party-mapping supersede`; kontakt, bilag,
+journal og moms ændres ikke.
+
 Enhver **muterende** kommando (alt der skriver til ledger'en — fakturaer,
 finansposteringer, backups, kunde-/leverandøroprettelse osv.) kræver en kendt
 actor. Det fulde sæt ligger i `MUTATING_COMMANDS` i `src/cli-actor.ts`.
