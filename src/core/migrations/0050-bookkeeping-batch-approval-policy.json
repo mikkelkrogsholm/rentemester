@@ -1,0 +1,5 @@
+{
+  "id": 50,
+  "name": "bookkeeping batch approval policy evidence",
+  "sql": "ALTER TABLE bookkeeping_batch_revision_approvals ADD COLUMN approval_policy_hash TEXT;\n"
+}
