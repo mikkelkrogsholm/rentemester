@@ -46,6 +46,7 @@ import {
   handleBankReconciliationCorrectionPlan, handleLegacyBankBindingApply, handleLegacyBankBindingPlan,
 } from "./router/bank";
 import { handleBookkeepingBatchApply, handleBookkeepingBatchApprove, handleBookkeepingBatchDryRun, handleBookkeepingBatchPersistDryRun, handleBookkeepingBatchStatus } from "./router/bookkeeping-batch";
+import { handleAccountingApprovalPolicyGet, handleAccountingApprovalPolicySet } from "./router/accounting-approval-policy";
 import { handleBookkeepingWorkbench } from "./router/bookkeeping-workbench";
 import { handlePurchaseCaseCreate, handlePurchaseCaseGet, handlePurchaseCaseGroupReview, handlePurchaseCaseList, handlePurchaseCaseReview, handlePurchaseOverview } from "./router/purchase-cases";
 import { handleDimensionAction, handleDimensionAssignments, handleDimensionBudgets, handleDimensionBudgetPlan, handleDimensionDefinitions, handleDimensionMembers, handleDimensionPlan } from "./router/dimensions";
@@ -349,6 +350,8 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "company", effect: "read", permission: "company.export", method: "GET", pattern: "/api/companies/:slug/trial-balance/export", summary: "Saldobalance som CSV-download (#372)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/journal", summary: "Journalposter." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/accounting-drafts", summary: "Bogføringskladder og deres seneste reviewtilstand." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/accounting-approval-policy", summary: "Aktuel versioneret approval-policy for et selskab." },
+  { scope: "company", effect: "write", permission: "company.admin", method: "POST", pattern: "/api/companies/:slug/accounting-approval-policy", summary: "Ændrer selskabets append-only approval-policy med confirm." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/posting-rules", summary: "Selskabslokale posteringsregler." },
   { scope: "company", effect: "read", permission: "company.read", method: "POST", pattern: "/api/companies/:slug/posting-rules/explain", summary: "Dry-run med præcise match- og afvigelsesårsager." },
   { scope: "company", effect: "write", permission: "company.review", method: "POST", pattern: "/api/companies/:slug/posting-rules/propose", summary: "Opretter et regel-forslag med confirm." },
@@ -803,6 +806,13 @@ export async function handleRequest(
     if (bookkeepingBatchMatch) { if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute"); return handleBookkeepingBatchDryRun(config, decodeURIComponent(bookkeepingBatchMatch[1]!), url); }
     const bookkeepingWorkbenchMatch = /^\/api\/companies\/([^/]+)\/bookkeeping-workbench$/.exec(path);
     if (bookkeepingWorkbenchMatch) { if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute"); return handleBookkeepingWorkbench(config, decodeURIComponent(bookkeepingWorkbenchMatch[1]!), url); }
+    const accountingApprovalPolicyMatch = /^\/api\/companies\/([^/]+)\/accounting-approval-policy$/.exec(path);
+    if (accountingApprovalPolicyMatch) {
+      const slug = decodeURIComponent(accountingApprovalPolicyMatch[1]!);
+      if (method === "GET") return handleAccountingApprovalPolicyGet(config, slug, request);
+      if (method === "POST") return await handleAccountingApprovalPolicySet(config, request, slug);
+      throw ApiError.methodNotAllowed("kun GET eller POST er understøttet på denne rute");
+    }
     const purchaseCaseReviewMatch=/^\/api\/companies\/([^/]+)\/purchase-cases\/([^/]+)\/review$/.exec(path);
     if(purchaseCaseReviewMatch){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");return await handlePurchaseCaseReview(config,request,decodeURIComponent(purchaseCaseReviewMatch[1]!),decodeURIComponent(purchaseCaseReviewMatch[2]!));}
     const purchaseCaseGroupReviewMatch=/^\/api\/companies\/([^/]+)\/purchase-cases\/group-review$/.exec(path);

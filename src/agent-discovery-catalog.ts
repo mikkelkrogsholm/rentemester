@@ -530,9 +530,9 @@ type SurfaceBaseline = { count: number; hash: string };
  */
 export const AGENT_SURFACE_BASELINES: Record<SurfaceName, SurfaceBaseline> = {
   // Public surface changes require an explicit discovery review.
-  mcp: { count: 233, hash: "52d90690362bab5cd9ca70980348aa5464189c50df26c4298ad07acd35f2b303" },
+  mcp: { count: 235, hash: "9bd8f724e6058ab820b6c5bf7ba39b596f4d0b990a2735c724d6866e6e976d3c" },
   cli: { count: 285, hash: "e7b306c3b359c8a56be778d8dff7b6f436d9ed19cd5c9f67100329344f2b34f4" },
-  http: { count: 223, hash: "2e524b3ef9843ccc36aff8fa8bf5431c1969523889ec674923491fbc8913c40b" },
+  http: { count: 225, hash: "a9e0e5124c1fb1137af4cb76a7ed3a68ebfb517808b28ed0c839337b6e4c9b6a" },
 };
 
 const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }> = [

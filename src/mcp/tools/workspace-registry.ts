@@ -11,6 +11,7 @@ import { enrichCorporateRecord, ingestCorporateRecord, inspectCorporateRecord, i
 import { companyKnowledgeHistory, inspectCompanyKnowledgeAssertion, proposeCompanyKnowledge, queryCompanyKnowledge, reviewCompanyKnowledge, supersedeCompanyKnowledge, COMPANY_KNOWLEDGE_PREDICATES } from "../../core/company-knowledge";
 import { applyOwnershipSnapshot, ownershipHistory, proposeOwnershipSnapshot, queryOwnershipGraph, reviewOwnershipSnapshot } from "../../core/ownership-graph";
 import { authorizeWorkspaceRoute } from "../../core/workspace-access";
+import { getAccountingApprovalPolicy, setAccountingApprovalPolicy } from "../../core/accounting-approval-policy";
 import { currentMcpAuthenticatedPrincipal } from "../security";
 import { envelopeShape, errorEnvelope, successEnvelope } from "../envelope";
 import { confirmField, withCompanyDb, withCompanyDbConfirmed } from "../tool-runtime";
@@ -27,6 +28,22 @@ const ownershipFact = z.object({owner:z.discriminatedUnion("kind",[z.object({kin
 function visibleOwnershipSnapshot(snapshot:any):boolean { const principal=currentMcpAuthenticatedPrincipal(); if(!principal||typeof snapshot?.snapshotId!=="string")return false; const db=openWorkspaceControlReadOnlyDb(workspace()); try { const row=db.query("SELECT canonical_facts FROM rm_ownership_source_snapshots WHERE snapshot_id=?").get(snapshot.snapshotId) as {canonical_facts?:string}|null; let facts:any[]=[]; try { facts=JSON.parse(row?.canonical_facts??"[]"); } catch { return false; } const endpoints=new Set<string>(); for(const fact of facts){if(typeof fact?.ownedCompanySlug==="string")endpoints.add(fact.ownedCompanySlug);if(fact?.owner?.kind==="company"&&typeof fact.owner.companySlug==="string")endpoints.add(fact.owner.companySlug);} return endpoints.size>0&&[...endpoints].every(companySlug=>authorizeWorkspaceRoute(db,workspace(),{userId:principal.subjectId,companySlug,permission:"company.ownership.read"}).allowed); } finally {db.close();} }
 
 export function registerWorkspaceRegistryTools(server:McpServer):void {
+  server.registerTool("accounting_approval_policy_get", { title: "Read company approval policy", description: "Reads the effective versioned company approval policy. Absence means the fail-safe independent-review default; this never changes a ledger.", inputSchema: { company, riskClass: z.enum(["normal", "elevated"]).optional() }, outputSchema: envelopeShape, annotations: read }, withCompanyDb<any>(server, ({ args }) => {
+    const db = openWorkspaceControlReadOnlyDb(workspace());
+    try { return successEnvelope({ policy: getAccountingApprovalPolicy(db, args.company, args.riskClass) }); }
+    finally { db.close(); }
+  }));
+  server.registerTool("accounting_approval_policy_set", { title: "Set company approval policy", description: "Appends a company-scoped approval policy version. It requires an authenticated principal with company-admin membership, actor attribution and confirm:true; it never authorizes by actor alone or changes a ledger.", inputSchema: { company, riskClass: z.enum(["normal", "elevated"]).optional(), reviewMode: z.enum(["sole_authorized_bookkeeper", "independent_reviewer"]), expectedEventHash: z.string().regex(/^[a-f0-9]{64}$/).nullable().optional(), confirm: confirmField }, outputSchema: envelopeShape, annotations: write }, withCompanyDbConfirmed<any>(server, "accounting_approval_policy_set", ({ args, actor }) => {
+    const principal = currentMcpAuthenticatedPrincipal();
+    if (!principal) throw new Error("authenticated workspace service principal is required");
+    const db = openWorkspaceControlDb(workspace());
+    try {
+      return successEnvelope(setAccountingApprovalPolicy(db, workspace(), {
+        scope: { kind: "company", companySlug: args.company }, riskClass: args.riskClass ?? "normal", reviewMode: args.reviewMode,
+        expectedEventHash: args.expectedEventHash ?? null, principalId: principal.subjectId, actor: actor.createdBy, confirm: true,
+      }));
+    } finally { db.close(); }
+  }));
   server.registerTool("workspace_party_search",{title:"Search visible workspace parties",description:"Lists canonical parties only when they have a role in the explicitly authorized company. Filtering occurs before pagination.",inputSchema:{company,query:z.string().optional(),cursor:z.number().int().nonnegative().optional(),limit:z.number().int().min(1).max(100).optional()},outputSchema:envelopeShape,annotations:read},withCompanyDb<any>(server,({args})=>{const db=openWorkspaceControlReadOnlyDb(workspace());try{return successEnvelope(searchParties(db,{query:args.query,companySlugs:new Set([args.company]),cursor:args.cursor,limit:args.limit}));}finally{db.close();}}));
   server.registerTool("workspace_party_inspect",{title:"Inspect a visible workspace party",description:"Returns canonical/provenance evidence with inaccessible company roles removed.",inputSchema:{company,partyId:z.string().min(3)},outputSchema:envelopeShape,annotations:read},withCompanyDb<any>(server,({args})=>{const party=visibleParty(args.partyId,args.company);return party?successEnvelope({party}):errorEnvelope("party not found",{code:"PARTY_NOT_FOUND"});}));
   server.registerTool("workspace_party_create",{title:"Create canonical workspace party",description:"Creates source-backed canonical identity; it never creates a ledger record. Link a company role separately.",inputSchema:{company,kind:z.enum(["person","organization","public_authority","financial_institution"]),name:z.string().min(1),aliases:z.array(z.string()).max(16).optional(),identifiers:z.array(z.object({country:z.string(),identifier:z.string().optional(),identifierKind:z.enum(["dk_cvr","eu_vat","non_eu"])})).optional(),source:z.string().min(1),observedAt:z.string().min(1),reviewAssertion:z.string().min(1),partyId:z.string().optional(),confirm:confirmField},outputSchema:envelopeShape,annotations:write},withCompanyDbConfirmed<any>(server,"workspace_party_create",({args,actor})=>{const db=openWorkspaceControlDb(workspace());try{return successEnvelope({party:createParty(db,{...args,actor:actor.createdBy})});}finally{db.close();}}));
