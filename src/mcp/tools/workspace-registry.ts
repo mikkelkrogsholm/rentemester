@@ -38,10 +38,15 @@ export function registerWorkspaceRegistryTools(server:McpServer):void {
     if (!principal) throw new Error("authenticated workspace service principal is required");
     const db = openWorkspaceControlDb(workspace());
     try {
-      return successEnvelope(setAccountingApprovalPolicy(db, workspace(), {
-        scope: { kind: "company", companySlug: args.company }, riskClass: args.riskClass ?? "normal", reviewMode: args.reviewMode,
-        expectedEventHash: args.expectedEventHash ?? null, principalId: principal.subjectId, actor: actor.createdBy, confirm: true,
-      }));
+      try {
+        return successEnvelope(setAccountingApprovalPolicy(db, workspace(), {
+          scope: { kind: "company", companySlug: args.company }, riskClass: args.riskClass ?? "normal", reviewMode: args.reviewMode,
+          expectedEventHash: args.expectedEventHash ?? null, principalId: principal.subjectId, actor: actor.createdBy, confirm: true,
+        }));
+      } catch (error) {
+        if (error instanceof Error && error.message === "ELEVATED_APPROVAL_POLICY_UNSUPPORTED") return errorEnvelope("elevated approval policy is not supported without a canonical risk classifier", { code: error.message });
+        throw error;
+      }
     } finally { db.close(); }
   }));
   server.registerTool("workspace_party_search",{title:"Search visible workspace parties",description:"Lists canonical parties only when they have a role in the explicitly authorized company. Filtering occurs before pagination.",inputSchema:{company,query:z.string().optional(),cursor:z.number().int().nonnegative().optional(),limit:z.number().int().min(1).max(100).optional()},outputSchema:envelopeShape,annotations:read},withCompanyDb<any>(server,({args})=>{const db=openWorkspaceControlReadOnlyDb(workspace());try{return successEnvelope(searchParties(db,{query:args.query,companySlugs:new Set([args.company]),cursor:args.cursor,limit:args.limit}));}finally{db.close();}}));

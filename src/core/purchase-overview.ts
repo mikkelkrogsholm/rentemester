@@ -6,7 +6,7 @@ import { listAccountingDrafts } from "./accounting-drafts";
 import { buildProfitAndLoss } from "./financial-statements";
 
 export type PurchaseOverviewFilter = { from: string; to: string; includeProvisional?: boolean };
-type SourceFact = { date: string | null; amount: number | null; currency: string | null };
+export type PurchaseSourceFact = { date: string | null; supplier: string | null; amount: number | null; currency: string | null; documentId: number | null };
 type KnownEffect = {
   caseId: string;
   status: "known";
@@ -19,24 +19,24 @@ type KnownEffect = {
 const iso = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value);
 const digest = (value: unknown) => createHash("sha256").update(canonicalJson(value)).digest("hex");
 
-function sourceFact(db: Database, purchaseCase: PurchaseCase): SourceFact {
+function sourceFact(db: Database, purchaseCase: PurchaseCase): PurchaseSourceFact {
   if (purchaseCase.source.kind === "bank_transaction") {
-    return (db.query("SELECT transaction_date AS date,amount,currency FROM bank_transactions WHERE id=?").get(purchaseCase.source.id) as SourceFact | null) ?? { date: null, amount: null, currency: null };
+    return (db.query("SELECT transaction_date AS date,NULL AS supplier,amount,currency,NULL AS documentId FROM bank_transactions WHERE id=?").get(purchaseCase.source.id) as PurchaseSourceFact | null) ?? { date: null, supplier: null, amount: null, currency: null, documentId: null };
   }
   if (purchaseCase.source.kind === "document") {
-    return (db.query("SELECT invoice_date AS date,amount_inc_vat AS amount,currency FROM documents WHERE id=?").get(purchaseCase.source.id) as SourceFact | null) ?? { date: null, amount: null, currency: null };
+    return (db.query("SELECT invoice_date AS date,COALESCE(supplier_name,sender_name) AS supplier,amount_inc_vat AS amount,currency,id AS documentId FROM documents WHERE id=?").get(purchaseCase.source.id) as PurchaseSourceFact | null) ?? { date: null, supplier: null, amount: null, currency: null, documentId: null };
   }
-  return (db.query("SELECT bill_date AS date,gross_amount AS amount,currency FROM payables WHERE id=?").get(purchaseCase.source.id) as SourceFact | null) ?? { date: null, amount: null, currency: null };
+  return (db.query("SELECT bill_date AS date,supplier_name AS supplier,gross_amount AS amount,currency,document_id AS documentId FROM payables WHERE id=?").get(purchaseCase.source.id) as PurchaseSourceFact | null) ?? { date: null, supplier: null, amount: null, currency: null, documentId: null };
 }
 
-function inScope(fact: SourceFact, input: PurchaseOverviewFilter): boolean {
+function inScope(fact: PurchaseSourceFact, input: PurchaseOverviewFilter): boolean {
   return fact.date === null || (fact.date >= input.from && fact.date <= input.to);
 }
 
-function group(purchaseCase: PurchaseCase, need: PurchaseCaseNeed) {
+function group(purchaseCase: PurchaseCase, sourceFact: PurchaseSourceFact, need: PurchaseCaseNeed) {
   return {
     need,
-    case: { caseId: purchaseCase.caseId, version: purchaseCase.version, source: purchaseCase.source, sourceFingerprint: purchaseCase.sourceFingerprint, documentationOutcome: purchaseCase.documentationOutcome, accountingProgress: purchaseCase.accountingProgress, vatEvidence: purchaseCase.vatEvidence },
+    case: { caseId: purchaseCase.caseId, version: purchaseCase.version, source: purchaseCase.source, sourceFact, sourceStatus: purchaseCase.sourceStatus, sourceFingerprint: purchaseCase.sourceFingerprint, documentationOutcome: purchaseCase.documentationOutcome, accountingProgress: purchaseCase.accountingProgress, vatEvidence: purchaseCase.vatEvidence, need },
   };
 }
 
@@ -92,7 +92,7 @@ export function buildPurchaseOverview(db: Database, input: PurchaseOverviewFilte
   const byNeed = new Map<string, Array<ReturnType<typeof group>>>();
   if (input.includeProvisional !== false) for (const item of current) if (item.need) {
     const items = byNeed.get(item.need.key) ?? [];
-    items.push(group(item.purchaseCase, item.need));
+    items.push(group(item.purchaseCase, item.fact, item.need));
     byNeed.set(item.need.key, items);
   }
   const groups = [...byNeed.entries()].map(([needKey, members]) => ({

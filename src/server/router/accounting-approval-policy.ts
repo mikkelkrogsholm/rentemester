@@ -34,12 +34,19 @@ export async function handleAccountingApprovalPolicySet(config: ServerConfig, re
   return okResponse(await withCompanyMutation(request, config, slug, (ctx, body) => {
     const db = openWorkspaceControlDb(config.workspaceRoot);
     try {
-      const result = setAccountingApprovalPolicy(db, config.workspaceRoot, {
-        scope: { kind: "company", companySlug: slug }, riskClass: riskClass(body.riskClass), reviewMode: reviewMode(body.reviewMode),
-        expectedEventHash: typeof body.expectedEventHash === "string" ? body.expectedEventHash : null,
-        principalId: principalId(config), actor: ctx.actor.createdBy, confirm: true,
-      });
-      return { ok: true, ...result };
+      try {
+        const result = setAccountingApprovalPolicy(db, config.workspaceRoot, {
+          scope: { kind: "company", companySlug: slug }, riskClass: riskClass(body.riskClass), reviewMode: reviewMode(body.reviewMode),
+          expectedEventHash: typeof body.expectedEventHash === "string" ? body.expectedEventHash : null,
+          principalId: principalId(config), actor: ctx.actor.createdBy, confirm: true,
+        });
+        return { ok: true, ...result };
+      } catch (error) {
+        if (error instanceof Error && error.message === "ELEVATED_APPROVAL_POLICY_UNSUPPORTED") {
+          throw ApiError.badRequest("elevated approval policy is not supported without a canonical risk classifier", { subcode: error.message });
+        }
+        throw error;
+      }
     } finally { db.close(); }
   }, { requireConfirm: true }));
 }

@@ -50,6 +50,7 @@ let workspace = "";
 let company = "";
 let writer: Client;
 let reviewer: Client;
+let admin: Client;
 
 beforeAll(async () => {
   workspace = mkdtempSync(join(tmpdir(), "rentemester-mcp-purchase-case-"));
@@ -57,24 +58,27 @@ beforeAll(async () => {
   const created = createCompany(workspace, { name: "Synthetic ApS", cvr: "DK90000001" });
   company = companyRootForSlug(workspace, created.slug);
   const ledger = openDb(companyPaths(company).db);
-  try { migrate(ledger); ledger.run("INSERT INTO bank_transactions(transaction_date,amount,currency,text,transaction_hash) VALUES(?,?,?,?,?)", "2026-01-10", -125, "DKK", "Synthetic MCP purchase", "a".repeat(64)); }
+  try { migrate(ledger); ledger.run("INSERT INTO bank_transactions(transaction_date,amount,currency,text,transaction_hash) VALUES(?,?,?,?,?)", "2026-01-10", -125, "DKK", "Synthetic MCP purchase", "a".repeat(64)); ledger.run("INSERT INTO bank_transactions(transaction_date,amount,currency,text,transaction_hash) VALUES(?,?,?,?,?)", "2026-01-11", -250, "DKK", "Synthetic MCP stale purchase", "b".repeat(64)); }
   finally { ledger.close(); }
-  appendFileSync(join(company, "config", "policy.yaml"), "  agents:\n    - agent:synthetic-purchase-writer/1\n    - agent:synthetic-purchase-reviewer/1\n");
+  appendFileSync(join(company, "config", "policy.yaml"), "  agents:\n    - agent:synthetic-purchase-writer/1\n    - agent:synthetic-purchase-reviewer/1\n    - agent:synthetic-purchase-administrator/1\n");
   const runtime = openWorkspaceBetterAuth(workspace, { secret: AUTH_SECRET, trustedOrigins: ["http://127.0.0.1"], baseURL: "http://127.0.0.1" });
   const control = openWorkspaceControlDb(workspace);
   try {
     const writePrincipal = await createWorkspaceServicePrincipal(control, runtime.auth, { displayName: "Synthetic purchase writer", actor: "user:test" });
     const reviewPrincipal = await createWorkspaceServicePrincipal(control, runtime.auth, { displayName: "Synthetic purchase reviewer", actor: "user:test" });
-    for (const principal of [writePrincipal, reviewPrincipal]) activateWorkspaceUser(control, { userId: principal.serviceAccountId, workspaceRole: "member", actor: "user:test" });
+    const adminPrincipal = await createWorkspaceServicePrincipal(control, runtime.auth, { displayName: "Synthetic purchase administrator", actor: "user:test" });
+    for (const principal of [writePrincipal, reviewPrincipal, adminPrincipal]) activateWorkspaceUser(control, { userId: principal.serviceAccountId, workspaceRole: "member", actor: "user:test" });
     grantCompanyMembership(control, workspace, { userId: writePrincipal.serviceAccountId, companySlug: created.slug, role: "bookkeeper", actor: "user:test" });
     grantCompanyMembership(control, workspace, { userId: reviewPrincipal.serviceAccountId, companySlug: created.slug, role: "reviewer", actor: "user:test" });
-    writer = new Client(workspace, writePrincipal.secret); reviewer = new Client(workspace, reviewPrincipal.secret);
+    grantCompanyMembership(control, workspace, { userId: adminPrincipal.serviceAccountId, companySlug: created.slug, role: "owner", actor: "user:test" });
+    writer = new Client(workspace, writePrincipal.secret); reviewer = new Client(workspace, reviewPrincipal.secret); admin = new Client(workspace, adminPrincipal.secret);
   } finally { control.close(); runtime.close(); }
   await writer.initialize("synthetic-purchase-writer");
   await reviewer.initialize("synthetic-purchase-reviewer");
+  await admin.initialize("synthetic-purchase-administrator");
 });
 
-afterAll(async () => { await writer?.close(); await reviewer?.close(); if (workspace) rmSync(workspace, { recursive: true, force: true }); });
+afterAll(async () => { await writer?.close(); await reviewer?.close(); await admin?.close(); if (workspace) rmSync(workspace, { recursive: true, force: true }); });
 
 describe("black-box MCP purchase-case lifecycle (#632)", () => {
   test("discovers, creates, independently reviews, and reads back one synthetic source-bound case", async () => {
@@ -92,5 +96,25 @@ describe("black-box MCP purchase-case lifecycle (#632)", () => {
     expect(review.result?.structuredContent?.ok, JSON.stringify(review)).toBe(true);
     const readback = await reviewer.call("tools/call", { name: "purchase_case_get", arguments: { company, caseId: initial.caseId } });
     expect(readback.result?.structuredContent?.data?.purchaseCase).toMatchObject({ caseId: initial.caseId, version: 2, documentationOutcome: "ordinary_evidence_sufficient", accountingProgress: "unposted" });
+  });
+
+  test("rejects an elevated approval policy with a stable machine-readable code", async () => {
+    const response = await admin.call("tools/call", { name: "accounting_approval_policy_set", arguments: { company, riskClass: "elevated", reviewMode: "independent_reviewer", confirm: true } });
+    expect(response.result?.structuredContent).toMatchObject({ ok: false, code: "ELEVATED_APPROVAL_POLICY_UNSUPPORTED" });
+  });
+
+  test("requires explicit reassessment after the canonical source changes", async () => {
+    const created = await writer.call("tools/call", { name: "purchase_case_create", arguments: { company, caseId: "synthetic-stale-case", source: { kind: "bank_transaction", id: 2 }, documentationOutcome: "unresolved", idempotencyKey: "synthetic-stale-create", confirm: true } });
+    const initial = created.result?.structuredContent?.data?.purchaseCase;
+    const ledger = openDb(companyPaths(company).db);
+    try { ledger.run("UPDATE bank_transactions SET text=? WHERE id=2", "Changed synthetic MCP purchase"); }
+    finally { ledger.close(); }
+    const stale = await reviewer.call("tools/call", { name: "purchase_case_review", arguments: { company, caseId: initial.caseId, expectedVersion: initial.version, expectedSourceFingerprint: initial.sourceFingerprint, documentationOutcome: "ordinary_evidence_sufficient", idempotencyKey: "synthetic-stale-review", confirm: true } });
+    expect(stale.result?.structuredContent).toMatchObject({ ok: false, errors: ["STALE_PURCHASE_CASE_SOURCE"] });
+    const readback = await reviewer.call("tools/call", { name: "purchase_case_get", arguments: { company, caseId: initial.caseId } });
+    const current = readback.result?.structuredContent?.data?.purchaseCase;
+    expect(current.sourceStatus.status).toBe("stale");
+    const reassessed = await reviewer.call("tools/call", { name: "purchase_case_reassess", arguments: { company, caseId: initial.caseId, expectedVersion: initial.version, expectedSourceFingerprint: initial.sourceFingerprint, currentSourceFingerprint: current.sourceStatus.currentSourceFingerprint, documentationOutcome: "ordinary_evidence_sufficient", reason: "Synthetic source change reviewed", idempotencyKey: "synthetic-stale-reassess", confirm: true } });
+    expect(reassessed.result?.structuredContent).toMatchObject({ ok: true, data: { purchaseCase: { version: 2, sourceStatus: { status: "current" } } } });
   });
 });
