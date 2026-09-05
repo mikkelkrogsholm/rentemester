@@ -20,6 +20,13 @@ Legacy kontakt → canonical party mapping: `legacy_party_mapping_plan` og
 bekræftelse, autentificeret company membership, idempotency key og eksakt
 kontakt-/bilag-/planbinding; `legacy_party_mapping_supersede` er den append-only
 korrektionsvej. En reviewed legacy reference alene opretter aldrig en mapping.
+Importerede, uafklarede leverandører bruger først
+`vendor_identity_enrichment_plan` → `vendor_identity_enrichment_apply` og kan
+inspiceres med `vendor_identity_enrichment_list`. Planen læser og SHA-256-
+verificerer det registrerede originalbilag og kræver eksakt navn/adresse samt
+overensstemmende dokumentidentitet. Apply udfylder kun null typefelter,
+kræver `company.master-data`, confirmation, actor, plan-hash og principal-scoped
+idempotency og overskriver aldrig en eksisterende typed identitet.
 - `src/cli-meta.ts` — CLI-kommandoerne. MCP-surface'en er *tæt på* 1:1 med
   CLI'en, men ikke fuldstændig — se "CLI/MCP-mapping" nedenfor.
 - `src/core/*.ts` — TypeScript-typer for inputs og resultater (`InvoicePayload`,

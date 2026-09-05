@@ -14,6 +14,15 @@ alene opretter aldrig en mapping.
 Korrektioner sker kun med `legacy-party-mapping supersede`; kontakt, bilag,
 journal og moms ændres ikke.
 
+En importeret leverandør med `identity_status=human_resolution_required` og
+manglende `country_code`/`identifier_kind` klargøres først med
+`vendor-identity-enrichment plan` og `apply`. Planen verificerer det registrerede
+originalbilags faktiske bytes og binder leverandørens nuværende navn, adresse og
+eventuelle eksisterende identifikator. `apply` kræver samme service-principal,
+actor-, confirmation-, plan-hash- og idempotency-gates som legacy mapping og
+udfylder kun de manglende typefelter. Den opfinder ikke et ID og ændrer ikke
+leverandørens ID, navn, adresse, noter, bilaget, journalen eller momsdata.
+
 Enhver **muterende** kommando (alt der skriver til ledger'en — fakturaer,
 finansposteringer, backups, kunde-/leverandøroprettelse osv.) kræver en kendt
 actor. Det fulde sæt ligger i `MUTATING_COMMANDS` i `src/cli-actor.ts`.

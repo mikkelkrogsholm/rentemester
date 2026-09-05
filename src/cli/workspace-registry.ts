@@ -29,10 +29,58 @@ const workspace = (ctx: CommandContext) => resolveWorkspaceRoot(need(ctx, "--wor
 const principal=(ctx:CommandContext)=>({kind:"local_operator" as const,id:need(ctx,"--principal-id")});
 
 export function register(dispatch: CommandDispatch): void {
-  const enrichmentInput=(ctx:CommandContext)=>({companySlug:need(ctx,"--company"),vendorId:Number(need(ctx,"--vendor-id")),documentId:Number(need(ctx,"--document-id")),countryCode:need(ctx,"--country-code"),identifierKind:need(ctx,"--identifier-kind") as any,identifier:ctx.arg("--identifier"),reviewedReference:need(ctx,"--reviewed-reference")});
-  dispatch.on("vendor-identity-enrichment","plan",ctx=>{const root=workspace(ctx),input=enrichmentInput(ctx),companyRoot=resolveWorkspaceSlug(root,input.companySlug);if(!companyRoot)ctx.fatal("--company is not a workspace company");const db=openLedgerReadOnly(companyPaths(companyRoot).db);try{ctx.emitResult(planVendorIdentityEnrichment(db,companyRoot,input));}finally{db.close();}});
-  dispatch.on("vendor-identity-enrichment","list",ctx=>{const root=workspace(ctx),companyRoot=resolveWorkspaceSlug(root,need(ctx,"--company"));if(!companyRoot)ctx.fatal("--company is not a workspace company");const db=openLedgerReadOnly(companyPaths(companyRoot).db);try{ctx.emitResult({ok:true,rows:listVendorIdentityEnrichments(db,{vendorId:ctx.arg("--vendor-id")?Number(ctx.arg("--vendor-id")):undefined})});}finally{db.close();}});
-  dispatch.on("vendor-identity-enrichment","apply",async ctx=>{confirm(ctx);const root=workspace(ctx),input=enrichmentInput(ctx),companyRoot=resolveWorkspaceSlug(root,input.companySlug);if(!companyRoot)ctx.fatal("--company is not a workspace company");const security=createMcpSecurityContextFromEnv();if(!security)ctx.fatal("vendor-identity-enrichment apply requires RENTEMESTER_SERVICE_PRINCIPAL_TOKEN and RENTEMESTER_WORKSPACE");const allowed=await authorizeMcpTool(security,"vendor_identity_enrichment_apply",{company:companyRoot});if(!allowed)ctx.fatal("vendor-identity-enrichment apply requires an active service principal with company.master-data membership");const db=openDb(companyPaths(companyRoot).db);try{migrate(db);ctx.emitResult(applyVendorIdentityEnrichment(db,companyRoot,{...input,planHash:need(ctx,"--plan-hash"),idempotencyKey:need(ctx,"--idempotency-key"),confirm:true,actor:actor(ctx),principal:allowed.principal.subjectId}));}finally{db.close();}});
+  const enrichmentInput = (ctx: CommandContext) => ({
+    companySlug: need(ctx, "--company"),
+    vendorId: Number(need(ctx, "--vendor-id")),
+    documentId: Number(need(ctx, "--document-id")),
+    countryCode: need(ctx, "--country-code"),
+    identifierKind: need(ctx, "--identifier-kind") as any,
+    identifier: ctx.arg("--identifier"),
+    reviewedReference: need(ctx, "--reviewed-reference"),
+  });
+  dispatch.on("vendor-identity-enrichment", "plan", (ctx) => {
+    const root = workspace(ctx);
+    const input = enrichmentInput(ctx);
+    const companyRoot = resolveWorkspaceSlug(root, input.companySlug);
+    if (!companyRoot) ctx.fatal("--company is not a workspace company");
+    const db = openLedgerReadOnly(companyPaths(companyRoot!).db);
+    try { ctx.emitResult(planVendorIdentityEnrichment(db, companyRoot!, input)); }
+    finally { db.close(); }
+  });
+  dispatch.on("vendor-identity-enrichment", "list", (ctx) => {
+    const root = workspace(ctx);
+    const companyRoot = resolveWorkspaceSlug(root, need(ctx, "--company"));
+    if (!companyRoot) ctx.fatal("--company is not a workspace company");
+    const db = openLedgerReadOnly(companyPaths(companyRoot!).db);
+    try {
+      ctx.emitResult({ ok: true, rows: listVendorIdentityEnrichments(db, {
+        vendorId: ctx.arg("--vendor-id") ? Number(ctx.arg("--vendor-id")) : undefined,
+      }) });
+    } finally { db.close(); }
+  });
+  dispatch.on("vendor-identity-enrichment", "apply", async (ctx) => {
+    confirm(ctx);
+    const root = workspace(ctx);
+    const input = enrichmentInput(ctx);
+    const companyRoot = resolveWorkspaceSlug(root, input.companySlug);
+    if (!companyRoot) ctx.fatal("--company is not a workspace company");
+    const security = createMcpSecurityContextFromEnv();
+    if (!security) ctx.fatal("vendor-identity-enrichment apply requires RENTEMESTER_SERVICE_PRINCIPAL_TOKEN and RENTEMESTER_WORKSPACE");
+    const allowed = await authorizeMcpTool(security!, "vendor_identity_enrichment_apply", { company: companyRoot! });
+    if (!allowed) ctx.fatal("vendor-identity-enrichment apply requires an active service principal with company.master-data membership");
+    const db = openDb(companyPaths(companyRoot!).db);
+    try {
+      migrate(db);
+      ctx.emitResult(applyVendorIdentityEnrichment(db, companyRoot!, {
+        ...input,
+        planHash: need(ctx, "--plan-hash"),
+        idempotencyKey: need(ctx, "--idempotency-key"),
+        confirm: true,
+        actor: actor(ctx),
+        principal: allowed!.principal.subjectId,
+      }));
+    } finally { db.close(); }
+  });
   const legacyInput=(ctx:CommandContext)=>({companySlug:need(ctx,"--company"),legacyKind:need(ctx,"--legacy-kind") as any,legacyId:need(ctx,"--legacy-id"),partyId:need(ctx,"--party-id"),role:need(ctx,"--role") as any,documentId:Number(need(ctx,"--document-id")),reviewedLegacyReference:need(ctx,"--reviewed-legacy-reference")});
   const legacyRead=(ctx:CommandContext,fn:(ledger:ReturnType<typeof openLedgerReadOnly>,control:ReturnType<typeof openWorkspaceControlReadOnlyDb>)=>void)=>{const root=workspace(ctx),slug=need(ctx,"--company"),companyRoot=resolveWorkspaceSlug(root,slug);if(!companyRoot)ctx.fatal("--company is not a workspace company");const ledger=openLedgerReadOnly(companyPaths(companyRoot!).db),control=openWorkspaceControlReadOnlyDb(root);try{fn(ledger,control);}finally{ledger.close();control.close();}};
   dispatch.on("legacy-party-mapping","plan",ctx=>legacyRead(ctx,(ledger,control)=>ctx.emitResult(planLegacyPartyMapping(ledger,control,legacyInput(ctx)))));

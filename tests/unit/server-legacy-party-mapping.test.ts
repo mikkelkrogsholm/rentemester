@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
+import { mkdtempSync, rmSync as removeTree, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { createVendor } from "../../src/core/master-data";
+import { ingestDocument } from "../../src/core/documents";
 import { createParty, linkPartyRole } from "../../src/core/party-registry";
 import { activateWorkspaceUser, grantCompanyMembership } from "../../src/core/workspace-access";
 import { openWorkspaceControlDb } from "../../src/core/workspace-control";
@@ -38,5 +42,34 @@ describe("#638 HTTP legacy party mapping",()=>{
       const listed=await get(hosted,"/api/companies/allowed-aps/legacy-party-mappings?legacyKind=vendor",{headers});
       expect(listed).toMatchObject({status:200,body:{ok:true,rows:[{partyId:"party-http-638",contactSnapshot:{notes:"keep this note"}}]}});
     }finally{control.close();runtime.close();rmSync(workspace,{recursive:true,force:true});}
+  });
+
+  test("provides reachable, confirmed and membership-gated vendor identity enrichment",async()=>{
+    const workspace=makeWorkspace("vendor-enrichment-http",["Allowed ApS"]),root=companyRootForSlug(workspace,"allowed-aps");
+    const inbox=mkdtempSync(join(tmpdir(),"vendor-enrichment-http-"));
+    const ledger=openDb(companyPaths(root).db);migrate(ledger);
+    const vendor=createVendor(ledger,{name:"Imported Supplier ApS",address:"Evidence Road 2",vatOrCvr:"DK11223344",notes:"preserved"});
+    if(!vendor.ok)throw new Error(vendor.errors.join("; "));
+    const source=join(inbox,"invoice.txt");writeFileSync(source,"immutable HTTP invoice");
+    const document=ingestDocument(ledger,root,source,{source:"synthetic",documentType:"purchase_sale",issueDate:"2026-09-02",invoiceNo:"HTTP-ENRICH",deliveryDescription:"Synthetic",amountIncVat:125,vatAmount:25,currency:"DKK",sender:{name:"Imported Supplier ApS",address:"Evidence Road 2",vatOrCvr:"DK11223344",countryCode:"DK",identifierKind:"dk_cvr"},recipient:{name:"Allowed ApS",address:"Buyer Road",vatOrCvr:"DK87654321"}});
+    if(!document.ok)throw new Error(document.errors.join("; "));
+    ledger.close();
+    const runtime=openWorkspaceBetterAuth(workspace,{secret:SECRET,trustedOrigins:[ORIGIN,"http://localhost"],baseURL:ORIGIN}),control=openWorkspaceControlDb(workspace);
+    try{
+      const service=await createWorkspaceServicePrincipal(control,runtime.auth,{displayName:"Vendor enrichment HTTP",actor:"user:test"});
+      activateWorkspaceUser(control,{userId:service.serviceAccountId,workspaceRole:"member",actor:"user:test"});
+      grantCompanyMembership(control,workspace,{userId:service.serviceAccountId,companySlug:"allowed-aps",role:"reader",actor:"user:test"});
+      const hostedAuth={secret:SECRET,secrets:[{version:1,value:SECRET}],baseURL:ORIGIN,trustedOrigins:[ORIGIN],authEmail:{provider:"http-json-v1" as const,url:"https://mailer.example.test/send",bearerToken:"synthetic",from:"auth@example.test"},rateLimitIpHeader:"x-real-ip" as const};
+      const hosted=config({workspaceRoot:workspace,deploymentProfile:"hosted",hostedBetterAuth:hostedAuth,betterAuthProvider:createBetterAuthRequestProvider(runtime.auth)});
+      const headers={[WORKSPACE_SERVICE_PRINCIPAL_HEADER]:service.secret,"content-type":"application/json",origin:ORIGIN};
+      const input={vendorId:vendor.vendorId,documentId:document.documentId,countryCode:"DK",identifierKind:"dk_cvr",identifier:"DK11223344",reviewedReference:"review:http:vendor"};
+      const planned=await get(hosted,"/api/companies/allowed-aps/vendor-identity-enrichments/plan",{method:"POST",headers,body:JSON.stringify(input)});
+      expect(planned).toMatchObject({status:200,body:{ok:true,plan:{proposedIdentity:{countryCode:"DK",identifierKind:"dk_cvr"}}}});
+      const apply={...input,planHash:(planned.body as any).plan.planHash,idempotencyKey:"http-vendor-enrich-1",confirm:true};
+      expect((await get(hosted,"/api/companies/allowed-aps/vendor-identity-enrichments/apply",{method:"POST",headers,body:JSON.stringify(apply)})).status).toBe(401);
+      grantCompanyMembership(control,workspace,{userId:service.serviceAccountId,companySlug:"allowed-aps",role:"bookkeeper",actor:"user:test"});
+      expect(await get(hosted,"/api/companies/allowed-aps/vendor-identity-enrichments/apply",{method:"POST",headers,body:JSON.stringify(apply)})).toMatchObject({status:200,body:{ok:true,idempotent:false}});
+      expect(await get(hosted,`/api/companies/allowed-aps/vendor-identity-enrichments?vendorId=${vendor.vendorId}`,{headers})).toMatchObject({status:200,body:{ok:true,rows:[{vendor_id:vendor.vendorId,document_id:document.documentId}]}});
+    }finally{control.close();runtime.close();rmSync(workspace,{recursive:true,force:true});removeTree(inbox,{recursive:true,force:true});}
   });
 });
