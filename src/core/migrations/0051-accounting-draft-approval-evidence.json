@@ -1,0 +1,5 @@
+{
+  "id": 51,
+  "name": "accounting draft approval evidence",
+  "sql": "ALTER TABLE accounting_draft_events ADD COLUMN principal_id TEXT;\nALTER TABLE accounting_draft_events ADD COLUMN approval_policy_hash TEXT;\nCREATE INDEX accounting_draft_events_principal ON accounting_draft_events(draft_id,event_type,principal_id);\n"
+}

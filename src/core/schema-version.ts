@@ -411,6 +411,31 @@ export function applySchemaMigrations(db: Database): void {
           // restoring the missing immutable migration row is sufficient.
           sql = "";
         }
+        if (migration.id === 47 && db.query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='purchase_case_events'").get()) {
+          // A lost migration ledger must never recreate an already present
+          // append-only purchase-case table. Later additive migrations still
+          // supply any newly introduced evidence columns.
+          sql = "";
+        }
+        if (migration.id === 48 && db.query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='purchase_case_group_events'").get()) {
+          sql = "";
+        }
+        if (migration.id === 49) {
+          const columns = new Set((db.query("PRAGMA table_info(purchase_case_events)").all() as Array<{name:string}>).map((column) => column.name));
+          if (columns.has("principal_id")) sql = sql.replace(/ALTER TABLE purchase_case_events ADD COLUMN principal_id TEXT;\s*/, "");
+          if (columns.has("approval_policy_hash")) sql = sql.replace(/ALTER TABLE purchase_case_events ADD COLUMN approval_policy_hash TEXT;\s*/, "");
+          sql = sql.replace("CREATE INDEX purchase_case_creator_principal", "CREATE INDEX IF NOT EXISTS purchase_case_creator_principal");
+        }
+        if (migration.id === 50) {
+          const columns = new Set((db.query("PRAGMA table_info(bookkeeping_batch_revision_approvals)").all() as Array<{name:string}>).map((column) => column.name));
+          if (columns.has("approval_policy_hash")) sql = sql.replace(/ALTER TABLE bookkeeping_batch_revision_approvals ADD COLUMN approval_policy_hash TEXT;\s*/, "");
+        }
+        if (migration.id === 51) {
+          const columns = new Set((db.query("PRAGMA table_info(accounting_draft_events)").all() as Array<{name:string}>).map((column) => column.name));
+          if (columns.has("principal_id")) sql = sql.replace(/ALTER TABLE accounting_draft_events ADD COLUMN principal_id TEXT;\s*/, "");
+          if (columns.has("approval_policy_hash")) sql = sql.replace(/ALTER TABLE accounting_draft_events ADD COLUMN approval_policy_hash TEXT;\s*/, "");
+          sql = sql.replace("CREATE INDEX accounting_draft_events_principal", "CREATE INDEX IF NOT EXISTS accounting_draft_events_principal");
+        }
         if (sql.trim()) db.exec(sql);
       }
       db.query(`INSERT INTO schema_migrations (id, name, checksum, applied_by_version, applied_by_commit) VALUES (?, ?, ?, ?, ?)`)
