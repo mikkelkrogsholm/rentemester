@@ -48,7 +48,7 @@ import {
 import { handleBookkeepingBatchApply, handleBookkeepingBatchApprove, handleBookkeepingBatchDryRun, handleBookkeepingBatchPersistDryRun, handleBookkeepingBatchStatus } from "./router/bookkeeping-batch";
 import { handleAccountingApprovalPolicyGet, handleAccountingApprovalPolicySet } from "./router/accounting-approval-policy";
 import { handleBookkeepingWorkbench } from "./router/bookkeeping-workbench";
-import { handlePurchaseCaseCreate, handlePurchaseCaseGet, handlePurchaseCaseGroupReview, handlePurchaseCaseList, handlePurchaseCaseReview, handlePurchaseOverview } from "./router/purchase-cases";
+import { handlePurchaseCaseCreate, handlePurchaseCaseGet, handlePurchaseCaseGroupReview, handlePurchaseCaseList, handlePurchaseCaseReassess, handlePurchaseCaseReview, handlePurchaseOverview } from "./router/purchase-cases";
 import { handleDimensionAction, handleDimensionAssignments, handleDimensionBudgets, handleDimensionBudgetPlan, handleDimensionDefinitions, handleDimensionMembers, handleDimensionPlan } from "./router/dimensions";
 import {
   handleCompanyAccounts,
@@ -389,6 +389,7 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/purchase-cases/:caseId", summary: "Aktuel afledt købscase med kilde- og evidensstatus." },
   { scope: "company", effect: "write", permission: "company.draft.write", method: "POST", pattern: "/api/companies/:slug/purchase-cases", summary: "Opretter append-only foreløbig købscase." },
   { scope: "company", effect: "write", permission: "company.review", method: "POST", pattern: "/api/companies/:slug/purchase-cases/:caseId/review", summary: "Appender eksakt kildebundet købscase-review." },
+  { scope: "company", effect: "write", permission: "company.review", method: "POST", pattern: "/api/companies/:slug/purchase-cases/:caseId/reassess", summary: "Appender eksplicit genvurdering mod ændret kilde." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/purchase-overview", summary: "Read-only overblik over purchase cases og dokumenterede behov." },
   { scope: "company", effect: "write", permission: "company.review", method: "POST", pattern: "/api/companies/:slug/purchase-cases/group-review", summary: "Atomisk review af en eksakt gruppe purchase cases." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/dimensions/:journalLineId", summary: "Append-only dimensionshistorik for en journal linje (#589)." },
@@ -815,6 +816,8 @@ export async function handleRequest(
     }
     const purchaseCaseReviewMatch=/^\/api\/companies\/([^/]+)\/purchase-cases\/([^/]+)\/review$/.exec(path);
     if(purchaseCaseReviewMatch){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");return await handlePurchaseCaseReview(config,request,decodeURIComponent(purchaseCaseReviewMatch[1]!),decodeURIComponent(purchaseCaseReviewMatch[2]!));}
+    const purchaseCaseReassessMatch=/^\/api\/companies\/([^/]+)\/purchase-cases\/([^/]+)\/reassess$/.exec(path);
+    if(purchaseCaseReassessMatch){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");return await handlePurchaseCaseReassess(config,request,decodeURIComponent(purchaseCaseReassessMatch[1]!),decodeURIComponent(purchaseCaseReassessMatch[2]!));}
     const purchaseCaseGroupReviewMatch=/^\/api\/companies\/([^/]+)\/purchase-cases\/group-review$/.exec(path);
     if(purchaseCaseGroupReviewMatch){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");return await handlePurchaseCaseGroupReview(config,request,decodeURIComponent(purchaseCaseGroupReviewMatch[1]!));}
     const purchaseOverviewMatch=/^\/api\/companies\/([^/]+)\/purchase-overview$/.exec(path);
