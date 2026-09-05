@@ -2,7 +2,7 @@ import type { CommandDispatch } from "../cli-dispatch";
 import { openLedgerReadOnly } from "../core/ledger-inspection";
 import { companyPaths } from "../core/paths";
 import { getPurchaseCase, listPurchaseCases } from "../core/purchase-cases";
-import { createPurchaseCase, reviewPurchaseCase, reviewPurchaseCaseGroup, type DocumentationOutcome, type PurchaseCaseGroupMember, type PurchaseCaseSource } from "../core/purchase-cases";
+import { createPurchaseCase, reassessPurchaseCase, reviewPurchaseCase, reviewPurchaseCaseGroup, type DocumentationOutcome, type PurchaseCaseGroupMember, type PurchaseCaseSource } from "../core/purchase-cases";
 import { buildPurchaseOverview } from "../core/purchase-overview";
 import { openCommandDb } from "../cli-dispatch";
 import { migrate } from "../core/db";
@@ -13,7 +13,7 @@ import { openWorkspaceControlDb } from "../core/workspace-control";
 import { realpathSync } from "node:fs";
 
 const outcome = (value: unknown): DocumentationOutcome | null => value === "unresolved" || value === "ordinary_evidence_sufficient" || value === "alternative_evidence_assessed" ? value : null;
-async function authenticated(ctx: any, tool: "purchase_case_create" | "purchase_case_review" | "purchase_case_group_review") {
+async function authenticated(ctx: any, tool: "purchase_case_create" | "purchase_case_review" | "purchase_case_reassess" | "purchase_case_group_review") {
   const security = createMcpSecurityContextFromEnv();
   if (!security) ctx.fatal(`${tool} requires RENTEMESTER_SERVICE_PRINCIPAL_TOKEN and RENTEMESTER_WORKSPACE`);
   const allowed = await authorizeMcpTool(security!, tool, { company: ctx.companyRoot() });
@@ -53,6 +53,12 @@ export function register(dispatch: CommandDispatch): void {
     const documentationOutcome = outcome(ctx.arg("--documentation-outcome"));
     if (!Number.isInteger(expectedVersion) || expectedVersion <= 0 || !expectedSourceFingerprint || !/^[a-f0-9]{64}$/.test(expectedSourceFingerprint) || !documentationOutcome) ctx.fatal("valid --expected-version, --expected-source-fingerprint and --documentation-outcome are required");
     const db = openCommandDb(ctx); try { migrate(db); const actor = audit(ctx); const principal=await authenticated(ctx, "purchase_case_review"); const payload = { caseId, expectedVersion, expectedSourceFingerprint: expectedSourceFingerprint!, expectedPolicyEventHash:ctx.arg("--expected-policy-event-hash")??null, documentationOutcome: documentationOutcome!, note: ctx.arg("--note") ?? "" }; const context=approvalContext(ctx,principal,payload.expectedPolicyEventHash??undefined); try { const run = executeLocalIdempotentMutation(db, { key: validateIdempotencyKey(ctx.arg("--idempotency-key") ?? ctx.fatal("--idempotency-key is required")), operation: "purchase_case_review", principal, payload, actor, execute: () => reviewPurchaseCase(db, { ...payload, actor,approval:context }) }); ctx.emitResult(run.receipt ? { ...run.result, idempotency: run.receipt } : run.result); } finally { context.controlDb.close(); } } finally { db.close(); }
+  });
+  dispatch.on("purchase-case", "reassess", async (ctx) => {
+    if (ctx.arg("--confirm") !== "yes") ctx.fatal("purchase-case reassess requires --confirm yes");
+    const caseId=ctx.arg("--case-id")??ctx.fatal("--case-id is required");const expectedVersion=Number(ctx.arg("--expected-version"));const expectedSourceFingerprint=ctx.arg("--expected-source-fingerprint");const currentSourceFingerprint=ctx.arg("--current-source-fingerprint");const documentationOutcome=outcome(ctx.arg("--documentation-outcome"));const reason=ctx.arg("--reason");
+    if(!Number.isInteger(expectedVersion)||expectedVersion<1||!expectedSourceFingerprint||!currentSourceFingerprint||!/^[a-f0-9]{64}$/.test(expectedSourceFingerprint)||!/^[a-f0-9]{64}$/.test(currentSourceFingerprint)||!documentationOutcome||!reason?.trim())ctx.fatal("valid --expected-version, both source fingerprints, --documentation-outcome and --reason are required");
+    const db=openCommandDb(ctx);try{migrate(db);const actor=audit(ctx);const principal=await authenticated(ctx,"purchase_case_reassess");const payload={caseId,expectedVersion,expectedSourceFingerprint,currentSourceFingerprint,documentationOutcome,reason,expectedPolicyEventHash:ctx.arg("--expected-policy-event-hash")??null};const context=approvalContext(ctx,principal,payload.expectedPolicyEventHash??undefined);try{const run=executeLocalIdempotentMutation(db,{key:validateIdempotencyKey(ctx.arg("--idempotency-key")??ctx.fatal("--idempotency-key is required")),operation:"purchase_case_reassess",principal,payload,actor,execute:()=>reassessPurchaseCase(db,{...payload,actor,approval:context})});ctx.emitResult(run.receipt?{...run.result,idempotency:run.receipt}:run.result);}finally{context.controlDb.close();}}finally{db.close();}
   });
   dispatch.on("purchase-case", "group-review", async (ctx) => {
     if (ctx.arg("--confirm") !== "yes") ctx.fatal("purchase-case group-review requires --confirm yes");
