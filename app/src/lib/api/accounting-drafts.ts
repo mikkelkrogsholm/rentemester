@@ -28,15 +28,15 @@ export const accountingDraftsApi = {
       body: JSON.stringify({ expectedEventHash: draft.eventHash }),
     }).then((response) => response.accountingDraft),
 
-  rejectAccountingDraft: (slug: string, draft: AccountingDraft, reason: string) =>
+  rejectAccountingDraft: (slug: string, draft: AccountingDraft, reason: string, expectedPolicyEventHash?: string) =>
     request<{ ok: true; accountingDraft: AccountingDraft }>(path(slug, `/${encodeURIComponent(draft.id)}/reject`), {
       method: "POST",
-      body: JSON.stringify({ expectedEventHash: draft.eventHash, reason }),
+      body: JSON.stringify({ expectedEventHash: draft.eventHash, reason, ...(expectedPolicyEventHash ? { expectedPolicyEventHash } : {}) }),
     }).then((response) => response.accountingDraft),
 
-  approveAndPostAccountingDraft: (slug: string, draft: AccountingDraft) =>
+  approveAndPostAccountingDraft: (slug: string, draft: AccountingDraft, expectedPolicyEventHash?: string) =>
     request<{ ok: true; accountingDraft: AccountingDraft }>(path(slug, `/${encodeURIComponent(draft.id)}/approve-and-post`), {
       method: "POST",
-      body: JSON.stringify({ expectedEventHash: draft.eventHash, confirm: true }),
+      body: JSON.stringify({ expectedEventHash: draft.eventHash, confirm: true, ...(expectedPolicyEventHash ? { expectedPolicyEventHash } : {}) }),
     }).then((response) => response.accountingDraft),
 };

@@ -60,6 +60,7 @@ function toPayload(input: { date: string; text: string; documentId: string; bank
 export function AccountingDraftsView() {
   const { slug = "" } = useParams();
   const state = useAsync(() => api.accountingDrafts(slug), [slug]);
+  const policy = useAsync(() => api.accountingApprovalPolicy(slug), [slug]);
   const [draftId, setDraftId] = useState("");
   const [date, setDate] = useState(todayIso());
   const [text, setText] = useState("");
@@ -113,8 +114,8 @@ export function AccountingDraftsView() {
       if (kind === "submit") await api.submitAccountingDraft(slug, draft);
       else if (kind === "reject") {
         if (!note.trim()) throw new Error("En afvisning kræver en begrundelse.");
-        await api.rejectAccountingDraft(slug, draft, note);
-      } else await api.approveAndPostAccountingDraft(slug, draft);
+        await api.rejectAccountingDraft(slug, draft, note, policy.data?.eventHash);
+      } else await api.approveAndPostAccountingDraft(slug, draft, policy.data?.eventHash);
       state.reload();
     } catch (error) {
       setActionError(error instanceof ApiError || error instanceof Error ? error.message : "Handlingen kunne ikke gennemføres.");
@@ -123,7 +124,7 @@ export function AccountingDraftsView() {
   }
 
   if (state.loading && !state.data) return <Loading label="Henter bogføringskladder…" />;
-  if (state.error) return <ErrorState message={state.error} onRetry={state.reload} />;
+  if (state.error || policy.error) return <ErrorState message={state.error ?? policy.error ?? "Kladder kunne ikke hentes."} onRetry={() => { state.reload(); policy.reload(); }} />;
 
   return <section className="statement accounting-drafts-view">
     <div className="page-head"><div><h2>Bogføringskladder</h2><p className="muted">Kladde → indsendelse → uafhængig godkendelse → atomisk bogføring</p></div><Link className="btn secondary" to={`/companies/${slug}/posteringer`}>Se bogførte posteringer</Link></div>

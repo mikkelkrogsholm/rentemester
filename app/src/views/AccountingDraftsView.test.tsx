@@ -38,6 +38,7 @@ describe("AccountingDraftsView", () => {
   test("creates a generic balanced draft without client-controlled actor fields", async () => {
     mockFetch({
       "GET /api/companies/acme-aps/accounting-drafts": { accountingDrafts: [] },
+      "GET /api/companies/acme-aps/accounting-approval-policy": { policy: null },
       "POST /api/companies/acme-aps/accounting-drafts": { accountingDraft: { ...submitted, status: "created" } },
     });
     renderView();
@@ -63,6 +64,7 @@ describe("AccountingDraftsView", () => {
   test("sends exact submitted evidence and explicit confirmation before posting", async () => {
     mockFetch({
       "GET /api/companies/acme-aps/accounting-drafts": { accountingDrafts: [submitted] },
+      "GET /api/companies/acme-aps/accounting-approval-policy": { policy: { eventHash: "c".repeat(64) } },
       "POST /api/companies/acme-aps/accounting-drafts/synthetic-draft/approve-and-post": {
         accountingDraft: { ...submitted, status: "approved_posted", journalEntryId: 1 },
       },
@@ -79,6 +81,7 @@ describe("AccountingDraftsView", () => {
     expect(JSON.parse(String((call![1] as RequestInit).body))).toEqual({
       expectedEventHash: submitted.eventHash,
       confirm: true,
+      expectedPolicyEventHash: "c".repeat(64),
     });
   });
 });
