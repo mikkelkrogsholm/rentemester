@@ -376,6 +376,7 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
     write("supersede",mcp("legacy_party_mapping_supersede"),"Append an explicit correction for the current mapping.",{boundary:"review",expectedIdempotent:true,retryClass:"natural-idempotent",inputIdentities:["planHash","idempotencyKey"],canonicalRecords:["legacy party mapping supersession"]}),
     read("inspect",mcp("legacy_party_mapping_list"),"Read company-scoped append-only mapping history."),
   ],unsupportedBoundaries:["A reviewed legacy reference alone never creates a mapping.","Mappings never rewrite contacts, documents, journal entries or VAT."]}),
+  workflow({id:"vendor-identity-enrichment",capabilityId:"legacy-party-mapping",title:"Vendor identity enrichment",intendedOutcome:"Complete only missing typed supplier identity fields from a verified registered original document.",steps:[read("plan",mcp("vendor_identity_enrichment_plan"),"Produce a byte-bound plan without inventing identifiers."),write("apply",mcp("vendor_identity_enrichment_apply"),"Confirm and idempotently apply the exact plan.",{dependsOn:["plan"],expectedIdempotent:true,retryClass:"natural-idempotent",inputIdentities:["planHash","idempotencyKey"],canonicalRecords:["vendor identity enrichment event"]}),read("inspect",mcp("vendor_identity_enrichment_list"),"Read append-only enrichment history.")],unsupportedBoundaries:["Existing identity, vendor text, document bytes, journals and VAT are never overwritten."]}),
   workflow({ id:"company-knowledge-lifecycle", capabilityId:"company-knowledge", title:"Company operating knowledge", intendedOutcome:"Retrieve or maintain source-backed, effective-dated operating context without changing canonical accounting settings.", steps:[
     read("context",mcp("company_knowledge_context"),"Read compact machine-readable context as of a declared date."),
     write("propose",mcp("company_knowledge_propose"),"Propose one typed, sourced assertion without a ledger effect.",{canonicalRecords:["company knowledge assertion"]}),
@@ -418,6 +419,7 @@ const capabilityTuples: CapabilityTuple[] = [
   ["posting-rules", "Posting rules", "Propose, approve and explain reusable posting rules.", "rules", ["create posting rule", "approve bookkeeping rule"], ["automation", "review separation"], "company", ["posting-rule-review"]],
   ["workspace-parties", "Workspace parties", "Maintain canonical counterparties with isolated company roles and reviewed supersession.", "master data", ["create canonical party", "link company party role", "review duplicate party"], ["party", "counterparty", "identity", "vendor role"], "workspace", ["workspace-party-lifecycle"]],
   ["legacy-party-mapping", "Legacy contact mapping", "Map existing company contacts to canonical parties with evidence-bound, append-only review.", "master data", ["map legacy vendor", "map legacy customer", "correct legacy party mapping"], ["legacy contact", "vendor mapping", "customer mapping", "party evidence"], "company", ["legacy-party-mapping"]],
+  ["vendor-identity-enrichment", "Vendor identity enrichment", "Complete unresolved imported vendor identity typing from verified source bytes.", "master data", ["enrich vendor identity", "resolve imported vendor"], ["vendor identity", "supplier identity", "non-EU vendor"], "company", ["vendor-identity-enrichment"]],
   ["document-party-resolution", "Document party resolution", "Resolve a document to canonical party relations, an explicit internal no-party decision, or a bounded unresolved state.", "documents", ["link document party", "confirm internal voucher has no external party", "inspect document party resolution"], ["document party", "issuer", "supplier", "payer", "payment descriptor"], "company", ["document-party-resolution"]],
   ["corporate-records", "Corporate records", "Store immutable corporate and governance evidence with typed, access-controlled links.", "governance", ["ingest corporate record", "link governance evidence", "supersede corporate record"], ["corporate record", "governance", "articles", "ownership evidence"], "workspace", ["corporate-record-lifecycle"]],
   ["ownership-graph", "Ownership and control graph", "Review source-backed, party-aware ownership and control facts without changing legal ledgers or inferring consolidation.", "governance", ["review ownership", "record registry ownership", "query control graph"], ["ownership", "shareholder", "control", "registry diff"], "legal-group", ["ownership-graph-review"]],
@@ -538,9 +540,9 @@ type SurfaceBaseline = { count: number; hash: string };
  */
 export const AGENT_SURFACE_BASELINES: Record<SurfaceName, SurfaceBaseline> = {
   // Public surface changes require an explicit discovery review.
-  mcp: { count: 240, hash: "d75049928e48c4b482d56d45403cfc3cef4d96f60944aa1868be9b21b8b50d2a" },
-  cli: { count: 290, hash: "d04cd1220088650a653e44f00b75abeca3663f83866796c060f7addec59439a8" },
-  http: { count: 230, hash: "f1e3d09255a9af63a775c01bdc1bea2800e7dcd6bfbf4c10e72165072932e424" },
+  mcp: { count: 243, hash: "67ac23b2bc614ab8e48dd723c2d7e242867a3cf5981fd7f6fc4fb99f84a6913d" },
+  cli: { count: 293, hash: "713166dc770b10963cdda108df4024b6544bf05a8bdb40049515345be02db6ae" },
+  http: { count: 233, hash: "9b180da8de305e5621b9e88ab4c9d747b8ee18851dbc69d94dece7677d661ed1" },
 };
 
 const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }> = [
@@ -551,6 +553,7 @@ const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }>
   { capabilityId: "corporate-records", pattern: /(?:corporate[_-]record|corporate-record)/ },
   { capabilityId: "workspace-parties", pattern: /(?:workspace[_-]party|^cli:party )/ },
   { capabilityId: "legacy-party-mapping", pattern: /legacy[_-]party[_-]mapping/ },
+  { capabilityId: "vendor-identity-enrichment", pattern: /vendor[_-]identity[_-]enrichment/ },
   { capabilityId: "document-party-resolution", pattern: /documents?_party|party-link|internal-no-external-party/ },
   { capabilityId: "digisense-nemhandel", pattern: /(?:efaktura|digisense|peppol|send-public)/ },
   { capabilityId: "group-intercompany", pattern: /(?:group|portfolio)/ },

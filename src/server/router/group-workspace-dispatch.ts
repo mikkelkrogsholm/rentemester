@@ -76,6 +76,10 @@ export async function dispatchGroupWorkspaceRoute(
   }
   const legacyMappings = /^\/api\/companies\/([^/]+)\/legacy-party-mappings$/.exec(path);
   if (legacyMappings) return getOnly(method, () => handlers.legacyPartyMappings(decodeURIComponent(legacyMappings[1]!)));
+  const enrichmentAction = /^\/api\/companies\/([^/]+)\/vendor-identity-enrichments\/(plan|apply)$/.exec(path);
+  if(enrichmentAction)return postOnly(method,()=>enrichmentAction[2]==="plan"?handlers.vendorIdentityEnrichmentPlan(decodeURIComponent(enrichmentAction[1]!)):handlers.vendorIdentityEnrichmentApply(decodeURIComponent(enrichmentAction[1]!)));
+  const enrichments = /^\/api\/companies\/([^/]+)\/vendor-identity-enrichments$/.exec(path);
+  if(enrichments)return getOnly(method,()=>handlers.vendorIdentityEnrichments(decodeURIComponent(enrichments[1]!)));
   const recordCollection = /^\/api\/companies\/([^/]+)\/corporate-records$/.exec(path);
   if (recordCollection) return getOrPost(method, () => handlers.registryRecords(decodeURIComponent(recordCollection[1]!)), () => handlers.registryRecordIngest(decodeURIComponent(recordCollection[1]!)));
   const recordAction = /^\/api\/companies\/([^/]+)\/corporate-records\/([^/]+)\/(link|enrich|supersede)$/.exec(path);
