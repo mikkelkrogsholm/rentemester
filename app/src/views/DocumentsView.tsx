@@ -635,7 +635,7 @@ export function DocumentsView() {
                     ) : (
                       <div className="doc-posting">
                         <span className="flag warning">Ikke bogført</span>
-                        {!selectedYearArchived && (
+                        {!selectedYearArchived && <>
                           <button
                             type="button"
                             className="btn small"
@@ -643,7 +643,8 @@ export function DocumentsView() {
                           >
                             Bogfør bilag
                           </button>
-                        )}
+                          <Link className="btn small secondary" to={`/companies/${slug}/koebsoverblik?sourceKind=document&sourceId=${doc.id}`}>Åbn købscase</Link>
+                        </>}
                       </div>
                     )}
                   </td>

@@ -368,6 +368,7 @@ export function BankView() {
                             >
                               Bogfør
                             </button>
+                            <Link className="btn secondary" to={`/companies/${slug}/koebsoverblik?sourceKind=bank_transaction&sourceId=${tx.id}`}>Åbn købscase</Link>
                           </div>
                         )}
                       </td>

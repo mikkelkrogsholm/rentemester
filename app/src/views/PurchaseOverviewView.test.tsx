@@ -34,6 +34,23 @@ describe("PurchaseOverviewView", () => {
     expect(JSON.parse(String((call![1] as RequestInit).body))).toMatchObject({ source: { kind: "bank_transaction", id: 7 }, documentationOutcome: "unresolved", confirm: true });
   });
 
+  test("prefills a readable source selected from an existing context link", async () => {
+    mockFetch({
+      "GET /api/companies/acme-aps/purchase-overview": { overview },
+      "GET /api/companies/acme-aps/purchase-cases": { purchaseCases: [] },
+      "GET /api/companies/acme-aps/accounting-approval-policy": { policy: null },
+      "POST /api/companies/acme-aps/purchase-cases": { purchaseCase: { id: "case-1" } },
+    });
+    renderAt(<PurchaseOverviewView />, { route: "/companies/acme-aps/koebsoverblik?sourceKind=document&sourceId=7", path: "/companies/:slug/koebsoverblik" });
+    expect(await screen.findByText("Valgt kilde: Bilag #7")).toBeTruthy();
+    expect(screen.queryByLabelText("Kilde-id")).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "Åbn case" }));
+    const dialog = await screen.findByRole("dialog", { name: "Åbn foreløbig købscase" });
+    await userEvent.click(dialog.querySelector<HTMLButtonElement>("button.btn:not(.secondary)")!);
+    const call = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find(([url, init]) => String(url).endsWith("/purchase-cases") && init?.method === "POST");
+    expect(JSON.parse(String((call![1] as RequestInit).body))).toMatchObject({ source: { kind: "document", id: 7 }, confirm: true });
+  });
+
   test("shows the provisional projection as not filing-ready and keeps it optional", async () => {
     mockFetch({
       "GET /api/companies/acme-aps/purchase-overview": { overview: { ...overview, basis: { ...overview.basis, provisional: { ...overview.basis.provisional, economicEffect: { expense: 1000, expectedVat: 250, status: "projection_not_filing_ready", effects: [] } } } } },
