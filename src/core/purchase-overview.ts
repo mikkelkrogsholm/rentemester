@@ -61,6 +61,20 @@ export function buildPurchaseOverview(db: Database, input: PurchaseOverviewFilte
     economicEffect: { expense: profitAndLoss.totalExpense, result: profitAndLoss.result, basis: "posted_ledger" as const },
   };
   const activeDrafts = listAccountingDrafts(db).filter(draft => (draft.status === "created" || draft.status === "revised" || draft.status === "submitted") && draft.payload.transactionDate >= input.from && draft.payload.transactionDate <= input.to);
+  const sourceKeys = (draft: (typeof activeDrafts)[number]) => [
+    ...(draft.payload.documentId == null ? [] : [`document:${draft.payload.documentId}`]),
+    ...(draft.payload.sourceBankTransactionId == null ? [] : [`bank_transaction:${draft.payload.sourceBankTransactionId}`]),
+  ];
+  const activeDraftsPerSource = new Map<string, number>();
+  for (const draft of activeDrafts) for (const key of sourceKeys(draft)) {
+    activeDraftsPerSource.set(key, (activeDraftsPerSource.get(key) ?? 0) + 1);
+  }
+  const hasCanonicalBooking = (draft: (typeof activeDrafts)[number]) =>
+    (draft.payload.documentId != null && db.query(`SELECT 1 FROM journal_entries entry
+      WHERE entry.document_id=? AND entry.status='posted' AND entry.reversal_of_entry_id IS NULL
+        AND NOT EXISTS (SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=entry.id)
+      LIMIT 1`).get(draft.payload.documentId) != null) ||
+    (draft.payload.sourceBankTransactionId != null && db.query("SELECT 1 FROM bank_journal_reconciliations WHERE bank_transaction_id=? LIMIT 1").get(draft.payload.sourceBankTransactionId) != null);
   const draftCaseIds = (draft: (typeof activeDrafts)[number]) => all.filter(purchaseCase =>
     (purchaseCase.source.kind === "document" && draft.payload.documentId === purchaseCase.source.id) ||
     (purchaseCase.source.kind === "bank_transaction" && draft.payload.sourceBankTransactionId === purchaseCase.source.id),
@@ -69,6 +83,8 @@ export function buildPurchaseOverview(db: Database, input: PurchaseOverviewFilte
     const caseIds = draftCaseIds(draft);
     const caseId = caseIds[0] ?? null;
     if (input.includeProvisional === false) return { caseId, caseIds, status: "excluded", reason: "provisional_projection_disabled" };
+    if (sourceKeys(draft).some(key => (activeDraftsPerSource.get(key) ?? 0) > 1)) return { caseId, caseIds, status: "unknown", reason: "multiple_active_drafts_for_source" };
+    if (hasCanonicalBooking(draft)) return { caseId, caseIds, status: "excluded", reason: "canonical_booking_exists" };
     const currency = draft.payload.currency ?? "DKK";
     const hasDocumentedConversion = draft.payload.amountForeign != null && draft.payload.amountDkk != null && draft.payload.fxRateToDkk != null;
     if (currency !== "DKK" && !hasDocumentedConversion) return { caseId, caseIds, status: "excluded", reason: "foreign_currency_without_documented_conversion" };
