@@ -5,6 +5,8 @@ export type AccountingApprovalPolicy = {
   reviewMode: "sole_authorized_bookkeeper" | "independent_reviewer";
   version: number;
   eventHash: string;
+  enforcement: "enforced" | "not_enforced";
+  unsupportedReason?: "ELEVATED_APPROVAL_POLICY_UNSUPPORTED";
 };
 
 const path = (slug: string) => `/api/companies/${encodeURIComponent(slug)}/accounting-approval-policy`;

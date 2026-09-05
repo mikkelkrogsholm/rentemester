@@ -39,6 +39,13 @@ export type AccountingApprovalPolicy = {
   actor: string;
   principalId: string;
   createdAt: string;
+  /**
+   * Elevated policies from earlier builds are retained for auditability, but
+   * Rentemester has no canonical elevated-risk classifier yet. They must
+   * therefore never be presented as an active enforcement boundary.
+   */
+  enforcement: "enforced" | "not_enforced";
+  unsupportedReason?: "ELEVATED_APPROVAL_POLICY_UNSUPPORTED";
 };
 
 export type AccountingApprovalDecision = {
@@ -64,11 +71,14 @@ function mode(value: unknown): AccountingApprovalReviewMode {
   return value as AccountingApprovalReviewMode;
 }
 function rowPolicy(row: PolicyRow): AccountingApprovalPolicy {
+  const elevated = row.risk_class === "elevated";
   return {
     scope: row.scope_kind === "workspace" ? { kind: "workspace" } : { kind: "company", companySlug: row.company_slug! },
     riskClass: row.risk_class, reviewMode: row.review_mode, version: row.version,
     eventHash: row.event_hash, previousEventHash: row.prior_event_hash,
     actor: row.actor, principalId: row.principal_id, createdAt: row.created_at,
+    enforcement: elevated ? "not_enforced" : "enforced",
+    ...(elevated ? { unsupportedReason: "ELEVATED_APPROVAL_POLICY_UNSUPPORTED" as const } : {}),
   };
 }
 function current(db: Database, scope: "workspace" | "company", companySlug: string | null, riskClass: AccountingApprovalRiskClass): PolicyRow | null {
@@ -101,6 +111,12 @@ export function setAccountingApprovalPolicy(
   const principalId = text(input.principalId, "principalId");
   const actor = text(input.actor, "actor");
   const selectedRisk = risk(input.riskClass);
+  // No caller has a canonical, product-owned elevated-risk classifier. Do
+  // not let configuration imply a protection that none of the accounting
+  // flows can enforce. Existing historical rows remain readable below.
+  if (selectedRisk === "elevated") {
+    throw new Error("ELEVATED_APPROVAL_POLICY_UNSUPPORTED");
+  }
   const reviewMode = mode(input.reviewMode);
   const scope = input.scope.kind;
   const companySlug = scope === "company" ? text(input.scope.companySlug, "companySlug", 120) : null;

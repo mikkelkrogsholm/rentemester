@@ -55,9 +55,34 @@ describe("accounting approval policy", () => {
       expect(() => setAccountingApprovalPolicy(db, root, {
         scope: { kind: "company", companySlug: "company-a" }, riskClass: "elevated", reviewMode: "sole_authorized_bookkeeper",
         expectedEventHash: null, principalId: "actor-only", actor: "owner", confirm: true,
-      })).toThrow("not authorized");
+      })).toThrow("ELEVATED_APPROVAL_POLICY_UNSUPPORTED");
       expect(() => db.exec("UPDATE rm_accounting_approval_policy_events SET review_mode='independent_reviewer'"))
         .toThrow("append-only");
+    } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("retains historical elevated policy evidence but reports it as not enforced", () => {
+    const root = workspace();
+    const db = setup(root);
+    try {
+      // Simulates an append-only row created before elevated activation was
+      // rejected. The migration deliberately does not rewrite or delete it.
+      db.query(`INSERT INTO rm_accounting_approval_policy_events
+        (scope_kind,company_slug,risk_class,review_mode,version,prior_event_hash,event_hash,actor,principal_id,created_at)
+        VALUES ('company','company-a','elevated','sole_authorized_bookkeeper',1,NULL,?,'agent:legacy','owner','2026-01-02T00:00:00.000Z')`)
+        .run("e".repeat(64));
+      const historical = getAccountingApprovalPolicy(db, "company-a", "elevated");
+      expect(historical).toMatchObject({
+        riskClass: "elevated",
+        reviewMode: "sole_authorized_bookkeeper",
+        enforcement: "not_enforced",
+        unsupportedReason: "ELEVATED_APPROVAL_POLICY_UNSUPPORTED",
+      });
+      expect(() => setAccountingApprovalPolicy(db, root, {
+        scope: { kind: "company", companySlug: "company-a" }, riskClass: "elevated", reviewMode: "independent_reviewer",
+        expectedEventHash: historical!.eventHash, principalId: "owner", actor: "agent:policy", confirm: true,
+      })).toThrow("ELEVATED_APPROVAL_POLICY_UNSUPPORTED");
+      expect(getAccountingApprovalPolicy(db, "company-a", "elevated")?.eventHash).toBe("e".repeat(64));
     } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
   });
 
