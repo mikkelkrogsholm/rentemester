@@ -11,6 +11,7 @@ import { approvePartyMerge, createParty, inspectParty, linkPartyRole, proposePar
 import { enrichCorporateRecord, ingestCorporateRecord, inspectCorporateRecord, linkCorporateRecord, listCorporateRecords, readCorporateRecordBytes, supersedeCorporateRecord } from "../core/corporate-records";
 import { companyKnowledgeHistory, proposeCompanyKnowledge, queryCompanyKnowledge, reviewCompanyKnowledge, supersedeCompanyKnowledge } from "../core/company-knowledge";
 import { applyOwnershipSnapshot, ownershipHistory, projectExactCompanyOwnership, proposeOwnershipSnapshot, queryOwnershipGraph, reviewOwnershipSnapshot } from "../core/ownership-graph";
+import { getAccountingApprovalPolicy, setAccountingApprovalPolicy } from "../core/accounting-approval-policy";
 import { approveWorkspaceInboxAssignment, completeWorkspaceInboxAssignment, ingestWorkspaceInboxSource, inspectWorkspaceInboxSource, listWorkspaceInboxSources } from "../core/workspace-document-inbox";
 import { companyPaths } from "../core/paths";
 import { migrate, openDb } from "../core/db";
@@ -24,6 +25,8 @@ const workspace = (ctx: CommandContext) => resolveWorkspaceRoot(need(ctx, "--wor
 const principal=(ctx:CommandContext)=>({kind:"local_operator" as const,id:need(ctx,"--principal-id")});
 
 export function register(dispatch: CommandDispatch): void {
+  dispatch.on("approval-policy", "get", (ctx) => { const db=openWorkspaceControlReadOnlyDb(workspace(ctx));try{ctx.emitResult({ok:true,policy:getAccountingApprovalPolicy(db,need(ctx,"--company"),ctx.arg("--risk-class") as any ?? "normal")});}finally{db.close();} });
+  dispatch.on("approval-policy", "set", (ctx) => { confirm(ctx);const root=workspace(ctx),db=openWorkspaceControlDb(root);try{const company=need(ctx,"--company"),expected=ctx.arg("--expected-event-hash");ctx.emitResult({ok:true,...setAccountingApprovalPolicy(db,root,{scope:{kind:"company",companySlug:company},riskClass:(ctx.arg("--risk-class")??"normal") as any,reviewMode:need(ctx,"--review-mode") as any,expectedEventHash:expected??null,principalId:need(ctx,"--principal-id"),actor:actor(ctx),confirm:true})});}finally{db.close();} });
   dispatch.on("party", "create", (ctx) => { confirm(ctx); const db=openWorkspaceControlDb(workspace(ctx)); try { const input=json(ctx,"--input"); ctx.emitResult({ok:true,party:createParty(db,{...input, actor:actor(ctx) } as any)}); } finally { db.close(); } });
   dispatch.on("party", "search", (ctx) => { const db=openWorkspaceControlReadOnlyDb(workspace(ctx)); try { ctx.emitResult({ok:true,...searchParties(db,{query:ctx.arg("--query"),companySlugs:new Set([need(ctx,"--company")]),cursor:Number(ctx.arg("--cursor")??0),limit:Number(ctx.arg("--limit")??25)})}); } finally {db.close();} });
   dispatch.on("party", "inspect", (ctx) => { const db=openWorkspaceControlReadOnlyDb(workspace(ctx)); try { const party=inspectParty(db,need(ctx,"--party-id")); ctx.emitResult(party?{ok:true,party}:{ok:false,errors:["party not found"]}); } finally {db.close();} });
