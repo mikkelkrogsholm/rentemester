@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { canonicalJson } from "./canonical-json";
 import { listPurchaseCases, purchaseCaseNeed, type PurchaseCase, type PurchaseCaseNeed } from "./purchase-cases";
 import { listAccountingDrafts } from "./accounting-drafts";
+import { buildProfitAndLoss } from "./financial-statements";
 
 export type PurchaseOverviewFilter = { from: string; to: string; includeProvisional?: boolean };
 type SourceFact = { date: string | null; amount: number | null; currency: string | null };
@@ -41,13 +42,15 @@ export function buildPurchaseOverview(db: Database, input: PurchaseOverviewFilte
     const need = purchaseCaseNeed(db, item.purchaseCase);
     return { ...item, need };
   });
+  const profitAndLoss=buildProfitAndLoss(db,input.from,input.to);
   const canonical = {
     sourceCaseCount: current.length,
     postedCaseCount: current.filter(item => item.purchaseCase.accountingProgress === "posted").length,
     unpostedCaseCount: current.filter(item => item.purchaseCase.accountingProgress === "unposted").length,
     financialAggregation: "not_available_without_double_counting" as const,
+    economicEffect: { expense: profitAndLoss.totalExpense, result: profitAndLoss.result, basis: "posted_ledger" as const },
   };
-  const activeDrafts = listAccountingDrafts(db).filter(draft => draft.status === "created" || draft.status === "revised" || draft.status === "submitted");
+  const activeDrafts = listAccountingDrafts(db).filter(draft => (draft.status === "created" || draft.status === "revised" || draft.status === "submitted") && draft.payload.transactionDate >= input.from && draft.payload.transactionDate <= input.to);
   const provisionalEffects = current.map(({ purchaseCase }) => {
     if (input.includeProvisional === false || purchaseCase.accountingProgress === "posted") return { caseId: purchaseCase.caseId, status: "excluded" as const, reason: "canonical_booking_exists" };
     const matches = activeDrafts.filter(draft =>
