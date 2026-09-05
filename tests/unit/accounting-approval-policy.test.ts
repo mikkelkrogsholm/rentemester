@@ -5,6 +5,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { migrate } from "../../src/core/db";
 import { createPurchaseCase, reviewPurchaseCase } from "../../src/core/purchase-cases";
+import { approveAndPostAccountingDraft, createAccountingDraft, submitAccountingDraft } from "../../src/core/accounting-drafts";
+import { seedAccounts, type JournalEntryInput } from "../../src/core/ledger";
 import {
   evaluateAccountingApproval,
   getAccountingApprovalPolicy,
@@ -31,6 +33,11 @@ function setup(root: string) {
   grantCompanyMembership(db, root, { userId: "reviewer", companySlug: "company-a", role: "reviewer", createdBy: "agent:test", createdByProgram: "test" });
   return db;
 }
+
+const draftPayload = (): JournalEntryInput => ({
+  transactionDate: "2026-01-02", text: "Synthetic policy draft",
+  lines: [{ accountNo: "2000", debitAmount: 100 }, { accountNo: "5000", creditAmount: 100 }],
+});
 
 describe("accounting approval policy", () => {
   test("allows a sole authorized bookkeeper only through scoped membership and never through actor", () => {
@@ -119,6 +126,35 @@ describe("accounting approval policy", () => {
         approval: { controlDb: control, workspaceRoot: root, companySlug: "company-a", principalId: "reviewer", expectedPolicyEventHash: policy.policy.eventHash },
       })).toEqual({ ok: false, errors: ["STALE_APPROVAL_POLICY"] });
       expect(ledger.query("SELECT count(*) AS count FROM purchase_case_events").get()).toEqual({ count: before.count + 1 });
+    } finally { ledger.close(); control.close(); rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("keeps draft author, submitter and reviewer independent while binding posting to current policy", () => {
+    const root = workspace();
+    const control = setup(root);
+    const ledger = new Database(":memory:");
+    try {
+      migrate(ledger);
+      seedAccounts(ledger);
+      const policy = setAccountingApprovalPolicy(control, root, {
+        scope: { kind: "company", companySlug: "company-a" }, riskClass: "normal", reviewMode: "independent_reviewer",
+        expectedEventHash: null, principalId: "owner", actor: "agent:policy", confirm: true,
+      }).policy;
+      const created = createAccountingDraft(ledger, "policy-draft", draftPayload(), { createdBy: "agent:author", createdByProgram: "test" }, { principalId: "bookkeeper" });
+      const submitted = submitAccountingDraft(ledger, created.id, created.eventHash, { createdBy: "agent:submitter", createdByProgram: "test" }, { principalId: "owner" });
+      expect(() => approveAndPostAccountingDraft(ledger, created.id, submitted.eventHash, { createdBy: "agent:reviewer", createdByProgram: "test" }, {
+        controlDb: control, workspaceRoot: root, companySlug: "company-a", principalId: "actor-only", expectedPolicyEventHash: policy.eventHash,
+      })).toThrow("PRINCIPAL_NOT_AUTHORIZED");
+      const posted = approveAndPostAccountingDraft(ledger, created.id, submitted.eventHash, { createdBy: "agent:reviewer", createdByProgram: "test" }, {
+        controlDb: control, workspaceRoot: root, companySlug: "company-a", principalId: "reviewer", expectedPolicyEventHash: policy.eventHash,
+      });
+      expect(posted).toMatchObject({ status: "approved_posted", principalId: "reviewer", approvalPolicyHash: policy.eventHash });
+      expect(ledger.query("SELECT approval_policy_hash FROM accounting_draft_events WHERE event_type='approved_posted'").get()).toEqual({ approval_policy_hash: policy.eventHash });
+      const changed = setAccountingApprovalPolicy(control, root, {
+        scope: { kind: "company", companySlug: "company-a" }, riskClass: "normal", reviewMode: "sole_authorized_bookkeeper",
+        expectedEventHash: policy.eventHash, principalId: "owner", actor: "agent:policy", confirm: true,
+      }).policy;
+      expect(changed.eventHash).not.toBe(policy.eventHash);
     } finally { ledger.close(); control.close(); rmSync(root, { recursive: true, force: true }); }
   });
 });

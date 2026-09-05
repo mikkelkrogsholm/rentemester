@@ -531,7 +531,7 @@ type SurfaceBaseline = { count: number; hash: string };
 export const AGENT_SURFACE_BASELINES: Record<SurfaceName, SurfaceBaseline> = {
   // Public surface changes require an explicit discovery review.
   mcp: { count: 233, hash: "52d90690362bab5cd9ca70980348aa5464189c50df26c4298ad07acd35f2b303" },
-  cli: { count: 283, hash: "307631f9f121767d554eaf595d8d33b74073a019974a5d61d8a88d130310b26f" },
+  cli: { count: 285, hash: "e7b306c3b359c8a56be778d8dff7b6f436d9ed19cd5c9f67100329344f2b34f4" },
   http: { count: 223, hash: "2e524b3ef9843ccc36aff8fa8bf5431c1969523889ec674923491fbc8913c40b" },
 };
 
@@ -560,7 +560,7 @@ const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }>
   { capabilityId: "imports", pattern: /(?:import|archive\/:year)/ },
   { capabilityId: "planning-reporting", pattern: /(?:report|dashboard|budget|cashflow|tax_return|tax\b|annual|accrual|compliance|obligations|multi-year)/ },
   { capabilityId: "operations-assurance", pattern: /(?:system|audit|health|ready|retention|integrity|backup|meta_about|agent[_-]capabilit|agent[_-]workflow|agent run|reg coverage|reg citations|serve|local start)/ },
-  { capabilityId: "company-workspace", pattern: /(?:company|companies|workspace|accounts?|cvr|contacts|members|invitations|^cli:init$|^http:get \/api$|^http:get \/api\/health$|^http:get \/api\/rules$|^http:get \/api\/me$)/ },
+  { capabilityId: "company-workspace", pattern: /(?:company|companies|workspace|accounts?|cvr|contacts|members|invitations|approval[_-]policy|^cli:init$|^http:get \/api$|^http:get \/api\/health$|^http:get \/api\/rules$|^http:get \/api\/me$)/ },
   { capabilityId: "company-knowledge", pattern: /(?:company[_-]knowledge|\/knowledge)/ },
   { capabilityId: "ownership-graph", pattern: /(?:ownership(?:[_ -](?:graph|snapshot|query|propose|review|apply|history|projection))?|ownership-graph)/ },
 ];
