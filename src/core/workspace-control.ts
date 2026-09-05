@@ -308,6 +308,8 @@ export function assertWorkspaceControlPrimitives(db: Database): void {
     "rm_corporate_record_scope_assertions",
     "rm_company_knowledge_assertions",
     "rm_company_knowledge_events",
+    "rm_knowledge_page_events",
+    "rm_knowledge_relation_events",
     "rm_ownership_source_snapshots",
     "rm_ownership_snapshot_events",
     "rm_ownership_facts",
