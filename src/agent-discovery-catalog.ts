@@ -202,6 +202,7 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
   workflow({ id:"purchase-case-lifecycle", capabilityId:"supplier-purchases", title:"Provisional purchase case lifecycle", intendedOutcome:"Record a source-bound provisional purchase case, review exact evidence, then continue only through an existing booking flow.", steps:[
     write("create",mcp("purchase_case_create"),"Create one append-only case bound to an existing document, bank transaction or payable. This never posts or changes VAT.",{boundary:"review",retryClass:"key-idempotent",inputIdentities:["source.kind","source.id","idempotencyKey"],outputIdentities:["caseId","sourceFingerprint"],canonicalRecords:["purchase case events","audit log"]}),
     read("inspect",mcp("purchase_case_get"),"Read the derived accounting and VAT evidence state without mutation.",{dependsOn:["create"],inputIdentities:["caseId"]}),
+    write("reassess-stale",mcp("purchase_case_reassess"),"When source evidence changed, append an explicit reassessment using both fingerprints and an explicit documentation outcome.",{dependsOn:["inspect"],boundary:"review",retryClass:"key-idempotent",inputIdentities:["caseId","expectedVersion","expectedSourceFingerprint","currentSourceFingerprint","documentationOutcome","idempotencyKey"],uncertainOutcomeReadBack:mcp("purchase_case_get"),canonicalRecords:["purchase case events","audit log"]}),
     write("review",mcp("purchase_case_review"),"Append only a review of the exact case version and source fingerprint.",{dependsOn:["inspect"],boundary:"review",retryClass:"key-idempotent",inputIdentities:["caseId","expectedVersion","expectedSourceFingerprint","idempotencyKey"],uncertainOutcomeReadBack:mcp("purchase_case_get"),canonicalRecords:["purchase case events","audit log"]}),
     read("readback",mcp("purchase_case_get"),"Read the current case after a retry or review.",{dependsOn:["review"],inputIdentities:["caseId"]}),
   ],relatedWorkflowIds:["supplier-expense-booking","supplier-payable-handling"],unsupportedBoundaries:["A purchase case is not a ledger, journal, draft, VAT approval or payable.","Booking remains in the existing reviewed supplier expense or payable workflow.","Changing source evidence makes a previous review stale."]}),
@@ -530,7 +531,7 @@ type SurfaceBaseline = { count: number; hash: string };
  */
 export const AGENT_SURFACE_BASELINES: Record<SurfaceName, SurfaceBaseline> = {
   // Public surface changes require an explicit discovery review.
-  mcp: { count: 235, hash: "9bd8f724e6058ab820b6c5bf7ba39b596f4d0b990a2735c724d6866e6e976d3c" },
+  mcp: { count: 236, hash: "b505d2218a39a30851550b30f6f1c9b470966b7519b7b1af14b29a5631779859" },
   cli: { count: 285, hash: "e7b306c3b359c8a56be778d8dff7b6f436d9ed19cd5c9f67100329344f2b34f4" },
   http: { count: 225, hash: "a9e0e5124c1fb1137af4cb76a7ed3a68ebfb517808b28ed0c839337b6e4c9b6a" },
 };
