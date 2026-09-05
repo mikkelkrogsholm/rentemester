@@ -3,6 +3,8 @@ import { describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { migrate } from "../../src/core/db";
+import { createPurchaseCase, reviewPurchaseCase } from "../../src/core/purchase-cases";
 import {
   evaluateAccountingApproval,
   getAccountingApprovalPolicy,
@@ -80,5 +82,43 @@ describe("accounting approval policy", () => {
         expectedEventHash: policy.policy.eventHash, principalId: "owner", actor: "agent:policy", confirm: true,
       })).toMatchObject({ replayed: true, policy: { eventHash: changed.policy.eventHash } });
     } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("binds a purchase review to the exact current policy without using its actor as authority", () => {
+    const root = workspace();
+    const control = setup(root);
+    const ledger = new Database(":memory:");
+    try {
+      migrate(ledger);
+      ledger.run("INSERT INTO companies(name,cvr) VALUES(?,?)", "Synthetic company", "12345678");
+      ledger.run("INSERT INTO bank_transactions(transaction_date,amount,currency,text,transaction_hash) VALUES(?,?,?,?,?)", "2026-01-02", -125, "DKK", "Synthetic", "a".repeat(64));
+      const policy = setAccountingApprovalPolicy(control, root, {
+        scope: { kind: "company", companySlug: "company-a" }, riskClass: "normal", reviewMode: "independent_reviewer",
+        expectedEventHash: null, principalId: "owner", actor: "agent:policy", confirm: true,
+      });
+      const created = createPurchaseCase(ledger, { caseId: "policy-bound-purchase", source: { kind: "bank_transaction", id: 1 }, actor: { createdBy: "agent:author", createdByProgram: "test", auditActor: "agent:author via test" }, principalId: "bookkeeper" });
+      if (!created.ok) throw new Error(created.errors.join(","));
+      const reviewed = reviewPurchaseCase(ledger, {
+        caseId: created.purchaseCase.caseId, expectedVersion: 1, expectedSourceFingerprint: created.purchaseCase.sourceFingerprint,
+        documentationOutcome: "ordinary_evidence_sufficient", actor: { createdBy: "agent:review", createdByProgram: "test", auditActor: "agent:review via test" },
+        approval: { controlDb: control, workspaceRoot: root, companySlug: "company-a", principalId: "reviewer", expectedPolicyEventHash: policy.policy.eventHash },
+      });
+      expect(reviewed).toMatchObject({ ok: true, purchaseCase: { version: 2 } });
+      const before = ledger.query("SELECT count(*) AS count FROM purchase_case_events").get() as { count: number };
+      const changed = setAccountingApprovalPolicy(control, root, {
+        scope: { kind: "company", companySlug: "company-a" }, riskClass: "normal", reviewMode: "sole_authorized_bookkeeper",
+        expectedEventHash: policy.policy.eventHash, principalId: "owner", actor: "agent:policy", confirm: true,
+      });
+      expect(changed.policy.version).toBe(2);
+      ledger.run("INSERT INTO bank_transactions(id,transaction_date,amount,currency,text,transaction_hash) VALUES(?,?,?,?,?,?)", 2, "2026-01-02", -50, "DKK", "Another synthetic", "b".repeat(64));
+      const second = createPurchaseCase(ledger, { caseId: "stale-policy-purchase", source: { kind: "bank_transaction", id: 2 }, actor: { createdBy: "agent:author", createdByProgram: "test", auditActor: "agent:author via test" }, principalId: "bookkeeper" });
+      if (!second.ok) throw new Error(second.errors.join(","));
+      expect(reviewPurchaseCase(ledger, {
+        caseId: second.purchaseCase.caseId, expectedVersion: 1, expectedSourceFingerprint: second.purchaseCase.sourceFingerprint,
+        documentationOutcome: "ordinary_evidence_sufficient", actor: { createdBy: "owner", createdByProgram: "test", auditActor: "owner via test" },
+        approval: { controlDb: control, workspaceRoot: root, companySlug: "company-a", principalId: "reviewer", expectedPolicyEventHash: policy.policy.eventHash },
+      })).toEqual({ ok: false, errors: ["STALE_APPROVAL_POLICY"] });
+      expect(ledger.query("SELECT count(*) AS count FROM purchase_case_events").get()).toEqual({ count: before.count + 1 });
+    } finally { ledger.close(); control.close(); rmSync(root, { recursive: true, force: true }); }
   });
 });

@@ -1,0 +1,5 @@
+{
+  "id": 49,
+  "name": "purchase case approval evidence",
+  "sql": "ALTER TABLE purchase_case_events ADD COLUMN principal_id TEXT;\nALTER TABLE purchase_case_events ADD COLUMN approval_policy_hash TEXT;\nCREATE INDEX purchase_case_creator_principal ON purchase_case_events(case_id,event_type,principal_id);\n"
+}
