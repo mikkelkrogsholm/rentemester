@@ -709,6 +709,10 @@ ord-for-ord, CLI/MCP-pendanter og er derfor hverken CLI-only eller MCP-only:
   `expense vat-preflight` og `expense_vat_preflight[_apply]`; MCP-værktøjet
   ligger under expense-domænet, mens CLI-adapteren bevidst er en selvstændig
   fil for at holde provider-I/O ude af posting-kernen.
+- `src/cli/purchase-case.ts` ↔ `src/mcp/tools/purchase-cases.ts` —
+  kildebundne, foreløbige købscases og eksakt review. Flowet bogfører aldrig
+  eller ændrer momsstatus; den efterfølgende bogføring følger det eksisterende
+  purchase-/payable-flow.
 
 > **Andre kendte mikro-afvigelser (samme filnavn, divergent klassifikation
 > eller ergonomi):**
