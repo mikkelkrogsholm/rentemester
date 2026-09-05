@@ -5,7 +5,7 @@
  * every write and `--confirm yes` makes the append-only boundary explicit.
  */
 import { readFileSync } from "node:fs";
-import { resolveWorkspaceRoot, resolveWorkspaceSlug } from "../core/workspace";
+import { companyRootForSlug, resolveWorkspaceRoot, resolveWorkspaceSlug } from "../core/workspace";
 import { openWorkspaceControlDb, openWorkspaceControlReadOnlyDb } from "../core/workspace-control";
 import { approvePartyMerge, createParty, inspectParty, linkPartyRole, proposePartyMerge, searchParties } from "../core/party-registry";
 import { enrichCorporateRecord, ingestCorporateRecord, inspectCorporateRecord, linkCorporateRecord, listCorporateRecords, readCorporateRecordBytes, supersedeCorporateRecord } from "../core/corporate-records";
@@ -16,6 +16,7 @@ import { approveWorkspaceInboxAssignment, completeWorkspaceInboxAssignment, inge
 import { companyPaths } from "../core/paths";
 import { migrate, openDb } from "../core/db";
 import type { CommandContext, CommandDispatch } from "../cli-dispatch";
+import { authorizeMcpTool, createMcpSecurityContextFromEnv } from "../mcp/security";
 
 const need = (ctx: CommandContext, flag: string) => { const v = ctx.trimToNull(ctx.arg(flag)); if (!v) ctx.fatal(`${flag} is required`); return v!; };
 const actor = (ctx: CommandContext) => ctx.cliActor ?? process.env.RENTEMESTER_ACTOR ?? ctx.inferredMutationActor() ?? (() => { ctx.fatal("actor required for mutations"); })();
@@ -26,7 +27,7 @@ const principal=(ctx:CommandContext)=>({kind:"local_operator" as const,id:need(c
 
 export function register(dispatch: CommandDispatch): void {
   dispatch.on("approval-policy", "get", (ctx) => { const db=openWorkspaceControlReadOnlyDb(workspace(ctx));try{ctx.emitResult({ok:true,policy:getAccountingApprovalPolicy(db,need(ctx,"--company"),ctx.arg("--risk-class") as any ?? "normal")});}finally{db.close();} });
-  dispatch.on("approval-policy", "set", (ctx) => { confirm(ctx);const root=workspace(ctx),db=openWorkspaceControlDb(root);try{const company=need(ctx,"--company"),expected=ctx.arg("--expected-event-hash");ctx.emitResult({ok:true,...setAccountingApprovalPolicy(db,root,{scope:{kind:"company",companySlug:company},riskClass:(ctx.arg("--risk-class")??"normal") as any,reviewMode:need(ctx,"--review-mode") as any,expectedEventHash:expected??null,principalId:need(ctx,"--principal-id"),actor:actor(ctx),confirm:true})});}finally{db.close();} });
+  dispatch.on("approval-policy", "set", async (ctx) => { confirm(ctx); const root=workspace(ctx), company=need(ctx,"--company"); const security=createMcpSecurityContextFromEnv(); if(!security)ctx.fatal("approval-policy set requires RENTEMESTER_SERVICE_PRINCIPAL_TOKEN and RENTEMESTER_WORKSPACE"); const allowed=await authorizeMcpTool(security!,"accounting_approval_policy_set",{company:companyRootForSlug(root,company)}); if(!allowed)ctx.fatal("approval-policy set requires an active authenticated service principal with company-admin membership"); const db=openWorkspaceControlDb(root);try{const expected=ctx.arg("--expected-event-hash");ctx.emitResult({ok:true,...setAccountingApprovalPolicy(db,root,{scope:{kind:"company",companySlug:company},riskClass:(ctx.arg("--risk-class")??"normal") as any,reviewMode:need(ctx,"--review-mode") as any,expectedEventHash:expected??null,principalId:allowed!.principal.subjectId,actor:actor(ctx),confirm:true})});}finally{db.close();} });
   dispatch.on("party", "create", (ctx) => { confirm(ctx); const db=openWorkspaceControlDb(workspace(ctx)); try { const input=json(ctx,"--input"); ctx.emitResult({ok:true,party:createParty(db,{...input, actor:actor(ctx) } as any)}); } finally { db.close(); } });
   dispatch.on("party", "search", (ctx) => { const db=openWorkspaceControlReadOnlyDb(workspace(ctx)); try { ctx.emitResult({ok:true,...searchParties(db,{query:ctx.arg("--query"),companySlugs:new Set([need(ctx,"--company")]),cursor:Number(ctx.arg("--cursor")??0),limit:Number(ctx.arg("--limit")??25)})}); } finally {db.close();} });
   dispatch.on("party", "inspect", (ctx) => { const db=openWorkspaceControlReadOnlyDb(workspace(ctx)); try { const party=inspectParty(db,need(ctx,"--party-id")); ctx.emitResult(party?{ok:true,party}:{ok:false,errors:["party not found"]}); } finally {db.close();} });
