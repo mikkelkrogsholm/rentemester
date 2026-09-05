@@ -86,18 +86,20 @@ describe("PurchaseOverviewView", () => {
 
   test("group review sends only the concretely selected members", async () => {
     const member = { caseId: "purchase-1", version: 1, source: purchaseCase.source, sourceFingerprint: "a".repeat(64), documentationOutcome: "unresolved", accountingProgress: "unposted", vatEvidence: { status: "pending" }, sourceFact: purchaseCase.sourceFact, sourceStatus: purchaseCase.sourceStatus, need: { key: "documentation:unresolved", question: "Review" } };
+    const secondMember = { ...member, caseId: "purchase-2", version: 2, source: { kind: "document" as const, id: 8 }, sourceFingerprint: "c".repeat(64), sourceFact: { date: "2026-01-02", supplier: "Leverandør A", amount: 250, currency: "DKK", documentId: 8 } };
     mockFetch({
-      "GET /api/companies/acme-aps/purchase-overview": { overview: { ...overview, groups: [{ need: { key: "documentation:unresolved", question: "Review" }, caseCount: 1, members: [member], selectionHash: "selection-1" }] } },
+      "GET /api/companies/acme-aps/purchase-overview": { overview: { ...overview, groups: [{ need: { key: "documentation:unresolved", question: "Review" }, caseCount: 2, members: [member, secondMember], selectionHash: "selection-1" }] } },
       "GET /api/companies/acme-aps/purchase-cases": { purchaseCases: [purchaseCase] },
       "GET /api/companies/acme-aps/accounting-approval-policy": { policy: null },
       "POST /api/companies/acme-aps/purchase-cases/group-review": { group: { groupId: "group-1" } },
     });
     renderAt(<PurchaseOverviewView />, { route: "/companies/acme-aps/koebsoverblik", path: "/companies/:slug/koebsoverblik" });
-    await screen.findByRole("button", { name: "Review den valgte gruppe" });
-    await userEvent.click(screen.getByRole("button", { name: "Review den valgte gruppe" }));
+    await screen.findByRole("button", { name: "Review 2 valgte" });
+    await userEvent.click(screen.getAllByLabelText("Vælg")[0]!);
+    await userEvent.click(screen.getByRole("button", { name: "Review 1 valgt" }));
     const dialog = await screen.findByRole("dialog", { name: "Review købsdokumentation" });
     await userEvent.click(dialog.querySelector<HTMLButtonElement>("button.btn:not(.secondary)")!);
     const call = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find(([url, init]) => String(url).endsWith("/group-review") && init?.method === "POST");
-    expect(JSON.parse(String((call![1] as RequestInit).body)).members).toEqual([{ caseId: "purchase-1", expectedVersion: 1, expectedSourceFingerprint: "a".repeat(64) }]);
+    expect(JSON.parse(String((call![1] as RequestInit).body)).members).toEqual([{ caseId: "purchase-2", expectedVersion: 2, expectedSourceFingerprint: "c".repeat(64) }]);
   });
 });
