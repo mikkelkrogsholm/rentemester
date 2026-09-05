@@ -122,7 +122,8 @@ export function reviewPurchaseCaseGroup(db: Database, input: { groupId?: string;
   if (!caseId.test(groupId) || input.members.length === 0 || input.members.length > 100 || note.length > 2000) return { ok: false, errors: ["PURCHASE_CASE_GROUP_INVALID"] };
   const ids = new Set<string>();
   if (input.members.some(member => !caseId.test(member.caseId) || !Number.isInteger(member.expectedVersion) || member.expectedVersion < 1 || !/^[a-f0-9]{64}$/.test(member.expectedSourceFingerprint) || ids.has(member.caseId) || !ids.add(member.caseId))) return { ok: false, errors: ["PURCHASE_CASE_GROUP_MEMBERS_INVALID"] };
-  return db.transaction(() => {
+  try {
+    return db.transaction(() => {
     const prepared: Array<{ row: Row; source: PurchaseCaseSource; fingerprint: string; purchaseCase: PurchaseCase; need: PurchaseCaseNeed }> = [];
     for (const member of input.members) {
       const row = current(db, member.caseId);
@@ -143,7 +144,6 @@ export function reviewPurchaseCaseGroup(db: Database, input: { groupId?: string;
     const selectionHash = sha({ needKey: "documentation:unresolved", selection, documentationOutcome: input.documentationOutcome, note });
     const createdAt = new Date().toISOString();
     const eventHash = sha({ groupId, selectionHash, actor: input.actor.createdBy, program: input.actor.createdByProgram, createdAt });
-    try {
       const groupEventId = Number(db.query("INSERT INTO purchase_case_group_events(group_id,need_key,selection_hash,documentation_outcome,note,event_hash,actor,program,created_at) VALUES(?,?,?,?,?,?,?,?,?)").run(groupId, "documentation:unresolved", selectionHash, input.documentationOutcome, note, eventHash, input.actor.createdBy, input.actor.createdByProgram, createdAt).lastInsertRowid);
       const reviewed = prepared.map(item => {
         const approvalPolicyHash=approval(input.approval,creatorPrincipalId(db,item.row.case_id));
@@ -154,8 +154,10 @@ export function reviewPurchaseCaseGroup(db: Database, input: { groupId?: string;
       });
       insertAuditLog(db, { eventType: "purchase_case_group_reviewed", entityType: "purchase_case_group", entityId: groupId, message: `Reviewed ${reviewed.length} purchase cases for documentation evidence`, createdBy: input.actor.createdBy, createdByProgram: input.actor.createdByProgram });
       return { ok: true as const, group: { groupId, selectionHash, need: prepared[0]!.need, caseIds: selection.map(item => item.caseId), eventHash }, purchaseCases: reviewed };
-    } catch { return { ok: false as const, errors: ["PURCHASE_CASE_GROUP_WRITE_REJECTED"] }; }
-  }).immediate();
+    }).immediate();
+  } catch {
+    return { ok: false, errors: ["PURCHASE_CASE_GROUP_WRITE_REJECTED"] };
+  }
 }
 export function getPurchaseCase(db: Database, id: string): PurchaseCase | null { const row=current(db,id); return row ? fromRow(db,row) : null; }
 export function listPurchaseCases(db: Database): PurchaseCase[] { return (db.query("SELECT case_id,version,source_kind,source_id,source_fingerprint,documentation_outcome,note,event_hash,created_at FROM current_purchase_cases ORDER BY id DESC").all() as Row[]).map(row=>fromRow(db,row)); }
