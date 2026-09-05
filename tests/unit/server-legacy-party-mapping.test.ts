@@ -41,6 +41,16 @@ describe("#638 HTTP legacy party mapping",()=>{
       expect(applied).toMatchObject({status:200,body:{ok:true,idempotent:false}});
       const listed=await get(hosted,"/api/companies/allowed-aps/legacy-party-mappings?legacyKind=vendor",{headers});
       expect(listed).toMatchObject({status:200,body:{ok:true,rows:[{partyId:"party-http-638",contactSnapshot:{notes:"keep this note"}}]}});
+      const documentPlan = await get(hosted, "/api/companies/allowed-aps/documents/party-links/plan", { method: "POST", headers, body: JSON.stringify(input) });
+      expect(documentPlan.status).toBe(200);
+      const documentApply = await get(hosted, "/api/companies/allowed-aps/documents/party-links/apply", { method: "POST", headers, body: JSON.stringify({ ...input, planHash: (documentPlan.body as any).plan.planHash, idempotencyKey: "http-subject-639", confirm: true, principal: "spoofed", actor: "agent:spoofed" }) });
+      expect(documentApply.status).toBe(200);
+      const evidenceDb = openDb(companyPaths(root).db);
+      try {
+        expect(evidenceDb.query("SELECT principal,actor FROM document_party_link_events").all()).toEqual([
+          { principal: `service-account:${service.serviceAccountId}`, actor: `user:${service.serviceAccountId}` },
+        ]);
+      } finally { evidenceDb.close(); }
     }finally{control.close();runtime.close();rmSync(workspace,{recursive:true,force:true});}
   });
 

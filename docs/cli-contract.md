@@ -6,6 +6,25 @@ korrekt. Implementeringen ligger i `src/cli-actor.ts` og `src/cli.ts`.
 
 ## 1. Actor-politik for muterende kommandoer
 
+`documents party-link-apply`, `party-link-supersede`,
+`internal-no-external-party` og `internal-no-external-party-supersede` kræver
+`RENTEMESTER_SERVICE_PRINCIPAL_TOKEN` og `RENTEMESTER_WORKSPACE` i processen.
+Den aktive token og virksomhedens aktuelle `company.master-data`-membership
+verificeres før mutation. Gemt principal er `service-account:<serviceAccountId>`
+fra autentificeringen; `--actor` forbliver den separate policy-godkendte
+revisionsidentitet. Udelad normalt `--principal`: flaget er kun en valgfri
+lighedsassertion og afvises, hvis det ikke matcher den verificerede principal.
+MCP's tilsvarende dokument-part-operationer udleder også principal fra den
+autentificerede servicekonto, aldrig fra klientens actor eller inputfelter.
+Eksisterende historik omskrives ikke.
+
+Efter en godkendt legacy mapping bruges de samme identitets-/referencefelter
+fra dokument-part-planen ved apply, sammen med dens eksakte `--plan-hash`,
+`--idempotency-key`, `--confirm yes` og `--actor`. CLI's `--company` er her
+virksomhedsstien; `--workspace` og `--company-slug` skal pege på samme
+autentificerede workspace og virksomhed. Se `docs/deployment-modes.md` for
+lokal service-bootstrap og sikker tokenoverførsel til containerprocessen.
+
 `legacy-party-mapping plan` er read-only. `legacy-party-mapping apply` kræver
 `--confirm yes`, actor, en autentificeret workspace-servicekonto, idempotency
 key, eksakt plan-hash og et eksisterende kildebilag; den er idempotent. Planen

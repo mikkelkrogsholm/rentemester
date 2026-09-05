@@ -66,6 +66,8 @@ class Client {
 let workspace = "";
 let companyRoot = "";
 let client: Client;
+let serviceAccountId: string;
+let serviceToken: string;
 
 function eventCount() {
   const db = openDb(companyPaths(companyRoot).db);
@@ -78,7 +80,7 @@ beforeAll(async () => {
   initWorkspace(workspace);
   const company = createCompany(workspace, { name: "Acme ApS" });
   companyRoot = companyRootForSlug(workspace, company.slug);
-  appendFileSync(join(companyRoot, "config", "policy.yaml"), "  agents:\n    - agent:document-party-black-box/1.0.0\n");
+  appendFileSync(join(companyRoot, "config", "policy.yaml"), "  agents:\n    - agent:document-party-black-box/1.0.0\n    - agent:second-party-reviewer/1.0.0\n");
   const ledger = openDb(companyPaths(companyRoot).db);
   migrate(ledger);
   ledger.query(`INSERT INTO documents
@@ -101,6 +103,8 @@ beforeAll(async () => {
   linkPartyRole(registry,{partyId:"party-mcp-no-id",companySlug:company.slug,role:"vendor",actor:"user:test"});
   const runtime=openWorkspaceBetterAuth(workspace,{secret:"I0UjL6i0-ScgvjfIgzMKJxPQyDpPXwg2mMKdLW3Y3WQ",trustedOrigins:["http://127.0.0.1"],baseURL:"http://127.0.0.1"});
   const service=await createWorkspaceServicePrincipal(registry,runtime.auth,{displayName:"Document party test",actor:"user:test"});
+  serviceAccountId = service.serviceAccountId;
+  serviceToken = service.secret;
   activateWorkspaceUser(registry,{userId:service.serviceAccountId,workspaceRole:"member",actor:"user:test"});
   grantCompanyMembership(registry,workspace,{userId:service.serviceAccountId,companySlug:company.slug,role:"owner",actor:"user:test"});
   registry.close();runtime.close();
@@ -157,9 +161,13 @@ describe("#588 MCP black-box contract", () => {
       const planned = await call("legacy_party_mapping_plan", mapping);
       await call("legacy_party_mapping_apply", { ...mapping, planHash: planned.plan.planHash, idempotencyKey: `mapping-${kind}`, confirm: true });
       const linked = await call("documents_party_link_plan", mapping);
-      await call("documents_party_link_apply", { ...mapping, planHash: linked.plan.planHash, idempotencyKey: `link-${kind}`, confirm: true });
+      await call("documents_party_link_apply", { ...mapping, planHash: linked.plan.planHash, idempotencyKey: `link-${kind}`, confirm: true, principal: "service-account:spoofed" });
       const inspected = await call("documents_party_link_inspect", { company: "acme-aps", documentId: document.documentId });
       expect(inspected.links).toContainEqual(expect.objectContaining({ party_id: partyId, event_type: "linked" }));
+      expect(inspected.links).toContainEqual(expect.objectContaining({
+        principal: `service-account:${serviceAccountId}`,
+        actor: "agent:document-party-black-box/1.0.0",
+      }));
     });
   }
   test("discovers and executes the read-plan → confirmed apply → inspect lifecycle", async () => {
@@ -231,5 +239,23 @@ describe("#588 MCP black-box contract", () => {
     expect((await client.send("tools/call",{name:"vendor_identity_enrichment_apply",arguments:args})).result?.structuredContent).toMatchObject({ok:true,data:{idempotent:false}});
     expect((await client.send("tools/call",{name:"vendor_identity_enrichment_apply",arguments:args})).result?.structuredContent).toMatchObject({ok:true,data:{idempotent:true}});
     expect((await client.send("tools/call",{name:"vendor_identity_enrichment_list",arguments:{company:"acme-aps",vendorId:2}})).result?.structuredContent).toMatchObject({ok:true,data:{rows:[{vendor_id:2,document_id:3}]}});
+  });
+  test("#639 a different MCP actor retains the authenticated subject on correction", async () => {
+    const second = new Client(workspace, serviceToken);
+    try {
+      await second.send("initialize", { protocolVersion: "2024-11-05", capabilities: {}, clientInfo: { name: "second-party-reviewer", version: "1.0.0" } });
+      await second.notify("notifications/initialized");
+      const history = await second.send("tools/call", { name: "documents_party_link_inspect", arguments: { company: "acme-aps", documentId: 1 } });
+      const planHash = history.result.structuredContent.data.links[0].plan_hash;
+      const result = await second.send("tools/call", { name: "documents_party_link_supersede", arguments: { company: "acme-aps", documentId: 1, role: "vendor", planHash, reason: "Synthetic reviewed correction", confirm: true } });
+      expect(result.result?.structuredContent?.ok).toBeTrue();
+      const db = openDb(companyPaths(companyRoot).db);
+      try {
+        expect(db.query("SELECT actor,principal FROM document_party_link_events WHERE document_id=1 ORDER BY id").all()).toEqual([
+          { actor: "agent:document-party-black-box/1.0.0", principal: `service-account:${serviceAccountId}` },
+          { actor: "agent:second-party-reviewer/1.0.0", principal: `service-account:${serviceAccountId}` },
+        ]);
+      } finally { db.close(); }
+    } finally { await second.close(); }
   });
 });
