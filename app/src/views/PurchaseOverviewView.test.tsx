@@ -59,10 +59,12 @@ describe("PurchaseOverviewView", () => {
     });
     renderAt(<PurchaseOverviewView />, { route: "/companies/acme-aps/koebsoverblik", path: "/companies/:slug/koebsoverblik" });
     expect(await screen.findByText("Ikke klar til momsindberetning.")).toBeTruthy();
-    expect(screen.getByText("Bilag #7")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Bilag #7" })).toHaveAttribute("href", "/companies/acme-aps/bilag?documentId=7");
     expect(screen.getByText(/Leverandør ukendt/)).toBeTruthy();
+    const before=(globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.filter(([,init])=>init?.method==="POST").length;
     await userEvent.click(screen.getByLabelText("Vis foreløbig effekt"));
     expect(await screen.findAllByText("Slået fra")).toHaveLength(2);
+    expect((globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.filter(([,init])=>init?.method==="POST")).toHaveLength(before);
   });
 
   test("reviews one current case only after reading its exact current version", async () => {
@@ -118,5 +120,22 @@ describe("PurchaseOverviewView", () => {
     await userEvent.click(dialog.querySelector<HTMLButtonElement>("button.btn:not(.secondary)")!);
     const call = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find(([url, init]) => String(url).endsWith("/group-review") && init?.method === "POST");
     expect(JSON.parse(String((call![1] as RequestInit).body)).members).toEqual([{ caseId: "purchase-2", expectedVersion: 2, expectedSourceFingerprint: "c".repeat(64) }]);
+  });
+
+  test("keeps the exact review open when the server denies permission", async () => {
+    mockFetch({
+      "GET /api/companies/acme-aps/purchase-overview": { overview },
+      "GET /api/companies/acme-aps/purchase-cases": { purchaseCases: [purchaseCase] },
+      "GET /api/companies/acme-aps/purchase-cases/purchase-1": { purchaseCase },
+      "GET /api/companies/acme-aps/accounting-approval-policy": { policy: null },
+      "POST /api/companies/acme-aps/purchase-cases/purchase-1/review": { __error: { code: "forbidden", message: "Din rolle har ikke adgang" } },
+    });
+    renderAt(<PurchaseOverviewView />, { route: "/companies/acme-aps/koebsoverblik", path: "/companies/:slug/koebsoverblik" });
+    await screen.findByText("Review almindeligt bilag");
+    await userEvent.click(screen.getByRole("button", { name: "Review almindeligt bilag" }));
+    const dialog = await screen.findByRole("dialog", { name: "Review købscase" });
+    await userEvent.click(dialog.querySelector<HTMLButtonElement>("button.btn:not(.secondary)")!);
+    expect(await screen.findByText("Din rolle har ikke adgang")).toBeTruthy();
+    expect(screen.getByRole("dialog", { name: "Review købscase" })).toBeTruthy();
   });
 });
