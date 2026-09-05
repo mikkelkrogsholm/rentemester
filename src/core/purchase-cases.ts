@@ -51,8 +51,17 @@ export function purchaseCaseSourceFingerprint(db: Database, source: PurchaseCase
 function booking(db: Database, source: PurchaseCaseSource): PurchaseCase["canonicalBooking"] {
   let row: { id:number } | null = null;
   if (source.kind === "bank_transaction") row = db.query("SELECT journal_entry_id AS id FROM bank_journal_reconciliations WHERE bank_transaction_id=? LIMIT 1").get(source.id) as {id:number}|null;
-  if (source.kind === "document") row = db.query("SELECT id FROM journal_entries WHERE document_id=? AND status='posted' ORDER BY id DESC LIMIT 1").get(source.id) as {id:number}|null;
-  if (source.kind === "payable") row = db.query("SELECT journal_entry_id AS id FROM payables WHERE id=?").get(source.id) as {id:number}|null;
+  // A case observes the existing ledger; it must never make a historic,
+  // reversed journal look like the current canonical booking.
+  if (source.kind === "document") row = db.query(`SELECT entry.id FROM journal_entries entry
+    WHERE entry.document_id=? AND entry.status='posted' AND entry.reversal_of_entry_id IS NULL
+      AND NOT EXISTS (SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=entry.id)
+    ORDER BY entry.id DESC LIMIT 1`).get(source.id) as {id:number}|null;
+  if (source.kind === "payable") row = db.query(`SELECT entry.id FROM payables payable
+    JOIN journal_entries entry ON entry.id=payable.journal_entry_id
+    WHERE payable.id=? AND entry.status='posted' AND entry.reversal_of_entry_id IS NULL
+      AND NOT EXISTS (SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=entry.id)
+    LIMIT 1`).get(source.id) as {id:number}|null;
   return row ? { kind:"journal", id:row.id } : undefined;
 }
 
