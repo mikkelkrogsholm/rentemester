@@ -52,6 +52,7 @@ export type {
 
 import { accountantApi } from "./api/accountant";
 import { accountingDraftsApi } from "./api/accounting-drafts";
+import { accountingApprovalPolicyApi } from "./api/accounting-approval-policy";
 import { accountsApi } from "./api/accounts";
 import { accrualsApi } from "./api/accruals";
 import { agentSuggestionsApi, exceptionsApi } from "./api/exceptions";
@@ -89,6 +90,7 @@ import { purchaseCasesApi } from "./api/purchase-cases";
 // shadowing is load-bearing any more.
 export const api = {
   ...accountingDraftsApi,
+  ...accountingApprovalPolicyApi,
   ...systemApi,
   ...retentionApi,
   ...integrityApi,

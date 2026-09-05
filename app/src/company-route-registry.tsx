@@ -5,6 +5,7 @@
  */
 import type { ReactElement } from "react";
 import { AccountingDraftsView } from "./views/AccountingDraftsView";
+import { AccountingApprovalPolicyView } from "./views/AccountingApprovalPolicyView";
 import { AccountsView } from "./views/AccountsView";
 import { AccrualsView } from "./views/AccrualsView";
 import { AnnualReportView } from "./views/AnnualReportView";
@@ -73,6 +74,7 @@ export const COMPANY_ROUTE_REGISTRY = [
   // Bogføring
   { id: "journal", segment: "posteringer", label: "Posteringer", area: "bookkeeping", element: <JournalView /> },
   { id: "drafts", segment: "kladder", label: "Kladder", area: "bookkeeping", element: <AccountingDraftsView /> },
+  { id: "approval-policy", segment: "godkendelsespolitik", label: "Godkendelsespolitik", area: "bookkeeping", element: <AccountingApprovalPolicyView /> },
   { id: "posting-rules", segment: "posteringsregler", label: "Posteringsregler", area: "bookkeeping", element: <PostingRulesView /> },
   { id: "batch-bookkeeping", segment: "batchbogfoering", label: "Bogføring", area: "bookkeeping", element: <BookkeepingBatchView /> },
   { id: "bank", segment: "bank", label: "Bank", area: "bookkeeping", element: <BankView /> },
