@@ -47,17 +47,19 @@ export function buildPurchaseOverview(db: Database, input: PurchaseOverviewFilte
     unpostedCaseCount: current.filter(item => item.purchaseCase.accountingProgress === "unposted").length,
     financialAggregation: "not_available_without_double_counting" as const,
   };
-  const activeDrafts = listAccountingDrafts(db).filter(draft => draft.status !== "approved_posted");
+  const activeDrafts = listAccountingDrafts(db).filter(draft => draft.status === "created" || draft.status === "revised" || draft.status === "submitted");
   const provisionalEffects = current.map(({ purchaseCase }) => {
     if (input.includeProvisional === false || purchaseCase.accountingProgress === "posted") return { caseId: purchaseCase.caseId, status: "excluded" as const, reason: "canonical_booking_exists" };
-    const matches = activeDrafts.filter(draft => draft.payload.documentId === (purchaseCase.source.kind === "document" ? purchaseCase.source.id : undefined) || draft.payload.sourceBankTransactionId === (purchaseCase.source.kind === "bank_transaction" ? purchaseCase.source.id : undefined));
+    const matches = activeDrafts.filter(draft =>
+      (purchaseCase.source.kind === "document" && draft.payload.documentId === purchaseCase.source.id) ||
+      (purchaseCase.source.kind === "bank_transaction" && draft.payload.sourceBankTransactionId === purchaseCase.source.id));
     if (matches.length !== 1) return { caseId: purchaseCase.caseId, status: "unknown" as const, reason: matches.length ? "multiple_active_drafts" : "no_active_draft" };
     const draft=matches[0]!; if ((draft.payload.currency ?? "DKK") !== "DKK") return { caseId: purchaseCase.caseId, status: "excluded" as const, reason: "foreign_currency_without_documented_conversion" };
     const amounts = draft.payload.lines.map(line=>{const account=db.query("SELECT type FROM accounts WHERE account_no=?").get(line.accountNo) as {type:string}|null;return {type:account?.type??null,amount:Number(line.debitAmount??0)-Number(line.creditAmount??0)};});
     if (amounts.some(line=>line.type===null)) return { caseId: purchaseCase.caseId, status: "unknown" as const, reason: "unknown_account" };
     return { caseId: purchaseCase.caseId, status: "known" as const, draftId:draft.id, expense:amounts.filter(line=>line.type==="expense").reduce((sum,line)=>sum+line.amount,0), expectedVat:amounts.filter(line=>line.type==="vat").reduce((sum,line)=>sum+line.amount,0) };
   });
-  const known=provisionalEffects.filter((item):item is Extract<typeof item,{status:"known"}>=>item.status==="known");
+  const known=[...new Map(provisionalEffects.filter((item):item is Extract<typeof item,{status:"known"}>=>item.status==="known").map(item=>[item.draftId,item])).values()];
   const provisional = {
     included: input.includeProvisional !== false,
     caseCount: input.includeProvisional === false ? 0 : current.length,
