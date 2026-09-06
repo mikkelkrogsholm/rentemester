@@ -5,13 +5,14 @@ import { applyDocumentPartyLink, planDocumentPartyLink, type DocumentPartyLinkPl
 import { inspectParty } from "./party-registry";
 import { resolveSupplierIdentity } from "./supplier-identity";
 
-export type PartyCoverageStatus = "linked" | "resolved_no_external_party" | "exact_candidate" | "ambiguous" | "missing_source";
-export type PartyCoverageFilter = { companySlug:string; asOf?:string; bankAccountId?:number };
-export type PartyCoverageDecision = { bankTransactionId:number; partyId?:string; role?:DocumentPartyRole; noExternalParty?:boolean; evidenceReference:string; rationale:string };
+export type PartyCoverageStatus = "linked" | "source_observed" | "unresolved_external_party" | "resolved_no_external_party" | "exact_candidate" | "ambiguous" | "missing_source";
+export type PartyCoverageFilter = { companySlug:string; asOf?:string; bankAccountId?:number; companyRoot?:string };
+export type PartyCoverageDecision = { bankTransactionId:number; partyId?:string; role?:DocumentPartyRole; noExternalParty?:boolean; unresolvedExternalParty?:boolean; nextAction?:string; sourceReview?:DocumentPartyLinkPlanInput["sourceReview"]; evidenceReference:string; rationale:string };
 
 const sha=(value:unknown)=>createHash("sha256").update(canonicalJson(value)).digest("hex");
 const bounded=(value:unknown,max=1000)=>typeof value==="string"&&value.trim()&&value.trim().length<=max?value.trim():null;
 const roleOrder:DocumentPartyRole[]=["vendor","supplier","customer","recipient","payee","payer","bank","related_company","processor","authority"];
+const observedRoles=new Set<DocumentPartyRole>(["establishment","location","payment_descriptor"]);
 
 function exactDocumentOperations(rows: Array<any>) {
   const documents=new Set<number>(); const operations:any[]=[];
@@ -30,7 +31,7 @@ function candidateForDocument(db:Database,registry:Database,companySlug:string,d
   const doc=db.query(`SELECT id,sha256_hash,document_type,sender_name,sender_vat_cvr,supplier_country_code,supplier_identifier_kind
     FROM documents WHERE id=?`).get(documentId) as any; if(!doc)return {kind:"missing" as const};
   const links=db.query("SELECT party_id,party_role,evidence_kind,plan_hash FROM current_document_party_links WHERE document_id=? ORDER BY party_role,party_id").all(documentId) as any[];
-  if(links.length)return {kind:"linked" as const,document:doc,links};
+  if(links.length){const legal=links.filter(link=>!observedRoles.has(link.party_role));return legal.length?{kind:"linked" as const,document:doc,links}:{kind:"observed" as const,document:doc,links};}
   if(db.query("SELECT 1 FROM current_document_party_resolution_events WHERE document_id=? AND state='internal_no_external_party'").get(documentId))return {kind:"no_external" as const,document:doc};
   const inputs:DocumentPartyLinkPlanInput[]=[];
   if(doc.supplier_country_code&&doc.supplier_identifier_kind&&doc.sender_vat_cvr){
@@ -59,16 +60,20 @@ export function projectPartyCoverage(db:Database,registry:Database,input:PartyCo
   const projected=rows.map(row=>{
     const base={bankTransactionId:row.bank_transaction_id,transactionHash:row.transaction_hash,transactionDate:row.transaction_date,amount:row.amount,currency:row.currency,bankAccountId:row.bank_account_id,reconciliation:row.reconciliation_id?{id:row.reconciliation_id,journalEntryId:row.journal_entry_id,journalEntryHash:row.entry_hash}:null};
     if(!row.reconciliation_id)return {...base,status:"missing_source" as const,documentId:null,candidate:null,reason:"Bank transaction has no current reconciliation.",nextAction:"Reconcile the bank transaction."};
-    const decision=db.query("SELECT resolution_type,party_id,party_role,evidence_reference,plan_hash,transaction_hash,journal_entry_hash,reconciliation_id FROM party_coverage_bank_resolution_events WHERE bank_transaction_id=?").get(row.bank_transaction_id) as any;
-    if(decision){if(decision.transaction_hash!==row.transaction_hash||decision.journal_entry_hash!==row.entry_hash||decision.reconciliation_id!==row.reconciliation_id)return {...base,status:"ambiguous" as const,documentId:null,candidate:null,reason:"Stored bank-party decision no longer matches current source hashes.",nextAction:"Review and correct the stale decision."};return {...base,status:decision.resolution_type==="linked"?"linked" as const:"resolved_no_external_party" as const,documentId:null,candidate:decision.party_id?{partyId:decision.party_id,role:decision.party_role,provenance:"reviewed_bank_journal_decision",planHash:decision.plan_hash}:null,reason:"Resolved by an append-only bank/journal decision.",nextAction:null};}
+    const decision=db.query("SELECT resolution_type,document_id,document_sha256,party_id,party_role,evidence_reference,rationale,next_action,plan_hash,transaction_hash,journal_entry_hash,reconciliation_id FROM party_coverage_bank_resolution_events WHERE bank_transaction_id=?").get(row.bank_transaction_id) as any;
+    if(decision&&(decision.transaction_hash!==row.transaction_hash||decision.journal_entry_hash!==row.entry_hash||decision.reconciliation_id!==row.reconciliation_id))return {...base,status:"ambiguous" as const,documentId:decision.document_id??null,candidate:null,reason:"Stored party decision no longer matches current source hashes.",nextAction:"Review and correct the stale decision."};
+    if(decision&&decision.resolution_type!=="unresolved_external_party")return {...base,status:decision.resolution_type==="linked"?"linked" as const:"resolved_no_external_party" as const,documentId:null,candidate:decision.party_id?{partyId:decision.party_id,role:decision.party_role,provenance:"reviewed_bank_journal_decision",planHash:decision.plan_hash}:null,reason:"Resolved by an append-only bank/journal decision.",nextAction:null};
     const documentIds=sourceDocumentIds(db,row.bank_transaction_id,row.document_id); if(documentIds.length!==1)return {...base,status:documentIds.length>1?"ambiguous" as const:"missing_source" as const,documentId:null,candidate:null,reason:documentIds.length>1?"Several source documents resolve from the same bank chain.":"The reconciled journal has no source document or reviewed party decision.",nextAction:documentIds.length>1?"Review the conflicting source chain.":"Record a hash-bound bank/journal party decision."};
     const resolved=candidateForDocument(db,registry,input.companySlug,documentIds[0]!);
-    if(resolved.kind==="linked")return {...base,status:"linked" as const,documentId:documentIds[0],documentHash:resolved.document.sha256_hash,candidate:{links:resolved.links,provenance:"current_document_party_links"},reason:"Document already has a current canonical party link.",nextAction:null};
+    if(decision&&(decision.document_id!==documentIds[0]||decision.document_sha256!==resolved.document?.sha256_hash))return {...base,status:"ambiguous" as const,documentId:documentIds[0],documentHash:resolved.document?.sha256_hash??null,candidate:null,reason:"Stored unresolved-external decision no longer matches the current document evidence.",nextAction:"Review the stale source chain; the historical decision remains retained."};
+    if(resolved.kind==="linked")return {...base,status:"linked" as const,documentId:documentIds[0],documentHash:resolved.document.sha256_hash,candidate:{links:resolved.links,provenance:"current_document_party_links"},reason:"Document has a current legal or tax identity party link.",nextAction:null};
+    if(resolved.kind==="observed")return {...base,status:"source_observed" as const,documentId:documentIds[0],documentHash:resolved.document.sha256_hash,candidate:{links:resolved.links,provenance:"source_observed_non_tax"},reason:"A merchant, establishment or payment descriptor is source-linked without asserting the legal supplier.",nextAction:decision?.next_action??"Resolve the legal supplier, or record an explicit unresolved-external follow-up."};
+    if(decision)return {...base,status:"unresolved_external_party" as const,documentId:documentIds[0],documentHash:resolved.document?.sha256_hash??null,candidate:{provenance:"reviewed_unresolved_external_party",planHash:decision.plan_hash,evidenceReference:decision.evidence_reference},reason:decision.rationale,nextAction:decision.next_action};
     if(resolved.kind==="no_external")return {...base,status:"resolved_no_external_party" as const,documentId:documentIds[0],documentHash:resolved.document.sha256_hash,candidate:null,reason:"Document has a current reviewed no-external-party decision.",nextAction:null};
     if(resolved.kind==="candidate")return {...base,status:"exact_candidate" as const,documentId:documentIds[0],documentHash:resolved.document.sha256_hash,candidate:{partyId:resolved.input.partyId,role:resolved.input.role,provenance:resolved.input.legacyKind?"reviewed_legacy_mapping":"typed_identifier",documentPlanHash:resolved.plan.planHash,input:resolved.input},reason:"One deterministic existing party workflow resolves this document.",nextAction:"Review and apply the exact batch plan."};
     return {...base,status:resolved.kind==="ambiguous"?"ambiguous" as const:"missing_source" as const,documentId:documentIds[0],documentHash:resolved.document?.sha256_hash??null,candidate:resolved.kind==="ambiguous"?{candidates:resolved.candidates}:null,reason:resolved.kind==="ambiguous"?"Several candidates or a name collision require review.":"No deterministic identifier or reviewed mapping exists.",nextAction:"Use the source-bound review flow or leave unresolved."};
   });
-  const totals={linked:0,resolved_no_external_party:0,exact_candidate:0,ambiguous:0,missing_source:0};for(const row of projected)totals[row.status]++;
+  const totals={linked:0,source_observed:0,unresolved_external_party:0,resolved_no_external_party:0,exact_candidate:0,ambiguous:0,missing_source:0};for(const row of projected)totals[row.status]++;
   const identity={filter:{asOf:input.asOf??null,bankAccountId:input.bankAccountId??null},rows:projected};
   const populationHash=sha(identity); const operations=exactDocumentOperations(projected);
   const planPayload={filter:{companySlug:input.companySlug,asOf:input.asOf??null,bankAccountId:input.bankAccountId??null},populationHash,operations};
@@ -76,17 +81,75 @@ export function projectPartyCoverage(db:Database,registry:Database,input:PartyCo
 }
 
 export function planPartyCoverage(db:Database,registry:Database,input:PartyCoverageFilter&{decisions?:PartyCoverageDecision[]}){
-  const projection=projectPartyCoverage(db,registry,input); const operations=exactDocumentOperations(projection.rows);
-  const decided=new Set<number>();for(const decision of input.decisions??[]){if(decided.has(decision.bankTransactionId))throw new Error("one bank transaction can have only one reviewed decision");decided.add(decision.bankTransactionId);const row=projection.rows.find(item=>item.bankTransactionId===decision.bankTransactionId);const reference=bounded(decision.evidenceReference,500),rationale=bounded(decision.rationale,1000);if(!row?.reconciliation||row.documentId||row.status!=="missing_source"||!reference||!rationale)throw new Error("bank decision requires one reconciled missing-source row and bounded evidence");const noExternal=decision.noExternalParty===true;if(noExternal===Boolean(decision.partyId))throw new Error("bank decision requires exactly one party or noExternalParty");if(noExternal&&registry.query("SELECT 1 FROM rm_intercompany_disposition_journal_links WHERE company_slug=? AND journal_entry_id=? LIMIT 1").get(input.companySlug,row.reconciliation.journalEntryId))throw new Error("an intercompany journal requires a related_company party decision");if(!noExternal){const party=inspectParty(registry,decision.partyId!);if(!party||!decision.role||!party.roles.some((role:any)=>role.companySlug===input.companySlug&&role.role===decision.role))throw new Error("bank decision party role is not visible in the company");}operations.push({actionKey:`bank:${row.bankTransactionId}`,kind:"bank_decision",bankTransactionId:row.bankTransactionId,transactionHash:row.transactionHash,reconciliation:row.reconciliation,resolutionType:noExternal?"no_external":"linked",partyId:decision.partyId??null,role:decision.role??null,evidenceReference:reference,rationale});}
-  operations.sort((a,b)=>a.actionKey.localeCompare(b.actionKey)); const payload={filter:{companySlug:input.companySlug,asOf:input.asOf??null,bankAccountId:input.bankAccountId??null},populationHash:projection.populationHash,operations};
+  const projection=projectPartyCoverage(db,registry,input);
+  const operations=exactDocumentOperations(projection.rows);
+  const decided=new Set<number>();
+  const decidedDocuments=new Set<number>();
+  for(const decision of input.decisions??[]){
+    if(decided.has(decision.bankTransactionId))throw new Error("one bank transaction can have only one reviewed decision");
+    decided.add(decision.bankTransactionId);
+    const row=projection.rows.find(item=>item.bankTransactionId===decision.bankTransactionId);
+    const reference=bounded(decision.evidenceReference,500), rationale=bounded(decision.rationale,1000);
+    if(!row?.reconciliation||!reference||!rationale)throw new Error("party decision requires one reconciled row and bounded evidence");
+
+    if(row.documentId){
+      if(decidedDocuments.has(row.documentId))throw new Error("one source document can have only one reviewed batch decision");
+      decidedDocuments.add(row.documentId);
+      const unresolved=decision.unresolvedExternalParty===true;
+      if(unresolved===Boolean(decision.partyId)||decision.noExternalParty)throw new Error("document decision requires exactly one observed party or unresolvedExternalParty");
+      if(!["missing_source","source_observed"].includes(row.status))throw new Error("document decision requires an unresolved document row");
+      if(unresolved){
+        const nextAction=bounded(decision.nextAction,1000), documentHash=bounded((row as any).documentHash,64);
+        if(!nextAction||!documentHash||!/^[a-f0-9]{64}$/.test(documentHash))throw new Error("unresolved external party requires a bounded next action and current document hash");
+        operations.push({actionKey:`document-resolution:${row.documentId}`,kind:"document_unresolved_external",bankTransactionId:row.bankTransactionId,transactionHash:row.transactionHash,reconciliation:row.reconciliation,documentId:row.documentId,documentHash,evidenceReference:reference,rationale,nextAction,accountingEffect:"none",taxEffect:"none"});
+        continue;
+      }
+      if(!decision.role||!observedRoles.has(decision.role)||!decision.sourceReview||!input.companyRoot)throw new Error("source-observed document decision requires a non-tax role and immutable source review");
+      const linkInput:DocumentPartyLinkPlanInput={documentId:row.documentId,companySlug:input.companySlug,partyId:decision.partyId,role:decision.role,sourceReview:decision.sourceReview};
+      const link=planDocumentPartyLink(db,registry,linkInput,input.companyRoot);
+      if(!link.ok)throw new Error(link.errors.join(","));
+      operations.push({actionKey:`document:${row.documentId}:${decision.role}`,kind:"document_link",documentId:row.documentId,input:linkInput,documentPlanHash:link.plan.planHash});
+      continue;
+    }
+
+    if(row.status!=="missing_source")throw new Error("bank decision requires one reconciled missing-source row");
+    const noExternal=decision.noExternalParty===true;
+    if(noExternal===Boolean(decision.partyId)||decision.unresolvedExternalParty)throw new Error("bank decision requires exactly one party or noExternalParty");
+    if(noExternal&&registry.query("SELECT 1 FROM rm_intercompany_disposition_journal_links WHERE company_slug=? AND journal_entry_id=? LIMIT 1").get(input.companySlug,row.reconciliation.journalEntryId))throw new Error("an intercompany journal requires a related_company party decision");
+    if(!noExternal){
+      const party=inspectParty(registry,decision.partyId!);
+      if(!party||!decision.role||!party.roles.some((role:any)=>role.companySlug===input.companySlug&&role.role===decision.role))throw new Error("bank decision party role is not visible in the company");
+    }
+    operations.push({actionKey:`bank:${row.bankTransactionId}`,kind:"bank_decision",bankTransactionId:row.bankTransactionId,transactionHash:row.transactionHash,reconciliation:row.reconciliation,resolutionType:noExternal?"no_external":"linked",partyId:decision.partyId??null,role:decision.role??null,evidenceReference:reference,rationale});
+  }
+  operations.sort((a,b)=>a.actionKey.localeCompare(b.actionKey));
+  const payload={filter:{companySlug:input.companySlug,asOf:input.asOf??null,bankAccountId:input.bankAccountId??null},populationHash:projection.populationHash,operations};
   return {ok:true as const,plan:{...payload,planHash:sha(payload)},projection};
 }
 
 export function applyPartyCoverage(db:Database,registry:Database,companyRoot:string,input:PartyCoverageFilter&{decisions?:PartyCoverageDecision[];planHash:string;idempotencyKey:string;confirm:boolean;actor:string;principal:string}){
-  if(!input.confirm)throw new Error("confirmation required");if(!/^(user|agent|system):\S+$/.test(input.actor)||!bounded(input.principal,200)||!bounded(input.idempotencyKey,128))throw new Error("actor, authenticated principal and idempotencyKey are required");const keyHash=sha(input.idempotencyKey);
-  return db.transaction(()=>{const prior=db.query("SELECT id,plan_hash,result_json FROM party_coverage_batch_events WHERE principal=? AND idempotency_key_hash=?").get(input.principal,keyHash) as any;if(prior){if(prior.plan_hash!==input.planHash)throw new Error("idempotency key already binds another plan");return {...JSON.parse(prior.result_json),idempotent:true};}
-    const planned=planPartyCoverage(db,registry,input);if(planned.plan.planHash!==input.planHash)throw new Error("stale party coverage plan");const results:any[]=[];
-    for(const operation of planned.plan.operations){if(operation.kind==="document_link"){const applied=applyDocumentPartyLink(db,registry,{...operation.input,planHash:operation.documentPlanHash,confirm:true,actor:input.actor,principal:input.principal,idempotencyKey:`coverage:${input.planHash}:${operation.actionKey}`},companyRoot);if(!applied.ok)throw new Error(applied.errors.join(","));results.push({actionKey:operation.actionKey,eventId:applied.id});}else{const row=db.query("INSERT INTO party_coverage_bank_resolution_events(bank_transaction_id,reconciliation_id,journal_entry_id,transaction_hash,journal_entry_hash,resolution_type,party_id,party_role,evidence_reference,rationale,plan_hash,actor,principal,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING id").get(operation.bankTransactionId,operation.reconciliation.id,operation.reconciliation.journalEntryId,operation.transactionHash,operation.reconciliation.journalEntryHash,operation.resolutionType,operation.partyId,operation.role,operation.evidenceReference,operation.rationale,input.planHash,input.actor,input.principal,new Date().toISOString()) as {id:number};results.push({actionKey:operation.actionKey,eventId:row.id});}}
-    const result={ok:true as const,idempotent:false,applied:results.length,results,planHash:input.planHash,populationHash:planned.plan.populationHash};db.query("INSERT INTO party_coverage_batch_events(plan_hash,population_hash,plan_json,result_json,idempotency_key_hash,actor,principal,created_at) VALUES(?,?,?,?,?,?,?,?)").run(input.planHash,planned.plan.populationHash,canonicalJson(planned.plan),canonicalJson(result),keyHash,input.actor,input.principal,new Date().toISOString());return result;
+  if(!input.confirm)throw new Error("confirmation required");
+  if(!/^(user|agent|system):\S+$/.test(input.actor)||!bounded(input.principal,200)||!bounded(input.idempotencyKey,128))throw new Error("actor, authenticated principal and idempotencyKey are required");
+  const keyHash=sha(input.idempotencyKey);
+  return db.transaction(()=>{
+    const prior=db.query("SELECT id,plan_hash,result_json FROM party_coverage_batch_events WHERE principal=? AND idempotency_key_hash=?").get(input.principal,keyHash) as any;
+    if(prior){if(prior.plan_hash!==input.planHash)throw new Error("idempotency key already binds another plan");return {...JSON.parse(prior.result_json),idempotent:true};}
+    const planned=planPartyCoverage(db,registry,{...input,companyRoot});
+    if(planned.plan.planHash!==input.planHash)throw new Error("stale party coverage plan");
+    const results:any[]=[];
+    for(const operation of planned.plan.operations){
+      if(operation.kind==="document_link"){
+        const applied=applyDocumentPartyLink(db,registry,{...operation.input,planHash:operation.documentPlanHash,confirm:true,actor:input.actor,principal:input.principal,idempotencyKey:`coverage:${input.planHash}:${operation.actionKey}`},companyRoot);
+        if(!applied.ok)throw new Error(applied.errors.join(","));
+        results.push({actionKey:operation.actionKey,eventId:applied.id});
+        continue;
+      }
+      const external=operation.kind==="document_unresolved_external";
+      const row=db.query("INSERT INTO party_coverage_bank_resolution_events(bank_transaction_id,reconciliation_id,journal_entry_id,transaction_hash,journal_entry_hash,resolution_type,document_id,document_sha256,party_id,party_role,evidence_reference,rationale,next_action,plan_hash,actor,principal,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING id").get(operation.bankTransactionId,operation.reconciliation.id,operation.reconciliation.journalEntryId,operation.transactionHash,operation.reconciliation.journalEntryHash,external?"unresolved_external_party":operation.resolutionType,external?operation.documentId:null,external?operation.documentHash:null,external?null:operation.partyId,external?null:operation.role,operation.evidenceReference,operation.rationale,external?operation.nextAction:null,input.planHash,input.actor,input.principal,new Date().toISOString()) as {id:number};
+      results.push({actionKey:operation.actionKey,eventId:row.id});
+    }
+    const result={ok:true as const,idempotent:false,applied:results.length,results,planHash:input.planHash,populationHash:planned.plan.populationHash};
+    db.query("INSERT INTO party_coverage_batch_events(plan_hash,population_hash,plan_json,result_json,idempotency_key_hash,actor,principal,created_at) VALUES(?,?,?,?,?,?,?,?)").run(input.planHash,planned.plan.populationHash,canonicalJson(planned.plan),canonicalJson(result),keyHash,input.actor,input.principal,new Date().toISOString());
+    return result;
   }).immediate();
 }

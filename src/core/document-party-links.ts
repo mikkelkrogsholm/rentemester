@@ -23,14 +23,15 @@ export const DOCUMENT_PARTY_ROLES = ["issuer", "supplier", "customer", "recipien
 export type DocumentPartyRole = typeof DOCUMENT_PARTY_ROLES[number];
 type PlanError = typeof DOCUMENT_PARTY_LINK_ERRORS[keyof typeof DOCUMENT_PARTY_LINK_ERRORS];
 const roles = new Set<DocumentPartyRole>(DOCUMENT_PARTY_ROLES);
+const sourceObservationRoles = new Set<DocumentPartyRole>(["establishment","location","payment_descriptor"]);
 const canonical = (v: unknown): string => v === null || typeof v !== "object" ? JSON.stringify(v) : Array.isArray(v) ? `[${v.map(canonical).join(",")}]` : `{${Object.keys(v as object).sort().map(k=>`${JSON.stringify(k)}:${canonical((v as any)[k])}`).join(",")}}`;
 const hash = (v: unknown) => createHash("sha256").update(canonical(v)).digest("hex");
 const value = (v: unknown, max = 512) => typeof v === "string" && v.trim() && v.trim().length <= max ? v.trim() : null;
 const fail = (error: PlanError) => ({ ok:false as const, errors:[error] as PlanError[] });
 
 export type DocumentPartySourceReview = {
-  observedName: string; observedAddress?: string; jurisdiction: string;
-  identifierKind: SupplierIdentifierKind; identifier?: string;
+  observedName: string; observedAddress?: string; jurisdiction?: string;
+  identifierKind?: SupplierIdentifierKind; identifier?: string;
   sourceReference: string; sourceLocation: string; rationale: string; vendorId?: number;
 };
 export type DocumentPartyLinkPlanInput = { documentId:number; companySlug:string; partyId?:string; role:DocumentPartyRole; jurisdiction?:string; identifierKind?:string; identifier?:string; legacyKind?:"customer"|"vendor"; legacyId?:string; reviewedLegacyReference?:string; sourceReview?:DocumentPartySourceReview };
@@ -49,12 +50,14 @@ export function planDocumentPartyLink(ledger: Database, registry: Database, inpu
   if (input.sourceReview) {
     const review=input.sourceReview, observedName=value(review.observedName,320), sourceReference=value(review.sourceReference,500), sourceLocation=value(review.sourceLocation,300), rationale=value(review.rationale,1000);
     if (!partyId || !observedName || !sourceReference || !sourceLocation || !rationale || !companyRoot) return fail(DOCUMENT_PARTY_LINK_ERRORS.SOURCE_REVIEW_INVALID);
-    const normalized=resolveSupplierIdentity({country:review.jurisdiction,identifierKind:review.identifierKind,identifier:review.identifier});
-    if(!normalized.ok) return fail(DOCUMENT_PARTY_LINK_ERRORS.SOURCE_REVIEW_INVALID);
+    const observationOnly=sourceObservationRoles.has(input.role);
+    if(observationOnly&&(review.jurisdiction||review.identifierKind||review.identifier||review.vendorId!==undefined))return fail(DOCUMENT_PARTY_LINK_ERRORS.SOURCE_REVIEW_INVALID);
+    const normalized=observationOnly?null:resolveSupplierIdentity({country:review.jurisdiction??"",identifierKind:review.identifierKind,identifier:review.identifier});
+    if(normalized&&!normalized.ok) return fail(DOCUMENT_PARTY_LINK_ERRORS.SOURCE_REVIEW_INVALID);
     let source:ReturnType<typeof snapshotRegisteredDocument>;
     try { source=snapshotRegisteredDocument(ledger,companyRoot,input.documentId); }
     catch(error) { return fail(error instanceof DocumentEvidenceError ? DOCUMENT_PARTY_LINK_ERRORS.SOURCE_EVIDENCE_INVALID : DOCUMENT_PARTY_LINK_ERRORS.SOURCE_REVIEW_INVALID); }
-    if(normalized.identifier){
+    if(normalized?.identifier){
       const rows=registry.query("SELECT party_id FROM rm_party_identifiers WHERE jurisdiction=? AND identifier_kind=? AND identifier=? ORDER BY party_id").all(normalized.country,normalized.identifierKind,normalized.identifier) as any[];
       if(!rows.length)return fail(DOCUMENT_PARTY_LINK_ERRORS.NO_IDENTIFIER_EVIDENCE);
       if(rows.length>1)return fail(DOCUMENT_PARTY_LINK_ERRORS.MULTIPLE_CANDIDATES);
@@ -62,18 +65,18 @@ export function planDocumentPartyLink(ledger: Database, registry: Database, inpu
     }
     candidateIds=[partyId];
     const imported={jurisdiction:doc.supplier_country_code,identifierKind:doc.supplier_identifier_kind,identifier:doc.sender_vat_cvr};
-    if((imported.jurisdiction&&imported.jurisdiction!==normalized.country)||(imported.identifierKind&&imported.identifierKind!==normalized.identifierKind)||(imported.identifier&&normalizedIdentifier(imported.identifier)!==normalizedIdentifier(normalized.identifier))) return fail(DOCUMENT_PARTY_LINK_ERRORS.IDENTIFIER_CONFLICT);
+    if(normalized&&((imported.jurisdiction&&imported.jurisdiction!==normalized.country)||(imported.identifierKind&&imported.identifierKind!==normalized.identifierKind)||(imported.identifier&&normalizedIdentifier(imported.identifier)!==normalizedIdentifier(normalized.identifier)))) return fail(DOCUMENT_PARTY_LINK_ERRORS.IDENTIFIER_CONFLICT);
     let contactChange:any=null;
     if(review.vendorId!==undefined){
       if(!Number.isSafeInteger(review.vendorId)||review.vendorId!<=0||!(input.role==="vendor"||input.role==="supplier"))return fail(DOCUMENT_PARTY_LINK_ERRORS.CONTACT_CONFLICT);
       const before=vendorSnapshot(ledger,review.vendorId!); if(!before)return fail(DOCUMENT_PARTY_LINK_ERRORS.CONTACT_CONFLICT);
       if(comparable(before.name)!==comparable(observedName)||(before.address&&review.observedAddress&&comparable(before.address)!==comparable(review.observedAddress)))return fail(DOCUMENT_PARTY_LINK_ERRORS.CONTACT_CONFLICT);
-      if((before.country_code&&before.country_code!==normalized.country)||(before.identifier_kind&&before.identifier_kind!==normalized.identifierKind)||(before.vat_or_cvr&&normalizedIdentifier(before.vat_or_cvr)!==normalizedIdentifier(normalized.identifier)))return fail(DOCUMENT_PARTY_LINK_ERRORS.CONTACT_CONFLICT);
+      if(!normalized||(before.country_code&&before.country_code!==normalized.country)||(before.identifier_kind&&before.identifier_kind!==normalized.identifierKind)||(before.vat_or_cvr&&normalizedIdentifier(before.vat_or_cvr)!==normalizedIdentifier(normalized.identifier)))return fail(DOCUMENT_PARTY_LINK_ERRORS.CONTACT_CONFLICT);
       const after={...before,country_code:before.country_code??normalized.country,identifier_kind:before.identifier_kind??normalized.identifierKind,vat_or_cvr:before.vat_or_cvr??normalized.identifier,identity_status:"resolved"};
       if(after.vat_or_cvr&&(ledger.query("SELECT id,vat_or_cvr FROM vendors WHERE id<>? AND vat_or_cvr IS NOT NULL").all(review.vendorId!) as any[]).some(row=>normalizedIdentifier(row.vat_or_cvr)===normalizedIdentifier(after.vat_or_cvr)))return fail(DOCUMENT_PARTY_LINK_ERRORS.CONTACT_CONFLICT);
       contactChange=canonical(before)===canonical(after)?null:{vendorId:review.vendorId,before,after};
     }
-    evidence={kind:"reviewed_source_observation",observationSubject:"external_counterparty",observedIdentity:{name:observedName,address:value(review.observedAddress,500),jurisdiction:normalized.country,identifierKind:normalized.identifierKind,identifier:normalized.identifier},source:{documentId:doc.id,documentSha256:source.sha256,documentType:doc.document_type,location:sourceLocation,reference:sourceReference,authorshipIsIdentityEvidence:false},documentMetadataSnapshot:{status:doc.status,retainUntil:doc.retain_until,senderName:doc.sender_name,senderAddress:doc.sender_address,supplierCountryCode:doc.supplier_country_code,supplierIdentifierKind:doc.supplier_identifier_kind,supplierIdentityStatus:doc.supplier_identity_status,senderVatOrCvr:doc.sender_vat_cvr},rationale,presentationDifferences:{name:comparable(observedName)!==comparable(doc.sender_name),address:Boolean(review.observedAddress)&&comparable(review.observedAddress)!==comparable(doc.sender_address)},contactChange,accountingEffect:"none",taxEffect:"none",invoiceClassification:doc.document_type==="internal_voucher"?"not_supplier_invoice":"unchanged"};
+    evidence={kind:"reviewed_source_observation",observationSubject:observationOnly?input.role:"external_counterparty",identityScope:observationOnly?"source_observed_non_tax":"legal_or_tax_identity",observedIdentity:observationOnly?{name:observedName,address:value(review.observedAddress,500)}:{name:observedName,address:value(review.observedAddress,500),jurisdiction:normalized!.country,identifierKind:normalized!.identifierKind,identifier:normalized!.identifier},source:{documentId:doc.id,documentSha256:source.sha256,documentType:doc.document_type,location:sourceLocation,reference:sourceReference,authorshipIsIdentityEvidence:false},documentMetadataSnapshot:{status:doc.status,retainUntil:doc.retain_until,senderName:doc.sender_name,senderAddress:doc.sender_address,supplierCountryCode:doc.supplier_country_code,supplierIdentifierKind:doc.supplier_identifier_kind,supplierIdentityStatus:doc.supplier_identity_status,senderVatOrCvr:doc.sender_vat_cvr},rationale,presentationDifferences:{name:comparable(observedName)!==comparable(doc.sender_name),address:Boolean(review.observedAddress)&&comparable(review.observedAddress)!==comparable(doc.sender_address)},contactChange,accountingEffect:"none",taxEffect:"none",...(observationOnly?{satisfiesLegalSupplierIdentity:false,satisfiesVatIdentity:false}:{}),invoiceClassification:doc.document_type==="internal_voucher"?"not_supplier_invoice":"unchanged"};
   } else if (value(input.jurisdiction,2) && value(input.identifierKind,32) && value(input.identifier,160)) {
     const normalized = resolveSupplierIdentity({ country: input.jurisdiction!, identifierKind: input.identifierKind as any, identifier: input.identifier });
     if (!normalized.ok || !normalized.identifier) return fail(DOCUMENT_PARTY_LINK_ERRORS.NO_IDENTIFIER_EVIDENCE);
@@ -109,7 +112,13 @@ export function planDocumentPartyLink(ledger: Database, registry: Database, inpu
   if(input.sourceReview && !evidence.observedIdentity.identifier) {
     const approvedNames=[{kind:"canonical_name",value:party.name,payloadHash:null},...party.aliases.filter((alias:any)=>alias.review_state==="approved").map((alias:any)=>({kind:"approved_alias",value:alias.alias,payloadHash:alias.payload_hash}))];
     const matched=approvedNames.find((entry:any)=>comparable(entry.value)===comparable(evidence.observedIdentity.name));
-    if(!matched)return fail(DOCUMENT_PARTY_LINK_ERRORS.NO_IDENTIFIER_EVIDENCE); evidence.canonicalNameEvidence=matched;
+    if(!matched)return fail(DOCUMENT_PARTY_LINK_ERRORS.NO_IDENTIFIER_EVIDENCE);
+    if(evidence.identityScope==="source_observed_non_tax"){
+      const candidates=(registry.query("SELECT party_id FROM rm_party_events WHERE event_type='created' ORDER BY party_id").all() as Array<{party_id:string}>).map(row=>inspectParty(registry,row.party_id)!).filter(candidate=>candidate.roles.some((role:any)=>role.companySlug===input.companySlug&&sourceObservationRoles.has(role.role))&&[candidate.name,...candidate.aliases.filter((alias:any)=>alias.review_state==="approved").map((alias:any)=>alias.alias)].some(name=>comparable(name)===comparable(evidence.observedIdentity.name)));
+      if(candidates.length>1)return fail(DOCUMENT_PARTY_LINK_ERRORS.MULTIPLE_CANDIDATES);
+      if(candidates.length!==1||candidates[0]!.partyId!==partyId)return fail(DOCUMENT_PARTY_LINK_ERRORS.NO_IDENTIFIER_EVIDENCE);
+    }
+    evidence.canonicalNameEvidence=matched;
   }
   if (!party.roles.some((r:any)=>r.companySlug===input.companySlug && r.role===input.role)) return fail(DOCUMENT_PARTY_LINK_ERRORS.SCOPE_MISMATCH);
   const snapshot={partyId:party.partyId,kind:party.kind,name:party.name,identifiers:party.identifiers ?? [],roles:party.roles.filter((r:any)=>r.companySlug===input.companySlug&&r.role===input.role),history:party.history,...(input.sourceReview?{aliases:party.aliases,assertions:party.assertions}:{})};
@@ -140,12 +149,13 @@ export function supersedeDocumentPartyLink(ledger:Database,input:{documentId:num
   const e=ledger.query("INSERT OR IGNORE INTO document_party_link_events(document_id,party_id,party_role,event_type,evidence_kind,evidence_json,document_sha256,document_payload_sha256,party_snapshot_json,plan_hash,reason,actor,principal,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING id").get(input.documentId,link.party_id,input.role,"superseded",link.evidence_kind,link.evidence_json,link.document_sha256,link.document_payload_sha256,link.party_snapshot_json,input.planHash,input.reason,input.actor,input.principal,new Date().toISOString()) as any;
   return {ok:true as const,id:e?.id ?? null,idempotent:!e};
 }
-export function inspectDocumentPartyLinks(ledger:Database, documentId:number) { return ledger.query("SELECT id,party_id,party_role,event_type,evidence_kind,evidence_json,document_sha256,document_payload_sha256,party_snapshot_json,plan_hash,reason,actor,principal,created_at FROM document_party_link_events WHERE document_id=? ORDER BY id").all(documentId); }
-export function listDocumentPartyLinks(ledger:Database, input:{status?:"linked"|"unlinked"|DocumentResolutionState;limit?:number}={}) { const linked="EXISTS(SELECT 1 FROM current_document_party_links l WHERE l.document_id=d.id)"; const internal="EXISTS(SELECT 1 FROM current_document_party_resolution_events r WHERE r.document_id=d.id)"; const state=`CASE WHEN ${internal} THEN 'internal_no_external_party' WHEN ${linked} THEN 'resolved' ELSE 'unresolved' END`; const wanted=input.status==="linked"?"resolved":input.status==="unlinked"?"unresolved":input.status; const where=wanted?`WHERE ${state}=?`:""; return ledger.query(`SELECT d.id,d.document_no,d.sha256_hash, ${linked} AS linked, ${state} AS resolution_state FROM documents d ${where} ORDER BY d.id DESC LIMIT ?`).all(...(wanted?[wanted,Math.min(Math.max(input.limit??100,1),100)]:[Math.min(Math.max(input.limit??100,1),100)])); }
+export function inspectDocumentPartyLinks(ledger:Database, documentId:number) { return ledger.query(`SELECT id,party_id,party_role,event_type,evidence_kind,evidence_json,document_sha256,document_payload_sha256,party_snapshot_json,plan_hash,reason,actor,principal,created_at FROM document_party_link_events WHERE document_id=?
+  UNION ALL SELECT id,NULL,NULL,'unresolved_external_party',NULL,json_object('evidenceReference',evidence_reference,'nextAction',next_action),document_sha256,NULL,NULL,plan_hash,rationale,actor,principal,created_at FROM party_coverage_bank_resolution_events WHERE document_id=? AND resolution_type='unresolved_external_party' ORDER BY created_at,id`).all(documentId,documentId); }
+export function listDocumentPartyLinks(ledger:Database, input:{status?:"linked"|"unlinked"|DocumentResolutionState;limit?:number}={}) { const legal="EXISTS(SELECT 1 FROM current_document_party_links l WHERE l.document_id=d.id AND l.party_role NOT IN ('establishment','location','payment_descriptor'))"; const observed="EXISTS(SELECT 1 FROM current_document_party_links l WHERE l.document_id=d.id AND l.party_role IN ('establishment','location','payment_descriptor'))"; const internal="EXISTS(SELECT 1 FROM current_document_party_resolution_events r WHERE r.document_id=d.id)"; const external="EXISTS(SELECT 1 FROM party_coverage_bank_resolution_events r WHERE r.document_id=d.id AND r.resolution_type='unresolved_external_party')"; const state=`CASE WHEN ${internal} THEN 'internal_no_external_party' WHEN ${legal} THEN 'resolved' WHEN ${observed} THEN 'source_observed' WHEN ${external} THEN 'unresolved_external_party' ELSE 'unresolved' END`; const wanted=input.status==="linked"?"resolved":input.status==="unlinked"?"unresolved":input.status; const where=wanted?`WHERE ${state}=?`:""; return ledger.query(`SELECT d.id,d.document_no,d.sha256_hash, ${legal} AS linked, ${state} AS resolution_state FROM documents d ${where} ORDER BY d.id DESC LIMIT ?`).all(...(wanted?[wanted,Math.min(Math.max(input.limit??100,1),100)]:[Math.min(Math.max(input.limit??100,1),100)])); }
 
 export const DOCUMENT_RESOLUTION_REASONS = ["NO_PARTY_DECISION", "NO_IDENTIFIER_EVIDENCE", "MULTIPLE_CANDIDATES", "SCOPE_MISMATCH", "REVIEW_REQUIRED"] as const;
 export type DocumentResolutionReason = typeof DOCUMENT_RESOLUTION_REASONS[number];
-export type DocumentResolutionState = "resolved" | "internal_no_external_party" | "unresolved";
+export type DocumentResolutionState = "resolved" | "source_observed" | "unresolved_external_party" | "internal_no_external_party" | "unresolved";
 
 /** A no-party decision is a first-class, hash-bound decision.  It exists only
  * for internal vouchers and never changes the immutable document, VAT, or
@@ -171,9 +181,13 @@ export function supersedeInternalNoExternalParty(ledger:Database,input:{document
   const current=ledger.query("SELECT * FROM current_document_party_resolution_events WHERE document_id=? AND state='internal_no_external_party' AND decision_hash=?").get(input.documentId,input.decisionHash) as any; if(!current)return fail(DOCUMENT_PARTY_LINK_ERRORS.LINK_NOT_FOUND);
   const row=ledger.query("INSERT OR IGNORE INTO document_party_resolution_events(document_id,state,reason,document_sha256,document_payload_sha256,decision_hash,supersedes_hash,actor,principal,created_at) VALUES(?,?,?,?,?,?,?,?,?,?) RETURNING id").get(input.documentId,"superseded",reason,current.document_sha256,current.document_payload_sha256,current.decision_hash,current.decision_hash,input.actor,input.principal,new Date().toISOString()) as any; return {ok:true as const,id:row?.id??null,idempotent:!row};
 }
-export function documentResolution(ledger:Database,documentId:number): {state:DocumentResolutionState; reason:DocumentResolutionReason|null; decisionHash:string|null} {
+export function documentResolution(ledger:Database,documentId:number): {state:DocumentResolutionState; reason:DocumentResolutionReason|null; decisionHash:string|null; nextAction?:string|null} {
   const internal=ledger.query("SELECT decision_hash FROM current_document_party_resolution_events WHERE document_id=? AND state='internal_no_external_party'").get(documentId) as any;
   if(internal)return {state:"internal_no_external_party",reason:null,decisionHash:internal.decision_hash};
-  const linked=ledger.query("SELECT 1 FROM current_document_party_links WHERE document_id=? LIMIT 1").get(documentId) as any;
-  return linked?{state:"resolved",reason:null,decisionHash:null}:{state:"unresolved",reason:"NO_PARTY_DECISION",decisionHash:null};
+  const legal=ledger.query("SELECT 1 FROM current_document_party_links WHERE document_id=? AND party_role NOT IN ('establishment','location','payment_descriptor') LIMIT 1").get(documentId) as any;
+  if(legal)return {state:"resolved",reason:null,decisionHash:null};
+  const observed=ledger.query("SELECT 1 FROM current_document_party_links WHERE document_id=? AND party_role IN ('establishment','location','payment_descriptor') LIMIT 1").get(documentId) as any;
+  const external=ledger.query("SELECT plan_hash,next_action FROM party_coverage_bank_resolution_events WHERE document_id=? AND resolution_type='unresolved_external_party' ORDER BY id DESC LIMIT 1").get(documentId) as any;
+  if(observed)return {state:"source_observed",reason:"REVIEW_REQUIRED",decisionHash:external?.plan_hash??null,nextAction:external?.next_action??null};
+  return external?{state:"unresolved_external_party",reason:"REVIEW_REQUIRED",decisionHash:external.plan_hash,nextAction:external.next_action}:{state:"unresolved",reason:"NO_PARTY_DECISION",decisionHash:null};
 }

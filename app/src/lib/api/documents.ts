@@ -8,8 +8,8 @@ export const documentsApi = {
     ).then((r) => r.documents),
 
   /** #588: review-only party-link state, kept separate from invoice facts. */
-  documentPartyLinks: (slug: string, status?: "linked" | "unlinked" | "resolved" | "internal_no_external_party" | "unresolved") =>
-    request<{ ok: true; links: Array<{ id: number; document_no: string | null; linked: 0 | 1; resolution_state: "resolved" | "internal_no_external_party" | "unresolved" }> }>(
+  documentPartyLinks: (slug: string, status?: "linked" | "unlinked" | "resolved" | "source_observed" | "unresolved_external_party" | "internal_no_external_party" | "unresolved") =>
+    request<{ ok: true; links: Array<{ id: number; document_no: string | null; linked: 0 | 1; resolution_state: "resolved" | "source_observed" | "unresolved_external_party" | "internal_no_external_party" | "unresolved" }> }>(
       `/api/companies/${encodeURIComponent(slug)}/documents/party-links${status ? `?status=${status}` : ""}`,
     ).then((r) => r.links),
 
@@ -29,9 +29,9 @@ export const documentsApi = {
   applyDocumentPartyLink: (slug: string, input: Record<string, unknown>) =>
       request<{ ok: boolean; id?: number; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-links/apply`, { method: "POST", body: JSON.stringify(input) }),
 
-  partyCoverage: (slug:string)=>request<{ok:true;rows:Array<{bankTransactionId:number;documentId:number|null;status:"linked"|"resolved_no_external_party"|"exact_candidate"|"ambiguous"|"missing_source";candidate:null|{partyId?:string;role?:string;provenance?:string;candidates?:Array<{partyId:string;role?:string;provenance:string}>};reason:string;nextAction:string|null}>;totals:Record<"linked"|"resolved_no_external_party"|"exact_candidate"|"ambiguous"|"missing_source",number>;populationHash:string;planHash:string}>(`/api/companies/${encodeURIComponent(slug)}/documents/party-coverage`),
-  planPartyCoverage: (slug:string)=>request<{ok:true;plan:{planHash:string;operations:Array<Record<string,unknown>>}}>(`/api/companies/${encodeURIComponent(slug)}/documents/party-coverage/plan`,{method:"POST",body:"{}"}),
-  applyPartyCoverage: (slug:string,input:{planHash:string;idempotencyKey:string;confirm:true})=>request<{ok:boolean;applied:number;errors?:string[]}>(`/api/companies/${encodeURIComponent(slug)}/documents/party-coverage/apply`,{method:"POST",body:JSON.stringify(input)}),
+  partyCoverage: (slug:string)=>request<{ok:true;rows:Array<{bankTransactionId:number;documentId:number|null;status:"linked"|"source_observed"|"unresolved_external_party"|"resolved_no_external_party"|"exact_candidate"|"ambiguous"|"missing_source";candidate:null|{partyId?:string;role?:string;provenance?:string;candidates?:Array<{partyId:string;role?:string;provenance:string}>};reason:string;nextAction:string|null}>;totals:Record<"linked"|"source_observed"|"unresolved_external_party"|"resolved_no_external_party"|"exact_candidate"|"ambiguous"|"missing_source",number>;populationHash:string;planHash:string}>(`/api/companies/${encodeURIComponent(slug)}/documents/party-coverage`),
+  planPartyCoverage: (slug:string,decisions?:Array<Record<string,unknown>>)=>request<{ok:true;plan:{planHash:string;operations:Array<Record<string,unknown>>}}>(`/api/companies/${encodeURIComponent(slug)}/documents/party-coverage/plan`,{method:"POST",body:JSON.stringify({decisions})}),
+  applyPartyCoverage: (slug:string,input:{planHash:string;idempotencyKey:string;confirm:true;decisions?:Array<Record<string,unknown>>})=>request<{ok:boolean;applied:number;errors?:string[]}>(`/api/companies/${encodeURIComponent(slug)}/documents/party-coverage/apply`,{method:"POST",body:JSON.stringify(input)}),
 
   confirmInternalNoExternalParty: (slug: string, input: Record<string, unknown>) =>
     request<{ ok: boolean; id?: number; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/internal-no-external-party`, { method: "POST", body: JSON.stringify(input) }),

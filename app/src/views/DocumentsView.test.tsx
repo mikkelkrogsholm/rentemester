@@ -18,7 +18,7 @@ function route(over = {}) {
     "GET /api/companies/acme-aps/documents": { documents: documents(over) },
     "GET /api/companies/acme-aps/fiscal-years": { fiscalYears: FISCAL_YEARS },
     "GET /api/companies/acme-aps/documents/party-links": { links: [] },
-    "GET /api/companies/acme-aps/documents/party-coverage": { rows: [], totals: { linked: 0, resolved_no_external_party: 0, exact_candidate: 0, ambiguous: 0, missing_source: 0 }, populationHash: "p".repeat(64), planHash: "h".repeat(64) },
+    "GET /api/companies/acme-aps/documents/party-coverage": { rows: [], totals: { linked: 0, source_observed:0, unresolved_external_party:0, resolved_no_external_party: 0, exact_candidate: 0, ambiguous: 0, missing_source: 0 }, populationHash: "p".repeat(64), planHash: "h".repeat(64) },
   };
 }
 
@@ -34,7 +34,7 @@ describe("DocumentsView — Bilag", () => {
     const applied: Array<Record<string, unknown>> = [];
     mockFetch({
       ...route(),
-      "GET /api/companies/acme-aps/documents/party-coverage": { rows: [{ bankTransactionId: 7, documentId: 3, status: "exact_candidate", candidate: { partyId: "party-1", role: "vendor", provenance: "typed_identifier" }, reason: "Deterministic identity.", nextAction: "Review and apply." }], totals: { linked: 2, resolved_no_external_party: 1, exact_candidate: 1, ambiguous: 0, missing_source: 0 }, populationHash: "p".repeat(64), planHash: "h".repeat(64) },
+      "GET /api/companies/acme-aps/documents/party-coverage": { rows: [{ bankTransactionId: 7, documentId: 3, status: "exact_candidate", candidate: { partyId: "party-1", role: "vendor", provenance: "typed_identifier" }, reason: "Deterministic identity.", nextAction: "Review and apply." }], totals: { linked: 2, source_observed:0, unresolved_external_party:0, resolved_no_external_party: 1, exact_candidate: 1, ambiguous: 0, missing_source: 0 }, populationHash: "p".repeat(64), planHash: "h".repeat(64) },
       "POST /api/companies/acme-aps/documents/party-coverage/plan": { plan: { planHash: "a".repeat(64), operations: [{ actionKey: "document:3" }] } },
       "POST /api/companies/acme-aps/documents/party-coverage/apply": (() => ({ applied: 1 })),
     });
@@ -44,6 +44,7 @@ describe("DocumentsView — Bilag", () => {
     try { renderView(); expect(await screen.findByText("Sikre kandidater")).toBeInTheDocument(); await userEvent.click(screen.getByText("Se grundlag og rester")); expect(await screen.findByText(/typed_identifier/)).toBeInTheDocument(); await userEvent.click(screen.getByRole("button",{name:"Anvend sikre kandidater"})); expect(applied).toEqual([{planHash:"a".repeat(64),idempotencyKey:`cockpit-party-coverage-${"a".repeat(64)}`,confirm:true}]); }
     finally { window.confirm=originalConfirm; }
   });
+  test("#645 records an explicit unresolved external next action through the same coverage plan",async()=>{const applied:Array<Record<string,unknown>>=[];mockFetch({...route(),"GET /api/companies/acme-aps/documents/party-coverage":{rows:[{bankTransactionId:8,documentId:4,status:"missing_source",candidate:null,reason:"No legal identity.",nextAction:"Review."}],totals:{linked:0,source_observed:0,unresolved_external_party:0,resolved_no_external_party:0,exact_candidate:0,ambiguous:0,missing_source:1},populationHash:"p".repeat(64),planHash:"h".repeat(64)},"POST /api/companies/acme-aps/documents/party-coverage/plan":{plan:{planHash:"b".repeat(64),operations:[{actionKey:"document-resolution:4"}]}},"POST /api/companies/acme-aps/documents/party-coverage/apply":(()=>({applied:1}))});const originalFetch=globalThis.fetch,originalPrompt=window.prompt,originalConfirm=window.confirm;const answers=["receipt header","legal party absent","request supplier invoice"];window.prompt=()=>answers.shift()??null;window.confirm=()=>true;globalThis.fetch=(async(input:RequestInfo|URL,init?:RequestInit)=>{const response=await originalFetch(input,init);if(String(input).endsWith("/party-coverage/apply"))applied.push(JSON.parse(String(init?.body)));return response;}) as typeof fetch;try{renderView();await userEvent.click(await screen.findByText("Se grundlag og rester"));await userEvent.click(screen.getByRole("button",{name:"Markér ekstern modpart uafklaret"}));expect(applied).toEqual([{decisions:[{bankTransactionId:8,unresolvedExternalParty:true,evidenceReference:"receipt header",rationale:"legal party absent",nextAction:"request supplier invoice"}],planHash:"b".repeat(64),idempotencyKey:`cockpit-unresolved-external-${"b".repeat(64)}`,confirm:true}]);}finally{globalThis.fetch=originalFetch;window.prompt=originalPrompt;window.confirm=originalConfirm;}});
   test("#588 requires explicit reviewed plan and confirmation before applying a canonical party", async () => {
     const applied: Array<Record<string, unknown>> = [];
     mockFetch({

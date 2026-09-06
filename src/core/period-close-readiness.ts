@@ -229,6 +229,14 @@ export function computePeriodCloseReadiness(db: Database, input: { periodStart: 
     return control("RECEIVABLE_OUTSTANDING",evidence.length?"warning":"passed",true,evidence,evidence.reduce((n,r)=>n+Math.abs(Number(r.amount_inc_vat??0)-Number(r.paid_amount??0)),0));
   }));
   items.push(protect("DKK_CONTROL_ACCOUNTS",()=>dkkControlAccounts(db,cutoff)));
+  items.push(protect("UNRESOLVED_EXTERNAL_PARTIES",()=>{
+    if(!exists(db,"party_coverage_bank_resolution_events")||!has(db,"party_coverage_bank_resolution_events","document_id"))return control("UNRESOLVED_EXTERNAL_PARTIES","passed",true,[]);
+    const evidence=rows(db,`SELECT r.id,r.document_id AS documentId,r.bank_transaction_id AS bankTransactionId,r.document_sha256 AS documentSha256,r.transaction_hash AS transactionHash,r.journal_entry_hash AS journalEntryHash,r.next_action AS nextAction
+      FROM party_coverage_bank_resolution_events r JOIN bank_transactions bt ON bt.id=r.bank_transaction_id
+      WHERE r.resolution_type='unresolved_external_party' AND bt.transaction_date BETWEEN ? AND ?
+      AND NOT EXISTS(SELECT 1 FROM current_document_party_links l WHERE l.document_id=r.document_id AND l.party_role NOT IN ('establishment','location','payment_descriptor')) ORDER BY r.id`,input.periodStart,cutoff);
+    return control("UNRESOLVED_EXTERNAL_PARTIES",evidence.length?"warning":"passed",true,evidence);
+  }));
   // A read-only snapshot has a temporary SQLite filename, so it cannot infer
   // the original company directory for document-evidence verification. The
   // caller supplies that stable root; the exact same root is used at review

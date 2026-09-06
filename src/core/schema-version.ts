@@ -436,6 +436,11 @@ export function applySchemaMigrations(db: Database): void {
           if (columns.has("approval_policy_hash")) sql = sql.replace(/ALTER TABLE accounting_draft_events ADD COLUMN approval_policy_hash TEXT;\s*/, "");
           sql = sql.replace("CREATE INDEX accounting_draft_events_principal", "CREATE INDEX IF NOT EXISTS accounting_draft_events_principal");
         }
+        if (migration.id === 55 && (db.query("PRAGMA table_info(party_coverage_bank_resolution_events)").all() as Array<{name:string}>).some(column=>column.name==="next_action")) {
+          // Recovery after a lost migration-ledger row: the append-only v55
+          // table already contains the durable evidence and must not be rebuilt.
+          sql = "";
+        }
         if (sql.trim()) db.exec(sql);
       }
       db.query(`INSERT INTO schema_migrations (id, name, checksum, applied_by_version, applied_by_commit) VALUES (?, ?, ?, ?, ?)`)
