@@ -40,9 +40,9 @@ async function authenticatedDocumentPrincipal(ctx: CommandContext, tool: string)
 }
 
 export function register(dispatch: CommandDispatch): void {
-  const partyInput = (ctx: any) => ({ documentId:Number(ctx.arg("--document-id")), companySlug:ctx.arg("--company-slug")!, role:ctx.arg("--role"), partyId:ctx.arg("--party-id"), jurisdiction:ctx.arg("--jurisdiction"), identifierKind:ctx.arg("--identifier-kind"), identifier:ctx.arg("--identifier"), legacyKind:ctx.arg("--legacy-kind"), legacyId:ctx.arg("--legacy-id"), reviewedLegacyReference:ctx.arg("--reviewed-legacy-reference") });
+  const partyInput = (ctx: any) => { const sourceReviewFile=ctx.arg("--source-review"); let sourceReview:any; if(sourceReviewFile){try{sourceReview=JSON.parse(readFileSync(sourceReviewFile,"utf8"));}catch{ctx.fatal("--source-review must be a readable JSON file");}} return { documentId:Number(ctx.arg("--document-id")), companySlug:ctx.arg("--company-slug")!, role:ctx.arg("--role"), partyId:ctx.arg("--party-id"), jurisdiction:ctx.arg("--jurisdiction"), identifierKind:ctx.arg("--identifier-kind"), identifier:ctx.arg("--identifier"), legacyKind:ctx.arg("--legacy-kind"), legacyId:ctx.arg("--legacy-id"), reviewedLegacyReference:ctx.arg("--reviewed-legacy-reference"), sourceReview }; };
   const registry = (ctx:any, write=false) => (write ? openWorkspaceControlDb : openWorkspaceControlReadOnlyDb)(resolveWorkspaceRoot(ctx.arg("--workspace")!));
-  dispatch.on("documents", "party-link-plan", (ctx) => { const ledger=openLedgerReadOnly(ctx.companyRoot()), control=registry(ctx); try { ctx.emitResult(planDocumentPartyLink(ledger,control,partyInput(ctx)) as any); } finally {control.close();ledger.close();} });
+  dispatch.on("documents", "party-link-plan", (ctx) => { const ledger=openLedgerReadOnly(ctx.companyRoot()), control=registry(ctx); try { ctx.emitResult(planDocumentPartyLink(ledger,control,partyInput(ctx),ctx.companyRoot()) as any); } finally {control.close();ledger.close();} });
   dispatch.on("documents", "party-link-apply", async (ctx) => {
     const principal = await authenticatedDocumentPrincipal(ctx, "documents_party_link_apply");
     const ledger = openCommandDb(ctx), control = registry(ctx);
@@ -52,7 +52,7 @@ export function register(dispatch: CommandDispatch): void {
         ...partyInput(ctx), planHash: ctx.arg("--plan-hash")!, confirm: ctx.arg("--confirm") === "yes",
         actor: ctx.cliActor ?? ctx.inferredMutationActor() ?? undefined, principal,
         idempotencyKey: ctx.arg("--idempotency-key"),
-      }) as any);
+      }, ctx.companyRoot()) as any);
     } finally { control.close(); ledger.close(); }
   });
   dispatch.on("documents", "party-link-supersede", async (ctx) => { const principal = await authenticatedDocumentPrincipal(ctx, "documents_party_link_supersede"); const ledger=openCommandDb(ctx); migrate(ledger); try { ctx.emitResult(supersedeDocumentPartyLink(ledger,{documentId:Number(ctx.arg("--document-id")),role:ctx.arg("--role") as any,planHash:ctx.arg("--plan-hash")!,reason:ctx.arg("--reason")!,confirm:ctx.arg("--confirm")==="yes",actor:ctx.cliActor??ctx.inferredMutationActor()??undefined,principal}) as any); } finally {ledger.close();} });

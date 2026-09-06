@@ -68,6 +68,7 @@ let companyRoot = "";
 let client: Client;
 let serviceAccountId: string;
 let serviceToken: string;
+let reviewedSourceDocumentId: number;
 
 function eventCount() {
   const db = openDb(companyPaths(companyRoot).db);
@@ -95,12 +96,17 @@ beforeAll(async () => {
   const source=join(workspace,"mcp-vendor-invoice.txt");writeFileSync(source,"immutable MCP vendor invoice");
   const importedDocument=ingestDocument(ledger,companyRoot,source,{source:"synthetic",documentType:"purchase_sale",issueDate:"2026-09-02",invoiceNo:"MCP-ENRICH",deliveryDescription:"Synthetic service",amountIncVat:125,vatAmount:25,currency:"DKK",sender:{name:"Imported MCP ApS",address:"2 Evidence Road",vatOrCvr:"DK11223344",countryCode:"DK",identifierKind:"dk_cvr"},recipient:{name:"Acme ApS",address:"Buyer Road",vatOrCvr:"DK87654321"}});
   if(!importedDocument.ok)throw new Error(importedDocument.errors.join("; "));
+  const reviewedSource=join(workspace,"mcp-legacy-evidence.txt");writeFileSync(reviewedSource,"immutable synthetic source naming Foreign Merchant");
+  const reviewedDocument=ingestDocument(ledger,companyRoot,reviewedSource,{source:"synthetic",documentType:"purchase_sale",issueDate:"2026-09-03",deliveryDescription:"Synthetic service",amountIncVat:10,vatAmount:0,currency:"DKK",sender:{name:"Foreign Merchant",address:"Source Road",countryCode:"US",identifierKind:"non_eu"},recipient:{name:"Acme ApS",address:"Buyer Road"}});
+  if(!reviewedDocument.ok)throw new Error(reviewedDocument.errors.join("; ")); reviewedSourceDocumentId=reviewedDocument.documentId; ledger.query("UPDATE documents SET supplier_country_code=NULL,supplier_identifier_kind=NULL,supplier_identity_status=NULL WHERE id=?").run(reviewedSourceDocumentId);
   ledger.close();
   const registry = openWorkspaceControlDb(workspace);
   createParty(registry, { partyId: "party-mcp", kind: "organization", name: "Canonical name", identifiers: [{ country: "DK", identifier: "DK12345678", identifierKind: "dk_cvr" }], source: "synthetic", observedAt: "2026-08-30T00:00:00.000Z", reviewAssertion: "reviewed synthetic identity", actor: "user:test" });
   linkPartyRole(registry, { partyId: "party-mcp", companySlug: company.slug, role: "vendor", actor: "user:test" });
   createParty(registry,{partyId:"party-mcp-no-id",kind:"organization",name:"No-ID Supplier Inc.",identifiers:[],source:"synthetic",observedAt:"2026-08-30T00:00:00.000Z",reviewAssertion:"reviewed source document",actor:"user:test"});
   linkPartyRole(registry,{partyId:"party-mcp-no-id",companySlug:company.slug,role:"vendor",actor:"user:test"});
+  createParty(registry,{partyId:"party-mcp-reviewed",kind:"organization",name:"Foreign Merchant",identifiers:[],source:"synthetic",observedAt:"2026-09-03T00:00:00.000Z",reviewAssertion:"reviewed source",actor:"user:test"});
+  linkPartyRole(registry,{partyId:"party-mcp-reviewed",companySlug:company.slug,role:"vendor",actor:"user:test"});
   const runtime=openWorkspaceBetterAuth(workspace,{secret:"I0UjL6i0-ScgvjfIgzMKJxPQyDpPXwg2mMKdLW3Y3WQ",trustedOrigins:["http://127.0.0.1"],baseURL:"http://127.0.0.1"});
   const service=await createWorkspaceServicePrincipal(registry,runtime.auth,{displayName:"Document party test",actor:"user:test"});
   serviceAccountId = service.serviceAccountId;
@@ -178,6 +184,7 @@ describe("#588 MCP black-box contract", () => {
     const schema = (tools.result.tools as any[]).find((tool) => tool.name === "documents_party_link_plan")?.inputSchema;
     expect(schema.properties.workspace).toBeUndefined();
     expect(schema.properties.companySlug).toBeUndefined();
+    expect(schema.properties.sourceReview.properties).toMatchObject({ observedName:{type:"string"}, sourceLocation:{type:"string"}, rationale:{type:"string"} });
 
     const input = { company: "acme-aps", documentId: 1, role: "vendor", partyId: "party-mcp", jurisdiction: "DK", identifierKind: "dk_cvr", identifier: "DK12345678" };
     const beforeCount = eventCount();
@@ -204,6 +211,13 @@ describe("#588 MCP black-box contract", () => {
     expect(inspected.result?.structuredContent).toMatchObject({ ok: true, data: { links: [{ party_id: "party-mcp", event_type: "linked" }] } });
     const listed = await client.send("tools/call", { name: "documents_party_link_list", arguments: { company: "acme-aps", status: "linked" } });
     expect(listed.result?.structuredContent?.data.links).toHaveLength(beforeCount + 1);
+  });
+
+  test("plans and applies an immutable-source-bound ID-less legacy counterparty",async()=>{
+    const input={company:"acme-aps",documentId:reviewedSourceDocumentId,partyId:"party-mcp-reviewed",role:"vendor",sourceReview:{observedName:"Foreign Merchant",jurisdiction:"US",identifierKind:"non_eu",sourceReference:"synthetic source evidence",sourceLocation:"page 1",rationale:"reviewed external counterparty"}};
+    const planned=await client.send("tools/call",{name:"documents_party_link_plan",arguments:input}); expect(planned.result?.structuredContent?.ok,JSON.stringify(planned)).toBeTrue(); const plan=planned.result.structuredContent.data.plan; expect(plan.evidence).toMatchObject({kind:"reviewed_source_observation",accountingEffect:"none",taxEffect:"none"});
+    const denied=await client.send("tools/call",{name:"documents_party_link_apply",arguments:{...input,planHash:plan.planHash,idempotencyKey:"mcp-source-640",confirm:false}}); expect(denied.result?.structuredContent).toMatchObject({ok:false,code:"CONFIRM_REQUIRED"});
+    const applied=await client.send("tools/call",{name:"documents_party_link_apply",arguments:{...input,planHash:plan.planHash,idempotencyKey:"mcp-source-640",confirm:true}}); expect(applied.result?.structuredContent).toMatchObject({ok:true,data:{idempotent:false}});
   });
 
   test("discovers and executes the reviewed no-identifier legacy mapping before document linking",async()=>{

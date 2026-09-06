@@ -137,11 +137,20 @@ export function DocumentsView() {
   const [partyReviewId, setPartyReviewId] = useState<number | null>(null);
   const [partyCandidates, setPartyCandidates] = useState<PartyCandidate[]>([]);
   const [selectedPartyId, setSelectedPartyId] = useState("");
-  const [partyRole, setPartyRole] = useState<"vendor" | "customer">("vendor");
+  const [partyRole, setPartyRole] = useState<"vendor" | "customer" | "bank" | "payee">("vendor");
   const [partyPlan, setPartyPlan] = useState<PartyPlan | null>(null);
   const [partyError, setPartyError] = useState<string | null>(null);
   const [partyBusy, setPartyBusy] = useState(false);
   const [partyConfirmed, setPartyConfirmed] = useState(false);
+  const [sourceReviewEnabled, setSourceReviewEnabled] = useState(false);
+  const [observedName, setObservedName] = useState("");
+  const [observedAddress, setObservedAddress] = useState("");
+  const [observedJurisdiction, setObservedJurisdiction] = useState("");
+  const [observedIdentifierKind, setObservedIdentifierKind] = useState<"dk_cvr"|"eu_vat"|"non_eu">("dk_cvr");
+  const [observedIdentifier, setObservedIdentifier] = useState("");
+  const [sourceReference, setSourceReference] = useState("");
+  const [sourceLocation, setSourceLocation] = useState("");
+  const [sourceRationale, setSourceRationale] = useState("");
   const [contextSourceReference, setContextSourceReference] = useState("");
   const [contextBusinessUseReason, setContextBusinessUseReason] = useState("");
   const [contextConfirmed, setContextConfirmed] = useState(false);
@@ -285,6 +294,8 @@ export function DocumentsView() {
     setPartyPlan(null);
     setPartyError(null);
     setPartyConfirmed(false);
+    setSourceReviewEnabled(!doc.supplierVatOrCvr);
+    setObservedName(doc.supplierName ?? ""); setObservedAddress(""); setObservedJurisdiction(""); setObservedIdentifierKind("dk_cvr"); setObservedIdentifier(""); setSourceReference(""); setSourceLocation(""); setSourceRationale("");
     setContextSourceReference("");
     setContextBusinessUseReason("");
     setContextConfirmed(false);
@@ -309,6 +320,7 @@ export function DocumentsView() {
       jurisdiction: doc.supplierCountryCode ?? undefined,
       identifierKind: doc.supplierIdentifierKind ?? undefined,
       identifier: doc.supplierVatOrCvr ?? undefined,
+      ...(sourceReviewEnabled ? { sourceReview:{ observedName, observedAddress:observedAddress||undefined, jurisdiction:observedJurisdiction.toUpperCase(), identifierKind:observedIdentifierKind, identifier:observedIdentifier||undefined, sourceReference, sourceLocation, rationale:sourceRationale } } : {}),
     };
   }
 
@@ -527,11 +539,11 @@ export function DocumentsView() {
             <div><dt>Bevis</dt><dd>Originalfilen og bogføringen ændres ikke. Planen binder bilagets hash til den valgte part.</dd></div>
           </dl>
           <div className="row-actions">
-            <label>Rolle <select value={partyRole} onChange={(event) => { setPartyRole(event.target.value as "vendor" | "customer"); setPartyPlan(null); }}><option value="vendor">Leverandør</option><option value="customer">Kunde</option></select></label>
+            <label>Rolle <select value={partyRole} onChange={(event) => { setPartyRole(event.target.value as typeof partyRole); setPartyPlan(null); }}><option value="vendor">Leverandør</option><option value="customer">Kunde</option><option value="bank">Bank</option><option value="payee">Betalingsmodtager</option></select></label>
             <label>Vælg kanonisk part <select aria-label="Vælg kanonisk part" value={selectedPartyId} onChange={(event) => { setSelectedPartyId(event.target.value); setPartyPlan(null); }} disabled={partyBusy}><option value="">Vælg en synlig part…</option>{partyCandidates.map((candidate) => <option key={candidate.partyId} value={candidate.partyId}>{candidate.name}</option>)}</select></label>
-            <button type="button" className="btn secondary" disabled={partyBusy || !selectedPartyId || !reviewedDocument.supplierVatOrCvr} onClick={planPartyLink}>Vis plan</button>
+            <button type="button" className="btn secondary" disabled={partyBusy || !selectedPartyId || (!reviewedDocument.supplierVatOrCvr && !sourceReviewEnabled)} onClick={planPartyLink}>Vis plan</button>
           </div>
-          {!reviewedDocument.supplierVatOrCvr && <p className="flag warning">Bilaget har ingen verificerbar identifikator. Navne alene kan ikke kobles.</p>}
+          {!reviewedDocument.supplierVatOrCvr && <div className="card"><label><input type="checkbox" checked={sourceReviewEnabled} onChange={(event)=>{setSourceReviewEnabled(event.target.checked);setPartyPlan(null);}}/> Identiteten er manuelt aflæst i den uforanderlige original</label>{sourceReviewEnabled&&<><p className="muted">Indtast kun det, der faktisk står i kilden. Land udledes aldrig af OSS/MOSS eller navnet.</p><label className="modal-field">Observeret navn<input value={observedName} onChange={(e)=>setObservedName(e.target.value)}/></label><label className="modal-field">Observeret adresse (valgfri)<input value={observedAddress} onChange={(e)=>setObservedAddress(e.target.value)}/></label><div className="row-actions"><label>Land<input size={4} maxLength={2} value={observedJurisdiction} onChange={(e)=>setObservedJurisdiction(e.target.value)}/></label><label>ID-type<select value={observedIdentifierKind} onChange={(e)=>setObservedIdentifierKind(e.target.value as typeof observedIdentifierKind)}><option value="dk_cvr">Dansk CVR</option><option value="eu_vat">EU VAT</option><option value="non_eu">Ikke-EU</option></select></label><label>Observeret ID<input value={observedIdentifier} onChange={(e)=>setObservedIdentifier(e.target.value)}/></label></div><label className="modal-field">Kildereference<input value={sourceReference} onChange={(e)=>setSourceReference(e.target.value)}/></label><label className="modal-field">Placering i kilden<input value={sourceLocation} onChange={(e)=>setSourceLocation(e.target.value)}/></label><label className="modal-field">Review-begrundelse<input value={sourceRationale} onChange={(e)=>setSourceRationale(e.target.value)}/></label></>}</div>}
           {partyError && <p className="flag warning" role="alert">{partyError}</p>}
           {partyPlan && <div className="card"><p><strong>Plan klar</strong> — {partyPlan.partySnapshot?.name ?? "Valgt part"}; bevis: {partyPlan.evidence?.kind ?? "exact_identifier"}.</p><p className="muted">Plan-hash: <code>{partyPlan.planHash}</code></p><label><input type="checkbox" checked={partyConfirmed} onChange={(event) => setPartyConfirmed(event.target.checked)} /> Jeg har gennemgået planen og vil oprette den append-only kobling.</label><div className="row-actions"><button type="button" className="btn" disabled={partyBusy || !partyConfirmed} onClick={applyPartyLink}>Bekræft og anvend</button></div></div>}
           {reviewedDocument.documentType === "internal_voucher" && <div className="card"><p className="muted">Interne bilag kan bekræftes uden ekstern part. Beslutningen er append-only og ændrer ikke bilag, moms eller journal.</p><button type="button" className="btn secondary" disabled={partyBusy} onClick={confirmInternalNoParty}>Bekræft ingen ekstern part</button></div>}
