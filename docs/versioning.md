@@ -76,7 +76,9 @@ rentemester --version
 curl http://127.0.0.1:4319/api/health
 ```
 
-MCP-klienter bruger `meta_about`. Health/MCP viser produktversion, commit,
+MCP-klienter starter i compact-profilen med `system_server_about`; det
+bagudkompatible full-profilnavn `meta_about` bevares. Health/MCP viser
+produktversion, commit,
 buildtid, schema-version/baseline-checksum og `rules.digest`. Lokale source-runs
 har med vilje `null` for commit og buildtid; officielle images har begge dele.
 

@@ -62,6 +62,10 @@ const proc = Bun.spawn(["bun", SERVER_PATH], {
   stdin: "pipe",
   stdout: "pipe",
   stderr: "pipe",
+  // This legacy lifecycle smoke intentionally exercises direct names. The
+  // production server defaults to compact; selecting full here keeps the
+  // existing end-to-end coverage explicit and backward-compatible.
+  env: { ...process.env, RENTEMESTER_MCP_PROFILE: "full" },
 });
 
 const reader = proc.stdout.getReader();

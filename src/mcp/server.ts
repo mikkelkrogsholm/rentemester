@@ -2,10 +2,11 @@
 /**
  * Rentemester MCP-server (stdio transport).
  *
- * Eksponerer hele Rentemester-tool-surface'en (138 tools, jf.
- * docs/mcp-tool-surface.md) over stdio, så Claude Desktop / Cursor /
- * Claude Code / Codex kan tale med Rentemester-kernen som MCP-tools.
- * Tools registreres pr. domæne af `registerAllTools` i `./registry`.
+ * Eksponerer den kompakte, discovery-ledede MCP-surface (otte tools som
+ * standard) over stdio, så Claude Desktop / Cursor / Claude Code / Codex kan
+ * tale med Rentemester-kernen. `RENTEMESTER_MCP_PROFILE=full` vælger den
+ * bagudkompatible direkte legacy-surface. Alle præcise operationer registreres
+ * internt af `registerAllTools` i `./registry`.
  *
  * Serveren leverer også en `instructions`-streng i `initialize`-svaret —
  * en kort orientering til en agent om rækkefølge, confirm/destructive-
@@ -25,6 +26,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerAllTools } from "./registry";
+import type { McpOperationProfile } from "./operation-registry";
 import { createMcpSecurityContextFromEnv } from "./security";
 import { PRODUCT_VERSION } from "../core/build-identity";
 
@@ -33,6 +35,13 @@ import { PRODUCT_VERSION } from "../core/build-identity";
 export const SERVER_NAME = "rentemester-mcp";
 export const SERVER_VERSION = PRODUCT_VERSION;
 
+/** Startup selection is immutable for the lifetime of a transport. */
+export function resolveMcpProfile(env: NodeJS.ProcessEnv = process.env): McpOperationProfile {
+  const value = env.RENTEMESTER_MCP_PROFILE?.trim().toLowerCase() || "compact";
+  if (value !== "compact" && value !== "full") throw new Error(`unknown MCP startup profile: ${value}`);
+  return value;
+}
+
 /**
  * Orientering der sendes til agenten i `initialize`-svarets
  * `instructions`-felt. Holdes kort og handlingsanvisende — den fulde
@@ -40,7 +49,8 @@ export const SERVER_VERSION = PRODUCT_VERSION;
  */
 const SERVER_INSTRUCTIONS = [
   "Rentemester er et dansk, append-only bogføringssystem. Du driver det via løse tools — der er ingen samtale-state mellem kald.",
-  "Start discovery with meta_about, then agent_capability_search, then agent_workflow_describe. These read-only tools return the versioned catalogue and live operation safety; do not guess tool names or capabilities.",
+  "The default compact profile lists exactly eight tools: system_server_about, agent_capability_search, agent_workflow_describe, agent_operation_search, agent_operation_describe, agent_operation_read, agent_operation_write and agent_operation_destroy. Start discovery with system_server_about, then capability/workflow search and operation describe; do not guess tool names or capabilities.",
+  "Set RENTEMESTER_MCP_PROFILE=full at startup for the backward-compatible direct legacy tool surface. Profile selection is fixed for the transport; search and calls never change tools/list.",
   "",
   "Identifikation: hvert tool tager en eksplicit absolut `company`-sti (workspace-tools tager `workspace`). Der er aldrig en implicit \"current company\".",
   "",
@@ -58,6 +68,10 @@ const SERVER_INSTRUCTIONS = [
 ].join("\n");
 
 async function main(): Promise<void> {
+  // Resolve the immutable transport profile before reading credentials or
+  // registering any operation. Unknown values therefore fail at startup,
+  // before security setup can observe a partially selected surface.
+  const profile = resolveMcpProfile();
   const server = new McpServer(
     {
       name: SERVER_NAME,
@@ -77,7 +91,7 @@ async function main(): Promise<void> {
   if (serviceMode && !security) {
     throw new Error("MCP service mode requires RENTEMESTER_SERVICE_PRINCIPAL_TOKEN and RENTEMESTER_WORKSPACE");
   }
-  registerAllTools(server, security);
+  registerAllTools(server, security, { profile });
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

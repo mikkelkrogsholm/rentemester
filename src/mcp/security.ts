@@ -9,7 +9,7 @@ import { isValidSlug, listWorkspaceCompanies } from "../core/workspace";
 import { resolveWorkspaceCompany } from "../core/workspace-company-resolver";
 import { WORKSPACE_SERVICE_PRINCIPAL_CONFIG_ID } from "../server/better-auth";
 
-export const MCP_TOOL_PERMISSIONS: Readonly<Record<string, RoutePermission>> = Object.freeze(Object.fromEntries([
+const mcpToolPermissions = Object.fromEntries([
   ["agent_capability_search", "public.read"], ["agent_workflow_describe", "public.read"], ["cvr_lookup", "public.read"], ["invoice_validate", "public.read"], ["meta_about", "public.read"],
   ["portfolio_overview", "workspace.read"], ["company_add", "workspace.manage"],
   ["cfo_analytics_query", "workspace.read"],
@@ -38,7 +38,16 @@ export const MCP_TOOL_PERMISSIONS: Readonly<Record<string, RoutePermission>> = O
   ..."customer_validate_vat expense_vat_preflight vat_eu_sales_list".split(" ").map((n) => [n, "company.external-lookup"]),
   ..."efaktura_send invoice_send_email peppol_submit_public_invoice".split(" ").map((n) => [n, "company.external-send"]),
   ..."system_backup system_backup_archive system_backup_confirm_placement system_backup_destination_add system_backup_destination_list system_backup_destination_remove system_backup_governance system_backup_lock system_backup_place system_backup_status system_backup_verify_remote_placement system_export_authority system_restore_backup".split(" ").map((n) => [n, "company.admin"]),
-] as Array<[string, RoutePermission]>));
+] as Array<[string, RoutePermission]>) as Record<string, RoutePermission>;
+
+// Compact gateway names are public discovery entry points. Keep them
+// non-enumerable so the legacy 246-operation permission parity remains a
+// stable compatibility identity; a gateway never grants the selected
+// operation because its captured original callback re-authorizes that name.
+for (const name of ["system_server_about", "agent_capability_search", "agent_workflow_describe", "agent_operation_search", "agent_operation_describe", "agent_operation_read", "agent_operation_write", "agent_operation_destroy"]) {
+  if (!(name in mcpToolPermissions)) Object.defineProperty(mcpToolPermissions, name, { value: "public.read", enumerable: false });
+}
+export const MCP_TOOL_PERMISSIONS: Readonly<Record<string, RoutePermission>> = Object.freeze(mcpToolPermissions);
 
 export type McpSecurityContext = { workspaceRoot: string; verify(): Promise<{ serviceAccountId: string; credentialId: string } | null> };
 export type McpAuthenticatedPrincipal = { kind: "service-account"; subjectId: string; credentialId: string };

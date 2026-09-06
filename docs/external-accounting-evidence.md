@@ -16,5 +16,6 @@ idempotency key, then handles a later bank settlement as a separate reviewed
 journal. This retains the distinction between a payroll report, the legal
 liability it documents and a bank movement.
 
-For a machine-readable, live-operation workflow, start at `meta_about` and
-search for `external payroll evidence` in the agent capability catalogue.
+For a machine-readable, live-operation workflow, start at `system_server_about`
+(the full profile retains `meta_about` as a compatibility name) and search for
+`external payroll evidence` in the agent capability catalogue.

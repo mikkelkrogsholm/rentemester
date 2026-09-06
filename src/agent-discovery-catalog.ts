@@ -5,7 +5,7 @@ import { getReleaseProvenance } from "./core/release-provenance";
 import { currentRuleBundleVersion } from "./core/rules-metadata";
 
 export const AGENT_CATALOGUE_SCHEMA_VERSION = "rentemester-agent-discovery-v1";
-export const AGENT_CATALOGUE_ENTRY_POINT = "meta_about -> agent_capability_search -> agent_workflow_describe -> tools/list";
+export const AGENT_CATALOGUE_ENTRY_POINT = "system_server_about -> agent_capability_search -> agent_workflow_describe -> agent_operation_search -> agent_operation_describe -> agent_operation_<class>";
 
 export type AgentScope = "company" | "workspace" | "legal-group" | "system";
 export type WorkflowBoundary = "read" | "dry-run" | "review" | "approval" | "apply" | "irreversible" | "destructive";
@@ -91,7 +91,7 @@ function write(id: string, operation: OperationReference, purpose: string, optio
 function workflow(input: Pick<AgentWorkflow, "id" | "capabilityId" | "title" | "intendedOutcome" | "steps"> & Partial<Omit<AgentWorkflow, "id" | "capabilityId" | "title" | "intendedOutcome" | "steps">>): AgentWorkflow {
   return {
     nonGoals: ["Discovery is not authorization and never executes the workflow."],
-    prerequisites: ["Call meta_about and verify build, rules and catalogue identity.", "Resolve every referenced operation in the live surface before mutation.", "Use an explicit company, workspace or legal-group identity where required."],
+    prerequisites: ["Call system_server_about and verify build, rules and catalogue identity.", "Resolve every referenced operation in the live surface before mutation.", "Use an explicit company, workspace or legal-group identity where required."],
     blockers: [
       { code: "INPUT_VALIDATION", meaning: "Correct the named schema field before retry." },
       { code: "CONFIRM_OR_ACTOR_REQUIRED", meaning: "The write lacks confirmation, actor attribution or permission." },
@@ -448,7 +448,20 @@ export function catalogueIdentity() {
   return { schemaVersion: AGENT_CATALOGUE_SCHEMA_VERSION, hash: AGENT_CATALOGUE_HASH, entryPoint: AGENT_CATALOGUE_ENTRY_POINT, capabilityCount: AGENT_CAPABILITIES.length, workflowCount: AGENT_WORKFLOWS.length, coverage: coverageIdentity(), build: getBuildIdentity(), provenance: getReleaseProvenance(), ruleBundleVersion };
 }
 
-export type LiveTool = { name: string; annotations?: { readOnlyHint?: boolean; destructiveHint?: boolean; idempotentHint?: boolean } };
+export type LiveTool = {
+  /** The immutable legacy/original registration identity. */
+  name: string;
+  annotations?: { readOnlyHint?: boolean; destructiveHint?: boolean; idempotentHint?: boolean };
+  /** Canonical identity from the captured MCP operation registry. */
+  canonicalName?: string;
+  aliases?: readonly string[];
+  /** False in compact profile: the operation is available through a gateway
+   * even though it is intentionally absent from tools/list. */
+  directlyListed?: boolean;
+  invocationRoute?: "agent_operation_read" | "agent_operation_write" | "agent_operation_destroy";
+  schemaIdentityHash?: string;
+  operationIdentityHash?: string;
+};
 export type LiveOperationSources = { tools?: readonly LiveTool[]; commands?: readonly DiscoveryCommand[]; routes?: readonly DiscoveryRoute[]; unavailableSurfaces?: Array<"mcp" | "cli" | "http"> };
 
 export function operationId(reference: OperationReference): string { return reference.surface === "mcp" ? `mcp:${reference.name}` : reference.surface === "cli" ? `cli:${reference.key}` : `http:${reference.method} ${reference.pattern}`; }
@@ -459,7 +472,21 @@ function resolveOperation(reference: OperationReference, sources: LiveOperationS
     const tool = sources.tools?.find((candidate) => candidate.name === reference.name);
     if (!tool) return { ...reference, id: operationId(reference), resolved: false, reason: "Live MCP tool is not registered." };
     if (!tool.annotations || typeof tool.annotations.readOnlyHint !== "boolean") return { ...reference, id: operationId(reference), resolved: false, reason: "Live MCP tool has no safety annotations." };
-    return { ...reference, id: operationId(reference), resolved: true, safety: tool.annotations.readOnlyHint ? "read" : tool.annotations.destructiveHint ? "destructive" : "write", idempotent: tool.annotations.idempotentHint === true };
+    return {
+      ...reference,
+      id: operationId(reference),
+      resolved: true,
+      available: true,
+      directlyListed: tool.directlyListed !== false,
+      invocationRoute: tool.invocationRoute,
+      canonicalName: tool.canonicalName,
+      aliases: tool.aliases,
+      schemaIdentityHash: tool.schemaIdentityHash,
+      operationIdentityHash: tool.operationIdentityHash,
+      reason: tool.directlyListed === false ? "Available through the compact operation gateway; not directly listed." : undefined,
+      safety: tool.annotations.readOnlyHint ? "read" : tool.annotations.destructiveHint ? "destructive" : "write",
+      idempotent: tool.annotations.idempotentHint === true,
+    };
   }
   if (reference.surface === "cli") return sources.commands?.some((candidate) => candidate.key === reference.key) ? { ...reference, id: operationId(reference), resolved: true } : { ...reference, id: operationId(reference), resolved: false, reason: "Canonical CLI command is not registered." };
   const route = sources.routes?.find((candidate) => candidate.method === reference.method && candidate.pattern === reference.pattern);
@@ -507,6 +534,12 @@ export type DiscoveryOperationBinding = {
   requiresActor: boolean;
   requiresConfirmation: boolean;
   retryClass: RetryClass;
+  canonicalName?: string;
+  aliases?: readonly string[];
+  directlyListed?: boolean;
+  invocationRoute?: "agent_operation_read" | "agent_operation_write" | "agent_operation_destroy";
+  schemaIdentityHash?: string;
+  operationIdentityHash?: string;
 };
 
 /** These are the only MCP mutations with a durable caller-key receipt. Keep
@@ -574,7 +607,7 @@ const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }>
   { capabilityId: "exceptions-corrections", pattern: /(?:exceptions?|journal|accounting-draft|opening-balance)/ },
   { capabilityId: "imports", pattern: /(?:import|archive\/:year)/ },
   { capabilityId: "planning-reporting", pattern: /(?:report|dashboard|budget|cashflow|tax_return|tax\b|annual|accrual|compliance|obligations|multi-year)/ },
-  { capabilityId: "operations-assurance", pattern: /(?:system|audit|health|ready|retention|integrity|backup|meta_about|agent[_-]capabilit|agent[_-]workflow|agent run|reg coverage|reg citations|serve|local start)/ },
+  { capabilityId: "operations-assurance", pattern: /(?:system|audit|health|ready|retention|integrity|backup|meta_about|system_server_about|agent[_-]capabilit|agent[_-]workflow|agent run|reg coverage|reg citations|serve|local start)/ },
   { capabilityId: "company-workspace", pattern: /(?:company|companies|workspace|accounts?|cvr|contacts|members|invitations|approval[_-]policy|^cli:init$|^http:get \/api$|^http:get \/api\/health$|^http:get \/api\/rules$|^http:get \/api\/me$)/ },
   { capabilityId: "company-knowledge", pattern: /(?:company[_-]knowledge|\/knowledge)/ },
   { capabilityId: "ownership-graph", pattern: /(?:ownership(?:[_ -](?:graph|snapshot|query|propose|review|apply|history|projection))?|ownership-graph)/ },
@@ -621,7 +654,21 @@ function bindingForOperation(id: string, input: AgentDiscoveryCoverageInput): Di
     if (!tool?.annotations || typeof tool.annotations.readOnlyHint !== "boolean") return null;
     const safety = tool.annotations.readOnlyHint ? "read" : tool.annotations.destructiveHint ? "destructive" : "write";
     const idempotent = tool.annotations.idempotentHint === true;
-    return { id, capabilityIds, safety, idempotent, requiresActor: safety !== "read", requiresConfirmation: safety !== "read", retryClass: retryClassForOperation(id, { safety, idempotent }) };
+    return {
+      id,
+      capabilityIds,
+      safety,
+      idempotent,
+      requiresActor: safety !== "read",
+      requiresConfirmation: safety !== "read",
+      retryClass: retryClassForOperation(id, { safety, idempotent }),
+      canonicalName: tool.canonicalName,
+      aliases: tool.aliases,
+      directlyListed: tool.directlyListed !== false,
+      invocationRoute: tool.invocationRoute,
+      schemaIdentityHash: tool.schemaIdentityHash,
+      operationIdentityHash: tool.operationIdentityHash,
+    };
   }
   if (id.startsWith("cli:")) {
     const command = input.commands.find((item) => item.key === id.slice(4));

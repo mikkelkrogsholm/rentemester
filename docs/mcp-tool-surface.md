@@ -1,9 +1,22 @@
 # MCP Tool Surface — Rentemester
 
-Den autoritative liste over de tools Rentemester-MCP-serveren eksponerer til
-agenter (Claude, Cursor, Claude Code, Codex osv.). Dokumentet startede som
-bygge-tegning for MCP-epicen (#89, scaffold #77, implementation #78) og
+The authoritative internal operation registry contains every exact operation.
+The default transport projection exposes exactly eight compact tools to agents
+(Claude, Cursor, Claude Code, Codex osv.):
+
+`system_server_about`, `agent_capability_search`, `agent_workflow_describe`,
+`agent_operation_search`, `agent_operation_describe`, `agent_operation_read`,
+`agent_operation_write`, `agent_operation_destroy`.
+
+Set `RENTEMESTER_MCP_PROFILE=full` before startup to expose the complete
+backward-compatible legacy surface directly. The document started as
+bygge-tegning for MCP-epicen (#89, scaffold #77, implementation #78) and
 vedligeholdes nu som facitliste mod den kørende server.
+
+In compact mode every precise operation remains available through the
+registry/gateway route and discovery reports `directlyListed: false`; coverage
+therefore still includes every precise operation while `tools/list` stays
+bounded and stable.
 
 > **Hold dette synkront.** Tool-tallet i dette dokument skal matche en
 > kørende server. Den hurtige måde at få den faktiske liste på er at drive
