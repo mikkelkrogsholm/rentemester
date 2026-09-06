@@ -49,7 +49,7 @@ export function resolveMcpProfile(env: NodeJS.ProcessEnv = process.env): McpOper
  */
 const SERVER_INSTRUCTIONS = [
   "Rentemester er et dansk, append-only bogføringssystem. Du driver det via løse tools — der er ingen samtale-state mellem kald.",
-  "The default compact profile lists exactly eight tools: system_server_about, agent_capability_search, agent_workflow_describe, agent_operation_search, agent_operation_describe, agent_operation_read, agent_operation_write and agent_operation_destroy. Start discovery with system_server_about, then capability/workflow search and operation describe; do not guess tool names or capabilities.",
+  "The default compact profile lists exactly eight tools: system_server_about, agent_capability_search, agent_workflow_describe, agent_operation_search, agent_operation_describe, agent_operation_read, agent_operation_write and agent_operation_destroy. Start discovery with system_server_about, then capability/workflow search and operation describe; do not guess tool names or capabilities. The explicit full profile retains legacy originals such as meta_about.",
   "Set RENTEMESTER_MCP_PROFILE=full at startup for the backward-compatible direct legacy tool surface. Profile selection is fixed for the transport; search and calls never change tools/list.",
   "",
   "Identifikation: hvert tool tager en eksplicit absolut `company`-sti (workspace-tools tager `workspace`). Der er aldrig en implicit \"current company\".",

@@ -40,11 +40,12 @@ export class StdioMcpClient {
   private buffer = "";
   private nextId = 1;
 
-  constructor() {
+  constructor(env: Record<string, string | undefined> = { ...process.env, RENTEMESTER_MCP_PROFILE: "full" }) {
     this.proc = Bun.spawn(["bun", SERVER_PATH], {
       stdin: "pipe",
       stdout: "pipe",
       stderr: "pipe",
+      env,
     });
     this.stdoutReader = this.proc.stdout.getReader();
   }

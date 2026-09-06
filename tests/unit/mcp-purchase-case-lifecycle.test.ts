@@ -22,7 +22,7 @@ class Client {
   private buffer = "";
   private id = 0;
   constructor(workspace: string, token: string) {
-    this.proc = Bun.spawn(["bun", SERVER_PATH], { stdin: "pipe", stdout: "pipe", stderr: "pipe", env: { ...process.env, RENTEMESTER_WORKSPACE: workspace, RENTEMESTER_SERVICE_PRINCIPAL_TOKEN: token } });
+    this.proc = Bun.spawn(["bun", SERVER_PATH], { stdin: "pipe", stdout: "pipe", stderr: "pipe", env: { ...process.env, RENTEMESTER_WORKSPACE: workspace, RENTEMESTER_SERVICE_PRINCIPAL_TOKEN: token, RENTEMESTER_MCP_PROFILE: "full" } });
     this.reader = this.proc.stdout.getReader();
     const errors = this.proc.stderr.getReader();
     void (async () => { for (;;) { const next = await errors.read(); if (next.done) return; this.stderr += new TextDecoder().decode(next.value, { stream: true }); } })();

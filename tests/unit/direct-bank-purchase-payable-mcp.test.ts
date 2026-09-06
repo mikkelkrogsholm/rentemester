@@ -12,7 +12,7 @@ import { seedAccounts } from "../../src/core/ledger";
 const serverPath = new URL("../../src/mcp/server.ts", import.meta.url).pathname;
 
 class Client {
-  private proc = Bun.spawn(["bun", serverPath], { stdin: "pipe", stdout: "pipe", stderr: "pipe" });
+  private proc = Bun.spawn(["bun", serverPath], { stdin: "pipe", stdout: "pipe", stderr: "pipe", env: { ...process.env, RENTEMESTER_MCP_PROFILE: "full" } });
   private reader = this.proc.stdout.getReader();
   private decoder = new TextDecoder();
   private buffer = "";

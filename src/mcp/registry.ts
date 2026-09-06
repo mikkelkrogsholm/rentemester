@@ -418,6 +418,8 @@ function operationSearch(registry: McpOperationRegistry, query: string | undefin
     invocationRoute: record.metadata.invocationRoute,
     schemaIdentityHash: record.metadata.schemaIdentityHash,
     operationIdentityHash: record.metadata.identityHash,
+    available: true,
+    directlyListed: registry.profile === "full",
     deprecated: Boolean(record.metadata.deprecatedAliasOf),
     deprecatedAliasOf: record.metadata.deprecatedAliasOf,
   }));

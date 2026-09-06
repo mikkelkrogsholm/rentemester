@@ -30,7 +30,7 @@ class Client {
       stdin: "pipe",
       stdout: "pipe",
       stderr: "pipe",
-      env: { ...process.env, RENTEMESTER_WORKSPACE: workspace, RENTEMESTER_SERVICE_PRINCIPAL_TOKEN: token },
+      env: { ...process.env, RENTEMESTER_WORKSPACE: workspace, RENTEMESTER_SERVICE_PRINCIPAL_TOKEN: token, RENTEMESTER_MCP_PROFILE: "full" },
     });
     this.reader = this.proc.stdout.getReader();
   }

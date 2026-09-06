@@ -47,6 +47,8 @@ Every captured operation has one immutable lowercase-snake canonical identity
 with explicit domain/resource/action metadata, an operation identity hash and
 an exact input/output schema identity hash. Use `agent_operation_search` and
 `agent_operation_describe` rather than deriving names from underscores.
+The reviewed naming source is `src/mcp/operation-naming.ts`; legacy original
+names stay unchanged for permissions, idempotency receipts and audit records.
 `agent_operation_read`, `agent_operation_write` and
 `agent_operation_destroy` invoke exactly one selected operation. They perform
 the original schema validation, then re-run the selected original

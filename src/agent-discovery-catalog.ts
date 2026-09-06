@@ -457,6 +457,7 @@ export type LiveTool = {
   aliases?: readonly string[];
   /** False in compact profile: the operation is available through a gateway
    * even though it is intentionally absent from tools/list. */
+  available?: boolean;
   directlyListed?: boolean;
   invocationRoute?: "agent_operation_read" | "agent_operation_write" | "agent_operation_destroy";
   schemaIdentityHash?: string;
@@ -536,6 +537,7 @@ export type DiscoveryOperationBinding = {
   retryClass: RetryClass;
   canonicalName?: string;
   aliases?: readonly string[];
+  available?: boolean;
   directlyListed?: boolean;
   invocationRoute?: "agent_operation_read" | "agent_operation_write" | "agent_operation_destroy";
   schemaIdentityHash?: string;

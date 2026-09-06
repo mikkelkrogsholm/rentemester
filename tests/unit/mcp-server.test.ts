@@ -47,7 +47,7 @@ class StdioMcpClient {
       stdin: "pipe",
       stdout: "pipe",
       stderr: "pipe",
-      env,
+      env: { ...env, RENTEMESTER_MCP_PROFILE: env.RENTEMESTER_MCP_PROFILE ?? "full" },
     });
     this.stdoutReader = this.proc.stdout.getReader();
   }
