@@ -27,7 +27,11 @@ export const documentsApi = {
     request<{ ok: boolean; plan?: { planHash: string }; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-links/plan`, { method: "POST", body: JSON.stringify(input) }),
 
   applyDocumentPartyLink: (slug: string, input: Record<string, unknown>) =>
-    request<{ ok: boolean; id?: number; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-links/apply`, { method: "POST", body: JSON.stringify(input) }),
+      request<{ ok: boolean; id?: number; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-links/apply`, { method: "POST", body: JSON.stringify(input) }),
+
+  partyCoverage: (slug:string)=>request<{ok:true;rows:Array<{bankTransactionId:number;documentId:number|null;status:"linked"|"resolved_no_external_party"|"exact_candidate"|"ambiguous"|"missing_source";candidate:null|{partyId?:string;role?:string;provenance?:string;candidates?:Array<{partyId:string;role?:string;provenance:string}>};reason:string;nextAction:string|null}>;totals:Record<"linked"|"resolved_no_external_party"|"exact_candidate"|"ambiguous"|"missing_source",number>;populationHash:string;planHash:string}>(`/api/companies/${encodeURIComponent(slug)}/documents/party-coverage`),
+  planPartyCoverage: (slug:string)=>request<{ok:true;plan:{planHash:string;operations:Array<Record<string,unknown>>}}>(`/api/companies/${encodeURIComponent(slug)}/documents/party-coverage/plan`,{method:"POST",body:"{}"}),
+  applyPartyCoverage: (slug:string,input:{planHash:string;idempotencyKey:string;confirm:true})=>request<{ok:boolean;applied:number;errors?:string[]}>(`/api/companies/${encodeURIComponent(slug)}/documents/party-coverage/apply`,{method:"POST",body:JSON.stringify(input)}),
 
   confirmInternalNoExternalParty: (slug: string, input: Record<string, unknown>) =>
     request<{ ok: boolean; id?: number; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/internal-no-external-party`, { method: "POST", body: JSON.stringify(input) }),

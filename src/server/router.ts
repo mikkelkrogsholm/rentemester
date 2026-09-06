@@ -93,6 +93,7 @@ import {
   handleDocumentCompanyContext,
   handleDocumentPurchaseVatEvidenceReview,
   handleInternalNoExternalParty,
+  handlePartyCoverage, handlePartyCoveragePlan, handlePartyCoverageApply,
 } from "./router/documents";
 import { handleGroupConsolidatedReport, handleGroupDispositionAction, handleGroupDispositionStatus, handleGroupEliminations, handleGroupOverview, handleGroupReconciliation, handleGroupReportProfiles } from "./router/group";
 import {
@@ -390,6 +391,8 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "company", effect: "read", permission: "company.documents.read", method: "GET", pattern: "/api/companies/:slug/documents/party-links", summary: "Kanoniske partskoblinger pr. bilag (#588)." },
   { scope: "company", effect: "read", permission: "company.documents.read", method: "GET", pattern: "/api/companies/:slug/documents/:id/party-links", summary: "Append-only partskoblingshistorik (#588)." },
   { scope: "company", effect: "read", permission: "company.documents.read", method: "POST", pattern: "/api/companies/:slug/documents/party-links/plan", summary: "Read-only partskoblingsplan (#588)." },
+  { scope:"company",effect:"read",permission:"company.documents.read",method:"GET",pattern:"/api/companies/:slug/documents/party-coverage",summary:"Deterministisk bank-til-part coverage (#644)." },
+  { scope:"company",effect:"read",permission:"company.documents.read",method:"POST",pattern:"/api/companies/:slug/documents/party-coverage/plan",summary:"Hash-bundet deduplikeret party coverage-plan (#644)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/bookkeeping-batch", summary: "Read-only batchplan med plan-hash og partitioner." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/bookkeeping-workbench", summary: "Kanonisk, read-only bankarbejdskø med batch- og periodeluk-drilldown." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/purchase-cases", summary: "Kildebundne foreløbige købscases uden ledger-mutation." },
@@ -472,6 +475,7 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "company", effect: "write", permission: "company.documents.upload", method: "POST", pattern: "/api/companies/:slug/documents/:id/parse", summary: "Parser et gemt PDF-bilag med confirm." },
   { scope: "company", effect: "write", permission: "company.documents.upload", method: "POST", pattern: "/api/companies/:slug/documents/parse-pending", summary: "Parser ventende PDF-bilag med confirm." },
   { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/documents/party-links/apply", summary: "Anvender auditeret partskobling (#588)." },
+  { scope:"company",effect:"write",permission:"company.master-data",method:"POST",pattern:"/api/companies/:slug/documents/party-coverage/apply",summary:"Anvender eksakt party coverage-plan append-only (#644)." },
   { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/documents/party-links/supersede", summary: "Supersederer auditeret partskobling (#588)." },
   { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/documents/internal-no-external-party", summary: "Bekræfter hash-bundet intern bilagskontekst uden ekstern part (#588)." },
   { scope: "company", effect: "write", permission: "company.master-data", method: "POST", pattern: "/api/companies/:slug/documents/internal-no-external-party/supersede", summary: "Supersederer intern no-party-beslutning append-only (#588)." },
@@ -974,6 +978,8 @@ export async function handleRequest(
     if (documentPartyLinksMatch) { if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute"); return handleDocumentPartyLinks(config,decodeURIComponent(documentPartyLinksMatch[1]!),request); }
     const documentPartyLinkInspectMatch = /^\/api\/companies\/([^/]+)\/documents\/(\d+)\/party-links$/.exec(path);
     if (documentPartyLinkInspectMatch) { if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute"); return handleDocumentPartyLinkInspect(config,decodeURIComponent(documentPartyLinkInspectMatch[1]!),documentPartyLinkInspectMatch[2]!); }
+    const partyCoverageMatch=/^\/api\/companies\/([^/]+)\/documents\/party-coverage$/.exec(path);
+    if(partyCoverageMatch){if(method!=="GET")throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");return handlePartyCoverage(config,decodeURIComponent(partyCoverageMatch[1]!),request);}
 
     const documentFileMatch =
       /^\/api\/companies\/([^/]+)\/documents\/(\d+)\/file$/.exec(path);
@@ -1449,6 +1455,8 @@ export async function handleRequest(
     if (documentPartyPlanMatch) { if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleDocumentPartyLinkPlan(config,decodeURIComponent(documentPartyPlanMatch[1]!),request); }
     const documentPartyApplyMatch = /^\/api\/companies\/([^/]+)\/documents\/party-links\/(apply|supersede)$/.exec(path);
     if (documentPartyApplyMatch) { if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleDocumentPartyLinkAction(config,decodeURIComponent(documentPartyApplyMatch[1]!),request,documentPartyApplyMatch[2]! as "apply"|"supersede"); }
+    const partyCoverageActionMatch=/^\/api\/companies\/([^/]+)\/documents\/party-coverage\/(plan|apply)$/.exec(path);
+    if(partyCoverageActionMatch){if(method!=="POST")throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute");const slug=decodeURIComponent(partyCoverageActionMatch[1]!);return partyCoverageActionMatch[2]==="plan"?await handlePartyCoveragePlan(config,slug,request):await handlePartyCoverageApply(config,slug,request);}
     const internalNoExternalMatch = path.match(/^\/api\/companies\/([^/]+)\/documents\/internal-no-external-party(\/supersede)?$/);
     if (internalNoExternalMatch) { if (method !== "POST") throw ApiError.methodNotAllowed("kun POST er understøttet på denne rute"); return await handleInternalNoExternalParty(config,decodeURIComponent(internalNoExternalMatch[1]!),request,Boolean(internalNoExternalMatch[2])); }
     const documentCompanyContextMatch = /^\/api\/companies\/([^/]+)\/documents\/company-context$/.exec(path);

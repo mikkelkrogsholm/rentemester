@@ -76,7 +76,7 @@ describe("MCP service principal guard", () => {
 
   test("keeps a complete, unique map for the live MCP surface", () => {
     expect(new Set(Object.keys(MCP_TOOL_PERMISSIONS)).size).toBe(Object.keys(MCP_TOOL_PERMISSIONS).length);
-      expect(Object.keys(MCP_TOOL_PERMISSIONS)).toHaveLength(243);
+      expect(Object.keys(MCP_TOOL_PERMISSIONS)).toHaveLength(246);
   });
 
   test("requires reviewer permission for an atomic dimension replacement", async () => {

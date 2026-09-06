@@ -125,6 +125,9 @@ export function DocumentsView() {
     [slug],
   );
   const partyLinks = useAsync(() => api.documentPartyLinks(slug), [slug]);
+  const partyCoverage = useAsync(() => api.partyCoverage(slug), [slug]);
+  const [coverageBusy,setCoverageBusy]=useState(false);
+  const [coverageError,setCoverageError]=useState<string|null>(null);
   // True while the document-intake modal (#213, slice 3) is open.
   const [ingesting, setIngesting] = useState(false);
   // Holds the bilag id whose Bogfør-modal is open (#407); null when none.
@@ -311,6 +314,8 @@ export function DocumentsView() {
       setPartyBusy(false);
     }
   }
+
+  async function applySafeCoverage(){setCoverageBusy(true);setCoverageError(null);try{const planned=await api.planPartyCoverage(slug);if(!planned.plan.operations.length){await partyCoverage.reload();return;}if(!window.confirm(`Anvend ${planned.plan.operations.length} sikre, hash-bundne modpartskoblinger?`))return;const result=await api.applyPartyCoverage(slug,{planHash:planned.plan.planHash,idempotencyKey:`cockpit-party-coverage-${planned.plan.planHash}`,confirm:true});if(!result.ok)throw new Error(result.errors?.join(", ")??"Coverage-planen blev afvist.");await Promise.all([partyCoverage.reload(),partyLinks.reload(),state.reload()]);}catch(error){setCoverageError(error instanceof Error?error.message:"Coverage-planen kunne ikke anvendes.");}finally{setCoverageBusy(false);}}
 
   function identityInput(doc: DocumentRow) {
     return {
@@ -524,6 +529,8 @@ export function DocumentsView() {
         {" · "}
         {d.linkedCount} bogført · {d.unlinkedCount} ubehandlet
       </p>
+
+      {partyCoverage.data&&<section className="card" aria-label="Modpartsdækning"><div className="page-head"><div><h3>Modpartsdækning</h3><p className="muted">Én kanonisk projektion fra bank til afstemning, bilag og part.</p></div><button type="button" className="btn secondary" disabled={coverageBusy||partyCoverage.data.totals.exact_candidate===0} onClick={applySafeCoverage}>Anvend sikre kandidater</button></div><div className="stats-grid"><div><strong>{partyCoverage.data.totals.linked+partyCoverage.data.totals.resolved_no_external_party}</strong><span>Dækket</span></div><div><strong>{partyCoverage.data.totals.exact_candidate}</strong><span>Sikre kandidater</span></div><div><strong>{partyCoverage.data.totals.ambiguous+partyCoverage.data.totals.missing_source}</strong><span>Kræver menneske</span></div></div><details><summary>Se grundlag og rester</summary><p className="muted">Population <code>{partyCoverage.data.populationHash}</code> · plan <code>{partyCoverage.data.planHash}</code></p><ul>{partyCoverage.data.rows.filter((row)=>row.status!=="linked"&&row.status!=="resolved_no_external_party").map((row)=><li key={row.bankTransactionId}>Bankpost #{row.bankTransactionId}{row.documentId?` · bilag #${row.documentId}`:""}: {row.reason}{row.candidate?.provenance?` (${row.candidate.provenance})`:""}{row.nextAction?` ${row.nextAction}`:""}</li>)}</ul></details>{coverageError&&<p className="flag warning" role="alert">{coverageError}</p>}</section>}
 
       {reviewedDocument && (
         <section className="card" aria-label="Gennemgå kanonisk part">

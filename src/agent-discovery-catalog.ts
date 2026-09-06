@@ -356,6 +356,9 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
     read("inspect", mcp("workspace_party_inspect"), "Read the visible canonical history and local roles.", { dependsOn:["link-role|approve-merge"] }),
   ], unsupportedBoundaries:["Name, amount or alias similarity never auto-merges a legal identity.", "Company-local defaults never become workspace posting rules."] }),
   workflow({ id: "document-party-resolution", capabilityId: "document-party-resolution", title: "Document party resolution", intendedOutcome: "Make exactly one visible party-resolution state without changing document evidence, VAT, or journals.", steps: [
+    read("coverage",mcp("party_coverage"),"Project every selected bank row through current reconciliation, journal, source document/open item and canonical party state."),
+    read("coverage-plan",mcp("party_coverage_plan"),"Deduplicate exact document candidates and hash-bind optional reviewed bank/journal decisions.",{dependsOn:["coverage"],boundary:"dry-run",canonicalRecords:["party coverage plan"]}),
+    write("coverage-apply",mcp("party_coverage_apply"),"Atomically append only the exact reviewed operations; leave ambiguous and missing-source rows untouched.",{dependsOn:["coverage-plan"],expectedIdempotent:true,retryClass:"natural-idempotent",canonicalRecords:["document party link event","party coverage bank resolution event","party coverage batch event"]}),
     read("list", mcp("documents_party_link_list"), "List resolved, internal-no-external-party, and unresolved documents."),
     read("plan", mcp("documents_party_link_plan"), "Plan an exact evidence-bound canonical party relation. For legacy metadata gaps, sourceReview binds exact human observations and location to the verified original bytes; optional vendor enrichment shows its before/after state."),
     write("apply", mcp("documents_party_link_apply"), "Append the confirmed canonical party relation and only the reviewed missing contact fields from the exact plan.", { dependsOn:["plan"], expectedIdempotent:true, retryClass:"natural-idempotent", canonicalRecords:["document party link event"] }),
@@ -540,9 +543,9 @@ type SurfaceBaseline = { count: number; hash: string };
  */
 export const AGENT_SURFACE_BASELINES: Record<SurfaceName, SurfaceBaseline> = {
   // Public surface changes require an explicit discovery review.
-  mcp: { count: 243, hash: "67ac23b2bc614ab8e48dd723c2d7e242867a3cf5981fd7f6fc4fb99f84a6913d" },
-  cli: { count: 293, hash: "713166dc770b10963cdda108df4024b6544bf05a8bdb40049515345be02db6ae" },
-  http: { count: 233, hash: "9b180da8de305e5621b9e88ab4c9d747b8ee18851dbc69d94dece7677d661ed1" },
+  mcp: { count: 246, hash: "47adcbc1e80f15082cdbc0f7a63674cc9ef3cf417abf819f43a9cedb250e0f97" },
+  cli: { count: 296, hash: "6294fde1d7dfdb844687356e4248a04bd1e4532be4e88affee4e0fc1b3924ec7" },
+  http: { count: 236, hash: "3cd65e22ba3ddebd5cfa6e877a777946e35bf7ac79e005b5eed7ed30e145e5e1" },
 };
 
 const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }> = [
@@ -554,7 +557,7 @@ const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }>
   { capabilityId: "workspace-parties", pattern: /(?:workspace[_-]party|^cli:party )/ },
   { capabilityId: "legacy-party-mapping", pattern: /legacy[_-]party[_-]mapping/ },
   { capabilityId: "vendor-identity-enrichment", pattern: /vendor[_-]identity[_-]enrichment/ },
-  { capabilityId: "document-party-resolution", pattern: /documents?_party|party-link|internal-no-external-party/ },
+  { capabilityId: "document-party-resolution", pattern: /documents?_party|party-link|party[_-]coverage|internal-no-external-party/ },
   { capabilityId: "digisense-nemhandel", pattern: /(?:efaktura|digisense|peppol|send-public)/ },
   { capabilityId: "group-intercompany", pattern: /(?:group|portfolio)/ },
   { capabilityId: "posting-rules", pattern: /(?:posting[_-]rules?|posting_rule|agent-suggestions)/ },

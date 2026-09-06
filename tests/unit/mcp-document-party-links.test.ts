@@ -9,6 +9,8 @@ import { companyRootForSlug, initWorkspace } from "../../src/core/workspace";
 import { openWorkspaceControlDb } from "../../src/core/workspace-control";
 import { migrate, openDb } from "../../src/core/db";
 import { createVendor } from "../../src/core/master-data";
+import { addBankAccount } from "../../src/core/bank";
+import { postJournalEntry, seedAccounts } from "../../src/core/ledger";
 import { ingestDocument } from "../../src/core/documents";
 import { openWorkspaceBetterAuth } from "../../src/server/better-auth";
 import { createWorkspaceServicePrincipal } from "../../src/core/workspace-service-principals";
@@ -84,6 +86,7 @@ beforeAll(async () => {
   appendFileSync(join(companyRoot, "config", "policy.yaml"), "  agents:\n    - agent:document-party-black-box/1.0.0\n    - agent:second-party-reviewer/1.0.0\n");
   const ledger = openDb(companyPaths(companyRoot).db);
   migrate(ledger);
+  seedAccounts(ledger);
   ledger.query(`INSERT INTO documents
     (document_no,sha256_hash,payload_json,upload_datetime,source,status,
      supplier_country_code,supplier_identifier_kind,sender_vat_cvr,sender_name,retain_until)
@@ -99,6 +102,11 @@ beforeAll(async () => {
   const reviewedSource=join(workspace,"mcp-legacy-evidence.txt");writeFileSync(reviewedSource,"immutable synthetic source naming Foreign Merchant");
   const reviewedDocument=ingestDocument(ledger,companyRoot,reviewedSource,{source:"synthetic",documentType:"purchase_sale",issueDate:"2026-09-03",deliveryDescription:"Synthetic service",amountIncVat:10,vatAmount:0,currency:"DKK",sender:{name:"Foreign Merchant",address:"Source Road",countryCode:"US",identifierKind:"non_eu"},recipient:{name:"Acme ApS",address:"Buyer Road"}});
   if(!reviewedDocument.ok)throw new Error(reviewedDocument.errors.join("; ")); reviewedSourceDocumentId=reviewedDocument.documentId; ledger.query("UPDATE documents SET supplier_country_code=NULL,supplier_identifier_kind=NULL,supplier_identity_status=NULL WHERE id=?").run(reviewedSourceDocumentId);
+  const coverageDocument=ledger.query(`INSERT INTO documents(document_no,sha256_hash,payload_json,upload_datetime,source,status,document_type,sender_name,sender_vat_cvr,supplier_country_code,supplier_identifier_kind,retain_until) VALUES(?,?,?,?,?,?,?,?,?,?,?,?) RETURNING id`).get("COVERAGE-MCP","d".repeat(64),"{}","2026-09-04T00:00:00.000Z","synthetic","posted","purchase_sale","Coverage Supplier","DK44332211","DK","dk_cvr","2032-01-01") as {id:number};
+  const bank=addBankAccount(ledger,{name:"Synthetic Bank",slug:"synthetic-bank",ledgerAccountNo:"2000"}).account!;
+  ledger.query("INSERT INTO bank_transactions(id,transaction_date,text,amount,currency,transaction_hash,bank_account_id,retain_until) VALUES(700,'2026-09-04','Coverage payment',-100,'DKK','coverage-bank-700',?,'2031-12-31')").run(bank.id);
+  const coveragePosting=postJournalEntry(ledger,{transactionDate:"2026-09-04",text:"Coverage purchase",documentId:coverageDocument.id,sourceBankTransactionId:700,createdBy:"agent:synthetic",lines:[{accountNo:"7000",debitAmount:100},{accountNo:"2000",creditAmount:100}]});
+  if(!coveragePosting.ok)throw new Error(coveragePosting.errors.join("; "));
   ledger.close();
   const registry = openWorkspaceControlDb(workspace);
   createParty(registry, { partyId: "party-mcp", kind: "organization", name: "Canonical name", identifiers: [{ country: "DK", identifier: "DK12345678", identifierKind: "dk_cvr" }], source: "synthetic", observedAt: "2026-08-30T00:00:00.000Z", reviewAssertion: "reviewed synthetic identity", actor: "user:test" });
@@ -107,6 +115,8 @@ beforeAll(async () => {
   linkPartyRole(registry,{partyId:"party-mcp-no-id",companySlug:company.slug,role:"vendor",actor:"user:test"});
   createParty(registry,{partyId:"party-mcp-reviewed",kind:"organization",name:"Foreign Merchant",identifiers:[],source:"synthetic",observedAt:"2026-09-03T00:00:00.000Z",reviewAssertion:"reviewed source",actor:"user:test"});
   linkPartyRole(registry,{partyId:"party-mcp-reviewed",companySlug:company.slug,role:"vendor",actor:"user:test"});
+  createParty(registry,{partyId:"party-coverage-mcp",kind:"organization",name:"Coverage Supplier",identifiers:[{country:"DK",identifierKind:"dk_cvr",identifier:"DK44332211"}],source:"synthetic",observedAt:"2026-09-04T00:00:00.000Z",reviewAssertion:"reviewed typed identity",actor:"user:test"});
+  linkPartyRole(registry,{partyId:"party-coverage-mcp",companySlug:company.slug,role:"vendor",actor:"user:test"});
   const runtime=openWorkspaceBetterAuth(workspace,{secret:"I0UjL6i0-ScgvjfIgzMKJxPQyDpPXwg2mMKdLW3Y3WQ",trustedOrigins:["http://127.0.0.1"],baseURL:"http://127.0.0.1"});
   const service=await createWorkspaceServicePrincipal(registry,runtime.auth,{displayName:"Document party test",actor:"user:test"});
   serviceAccountId = service.serviceAccountId;
@@ -126,6 +136,19 @@ afterAll(async () => {
 });
 
 describe("#588 MCP black-box contract", () => {
+  test("#644 discovers and executes projection → plan → confirmed idempotent apply",async()=>{
+    const tools=await client.send("tools/list"); const names=(tools.result?.tools??[]).map((tool:any)=>tool.name);
+    for(const name of ["party_coverage","party_coverage_plan","party_coverage_apply"])expect(names).toContain(name);
+    const projected=(await client.send("tools/call",{name:"party_coverage",arguments:{company:"acme-aps"}})).result?.structuredContent;
+    expect(projected).toMatchObject({ok:true,data:{totals:{exact_candidate:1},rows:[{bankTransactionId:700,status:"exact_candidate",candidate:{partyId:"party-coverage-mcp",provenance:"typed_identifier"}}]}});
+    const planned=(await client.send("tools/call",{name:"party_coverage_plan",arguments:{company:"acme-aps"}})).result?.structuredContent;
+    expect(planned).toMatchObject({ok:true,data:{plan:{operations:[{kind:"document_link"}]}}});
+    const args={company:"acme-aps",planHash:planned.data.plan.planHash,idempotencyKey:"coverage-mcp-644",confirm:true};
+    const denied=await client.send("tools/call",{name:"party_coverage_apply",arguments:{...args,confirm:false}});expect(denied.result?.structuredContent).toMatchObject({ok:false,code:"CONFIRM_REQUIRED"});
+    expect((await client.send("tools/call",{name:"party_coverage_apply",arguments:args})).result?.structuredContent).toMatchObject({ok:true,data:{idempotent:false,applied:1}});
+    expect((await client.send("tools/call",{name:"party_coverage_apply",arguments:args})).result?.structuredContent).toMatchObject({ok:true,data:{idempotent:true,applied:1}});
+    const db=openDb(companyPaths(companyRoot).db);try{expect(db.query("SELECT actor,principal FROM party_coverage_batch_events WHERE plan_hash=?").get(planned.data.plan.planHash)).toEqual({actor:"agent:document-party-black-box/1.0.0",principal:`service-account:${serviceAccountId}`});}finally{db.close();}
+  });
   for (const kind of ["dk_cvr", "non_eu"] as const) {
     test(`public imported ${kind} enrichment → mapping → document resolution`, async () => {
       const name = `Synthetic imported ${kind}`;

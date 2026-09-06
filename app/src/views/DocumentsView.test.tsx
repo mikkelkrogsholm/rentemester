@@ -18,6 +18,7 @@ function route(over = {}) {
     "GET /api/companies/acme-aps/documents": { documents: documents(over) },
     "GET /api/companies/acme-aps/fiscal-years": { fiscalYears: FISCAL_YEARS },
     "GET /api/companies/acme-aps/documents/party-links": { links: [] },
+    "GET /api/companies/acme-aps/documents/party-coverage": { rows: [], totals: { linked: 0, resolved_no_external_party: 0, exact_candidate: 0, ambiguous: 0, missing_source: 0 }, populationHash: "p".repeat(64), planHash: "h".repeat(64) },
   };
 }
 
@@ -29,6 +30,20 @@ function renderView(route = "/companies/acme-aps/bilag") {
 }
 
 describe("DocumentsView — Bilag", () => {
+  test("#644 shows inspectable party coverage and applies only a confirmed exact plan", async () => {
+    const applied: Array<Record<string, unknown>> = [];
+    mockFetch({
+      ...route(),
+      "GET /api/companies/acme-aps/documents/party-coverage": { rows: [{ bankTransactionId: 7, documentId: 3, status: "exact_candidate", candidate: { partyId: "party-1", role: "vendor", provenance: "typed_identifier" }, reason: "Deterministic identity.", nextAction: "Review and apply." }], totals: { linked: 2, resolved_no_external_party: 1, exact_candidate: 1, ambiguous: 0, missing_source: 0 }, populationHash: "p".repeat(64), planHash: "h".repeat(64) },
+      "POST /api/companies/acme-aps/documents/party-coverage/plan": { plan: { planHash: "a".repeat(64), operations: [{ actionKey: "document:3" }] } },
+      "POST /api/companies/acme-aps/documents/party-coverage/apply": (() => ({ applied: 1 })),
+    });
+    const originalFetch=globalThis.fetch;
+    globalThis.fetch=(async(input:RequestInfo|URL,init?:RequestInit)=>{const response=await originalFetch(input,init);if(String(input).endsWith("/party-coverage/apply"))applied.push(JSON.parse(String(init?.body)));return response;}) as typeof fetch;
+    const originalConfirm=window.confirm; window.confirm=()=>true;
+    try { renderView(); expect(await screen.findByText("Sikre kandidater")).toBeInTheDocument(); await userEvent.click(screen.getByText("Se grundlag og rester")); expect(await screen.findByText(/typed_identifier/)).toBeInTheDocument(); await userEvent.click(screen.getByRole("button",{name:"Anvend sikre kandidater"})); expect(applied).toEqual([{planHash:"a".repeat(64),idempotencyKey:`cockpit-party-coverage-${"a".repeat(64)}`,confirm:true}]); }
+    finally { window.confirm=originalConfirm; }
+  });
   test("#588 requires explicit reviewed plan and confirmation before applying a canonical party", async () => {
     const applied: Array<Record<string, unknown>> = [];
     mockFetch({
