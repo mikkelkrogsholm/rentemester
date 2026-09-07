@@ -48,9 +48,9 @@ export function ManageCompanyView() {
     return { found, settings };
   }, [slug]);
 
-  if (state.loading) return <Loading />;
+  if (state.loading) return <section data-evidence-issue="657"><h2 data-evidence-heading>Administration</h2><p data-evidence-status="loading">Henter virksomhedsprofil</p><Loading /></section>;
   if (state.error)
-    return <ErrorState message={state.error} onRetry={state.reload} />;
+    return <section data-evidence-issue="657"><h2 data-evidence-heading>Administration</h2><p data-evidence-status={/403|forbudt|adgang/i.test(state.error) ? "warning-or-blocked" : "error"}>{/403|forbudt|adgang/i.test(state.error) ? "Virksomhedsprofil kræver afklaring" : "Virksomhedsprofil kunne ikke hentes"}</p><ErrorState message={state.error} onRetry={state.reload} /></section>;
 
   return (
     <ManageForm
@@ -180,7 +180,7 @@ function ManageForm({
         <h3 id="daglig-opsætning-heading">Daglig opsætning</h3>
         <p>Vælg det område, du vil gøre klar til den daglige bogføring.</p>
         <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${company.slug}/kontoplan`}>Kontoplan</Link>
+          <Link className="btn secondary" data-evidence-core-action to={`/companies/${company.slug}/kontoplan`}>Åbn daglig opsætning</Link>
           <Link className="btn secondary" to={`/companies/${company.slug}/dimensioner`}>Dimensioner</Link>
           <Link className="btn secondary" to={`/companies/${company.slug}/bankkonti`}>Bankkonti</Link>
           <Link className="btn secondary" to={`/companies/${company.slug}/bilagsmail`}>Bilagsmail</Link>
@@ -198,7 +198,7 @@ function ManageForm({
         </div>
       </section>
 
-      <details className="card">
+      <details className="card" data-evidence-progressive>
         <summary>System- og livscyklusindstillinger</summary>
       <AccountantExportCard slug={company.slug} />
 

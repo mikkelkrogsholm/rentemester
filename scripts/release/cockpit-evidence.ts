@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { isAbsolute, resolve, sep } from "node:path";
-import { evidenceResponse, validateEvidenceFixtures } from "./cockpit-evidence-fixtures";
+import { evidenceRequests, evidenceResponse, validateEvidenceFixtures } from "./cockpit-evidence-fixtures";
 
 export const COCKPIT_EVIDENCE_VERSION = 3;
 export const REQUIRED_ISSUES = [
@@ -78,6 +78,13 @@ export type Scenario = {
     body: string;
     delayMs?: number;
   };
+  /** Every request owned by the rendered view. Exact paths only: no globs. */
+  requests?: Array<{
+    urlPattern: string;
+    status: 200 | 403 | 500;
+    body: string;
+    delayMs?: number;
+  }>;
 };
 type IssueProfile = {
   issue: number;
@@ -220,15 +227,17 @@ export function parseScenarios(path: string): Scenario[] {
       throw new Error(
         `page-local heading, status and structural contract required for ${s.scenario}`,
       );
+    const requests = s.requests ?? (s.interception ? [s.interception] : []);
     if (
       s.endpoint === "/api/health" || s.endpoint.includes("identity") ||
-      (s.interception && s.interception.urlPattern !== s.endpoint)
+      !requests.length || requests.some((request) =>
+        request.urlPattern.includes("*") || request.urlPattern.includes(":") ||
+        !request.urlPattern.startsWith("/api/")
+      ) || !requests.some((request) => request.urlPattern === s.endpoint)
     )
       throw new Error(
         `endpoint and interception must be exact, route-specific, and exclude health/identity for ${s.scenario}`,
       );
-    if (!s.interception)
-      throw new Error(`every browser state must intercept its exact owned endpoint: ${s.scenario}`);
   }
   for (const issue of REQUIRED_ISSUES) {
     const mine = scenarios.filter((s) => s.issue === issue);
@@ -312,6 +321,7 @@ function expandProfile(profile: IssueProfile): Scenario[] {
       status: state === "warning-or-blocked" ? 403 : state === "error" ? 500 : 200,
       body: evidenceResponse(profile.issue, state), ...(state === "loading" ? { delayMs: 3000 } : {}),
     },
+    requests: evidenceRequests(profile.issue, state),
   });
   return [scenario("normal", "desktop"), scenario("normal", "mobile"), scenario("normal", "zoom"), ...REQUIRED_STATES.slice(1).map((state) => scenario(state, "desktop"))];
 }

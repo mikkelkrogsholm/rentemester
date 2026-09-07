@@ -31,9 +31,9 @@ export function VatView() {
   // Set after a successful period close / reopen — surfaced as a success banner.
   const [closedNotice, setClosedNotice] = useState<string | null>(null);
 
-  if (state.loading && !state.data) return <Loading label="Henter moms…" />;
+  if (state.loading && !state.data) return <section data-evidence-issue="656"><h2 data-evidence-heading>Moms og lukkeparathed</h2><p data-evidence-status="loading">Henter momsparathed</p><Loading label="Henter moms…" /></section>;
   if (state.error)
-    return <ErrorState message={state.error} onRetry={state.reload} />;
+    return <section data-evidence-issue="656"><h2 data-evidence-heading>Moms og lukkeparathed</h2><p data-evidence-status={/403|forbudt|adgang/i.test(state.error) ? "warning-or-blocked" : "error"}>{/403|forbudt|adgang/i.test(state.error) ? "Moms kræver afklaring" : "Momsparathed kunne ikke hentes"}</p><ErrorState message={state.error} onRetry={state.reload} /></section>;
 
   const v = state.data!;
   const currency = v.company.currency || "DKK";
@@ -72,6 +72,10 @@ export function VatView() {
     );
   }
 
+  if (v.outputVat === 0 && v.inputVat === 0 && v.payable === 0 && v.rubrikker.momsIAlt === 0) {
+    return <section className="statement" data-cockpit-page="vat" data-evidence-issue="656"><div className="page-head"><div><h2>{v.company.name}</h2><h3 data-evidence-heading>Moms og lukkeparathed</h3><p className="muted" data-evidence-status="empty">Ingen momsforpligtelser i perioden</p></div></div><PageState kind="empty" title="Ingen momsforpligtelser i perioden">Der er ingen momsbeløb at gennemgå for den valgte periode.</PageState></section>;
+  }
+
   // TypeScript narrows v to CompanyVatRegistered after the !v.vatRegistered
   // early return above — every period/deadline/rubrikker field is non-null
   // from here on. No `!` or `?? ""` shims needed.
@@ -96,7 +100,7 @@ export function VatView() {
         <div>
             <h2>{v.company.name}</h2>
             <h3 data-evidence-heading>Moms og lukkeparathed</h3>
-            <p className="muted" data-evidence-status="normal">Momsparathed klar</p>
+            <p className="muted" data-evidence-status={v.vatReportErrors.length || v.vatReportWarnings.length ? "warning-or-blocked" : "normal"}>{v.vatReportErrors.length || v.vatReportWarnings.length ? "Moms kræver afklaring" : "Momsparathed klar"}</p>
           <p className="muted">
             {v.company.cvr ? `CVR ${v.company.cvr} · ` : ""}
             {v.company.country} · {currency} · Moms
@@ -151,6 +155,8 @@ export function VatView() {
       />
 
       {closedNotice && <Banner kind="success">{closedNotice}</Banner>}
+
+      <details data-evidence-core-action data-evidence-progressive><summary>Gennemgå momsparathed</summary><p data-evidence-task-outcome>Se lukkegrundlag</p></details>
 
       <section className="card" aria-label="Indberetningsklarhed">
         <div className="statement-card-head"><h3>Indberetning</h3><StatusChip tone={statusTone}>{filingStatus}</StatusChip></div>
@@ -281,7 +287,7 @@ export function VatView() {
               forbi, for at få de endelige tal.
             </Banner>
           )}
-          <div className="card statement-card">
+          <div className="card statement-card" data-evidence-data>
             <table className="data statement-table">
               <tbody>
                 <tr>

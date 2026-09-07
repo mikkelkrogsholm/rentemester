@@ -33,6 +33,27 @@ export function evidenceResponse(issue: number, state: "normal" | "loading" | "e
   return success(issue, state === "empty");
 }
 
+type EvidenceState = "normal" | "loading" | "empty" | "warning-or-blocked" | "error";
+type EvidenceRequest = { urlPattern: string; status: 200 | 403 | 500; body: string; delayMs?: number };
+
+const batchWorkbench = (empty: boolean) => JSON.stringify({ ok: true, workbench: {
+  state: empty ? "zero" : "available", counts: { ready: empty ? 0 : 1, suggestedMatch: 0, missingDocument: 0, partyUnresolved: 0, accountingDecisionRequired: 0, vatEvidenceRequired: 0, dimensionEvidenceRequired: 0, stalePlan: 0, applyFailed: 0 },
+  population: { total: empty ? 0 : 1, ready: empty ? 0 : 1, blockers: 0 }, selection: { total: empty ? 0 : 1, ready: empty ? 0 : 1, blockers: 0 }, page: { cursor: 0, total: empty ? 0 : 1, nextCursor: null }, completeness: { nextAction: "Gennemgå den syntetiske bankpost." }, periodClose: { status: "available", blockers: 0 },
+  plan: { planHash: "synthetic-plan-hash", candidateSetHash: "synthetic-candidates", readyCount: empty ? 0 : 1 }, rows: empty ? [] : [{ bankTransactionId: 1, date: "2026-01-15", text: "Syntetisk bankpost", amount: 125, currency: "DKK", bankAccount: { id: 1, name: "Syntetisk bank" }, document: null, proposed: { account: "55000", vatTreatment: "none", dimensions: [] }, status: "ready", nextAction: "Forhåndsvis planen.", drilldown: { bankTransactionId: 1, periodClose: { from: "2026-01-01", to: "2026-12-31" } }, sourceHash: "synthetic-source-hash" }]
+} });
+const batchPlan = JSON.stringify({ ok: true, dryRun: true, plan: { planHash: "synthetic-plan-hash", candidateSetHash: "synthetic-candidates", items: [{ actionKey: "synthetic-action", partition: "2026" }] } });
+
+/** The runner uses this finite list verbatim; it never installs a wildcard route. */
+export function evidenceRequests(issue: number, state: EvidenceState): EvidenceRequest[] {
+  const primary: EvidenceRequest = { urlPattern: issue === 650 ? "/api/companies/evidence-fixture/fiscal-years" : ({ 649: "/api/companies/evidence-fixture/attention", 651: "/api/companies/evidence-fixture/changes-since?after=0", 652: "/api/companies/evidence-fixture/journal", 653: "/api/companies/evidence-fixture/party-hub?query=", 654: "/api/companies/evidence-fixture/balance", 655: "/api/companies/evidence-fixture/bank", 656: "/api/companies/evidence-fixture/vat", 657: "/api/companies" } as Record<number, string>)[issue]!, status: state === "warning-or-blocked" ? 403 : state === "error" ? 500 : 200, body: evidenceResponse(issue, state), ...(state === "loading" ? { delayMs: 3000 } : {}) };
+  if (issue !== 650 || state === "loading" || state === "warning-or-blocked" || state === "error") return [primary];
+  return [
+    { ...primary, body: evidenceResponse(650, state) },
+    { urlPattern: "/api/companies/evidence-fixture/bookkeeping-workbench?from=2026-01-01&to=2026-12-31&cursor=0&limit=25", status: 200, body: batchWorkbench(state === "empty") },
+    { urlPattern: "/api/companies/evidence-fixture/bookkeeping-batch?companyId=1&accountingFrom=2026-01-01&accountingTo=2026-12-31&bankFrom=2026-01-01&bankTo=2026-12-31", status: 200, body: batchPlan },
+  ];
+}
+
 /** Lightweight contract check used by release/unit tests before Chrome runs. */
 export function validateEvidenceFixtures() {
   for (const issue of [649, 650, 651, 652, 653, 654, 655, 656, 657]) {
@@ -41,5 +62,10 @@ export function validateEvidenceFixtures() {
       if (issue === 653 ? !Array.isArray(value.rows) : value.ok !== true)
         throw new Error(`invalid success fixture for #${issue}/${state}`);
     }
+  }
+  for (const state of ["normal", "empty"] as const) {
+    const requests = evidenceRequests(650, state);
+    if (requests.length !== 3 || requests.some((request) => request.urlPattern.includes("*")))
+      throw new Error("#650 must declare its three exact owned requests");
   }
 }

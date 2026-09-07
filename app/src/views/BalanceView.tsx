@@ -18,7 +18,7 @@ import { useAsync } from "../lib/useAsync";
 import type { BalanceLine, CompanyBalance } from "../lib/types";
 import { ErrorState, Loading } from "../components/Feedback";
 import { ArchivedBanner } from "../components/ArchivedBanner";
-import { StatusChip } from "../components/CockpitPrimitives";
+import { PageState, StatusChip } from "../components/CockpitPrimitives";
 import {
   CompanyNav,
   accountPostingsTo,
@@ -39,9 +39,9 @@ export function BalanceView() {
     [slug, year],
   );
 
-  if (state.loading && !state.data) return <Loading label="Henter balance…" />;
+  if (state.loading && !state.data) return <section data-evidence-issue="654"><h2 data-evidence-heading>Balance</h2><p data-evidence-status="loading">Henter balance</p><Loading label="Henter balance…" /></section>;
   if (state.error)
-    return <ErrorState message={state.error} onRetry={state.reload} />;
+    return <section data-evidence-issue="654"><h2 data-evidence-heading>Balance</h2><p data-evidence-status={/403|forbudt|adgang/i.test(state.error) ? "warning-or-blocked" : "error"}>{/403|forbudt|adgang/i.test(state.error) ? "Ufuldstændigt grundlag" : "Balance kunne ikke hentes"}</p><ErrorState message={state.error} onRetry={state.reload} /></section>;
 
   const b = state.data!;
   const currency = b.company.currency || "DKK";
@@ -53,7 +53,7 @@ export function BalanceView() {
         <div>
           <h2>{b.company.name}</h2>
           <h3 data-evidence-heading>Balance</h3>
-          <p className="muted" data-evidence-status="normal">Aktuel bogføring</p>
+          <p className="muted" data-evidence-status={b.assets.lines.length || b.liabilities.lines.length || b.equity.lines.length ? "normal" : "empty"}>{b.assets.lines.length || b.liabilities.lines.length || b.equity.lines.length ? "Aktuel bogføring" : "Ingen balanceposter i perioden"}</p>
           <p className="muted">
             {b.company.cvr ? `CVR ${b.company.cvr} · ` : ""}
             {b.company.country} · {currency} · Balance
@@ -93,7 +93,7 @@ export function BalanceView() {
       )}
       <p className="statement-asof muted"><StatusChip coverage={b.coverage} /> · Pr. {b.asOfDate}</p>
       {b.coverage.comparison === "not_comparable" && <p className="muted">Ingen kilde for foregående år — ikke sammenlignelig.</p>}
-      <div className="card statement-card">
+      {!(b.assets.lines.length || b.liabilities.lines.length || b.equity.lines.length) ? <PageState kind="empty" title="Ingen balanceposter i perioden">Der er endnu ingen poster at vise i balancen.</PageState> : <div className="card statement-card">
         <table className="data statement-table" data-evidence-data>
           <thead>
             <tr>
@@ -145,7 +145,8 @@ export function BalanceView() {
             </tr>
           </tbody>
         </table>
-      </div>
+      </div>}
+      <details data-evidence-progressive><summary>Se rapportgrundlag</summary><p>Balancen bygger på den valgte periodes bogføring.</p></details>
       <BalanceCheck balanced={b.balanced} />
     </section>
   );
@@ -192,6 +193,7 @@ function BalanceSection({
               ) : (
                 <Link
                   className="account-link"
+                  data-evidence-core-action
                   to={accountPostingsTo(slug, year, line.accountNo)}
                 >
                   {line.accountNo}

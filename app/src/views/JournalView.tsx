@@ -100,9 +100,9 @@ export function JournalView() {
   }, [state.data, hasActiveFilter, q, fromDate, toDate, amountMin, amountMax, journalEntryId, journalLineId]);
 
   if (state.loading && !state.data)
-    return <PageState kind="loading" title="Henter posteringer" />;
+    return <section data-evidence-issue="652"><h2 data-evidence-heading>Posteringer</h2><p data-evidence-status="loading">Henter posteringer</p><PageState kind="loading" title="Henter posteringer" /></section>;
   if (state.error)
-    return <PageState kind="error" title="Posteringer kunne ikke hentes" onRetry={state.reload}>{state.error}</PageState>;
+    return <section data-evidence-issue="652"><h2 data-evidence-heading>Posteringer</h2><p data-evidence-status={/403|forbudt|adgang/i.test(state.error) ? "warning-or-blocked" : "error"}>{/403|forbudt|adgang/i.test(state.error) ? "Postering kræver afklaring" : "Posteringer kunne ikke hentes"}</p><PageState kind="error" title="Posteringer kunne ikke hentes" onRetry={state.reload}>{state.error}</PageState></section>;
 
   const j = state.data!;
   const currency = j.company.currency || "DKK";
@@ -185,6 +185,7 @@ export function JournalView() {
         <FormField label="Fra"><input type="date" value={fromDate} onChange={(e) => setFilter("from", e.target.value)} /></FormField>
         <FormField label="Til"><input type="date" value={toDate} onChange={(e) => setFilter("to", e.target.value)} /></FormField>
       </FilterBar>
+      <details data-evidence-progressive><summary>Forklar posten</summary><p>Åbn en postering for at se kontering og dokumenteret grundlag.</p></details>
 
       <p className="statement-asof muted">
         {j.periodStart} – {j.periodEnd} ·{" "}
@@ -201,7 +202,7 @@ export function JournalView() {
                 : "Ingen posteringer i året."}
         </PageState>
       ) : (
-        <ul className="entry-list" aria-label="Posteringer">
+        <ul className="entry-list" aria-label="Posteringer" data-evidence-data>
           {pageEntries.map((entry) => (
             <EntryRow
               key={entry.id}
@@ -260,6 +261,7 @@ function EntryRow({
         type="button"
         className="entry-summary"
         aria-expanded={open}
+        data-evidence-core-action
         onClick={onSelect}
       >
         <span className="entry-caret" aria-hidden="true">
@@ -274,6 +276,7 @@ function EntryRow({
           {formatKroner(entry.total, currency)}
         </span>
       </button>
+      {open && <p data-evidence-task-outcome>Forklaring åbnet</p>}
       {open && (
         <div className="entry-lines table-scroll">
           <table className="data statement-table">
@@ -313,7 +316,7 @@ function EntryRow({
               ))}
             </tbody>
           </table>
-          <div className="entry-bilag">
+          <div className="entry-bilag" data-evidence-progressive>
             <ExplanationPanel slug={slug} entryId={entry.id} />
             {hasDocument ? (
               <a

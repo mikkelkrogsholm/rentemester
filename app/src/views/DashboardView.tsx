@@ -105,7 +105,7 @@ export function DashboardView() {
       <section className="section" aria-labelledby="changes-heading">
         <h3 id="changes-heading" data-evidence-heading>Siden sidst</h3>
         {changes.loading && <p className="muted" data-evidence-status="loading">Henter ændringer…</p>}
-        {changes.error && <p role="alert" data-evidence-status="error">Kunne ikke hente ændringer. Prøv igen senere.</p>}
+        {changes.error && <p role="alert" data-evidence-status={/403|forbudt|adgang/i.test(changes.error) ? "warning-or-blocked" : "error"}>{/403|forbudt|adgang/i.test(changes.error) ? "Overblik kræver opmærksomhed" : "Virksomhedsoverblik kunne ikke hentes"}</p>}
         {changes.data && changes.data.events.length === 0 && <p className="muted" data-evidence-status="empty">Ingen nye data- eller statusændringer siden dit seneste besøg.</p>}
         {changes.data && changes.data.events.length > 0 && <><p data-evidence-status="normal">Overblik klar</p><ul>{changes.data.events.map((event) => <li key={event.id}><strong>{event.eventType}</strong>: {event.message} <span className="muted">· {event.actor}</span></li>)}</ul><button className="btn secondary" type="button" onClick={markSeen} data-evidence-core-action>Markér som set</button>{seenNotice && <p data-evidence-task-outcome>Ændringer markeret som set</p>}</>}
         {changes.data && seen === 0 && <p className="muted">Første besøg: ændringer vises fra begyndelsen af det tilgængelige revisionsspor.</p>}

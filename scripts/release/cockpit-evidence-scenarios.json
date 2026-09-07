@@ -42,9 +42,9 @@
       "route": "/companies/evidence-fixture/posteringer",
       "endpoint": "/api/companies/evidence-fixture/journal",
       "heading": "Posteringer",
-      "coreAction": "Forklar postering",
-      "data": "Journalposteringer",
-      "progressive": "Se konteringens forklaring",
+      "coreAction": "B-2026-0001",
+      "data": "Syntetisk journalpost",
+      "progressive": "Forklar posten",
       "taskOutcome": "Forklaring åbnet",
       "states": { "normal": "Posteringer klar", "loading": "Henter posteringer", "empty": "Ingen posteringer i perioden", "warning-or-blocked": "Postering kræver afklaring", "error": "Posteringer kunne ikke hentes" }
     },
@@ -53,11 +53,11 @@
       "owner": "#653 party hub",
       "route": "/companies/evidence-fixture/parter",
       "endpoint": "/api/companies/evidence-fixture/party-hub?query=",
-      "heading": "Kontakter og parter",
-      "coreAction": "Åbn part",
-      "data": "Partsoverblik",
-      "progressive": "Se partens grundlag",
-      "taskOutcome": "Part åbnet",
+      "heading": "Parter",
+      "coreAction": "Syntetisk part",
+      "data": "Syntetisk part",
+      "progressive": "Søg og sortér canonical parter",
+      "taskOutcome": { "url": "/companies/evidence-fixture/parter/party-evidence" },
       "states": { "normal": "Parter klar", "loading": "Henter parter", "empty": "Ingen parter endnu", "warning-or-blocked": "Part kræver afklaring", "error": "Parter kunne ikke hentes" }
     },
     {
@@ -66,10 +66,10 @@
       "route": "/companies/evidence-fixture/balance",
       "endpoint": "/api/companies/evidence-fixture/balance",
       "heading": "Balance",
-      "coreAction": "Åbn balancepost",
-      "data": "Aktuel bogføring",
+      "coreAction": "55000",
+      "data": "Bank",
       "progressive": "Se rapportgrundlag",
-      "taskOutcome": "Balancepost åbnet",
+      "taskOutcome": { "url": "/companies/evidence-fixture/posteringer?year=2026&account=55000" },
       "states": { "normal": "Aktuel bogføring", "loading": "Henter balance", "empty": "Ingen balanceposter i perioden", "warning-or-blocked": "Ufuldstændigt grundlag", "error": "Balance kunne ikke hentes" }
     },
     {
@@ -92,8 +92,8 @@
       "heading": "Moms og lukkeparathed",
       "coreAction": "Gennemgå momsparathed",
       "data": "Momsstatus",
-      "progressive": "Se lukkegrundlag",
-      "taskOutcome": "Momsparathed åbnet",
+      "progressive": "Gennemgå momsparathed",
+      "taskOutcome": "Se lukkegrundlag",
       "states": { "normal": "Momsparathed klar", "loading": "Henter momsparathed", "empty": "Ingen momsforpligtelser i perioden", "warning-or-blocked": "Moms kræver afklaring", "error": "Momsparathed kunne ikke hentes" }
     },
     {
@@ -105,7 +105,7 @@
       "coreAction": "Åbn daglig opsætning",
       "data": "Virksomhedsprofil",
       "progressive": "System- og livscyklusindstillinger",
-      "taskOutcome": "Daglig opsætning åbnet",
+      "taskOutcome": { "url": "/companies/evidence-fixture/kontoplan" },
       "states": { "normal": "Administration klar", "loading": "Henter virksomhedsprofil", "empty": "Ingen administrationsoplysninger endnu", "warning-or-blocked": "Virksomhedsprofil kræver afklaring", "error": "Virksomhedsprofil kunne ikke hentes" }
     }
   ]

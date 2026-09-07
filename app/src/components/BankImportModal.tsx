@@ -122,6 +122,7 @@ export function BankImportModal({ slug, onImported, onClose }: BankImportModalPr
       <div
         className="modal"
         role="dialog"
+        data-evidence-task-outcome
         aria-modal="true"
         aria-label="Importér kontoudtog"
         onClick={(e) => e.stopPropagation()}

@@ -214,22 +214,21 @@ async function renderScenario(
         request?: { url?: string };
       };
       if (!p.requestId) return;
-      const match =
-        !!scenario.interception &&
-        p.request?.url === `${base}${scenario.interception.urlPattern}`;
+      const ownedRequests = scenario.requests ?? (scenario.interception ? [scenario.interception] : []);
+      const response = ownedRequests.find((request) => p.request?.url === `${base}${request.urlPattern}`);
       if (p.request?.url) actualRequests.push(p.request.url);
       interceptions.push(
-        match
+        response
           ? (async () => {
-              if (scenario.interception?.delayMs)
-                await Bun.sleep(scenario.interception.delayMs);
+              if (response.delayMs)
+                await Bun.sleep(response.delayMs);
               await cdp!.call("Fetch.fulfillRequest", {
                 requestId: p.requestId,
-                responseCode: scenario.interception!.status,
+                responseCode: response.status,
                 responseHeaders: [
                   { name: "content-type", value: "application/json" },
                 ],
-                body: Buffer.from(scenario.interception!.body).toString(
+                body: Buffer.from(response.body).toString(
                   "base64",
                 ),
               });
@@ -246,7 +245,7 @@ async function renderScenario(
       mobile: false,
     });
     await cdp.call("Fetch.enable", {
-      patterns: [{ urlPattern: `${base}${scenario.endpoint}`, requestStage: "Request" }],
+      patterns: (scenario.requests ?? [scenario.interception!]).map((request) => ({ urlPattern: `${base}${request.urlPattern}`, requestStage: "Request" })),
     });
     await cdp.call("Page.navigate", { url: `${base}${scenario.route}` });
     await Bun.sleep(scenario.interception?.delayMs ? 300 : 1000);
@@ -322,10 +321,10 @@ async function renderScenario(
       );
     }
     await Promise.all(interceptions);
-    if (!actualRequests.includes(`${base}${scenario.endpoint}`))
-      throw new Error(
-        `expected feature endpoint was not observed: ${scenario.endpoint}`,
-      );
+    const expectedRequests = scenario.requests ?? [scenario.interception!];
+    for (const request of expectedRequests)
+      if (!actualRequests.includes(`${base}${request.urlPattern}`))
+        throw new Error(`expected exact owned request was not observed: ${request.urlPattern}`);
     if (consoleErrors.length)
       throw new Error(
         `console errors in ${scenario.scenario}: ${consoleErrors.join("\n")}`,
@@ -340,7 +339,7 @@ async function renderScenario(
       png: Uint8Array.fromBase64(screenshot.data),
       keyboardAssertions,
       interception: {
-        requested: scenario.interception?.urlPattern ?? null,
+        requested: expectedRequests.map((request) => request.urlPattern).join(","),
         actualRequests,
       },
       consoleErrors,

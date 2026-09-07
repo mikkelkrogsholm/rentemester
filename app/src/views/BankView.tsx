@@ -152,8 +152,8 @@ export function BankView() {
     return out;
   }, [filteredTransactions, sort]);
 
-  if (state.loading && !state.data) return <BankPageShell><PageState kind="loading" title="Henter bankposter" /></BankPageShell>;
-  if (state.error) return <BankPageShell><PageState kind="error" title="Bankposter kunne ikke hentes" onRetry={state.reload}>{state.error}</PageState></BankPageShell>;
+  if (state.loading && !state.data) return <section data-evidence-issue="655"><p data-evidence-heading>Bank</p><p data-evidence-status="loading">Henter bankposter</p><BankPageShell><PageState kind="loading" title="Henter bankposter" /></BankPageShell></section>;
+  if (state.error) return <section data-evidence-issue="655"><p data-evidence-heading>Bank</p><p data-evidence-status={/403|forbudt|adgang/i.test(state.error) ? "warning-or-blocked" : "error"}>{/403|forbudt|adgang/i.test(state.error) ? "Bank kræver afstemning" : "Bankposter kunne ikke hentes"}</p><BankPageShell><PageState kind="error" title="Bankposter kunne ikke hentes" onRetry={state.reload}>{state.error}</PageState></BankPageShell></section>;
 
   const b = state.data!;
   const currency = b.company.currency || "DKK";
@@ -163,7 +163,7 @@ export function BankView() {
       <div className="page-head">
         <div>
           <h1 data-evidence-heading>Bank</h1>
-          <p className="muted" data-evidence-status="normal">Bank klar til gennemgang</p>
+          <p className="muted" data-evidence-status={b.transactions.length ? "normal" : "empty"}>{b.transactions.length ? "Bank klar til gennemgang" : "Ingen bankposter i perioden"}</p>
           <h2>{b.company.name}</h2>
           <p className="muted">
             {b.company.cvr ? `CVR ${b.company.cvr} · ` : ""}
