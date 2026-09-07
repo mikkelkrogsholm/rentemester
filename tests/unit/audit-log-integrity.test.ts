@@ -17,7 +17,7 @@ import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { postJournalEntry, seedAccounts } from "../../src/core/ledger";
-import { verifyAuditLogIntegrity } from "../../src/core/audit-log";
+import { listChangesSince, verifyAuditLogIntegrity } from "../../src/core/audit-log";
 
 function freshDb(prefix: string) {
   const root = mkdtempSync(join(tmpdir(), prefix));
@@ -45,6 +45,18 @@ function unlockAuditLog(db: any) {
 }
 
 describe("audit_log tamper-evidence (KODE-14)", () => {
+  test("changes-since returns only new data events with actor and stable cursor", () => {
+    const { root, db } = freshDb("rentemester-changes-");
+    const posted = post(db, "2026-05-15", "new data");
+    expect(posted.ok).toBe(true);
+    const first = listChangesSince(db);
+    expect(first.events).toHaveLength(1);
+    expect(first.events[0]).toMatchObject({ eventType: "journal_post" });
+    expect(first.events[0]!.actor.length).toBeGreaterThan(0);
+    expect(first.cursor).toBe(first.events[0]!.id);
+    expect(listChangesSince(db, first.cursor)).toEqual({ events: [], cursor: first.cursor });
+    db.close(); rmSync(root, { recursive: true, force: true });
+  });
   test("a clean ledger passes integrity verification", () => {
     const { root, db } = freshDb("rentemester-auditint-ok-");
     post(db, "2026-05-15", "one");

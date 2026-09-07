@@ -8,8 +8,12 @@
 // All `/overview` money fields are kroner, so `formatKroner` is used
 // throughout (never `formatCurrency`, which expects minor units).
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { Chart } from "@tanstack/react-charts";
+import { defineChart, lineY } from "@tanstack/charts";
+import { scaleLinear } from "@tanstack/charts/scales/linear";
+import { scalePoint } from "@tanstack/charts/scales/point";
 import { api } from "../lib/api";
 import { formatDateDa, formatKroner, formatPercent } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
@@ -28,21 +32,35 @@ import { AccountantExportCard } from "../components/AccountantExportCard";
 export function DashboardView() {
   const { slug = "" } = useParams();
   const { year, setYear } = useCompanyYear();
+  const seenKey = `rentemester:changes:local:workspace:${slug}`;
+  const seen = Number(window.localStorage.getItem(seenKey) ?? "0") || 0;
   const state = useAsync<CompanyOverview>(
     () => api.overview(slug, year),
     [slug, year],
   );
+  const changes = useAsync(() => api.changesSince(slug, seen), [slug, seen]);
+  useEffect(() => {
+    if (changes.error) window.localStorage.removeItem(seenKey);
+  }, [changes.error, seenKey]);
 
   if (state.loading && !state.data) return <Loading label="Henter overblik…" />;
   if (state.error)
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const o = state.data!;
+  const chartDefinition = defineChart({
+    marks: [lineY(o.profitAndLoss.months, { x: "label", y: "income" })],
+    scales: { x: { scale: scalePoint }, y: { scale: scaleLinear, nice: true, grid: true, axis: { label: "Omsætning (kr.)" } } },
+  });
+  const markSeen = () => {
+    if (changes.data) window.localStorage.setItem(seenKey, String(changes.data.cursor));
+    changes.reload();
+  };
   const currency = o.company.currency || "DKK";
   const positive = o.profitAndLoss.resultat >= 0;
 
   return (
-    <section className="overview">
+    <section className="overview" data-evidence-issue="651">
       <div className="page-head">
         <div>
           <h2>{o.company.name}</h2>
@@ -76,6 +94,21 @@ export function DashboardView() {
           : "Ingen posteringer bogført endnu"}
       </p>
 
+      <section className="card" aria-label="Status og næste handling">
+        <h3>{o.exceptions.count > 0 ? `${o.exceptions.count} forhold kræver opmærksomhed` : "Status: ingen åbne forhold"}</h3>
+        <p className="muted">{o.exceptions.count > 0 ? "Gennemgå de åbne forhold, før du vurderer nøgletallene." : "Regnskabsdataene er klar til gennemgang."}</p>
+        {o.exceptions.count > 0 ? <Link className="btn primary" to={`/companies/${slug}/opmaerksomhed`}>Se krævende handlinger</Link> : isFreshEmptyCompany(o) ? <Link className="btn primary" to={`/companies/${slug}/bilag`}>Start med bilag</Link> : <Link className="btn secondary" to={statementTo(slug, "posteringer", o.selectedYear)}>Se posteringer</Link>}
+      </section>
+
+      <section className="section" aria-labelledby="changes-heading">
+        <h3 id="changes-heading" data-evidence-heading>Siden sidst</h3>
+        {changes.loading && <p className="muted" data-evidence-status="loading">Henter ændringer…</p>}
+        {changes.error && <p role="alert" data-evidence-status="error">Kunne ikke hente ændringer. Prøv igen senere.</p>}
+        {changes.data && changes.data.events.length === 0 && <p className="muted" data-evidence-status="empty">Ingen nye data- eller statusændringer siden dit seneste besøg.</p>}
+        {changes.data && changes.data.events.length > 0 && <><p data-evidence-status="normal">Overblik klar</p><ul>{changes.data.events.map((event) => <li key={event.id}><strong>{event.eventType}</strong>: {event.message} <span className="muted">· {event.actor}</span></li>)}</ul><button className="btn secondary" type="button" onClick={markSeen} data-evidence-core-action>Markér som set</button><p className="sr-only" data-evidence-task-outcome>Ændringer markeret som set</p></>}
+        {changes.data && seen === 0 && <p className="muted">Første besøg: ændringer vises fra begyndelsen af det tilgængelige revisionsspor.</p>}
+      </section>
+
       <div className="kpi-row">
         <KpiCard
           label="Omsætning"
@@ -102,8 +135,12 @@ export function DashboardView() {
       <KeyFigures keyFigures={o.keyFigures} />
 
       <div className="section">
-        <h3>Indtægter og udgifter — {o.selectedYear}</h3>
+        <h3>{o.profitAndLoss.months.length > 0 ? `Omsætningen toppede i ${o.profitAndLoss.months.reduce((best, month) => month.income > best.income ? month : best, o.profitAndLoss.months[0]!).label}` : "Omsætningens udvikling kan endnu ikke vises"} — {o.selectedYear}</h3>
+        <p className="muted">Én pointe: sammenlign månedernes omsætning. Regnskabsår {o.selectedYear}.</p>
         <div className="card chart-card">
+          {o.profitAndLoss.months.length > 0 ? <Chart definition={chartDefinition} ariaLabel="Omsætning pr. måned" ariaDescription={`Omsætning i regnskabsår ${o.selectedYear}`} height={260} /> : <p className="muted">Ingen måneder at vise endnu.</p>}
+          <table data-evidence-data><caption className="sr-only">Omsætning pr. måned, regnskabsår {o.selectedYear}</caption><thead><tr><th>Måned</th><th>Beløb (kr.)</th></tr></thead><tbody>{o.profitAndLoss.months.map((month) => <tr key={month.month}><td>{month.label}</td><td>{formatKroner(month.income, currency)}</td></tr>)}</tbody></table>
+          <Link to={statementTo(slug, "resultatopgorelse", o.selectedYear)} data-evidence-progressive>Se underliggende resultatopgørelse</Link>
           <PnlChart months={o.profitAndLoss.months} />
         </div>
       </div>

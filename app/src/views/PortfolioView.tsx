@@ -4,6 +4,7 @@
 // and one card per company shows the headline health an owner judges a
 // company on. Companies that need attention sort to the top and are flagged.
 
+import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { formatKroner, sortByAttention } from "../lib/format";
@@ -15,6 +16,11 @@ import { Onboarding } from "./Onboarding";
 export function PortfolioView() {
   const navigate = useNavigate();
   const state = useAsync(() => api.portfolio(), []);
+  useEffect(() => {
+    if (state.data?.companies.length === 1) {
+      navigate(`/companies/${state.data.companies[0]!.slug}`, { replace: true });
+    }
+  }, [navigate, state.data]);
 
   if (state.loading) return <Loading label="Henter portefølje…" />;
   if (state.error)
@@ -22,12 +28,16 @@ export function PortfolioView() {
 
   const portfolio = state.data!;
 
+  // The server has already filtered this list to the authenticated member's
+  // visible companies. Do not reconstruct membership in the browser.
   // First run: an empty workspace drops straight into onboarding.
   if (portfolio.companies.length === 0) {
     return (
       <Onboarding onCreated={(slug) => navigate(`/companies/${slug}`)} />
     );
   }
+
+  if (portfolio.companies.length === 1) return <Loading label="Åbner virksomhedsoverblik…" />;
 
   const ordered = sortByAttention(portfolio.companies);
   const needAttention = ordered.filter(

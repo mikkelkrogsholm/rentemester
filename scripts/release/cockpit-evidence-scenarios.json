@@ -28,12 +28,12 @@
       "issue": 651,
       "owner": "#651 adaptive portfolio overview",
       "route": "/companies/evidence-fixture",
-      "endpoint": "/api/companies/evidence-fixture/overview/changes",
-      "heading": "Virksomhedsoverblik",
-      "coreAction": "Se siden sidst",
-      "data": "Portefølje og udvikling",
-      "progressive": "Udforsk TanStack-graf",
-      "taskOutcome": "Ændringer siden sidst åbnet",
+      "endpoint": "/api/companies/evidence-fixture/changes-since?after=0",
+      "heading": "Siden sidst",
+      "coreAction": "Markér som set",
+      "data": "Omsætning pr. måned",
+      "progressive": "Se underliggende resultatopgørelse",
+      "taskOutcome": "Ændringer markeret som set",
       "states": { "normal": "Overblik klar", "loading": "Henter virksomhedsoverblik", "empty": "Ingen ændringer siden sidst", "warning-or-blocked": "Overblik kræver opmærksomhed", "error": "Virksomhedsoverblik kunne ikke hentes" }
     },
     {

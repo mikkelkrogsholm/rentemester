@@ -75,10 +75,10 @@ describe("PortfolioView", () => {
     expect(screen.getByText(/Samlet likviditet/i)).toBeInTheDocument();
   });
 
-  test("marks liquidity incomplete when a company statement is ambiguous", async () => {
+  test("a single visible company opens its overview directly", async () => {
     mockFetch(portfolioRoute([summary({ actualBankBalance: null, bankStatementStatus: "ambiguous", bankStatementDiagnostics: ["source collision"] })]));
     renderAt(<PortfolioView />);
-    expect(await screen.findByText(/Ufuldstændig/)).toBeInTheDocument();
+    expect(await screen.findByText(/Åbner virksomhedsoverblik/)).toBeInTheDocument();
   });
 
   test("surfaces an API error with a retry affordance", async () => {

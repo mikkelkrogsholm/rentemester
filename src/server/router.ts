@@ -78,6 +78,7 @@ import {
   handleCompanyFiscalYears,
   handleCompanyMultiYear,
   handleCompanyOverview,
+  handleCompanyChangesSince,
 } from "./router/dashboard";
 import {
   handleCompanyDocumentBookingOptions,
@@ -354,6 +355,7 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/dashboard", summary: "Virksomhedens dashboard." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/fiscal-years", summary: "Kendte regnskabsår." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/overview", summary: "Nøgletalsoverblik." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/changes-since", summary: "Cockpit-lokal cursorprojektion af revisionssporet (#651); MCP audit_log_list er den offentlige audit-læsning." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/income-statement", summary: "Resultatopgørelse." },
   { scope: "company", effect: "read", permission: "company.export", method: "GET", pattern: "/api/companies/:slug/income-statement/export", summary: "Resultatopgørelse som CSV-download (#372)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/balance", summary: "Balance." },
@@ -871,6 +873,12 @@ export async function handleRequest(
       if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(overviewMatch[1]!);
       return handleCompanyOverview(config, slug, url);
+    }
+
+    const changesSinceMatch = /^\/api\/companies\/([^/]+)\/changes-since$/.exec(path);
+    if (changesSinceMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
+      return handleCompanyChangesSince(config, decodeURIComponent(changesSinceMatch[1]!), url);
     }
 
     const retentionMatch = /^\/api\/companies\/([^/]+)\/retention$/.exec(path);

@@ -30,7 +30,7 @@ const MODE_VIEWPORTS: Record<
 const REQUIRED_ISSUE_MAPPING: Record<number, { route: string; endpoint: string }> = {
   649: { route: "/companies/evidence-fixture", endpoint: "/api/companies/evidence-fixture/attention" },
   650: { route: "/companies/evidence-fixture/batchbogfoering", endpoint: "/api/companies/evidence-fixture/bookkeeping-workbench" },
-  651: { route: "/companies/evidence-fixture", endpoint: "/api/companies/evidence-fixture/overview/changes" },
+  651: { route: "/companies/evidence-fixture", endpoint: "/api/companies/evidence-fixture/changes-since?after=0" },
   652: { route: "/companies/evidence-fixture/posteringer", endpoint: "/api/companies/evidence-fixture/journal/explanation" },
   653: { route: "/companies/evidence-fixture/kontakter", endpoint: "/api/companies/evidence-fixture/party-projection" },
   654: { route: "/companies/evidence-fixture/balance", endpoint: "/api/companies/evidence-fixture/balance" },

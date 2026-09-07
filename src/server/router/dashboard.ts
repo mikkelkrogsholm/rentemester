@@ -10,6 +10,7 @@ import {
   resolveYearParam,
 } from "../data";
 import { okResponse } from "./_shared";
+export { handleCompanyChangesSince } from "./changes-since";
 
 export function handleCompanyDashboard(
   config: ServerConfig,

@@ -580,9 +580,9 @@ type SurfaceBaseline = { count: number; hash: string };
  */
 export const AGENT_SURFACE_BASELINES: Record<SurfaceName, SurfaceBaseline> = {
   // Public surface changes require an explicit discovery review.
-  mcp: { count: 248, hash: "e5df04e9df90317d8e94e70453460929f40466ed9d19db1afea19fd240f07060" },
-  cli: { count: 298, hash: "e0855ff7be20dcba4a2a438010ee430c41e9ac6bc3c3ca3299f7f1dbf153014d" },
-  http: { count: 239, hash: "5e5062f7222c0b0accd41f817c66c7440d12850254708b4058f6ca8a1f1e9588" },
+  mcp: { count: 249, hash: "fcf17dc7e840113e1b36cd6a97c365993cfc3bf144570789306a2582791021c8" },
+  cli: { count: 299, hash: "db13a00992b82154565c5c0dcbe3e8540a8fd495d2c2f59631bc13c777a03c8e" },
+  http: { count: 241, hash: "729b950ce6abe4b153b16d34c827362c78ae33919721305f2a14e6254b341546" },
 };
 
 const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }> = [
@@ -611,7 +611,7 @@ const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }>
   { capabilityId: "exceptions-corrections", pattern: /(?:exceptions?|journal|accounting-draft|opening-balance)/ },
   { capabilityId: "imports", pattern: /(?:import|archive\/:year)/ },
   { capabilityId: "planning-reporting", pattern: /(?:report|dashboard|budget|cashflow|tax_return|tax\b|annual|accrual|compliance|obligations|multi-year)/ },
-  { capabilityId: "operations-assurance", pattern: /(?:system|audit|health|ready|retention|integrity|backup|meta_about|system_server_about|agent[_-]capabilit|agent[_-]workflow|agent run|reg coverage|reg citations|serve|local start)/ },
+  { capabilityId: "operations-assurance", pattern: /(?:system|audit|changes-since|health|ready|retention|integrity|backup|meta_about|system_server_about|agent[_-]capabilit|agent[_-]workflow|agent run|reg coverage|reg citations|serve|local start)/ },
   { capabilityId: "company-workspace", pattern: /(?:company|companies|workspace|accounts?|cvr|contacts|members|invitations|approval[_-]policy|^cli:init$|^http:get \/api$|^http:get \/api\/health$|^http:get \/api\/rules$|^http:get \/api\/me$)/ },
   { capabilityId: "company-knowledge", pattern: /(?:company[_-]knowledge|\/knowledge)/ },
   { capabilityId: "ownership-graph", pattern: /(?:ownership(?:[_ -](?:graph|snapshot|query|propose|review|apply|history|projection))?|ownership-graph)/ },

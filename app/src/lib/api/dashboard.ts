@@ -6,6 +6,7 @@ import type {
   MultiYearResponse,
   ObligationsResponse,
   OverviewResponse,
+  ChangesSinceResponse,
 } from "../types";
 import { request } from "./_shared";
 
@@ -33,6 +34,10 @@ export const dashboardApi = {
       }`,
     ).then((r) => r.overview);
   },
+
+  changesSince: (slug: string, after = 0) => request<ChangesSinceResponse>(
+    `/api/companies/${encodeURIComponent(slug)}/changes-since?after=${encodeURIComponent(String(after))}`,
+  ).then((r) => r.changes),
 
   archive: (slug: string, year: string) =>
     request<ArchiveResponse>(

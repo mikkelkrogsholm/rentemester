@@ -195,3 +195,6 @@ export type OverviewResponse = {
   ok: true;
   overview: CompanyOverview;
 };
+
+export type ChangesSince = { events: Array<{ id:number; eventType:string; entityType:string; entityId:string|null; message:string; actor:string; createdAt:string }>; cursor:number };
+export type ChangesSinceResponse = { ok:true; changes: ChangesSince };
