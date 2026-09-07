@@ -10,6 +10,21 @@ export type CockpitPageFamily = {
 };
 
 /**
+ * Detail routes are audited separately from the route registry. They inherit
+ * the family evidence but are not registry entries themselves, so this list
+ * deliberately must not be used for registry-exhaustiveness checks.
+ */
+export const COCKPIT_DETAIL_ROUTE_EVIDENCE = [
+  {
+    id: "party-profile",
+    path: "/companies/:slug/parter/:partyId",
+    family: "Filtreret register",
+    state: "mutation-required" as const,
+    reason: "Kræver en syntetisk canonical part med dokumenterede koblinger; det er en detailrute, ikke et register.",
+  },
+] as const;
+
+/**
  * The human-facing inventory is intentionally by reusable page family, not URL.
  * `company-page-inventory.test.ts` makes this list exhaustive against the route
  * registry, so a new route must receive an explicit synthetic-test classification.

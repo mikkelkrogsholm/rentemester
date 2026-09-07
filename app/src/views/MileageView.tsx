@@ -43,7 +43,7 @@ export function MileageView() {
   const hasEntries = m.entries.length > 0;
 
   return (
-    <section className="statement">
+    <section className="statement" data-cockpit-page="mileage" data-evidence-issue="655">
       <div className="page-head">
         <div>
           <h2>{m.company.name}</h2>
@@ -93,7 +93,7 @@ export function MileageView() {
           <MonthlyBreakdown mileage={m} currency={currency} />
 
           <div className="card statement-card table-scroll">
-            <table className="data statement-table">
+            <table className="data statement-table responsive-table" aria-label="Kørselsregister">
               <thead>
                 <tr>
                   <th>Bilag</th>

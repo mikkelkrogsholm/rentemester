@@ -56,7 +56,7 @@ export function AssetsView() {
   const currency = data.company.currency || "DKK";
 
   return (
-    <section className="statement">
+    <section className="statement" data-cockpit-page="assets" data-evidence-issue="655">
       <div className="page-head">
         <div>
           <h2>{data.company.name}</h2>
@@ -149,7 +149,7 @@ export function AssetsView() {
         </div>
       ) : (
         <div className="card statement-card table-scroll">
-          <table className="data statement-table">
+          <table className="data statement-table responsive-table" aria-label="Kapitaliserede anlæg">
             <thead>
               <tr>
                 <th>Navn</th>
@@ -205,7 +205,7 @@ export function AssetsView() {
         </div>
       ) : (
         <div className="card statement-card table-scroll">
-          <table className="data statement-table">
+          <table className="data statement-table responsive-table" aria-label="Straksafskrivninger">
             <thead>
               <tr>
                 <th>Navn</th>

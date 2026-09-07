@@ -12,7 +12,7 @@ import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
 import type { AccountRole, AccountRoleResolution, AccountRow, CompanyAccounts } from "../lib/types";
-import { ErrorState, Loading } from "../components/Feedback";
+import { FilterBar, PageState, ResponsiveTable } from "../components/CockpitPrimitives";
 
 const TYPE_LABELS: Record<string, string> = {
   asset: "Aktiv",
@@ -59,12 +59,12 @@ export function AccountsView() {
     });
   }, [state.data, typeFilter, search]);
 
-  if (state.loading) return <Loading />;
-  if (state.error) return <ErrorState message={state.error} />;
+  if (state.loading) return <PageState kind="loading" title="Henter kontoplan" />;
+  if (state.error) return <PageState kind="error" title="Kontoplan kunne ikke hentes" onRetry={state.reload}>{state.error}</PageState>;
   const data = state.data!;
 
   return (
-    <section className="accounts-view">
+    <section className="accounts-view" data-cockpit-page="accounts" data-evidence-issue="655">
       <header className="page-head">
         <div>
           <h2>{data.company.name}</h2>
@@ -91,7 +91,7 @@ export function AccountsView() {
 
       <section className="card">
         <h3>Sammentælling pr. type</h3>
-        <div className="filter-bar">
+        <FilterBar activeFilters={typeFilter ? [`Type: ${TYPE_LABELS[typeFilter] ?? typeFilter}`] : []} onReset={() => setTypeFilter("")}>
           {Object.entries(data.byType)
             .sort((a, b) => a[0].localeCompare(b[0]))
             .map(([type, count]) => (
@@ -106,16 +106,7 @@ export function AccountsView() {
                 {TYPE_LABELS[type] ?? type}: {count}
               </button>
             ))}
-          {typeFilter !== "" && (
-            <button
-              type="button"
-              className="btn small secondary"
-              onClick={() => setTypeFilter("")}
-            >
-              Nulstil filter
-            </button>
-          )}
-        </div>
+        </FilterBar>
       </section>
 
       <details className="card">
@@ -127,7 +118,7 @@ export function AccountsView() {
         <h3>
           Kontoplan ({filtered.length} af {data.accounts.length})
         </h3>
-        <div className="filter-bar">
+        <FilterBar activeFilters={search ? [`Søgning: ${search}`] : []} onReset={() => setSearch("")}>
           <label>
             Søg{" "}
             <input
@@ -137,9 +128,9 @@ export function AccountsView() {
               placeholder="kontonummer, navn, vat-kode …"
             />
           </label>
-        </div>
+        </FilterBar>
 
-        <table className="table">
+        <ResponsiveTable label="Kontoplan">
           <thead>
             <tr>
               <th>Kontonr.</th>
@@ -162,7 +153,7 @@ export function AccountsView() {
               </tr>
             )}
           </tbody>
-        </table>
+        </ResponsiveTable>
       </section>
     </section>
   );
@@ -183,7 +174,7 @@ function AccountRolesCard({ accountRoles }: Pick<CompanyAccounts, "accountRoles"
             : "Manglende roller skal bekræftes af et menneske, før bogføring fortsætter."}
         </p>
       )}
-      <table className="table">
+      <ResponsiveTable label="Kontoroller">
         <thead>
           <tr>
             <th>Rolle</th>
@@ -195,7 +186,7 @@ function AccountRolesCard({ accountRoles }: Pick<CompanyAccounts, "accountRoles"
             <AccountRoleResolutionRow key={resolution.role} resolution={resolution} />
           ))}
         </tbody>
-      </table>
+      </ResponsiveTable>
       {accountRoles.proposals.length > 0 && <p className="muted">Importforslag: {accountRoles.proposals.map((proposal) => `${ACCOUNT_ROLE_LABELS[proposal.role]} → ${proposal.accountNo} (${proposal.source})`).join(", ")}</p>}
       {accountRoles.reasons.length > 0 && <p className="warning">{accountRoles.reasons.map((reason) => `${ACCOUNT_ROLE_LABELS[reason.role]}: ${reason.reason}`).join(" · ")}</p>}
     </section>

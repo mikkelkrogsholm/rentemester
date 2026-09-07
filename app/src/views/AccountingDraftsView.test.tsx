@@ -84,4 +84,18 @@ describe("AccountingDraftsView", () => {
       expectedPolicyEventHash: "c".repeat(64),
     });
   });
+
+  test("keeps a labelled responsive register and resets the active status filter", async () => {
+    mockFetch({
+      "GET /api/companies/acme-aps/accounting-drafts": { accountingDrafts: [submitted] },
+      "GET /api/companies/acme-aps/accounting-approval-policy": { policy: null },
+    });
+    renderView();
+    await screen.findByText("Afventer godkendelse");
+    expect(screen.getByRole("table", { name: "Bogføringskladder" })).toBeInTheDocument();
+    await userEvent.selectOptions(screen.getByLabelText("Filtrér kladder på status"), "rejected");
+    expect(screen.getByText("Aktive filtre: Status: Afvist")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Nulstil filtre" }));
+    expect(screen.getByText("Afventer godkendelse")).toBeInTheDocument();
+  });
 });

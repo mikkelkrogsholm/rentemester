@@ -13,8 +13,8 @@ import { Link, useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
 import type { BankAccount, CompanyBankAccounts } from "../lib/types";
-import { ErrorState, Loading } from "../components/Feedback";
 import { LegacyBankBindingModal } from "../components/LegacyBankBindingModal";
+import { PageState, ResponsiveTable } from "../components/CockpitPrimitives";
 
 export function BankAccountsView() {
   const { slug = "" } = useParams();
@@ -28,12 +28,12 @@ export function BankAccountsView() {
     [slug, refresh],
   );
 
-  if (state.loading) return <Loading />;
-  if (state.error) return <ErrorState message={state.error} />;
+  if (state.loading) return <PageState kind="loading" title="Henter bankkonti" />;
+  if (state.error) return <PageState kind="error" title="Bankkonti kunne ikke hentes" onRetry={state.reload}>{state.error}</PageState>;
   const data = state.data!;
 
   return (
-    <section className="bank-accounts-view">
+    <section className="bank-accounts-view" data-cockpit-page="bank-accounts" data-evidence-issue="655">
       <header className="page-head">
         <div>
           <h2>{data.company.name}</h2>
@@ -79,7 +79,7 @@ export function BankAccountsView() {
             <code>BankImportModal</code> eller CLI'ens <code>bank import</code>.
           </p>
         ) : (
-          <table className="table">
+          <ResponsiveTable label="Registrerede bankkonti">
             <thead>
               <tr>
                 <th>Navn</th>
@@ -99,7 +99,7 @@ export function BankAccountsView() {
                 <BankAccountRow key={a.id} account={a} />
               ))}
             </tbody>
-          </table>
+          </ResponsiveTable>
         )}
       </section>
 
@@ -114,7 +114,7 @@ export function BankAccountsView() {
           genbruger disse hard-kodede mapping-profiler. Pr.-konto mapping-
           override er en follow-up.
         </p>
-        <table className="table">
+        <ResponsiveTable label="CSV-mapping-profiler">
           <thead>
             <tr>
               <th>Profil-navn</th>
@@ -139,7 +139,7 @@ export function BankAccountsView() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </ResponsiveTable>
       </details>
 
       {openCreate && (

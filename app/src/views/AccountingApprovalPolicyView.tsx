@@ -4,7 +4,7 @@ import { api } from "../lib/api";
 import type { AccountingApprovalPolicy } from "../lib/api/accounting-approval-policy";
 import { useAsync } from "../lib/useAsync";
 import { ConfirmDialog } from "../components/ConfirmDialog";
-import { ErrorState, Loading } from "../components/Feedback";
+import { PageState } from "../components/CockpitPrimitives";
 
 const LABEL: Record<AccountingApprovalPolicy["reviewMode"], string> = {
   independent_reviewer: "Uafhængig reviewer",
@@ -16,8 +16,8 @@ export function AccountingApprovalPolicyView() {
   const state = useAsync(() => api.accountingApprovalPolicy(slug), [slug]);
   const [pending, setPending] = useState<AccountingApprovalPolicy["reviewMode"] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  if (state.loading && state.data === undefined) return <Loading label="Henter godkendelsespolitik…" />;
-  if (state.error) return <ErrorState message={state.error} onRetry={state.reload} />;
+  if (state.loading && state.data === undefined) return <PageState kind="loading" title="Henter godkendelsespolitik" />;
+  if (state.error) return <PageState kind="error" title="Godkendelsespolitik kunne ikke hentes" onRetry={state.reload}>{state.error}</PageState>;
   const policy = state.data;
   async function save() {
     if (!pending) return;
@@ -25,7 +25,7 @@ export function AccountingApprovalPolicyView() {
     try { await api.setAccountingApprovalPolicy(slug, pending, policy?.eventHash ?? null); state.reload(); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Politikken kunne ikke ændres."); throw cause; }
   }
-  return <section className="statement">
+  return <section className="statement" data-cockpit-page="approval-policy" data-evidence-issue="655">
     <div className="page-head"><div><h2>Godkendelsespolitik</h2><p className="muted">Bestemmer hvem der kan færdiggøre kontrollerede køb, batches og kladder. Den ændrer aldrig adgang eller bogføring i sig selv.</p></div></div>
     {error && <div className="card archived-notice" role="alert"><p>{error}</p></div>}
     <section className="card"><h3>Aktiv politik</h3>

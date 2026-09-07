@@ -82,7 +82,7 @@ export function RecurringInvoicesView() {
     fiscalYears.find((y) => y.label === selectedYear)?.source === "archive";
 
   return (
-    <section className="statement">
+    <section className="statement" data-cockpit-page="invoice-templates" data-evidence-issue="655">
       <div className="page-head">
         <div>
           <h2>Faktura-skabeloner</h2>
@@ -322,7 +322,7 @@ function TemplateCard({
 
       {template.generations.length > 0 && (
         <div className="table-scroll" style={{ marginTop: 12 }}>
-          <table className="data statement-table">
+          <table className="data statement-table responsive-table" aria-label="Udstedte fakturaer fra skabelonen">
             <thead>
               <tr>
                 <th>Periode</th>

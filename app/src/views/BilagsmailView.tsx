@@ -15,7 +15,7 @@ import { useAsync } from "../lib/useAsync";
 import { formatKroner } from "../lib/format";
 import type { CompanyBilagsmail } from "../lib/types";
 import { ConfirmDialog } from "../components/ConfirmDialog";
-import { ErrorState, Loading } from "../components/Feedback";
+import { PageState } from "../components/CockpitPrimitives";
 
 export function BilagsmailView() {
   const { slug = "" } = useParams();
@@ -28,13 +28,13 @@ export function BilagsmailView() {
 
   const doneRefresh = () => setRefresh((n) => n + 1);
 
-  if (state.loading) return <Loading />;
-  if (state.error) return <ErrorState message={state.error} />;
+  if (state.loading) return <PageState kind="loading" title="Henter bilagsmail" />;
+  if (state.error) return <PageState kind="error" title="Bilagsmail kunne ikke hentes" onRetry={state.reload}>{state.error}</PageState>;
   const data = state.data!;
   const currency = data.company.currency || "DKK";
 
   return (
-    <section className="bilagsmail-view">
+    <section className="bilagsmail-view" data-cockpit-page="receipt-email" data-evidence-issue="655">
       <header className="page-head">
         <div>
           <h2>{data.company.name}</h2>

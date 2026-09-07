@@ -4,8 +4,8 @@ import { api, ApiError } from "../lib/api";
 import type { AccountingDraft, AccountingDraftLine, AccountingDraftPayload } from "../lib/types";
 import { useAsync } from "../lib/useAsync";
 import { ConfirmDialog } from "../components/ConfirmDialog";
-import { ErrorState, Loading } from "../components/Feedback";
 import { formatKroner, todayIso } from "../lib/format";
+import { FilterBar, PageState, ResponsiveTable } from "../components/CockpitPrimitives";
 
 type LineForm = { accountNo: string; debitAmount: string; creditAmount: string; vatCode: string; text: string };
 const EMPTY_LINE: LineForm = { accountNo: "", debitAmount: "", creditAmount: "", vatCode: "", text: "" };
@@ -71,6 +71,7 @@ export function AccountingDraftsView() {
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [pending, setPending] = useState<{ kind: "submit" | "reject" | "approve"; draft: AccountingDraft } | null>(null);
+  const [statusFilter, setStatusFilter] = useState<AccountingDraft["status"] | "">("");
 
   async function create(event: FormEvent) {
     event.preventDefault();
@@ -123,10 +124,11 @@ export function AccountingDraftsView() {
     }
   }
 
-  if (state.loading && !state.data) return <Loading label="Henter bogføringskladder…" />;
-  if (state.error || policy.error) return <ErrorState message={state.error ?? policy.error ?? "Kladder kunne ikke hentes."} onRetry={() => { state.reload(); policy.reload(); }} />;
+  if (state.loading && !state.data) return <PageState kind="loading" title="Henter bogføringskladder" />;
+  if (state.error || policy.error) return <PageState kind="error" title="Kladder kunne ikke hentes" onRetry={() => { state.reload(); policy.reload(); }}>{state.error ?? policy.error}</PageState>;
+  const drafts = state.data!.filter((draft) => !statusFilter || draft.status === statusFilter);
 
-  return <section className="statement accounting-drafts-view">
+  return <section className="statement accounting-drafts-view" data-cockpit-page="drafts" data-evidence-issue="655">
     <div className="page-head"><div><h2>Bogføringskladder</h2><p className="muted">Kladde → indsendelse → uafhængig godkendelse → atomisk bogføring</p></div><Link className="btn secondary" to={`/companies/${slug}/posteringer`}>Se bogførte posteringer</Link></div>
     <p className="muted">Den indsendte version låses med en SHA-256-identitet. Godkenderen skal være en anden bruger end forfatteren og indsenderen.</p>
     {actionError && <div className="card archived-notice" role="alert"><p>{actionError}</p></div>}
@@ -140,7 +142,7 @@ export function AccountingDraftsView() {
         <label>Bilags-id (valgfrit)<input inputMode="numeric" value={documentId} onChange={(event) => setDocumentId(event.target.value)} /></label>
         <label>Bankpost-id (valgfrit)<input inputMode="numeric" value={bankId} onChange={(event) => setBankId(event.target.value)} /></label>
       </div>
-      <div className="table-scroll"><table className="data"><thead><tr><th>Konto</th><th>Debet</th><th>Kredit</th><th>Momskode</th><th>Linjetekst</th><th /></tr></thead><tbody>{lines.map((line, index) => <tr key={index}>
+      <div className="table-scroll"><table className="data responsive-table" aria-label="Kladdeposteringslinjer"><thead><tr><th scope="col">Konto</th><th scope="col">Debet</th><th scope="col">Kredit</th><th scope="col">Momskode</th><th scope="col">Linjetekst</th><th scope="col" aria-label="Handling" /></tr></thead><tbody>{lines.map((line, index) => <tr key={index}>
         <td><input aria-label={`Konto linje ${index + 1}`} value={line.accountNo} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, accountNo: event.target.value } : item))} /></td>
         <td><input aria-label={`Debet linje ${index + 1}`} inputMode="decimal" value={line.debitAmount} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, debitAmount: event.target.value, creditAmount: event.target.value ? "" : item.creditAmount } : item))} /></td>
         <td><input aria-label={`Kredit linje ${index + 1}`} inputMode="decimal" value={line.creditAmount} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, creditAmount: event.target.value, debitAmount: event.target.value ? "" : item.debitAmount } : item))} /></td>
@@ -151,12 +153,12 @@ export function AccountingDraftsView() {
       <div className="row-actions"><button type="button" className="btn secondary" onClick={() => setLines((current) => [...current, { ...EMPTY_LINE }])}>Tilføj linje</button>{editing && <button type="button" className="btn secondary" onClick={() => { setEditing(null); setDraftId(""); setText(""); setDocumentId(""); setBankId(""); setLines([{ ...EMPTY_LINE }, { ...EMPTY_LINE }]); }}>Annullér revision</button>}<button className="btn" type="submit" disabled={busy}>{busy ? "Gemmer…" : editing ? "Gem ny version" : "Opret kladde"}</button></div>
     </form>
 
-    <section className="card"><h3>Kladder ({state.data!.length})</h3>{state.data!.length === 0 ? <p className="muted">Ingen kladder endnu.</p> : <div className="table-scroll"><table className="data"><thead><tr><th>Id / version</th><th>Status</th><th>Dato og tekst</th><th>Beløb</th><th>Evidens</th><th>Handling</th></tr></thead><tbody>{state.data!.map((draft) => <tr key={draft.id}>
+    <section className="card"><h3>Kladder ({drafts.length} af {state.data!.length})</h3><FilterBar activeFilters={statusFilter ? [`Status: ${STATUS_LABEL[statusFilter]}`] : []} onReset={() => setStatusFilter("")}><label>Status <select aria-label="Filtrér kladder på status" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as AccountingDraft["status"] | "")}><option value="">Alle statuser</option>{Object.entries(STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{value === "submitted" ? "Indsendt – afventer godkendelse" : label}</option>)}</select></label></FilterBar>{drafts.length === 0 ? statusFilter ? <PageState kind="empty" title="Ingen kladder i visningen">Prøv at nulstille statusfiltret.</PageState> : <p className="muted">Ingen kladder endnu.</p> : <ResponsiveTable label="Bogføringskladder"><thead><tr><th scope="col">Id / version</th><th scope="col">Status</th><th scope="col">Dato og tekst</th><th scope="col">Beløb</th><th scope="col">Evidens</th><th scope="col">Handling</th></tr></thead><tbody>{drafts.map((draft) => <tr key={draft.id}>
       <td><strong>{draft.id}</strong><div className="muted">v{draft.version}</div></td><td><span className={`pill ${draft.status === "approved_posted" ? "ok" : draft.status === "rejected" ? "warn" : ""}`}>{STATUS_LABEL[draft.status]}</span>{draft.reason && <div className="muted">{draft.reason}</div>}</td>
       <td>{draft.payload.transactionDate}<div className="muted">{draft.payload.text}</div></td><td className="num">{formatKroner(draft.payload.lines.reduce((sum, line) => sum + (line.debitAmount ?? 0), 0))}</td>
       <td><code title={draft.eventHash}>{draft.eventHash.slice(0, 12)}…</code>{draft.journalEntryId && <div className="muted">Journal #{draft.journalEntryId}</div>}</td>
       <td><div className="row-actions">{(draft.status === "created" || draft.status === "revised") && <><button className="btn" type="button" onClick={() => setPending({ kind: "submit", draft })}>Indsend</button><button className="btn secondary" type="button" onClick={() => edit(draft)}>Redigér ny version</button></>}{draft.status === "rejected" && <button className="btn secondary" type="button" onClick={() => edit(draft)}>Ret og opret ny version</button>}{draft.status === "submitted" && <><button className="btn" type="button" onClick={() => setPending({ kind: "approve", draft })}>Godkend og bogfør</button><button className="btn secondary" type="button" onClick={() => setPending({ kind: "reject", draft })}>Afvis</button></>}</div></td>
-    </tr>)}</tbody></table></div>}</section>
+    </tr>)}</tbody></ResponsiveTable>}</section>
 
     {pending && <ConfirmDialog title={pending.kind === "approve" ? "Godkend og bogfør" : pending.kind === "reject" ? "Afvis kladde" : "Indsend kladde"} body={<p>{pending.kind === "approve" ? "Den præcise indsendte version bogføres irreversibelt og audit-logges." : pending.kind === "reject" ? "Kladdeversionen afvises; skriv hvorfor." : "Den aktuelle version låses til uafhængigt review."}</p>} confirmLabel={pending.kind === "approve" ? "Godkend og bogfør" : pending.kind === "reject" ? "Afvis" : "Indsend"} confirmKind={pending.kind === "reject" ? "danger" : "primary"} noteLabel={pending.kind === "reject" ? "Begrundelse" : undefined} onConfirm={(note) => action(pending.kind, pending.draft, note)} onClose={() => setPending(null)} />}
   </section>;

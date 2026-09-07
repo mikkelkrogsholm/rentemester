@@ -108,7 +108,7 @@ export function ContactsView() {
   }
 
   return (
-    <section className="statement">
+    <section className="statement" data-cockpit-page="contacts" data-evidence-issue="655">
       <div className="page-head">
         <div>
           <h2>{c.company.name}</h2>
@@ -285,7 +285,7 @@ function CustomerTable({
 }) {
   return (
     <div className="card statement-card table-scroll">
-      <table className="data statement-table">
+      <table className="data statement-table responsive-table" aria-label="Kunder">
         <thead>
           <tr>
             <th>Navn</th>
@@ -376,7 +376,7 @@ function VendorTable({
 }) {
   return (
     <div className="card statement-card table-scroll">
-      <table className="data statement-table">
+      <table className="data statement-table responsive-table" aria-label="Leverandører">
         <thead>
           <tr>
             <th>Navn</th>

@@ -51,4 +51,18 @@ describe("Party Hub and profile (#653)", () => {
     expect(await screen.findByText("Part findes ikke")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Prøv igen" })).toBeInTheDocument();
   });
+
+  test("marks the profile as a detail route while keeping the hub filter resettable", async () => {
+    mockFetch({ "GET /api/companies/acme-aps/party-hub": hub });
+    renderHub();
+    await screen.findByText("Leverandør ApS");
+    await userEvent.type(screen.getByLabelText("Søg parter"), "leverandør");
+    expect(screen.getByText(/Aktive filtre: Søgning: leverandør/i)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Nulstil filtre" }));
+    expect(screen.getByDisplayValue("")).toBeInTheDocument();
+
+    mockFetch({ "GET /api/companies/acme-aps/party-hub/party-1": profile() });
+    renderProfile();
+    expect((await screen.findByRole("heading", { name: "Leverandør ApS" })).closest("section")?.getAttribute("data-cockpit-detail-route")).toBe("party-profile");
+  });
 });
