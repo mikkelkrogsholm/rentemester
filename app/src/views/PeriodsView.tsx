@@ -49,7 +49,7 @@ export function PeriodsView() {
   const data = state.data!;
 
   return (
-    <section className="periods-view">
+    <section className="periods-view" data-cockpit-page="period-lock" data-evidence-issue="655">
       <header className="page-head">
         <div>
           <h2>{data.company.name}</h2>

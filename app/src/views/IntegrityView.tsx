@@ -31,7 +31,7 @@ export function IntegrityView() {
   const backupOk = data.backup.ok && !data.backup.backupDue;
 
   return (
-    <section className="integrity-view">
+    <section className="integrity-view" data-cockpit-page="integrity" data-evidence-issue="655">
       <header className="page-head">
         <div>
           <h2>{data.company.name}</h2>

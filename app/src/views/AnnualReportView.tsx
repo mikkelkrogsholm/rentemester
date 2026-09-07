@@ -43,7 +43,7 @@ export function AnnualReportView() {
   };
 
   return (
-    <section className="annual-report-view">
+    <section className="annual-report-view" data-cockpit-page="annual-report" data-evidence-issue="655">
       <header className="page-head">
         <div>
           <h2>Årsrapport (regnskabsklasse B)</h2>

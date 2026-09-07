@@ -27,7 +27,7 @@ export function RetentionView() {
   const totalExpired = r.report.rows.reduce((acc, row) => acc + row.expired, 0);
 
   return (
-    <section className="retention-view">
+    <section className="retention-view" data-cockpit-page="retention" data-evidence-issue="655">
       <header className="page-head">
         <div>
           <h2>{r.company.name}</h2>

@@ -45,7 +45,7 @@ export function VatView() {
   // below.
   if (!v.vatRegistered) {
     return (
-      <section className="statement">
+      <section className="statement" data-cockpit-page="vat" data-evidence-issue="655">
         <div className="page-head">
           <div>
             <h2>{v.company.name}</h2>
@@ -91,7 +91,7 @@ export function VatView() {
   const statusTone = filingStatus === "Ikke klar" ? "danger" : filingStatus === "Kræver stillingtagen" ? "warning" : "success";
 
   return (
-    <section className="statement">
+    <section className="statement" data-cockpit-page="vat" data-evidence-issue="655">
       <div className="page-head">
         <div>
           <h2>{v.company.name}</h2>

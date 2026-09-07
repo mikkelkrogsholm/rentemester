@@ -74,7 +74,7 @@ export function MultiYearView() {
   const showDelta = m.years.length > 1;
 
   return (
-    <section className="statement">
+    <section className="statement" data-cockpit-page="multi-year" data-evidence-issue="655">
       <div className="page-head">
         <div>
           <h2>{m.company.name}</h2>

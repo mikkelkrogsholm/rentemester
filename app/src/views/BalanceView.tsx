@@ -48,7 +48,7 @@ export function BalanceView() {
   const priorYear = String(parseInt(b.selectedYear, 10) - 1);
 
   return (
-    <section className="statement">
+    <section className="statement" data-cockpit-page="balance" data-evidence-issue="655">
       <div className="page-head">
         <div>
           <h2>{b.company.name}</h2>

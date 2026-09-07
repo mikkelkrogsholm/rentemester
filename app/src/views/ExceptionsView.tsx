@@ -95,7 +95,7 @@ export function ExceptionsView() {
   const rows = data.rows;
 
   return (
-    <section className="exceptions-view">
+    <section className="exceptions-view" data-cockpit-page="exceptions" data-evidence-issue="655">
       <header className="page-head">
         <div>
           <h2>{data.company.name}</h2>

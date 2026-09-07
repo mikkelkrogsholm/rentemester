@@ -42,7 +42,7 @@ export function ArchiveView() {
   const selectedLabel = year ?? years[0]?.label ?? "";
 
   return (
-    <section className="statement">
+    <section className="statement" data-cockpit-page="archive" data-evidence-issue="655">
       <div className="page-head">
         <div>
           <h2>Om arkivet</h2>

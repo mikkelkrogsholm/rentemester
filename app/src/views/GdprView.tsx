@@ -82,7 +82,7 @@ export function GdprView() {
   };
 
   return (
-    <section className="gdpr-view">
+    <section className="gdpr-view" data-cockpit-page="gdpr" data-evidence-issue="655">
       <header className="page-head">
         <div>
           <h2>GDPR</h2>

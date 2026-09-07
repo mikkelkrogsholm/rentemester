@@ -74,7 +74,7 @@ export function LiquidityView() {
   const netto = cf.totalIn - cf.totalOut;
 
   return (
-    <section className="statement">
+    <section className="statement" data-cockpit-page="liquidity" data-evidence-issue="655">
       <div className="page-head">
         <div>
           <h2>{cf.company.name}</h2>

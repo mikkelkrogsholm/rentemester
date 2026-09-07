@@ -75,7 +75,7 @@ export function BudgetView() {
   const currency = data.company.currency || "DKK";
 
   return (
-    <section className="statement">
+    <section className="statement" data-cockpit-page="budget" data-evidence-issue="655">
       <div className="page-head">
         <div>
           <h2>{data.company.name}</h2>

@@ -38,7 +38,7 @@ export function IncomeStatementView() {
   const positive = s.result >= 0;
 
   return (
-    <section className="statement">
+    <section className="statement" data-cockpit-page="income-statement" data-evidence-issue="655">
       <div className="page-head">
         <div>
           <h2>{s.company.name}</h2>

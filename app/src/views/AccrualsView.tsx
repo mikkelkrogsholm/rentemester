@@ -39,7 +39,7 @@ export function AccrualsView() {
   const currency = data.company.currency || "DKK";
 
   return (
-    <section className="accruals-view">
+    <section className="accruals-view" data-cockpit-page="accruals" data-evidence-issue="655">
       <header className="page-head">
         <div>
           <h2>{data.company.name}</h2>

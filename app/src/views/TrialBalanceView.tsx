@@ -35,7 +35,7 @@ export function TrialBalanceView() {
   const currency = t.company.currency || "DKK";
 
   return (
-    <section className="statement">
+    <section className="statement" data-cockpit-page="trial-balance" data-evidence-issue="655">
       <div className="page-head">
         <div>
           <h2>{t.company.name}</h2>

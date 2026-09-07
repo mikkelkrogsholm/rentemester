@@ -132,7 +132,7 @@ function ManageForm({
   }
 
   return (
-    <section>
+    <section data-cockpit-page="manage" data-evidence-issue="655">
       <div className="page-head">
         <div>
           <h2>Administration</h2>

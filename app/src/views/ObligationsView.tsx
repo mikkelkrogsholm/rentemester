@@ -33,7 +33,7 @@ export function ObligationsView() {
   const currency = o.company.currency || "DKK";
 
   return (
-    <section className="statement">
+    <section className="statement" data-cockpit-page="obligations" data-evidence-issue="655">
       <div className="page-head">
         <div>
           <h2>{o.company.name}</h2>
