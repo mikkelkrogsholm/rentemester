@@ -17,7 +17,7 @@ export function AttentionView() {
     return <section data-evidence-issue="649"><h2 data-evidence-heading>Opgaver der kræver opmærksomhed</h2><p data-evidence-status={blocked ? "warning-or-blocked" : "error"}>{blocked ? "Opgaver er blokeret" : "Opgaver kunne ikke hentes"}</p><ErrorState message={blocked ? "Du har ikke adgang til disse opgaver." : "Opgaver kunne ikke hentes"} onRetry={state.reload} /></section>;
   }
   const attention = state.data!;
-  return <section className="attention-view" data-cockpit-page="attention" data-evidence-issue="655" data-evidence-prior-issue="649">
+  return <section className="attention-view" data-cockpit-page="attention" data-evidence-issue="649">
     <header className="page-head">
       <div><h2 data-evidence-heading>Opgaver der kræver opmærksomhed</h2><p className="muted">{attention.company.name} · én samlet liste over det, der skal afklares.</p></div>
     </header>

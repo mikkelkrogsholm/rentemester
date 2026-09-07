@@ -271,6 +271,36 @@ async function renderScenario(
     );
     const keyboardAssertions: string[] = [];
     for (const step of scenario.keyboard ?? []) {
+      // Do not assume that the first Tab belongs to the feature.  Browser
+      // chrome, skip links and shell navigation are legitimate earlier stops.
+      // Traverse from document focus, bounded to keep a broken focus order from
+      // hanging a release run.
+      if (step.key === "Tab") {
+        const maxTabs = 24;
+        let reached = false;
+        for (let tab = 1; tab <= maxTabs; tab++) {
+          await cdp.call("Input.dispatchKeyEvent", { type: "keyDown", key: "Tab", code: "Tab" });
+          await cdp.call("Input.dispatchKeyEvent", { type: "keyUp", key: "Tab", code: "Tab" });
+          const focused = await cdp.call("Runtime.evaluate", {
+            expression: `(()=>{const e=document.activeElement;return e instanceof Element&&e.matches(${JSON.stringify(step.expectFocus.selector)});})()`,
+            returnByValue: true,
+          });
+          if ((focused.result as { value?: unknown }).value === true) {
+            keyboardAssertions.push(`Tab traversal reached core action after ${tab} tabs (max ${maxTabs})`);
+            reached = true;
+            break;
+          }
+        }
+        if (!reached)
+          throw new Error(`${scenario.scenario} core action unreachable after ${maxTabs} Tabs`);
+        await evaluateBoolean(cdp, expression(step.expectState), `${scenario.scenario} focused core action`);
+        continue;
+      }
+      // A post-action state is evidence only when it did not exist before the
+      // real keyboard activation.  This catches hidden/pre-rendered success
+      // copy masquerading as a task outcome.
+      if (step.expectState) await evaluateBoolean(cdp, `!(${expression(step.expectState)})`, `${scenario.scenario} outcome absent before ${step.key}`);
+      if (step.expectUrl) await evaluateBoolean(cdp, `location.pathname !== ${JSON.stringify(step.expectUrl)}`, `${scenario.scenario} URL outcome absent before ${step.key}`);
       await cdp.call("Input.dispatchKeyEvent", {
         type: "keyDown",
         key: step.key,
@@ -283,18 +313,10 @@ async function renderScenario(
         code: step.key === "Space" ? "Space" : step.key,
         modifiers: step.key === "Shift+Tab" ? 8 : 0,
       });
-      await evaluateBoolean(
-        cdp,
-        `(()=>{const e=document.activeElement;return e instanceof Element&&e.matches(${JSON.stringify(step.expectFocus.selector)});})()`,
-        `${scenario.scenario} focus after ${step.key}`,
-      );
-      await evaluateBoolean(
-        cdp,
-        expression(step.expectState),
-        `${scenario.scenario} task outcome after ${step.key}`,
-      );
+      if (step.expectState) await evaluateBoolean(cdp, expression(step.expectState), `${scenario.scenario} task outcome after ${step.key}`);
+      if (step.expectUrl) await evaluateBoolean(cdp, `location.pathname === ${JSON.stringify(step.expectUrl)}`, `${scenario.scenario} URL outcome after ${step.key}`);
       keyboardAssertions.push(
-        `${step.key}: natural focus and UI state verified`,
+        `${step.key}: real control activated and new UI state verified`,
       );
     }
     await Promise.all(interceptions);

@@ -28,15 +28,18 @@ const MODE_VIEWPORTS: Record<
   zoom: { width: 720, height: 450, deviceScaleFactor: 2 },
 };
 const REQUIRED_ISSUE_MAPPING: Record<number, { route: string; endpoint: string }> = {
-  649: { route: "/companies/evidence-fixture", endpoint: "/api/companies/evidence-fixture/attention" },
-  650: { route: "/companies/evidence-fixture/batchbogfoering", endpoint: "/api/companies/evidence-fixture/bookkeeping-workbench" },
+  649: { route: "/companies/evidence-fixture/opmaerksomhed", endpoint: "/api/companies/evidence-fixture/attention" },
+  // The workbench cannot be requested before its fiscal period is known.  The
+  // fiscal-years request is therefore the canonical initial request owned by
+  // the page, rather than an invented query-less workbench URL.
+  650: { route: "/companies/evidence-fixture/batchbogfoering", endpoint: "/api/companies/evidence-fixture/fiscal-years" },
   651: { route: "/companies/evidence-fixture", endpoint: "/api/companies/evidence-fixture/changes-since?after=0" },
-  652: { route: "/companies/evidence-fixture/posteringer", endpoint: "/api/companies/evidence-fixture/journal/explanation" },
-  653: { route: "/companies/evidence-fixture/kontakter", endpoint: "/api/companies/evidence-fixture/party-projection" },
+  652: { route: "/companies/evidence-fixture/posteringer", endpoint: "/api/companies/evidence-fixture/journal" },
+  653: { route: "/companies/evidence-fixture/parter", endpoint: "/api/companies/evidence-fixture/party-hub?query=" },
   654: { route: "/companies/evidence-fixture/balance", endpoint: "/api/companies/evidence-fixture/balance" },
-  655: { route: "/companies/evidence-fixture/bank", endpoint: "/api/companies/evidence-fixture/bank?year=2026" },
-  656: { route: "/companies/evidence-fixture/moms", endpoint: "/api/companies/evidence-fixture/vat/readiness" },
-  657: { route: "/companies/evidence-fixture/manage", endpoint: "/api/companies/evidence-fixture/company/profile" },
+  655: { route: "/companies/evidence-fixture/bank", endpoint: "/api/companies/evidence-fixture/bank" },
+  656: { route: "/companies/evidence-fixture/moms", endpoint: "/api/companies/evidence-fixture/vat" },
+  657: { route: "/companies/evidence-fixture/manage", endpoint: "/api/companies" },
 };
 
 export type DomAssertion = {
@@ -65,7 +68,8 @@ export type Scenario = {
   keyboard?: {
     key: "Tab" | "Shift+Tab" | "Enter" | "Space";
     expectFocus: DomAssertion;
-    expectState: DomAssertion;
+    expectState?: DomAssertion;
+    expectUrl?: string;
   }[];
   interception?: {
     urlPattern: string;
@@ -83,7 +87,7 @@ type IssueProfile = {
   coreAction: string;
   data: string;
   progressive: string;
-  taskOutcome: string;
+  taskOutcome: string | { url: string };
   states: Record<State, string>;
 };
 type ScenarioConfig = { profiles: IssueProfile[] };
@@ -269,7 +273,7 @@ function expandProfile(profile: IssueProfile): Scenario[] {
     !profile.owner || !profile.route.startsWith("/") ||
     !/^\/api\/[a-z0-9/:?=&._-]+$/i.test(profile.endpoint) ||
     !profile.heading || !profile.coreAction || !profile.data || !profile.progressive ||
-    !profile.taskOutcome || REQUIRED_STATES.some((state) => !profile.states?.[state]) ||
+    !profile.taskOutcome || (typeof profile.taskOutcome !== "string" && !profile.taskOutcome.url.startsWith("/")) || REQUIRED_STATES.some((state) => !profile.states?.[state]) ||
     profile.route !== REQUIRED_ISSUE_MAPPING[profile.issue]?.route ||
     profile.endpoint !== REQUIRED_ISSUE_MAPPING[profile.issue]?.endpoint
   ) throw new Error(`invalid issue profile for #${profile.issue}`);
@@ -285,6 +289,9 @@ function expandProfile(profile: IssueProfile): Scenario[] {
     coreAction: state === "normal" ? { selector: `${root} [data-evidence-core-action]`, text: profile.coreAction, visible: true } : undefined,
     noHorizontalOverflow: true as const,
   });
+  const outcome = typeof profile.taskOutcome === "string"
+    ? { expectState: { selector: `${root} [data-evidence-task-outcome]`, text: profile.taskOutcome, visible: true } }
+    : { expectUrl: profile.taskOutcome.url };
   const keyboard = [{
     key: "Tab" as const,
     expectFocus: { selector: `${root} [data-evidence-core-action]`, visible: true },
@@ -292,7 +299,7 @@ function expandProfile(profile: IssueProfile): Scenario[] {
   }, {
     key: "Enter" as const,
     expectFocus: { selector: `${root} [data-evidence-core-action]`, visible: true },
-    expectState: { selector: `${root} [data-evidence-task-outcome]`, text: profile.taskOutcome, visible: true },
+    ...outcome,
   }];
   const scenario = (state: State, mode: Mode): Scenario => ({
     issue: profile.issue, scenario: `issue-${profile.issue}-${state}-${mode}`,
