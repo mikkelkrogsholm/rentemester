@@ -16,6 +16,7 @@ import {
 import { internalAppIpv4, startLoopbackProxy, type NetworkSettings } from "./cockpit-evidence-proxy";
 import { browserUrlMatchesExpected } from "./cockpit-evidence-url";
 import { selectPageDevToolsTarget } from "./cockpit-evidence-cdp-target";
+import { cdpKeyEvents, type EvidenceKey } from "./cockpit-evidence-key-events";
 import {
   LOADING_HEADING_READY_DEADLINE_MS,
   POST_ACTION_CONDITION_DEADLINE_MS,
@@ -188,6 +189,10 @@ async function evaluateBoolean(cdp: Cdp, source: string, label: string) {
   if ((value.result as { value?: unknown })?.value !== true)
     throw new Error(`DOM assertion failed: ${label}`);
 }
+async function dispatchEvidenceKey(cdp: Cdp, key: EvidenceKey) {
+  for (const event of cdpKeyEvents(key))
+    await cdp.call("Input.dispatchKeyEvent", event);
+}
 async function scenarioHeadingSnapshot(cdp: Cdp, selector: string) {
   const value = await cdp.call("Runtime.evaluate", {
     expression: `(()=>{const e=document.querySelector(${JSON.stringify(selector)});return {headingVisible:!!e&&!!(e.offsetWidth||e.offsetHeight||e.getClientRects().length),url:location.href,readyState:document.readyState,bodyText:(document.body?.innerText??document.documentElement?.innerText??"").slice(0,1000)};})()`,
@@ -352,8 +357,7 @@ async function renderScenario(
         const maxTabs = 24;
         let reached = false;
         for (let tab = 1; tab <= maxTabs; tab++) {
-          await cdp.call("Input.dispatchKeyEvent", { type: "keyDown", key: "Tab", code: "Tab" });
-          await cdp.call("Input.dispatchKeyEvent", { type: "keyUp", key: "Tab", code: "Tab" });
+          await dispatchEvidenceKey(cdp, "Tab");
           const focused = await cdp.call("Runtime.evaluate", {
             expression: `(()=>{const e=document.activeElement;return e instanceof Element&&e.matches(${JSON.stringify(step.expectFocus.selector)});})()`,
             returnByValue: true,
@@ -374,18 +378,7 @@ async function renderScenario(
       // copy masquerading as a task outcome.
       if (step.expectState) await evaluateBoolean(cdp, `!(${expression(step.expectState)})`, `${scenario.scenario} outcome absent before ${step.key}`);
       if (step.expectUrl) await evaluateBoolean(cdp, `!(${browserUrlMatchesExpected.toString()}(new URL(location.href), ${JSON.stringify(step.expectUrl)}))`, `${scenario.scenario} URL outcome absent before ${step.key}`);
-      await cdp.call("Input.dispatchKeyEvent", {
-        type: "keyDown",
-        key: step.key,
-        code: step.key === "Space" ? "Space" : step.key,
-        modifiers: step.key === "Shift+Tab" ? 8 : 0,
-      });
-      await cdp.call("Input.dispatchKeyEvent", {
-        type: "keyUp",
-        key: step.key,
-        code: step.key === "Space" ? "Space" : step.key,
-        modifiers: step.key === "Shift+Tab" ? 8 : 0,
-      });
+      await dispatchEvidenceKey(cdp, step.key);
       const postActionConditions = [
         ...(step.expectState ? [expression(step.expectState)] : []),
         ...(step.expectUrl
