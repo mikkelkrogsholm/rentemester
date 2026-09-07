@@ -100,6 +100,9 @@ class McpClient {
       stdin: "pipe",
       stdout: "pipe",
       stderr: "pipe",
+      // This legacy demo intentionally exercises the direct operation surface.
+      // New integrations should use the compact discovery-and-gateway profile.
+      env: { ...process.env, RENTEMESTER_MCP_PROFILE: "full" },
     });
     this.reader = this.proc.stdout.getReader();
   }
