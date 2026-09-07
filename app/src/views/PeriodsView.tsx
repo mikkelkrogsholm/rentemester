@@ -107,7 +107,7 @@ export function PeriodsView() {
             vises her sammen med deres effective status.
           </p>
         ) : (
-          <table className="table">
+          <div className="table-scroll"><table className="table responsive-table" aria-label="Regnskabsperioder">
             <thead>
               <tr>
                 <th>Start</th>
@@ -154,7 +154,7 @@ export function PeriodsView() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </section>
 

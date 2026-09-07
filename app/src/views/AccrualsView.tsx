@@ -77,7 +77,7 @@ export function AccrualsView() {
         {r.accruals.length === 0 ? (
           <PageState kind="empty" title="Ingen periodiseringer registreret">Ingen accruals registreret. Åbn opgaver der kræver opmærksomhed og kopiér den sikre næste handling. Den opretter eller bogfører intet.</PageState>
         ) : (
-          <table className="table">
+          <div className="table-scroll"><table className="table responsive-table" aria-label="Periodiseringer">
             <thead>
               <tr>
                 <th>Type</th>
@@ -96,7 +96,7 @@ export function AccrualsView() {
                 <AccrualRow key={a.accrualId} row={a} currency={currency} />
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </section>
     </section>

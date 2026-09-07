@@ -32,11 +32,10 @@ import type {
   ImportedReceivableRow,
   InvoiceStatus,
 } from "../lib/types";
-import { ErrorState, Loading } from "../components/Feedback";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { InvoiceIssueModal } from "../components/InvoiceIssueModal";
-import { StatusChip } from "../components/CockpitPrimitives";
+import { PageState, StatusChip } from "../components/CockpitPrimitives";
 import { PartyLink } from "../components/PartyLink";
 
 // #UI-16 — the statutory late-payment reminder fee (rentel. § 9b), in kroner.
@@ -91,15 +90,15 @@ export function InvoicesView() {
   const [reminderBookFee, setReminderBookFee] = useState(true);
 
   if (state.loading && !state.data)
-    return <Loading label="Henter fakturaer…" />;
+    return <PageState kind="loading" title="Henter fakturaer" />;
   if (state.error)
-    return <ErrorState message={state.error} onRetry={state.reload} />;
+    return <PageState kind="error" title="Fakturaer kunne ikke hentes" onRetry={state.reload}>{state.error}</PageState>;
 
   const inv = state.data!;
   const currency = inv.company.currency || "DKK";
 
   return (
-    <section className="statement">
+    <section className="statement" data-cockpit-page="invoices" data-evidence-issue="655">
       <div className="page-head">
         <div>
           <h2>{inv.company.name}</h2>
@@ -143,7 +142,7 @@ export function InvoicesView() {
           <strong>{imported.data ? formatKroner(imported.data.totalOpen, currency) : "—"}</strong>
         </div>
         {imported.error ? <p className="muted">Kunne ikke hente importarkivet.</p> : imported.data?.rows.length ? (
-          <div className="table-scroll"><table className="data"><thead><tr><th>Kilde-faktura</th><th>Kunde</th><th>Dato</th><th className="num">Åben saldo</th><th>Handling</th></tr></thead><tbody>
+          <div className="table-scroll"><table className="data responsive-table" aria-label="Kilde-fakturaer"><thead><tr><th>Kilde-faktura</th><th>Kunde</th><th>Dato</th><th className="num">Åben saldo</th><th>Handling</th></tr></thead><tbody>
             {imported.data.rows.map((row) => <tr key={`${row.scheduleHash}:${row.externalInvoiceId}`}><td>{row.externalInvoiceId}</td><td>{row.customerName ?? "—"}</td><td>{formatDateDa(row.invoiceDate)}</td><td className="num">{formatKroner(row.openBalance, currency)}</td><td>{row.openBalance > 0 ? <button type="button" className="btn secondary" onClick={() => setSettlingImported(row)}>Afstem bankpost</button> : "—"}</td></tr>)}
           </tbody></table></div>
         ) : <p className="muted">Ingen importerede tilgodehavender i arkivet.</p>}
@@ -512,7 +511,7 @@ export function InvoicesView() {
           </div>
 
           <div className="card statement-card table-scroll">
-            <table className="data statement-table">
+            <table className="data statement-table responsive-table" aria-label="Fakturaer">
               <thead>
                 <tr>
                   <th>Fakturanr.</th>

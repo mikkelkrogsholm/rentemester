@@ -24,7 +24,7 @@ import type {
   DocumentRow,
   FiscalYearEntry,
 } from "../lib/types";
-import { ErrorState, Loading } from "../components/Feedback";
+import { PageState } from "../components/CockpitPrimitives";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { DocumentIngestModal } from "../components/DocumentIngestModal";
 import { DocumentBookExpenseModal } from "../components/DocumentBookExpenseModal";
@@ -271,9 +271,9 @@ export function DocumentsView() {
     return out;
   }, [filteredDocuments, sort]);
 
-  if (state.loading && !state.data) return <Loading label="Henter bilag…" />;
+  if (state.loading && !state.data) return <PageState kind="loading" title="Henter bilag" />;
   if (state.error)
-    return <ErrorState message={state.error} onRetry={state.reload} />;
+    return <PageState kind="error" title="Bilag kunne ikke hentes" onRetry={state.reload}>{state.error}</PageState>;
 
   const { documents: d, fiscalYears } = state.data!;
   const currency = d.company.currency || "DKK";
@@ -576,7 +576,7 @@ export function DocumentsView() {
       )}
 
       <div className="card statement-card table-scroll">
-        <table className="data statement-table">
+        <table className="data statement-table responsive-table" aria-label="Bilag">
           <thead>
             <tr>
               <th>Bilagsnr.</th>

@@ -32,19 +32,21 @@ export function FilterBar({
   children,
   activeFilters = [],
   onReset,
+  resetLabel = "Nulstil filtre",
   advanced,
 }: {
   children: ReactNode;
   activeFilters?: string[];
   onReset?: () => void;
+  resetLabel?: string;
   advanced?: ReactNode;
 }) {
-  return <section className="filter-bar cockpit-filter-bar" aria-label="Filtre">
+  return <section className="filter-bar cockpit-filter-bar" aria-label="Filtre" role="search">
     <div className="filter-bar-controls">{children}</div>
     {advanced && <details className="filter-bar-advanced"><summary>Avancerede filtre</summary><div>{advanced}</div></details>}
     {activeFilters.length > 0 && <div className="active-filters" aria-live="polite">
       <span>Aktive filtre: {activeFilters.join(", ")}</span>
-      {onReset && <button type="button" className="btn secondary" onClick={onReset}>Nulstil filtre</button>}
+      {onReset && <button type="button" className="btn secondary" onClick={onReset}>{resetLabel}</button>}
     </div>}
   </section>;
 }
@@ -58,18 +60,20 @@ export function PageState({
   title,
   children,
   onRetry,
+  actions,
 }: {
   kind: "loading" | "empty" | "warning" | "blocked" | "error";
   title: string;
   children?: ReactNode;
   onRetry?: () => void;
+  actions?: ReactNode;
 }) {
   const role = kind === "error" || kind === "blocked" ? "alert" : "status";
   const live = kind === "loading" ? "polite" : undefined;
   return <section className={`page-state page-state--${kind}`} role={role} aria-live={live} data-page-state={kind}>
     <h2>{title}</h2>
     {children && <p>{children}</p>}
-    {onRetry && <button className="btn secondary" type="button" onClick={onRetry}>Prøv igen</button>}
+    {(onRetry || actions) && <div className="page-state-actions">{onRetry && <button className="btn secondary" type="button" onClick={onRetry}>Prøv igen</button>}{actions}</div>}
   </section>;
 }
 
@@ -86,8 +90,8 @@ export function MetricCard({ label, value, children }: { label: string; value: R
 }
 
 /** A deliberately small semantic table wrapper. Cells may use data-label for mobile detail labels. */
-export function ResponsiveTable({ children, className = "" }: { children: ReactNode; className?: string }) {
+export function ResponsiveTable({ children, className = "", label }: { children: ReactNode; className?: string; label?: string }) {
   return <div className="card responsive-table-shell" data-responsive-table>
-    <div className="responsive-table-scroll"><table className={`data responsive-table ${className}`.trim()}>{children}</table></div>
+    <div className="responsive-table-scroll"><table aria-label={label} className={`data responsive-table ${className}`.trim()}>{children}</table></div>
   </div>;
 }

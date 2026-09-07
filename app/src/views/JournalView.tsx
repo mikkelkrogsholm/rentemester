@@ -17,11 +17,11 @@ import { formatKroner } from "../lib/format";
 // #379 — the EntryRow needs the slug to build the bilag-file URL on the fly.
 import { useAsync } from "../lib/useAsync";
 import type { CompanyJournal, JournalEntry } from "../lib/types";
-import { ErrorState, Loading } from "../components/Feedback";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { ArchivedBanner } from "../components/ArchivedBanner";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { PartyLink } from "../components/PartyLink";
+import { FilterBar, FormField, PageHeaderActions, PageState } from "../components/CockpitPrimitives";
 
 const FILTER_PARAM_KEYS = ["q", "from", "to", "amountMin", "amountMax", "journalEntryId", "journalLineId"] as const;
 
@@ -100,9 +100,9 @@ export function JournalView() {
   }, [state.data, hasActiveFilter, q, fromDate, toDate, amountMin, amountMax, journalEntryId, journalLineId]);
 
   if (state.loading && !state.data)
-    return <Loading label="Henter posteringer…" />;
+    return <PageState kind="loading" title="Henter posteringer" />;
   if (state.error)
-    return <ErrorState message={state.error} onRetry={state.reload} />;
+    return <PageState kind="error" title="Posteringer kunne ikke hentes" onRetry={state.reload}>{state.error}</PageState>;
 
   const j = state.data!;
   const currency = j.company.currency || "DKK";
@@ -112,7 +112,7 @@ export function JournalView() {
   const pageEntries = filteredEntries.slice(page * pageSize, page * pageSize + pageSize);
 
   return (
-    <section className="statement">
+    <section className="statement" data-cockpit-page="journal" data-evidence-issue="655">
       <div className="page-head">
         <div>
           <h2>{j.company.name}</h2>
@@ -121,7 +121,7 @@ export function JournalView() {
             {j.company.country} · {currency} · Posteringer
           </p>
         </div>
-        <div className="row-actions">
+        <PageHeaderActions>
           {/* #465 — revisor-anmodning: hele kassekladden som CSV. URL'en
               bærer den aktive konto-drilldown med, så ejeren kan eksportere
               "kun denne konto"-udsnittet direkte. */}
@@ -135,7 +135,7 @@ export function JournalView() {
           <Link className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
           </Link>
-        </div>
+        </PageHeaderActions>
       </div>
 
       <CompanyNav
@@ -165,62 +165,24 @@ export function JournalView() {
         </div>
       )}
 
-      <div className="journal-filter-bar card" role="search">
-        <label className="journal-filter-field journal-filter-field--search">
-          <span className="muted">Søg</span>
-          <input
-            type="search"
-            value={q}
-            placeholder="Søg på tekst, bilagsnummer eller konto…"
-            onChange={(e) => setFilter("q", e.target.value)}
-          />
-        </label>
-        <label className="journal-filter-field">
-          <span className="muted">Fra</span>
-          <input
-            type="date"
-            value={fromDate}
-            onChange={(e) => setFilter("from", e.target.value)}
-          />
-        </label>
-        <label className="journal-filter-field">
-          <span className="muted">Til</span>
-          <input
-            type="date"
-            value={toDate}
-            onChange={(e) => setFilter("to", e.target.value)}
-          />
-        </label>
-        <label className="journal-filter-field">
-          <span className="muted">Beløb min</span>
+      <FilterBar activeFilters={[
+        q && `Søgning: ${q}`, fromDate && `Fra: ${fromDate}`, toDate && `Til: ${toDate}`,
+        amountMin && `Beløb fra: ${amountMin}`, amountMax && `Beløb til: ${amountMax}`,
+      ].filter(Boolean) as string[]} onReset={clearAllFilters} resetLabel="Ryd filtre" advanced={<><FormField label="Beløb min">
           <input
             type="number"
-            inputMode="decimal"
-            value={amountMin}
-            placeholder="0"
-            onChange={(e) => setFilter("amountMin", e.target.value)}
+            inputMode="decimal" value={amountMin} placeholder="0" onChange={(e) => setFilter("amountMin", e.target.value)}
           />
-        </label>
-        <label className="journal-filter-field">
-          <span className="muted">Beløb maks</span>
+        </FormField><FormField label="Beløb maks">
           <input
             type="number"
-            inputMode="decimal"
-            value={amountMax}
-            placeholder="∞"
-            onChange={(e) => setFilter("amountMax", e.target.value)}
+            inputMode="decimal" value={amountMax} placeholder="∞" onChange={(e) => setFilter("amountMax", e.target.value)}
           />
-        </label>
-        {hasActiveFilter && (
-          <button
-            type="button"
-            className="btn secondary"
-            onClick={clearAllFilters}
-          >
-            Ryd filtre
-          </button>
-        )}
-      </div>
+        </FormField></>}>
+        <FormField label="Søg"><input type="search" value={q} placeholder="Søg på tekst, bilagsnummer eller konto…" onChange={(e) => setFilter("q", e.target.value)} /></FormField>
+        <FormField label="Fra"><input type="date" value={fromDate} onChange={(e) => setFilter("from", e.target.value)} /></FormField>
+        <FormField label="Til"><input type="date" value={toDate} onChange={(e) => setFilter("to", e.target.value)} /></FormField>
+      </FilterBar>
 
       <p className="statement-asof muted">
         {j.periodStart} – {j.periodEnd} ·{" "}
@@ -229,15 +191,13 @@ export function JournalView() {
           : `${totalCount} posteringer`}
       </p>
       {filteredEntries.length === 0 ? (
-        <div className="card statement-card">
-          <p className="empty-inline" style={{ padding: "var(--space-md)" }}>
-            {hasActiveFilter
+        <PageState kind="empty" title={hasActiveFilter ? "Ingen posteringer" : "Ingen posteringer i året"}>
+          {hasActiveFilter
               ? "Ingen posteringer matcher filtrene."
               : j.accountFilter
                 ? "Ingen posteringer på kontoen i året."
                 : "Ingen posteringer i året."}
-          </p>
-        </div>
+        </PageState>
       ) : (
         <ul className="entry-list" aria-label="Posteringer">
           {pageEntries.map((entry) => (
