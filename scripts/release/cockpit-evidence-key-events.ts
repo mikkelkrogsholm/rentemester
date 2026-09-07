@@ -2,7 +2,7 @@
 export type EvidenceKey = "Tab" | "Shift+Tab" | "Enter" | "Space";
 
 export type CdpKeyEvent = {
-  type: "rawKeyDown" | "keyUp";
+  type: "rawKeyDown" | "keyDown" | "keyUp";
   key: string;
   code: string;
   modifiers: number;
@@ -51,11 +51,14 @@ const KEY_DEFINITIONS: Readonly<Record<EvidenceKey, KeyDefinition>> = {
 
 /**
  * Builds the native key pair Chrome needs to perform browser default actions.
- * Text belongs only on the raw key-down event for printable/activation keys.
+ * Textual keys use keyDown; non-textual keys use rawKeyDown.
  */
 export function cdpKeyEvents(key: EvidenceKey): readonly [CdpKeyEvent, CdpKeyEvent] {
   const { text, ...definition } = KEY_DEFINITIONS[key];
-  const keyDown: CdpKeyEvent = { type: "rawKeyDown", ...definition };
+  const keyDown: CdpKeyEvent = {
+    type: text === undefined ? "rawKeyDown" : "keyDown",
+    ...definition,
+  };
   if (text !== undefined) {
     keyDown.text = text;
     keyDown.unmodifiedText = text;

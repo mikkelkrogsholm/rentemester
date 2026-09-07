@@ -4,7 +4,7 @@ import { cdpKeyEvents } from "../../scripts/release/cockpit-evidence-key-events"
 test("builds Chrome-compatible Enter events with carriage-return text", () => {
   expect(cdpKeyEvents("Enter")).toEqual([
     {
-      type: "rawKeyDown", key: "Enter", code: "Enter", modifiers: 0,
+      type: "keyDown", key: "Enter", code: "Enter", modifiers: 0,
       windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13,
       text: "\r", unmodifiedText: "\r",
     },
@@ -18,7 +18,7 @@ test("builds Chrome-compatible Enter events with carriage-return text", () => {
 test("builds Chrome-compatible Space events with printable text", () => {
   expect(cdpKeyEvents("Space")).toEqual([
     {
-      type: "rawKeyDown", key: " ", code: "Space", modifiers: 0,
+      type: "keyDown", key: " ", code: "Space", modifiers: 0,
       windowsVirtualKeyCode: 32, nativeVirtualKeyCode: 32,
       text: " ", unmodifiedText: " ",
     },
