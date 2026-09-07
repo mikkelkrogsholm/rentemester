@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import {
   assertImmutableImage,
   parseScenarios,
+  normalizeObservedRequestPaths,
   pngDimensions,
   screenshotName,
   sha256,
@@ -262,7 +263,7 @@ async function renderScenario(
     );
     await waitFor(`http://127.0.0.1:${port}/json/version`);
     cdp = await openCdp(port);
-    const actualRequests: string[] = [],
+    const liveActualRequests: string[] = [],
       consoleErrors: string[] = [],
       expectedNetworkErrors: ExpectedNetworkError[] = [],
       interceptions: Promise<unknown>[] = [];
@@ -283,7 +284,7 @@ async function renderScenario(
       if (!p.requestId) return;
       const ownedRequests = scenario.requests ?? (scenario.interception ? [scenario.interception] : []);
       const response = ownedRequests.find((request) => p.request?.url === `${base}${request.urlPattern}`);
-      if (p.request?.url) actualRequests.push(p.request.url);
+      if (p.request?.url) liveActualRequests.push(p.request.url);
       interceptions.push(
         response
           ? (async () => {
@@ -409,7 +410,7 @@ async function renderScenario(
     await Promise.all(interceptions);
     const expectedRequests = scenario.requests ?? [scenario.interception!];
     for (const request of expectedRequests)
-      if (!actualRequests.includes(`${base}${request.urlPattern}`))
+      if (!liveActualRequests.includes(`${base}${request.urlPattern}`))
         throw new Error(`expected exact owned request was not observed: ${request.urlPattern}`);
     if (consoleErrors.length)
       throw new Error(
@@ -425,8 +426,8 @@ async function renderScenario(
       png: Uint8Array.fromBase64(screenshot.data),
       keyboardAssertions,
       interception: {
-        requested: expectedRequests.map((request) => request.urlPattern).join(","),
-        actualRequests,
+        requested: scenario.endpoint,
+        actualRequests: normalizeObservedRequestPaths(liveActualRequests),
       },
       consoleErrors,
       expectedNetworkErrors,

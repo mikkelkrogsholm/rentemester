@@ -6,6 +6,7 @@ import {
   parseScenarios,
   screenshotName,
   sha256,
+  normalizeObservedRequestPaths,
   verifyEvidence,
   type EvidenceManifest,
 } from "../../scripts/release/cockpit-evidence";
@@ -75,8 +76,8 @@ function fixture() {
       screenshot: screenshotName(s),
       keyboardAssertions: ["Tab: natural focus and UI state verified"],
       interception: {
-        requested: s.interception?.urlPattern ?? null,
-        actualRequests: [s.endpoint],
+        requested: s.endpoint,
+        actualRequests: (s.requests ?? []).map((request) => request.urlPattern),
       },
       consoleErrors: [],
       expectedNetworkErrors: [],
@@ -111,6 +112,16 @@ test("keeps #656 empty VAT data at zero and #657 fixtures as exact usable API co
     expect(JSON.parse(requests[0]!.body)).toMatchObject({ ok: true, count: 1, companies: [{ slug: "evidence-fixture" }] });
     expect(JSON.parse(requests[1]!.body)).toMatchObject({ ok: true, company: { name: "Synthetic Evidence Fixture" } });
   }
+});
+test("normalizes observed request URLs to deduplicated, origin-independent paths", () => {
+  expect(normalizeObservedRequestPaths([
+    "http://127.0.0.1:43117/api/companies/evidence-fixture/fiscal-years",
+    "https://evidence.example/api/companies/evidence-fixture/fiscal-years",
+    "http://localhost:9876/api/companies/evidence-fixture/posting-drafts?limit=20",
+  ])).toEqual([
+    "/api/companies/evidence-fixture/fiscal-years",
+    "/api/companies/evidence-fixture/posting-drafts?limit=20",
+  ]);
 });
 test("compares URL outcomes with a query exactly and retains pathname-only outcomes", () => {
   expect(browserUrlMatchesExpected(new URL("http://test/companies/a/posteringer?year=2026&account=55000"), "/companies/a/posteringer?year=2026&account=55000")).toBe(true);
@@ -191,6 +202,40 @@ test("verifies PNG structure, dimensions, one-to-one mapping and query checksum"
     writeFileSync(join(value.dir, "orphan.png"), png(1, 1));
     writeFileSync(value.path, JSON.stringify(value.manifest));
     expect(() => verifyEvidence(value.path)).toThrow("unreferenced screenshot");
+  } finally {
+    rmSync(value.dir, { recursive: true, force: true });
+  }
+});
+test("verifies every declared #650 request and rejects missing secondary coverage", () => {
+  const value = fixture();
+  try {
+    const scenario = value.manifest.scenarios.find(
+      (item) => item.issue === 650 && item.state === "normal" && item.mode === "desktop",
+    )!;
+    expect(scenario.requests).toHaveLength(3);
+    const secondary = scenario.requests![1]!.urlPattern;
+    expect(verifyEvidence(value.path)).toBeDefined();
+    scenario.interception.actualRequests = [scenario.endpoint];
+    writeFileSync(value.path, JSON.stringify(value.manifest));
+    expect(() => verifyEvidence(value.path)).toThrow(
+      `declared request was not observed: ${secondary}`,
+    );
+  } finally {
+    rmSync(value.dir, { recursive: true, force: true });
+  }
+});
+test("rejects full URLs and undeclared paths in persisted interception evidence", () => {
+  const value = fixture();
+  try {
+    const scenario = value.manifest.scenarios[0]!;
+    scenario.interception.actualRequests = [
+      `http://different-origin.example${scenario.endpoint}`,
+    ];
+    writeFileSync(value.path, JSON.stringify(value.manifest));
+    expect(() => verifyEvidence(value.path)).toThrow("undeclared intercepted request");
+    scenario.interception.actualRequests = [scenario.endpoint, "/api/undeclared"];
+    writeFileSync(value.path, JSON.stringify(value.manifest));
+    expect(() => verifyEvidence(value.path)).toThrow("undeclared intercepted request");
   } finally {
     rmSync(value.dir, { recursive: true, force: true });
   }

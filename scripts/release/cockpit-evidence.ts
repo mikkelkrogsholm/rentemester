@@ -144,6 +144,16 @@ export type EvidenceManifest = {
     }
   >;
 };
+/** Persist request evidence independently of the loopback origin used to capture it. */
+export function normalizeObservedRequestPaths(urls: string[]): string[] {
+  const paths: string[] = [];
+  for (const url of urls) {
+    const parsed = new URL(url);
+    const path = `${parsed.pathname}${parsed.search}`;
+    if (!paths.includes(path)) paths.push(path);
+  }
+  return paths;
+}
 export function sha256(path: string): string {
   return `sha256:${createHash("sha256").update(readFileSync(path)).digest("hex")}`;
 }
@@ -426,10 +436,27 @@ export function verifyEvidence(manifestPath: string): EvidenceManifest {
     )
       throw new Error(`scenario capture dimensions mismatch: ${s.scenario}`);
     const requested = s.interception.requested;
-    if (requested !== null && requested !== s.endpoint)
+    if (requested !== s.endpoint)
       throw new Error(`interception endpoint mismatch: ${s.scenario}`);
-    if (!s.interception.actualRequests.includes(s.endpoint))
-      throw new Error(`feature endpoint was not observed for ${s.scenario}`);
+    const declaredRequests = s.requests ?? [];
+    if (!declaredRequests.length)
+      throw new Error(`declared request contract missing: ${s.scenario}`);
+    const actualRequests = s.interception.actualRequests;
+    if (
+      !Array.isArray(actualRequests) ||
+      actualRequests.some((request) =>
+        !request.startsWith("/") || request.includes("://") ||
+        !declaredRequests.some((declared) => declared.urlPattern === request),
+      )
+    )
+      throw new Error(`undeclared intercepted request: ${s.scenario}`);
+    if (new Set(actualRequests).size !== actualRequests.length)
+      throw new Error(`intercepted requests must be deduplicated: ${s.scenario}`);
+    for (const request of declaredRequests)
+      if (!actualRequests.includes(request.urlPattern))
+        throw new Error(
+          `declared request was not observed: ${request.urlPattern} for ${s.scenario}`,
+        );
     for (const error of s.expectedNetworkErrors) {
       let request: NonNullable<Scenario["requests"]>[number] | undefined;
       try {
