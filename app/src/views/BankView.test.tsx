@@ -285,17 +285,35 @@ describe("BankView — Bank", () => {
     expect(screen.queryByText("Gebyr Danske Bank")).not.toBeInTheDocument();
   });
 
-  test("Ryd filtre-knappen er kun synlig når et filter er aktivt (#451)", async () => {
+  test("Nulstil filtre er kun synlig når et filter er aktivt (#451)", async () => {
     mockFetch(route(MULTI_TX));
     renderView();
     await screen.findByText("Indbetaling Energinet");
     expect(
-      screen.queryByRole("button", { name: /Ryd filtre/i }),
+      screen.queryByRole("button", { name: /Nulstil filtre/i }),
     ).not.toBeInTheDocument();
     const search = screen.getByPlaceholderText(/Søg på tekst/i);
     await userEvent.type(search, "energinet");
     expect(
-      screen.getByRole("button", { name: /Ryd filtre/i }),
+      screen.getByRole("button", { name: /Nulstil filtre/i }),
     ).toBeInTheDocument();
+  });
+
+  test("uses the shared labelled filter bar and keeps advanced date filters available", async () => {
+    mockFetch(route(MULTI_TX));
+    renderView();
+    await screen.findByText("Indbetaling Energinet");
+    expect(screen.getByLabelText("Søg")).toHaveAttribute("type", "search");
+    await userEvent.click(screen.getByText("Avancerede filtre"));
+    expect(screen.getByLabelText("Fra")).toBeInTheDocument();
+    expect(screen.getByLabelText("Til")).toBeInTheDocument();
+  });
+
+  test("keeps bank structure while a request fails and offers retry", async () => {
+    mockFetch({ "GET /api/companies/acme-aps/bank": { __error: { code: "unavailable", message: "Midlertidig fejl" } } });
+    renderView();
+    expect(await screen.findByRole("heading", { name: "Bankposter kunne ikke hentes" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Prøv igen" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Bank" })).toBeInTheDocument();
   });
 });

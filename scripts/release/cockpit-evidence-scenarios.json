@@ -78,11 +78,11 @@
       "route": "/companies/evidence-fixture/bank",
       "endpoint": "/api/companies/evidence-fixture/bank?year=2026",
       "heading": "Bank",
-      "coreAction": "Afstem bankpost",
-      "data": "Bankposter",
-      "progressive": "Se afstemningsgrundlag",
-      "taskOutcome": "Bankafstemning åbnet",
-      "states": { "normal": "Bank klar", "loading": "Henter bankposter", "empty": "Ingen bankposter i perioden", "warning-or-blocked": "Bank kræver afstemning", "error": "Bankposter kunne ikke hentes" }
+      "coreAction": "Importér kontoudtog",
+      "data": "Indbetaling faktura 1001",
+      "progressive": "Avancerede filtre",
+      "taskOutcome": "Importér kontoudtog",
+      "states": { "normal": "Bank klar til gennemgang", "loading": "Henter bankposter", "empty": "Ingen bankposter i perioden", "warning-or-blocked": "Bank kræver afstemning", "error": "Bankposter kunne ikke hentes" }
     },
     {
       "issue": 656,

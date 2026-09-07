@@ -1,8 +1,8 @@
-// Small shared presentational components for loading / error / empty states
-// and inline banners. Kept tiny and prop-driven so views stay declarative.
+// Compatibility adapters for older views. New pages use PageState directly.
+import { PageState } from "./CockpitPrimitives";
 
 export function Loading({ label = "Indlæser…" }: { label?: string }) {
-  return <div className="state-msg">{label}</div>;
+  return <PageState kind="loading" title={label} />;
 }
 
 export function ErrorState({
@@ -13,16 +13,7 @@ export function ErrorState({
   onRetry?: () => void;
 }) {
   return (
-    <div className="state-msg">
-      <p className="banner error" role="alert">
-        {message}
-      </p>
-      {onRetry && (
-        <button className="btn secondary" type="button" onClick={onRetry}>
-          Prøv igen
-        </button>
-      )}
-    </div>
+    <PageState kind="error" title="Siden kunne ikke hentes" onRetry={onRetry}>{message}</PageState>
   );
 }
 

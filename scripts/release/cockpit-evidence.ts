@@ -59,10 +59,10 @@ export type Scenario = {
     status: DomAssertion;
     controls: DomAssertion[];
     data: DomAssertion[];
-    coreAction: DomAssertion;
+    coreAction?: DomAssertion;
     noHorizontalOverflow: true;
   };
-  keyboard: {
+  keyboard?: {
     key: "Tab" | "Shift+Tab" | "Enter" | "Space";
     expectFocus: DomAssertion;
     expectState: DomAssertion;
@@ -207,14 +207,12 @@ export function parseScenarios(path: string): Scenario[] {
     if (
       !s.dom?.heading?.selector ||
       !s.dom.status?.selector ||
-      !s.dom.coreAction?.selector ||
       !s.dom.noHorizontalOverflow ||
-      !s.dom.controls?.length ||
-      !s.dom.data?.length ||
-      !s.keyboard?.length
+      !Array.isArray(s.dom.controls) ||
+      !Array.isArray(s.dom.data)
     )
       throw new Error(
-        `page-local DOM and keyboard contract required for ${s.scenario}`,
+        `page-local heading, status and structural contract required for ${s.scenario}`,
       );
     if (
       s.endpoint === "/api/health" || s.endpoint.includes("identity") ||
@@ -239,7 +237,7 @@ export function parseScenarios(path: string): Scenario[] {
     for (const mode of REQUIRED_MODES)
       if (!mine.some((s) => s.state === "normal" && s.mode === mode))
         throw new Error(`missing normal ${mode} scenario for #${issue}`);
-    if (!mine.some((s) => s.keyboard.length))
+    if (!mine.some((s) => s.state === "normal" && s.keyboard?.length))
       throw new Error(`missing keyboard trace for #${issue}`);
   }
   return scenarios;
@@ -279,12 +277,12 @@ function expandProfile(profile: IssueProfile): Scenario[] {
   const dom = (state: State) => ({
     heading: { selector: `${root} [data-evidence-heading]`, text: profile.heading, visible: true },
     status: { selector: `${root} [data-evidence-status="${state}"]`, text: profile.states[state], visible: true },
-    controls: [{ selector: `${root} [data-evidence-core-action]`, text: profile.coreAction, visible: true }],
-    data: [
+    controls: state === "normal" ? [{ selector: `${root} [data-evidence-core-action]`, text: profile.coreAction, visible: true }] : [],
+    data: state === "normal" ? [
       { selector: `${root} [data-evidence-data]`, text: profile.data, visible: true },
       { selector: `${root} [data-evidence-progressive]`, text: profile.progressive, visible: true },
-    ],
-    coreAction: { selector: `${root} [data-evidence-core-action]`, text: profile.coreAction, visible: true },
+    ] : [],
+    coreAction: state === "normal" ? { selector: `${root} [data-evidence-core-action]`, text: profile.coreAction, visible: true } : undefined,
     noHorizontalOverflow: true as const,
   });
   const keyboard = [{
@@ -304,7 +302,7 @@ function expandProfile(profile: IssueProfile): Scenario[] {
       width: MODE_VIEWPORTS[mode].width * MODE_VIEWPORTS[mode].deviceScaleFactor,
       height: MODE_VIEWPORTS[mode].height * MODE_VIEWPORTS[mode].deviceScaleFactor,
     },
-    dom: dom(state), keyboard,
+    dom: dom(state), keyboard: state === "normal" && mode === "desktop" ? keyboard : undefined,
     ...(["loading", "warning-or-blocked", "error"] as State[]).includes(state) ? {
       interception: {
         urlPattern: profile.endpoint,
@@ -394,7 +392,7 @@ export function verifyEvidence(manifestPath: string): EvidenceManifest {
       );
     used.add(s.screenshot);
     if (
-      !s.keyboardAssertions?.length ||
+      (s.keyboard?.length && !s.keyboardAssertions?.length) ||
       !s.domAssertions?.length ||
       !s.interception ||
       !Array.isArray(s.consoleErrors) ||

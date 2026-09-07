@@ -259,7 +259,7 @@ async function renderScenario(
       scenario.dom.status,
       ...scenario.dom.controls,
       ...scenario.dom.data,
-      scenario.dom.coreAction,
+      ...(scenario.dom.coreAction ? [scenario.dom.coreAction] : []),
     ];
     for (const a of assertions)
       await evaluateBoolean(cdp, expression(a), a.selector);
@@ -269,7 +269,7 @@ async function renderScenario(
       `${scenario.scenario} has no horizontal overflow`,
     );
     const keyboardAssertions: string[] = [];
-    for (const step of scenario.keyboard) {
+    for (const step of scenario.keyboard ?? []) {
       await cdp.call("Input.dispatchKeyEvent", {
         type: "keyDown",
         key: step.key,

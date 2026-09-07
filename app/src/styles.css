@@ -363,11 +363,36 @@ td.num,
   text-align: right;
 }
 
-.state-msg {
-  padding: var(--space-2xl) 0;
-  text-align: center;
-  color: var(--text-dim);
-}
+/* Cockpit foundation (#655): labels and states deliberately share the existing
+   token system; these are not a second component theme. */
+.form-field { display: grid; gap: var(--space-xxs); min-width: 0; }
+.form-field > label { font-size: var(--text-size-sm); font-weight: var(--text-weight-semibold); }
+.form-field input, .form-field select, .form-field textarea { min-height: 40px; width: 100%; }
+.form-field :is(input, select, textarea):focus-visible, .filter-bar summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.field-hint, .field-error { margin: 0; font-size: var(--text-size-xs); }
+.field-hint { color: var(--text-dim); }
+.field-error { color: var(--critical); }
+.cockpit-filter-bar { display: grid; gap: var(--space-sm); }
+.filter-bar-controls { display: flex; flex-wrap: wrap; gap: var(--space-sm); align-items: end; }
+.filter-bar-advanced { font-size: var(--text-size-sm); }
+.filter-bar-advanced > div { display: flex; flex-wrap: wrap; gap: var(--space-sm); margin-top: var(--space-sm); }
+.active-filters { display: flex; flex-wrap: wrap; gap: var(--space-sm); align-items: center; font-size: var(--text-size-sm); }
+.page-state { margin: var(--space-md) 0; padding: var(--space-lg); border: 1px solid var(--border); background: var(--surface); }
+.page-state h2, .page-state p { margin: 0 0 var(--space-sm); }
+.page-state--warning, .page-state--blocked { border-left: 4px solid var(--warning); }
+.page-state--error { border-left: 4px solid var(--critical); }
+.status-chip { display: inline-block; padding: 2px var(--space-xs); border: 1px solid var(--border); font-size: var(--text-size-sm); }
+.status-chip--success { background: var(--color-success-soft); border-color: var(--ok); }
+.status-chip--warning { background: var(--color-warning-soft); border-color: var(--warning); }
+.status-chip--danger { background: var(--color-danger-soft); border-color: var(--critical); }
+.status-chip--info { background: var(--color-info-soft); }
+.page-header-actions { display: flex; flex-wrap: wrap; gap: var(--space-xs); align-items: center; }
+.metric-card h2 { margin: 0 0 var(--space-xs); font-size: var(--text-size-md); }
+.metric-card-value { font-family: var(--font-mono); font-size: var(--text-size-xl); font-variant-numeric: tabular-nums; }
+.metric-card p { margin: var(--space-xs) 0 0; }
+.responsive-table-shell { padding: 0; overflow: hidden; }
+.responsive-table-scroll { overflow-x: auto; }
+.responsive-table { width: 100%; }
 
 /* ==========================================================================
    Cards
@@ -1747,6 +1772,15 @@ table.statement-table td.num.muted {
     flex-direction: column;
     align-items: stretch;
   }
+  .filter-bar-controls, .filter-bar-advanced > div { display: grid; grid-template-columns: 1fr; }
+  .page-header-actions > .btn, .page-header-actions > a { flex: 1 1 160px; text-align: center; }
+  .responsive-table-scroll { overflow: visible; }
+  .responsive-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .responsive-table, .responsive-table tbody, .responsive-table tr, .responsive-table td { display: block; width: 100%; }
+  .responsive-table tr { padding: var(--space-sm); border-bottom: 1px solid var(--border); }
+  .responsive-table td { display: grid; grid-template-columns: minmax(7rem, 42%) 1fr; gap: var(--space-xs); padding: var(--space-xxs) 0; border: 0; text-align: left !important; }
+  .responsive-table td::before { content: attr(data-label); color: var(--text-dim); font-size: var(--text-size-xs); font-weight: var(--text-weight-semibold); text-transform: uppercase; }
+  .responsive-table td:empty { display: none; }
 }
 
 /* #395 — empty-state next-step CTA on Overblik */

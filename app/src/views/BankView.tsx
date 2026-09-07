@@ -14,13 +14,13 @@
 // Status-linjen under filter-baren viser hvor mange transaktioner der matcher
 // — og hvor mange af dem der er afstemt vs. uafstemte.
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { formatDateDa, formatKroner } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
 import type { BankTransactionRow, CompanyBank } from "../lib/types";
-import { ErrorState, Loading } from "../components/Feedback";
+import { FilterBar, FormField, MetricCard, PageHeaderActions, PageState, ResponsiveTable, StatusChip } from "../components/CockpitPrimitives";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { BankImportModal } from "../components/BankImportModal";
 import {
@@ -151,30 +151,32 @@ export function BankView() {
     return out;
   }, [filteredTransactions, sort]);
 
-  if (state.loading && !state.data) return <Loading label="Henter bank…" />;
-  if (state.error)
-    return <ErrorState message={state.error} onRetry={state.reload} />;
+  if (state.loading && !state.data) return <BankPageShell><PageState kind="loading" title="Henter bankposter" /></BankPageShell>;
+  if (state.error) return <BankPageShell><PageState kind="error" title="Bankposter kunne ikke hentes" onRetry={state.reload}>{state.error}</PageState></BankPageShell>;
 
   const b = state.data!;
   const currency = b.company.currency || "DKK";
 
   return (
-    <section className="statement">
+    <section className="statement" data-cockpit-page="bank" data-evidence-issue="655">
       <div className="page-head">
         <div>
+          <h1 data-evidence-heading>Bank</h1>
+          <p className="muted" data-evidence-status="normal">Bank klar til gennemgang</p>
           <h2>{b.company.name}</h2>
           <p className="muted">
             {b.company.cvr ? `CVR ${b.company.cvr} · ` : ""}
             {b.company.country} · {currency} · Bank
           </p>
         </div>
-        <div className="row-actions">
+        <PageHeaderActions>
           {/* The bank-import write action — hidden for an archived (read-only)
               year, where no live ledger is available to import into. */}
           {!b.archived && (
             <button
               type="button"
               className="btn"
+              data-evidence-core-action
               onClick={() => setImporting(true)}
             >
               Importér kontoudtog
@@ -183,7 +185,7 @@ export function BankView() {
           <Link className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
           </Link>
-        </div>
+        </PageHeaderActions>
       </div>
 
       <CompanyNav
@@ -232,14 +234,7 @@ export function BankView() {
           <BankDifferenceBanner bank={b} currency={currency} />
 
           <div className="status-grid bank-summary">
-            <div className="card status-card">
-              <h3>Faktisk saldo</h3>
-              <div className="status-figure">
-                {b.actualBalance === null
-                  ? "—"
-                  : formatKroner(b.actualBalance, currency)}
-              </div>
-              <p className="muted status-note">
+            <MetricCard label="Faktisk saldo" value={b.actualBalance === null ? "—" : formatKroner(b.actualBalance, currency)}>
                 {/* #305: distinguish "no statement imported" from "a
                     statement was imported but its CSV had no balance column".
                     Saying "intet kontoudtog importeret" for the second case
@@ -251,14 +246,8 @@ export function BankView() {
                     : b.bankStatementStatus === "ambiguous"
                       ? "Banksaldo ukendt — kontoudtogets rækkefølge eller saldo-kæde kan ikke bevises"
                     : "Intet kontoudtog importeret"}
-              </p>
-            </div>
-            <div className="card status-card">
-              <h3>Bogført saldo</h3>
-              <div className="status-figure">
-                {formatKroner(b.bookedBalance, currency)}
-              </div>
-              <p className="muted status-note">
+            </MetricCard>
+            <MetricCard label="Bogført saldo" value={formatKroner(b.bookedBalance, currency)}>
                 {b.accounts.length > 0
                   ? b.accounts
                       .map((a) =>
@@ -266,18 +255,11 @@ export function BankView() {
                       )
                       .join(", ")
                   : "Bank- og kassekonti"}
-              </p>
-            </div>
-            <div className="card status-card">
-              <h3>Afstemning</h3>
-              <div className="status-figure">
-                {b.matchedCount} / {b.transactions.length}
-              </div>
-              <p className="muted status-note">
+            </MetricCard>
+            <MetricCard label="Afstemning" value={`${b.matchedCount} / ${b.transactions.length}`}>
                 {b.matchedCount} afstemt ·{" "}
                 {b.unmatchedCount} uafstemte transaktioner
-              </p>
-            </div>
+            </MetricCard>
           </div>
 
           <BankFilterBar
@@ -296,8 +278,8 @@ export function BankView() {
             hasActiveFilter={hasActiveFilter}
           />
 
-          <div className="card statement-card table-scroll">
-            <table className="data statement-table">
+          {sortedTransactions.length === 0 && <PageState kind="empty" title={hasActiveFilter ? "Ingen transaktioner matcher filtrene" : "Ingen bankposter i perioden"}>{hasActiveFilter ? "Nulstil filtrene for at se alle bankposter." : "Importér et kontoudtog, når du er klar."}</PageState>}
+          <div data-evidence-data><ResponsiveTable className="statement-table">
               <thead>
                 <tr>
                   <th scope="col" aria-sort={ariaSort("date")}>
@@ -326,33 +308,24 @@ export function BankView() {
                 </tr>
               </thead>
               <tbody>
-                {sortedTransactions.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="empty-inline">
-                      {hasActiveFilter
-                        ? "Ingen transaktioner matcher filtrene."
-                        : "Ingen banktransaktioner i året."}
-                    </td>
-                  </tr>
-                ) : (
-                  sortedTransactions.map((tx) => (
+                {sortedTransactions.map((tx) => (
                     <tr key={tx.id}>
-                      <td className="entry-date">{tx.date}</td>
-                      <td>{tx.text}</td>
-                      <td className="num">
+                      <td className="entry-date" data-label="Dato">{tx.date}</td>
+                      <td data-label="Tekst">{tx.text}</td>
+                      <td className="num" data-label="Beløb">
                         {formatKroner(tx.amount, currency)}
                       </td>
-                      <td className="num">
+                      <td className="num" data-label="Saldo">
                         {tx.runningBalance === null
                           ? "—"
                           : formatKroner(tx.runningBalance, currency)}
                       </td>
-                      <td>
+                      <td data-label="Afstemning">
                         {tx.reconciliationStatus === "matched" ? (
-                          <div className="row-actions"><span className="flag ok">Afstemt{tx.journalEntryNo ? ` · ${tx.journalEntryNo}` : ""}</span><button type="button" className="btn secondary" onClick={() => setCorrecting({ id: tx.id, text: tx.text, journalEntryNo: tx.journalEntryNo })}>Ret</button></div>
+                          <div className="row-actions"><StatusChip tone="success">Afstemt{tx.journalEntryNo ? ` · ${tx.journalEntryNo}` : ""}</StatusChip><button type="button" className="btn secondary" onClick={() => setCorrecting({ id: tx.id, text: tx.text, journalEntryNo: tx.journalEntryNo })}>Ret</button></div>
                         ) : (
                           <div className="row-actions">
-                            <span className="flag warning">Uafstemt</span>
+                            <StatusChip tone="warning">Uafstemt</StatusChip>
                             <button
                               type="button"
                               className="btn secondary"
@@ -373,11 +346,9 @@ export function BankView() {
                         )}
                       </td>
                     </tr>
-                  ))
-                )}
+                  ))}
               </tbody>
-            </table>
-          </div>
+          </ResponsiveTable></div>
         </>
       )}
     </section>
@@ -412,36 +383,31 @@ function BankFilterBar({
   clearAllFilters: () => void;
   showStatusFilter?: boolean;
 }) {
+  const activeFilters = [
+    q && `Søgning: ${q}`,
+    status !== "all" && (status === "matched" ? "Afstemte" : "Uafstemte"),
+    fromDate && `Fra: ${fromDate}`,
+    toDate && `Til: ${toDate}`,
+  ].filter(Boolean) as string[];
   return (
-    <div className="journal-filter-bar card" role="search">
-      <label className="journal-filter-field journal-filter-field--search">
-        <span className="muted">Søg</span>
+    <FilterBar
+      activeFilters={activeFilters}
+      onReset={hasActiveFilter ? clearAllFilters : undefined}
+      advanced={<div data-evidence-progressive>
+        <FormField label="Fra"><input type="date" value={fromDate} onChange={(e) => setFilter("from", e.target.value)} /></FormField>
+        <FormField label="Til"><input type="date" value={toDate} onChange={(e) => setFilter("to", e.target.value)} /></FormField>
+      </div>}
+    >
+      <FormField label="Søg">
         <input
           type="search"
           value={q}
           placeholder="Søg på tekst eller posteringsnr…"
           onChange={(e) => setFilter("q", e.target.value)}
         />
-      </label>
-      <label className="journal-filter-field">
-        <span className="muted">Fra</span>
-        <input
-          type="date"
-          value={fromDate}
-          onChange={(e) => setFilter("from", e.target.value)}
-        />
-      </label>
-      <label className="journal-filter-field">
-        <span className="muted">Til</span>
-        <input
-          type="date"
-          value={toDate}
-          onChange={(e) => setFilter("to", e.target.value)}
-        />
-      </label>
+      </FormField>
       {showStatusFilter && (
-        <label className="journal-filter-field">
-          <span className="muted">Status</span>
+        <FormField label="Status">
           <select
             value={status}
             onChange={(e) => setFilter("status", e.target.value)}
@@ -450,19 +416,14 @@ function BankFilterBar({
             <option value="matched">Kun afstemte</option>
             <option value="unmatched">Kun uafstemte</option>
           </select>
-        </label>
+        </FormField>
       )}
-      {hasActiveFilter && (
-        <button
-          type="button"
-          className="btn secondary"
-          onClick={clearAllFilters}
-        >
-          Ryd filtre
-        </button>
-      )}
-    </div>
+    </FilterBar>
   );
+}
+
+function BankPageShell({ children }: { children: ReactNode }) {
+  return <section className="statement" data-cockpit-page="bank"><div className="page-head"><div><h1>Bank</h1><p className="muted">Se bankposter, afstemning og næste skridt.</p></div></div>{children}</section>;
 }
 
 // #451 — the "X af Y matcher · Z afstemt · W uafstemte" status line under
@@ -657,8 +618,7 @@ function ArchivedBankView({
         hasActiveFilter={hasActiveFilter}
       />
 
-      <div className="card statement-card table-scroll">
-        <table className="data statement-table">
+      <ResponsiveTable className="statement-table">
           <thead>
             <tr>
               <th scope="col" aria-sort={ariaSort("date")}>
@@ -697,10 +657,10 @@ function ArchivedBankView({
             ) : (
               sortedTransactions.map((tx) => (
                 <tr key={tx.id}>
-                  <td className="entry-date">{tx.date}</td>
-                  <td>{tx.text}</td>
-                  <td className="num">{formatKroner(tx.amount, currency)}</td>
-                  <td className="num">
+                  <td className="entry-date" data-label="Dato">{tx.date}</td>
+                  <td data-label="Tekst">{tx.text}</td>
+                  <td className="num" data-label="Beløb">{formatKroner(tx.amount, currency)}</td>
+                  <td className="num" data-label="Saldo">
                     {tx.runningBalance === null
                       ? "—"
                       : formatKroner(tx.runningBalance, currency)}
@@ -709,8 +669,7 @@ function ArchivedBankView({
               ))
             )}
           </tbody>
-        </table>
-      </div>
+      </ResponsiveTable>
     </>
   );
 }
