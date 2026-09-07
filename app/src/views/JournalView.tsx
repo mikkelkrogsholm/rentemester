@@ -31,6 +31,8 @@ export function JournalView() {
   // An optional account drill-down: `?account=<accountNo>` filters the journal
   // to the entries that touch that account (set by the statement views).
   const [params, setParams] = useSearchParams();
+  const [page, setPage] = useState(0);
+  const [selectedEntryId, setSelectedEntryId] = useState<number | null>(null);
   const account = params.get("account") ?? undefined;
   const journalEntryId = Number(params.get("journalEntryId")) || null;
   const journalLineId = Number(params.get("journalLineId")) || null;
@@ -106,6 +108,8 @@ export function JournalView() {
   const currency = j.company.currency || "DKK";
   const totalCount = j.entries.length;
   const matchCount = filteredEntries.length;
+  const pageSize = 25;
+  const pageEntries = filteredEntries.slice(page * pageSize, page * pageSize + pageSize);
 
   return (
     <section className="statement">
@@ -235,18 +239,21 @@ export function JournalView() {
           </p>
         </div>
       ) : (
-        <ul className="entry-list">
-          {filteredEntries.map((entry) => (
+        <ul className="entry-list" aria-label="Posteringer">
+          {pageEntries.map((entry) => (
             <EntryRow
               key={entry.id}
               entry={entry}
               currency={currency}
               slug={slug}
               archived={j.archived}
+              open={selectedEntryId === entry.id}
+              onSelect={() => setSelectedEntryId((current) => current === entry.id ? null : entry.id)}
             />
           ))}
         </ul>
       )}
+      {filteredEntries.length > pageSize && <nav className="row-actions" aria-label="Sider"><button type="button" className="btn secondary" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>Forrige</button><span className="muted">Side {page + 1} af {Math.ceil(filteredEntries.length / pageSize)}</span><button type="button" className="btn secondary" disabled={(page + 1) * pageSize >= filteredEntries.length} onClick={() => setPage((p) => p + 1)}>Næste</button></nav>}
     </section>
   );
 }
@@ -267,6 +274,8 @@ function EntryRow({
   currency,
   slug,
   archived,
+  open,
+  onSelect,
 }: {
   entry: JournalEntry;
   currency: string;
@@ -277,8 +286,9 @@ function EntryRow({
    * sender ejeren mod en route der ikke kan resolves.
    */
   archived: boolean;
+  open: boolean;
+  onSelect: () => void;
 }) {
-  const [open, setOpen] = useState(false);
   // #379 — en post har et bilag når både linkage og fil-route er meningsfulde.
   // Arkiverede år vises altid som "Intet bilag" (filen er ikke i `documents`).
   const hasDocument = !archived && entry.documentId !== null;
@@ -288,7 +298,7 @@ function EntryRow({
         type="button"
         className="entry-summary"
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        onClick={onSelect}
       >
         <span className="entry-caret" aria-hidden="true">
           {open ? "▾" : "▸"}
@@ -296,6 +306,8 @@ function EntryRow({
         <span className="entry-no">{entry.entryNo}</span>
         <span className="entry-date">{entry.date}</span>
         <span className="entry-text"><PartyLink slug={slug} partyId={entry.partyId}>{entry.text}</PartyLink></span>
+        <span className="muted">{entry.documentNo ? "Bilag" : "Bilag mangler"}</span>
+        <span className="muted">Bogført</span>
         <span className="entry-total num">
           {formatKroner(entry.total, currency)}
         </span>
@@ -340,6 +352,7 @@ function EntryRow({
             </tbody>
           </table>
           <div className="entry-bilag">
+            <ExplanationPanel slug={slug} entryId={entry.id} />
             {hasDocument ? (
               <a
                 className="entry-bilag-link"
@@ -360,6 +373,20 @@ function EntryRow({
       )}
     </li>
   );
+}
+
+function ExplanationPanel({ slug, entryId }: { slug: string; entryId: number }) {
+  const state = useAsync<any>(() => api.journalExplanation(slug, entryId), [slug, entryId]);
+  if (state.loading && !state.data) return <span className="muted">Henter forklaring…</span>;
+  if (state.error) return <span className="muted">Forklaringen kunne ikke hentes.</span>;
+  const e = state.data;
+  return <details className="dimension-assignment"><summary>Forklar posten</summary><p>Konkrete kilder vises kun, når de er eksplicit knyttet til posteringen.</p>
+    <p><strong>Faglig vurdering:</strong> {e.professionalAssessment.text}</p>
+    <p><strong>Lovgrundlag:</strong> {e.legalSource.text}</p>
+    {e.appliedRule && <p><strong>Anvendt Rentemester-regel:</strong> {e.appliedRule.ruleId} v{e.appliedRule.version} (gælder fra {e.appliedRule.effectiveFrom}).</p>}
+    {e.correction.sentence && <p>{e.correction.sentence}</p>}
+    <details><summary>Evidens</summary><code>{e.evidence.entryHash}</code></details>
+  </details>;
 }
 
 type Allocation = { dimensionId: string; memberId: string; amountMinor: number; currency: string };

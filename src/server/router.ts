@@ -122,6 +122,7 @@ import {
   handleCompanyBalance,
   handleCompanyIncomeStatement,
   handleCompanyJournal,
+  handleCompanyJournalExplanation,
   handleCompanyJournalExport,
   handleCompanyStatementExport,
   handleCompanyTrialBalance,
@@ -360,6 +361,7 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/trial-balance", summary: "Saldobalance." },
   { scope: "company", effect: "read", permission: "company.export", method: "GET", pattern: "/api/companies/:slug/trial-balance/export", summary: "Saldobalance som CSV-download (#372)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/journal", summary: "Journalposter." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/journal/:entryId/explanation", summary: "Kildebundet forklaring af en postering (#652)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/accounting-drafts", summary: "Bogføringskladder og deres seneste reviewtilstand." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/accounting-approval-policy", summary: "Aktuel versioneret approval-policy; historisk elevated-status er eksplicit ikke-håndhævet." },
   { scope: "company", effect: "write", permission: "company.admin", method: "POST", pattern: "/api/companies/:slug/accounting-approval-policy", summary: "Ændrer selskabets append-only normal approval-policy med confirm; elevated aktivering afvises." },
@@ -936,6 +938,12 @@ export async function handleRequest(
       if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(trialBalanceMatch[1]!);
       return handleCompanyTrialBalance(config, slug, url);
+    }
+
+    const journalExplanationMatch = /^\/api\/companies\/([^/]+)\/journal\/(\d+)\/explanation$/.exec(path);
+    if (journalExplanationMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
+      return handleCompanyJournalExplanation(config, decodeURIComponent(journalExplanationMatch[1]!), Number(journalExplanationMatch[2]));
     }
 
     const journalExportMatch = /^\/api\/companies\/([^/]+)\/journal\/export$/.exec(path);

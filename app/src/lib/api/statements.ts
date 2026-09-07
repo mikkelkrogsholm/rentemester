@@ -39,6 +39,7 @@ export const statementsApi = {
       }`,
     ).then((r) => r.journal);
   },
+  journalExplanation: (slug: string, entryId: number) => request<{ ok: true; explanation: any }>(`/api/companies/${encodeURIComponent(slug)}/journal/${entryId}/explanation`).then((r) => r.explanation),
 
   /**
    * URL of the Resultatopgørelse, Balance eller Saldobalance som CSV-fil

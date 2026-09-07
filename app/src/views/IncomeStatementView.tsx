@@ -169,7 +169,7 @@ function StatementSection({
               </Link>
             </td>
             <td>{line.name}</td>
-            <td className="num">{formatKroner(line.amount, currency)}</td>
+            <td className="num">{formatKroner(line.amount, currency)} <Link className="muted" to={`${accountPostingsTo(slug, year, line.accountNo)}&reportLine=${encodeURIComponent(line.name)}&asOf=${year}-12-31`}>Forklar tallet</Link></td>
             <td className="num muted">
               {line.priorAmount === null ? "—" : formatKroner(line.priorAmount, currency)}
             </td>

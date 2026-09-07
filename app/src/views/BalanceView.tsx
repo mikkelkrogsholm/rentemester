@@ -197,7 +197,7 @@ function BalanceSection({
               )}
             </td>
             <td>{line.name}</td>
-            <td className="num">{formatKroner(line.amount, currency)}</td>
+            <td className="num">{formatKroner(line.amount, currency)} {line.accountNo !== "—" && <Link className="muted" to={`${accountPostingsTo(slug, year, line.accountNo)}&reportLine=${encodeURIComponent(line.name)}&asOf=${encodeURIComponent("" + year + "-12-31")}`}>Forklar tallet</Link>}</td>
             <td className="num muted">
               {priorCell(line.priorAmount, currency)}
             </td>

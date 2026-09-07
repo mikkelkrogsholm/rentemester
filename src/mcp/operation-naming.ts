@@ -109,6 +109,7 @@ export const MCP_OPERATION_NAMING: Readonly<Record<string, McpOperationNaming>> 
   "journal_dry_run": {"originalName":"journal_dry_run","canonicalName":"accounting_journal_preview","domain":"accounting","resource":"journal","action":"preview"},
   "journal_reverse": {"originalName":"journal_reverse","canonicalName":"accounting_journal_reverse","domain":"accounting","resource":"journal","action":"reverse"},
   "journal_list": {"originalName":"journal_list","canonicalName":"accounting_journal_list","domain":"accounting","resource":"journal","action":"list"},
+  "journal_explain": {"originalName":"journal_explain","canonicalName":"accounting_journal_explain","domain":"accounting","resource":"journal","action":"explain"},
   "peppol_submit_public_invoice": {"originalName":"peppol_submit_public_invoice","canonicalName":"external_peppol_invoice_submit","domain":"external","resource":"peppol_invoice","action":"submit"},
   "period_close_readiness": {"originalName":"period_close_readiness","canonicalName":"accounting_period_readiness","domain":"accounting","resource":"period","action":"readiness"},
   "period_close_status": {"originalName":"period_close_status","canonicalName":"accounting_period_status","domain":"accounting","resource":"period","action":"status"},

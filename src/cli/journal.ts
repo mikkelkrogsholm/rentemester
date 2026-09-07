@@ -6,6 +6,7 @@ import { openCommandDb, readJsonObjectCliInput } from "../cli-dispatch";
 import { formatKroner } from "../cli-format";
 import { journalStatusDa } from "../core/messages";
 import type { CommandDispatch } from "../cli-dispatch";
+import { explainJournalEntry } from "../core/journal-explanation";
 
 function resolveJournalEntryId(
   db: Database,
@@ -156,5 +157,12 @@ export function register(dispatch: CommandDispatch): void {
       }
     }
     db.close();
+  });
+
+  dispatch.on("journal", "explain", (ctx) => {
+    const entryId = Number(ctx.arg("--entry-id"));
+    if (!Number.isInteger(entryId) || entryId < 1) ctx.fatal("journal explain requires --entry-id <positive integer>");
+    const db = openCommandDb(ctx); migrate(db);
+    try { ctx.emitResult(explainJournalEntry(db, entryId) as Record<string, unknown>); } finally { db.close(); }
   });
 }
