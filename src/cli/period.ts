@@ -1,6 +1,6 @@
 import { migrate } from "../core/db";
 import { closeAccountingPeriod, reopenAccountingPeriod } from "../core/periods";
-import { computePeriodCloseReadiness, loadPeriodCloseReview, periodCloseReviewSchemaAvailable, reviewPeriodCloseReadiness } from "../core/period-close-readiness";
+import { computePeriodCloseReadiness, loadPeriodCloseReview, periodCloseReviewSchemaAvailable, projectHumanReadiness, reviewPeriodCloseReadiness } from "../core/period-close-readiness";
 import { openCommandDb } from "../cli-dispatch";
 import type { CommandContext, CommandDispatch } from "../cli-dispatch";
 import { companyPaths } from "../core/paths";
@@ -64,7 +64,7 @@ export function register(dispatch: CommandDispatch): void {
   dispatch.on("period", "readiness", (ctx) => {
     const from = ctx.arg("--from"); const to = ctx.arg("--to");
     if (!from || !to) { console.error("Missing required --from <YYYY-MM-DD> or --to <YYYY-MM-DD>"); process.exit(2); }
-    withReadOnlyCurrentLedger(ctx,db=>ctx.emitResult({ok:true,packet:computePeriodCloseReadiness(db, { periodStart: from, periodEnd: to, companyRoot: ctx.companyRoot() })}));
+    withReadOnlyCurrentLedger(ctx,db=>{ const packet=computePeriodCloseReadiness(db, { periodStart: from, periodEnd: to, companyRoot: ctx.companyRoot() }); ctx.emitResult({ok:true,packet,readiness:projectHumanReadiness(packet)}); });
   });
   dispatch.on("period", "review", (ctx) => {
     const from = ctx.arg("--from"); const to = ctx.arg("--to");

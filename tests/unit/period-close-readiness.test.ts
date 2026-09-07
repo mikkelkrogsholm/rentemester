@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { openDb, migrate } from "../../src/core/db";
 import { postJournalEntry, seedAccounts } from "../../src/core/ledger";
 import { seedNativeAccountRoles } from "../../src/core/account-roles";
-import { createPeriodCloseReadinessPacket, reviewPeriodCloseReadiness } from "../../src/core/period-close-readiness";
+import { createPeriodCloseReadinessPacket, projectHumanReadiness, reviewPeriodCloseReadiness } from "../../src/core/period-close-readiness";
 import { closeAccountingPeriod, reopenAccountingPeriod } from "../../src/core/periods";
 import { ensureCompanyDirs } from "../../src/core/paths";
 import { createSystemBackup } from "../../src/core/system-backups";
@@ -38,6 +38,15 @@ function dkkControl(db: ReturnType<typeof openDb>, start = "2025-01-01", end = "
 }
 
 describe("#580 period-close readiness", () => {
+  test("#656 projects immutable readiness into the common human vocabulary", () => {
+    const packet = (items: any[]) => ({ version: 4 as const, periodStart: "2025-01-01", periodEnd: "2025-01-31", cutoff: "2025-01-31", controlsRun: [], items, blockers: 0, warnings: 0, hash: "x" });
+    expect(projectHumanReadiness(packet([]))).toMatchObject({ status: "Klar", openControls: 0 });
+    expect(projectHumanReadiness(packet([]), "reported").status).toBe("Lukket/endelig");
+    expect(projectHumanReadiness(packet([{ status: "warning", waivable: true }])) .status).toBe("Kræver stillingtagen");
+    expect(projectHumanReadiness(packet([{ status: "blocked", waivable: true }])) .status).toBe("Kræver stillingtagen");
+    expect(projectHumanReadiness(packet([{ status: "blocked", waivable: false }])) .status).toBe("Ikke klar");
+    expect(projectHumanReadiness(packet([{ status: "unavailable", waivable: false }])) .status).toBe("Ikke klar");
+  });
   test("readiness is deterministic and does not persist a packet or audit event", () => {
     const db = fixture();
     const before = db.query("SELECT COUNT(*) AS n FROM period_close_readiness_packets").get() as { n: number };

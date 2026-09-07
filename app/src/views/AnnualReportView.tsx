@@ -14,13 +14,15 @@ import type {
   AnnualReport,
   CompanyAnnualReportResponse,
 } from "../lib/types";
+import { StatusChip } from "../components/CockpitPrimitives";
+import { useAsync } from "../lib/useAsync";
 
 export function AnnualReportView() {
   const { slug = "" } = useParams();
   const today = new Date();
   const defaultYear = today.getUTCFullYear() - 1;
-  const [fiscalYearStart, setFiscalYearStart] = useState(`${defaultYear}-01-01`);
-  const [fiscalYearEnd, setFiscalYearEnd] = useState(`${defaultYear}-12-31`);
+  const [selectedYear, setSelectedYear] = useState(String(defaultYear));
+  const readiness = useAsync(() => api.annualReport(slug, "", "", selectedYear), [slug, selectedYear]);
   const [data, setData] = useState<CompanyAnnualReportResponse["annualReport"] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +32,7 @@ export function AnnualReportView() {
     setError(null);
     setLoading(true);
     try {
-      const result = await api.annualReport(slug, fiscalYearStart, fiscalYearEnd);
+      const result = await api.annualReport(slug, "", "", selectedYear);
       setData(result);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Kunne ikke bygge årsrapport.");
@@ -61,25 +63,12 @@ export function AnnualReportView() {
       <section className="card">
         <h3>Vælg regnskabsår</h3>
         <form onSubmit={build} className="filter-bar">
-          <label>
-            Start (YYYY-MM-DD)
-            <input
-              type="date"
-              value={fiscalYearStart}
-              onChange={(e) => setFiscalYearStart(e.target.value)}
-              required
-            />
+          <label htmlFor="annual-year">Regnskabsår
+            <select id="annual-year" value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
+              {[0, 1, 2, 3, 4].map(offset => <option key={defaultYear - offset} value={defaultYear - offset}>{defaultYear - offset}</option>)}
+            </select>
           </label>
-          <label>
-            Slut (YYYY-MM-DD)
-            <input
-              type="date"
-              value={fiscalYearEnd}
-              onChange={(e) => setFiscalYearEnd(e.target.value)}
-              required
-            />
-          </label>
-          <button type="submit" className="btn primary" disabled={loading}>
+          <button type="submit" className="btn primary" disabled={loading || readiness.loading || readiness.data?.readiness?.status === "Ikke klar"} title={readiness.data?.readiness?.status === "Ikke klar" ? "Ret readiness-kontrollerne før build" : undefined}>
             {loading ? "Bygger …" : "Byg årsrapport"}
           </button>
         </form>
@@ -90,6 +79,8 @@ export function AnnualReportView() {
           {error}
         </div>
       )}
+
+      {readiness.data && <section className="card"><div className="statement-card-head"><h3>Readiness</h3><StatusChip tone={readiness.data.readiness?.status === "Klar" ? "success" : "danger"}>{readiness.data.readiness?.status ?? "Ikke klar"}</StatusChip></div><p>Canoniske datoer: {readiness.data.fiscalYearStart} – {readiness.data.fiscalYearEnd}</p><ul>{(readiness.data.readiness?.items ?? []).map(item => <li key={item.label}>{item.ok ? "✓" : "•"} {item.label}{!item.ok && <> — <Link to={`/companies/${slug}/${item.destination === "periods" ? "perioder" : "manage"}`}>Åbn løsning</Link></>}</li>)}</ul></section>}
 
       {data && <ReportPanel report={data.report} />}
     </section>

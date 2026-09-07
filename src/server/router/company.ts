@@ -187,9 +187,10 @@ export function handleCompanyAnnualReport(
   slug: string,
   url: URL,
 ): Response {
+  const canonicalYear = url.searchParams.get("year");
   const fiscalYearStart = url.searchParams.get("fiscalYearStart");
   const fiscalYearEnd = url.searchParams.get("fiscalYearEnd");
-  if (!fiscalYearStart || !fiscalYearEnd) {
+  if (!canonicalYear && (!fiscalYearStart || !fiscalYearEnd)) {
     throw ApiError.badRequest(
       "fiscalYearStart og fiscalYearEnd (YYYY-MM-DD) er begge påkrævet.",
     );
@@ -197,8 +198,9 @@ export function handleCompanyAnnualReport(
   const data = buildCompanyAnnualReport(
     config.workspaceRoot,
     slug,
-    fiscalYearStart,
-    fiscalYearEnd,
+    fiscalYearStart ?? "",
+    fiscalYearEnd ?? "",
+    canonicalYear ?? undefined,
   );
   return okResponse({ annualReport: data });
 }

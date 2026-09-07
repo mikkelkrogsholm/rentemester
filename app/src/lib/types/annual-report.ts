@@ -51,6 +51,7 @@ export type CompanyAnnualReportResponse = {
     };
     fiscalYearStart: string;
     fiscalYearEnd: string;
+    readiness: { status: "Ikke klar" | "Klar"; items: Array<{ label: string; ok: boolean; destination: string }> };
     report: AnnualReport;
   };
 };

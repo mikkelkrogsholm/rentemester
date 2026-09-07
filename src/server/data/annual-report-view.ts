@@ -12,6 +12,7 @@ import { findWorkspaceCompany, companyRootForSlug } from "../../core/workspace";
 import { companyPaths } from "../../core/paths";
 import { openDb, migrate } from "../../core/db";
 import { getCompanySettings } from "../../core/company";
+import { fiscalYearForDate } from "../../core/fiscal-year";
 
 export type CompanyAnnualReportView = {
   slug: string;
@@ -25,6 +26,7 @@ export type CompanyAnnualReportView = {
   };
   fiscalYearStart: string;
   fiscalYearEnd: string;
+  readiness: { status: "Ikke klar" | "Klar"; items: Array<{ label: string; ok: boolean; destination: string }> };
   report: AnnualReport;
 };
 
@@ -33,6 +35,7 @@ export function buildCompanyAnnualReport(
   slug: string,
   fiscalYearStart: string,
   fiscalYearEnd: string,
+  canonicalYear?: string,
 ): CompanyAnnualReportView {
   const entry = findWorkspaceCompany(workspaceRoot, slug);
   if (!entry) {
@@ -47,7 +50,15 @@ export function buildCompanyAnnualReport(
   try {
     migrate(db);
     const company = getCompanySettings(db);
-    const report = buildAnnualReport(db, fiscalYearStart, fiscalYearEnd);
+    const fiscalYear = canonicalYear ? fiscalYearForDate(`${canonicalYear}-12-31`, Number(company.fiscalYearStartMonth), company.fiscalYearLabelStrategy) : null;
+    const start = fiscalYear?.start ?? fiscalYearStart;
+    const end = fiscalYear?.end ?? fiscalYearEnd;
+    const report = buildAnnualReport(db, start, end);
+    const items = [
+      { label: "Virksomhedens CVR", ok: !report.errors.some(error => /CVR/i.test(error)), destination: "manage" },
+      { label: "Regnskabsåret er låst", ok: !report.errors.some(error => /låst|locked/i.test(error)), destination: "periods" },
+      { label: "Bøgerne balancerer", ok: !report.errors.some(error => /balanc/i.test(error)), destination: "periods" },
+    ];
     return {
       slug,
       company: {
@@ -58,8 +69,9 @@ export function buildCompanyAnnualReport(
         fiscalYearStartMonth: company.fiscalYearStartMonth,
         fiscalYearLabelStrategy: company.fiscalYearLabelStrategy,
       },
-      fiscalYearStart,
-      fiscalYearEnd,
+      fiscalYearStart: start,
+      fiscalYearEnd: end,
+      readiness: { status: report.ok ? "Klar" : "Ikke klar", items },
       report,
     };
   } finally {

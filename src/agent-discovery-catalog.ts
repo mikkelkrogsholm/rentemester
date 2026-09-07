@@ -251,7 +251,7 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
   ], alternatives: ["Use invoice_credit_note for an issued sales invoice."], unsupportedBoundaries: ["Posted entries and original documents are never overwritten or deleted."] }),
   workflow({ id: "period-close-reopen", capabilityId: "period-management", title: "Period readiness, close and reopen", intendedOutcome: "Inspect period readiness, close deliberately and reopen only through the supported correction path.", steps: [
     read("list-periods", mcp("period_list"), "Inspect period state and blockers."),
-    read("close-readiness", mcp("period_close_readiness"), "Compute the exact read-only readiness packet and inspect every control.", { dependsOn: ["list-periods"], canonicalRecords: ["period close readiness packet"] }),
+    read("close-readiness", mcp("period_close_readiness"), "Compute the exact read-only readiness packet, inspect the human readiness projection and every control. The projection is not approval evidence.", { dependsOn: ["list-periods"], canonicalRecords: ["period close readiness packet"] }),
     write("review-readiness", mcp("period_close_review"), "Persist the reviewed packet before any close attempt.", { dependsOn: ["close-readiness"], boundary: "approval", canonicalRecords: ["period close review"] }),
     write("close-period", mcp("period_close"), "Close using the exact persisted review ID and packet hash; never retry after a stale packet.", { dependsOn: ["review-readiness"], boundary: "approval", canonicalRecords: ["period locks", "period close decision"] }),
     read("close-status", mcp("period_close_status"), "Poll the durable reviewed packet without recomputing readiness.", { dependsOn: ["review-readiness"] }),

@@ -16,6 +16,25 @@ export type CloseReadinessItem = { code: string; status: CloseControlStatus; wai
 export type CloseReadinessPacket = { version: 4; periodStart: string; periodEnd: string; cutoff: string; controlsRun: readonly string[]; items: readonly CloseReadinessItem[]; blockers: number; warnings: number; hash: string };
 export type CloseReviewPrincipal = { kind: "user" | "service-account" | "local-trusted"; subjectId: string };
 export type PeriodCloseReview = { id: number; packet: CloseReadinessPacket; reviewerActor: string; reviewerPrincipal: CloseReviewPrincipal | null; createdAt: string };
+/** A deliberately non-durable, human-facing summary of a packet. */
+export type HumanReadiness = {
+  status: "Ikke klar" | "Kræver stillingtagen" | "Klar" | "Lukket/endelig";
+  openControls: number;
+  reason: string;
+};
+
+/**
+ * Maps immutable control evidence to the common Cockpit vocabulary. This is
+ * presentation only: it neither changes the packet hash nor authorizes close.
+ */
+export function projectHumanReadiness(packet: CloseReadinessPacket, effectiveStatus: "open" | "closed" | "reported" = "open"): HumanReadiness {
+  const nonWaivable = packet.items.some(item => !item.waivable && (item.status === "blocked" || item.status === "unavailable"));
+  if (nonWaivable) return { status: "Ikke klar", openControls: packet.items.filter(item => item.status !== "passed").length, reason: "En ufravigelig kontrol er blokeret eller utilgængelig." };
+  const review = packet.items.some(item => item.status === "warning" || (item.waivable && item.status === "blocked"));
+  if (review) return { status: "Kræver stillingtagen", openControls: packet.items.filter(item => item.status !== "passed").length, reason: "En advarsel eller en fravigelig blokering kræver et dokumenteret valg." };
+  if (effectiveStatus === "closed" || effectiveStatus === "reported") return { status: "Lukket/endelig", openControls: 0, reason: "Alle kontroller er bestået, og perioden er effektivt lukket eller indberettet." };
+  return { status: "Klar", openControls: 0, reason: "Alle kontroller er bestået, og perioden er åben." };
+}
 
 export const canonicalCloseReadiness = canonicalJson;
 export function closeReadinessDigest(value: unknown): string { return createHash("sha256").update(canonicalCloseReadiness(value)).digest("hex"); }

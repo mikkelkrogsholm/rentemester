@@ -16,6 +16,7 @@ import type { CompanyVat, CompanyVatRegistered, VatRubrikker } from "../lib/type
 import { Banner, ErrorState, Loading } from "../components/Feedback";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { PageState, StatusChip } from "../components/CockpitPrimitives";
 
 export function VatView() {
   const { slug = "" } = useParams();
@@ -82,6 +83,12 @@ export function VatView() {
   const canReopen = !v.archived && v.periodStatus === "closed";
   // #303: a momsangivelse is only filing-ready for a closed/reported period.
   const provisional = !v.archived && !v.momsangivelseReady;
+  const filingStatus = v.periodStatus === "reported" || v.periodStatus === "closed"
+    ? "Lukket/endelig"
+    : v.vatReportErrors.length > 0 ? "Ikke klar"
+    : v.vatReportWarnings.length > 0 ? "Kræver stillingtagen"
+    : "Klar";
+  const statusTone = filingStatus === "Ikke klar" ? "danger" : filingStatus === "Kræver stillingtagen" ? "warning" : "success";
 
   return (
     <section className="statement">
@@ -143,16 +150,25 @@ export function VatView() {
 
       {closedNotice && <Banner kind="success">{closedNotice}</Banner>}
 
+      <section className="card" aria-label="Indberetningsklarhed">
+        <div className="statement-card-head"><h3>Indberetning</h3><StatusChip tone={statusTone}>{filingStatus}</StatusChip></div>
+        <div className="filter-bar">
+          <span><strong>{payablePositive ? "Moms at betale" : "Moms tilgode"}:</strong> {formatKroner(v.payable, currency)}</span>
+          <span><strong>Frist:</strong> {formatDateDa(v.deadline)}</span>
+        </div>
+        <p className="muted">{provisional ? "Luk og review først; en åben periode kan ikke indberettes." : "Tallene er endelige. Kontrollér og overfør derefter felterne i TastSelv."}</p>
+      </section>
+
       {v.vatReportErrors.length > 0 && (
-        <Banner kind="error">
-          Momsrapporten kan ikke indberettes endnu: {v.vatReportErrors.join(" ")}
-        </Banner>
+        <PageState kind="blocked" title="Momsrapporten kan ikke indberettes">
+          Påvirkning: SKAT-felterne er ikke et sikkert indberetningsgrundlag. Beslutning: ret fejlene og genberegn. <Link to={`/companies/${slug}/opmaerksomhed`}>Åbn opgaver der kræver opmærksomhed</Link>. {v.vatReportErrors.join(" ")}
+        </PageState>
       )}
 
       {v.vatReportWarnings.length > 0 && (
-        <Banner kind="warning">
-          Kontrollér før indberetning: {v.vatReportWarnings.join(" ")}
-        </Banner>
+        <PageState kind="warning" title="Moms kræver stillingtagen">
+          Påvirkning: beløbet kan være korrekt, men kræver faglig gennemgang. Beslutning: gennemgå advarslerne før indberetning. <Link to={`/companies/${slug}/opmaerksomhed`}>Åbn opgaver der kræver opmærksomhed</Link>. {v.vatReportWarnings.join(" ")}
+        </PageState>
       )}
 
       {closing && (
@@ -482,6 +498,7 @@ function RubrikkerCard({
         <button
           type="button"
           className="rubrik-copy-csv"
+          aria-label="Kopier alle som CSV"
           onClick={copyAllAsCsv}
           disabled={provisional}
           title={
@@ -490,7 +507,7 @@ function RubrikkerCard({
               : "Kopier alle rubrikker som CSV (label;beløb) til regneark"
           }
         >
-          {copiedLabel === "__csv__" ? "Kopieret" : "Kopier alle som CSV"}
+          {copiedLabel === "__csv__" ? "Kopieret" : "Kopiér alle SKAT-felter"}
         </button>
       </div>
       <p className="muted statement-note">

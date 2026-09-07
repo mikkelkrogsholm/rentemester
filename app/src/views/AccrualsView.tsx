@@ -8,6 +8,7 @@
 // follow-ups — kernens CLI (`accrual register` / `accrual recognize`)
 // dækker dem indtil videre.
 
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
@@ -16,7 +17,7 @@ import type {
   AccrualRegisterRow,
   CompanyAccrualsResponse,
 } from "../lib/types";
-import { ErrorState, Loading } from "../components/Feedback";
+import { PageState, StatusChip } from "../components/CockpitPrimitives";
 
 const TYPE_LABEL: Record<AccrualRegisterRow["accrualType"], string> = {
   prepaid_expense: "Forudbetalt omkostning",
@@ -31,8 +32,8 @@ export function AccrualsView() {
     [slug],
   );
 
-  if (state.loading) return <Loading />;
-  if (state.error) return <ErrorState message={state.error} />;
+  if (state.loading && !state.data) return <PageState kind="loading" title="Henter periodiseringer" />;
+  if (state.error) return <PageState kind="error" title="Periodiseringer kunne ikke hentes" onRetry={state.reload}>{state.error}</PageState>;
   const data = state.data!;
   const r = data.report;
   const currency = data.company.currency || "DKK";
@@ -54,13 +55,7 @@ export function AccrualsView() {
         </div>
       </header>
 
-      <p className="muted">
-        Periodeafgrænsningsposter (PAP): forudbetalte omkostninger,
-        skyldige omkostninger og udskudt omsætning. Beløb rulles ud lineært
-        over de aftalte perioder. Visningen er læsbar — nye periodiseringer
-        oprettes i øjeblikket via kommandolinjen; et skrive-flow i cockpittet
-        følger.
-      </p>
+      <section className="card"><div className="statement-card-head"><h3>Sikker næste handling</h3><StatusChip tone="info">Kræver review</StatusChip></div><p>Rentemester bogfører ikke en periodisering fra denne side. Gennemgå først opgaven og brug derefter den eksisterende agent-/review-arbejdsgang.</p><Link className="btn secondary" to={`/companies/${slug}/opmaerksomhed`}>Åbn opgaver der kræver opmærksomhed</Link><CopySafeStep slug={slug} /></section>
 
       <section className="card">
         <h3>Portfolio</h3>
@@ -80,10 +75,7 @@ export function AccrualsView() {
       <section className="card">
         <h3>Accruals ({r.accruals.length})</h3>
         {r.accruals.length === 0 ? (
-          <p className="muted">
-            Ingen accruals registreret. Periodeafgrænsningsposter oprettes via
-            CLI'ens <code>accrual register</code>.
-          </p>
+          <PageState kind="empty" title="Ingen periodiseringer registreret">Ingen accruals registreret. Åbn opgaver der kræver opmærksomhed og kopiér den sikre næste handling. Den opretter eller bogfører intet.</PageState>
         ) : (
           <table className="table">
             <thead>
@@ -109,6 +101,12 @@ export function AccrualsView() {
       </section>
     </section>
   );
+}
+
+function CopySafeStep({ slug }: { slug: string }) {
+  const [copied, setCopied] = useState(false);
+  const text = `Åbn Cockpit → ${slug} → Opgaver der kræver opmærksomhed. Gennemgå bilag og forslag, lav dry run og bekræft først derefter en periodisering.`;
+  return <button type="button" className="btn secondary" onClick={async () => { try { await navigator.clipboard.writeText(text); setCopied(true); } catch { /* visible text remains safe */ } }}>{copied ? "Kopieret" : "Kopiér sikker næste handling"}</button>;
 }
 
 function AccrualRow({
