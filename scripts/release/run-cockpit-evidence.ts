@@ -241,34 +241,19 @@ async function renderScenario(
     await cdp.call("Emulation.setDeviceMetricsOverride", {
       width: scenario.viewport.width,
       height: scenario.viewport.height,
-      deviceScaleFactor: 1,
+      deviceScaleFactor: scenario.viewport.deviceScaleFactor,
       mobile: false,
     });
-    if (scenario.interception)
-      await cdp.call("Fetch.enable", {
-        patterns: [{ urlPattern: `${base}${scenario.interception.urlPattern}`, requestStage: "Request" }],
-      });
+    await cdp.call("Fetch.enable", {
+      patterns: [{ urlPattern: `${base}${scenario.endpoint}`, requestStage: "Request" }],
+    });
     await cdp.call("Page.navigate", { url: `${base}${scenario.route}` });
     await Bun.sleep(scenario.interception?.delayMs ? 300 : 1000);
-    if (scenario.zoom === 2) {
-      await cdp.call("Input.dispatchKeyEvent", {
-        type: "keyDown",
-        key: "+",
-        code: "Equal",
-        modifiers: 2,
-      });
-      await cdp.call("Input.dispatchKeyEvent", {
-        type: "keyUp",
-        key: "+",
-        code: "Equal",
-        modifiers: 2,
-      });
-      await evaluateBoolean(
-        cdp,
-        "window.visualViewport.scale > 1",
-        `${scenario.scenario} browser zoom/reflow`,
-      );
-    }
+    await evaluateBoolean(
+      cdp,
+      `window.innerWidth === ${scenario.viewport.width} && window.innerHeight === ${scenario.viewport.height} && window.devicePixelRatio === ${scenario.viewport.deviceScaleFactor}`,
+      `${scenario.scenario} CSS viewport and device scale`,
+    );
     const assertions = [
       scenario.dom.heading,
       scenario.dom.status,
@@ -312,12 +297,9 @@ async function renderScenario(
       );
     }
     await Promise.all(interceptions);
-    if (
-      scenario.interception &&
-      !actualRequests.includes(`${base}${scenario.interception.urlPattern}`)
-    )
+    if (!actualRequests.includes(`${base}${scenario.endpoint}`))
       throw new Error(
-        `expected route was not intercepted: ${scenario.interception.urlPattern}`,
+        `expected feature endpoint was not observed: ${scenario.endpoint}`,
       );
     if (consoleErrors.length)
       throw new Error(
@@ -352,7 +334,8 @@ const chrome = await command("sh", [
     "-c",
     "command -v google-chrome || command -v chromium || command -v chromium-browser",
   ]),
-  container = `rentemester-cockpit-evidence-${crypto.randomUUID().slice(0, 12)}`;
+  container = `rentemester-cockpit-evidence-${crypto.randomUUID().slice(0, 12)}`,
+  network = `rentemester-cockpit-evidence-${crypto.randomUUID().slice(0, 12)}`;
 try {
   await command("docker", ["pull", image], true);
   const repoDigests = JSON.parse(
@@ -373,6 +356,12 @@ try {
   const regressionIssues = JSON.parse(
     await Bun.file(regressionPath).text(),
   ) as EvidenceManifest["regressionQuery"]["issues"];
+  await command("docker", ["network", "create", "--internal", network], true);
+  const internal = await command("docker", [
+    "network", "inspect", network, "--format", "{{.Internal}}",
+  ]);
+  if (internal !== "true")
+    throw new Error("Docker did not create an internal evidence network");
   await command(
     "docker",
     [
@@ -393,7 +382,7 @@ try {
       "1",
       "--init",
       "--network",
-      "bridge",
+      network,
       "--publish",
       "127.0.0.1::4319",
       "--tmpfs",
@@ -459,6 +448,13 @@ try {
       path = join(output, name);
     await Bun.write(path, rendered.png);
     const dimensions = pngDimensions(path);
+    if (
+      dimensions.width !== scenario.capture.width ||
+      dimensions.height !== scenario.capture.height
+    )
+      throw new Error(
+        `${scenario.scenario} screenshot dimensions must be ${scenario.capture.width}x${scenario.capture.height}`,
+      );
     artifacts.push({ path: name, sha256: sha256(path), ...dimensions });
     generated.push({ ...scenario, screenshot: name, ...rendered });
   }
@@ -487,6 +483,9 @@ try {
   process.stdout.write(`${manifestPath}\n`);
 } finally {
   await command("docker", ["rm", "--force", container], true).catch(
+    () => undefined,
+  );
+  await command("docker", ["network", "rm", network], true).catch(
     () => undefined,
   );
 }

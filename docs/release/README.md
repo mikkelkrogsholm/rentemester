@@ -65,12 +65,15 @@ skjult dobbeltkørsel.
 
 Kandidatworkflowet starter også det publicerede image med en helt ny, syntetisk
 workspace og afvikler `scripts/release/cockpit-evidence-scenarios.json` i system-
-Chrome. Runneren accepterer kun `ghcr.io/...@sha256:...`, aldrig et tag, og
-containeren får en tom tmpfs-workspace; den læser derfor ikke drifts- eller
-virksomhedsdata. Scenarierne er den fælles evidenskontrakt for #649–#657 og
-dækker desktop, 390 px, 200 % zoom, loading, empty, warning/blokeret, fejl og
-tastatur. Request-interception er begrænset til de deklarerede deterministiske
-loading-, 403- og fejlpræsentationer.
+Chrome. Filen indeholder ni eksplicitte issue-profiler; runneren udvider dem
+deterministisk til 63 scenarier. Runneren accepterer kun `ghcr.io/...@sha256:...`,
+aldrig et tag, og containeren får en tom tmpfs-workspace på et kortlivet Docker
+`--internal`-netværk med kun loopback-publiceret adgang; den læser derfor ikke
+drifts- eller virksomhedsdata og har ingen ekstern egress. Scenarierne er den
+fælles evidenskontrakt for #649–#657 og dækker desktop, 390 px, 200 %-ækvivalent
+reflow (720×450 CSS px ved device scale 2 og 1440×900 PNG), loading, empty,
+warning/blokeret, fejl og tastatur. Request-interception er begrænset til den
+eksakte feature-endpoint, som den pågældende profil ejer.
 
 Artefaktet `release-candidate-evidence` indeholder PNG'erne og
 `cockpit-evidence.json`. Manifestet binder commit, immutable image-digest,

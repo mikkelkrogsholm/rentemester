@@ -28,6 +28,10 @@ const containerTest = readFileSync(
   join(root, "scripts", "release", "test-local-container.ts"),
   "utf8",
 );
+const cockpitEvidenceRunner = readFileSync(
+  join(root, "scripts", "release", "run-cockpit-evidence.ts"),
+  "utf8",
+);
 
 describe("release workflow security contract", () => {
   test("pins every privileged third-party action to a full commit", () => {
@@ -71,6 +75,16 @@ describe("release workflow security contract", () => {
     expect(candidate.indexOf("run: bun run lint")).toBeLessThan(
       candidate.indexOf("name: Build and push candidate image"),
     );
+  });
+
+  test("runs Cockpit evidence on a disposable internal network with loopback access", () => {
+    expect(cockpitEvidenceRunner).toContain('"network", "create", "--internal", network');
+    expect(cockpitEvidenceRunner).toContain('"network", "inspect", network, "--format", "{{.Internal}}"');
+    expect(cockpitEvidenceRunner).toContain("Docker did not create an internal evidence network");
+    expect(cockpitEvidenceRunner).toContain('"--network",\n      network');
+    expect(cockpitEvidenceRunner).toContain('"--publish",\n      "127.0.0.1::4319"');
+    expect(cockpitEvidenceRunner).toContain('"network", "rm", network');
+    expect(cockpitEvidenceRunner).not.toContain('"--network",\n      "bridge"');
   });
 
   test("makes the production license allowlist a merge and release gate", () => {

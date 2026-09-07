@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -20,23 +20,32 @@ const scenarios = parseScenarios(
     "cockpit-evidence-scenarios.json",
   ),
 );
-// 1×1 RGBA PNG: the verifier checks the actual container structure, not a MIME claim.
-const png = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAF/gJ+QvXW4QAAAABJRU5ErkJggg==",
-  "base64",
-);
+// Minimal dimension-bearing PNG for structural verifier tests.
+function png(width: number, height: number) {
+  const header = Buffer.alloc(25);
+  header.writeUInt32BE(13, 0);
+  header.write("IHDR", 4);
+  header.writeUInt32BE(width, 8);
+  header.writeUInt32BE(height, 12);
+  header[16] = 8;
+  header[17] = 6;
+  return Buffer.concat([
+    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), header,
+    Buffer.from([0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]),
+  ]);
+}
 function fixture() {
   const dir = mkdtempSync(join(tmpdir(), "rentemester-cockpit-evidence-"));
   const query = join(dir, "cockpit-epic-648-open-issues.json");
   writeFileSync(query, "[]");
   const artifacts = scenarios.map((s) => {
     const path = join(dir, screenshotName(s));
-    writeFileSync(path, png);
+    writeFileSync(path, png(s.capture.width, s.capture.height));
     return {
       path: screenshotName(s),
       sha256: sha256(path),
-      width: 1,
-      height: 1,
+      width: s.capture.width,
+      height: s.capture.height,
     };
   });
   const manifest: EvidenceManifest = {
@@ -62,7 +71,7 @@ function fixture() {
       keyboardAssertions: ["Tab: natural focus and UI state verified"],
       interception: {
         requested: s.interception?.urlPattern ?? null,
-        actualRequests: s.interception ? [s.interception.urlPattern] : [],
+        actualRequests: [s.endpoint],
       },
       consoleErrors: [],
       domAssertions: [s.dom.heading.selector],
@@ -76,6 +85,55 @@ test("requires every state and responsive normal mode for every #649-#657 featur
   expect(scenarios).toHaveLength(63);
   for (const issue of [649, 650, 651, 652, 653, 654, 655, 656, 657])
     expect(scenarios.filter((s) => s.issue === issue)).toHaveLength(7);
+  const zoom = scenarios.find((s) => s.issue === 649 && s.mode === "zoom");
+  expect(zoom?.viewport).toEqual({ width: 720, height: 450, deviceScaleFactor: 2 });
+  expect(zoom?.capture).toEqual({ width: 1440, height: 900 });
+});
+test("rejects a manifest missing one issue-local state or responsive mode", () => {
+  const value = fixture();
+  const modeValue = fixture();
+  try {
+    value.manifest.scenarios = value.manifest.scenarios.filter(
+      (scenario) => !(scenario.issue === 649 && scenario.state === "empty"),
+    );
+    writeFileSync(value.path, JSON.stringify(value.manifest));
+    expect(() => verifyEvidence(value.path)).toThrow("missing empty scenario for #649");
+    modeValue.manifest.scenarios = modeValue.manifest.scenarios.filter(
+      (scenario) => !(scenario.issue === 650 && scenario.state === "normal" && scenario.mode === "zoom"),
+    );
+    writeFileSync(modeValue.path, JSON.stringify(modeValue.manifest));
+    expect(() => verifyEvidence(modeValue.path)).toThrow("missing normal zoom scenario for #650");
+  } finally {
+    rmSync(value.dir, { recursive: true, force: true });
+    rmSync(modeValue.dir, { recursive: true, force: true });
+  }
+});
+test("rejects a manifest with a cross-feature route or endpoint mapping", () => {
+  const value = fixture();
+  try {
+    value.manifest.scenarios[0]!.endpoint =
+      "/api/companies/evidence-fixture/overview/changes";
+    writeFileSync(value.path, JSON.stringify(value.manifest));
+    expect(() => verifyEvidence(value.path)).toThrow(
+      "wrong route or endpoint mapping for #649",
+    );
+  } finally {
+    rmSync(value.dir, { recursive: true, force: true });
+  }
+});
+test("expands only the nine exact feature profiles and rejects a wrong mapping", () => {
+  expect(scenarios.find((s) => s.issue === 650)?.route).toBe("/companies/evidence-fixture/batchbogfoering");
+  expect(scenarios.find((s) => s.issue === 651)?.endpoint).toBe("/api/companies/evidence-fixture/overview/changes");
+  const dir = mkdtempSync(join(tmpdir(), "rentemester-cockpit-config-"));
+  try {
+    const config = JSON.parse(readFileSync(join(import.meta.dir, "..", "..", "scripts", "release", "cockpit-evidence-scenarios.json"), "utf8"));
+    config.profiles[0].endpoint = "/api/companies/evidence-fixture/overview";
+    const path = join(dir, "scenarios.json");
+    writeFileSync(path, JSON.stringify(config));
+    expect(() => parseScenarios(path)).toThrow("invalid issue profile for #649");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 test("verifies PNG structure, dimensions, one-to-one mapping and query checksum", () => {
   const value = fixture();
@@ -84,13 +142,13 @@ test("verifies PNG structure, dimensions, one-to-one mapping and query checksum"
     value.manifest.artifacts[0]!.width = 390;
     writeFileSync(value.path, JSON.stringify(value.manifest));
     expect(() => verifyEvidence(value.path)).toThrow("dimension mismatch");
-    value.manifest.artifacts[0]!.width = 1;
+    value.manifest.artifacts[0]!.width = value.manifest.scenarios[0]!.capture.width;
     value.manifest.scenarios[1]!.screenshot =
       value.manifest.scenarios[0]!.screenshot;
     writeFileSync(value.path, JSON.stringify(value.manifest));
     expect(() => verifyEvidence(value.path)).toThrow("one-to-one");
     value.manifest.scenarios[1]!.screenshot = value.manifest.artifacts[1]!.path;
-    writeFileSync(join(value.dir, "orphan.png"), png);
+    writeFileSync(join(value.dir, "orphan.png"), png(1, 1));
     writeFileSync(value.path, JSON.stringify(value.manifest));
     expect(() => verifyEvidence(value.path)).toThrow("unreferenced screenshot");
   } finally {
@@ -106,7 +164,13 @@ test("rejects fake PNG, swapped runtime identity, unsafe paths and open epic blo
     );
     writeFileSync(value.path, JSON.stringify(value.manifest));
     expect(() => verifyEvidence(value.path)).toThrow("PNG");
-    writeFileSync(join(value.dir, value.manifest.artifacts[0]!.path), png);
+    writeFileSync(
+      join(value.dir, value.manifest.artifacts[0]!.path),
+      png(
+        value.manifest.scenarios[0]!.capture.width,
+        value.manifest.scenarios[0]!.capture.height,
+      ),
+    );
     value.manifest.artifacts[0]!.sha256 = sha256(
       join(value.dir, value.manifest.artifacts[0]!.path),
     );

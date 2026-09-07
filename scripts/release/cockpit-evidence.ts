@@ -15,6 +15,29 @@ export const REQUIRED_STATES = [
 ] as const;
 export const REQUIRED_MODES = ["desktop", "mobile", "zoom"] as const;
 type State = (typeof REQUIRED_STATES)[number];
+type Mode = (typeof REQUIRED_MODES)[number];
+
+const MODE_VIEWPORTS: Record<
+  Mode,
+  { width: number; height: number; deviceScaleFactor: number }
+> = {
+  desktop: { width: 1440, height: 900, deviceScaleFactor: 1 },
+  mobile: { width: 390, height: 844, deviceScaleFactor: 1 },
+  // A 720×450 CSS layout viewport at device scale 2 is the deterministic
+  // equivalent of desktop 200% zoom; Chrome captures 1440×900 physical pixels.
+  zoom: { width: 720, height: 450, deviceScaleFactor: 2 },
+};
+const REQUIRED_ISSUE_MAPPING: Record<number, { route: string; endpoint: string }> = {
+  649: { route: "/companies/evidence-fixture", endpoint: "/api/companies/evidence-fixture/attention" },
+  650: { route: "/companies/evidence-fixture/batchbogfoering", endpoint: "/api/companies/evidence-fixture/bookkeeping-workbench" },
+  651: { route: "/companies/evidence-fixture", endpoint: "/api/companies/evidence-fixture/overview/changes" },
+  652: { route: "/companies/evidence-fixture/posteringer", endpoint: "/api/companies/evidence-fixture/journal/explanation" },
+  653: { route: "/companies/evidence-fixture/kontakter", endpoint: "/api/companies/evidence-fixture/party-projection" },
+  654: { route: "/companies/evidence-fixture/balance", endpoint: "/api/companies/evidence-fixture/balance" },
+  655: { route: "/companies/evidence-fixture/bank", endpoint: "/api/companies/evidence-fixture/bank?year=2026" },
+  656: { route: "/companies/evidence-fixture/moms", endpoint: "/api/companies/evidence-fixture/vat/readiness" },
+  657: { route: "/companies/evidence-fixture/manage", endpoint: "/api/companies/evidence-fixture/company/profile" },
+};
 
 export type DomAssertion = {
   selector: string;
@@ -26,10 +49,11 @@ export type Scenario = {
   scenario: string;
   owner: string;
   route: string;
+  endpoint: string;
   state: State;
-  mode: (typeof REQUIRED_MODES)[number];
-  viewport: { width: number; height: number };
-  zoom: number;
+  mode: Mode;
+  viewport: { width: number; height: number; deviceScaleFactor: number };
+  capture: { width: number; height: number };
   dom: {
     heading: DomAssertion;
     status: DomAssertion;
@@ -50,6 +74,19 @@ export type Scenario = {
     delayMs?: number;
   };
 };
+type IssueProfile = {
+  issue: number;
+  owner: string;
+  route: string;
+  endpoint: string;
+  heading: string;
+  coreAction: string;
+  data: string;
+  progressive: string;
+  taskOutcome: string;
+  states: Record<State, string>;
+};
+type ScenarioConfig = { profiles: IssueProfile[] };
 export type EvidenceArtifact = {
   path: string;
   sha256: string;
@@ -136,15 +173,19 @@ export function pngDimensions(path: string): { width: number; height: number } {
 }
 export function parseScenarios(path: string): Scenario[] {
   const value: unknown = JSON.parse(readFileSync(path, "utf8"));
-  if (!Array.isArray(value))
-    throw new Error("scenario list must be a non-empty JSON array");
-  const scenarios = value as Scenario[];
+  if (!value || typeof value !== "object" || !Array.isArray((value as ScenarioConfig).profiles))
+    throw new Error("scenario configuration must contain issue profiles");
+  const profiles = (value as ScenarioConfig).profiles;
+  if (profiles.length !== REQUIRED_ISSUES.length)
+    throw new Error("scenario configuration must contain exactly nine issue profiles");
+  const scenarios = profiles.flatMap(expandProfile);
   for (const s of scenarios) {
     if (
       !REQUIRED_ISSUES.includes(s.issue as never) ||
       !s.scenario ||
       !s.owner ||
       !s.route.startsWith("/") ||
+      !/^\/api\/[a-z0-9/:?=&._-]+$/i.test(s.endpoint) ||
       !REQUIRED_STATES.includes(s.state) ||
       !REQUIRED_MODES.includes(s.mode)
     )
@@ -152,14 +193,15 @@ export function parseScenarios(path: string): Scenario[] {
     if (
       !Number.isInteger(s.viewport?.width) ||
       !Number.isInteger(s.viewport?.height) ||
-      s.viewport.width < 390 ||
-      s.zoom < 1
+      s.viewport.width < 390
     )
       throw new Error(`invalid viewport for ${s.scenario}`);
     if (
-      (s.mode === "desktop" && (s.viewport.width <= 390 || s.zoom !== 1)) ||
-      (s.mode === "mobile" && (s.viewport.width !== 390 || s.zoom !== 1)) ||
-      (s.mode === "zoom" && s.zoom !== 2)
+      s.viewport.width !== MODE_VIEWPORTS[s.mode].width ||
+      s.viewport.height !== MODE_VIEWPORTS[s.mode].height ||
+      s.viewport.deviceScaleFactor !== MODE_VIEWPORTS[s.mode].deviceScaleFactor ||
+      s.capture.width !== s.viewport.width * s.viewport.deviceScaleFactor ||
+      s.capture.height !== s.viewport.height * s.viewport.deviceScaleFactor
     )
       throw new Error(`mode dimensions must be explicit for ${s.scenario}`);
     if (
@@ -175,13 +217,11 @@ export function parseScenarios(path: string): Scenario[] {
         `page-local DOM and keyboard contract required for ${s.scenario}`,
       );
     if (
-      s.interception &&
-      (!/^\/api\/[a-z0-9/:?=&._-]+$/i.test(s.interception.urlPattern) ||
-        s.interception.urlPattern === "/api/health" ||
-        s.interception.urlPattern.includes("identity"))
+      s.endpoint === "/api/health" || s.endpoint.includes("identity") ||
+      (s.interception && s.interception.urlPattern !== s.endpoint)
     )
       throw new Error(
-        `interception must be exact, route-specific, and exclude health/identity for ${s.scenario}`,
+        `endpoint and interception must be exact, route-specific, and exclude health/identity for ${s.scenario}`,
       );
     if (
       ["loading", "warning-or-blocked", "error"].includes(s.state) !==
@@ -204,14 +244,19 @@ export function parseScenarios(path: string): Scenario[] {
   }
   return scenarios;
 }
-function assertScenarios(scenarios: Array<Pick<Scenario, "issue" | "state" | "mode">>): void {
-  parseScenariosValue(scenarios);
-}
-function parseScenariosValue(scenarios: Array<Pick<Scenario, "issue" | "state" | "mode">>): void {
-  const temp = "/tmp";
-  /* keep manifest and source contracts identical without accepting global coverage */ void temp;
+function assertScenarios(
+  scenarios: Array<Pick<Scenario, "issue" | "state" | "mode" | "route" | "endpoint">>,
+): void {
   for (const issue of REQUIRED_ISSUES) {
     const mine = scenarios.filter((s) => s.issue === issue);
+    if (
+      mine.some(
+        (s) =>
+          s.route !== REQUIRED_ISSUE_MAPPING[issue].route ||
+          s.endpoint !== REQUIRED_ISSUE_MAPPING[issue].endpoint,
+      )
+    )
+      throw new Error(`wrong route or endpoint mapping for #${issue}`);
     for (const state of REQUIRED_STATES)
       if (!mine.some((s) => s.state === state))
         throw new Error(`missing ${state} scenario for #${issue}`);
@@ -219,6 +264,56 @@ function parseScenariosValue(scenarios: Array<Pick<Scenario, "issue" | "state" |
       if (!mine.some((s) => s.state === "normal" && s.mode === mode))
         throw new Error(`missing normal ${mode} scenario for #${issue}`);
   }
+}
+function expandProfile(profile: IssueProfile): Scenario[] {
+  if (
+    !REQUIRED_ISSUES.includes(profile.issue as never) ||
+    !profile.owner || !profile.route.startsWith("/") ||
+    !/^\/api\/[a-z0-9/:?=&._-]+$/i.test(profile.endpoint) ||
+    !profile.heading || !profile.coreAction || !profile.data || !profile.progressive ||
+    !profile.taskOutcome || REQUIRED_STATES.some((state) => !profile.states?.[state]) ||
+    profile.route !== REQUIRED_ISSUE_MAPPING[profile.issue]?.route ||
+    profile.endpoint !== REQUIRED_ISSUE_MAPPING[profile.issue]?.endpoint
+  ) throw new Error(`invalid issue profile for #${profile.issue}`);
+  const root = `[data-evidence-issue="${profile.issue}"]`;
+  const dom = (state: State) => ({
+    heading: { selector: `${root} [data-evidence-heading]`, text: profile.heading, visible: true },
+    status: { selector: `${root} [data-evidence-status="${state}"]`, text: profile.states[state], visible: true },
+    controls: [{ selector: `${root} [data-evidence-core-action]`, text: profile.coreAction, visible: true }],
+    data: [
+      { selector: `${root} [data-evidence-data]`, text: profile.data, visible: true },
+      { selector: `${root} [data-evidence-progressive]`, text: profile.progressive, visible: true },
+    ],
+    coreAction: { selector: `${root} [data-evidence-core-action]`, text: profile.coreAction, visible: true },
+    noHorizontalOverflow: true as const,
+  });
+  const keyboard = [{
+    key: "Tab" as const,
+    expectFocus: { selector: `${root} [data-evidence-core-action]`, visible: true },
+    expectState: { selector: `${root} [data-evidence-core-action]`, text: profile.coreAction, visible: true },
+  }, {
+    key: "Enter" as const,
+    expectFocus: { selector: `${root} [data-evidence-core-action]`, visible: true },
+    expectState: { selector: `${root} [data-evidence-task-outcome]`, text: profile.taskOutcome, visible: true },
+  }];
+  const scenario = (state: State, mode: Mode): Scenario => ({
+    issue: profile.issue, scenario: `issue-${profile.issue}-${state}-${mode}`,
+    owner: profile.owner, route: profile.route, endpoint: profile.endpoint, state, mode,
+    viewport: MODE_VIEWPORTS[mode],
+    capture: {
+      width: MODE_VIEWPORTS[mode].width * MODE_VIEWPORTS[mode].deviceScaleFactor,
+      height: MODE_VIEWPORTS[mode].height * MODE_VIEWPORTS[mode].deviceScaleFactor,
+    },
+    dom: dom(state), keyboard,
+    ...(["loading", "warning-or-blocked", "error"] as State[]).includes(state) ? {
+      interception: {
+        urlPattern: profile.endpoint,
+        status: state === "warning-or-blocked" ? 403 : state === "error" ? 500 : 200,
+        body: "{}", ...(state === "loading" ? { delayMs: 3000 } : {}),
+      },
+    } : {},
+  });
+  return [scenario("normal", "desktop"), scenario("normal", "mobile"), scenario("normal", "zoom"), ...REQUIRED_STATES.slice(1).map((state) => scenario(state, "desktop"))];
 }
 export function verifyEvidence(manifestPath: string): EvidenceManifest {
   const absolute = resolve(manifestPath),
@@ -306,12 +401,17 @@ export function verifyEvidence(manifestPath: string): EvidenceManifest {
       s.consoleErrors.length
     )
       throw new Error(`incomplete scenario result: ${s.scenario}`);
-    const requested = s.interception.requested;
+    const screenshot = artifacts.get(s.screenshot)!;
     if (
-      requested &&
-      !s.interception.actualRequests.some((url) => url.includes(requested))
+      screenshot.width !== s.capture.width ||
+      screenshot.height !== s.capture.height
     )
-      throw new Error(`interception was not observed for ${s.scenario}`);
+      throw new Error(`scenario capture dimensions mismatch: ${s.scenario}`);
+    const requested = s.interception.requested;
+    if (requested !== null && requested !== s.endpoint)
+      throw new Error(`interception endpoint mismatch: ${s.scenario}`);
+    if (!s.interception.actualRequests.includes(s.endpoint))
+      throw new Error(`feature endpoint was not observed for ${s.scenario}`);
   }
   if (used.size !== artifacts.size)
     throw new Error("unreferenced screenshot artifact");
