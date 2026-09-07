@@ -173,7 +173,10 @@ const expression = (a: {
   text?: string;
   visible?: boolean;
 }) =>
-  `(()=>{const e=document.querySelector(${JSON.stringify(a.selector)});if(!e)return false;const visible=${a.visible !== false};return (!visible||(!!(e.offsetWidth||e.offsetHeight||e.getClientRects().length)))&&${a.text ? `e.textContent.includes(${JSON.stringify(a.text)})` : "true"};})()`;
+  // A normal-fixture contract is behavioral evidence: its configured text
+  // must be rendered for a sighted user inside the designated element.  Do
+  // not let aria labels, sr-only captions, or hidden descendants satisfy it.
+  `(()=>{const e=document.querySelector(${JSON.stringify(a.selector)});if(!e)return false;const visible=${a.visible !== false};const isVisible=n=>{for(let x=n.parentElement;x;x=x.parentElement){const s=getComputedStyle(x);if(x.classList.contains('sr-only')||s.display==='none'||s.visibility==='hidden'||s.visibility==='collapse'||s.contentVisibility==='hidden')return false}const r=document.createRange();r.selectNodeContents(n);return Array.from(r.getClientRects()).some(rect=>rect.width||rect.height)};const visibleText=()=>{const w=document.createTreeWalker(e,NodeFilter.SHOW_TEXT);let text='',n;while(n=w.nextNode())if(n.nodeValue&&isVisible(n))text+=n.nodeValue;return text};return (!visible||(!!(e.offsetWidth||e.offsetHeight||e.getClientRects().length)))&&${a.text ? `visibleText().includes(${JSON.stringify(a.text)})` : "true"};})()`;
 async function evaluateBoolean(cdp: Cdp, source: string, label: string) {
   const value = await cdp.call("Runtime.evaluate", {
     expression: source,

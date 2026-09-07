@@ -394,7 +394,8 @@ function BankFilterBar({
     <FilterBar
       activeFilters={activeFilters}
       onReset={hasActiveFilter ? clearAllFilters : undefined}
-      advanced={<div data-evidence-progressive>
+      advancedEvidence
+      advanced={<div>
         <FormField label="Fra"><input type="date" value={fromDate} onChange={(e) => setFilter("from", e.target.value)} /></FormField>
         <FormField label="Til"><input type="date" value={toDate} onChange={(e) => setFilter("to", e.target.value)} /></FormField>
       </div>}

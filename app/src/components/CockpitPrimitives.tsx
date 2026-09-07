@@ -34,16 +34,18 @@ export function FilterBar({
   onReset,
   resetLabel = "Nulstil filtre",
   advanced,
+  advancedEvidence = false,
 }: {
   children: ReactNode;
   activeFilters?: string[];
   onReset?: () => void;
   resetLabel?: string;
   advanced?: ReactNode;
+  advancedEvidence?: boolean;
 }) {
   return <section className="filter-bar cockpit-filter-bar" aria-label="Filtre" role="search">
     <div className="filter-bar-controls">{children}</div>
-    {advanced && <details className="filter-bar-advanced"><summary>Avancerede filtre</summary><div>{advanced}</div></details>}
+    {advanced && <details className="filter-bar-advanced" data-evidence-progressive={advancedEvidence || undefined}><summary>Avancerede filtre</summary><div>{advanced}</div></details>}
     {activeFilters.length > 0 && <div className="active-filters" aria-live="polite">
       <span>Aktive filtre: {activeFilters.join(", ")}</span>
       {onReset && <button type="button" className="btn secondary" onClick={onReset}>{resetLabel}</button>}

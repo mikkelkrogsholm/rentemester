@@ -7,7 +7,7 @@
       "endpoint": "/api/companies/evidence-fixture/attention",
       "heading": "Opgaver der kræver opmærksomhed",
       "coreAction": "Åbn næste opgave",
-      "data": "Prioriteret opgaveliste",
+      "data": "Syntetisk opgave",
       "progressive": "Se grundlag for opgaven",
       "taskOutcome": { "url": "/companies/evidence-fixture/batchbogfoering" },
       "states": { "normal": "Opgaver klar", "loading": "Henter opgaver", "empty": "Ingen opgaver kræver opmærksomhed", "warning-or-blocked": "Opgaver er blokeret", "error": "Opgaver kunne ikke hentes" }
@@ -19,7 +19,7 @@
       "endpoint": "/api/companies/evidence-fixture/fiscal-years",
       "heading": "Bogføringsarbejdsbord",
       "coreAction": "Forhåndsvis samlet dry run",
-      "data": "Bogføringskø",
+      "data": "Klar til dry run",
       "progressive": "Se bilag og kontering",
       "taskOutcome": "Samlet dry run forhåndsvist",
       "states": { "normal": "Bogføringskø klar", "loading": "Henter bogføringskø", "empty": "Ingen poster klar til bogføring", "warning-or-blocked": "Bogføring kræver afklaring", "error": "Bogføringskø kunne ikke hentes" }
@@ -31,7 +31,7 @@
       "endpoint": "/api/companies/evidence-fixture/changes-since?after=0",
       "heading": "Siden sidst",
       "coreAction": "Markér som set",
-      "data": "Omsætning pr. måned",
+      "data": "Måned",
       "progressive": "Se underliggende resultatopgørelse",
       "taskOutcome": "Ændringer markeret som set",
       "states": { "normal": "Overblik klar", "loading": "Henter virksomhedsoverblik", "empty": "Ingen ændringer siden sidst", "warning-or-blocked": "Overblik kræver opmærksomhed", "error": "Virksomhedsoverblik kunne ikke hentes" }
@@ -91,7 +91,7 @@
       "endpoint": "/api/companies/evidence-fixture/vat",
       "heading": "Moms og lukkeparathed",
       "coreAction": "Gennemgå momsparathed",
-      "data": "Momsstatus",
+      "data": "Moms at betale",
       "progressive": "Gennemgå momsparathed",
       "taskOutcome": "Se lukkegrundlag",
       "states": { "normal": "Momsparathed klar", "loading": "Henter momsparathed", "empty": "Ingen momsforpligtelser i perioden", "warning-or-blocked": "Moms kræver afklaring", "error": "Momsparathed kunne ikke hentes" }
