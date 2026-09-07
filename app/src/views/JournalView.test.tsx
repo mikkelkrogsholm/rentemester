@@ -63,14 +63,10 @@ describe("JournalView — Posteringer", () => {
     expect(screen.getByRole("button", { name: /Erstat nuværende tildeling atomisk/i })).toBeDisabled();
   });
 
-  test("the company sub-nav exposes the new tabs", async () => {
+  test("the daily navigation lets the owner find money and documents", async () => {
     mockFetch(route());
     renderView();
-    const bankTab = await screen.findByRole("link", { name: "Bank" });
-    expect(bankTab).toHaveAttribute(
-      "href",
-      expect.stringContaining("/companies/acme-aps/bank"),
-    );
+    expect(await screen.findByRole("link", { name: "Penge og bilag" })).toHaveAttribute("href", expect.stringContaining("/companies/acme-aps/bank"));
   });
 
   test("the fiscal-year selector reloads for the chosen year", async () => {
@@ -106,7 +102,7 @@ describe("JournalView — Posteringer", () => {
       path: "/companies/:slug/posteringer",
     });
     // The filter banner names the account.
-    expect(await screen.findByText("Bank")).toBeInTheDocument();
+    expect(await screen.findByText(/Posteringer på konto/)).toHaveTextContent("Bank");
     expect(screen.getByText("55000")).toBeInTheDocument();
     // The fetch carried the account param.
     const calls = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;

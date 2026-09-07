@@ -100,3 +100,17 @@ export type ExceptionsResponse = {
   ok: true;
   exceptions: CompanyExceptions;
 };
+
+export type AttentionItem = {
+  id: string;
+  source: "exception" | "agent-proposal" | "readiness" | "workbench";
+  severity: "high" | "medium" | "low";
+  title: string;
+  reason: string;
+  actor: string | null;
+  destination: string;
+  sourceIdentity: string;
+  evidence: unknown;
+};
+export type CompanyAttention = { slug: string; company: { name: string; currency: string }; scope: { from: string; to: string }; items: AttentionItem[]; count: number };
+export type AttentionResponse = { ok: true; attention: CompanyAttention };

@@ -12,13 +12,7 @@
 //     into six task areas; only the active area's destinations are shown.
 
 import { NavLink, useLocation, useSearchParams } from "react-router-dom";
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, type ReactNode } from "react";
 import type { FiscalYearEntry } from "../lib/types";
 import { companyRouteForPath } from "../company-route-path";
 import type { CompanyRouteId } from "../company-route-registry";
@@ -33,6 +27,7 @@ export type CompanyRouteNavigationProjection = {
   areas: readonly {
     id: string;
     label: string;
+    destination: string;
   }[];
 };
 
@@ -121,57 +116,28 @@ export function CompanyTaskNavigation({
   const visibleRoutes = navigation?.routes.filter(
     (route) => !visibleRouteIds || visibleRouteIds.includes(route.id),
   ) ?? [];
-  const visibleAreas = navigation?.areas.filter((area) =>
-    visibleRoutes.some((route) => route.area === area.id),
-  ) ?? [];
-  const defaultArea = visibleAreas.some((area) => area.id === currentRoute?.area)
-    ? currentRoute?.area
-    : visibleAreas[0]?.id;
-  const [selectedArea, setSelectedArea] = useState<string | undefined>(
-    defaultArea,
-  );
-  useEffect(() => setSelectedArea(defaultArea), [defaultArea]);
+  const visibleAreas = navigation?.areas.filter((area) => visibleRoutes.some((route) => route.area === area.id)) ?? [];
   if (!currentRoute || !slug) return null;
-  const currentAreaRoutes = visibleRoutes.filter((route) => route.area === selectedArea);
   const toPath = (segment: string) =>
     `${segment ? `/companies/${slug}/${segment}` : `/companies/${slug}`}${suffix}`;
 
   return (
     <section className="company-task-navigation" aria-label="Virksomhedsnavigation">
-      <nav className="company-areas" aria-label="Opgaveområder">
+      <nav className="company-areas" aria-label="Daglige opgaver">
         {visibleAreas.map((area) => {
-          const active = area.id === selectedArea;
-          const current = area.id === currentRoute.area;
+          const destination = visibleRoutes.find((route) => route.segment === area.destination) ?? visibleRoutes.find((route) => route.area === area.id);
+          if (!destination) return null;
           return (
-            <button
+            <NavLink
               key={area.id}
-              type="button"
-              className={[active && "active", current && "current"]
-                .filter(Boolean)
-                .join(" ") || undefined}
-              aria-pressed={active}
-              aria-current={current ? "true" : undefined}
-              aria-controls="company-area-destinations"
-              onClick={() => setSelectedArea(area.id)}
+              to={toPath(destination.segment)}
+              className={currentRoute.area === area.id ? "active" : undefined}
             >
               {area.label}
-            </button>
+            </NavLink>
           );
         })}
       </nav>
-      {currentAreaRoutes.length > 0 && (
-        <nav
-          id="company-area-destinations"
-          className="company-destinations"
-          aria-label={`Sider i ${navigation?.areas.find((area) => area.id === selectedArea)?.label}`}
-        >
-          {currentAreaRoutes.map((route) => (
-            <NavLink key={route.id} to={toPath(route.segment)} end>
-              {route.label}
-            </NavLink>
-          ))}
-        </nav>
-      )}
     </section>
   );
 }

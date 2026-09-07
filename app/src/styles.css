@@ -1250,7 +1250,7 @@ tr.account-row:hover {
 }
 
 /* ==========================================================================
-   Per-company navigation — task areas plus current-area destinations
+   Per-company navigation — one daily task level
    ========================================================================== */
 
 .company-task-navigation {
@@ -1260,8 +1260,7 @@ tr.account-row:hover {
   border-bottom: 1px solid var(--border);
   margin-bottom: var(--space-lg);
 }
-.company-areas,
-.company-destinations {
+.company-areas {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-xxs);
@@ -1271,8 +1270,7 @@ tr.account-row:hover {
   padding-bottom: var(--space-xs);
   border-bottom: 1px solid var(--border);
 }
-.company-areas button,
-.company-destinations a {
+.company-areas a {
   color: var(--text-dim);
   font-size: var(--text-size-md);
   font-weight: var(--text-weight-medium);
@@ -1286,25 +1284,18 @@ tr.account-row:hover {
   text-align: left;
   transition: color 0.12s ease;
 }
-.company-areas button:hover,
-.company-destinations a:hover {
+.company-areas a:hover {
   color: var(--text);
   text-decoration: none;
   border-color: var(--border-strong);
 }
-.company-areas button.active,
-.company-destinations a.active {
+.company-areas a.active {
   color: var(--text);
   font-weight: var(--text-weight-semibold);
   border-color: var(--accent);
   background: var(--surface-2);
 }
-.company-areas button.current:not(.active) {
-  color: var(--text);
-  border-color: var(--border-strong);
-}
-.company-areas button:focus-visible,
-.company-destinations a:focus-visible {
+.company-areas a:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -1748,12 +1739,10 @@ table.statement-table td.num.muted {
   .company-year-controls {
     justify-content: flex-start;
   }
-  .company-areas,
-  .company-destinations {
+  .company-areas {
     width: 100%;
   }
-  .company-areas button,
-  .company-destinations a {
+  .company-areas a {
     max-width: 100%;
   }
   /* Tighten statement-table padding so the columns fit a phone width. */

@@ -7,7 +7,7 @@ sammenligner den med route-registret og fejler, hvis en ny rute mangler.
 
 | Sideskabelon | Status | Ruter |
 | --- | --- | --- |
-| Overblik og arbejdsstatus | Kræver mutation | dashboard, suggestions, exceptions, workspace-inbox |
+| Overblik og arbejdsstatus | Kræver mutation | dashboard, attention, suggestions, exceptions, workspace-inbox |
 | Bankregister og afstemning | Undersøgt | bank |
 | Filtreret register | Kræver mutation | journal, drafts, documents, payables, purchase-overview, mileage, assets, invoices, invoice-templates, contacts, accounts, dimensions, bank-accounts, receipt-email |
 | Bogføringsarbejdsgang | Kræver mutation | approval-policy, posting-rules, batch-bookkeeping, period-lock, accruals |

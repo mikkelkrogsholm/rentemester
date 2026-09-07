@@ -2,6 +2,7 @@ import type { ExceptionsResponse } from "../types";
 import { request } from "./_shared";
 
 export const exceptionsApi = {
+  attention: (slug: string) => request<import("../types").AttentionResponse>(`/api/companies/${encodeURIComponent(slug)}/attention`).then((r) => r.attention),
   /**
    * #332 — Exceptions queue list. Default status er 'open' så cockpittet
    * altid starter på det aktive arbejde.

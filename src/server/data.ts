@@ -47,6 +47,9 @@ export type {
   CompanyAgentSuggestions,
 } from "./data/agent-suggestions";
 
+export { buildCompanyAttention } from "./data/attention";
+export type { AttentionItem } from "./data/attention";
+
 // --- data/vat.ts -----------------------------------------------------------
 export type { VatPosition, VatRubrikker } from "./data/vat";
 

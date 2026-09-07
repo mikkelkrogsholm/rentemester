@@ -1,100 +1,26 @@
-// #UI-4 — the sub-navigation must thread ONLY the fiscal year between views, so
-// per-view filters (Bank's q/from/to/status, a posting account=…) never leak
-// onto sibling tabs.
-
 import { describe, expect, test } from "bun:test";
 import { screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { useLocation } from "react-router-dom";
 import { CompanyTaskNavigation } from "./CompanyNav";
 import { renderAt } from "../test/render";
 
-function renderNav(route: string) {
-  return renderAt(
-    <CompanyTaskNavigation />,
-    { route, path: "*" },
-  );
-}
-
-function LocationProbe() {
-  const location = useLocation();
-  return <output data-testid="location">{location.pathname}{location.search}</output>;
-}
-
-describe("CompanyNav query-string whitelist (#UI-4)", () => {
-  test("threads ?year= onto the current area's destinations", () => {
-    renderNav("/companies/acme-aps/bank?year=2025");
-    const bookkeeping = screen.getByRole("button", { name: "Bogføring" });
-    expect(bookkeeping).toHaveAttribute("aria-pressed", "true");
-    const documents = screen.getByRole("link", { name: "Bilag" });
-    expect(documents.getAttribute("href")).toBe("/companies/acme-aps/bilag?year=2025");
-    expect(screen.getByRole("link", { name: "Bank" }).getAttribute("aria-current")).toBe("page");
-    expect(screen.queryByRole("link", { name: "Resultatopgørelse" })).not.toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "Opgaveområder" })).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "Sider i Bogføring" })).toBeInTheDocument();
+describe("CompanyTaskNavigation (#649)", () => {
+  test("shows the approved daily labels as one navigation level", () => {
+    renderAt(<CompanyTaskNavigation />, { route: "/companies/acme-aps/bank", path: "*" });
+    expect(screen.getByRole("navigation", { name: "Daglige opgaver" })).toBeInTheDocument();
+    expect(screen.getAllByRole("navigation")).toHaveLength(1);
+    for (const label of ["Status", "Kræver opmærksomhed", "Penge og bilag", "Fakturaer", "Moms og frister", "Rapporter", "Viden", "Administration"])
+      expect(screen.getByRole("link", { name: label })).toBeInTheDocument();
   });
 
-  test("does NOT leak per-view filters (q/from/to/status/account) to sibling tabs", () => {
-    renderNav(
-      "/companies/acme-aps/bank?year=2025&q=netto&from=2025-01-01&to=2025-03-31&status=unmatched",
-    );
-    const postings = screen.getByRole("link", { name: "Posteringer" });
-    const href = postings.getAttribute("href") ?? "";
-    expect(href).toBe("/companies/acme-aps/posteringer?year=2025");
-    expect(href).not.toMatch(/q=/);
-    expect(href).not.toMatch(/from=/);
-    expect(href).not.toMatch(/status=/);
+  test("keeps primary destinations natural and only carries the fiscal year", () => {
+    renderAt(<CompanyTaskNavigation />, { route: "/companies/acme-aps/bank?year=2025&q=netto", path: "*" });
+    expect(screen.getByRole("link", { name: "Moms og frister" })).toHaveAttribute("href", "/companies/acme-aps/moms?year=2025");
+    expect(screen.getByRole("link", { name: "Kræver opmærksomhed" })).toHaveAttribute("href", "/companies/acme-aps/opmaerksomhed?year=2025");
   });
 
-  test("omits the query string entirely when no year is set", () => {
-    renderNav("/companies/acme-aps/bank?q=netto");
-    const postings = screen.getByRole("link", { name: "Posteringer" });
-    expect(postings.getAttribute("href")).toBe("/companies/acme-aps/posteringer");
-  });
-
-  test("hides empty permission-filtered task areas and preserves long labels", () => {
-    renderAt(
-      <CompanyTaskNavigation visibleRouteIds={["bank", "payables"]} />,
-      { route: "/companies/acme-aps/bank", path: "*" },
-    );
-    expect(screen.getByRole("link", { name: "Leverandørfaktura" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Rapporter og planlægning" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Salg og debitorer" })).not.toBeInTheDocument();
-  });
-
-  test("uses wrap-safe, visible-focus navigation CSS", async () => {
-    const css = await Bun.file(new URL("../styles.css", import.meta.url)).text();
-    expect(css).toContain(".company-areas,\n.company-destinations");
-    expect(css).toContain("overflow-wrap: anywhere");
-    expect(css).toContain(".company-areas button:focus-visible");
-  });
-
-  test("renders on a deep-linked company page that has no fiscal-year control", () => {
-    renderNav("/companies/acme-aps/manage");
-    expect(screen.getByRole("button", { name: "Virksomhedsadministration" }))
-      .toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("link", { name: "Virksomhedsoplysninger" }))
-      .toHaveAttribute("aria-current", "page");
-  });
-
-  test("does not render company navigation on the create-company route", () => {
-    renderNav("/companies/new");
-    expect(screen.queryByRole("navigation", { name: "Opgaveområder" }))
-      .not.toBeInTheDocument();
-  });
-
-  test("reveals an area without navigating or adding an intermediate history entry", async () => {
-    renderAt(
-      <><CompanyTaskNavigation /><LocationProbe /></>,
-      { route: "/companies/acme-aps/bank?year=2025", path: "*" },
-    );
-    await userEvent.click(screen.getByRole("button", { name: "Moms og perioder" }));
-    expect(screen.getByRole("link", { name: "Moms" })).toHaveAttribute(
-      "href",
-      "/companies/acme-aps/moms?year=2025",
-    );
-    expect(screen.getByTestId("location")).toHaveTextContent(
-      "/companies/acme-aps/bank?year=2025",
-    );
+  test("hides a task whose destination is not in the permission-filtered presentation", () => {
+    renderAt(<CompanyTaskNavigation visibleRouteIds={["bank"]} />, { route: "/companies/acme-aps/bank", path: "*" });
+    expect(screen.getByRole("link", { name: "Penge og bilag" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Rapporter" })).not.toBeInTheDocument();
   });
 });

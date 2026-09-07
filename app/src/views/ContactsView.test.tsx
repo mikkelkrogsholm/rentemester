@@ -38,14 +38,10 @@ describe("ContactsView — Kontakter", () => {
     ).toBeInTheDocument();
   });
 
-  test("the company sub-nav exposes the Kontakter tab", async () => {
+  test("the daily navigation groups contacts under knowledge", async () => {
     mockFetch(route());
     renderView();
-    const tab = await screen.findByRole("link", { name: "Kontakter" });
-    expect(tab).toHaveAttribute(
-      "href",
-      expect.stringContaining("/companies/acme-aps/kontakter"),
-    );
+    expect(await screen.findByRole("link", { name: "Viden" })).toHaveAttribute("href", expect.stringContaining("/companies/acme-aps/workspace-register"));
   });
 
   test("offers an Importér action", async () => {

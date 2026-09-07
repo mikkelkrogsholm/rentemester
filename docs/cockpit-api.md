@@ -157,6 +157,7 @@ explicit `YYYY-MM-DD` value and otherwise fails closed.
 | `GET /api/companies/:slug/dashboard?asOf=` | `dashboard` | The company dashboard data. |
 | `GET /api/companies/:slug/fiscal-years` | `fiscalYears` | The company's fiscal years. |
 | `GET /api/companies/:slug/overview?year=` | `overview` | Per-year overview. |
+| `GET /api/companies/:slug/attention` | `attention` | Read-only daily inbox. It aggregates canonical open exceptions (including true agent proposals exactly once), blocked close-readiness controls and actionable bookkeeping-workbench blockers; each item retains source identity, actor, reason, evidence and an existing destination. |
 | `GET /api/companies/:slug/income-statement?year=` | `incomeStatement` | Income statement (resultatopgørelse). |
 | `GET /api/companies/:slug/income-statement/export?format=csv&year=` | _binary CSV_ | #372 — Resultatopgørelse som CSV-download (text/csv attachment, dansk semikolon-separator + UTF-8 BOM, byte-deterministic for samme ledger). PDF følger i et opfølger-issue. |
 | `GET /api/companies/:slug/balance?year=` | `balance` | Balance sheet (balance). |

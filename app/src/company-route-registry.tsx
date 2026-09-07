@@ -5,6 +5,7 @@
  */
 import type { ReactElement } from "react";
 import { AccountingDraftsView } from "./views/AccountingDraftsView";
+import { AttentionView } from "./views/AttentionView";
 import { AccountingApprovalPolicyView } from "./views/AccountingApprovalPolicyView";
 import { AccountsView } from "./views/AccountsView";
 import { AccrualsView } from "./views/AccrualsView";
@@ -49,12 +50,14 @@ import {
 } from "./company-route-path";
 
 export const COMPANY_TASK_AREAS = [
-  { id: "overview", label: "Overblik" },
-  { id: "bookkeeping", label: "Bogføring" },
-  { id: "sales", label: "Salg og debitorer" },
-  { id: "vat-periods", label: "Moms og perioder" },
-  { id: "reports", label: "Rapporter og planlægning" },
-  { id: "administration", label: "Virksomhedsadministration" },
+  { id: "status", label: "Status", destination: "" },
+  { id: "attention", label: "Kræver opmærksomhed", destination: "opmaerksomhed" },
+  { id: "money-documents", label: "Penge og bilag", destination: "bank" },
+  { id: "invoices", label: "Fakturaer", destination: "fakturaer" },
+  { id: "vat-deadlines", label: "Moms og frister", destination: "moms" },
+  { id: "reports", label: "Rapporter", destination: "resultatopgorelse" },
+  { id: "knowledge", label: "Viden", destination: "workspace-register" },
+  { id: "administration", label: "Administration", destination: "manage" },
 ] as const;
 
 export type CompanyTaskAreaId = (typeof COMPANY_TASK_AREAS)[number]["id"];
@@ -69,32 +72,33 @@ export type CompanyRouteDescriptor = CompanyRoutePathDescriptor & {
 
 export const COMPANY_ROUTE_REGISTRY = [
   // Overblik
-  { id: "dashboard", segment: "", label: "Overblik", area: "overview", element: <DashboardView /> },
+  { id: "dashboard", segment: "", label: "Status", area: "status", element: <DashboardView /> },
+  { id: "attention", segment: "opmaerksomhed", label: "Kræver opmærksomhed", area: "attention", element: <AttentionView /> },
 
   // Bogføring
-  { id: "journal", segment: "posteringer", label: "Posteringer", area: "bookkeeping", element: <JournalView /> },
-  { id: "drafts", segment: "kladder", label: "Kladder", area: "bookkeeping", element: <AccountingDraftsView /> },
-  { id: "approval-policy", segment: "godkendelsespolitik", label: "Godkendelsespolitik", area: "bookkeeping", element: <AccountingApprovalPolicyView /> },
-  { id: "posting-rules", segment: "posteringsregler", label: "Posteringsregler", area: "bookkeeping", element: <PostingRulesView /> },
-  { id: "batch-bookkeeping", segment: "batchbogfoering", label: "Bogføring", area: "bookkeeping", element: <BookkeepingBatchView /> },
-  { id: "bank", segment: "bank", label: "Bank", area: "bookkeeping", element: <BankView /> },
-  { id: "documents", segment: "bilag", label: "Bilag", area: "bookkeeping", element: <DocumentsView /> },
-  { id: "payables", segment: "leverandoerfaktura", label: "Leverandørfaktura", area: "bookkeeping", element: <PayablesView /> },
-  { id: "purchase-overview", segment: "koebsoverblik", label: "Købsoverblik", area: "bookkeeping", element: <PurchaseOverviewView /> },
-  { id: "mileage", segment: "koersel", label: "Kørsel", area: "bookkeeping", element: <MileageView /> },
-  { id: "assets", segment: "anlaeg", label: "Anlæg", area: "bookkeeping", element: <AssetsView /> },
-  { id: "suggestions", segment: "agent-forslag", label: "Agent-forslag", area: "bookkeeping", element: <SuggestionsView /> },
-  { id: "exceptions", segment: "undtagelser", label: "Undtagelser", area: "bookkeeping", element: <ExceptionsView /> },
+  { id: "journal", segment: "posteringer", label: "Posteringer", area: "money-documents", element: <JournalView /> },
+  { id: "drafts", segment: "kladder", label: "Kladder", area: "money-documents", element: <AccountingDraftsView /> },
+  { id: "approval-policy", segment: "godkendelsespolitik", label: "Godkendelsespolitik", area: "administration", element: <AccountingApprovalPolicyView /> },
+  { id: "posting-rules", segment: "posteringsregler", label: "Posteringsregler", area: "administration", element: <PostingRulesView /> },
+  { id: "batch-bookkeeping", segment: "batchbogfoering", label: "Bogføring", area: "money-documents", element: <BookkeepingBatchView /> },
+  { id: "bank", segment: "bank", label: "Bank", area: "money-documents", element: <BankView /> },
+  { id: "documents", segment: "bilag", label: "Bilag", area: "money-documents", element: <DocumentsView /> },
+  { id: "payables", segment: "leverandoerfaktura", label: "Leverandørfaktura", area: "invoices", element: <PayablesView /> },
+  { id: "purchase-overview", segment: "koebsoverblik", label: "Købsoverblik", area: "money-documents", element: <PurchaseOverviewView /> },
+  { id: "mileage", segment: "koersel", label: "Kørsel", area: "money-documents", element: <MileageView /> },
+  { id: "assets", segment: "anlaeg", label: "Anlæg", area: "money-documents", element: <AssetsView /> },
+  { id: "suggestions", segment: "agent-forslag", label: "Agent-forslag", area: "attention", element: <SuggestionsView /> },
+  { id: "exceptions", segment: "undtagelser", label: "Undtagelser", area: "attention", element: <ExceptionsView /> },
 
   // Salg og debitorer
-  { id: "invoices", segment: "fakturaer", label: "Fakturaer", area: "sales", element: <InvoicesView /> },
-  { id: "invoice-templates", segment: "faktura-skabeloner", label: "Skabeloner", area: "sales", element: <RecurringInvoicesView /> },
-  { id: "contacts", segment: "kontakter", label: "Kontakter", area: "sales", element: <ContactsView /> },
+  { id: "invoices", segment: "fakturaer", label: "Fakturaer", area: "invoices", element: <InvoicesView /> },
+  { id: "invoice-templates", segment: "faktura-skabeloner", label: "Skabeloner", area: "invoices", element: <RecurringInvoicesView /> },
+  { id: "contacts", segment: "kontakter", label: "Kontakter", area: "knowledge", element: <ContactsView /> },
 
   // Moms og perioder
-  { id: "vat", segment: "moms", label: "Moms", area: "vat-periods", element: <VatView /> },
-  { id: "period-lock", segment: "periodelas", label: "Periodelås", area: "vat-periods", element: <PeriodsView /> },
-  { id: "accruals", segment: "periodisering", label: "Periodisering", area: "vat-periods", element: <AccrualsView /> },
+  { id: "vat", segment: "moms", label: "Moms", area: "vat-deadlines", element: <VatView /> },
+  { id: "period-lock", segment: "periodelas", label: "Periodelås", area: "vat-deadlines", element: <PeriodsView /> },
+  { id: "accruals", segment: "periodisering", label: "Periodisering", area: "vat-deadlines", element: <AccrualsView /> },
 
   // Rapporter og planlægning
   { id: "income-statement", segment: "resultatopgorelse", label: "Resultatopgørelse", area: "reports", element: <IncomeStatementView /> },

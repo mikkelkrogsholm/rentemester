@@ -16,6 +16,7 @@ import { buildCompanyPeriods } from "../data/periods-view";
 import { buildCompanyRetention } from "../data/retention-view";
 import {
   buildCompanyAgentSuggestions,
+  buildCompanyAttention,
   buildCompanyArchiveYear,
   buildCompanyBudget,
   buildCompanyBudgetDimensionActuals,
@@ -336,4 +337,9 @@ export function handleCompanyAgentSuggestions(
 ): Response {
   const data = buildCompanyAgentSuggestions(config.workspaceRoot, slug);
   return okResponse({ agentSuggestions: data });
+}
+
+/** GET /api/companies/:slug/attention — one read-only daily task inbox (#649). */
+export function handleCompanyAttention(config: ServerConfig, slug: string): Response {
+  return okResponse({ attention: buildCompanyAttention(config.workspaceRoot, slug) });
 }

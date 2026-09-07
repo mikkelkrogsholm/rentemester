@@ -8,8 +8,8 @@ import {
 import { companyRouteForPath as matchCompanyRoutePath } from "./company-route-path";
 
 describe("company route registry", () => {
-  test("owns a unique, renderable route in all six task areas", () => {
-    expect(COMPANY_TASK_AREAS).toHaveLength(6);
+  test("owns a unique, renderable route in all approved daily task areas", () => {
+    expect(COMPANY_TASK_AREAS.map((area) => area.label)).toEqual(["Status", "Kræver opmærksomhed", "Penge og bilag", "Fakturaer", "Moms og frister", "Rapporter", "Viden", "Administration"]);
     expect(new Set(COMPANY_ROUTE_REGISTRY.map((route) => route.id)).size)
       .toBe(COMPANY_ROUTE_REGISTRY.length);
     expect(new Set(COMPANY_ROUTE_REGISTRY.map((route) => route.segment)).size)

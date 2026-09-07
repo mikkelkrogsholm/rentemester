@@ -15,7 +15,7 @@ export type CockpitPageFamily = {
  * registry, so a new route must receive an explicit synthetic-test classification.
  */
 export const COCKPIT_PAGE_FAMILIES: readonly CockpitPageFamily[] = [
-  { template: "Overblik og arbejdsstatus", state: "mutation-required", reason: "Kræver syntetisk arbejds- og opmærksomhedsdata.", routeIds: ["dashboard", "suggestions", "exceptions", "workspace-inbox"] },
+  { template: "Overblik og arbejdsstatus", state: "mutation-required", reason: "Kræver syntetisk arbejds- og opmærksomhedsdata.", routeIds: ["dashboard", "attention", "suggestions", "exceptions", "workspace-inbox"] },
   { template: "Bankregister og afstemning", state: "investigated", reason: "BankView er baseline med syntetiske læse- og afstemningsfixtures.", routeIds: ["bank"] },
   { template: "Filtreret register", state: "mutation-required", reason: "Kræver syntetiske records og en sikker skriveopgave for fuld gennemgang.", routeIds: ["journal", "drafts", "documents", "payables", "purchase-overview", "mileage", "assets", "invoices", "invoice-templates", "contacts", "accounts", "dimensions", "bank-accounts", "receipt-email"] },
   { template: "Bogføringsarbejdsgang", state: "mutation-required", reason: "Kræver en syntetisk, bekræftet arbejdsgang uden produktionsdata.", routeIds: ["approval-policy", "posting-rules", "batch-bookkeeping", "period-lock", "accruals"] },

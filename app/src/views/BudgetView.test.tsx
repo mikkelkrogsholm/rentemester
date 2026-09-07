@@ -166,13 +166,9 @@ describe("BudgetView — Budget", () => {
     ).toBeInTheDocument();
   });
 
-  test("the company sub-nav exposes the Budget tab", async () => {
+  test("the daily navigation lets the owner find reports", async () => {
     mockFetch(route());
     renderView();
-    const tab = await screen.findByRole("link", { name: "Budget" });
-    expect(tab).toHaveAttribute(
-      "href",
-      expect.stringContaining("/companies/acme-aps/budget"),
-    );
+    expect(await screen.findByRole("link", { name: "Rapporter" })).toHaveAttribute("href", expect.stringContaining("/companies/acme-aps/resultatopgorelse"));
   });
 });

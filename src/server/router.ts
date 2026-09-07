@@ -54,6 +54,7 @@ import {
   handleCompanyAccounts,
   handleCompanyAccruals,
   handleCompanyAgentSuggestions,
+  handleCompanyAttention,
   handleCompanyAnnualReport,
   handleCompanyArchiveYear,
   handleCompanyBilagsmail,
@@ -515,6 +516,7 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
   { scope: "company", effect: "read", permission: "company.read", method: "POST", pattern: "/api/companies/:slug/payables/direct-bank-correction/plan", summary: "Planlægger hash-bundet direct-bank→payable-korrektion (#594)." },
   { scope: "company", effect: "write", permission: "company.ledger.post", method: "POST", pattern: "/api/companies/:slug/payables/direct-bank-correction/apply", summary: "Anvender reviewet direct-bank→payable-korrektion append-only (#594)." },
   { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/agent-suggestions", summary: "Agent-forslag i kø — afventer ejerens godkendelse (#346)." },
+  { scope: "company", effect: "read", permission: "company.read", method: "GET", pattern: "/api/companies/:slug/attention", summary: "Samlet, read-only opmærksomhedsindbakke fra canonical exceptions og blokeringer (#649)." },
   { scope: "company", effect: "write", permission: "company.review", method: "POST", pattern: "/api/companies/:slug/agent-suggestions/:id/approve", summary: "Ejer godkender agent-forslag — løser undtagelsen med 'Godkendt'-note (#346)." },
   { scope: "company", effect: "write", permission: "company.review", method: "POST", pattern: "/api/companies/:slug/agent-suggestions/:id/reject", summary: "Ejer afviser agent-forslag — løser undtagelsen med 'Afvist'-note (#346)." },
 ];
@@ -1755,6 +1757,12 @@ export async function handleRequest(
       if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
       const slug = decodeURIComponent(agentSuggestionsMatch[1]!);
       return handleCompanyAgentSuggestions(config, slug);
+    }
+
+    const attentionMatch = /^\/api\/companies\/([^/]+)\/attention$/.exec(path);
+    if (attentionMatch) {
+      if (method !== "GET") throw ApiError.methodNotAllowed("kun GET er understøttet på denne rute");
+      return handleCompanyAttention(config, decodeURIComponent(attentionMatch[1]!));
     }
 
     const companyMatch = /^\/api\/companies\/([^/]+)$/.exec(path);
