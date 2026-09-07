@@ -146,9 +146,14 @@ describe("release workflow security contract", () => {
     expect(candidate).toContain("name: Generate digest-bound Cockpit acceptance evidence");
     expect(candidate).toContain("COCKPIT_EVIDENCE_IMAGE: ${{ env.REGISTRY_IMAGE }}@${{ steps.image.outputs.digest }}");
     expect(candidate).toContain("bun run scripts/release/run-cockpit-evidence.ts");
-    expect(candidate).toContain("bun run scripts/release/verify-cockpit-evidence.ts cockpit-evidence/cockpit-evidence.json cockpit-open-regressions.json");
-    expect(candidate).toContain("gh issue list --repo \"$GITHUB_REPOSITORY\" --state open --label regression");
+    expect(candidate).toContain("bun run scripts/release/verify-cockpit-evidence.ts cockpit-evidence/cockpit-evidence.json");
+    expect(candidate).toContain("GH_TOKEN: ${{ github.token }}");
+    expect(candidate).toContain("gh auth status");
+    expect(candidate).toContain("--label epic:648 --limit 1000");
+    expect(candidate).toContain("cockpit-epic-648-open-issues.json.sha256");
     expect(candidate).toContain("cockpit-evidence/cockpit-evidence.json");
+    expect(candidate).toContain("RELEASE_COCKPIT_EVIDENCE_SHA256");
+    expect(candidate).toContain("RELEASE_COCKPIT_REGRESSION_QUERY_SHA256");
     expect(candidate).toContain("cockpit-evidence/*.png");
     expect(candidate).toContain("sbom: true");
     expect(candidate).toContain("outputs: type=registry,rewrite-timestamp=true");

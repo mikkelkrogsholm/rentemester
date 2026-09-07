@@ -173,3 +173,8 @@ understøtter ledgerens schema-version. Ved schemaændringer skal operatøren f�
 følge migrations-/backupplanen i `docs/versioning.md`; start aldrig blot et
 ældre image mod nyere data. Tag en signeret, verificerbar backup før enhver
 fremtidig schema-opgradering.
+# Cockpit candidate evidence
+
+Candidate evidence is digest-bound and deliberately fail-closed. The release workflow authenticates `gh` with `GH_TOKEN`, queries every open `epic:648` issue (pagination limit 1000), and records the exact JSON plus SHA-256 inside the Cockpit manifest. Any related `severity:high` or `severity:critical` issue blocks the candidate.
+
+For every #649–#657 feature, the scenario contract requires normal desktop, 390px, and real 200% browser-zoom/reflow evidence plus loading, empty, blocked, and error states. Feature-owned selectors are intentionally not relaxed while the corresponding UI is unfinished. Each rendered scenario records exact route interception, page-local DOM/status/control/data assertions, natural keyboard task traces, console state and PNG dimensions. The verifier rejects fake, reused, swapped, unsafe, or unreferenced screenshots, and binds the Cockpit manifest/query checksums into `release-manifest.json`.

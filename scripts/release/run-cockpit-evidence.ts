@@ -1,15 +1,12 @@
 #!/usr/bin/env bun
-/**
- * Direct, synthetic-browser acceptance evidence for a published candidate. It
- * deliberately owns one disposable Docker workspace and one system Chrome;
- * it never accepts a host workspace path or a mutable image tag.
- */
-import { mkdirSync } from "node:fs";
+/** Digest-bound, isolated browser evidence. Feature-owned selectors deliberately fail closed until their UI lands. */
+import { copyFileSync, mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { tmpdir } from "node:os";
 import {
   assertImmutableImage,
   parseScenarios,
-  relativeArtifact,
+  pngDimensions,
   screenshotName,
   sha256,
   type EvidenceManifest,
@@ -17,161 +14,479 @@ import {
   verifyEvidence,
 } from "./cockpit-evidence";
 
-function required(name: string): string {
+const required = (name: string) => {
   const value = process.env[name]?.trim();
   if (!value) throw new Error(`${name} is required`);
   return value;
-}
-
-const image = required("COCKPIT_EVIDENCE_IMAGE");
-const commit = required("COCKPIT_EVIDENCE_COMMIT");
-const output = resolve(process.env.COCKPIT_EVIDENCE_OUT ?? "cockpit-evidence");
-const scenarioPath = resolve(process.env.COCKPIT_EVIDENCE_SCENARIOS ?? "scripts/release/cockpit-evidence-scenarios.json");
+};
+const image = required("COCKPIT_EVIDENCE_IMAGE"),
+  commit = required("COCKPIT_EVIDENCE_COMMIT"),
+  output = resolve(process.env.COCKPIT_EVIDENCE_OUT ?? "cockpit-evidence"),
+  scenarioPath = resolve(
+    process.env.COCKPIT_EVIDENCE_SCENARIOS ??
+      "scripts/release/cockpit-evidence-scenarios.json",
+  ),
+  regressionQueryPath = resolve(required("COCKPIT_EVIDENCE_REGRESSION_QUERY"));
 assertImmutableImage(image);
-if (!/^[0-9a-f]{40}$/i.test(commit)) throw new Error("COCKPIT_EVIDENCE_COMMIT must be a full 40-character commit id");
+if (!/^[0-9a-f]{40}$/i.test(commit))
+  throw new Error(
+    "COCKPIT_EVIDENCE_COMMIT must be a full 40-character commit id",
+  );
 const scenarios = parseScenarios(scenarioPath);
 mkdirSync(output, { recursive: true });
-
-function command(command: string, args: string[], quiet = false): Promise<string> {
-  const child = Bun.spawn([command, ...args], { stdout: "pipe", stderr: "pipe" });
-  return new Promise(async (resolveCommand, reject) => {
-    const [stdout, stderr, exitCode] = await Promise.all([
-      new Response(child.stdout).text(), new Response(child.stderr).text(), child.exited,
-    ]);
-    if (exitCode !== 0) reject(new Error(`${command} ${args.join(" ")} failed: ${stderr || stdout}`));
-    else resolveCommand(quiet ? "" : stdout.trim());
+async function command(
+  command: string,
+  args: string[],
+  quiet = false,
+): Promise<string> {
+  const child = Bun.spawn([command, ...args], {
+    stdout: "pipe",
+    stderr: "pipe",
   });
+  const [stdout, stderr, code] = await Promise.all([
+    new Response(child.stdout).text(),
+    new Response(child.stderr).text(),
+    child.exited,
+  ]);
+  if (code !== 0)
+    throw new Error(`${command} ${args.join(" ")} failed: ${stderr || stdout}`);
+  return quiet ? "" : stdout.trim();
 }
-
-async function waitFor(url: string): Promise<void> {
-  for (let attempt = 0; attempt < 100; attempt += 1) {
-    try { if ((await fetch(url)).ok) return; } catch { /* container is starting */ }
+async function waitFor(url: string) {
+  for (let i = 0; i < 100; i++) {
+    try {
+      if ((await fetch(url)).ok) return;
+    } catch {}
     await Bun.sleep(100);
   }
   throw new Error(`candidate did not become ready at ${url}`);
 }
-
-type Cdp = { call(method: string, params?: Record<string, unknown>): Promise<Record<string, unknown>>; on(handler: (message: Record<string, unknown>) => void): () => void; close(): void };
-async function openCdp(port: number): Promise<Cdp> {
-  const targets = await fetch(`http://127.0.0.1:${port}/json/list`).then((response) => response.json()) as Array<{ webSocketDebuggerUrl: string }>;
-  const wsUrl = targets.find((target) => target.webSocketDebuggerUrl)?.webSocketDebuggerUrl;
-  if (!wsUrl) throw new Error("system Chrome did not expose a DevTools page target");
-  const socket = new WebSocket(wsUrl);
-  const pending = new Map<number, { resolve(value: Record<string, unknown>): void; reject(reason: Error): void }>();
-  const events: Array<(message: Record<string, unknown>) => void> = [];
-  let nextId = 1;
-  await new Promise<void>((resolveOpen, rejectOpen) => {
-    socket.onopen = () => resolveOpen();
-    socket.onerror = () => rejectOpen(new Error("unable to connect to system Chrome DevTools"));
+async function freePort() {
+  const listener = Bun.listen({
+    hostname: "127.0.0.1",
+    port: 0,
+    socket: { data() {}, open() {} },
   });
-  socket.onmessage = (event) => {
-    const message = JSON.parse(String(event.data)) as Record<string, unknown>;
-    if (typeof message.id === "number") {
-      const request = pending.get(message.id);
-      if (!request) return;
-      pending.delete(message.id);
-      if (message.error) request.reject(new Error(`Chrome ${String((message.error as { message?: string }).message ?? "protocol error")}`));
-      else request.resolve((message.result ?? {}) as Record<string, unknown>);
-      return;
-    }
-    events.forEach((handler) => {
-      handler(message);
-    });
+  const port = listener.port;
+  listener.stop();
+  return port;
+}
+type Cdp = {
+  call(
+    method: string,
+    params?: Record<string, unknown>,
+  ): Promise<Record<string, unknown>>;
+  on(handler: (message: Record<string, unknown>) => void): () => void;
+  close(): void;
+};
+async function openCdp(port: number): Promise<Cdp> {
+  const targets = (await fetch(`http://127.0.0.1:${port}/json/list`).then((r) =>
+    r.json(),
+  )) as Array<{ webSocketDebuggerUrl?: string }>;
+  const url = targets.find((t) => t.webSocketDebuggerUrl)?.webSocketDebuggerUrl;
+  if (!url) throw new Error("Chrome did not expose a DevTools page target");
+  const socket = new WebSocket(url),
+    pending = new Map<
+      number,
+      {
+        resolve: (v: Record<string, unknown>) => void;
+        reject: (e: Error) => void;
+      }
+    >(),
+    events: Array<(m: Record<string, unknown>) => void> = [];
+  let id = 0;
+  await new Promise<void>((resolveOpen, rejectOpen) => {
+    const timer = setTimeout(
+      () => rejectOpen(new Error("CDP connect timed out")),
+      10_000,
+    );
+    socket.onopen = () => {
+      clearTimeout(timer);
+      resolveOpen();
+    };
+    socket.onerror = () => {
+      clearTimeout(timer);
+      rejectOpen(new Error("unable to connect to Chrome DevTools"));
+    };
+  });
+  socket.onmessage = (e) => {
+    const m = JSON.parse(String(e.data)) as Record<string, unknown>;
+    if (typeof m.id === "number") {
+      const p = pending.get(m.id);
+      if (!p) return;
+      pending.delete(m.id);
+      m.error
+        ? p.reject(
+            new Error(
+              `Chrome protocol error: ${String((m.error as { message?: string }).message ?? "")}`,
+            ),
+          )
+        : p.resolve((m.result ?? {}) as Record<string, unknown>);
+    } else events.forEach((h) => { h(m); });
+  };
+  socket.onclose = () => {
+    for (const p of pending.values()) p.reject(new Error("CDP socket closed"));
+    pending.clear();
   };
   return {
     call(method, params = {}) {
-      const id = nextId++;
-      socket.send(JSON.stringify({ id, method, params }));
-      return new Promise((resolveCall, rejectCall) => pending.set(id, { resolve: resolveCall, reject: rejectCall }));
+      const requestId = ++id;
+      socket.send(JSON.stringify({ id: requestId, method, params }));
+      return new Promise((resolveCall, rejectCall) => {
+        const timer = setTimeout(() => {
+          pending.delete(requestId);
+          rejectCall(new Error(`CDP timeout: ${method}`));
+        }, 15_000);
+        pending.set(requestId, {
+          resolve: (v) => {
+            clearTimeout(timer);
+            resolveCall(v);
+          },
+          reject: (e) => {
+            clearTimeout(timer);
+            rejectCall(e);
+          },
+        });
+      });
     },
     on(handler) {
       events.push(handler);
       return () => events.splice(events.indexOf(handler), 1);
     },
-    close() { socket.close(); },
+    close() {
+      socket.close();
+    },
   };
 }
-
-async function renderScenario(cdp: Cdp, baseUrl: string, scenario: Scenario): Promise<{ png: Uint8Array; keyboardAssertions: string[]; interceptionDescription: string }> {
-  await cdp.call("Emulation.setDeviceMetricsOverride", { width: scenario.viewport.width, height: scenario.viewport.height, deviceScaleFactor: 1, mobile: false });
-  await cdp.call("Emulation.setPageScaleFactor", { pageScaleFactor: scenario.zoom });
-  const interceptionDescription = scenario.interception
-    ? `deterministic ${scenario.interception.status} presentation for requests containing ${scenario.interception.urlIncludes}${scenario.interception.delayMs ? ` after ${scenario.interception.delayMs}ms` : ""}`
-    : "none";
-  const stopIntercepting = scenario.interception ? cdp.on((message) => {
-    if (message.method !== "Fetch.requestPaused") return;
-    const params = message.params as { requestId?: string; request?: { url?: string } } | undefined;
-    const requestId = params?.requestId;
-    if (!requestId) return;
-    const matches = params.request?.url?.includes(scenario.interception!.urlIncludes);
-    if (!matches) {
-      void cdp.call("Fetch.continueRequest", { requestId });
-      return;
-    }
-    void (async () => {
-      if (scenario.interception?.delayMs) await Bun.sleep(scenario.interception.delayMs);
-      await cdp.call("Fetch.fulfillRequest", {
-        requestId,
-        responseCode: scenario.interception!.status,
-        responseHeaders: [{ name: "content-type", value: "application/json" }],
-        body: Buffer.from(scenario.interception!.body).toString("base64"),
-      });
-    })();
-  }) : undefined;
-  if (scenario.interception) await cdp.call("Fetch.enable", { patterns: [{ urlPattern: "*", requestStage: "Request" }] });
-  await cdp.call("Page.navigate", { url: `${baseUrl}${scenario.route}` });
-  await Bun.sleep(scenario.interception?.delayMs ? 400 : 1200);
-  const keyboardAssertions: string[] = [];
-  for (const assertion of scenario.keyboard) {
-    const expression = `(() => { const element=document.querySelector(${JSON.stringify(assertion.selector)}); if (!element) return 'missing selector'; element.setAttribute('tabindex','-1'); element.focus(); return document.activeElement===element ? 'focused' : 'not focused'; })()`;
-    const result = await cdp.call("Runtime.evaluate", { expression, returnByValue: true });
-    const value = (((result.result as { value?: unknown } | undefined)?.value) ?? "") as string;
-    await cdp.call("Input.dispatchKeyEvent", { type: "keyDown", key: assertion.key });
-    await cdp.call("Input.dispatchKeyEvent", { type: "keyUp", key: assertion.key });
-    if (value !== "focused" || !assertion.expectFocused) throw new Error(`keyboard assertion failed for ${scenario.scenario}: ${assertion.selector} after ${assertion.key}`);
-    keyboardAssertions.push(`${assertion.key}: ${assertion.selector} focused`);
-  }
-  const result = await cdp.call("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
-  const data = result.data;
-  if (typeof data !== "string") throw new Error(`Chrome did not return a PNG for ${scenario.scenario}`);
-  if (scenario.interception) await cdp.call("Fetch.disable");
-  stopIntercepting?.();
-  return { png: Uint8Array.fromBase64(data), keyboardAssertions, interceptionDescription };
+const expression = (a: {
+  selector: string;
+  text?: string;
+  visible?: boolean;
+}) =>
+  `(()=>{const e=document.querySelector(${JSON.stringify(a.selector)});if(!e)return false;const visible=${a.visible !== false};return (!visible||(!!(e.offsetWidth||e.offsetHeight||e.getClientRects().length)))&&${a.text ? `e.textContent.includes(${JSON.stringify(a.text)})` : "true"};})()`;
+async function evaluateBoolean(cdp: Cdp, source: string, label: string) {
+  const value = await cdp.call("Runtime.evaluate", {
+    expression: source,
+    returnByValue: true,
+    awaitPromise: true,
+  });
+  if ((value.result as { value?: unknown })?.value !== true)
+    throw new Error(`DOM assertion failed: ${label}`);
 }
-
-const docker = "docker";
-const chrome = await command("sh", ["-c", "command -v google-chrome || command -v chromium || command -v chromium-browser"]);
-const container = `rentemester-cockpit-evidence-${crypto.randomUUID().slice(0, 12)}`;
-let chromeProcess: ReturnType<typeof Bun.spawn> | undefined;
-try {
-  await command(docker, ["pull", image], true);
-  await command(docker, ["run", "--detach", "--name", container, "--read-only", "--publish", "127.0.0.1::4319", "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m", "--tmpfs", "/workspace:rw,nosuid,size=64m,uid=1000,gid=1000", "--tmpfs", "/import:rw,nosuid,size=64m,uid=1000,gid=1000", "--env", "RENTEMESTER_DEPLOYMENT_PROFILE=local-container", "--env", "RENTEMESTER_APP_AUTH=off", image], true);
-  const address = await command(docker, ["port", container, "4319/tcp"]);
-  if (!/^127\.0\.0\.1:\d+$/.test(address)) throw new Error(`candidate must publish only loopback, got ${address}`);
-  const baseUrl = `http://${address}`;
-  await waitFor(`${baseUrl}/api/ready`);
-  await command(docker, ["exec", container, "bun", "run", "src/cli.ts", "company", "add", "--workspace", "/workspace", "--name", "Synthetic Evidence Fixture", "--slug", "evidence-fixture", "--cvr", "12345678", "--bank-name", "Synthetic Bank", "--bank-reg", "1234", "--bank-account", "5678901234"], true);
-  const debugPort = 9222;
-  chromeProcess = Bun.spawn([chrome, "--headless", "--no-sandbox", "--disable-gpu", `--remote-debugging-port=${debugPort}`, "about:blank"], { stdout: "ignore", stderr: "ignore" });
-  await waitFor(`http://127.0.0.1:${debugPort}/json/version`);
-  const cdp = await openCdp(debugPort);
-  const generated: EvidenceManifest["scenarios"] = [];
-  const artifacts: EvidenceManifest["artifacts"] = [];
-  for (const scenario of scenarios) {
-    const screenshot = screenshotName(scenario);
-    const rendered = await renderScenario(cdp, baseUrl, scenario);
-    const screenshotPath = join(output, screenshot);
-    await Bun.write(screenshotPath, rendered.png);
-    artifacts.push({ path: relativeArtifact(screenshotPath), sha256: sha256(screenshotPath) });
-    generated.push({ ...scenario, screenshot, keyboardAssertions: rendered.keyboardAssertions, interceptionDescription: rendered.interceptionDescription });
+async function renderScenario(
+  chrome: string,
+  base: string,
+  scenario: Scenario,
+) {
+  const profile = mkdtempSync(join(tmpdir(), "rentemester-cockpit-profile-")),
+    port = await freePort();
+  let browser: ReturnType<typeof Bun.spawn> | undefined;
+  let cdp!: Cdp;
+  try {
+    browser = Bun.spawn(
+      [
+        chrome,
+        "--headless=new",
+        "--disable-gpu",
+        `--remote-debugging-port=${port}`,
+        `--user-data-dir=${profile}`,
+        "--no-first-run",
+        "--no-default-browser-check",
+        "about:blank",
+      ],
+      { stdout: "ignore", stderr: "ignore" },
+    );
+    await waitFor(`http://127.0.0.1:${port}/json/version`);
+    cdp = await openCdp(port);
+    const actualRequests: string[] = [],
+      consoleErrors: string[] = [],
+      interceptions: Promise<unknown>[] = [];
+    const stop = cdp.on((message) => {
+      if (
+        message.method === "Runtime.exceptionThrown" ||
+        message.method === "Log.entryAdded"
+      )
+        consoleErrors.push(JSON.stringify(message.params));
+      if (message.method !== "Fetch.requestPaused") return;
+      const p = message.params as {
+        requestId?: string;
+        request?: { url?: string };
+      };
+      if (!p.requestId) return;
+      const match =
+        !!scenario.interception &&
+        p.request?.url === `${base}${scenario.interception.urlPattern}`;
+      if (p.request?.url) actualRequests.push(p.request.url);
+      interceptions.push(
+        match
+          ? (async () => {
+              if (scenario.interception?.delayMs)
+                await Bun.sleep(scenario.interception.delayMs);
+              await cdp!.call("Fetch.fulfillRequest", {
+                requestId: p.requestId,
+                responseCode: scenario.interception!.status,
+                responseHeaders: [
+                  { name: "content-type", value: "application/json" },
+                ],
+                body: Buffer.from(scenario.interception!.body).toString(
+                  "base64",
+                ),
+              });
+            })()
+          : cdp.call("Fetch.continueRequest", { requestId: p.requestId }),
+      );
+    });
+    await cdp.call("Runtime.enable");
+    await cdp.call("Log.enable");
+    await cdp.call("Emulation.setDeviceMetricsOverride", {
+      width: scenario.viewport.width,
+      height: scenario.viewport.height,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+    if (scenario.interception)
+      await cdp.call("Fetch.enable", {
+        patterns: [{ urlPattern: `${base}${scenario.interception.urlPattern}`, requestStage: "Request" }],
+      });
+    await cdp.call("Page.navigate", { url: `${base}${scenario.route}` });
+    await Bun.sleep(scenario.interception?.delayMs ? 300 : 1000);
+    if (scenario.zoom === 2) {
+      await cdp.call("Input.dispatchKeyEvent", {
+        type: "keyDown",
+        key: "+",
+        code: "Equal",
+        modifiers: 2,
+      });
+      await cdp.call("Input.dispatchKeyEvent", {
+        type: "keyUp",
+        key: "+",
+        code: "Equal",
+        modifiers: 2,
+      });
+      await evaluateBoolean(
+        cdp,
+        "window.visualViewport.scale > 1",
+        `${scenario.scenario} browser zoom/reflow`,
+      );
+    }
+    const assertions = [
+      scenario.dom.heading,
+      scenario.dom.status,
+      ...scenario.dom.controls,
+      ...scenario.dom.data,
+      scenario.dom.coreAction,
+    ];
+    for (const a of assertions)
+      await evaluateBoolean(cdp, expression(a), a.selector);
+    await evaluateBoolean(
+      cdp,
+      "document.documentElement.scrollWidth <= window.innerWidth",
+      `${scenario.scenario} has no horizontal overflow`,
+    );
+    const keyboardAssertions: string[] = [];
+    for (const step of scenario.keyboard) {
+      await cdp.call("Input.dispatchKeyEvent", {
+        type: "keyDown",
+        key: step.key,
+        code: step.key === "Space" ? "Space" : step.key,
+        modifiers: step.key === "Shift+Tab" ? 8 : 0,
+      });
+      await cdp.call("Input.dispatchKeyEvent", {
+        type: "keyUp",
+        key: step.key,
+        code: step.key === "Space" ? "Space" : step.key,
+        modifiers: step.key === "Shift+Tab" ? 8 : 0,
+      });
+      await evaluateBoolean(
+        cdp,
+        `(()=>{const e=document.activeElement;return e instanceof Element&&e.matches(${JSON.stringify(step.expectFocus.selector)});})()`,
+        `${scenario.scenario} focus after ${step.key}`,
+      );
+      await evaluateBoolean(
+        cdp,
+        expression(step.expectState),
+        `${scenario.scenario} task outcome after ${step.key}`,
+      );
+      keyboardAssertions.push(
+        `${step.key}: natural focus and UI state verified`,
+      );
+    }
+    await Promise.all(interceptions);
+    if (
+      scenario.interception &&
+      !actualRequests.includes(`${base}${scenario.interception.urlPattern}`)
+    )
+      throw new Error(
+        `expected route was not intercepted: ${scenario.interception.urlPattern}`,
+      );
+    if (consoleErrors.length)
+      throw new Error(
+        `console errors in ${scenario.scenario}: ${consoleErrors.join("\n")}`,
+      );
+    const screenshot = await cdp.call("Page.captureScreenshot", {
+      format: "png",
+      captureBeyondViewport: false,
+    });
+    if (typeof screenshot.data !== "string")
+      throw new Error("Chrome did not return PNG");
+    return {
+      png: Uint8Array.fromBase64(screenshot.data),
+      keyboardAssertions,
+      interception: {
+        requested: scenario.interception?.urlPattern ?? null,
+        actualRequests,
+      },
+      consoleErrors,
+      domAssertions: assertions.map((a) => a.selector),
+    };
+  } finally {
+    try {
+      await cdp?.call("Fetch.disable");
+    } catch {}
+    cdp?.close();
+    browser?.kill();
+    rmSync(profile, { recursive: true, force: true });
   }
-  cdp.close();
-  const manifest: EvidenceManifest = { manifestVersion: 1, commit, image, imageDigest: image.slice(image.lastIndexOf("@") + 1), generatedAt: new Date().toISOString(), artifacts, scenarios: generated };
+}
+const chrome = await command("sh", [
+    "-c",
+    "command -v google-chrome || command -v chromium || command -v chromium-browser",
+  ]),
+  container = `rentemester-cockpit-evidence-${crypto.randomUUID().slice(0, 12)}`;
+try {
+  await command("docker", ["pull", image], true);
+  const repoDigests = JSON.parse(
+    await command("docker", [
+      "image",
+      "inspect",
+      image,
+      "--format",
+      "{{json .RepoDigests}}",
+    ]),
+  );
+  if (!Array.isArray(repoDigests) || !repoDigests.includes(image))
+    throw new Error(
+      "docker pull did not resolve the requested immutable digest",
+    );
+  const regressionPath = join(output, "cockpit-epic-648-open-issues.json");
+  copyFileSync(regressionQueryPath, regressionPath);
+  const regressionIssues = JSON.parse(
+    await Bun.file(regressionPath).text(),
+  ) as EvidenceManifest["regressionQuery"]["issues"];
+  await command(
+    "docker",
+    [
+      "run",
+      "--detach",
+      "--name",
+      container,
+      "--read-only",
+      "--security-opt",
+      "no-new-privileges",
+      "--cap-drop",
+      "ALL",
+      "--pids-limit",
+      "128",
+      "--memory",
+      "512m",
+      "--cpus",
+      "1",
+      "--init",
+      "--network",
+      "bridge",
+      "--publish",
+      "127.0.0.1::4319",
+      "--tmpfs",
+      "/tmp:rw,noexec,nosuid,size=64m",
+      "--tmpfs",
+      "/workspace:rw,nosuid,size=64m,uid=1000,gid=1000",
+      "--tmpfs",
+      "/import:rw,nosuid,size=64m,uid=1000,gid=1000",
+      "--env",
+      "RENTEMESTER_DEPLOYMENT_PROFILE=local-container",
+      "--env",
+      "RENTEMESTER_APP_AUTH=off",
+      image,
+    ],
+    true,
+  );
+  const address = await command("docker", ["port", container, "4319/tcp"]);
+  if (!/^127\.0\.0\.1:\d+$/.test(address))
+    throw new Error(`candidate must publish only loopback, got ${address}`);
+  const base = `http://${address}`;
+  await waitFor(`${base}/api/ready`);
+  const health = (await fetch(`${base}/api/health`).then((r) => r.json())) as {
+    build?: { gitCommit?: string; version?: string };
+  };
+  if (health.build?.gitCommit !== commit)
+    throw new Error(
+      "runtime /api/health gitCommit does not match expected commit",
+    );
+  await command(
+    "docker",
+    [
+      "exec",
+      container,
+      "bun",
+      "run",
+      "src/cli.ts",
+      "company",
+      "add",
+      "--workspace",
+      "/workspace",
+      "--name",
+      "Synthetic Evidence Fixture",
+      "--slug",
+      "evidence-fixture",
+      "--cvr",
+      "12345678",
+      "--bank-name",
+      "Synthetic Bank",
+      "--bank-reg",
+      "1234",
+      "--bank-account",
+      "5678901234",
+      "--actor",
+      "system:release-candidate",
+    ],
+    true,
+  );
+  const artifacts: EvidenceManifest["artifacts"] = [],
+    generated: EvidenceManifest["scenarios"] = [];
+  for (const scenario of scenarios) {
+    const rendered = await renderScenario(chrome, base, scenario),
+      name = screenshotName(scenario),
+      path = join(output, name);
+    await Bun.write(path, rendered.png);
+    const dimensions = pngDimensions(path);
+    artifacts.push({ path: name, sha256: sha256(path), ...dimensions });
+    generated.push({ ...scenario, screenshot: name, ...rendered });
+  }
+  const manifest: EvidenceManifest = {
+    manifestVersion: 2,
+    commit,
+    image,
+    imageDigest: image.slice(image.lastIndexOf("@") + 1),
+    generatedAt: new Date().toISOString(),
+    runtime: {
+      imageRepoDigest: image,
+      repoDigests,
+      health: { gitCommit: commit, version: health.build?.version },
+    },
+    regressionQuery: {
+      path: "cockpit-epic-648-open-issues.json",
+      sha256: sha256(regressionPath),
+      issues: regressionIssues,
+    },
+    artifacts,
+    scenarios: generated,
+  };
   const manifestPath = join(output, "cockpit-evidence.json");
   await Bun.write(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   verifyEvidence(manifestPath);
   process.stdout.write(`${manifestPath}\n`);
 } finally {
-  chromeProcess?.kill();
-  await command(docker, ["rm", "--force", container], true).catch(() => undefined);
+  await command("docker", ["rm", "--force", container], true).catch(
+    () => undefined,
+  );
 }

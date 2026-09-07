@@ -1,11 +1,4178 @@
 [
-  {"issue":649,"scenario":"desktop-navigation","route":"/companies/evidence-fixture?year=2026","state":"normal","viewport":{"width":1440,"height":900},"zoom":1,"keyboard":[{"selector":"#root","key":"Tab","expectFocused":true}]},
-  {"issue":650,"scenario":"mobile-workflow","route":"/companies/evidence-fixture/batchbogfoering?year=2026","state":"normal","viewport":{"width":390,"height":844},"zoom":1,"keyboard":[{"selector":"#root","key":"Tab","expectFocused":true}]},
-  {"issue":651,"scenario":"zoom-overview","route":"/companies/evidence-fixture?year=2026","state":"normal","viewport":{"width":1440,"height":900},"zoom":2,"keyboard":[{"selector":"#root","key":"Tab","expectFocused":true}]},
-  {"issue":652,"scenario":"loading-drilldown","route":"/companies/evidence-fixture/posteringer?year=2026","state":"loading","viewport":{"width":1440,"height":900},"zoom":1,"keyboard":[{"selector":"#root","key":"Tab","expectFocused":true}],"interception":{"urlIncludes":"/api/","status":200,"body":"{}","delayMs":2500}},
-  {"issue":653,"scenario":"empty-party-hub","route":"/companies/evidence-fixture/kontakter?year=2026","state":"empty","viewport":{"width":390,"height":844},"zoom":1,"keyboard":[{"selector":"#root","key":"Tab","expectFocused":true}]},
-  {"issue":654,"scenario":"blocked-report","route":"/companies/evidence-fixture/balance?year=2026","state":"warning-or-blocked","viewport":{"width":1440,"height":900},"zoom":1,"keyboard":[{"selector":"#root","key":"Tab","expectFocused":true}],"interception":{"urlIncludes":"/api/","status":403,"body":"{\"error\":\"synthetic evidence access blocked\"}"}},
-  {"issue":655,"scenario":"error-state","route":"/companies/evidence-fixture/bank?year=2026","state":"error","viewport":{"width":390,"height":844},"zoom":2,"keyboard":[{"selector":"#root","key":"Tab","expectFocused":true}],"interception":{"urlIncludes":"/api/","status":500,"body":"{\"error\":\"synthetic evidence error\"}"}},
-  {"issue":656,"scenario":"keyboard-readiness","route":"/companies/evidence-fixture/moms?year=2026","state":"normal","viewport":{"width":1440,"height":900},"zoom":1,"keyboard":[{"selector":"#root","key":"Tab","expectFocused":true}]},
-  {"issue":657,"scenario":"mobile-administration","route":"/companies/evidence-fixture/manage?year=2026","state":"normal","viewport":{"width":390,"height":844},"zoom":1,"keyboard":[{"selector":"#root","key":"Tab","expectFocused":true}]}
+  {
+    "issue": 649,
+    "owner": "Epic #649 feature implementation",
+    "route": "/companies/evidence-fixture?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-649-normal-desktop",
+    "state": "normal",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 649,
+    "owner": "Epic #649 feature implementation",
+    "route": "/companies/evidence-fixture?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-649-normal-mobile",
+    "state": "normal",
+    "mode": "mobile",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 649,
+    "owner": "Epic #649 feature implementation",
+    "route": "/companies/evidence-fixture?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-649-normal-zoom",
+    "state": "normal",
+    "mode": "zoom",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 2
+  },
+  {
+    "issue": 649,
+    "owner": "Epic #649 feature implementation",
+    "route": "/companies/evidence-fixture?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-649-loading",
+    "state": "loading",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 200,
+      "body": "{}",
+      "delayMs": 3000
+    }
+  },
+  {
+    "issue": 649,
+    "owner": "Epic #649 feature implementation",
+    "route": "/companies/evidence-fixture?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-649-empty",
+    "state": "empty",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 649,
+    "owner": "Epic #649 feature implementation",
+    "route": "/companies/evidence-fixture?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-649-warning-or-blocked",
+    "state": "warning-or-blocked",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 403,
+      "body": "{\"error\":\"synthetic blocked\"}"
+    }
+  },
+  {
+    "issue": 649,
+    "owner": "Epic #649 feature implementation",
+    "route": "/companies/evidence-fixture?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-649-error",
+    "state": "error",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 500,
+      "body": "{\"error\":\"synthetic error\"}"
+    }
+  },
+  {
+    "issue": 650,
+    "owner": "Epic #650 feature implementation",
+    "route": "/companies/evidence-fixture/batchbogfoering?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-650-normal-desktop",
+    "state": "normal",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 650,
+    "owner": "Epic #650 feature implementation",
+    "route": "/companies/evidence-fixture/batchbogfoering?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-650-normal-mobile",
+    "state": "normal",
+    "mode": "mobile",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 650,
+    "owner": "Epic #650 feature implementation",
+    "route": "/companies/evidence-fixture/batchbogfoering?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-650-normal-zoom",
+    "state": "normal",
+    "mode": "zoom",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 2
+  },
+  {
+    "issue": 650,
+    "owner": "Epic #650 feature implementation",
+    "route": "/companies/evidence-fixture/batchbogfoering?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-650-loading",
+    "state": "loading",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 200,
+      "body": "{}",
+      "delayMs": 3000
+    }
+  },
+  {
+    "issue": 650,
+    "owner": "Epic #650 feature implementation",
+    "route": "/companies/evidence-fixture/batchbogfoering?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-650-empty",
+    "state": "empty",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 650,
+    "owner": "Epic #650 feature implementation",
+    "route": "/companies/evidence-fixture/batchbogfoering?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-650-warning-or-blocked",
+    "state": "warning-or-blocked",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 403,
+      "body": "{\"error\":\"synthetic blocked\"}"
+    }
+  },
+  {
+    "issue": 650,
+    "owner": "Epic #650 feature implementation",
+    "route": "/companies/evidence-fixture/batchbogfoering?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-650-error",
+    "state": "error",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 500,
+      "body": "{\"error\":\"synthetic error\"}"
+    }
+  },
+  {
+    "issue": 651,
+    "owner": "Epic #651 feature implementation",
+    "route": "/companies/evidence-fixture/posteringer?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-651-normal-desktop",
+    "state": "normal",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 651,
+    "owner": "Epic #651 feature implementation",
+    "route": "/companies/evidence-fixture/posteringer?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-651-normal-mobile",
+    "state": "normal",
+    "mode": "mobile",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 651,
+    "owner": "Epic #651 feature implementation",
+    "route": "/companies/evidence-fixture/posteringer?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-651-normal-zoom",
+    "state": "normal",
+    "mode": "zoom",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 2
+  },
+  {
+    "issue": 651,
+    "owner": "Epic #651 feature implementation",
+    "route": "/companies/evidence-fixture/posteringer?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-651-loading",
+    "state": "loading",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 200,
+      "body": "{}",
+      "delayMs": 3000
+    }
+  },
+  {
+    "issue": 651,
+    "owner": "Epic #651 feature implementation",
+    "route": "/companies/evidence-fixture/posteringer?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-651-empty",
+    "state": "empty",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 651,
+    "owner": "Epic #651 feature implementation",
+    "route": "/companies/evidence-fixture/posteringer?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-651-warning-or-blocked",
+    "state": "warning-or-blocked",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 403,
+      "body": "{\"error\":\"synthetic blocked\"}"
+    }
+  },
+  {
+    "issue": 651,
+    "owner": "Epic #651 feature implementation",
+    "route": "/companies/evidence-fixture/posteringer?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-651-error",
+    "state": "error",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 500,
+      "body": "{\"error\":\"synthetic error\"}"
+    }
+  },
+  {
+    "issue": 652,
+    "owner": "Epic #652 feature implementation",
+    "route": "/companies/evidence-fixture/kontakter?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-652-normal-desktop",
+    "state": "normal",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 652,
+    "owner": "Epic #652 feature implementation",
+    "route": "/companies/evidence-fixture/kontakter?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-652-normal-mobile",
+    "state": "normal",
+    "mode": "mobile",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 652,
+    "owner": "Epic #652 feature implementation",
+    "route": "/companies/evidence-fixture/kontakter?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-652-normal-zoom",
+    "state": "normal",
+    "mode": "zoom",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 2
+  },
+  {
+    "issue": 652,
+    "owner": "Epic #652 feature implementation",
+    "route": "/companies/evidence-fixture/kontakter?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-652-loading",
+    "state": "loading",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 200,
+      "body": "{}",
+      "delayMs": 3000
+    }
+  },
+  {
+    "issue": 652,
+    "owner": "Epic #652 feature implementation",
+    "route": "/companies/evidence-fixture/kontakter?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-652-empty",
+    "state": "empty",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 652,
+    "owner": "Epic #652 feature implementation",
+    "route": "/companies/evidence-fixture/kontakter?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-652-warning-or-blocked",
+    "state": "warning-or-blocked",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 403,
+      "body": "{\"error\":\"synthetic blocked\"}"
+    }
+  },
+  {
+    "issue": 652,
+    "owner": "Epic #652 feature implementation",
+    "route": "/companies/evidence-fixture/kontakter?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-652-error",
+    "state": "error",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 500,
+      "body": "{\"error\":\"synthetic error\"}"
+    }
+  },
+  {
+    "issue": 653,
+    "owner": "Epic #653 feature implementation",
+    "route": "/companies/evidence-fixture/balance?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-653-normal-desktop",
+    "state": "normal",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 653,
+    "owner": "Epic #653 feature implementation",
+    "route": "/companies/evidence-fixture/balance?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-653-normal-mobile",
+    "state": "normal",
+    "mode": "mobile",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 653,
+    "owner": "Epic #653 feature implementation",
+    "route": "/companies/evidence-fixture/balance?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-653-normal-zoom",
+    "state": "normal",
+    "mode": "zoom",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 2
+  },
+  {
+    "issue": 653,
+    "owner": "Epic #653 feature implementation",
+    "route": "/companies/evidence-fixture/balance?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-653-loading",
+    "state": "loading",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 200,
+      "body": "{}",
+      "delayMs": 3000
+    }
+  },
+  {
+    "issue": 653,
+    "owner": "Epic #653 feature implementation",
+    "route": "/companies/evidence-fixture/balance?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-653-empty",
+    "state": "empty",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 653,
+    "owner": "Epic #653 feature implementation",
+    "route": "/companies/evidence-fixture/balance?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-653-warning-or-blocked",
+    "state": "warning-or-blocked",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 403,
+      "body": "{\"error\":\"synthetic blocked\"}"
+    }
+  },
+  {
+    "issue": 653,
+    "owner": "Epic #653 feature implementation",
+    "route": "/companies/evidence-fixture/balance?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-653-error",
+    "state": "error",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 500,
+      "body": "{\"error\":\"synthetic error\"}"
+    }
+  },
+  {
+    "issue": 654,
+    "owner": "Epic #654 feature implementation",
+    "route": "/companies/evidence-fixture/bank?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-654-normal-desktop",
+    "state": "normal",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 654,
+    "owner": "Epic #654 feature implementation",
+    "route": "/companies/evidence-fixture/bank?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-654-normal-mobile",
+    "state": "normal",
+    "mode": "mobile",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 654,
+    "owner": "Epic #654 feature implementation",
+    "route": "/companies/evidence-fixture/bank?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-654-normal-zoom",
+    "state": "normal",
+    "mode": "zoom",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 2
+  },
+  {
+    "issue": 654,
+    "owner": "Epic #654 feature implementation",
+    "route": "/companies/evidence-fixture/bank?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-654-loading",
+    "state": "loading",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 200,
+      "body": "{}",
+      "delayMs": 3000
+    }
+  },
+  {
+    "issue": 654,
+    "owner": "Epic #654 feature implementation",
+    "route": "/companies/evidence-fixture/bank?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-654-empty",
+    "state": "empty",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 654,
+    "owner": "Epic #654 feature implementation",
+    "route": "/companies/evidence-fixture/bank?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-654-warning-or-blocked",
+    "state": "warning-or-blocked",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 403,
+      "body": "{\"error\":\"synthetic blocked\"}"
+    }
+  },
+  {
+    "issue": 654,
+    "owner": "Epic #654 feature implementation",
+    "route": "/companies/evidence-fixture/bank?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-654-error",
+    "state": "error",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 500,
+      "body": "{\"error\":\"synthetic error\"}"
+    }
+  },
+  {
+    "issue": 655,
+    "owner": "Epic #655 feature implementation",
+    "route": "/companies/evidence-fixture/moms?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-655-normal-desktop",
+    "state": "normal",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 655,
+    "owner": "Epic #655 feature implementation",
+    "route": "/companies/evidence-fixture/moms?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-655-normal-mobile",
+    "state": "normal",
+    "mode": "mobile",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 655,
+    "owner": "Epic #655 feature implementation",
+    "route": "/companies/evidence-fixture/moms?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-655-normal-zoom",
+    "state": "normal",
+    "mode": "zoom",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 2
+  },
+  {
+    "issue": 655,
+    "owner": "Epic #655 feature implementation",
+    "route": "/companies/evidence-fixture/moms?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-655-loading",
+    "state": "loading",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 200,
+      "body": "{}",
+      "delayMs": 3000
+    }
+  },
+  {
+    "issue": 655,
+    "owner": "Epic #655 feature implementation",
+    "route": "/companies/evidence-fixture/moms?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-655-empty",
+    "state": "empty",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 655,
+    "owner": "Epic #655 feature implementation",
+    "route": "/companies/evidence-fixture/moms?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-655-warning-or-blocked",
+    "state": "warning-or-blocked",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 403,
+      "body": "{\"error\":\"synthetic blocked\"}"
+    }
+  },
+  {
+    "issue": 655,
+    "owner": "Epic #655 feature implementation",
+    "route": "/companies/evidence-fixture/moms?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-655-error",
+    "state": "error",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 500,
+      "body": "{\"error\":\"synthetic error\"}"
+    }
+  },
+  {
+    "issue": 656,
+    "owner": "Epic #656 feature implementation",
+    "route": "/companies/evidence-fixture/manage?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-656-normal-desktop",
+    "state": "normal",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 656,
+    "owner": "Epic #656 feature implementation",
+    "route": "/companies/evidence-fixture/manage?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-656-normal-mobile",
+    "state": "normal",
+    "mode": "mobile",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 656,
+    "owner": "Epic #656 feature implementation",
+    "route": "/companies/evidence-fixture/manage?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-656-normal-zoom",
+    "state": "normal",
+    "mode": "zoom",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 2
+  },
+  {
+    "issue": 656,
+    "owner": "Epic #656 feature implementation",
+    "route": "/companies/evidence-fixture/manage?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-656-loading",
+    "state": "loading",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 200,
+      "body": "{}",
+      "delayMs": 3000
+    }
+  },
+  {
+    "issue": 656,
+    "owner": "Epic #656 feature implementation",
+    "route": "/companies/evidence-fixture/manage?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-656-empty",
+    "state": "empty",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 656,
+    "owner": "Epic #656 feature implementation",
+    "route": "/companies/evidence-fixture/manage?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-656-warning-or-blocked",
+    "state": "warning-or-blocked",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 403,
+      "body": "{\"error\":\"synthetic blocked\"}"
+    }
+  },
+  {
+    "issue": 656,
+    "owner": "Epic #656 feature implementation",
+    "route": "/companies/evidence-fixture/manage?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-656-error",
+    "state": "error",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 500,
+      "body": "{\"error\":\"synthetic error\"}"
+    }
+  },
+  {
+    "issue": 657,
+    "owner": "Epic #657 feature implementation",
+    "route": "/companies/evidence-fixture/forpligtelser?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-657-normal-desktop",
+    "state": "normal",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 657,
+    "owner": "Epic #657 feature implementation",
+    "route": "/companies/evidence-fixture/forpligtelser?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-657-normal-mobile",
+    "state": "normal",
+    "mode": "mobile",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 657,
+    "owner": "Epic #657 feature implementation",
+    "route": "/companies/evidence-fixture/forpligtelser?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-657-normal-zoom",
+    "state": "normal",
+    "mode": "zoom",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 2
+  },
+  {
+    "issue": 657,
+    "owner": "Epic #657 feature implementation",
+    "route": "/companies/evidence-fixture/forpligtelser?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-657-loading",
+    "state": "loading",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 200,
+      "body": "{}",
+      "delayMs": 3000
+    }
+  },
+  {
+    "issue": 657,
+    "owner": "Epic #657 feature implementation",
+    "route": "/companies/evidence-fixture/forpligtelser?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-657-empty",
+    "state": "empty",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1
+  },
+  {
+    "issue": 657,
+    "owner": "Epic #657 feature implementation",
+    "route": "/companies/evidence-fixture/forpligtelser?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-657-warning-or-blocked",
+    "state": "warning-or-blocked",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 403,
+      "body": "{\"error\":\"synthetic blocked\"}"
+    }
+  },
+  {
+    "issue": 657,
+    "owner": "Epic #657 feature implementation",
+    "route": "/companies/evidence-fixture/forpligtelser?year=2026",
+    "dom": {
+      "heading": {
+        "selector": "main[data-cockpit-view] h1",
+        "visible": true
+      },
+      "status": {
+        "selector": "[data-cockpit-status]",
+        "visible": true
+      },
+      "controls": [
+        {
+          "selector": "[data-cockpit-controls]",
+          "visible": true
+        }
+      ],
+      "data": [
+        {
+          "selector": "[data-cockpit-data]",
+          "visible": true
+        }
+      ],
+      "coreAction": {
+        "selector": "[data-cockpit-primary-action]",
+        "visible": true
+      },
+      "noHorizontalOverflow": true
+    },
+    "keyboard": [
+      {
+        "key": "Tab",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        }
+      },
+      {
+        "key": "Enter",
+        "expectFocus": {
+          "selector": "[data-cockpit-primary-action]",
+          "visible": true
+        },
+        "expectState": {
+          "selector": "[data-cockpit-task-outcome]",
+          "visible": true
+        }
+      }
+    ],
+    "scenario": "issue-657-error",
+    "state": "error",
+    "mode": "desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "zoom": 1,
+    "interception": {
+      "urlPattern": "/api/companies/evidence-fixture/overview",
+      "status": 500,
+      "body": "{\"error\":\"synthetic error\"}"
+    }
+  }
 ]

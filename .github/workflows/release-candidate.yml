@@ -221,11 +221,16 @@ jobs:
           COCKPIT_EVIDENCE_IMAGE: ${{ env.REGISTRY_IMAGE }}@${{ steps.image.outputs.digest }}
           COCKPIT_EVIDENCE_COMMIT: ${{ steps.identity.outputs.commit }}
           COCKPIT_EVIDENCE_OUT: cockpit-evidence
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          gh auth status
+          # --limit 1000 makes gh paginate all open issues; label relation is explicit.
+          gh issue list --repo "$GITHUB_REPOSITORY" --state open --label epic:648 --limit 1000 --json number,title,labels > cockpit-epic-648-open-issues.json
+          sha256sum cockpit-epic-648-open-issues.json > cockpit-epic-648-open-issues.json.sha256
+          export COCKPIT_EVIDENCE_REGRESSION_QUERY="$PWD/cockpit-epic-648-open-issues.json"
           bun run scripts/release/run-cockpit-evidence.ts
-          gh issue list --repo "$GITHUB_REPOSITORY" --state open --label regression --limit 100 --json number,title,labels > cockpit-open-regressions.json
-          bun run scripts/release/verify-cockpit-evidence.ts cockpit-evidence/cockpit-evidence.json cockpit-open-regressions.json
+          bun run scripts/release/verify-cockpit-evidence.ts cockpit-evidence/cockpit-evidence.json
 
       - name: Extract digest-bound SPDX SBOM evidence
         id: sbom
@@ -280,6 +285,8 @@ jobs:
           RELEASE_SBOM_SHA256: ${{ steps.sbom.outputs.sha256 }}
           RELEASE_SUPPLY_CHAIN_SHA256: ${{ steps.supply_chain.outputs.sha256 }}
           RELEASE_AGENT_DISCOVERY_SHA256: ${{ steps.agent_discovery.outputs.sha256 }}
+          RELEASE_COCKPIT_EVIDENCE_SHA256: sha256:${{ hashFiles('cockpit-evidence/cockpit-evidence.json') }}
+          RELEASE_COCKPIT_REGRESSION_QUERY_SHA256: sha256:${{ hashFiles('cockpit-epic-648-open-issues.json') }}
         run: |
           bun run scripts/release/create-manifest.ts > release-manifest.json
           sha256sum release-manifest.json > release-manifest.json.sha256
@@ -308,6 +315,8 @@ jobs:
             agent-discovery-coverage-report.json.sha256
             cockpit-evidence/cockpit-evidence.json
             cockpit-evidence/*.png
+            cockpit-evidence/cockpit-epic-648-open-issues.json
+            cockpit-epic-648-open-issues.json.sha256
             docs/release/digisense-approval.schema.json
           if-no-files-found: error
           retention-days: 90
