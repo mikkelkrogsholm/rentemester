@@ -13,6 +13,7 @@ import {
   type Scenario,
   verifyEvidence,
 } from "./cockpit-evidence";
+import { internalAppIpv4, startLoopbackProxy, type NetworkSettings } from "./cockpit-evidence-proxy";
 
 const required = (name: string) => {
   const value = process.env[name]?.trim();
@@ -336,6 +337,7 @@ const chrome = await command("sh", [
   ]),
   container = `rentemester-cockpit-evidence-${crypto.randomUUID().slice(0, 12)}`,
   network = `rentemester-cockpit-evidence-${crypto.randomUUID().slice(0, 12)}`;
+let proxy: ReturnType<typeof Bun.serve> | undefined;
 try {
   await command("docker", ["pull", image], true);
   const repoDigests = JSON.parse(
@@ -383,8 +385,6 @@ try {
       "--init",
       "--network",
       network,
-      "--publish",
-      "127.0.0.1::4319",
       "--tmpfs",
       "/tmp:rw,noexec,nosuid,size=64m",
       "--tmpfs",
@@ -399,10 +399,18 @@ try {
     ],
     true,
   );
-  const address = await command("docker", ["port", container, "4319/tcp"]);
-  if (!/^127\.0\.0\.1:\d+$/.test(address))
-    throw new Error(`candidate must publish only loopback, got ${address}`);
-  const base = `http://${address}`;
+  const settings = JSON.parse(
+    await command("docker", [
+      "inspect",
+      container,
+      "--format",
+      "{{json .NetworkSettings}}",
+    ]),
+  ) as NetworkSettings;
+  const appAddress = internalAppIpv4(settings, network);
+  const access = startLoopbackProxy(appAddress);
+  proxy = access.proxy;
+  const base = access.base;
   await waitFor(`${base}/api/ready`);
   const health = (await fetch(`${base}/api/health`).then((r) => r.json())) as {
     build?: { gitCommit?: string; version?: string };
@@ -482,6 +490,7 @@ try {
   verifyEvidence(manifestPath);
   process.stdout.write(`${manifestPath}\n`);
 } finally {
+  await proxy?.stop(true);
   await command("docker", ["rm", "--force", container], true).catch(
     () => undefined,
   );

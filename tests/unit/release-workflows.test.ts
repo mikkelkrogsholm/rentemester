@@ -32,6 +32,10 @@ const cockpitEvidenceRunner = readFileSync(
   join(root, "scripts", "release", "run-cockpit-evidence.ts"),
   "utf8",
 );
+const cockpitEvidenceProxy = readFileSync(
+  join(root, "scripts", "release", "cockpit-evidence-proxy.ts"),
+  "utf8",
+);
 
 describe("release workflow security contract", () => {
   test("pins every privileged third-party action to a full commit", () => {
@@ -77,14 +81,24 @@ describe("release workflow security contract", () => {
     );
   });
 
-  test("runs Cockpit evidence on a disposable internal network with loopback access", () => {
+  test("runs Cockpit evidence through a loopback proxy to one internal-only application", () => {
     expect(cockpitEvidenceRunner).toContain('"network", "create", "--internal", network');
     expect(cockpitEvidenceRunner).toContain('"network", "inspect", network, "--format", "{{.Internal}}"');
     expect(cockpitEvidenceRunner).toContain("Docker did not create an internal evidence network");
     expect(cockpitEvidenceRunner).toContain('"--network",\n      network');
-    expect(cockpitEvidenceRunner).toContain('"--publish",\n      "127.0.0.1::4319"');
+    expect(cockpitEvidenceRunner).not.toContain('"--publish"');
+    expect(cockpitEvidenceRunner).toContain('"{{json .NetworkSettings}}"');
+    expect(cockpitEvidenceProxy).toContain("candidate must be attached only to the internal evidence network");
+    expect(cockpitEvidenceProxy).toContain("candidate must not publish container ports");
+    expect(cockpitEvidenceProxy).toContain("invalid internal application IPv4");
+    expect(cockpitEvidenceProxy).toContain('hostname: "127.0.0.1"');
+    expect(cockpitEvidenceRunner).toContain("startLoopbackProxy(appAddress)");
+    expect(cockpitEvidenceProxy).toContain("const appOrigin = `http://${appAddress}:${appPort}`");
+    expect(cockpitEvidenceProxy).toContain("new URL(`${incoming.pathname}${incoming.search}`, appOrigin)");
+    expect(cockpitEvidenceRunner).toContain('proxy?.stop(true)');
     expect(cockpitEvidenceRunner).toContain('"network", "rm", network');
     expect(cockpitEvidenceRunner).not.toContain('"--network",\n      "bridge"');
+    expect(cockpitEvidenceRunner).not.toContain('"--network",\n      "host"');
   });
 
   test("makes the production license allowlist a merge and release gate", () => {
