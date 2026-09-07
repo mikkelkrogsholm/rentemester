@@ -18,10 +18,10 @@
       "route": "/companies/evidence-fixture/batchbogfoering",
       "endpoint": "/api/companies/evidence-fixture/bookkeeping-workbench",
       "heading": "Bogføringsarbejdsbord",
-      "coreAction": "Gennemgå klar bogføring",
+      "coreAction": "Forhåndsvis samlet dry run",
       "data": "Bogføringskø",
       "progressive": "Se bilag og kontering",
-      "taskOutcome": "Bogføringskø åbnet",
+      "taskOutcome": "Samlet dry run forhåndsvist",
       "states": { "normal": "Bogføringskø klar", "loading": "Henter bogføringskø", "empty": "Ingen poster klar til bogføring", "warning-or-blocked": "Bogføring kræver afklaring", "error": "Bogføringskø kunne ikke hentes" }
     },
     {
