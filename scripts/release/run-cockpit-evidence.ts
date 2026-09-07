@@ -18,6 +18,8 @@ import { browserUrlMatchesExpected } from "./cockpit-evidence-url";
 import { selectPageDevToolsTarget } from "./cockpit-evidence-cdp-target";
 import {
   LOADING_HEADING_READY_DEADLINE_MS,
+  POST_ACTION_CONDITION_DEADLINE_MS,
+  waitForBoundedCondition,
   waitForScenarioHeading,
 } from "./cockpit-evidence-dom-ready";
 
@@ -208,6 +210,26 @@ async function scenarioHeadingSnapshot(cdp: Cdp, selector: string) {
     bodyText: typeof record.bodyText === "string" ? record.bodyText : "",
   };
 }
+async function scenarioConditionSnapshot(cdp: Cdp, condition: string) {
+  const value = await cdp.call("Runtime.evaluate", {
+    expression: `(()=>({satisfied:Boolean(${condition}),url:location.href,bodyText:(document.body?.innerText??document.documentElement?.innerText??"").slice(0,1000)}))()`,
+    returnByValue: true,
+    awaitPromise: true,
+  });
+  const snapshot = (value.result as { value?: unknown })?.value;
+  if (!snapshot || typeof snapshot !== "object")
+    throw new Error("Chrome did not return a post-action condition snapshot");
+  const record = snapshot as Partial<{
+    satisfied: unknown;
+    url: unknown;
+    bodyText: unknown;
+  }>;
+  return {
+    satisfied: record.satisfied === true,
+    url: typeof record.url === "string" ? record.url : "",
+    bodyText: typeof record.bodyText === "string" ? record.bodyText : "",
+  };
+}
 async function renderScenario(
   chrome: string,
   base: string,
@@ -364,8 +386,24 @@ async function renderScenario(
         code: step.key === "Space" ? "Space" : step.key,
         modifiers: step.key === "Shift+Tab" ? 8 : 0,
       });
-      if (step.expectState) await evaluateBoolean(cdp, expression(step.expectState), `${scenario.scenario} task outcome after ${step.key}`);
-      if (step.expectUrl) await evaluateBoolean(cdp, `(${browserUrlMatchesExpected.toString()}(new URL(location.href), ${JSON.stringify(step.expectUrl)}))`, `${scenario.scenario} URL outcome after ${step.key}`);
+      const postActionConditions = [
+        ...(step.expectState ? [expression(step.expectState)] : []),
+        ...(step.expectUrl
+          ? [`${browserUrlMatchesExpected.toString()}(new URL(location.href), ${JSON.stringify(step.expectUrl)})`]
+          : []),
+      ];
+      if (postActionConditions.length) {
+        const expectedOutcome = [
+          ...(step.expectState ? [`visible state ${step.expectState.selector}`] : []),
+          ...(step.expectUrl ? [`URL matching ${step.expectUrl}`] : []),
+        ].join(" and ");
+        await waitForBoundedCondition({
+          scenario: scenario.scenario,
+          expectedOutcome,
+          deadlineMs: POST_ACTION_CONDITION_DEADLINE_MS,
+          probe: () => scenarioConditionSnapshot(cdp, postActionConditions.join(" && ")),
+        });
+      }
       keyboardAssertions.push(
         `${step.key}: real control activated and new UI state verified`,
       );
