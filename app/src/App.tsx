@@ -42,6 +42,7 @@ import { GroupOverviewView } from "./views/GroupOverviewView";
 import { InvitationView } from "./views/InvitationView";
 import { WorkspaceAccessView } from "./views/WorkspaceAccessView";
 import { CfoCockpitView } from "./views/CfoCockpitView";
+import { PartyProfileView } from "./views/PartyHubView";
 import {
   CompanyNavigationShell,
   CompanyTaskNavigation,
@@ -56,6 +57,9 @@ const COMPANY_NAVIGATION = {
   routes: COMPANY_ROUTE_REGISTRY,
   areas: COMPANY_TASK_AREAS,
 };
+// Detail route belongs to the Party Hub; fixed company pages remain owned by
+// the route registry below.
+const partyProfilePath = "/companies/:slug/parter/:partyId";
 
 export function App() {
   const health = useAsync(() => api.health(), []);
@@ -123,6 +127,7 @@ function CockpitApp() {
             <Route path="/" element={<PortfolioView />} />
             {hosted && <Route path="/cfo" element={<CfoCockpitView />} />}
             <Route path="/companies/new" element={<AddCompanyView />} />
+            <Route path={partyProfilePath} element={<PartyProfileView />} />
             {hosted && canManageWorkspace && <Route path="/koncernstruktur" element={<GroupOverviewView />} />}
             {hosted && canManageWorkspace && <Route path="/adgang" element={<WorkspaceAccessView />} />}
             {COMPANY_ROUTE_REGISTRY.map((route) => (

@@ -44,6 +44,7 @@ import { TrialBalanceView } from "./views/TrialBalanceView";
 import { VatView } from "./views/VatView";
 import { WorkspaceInboxView } from "./views/WorkspaceInboxView";
 import { WorkspaceRegistryView } from "./views/WorkspaceRegistryView";
+import { PartyHubView } from "./views/PartyHubView";
 import {
   companyRouteForPath as findCompanyRouteForPath,
   type CompanyRoutePathDescriptor,
@@ -94,6 +95,7 @@ export const COMPANY_ROUTE_REGISTRY = [
   { id: "invoices", segment: "fakturaer", label: "Fakturaer", area: "invoices", element: <InvoicesView /> },
   { id: "invoice-templates", segment: "faktura-skabeloner", label: "Skabeloner", area: "invoices", element: <RecurringInvoicesView /> },
   { id: "contacts", segment: "kontakter", label: "Kontakter", area: "knowledge", element: <ContactsView /> },
+  { id: "party-hub", segment: "parter", label: "Parter", area: "knowledge", element: <PartyHubView /> },
 
   // Moms og perioder
   { id: "vat", segment: "moms", label: "Moms", area: "vat-deadlines", element: <VatView /> },

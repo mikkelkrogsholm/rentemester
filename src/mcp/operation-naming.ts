@@ -219,6 +219,8 @@ export const MCP_OPERATION_NAMING: Readonly<Record<string, McpOperationNaming>> 
   "accounting_approval_policy_set": {"originalName":"accounting_approval_policy_set","canonicalName":"accounting_approval_policy_set","domain":"accounting","resource":"approval_policy","action":"set"},
   "workspace_party_search": {"originalName":"workspace_party_search","canonicalName":"workspace_party_search","domain":"workspace","resource":"party","action":"search"},
   "workspace_party_inspect": {"originalName":"workspace_party_inspect","canonicalName":"workspace_party_inspect","domain":"workspace","resource":"party","action":"inspect"},
+  "party_hub": {"originalName":"party_hub","canonicalName":"workspace_party_hub_search","domain":"workspace","resource":"party_hub","action":"search"},
+  "party_profile": {"originalName":"party_profile","canonicalName":"workspace_party_profile_inspect","domain":"workspace","resource":"party_profile","action":"inspect"},
   "workspace_party_create": {"originalName":"workspace_party_create","canonicalName":"workspace_party_create","domain":"workspace","resource":"party","action":"create"},
   "workspace_party_link_role": {"originalName":"workspace_party_link_role","canonicalName":"workspace_party_role_link","domain":"workspace","resource":"party_role","action":"link"},
   "workspace_party_propose_merge": {"originalName":"workspace_party_propose_merge","canonicalName":"workspace_party_merge_propose","domain":"workspace","resource":"party_merge","action":"propose"},

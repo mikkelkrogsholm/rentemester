@@ -256,7 +256,7 @@ tabel uenige, er det tabellerne (og i sidste ende `tools/list`) der gælder.
 - **Read-tools**: 91
 - **Ordinary write-tools**: 122
 - **Destructive**: 1 (`system_restore_backup`)
-- **Total**: **246** (read and write tool counts are verified from the live registry in CI)
+- **Total**: **248** (read and write tool counts are verified from the live registry in CI)
 
 ## Read-tools
 

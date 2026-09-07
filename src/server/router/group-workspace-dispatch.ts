@@ -67,6 +67,10 @@ export async function dispatchGroupWorkspaceRoute(
   if (partyMerge) return postOnly(method, () => handlers.registryPartyMerge(decodeURIComponent(partyMerge[1]!), partyMerge[2] === "approve"));
   const partyOne = /^\/api\/companies\/([^/]+)\/workspace-parties\/([^/]+)$/.exec(path);
   if (partyOne) return getOnly(method, () => handlers.registryParty(decodeURIComponent(partyOne[1]!), decodeURIComponent(partyOne[2]!)));
+  const partyProfile = /^\/api\/companies\/([^/]+)\/party-hub\/([^/]+)$/.exec(path);
+  if (partyProfile) return getOnly(method, () => handlers.partyProfile(decodeURIComponent(partyProfile[1]!), decodeURIComponent(partyProfile[2]!)));
+  const partyHub = /^\/api\/companies\/([^/]+)\/party-hub$/.exec(path);
+  if (partyHub) return getOnly(method, () => handlers.partyHub(decodeURIComponent(partyHub[1]!)));
   const legacyMappingAction = /^\/api\/companies\/([^/]+)\/legacy-party-mappings\/(plan|apply|supersede)$/.exec(path);
   if (legacyMappingAction) {
     const slug=decodeURIComponent(legacyMappingAction[1]!);
