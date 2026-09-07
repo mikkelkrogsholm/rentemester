@@ -1778,9 +1778,9 @@ table.statement-table td.num.muted {
   .page-header-actions > .btn, .page-header-actions > a { flex: 1 1 160px; text-align: center; }
   .responsive-table-scroll { overflow: visible; }
   .responsive-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .responsive-table, .responsive-table tbody, .responsive-table tr, .responsive-table td { display: block; width: 100%; }
+  .responsive-table, .responsive-table tbody, .responsive-table tr, .responsive-table td { display: block; width: 100%; min-width: 0; }
   .responsive-table tr { padding: var(--space-sm); border-bottom: 1px solid var(--border); }
-  .responsive-table td { display: grid; grid-template-columns: minmax(7rem, 42%) 1fr; gap: var(--space-xs); padding: var(--space-xxs) 0; border: 0; text-align: left !important; }
+  .responsive-table td { display: grid; grid-template-columns: minmax(7rem, 42%) minmax(0, 1fr); gap: var(--space-xs); padding: var(--space-xxs) 0; border: 0; overflow-wrap: anywhere; text-align: left !important; }
   .responsive-table td::before { content: attr(data-label); color: var(--text-dim); font-size: var(--text-size-xs); font-weight: var(--text-weight-semibold); text-transform: uppercase; }
   .responsive-table td:empty { display: none; }
 }
