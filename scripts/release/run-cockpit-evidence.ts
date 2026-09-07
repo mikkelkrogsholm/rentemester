@@ -14,6 +14,7 @@ import {
   verifyEvidence,
 } from "./cockpit-evidence";
 import { internalAppIpv4, startLoopbackProxy, type NetworkSettings } from "./cockpit-evidence-proxy";
+import { browserUrlMatchesExpected } from "./cockpit-evidence-url";
 
 const required = (name: string) => {
   const value = process.env[name]?.trim();
@@ -301,7 +302,7 @@ async function renderScenario(
       // real keyboard activation.  This catches hidden/pre-rendered success
       // copy masquerading as a task outcome.
       if (step.expectState) await evaluateBoolean(cdp, `!(${expression(step.expectState)})`, `${scenario.scenario} outcome absent before ${step.key}`);
-      if (step.expectUrl) await evaluateBoolean(cdp, `location.pathname !== ${JSON.stringify(step.expectUrl)}`, `${scenario.scenario} URL outcome absent before ${step.key}`);
+      if (step.expectUrl) await evaluateBoolean(cdp, `!(${browserUrlMatchesExpected.toString()}(new URL(location.href), ${JSON.stringify(step.expectUrl)}))`, `${scenario.scenario} URL outcome absent before ${step.key}`);
       await cdp.call("Input.dispatchKeyEvent", {
         type: "keyDown",
         key: step.key,
@@ -315,7 +316,7 @@ async function renderScenario(
         modifiers: step.key === "Shift+Tab" ? 8 : 0,
       });
       if (step.expectState) await evaluateBoolean(cdp, expression(step.expectState), `${scenario.scenario} task outcome after ${step.key}`);
-      if (step.expectUrl) await evaluateBoolean(cdp, `location.pathname === ${JSON.stringify(step.expectUrl)}`, `${scenario.scenario} URL outcome after ${step.key}`);
+      if (step.expectUrl) await evaluateBoolean(cdp, `(${browserUrlMatchesExpected.toString()}(new URL(location.href), ${JSON.stringify(step.expectUrl)}))`, `${scenario.scenario} URL outcome after ${step.key}`);
       keyboardAssertions.push(
         `${step.key}: real control activated and new UI state verified`,
       );

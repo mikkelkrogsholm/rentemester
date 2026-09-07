@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, test, vi } from "bun:test";
 import { cleanup, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BookkeepingBatchView } from "./BookkeepingBatchView";
@@ -49,6 +49,25 @@ describe("BookkeepingBatchView", () => {
   test("renders zero, loading, read-error and permission states", async () => {
     mockFetch({ "GET /api/companies/acme-aps/fiscal-years": { fiscalYears: { slug: "acme-aps", years: [] } } }); renderView();
     expect(await screen.findByText("Ingen poster klar til bogføring")).toBeInTheDocument();
+  });
+
+  test("keeps initial loading and fiscal-year errors inside #650 evidence root", async () => {
+    globalThis.fetch = vi.fn(() => new Promise<Response>(() => {})) as unknown as typeof fetch;
+    renderView();
+    const loading = document.querySelector('[data-evidence-status="loading"]');
+    expect(loading).not.toBeNull();
+    if (!loading) throw new Error("expected #650 loading evidence status");
+    expect(loading.closest("[data-evidence-issue]")).toHaveAttribute("data-evidence-issue", "650");
+    expect(loading).toHaveAttribute("data-evidence-status", "loading");
+    cleanup();
+    mockFetch({ "GET /api/companies/acme-aps/fiscal-years": { __error: { code: "unavailable", message: "Midlertidig fejl" } } }); renderView();
+    const status = await screen.findByText("Bogføringskø kunne ikke hentes", { selector: '[data-evidence-status="error"]' });
+    expect(status.closest("[data-evidence-issue]")).toHaveAttribute("data-evidence-issue", "650");
+    expect(status).toHaveAttribute("data-evidence-status", "error");
+    cleanup();
+    mockFetch({ "GET /api/companies/acme-aps/fiscal-years": { __error: { code: "forbidden", message: "403 adgang nægtet" } } }); renderView();
+    const blocked = await screen.findByText("Bogføring kræver afklaring", { selector: '[data-evidence-status="warning-or-blocked"]' });
+    expect(blocked.closest("[data-evidence-issue]")).toHaveAttribute("data-evidence-issue", "650");
   });
 
   test("does not advance on mutation failure and surfaces the failure", async () => {

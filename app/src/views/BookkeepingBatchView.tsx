@@ -52,8 +52,11 @@ export function BookkeepingBatchView() {
   const apply = async () => { if (!run || applyDisabled) return; try { const applied = await api.bookkeepingBatchApply(slug, { runId: run.runId, planHash: run.plan.planHash }); setResult(applied); setOutcome("Bogføring gennemført"); await refresh(0); } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)); } };
   const counts = (states: WorkbenchStatus[]) => states.reduce((sum, state) => sum + (workbench?.counts[state] ?? 0), 0);
 
-  if (loading && !years) return <PageState kind="loading" title="Henter bogføringskø" />;
-  if (error && !years) return <PageState kind={/403|forbudt|adgang/i.test(error) ? "blocked" : "error"} title={/403|forbudt|adgang/i.test(error) ? "Bogføring kræver afklaring" : "Bogføringskø kunne ikke hentes"} onRetry={() => void refresh(0)}>{error}</PageState>;
+  if (loading && !years) return <section className="statement" data-cockpit-page="batch-bookkeeping" data-evidence-issue="650"><div className="page-head"><div><h2 data-evidence-heading>Bogføringsarbejdsbord</h2><p className="muted" data-evidence-status="loading">Henter bogføringskø</p></div></div><PageState kind="loading" title="Henter bogføringskø" /></section>;
+  if (error && !years) {
+    const blocked = /403|forbudt|adgang/i.test(error);
+    return <section className="statement" data-cockpit-page="batch-bookkeeping" data-evidence-issue="650"><div className="page-head"><div><h2 data-evidence-heading>Bogføringsarbejdsbord</h2><p className="muted" data-evidence-status={blocked ? "warning-or-blocked" : "error"}>{blocked ? "Bogføring kræver afklaring" : "Bogføringskø kunne ikke hentes"}</p></div></div><PageState kind={blocked ? "blocked" : "error"} title={blocked ? "Bogføring kræver afklaring" : "Bogføringskø kunne ikke hentes"} onRetry={() => void refresh(0)}>{error}</PageState></section>;
+  }
   const status = !scope ? "empty" : error ? (/403|forbudt|adgang/i.test(error) ? "warning-or-blocked" : "error") : loading && !workbench ? "loading" : workbench?.population.total === 0 ? "empty" : workbench?.population.blockers ? "warning-or-blocked" : "normal";
   return <section className="statement" data-cockpit-page="batch-bookkeeping" data-evidence-issue="650">
     <div className="page-head"><div><h2 data-evidence-heading>Bogføringsarbejdsbord</h2><p className="muted" data-evidence-status={status}>{status === "normal" ? "Bogføringskø klar" : status === "loading" ? "Henter bogføringskø" : status === "empty" ? "Ingen poster klar til bogføring" : status === "warning-or-blocked" ? "Bogføring kræver afklaring" : "Bogføringskø kunne ikke hentes"}</p><p className="muted">Bankposten er arbejdskøen. Klargør → samlet dry run/forhåndsvis → gem eksakt plan → godkend → bogfør.</p></div></div>

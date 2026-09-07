@@ -37,6 +37,19 @@ describe("ManageCompanyView", () => {
     expect(screen.getByRole("heading", { name: "Virksomhedsprofil" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Daglig opsætning" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Avanceret og sikkerhed" })).toBeInTheDocument();
+    expect(screen.getByText("Administration klar")).toHaveAttribute("data-evidence-status", "normal");
+    expect(screen.getByRole("heading", { name: "Virksomhedsprofil" }).closest("section")).toHaveAttribute("data-evidence-data");
+  });
+
+  test("truthfully reports an empty administration profile without treating the company as missing", async () => {
+    mockFetch({
+      ...companiesRoute(),
+      "GET /api/companies/acme-aps/company": { company: companySettings({ cvr: null, address: null, postalCode: null, city: null, companyForm: null }) },
+    });
+    renderAt(<ManageCompanyView />, { route: "/companies/acme-aps/manage", path: "/companies/:slug/manage" });
+    const status = await screen.findByText("Ingen administrationsoplysninger endnu");
+    expect(status).toHaveAttribute("data-evidence-status", "empty");
+    expect(screen.getByRole("heading", { name: "Virksomhedsprofil" })).toBeInTheDocument();
   });
 
   test("keeps lifecycle actions behind the advanced disclosure", async () => {

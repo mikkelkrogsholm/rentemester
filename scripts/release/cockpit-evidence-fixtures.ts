@@ -21,7 +21,7 @@ function success(issue: number, empty = false) {
     653: { rows: empty ? [] : [{ partyId: "party-evidence", name: "Syntetisk part", roles: ["vendor"], recentActivity: "2026-01-15", computedSpend: 125, partyLink: { href: "/companies/evidence-fixture/parter/party-evidence" } }] },
     654: { ok: true, balance: { slug: "evidence-fixture", selectedYear: "2026", archived: false, archivedSource: null, company, fiscalYears: years, asOfDate: "2026-12-31", assets: { lines: empty ? [] : [{ accountNo: "55000", name: "Bank", amount: 125, priorAmount: 0 }], total: empty ? 0 : 125, priorTotal: 0 }, liabilities: { lines: [], total: 0, priorTotal: 0 }, equity: { lines: empty ? [] : [{ accountNo: "51000", name: "Egenkapital", amount: 125, priorAmount: 0 }], total: empty ? 0 : 125, priorTotal: 0 }, periodResult: 0, totalAssets: empty ? 0 : 125, totalLiabilitiesAndEquity: empty ? 0 : 125, priorTotalLiabilitiesAndEquity: 0, balanced: true, coverage } },
     655: { ok: true, bank: { slug: "evidence-fixture", selectedYear: "2026", archived: false, company, fiscalYears: years, periodStart: "2026-01-01", periodEnd: "2026-12-31", accounts: [{ id: 1, name: "Syntetisk bank", bankName: "Synthetic Bank", accountNo: "5678901234", ledgerAccountNo: "55000" }], bookedBalance: 125, actualBalance: 125, difference: 0, bankStatementStatus: "known", transactions: empty ? [] : [{ id: 1, date: "2026-01-15", text: "Indbetaling faktura 1001", amount: 125, runningBalance: 125, reconciliationStatus: "matched", journalEntryNo: "B-2026-0001" }], matchedCount: empty ? 0 : 1, unmatchedCount: 0 } },
-    656: { ok: true, vat: { slug: "evidence-fixture", selectedYear: "2026", archived: false, company, fiscalYears: years, vatRegistered: true, periodStart: "2026-01-01", periodEnd: "2026-03-31", periodLabel: "Q1 2026", outputVat: 25, outputVatAdjustment: 0, inputVat: 0, payable: 25, deadline: "2026-06-01", daysRemaining: 30, periodStatus: "open", momsangivelseReady: false, vatReportErrors: empty ? [] : [], vatReportWarnings: [], rubrikker: { salgsmoms: 25, kobsmoms: 0, momsAfVarekobUdland: 0, momsAfYdelseskobUdland: 0, rubrikAVarer: 0, rubrikAYdelser: 0, rubrikBVarerEuSalesList: 0, rubrikBVarerIkkeEuSalesList: 0, rubrikBYdelser: 0, rubrikC: 0, olieOgFlaskegasafgift: 0, elafgift: 0, naturgasOgBygasafgift: 0, kulafgift: 0, co2Afgift: 0, vandafgift: 0, momsIAlt: 25, wholeKronerDifferenceDkk: 0 } } },
+    656: { ok: true, vat: { slug: "evidence-fixture", selectedYear: "2026", archived: false, company, fiscalYears: years, vatRegistered: true, periodStart: "2026-01-01", periodEnd: "2026-03-31", periodLabel: "Q1 2026", outputVat: empty ? 0 : 25, outputVatAdjustment: 0, inputVat: 0, payable: empty ? 0 : 25, deadline: "2026-06-01", daysRemaining: 30, periodStatus: "open", momsangivelseReady: false, vatReportErrors: [], vatReportWarnings: [], rubrikker: { salgsmoms: empty ? 0 : 25, kobsmoms: 0, momsAfVarekobUdland: 0, momsAfYdelseskobUdland: 0, rubrikAVarer: 0, rubrikAYdelser: 0, rubrikBVarerEuSalesList: 0, rubrikBVarerIkkeEuSalesList: 0, rubrikBYdelser: 0, rubrikC: 0, olieOgFlaskegasafgift: 0, elafgift: 0, naturgasOgBygasafgift: 0, kulafgift: 0, co2Afgift: 0, vandafgift: 0, momsIAlt: empty ? 0 : 25, wholeKronerDifferenceDkk: 0 } } },
     657: { ok: true, workspace: "/workspace", count: 1, companies: [{ slug: "evidence-fixture", name: company.name, createdAt: "2026-01-01T00:00:00.000Z", archived: false }] },
   };
   return JSON.stringify(body[issue]);
@@ -42,10 +42,18 @@ const batchWorkbench = (empty: boolean) => JSON.stringify({ ok: true, workbench:
   plan: { planHash: "synthetic-plan-hash", candidateSetHash: "synthetic-candidates", readyCount: empty ? 0 : 1 }, rows: empty ? [] : [{ bankTransactionId: 1, date: "2026-01-15", text: "Syntetisk bankpost", amount: 125, currency: "DKK", bankAccount: { id: 1, name: "Syntetisk bank" }, document: null, proposed: { account: "55000", vatTreatment: "none", dimensions: [] }, status: "ready", nextAction: "Forhåndsvis planen.", drilldown: { bankTransactionId: 1, periodClose: { from: "2026-01-01", to: "2026-12-31" } }, sourceHash: "synthetic-source-hash" }]
 } });
 const batchPlan = JSON.stringify({ ok: true, dryRun: true, plan: { planHash: "synthetic-plan-hash", candidateSetHash: "synthetic-candidates", items: [{ actionKey: "synthetic-action", partition: "2026" }] } });
+const companySettings = (empty: boolean) => JSON.stringify({ ok: true, company: {
+  id: 1, name: company.name, country: "DK", currency: "DKK", cvr: empty ? null : "DK90000000", fiscalYearStartMonth: 1, fiscalYearLabelStrategy: "end-year",
+  address: empty ? null : "Syntetisk Vej 1", postalCode: empty ? null : "1000", city: empty ? null : "København", companyForm: empty ? null : "ApS", industryCode: null, industryText: null, cvrStatus: null, auditWaived: null, cvrSyncedAt: null, vatPeriodType: "quarter", payment: null,
+} });
 
 /** The runner uses this finite list verbatim; it never installs a wildcard route. */
 export function evidenceRequests(issue: number, state: EvidenceState): EvidenceRequest[] {
   const primary: EvidenceRequest = { urlPattern: issue === 650 ? "/api/companies/evidence-fixture/fiscal-years" : ({ 649: "/api/companies/evidence-fixture/attention", 651: "/api/companies/evidence-fixture/changes-since?after=0", 652: "/api/companies/evidence-fixture/journal", 653: "/api/companies/evidence-fixture/party-hub?query=", 654: "/api/companies/evidence-fixture/balance", 655: "/api/companies/evidence-fixture/bank", 656: "/api/companies/evidence-fixture/vat", 657: "/api/companies" } as Record<number, string>)[issue]!, status: state === "warning-or-blocked" ? 403 : state === "error" ? 500 : 200, body: evidenceResponse(issue, state), ...(state === "loading" ? { delayMs: 3000 } : {}) };
+  if (issue === 657 && (state === "normal" || state === "empty")) return [
+    { ...primary, body: evidenceResponse(657, state) },
+    { urlPattern: "/api/companies/evidence-fixture/company", status: 200, body: companySettings(state === "empty") },
+  ];
   if (issue !== 650 || state === "loading" || state === "warning-or-blocked" || state === "error") return [primary];
   return [
     { ...primary, body: evidenceResponse(650, state) },
@@ -67,5 +75,17 @@ export function validateEvidenceFixtures() {
     const requests = evidenceRequests(650, state);
     if (requests.length !== 3 || requests.some((request) => request.urlPattern.includes("*")))
       throw new Error("#650 must declare its three exact owned requests");
+  }
+  const emptyVat = JSON.parse(evidenceResponse(656, "empty")).vat;
+  if (emptyVat.outputVat !== 0 || emptyVat.payable !== 0 || emptyVat.rubrikker.momsIAlt !== 0)
+    throw new Error("#656 empty fixture must contain zero VAT totals");
+  for (const state of ["normal", "empty"] as const) {
+    const requests = evidenceRequests(657, state);
+    if (requests.length !== 2 || requests.some((request) => request.urlPattern.includes("*")))
+      throw new Error("#657 must declare its exact companies and settings requests");
+    const companies = JSON.parse(requests[0].body);
+    const settings = JSON.parse(requests[1].body);
+    if (companies.ok !== true || !Array.isArray(companies.companies) || companies.companies[0]?.slug !== "evidence-fixture" || settings.ok !== true || !settings.company)
+      throw new Error("#657 fixtures must match companies and settings response contracts");
   }
 }

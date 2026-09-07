@@ -61,6 +61,10 @@ export function ManageCompanyView() {
   );
 }
 
+function hasIncompleteAdministrativeProfile(settings: CompanySettings) {
+  return !settings.cvr;
+}
+
 function ManageForm({
   company,
   settings,
@@ -136,7 +140,7 @@ function ManageForm({
       <div className="page-head">
         <div>
           <h2 data-evidence-heading>Administration</h2>
-          <p className="muted" data-evidence-status="normal">Administration klar</p>
+          <p className="muted" data-evidence-status={hasIncompleteAdministrativeProfile(settings) ? "empty" : "normal"}>{hasIncompleteAdministrativeProfile(settings) ? "Ingen administrationsoplysninger endnu" : "Administration klar"}</p>
           <p className="muted">
             Hold virksomhedens profil og den daglige opsætning på plads.
           </p>
@@ -149,7 +153,7 @@ function ManageForm({
       {error && <Banner kind="error">{error}</Banner>}
       {notice && <Banner kind="success">{notice}</Banner>}
 
-      <section aria-labelledby="virksomhedsprofil-heading">
+      <section aria-labelledby="virksomhedsprofil-heading" data-evidence-data={!hasIncompleteAdministrativeProfile(settings) ? true : undefined}>
       <h3 id="virksomhedsprofil-heading">Virksomhedsprofil</h3>
       <p className="muted">Redigér navn, stamdata og betalingsoplysninger. Regnskabsdata påvirkes ikke.</p>
       <form className="form" onSubmit={rename} aria-label="Omdøb virksomhed">

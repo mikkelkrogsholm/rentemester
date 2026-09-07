@@ -12,6 +12,8 @@ import {
 import { createCompany } from "../../src/core/company";
 import { initWorkspace } from "../../src/core/workspace";
 import { handleRequest } from "../../src/server/router";
+import { evidenceRequests, evidenceResponse } from "../../scripts/release/cockpit-evidence-fixtures";
+import { browserUrlMatchesExpected } from "../../scripts/release/cockpit-evidence-url";
 
 const scenarios = parseScenarios(
   join(
@@ -91,6 +93,28 @@ test("requires every state and responsive normal mode for every #649-#657 featur
   const zoom = scenarios.find((s) => s.issue === 649 && s.mode === "zoom");
   expect(zoom?.viewport).toEqual({ width: 720, height: 450, deviceScaleFactor: 2 });
   expect(zoom?.capture).toEqual({ width: 1440, height: 900 });
+});
+test("keeps #656 empty VAT data at zero and #657 fixtures as exact usable API contracts", () => {
+  const emptyVat = JSON.parse(evidenceResponse(656, "empty")).vat;
+  expect(emptyVat.outputVat).toBe(0);
+  expect(emptyVat.payable).toBe(0);
+  expect(emptyVat.rubrikker.momsIAlt).toBe(0);
+  expect(JSON.parse(evidenceResponse(656, "normal")).vat.payable).toBeGreaterThan(0);
+
+  for (const state of ["normal", "empty"] as const) {
+    const requests = evidenceRequests(657, state);
+    expect(requests.map((request) => request.urlPattern)).toEqual([
+      "/api/companies",
+      "/api/companies/evidence-fixture/company",
+    ]);
+    expect(JSON.parse(requests[0]!.body)).toMatchObject({ ok: true, count: 1, companies: [{ slug: "evidence-fixture" }] });
+    expect(JSON.parse(requests[1]!.body)).toMatchObject({ ok: true, company: { name: "Synthetic Evidence Fixture" } });
+  }
+});
+test("compares URL outcomes with a query exactly and retains pathname-only outcomes", () => {
+  expect(browserUrlMatchesExpected(new URL("http://test/companies/a/posteringer?year=2026&account=55000"), "/companies/a/posteringer?year=2026&account=55000")).toBe(true);
+  expect(browserUrlMatchesExpected(new URL("http://test/companies/a/posteringer?year=2026"), "/companies/a/posteringer?year=2026&account=55000")).toBe(false);
+  expect(browserUrlMatchesExpected(new URL("http://test/companies/a/batchbogfoering?runId=1"), "/companies/a/batchbogfoering")).toBe(true);
 });
 test("rejects a manifest missing one issue-local state or responsive mode", () => {
   const value = fixture();
