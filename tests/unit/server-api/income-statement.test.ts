@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { config, get, makeWorkspace, postPnlEntry, rmSync } from "./_shared";
+import { config, get, makeWorkspace, postPnlEntry, rmSync, seedArchiveYear } from "./_shared";
 
 describe("cockpit API — income statement (GET .../income-statement)", () => {
   test("returns grouped income/expense lines and the result for the year", async () => {
@@ -18,8 +18,9 @@ describe("cockpit API — income statement (GET .../income-statement)", () => {
       expect(is.totalIncome).toBe(1000);
       expect(is.totalExpense).toBe(400);
       expect(is.result).toBe(600);
-      expect(is.income[0]).toMatchObject({ amount: 1000, priorAmount: 0 });
-      expect(is.expense[0]).toMatchObject({ amount: 400, priorAmount: 0 });
+      expect(is.income[0]).toMatchObject({ amount: 1000, priorAmount: null });
+      expect(is.expense[0]).toMatchObject({ amount: 400, priorAmount: null });
+      expect(is.coverage).toMatchObject({ label: "Aktuel bogføring", asOfDate: "2026-03-15", comparison: "not_comparable" });
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -41,6 +42,18 @@ describe("cockpit API — income statement (GET .../income-statement)", () => {
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
+  });
+
+  test("a genuine zero remains comparable when the prior year has coverage", async () => {
+    const ws = makeWorkspace("is-prior-zero", ["Acme ApS"]);
+    try {
+      // An archived source covers the prior year but legitimately has no income.
+      seedArchiveYear(ws, "acme-aps", 2025, [["3000", "Udgift", 50]]);
+      postPnlEntry(ws, "acme-aps", "2026-04-01", 1000, 0);
+      const res = await get(config({ workspaceRoot: ws }), "/api/companies/acme-aps/income-statement?year=2026");
+      expect(res.body.incomeStatement.priorTotalIncome).toBe(0);
+      expect(res.body.incomeStatement.coverage.comparison).toBe("available");
+    } finally { rmSync(ws, { recursive: true, force: true }); }
   });
 
   test("income-statement for an unknown slug is a safe 404", async () => {

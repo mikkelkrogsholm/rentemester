@@ -18,6 +18,7 @@ import { useAsync } from "../lib/useAsync";
 import type { BalanceLine, CompanyBalance } from "../lib/types";
 import { ErrorState, Loading } from "../components/Feedback";
 import { ArchivedBanner } from "../components/ArchivedBanner";
+import { StatusChip } from "../components/CockpitPrimitives";
 import {
   CompanyNav,
   accountPostingsTo,
@@ -88,7 +89,8 @@ export function BalanceView() {
       {b.archived && (
         <ArchivedBanner year={b.selectedYear} source={b.archivedSource} />
       )}
-      <p className="statement-asof muted">Pr. {b.asOfDate}</p>
+      <p className="statement-asof muted"><StatusChip coverage={b.coverage} /> · Pr. {b.asOfDate}</p>
+      {b.coverage.comparison === "not_comparable" && <p className="muted">Ingen kilde for foregående år — ikke sammenlignelig.</p>}
       <div className="card statement-card">
         <table className="data statement-table">
           <thead>

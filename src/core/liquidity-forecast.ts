@@ -87,6 +87,10 @@ export type LiquidityForecastResult = {
   months?: number;
   /** The booked bank balance the day before startDate. */
   openingBalance: number;
+  /** False means no canonical bank/cash account exists; zero is not cash evidence. */
+  openingBalanceVerified: boolean;
+  /** Canonical scope exclusions that a UI must disclose. */
+  exclusions: string[];
   /** Projected balance at the end of the final period. */
   closingBalance: number;
   periods: LiquidityForecastPeriod[];
@@ -286,6 +290,8 @@ export function buildLiquidityForecast(
       ok: false,
       appliedRules: [LIQUIDITY_FORECAST_REPORT_ID],
       openingBalance: 0,
+      openingBalanceVerified: false,
+      exclusions: ["Ingen verificeret startsaldo ved ugyldig forecast-forespørgsel."],
       closingBalance: 0,
       periods: [],
       errors,
@@ -301,6 +307,8 @@ export function buildLiquidityForecast(
       ok: false,
       appliedRules: [LIQUIDITY_FORECAST_REPORT_ID],
       openingBalance: 0,
+      openingBalanceVerified: false,
+      exclusions: ["Ingen verificeret startsaldo ved ugyldig forecast-forespørgsel."],
       closingBalance: 0,
       periods: [],
       errors: ["startDate does not resolve to a valid calendar month"],
@@ -321,6 +329,7 @@ export function buildLiquidityForecast(
   // Opening balance: the booked bank balance the day before the window opens,
   // so a posting dated on the window start counts as a forecast-period event,
   // not as part of the baseline.
+  const openingBalanceVerified = bankAccountNumbers(db).length > 0;
   const openingBalanceOre = toOre(bookedBankBalance(db, addDays(windowStart, -1)));
 
   const invoiceInflow = invoiceInflowByPeriod(db, windowStart, windowEnd);
@@ -354,6 +363,8 @@ export function buildLiquidityForecast(
     startDate,
     months,
     openingBalance: fromOre(openingBalanceOre),
+    openingBalanceVerified,
+    exclusions: ["Ubudgetterede/ad hoc-udgifter", "momsafregningstidspunkt", "løn", "sandsynlighedsvægtning af forfaldne fakturaer"],
     closingBalance: fromOre(runningOre),
     periods: out,
     errors: [],
@@ -423,7 +434,7 @@ export type WeeklyLiquidityPeriod = {
   scenarioClosingCash:number;
   sources:Array<{source:string;amount:number;reference:string;assumption?:boolean;settlementStatus?:"unknown"}>;
 };
-export type WeeklyLiquidityResult = { ok:boolean; startDate?:string; openingCash:number; lowestPoint:number; completeness:{included:string[];excluded:string[]}; periods:WeeklyLiquidityPeriod[]; errors:string[]; appliedRules:string[] };
+export type WeeklyLiquidityResult = { ok:boolean; startDate?:string; openingCash:number; openingBalanceVerified:boolean; lowestPoint:number; completeness:{included:string[];excluded:string[]}; periods:WeeklyLiquidityPeriod[]; errors:string[]; appliedRules:string[] };
 
 function companyVatPeriodType(db: Database): VatPeriodType | null {
   const columns = db.query("PRAGMA table_info(companies)").all() as Array<{ name: string }>;
@@ -506,8 +517,8 @@ function budgetAssumptionsForWindow(
 
 export function buildThirteenWeekLiquidityForecast(db:Database,input:ThirteenWeekLiquidityInput):WeeklyLiquidityResult {
   const weeks=input.weeks??13;
-  if(!isValidIsoDate(input.startDate)||!Number.isInteger(weeks)||weeks<1||weeks>13)return {ok:false,openingCash:0,lowestPoint:0,periods:[],errors:["startDate and weeks (1-13) are required"],appliedRules:["liquidity-forecast-13-week-v1"],completeness:{included:[],excluded:[]}};
-  const start=input.startDate, end=addDays(start,weeks*7-1), openingOre=toOre(bookedBankBalance(db,addDays(start,-1)));
+  if(!isValidIsoDate(input.startDate)||!Number.isInteger(weeks)||weeks<1||weeks>13)return {ok:false,openingCash:0,openingBalanceVerified:false,lowestPoint:0,periods:[],errors:["startDate and weeks (1-13) are required"],appliedRules:["liquidity-forecast-13-week-v1"],completeness:{included:[],excluded:[]}};
+  const start=input.startDate, end=addDays(start,weeks*7-1), openingBalanceVerified=bankAccountNumbers(db).length>0, openingOre=toOre(bookedBankBalance(db,addDays(start,-1)));
   const rows:WeeklyLiquidityPeriod[]=[];let baseCashOre=openingOre, scenarioCashOre=openingOre, lowestOre=openingOre;
   const occurrences=plannedCommitmentOccurrences(db,start,weeks);
   const invoices=buildInvoiceList(db,{status:"all",asOfDate:start}).rows.filter((r):r is typeof r & {effectiveDueDate:string}=>r.openBalance>0&&typeof r.effectiveDueDate==="string"&&r.effectiveDueDate>=start&&r.effectiveDueDate<=addDays(start,weeks*7-1));
@@ -563,5 +574,5 @@ export function buildThirteenWeekLiquidityForecast(db:Database,input:ThirteenWee
     lowestOre=baseCashOre<lowestOre?baseCashOre:lowestOre;
     rows.push({weekStart,openingCash:fromOre(openingCashOre),receivables:fromOre(invOre),payables:fromOre(payableOre),commitments:fromOre(commitmentOre),budgets:fromOre(budgetOre),undatedBudgetAssumptions:fromOre(undatedBudgetOre),scenarios:fromOre(scenarioOre),obligations:fromOre(obligationOre),intercompany:fromOre(intercompanyOre),excluded,closingCash:fromOre(baseCashOre),scenarioClosingCash:fromOre(scenarioCashOre),sources});
   }
-  return {ok:true,startDate:start,openingCash:fromOre(openingOre),lowestPoint:fromOre(lowestOre),periods:rows,errors:[],appliedRules:["liquidity-forecast-13-week-v3"],completeness:{included:["observed opening cash","issued receivables","registered payables","approved DKK commitments","filing-safe closed/reported VAT obligations (settlement status unknown)","dated reviewed DKK supplements scoped by workspace company identity"],excluded:["monthly account budgets without a documented cash date (informational scenario upper-bound only)","open VAT periods (estimated scenario assumption, not legal obligation)","foreign-currency commitments or supplements without explicit dated FX","unregistered obligations","unreviewed, malformed, or wrong-company supplements"]}};
+  return {ok:true,startDate:start,openingCash:fromOre(openingOre),openingBalanceVerified,lowestPoint:fromOre(lowestOre),periods:rows,errors:[],appliedRules:["liquidity-forecast-13-week-v3"],completeness:{included:["observed opening cash","issued receivables","registered payables","approved DKK commitments","filing-safe closed/reported VAT obligations (settlement status unknown)","dated reviewed DKK supplements scoped by workspace company identity"],excluded:["monthly account budgets without a documented cash date (informational scenario upper-bound only)","open VAT periods (estimated scenario assumption, not legal obligation)","foreign-currency commitments or supplements without explicit dated FX","unregistered obligations","unreviewed, malformed, or wrong-company supplements"]}};
 }

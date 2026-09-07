@@ -12,6 +12,7 @@ import { useAsync } from "../lib/useAsync";
 import type { CompanyIncomeStatement, IncomeStatementLine } from "../lib/types";
 import { ErrorState, Loading } from "../components/Feedback";
 import { ArchivedBanner } from "../components/ArchivedBanner";
+import { StatusChip } from "../components/CockpitPrimitives";
 import {
   CompanyNav,
   accountPostingsTo,
@@ -79,6 +80,8 @@ export function IncomeStatementView() {
       {s.archived && (
         <ArchivedBanner year={s.selectedYear} source={s.archivedSource} />
       )}
+      <p className="statement-asof muted"><StatusChip coverage={s.coverage} />{s.coverage.asOfDate ? ` · Pr. ${s.coverage.asOfDate}` : ""}</p>
+      {s.coverage.comparison === "not_comparable" && <p className="muted">Ingen kilde for foregående år — ikke sammenlignelig.</p>}
       <div className="card statement-card">
         <table className="data statement-table">
           <thead>
@@ -114,7 +117,7 @@ export function IncomeStatementView() {
               <td colSpan={2}>Årets resultat</td>
               <td className="num">{formatKroner(s.result, currency)}</td>
               <td className="num">
-                {formatKroner(s.priorResult, currency)}
+                {s.priorResult === null ? "—" : formatKroner(s.priorResult, currency)}
               </td>
             </tr>
           </tbody>
@@ -137,7 +140,7 @@ function StatementSection({
   heading: string;
   lines: IncomeStatementLine[];
   total: number;
-  priorTotal: number;
+  priorTotal: number | null;
   totalLabel: string;
   currency: string;
   slug: string;
@@ -168,7 +171,7 @@ function StatementSection({
             <td>{line.name}</td>
             <td className="num">{formatKroner(line.amount, currency)}</td>
             <td className="num muted">
-              {formatKroner(line.priorAmount, currency)}
+              {line.priorAmount === null ? "—" : formatKroner(line.priorAmount, currency)}
             </td>
           </tr>
         ))
@@ -176,7 +179,7 @@ function StatementSection({
       <tr className="statement-subtotal">
         <td colSpan={2}>{totalLabel}</td>
         <td className="num">{formatKroner(total, currency)}</td>
-        <td className="num muted">{formatKroner(priorTotal, currency)}</td>
+        <td className="num muted">{priorTotal === null ? "—" : formatKroner(priorTotal, currency)}</td>
       </tr>
     </tbody>
   );

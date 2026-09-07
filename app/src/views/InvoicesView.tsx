@@ -36,6 +36,7 @@ import { ErrorState, Loading } from "../components/Feedback";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { InvoiceIssueModal } from "../components/InvoiceIssueModal";
+import { StatusChip } from "../components/CockpitPrimitives";
 
 // #UI-16 — the statutory late-payment reminder fee (rentel. § 9b), in kroner.
 // One named constant, rendered through `formatKroner`, so the two places that
@@ -130,6 +131,7 @@ export function InvoicesView() {
         selectedYear={inv.selectedYear}
         onYearChange={setYear}
       />
+      <p className="statement-asof muted"><StatusChip coverage={inv.coverage} />{inv.coverage.asOfDate ? ` · Pr. ${inv.coverage.asOfDate}` : ""}</p>
 
       <section className="card statement-card" aria-label="Importerede tilgodehavender">
         <div className="row-between">

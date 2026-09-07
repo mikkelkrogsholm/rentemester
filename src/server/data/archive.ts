@@ -31,7 +31,7 @@ export type IncomeStatementLine = {
   name: string;
   amount: number;
   /** The same account's amount in the prior calendar year, kroner. */
-  priorAmount: number;
+  priorAmount: number | null;
 };
 
 /** The `import_archive_years` header row for a fiscal year, or null. */

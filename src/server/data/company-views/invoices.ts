@@ -20,6 +20,7 @@ import {
   roundKroner,
   statementCompanyBlock,
 } from "../shared";
+import { dataCoverage } from "../../../data-coverage";
 
 // --------------------------------------------------------------------------
 // Per-company issued invoices (Fakturaer, year-aware) — cockpit-redesign it. 5
@@ -193,6 +194,7 @@ export function buildCompanyInvoices(
         totalGross: 0,
         totalOpen: 0,
         overdueCount: 0,
+        coverage: dataCoverage("final", `${ctx.selectedLabel}-12-31`, "not_comparable", "archived", ["Arkiveret periode har ingen native udstedte fakturaer."]),
       };
     }
 
@@ -323,6 +325,7 @@ export function buildCompanyInvoices(
       totalGross,
       totalOpen,
       overdueCount,
+      coverage: dataCoverage("current", list.asOfDate ?? null, "available", "native", ["Native, udstedte Rentemester-fakturaer."]),
     };
   } finally {
     ctx.db.close();

@@ -3,7 +3,7 @@
 //
 // All money fields below are kroner (DKK with decimals) — use `formatKroner`.
 
-import type { FiscalYearEntry, StatementCompany } from "./common";
+import type { DataCoverage, FiscalYearEntry, StatementCompany } from "./common";
 
 // --- income statement (GET .../income-statement?year=) --------------------
 
@@ -12,7 +12,7 @@ export type IncomeStatementLine = {
   name: string;
   amount: number;
   /** The same account's amount in the prior calendar year, kroner. */
-  priorAmount: number;
+  priorAmount: number | null;
 };
 
 export type CompanyIncomeStatement = {
@@ -28,10 +28,11 @@ export type CompanyIncomeStatement = {
   expense: IncomeStatementLine[];
   totalIncome: number;
   totalExpense: number;
-  priorTotalIncome: number;
-  priorTotalExpense: number;
+  priorTotalIncome: number | null;
+  priorTotalExpense: number | null;
   result: number;
-  priorResult: number;
+  priorResult: number | null;
+  coverage: DataCoverage;
 };
 
 export type IncomeStatementResponse = {
@@ -89,6 +90,7 @@ export type CompanyBalance = {
    */
   priorTotalLiabilitiesAndEquity: number | null;
   balanced: boolean;
+  coverage: DataCoverage;
 };
 
 export type BalanceResponse = {

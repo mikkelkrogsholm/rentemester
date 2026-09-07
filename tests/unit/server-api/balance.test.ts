@@ -13,7 +13,8 @@ describe("cockpit API — balance sheet (GET .../balance)", () => {
       expect(res.status).toBe(200);
       const b = res.body.balance;
       expect(b.slug).toBe("acme-aps");
-      expect(b.asOfDate).toBe("2026-12-31");
+      expect(b.asOfDate).toBe("2026-03-15");
+      expect(b.coverage).toMatchObject({ label: "Aktuel bogføring", asOfDate: "2026-03-15", provenance: "native" });
       expect(b.balanced).toBe(true);
       expect(b.totalAssets).toBe(b.totalLiabilitiesAndEquity);
       expect(b.assets).toHaveProperty("lines");
@@ -92,6 +93,7 @@ describe("cockpit API — balance sheet (GET .../balance)", () => {
       for (const l of b.equity.lines) expect(l.priorAmount).toBeNull();
       // The balanced-flag only covers the current year — see acceptkriterier.
       expect(b.balanced).toBe(true);
+      expect(b.coverage.comparison).toBe("not_comparable");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }

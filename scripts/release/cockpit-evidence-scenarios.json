@@ -67,10 +67,10 @@
       "endpoint": "/api/companies/evidence-fixture/balance",
       "heading": "Balance",
       "coreAction": "Åbn balancepost",
-      "data": "Balancerapport",
+      "data": "Aktuel bogføring",
       "progressive": "Se rapportgrundlag",
       "taskOutcome": "Balancepost åbnet",
-      "states": { "normal": "Balance klar", "loading": "Henter balance", "empty": "Ingen balanceposter i perioden", "warning-or-blocked": "Balance kræver afstemning", "error": "Balance kunne ikke hentes" }
+      "states": { "normal": "Aktuel bogføring", "loading": "Henter balance", "empty": "Ingen balanceposter i perioden", "warning-or-blocked": "Ufuldstændigt grundlag", "error": "Balance kunne ikke hentes" }
     },
     {
       "issue": 655,

@@ -1,4 +1,5 @@
 import { cloneElement, type ReactElement, type ReactNode } from "react";
+import type { DataCoverage } from "../lib/types";
 
 type Tone = "neutral" | "success" | "warning" | "danger" | "info";
 
@@ -48,8 +49,8 @@ export function FilterBar({
   </section>;
 }
 
-export function StatusChip({ tone = "neutral", children }: { tone?: Tone; children: ReactNode }) {
-  return <span className={`status-chip status-chip--${tone}`}>{children}</span>;
+export function StatusChip({ tone = "neutral", children, coverage }: { tone?: Tone; children?: ReactNode; coverage?: DataCoverage }) {
+  return <span className={`status-chip status-chip--${tone}`} data-coverage={coverage?.kind}>{coverage ? coverage.label : children}</span>;
 }
 
 export function PageState({

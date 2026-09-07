@@ -28,6 +28,7 @@ export function incomeStatement(
     priorTotalExpense: 0,
     result: 13234.82,
     priorResult: 0,
+    coverage: { kind: "current", label: "Aktuel bogføring", asOfDate: "2026-06-30", comparison: "available", provenance: "native", details: [] },
     ...over,
   };
 }
@@ -90,6 +91,7 @@ export function balance(over: Partial<CompanyBalance> = {}): CompanyBalance {
     totalLiabilitiesAndEquity: 41388.03,
     priorTotalLiabilitiesAndEquity: 32000,
     balanced: true,
+    coverage: { kind: "current", label: "Aktuel bogføring", asOfDate: "2026-06-30", comparison: "available", provenance: "native", details: [] },
     ...over,
   };
 }

@@ -70,5 +70,14 @@ export type StatementCompany = {
   fiscalYearLabelStrategy: string;
 };
 
+export type DataCoverage = {
+  kind: "current" | "historical" | "scenario" | "incomplete" | "final";
+  label: "Aktuel bogføring" | "Historisk kilde" | "Scenarie" | "Ufuldstændigt grundlag" | "Endelig/låst";
+  asOfDate: string | null;
+  comparison: "available" | "not_comparable";
+  provenance: "native" | "imported" | "archived" | "scenario";
+  details: string[];
+};
+
 /** The three VAT settlement cadences a Danish company can be registered for. */
 export type VatPeriodType = "month" | "quarter" | "half-year";

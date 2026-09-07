@@ -2,7 +2,7 @@
 //
 // All money fields below are kroner (DKK with decimals) — use `formatKroner`.
 
-import type { FiscalYearEntry, StatementCompany } from "./common";
+import type { DataCoverage, FiscalYearEntry, StatementCompany } from "./common";
 
 // --- invoices / Fakturaer (GET .../invoices?year=) — cockpit-redesign it. 5 --
 
@@ -93,6 +93,7 @@ export type CompanyInvoices = {
   totalGross: number;
   totalOpen: number;
   overdueCount: number;
+  coverage: DataCoverage;
 };
 
 export type InvoicesResponse = {
