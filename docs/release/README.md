@@ -61,6 +61,31 @@ at publicere netop dette image med attestering og evidens. Workflowet må derfor
 ikke få `bun test`, `cockpit:test` eller den fulde kilde-smoke tilbage som en
 skjult dobbeltkørsel.
 
+### Cockpit acceptance evidence
+
+Kandidatworkflowet starter også det publicerede image med en helt ny, syntetisk
+workspace og afvikler `scripts/release/cockpit-evidence-scenarios.json` i system-
+Chrome. Runneren accepterer kun `ghcr.io/...@sha256:...`, aldrig et tag, og
+containeren får en tom tmpfs-workspace; den læser derfor ikke drifts- eller
+virksomhedsdata. Scenarierne er den fælles evidenskontrakt for #649–#657 og
+dækker desktop, 390 px, 200 % zoom, loading, empty, warning/blokeret, fejl og
+tastatur. Request-interception er begrænset til de deklarerede deterministiske
+loading-, 403- og fejlpræsentationer.
+
+Artefaktet `release-candidate-evidence` indeholder PNG'erne og
+`cockpit-evidence.json`. Manifestet binder commit, immutable image-digest,
+route, viewport, zoom, tastaturresultater, interception og SHA-256 for hver
+screenshot sammen. Kontrollér det lokalt med:
+
+```sh
+bun run cockpit:evidence:verify cockpit-evidence/cockpit-evidence.json
+```
+
+Verifikationen fejler med en konkret fejl ved mutable image-reference, manglende
+screenshot, forkert hash eller et manglende obligatorisk scenario. Kandidaten
+stopper også, hvis et åbent `regression`-issue samtidig har label
+`severity:critical` eller `severity:high`.
+
 Manifestet binder version, commit, OCI-digest, schema-checksum og regelsæt-digest
 sammen med GitHub run-id og run-attempt. Digisense skal hente
 kandidat-artefaktet fra workflow-runnet og teste imaget ved

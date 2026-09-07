@@ -14,6 +14,7 @@ on:
 
 permissions:
   contents: read
+  issues: read
   packages: write
   id-token: write
   attestations: write
@@ -215,45 +216,16 @@ jobs:
                 trap "kill $server_pid 2>/dev/null || true" EXIT
                 bun -e '\''const base="http://127.0.0.1:4319/"; let health; for(let i=0;i<100;i++){try{const response=await fetch(new URL("api/health",base)); if(response.ok){health=await response.json(); break}}catch{} await Bun.sleep(100)} if(!health) throw new Error("server did not become healthy"); if(health.build.version!==process.env.EXPECTED_VERSION||health.build.gitCommit!==process.env.EXPECTED_COMMIT||health.build.bunVersion!==process.env.EXPECTED_BUN_VERSION||health.build.baseImageDigest!==process.env.EXPECTED_BASE_IMAGE_DIGEST) throw new Error("wrong build identity"); const html=await fetch(base).then(r=>{if(!r.ok) throw new Error(`cockpit index ${r.status}`); return r.text()}); const asset=/src="([^"]+\.js)"/.exec(html)?.[1]; if(!asset) throw new Error("cockpit asset missing"); const js=await fetch(new URL(asset,base)).then(r=>{if(!r.ok) throw new Error(`cockpit asset ${r.status}`); return r.text()}); if(!js.includes(process.env.EXPECTED_VERSION)) throw new Error("cockpit version missing")'\'''
 
-      - name: Render the published local-container cockpit
+      - name: Generate digest-bound Cockpit acceptance evidence
         env:
-          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+          COCKPIT_EVIDENCE_IMAGE: ${{ env.REGISTRY_IMAGE }}@${{ steps.image.outputs.digest }}
+          COCKPIT_EVIDENCE_COMMIT: ${{ steps.identity.outputs.commit }}
+          COCKPIT_EVIDENCE_OUT: cockpit-evidence
         run: |
           set -euo pipefail
-          image="$REGISTRY_IMAGE@$IMAGE_DIGEST"
-          container="rentemester-candidate-ui-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          cleanup() { docker rm --force "$container" >/dev/null 2>&1 || true; }
-          trap cleanup EXIT
-          docker run --detach --name "$container" --read-only \
-            --publish 127.0.0.1::4319 \
-            --tmpfs /tmp:rw,noexec,nosuid,size=64m \
-            --tmpfs /workspace:rw,nosuid,size=64m,uid=1000,gid=1000 \
-            --tmpfs /import:rw,nosuid,size=64m,uid=1000,gid=1000 \
-            --env RENTEMESTER_DEPLOYMENT_PROFILE=local-container \
-            --env RENTEMESTER_APP_AUTH=off \
-            "$image"
-          address="$(docker port "$container" 4319/tcp)"
-          [[ "$address" =~ ^127\.0\.0\.1:[0-9]+$ ]]
-          base_url="http://$address"
-          BASE_URL="$base_url" bun -e 'for(let i=0;i<100;i++){try{const r=await fetch(`${process.env.BASE_URL}/api/ready`); if(r.ok) process.exit(0)}catch{} await Bun.sleep(100)} process.exit(1)'
-          docker exec "$container" bun run src/cli.ts company add \
-            --workspace /workspace --name "Release Check" --slug release-check \
-            --cvr 12345678 \
-            --bank-name Testbank --bank-reg 1234 --bank-account 5678901234
-          chrome="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
-          test -n "$chrome"
-          for route in \
-            "/companies/release-check?year=2026" \
-            "/companies/release-check/manage?source=release-candidate"; do
-            rendered="cockpit-rendered-$(echo "$route" | tr '/?=&' '-')".html
-            "$chrome" --headless --no-sandbox --disable-gpu --virtual-time-budget=5000 --dump-dom "$base_url$route" > "$rendered"
-            grep -F '<div id="root"><div class="app-shell"' "$rendered"
-            grep -F 'Release Check' "$rendered"
-            if grep -Fq 'Kunne ikke bekræfte Rentemesters sikkerhedsprofil' "$rendered"; then
-              echo "local-container cockpit was rejected by the UI security-profile gate" >&2
-              exit 1
-            fi
-          done
+          bun run scripts/release/run-cockpit-evidence.ts
+          gh issue list --repo "$GITHUB_REPOSITORY" --state open --label regression --limit 100 --json number,title,labels > cockpit-open-regressions.json
+          bun run scripts/release/verify-cockpit-evidence.ts cockpit-evidence/cockpit-evidence.json cockpit-open-regressions.json
 
       - name: Extract digest-bound SPDX SBOM evidence
         id: sbom
@@ -334,6 +306,8 @@ jobs:
             supply-chain-evidence.json.sha256
             agent-discovery-coverage-report.json
             agent-discovery-coverage-report.json.sha256
+            cockpit-evidence/cockpit-evidence.json
+            cockpit-evidence/*.png
             docs/release/digisense-approval.schema.json
           if-no-files-found: error
           retention-days: 90

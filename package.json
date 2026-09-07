@@ -37,7 +37,9 @@
     "container:reproducibility": "bun run scripts/release/verify-container-reproducibility.ts",
     "supply-chain:audit": "bun audit --audit-level=low",
     "supply-chain:licenses": "bun run scripts/release/check-production-licenses.ts",
-    "supply-chain:evidence": "bun run scripts/release/create-supply-chain-evidence.ts"
+    "supply-chain:evidence": "bun run scripts/release/create-supply-chain-evidence.ts",
+    "cockpit:evidence": "bun run scripts/release/run-cockpit-evidence.ts",
+    "cockpit:evidence:verify": "bun run scripts/release/verify-cockpit-evidence.ts"
   },
   "dependencies": {
     "@better-auth/api-key": "1.7.1",
