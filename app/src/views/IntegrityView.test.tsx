@@ -98,7 +98,7 @@ describe("IntegrityView (#333)", () => {
 
   test("viser backup-tabel med seneste backup og antal", async () => {
     renderView(sample());
-    expect(await screen.findByText(/Backup-status/)).toBeInTheDocument();
+    expect(await screen.findByText(/^Backup$/)).toBeInTheDocument();
     expect(
       screen.getByText(/2026-05-20T10:00:00Z/),
     ).toBeInTheDocument();
@@ -113,7 +113,7 @@ describe("IntegrityView (#333)", () => {
   test("destinations-tabel viser EU/EØS-flag og senest brugt", async () => {
     renderView(sample());
     expect(
-      await screen.findByText(/Backup-destinationer \(1\)/),
+      await screen.findByText(/Se tekniske destinationer \(1\)/),
     ).toBeInTheDocument();
     const row = (
       await screen.findByRole("cell", { name: "EU Cloud Storage" })

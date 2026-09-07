@@ -56,6 +56,11 @@ export function BilagsmailView() {
         </div>
       )}
 
+      <section className="card">
+        <h3>Modtag bilag ét sted</h3>
+        <p>Vælg en bilagsmail, så modtagne bilag kan samles til gennemgang.</p>
+      </section>
+
       <AliasPanel
         slug={slug}
         initial={data.mailAlias}
@@ -63,15 +68,15 @@ export function BilagsmailView() {
         onError={setError}
       />
 
-      <ImapConfigPanel
-        slug={slug}
-        configured={data.imapConfigured}
-        status={data.imapStatus}
-        onDone={doneRefresh}
-        onError={setError}
-      />
+      <details className="card">
+        <summary>Avanceret: mailforbindelse</summary>
+        <ImapConfigPanel slug={slug} configured={data.imapConfigured} status={data.imapStatus} onDone={doneRefresh} onError={setError} />
+      </details>
 
-      <InboxPanel inbox={data.inbox} currency={currency} />
+      <details className="card">
+        <summary>Avanceret: modtagne bilag</summary>
+        <InboxPanel inbox={data.inbox} currency={currency} />
+      </details>
     </section>
   );
 }
@@ -107,9 +112,7 @@ function AliasPanel({
     <section className="card">
       <h3>Mail-alias</h3>
       <p className="muted">
-        Virksomhedens unikke localpart i bilagsmail-adressen
-        (<code>&lt;alias&gt;@bilag.din-host.tld</code>). 3-64 tegn, små bogstaver,
-        cifre, punkt, underscore, bindestreg. Tom = ryd alias'et.
+        Vælg et kort navn til virksomhedens bilagsmail. Det kan ændres senere.
       </p>
       <form onSubmit={save} className="filter-bar">
         <label>
@@ -192,12 +195,10 @@ function ImapConfigPanel({
 
   return (
     <section className="card">
-      <h3>IMAP-konfiguration</h3>
+      <h3>Forbind til mailkonto</h3>
       <p className="muted">
-        Gemmes på disk i <code>config/imap.json</code> (mode 0600) — ALDRIG i
-        bogføringsdatabasen. Passwordet vises aldrig efter du har gemt; lad
-        det stå tomt for at beholde det eksisterende, men du skal indtaste
-        det igen for at ændre noget.
+        Tilslut kun denne forbindelse, hvis bilag skal hentes automatisk fra
+        en eksisterende mailkonto. Passwordet vises aldrig efter gemning.
       </p>
       <p className="muted">
         Status:{" "}
@@ -304,9 +305,7 @@ function InboxPanel({
     <section className="card">
       <h3>Inbox ({inbox.length})</h3>
       <p className="muted">
-        Senest indlæste mail-drop-dokumenter. Når IMAP-polling kører via
-        serve-daemonen (<code>--imap-poll-interval-sec</code>), dukker
-        nye bilag op her.
+        Senest modtagne bilag fra mailforbindelsen.
       </p>
       {inbox.length === 0 ? (
         <p className="muted">Ingen mail-drop-bilag indlæst endnu.</p>

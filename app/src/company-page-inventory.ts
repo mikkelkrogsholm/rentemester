@@ -17,10 +17,10 @@ export type CockpitPageFamily = {
 export const COCKPIT_PAGE_FAMILIES: readonly CockpitPageFamily[] = [
   { template: "Overblik og arbejdsstatus", state: "mutation-required", reason: "Kræver syntetisk arbejds- og opmærksomhedsdata.", routeIds: ["dashboard", "attention", "suggestions", "exceptions", "workspace-inbox"] },
   { template: "Bankregister og afstemning", state: "investigated", reason: "BankView er baseline med syntetiske læse- og afstemningsfixtures.", routeIds: ["bank"] },
-  { template: "Filtreret register", state: "mutation-required", reason: "Kræver syntetiske records og en sikker skriveopgave for fuld gennemgang.", routeIds: ["journal", "drafts", "documents", "payables", "purchase-overview", "mileage", "assets", "invoices", "invoice-templates", "contacts", "party-hub", "accounts", "dimensions", "bank-accounts", "receipt-email"] },
+  { template: "Filtreret register", state: "mutation-required", reason: "Kræver syntetiske records og en sikker skriveopgave for fuld gennemgang.", routeIds: ["journal", "drafts", "documents", "payables", "purchase-overview", "mileage", "assets", "invoices", "invoice-templates", "contacts", "party-hub"] },
   { template: "Bogføringsarbejdsgang", state: "mutation-required", reason: "Kræver en syntetisk, bekræftet arbejdsgang uden produktionsdata.", routeIds: ["approval-policy", "posting-rules", "batch-bookkeeping", "period-lock", "accruals"] },
   { template: "Finansiel rapport", state: "unavailable", reason: "Mangler endnu et fælles syntetisk rapportkorpus til sidefamilie-gennemgang.", routeIds: ["income-statement", "balance", "trial-balance", "obligations", "liquidity", "budget", "multi-year", "annual-report", "vat"] },
-  { template: "Virksomhedsadministration", state: "mutation-required", reason: "Kræver syntetisk virksomhedsprofil og eksplicitte, reversible mutationer.", routeIds: ["workspace-register", "archive", "manage", "retention", "integrity", "gdpr"] },
+  { template: "Administration: profil, daglig opsætning og sikkerhed", state: "mutation-required", reason: "Kræver syntetisk profil, sikker daglig opsætning og eksplicit bekræftede specialflows.", routeIds: ["workspace-register", "archive", "manage", "retention", "integrity", "gdpr", "accounts", "dimensions", "bank-accounts", "receipt-email"] },
 ];
 
 export const INVENTORIED_COMPANY_ROUTE_IDS = COCKPIT_PAGE_FAMILIES.flatMap((family) => family.routeIds);

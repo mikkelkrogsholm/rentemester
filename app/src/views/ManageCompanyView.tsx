@@ -135,11 +135,9 @@ function ManageForm({
     <section>
       <div className="page-head">
         <div>
-          <h2>Administrér {savedName}</h2>
+          <h2>Administration</h2>
           <p className="muted">
-            Slug <code>{company.slug}</code> · oprettet{" "}
-            {formatDateDa(company.createdAt.slice(0, 10))}
-            {archived ? " · arkiveret" : ""}
+            Hold virksomhedens profil og den daglige opsætning på plads.
           </p>
         </div>
         <Link className="btn secondary" to={`/companies/${company.slug}`}>
@@ -150,6 +148,9 @@ function ManageForm({
       {error && <Banner kind="error">{error}</Banner>}
       {notice && <Banner kind="success">{notice}</Banner>}
 
+      <section aria-labelledby="virksomhedsprofil-heading">
+      <h3 id="virksomhedsprofil-heading">Virksomhedsprofil</h3>
+      <p className="muted">Redigér navn, stamdata og betalingsoplysninger. Regnskabsdata påvirkes ikke.</p>
       <form className="form" onSubmit={rename} aria-label="Omdøb virksomhed">
         <label>
           Visningsnavn
@@ -172,7 +173,32 @@ function ManageForm({
       <ProfileCard slug={company.slug} initial={settings} />
 
       <CvrCard slug={company.slug} initial={settings} />
+      </section>
 
+      <section className="card" aria-labelledby="daglig-opsætning-heading">
+        <h3 id="daglig-opsætning-heading">Daglig opsætning</h3>
+        <p>Vælg det område, du vil gøre klar til den daglige bogføring.</p>
+        <div className="row-actions">
+          <Link className="btn secondary" to={`/companies/${company.slug}/kontoplan`}>Kontoplan</Link>
+          <Link className="btn secondary" to={`/companies/${company.slug}/dimensioner`}>Dimensioner</Link>
+          <Link className="btn secondary" to={`/companies/${company.slug}/bankkonti`}>Bankkonti</Link>
+          <Link className="btn secondary" to={`/companies/${company.slug}/bilagsmail`}>Bilagsmail</Link>
+        </div>
+      </section>
+
+      <section className="card" aria-labelledby="advanced-security-heading">
+        <h3 id="advanced-security-heading">Avanceret og sikkerhed</h3>
+        <p className="muted">Kontrol, opbevaring og særlige arbejdsgange er adskilt fra den almindelige profilredigering.</p>
+        <div className="row-actions">
+          <Link className="btn secondary" to={`/companies/${company.slug}/integritet`}>Integritet og backup</Link>
+          <Link className="btn secondary" to={`/companies/${company.slug}/retention`}>Opbevaring</Link>
+          <Link className="btn secondary" to={`/companies/${company.slug}/gdpr`}>GDPR</Link>
+          <Link className="btn secondary" to={`/companies/${company.slug}/arkiv`}>Arkiv</Link>
+        </div>
+      </section>
+
+      <details className="card">
+        <summary>System- og livscyklusindstillinger</summary>
       <AccountantExportCard slug={company.slug} />
 
       <div className="card" style={{ marginTop: 24, maxWidth: 460 }}>
@@ -212,6 +238,7 @@ function ManageForm({
           onClose={() => setConfirmingArchive(false)}
         />
       )}
+      </details>
     </section>
   );
 }

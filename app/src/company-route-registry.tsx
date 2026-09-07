@@ -69,6 +69,10 @@ export type CompanyRouteDescriptor = CompanyRoutePathDescriptor & {
   label: string;
   area: CompanyTaskAreaId;
   element: ReactElement;
+  /** Human-facing grouping used by the Administration landing page. */
+  administrationGroup?: "profile" | "daily" | "advanced";
+  administrationPurpose?: string;
+  administrationNextStep?: string;
 };
 
 export const COMPANY_ROUTE_REGISTRY = [
@@ -79,8 +83,8 @@ export const COMPANY_ROUTE_REGISTRY = [
   // Bogføring
   { id: "journal", segment: "posteringer", label: "Posteringer", area: "money-documents", element: <JournalView /> },
   { id: "drafts", segment: "kladder", label: "Kladder", area: "money-documents", element: <AccountingDraftsView /> },
-  { id: "approval-policy", segment: "godkendelsespolitik", label: "Godkendelsespolitik", area: "administration", element: <AccountingApprovalPolicyView /> },
-  { id: "posting-rules", segment: "posteringsregler", label: "Posteringsregler", area: "administration", element: <PostingRulesView /> },
+  { id: "approval-policy", segment: "godkendelsespolitik", label: "Godkendelsespolitik", area: "administration", element: <AccountingApprovalPolicyView />, administrationGroup: "advanced", administrationPurpose: "Fastlæg sikker godkendelse af bogføring.", administrationNextStep: "Gennemgå godkendelsespolitik" },
+  { id: "posting-rules", segment: "posteringsregler", label: "Posteringsregler", area: "administration", element: <PostingRulesView />, administrationGroup: "advanced", administrationPurpose: "Gennemgå automatiske bogføringsregler.", administrationNextStep: "Gennemgå posteringsregler" },
   { id: "batch-bookkeeping", segment: "batchbogfoering", label: "Bogføring", area: "money-documents", element: <BookkeepingBatchView /> },
   { id: "bank", segment: "bank", label: "Bank", area: "money-documents", element: <BankView /> },
   { id: "documents", segment: "bilag", label: "Bilag", area: "money-documents", element: <DocumentsView /> },
@@ -113,17 +117,17 @@ export const COMPANY_ROUTE_REGISTRY = [
   { id: "annual-report", segment: "aarsrapport", label: "Årsrapport", area: "reports", element: <AnnualReportView /> },
 
   // Virksomhedsadministration
-  { id: "workspace-register", segment: "workspace-register", label: "Workspace-register", area: "administration", element: <WorkspaceRegistryView /> },
-  { id: "workspace-inbox", segment: "workspace-inbox", label: "Fælles indbakke", area: "administration", element: <WorkspaceInboxView /> },
-  { id: "archive", segment: "arkiv", label: "Arkiv", area: "administration", element: <ArchiveView /> },
-  { id: "manage", segment: "manage", label: "Virksomhedsoplysninger", area: "administration", element: <ManageCompanyView /> },
-  { id: "retention", segment: "retention", label: "Retention", area: "administration", element: <RetentionView /> },
-  { id: "integrity", segment: "integritet", label: "Integritet", area: "administration", element: <IntegrityView /> },
-  { id: "accounts", segment: "kontoplan", label: "Kontoplan", area: "administration", element: <AccountsView /> },
-  { id: "dimensions", segment: "dimensioner", label: "Dimensioner", area: "administration", element: <DimensionsView /> },
-  { id: "bank-accounts", segment: "bankkonti", label: "Bankkonti", area: "administration", element: <BankAccountsView /> },
-  { id: "gdpr", segment: "gdpr", label: "GDPR", area: "administration", element: <GdprView /> },
-  { id: "receipt-email", segment: "bilagsmail", label: "Bilagsmail", area: "administration", element: <BilagsmailView /> },
+  { id: "workspace-register", segment: "workspace-register", label: "Workspace-register", area: "administration", element: <WorkspaceRegistryView />, administrationGroup: "advanced", administrationPurpose: "Fælles viden og dokumentation.", administrationNextStep: "Åbn registeret" },
+  { id: "workspace-inbox", segment: "workspace-inbox", label: "Fælles indbakke", area: "administration", element: <WorkspaceInboxView />, administrationGroup: "daily", administrationPurpose: "Fælles indbakke for arbejdsområdet.", administrationNextStep: "Åbn indbakken" },
+  { id: "archive", segment: "arkiv", label: "Arkiv", area: "administration", element: <ArchiveView />, administrationGroup: "advanced", administrationPurpose: "Læs tidligere, skrivebeskyttede regnskabsår.", administrationNextStep: "Se arkivet" },
+  { id: "manage", segment: "manage", label: "Virksomhedsprofil", area: "administration", element: <ManageCompanyView />, administrationGroup: "profile", administrationPurpose: "Redigér virksomhedens stamdata og betalingsoplysninger.", administrationNextStep: "Redigér profil" },
+  { id: "retention", segment: "retention", label: "Opbevaring", area: "administration", element: <RetentionView />, administrationGroup: "advanced", administrationPurpose: "Se opbevaringspligt og udløb.", administrationNextStep: "Gennemgå opbevaring" },
+  { id: "integrity", segment: "integritet", label: "Integritet og backup", area: "administration", element: <IntegrityView />, administrationGroup: "advanced", administrationPurpose: "Kontrollér bogføringens integritet og backup.", administrationNextStep: "Verificér integritet" },
+  { id: "accounts", segment: "kontoplan", label: "Kontoplan", area: "administration", element: <AccountsView />, administrationGroup: "daily", administrationPurpose: "Find og gennemgå konti til bogføring.", administrationNextStep: "Gennemgå kontoplan" },
+  { id: "dimensions", segment: "dimensioner", label: "Dimensioner", area: "administration", element: <DimensionsView />, administrationGroup: "daily", administrationPurpose: "Organisér bogføring efter fx projekt eller afdeling.", administrationNextStep: "Opret dimension" },
+  { id: "bank-accounts", segment: "bankkonti", label: "Bankkonti", area: "administration", element: <BankAccountsView />, administrationGroup: "daily", administrationPurpose: "Registrér konti, der bruges i bankarbejdet.", administrationNextStep: "Opret bankkonto" },
+  { id: "gdpr", segment: "gdpr", label: "GDPR", area: "administration", element: <GdprView />, administrationGroup: "advanced", administrationPurpose: "Find og håndtér personoplysninger sikkert.", administrationNextStep: "Find oplysninger" },
+  { id: "receipt-email", segment: "bilagsmail", label: "Bilagsmail", area: "administration", element: <BilagsmailView />, administrationGroup: "daily", administrationPurpose: "Modtag bilag i én fælles indbakke.", administrationNextStep: "Vælg bilagsmail" },
 ] as const satisfies readonly CompanyRouteDescriptor[];
 
 export type CompanyRouteId = (typeof COMPANY_ROUTE_REGISTRY)[number]["id"];

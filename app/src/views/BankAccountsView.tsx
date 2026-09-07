@@ -53,7 +53,6 @@ export function BankAccountsView() {
           >
             Opret bankkonto …
           </button>
-          <button type="button" className="btn secondary" disabled={!data.accounts.some(account=>account.ledgerAccountNo===null)} onClick={()=>setLegacyBinding(true)}>Bind legacy-konto</button>
           <Link className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
           </Link>
@@ -66,6 +65,11 @@ export function BankAccountsView() {
         </div>
       )}
       {legacyBinding&&<LegacyBankBindingModal slug={slug} accounts={data.accounts} onApplied={()=>setRefresh(value=>value+1)} onClose={()=>setLegacyBinding(false)} />}
+
+      <section className="card">
+        <h3>Bankkonti til den daglige bogføring</h3>
+        <p>Registrér den konto, du bruger til at hente og afstemme bankbevægelser.</p>
+      </section>
 
       <section className="card">
         <h3>Registrerede bankkonti ({data.accounts.length})</h3>
@@ -99,7 +103,11 @@ export function BankAccountsView() {
         )}
       </section>
 
-      <section className="card">
+      <details className="card">
+        <summary>Avanceret: legacy-binding og importprofiler</summary>
+        <div className="row-actions">
+          <button type="button" className="btn secondary" disabled={!data.accounts.some(account=>account.ledgerAccountNo===null)} onClick={()=>setLegacyBinding(true)}>Bind ældre bankkonto</button>
+        </div>
         <h3>Indbyggede CSV-mapping-profiler ({data.profiles.length})</h3>
         <p className="muted">
           BankImportModal og CLI'ens <code>bank import --profile &lt;navn&gt;</code>
@@ -132,7 +140,7 @@ export function BankAccountsView() {
             ))}
           </tbody>
         </table>
-      </section>
+      </details>
 
       {openCreate && (
         <CreateBankAccountModal

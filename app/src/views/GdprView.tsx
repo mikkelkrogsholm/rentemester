@@ -85,7 +85,7 @@ export function GdprView() {
     <section className="gdpr-view">
       <header className="page-head">
         <div>
-          <h2>GDPR-indsigt</h2>
+          <h2>GDPR</h2>
           <p className="muted">
             Find personoplysninger om en person eller virksomhed (kunde eller
             leverandør) og anonymisér dem hvor bogføringspligten ikke længere
@@ -100,7 +100,7 @@ export function GdprView() {
       </header>
 
       <section className="card">
-        <h3>Søg person eller virksomhed</h3>
+        <h3>Find oplysninger</h3>
         <form onSubmit={runExport} className="filter-bar">
           <label>
             CVR
@@ -125,7 +125,7 @@ export function GdprView() {
             className="btn primary"
             disabled={loading || (!cvr.trim() && !name.trim())}
           >
-            {loading ? "Søger …" : "Hent indsigtsrapport"}
+            {loading ? "Søger …" : "Find oplysninger"}
           </button>
         </form>
         <p className="muted">
@@ -152,12 +152,12 @@ export function GdprView() {
 
       {pendingErase && (
         <ConfirmDialog
-          title="Anonymisér personoplysninger"
+          title="Bekræft anonymisering"
           body={
             <p>
-              Anonymisering erstatter personoplysningerne med en spærret
-              markering. Rækker, der stadig er bogføringspligtige (5-års-fristen),
-              springes over. Handlingen kan ikke fortrydes.
+              Konsekvens: Anonymisering erstatter de viste, tilladte
+              personoplysninger med en spærret markering. Rækker, der stadig er
+              bogføringspligtige, springes over. Handlingen kan ikke fortrydes.
             </p>
           }
           confirmLabel="Anonymisér nu"
@@ -221,18 +221,25 @@ function ExportPanel({
               ))}
             </tbody>
           </table>
-          <div className="row-actions">
-            <button
-              type="button"
-              className="btn danger"
-              onClick={onErase}
-              disabled={erasing || erasable === 0}
-            >
-              {erasing
-                ? "Anonymiserer …"
-                : `Anonymisér de ${erasable} mulige rækker`}
-            </button>
-          </div>
+          <section className="card" aria-labelledby="anonymisering-heading">
+            <h4 id="anonymisering-heading">Anonymisering</h4>
+            <p>
+              Resultat: {erasable} række{erasable === 1 ? " kan" : "r kan"} anonymiseres nu, mens {underRetention} fortsat skal opbevares.
+            </p>
+            <p className="muted">Konsekvens: Tilladte personoplysninger erstattes permanent med en spærret markering. Gennemgå resultatet ovenfor før du fortsætter.</p>
+            <div className="row-actions">
+              <button
+                type="button"
+                className="btn danger"
+                onClick={onErase}
+                disabled={erasing || erasable === 0}
+              >
+                {erasing
+                  ? "Anonymiserer …"
+                  : `Anonymisér de ${erasable} mulige rækker`}
+              </button>
+            </div>
+          </section>
         </>
       )}
     </section>

@@ -81,12 +81,13 @@ export function AccountsView() {
       </header>
 
       <p className="muted">
-        {data.accounts.length} konti i kontoplanen. Kontoplanen kommer som
-        standard fra Rentemester og opdateres automatisk når du migrerer fra
-        et andet system. En konto, der allerede har bogføringslinjer, kan ikke
-        ændres — det er en garanti for at de tidligere posteringer bliver
-        stående uændret.
+        Kontoplanen hjælper dig med at vælge den rigtige konto, når du bogfører.
       </p>
+
+      <section className="card">
+        <h3>Gennemgå kontoplan</h3>
+        <p>{data.accounts.length} konti er klar til at blive søgt og filtreret.</p>
+      </section>
 
       <section className="card">
         <h3>Sammentælling pr. type</h3>
@@ -117,7 +118,10 @@ export function AccountsView() {
         </div>
       </section>
 
-      <AccountRolesCard accountRoles={data.accountRoles} />
+      <details className="card">
+        <summary>Avanceret: kontoroller og importgrundlag</summary>
+        <AccountRolesCard accountRoles={data.accountRoles} />
+      </details>
 
       <section className="card">
         <h3>

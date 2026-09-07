@@ -19,6 +19,8 @@ describe("company route registry", () => {
       new Set(COMPANY_TASK_AREAS.map((area) => area.id)),
     );
     expect(() => assertCompanyRouteRegistry()).not.toThrow();
+    const administration = COMPANY_ROUTE_REGISTRY.filter((route) => route.area === "administration");
+    expect(administration.every((route) => route.administrationGroup && route.administrationPurpose && route.administrationNextStep)).toBe(true);
   });
 
   test("resolves deep links without considering their query string", () => {

@@ -102,10 +102,10 @@
       "route": "/companies/evidence-fixture/manage",
       "endpoint": "/api/companies/evidence-fixture/company/profile",
       "heading": "Administration",
-      "coreAction": "Åbn virksomhedsprofil",
+      "coreAction": "Åbn daglig opsætning",
       "data": "Virksomhedsprofil",
-      "progressive": "Se profilgrundlag",
-      "taskOutcome": "Virksomhedsprofil åbnet",
+      "progressive": "System- og livscyklusindstillinger",
+      "taskOutcome": "Daglig opsætning åbnet",
       "states": { "normal": "Administration klar", "loading": "Henter virksomhedsprofil", "empty": "Ingen administrationsoplysninger endnu", "warning-or-blocked": "Virksomhedsprofil kræver afklaring", "error": "Virksomhedsprofil kunne ikke hentes" }
     }
   ]

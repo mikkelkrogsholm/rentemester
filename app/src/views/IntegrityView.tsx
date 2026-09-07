@@ -74,14 +74,27 @@ export function IntegrityView() {
         </div>
       )}
 
+      <section className={`card ${chainOk && backupOk ? "" : "warning"}`} aria-label="Konklusion">
+        <h3>{chainOk && backupOk ? "Bogføringen og backup ser sunde ud" : "Der kræves handling"}</h3>
+        <p>
+          {chainOk
+            ? "Bogføringen er kontrolleret uden fundne ændringer."
+            : "Bogføringen må ikke bruges videre, før afvigelsen er undersøgt."}
+          {backupOk ? " Backup er inden for den valgte rytme." : " Backup skal gennemgås nu."}
+        </p>
+        <p className="muted">Senest kontrolleret: {data.backup.checkedAt.slice(0, 10)}. Næste skridt: {chainOk && backupOk ? "Verificér igen efter væsentlige ændringer." : "Følg advarslen ovenfor og verificér igen."}</p>
+      </section>
+
       <section className="card">
-        <h3>Hash-kæden (digital plombe)</h3>
+        <h3>Kontrol af bogføringen</h3>
         <p>
           Hver bogføringspost har et SHA-256-fingeraftryk der bindes til den
           forrige post. Hvis kæden er hel, kan ingen ændre en bogføring uden at
           det opdages. Verificeres på hvert kald — det er sikkert at trykke
           "Verificér igen".
         </p>
+        <details>
+          <summary>Se tekniske kontroloplysninger</summary>
         <table className="table">
           <tbody>
             <tr>
@@ -97,7 +110,7 @@ export function IntegrityView() {
           </tbody>
         </table>
         {data.auditChain.errors.length > 0 && (
-          <details open>
+          <details>
             <summary>
               {data.auditChain.errors.length} afvigelse
               {data.auditChain.errors.length === 1 ? "" : "r"}
@@ -111,10 +124,14 @@ export function IntegrityView() {
             </ul>
           </details>
         )}
+        </details>
       </section>
 
       <section className="card">
-        <h3>Backup-status</h3>
+        <h3>Backup</h3>
+        <p>{backupOk ? "En backup er registreret, og der er ingen forfalden handling." : "Backup kræver opmærksomhed, før du fortsætter normalt arbejde."}</p>
+        <details>
+          <summary>Se backupdetaljer</summary>
         <table className="table">
           <tbody>
             <tr>
@@ -155,10 +172,13 @@ export function IntegrityView() {
             </tr>
           </tbody>
         </table>
+        </details>
       </section>
 
       <section className="card">
-        <h3>Backup-destinationer ({data.destinations.length})</h3>
+        <h3>Backup-destinationer</h3>
+        <details>
+          <summary>Se tekniske destinationer ({data.destinations.length})</summary>
         {data.destinations.length === 0 ? (
           <p className="muted">
             Ingen destinationer konfigureret. Brug{" "}
@@ -193,6 +213,7 @@ export function IntegrityView() {
             </tbody>
           </table>
         )}
+        </details>
       </section>
 
       <section className="card">

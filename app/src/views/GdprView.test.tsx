@@ -42,7 +42,7 @@ describe("GdprView (#334)", () => {
   test("kræver mindst ét felt før knappen er klikbar", async () => {
     renderView();
     const submit = await screen.findByRole("button", {
-      name: /Hent indsigtsrapport/,
+      name: /^Find oplysninger$/,
     });
     expect(submit).toBeDisabled();
   });
@@ -53,7 +53,7 @@ describe("GdprView (#334)", () => {
     const cvr = await screen.findByPlaceholderText("DK…");
     await user.type(cvr, "DK99999999");
     await user.click(
-      screen.getByRole("button", { name: /Hent indsigtsrapport/ }),
+      screen.getByRole("button", { name: /^Find oplysninger$/ }),
     );
     expect(
       await screen.findByText(/Ingen personoplysninger fundet/),
@@ -121,7 +121,7 @@ describe("GdprView (#334)", () => {
     const cvr = await screen.findByPlaceholderText("DK…");
     await user.type(cvr, "DK99999999");
     await user.click(
-      screen.getByRole("button", { name: /Hent indsigtsrapport/ }),
+      screen.getByRole("button", { name: /^Find oplysninger$/ }),
     );
     expect(
       await screen.findByText("Acme Kunde"),
@@ -139,5 +139,22 @@ describe("GdprView (#334)", () => {
     expect(
       screen.getByRole("button", { name: "Anonymisér de 1 mulige rækker" }),
     ).toBeInTheDocument();
+    expect(screen.getByText(/Konsekvens: Tilladte personoplysninger/)).toBeInTheDocument();
+  });
+
+  test("anonymiserer ikke, når bekræftelsen annulleres", async () => {
+    const user = userEvent.setup();
+    renderView(exportPayload([{
+      source: "customers", sourceRowId: 2, label: "Sikker Kunde",
+      personalData: { name: "Sikker Kunde", address: null, email: null, vatOrCvr: "DK99999999" },
+      retainUntil: null, underRetention: false, erased: false, erasable: true,
+    }]));
+    await user.type(await screen.findByPlaceholderText("DK…"), "DK99999999");
+    await user.click(screen.getByRole("button", { name: /^Find oplysninger$/ }));
+    await user.click(await screen.findByRole("button", { name: /Anonymisér de 1 mulige rækker/ }));
+    expect(screen.getByRole("dialog", { name: /Bekræft anonymisering/ })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Annullér" }));
+    const calls = (fetch as unknown as { mock: { calls: Array<[string, RequestInit]> } }).mock.calls;
+    expect(calls.some(([url, init]) => url.includes("/gdpr/erase") && init?.method === "POST")).toBe(false);
   });
 });

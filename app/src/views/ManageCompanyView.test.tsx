@@ -34,6 +34,16 @@ describe("ManageCompanyView", () => {
       /Visningsnavn/i,
     )) as HTMLInputElement;
     expect(input.value).toBe("Acme ApS");
+    expect(screen.getByRole("heading", { name: "Virksomhedsprofil" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Daglig opsætning" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Avanceret og sikkerhed" })).toBeInTheDocument();
+  });
+
+  test("keeps lifecycle actions behind the advanced disclosure", async () => {
+    mockFetch(companiesRoute());
+    renderAt(<ManageCompanyView />, { route: "/companies/acme-aps/manage", path: "/companies/:slug/manage" });
+    const details = await screen.findByText("System- og livscyklusindstillinger");
+    expect(details.closest("details")).not.toHaveAttribute("open");
   });
 
   test("PATCHes a new display name", async () => {

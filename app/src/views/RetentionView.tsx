@@ -44,11 +44,8 @@ export function RetentionView() {
       </header>
 
       <p className="muted">
-        Pr. {r.report.asOf}. Hver data-domæne skal opbevares i 5 år efter udløb
-        af det regnskabsår posten vedrører. Tabellen viser hvor mange poster der
-        ligger udløbet (klar til{" "}
-        <Link to={`/companies/${slug}/manage`}>GDPR-anonymisering</Link>) og
-        hvornår næste post udløber.
+        Overblik over, hvornår personoplysninger fortsat skal opbevares sammen
+        med bogføringsmaterialet.
       </p>
 
       {totalExpired > 0 && (
@@ -58,6 +55,14 @@ export function RetentionView() {
         </div>
       )}
 
+      <section className={`card ${totalExpired > 0 ? "warning" : ""}`} aria-label="Konklusion">
+        <h3>{totalExpired > 0 ? "Nogle oplysninger kan nu vurderes til anonymisering" : "Oplysningerne er fortsat under opbevaring"}</h3>
+        <p>{totalExpired > 0 ? `${totalExpired} post${totalExpired === 1 ? " er" : "er"} har passeret opbevaringsfristen. Bogføringsmateriale slettes ikke automatisk.` : "Der er ingen poster, som endnu har passeret opbevaringsfristen."}</p>
+        <p className="muted">Senest vurderet: {r.report.asOf}. Næste skridt: {totalExpired > 0 ? <Link to={`/companies/${slug}/gdpr`}>Find oplysninger før anonymisering</Link> : "Gennemgå igen ved næste opbevaringskontrol."}</p>
+      </section>
+
+      <details className="card">
+        <summary>Se opbevaringsdetaljer pr. datakilde</summary>
       <table className="table">
         <thead>
           <tr>
@@ -80,6 +85,7 @@ export function RetentionView() {
           ))}
         </tbody>
       </table>
+      </details>
 
       <section className="card">
         <h3>Lovgrundlag</h3>
@@ -90,9 +96,7 @@ export function RetentionView() {
           </Link>
           .
         </p>
-        <p className="muted">
-          Anvendte regler: {r.report.appliedRules.join(", ")}
-        </p>
+        <details><summary>Se teknisk regelgrundlag</summary><p className="muted">Anvendte regler: {r.report.appliedRules.join(", ")}</p></details>
       </section>
     </section>
   );
