@@ -21,6 +21,7 @@ import { ErrorState, Loading } from "../components/Feedback";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { ArchivedBanner } from "../components/ArchivedBanner";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
+import { PartyLink } from "../components/PartyLink";
 
 const FILTER_PARAM_KEYS = ["q", "from", "to", "amountMin", "amountMax", "journalEntryId", "journalLineId"] as const;
 
@@ -294,7 +295,7 @@ function EntryRow({
         </span>
         <span className="entry-no">{entry.entryNo}</span>
         <span className="entry-date">{entry.date}</span>
-        <span className="entry-text">{entry.text}</span>
+        <span className="entry-text"><PartyLink slug={slug} partyId={entry.partyId}>{entry.text}</PartyLink></span>
         <span className="entry-total num">
           {formatKroner(entry.total, currency)}
         </span>

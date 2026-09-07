@@ -35,6 +35,7 @@ export type CompanyInvoiceRow = {
   invoiceNo: string;
   invoiceDate: string | null;
   customerName: string | null;
+  partyId?: string | null;
   /**
    * Customer's e-mail when set on the kontaktkort (#429). The cockpit row
    * offers "Send på mail" only when this is present so the dialog can

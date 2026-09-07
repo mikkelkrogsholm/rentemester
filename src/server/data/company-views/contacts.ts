@@ -4,6 +4,7 @@ import { openDb, migrate } from "../../../core/db";
 import { getCompanySettings } from "../../../core/company";
 import { buildInvoiceList } from "../../../core/invoice-list";
 import { listCustomers, listVendors } from "../../../core/master-data";
+import { openWorkspaceControlReadOnlyDb } from "../../../core/workspace-control";
 import {
   companyRootForSlug,
   findWorkspaceCompany,
@@ -46,6 +47,8 @@ export type ContactCustomerRow = {
   openBalance: number;
   openInvoiceCount: number;
   overdueCount: number;
+  /** Reviewed durable mapping to a canonical workspace party, when present. */
+  partyId: string | null;
 };
 
 /** One vendor (supplier) in the master data. */
@@ -65,6 +68,8 @@ export type ContactVendorRow = {
   phone: string | null;
   website: string | null;
   notes: string | null;
+  /** Reviewed durable mapping to a canonical workspace party, when present. */
+  partyId: string | null;
 };
 
 export type CompanyContacts = ReturnType<typeof buildCompanyContacts>;
@@ -129,59 +134,73 @@ export function buildCompanyContacts(workspaceRoot: string, slug: string) {
       openByCustomerName.set(key, agg);
     }
 
-    const customers: ContactCustomerRow[] = listCustomers(db).rows.map((c) => {
-      const agg = openByCustomerName.get((c.name ?? "").trim());
-      return {
-        id: c.id,
-        name: c.name,
-        vatOrCvr: c.vatOrCvr,
-        email: c.email,
-        paymentTermsDays: c.paymentTermsDays,
-        defaultCurrency: c.defaultCurrency,
-        address: c.address,
-        phone: c.phone,
-        website: c.website,
-        eanNumber: c.eanNumber,
-        notes: c.notes,
-        openBalance: agg ? roundKroner(agg.openBalance) : 0,
-        openInvoiceCount: agg?.openInvoiceCount ?? 0,
-        overdueCount: agg?.overdueCount ?? 0,
-      };
-    });
-    // #439 — bring customers with forfaldne fakturaer to the top, then those
-    // with any open invoice, then the rest. Within each bucket keep the
-    // master-data ordering so the table is stable. Mirrors PortfolioView's
-    // `sortByAttention`.
-    customers.sort((a, b) => {
-      const aAttn = a.overdueCount > 0 ? 2 : a.openInvoiceCount > 0 ? 1 : 0;
-      const bAttn = b.overdueCount > 0 ? 2 : b.openInvoiceCount > 0 ? 1 : 0;
-      if (aAttn !== bAttn) return bAttn - aAttn;
-      if (b.openBalance !== a.openBalance) return b.openBalance - a.openBalance;
-      return 0;
-    });
-    const vendors: ContactVendorRow[] = listVendors(db).rows.map((v) => ({
-      id: v.id,
-      name: v.name,
-      vatOrCvr: v.vatOrCvr,
-      countryCode: v.countryCode,
-      identifierKind: v.identifierKind,
-      identityStatus: v.identityStatus,
-      defaultExpenseAccount: v.defaultExpenseAccount,
-      defaultVatTreatment: v.defaultVatTreatment,
-      address: v.address,
-      email: v.email,
-      phone: v.phone,
-      website: v.website,
-      notes: v.notes,
-    }));
+    const control = openWorkspaceControlReadOnlyDb(workspaceRoot);
+    try {
+      const partyIdFor = (legacyKind: "customer" | "vendor", id: number) =>
+        (control.query(`SELECT party_id AS partyId FROM current_legacy_party_mappings
+          WHERE company_slug=? AND legacy_kind=? AND legacy_id=?`).get(
+          slug,
+          legacyKind,
+          String(id),
+        ) as { partyId: string } | null)?.partyId ?? null;
+      const customers: ContactCustomerRow[] = listCustomers(db).rows.map((c) => {
+        const agg = openByCustomerName.get((c.name ?? "").trim());
+        return {
+          id: c.id,
+          name: c.name,
+          vatOrCvr: c.vatOrCvr,
+          email: c.email,
+          paymentTermsDays: c.paymentTermsDays,
+          defaultCurrency: c.defaultCurrency,
+          address: c.address,
+          phone: c.phone,
+          website: c.website,
+          eanNumber: c.eanNumber,
+          notes: c.notes,
+          openBalance: agg ? roundKroner(agg.openBalance) : 0,
+          openInvoiceCount: agg?.openInvoiceCount ?? 0,
+          overdueCount: agg?.overdueCount ?? 0,
+          partyId: partyIdFor("customer", c.id),
+        };
+      });
+      // #439 — bring customers with forfaldne fakturaer to the top, then those
+      // with any open invoice, then the rest. Within each bucket keep the
+      // master-data ordering so the table is stable. Mirrors PortfolioView's
+      // `sortByAttention`.
+      customers.sort((a, b) => {
+        const aAttn = a.overdueCount > 0 ? 2 : a.openInvoiceCount > 0 ? 1 : 0;
+        const bAttn = b.overdueCount > 0 ? 2 : b.openInvoiceCount > 0 ? 1 : 0;
+        if (aAttn !== bAttn) return bAttn - aAttn;
+        if (b.openBalance !== a.openBalance) return b.openBalance - a.openBalance;
+        return 0;
+      });
+      const vendors: ContactVendorRow[] = listVendors(db).rows.map((v) => ({
+        id: v.id,
+        name: v.name,
+        vatOrCvr: v.vatOrCvr,
+        countryCode: v.countryCode,
+        identifierKind: v.identifierKind,
+        identityStatus: v.identityStatus,
+        defaultExpenseAccount: v.defaultExpenseAccount,
+        defaultVatTreatment: v.defaultVatTreatment,
+        address: v.address,
+        email: v.email,
+        phone: v.phone,
+        website: v.website,
+        notes: v.notes,
+        partyId: partyIdFor("vendor", v.id),
+      }));
 
-    return {
-      slug: entry.slug,
-      company: statementCompanyBlock(company),
-      fiscalYears: years,
-      customers,
-      vendors,
-    };
+      return {
+        slug: entry.slug,
+        company: statementCompanyBlock(company),
+        fiscalYears: years,
+        customers,
+        vendors,
+      };
+    } finally {
+      control.close();
+    }
   } finally {
     db.close();
   }

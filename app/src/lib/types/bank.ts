@@ -22,6 +22,7 @@ export type BankTransactionRow = {
   runningBalance: number | null;
   reconciliationStatus: "matched" | "unmatched";
   journalEntryNo: string | null;
+  partyId?: string | null;
 };
 
 export type CompanyBank = {

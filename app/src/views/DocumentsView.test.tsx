@@ -30,6 +30,17 @@ function renderView(route = "/companies/acme-aps/bilag") {
 }
 
 describe("DocumentsView — Bilag", () => {
+  test("links only documents with an explicit canonical party ID", async () => {
+    const row = documents().documents[0];
+    mockFetch(route({ documents: [
+      { ...row, id: 11, supplierName: "Samme navn", partyId: "party-document" },
+      { ...row, id: 12, supplierName: "Samme navn", partyId: null },
+    ] }));
+    renderView();
+    expect(await screen.findByRole("link", { name: "Samme navn" })).toHaveAttribute("href", "/companies/acme-aps/parter/party-document");
+    expect(screen.getAllByText("Samme navn").some((element) => element.closest("a") === null)).toBe(true);
+  });
+
   test("#644 shows inspectable party coverage and applies only a confirmed exact plan", async () => {
     const applied: Array<Record<string, unknown>> = [];
     mockFetch({

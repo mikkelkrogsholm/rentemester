@@ -19,6 +19,17 @@ function renderView(path = "/companies/acme-aps/bank") {
 }
 
 describe("BankView — Bank", () => {
+  test("links only bank rows with an explicit canonical party decision", async () => {
+    const row = bank().transactions[0];
+    mockFetch(route({ transactions: [
+      { ...row, id: 11, text: "Samme navn", partyId: "party-bank" },
+      { ...row, id: 12, text: "Samme navn", partyId: null },
+    ] }));
+    renderView();
+    expect(await screen.findByRole("link", { name: "Samme navn" })).toHaveAttribute("href", "/companies/acme-aps/parter/party-bank");
+    expect(screen.getAllByText("Samme navn").some((element) => element.closest("a") === null)).toBe(true);
+  });
+
   test("shows the booked balance and the bank account", async () => {
     mockFetch(route());
     renderView();

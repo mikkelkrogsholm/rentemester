@@ -19,6 +19,16 @@ function renderView() {
 }
 
 describe("ContactsView — Kontakter", () => {
+  test("links only contacts with an explicit canonical party ID", async () => {
+    mockFetch(route({ customers: [
+      { ...contacts().customers[0], id: 11, name: "Samme navn", partyId: "party-customer" },
+      { ...contacts().customers[0], id: 12, name: "Samme navn", partyId: null },
+    ], vendors: [] }));
+    renderView();
+    expect(await screen.findByRole("link", { name: "Samme navn" })).toHaveAttribute("href", "/companies/acme-aps/parter/party-customer");
+    expect(screen.getAllByText("Samme navn").some((element) => element.closest("a") === null)).toBe(true);
+  });
+
   test("lists customers and vendors", async () => {
     mockFetch(route());
     renderView();

@@ -37,6 +37,7 @@ import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { InvoiceIssueModal } from "../components/InvoiceIssueModal";
 import { StatusChip } from "../components/CockpitPrimitives";
+import { PartyLink } from "../components/PartyLink";
 
 // #UI-16 — the statutory late-payment reminder fee (rentel. § 9b), in kroner.
 // One named constant, rendered through `formatKroner`, so the two places that
@@ -569,7 +570,7 @@ export function InvoicesView() {
                   return (
                     <tr key={row.documentId}>
                       <td className="account-no">{row.invoiceNo}</td>
-                      <td>{row.customerName ?? "—"}</td>
+                      <td><PartyLink slug={slug} partyId={row.partyId}>{row.customerName ?? "—"}</PartyLink></td>
                       <td className="entry-date">{row.invoiceDate ?? "—"}</td>
                       <td className="entry-date">
                         {row.effectiveDueDate ?? "—"}

@@ -28,6 +28,17 @@ function dimensionsRoute() {
 }
 
 describe("JournalView — Posteringer", () => {
+  test("links only journal entries with an explicit linked-document party ID", async () => {
+    const row = journal().entries[0];
+    mockFetch(route({ entries: [
+      { ...row, id: 11, text: "Samme navn", partyId: "party-journal" },
+      { ...row, id: 12, text: "Samme navn", partyId: null },
+    ] }));
+    renderView();
+    expect(await screen.findByRole("link", { name: "Samme navn" })).toHaveAttribute("href", "/companies/acme-aps/parter/party-journal");
+    expect(screen.getAllByText("Samme navn").some((element) => element.closest("a") === null)).toBe(true);
+  });
+
   test("lists the posted journal entries", async () => {
     mockFetch(route());
     renderView();

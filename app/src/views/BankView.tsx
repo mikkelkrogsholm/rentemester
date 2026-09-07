@@ -28,6 +28,7 @@ import {
   type BankReconcileTransaction,
 } from "../components/BankReconcileModal";
 import { BankCorrectionModal } from "../components/BankCorrectionModal";
+import { PartyLink } from "../components/PartyLink";
 
 // #451 — the URL keys we own; listed once so "Ryd filtre" can clear them all
 // without touching other params (e.g. `?year=`).
@@ -311,7 +312,7 @@ export function BankView() {
                 {sortedTransactions.map((tx) => (
                     <tr key={tx.id}>
                       <td className="entry-date" data-label="Dato">{tx.date}</td>
-                      <td data-label="Tekst">{tx.text}</td>
+                      <td data-label="Tekst"><PartyLink slug={slug} partyId={tx.partyId}>{tx.text}</PartyLink></td>
                       <td className="num" data-label="Beløb">
                         {formatKroner(tx.amount, currency)}
                       </td>

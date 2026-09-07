@@ -28,6 +28,7 @@ import { ErrorState, Loading } from "../components/Feedback";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { DocumentIngestModal } from "../components/DocumentIngestModal";
 import { DocumentBookExpenseModal } from "../components/DocumentBookExpenseModal";
+import { PartyLink } from "../components/PartyLink";
 
 type DocumentsPage = {
   documents: CompanyDocuments;
@@ -630,7 +631,7 @@ export function DocumentsView() {
                         ? doc.internalVoucherKind === "non_cash_balance_correction"
                           ? "Internt balancekorrektionsbilag — ingen bankbevægelse"
                           : `Bankpost #${doc.sourceBankTransactionId ?? "—"}`
-                        : doc.supplierName ?? "—"}
+                        : <PartyLink slug={slug} partyId={doc.partyId}>{doc.supplierName ?? "—"}</PartyLink>}
                     </div>
                     {doc.documentType === "internal_voucher" && doc.accountingRationale ? (
                       <div className="muted">{doc.accountingRationale}</div>

@@ -31,6 +31,17 @@ function renderView() {
 }
 
 describe("InvoicesView — Fakturaer", () => {
+  test("links only invoices with an explicit customer party ID", async () => {
+    const row = invoices().invoices[0];
+    mockFetch(route({ invoices: [
+      { ...row, documentId: 11, customerName: "Samme navn", partyId: "party-invoice" },
+      { ...row, documentId: 12, customerName: "Samme navn", partyId: null },
+    ] }));
+    renderView();
+    expect(await screen.findByRole("link", { name: "Samme navn" })).toHaveAttribute("href", "/companies/acme-aps/parter/party-invoice");
+    expect(screen.getAllByText("Samme navn").some((element) => element.closest("a") === null)).toBe(true);
+  });
+
   test("lists the issued invoices with their status", async () => {
     mockFetch(route());
     renderView();

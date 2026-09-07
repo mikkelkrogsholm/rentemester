@@ -113,6 +113,8 @@ export type CompanyInvoiceRow = {
   invoiceNo: string;
   invoiceDate: string | null;
   customerName: string | null;
+  /** Explicit customer/recipient party relation on this invoice document. */
+  partyId: string | null;
   /**
    * Customer's e-mail when set on the kontaktkort (#429). Surfaced so the
    * cockpit can render a "Send på mail" action only on rows where there is
@@ -280,6 +282,9 @@ export function buildCompanyInvoices(
       invoiceNo: r.invoiceNumber,
       invoiceDate: r.invoiceDate,
       customerName: r.customerName,
+      partyId: (ctx.db.query(`SELECT party_id AS partyId FROM current_document_party_links
+        WHERE document_id=? AND party_role IN ('customer','recipient','payer')
+        ORDER BY CASE party_role WHEN 'customer' THEN 0 WHEN 'recipient' THEN 1 WHEN 'payer' THEN 2 END, id DESC LIMIT 1`).get(r.documentId) as { partyId: string } | null)?.partyId ?? null,
       customerEmail: r.customerName
         ? customerEmailByName.get(r.customerName.trim()) ?? null
         : null,

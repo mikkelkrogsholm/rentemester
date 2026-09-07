@@ -24,6 +24,8 @@ export type BankTransactionRow = {
   reconciliationStatus: "matched" | "unmatched";
   /** The matched journal entry's number, when reconciled. */
   journalEntryNo: string | null;
+  /** Exact reviewed bank-row party decision; never inferred from text. */
+  partyId: string | null;
 };
 
 export type CompanyBank = ReturnType<typeof buildCompanyBank>;
@@ -71,9 +73,11 @@ export function buildCompanyBank(
                 bt.text          AS text,
                 bt.amount        AS amount,
                 bt.balance_after AS runningBalance,
-                br.journal_entry_no AS journalEntryNo
+                br.journal_entry_no AS journalEntryNo,
+                party_decision.party_id AS partyId
            FROM bank_transactions bt
            LEFT JOIN bank_journal_reconciliations br ON br.bank_transaction_id = bt.id
+           LEFT JOIN current_party_coverage_bank_resolution_events party_decision ON party_decision.bank_transaction_id = bt.id
           WHERE bt.transaction_date >= ? AND bt.transaction_date <= ?
           ORDER BY bt.transaction_date ASC,
                    CASE WHEN bt.statement_order = 'descending' THEN -bt.statement_row_index ELSE bt.statement_row_index END ASC,
@@ -86,6 +90,7 @@ export function buildCompanyBank(
       amount: number;
       runningBalance: number | null;
       journalEntryNo: string | null;
+      partyId: string | null;
     }>;
     const transactions: BankTransactionRow[] = rows.map((r) => ({
       id: r.id,
@@ -98,6 +103,7 @@ export function buildCompanyBank(
           : roundKroner(r.runningBalance),
       reconciliationStatus: r.journalEntryNo ? "matched" : "unmatched",
       journalEntryNo: r.journalEntryNo,
+      partyId: r.partyId,
     }));
     const matchedCount = transactions.filter(
       (t) => t.reconciliationStatus === "matched",

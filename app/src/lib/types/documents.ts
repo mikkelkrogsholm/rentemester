@@ -19,6 +19,7 @@ export type DocumentRow = {
   supplierCountryCode: string | null;
   supplierIdentifierKind: string | null;
   supplierIdentityStatus: string | null;
+  partyId?: string | null;
   invoiceNo: string | null;
   invoiceDate: string | null;
   amountIncVat: number | null;

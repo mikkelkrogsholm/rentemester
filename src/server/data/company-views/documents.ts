@@ -43,6 +43,8 @@ export type DocumentRow = {
   supplierCountryCode: string | null;
   supplierIdentifierKind: string | null;
   supplierIdentityStatus: string | null;
+  /** Current explicit document-to-canonical-party relation, when present. */
+  partyId: string | null;
   invoiceNo: string | null;
   invoiceDate: string | null;
   amountIncVat: number | null;
@@ -104,6 +106,9 @@ export function buildCompanyDocuments(workspaceRoot: string, slug: string) {
                 d.supplier_country_code AS supplierCountryCode,
                 d.supplier_identifier_kind AS supplierIdentifierKind,
                 d.supplier_identity_status AS supplierIdentityStatus,
+                (SELECT party_id FROM current_document_party_links party_link
+                  WHERE party_link.document_id=d.id
+                  ORDER BY CASE party_link.party_role WHEN 'supplier' THEN 0 WHEN 'vendor' THEN 1 WHEN 'issuer' THEN 2 WHEN 'customer' THEN 3 WHEN 'recipient' THEN 4 ELSE 99 END, party_link.id DESC LIMIT 1) AS partyId,
                 d.invoice_no      AS invoiceNo,
                 d.invoice_date    AS invoiceDate,
                 d.amount_inc_vat  AS amountIncVat,
@@ -167,6 +172,7 @@ export function buildCompanyDocuments(workspaceRoot: string, slug: string) {
       supplierCountryCode: string | null;
       supplierIdentifierKind: string | null;
       supplierIdentityStatus: string | null;
+      partyId: string | null;
       invoiceNo: string | null;
       invoiceDate: string | null;
       amountIncVat: number | null;
@@ -200,6 +206,7 @@ export function buildCompanyDocuments(workspaceRoot: string, slug: string) {
       supplierCountryCode: r.supplierCountryCode,
       supplierIdentifierKind: r.supplierIdentifierKind,
       supplierIdentityStatus: r.supplierIdentityStatus,
+      partyId: r.partyId,
       invoiceNo: r.invoiceNo,
       invoiceDate: r.invoiceDate,
       amountIncVat:
