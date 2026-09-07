@@ -24,6 +24,38 @@ function record(db: ReturnType<typeof openWorkspaceControlDb>, recordId: string,
 }
 
 describe("workspace registry HTTP access projection", () => {
+  test("serves deterministic Party Hub search/profile only inside the principal workspace and membership", async () => {
+    const workspace = makeWorkspace("party-hub-http", ["Allowed ApS", "Hidden ApS"]);
+    const foreignWorkspace = makeWorkspace("party-hub-foreign", ["Foreign ApS"]);
+    const runtime = openWorkspaceBetterAuth(workspace, { secret: SECRET, trustedOrigins: [ORIGIN], baseURL: ORIGIN });
+    const db = openWorkspaceControlDb(workspace);
+    try {
+      party(db, "party-z-visible", "Zulu visible", "allowed-aps");
+      party(db, "party-a-visible", "Alpha visible", "allowed-aps");
+      party(db, "party-hidden", "Aardvark hidden", "hidden-aps");
+      const service = await createWorkspaceServicePrincipal(db, runtime.auth, { displayName: "Party hub reader", actor: "user:owner" });
+      activateWorkspaceUser(db, { userId: service.serviceAccountId, workspaceRole: "member", actor: "user:owner" });
+      grantCompanyMembership(db, workspace, { userId: service.serviceAccountId, companySlug: "allowed-aps", role: "reader", actor: "user:owner" });
+      const hosted = config({ workspaceRoot: workspace, deploymentProfile: "hosted", betterAuthProvider: createBetterAuthRequestProvider(runtime.auth) });
+      const headers = { [WORKSPACE_SERVICE_PRINCIPAL_HEADER]: service.secret };
+
+      expect((await get(hosted, "/api/companies/allowed-aps/party-hub")).status).toBe(401);
+      const search = await get(hosted, "/api/companies/allowed-aps/party-hub?sort=name&limit=1", { headers });
+      expect(search).toMatchObject({ status: 200, body: { ok: true, sort: "name", count: 2, rows: [{ partyId: "party-a-visible", name: "Alpha visible", partyLink: { href: "/companies/allowed-aps/parter/party-a-visible" } }] } });
+      expect(JSON.stringify(search.body)).not.toContain("party-hidden");
+      const profile = await get(hosted, "/api/companies/allowed-aps/party-hub/party-z-visible?from=2026-01-01&asOf=2026-01-31", { headers });
+      expect(profile).toMatchObject({ status: 200, body: { ok: true, party: { partyId: "party-z-visible", roles: [{ companySlug: "allowed-aps", role: "vendor" }] }, computed: { period: { from: "2026-01-01", to: "2026-01-31" }, sourceCoverage: { documents: 0, unmappedLedgerReferences: 0 } }, research: { warnings: [] }, links: { documents: [], relations: [{ companySlug: "allowed-aps" }] } } });
+      expect((await get(hosted, "/api/companies/allowed-aps/party-hub/not-a-party", { headers })).status).toBe(404);
+      expect((await get(hosted, "/api/companies/hidden-aps/party-hub", { headers })).status).toBe(401);
+      expect((await get(hosted, "/api/companies/foreign-aps/party-hub", { headers })).status).toBe(401);
+    } finally {
+      db.close();
+      runtime.close();
+      rmSync(workspace, { recursive: true, force: true });
+      rmSync(foreignWorkspace, { recursive: true, force: true });
+    }
+  });
+
   test("enforces ownership roles for every endpoint, survives rotation and revokes immediately", async () => {
     const workspace = makeWorkspace("ownership-http", ["Allowed ApS", "Hidden ApS"]);
     const runtime = openWorkspaceBetterAuth(workspace, { secret: SECRET, trustedOrigins: [ORIGIN, "http://localhost"], baseURL: ORIGIN });

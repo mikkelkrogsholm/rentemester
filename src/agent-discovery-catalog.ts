@@ -349,11 +349,13 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
   ] }),
   workflow({ id: "workspace-party-lifecycle", capabilityId: "workspace-parties", title: "Workspace party lifecycle", intendedOutcome: "Create a canonical party, attach only company-scoped roles, and review an explicit duplicate proposal without automatic identity merging.", steps: [
     read("search", mcp("workspace_party_search"), "Search only parties visible through the selected company."),
+    read("party-hub", mcp("party_hub"), "Search the owner-facing Party Hub; computed activity and spend use durable party links only.", { dependsOn:["search"] }),
     write("create", mcp("workspace_party_create"), "Create source-backed identity evidence without a ledger effect.", { dependsOn:["search"], canonicalRecords:["workspace party events", "party identifier assertions"] }),
     write("link-role", mcp("workspace_party_link_role"), "Attach a role and defaults only for the selected company.", { dependsOn:["create"], canonicalRecords:["company party role"] }),
     write("propose-merge", mcp("workspace_party_propose_merge"), "Record an explicit human-reviewed duplicate proposal.", { dependsOn:["link-role"], boundary:"review", canonicalRecords:["party merge proposal"] }),
     write("approve-merge", mcp("workspace_party_approve_merge"), "Approve the exact proposal and append a supersession event.", { dependsOn:["propose-merge"], boundary:"approval", canonicalRecords:["party merge approval", "party supersession"] }),
     read("inspect", mcp("workspace_party_inspect"), "Read the visible canonical history and local roles.", { dependsOn:["link-role|approve-merge"] }),
+    read("party-profile", mcp("party_profile"), "Read the selected Party Profile, keeping computed figures separate from source-backed research.", { dependsOn:["inspect"] }),
   ], unsupportedBoundaries:["Name, amount or alias similarity never auto-merges a legal identity.", "Company-local defaults never become workspace posting rules."] }),
   workflow({ id: "document-party-resolution", capabilityId: "document-party-resolution", title: "Document party resolution", intendedOutcome: "Make exactly one visible party-resolution state without changing document evidence, VAT, or journals.", steps: [
     read("coverage",mcp("party_coverage"),"Project every selected bank row through current reconciliation, journal, source document/open item and canonical party state. Exact bank-row decisions take precedence only for their own transaction; document links remain document-wide."),
@@ -578,9 +580,9 @@ type SurfaceBaseline = { count: number; hash: string };
  */
 export const AGENT_SURFACE_BASELINES: Record<SurfaceName, SurfaceBaseline> = {
   // Public surface changes require an explicit discovery review.
-  mcp: { count: 246, hash: "47adcbc1e80f15082cdbc0f7a63674cc9ef3cf417abf819f43a9cedb250e0f97" },
-  cli: { count: 296, hash: "6294fde1d7dfdb844687356e4248a04bd1e4532be4e88affee4e0fc1b3924ec7" },
-  http: { count: 237, hash: "a9470c9d47d7a2845882752c012ce6330e31914be30e4a5e505adb327d985afe" },
+  mcp: { count: 248, hash: "e5df04e9df90317d8e94e70453460929f40466ed9d19db1afea19fd240f07060" },
+  cli: { count: 298, hash: "e0855ff7be20dcba4a2a438010ee430c41e9ac6bc3c3ca3299f7f1dbf153014d" },
+  http: { count: 239, hash: "5e5062f7222c0b0accd41f817c66c7440d12850254708b4058f6ca8a1f1e9588" },
 };
 
 const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }> = [
@@ -589,7 +591,7 @@ const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }>
   { capabilityId: "cfo-analytics", pattern: /(?:cfo[_-]analytics|report analytics|cfo-analytics)/ },
   { capabilityId: "workspace-document-inbox", pattern: /workspace[_-]inbox/ },
   { capabilityId: "corporate-records", pattern: /(?:corporate[_-]record|corporate-record)/ },
-  { capabilityId: "workspace-parties", pattern: /(?:workspace[_-]party|^cli:party )/ },
+  { capabilityId: "workspace-parties", pattern: /(?:workspace[_-]party|party[_-](?:hub|profile)|^cli:party )/ },
   { capabilityId: "legacy-party-mapping", pattern: /legacy[_-]party[_-]mapping/ },
   { capabilityId: "vendor-identity-enrichment", pattern: /vendor[_-]identity[_-]enrichment/ },
   { capabilityId: "document-party-resolution", pattern: /documents?_party|party-link|party[_-]coverage|internal-no-external-party/ },

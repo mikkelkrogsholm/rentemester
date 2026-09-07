@@ -70,6 +70,7 @@ let companyRoot = "";
 let client: Client;
 let serviceAccountId: string;
 let serviceToken: string;
+let unprivilegedToken: string;
 let reviewedSourceDocumentId: number;
 let coverageDocumentId: number;
 
@@ -121,8 +122,10 @@ beforeAll(async () => {
   linkPartyRole(registry,{partyId:"party-coverage-mcp",companySlug:company.slug,role:"vendor",actor:"user:test"});
   const runtime=openWorkspaceBetterAuth(workspace,{secret:"I0UjL6i0-ScgvjfIgzMKJxPQyDpPXwg2mMKdLW3Y3WQ",trustedOrigins:["http://127.0.0.1"],baseURL:"http://127.0.0.1"});
   const service=await createWorkspaceServicePrincipal(registry,runtime.auth,{displayName:"Document party test",actor:"user:test"});
+  const unprivileged=await createWorkspaceServicePrincipal(registry,runtime.auth,{displayName:"Unprivileged party reader",actor:"user:test"});
   serviceAccountId = service.serviceAccountId;
   serviceToken = service.secret;
+  unprivilegedToken = unprivileged.secret;
   activateWorkspaceUser(registry,{userId:service.serviceAccountId,workspaceRole:"member",actor:"user:test"});
   grantCompanyMembership(registry,workspace,{userId:service.serviceAccountId,companySlug:company.slug,role:"owner",actor:"user:test"});
   registry.close();runtime.close();
@@ -138,6 +141,36 @@ afterAll(async () => {
 });
 
 describe("#588 MCP black-box contract", () => {
+  test("#653 exposes read-only Party Hub search and profile schemas without side effects", async () => {
+    const listed = await client.send("tools/list");
+    const tools = new Map((listed.result?.tools ?? []).map((tool: any) => [tool.name, tool]));
+    for (const name of ["party_hub", "party_profile"]) {
+      const tool = tools.get(name);
+      expect(tool).toBeDefined();
+      expect(tool.annotations).toMatchObject({ readOnlyHint: true, destructiveHint: false, idempotentHint: true });
+      expect(tool.outputSchema).toBeDefined();
+    }
+    expect(tools.get("party_hub")?.inputSchema?.properties).toMatchObject({ company: expect.any(Object), sort: expect.any(Object), limit: expect.any(Object) });
+    expect(tools.get("party_profile")?.inputSchema?.properties).toMatchObject({ company: expect.any(Object), partyId: expect.any(Object) });
+    const before = eventCount();
+    const hub = await client.send("tools/call", { name: "party_hub", arguments: { company: "acme-aps", sort: "name" } });
+    expect(hub.result?.structuredContent).toMatchObject({ ok: true, data: { sort: "name" } });
+    expect(hub.result?.structuredContent?.data.rows.find((row: any) => row.partyId === "party-mcp")).toMatchObject({ partyLink: { href: "/companies/acme-aps/parter/party-mcp" } });
+    const profile = await client.send("tools/call", { name: "party_profile", arguments: { company: "acme-aps", partyId: "party-mcp" } });
+    expect(profile.result?.structuredContent).toMatchObject({ ok: true, data: { party: { partyId: "party-mcp" }, computed: { sourceCoverage: { documents: 0, unmappedLedgerReferences: 0 } }, research: { warnings: [] } } });
+    const missing = await client.send("tools/call", { name: "party_profile", arguments: { company: "acme-aps", partyId: "not-a-party" } });
+    expect(missing.result?.structuredContent).toMatchObject({ ok: false, code: "PARTY_NOT_FOUND" });
+    expect(eventCount()).toBe(before);
+    const deniedClient = new Client(workspace, unprivilegedToken);
+    try {
+      await deniedClient.send("initialize", { protocolVersion: "2024-11-05", capabilities: {}, clientInfo: { name: "unprivileged-party-reader", version: "1.0.0" } });
+      await deniedClient.notify("notifications/initialized");
+      const denied = await deniedClient.send("tools/call", { name: "party_hub", arguments: { company: "acme-aps" } });
+      expect(denied.result?.structuredContent).toMatchObject({ ok: false });
+      expect(eventCount()).toBe(before);
+    } finally { await deniedClient.close(); }
+  });
+
   test("#644 discovers and executes projection → plan → confirmed idempotent apply",async()=>{
     const tools=await client.send("tools/list"); const names=(tools.result?.tools??[]).map((tool:any)=>tool.name);
     for(const name of ["party_coverage","party_coverage_plan","party_coverage_apply"])expect(names).toContain(name);

@@ -53,6 +53,26 @@ describe("workspace registry CLI safety gates", () => {
     }
   });
 
+  test("keeps Party Hub search and Party Profile read-only and schema-parallel", async () => {
+    const workspace = makeWorkspace("party-hub-cli", ["Synthetic Company"]);
+    const db = openWorkspaceControlDb(workspace);
+    try {
+      createParty(db, { partyId: "party-cli-hub", kind: "organization", name: "CLI Party", source: "synthetic", observedAt: "2026-01-01T00:00:00.000Z", reviewAssertion: "reviewed", actor: "user:test" });
+      linkPartyRole(db, { partyId: "party-cli-hub", companySlug: "synthetic-company", role: "vendor", actor: "user:test" });
+      const before = (db.query("SELECT count(*) AS n FROM rm_party_events").get() as { n: number }).n;
+      const hub = command(["party", "hub", "--workspace", workspace, "--company", "synthetic-company", "--sort", "name"], emptyActorEnv);
+      expect(await hub.exited).toBe(0);
+      expect(JSON.parse(await new Response(hub.stdout).text())).toMatchObject({ ok: true, sort: "name", rows: [{ partyId: "party-cli-hub", partyLink: { href: "/companies/synthetic-company/parter/party-cli-hub" } }] });
+      const profile = command(["party", "profile", "--workspace", workspace, "--company", "synthetic-company", "--party-id", "party-cli-hub"], emptyActorEnv);
+      expect(await profile.exited).toBe(0);
+      expect(JSON.parse(await new Response(profile.stdout).text())).toMatchObject({ ok: true, party: { partyId: "party-cli-hub" }, computed: { sourceCoverage: { documents: 0, unmappedLedgerReferences: 0 } }, research: { warnings: [] } });
+      expect((db.query("SELECT count(*) AS n FROM rm_party_events").get() as { n: number }).n).toBe(before);
+    } finally {
+      db.close();
+      rmSync(workspace, { recursive: true, force: true });
+    }
+  });
+
   test("offers read-plan and authenticated confirmed apply through the CLI",async()=>{
     const workspace=makeWorkspace("legacy-mapping-cli",["Synthetic Company"]),root=companyRootForSlug(workspace,"synthetic-company");
     appendFileSync(join(root,"config","policy.yaml"),"  agents:\n    - agent:legacy-cli/1\n");

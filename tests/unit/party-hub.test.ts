@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { initWorkspace } from "../../src/core/workspace";
 import { openWorkspaceControlDb } from "../../src/core/workspace-control";
-import { createParty, linkPartyRole } from "../../src/core/party-registry";
+import { addPartyAlias, createParty, linkPartyRole } from "../../src/core/party-registry";
 import { partyHub, partyProfile } from "../../src/core/party-hub";
 
 const roots:string[]=[];
@@ -35,6 +35,18 @@ describe("#653 party hub projection",()=>{
     const {control,ledger}=setup();
     for(const [id,name] of [["party-b","Beta"],["party-a","Alpha"]] as const){createParty(control,{partyId:id,kind:"organization",name,source:"test",observedAt:"2026-01-01T00:00:00Z",reviewAssertion:"reviewed",actor:"user:test"});linkPartyRole(control,{partyId:id,companySlug:"alpha",role:"vendor",actor:"user:test"});}
     expect(partyHub(ledger,control,{companySlug:"alpha",visibleCompanies:new Set(["alpha"]),sort:"spend",from:"2026-01-01",asOf:"2026-01-31"}).rows.map(row=>row.partyId)).toEqual(["party-a","party-b"]);
+    ledger.close();control.close();
+  });
+
+  test("keeps unmapped ledger references out of coverage without inferring a display-name link",()=>{
+    const {control,ledger}=setup();
+    const party=createParty(control,{partyId:"party-research",kind:"organization",name:"Known name",source:"test",observedAt:"2026-01-01T00:00:00Z",reviewAssertion:"reviewed",actor:"user:test"});
+    linkPartyRole(control,{partyId:party.partyId,companySlug:"alpha",role:"vendor",actor:"user:test"});
+    addPartyAlias(control,{partyId:party.partyId,alias:"Proposed alias",source:"import",observedAt:"2026-01-03T00:00:00Z",reviewState:"proposed",actor:"user:test"});
+    ledger.run("INSERT INTO documents VALUES(7,'UNMAPPED','2026-01-10',500,'DKK','Known name')");
+    const result=partyProfile(ledger,control,{companySlug:"alpha",partyId:party.partyId,visibleCompanies:new Set(["alpha"]),from:"2026-01-01",asOf:"2026-01-31"})!;
+    expect(result.computed).toMatchObject({purchase:{amount:0},sourceCoverage:{documents:0,unmappedLedgerReferences:0}});
+    expect(result.research.warnings).toEqual(["Foreslået kilde kræver review: import"]);
     ledger.close();control.close();
   });
 });
