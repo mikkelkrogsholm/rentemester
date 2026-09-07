@@ -133,6 +133,13 @@ export type EvidenceManifest = {
       keyboardAssertions: string[];
       interception: { requested: string | null; actualRequests: string[] };
       consoleErrors: string[];
+      expectedNetworkErrors: Array<{
+        url: string;
+        status: 403 | 500;
+        source: "network";
+        level: "error";
+        message: string;
+      }>;
       domAssertions: string[];
     }
   >;
@@ -408,7 +415,8 @@ export function verifyEvidence(manifestPath: string): EvidenceManifest {
       !s.domAssertions?.length ||
       !s.interception ||
       !Array.isArray(s.consoleErrors) ||
-      s.consoleErrors.length
+      s.consoleErrors.length ||
+      !Array.isArray(s.expectedNetworkErrors)
     )
       throw new Error(`incomplete scenario result: ${s.scenario}`);
     const screenshot = artifacts.get(s.screenshot)!;
@@ -422,6 +430,26 @@ export function verifyEvidence(manifestPath: string): EvidenceManifest {
       throw new Error(`interception endpoint mismatch: ${s.scenario}`);
     if (!s.interception.actualRequests.includes(s.endpoint))
       throw new Error(`feature endpoint was not observed for ${s.scenario}`);
+    for (const error of s.expectedNetworkErrors) {
+      let request: NonNullable<Scenario["requests"]>[number] | undefined;
+      try {
+        const url = new URL(error.url);
+        request = (s.requests ?? []).find(
+          (candidate) => candidate.urlPattern === `${url.pathname}${url.search}`,
+        );
+      } catch {}
+      if (
+        !request ||
+        request.status !== error.status ||
+        (error.status !== 403 && error.status !== 500) ||
+        error.source !== "network" ||
+        error.level !== "error" ||
+        !new RegExp(
+          `^Failed to load resource: the server responded with a status of ${error.status}(?: \\([^)]*\\))?$`,
+        ).test(error.message)
+      )
+        throw new Error(`invalid expected network error: ${s.scenario}`);
+    }
   }
   if (used.size !== artifacts.size)
     throw new Error("unreferenced screenshot artifact");

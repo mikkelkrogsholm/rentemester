@@ -79,6 +79,7 @@ function fixture() {
         actualRequests: [s.endpoint],
       },
       consoleErrors: [],
+      expectedNetworkErrors: [],
       domAssertions: [s.dom.heading.selector],
     })),
   };
@@ -190,6 +191,26 @@ test("verifies PNG structure, dimensions, one-to-one mapping and query checksum"
     writeFileSync(join(value.dir, "orphan.png"), png(1, 1));
     writeFileSync(value.path, JSON.stringify(value.manifest));
     expect(() => verifyEvidence(value.path)).toThrow("unreferenced screenshot");
+  } finally {
+    rmSync(value.dir, { recursive: true, force: true });
+  }
+});
+test("rejects expected network evidence unless it exactly matches an owned 403 or 500 request", () => {
+  const value = fixture();
+  try {
+    const scenario = value.manifest.scenarios.find((item) => item.issue === 649 && item.state === "warning-or-blocked")!;
+    scenario.expectedNetworkErrors = [{
+      url: "http://127.0.0.1:43117/api/companies/evidence-fixture/attention",
+      status: 403,
+      source: "network",
+      level: "error",
+      message: "Failed to load resource: the server responded with a status of 403 ()",
+    }];
+    writeFileSync(value.path, JSON.stringify(value.manifest));
+    expect(verifyEvidence(value.path)).toBeDefined();
+    scenario.expectedNetworkErrors[0]!.url += "?partial=1";
+    writeFileSync(value.path, JSON.stringify(value.manifest));
+    expect(() => verifyEvidence(value.path)).toThrow("invalid expected network error");
   } finally {
     rmSync(value.dir, { recursive: true, force: true });
   }

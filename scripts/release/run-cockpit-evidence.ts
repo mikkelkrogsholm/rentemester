@@ -23,6 +23,7 @@ import {
   waitForBoundedCondition,
   waitForScenarioHeading,
 } from "./cockpit-evidence-dom-ready";
+import { expectedNetworkError, type ExpectedNetworkError } from "./cockpit-evidence-network-errors";
 
 const required = (name: string) => {
   const value = process.env[name]?.trim();
@@ -263,13 +264,17 @@ async function renderScenario(
     cdp = await openCdp(port);
     const actualRequests: string[] = [],
       consoleErrors: string[] = [],
+      expectedNetworkErrors: ExpectedNetworkError[] = [],
       interceptions: Promise<unknown>[] = [];
     const stop = cdp.on((message) => {
-      if (
-        message.method === "Runtime.exceptionThrown" ||
-        message.method === "Log.entryAdded"
-      )
+      if (message.method === "Runtime.exceptionThrown")
         consoleErrors.push(JSON.stringify(message.params));
+      if (message.method === "Log.entryAdded") {
+        const ownedRequests = scenario.requests ?? (scenario.interception ? [scenario.interception] : []);
+        const expected = expectedNetworkError(message.params, base, ownedRequests);
+        if (expected) expectedNetworkErrors.push(expected);
+        else consoleErrors.push(JSON.stringify(message.params));
+      }
       if (message.method !== "Fetch.requestPaused") return;
       const p = message.params as {
         requestId?: string;
@@ -424,6 +429,7 @@ async function renderScenario(
         actualRequests,
       },
       consoleErrors,
+      expectedNetworkErrors,
       domAssertions: assertions.map((a) => a.selector),
     };
   } finally {
