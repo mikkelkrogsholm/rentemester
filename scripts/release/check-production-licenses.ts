@@ -1,9 +1,11 @@
 const ALLOWED_PRODUCTION_LICENSES = new Set([
+  "0BSD",
   "Apache-2.0",
   "BSD-2-Clause",
   "BSD-3-Clause",
   "ISC",
   "MIT",
+  "Unlicense",
 ]);
 
 type LicensePackage = {
