@@ -53,6 +53,26 @@ test("waits for a delayed post-keyboard condition without a static sleep", async
   expect(elapsed).toBe(200);
 });
 
+test("waits for the declared #650 normal DOM state after its loading shell mounts", async () => {
+  let probes = 0;
+  let elapsed = 0;
+  await waitForBoundedCondition({
+    scenario: "issue-650-normal-desktop",
+    expectedOutcome: 'visible DOM state issue-650-normal-desktop; selector=[data-evidence-issue="650"] [data-evidence-status="normal"]; expectedText="Bogføringskø klar"',
+    deadlineMs: NORMAL_HEADING_READY_DEADLINE_MS,
+    probe: async () => ({
+      satisfied: ++probes === 3,
+      url: "http://127.0.0.1:43117/companies/evidence-fixture/batchbogfoering",
+      bodyText: "Bogføringsarbejdsbord Henter bogføringskø",
+      diagnostics: "#650=loading:Henter bogføringskø",
+    }),
+    now: () => elapsed,
+    sleep: async (milliseconds) => { elapsed += milliseconds; },
+  });
+  expect(probes).toBe(3);
+  expect(elapsed).toBe(200);
+});
+
 test("reports scenario, expected outcome, URL and visible body on post-keyboard timeout", async () => {
   let elapsed = 0;
   const snapshot = {
@@ -71,6 +91,23 @@ test("reports scenario, expected outcome, URL and visible body on post-keyboard 
     "scenario=issue-649-normal-desktop; expected=URL matching /companies/evidence-fixture/opmaerksomhed?filter=open; url=http://127.0.0.1:43117/companies/evidence-fixture/opmaerksomhed; bodyText=\"Attention still loading\"",
   );
   expect(elapsed).toBe(200);
+});
+
+test("includes observed evidence state in a bounded-condition timeout", async () => {
+  let elapsed = 0;
+  await expect(waitForBoundedCondition({
+    scenario: "issue-650-normal-desktop",
+    expectedOutcome: "visible normal evidence status",
+    deadlineMs: 100,
+    probe: async () => ({
+      satisfied: false,
+      url: "http://127.0.0.1:43117/companies/evidence-fixture/batchbogfoering",
+      bodyText: "Bogføringsarbejdsbord Henter bogføringskø",
+      diagnostics: "#650=loading:Henter bogføringskø",
+    }),
+    now: () => elapsed,
+    sleep: async (milliseconds) => { elapsed += milliseconds; },
+  })).rejects.toThrow('diagnostics="#650=loading:Henter bogføringskø"');
 });
 
 test("reports actionable sanitized diagnostics on a heading timeout", async () => {

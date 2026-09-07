@@ -23,6 +23,8 @@ export type BoundedConditionSnapshot = {
   url: string;
   bodyText: string;
   readyState?: string;
+  /** A compact, browser-observed state summary for timeout triage. */
+  diagnostics?: string;
 };
 
 export type BoundedConditionOptions = {
@@ -49,7 +51,7 @@ function conditionTimeoutError(
   snapshot: BoundedConditionSnapshot,
 ): Error {
   return new Error(
-    `scenario condition did not become true before deadline: scenario=${options.scenario}; expected=${options.expectedOutcome}; url=${snapshot.url};${snapshot.readyState ? ` readyState=${snapshot.readyState};` : ""} bodyText=${JSON.stringify(sanitizedBodyExcerpt(snapshot.bodyText))}`,
+    `scenario condition did not become true before deadline: scenario=${options.scenario}; expected=${options.expectedOutcome}; url=${snapshot.url};${snapshot.readyState ? ` readyState=${snapshot.readyState};` : ""}${snapshot.diagnostics ? ` diagnostics=${JSON.stringify(sanitizedBodyExcerpt(snapshot.diagnostics))};` : ""} bodyText=${JSON.stringify(sanitizedBodyExcerpt(snapshot.bodyText))}`,
   );
 }
 

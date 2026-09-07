@@ -21,6 +21,7 @@ import { cdpKeyEvents, type EvidenceKey } from "./cockpit-evidence-key-events";
 import {
   LOADING_HEADING_READY_DEADLINE_MS,
   POST_ACTION_CONDITION_DEADLINE_MS,
+  headingReadyDeadline,
   waitForBoundedCondition,
   waitForScenarioHeading,
 } from "./cockpit-evidence-dom-ready";
@@ -182,6 +183,8 @@ const expression = (a: {
   // must be rendered for a sighted user inside the designated element.  Do
   // not let aria labels, sr-only captions, or hidden descendants satisfy it.
   `(()=>{const e=document.querySelector(${JSON.stringify(a.selector)});if(!e)return false;const visible=${a.visible !== false};const isVisible=n=>{for(let x=n.parentElement;x;x=x.parentElement){const s=getComputedStyle(x);if(x.classList.contains('sr-only')||s.display==='none'||s.visibility==='hidden'||s.visibility==='collapse'||s.contentVisibility==='hidden')return false}const r=document.createRange();r.selectNodeContents(n);return Array.from(r.getClientRects()).some(rect=>rect.width||rect.height)};const visibleText=()=>{const w=document.createTreeWalker(e,NodeFilter.SHOW_TEXT);let text='',n;while(n=w.nextNode())if(n.nodeValue&&isVisible(n))text+=n.nodeValue;return text};return (!visible||(!!(e.offsetWidth||e.offsetHeight||e.getClientRects().length)))&&${a.text ? `visibleText().includes(${JSON.stringify(a.text)})` : "true"};})()`;
+const assertionLabel = (scenario: Scenario, assertion: { selector: string; text?: string }) =>
+  `${scenario.scenario}; selector=${assertion.selector}; expectedText=${JSON.stringify(assertion.text ?? "")}`;
 async function evaluateBoolean(cdp: Cdp, source: string, label: string) {
   const value = await cdp.call("Runtime.evaluate", {
     expression: source,
@@ -219,7 +222,7 @@ async function scenarioHeadingSnapshot(cdp: Cdp, selector: string) {
 }
 async function scenarioConditionSnapshot(cdp: Cdp, condition: string) {
   const value = await cdp.call("Runtime.evaluate", {
-    expression: `(()=>({satisfied:Boolean(${condition}),url:location.href,bodyText:(document.body?.innerText??document.documentElement?.innerText??"").slice(0,1000)}))()`,
+    expression: `(()=>({satisfied:Boolean(${condition}),url:location.href,bodyText:(document.body?.innerText??document.documentElement?.innerText??"").slice(0,1000),diagnostics:Array.from(document.querySelectorAll('[data-evidence-issue] [data-evidence-status]')).map(e=>\`#\${e.closest('[data-evidence-issue]')?.getAttribute('data-evidence-issue') ?? '?'}=\${e.getAttribute('data-evidence-status') ?? '?'}:\${e.textContent?.trim() ?? ''}\`).join(' | ') || 'no evidence status in DOM'}))()`,
     returnByValue: true,
     awaitPromise: true,
   });
@@ -230,11 +233,13 @@ async function scenarioConditionSnapshot(cdp: Cdp, condition: string) {
     satisfied: unknown;
     url: unknown;
     bodyText: unknown;
+    diagnostics: unknown;
   }>;
   return {
     satisfied: record.satisfied === true,
     url: typeof record.url === "string" ? record.url : "",
     bodyText: typeof record.bodyText === "string" ? record.bodyText : "",
+    diagnostics: typeof record.diagnostics === "string" ? record.diagnostics : "",
   };
 }
 async function renderScenario(
@@ -332,6 +337,16 @@ async function renderScenario(
       state: scenario.state,
       probe: () => scenarioHeadingSnapshot(cdp, scenario.dom.heading.selector),
     });
+    // #650 (and any future view with a shared loading/ready heading) can mount
+    // its page shell before its owned requests have reached the declared state.
+    // Evidence therefore waits for the contract's exact status, not merely the
+    // heading that proves React mounted.
+    await waitForBoundedCondition({
+      scenario: scenario.scenario,
+      expectedOutcome: `visible DOM state ${assertionLabel(scenario, scenario.dom.status)}`,
+      deadlineMs: headingReadyDeadline(scenario.state),
+      probe: () => scenarioConditionSnapshot(cdp, expression(scenario.dom.status)),
+    });
     await evaluateBoolean(
       cdp,
       `window.innerWidth === ${scenario.viewport.width} && window.innerHeight === ${scenario.viewport.height} && window.devicePixelRatio === ${scenario.viewport.deviceScaleFactor}`,
@@ -345,7 +360,7 @@ async function renderScenario(
       ...(scenario.dom.coreAction ? [scenario.dom.coreAction] : []),
     ];
     for (const a of assertions)
-      await evaluateBoolean(cdp, expression(a), a.selector);
+      await evaluateBoolean(cdp, expression(a), assertionLabel(scenario, a));
     await evaluateBoolean(
       cdp,
       "document.documentElement.scrollWidth <= window.innerWidth",
