@@ -15,6 +15,7 @@ import {
 } from "./cockpit-evidence";
 import { internalAppIpv4, startLoopbackProxy, type NetworkSettings } from "./cockpit-evidence-proxy";
 import { browserUrlMatchesExpected } from "./cockpit-evidence-url";
+import { selectPageDevToolsTarget } from "./cockpit-evidence-cdp-target";
 import {
   LOADING_HEADING_READY_DEADLINE_MS,
   waitForScenarioHeading,
@@ -88,9 +89,12 @@ type Cdp = {
 async function openCdp(port: number): Promise<Cdp> {
   const targets = (await fetch(`http://127.0.0.1:${port}/json/list`).then((r) =>
     r.json(),
-  )) as Array<{ webSocketDebuggerUrl?: string }>;
-  const url = targets.find((t) => t.webSocketDebuggerUrl)?.webSocketDebuggerUrl;
-  if (!url) throw new Error("Chrome did not expose a DevTools page target");
+  )) as Array<{
+    type?: string;
+    url?: string;
+    webSocketDebuggerUrl?: string;
+  }>;
+  const url = selectPageDevToolsTarget(targets);
   const socket = new WebSocket(url),
     pending = new Map<
       number,
@@ -216,6 +220,7 @@ async function renderScenario(
         chrome,
         "--headless=new",
         "--disable-gpu",
+        "--disable-extensions",
         `--remote-debugging-port=${port}`,
         `--user-data-dir=${profile}`,
         "--no-first-run",
