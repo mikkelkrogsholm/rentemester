@@ -15,6 +15,10 @@ import {
 } from "./cockpit-evidence";
 import { internalAppIpv4, startLoopbackProxy, type NetworkSettings } from "./cockpit-evidence-proxy";
 import { browserUrlMatchesExpected } from "./cockpit-evidence-url";
+import {
+  LOADING_HEADING_READY_DEADLINE_MS,
+  waitForScenarioHeading,
+} from "./cockpit-evidence-dom-ready";
 
 const required = (name: string) => {
   const value = process.env[name]?.trim();
@@ -175,6 +179,28 @@ async function evaluateBoolean(cdp: Cdp, source: string, label: string) {
   if ((value.result as { value?: unknown })?.value !== true)
     throw new Error(`DOM assertion failed: ${label}`);
 }
+async function scenarioHeadingSnapshot(cdp: Cdp, selector: string) {
+  const value = await cdp.call("Runtime.evaluate", {
+    expression: `(()=>{const e=document.querySelector(${JSON.stringify(selector)});return {headingVisible:!!e&&!!(e.offsetWidth||e.offsetHeight||e.getClientRects().length),url:location.href,readyState:document.readyState,bodyText:(document.body?.innerText??document.documentElement?.innerText??"").slice(0,1000)};})()`,
+    returnByValue: true,
+    awaitPromise: true,
+  });
+  const snapshot = (value.result as { value?: unknown })?.value;
+  if (!snapshot || typeof snapshot !== "object")
+    throw new Error("Chrome did not return a page readiness snapshot");
+  const record = snapshot as Partial<{
+    headingVisible: unknown;
+    url: unknown;
+    readyState: unknown;
+    bodyText: unknown;
+  }>;
+  return {
+    headingVisible: record.headingVisible === true,
+    url: typeof record.url === "string" ? record.url : "",
+    readyState: typeof record.readyState === "string" ? record.readyState : "unknown",
+    bodyText: typeof record.bodyText === "string" ? record.bodyText : "",
+  };
+}
 async function renderScenario(
   chrome: string,
   base: string,
@@ -249,7 +275,22 @@ async function renderScenario(
       patterns: (scenario.requests ?? [scenario.interception!]).map((request) => ({ urlPattern: `${base}${request.urlPattern}`, requestStage: "Request" })),
     });
     await cdp.call("Page.navigate", { url: `${base}${scenario.route}` });
-    await Bun.sleep(scenario.interception?.delayMs ? 300 : 1000);
+    const ownedRequests = scenario.requests ?? (scenario.interception ? [scenario.interception] : []);
+    if (
+      scenario.state === "loading" &&
+      !ownedRequests.some(
+        (request) =>
+          (request.delayMs ?? 0) >= LOADING_HEADING_READY_DEADLINE_MS * 2,
+      )
+    )
+      throw new Error(
+        `${scenario.scenario} loading response delay must exceed the bounded heading mount wait`,
+      );
+    await waitForScenarioHeading({
+      scenario: scenario.scenario,
+      state: scenario.state,
+      probe: () => scenarioHeadingSnapshot(cdp, scenario.dom.heading.selector),
+    });
     await evaluateBoolean(
       cdp,
       `window.innerWidth === ${scenario.viewport.width} && window.innerHeight === ${scenario.viewport.height} && window.devicePixelRatio === ${scenario.viewport.deviceScaleFactor}`,

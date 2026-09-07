@@ -319,7 +319,7 @@ function expandProfile(profile: IssueProfile): Scenario[] {
     interception: {
       urlPattern: profile.endpoint,
       status: state === "warning-or-blocked" ? 403 : state === "error" ? 500 : 200,
-      body: evidenceResponse(profile.issue, state), ...(state === "loading" ? { delayMs: 3000 } : {}),
+      body: evidenceResponse(profile.issue, state), ...(state === "loading" ? { delayMs: 5000 } : {}),
     },
     requests: evidenceRequests(profile.issue, state),
   });
