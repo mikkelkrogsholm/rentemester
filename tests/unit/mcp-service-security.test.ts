@@ -60,6 +60,8 @@ describe("MCP service principal guard", () => {
       expect(env.RENTEMESTER_SERVICE_PRINCIPAL_TOKEN).toBeUndefined();
       expect(await authorizeMcpTool(context, "accounts_list", { company: "allowed-aps" })).not.toBeNull();
       expect(await authorizeMcpTool(context, "accounts_add", { company: "allowed-aps" })).toBeNull();
+      expect(await authorizeMcpTool(context, "party_coverage", { company: "allowed-aps" })).not.toBeNull();
+      expect(await authorizeMcpTool(context, "party_coverage_apply", { company: "allowed-aps", confirm: true })).toBeNull();
       expect(await authorizeMcpTool(context, "accounts_list", { company: "hidden-aps" })).toBeNull();
       // Fan-out tools cannot use a partly authorized key.  The hidden active
       // company is denied before the handler can inspect or mutate either

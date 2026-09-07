@@ -441,6 +441,12 @@ export function applySchemaMigrations(db: Database): void {
           // table already contains the durable evidence and must not be rebuilt.
           sql = "";
         }
+        if (migration.id === 56 && (db.query("PRAGMA table_info(party_coverage_bank_resolution_events)").all() as Array<{name:string}>).some(column=>column.name==="decision_hash")) {
+          // Recovery after a lost migration-ledger row: the v56 event table,
+          // current projection and append-only guards already protect the
+          // retained evidence. Never rebuild or duplicate that history.
+          sql = "";
+        }
         if (sql.trim()) db.exec(sql);
       }
       db.query(`INSERT INTO schema_migrations (id, name, checksum, applied_by_version, applied_by_commit) VALUES (?, ?, ?, ?, ?)`)

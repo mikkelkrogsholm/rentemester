@@ -68,6 +68,7 @@ describe("agent runtime catalogue (#584)", () => {
       ["close period", "period-management"],
       ["import from Dinero", "imports"],
       ["send e-invoice", "digisense-nemhandel"],
+      ["identify bank row counterparty", "document-party-resolution"],
     ]);
     for (const [query, capabilityId] of expected) {
       expect(searchCapabilities(query, 0, 10).items.map((item) => item.id)).toContain(capabilityId);
@@ -75,6 +76,9 @@ describe("agent runtime catalogue (#584)", () => {
     expect(searchCapabilities("submit VAT authority return", 0, 10)).toMatchObject({ total: 0, items: [] });
     expect(searchCapabilities("correct balance without bank movement", 0, 10).items.map((item) => item.id)).toContain("non-cash-balance-corrections");
     expect(describeWorkflow("non-cash-balance-correction", { tools: [], commands: [], routes: [] })?.workflow.steps.map((step) => step.operation.name)).toEqual(["documents_ingest", "documents_list", "journal_dry_run", "journal_post", "journal_list"]);
+    const partyWorkflow=AGENT_WORKFLOWS.find(workflow=>workflow.id==="document-party-resolution")!;
+    expect(partyWorkflow.steps.find(step=>step.id==="coverage-plan")?.purpose).toContain("exact transaction");
+    expect(partyWorkflow.unsupportedBoundaries).toContain("A bank-row decision applies only to its exact transaction and is never projected onto sibling rows sharing a document.");
   });
 
   test("is deterministic and paginated for identical build inputs", () => {
