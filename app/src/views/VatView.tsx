@@ -45,7 +45,7 @@ export function VatView() {
   // below.
   if (!v.vatRegistered) {
     return (
-      <section className="statement" data-cockpit-page="vat" data-evidence-issue="655">
+      <section className="statement" data-cockpit-page="vat" data-evidence-issue="656">
         <div className="page-head">
           <div>
             <h2>{v.company.name}</h2>
@@ -91,10 +91,12 @@ export function VatView() {
   const statusTone = filingStatus === "Ikke klar" ? "danger" : filingStatus === "Kræver stillingtagen" ? "warning" : "success";
 
   return (
-    <section className="statement" data-cockpit-page="vat" data-evidence-issue="655">
+    <section className="statement" data-cockpit-page="vat" data-evidence-issue="656">
       <div className="page-head">
         <div>
-          <h2>{v.company.name}</h2>
+            <h2>{v.company.name}</h2>
+            <h3 data-evidence-heading>Moms og lukkeparathed</h3>
+            <p className="muted" data-evidence-status="normal">Momsparathed klar</p>
           <p className="muted">
             {v.company.cvr ? `CVR ${v.company.cvr} · ` : ""}
             {v.company.country} · {currency} · Moms

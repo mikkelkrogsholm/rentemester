@@ -52,7 +52,7 @@ function fixture() {
     };
   });
   const manifest: EvidenceManifest = {
-    manifestVersion: 2,
+    manifestVersion: 3,
     commit: "a".repeat(40),
     image: `ghcr.io/example/rentemester@sha256:${"b".repeat(64)}`,
     imageDigest: `sha256:${"b".repeat(64)}`,

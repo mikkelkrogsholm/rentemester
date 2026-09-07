@@ -1,8 +1,9 @@
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { isAbsolute, resolve, sep } from "node:path";
+import { evidenceResponse, validateEvidenceFixtures } from "./cockpit-evidence-fixtures";
 
-export const COCKPIT_EVIDENCE_VERSION = 2;
+export const COCKPIT_EVIDENCE_VERSION = 3;
 export const REQUIRED_ISSUES = [
   649, 650, 651, 652, 653, 654, 655, 656, 657,
 ] as const;
@@ -176,6 +177,7 @@ export function pngDimensions(path: string): { width: number; height: number } {
   return ihdr;
 }
 export function parseScenarios(path: string): Scenario[] {
+  validateEvidenceFixtures();
   const value: unknown = JSON.parse(readFileSync(path, "utf8"));
   if (!value || typeof value !== "object" || !Array.isArray((value as ScenarioConfig).profiles))
     throw new Error("scenario configuration must contain issue profiles");
@@ -225,13 +227,8 @@ export function parseScenarios(path: string): Scenario[] {
       throw new Error(
         `endpoint and interception must be exact, route-specific, and exclude health/identity for ${s.scenario}`,
       );
-    if (
-      ["loading", "warning-or-blocked", "error"].includes(s.state) !==
-      !!s.interception
-    )
-      throw new Error(
-        `state-to-interception semantics required for ${s.scenario}`,
-      );
+    if (!s.interception)
+      throw new Error(`every browser state must intercept its exact owned endpoint: ${s.scenario}`);
   }
   for (const issue of REQUIRED_ISSUES) {
     const mine = scenarios.filter((s) => s.issue === issue);
@@ -310,13 +307,11 @@ function expandProfile(profile: IssueProfile): Scenario[] {
       height: MODE_VIEWPORTS[mode].height * MODE_VIEWPORTS[mode].deviceScaleFactor,
     },
     dom: dom(state), keyboard: state === "normal" && mode === "desktop" ? keyboard : undefined,
-    ...(["loading", "warning-or-blocked", "error"] as State[]).includes(state) ? {
-      interception: {
-        urlPattern: profile.endpoint,
-        status: state === "warning-or-blocked" ? 403 : state === "error" ? 500 : 200,
-        body: "{}", ...(state === "loading" ? { delayMs: 3000 } : {}),
-      },
-    } : {},
+    interception: {
+      urlPattern: profile.endpoint,
+      status: state === "warning-or-blocked" ? 403 : state === "error" ? 500 : 200,
+      body: evidenceResponse(profile.issue, state), ...(state === "loading" ? { delayMs: 3000 } : {}),
+    },
   });
   return [scenario("normal", "desktop"), scenario("normal", "mobile"), scenario("normal", "zoom"), ...REQUIRED_STATES.slice(1).map((state) => scenario(state, "desktop"))];
 }

@@ -112,10 +112,12 @@ export function JournalView() {
   const pageEntries = filteredEntries.slice(page * pageSize, page * pageSize + pageSize);
 
   return (
-    <section className="statement" data-cockpit-page="journal" data-evidence-issue="655">
+    <section className="statement" data-cockpit-page="journal" data-evidence-issue="652">
       <div className="page-head">
         <div>
           <h2>{j.company.name}</h2>
+          <h3 data-evidence-heading>Posteringer</h3>
+          <p className="muted" data-evidence-status={filteredEntries.length ? "normal" : "empty"}>{filteredEntries.length ? "Posteringer klar" : "Ingen posteringer i perioden"}</p>
           <p className="muted">
             {j.company.cvr ? `CVR ${j.company.cvr} · ` : ""}
             {j.company.country} · {currency} · Posteringer

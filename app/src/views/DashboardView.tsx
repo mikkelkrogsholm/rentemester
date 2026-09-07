@@ -62,7 +62,7 @@ export function DashboardView() {
   const positive = o.profitAndLoss.resultat >= 0;
 
   return (
-    <section className="overview" data-cockpit-page="dashboard" data-evidence-issue="655" data-evidence-prior-issue="651">
+    <section className="overview" data-cockpit-page="dashboard" data-evidence-issue="651">
       <div className="page-head">
         <div>
           <h2>{o.company.name}</h2>

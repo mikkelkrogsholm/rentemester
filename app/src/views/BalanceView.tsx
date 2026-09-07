@@ -48,10 +48,12 @@ export function BalanceView() {
   const priorYear = String(parseInt(b.selectedYear, 10) - 1);
 
   return (
-    <section className="statement" data-cockpit-page="balance" data-evidence-issue="655">
+    <section className="statement" data-cockpit-page="balance" data-evidence-issue="654">
       <div className="page-head">
         <div>
           <h2>{b.company.name}</h2>
+          <h3 data-evidence-heading>Balance</h3>
+          <p className="muted" data-evidence-status="normal">Aktuel bogføring</p>
           <p className="muted">
             {b.company.cvr ? `CVR ${b.company.cvr} · ` : ""}
             {b.company.country} · {currency} · Balance
@@ -92,7 +94,7 @@ export function BalanceView() {
       <p className="statement-asof muted"><StatusChip coverage={b.coverage} /> · Pr. {b.asOfDate}</p>
       {b.coverage.comparison === "not_comparable" && <p className="muted">Ingen kilde for foregående år — ikke sammenlignelig.</p>}
       <div className="card statement-card">
-        <table className="data statement-table">
+        <table className="data statement-table" data-evidence-data>
           <thead>
             <tr>
               <th>Konto</th>

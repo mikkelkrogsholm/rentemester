@@ -276,6 +276,8 @@ async function renderScenario(
       // Traverse from document focus, bounded to keep a broken focus order from
       // hanging a release run.
       if (step.key === "Tab") {
+        if (!step.expectState)
+          throw new Error(`${scenario.scenario} Tab proof requires a focused control assertion`);
         const maxTabs = 24;
         let reached = false;
         for (let tab = 1; tab <= maxTabs; tab++) {
@@ -489,7 +491,7 @@ try {
     generated.push({ ...scenario, screenshot: name, ...rendered });
   }
   const manifest: EvidenceManifest = {
-    manifestVersion: 2,
+    manifestVersion: 3,
     commit,
     image,
     imageDigest: image.slice(image.lastIndexOf("@") + 1),

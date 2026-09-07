@@ -132,10 +132,11 @@ function ManageForm({
   }
 
   return (
-    <section data-cockpit-page="manage" data-evidence-issue="655">
+    <section data-cockpit-page="manage" data-evidence-issue="657">
       <div className="page-head">
         <div>
-          <h2>Administration</h2>
+          <h2 data-evidence-heading>Administration</h2>
+          <p className="muted" data-evidence-status="normal">Administration klar</p>
           <p className="muted">
             Hold virksomhedens profil og den daglige opsætning på plads.
           </p>
