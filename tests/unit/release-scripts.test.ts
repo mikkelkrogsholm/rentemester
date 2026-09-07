@@ -15,6 +15,8 @@ const baseImageDigest = `sha256:${"d".repeat(64)}`;
 const sbomSha256 = `sha256:${"e".repeat(64)}`;
 const supplyChainSha256 = `sha256:${"f".repeat(64)}`;
 const agentDiscoverySha256 = `sha256:${"1".repeat(64)}`;
+const cockpitEvidenceSha256 = `sha256:${"2".repeat(64)}`;
+const cockpitRegressionQuerySha256 = `sha256:${"3".repeat(64)}`;
 
 function runScript(script: string, args: string[], env: NodeJS.ProcessEnv = {}) {
   return spawnSync("bun", ["run", script, ...args], {
@@ -95,6 +97,8 @@ describe("release evidence scripts", () => {
       RELEASE_SBOM_SHA256: sbomSha256,
       RELEASE_SUPPLY_CHAIN_SHA256: supplyChainSha256,
       RELEASE_AGENT_DISCOVERY_SHA256: agentDiscoverySha256,
+      RELEASE_COCKPIT_EVIDENCE_SHA256: cockpitEvidenceSha256,
+      RELEASE_COCKPIT_REGRESSION_QUERY_SHA256: cockpitRegressionQuerySha256,
     });
     expect(created.status).not.toBe(0);
     expect(created.stderr).toContain("invalid release SemVer");
@@ -118,6 +122,8 @@ describe("release evidence scripts", () => {
         RELEASE_SBOM_SHA256: sbomSha256,
         RELEASE_SUPPLY_CHAIN_SHA256: supplyChainSha256,
         RELEASE_AGENT_DISCOVERY_SHA256: agentDiscoverySha256,
+        RELEASE_COCKPIT_EVIDENCE_SHA256: cockpitEvidenceSha256,
+        RELEASE_COCKPIT_REGRESSION_QUERY_SHA256: cockpitRegressionQuerySha256,
       });
       expect(created.status).toBe(0);
       expect(JSON.parse(created.stdout).workflow).toEqual({
@@ -125,7 +131,7 @@ describe("release evidence scripts", () => {
         runAttempt: 1,
       });
       expect(JSON.parse(created.stdout).runtime).toEqual({ bunVersion, baseImageDigest });
-      expect(JSON.parse(created.stdout).evidence).toEqual({ sbomSha256, supplyChainSha256, agentDiscoverySha256 });
+      expect(JSON.parse(created.stdout).evidence).toEqual({ sbomSha256, supplyChainSha256, agentDiscoverySha256, cockpitEvidenceSha256, cockpitRegressionQuerySha256 });
       const manifestPath = join(directory, "release-manifest.json");
       writeFileSync(manifestPath, created.stdout);
       const releaseManifestDigest = `sha256:${createHash("sha256")
@@ -151,6 +157,17 @@ describe("release evidence scripts", () => {
       );
       expect(verified.status).toBe(0);
       expect(verified.stdout).toContain("Digisense approved 0.2.0");
+
+      const manifest = JSON.parse(created.stdout);
+      manifest.evidence.cockpitEvidenceSha256 = "sha256:not-a-checksum";
+      writeFileSync(manifestPath, JSON.stringify(manifest));
+      const invalidCockpitEvidence = runScript(
+        "scripts/release/verify-approval.ts",
+        [manifestPath, approvalPath],
+      );
+      expect(invalidCockpitEvidence.status).not.toBe(0);
+      expect(invalidCockpitEvidence.stderr).toContain("evidence checksums are invalid");
+      writeFileSync(manifestPath, created.stdout);
 
       writeFileSync(
         approvalPath,
@@ -198,6 +215,8 @@ describe("release evidence scripts", () => {
       RELEASE_SBOM_SHA256: sbomSha256,
       RELEASE_SUPPLY_CHAIN_SHA256: supplyChainSha256,
       RELEASE_AGENT_DISCOVERY_SHA256: agentDiscoverySha256,
+      RELEASE_COCKPIT_EVIDENCE_SHA256: cockpitEvidenceSha256,
+      RELEASE_COCKPIT_REGRESSION_QUERY_SHA256: cockpitRegressionQuerySha256,
     });
     expect(created.status).not.toBe(0);
     expect(created.stderr).toContain("runtime must declare Bun version and base image digest");
@@ -219,6 +238,8 @@ describe("release evidence scripts", () => {
       RELEASE_SBOM_SHA256: "",
       RELEASE_SUPPLY_CHAIN_SHA256: supplyChainSha256,
       RELEASE_AGENT_DISCOVERY_SHA256: agentDiscoverySha256,
+      RELEASE_COCKPIT_EVIDENCE_SHA256: cockpitEvidenceSha256,
+      RELEASE_COCKPIT_REGRESSION_QUERY_SHA256: cockpitRegressionQuerySha256,
     });
     expect(created.status).not.toBe(0);
     expect(created.stderr).toContain("RELEASE_SBOM_SHA256 is required");
@@ -240,6 +261,8 @@ describe("release evidence scripts", () => {
       RELEASE_SBOM_SHA256: sbomSha256,
       RELEASE_SUPPLY_CHAIN_SHA256: "",
       RELEASE_AGENT_DISCOVERY_SHA256: agentDiscoverySha256,
+      RELEASE_COCKPIT_EVIDENCE_SHA256: cockpitEvidenceSha256,
+      RELEASE_COCKPIT_REGRESSION_QUERY_SHA256: cockpitRegressionQuerySha256,
     });
     expect(created.status).not.toBe(0);
     expect(created.stderr).toContain("RELEASE_SUPPLY_CHAIN_SHA256 is required");
@@ -261,6 +284,8 @@ describe("release evidence scripts", () => {
       RELEASE_SBOM_SHA256: sbomSha256,
       RELEASE_SUPPLY_CHAIN_SHA256: supplyChainSha256,
       RELEASE_AGENT_DISCOVERY_SHA256: "",
+      RELEASE_COCKPIT_EVIDENCE_SHA256: cockpitEvidenceSha256,
+      RELEASE_COCKPIT_REGRESSION_QUERY_SHA256: cockpitRegressionQuerySha256,
     });
     expect(created.status).not.toBe(0);
     expect(created.stderr).toContain("RELEASE_AGENT_DISCOVERY_SHA256 is required");

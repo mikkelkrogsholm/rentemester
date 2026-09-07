@@ -100,11 +100,16 @@ if (!/^sha256:[0-9a-f]{64}$/i.test(releaseImageDigest)) {
 const runtimeBunVersion = stringField(runtime, "bunVersion");
 const runtimeBaseImageDigest = stringField(runtime, "baseImageDigest");
 const sbomSha256 = stringField(evidence, "sbomSha256");
+const supplyChainSha256 = stringField(evidence, "supplyChainSha256");
+const agentDiscoverySha256 = stringField(evidence, "agentDiscoverySha256");
+const cockpitEvidenceSha256 = stringField(evidence, "cockpitEvidenceSha256");
+const cockpitRegressionQuerySha256 = stringField(evidence, "cockpitRegressionQuerySha256");
 if (!isValidSemVer(runtimeBunVersion) || !/^sha256:[0-9a-f]{64}$/i.test(runtimeBaseImageDigest)) {
   throw new Error("release manifest runtime identity is invalid");
 }
-if (!/^sha256:[0-9a-f]{64}$/i.test(sbomSha256)) {
-  throw new Error("release manifest SBOM evidence is invalid");
+if (![sbomSha256, supplyChainSha256, agentDiscoverySha256, cockpitEvidenceSha256, cockpitRegressionQuerySha256]
+  .every((digest) => /^sha256:[0-9a-f]{64}$/i.test(digest))) {
+  throw new Error("release manifest evidence checksums are invalid");
 }
 if (
   !/^\d+$/.test(stringField(workflow, "runId")) ||

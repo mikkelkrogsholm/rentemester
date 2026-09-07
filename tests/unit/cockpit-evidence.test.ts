@@ -9,6 +9,9 @@ import {
   verifyEvidence,
   type EvidenceManifest,
 } from "../../scripts/release/cockpit-evidence";
+import { createCompany } from "../../src/core/company";
+import { initWorkspace } from "../../src/core/workspace";
+import { handleRequest } from "../../src/server/router";
 
 const scenarios = parseScenarios(
   join(
@@ -121,9 +124,21 @@ test("rejects a manifest with a cross-feature route or endpoint mapping", () => 
     rmSync(value.dir, { recursive: true, force: true });
   }
 });
-test("expands only the nine exact feature profiles and rejects a wrong mapping", () => {
+test("expands only the nine exact feature profiles, resolves #651 live route, and rejects a wrong mapping", async () => {
   expect(scenarios.find((s) => s.issue === 650)?.route).toBe("/companies/evidence-fixture/batchbogfoering");
-  expect(scenarios.find((s) => s.issue === 651)?.endpoint).toBe("/api/companies/evidence-fixture/overview/changes");
+  expect(scenarios.find((s) => s.issue === 651)?.endpoint).toBe("/api/companies/evidence-fixture/changes-since?after=0");
+  const workspace = mkdtempSync(join(tmpdir(), "rentemester-cockpit-route-"));
+  try {
+    initWorkspace(workspace);
+    createCompany(workspace, { name: "Evidence Fixture", cvr: "DK90000000" });
+    const response = await handleRequest(
+      new Request("http://localhost/api/companies/evidence-fixture/changes-since?after=0"),
+      { workspaceRoot: workspace, host: "127.0.0.1", port: 0, authRequired: false, authToken: null },
+    );
+    expect(response.status).toBe(200);
+  } finally {
+    rmSync(workspace, { recursive: true, force: true });
+  }
   const dir = mkdtempSync(join(tmpdir(), "rentemester-cockpit-config-"));
   try {
     const config = JSON.parse(readFileSync(join(import.meta.dir, "..", "..", "scripts", "release", "cockpit-evidence-scenarios.json"), "utf8"));

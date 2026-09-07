@@ -41,7 +41,7 @@ const mcpToolPermissions = Object.fromEntries([
 ] as Array<[string, RoutePermission]>) as Record<string, RoutePermission>;
 
 // Compact gateway names are public discovery entry points. Keep them
-// non-enumerable so the legacy 246-operation permission parity remains a
+// non-enumerable so the legacy 249-operation permission parity remains a
 // stable compatibility identity; a gateway never grants the selected
 // operation because its captured original callback re-authorizes that name.
 for (const name of ["system_server_about", "agent_capability_search", "agent_workflow_describe", "agent_operation_search", "agent_operation_describe", "agent_operation_read", "agent_operation_write", "agent_operation_destroy"]) {

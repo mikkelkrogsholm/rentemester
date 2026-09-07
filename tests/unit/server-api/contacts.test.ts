@@ -14,7 +14,7 @@ import {
 } from "./_shared";
 
 describe("cockpit API — contacts (GET .../contacts)", () => {
-  test("returns customers and vendors from the master data", async () => {
+  test("returns customers and vendors without requiring Party Hub or inferring a party", async () => {
     const ws = makeWorkspace("con-live", ["Acme ApS"]);
     try {
       const db = openDb(companyPaths(companyRootForSlug(ws, "acme-aps")).db);
@@ -36,6 +36,10 @@ describe("cockpit API — contacts (GET .../contacts)", () => {
       expect(c.customers[0].name).toBe("Kunde A/S");
       expect(c.vendors.length).toBe(1);
       expect(c.vendors[0].name).toBe("Leverandør ApS");
+      // The fixture has no workspace Party Hub registry. Contacts remain
+      // company-local master data until an explicit durable mapping exists.
+      expect(c.customers[0].partyId).toBeNull();
+      expect(c.vendors[0].partyId).toBeNull();
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }

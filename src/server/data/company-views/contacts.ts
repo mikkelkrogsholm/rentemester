@@ -4,7 +4,10 @@ import { openDb, migrate } from "../../../core/db";
 import { getCompanySettings } from "../../../core/company";
 import { buildInvoiceList } from "../../../core/invoice-list";
 import { listCustomers, listVendors } from "../../../core/master-data";
-import { openWorkspaceControlReadOnlyDb } from "../../../core/workspace-control";
+import {
+  openWorkspaceControlReadOnlyDb,
+  workspaceControlPaths,
+} from "../../../core/workspace-control";
 import {
   companyRootForSlug,
   findWorkspaceCompany,
@@ -134,10 +137,16 @@ export function buildCompanyContacts(workspaceRoot: string, slug: string) {
       openByCustomerName.set(key, agg);
     }
 
-    const control = openWorkspaceControlReadOnlyDb(workspaceRoot);
+    // Party Hub is optional workspace-level enrichment. A normal company
+    // ledger must remain readable before its workspace has a Party Hub
+    // registry; in that case no durable legacy mapping exists, so expose
+    // `partyId: null` rather than deriving one from a contact name.
+    const control = existsSync(workspaceControlPaths(workspaceRoot).db)
+      ? openWorkspaceControlReadOnlyDb(workspaceRoot)
+      : null;
     try {
       const partyIdFor = (legacyKind: "customer" | "vendor", id: number) =>
-        (control.query(`SELECT party_id AS partyId FROM current_legacy_party_mappings
+        (control?.query(`SELECT party_id AS partyId FROM current_legacy_party_mappings
           WHERE company_slug=? AND legacy_kind=? AND legacy_id=?`).get(
           slug,
           legacyKind,
@@ -199,7 +208,7 @@ export function buildCompanyContacts(workspaceRoot: string, slug: string) {
         vendors,
       };
     } finally {
-      control.close();
+      control?.close();
     }
   } finally {
     db.close();

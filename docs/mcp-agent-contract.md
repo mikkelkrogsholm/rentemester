@@ -38,7 +38,7 @@ gateway availability, safety, actor/confirmation and retry metadata.
 ### Profiles and canonical operation gateways
 
 The stdio server selects `compact` by default. Set
-`RENTEMESTER_MCP_PROFILE=full` before startup to expose all 246 legacy names
+`RENTEMESTER_MCP_PROFILE=full` before startup to expose all 249 legacy names
 directly with their existing schemas and behavior. An unknown profile fails
 startup. Full-profile names remain compatibility aliases; persisted keys,
 permission names and audit identities are not renamed.
@@ -81,7 +81,7 @@ fails before release instead of silently disappearing from agent discovery.
 
 ## What the surface is
 
-Rentemester exposes its bookkeeping core as 246 precise internal operations
+Rentemester exposes its bookkeeping core as 249 precise internal operations
 over stdio (`src/mcp/server.ts`, registered by `src/mcp/registry.ts`). Compact
 mode lists eight gateway tools; full mode lists all precise legacy names. Each
 operation maps to a single core operation — issue an invoice, post a journal
