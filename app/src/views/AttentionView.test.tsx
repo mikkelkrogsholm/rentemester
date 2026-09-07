@@ -20,7 +20,8 @@ describe("AttentionView (#649)", () => {
   });
   test("does not reveal a denied destination", async () => {
     mockFetch({ "GET /api/companies/acme-aps/attention": { ok: false, errors: ["forbudt"], code: "FORBIDDEN" } }); renderView();
-    expect(await screen.findByText("Opgaver kunne ikke hentes", { selector: "[data-evidence-status]" })).toBeInTheDocument();
+    expect(await screen.findByText("Opgaver er blokeret", { selector: "[data-evidence-status]" })).toBeInTheDocument();
+    expect(screen.getByText("Du har ikke adgang til disse opgaver.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Åbn næste opgave" })).not.toBeInTheDocument();
   });
 });
