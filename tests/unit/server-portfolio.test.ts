@@ -4,7 +4,11 @@ import { createHash } from "node:crypto";
 import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { buildPortfolioOverview } from "../../src/server/data";
+import {
+  buildCompanyAttention,
+  buildCompanyOverview,
+  buildPortfolioOverview,
+} from "../../src/server/data";
 import { handleRequest } from "../../src/server/router";
 import type { ServerConfig } from "../../src/server/config";
 import { createCompany } from "../../src/core/company";
@@ -254,11 +258,56 @@ describe("portfolio aggregation", () => {
       seedException(ws, "acme-aps", "MAIL_INTAKE_NO_ATTACHMENT");
       const overview = buildPortfolioOverview(ws, "2026-05-20");
       const c = overview.companies[0]!;
-      expect(c.openTaskCount).toBe(3);
+      expect(c.openTaskCount).toBe(buildCompanyAttention(ws, "acme-aps").count);
+      expect(c.openTaskCount).toBeGreaterThanOrEqual(3);
       expect(c.openExceptionCount).toBe(3);
       const bank = c.taskGroups.find((g) => g.type === "UNMATCHED_BANK_TRANSACTION");
       expect(bank?.count).toBe(2);
       expect(bank?.label).toBe("2 banktransaktioner mangler afstemning");
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
+  test("portfolio, company overview and inbox share the canonical attention count", () => {
+    const ws = tmpRoot("pf-attention-parity");
+    try {
+      initWorkspace(ws);
+      createCompany(ws, { name: "Synthetic ApS", cvr: "DK10000018" });
+      // No exception is recorded. The unmatched statement row instead makes
+      // period-close readiness and the bookkeeping workbench actionable.
+      seedBankRow(ws, "synthetic-aps", "2026-04-01", 500, 500);
+
+      const inbox = buildCompanyAttention(ws, "synthetic-aps");
+      const portfolio = buildPortfolioOverview(ws, "2026-05-20");
+      const overview = buildCompanyOverview(ws, "synthetic-aps", 2026);
+
+      expect(inbox.count).toBeGreaterThan(0);
+      expect(overview.exceptions.count).toBe(0);
+      expect(portfolio.companies[0]!.openTaskCount).toBe(inbox.count);
+      expect(portfolio.companies[0]!.attentionStatus).toBe(inbox.status);
+      expect(portfolio.rollup.openTaskCount).toBe(inbox.count);
+      expect(overview.attention.count).toBe(inbox.count);
+      expect(overview.attention.status).toBe(inbox.status);
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
+  test("all attention surfaces stay clear for an empty canonical ledger", () => {
+    const ws = tmpRoot("pf-attention-empty");
+    try {
+      initWorkspace(ws);
+      createCompany(ws, { name: "Empty ApS", cvr: "DK10000019" });
+      const inbox = buildCompanyAttention(ws, "empty-aps");
+      const portfolio = buildPortfolioOverview(ws, "2026-05-20");
+      const overview = buildCompanyOverview(ws, "empty-aps", 2026);
+      expect(inbox.count).toBe(0);
+      expect(portfolio.companies[0]!.openTaskCount).toBe(0);
+      expect(portfolio.companies[0]!.attentionStatus).toBe("clear");
+      expect(portfolio.rollup.openTaskCount).toBe(0);
+      expect(overview.attention.count).toBe(0);
+      expect(overview.attention.status).toBe("clear");
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -279,7 +328,9 @@ describe("portfolio aggregation", () => {
       expect(overview.rollup.resultat).toBe(2100);
       expect(overview.rollup.liquidity).toBe(1300);
       expect(overview.rollup.vatPayable).toBe(525);
-      expect(overview.rollup.openTaskCount).toBe(1);
+      expect(overview.rollup.openTaskCount).toBe(
+        overview.companies.reduce((sum, company) => sum + company.openTaskCount, 0),
+      );
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }
@@ -431,7 +482,9 @@ describe("portfolio aggregation", () => {
       const portfolioBody = await portfolioResponse.json();
       expect(portfolioResponse.status).toBe(200);
       expect(portfolioBody.portfolio.companyCount).toBe(1);
-      expect(portfolioBody.portfolio.rollup.openTaskCount).toBe(1);
+      expect(portfolioBody.portfolio.rollup.openTaskCount).toBe(
+        buildCompanyAttention(ws, "canonical-aps").count,
+      );
 
       const directResponse = await handleRequest(
         new Request("http://localhost/api/companies/dry-run-copy/dashboard"),

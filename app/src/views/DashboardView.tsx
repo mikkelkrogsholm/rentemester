@@ -19,6 +19,7 @@ import { formatDateDa, formatKroner, formatPercent } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
 import type {
   CompanyOverview,
+  ChangesSince,
   OverviewExceptionRow,
   OverviewMonth,
 } from "../lib/types";
@@ -33,7 +34,9 @@ export function DashboardView() {
   const { slug = "" } = useParams();
   const { year, setYear } = useCompanyYear();
   const seenKey = `rentemester:changes:local:workspace:${slug}`;
-  const seen = Number(window.localStorage.getItem(seenKey) ?? "0") || 0;
+  const [seen, setSeen] = useState(
+    () => Number(window.localStorage.getItem(seenKey) ?? "0") || 0,
+  );
   const state = useAsync<CompanyOverview>(
     () => api.overview(slug, year),
     [slug, year],
@@ -41,7 +44,10 @@ export function DashboardView() {
   const changes = useAsync(() => api.changesSince(slug, seen), [slug, seen]);
   const [seenNotice, setSeenNotice] = useState(false);
   useEffect(() => {
-    if (changes.error) window.localStorage.removeItem(seenKey);
+    if (changes.error) {
+      window.localStorage.removeItem(seenKey);
+      setSeen(0);
+    }
   }, [changes.error, seenKey]);
 
   if (state.loading && !state.data) return <Loading label="Henter overblik…" />;
@@ -54,9 +60,11 @@ export function DashboardView() {
     scales: { x: { scale: scalePoint }, y: { scale: scaleLinear, nice: true, grid: true, axis: { label: "Omsætning (kr.)" } } },
   });
   const markSeen = () => {
-    if (changes.data) window.localStorage.setItem(seenKey, String(changes.data.cursor));
+    if (changes.data) {
+      window.localStorage.setItem(seenKey, String(changes.data.cursor));
+      setSeen(changes.data.cursor);
+    }
     setSeenNotice(true);
-    changes.reload();
   };
   const currency = o.company.currency || "DKK";
   const positive = o.profitAndLoss.resultat >= 0;
@@ -97,9 +105,9 @@ export function DashboardView() {
       </p>
 
       <section className="card" aria-label="Status og næste handling">
-        <h3>{o.exceptions.count > 0 ? `${o.exceptions.count} forhold kræver opmærksomhed` : "Status: ingen åbne forhold"}</h3>
-        <p className="muted">{o.exceptions.count > 0 ? "Gennemgå de åbne forhold, før du vurderer nøgletallene." : "Regnskabsdataene er klar til gennemgang."}</p>
-        {o.exceptions.count > 0 ? <Link className="btn primary" to={`/companies/${slug}/opmaerksomhed`}>Se krævende handlinger</Link> : isFreshEmptyCompany(o) ? <Link className="btn primary" to={`/companies/${slug}/bilag`}>Start med bilag</Link> : <Link className="btn secondary" to={statementTo(slug, "posteringer", o.selectedYear)}>Se posteringer</Link>}
+        <h3>{o.attention.status === "requires-attention" ? `${o.attention.count} forhold kræver opmærksomhed` : "Status: ingen åbne forhold"}</h3>
+        <p className="muted">{o.attention.status === "requires-attention" ? "Gennemgå de åbne forhold, før du vurderer nøgletallene." : "Regnskabsdataene er klar til gennemgang."}</p>
+        {o.attention.status === "requires-attention" ? <Link className="btn primary" to={`/companies/${slug}/opmaerksomhed`}>Se krævende handlinger</Link> : isFreshEmptyCompany(o) ? <Link className="btn primary" to={`/companies/${slug}/bilag`}>Start med bilag</Link> : <Link className="btn secondary" to={statementTo(slug, "posteringer", o.selectedYear)}>Se posteringer</Link>}
       </section>
 
       <section className="section" aria-labelledby="changes-heading">
@@ -107,7 +115,7 @@ export function DashboardView() {
         {changes.loading && <p className="muted" data-evidence-status="loading">Henter ændringer…</p>}
         {changes.error && <p role="alert" data-evidence-status={/403|forbudt|adgang/i.test(changes.error) ? "warning-or-blocked" : "error"}>{/403|forbudt|adgang/i.test(changes.error) ? "Overblik kræver opmærksomhed" : "Virksomhedsoverblik kunne ikke hentes"}</p>}
         {changes.data && changes.data.events.length === 0 && <p className="muted" data-evidence-status="empty">Ingen nye data- eller statusændringer siden dit seneste besøg.</p>}
-        {changes.data && changes.data.events.length > 0 && <><p data-evidence-status="normal">Overblik klar</p><ul>{changes.data.events.map((event) => <li key={event.id}><strong>{event.eventType}</strong>: {event.message} <span className="muted">· {event.actor}</span></li>)}</ul><button className="btn secondary" type="button" onClick={markSeen} data-evidence-core-action>Markér som set</button>{seenNotice && <p data-evidence-task-outcome>Ændringer markeret som set</p>}</>}
+        {changes.data && changes.data.events.length > 0 && <ChangesSummary changes={changes.data} onSeen={markSeen} seenNotice={seenNotice} />}
         {changes.data && seen === 0 && <p className="muted">Første besøg: ændringer vises fra begyndelsen af det tilgængelige revisionsspor.</p>}
       </section>
 
@@ -172,6 +180,7 @@ export function DashboardView() {
             <ExceptionsCard
               slug={slug}
               exceptions={o.exceptions}
+              attentionCount={o.attention.count}
               archived={o.archived}
               onResolved={state.reload}
             />
@@ -193,6 +202,52 @@ export function DashboardView() {
       )}
     </section>
   );
+}
+
+const changeCategoryLabels: readonly [prefix: string, singular: string, plural: string][] = [
+  ["journal_", "bogføringsændring", "bogføringsændringer"],
+  ["document_", "bilagsændring", "bilagsændringer"],
+  ["bank_", "bankændring", "bankændringer"],
+  ["invoice_", "fakturaændring", "fakturaændringer"],
+  ["exception_", "opgaveændring", "opgaveændringer"],
+  ["vat_", "momsændring", "momsændringer"],
+  ["period_", "periodeændring", "periodeændringer"],
+  ["company_", "virksomhedsændring", "virksomhedsændringer"],
+];
+
+function ChangesSummary({
+  changes,
+  onSeen,
+  seenNotice,
+}: {
+  changes: ChangesSince;
+  onSeen: () => void;
+  seenNotice: boolean;
+}) {
+  const counts = new Map<string, { count: number; singular: string; plural: string }>();
+  for (const event of changes.events) {
+    const category = changeCategoryLabels.find(([prefix]) => event.eventType.startsWith(prefix));
+    const key = category?.[0] ?? "other";
+    const current = counts.get(key) ?? {
+      count: 0,
+      singular: category?.[1] ?? "anden ændring",
+      plural: category?.[2] ?? "andre ændringer",
+    };
+    current.count += 1;
+    counts.set(key, current);
+  }
+  return <>
+    <p data-evidence-status="normal">{changes.events.length} {changes.events.length === 1 ? "ny ændring" : "nye ændringer"} siden dit seneste besøg.</p>
+    <ul aria-label="Kort ændringsoversigt" data-evidence-data>
+      {[...counts.values()].map((item) => <li key={item.singular}>{item.count} {item.count === 1 ? item.singular : item.plural}</li>)}
+    </ul>
+    <details data-evidence-progressive>
+      <summary>Evidens</summary>
+      <ul>{changes.events.map((event) => <li key={event.id}><strong>{event.eventType}</strong>: {event.message} <span className="muted">· {event.actor} · {event.createdAt}</span></li>)}</ul>
+    </details>
+    <button className="btn secondary" type="button" onClick={onSeen} data-evidence-core-action>Markér som set</button>
+    {seenNotice && <p data-evidence-task-outcome>Ændringer markeret som set</p>}
+  </>;
 }
 
 // --------------------------------------------------------------------------
@@ -504,11 +559,13 @@ function exceptionLinkTo(slug: string, link: string | null): string | null {
 function ExceptionsCard({
   slug,
   exceptions,
+  attentionCount,
   archived,
   onResolved,
 }: {
   slug: string;
   exceptions: CompanyOverview["exceptions"];
+  attentionCount: number;
   /** A pre-cut-over archived year is read-only — no write action is offered. */
   archived: boolean;
   /** Re-runs the overview load after an exception is resolved. */
@@ -521,15 +578,16 @@ function ExceptionsCard({
     <StatusCard title="Opgaver">
       <div
         className={`status-figure${
-          exceptions.count > 0 ? " status-alert" : ""
+          attentionCount > 0 ? " status-alert" : ""
         }`}
       >
-        {exceptions.count}
+        {attentionCount}
       </div>
-      {exceptions.count === 0 ? (
+      {attentionCount === 0 ? (
         <p className="muted status-note">Ingen åbne opgaver.</p>
       ) : (
         <>
+          <p><Link to={`/companies/${slug}/opmaerksomhed`}>Se alle opgaver</Link></p>
           {/* The grouped summary lines — one Danish line per exception type. */}
           <ul className="status-list">
             {exceptions.groups.map((g) => {

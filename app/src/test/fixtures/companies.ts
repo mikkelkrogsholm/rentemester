@@ -22,6 +22,7 @@ export function summary(over: Partial<CompanySummary> = {}): CompanySummary {
     bankStatementDiagnostics: [],
     vat: { payable: 3371.2, deadline: "2026-09-01", daysRemaining: 103 },
     openTaskCount: 0,
+    attentionStatus: over.openTaskCount && over.openTaskCount > 0 ? "requires-attention" : "clear",
     taskGroups: [],
     auditChainOk: true,
     openInvoiceCount: 0,

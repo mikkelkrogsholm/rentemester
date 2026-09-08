@@ -46,7 +46,7 @@ export function PortfolioView() {
       (c.ledgerMissing ||
         !c.auditChainOk ||
         c.resultat < 0 ||
-        c.openTaskCount > 0 ||
+        c.attentionStatus === "requires-attention" ||
         (c.vat !== null &&
           c.vat.payable > 0 &&
           c.vat.daysRemaining <= 30)),

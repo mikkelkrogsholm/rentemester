@@ -34,6 +34,7 @@ import { currentFiscalYear, roundKroner } from "./shared";
 import { resolveActualBankBalanceAsOf } from "./bank";
 import { selectVatPeriod, vatPeriodEffectiveStatus } from "./vat";
 import { groupExceptions, type ExceptionGroup } from "./exceptions";
+import { buildCompanyAttention } from "./attention";
 
 // --------------------------------------------------------------------------
 // Per-company summary (one row in the portfolio overview)
@@ -79,6 +80,7 @@ export type CompanySummary = {
   vat: CompanyVatSummary | null;
   /** Open tasks — open exceptions, grouped into Danish summary lines. */
   openTaskCount: number;
+  attentionStatus: "clear" | "requires-attention";
   taskGroups: ExceptionGroup[];
   auditChainOk: boolean;
   // --- legacy fields retained for the MCP/older consumers -----------------
@@ -114,6 +116,7 @@ function summariseCompany(
       bankStatementDiagnostics: [],
       vat: null,
       openTaskCount: 0,
+      attentionStatus: "clear",
       taskGroups: [],
       auditChainOk: false,
       openInvoiceCount: 0,
@@ -144,6 +147,7 @@ function summariseCompany(
       bankStatementDiagnostics: [],
       vat: null,
       openTaskCount: 0,
+      attentionStatus: "clear",
       taskGroups: [],
       auditChainOk: false,
       openInvoiceCount: 0,
@@ -197,6 +201,7 @@ function summariseCompany(
 
     // Open tasks — open exceptions grouped into Danish summary lines.
     const exceptions = listExceptions(db, { status: "open" });
+    const attention = buildCompanyAttention(workspaceRoot, entry.slug);
     const taskGroups = groupExceptions(
       exceptions.rows.map((row: any) => ({
         type: row.type,
@@ -226,7 +231,8 @@ function summariseCompany(
       bankStatementStatus,
       bankStatementDiagnostics: statementBalance.diagnostics,
       vat,
-      openTaskCount: exceptions.count,
+      openTaskCount: attention.count,
+      attentionStatus: attention.status,
       taskGroups,
       auditChainOk: audit.ok,
       openInvoiceCount: invoices.count,

@@ -57,7 +57,7 @@ export const COMPANY_TASK_AREAS = [
   { id: "invoices", label: "Fakturaer", destination: "fakturaer" },
   { id: "vat-deadlines", label: "Moms og frister", destination: "moms" },
   { id: "reports", label: "Rapporter", destination: "resultatopgorelse" },
-  { id: "knowledge", label: "Viden", destination: "workspace-register" },
+  { id: "knowledge", label: "Viden", destination: "parter" },
   { id: "administration", label: "Administration", destination: "manage" },
 ] as const;
 
@@ -117,7 +117,7 @@ export const COMPANY_ROUTE_REGISTRY = [
   { id: "annual-report", segment: "aarsrapport", label: "Årsrapport", area: "reports", element: <AnnualReportView /> },
 
   // Virksomhedsadministration
-  { id: "workspace-register", segment: "workspace-register", label: "Workspace-register", area: "administration", element: <WorkspaceRegistryView />, administrationGroup: "advanced", administrationPurpose: "Fælles viden og dokumentation.", administrationNextStep: "Åbn registeret" },
+  { id: "workspace-register", segment: "workspace-register", label: "Styring og dokumentation", area: "administration", element: <WorkspaceRegistryView />, administrationGroup: "advanced", administrationPurpose: "Fælles styring, governance og dokumentation.", administrationNextStep: "Åbn styringen" },
   { id: "workspace-inbox", segment: "workspace-inbox", label: "Fælles indbakke", area: "administration", element: <WorkspaceInboxView />, administrationGroup: "daily", administrationPurpose: "Fælles indbakke for arbejdsområdet.", administrationNextStep: "Åbn indbakken" },
   { id: "archive", segment: "arkiv", label: "Arkiv", area: "administration", element: <ArchiveView />, administrationGroup: "advanced", administrationPurpose: "Læs tidligere, skrivebeskyttede regnskabsår.", administrationNextStep: "Se arkivet" },
   { id: "manage", segment: "manage", label: "Virksomhedsprofil", area: "administration", element: <ManageCompanyView />, administrationGroup: "profile", administrationPurpose: "Redigér virksomhedens stamdata og betalingsoplysninger.", administrationNextStep: "Redigér profil" },

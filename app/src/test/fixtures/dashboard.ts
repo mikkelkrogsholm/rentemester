@@ -82,6 +82,10 @@ export function overview(over: Partial<CompanyOverview> = {}): CompanyOverview {
       daysRemaining: 103,
       periodStatus: "open",
     },
+    attention: {
+      count: over.exceptions?.count ?? 0,
+      status: over.exceptions?.count ? "requires-attention" : "clear",
+    },
     exceptions: { count: 0, rows: [], groups: [] },
     recentEntries: [],
     lastPostedDate: "2026-02-27",

@@ -6,7 +6,7 @@ import { PartyHubView, PartyProfileView } from "./PartyHubView";
 import { renderAt } from "../test/render";
 import { mockFetch } from "../test/fixtures";
 
-const hub = { rows: [{ partyId: "party-1", name: "Leverandør ApS", roles: ["vendor"], recentActivity: "2026-01-15", computedSpend: 125, partyLink: { href: "/companies/acme-aps/parter/party-1" } }] };
+const hub = { rows: [{ partyId: "party-1", name: "Leverandør ApS", roles: ["vendor"], recentActivity: "2026-01-15", computedSpend: 3051.1999999999994, partyLink: { href: "/companies/acme-aps/parter/party-1" } }] };
 const profile = (warnings: string[] = []) => ({ party: { name: "Leverandør ApS", kind: "organization", roles: [{ role: "vendor" }] }, computed: { period: { from: "2026-01-01", to: "2026-01-31" }, asOf: "2026-01-31", purchase: { amount: 125 }, sales: { amount: 0 }, sourceCoverage: { documents: 1 } }, research: { assertions: [{ field: "name", value: "Leverandør ApS", source: "register", observed_at: "2026-01-01", review_state: "conflicting" }], warnings }, links: { documents: [{ id: 1, label: "B-1", role: "vendor" }], relations: [] } });
 
 function renderHub() { return renderAt(<PartyHubView />, { route: "/companies/acme-aps/parter", path: "/companies/:slug/parter" }); }
@@ -19,6 +19,20 @@ describe("Party Hub and profile (#653)", () => {
     (await screen.findByRole("button", { name: /Leverandør ApS/ })).focus();
     await userEvent.keyboard("{Enter}");
     expect(await screen.findByText("Profil åbnet")).toBeInTheDocument();
+  });
+
+  test("formats every computed amount and keeps governance as an advanced human path", async () => {
+    mockFetch({ "GET /api/companies/acme-aps/party-hub": { rows: [
+      hub.rows[0],
+      { ...hub.rows[0], partyId: "party-2", name: "Nul", computedSpend: 0 },
+      { ...hub.rows[0], partyId: "party-3", name: "Kredit", computedSpend: -1234567.8 },
+    ] } });
+    renderHub();
+    expect(await screen.findByText(/køb 3\.051,20 kr\./)).toBeInTheDocument();
+    expect(screen.getByText(/køb 0,00 kr\./)).toBeInTheDocument();
+    expect(screen.getByText(/køb -1\.234\.567,80 kr\./)).toBeInTheDocument();
+    expect(screen.queryByText(/3051\.199999/)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Styring og dokumentation" })).toHaveAttribute("href", "/companies/acme-aps/workspace-register");
   });
 
   test("renders loading, empty and API-error states with their matching actions", async () => {
@@ -43,6 +57,7 @@ describe("Party Hub and profile (#653)", () => {
     renderProfile();
     expect(await screen.findByRole("heading", { name: "Leverandør ApS" })).toBeInTheDocument();
     expect(screen.getByText("Beregnede Rentemester-tal")).toBeInTheDocument();
+    expect(screen.getByText(/Køb: 125,00 kr\. · Salg: 0,00 kr\./)).toBeInTheDocument();
     expect(screen.getByText("Foreslået kilde kræver review: import")).toBeInTheDocument();
     expect(screen.getByText("Modstridende kilde kræver review: register")).toBeInTheDocument();
 

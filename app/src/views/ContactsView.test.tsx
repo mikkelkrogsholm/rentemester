@@ -51,7 +51,7 @@ describe("ContactsView — Kontakter", () => {
   test("the daily navigation groups contacts under knowledge", async () => {
     mockFetch(route());
     renderView();
-    expect(await screen.findByRole("link", { name: "Viden" })).toHaveAttribute("href", expect.stringContaining("/companies/acme-aps/workspace-register"));
+    expect(await screen.findByRole("link", { name: "Viden" })).toHaveAttribute("href", expect.stringContaining("/companies/acme-aps/parter"));
   });
 
   test("offers an Importér action", async () => {

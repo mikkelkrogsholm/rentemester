@@ -21,8 +21,8 @@ export function AttentionView() {
     <header className="page-head">
       <div><h2 data-evidence-heading>Opgaver der kræver opmærksomhed</h2><p className="muted">{attention.company.name} · én samlet liste over det, der skal afklares.</p></div>
     </header>
-    {attention.items.length === 0 ? <div className="card"><p data-evidence-status="empty">Ingen opgaver kræver opmærksomhed</p></div> : <>
-      <p className="muted" data-evidence-status="normal">Opgaver klar</p>
+    {attention.status === "clear" ? <div className="card"><p data-evidence-status="empty">Ingen opgaver kræver opmærksomhed</p></div> : <>
+      <p className="muted" data-evidence-status="normal">{attention.count} forhold kræver opmærksomhed</p>
       <h3>Prioriteret opgaveliste</h3>
       <ol className="attention-list" aria-label="Prioriteret opgaveliste" data-evidence-data>
         {attention.items.map((item, index) => <li key={item.id} className={`card attention-item severity-${item.severity}`}>

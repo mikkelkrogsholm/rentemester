@@ -26,7 +26,7 @@ describe("App topbar", () => {
       ["Status", "/companies/acme-aps"], ["Kræver opmærksomhed", "/companies/acme-aps/opmaerksomhed"],
       ["Penge og bilag", "/companies/acme-aps/bank"], ["Fakturaer", "/companies/acme-aps/fakturaer"],
       ["Moms og frister", "/companies/acme-aps/moms"], ["Rapporter", "/companies/acme-aps/resultatopgorelse"],
-      ["Viden", "/companies/acme-aps/workspace-register"], ["Administration", "/companies/acme-aps/manage"],
+      ["Viden", "/companies/acme-aps/parter"], ["Administration", "/companies/acme-aps/manage"],
     ] as const;
 
     for (const [area, route] of routes) {

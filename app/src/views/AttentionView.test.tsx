@@ -4,7 +4,7 @@ import { AttentionView } from "./AttentionView";
 import { renderAt } from "../test/render";
 import { mockFetch } from "../test/fixtures";
 
-const attention = (items: any[] = [{ id: "exception:4", source: "exception", severity: "high", title: "Bogføring kræver opmærksomhed", reason: "Bogfør det manglende", actor: "agent:test", destination: "bank", sourceIdentity: "exception:4", evidence: { type: "UNMATCHED_BANK_TRANSACTION" } }]) => ({ slug: "acme-aps", company: { name: "Acme ApS", currency: "DKK" }, scope: { from: "2026-01-01", to: "2026-12-31" }, items, count: items.length });
+const attention = (items: any[] = [{ id: "exception:4", source: "exception", severity: "high", title: "Bogføring kræver opmærksomhed", reason: "Bogfør det manglende", actor: "agent:test", destination: "bank", sourceIdentity: "exception:4", evidence: { type: "UNMATCHED_BANK_TRANSACTION" } }]) => ({ slug: "acme-aps", company: { name: "Acme ApS", currency: "DKK" }, scope: { from: "2026-01-01", to: "2026-12-31" }, items, count: items.length, status: items.length ? "requires-attention" : "clear" });
 function renderView() { return renderAt(<AttentionView />, { route: "/companies/acme-aps/opmaerksomhed", path: "/companies/:slug/opmaerksomhed" }); }
 
 describe("AttentionView (#649)", () => {

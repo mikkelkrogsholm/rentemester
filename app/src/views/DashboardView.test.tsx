@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { DashboardView } from "./DashboardView";
 import { renderAt } from "../test/render";
 import { overview, mockFetch } from "../test/fixtures";
+import type { ChangesSince } from "../lib/types";
 
 // The P&L chart needs a real <canvas> 2D context, which happy-dom lacks —
 // stub it so the view's data wiring is what the specs exercise.
@@ -11,9 +12,10 @@ vi.mock("../components/PnlChart", () => ({
   PnlChart: () => <div data-testid="pnl-chart" />,
 }));
 
-function overviewRoute(over = {}) {
+function overviewRoute(over = {}, changes: ChangesSince = { events: [], cursor: 0 }) {
   return {
     "GET /api/companies/acme-aps/overview": { overview: overview(over) },
+    "GET /api/companies/acme-aps/changes-since": { changes },
   };
 }
 
@@ -134,6 +136,43 @@ describe("DashboardView — Overblik", () => {
       "href",
       "/companies/acme-aps/bank",
     );
+  });
+
+  test("uses the canonical attention count when readiness is blocked without an exception", async () => {
+    mockFetch(overviewRoute({ attention: { count: 1, status: "requires-attention" }, exceptions: { count: 0, rows: [], groups: [] } }));
+    renderDashboard();
+    expect(await screen.findByRole("heading", { name: "1 forhold kræver opmærksomhed" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Se krævende handlinger" })).toHaveAttribute("href", "/companies/acme-aps/opmaerksomhed");
+    const tasks = screen.getByRole("heading", { name: "Opgaver" }).closest(".status-card")!;
+    expect(within(tasks as HTMLElement).getByText("1", { selector: ".status-figure" })).toBeInTheDocument();
+    expect(within(tasks as HTMLElement).getByRole("link", { name: "Se alle opgaver" })).toBeInTheDocument();
+  });
+
+  test("summarises first-visit changes for the owner and keeps raw audit fields under evidence", async () => {
+    window.localStorage.removeItem("rentemester:changes:local:workspace:acme-aps");
+    mockFetch(overviewRoute({}, { events: [
+      { id: 1, eventType: "document_ingest", entityType: "document", entityId: "1", message: "Raw transport detail", actor: "agent:test", createdAt: "2026-09-08T08:00:00Z" },
+      { id: 2, eventType: "journal_post", entityType: "journal", entityId: "2", message: "Raw posting detail", actor: "user:owner", createdAt: "2026-09-08T08:01:00Z" },
+    ], cursor: 2 }));
+    renderDashboard();
+    expect(await screen.findByText("2 nye ændringer siden dit seneste besøg.")).toBeInTheDocument();
+    expect(screen.getByText("1 bilagsændring")).toBeInTheDocument();
+    expect(screen.getByText("1 bogføringsændring")).toBeInTheDocument();
+    const evidence = screen.getByText("Evidens").closest("details")!;
+    expect(within(evidence as HTMLElement).getByText(/document_ingest/)).toBeInTheDocument();
+    expect(within(evidence as HTMLElement).getByText(/agent:test/)).toBeInTheDocument();
+    expect(evidence).not.toHaveAttribute("open");
+  });
+
+  test("requests only later changes after a previous visit", async () => {
+    window.localStorage.setItem("rentemester:changes:local:workspace:acme-aps", "42");
+    mockFetch(overviewRoute());
+    renderDashboard();
+    expect(await screen.findByText("Ingen nye data- eller statusændringer siden dit seneste besøg.")).toBeInTheDocument();
+    const calls = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
+    expect(calls.some((call) => String(call[0]).includes("/changes-since?after=42"))).toBe(true);
+    expect(screen.queryByText(/Første besøg/)).not.toBeInTheDocument();
+    window.localStorage.removeItem("rentemester:changes:local:workspace:acme-aps");
   });
 
   test("an archived year renders the P&L overview under a read-only banner", async () => {

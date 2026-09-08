@@ -89,7 +89,7 @@ export function CompanyCard({ company }: { company: CompanySummary }) {
 
       {!company.ledgerMissing && (
         <div className="cc-tasks">
-          {company.openTaskCount === 0 ? (
+          {company.attentionStatus === "clear" ? (
             <span className="cc-task-none">Ingen åbne opgaver</span>
           ) : (
             <>

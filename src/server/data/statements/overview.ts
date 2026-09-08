@@ -33,6 +33,7 @@ import {
   archiveIncomeStatement,
   archiveYearRow,
 } from "../archive";
+import { buildCompanyAttention } from "../attention";
 
 export type OverviewMonth = {
   /** 1–12. */
@@ -120,6 +121,7 @@ export function buildCompanyOverview(
   try {
     migrate(db);
     const company = getCompanySettings(db);
+    const attention = buildCompanyAttention(workspaceRoot, entry.slug);
 
     const companyBlock = {
       name: company.name,
@@ -236,6 +238,7 @@ export function buildCompanyOverview(
         },
         receivables: { openCount: 0, openTotal: 0 },
         vat: null,
+        attention: { count: attention.count, status: attention.status },
         exceptions: {
           count: 0,
           rows: [] as ExceptionPreview[],
@@ -424,6 +427,7 @@ export function buildCompanyOverview(
       },
       receivables,
       vat: vatBlock,
+      attention: { count: attention.count, status: attention.status },
       exceptions: {
         count: exceptions.count,
         rows: exceptionRows,

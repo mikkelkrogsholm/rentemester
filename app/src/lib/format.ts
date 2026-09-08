@@ -294,7 +294,7 @@ export function attentionFlags(c: CompanySummary): AttentionFlag[] {
       });
     }
   }
-  if (c.openTaskCount > 0) {
+  if (c.attentionStatus === "requires-attention") {
     flags.push({
       level: "warning",
       label: `${c.openTaskCount} åbne opgaver`,

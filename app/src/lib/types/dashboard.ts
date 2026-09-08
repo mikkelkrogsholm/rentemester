@@ -174,6 +174,8 @@ export type CompanyOverview = {
   };
   /** The half-yearly VAT position; null for an archived year. */
   vat: OverviewVat | null;
+  /** Canonical count from the same attention projection as the task inbox. */
+  attention: { count: number; status: "clear" | "requires-attention" };
   exceptions: {
     count: number;
     rows: OverviewExceptionRow[];

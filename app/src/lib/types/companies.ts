@@ -52,6 +52,7 @@ export type CompanySummary = {
   vat: CompanyVatSummary | null;
   /** Open tasks across the company. */
   openTaskCount: number;
+  attentionStatus: "clear" | "requires-attention";
   /** The open tasks grouped into Danish summary lines. */
   taskGroups: ExceptionGroup[];
   auditChainOk: boolean;

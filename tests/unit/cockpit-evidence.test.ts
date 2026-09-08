@@ -17,6 +17,7 @@ import { handleRequest } from "../../src/server/router";
 import { evidenceRequests, evidenceResponse } from "../../scripts/release/cockpit-evidence-fixtures";
 import { browserUrlMatchesExpected } from "../../scripts/release/cockpit-evidence-url";
 import { captureFinalizedScreenshot } from "../../scripts/release/cockpit-evidence-finalization";
+import { formatKroner } from "../../app/src/lib/format";
 
 const scenarios = parseScenarios(
   join(
@@ -188,8 +189,13 @@ test("keeps #652-#657 profile copy and live evidence markers in parity", () => {
     ])
       expect(source).toContain(text);
     const normalFixture = evidenceResponse(profile.issue, "normal");
-    for (const text of [profile.coreAction, profile.data])
-      expect(source.includes(text) || normalFixture.includes(text)).toBe(true);
+    expect(source.includes(profile.coreAction) || normalFixture.includes(profile.coreAction)).toBe(true);
+    if (profile.issue === 653) {
+      const fixture = JSON.parse(normalFixture);
+      expect(formatKroner(fixture.rows[0].computedSpend)).toBe(profile.data);
+    } else {
+      expect(source.includes(profile.data) || normalFixture.includes(profile.data)).toBe(true);
+    }
     for (const marker of [
       "data-evidence-heading",
       "data-evidence-status",

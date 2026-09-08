@@ -112,5 +112,5 @@ export type AttentionItem = {
   sourceIdentity: string;
   evidence: unknown;
 };
-export type CompanyAttention = { slug: string; company: { name: string; currency: string }; scope: { from: string; to: string }; items: AttentionItem[]; count: number };
+export type CompanyAttention = { slug: string; company: { name: string; currency: string }; scope: { from: string; to: string }; items: AttentionItem[]; count: number; status: "clear" | "requires-attention" };
 export type AttentionResponse = { ok: true; attention: CompanyAttention };

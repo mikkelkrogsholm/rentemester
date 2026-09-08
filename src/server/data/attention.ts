@@ -93,7 +93,14 @@ export function buildCompanyAttention(workspaceRoot: string, slug: string) {
     });
     const unique = [...new Map(items.map((item) => [item.sourceIdentity, item])).values()];
     unique.sort((a, b) => rank[a.severity] - rank[b.severity] || a.id.localeCompare(b.id));
-    return { slug: entry.slug, company: { name: company.name, currency: company.currency }, scope: { from: fiscalYear.start, to: fiscalYear.end }, items: unique, count: unique.length };
+    return {
+      slug: entry.slug,
+      company: { name: company.name, currency: company.currency },
+      scope: { from: fiscalYear.start, to: fiscalYear.end },
+      items: unique,
+      count: unique.length,
+      status: unique.length > 0 ? "requires-attention" as const : "clear" as const,
+    };
   } finally { db.close(); }
 }
 
