@@ -72,4 +72,25 @@ describe("cockpit evidence proxy", () => {
       await upstream.stop(true);
     }
   });
+
+  test("returns a deterministic 502 when the upstream loopback port is closed", async () => {
+    const listener = Bun.listen({
+      hostname: "127.0.0.1",
+      port: 0,
+      socket: { data() {}, open() {} },
+    });
+    const closedPort = listener.port;
+    listener.stop();
+    const { proxy, base } = startLoopbackProxy("127.0.0.1", closedPort);
+    try {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const response = await fetch(`${base}/api/ready`);
+        expect(response.status).toBe(502);
+        expect(response.headers.get("content-type")).toBe("text/plain;charset=utf-8");
+        expect(await response.text()).toBe("upstream unavailable");
+      }
+    } finally {
+      await proxy.stop(true);
+    }
+  });
 });

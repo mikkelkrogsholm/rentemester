@@ -52,11 +52,15 @@ export function startLoopbackProxy(appAddress: string, appPort = 4319) {
       // The proxy itself chooses the only allowed upstream host.
       headers.delete("host");
       headers.delete("connection");
-      return fetch(target, {
-        method: request.method,
-        headers,
-        body: request.method === "GET" || request.method === "HEAD" ? undefined : request.body,
-      });
+      try {
+        return await fetch(target, {
+          method: request.method,
+          headers,
+          body: request.method === "GET" || request.method === "HEAD" ? undefined : request.body,
+        });
+      } catch {
+        return new Response("upstream unavailable", { status: 502 });
+      }
     },
   });
   const port = proxy.port;
