@@ -156,7 +156,7 @@ export function VatView() {
 
       {closedNotice && <Banner kind="success">{closedNotice}</Banner>}
 
-      <details data-evidence-core-action data-evidence-progressive><summary>Gennemgå momsparathed</summary><p data-evidence-task-outcome>Se lukkegrundlag</p></details>
+      <details data-evidence-progressive><summary data-evidence-core-action>Gennemgå momsparathed</summary><p data-evidence-task-outcome>Se lukkegrundlag</p></details>
 
       <section className="card" aria-label="Indberetningsklarhed">
         <div className="statement-card-head"><h3>Indberetning</h3><StatusChip tone={statusTone}>{filingStatus}</StatusChip></div>

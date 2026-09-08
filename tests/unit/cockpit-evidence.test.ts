@@ -171,6 +171,38 @@ test("keeps #652-#657 profile copy and live evidence markers in parity", () => {
     }
   }
 });
+test("targets #656's native summary control and verifies its Enter-revealed outcome", () => {
+  const source = readFileSync(join(projectRoot, "app/src/views/VatView.tsx"), "utf8");
+  const scenario = scenarios.find((item) => item.scenario === "issue-656-normal-desktop");
+
+  expect(source).toContain('<details data-evidence-progressive><summary data-evidence-core-action>Gennemgå momsparathed</summary><p data-evidence-task-outcome>Se lukkegrundlag</p></details>');
+  expect(scenario?.keyboard).toEqual([
+    {
+      key: "Tab",
+      expectFocus: {
+        selector: '[data-evidence-issue="656"] [data-evidence-core-action]',
+        visible: true,
+      },
+      expectState: {
+        selector: '[data-evidence-issue="656"] [data-evidence-core-action]',
+        text: "Gennemgå momsparathed",
+        visible: true,
+      },
+    },
+    {
+      key: "Enter",
+      expectFocus: {
+        selector: '[data-evidence-issue="656"] [data-evidence-core-action]',
+        visible: true,
+      },
+      expectState: {
+        selector: '[data-evidence-issue="656"] [data-evidence-task-outcome]',
+        text: "Se lukkegrundlag",
+        visible: true,
+      },
+    },
+  ]);
+});
 test("normalizes observed request URLs to deduplicated, origin-independent paths", () => {
   expect(normalizeObservedRequestPaths([
     "http://127.0.0.1:43117/api/companies/evidence-fixture/fiscal-years",

@@ -21,6 +21,28 @@ function renderView() {
 }
 
 describe("VatView — Moms", () => {
+  test("keeps the close-readiness summary as the natural keyboard core action", async () => {
+    mockFetch(route());
+    renderView();
+
+    const summary = await screen.findByText("Gennemgå momsparathed");
+    const details = summary.closest("details")!;
+    expect(summary.tagName).toBe("SUMMARY");
+    expect(summary).toHaveAttribute("data-evidence-core-action");
+    expect(details).toHaveAttribute("data-evidence-progressive");
+    expect(details).not.toHaveAttribute("data-evidence-core-action");
+    expect(details).not.toHaveAttribute("open");
+
+    const user = userEvent.setup();
+    for (let tabs = 0; tabs < 20 && document.activeElement !== summary; tabs++)
+      await user.tab();
+    expect(document.activeElement).toBe(summary);
+
+    await user.click(summary);
+    expect((details as HTMLDetailsElement).open).toBe(true);
+    expect(screen.getByText("Se lukkegrundlag")).toBeVisible();
+  });
+
   test("shows the output, input and payable VAT figures", async () => {
     mockFetch(route());
     renderView();
