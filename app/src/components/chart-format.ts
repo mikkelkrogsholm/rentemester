@@ -5,6 +5,11 @@
 // (e.g. a stray decimal) would have made one chart's tooltips disagree with the
 // others, so they live here as the single source of truth.
 
+/** Local/system font stacks shared with the Cockpit typography tokens. */
+export const CHART_SANS_FONT =
+  '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+export const CHART_MONO_FONT = "ui-monospace, SFMono-Regular, Menlo, monospace";
+
 /** Full currency formatting — chart tooltips ("18.000 kr."). */
 export const CHART_CURRENCY = new Intl.NumberFormat("da-DK", {
   style: "currency",

@@ -12,7 +12,7 @@ import {
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import type { MultiYearRow } from "../lib/types";
-import { CHART_AXIS_NUMBER, CHART_CURRENCY } from "./chart-format";
+import { CHART_AXIS_NUMBER, CHART_CURRENCY, CHART_MONO_FONT, CHART_SANS_FONT } from "./chart-format";
 
 // DESIGN.md palette — kept in sync with app/src/styles.css tokens.
 const INK_MUTED = "#4c4740";
@@ -60,7 +60,7 @@ export function MultiYearBalanceChart({
           color: INK_MUTED,
           boxWidth: 12,
           boxHeight: 12,
-          font: { family: "IBM Plex Sans", size: 13 },
+          font: { family: CHART_SANS_FONT, size: 13 },
         },
       },
       tooltip: {
@@ -75,20 +75,20 @@ export function MultiYearBalanceChart({
         grid: { display: false },
         ticks: {
           color: INK_MUTED,
-          font: { family: "IBM Plex Sans", size: 12 },
+          font: { family: CHART_SANS_FONT, size: 12 },
         },
       },
       y: {
         beginAtZero: true,
-        // A fixed gutter width so the axis labels never clip before the web
-        // font loads — the same trick `PnlChart` uses.
+        // A fixed gutter width keeps axis labels from clipping with local font
+        // metrics — the same trick `PnlChart` uses.
         afterFit: (scale) => {
           scale.width = 76;
         },
         grid: { color: BORDER },
         ticks: {
           color: INK_MUTED,
-          font: { family: "IBM Plex Mono", size: 11 },
+          font: { family: CHART_MONO_FONT, size: 11 },
           callback: (value) => CHART_AXIS_NUMBER.format(Number(value)),
         },
       },

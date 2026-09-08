@@ -22,7 +22,7 @@ import {
 } from "chart.js";
 import { Chart } from "react-chartjs-2";
 import type { CashflowMonth } from "../lib/types";
-import { CHART_AXIS_NUMBER, CHART_CURRENCY } from "./chart-format";
+import { CHART_AXIS_NUMBER, CHART_CURRENCY, CHART_MONO_FONT, CHART_SANS_FONT } from "./chart-format";
 
 // The generic <Chart> component does not auto-register controllers, so this
 // mixed bar+line chart registers everything it needs itself — self-contained,
@@ -108,7 +108,7 @@ export function CashflowChart({
           color: INK_MUTED,
           boxWidth: 12,
           boxHeight: 12,
-          font: { family: "IBM Plex Sans", size: 13 },
+          font: { family: CHART_SANS_FONT, size: 13 },
         },
       },
       tooltip: {
@@ -126,21 +126,21 @@ export function CashflowChart({
         grid: { display: false },
         ticks: {
           color: INK_MUTED,
-          font: { family: "IBM Plex Sans", size: 12 },
+          font: { family: CHART_SANS_FONT, size: 12 },
         },
       },
       y: {
         beginAtZero: true,
         position: "left",
-        // A fixed gutter so the axis labels never clip before the web font
-        // loads — the same trick `PnlChart` uses.
+        // A fixed gutter keeps axis labels from clipping with local font
+        // metrics — the same trick `PnlChart` uses.
         afterFit: (scale) => {
           scale.width = 76;
         },
         grid: { color: BORDER },
         ticks: {
           color: INK_MUTED,
-          font: { family: "IBM Plex Mono", size: 11 },
+          font: { family: CHART_MONO_FONT, size: 11 },
           callback: (value) => CHART_AXIS_NUMBER.format(Number(value)),
         },
       },
@@ -152,7 +152,7 @@ export function CashflowChart({
         grid: { display: false },
         ticks: {
           color: BALANCE,
-          font: { family: "IBM Plex Mono", size: 11 },
+          font: { family: CHART_MONO_FONT, size: 11 },
           callback: (value) => CHART_AXIS_NUMBER.format(Number(value)),
         },
       },

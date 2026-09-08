@@ -16,7 +16,7 @@ import {
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import type { OverviewMonth } from "../lib/types";
-import { CHART_AXIS_NUMBER, CHART_CURRENCY } from "./chart-format";
+import { CHART_AXIS_NUMBER, CHART_CURRENCY, CHART_MONO_FONT, CHART_SANS_FONT } from "./chart-format";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -57,7 +57,7 @@ export function PnlChart({ months }: { months: OverviewMonth[] }) {
           color: INK_MUTED,
           boxWidth: 12,
           boxHeight: 12,
-          font: { family: "IBM Plex Sans", size: 13 },
+          font: { family: CHART_SANS_FONT, size: 13 },
         },
       },
       tooltip: {
@@ -72,22 +72,22 @@ export function PnlChart({ months }: { months: OverviewMonth[] }) {
         grid: { display: false },
         ticks: {
           color: INK_MUTED,
-          font: { family: "IBM Plex Sans", size: 12 },
+          font: { family: CHART_SANS_FONT, size: 12 },
         },
       },
       y: {
         beginAtZero: true,
         // Pin the axis gutter wide enough for a full 6-digit label ("18.000").
         // Chart.js auto-fits axis width by measuring labels, but that runs
-        // before the web font loads — it under-reserves and clips the leading
-        // digit. A fixed width makes the gutter deterministic.
+        // with different local font metrics. A fixed width makes the gutter
+        // deterministic.
         afterFit: (scale) => {
           scale.width = 76;
         },
         grid: { color: BORDER },
         ticks: {
           color: INK_MUTED,
-          font: { family: "IBM Plex Mono", size: 11 },
+          font: { family: CHART_MONO_FONT, size: 11 },
           callback: (value) => CHART_AXIS_NUMBER.format(Number(value)),
         },
       },

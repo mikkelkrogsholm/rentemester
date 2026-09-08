@@ -32,10 +32,10 @@
   --color-border-strong: #b7af9f;
 
   /* ---- typography ----------------------------------------------------- */
-  --font-headline: "Source Serif 4", "Iowan Old Style", Georgia, serif;
-  --font-body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-headline: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --text-size-body: 16px;
   --text-line-height: 1.5;
   --text-size-xs: 11px;
