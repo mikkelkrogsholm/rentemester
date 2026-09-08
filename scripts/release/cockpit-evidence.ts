@@ -366,7 +366,7 @@ function expandProfile(profile: IssueProfile): Scenario[] {
       status: state === "warning-or-blocked" ? 403 : state === "error" ? 500 : 200,
       body: evidenceResponse(profile.issue, state), ...(state === "loading" ? { delayMs: 5000 } : {}),
     },
-    requests: evidenceRequests(profile.issue, state),
+    requests: evidenceRequests(profile.issue, state, mode),
   });
   return [scenario("normal", "desktop"), scenario("normal", "mobile"), scenario("normal", "zoom"), ...REQUIRED_STATES.slice(1).map((state) => scenario(state, "desktop"))];
 }

@@ -145,6 +145,20 @@ test("keeps #656 empty VAT data at zero and #657 fixtures as exact usable API co
     expect(JSON.parse(requests[1]!.body)).toMatchObject({ ok: true, company: { name: "Synthetic Evidence Fixture" } });
   }
 });
+test("declares #652's explanation only for the desktop scenario that opens the entry", () => {
+  const desktop = scenarios.find((item) => item.scenario === "issue-652-normal-desktop")!;
+  expect(desktop.requests?.map((request) => request.urlPattern)).toEqual([
+    "/api/companies/evidence-fixture/journal",
+    "/api/companies/evidence-fixture/journal/1/explanation",
+  ]);
+  expect(JSON.parse(desktop.requests![1]!.body)).toMatchObject({
+    ok: true,
+    explanation: { entry: { id: 1, entryNo: "B-2026-0001" }, evidence: { lines: expect.any(Array) } },
+  });
+  for (const mode of ["mobile", "zoom"])
+    expect(scenarios.find((item) => item.issue === 652 && item.state === "normal" && item.mode === mode)?.requests)
+      .toHaveLength(1);
+});
 test("keeps #652-#657 profile copy and live evidence markers in parity", () => {
   for (const profile of scenarioProfiles.filter(({ issue }) => issue >= 652 && issue <= 657)) {
     const source = evidenceViewSources[profile.issue]
@@ -372,6 +386,26 @@ test("verifies every declared #650 request and rejects missing secondary coverag
     expect(() => verifyEvidence(value.path)).toThrow(
       `declared request was not observed: ${secondary}`,
     );
+  } finally {
+    rmSync(value.dir, { recursive: true, force: true });
+  }
+});
+test("requires both exact #652 desktop requests and rejects undeclared explanation evidence", () => {
+  const value = fixture();
+  try {
+    const scenario = value.manifest.scenarios.find(
+      (item) => item.scenario === "issue-652-normal-desktop",
+    )!;
+    const explanation = "/api/companies/evidence-fixture/journal/1/explanation";
+    expect(verifyEvidence(value.path)).toBeDefined();
+    scenario.interception.actualRequests = [scenario.endpoint];
+    writeFileSync(value.path, JSON.stringify(value.manifest));
+    expect(() => verifyEvidence(value.path)).toThrow(
+      `declared request was not observed: ${explanation}`,
+    );
+    scenario.interception.actualRequests = [scenario.endpoint, explanation, "/api/companies/evidence-fixture/journal/2/explanation"];
+    writeFileSync(value.path, JSON.stringify(value.manifest));
+    expect(() => verifyEvidence(value.path)).toThrow("undeclared intercepted request");
   } finally {
     rmSync(value.dir, { recursive: true, force: true });
   }

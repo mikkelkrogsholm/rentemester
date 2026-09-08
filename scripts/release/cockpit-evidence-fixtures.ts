@@ -4,7 +4,7 @@
  * objects: a successful interception must exercise the same renderer path as
  * a real server response.
  */
-export const COCKPIT_EVIDENCE_FIXTURE_VERSION = 1;
+export const COCKPIT_EVIDENCE_FIXTURE_VERSION = 2;
 
 const company = { name: "Synthetic Evidence Fixture", cvr: "12345678", country: "DK", currency: "DKK", fiscalYearStartMonth: 1, fiscalYearLabelStrategy: "end-year" };
 const years = [{ label: "2026", start: "2026-01-01", end: "2026-12-31", source: "live" }];
@@ -47,12 +47,27 @@ const companySettings = (empty: boolean) => JSON.stringify({ ok: true, company: 
   address: empty ? null : "Syntetisk Vej 1", postalCode: empty ? null : "1000", city: empty ? null : "København", companyForm: empty ? null : "ApS", industryCode: null, industryText: null, cvrStatus: null, auditWaived: null, cvrSyncedAt: null, vatPeriodType: "quarter", payment: null,
 } });
 
+/** Exact #652 drilldown DTO returned after the desktop keyboard action opens entry 1. */
+const journalExplanation = JSON.stringify({ ok: true, explanation: {
+  entry: { id: 1, entryNo: "B-2026-0001", transactionDate: "2026-01-15", text: "Syntetisk journalpost", status: "posted", registrationDatetime: "2026-01-15T09:00:00.000Z", documentId: null, bankTransactionId: null },
+  sourceFacts: { document: null, bankTransaction: null, party: null, accounts: [{ journalLineId: 1, accountNo: "1000", accountName: "Omsætning", accountType: "income", debit: 0, credit: 125, text: "Salg" }], vatCodes: [] },
+  appliedRule: null,
+  legalSource: { status: "not_registered", text: "Ingen lov- eller myndighedskilde er eksplicit knyttet til denne postering." },
+  professionalAssessment: { text: "ingen registreret vurdering", record: null },
+  correction: { sentence: null, reversalOfEntryId: null, reversedByEntryId: null },
+  evidence: { entryHash: "synthetic-entry-hash", previousHash: null, createdBy: "system", createdByProgram: "cockpit-evidence", lines: [{ journalLineId: 1, accountNo: "1000", accountName: "Omsætning", accountType: "income", debit: 0, credit: 125, vatCode: null, text: "Salg" }] },
+} });
+
 /** The runner uses this finite list verbatim; it never installs a wildcard route. */
-export function evidenceRequests(issue: number, state: EvidenceState): EvidenceRequest[] {
+export function evidenceRequests(issue: number, state: EvidenceState, mode?: "desktop" | "mobile" | "zoom"): EvidenceRequest[] {
   const primary: EvidenceRequest = { urlPattern: issue === 650 ? "/api/companies/evidence-fixture/fiscal-years" : ({ 649: "/api/companies/evidence-fixture/attention", 651: "/api/companies/evidence-fixture/changes-since?after=0", 652: "/api/companies/evidence-fixture/journal", 653: "/api/companies/evidence-fixture/party-hub?query=", 654: "/api/companies/evidence-fixture/balance", 655: "/api/companies/evidence-fixture/bank", 656: "/api/companies/evidence-fixture/vat", 657: "/api/companies" } as Record<number, string>)[issue]!, status: state === "warning-or-blocked" ? 403 : state === "error" ? 500 : 200, body: evidenceResponse(issue, state), ...(state === "loading" ? { delayMs: 5000 } : {}) };
   if (issue === 657 && (state === "normal" || state === "empty")) return [
     { ...primary, body: evidenceResponse(657, state) },
     { urlPattern: "/api/companies/evidence-fixture/company", status: 200, body: companySettings(state === "empty") },
+  ];
+  if (issue === 652 && state === "normal" && mode === "desktop") return [
+    primary,
+    { urlPattern: "/api/companies/evidence-fixture/journal/1/explanation", status: 200, body: journalExplanation },
   ];
   if (issue !== 650 || state === "loading" || state === "warning-or-blocked" || state === "error") return [primary];
   return [
@@ -88,4 +103,19 @@ export function validateEvidenceFixtures() {
     if (companies.ok !== true || !Array.isArray(companies.companies) || companies.companies[0]?.slug !== "evidence-fixture" || settings.ok !== true || !settings.company)
       throw new Error("#657 fixtures must match companies and settings response contracts");
   }
+  const desktopJournal = evidenceRequests(652, "normal", "desktop");
+  if (
+    desktopJournal.length !== 2 ||
+    desktopJournal[0]?.urlPattern !== "/api/companies/evidence-fixture/journal" ||
+    desktopJournal[1]?.urlPattern !== "/api/companies/evidence-fixture/journal/1/explanation" ||
+    desktopJournal.some((request) => request.urlPattern.includes("*"))
+  ) throw new Error("#652 desktop must declare its exact journal and explanation requests");
+  const explanation = JSON.parse(desktopJournal[1].body);
+  if (
+    explanation.ok !== true || explanation.explanation?.entry?.id !== 1 ||
+    !Array.isArray(explanation.explanation?.evidence?.lines)
+  ) throw new Error("#652 explanation fixture must match the live explanation response contract");
+  for (const mode of ["mobile", "zoom"] as const)
+    if (evidenceRequests(652, "normal", mode).length !== 1)
+      throw new Error(`#652 ${mode} must not declare the unopened explanation request`);
 }
