@@ -173,8 +173,6 @@ describe("release workflow security contract", () => {
     expect(candidate).toContain("fetch(new URL(asset,base))");
     expect(candidate).toContain("name: Generate digest-bound Cockpit acceptance evidence");
     expect(candidate).toContain("COCKPIT_EVIDENCE_IMAGE: ${{ env.REGISTRY_IMAGE }}@${{ steps.image.outputs.digest }}");
-    expect(candidate).toContain("bun run scripts/release/run-cockpit-evidence.ts");
-    expect(candidate).toContain("bun run scripts/release/verify-cockpit-evidence.ts cockpit-evidence/cockpit-evidence.json");
     expect(candidate).toContain("GH_TOKEN: ${{ github.token }}");
     expect(candidate).toContain("gh auth status");
     expect(candidate).toContain("--label epic:648 --limit 1000");
@@ -210,6 +208,20 @@ describe("release workflow security contract", () => {
     expect(candidate).toContain("const sbom=value.SPDX??value");
     expect(candidate).toContain("sbom.spdx.json.sha256");
     expect(candidate).toContain("SBOM must contain pdfjs-dist@6.2.108");
+  });
+
+  test("uses the generator's fail-closed Cockpit evidence verification", () => {
+    const evidenceStep = candidate.slice(
+      candidate.indexOf("name: Generate digest-bound Cockpit acceptance evidence"),
+      candidate.indexOf("name: Extract digest-bound SPDX SBOM evidence"),
+    );
+    const verify = cockpitEvidenceRunner.indexOf("verifyEvidence(manifestPath)");
+    const success = cockpitEvidenceRunner.indexOf("process.stdout.write(`${manifestPath}\\n`)");
+
+    expect(evidenceStep).toContain("bun run scripts/release/run-cockpit-evidence.ts");
+    expect(evidenceStep).not.toContain("verify-cockpit-evidence.ts");
+    expect(verify).toBeGreaterThan(-1);
+    expect(success).toBeGreaterThan(verify);
   });
 
   test("binds promotion to one successful trusted run and its attestation", () => {

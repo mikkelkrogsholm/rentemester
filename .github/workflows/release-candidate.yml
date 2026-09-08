@@ -230,7 +230,6 @@ jobs:
           sha256sum cockpit-epic-648-open-issues.json > cockpit-epic-648-open-issues.json.sha256
           export COCKPIT_EVIDENCE_REGRESSION_QUERY="$PWD/cockpit-epic-648-open-issues.json"
           bun run scripts/release/run-cockpit-evidence.ts
-          bun run scripts/release/verify-cockpit-evidence.ts cockpit-evidence/cockpit-evidence.json
 
       - name: Extract digest-bound SPDX SBOM evidence
         id: sbom
