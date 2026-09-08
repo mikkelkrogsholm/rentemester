@@ -34,7 +34,7 @@
       "data": "Måned",
       "progressive": "Se underliggende resultatopgørelse",
       "taskOutcome": "Ændringer markeret som set",
-      "states": { "normal": "Overblik klar", "loading": "Henter virksomhedsoverblik", "empty": "Ingen ændringer siden sidst", "warning-or-blocked": "Overblik kræver opmærksomhed", "error": "Virksomhedsoverblik kunne ikke hentes" }
+      "states": { "normal": "Overblik klar", "loading": "Henter ændringer…", "empty": "Ingen nye data- eller statusændringer siden dit seneste besøg.", "warning-or-blocked": "Overblik kræver opmærksomhed", "error": "Virksomhedsoverblik kunne ikke hentes" }
     },
     {
       "issue": 652,
