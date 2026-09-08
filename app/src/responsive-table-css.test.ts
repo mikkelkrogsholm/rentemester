@@ -31,4 +31,8 @@ describe("responsive table mobile CSS contract (#650)", () => {
     expect(mobileCards).toContain("grid-template-columns: minmax(7rem, 42%) minmax(0, 1fr)");
     expect(mobileCards).toMatch(/\.responsive-table td[^\{]*\{[^}]*overflow-wrap:\s*anywhere/);
   });
+
+  test("lets every shared action group wrap before it widens a phone page", () => {
+    expect(mobileCards).toMatch(/\.row-actions\s*\{[^}]*flex-wrap:\s*wrap/);
+  });
 });

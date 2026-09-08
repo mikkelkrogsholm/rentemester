@@ -1774,6 +1774,11 @@ table.statement-table td.num.muted {
     flex-direction: column;
     align-items: stretch;
   }
+  /* Action groups appear throughout the cockpit, not only in page headers.
+     Let each control take its own line before it can widen the page. */
+  .row-actions {
+    flex-wrap: wrap;
+  }
   .filter-bar-controls, .filter-bar-advanced > div { display: grid; grid-template-columns: 1fr; }
   .page-header-actions > .btn, .page-header-actions > a { flex: 1 1 160px; text-align: center; }
   .responsive-table-scroll { overflow: visible; }

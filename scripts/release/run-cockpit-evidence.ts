@@ -26,6 +26,11 @@ import {
   waitForScenarioHeading,
 } from "./cockpit-evidence-dom-ready";
 import { expectedNetworkError, type ExpectedNetworkError } from "./cockpit-evidence-network-errors";
+import {
+  horizontalOverflowFailure,
+  horizontalOverflowSnapshotExpression,
+  type OverflowSnapshot,
+} from "./cockpit-evidence-overflow";
 
 const required = (name: string) => {
   const value = process.env[name]?.trim();
@@ -242,6 +247,18 @@ async function scenarioConditionSnapshot(cdp: Cdp, condition: string) {
     diagnostics: typeof record.diagnostics === "string" ? record.diagnostics : "",
   };
 }
+async function assertNoHorizontalOverflow(cdp: Cdp, scenario: Scenario) {
+  const value = await cdp.call("Runtime.evaluate", {
+    // Keep the release gate strict, but include the browser's concrete layout
+    // offenders so a failed run points to the owning shell/component instead
+    // of only reporting the document-level symptom.
+    expression: horizontalOverflowSnapshotExpression,
+    returnByValue: true,
+  });
+  const snapshot = (value.result as { value?: unknown })?.value as OverflowSnapshot | undefined;
+  if (snapshot?.fits === true) return;
+  throw new Error(horizontalOverflowFailure(scenario.scenario, snapshot));
+}
 async function renderScenario(
   chrome: string,
   base: string,
@@ -361,11 +378,7 @@ async function renderScenario(
     ];
     for (const a of assertions)
       await evaluateBoolean(cdp, expression(a), assertionLabel(scenario, a));
-    await evaluateBoolean(
-      cdp,
-      "document.documentElement.scrollWidth <= window.innerWidth",
-      `${scenario.scenario} has no horizontal overflow`,
-    );
+    await assertNoHorizontalOverflow(cdp, scenario);
     const keyboardAssertions: string[] = [];
     for (const step of scenario.keyboard ?? []) {
       // Do not assume that the first Tab belongs to the feature.  Browser
