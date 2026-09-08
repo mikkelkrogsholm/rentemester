@@ -1,6 +1,9 @@
 export const TAB_TRAVERSAL_HARD_CAP = 512;
-/** Chrome exposes native date/time fields as several keyboard stops. */
-export const MAX_CONSECUTIVE_COMPOSITE_TAB_STOPS = 3;
+/**
+ * Chrome exposes native date/time fields as several keyboard stops. Eight covers
+ * the observed locale and picker subcontrols while keeping cycle detection finite.
+ */
+export const MAX_CONSECUTIVE_COMPOSITE_TAB_STOPS = 8;
 
 export type FocusStop = {
   identity: string;

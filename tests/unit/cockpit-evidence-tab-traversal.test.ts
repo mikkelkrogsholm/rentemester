@@ -22,9 +22,10 @@ test("derives a Tab bound above the former 24-control limit", async () => {
   expect(result).toMatchObject({ reached: true, tabs: 30 });
 });
 
-test("allows a native date input's repeated active-element identity before the target", async () => {
-  expect(tabTraversalLimit(2, 1)).toBe(5);
-  const stops = ["#field-fra", "#field-fra", "#continue"];
+test("allows four native date input observations before the target", async () => {
+  expect(MAX_CONSECUTIVE_COMPOSITE_TAB_STOPS).toBe(8);
+  expect(tabTraversalLimit(2, 1)).toBe(10);
+  const stops = ["#field-fra", "#field-fra", "#field-fra", "#field-fra", "#continue"];
   let current = 0;
   const result = await traverseTabs({
     limit: tabTraversalLimit(2, 1),
@@ -39,7 +40,7 @@ test("allows a native date input's repeated active-element identity before the t
       };
     },
   });
-  expect(result).toMatchObject({ reached: true, tabs: 3 });
+  expect(result).toMatchObject({ reached: true, tabs: 5 });
 });
 
 test("stops at the hard cap when a target is unreachable", async () => {
@@ -71,7 +72,7 @@ test("detects focus cycles and reports the visited focus stops", async () => {
   );
 });
 
-test("fails closed when a composite control remains focused beyond its internal-stop allowance", async () => {
+test("fails closed when a composite control remains focused above its internal-stop allowance", async () => {
   const result = await traverseTabs({
     limit: 10,
     dispatchTab: async () => {},
