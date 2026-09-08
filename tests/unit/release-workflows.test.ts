@@ -176,7 +176,9 @@ describe("release workflow security contract", () => {
     expect(candidate).toContain("GH_TOKEN: ${{ github.token }}");
     expect(candidate).toContain("gh auth status");
     expect(candidate).toContain("--label epic:648 --limit 1000");
-    expect(candidate).toContain("cockpit-epic-648-open-issues.json.sha256");
+    expect(candidate).toContain(
+      "cockpit-evidence/cockpit-epic-648-open-issues.json.sha256",
+    );
     expect(candidate).toContain("cockpit-evidence/cockpit-evidence.json");
     expect(candidate).toContain("RELEASE_COCKPIT_EVIDENCE_SHA256");
     expect(candidate).toContain("RELEASE_COCKPIT_REGRESSION_QUERY_SHA256");
@@ -222,6 +224,27 @@ describe("release workflow security contract", () => {
     expect(evidenceStep).not.toContain("verify-cockpit-evidence.ts");
     expect(verify).toBeGreaterThan(-1);
     expect(success).toBeGreaterThan(verify);
+  });
+
+  test("binds the release manifest to raw Cockpit artifact files", () => {
+    const manifestStep = candidate.slice(
+      candidate.indexOf("name: Create digest-bound release manifest"),
+      candidate.indexOf("name: Attest candidate image provenance"),
+    );
+
+    expect(manifestStep).not.toContain("hashFiles(");
+    expect(manifestStep).toContain("set -euo pipefail");
+    expect(manifestStep).toContain('test -f "cockpit-evidence/cockpit-evidence.json"');
+    expect(manifestStep).toContain(
+      'test -f "cockpit-evidence/cockpit-epic-648-open-issues.json"',
+    );
+    expect(manifestStep).toContain(
+      'RELEASE_COCKPIT_EVIDENCE_SHA256="sha256:$(sha256sum "cockpit-evidence/cockpit-evidence.json"',
+    );
+    expect(manifestStep).toContain(
+      'RELEASE_COCKPIT_REGRESSION_QUERY_SHA256="sha256:$(sha256sum "cockpit-evidence/cockpit-epic-648-open-issues.json"',
+    );
+    expect(manifestStep).toContain("bun run scripts/release/create-manifest.ts");
   });
 
   test("binds promotion to one successful trusted run and its attestation", () => {

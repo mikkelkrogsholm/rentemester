@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -194,6 +194,46 @@ describe("release evidence scripts", () => {
         );
         expect(invalid.status).not.toBe(0);
       }
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  test("records the raw SHA-256 values of the Cockpit evidence fixtures", () => {
+    const directory = mkdtempSync(join(tmpdir(), "rentemester-release-cockpit-"));
+    try {
+      const evidencePath = join(directory, "cockpit-evidence.json");
+      const regressionQueryPath = join(directory, "cockpit-epic-648-open-issues.json");
+      writeFileSync(evidencePath, '{"fixture":"cockpit evidence"}\n');
+      writeFileSync(regressionQueryPath, "[]\n");
+      const fixtureSha256 = (path: string) =>
+        `sha256:${createHash("sha256").update(readFileSync(path)).digest("hex")}`;
+      const cockpitEvidenceSha256 = fixtureSha256(evidencePath);
+      const cockpitRegressionQuerySha256 = fixtureSha256(regressionQueryPath);
+      const created = runScript("scripts/release/create-manifest.ts", [], {
+        RELEASE_VERSION: "0.2.0",
+        RELEASE_GIT_COMMIT: commit,
+        RELEASE_BUILT_AT: builtAt,
+        RELEASE_IMAGE_REPOSITORY: "ghcr.io/example/rentemester",
+        RELEASE_IMAGE_DIGEST: imageDigest,
+        RELEASE_WORKFLOW_RUN_ID: "123456789",
+        RELEASE_WORKFLOW_RUN_ATTEMPT: "1",
+        RENTEMESTER_GIT_COMMIT: commit,
+        RENTEMESTER_BUILT_AT: builtAt,
+        RENTEMESTER_BUN_VERSION: bunVersion,
+        RENTEMESTER_BASE_IMAGE_DIGEST: baseImageDigest,
+        RELEASE_SBOM_SHA256: sbomSha256,
+        RELEASE_SUPPLY_CHAIN_SHA256: supplyChainSha256,
+        RELEASE_AGENT_DISCOVERY_SHA256: agentDiscoverySha256,
+        RELEASE_COCKPIT_EVIDENCE_SHA256: cockpitEvidenceSha256,
+        RELEASE_COCKPIT_REGRESSION_QUERY_SHA256: cockpitRegressionQuerySha256,
+      });
+
+      expect(created.status).toBe(0);
+      expect(JSON.parse(created.stdout).evidence).toMatchObject({
+        cockpitEvidenceSha256,
+        cockpitRegressionQuerySha256,
+      });
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }
