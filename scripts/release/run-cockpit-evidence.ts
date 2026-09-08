@@ -19,6 +19,14 @@ import { browserUrlMatchesExpected } from "./cockpit-evidence-url";
 import { selectPageDevToolsTarget } from "./cockpit-evidence-cdp-target";
 import { cdpKeyEvents, type EvidenceKey } from "./cockpit-evidence-key-events";
 import {
+  focusedStopExpression,
+  tabbableControlCountExpression,
+  tabTraversalDiagnostics,
+  tabTraversalLimit,
+  traverseTabs,
+  type FocusStop,
+} from "./cockpit-evidence-tab-traversal";
+import {
   LOADING_HEADING_READY_DEADLINE_MS,
   POST_ACTION_CONDITION_DEADLINE_MS,
   headingReadyDeadline,
@@ -388,22 +396,35 @@ async function renderScenario(
       if (step.key === "Tab") {
         if (!step.expectState)
           throw new Error(`${scenario.scenario} Tab proof requires a focused control assertion`);
-        const maxTabs = 24;
-        let reached = false;
-        for (let tab = 1; tab <= maxTabs; tab++) {
-          await dispatchEvidenceKey(cdp, "Tab");
-          const focused = await cdp.call("Runtime.evaluate", {
-            expression: `(()=>{const e=document.activeElement;return e instanceof Element&&e.matches(${JSON.stringify(step.expectFocus.selector)});})()`,
-            returnByValue: true,
-          });
-          if ((focused.result as { value?: unknown }).value === true) {
-            keyboardAssertions.push(`Tab traversal reached core action after ${tab} tabs (max ${maxTabs})`);
-            reached = true;
-            break;
-          }
-        }
-        if (!reached)
-          throw new Error(`${scenario.scenario} core action unreachable after ${maxTabs} Tabs`);
+        const counted = await cdp.call("Runtime.evaluate", {
+          expression: tabbableControlCountExpression,
+          returnByValue: true,
+        });
+        const tabbableControls = (counted.result as { value?: unknown }).value;
+        if (typeof tabbableControls !== "number")
+          throw new Error(`${scenario.scenario} could not count tabbable controls`);
+        const result = await traverseTabs({
+          limit: tabTraversalLimit(tabbableControls),
+          dispatchTab: () => dispatchEvidenceKey(cdp, "Tab"),
+          focusedStop: async () => {
+            const focused = await cdp.call("Runtime.evaluate", {
+              expression: focusedStopExpression(step.expectFocus.selector),
+              returnByValue: true,
+            });
+            return (focused.result as { value?: FocusStop }).value ?? {
+              identity: "missing-focus-snapshot",
+              label: "missing focus snapshot",
+              isTarget: false,
+            };
+          },
+        });
+        if (!result.reached)
+          throw new Error(
+            `${scenario.scenario} core action unreachable after ${result.visited.length} Tabs (${result.reason}; bound ${result.limit} from ${tabbableControls} tabbable controls). Visited focus stops: ${tabTraversalDiagnostics(result.visited)}`,
+          );
+        keyboardAssertions.push(
+          `Tab traversal reached core action after ${result.tabs} tabs (bound ${tabTraversalLimit(tabbableControls)} from ${tabbableControls} tabbable controls)`,
+        );
         await evaluateBoolean(cdp, expression(step.expectState), `${scenario.scenario} focused core action`);
         continue;
       }
