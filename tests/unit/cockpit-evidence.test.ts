@@ -26,6 +26,36 @@ const scenarios = parseScenarios(
     "cockpit-evidence-scenarios.json",
   ),
 );
+const scenarioProfiles = JSON.parse(
+  readFileSync(
+    join(
+      import.meta.dir,
+      "..",
+      "..",
+      "scripts",
+      "release",
+      "cockpit-evidence-scenarios.json",
+    ),
+    "utf8",
+  ),
+).profiles as Array<{
+  issue: number;
+  heading: string;
+  coreAction: string;
+  data: string;
+  progressive: string;
+  taskOutcome: string | { url: string };
+  states: Record<string, string>;
+}>;
+const evidenceViewSources: Record<number, string[]> = {
+  652: ["app/src/views/JournalView.tsx"],
+  653: ["app/src/views/PartyHubView.tsx"],
+  654: ["app/src/views/BalanceView.tsx"],
+  655: ["app/src/views/BankView.tsx", "app/src/components/BankImportModal.tsx", "app/src/components/CockpitPrimitives.tsx"],
+  656: ["app/src/views/VatView.tsx"],
+  657: ["app/src/views/ManageCompanyView.tsx"],
+};
+const projectRoot = join(import.meta.dir, "..", "..");
 // Minimal dimension-bearing PNG for structural verifier tests.
 function png(width: number, height: number) {
   const header = Buffer.alloc(25);
@@ -111,6 +141,34 @@ test("keeps #656 empty VAT data at zero and #657 fixtures as exact usable API co
     ]);
     expect(JSON.parse(requests[0]!.body)).toMatchObject({ ok: true, count: 1, companies: [{ slug: "evidence-fixture" }] });
     expect(JSON.parse(requests[1]!.body)).toMatchObject({ ok: true, company: { name: "Synthetic Evidence Fixture" } });
+  }
+});
+test("keeps #652-#657 profile copy and live evidence markers in parity", () => {
+  for (const profile of scenarioProfiles.filter(({ issue }) => issue >= 652 && issue <= 657)) {
+    const source = evidenceViewSources[profile.issue]
+      .map((path) => readFileSync(join(projectRoot, path), "utf8"))
+      .join("\n");
+    for (const text of [
+      profile.heading,
+      profile.progressive,
+      ...Object.values(profile.states),
+    ])
+      expect(source).toContain(text);
+    const normalFixture = evidenceResponse(profile.issue, "normal");
+    for (const text of [profile.coreAction, profile.data])
+      expect(source.includes(text) || normalFixture.includes(text)).toBe(true);
+    for (const marker of [
+      "data-evidence-heading",
+      "data-evidence-status",
+      "data-evidence-core-action",
+      "data-evidence-data",
+      "data-evidence-progressive",
+    ])
+      expect(source).toContain(marker);
+    if (typeof profile.taskOutcome === "string") {
+      expect(source).toContain("data-evidence-task-outcome");
+      expect(source).toContain(profile.taskOutcome);
+    }
   }
 });
 test("normalizes observed request URLs to deduplicated, origin-independent paths", () => {
