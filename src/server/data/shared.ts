@@ -10,7 +10,7 @@
 // existing `import ... from "./data"` keeps resolving unchanged.
 
 import type { Database } from "bun:sqlite";
-import { openDb, migrate } from "../../core/db";
+import { openCurrentLedgerReadOnly } from "../../core/ledger-inspection";
 import { getCompanySettings, type CompanySettings } from "../../core/company";
 import { todayIsoDate } from "../../core/dates";
 import { fiscalYearForDate } from "../../core/fiscal-year";
@@ -143,9 +143,8 @@ export function buildCompanyFiscalYears(
   }
   const { entry, ledgerDbPath: dbPath } = target.company;
 
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const company = getCompanySettings(db);
     const byLabel = new Map<string, FiscalYearEntry>();
 
@@ -235,8 +234,7 @@ export function resolveStatementContext(
   const selected = years.find((y) => y.label === selectedLabel);
   const isArchivedOnly = selected ? selected.source === "archive" : false;
 
-  const db = openDb(dbPath);
-  migrate(db);
+  const db = openCurrentLedgerReadOnly(dbPath);
   return {
     entry,
     db,

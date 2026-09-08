@@ -491,10 +491,7 @@ export function setWorkspaceCompanyArchived(
 
 function readCompanyName(dbPath: string): string | null {
   try {
-    // Lazy import keeps the module dependency-light for callers that only
-    // need the pure manifest helpers.
-    const { Database } = require("bun:sqlite") as typeof import("bun:sqlite");
-    const db = new Database(dbPath, { readonly: true });
+    const db = openLedgerReadOnly(dbPath);
     try {
       const row = db.query("SELECT name FROM companies ORDER BY id ASC LIMIT 1").get() as
         | { name: string }

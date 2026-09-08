@@ -1,5 +1,5 @@
 /** Generic, reviewed reporting-chart profiles and read-only consolidated reports. */
-import { Database, type SQLQueryBindings } from "bun:sqlite";
+import { type Database, type SQLQueryBindings } from "bun:sqlite";
 import { createHash } from "node:crypto";
 import type { ResolveActorInput } from "./actor";
 import { resolveActor } from "./actor";
@@ -12,6 +12,7 @@ import { companyPaths } from "./paths";
 import { assertSchemaCompatibility } from "./schema-version";
 import { companyRootForSlug, listWorkspaceCompanies } from "./workspace";
 import { insertWorkspaceAudit } from "./workspace-control";
+import { openCurrentLedgerReadOnly } from "./ledger-inspection";
 
 const IDENTIFIER = /^[a-z][a-z0-9-]{0,63}$/;
 const ACCOUNT = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
@@ -125,7 +126,7 @@ export function listAvailableConsolidationProfiles(
 
 type LedgerAccountValue = { accountNo: string; accountType: string; ore: bigint; sourceHash: string };
 function readLedger(workspaceRoot: string, companySlug: string, periodFrom: string, asOf: string): { currency: string; head: string | null; entries: number; accounts: Array<{ accountNo: string; accountType: string; active: boolean }>; pnl: LedgerAccountValue[]; cumulativeResult: LedgerAccountValue[]; balance: LedgerAccountValue[] } {
-  const root=companyRootForSlug(workspaceRoot,companySlug); const db=new Database(companyPaths(root).db,{readonly:true});
+  const root=companyRootForSlug(workspaceRoot,companySlug); const db=openCurrentLedgerReadOnly(companyPaths(root).db);
   try { db.exec("PRAGMA query_only=ON; PRAGMA foreign_keys=ON"); assertSchemaCompatibility(db); const audit=verifyAuditChain(db,{companyRoot:root}); if(!audit.ok) throw new Error("ledger audit verification failed"); const company=db.query("SELECT currency FROM companies WHERE id=1").get() as {currency:string}|null; if(!company) throw new Error("company currency unavailable");
     const query=(from:string|null,types:string[]):LedgerAccountValue[]=>{ const typeBindings:SQLQueryBindings[]=[...types]; const dateClause=from?"AND je.transaction_date>=? AND je.transaction_date<=?":"AND je.transaction_date<=?"; const bindings:SQLQueryBindings[]=[...typeBindings,...(from?[from,asOf]:[asOf])]; const rows=db.query(`SELECT a.account_no,a.type,jl.id AS line_id,je.id AS entry_id,je.entry_hash,je.transaction_date,jl.debit_amount,jl.credit_amount FROM accounts a JOIN journal_lines jl ON jl.account_id=a.id JOIN journal_entries je ON je.id=jl.journal_entry_id WHERE a.type IN (${types.map(()=>"?").join(",")}) ${dateClause} ORDER BY je.id,jl.id`).all(...bindings) as Array<{account_no:string;type:string;line_id:number;entry_id:number;entry_hash:string;transaction_date:string;debit_amount:number;credit_amount:number}>; const by=new Map<string,{type:string;ore:bigint;refs:unknown[]}>(); for(const row of rows){const value=by.get(row.account_no)??{type:row.type,ore:0n,refs:[]}; value.ore+=toOre(row.debit_amount)-toOre(row.credit_amount); value.refs.push([row.entry_id,row.entry_hash,row.line_id,row.transaction_date,row.debit_amount,row.credit_amount]); by.set(row.account_no,value);} return [...by].map(([accountNo,value])=>({accountNo,accountType:value.type,ore:value.ore,sourceHash:sha(JSON.stringify({companySlug,accountNo,from,asOf,refs:value.refs}))})); };
     const head=db.query("SELECT entry_hash FROM journal_entries ORDER BY id DESC LIMIT 1").get() as {entry_hash:string}|null; const accounts=(db.query("SELECT account_no,type,active FROM accounts ORDER BY account_no").all() as Array<{account_no:string;type:string;active:number}>).map(account=>({accountNo:account.account_no,accountType:account.type,active:account.active===1})); return {currency:company.currency.trim().toUpperCase(),head:head?.entry_hash??null,entries:audit.entries,accounts,pnl:query(periodFrom,["income","expense"]),cumulativeResult:query(null,["income","expense"]),balance:query(null,["asset","liability","equity","vat"])};

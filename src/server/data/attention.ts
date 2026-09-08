@@ -5,8 +5,8 @@
  * controls and the bookkeeping workbench remain the respective sources of
  * truth; this module neither records a task nor changes their completion.
  */
-import { Database } from "bun:sqlite";
 import { companyPaths } from "../../core/paths";
+import { openCurrentLedgerReadOnly } from "../../core/ledger-inspection";
 import { getCompanySettings } from "../../core/company";
 import { fiscalYearForDate } from "../../core/fiscal-year";
 import { computePeriodCloseReadiness } from "../../core/period-close-readiness";
@@ -53,7 +53,7 @@ function exceptionDestination(type: string): string {
 export function buildCompanyAttention(workspaceRoot: string, slug: string) {
   const entry = findWorkspaceCompany(workspaceRoot, slug);
   if (!entry) throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
-  const db = new Database(companyPaths(companyRootForSlug(workspaceRoot, slug)).db, { readonly: true });
+  const db = openCurrentLedgerReadOnly(companyPaths(companyRootForSlug(workspaceRoot, slug)).db);
   try {
     const company = getCompanySettings(db);
     const today = todayIsoDate();

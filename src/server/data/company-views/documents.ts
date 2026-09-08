@@ -1,7 +1,6 @@
-import { Database } from "bun:sqlite";
 import { existsSync } from "node:fs";
 import { getCompanySettings } from "../../../core/company";
-import { migrate, openDb } from "../../../core/db";
+import { openCurrentLedgerReadOnly } from "../../../core/ledger-inspection";
 import { purchaseVatLinesFromPayload } from "../../../core/documents";
 import { companyPaths } from "../../../core/paths";
 import {
@@ -83,9 +82,8 @@ export function buildCompanyDocuments(workspaceRoot: string, slug: string) {
     throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const company = getCompanySettings(db);
     // A bilag is "bogført" when either an import_document_links row binds it
     // to a journal entry (the legacy archive-import flow) OR a journal entry
@@ -266,9 +264,8 @@ export function resolveCompanyDocumentFile(
   // A download is evidence retrieval, never a ledger maintenance path.  In
   // particular it must not call `migrate()` (which can repair/write state) or
   // even open the ledger read-write.
-  const db = new Database(dbPath, { readonly: true });
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    db.exec("PRAGMA query_only = ON");
     const row = db.query(
       `SELECT stored_path AS storedPath, mime_type AS mimeType,
               sha256_hash AS sha256Hash, document_type AS documentType
@@ -399,9 +396,8 @@ export function buildDocumentBookingOptions(
   if (!existsSync(dbPath)) {
     throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const doc = db
       .query(
         `SELECT d.id, d.document_no, d.document_type, d.invoice_no, d.invoice_date,

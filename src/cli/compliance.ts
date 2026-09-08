@@ -9,7 +9,7 @@ import { dirname } from "node:path";
 import type { Database } from "bun:sqlite";
 import { companyPaths } from "../core/paths";
 import { todayIsoDate } from "../core/dates";
-import { openDb, migrate } from "../core/db";
+import { openCurrentLedgerReadOnly } from "../core/ledger-inspection";
 import { getCompanySettings } from "../core/company";
 import { verifyAuditChain } from "../core/ledger";
 import { buildRetentionStatusReport } from "../core/retention";
@@ -73,8 +73,7 @@ export function register(dispatch: CommandDispatch): void {
     }
 
     const companyRoot = ctx.companyRoot();
-    const db = openDb(companyPaths(companyRoot).db);
-    migrate(db);
+    const db = openCurrentLedgerReadOnly(companyPaths(companyRoot).db);
 
     const company = getCompanySettings(db);
     const audit = verifyAuditChain(db, { companyRoot });

@@ -4,6 +4,7 @@ import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ensureCompanyDirs } from "./paths";
 import { openDb, migrate } from "./db";
+import { openCurrentLedgerReadOnly } from "./ledger-inspection";
 import { seedAccounts } from "./ledger";
 import { seedNativeAccountRoles } from "./account-roles";
 import { insertAuditLog } from "./actor";
@@ -428,7 +429,11 @@ export function initialiseCompanyVolume(
       "INSERT INTO audit_log (event_type, entity_type, message) VALUES ('init','company','Company volume initialized')",
     );
   } finally {
-    db.close();
+    // Company creation must be physically complete before the caller receives
+    // the new volume; otherwise Bun may remove empty WAL sidecars during the
+    // first later request, making that read appear mutating.
+    db.run("PRAGMA wal_checkpoint(TRUNCATE)");
+    db.close(true);
   }
   return { companyRoot, dbPath: p.db };
 }
@@ -463,7 +468,7 @@ export type CompanyOnboardingSummary = {
  */
 export function summariseCompanyVolume(companyRoot: string): CompanyOnboardingSummary {
   const dbPath = join(companyRoot, "data", "ledger.sqlite");
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
     const settings = getCompanySettings(db);
     const row = db.query("SELECT COUNT(*) AS n FROM accounts").get() as { n: number };

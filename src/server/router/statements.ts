@@ -22,7 +22,7 @@ import {
 } from "../data/statement-exports";
 import { okResponse } from "./_shared";
 import { responseBodyFromBytes } from "../response-body";
-import { openDb } from "../../core/db";
+import { openCurrentLedgerReadOnly } from "../../core/ledger-inspection";
 import { companyPaths } from "../../core/paths";
 import { resolveWorkspaceCompany } from "../../core/workspace-company-resolver";
 import { explainJournalEntry } from "../../core/journal-explanation";
@@ -207,7 +207,7 @@ export function handleCompanyJournal(
 export function handleCompanyJournalExplanation(config: ServerConfig, slug: string, entryId: number): Response {
   const resolved = resolveWorkspaceCompany(config.workspaceRoot, slug, { selection: "registered", archived: "allow", ledger: "required" });
   if (!resolved.ok) throw ApiError.notFound("virksomhed ikke fundet");
-  const db = openDb(companyPaths(resolved.company.companyRoot).db);
+  const db = openCurrentLedgerReadOnly(companyPaths(resolved.company.companyRoot).db);
   try {
     const result = explainJournalEntry(db, entryId);
     if (!result.ok) throw ApiError.notFound(result.errors[0] ?? "postering ikke fundet");

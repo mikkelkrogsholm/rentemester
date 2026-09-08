@@ -1,6 +1,8 @@
 import type { Database } from "bun:sqlite";
 import { migrate } from "../core/db";
 import { dryRunJournalEntry, postJournalEntry, reverseJournalEntry, type JournalEntryInput } from "../core/ledger";
+import { openCurrentLedgerSimulation } from "../core/ledger-inspection";
+import { companyPaths } from "../core/paths";
 import { asJournalEntryId, type JournalEntryId } from "../core/ids";
 import { openCommandDb, readJsonObjectCliInput } from "../cli-dispatch";
 import { formatKroner } from "../cli-format";
@@ -78,8 +80,7 @@ export function register(dispatch: CommandDispatch): void {
       console.error("Missing required --input <file.json>");
       process.exit(2);
     }
-    const db = openCommandDb(ctx);
-    migrate(db);
+    const db = openCurrentLedgerSimulation(companyPaths(ctx.companyRoot()).db);
     const payload = readJsonObjectCliInput(ctx, input, "--input") as unknown as JournalEntryInput;
     // Non-binding preview: dryRunJournalEntry rolls its transaction back, so
     // this never writes to the append-only ledger.

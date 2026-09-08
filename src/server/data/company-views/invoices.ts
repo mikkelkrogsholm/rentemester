@@ -1,6 +1,5 @@
-import { Database } from "bun:sqlite";
 import { existsSync } from "node:fs";
-import { migrate, openDb } from "../../../core/db";
+import { openCurrentLedgerReadOnly } from "../../../core/ledger-inspection";
 import { buildInvoiceList } from "../../../core/invoice-list";
 import { listImportedReceivables } from "../../../core/imported-receivables";
 import { companyPaths } from "../../../core/paths";
@@ -46,7 +45,7 @@ export function resolveCompanyIssuedInvoicePdf(
     throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
-  const db = new Database(dbPath, { readonly: true });
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
     db.exec("PRAGMA query_only = ON");
     const invoice = db.query(
@@ -350,7 +349,7 @@ export function buildCompanyImportedReceivables(
   if (!entry) throw ApiError.notFound(`ingen virksomhed med slug '${slug}' findes i workspacet`);
   const dbPath = companyPaths(companyRootForSlug(workspaceRoot, slug)).db;
   if (!existsSync(dbPath)) throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
-  const db = new Database(dbPath, { readonly: true });
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
     db.exec("PRAGMA query_only = ON");
     return listImportedReceivables(db, asOf);

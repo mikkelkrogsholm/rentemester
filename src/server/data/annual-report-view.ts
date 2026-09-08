@@ -10,7 +10,7 @@ import { ApiError } from "../errors";
 import { buildAnnualReport, type AnnualReport } from "../../core/annual-report";
 import { findWorkspaceCompany, companyRootForSlug } from "../../core/workspace";
 import { companyPaths } from "../../core/paths";
-import { openDb, migrate } from "../../core/db";
+import { openCurrentLedgerReadOnly } from "../../core/ledger-inspection";
 import { getCompanySettings } from "../../core/company";
 import { fiscalYearForDate } from "../../core/fiscal-year";
 
@@ -46,9 +46,8 @@ export function buildCompanyAnnualReport(
   if (!existsSync(dbPath)) {
     throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const company = getCompanySettings(db);
     const fiscalYear = canonicalYear ? fiscalYearForDate(`${canonicalYear}-12-31`, Number(company.fiscalYearStartMonth), company.fiscalYearLabelStrategy) : null;
     const start = fiscalYear?.start ?? fiscalYearStart;

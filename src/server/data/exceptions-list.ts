@@ -10,7 +10,7 @@ import { ApiError } from "../errors";
 import { listExceptions } from "../../core/exceptions";
 import { findWorkspaceCompany, companyRootForSlug } from "../../core/workspace";
 import { companyPaths } from "../../core/paths";
-import { openDb, migrate } from "../../core/db";
+import { openCurrentLedgerReadOnly } from "../../core/ledger-inspection";
 import { getCompanySettings } from "../../core/company";
 
 export type ExceptionRow = {
@@ -60,9 +60,8 @@ export function buildCompanyExceptions(
   if (!existsSync(dbPath)) {
     throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const company = getCompanySettings(db);
     const result = listExceptions(db, { status });
     if (!result.ok) {

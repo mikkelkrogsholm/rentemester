@@ -5,8 +5,8 @@
  * already-configured delivery adapter. The manifest is the only company list.
  */
 import { existsSync } from "node:fs";
-import { Database } from "bun:sqlite";
 import { openDb, migrate } from "./db";
+import { openLedgerReadOnly } from "./ledger-inspection";
 import { evaluateBackupLock } from "./backup-governance";
 import { companyPaths } from "./paths";
 import { companyRootForSlug, listWorkspaceCompanies } from "./workspace";
@@ -62,7 +62,7 @@ function preflightTarget(target: Target, actor: string): boolean {
   if (!isCanonicalActorId(actor)) return false;
   const allowed = checkActorAllowlist(target.root, actor);
   if (!allowed.allowed) return false;
-  const db = new Database(companyPaths(target.root).db, { readonly: true });
+  const db = openLedgerReadOnly(companyPaths(target.root).db);
   try {
     db.exec("PRAGMA query_only = ON; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 30000;");
     const lock = evaluateBackupLock(db, target.root);

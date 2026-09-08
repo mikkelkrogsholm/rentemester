@@ -1,4 +1,5 @@
 import { openDb, migrate } from "../../../core/db";
+import { openCurrentLedgerReadOnly } from "../../../core/ledger-inspection";
 import {
   getCompanySettings,
   resolveCompanyPaymentDetails,
@@ -35,9 +36,8 @@ export function buildCompanySettings(
   workspaceRoot: string,
   slug: string,
 ): CompanySettingsView {
-  const db = openDb(requireCompanyDbPath(workspaceRoot, slug));
+  const db = openCurrentLedgerReadOnly(requireCompanyDbPath(workspaceRoot, slug));
   try {
-    migrate(db);
     const settings = getCompanySettings(db);
     const payment = resolveCompanyPaymentDetails(db, settings.currency) ?? null;
     return { ...settings, payment };

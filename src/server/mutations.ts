@@ -411,6 +411,9 @@ export async function withCompanyMutation<T extends CoreResult>(
 
     return result;
   } finally {
-    db.close();
+    // An HTTP mutation is complete before its response is observable. A
+    // strict close prevents Bun from deferring WAL cleanup until the next
+    // (possibly read-only) request in this long-lived server process.
+    db.close(true);
   }
 }

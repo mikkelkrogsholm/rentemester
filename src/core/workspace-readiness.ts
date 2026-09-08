@@ -5,6 +5,7 @@ import { Database } from "bun:sqlite";
 import { existsSync, lstatSync } from "node:fs";
 import { companyPaths } from "./paths";
 import { inspectOpenLedger, openLedgerReadOnly } from "./ledger-inspection";
+import { openSqliteReadOnlySnapshot } from "./sqlite-readonly-snapshot";
 import {
   CURRENT_WORKSPACE_CONTROL_SCHEMA_VERSION,
   assertWorkspaceControlCompatibility,
@@ -51,7 +52,7 @@ function openReadonly(path: string): Database {
   if (!existsSync(path) || !isRegularFile(path)) {
     throw new Error("readiness database is unavailable");
   }
-  const db = new Database(path, { readonly: true });
+  const db = openSqliteReadOnlySnapshot(path);
   try {
     // The connection-level guard makes accidental write SQL fail even if a
     // future check is changed. Neither pragma persists into the database.

@@ -27,8 +27,37 @@ function setLegacyDocumentPath(container: string, slug: string, documentId: numb
 
 function registeredDocumentPath(container: string, slug: string, documentId: number): string {
   const dbPath = `/workspace/${slug}/data/ledger.sqlite`;
-  const source = `import {Database} from "bun:sqlite";const db=new Database(${JSON.stringify(dbPath)},{readonly:true});const row=db.query("SELECT stored_path FROM documents WHERE id=?").get(${documentId});db.close();console.log(row.stored_path);`;
+  const source = `import {openLedgerReadOnly} from "./src/core/ledger-inspection";const db=openLedgerReadOnly(${JSON.stringify(dbPath)});const row=db.query("SELECT stored_path FROM documents WHERE id=?").get(${documentId});db.close();console.log(row.stored_path);`;
   return run(["docker", "exec", container, "bun", "-e", source]).stdout.trim();
+}
+
+function ledgerPhysicalIdentity(container: string, slug: string): unknown {
+  const dbPath = `/workspace/${slug}/data/ledger.sqlite`;
+  const source = `import {createHash} from "node:crypto";import {existsSync,readFileSync} from "node:fs";import {openLedgerReadOnly} from "./src/core/ledger-inspection";const path=${JSON.stringify(dbPath)};const files=[path,path+"-wal",path+"-shm"].map(file=>existsSync(file)?{name:file.slice(path.length),sha256:createHash("sha256").update(readFileSync(file)).digest("hex")}:{name:file.slice(path.length),missing:true});const db=openLedgerReadOnly(path);const schemaVersion=Number(Object.values(db.query("PRAGMA schema_version").get())[0]);db.close();console.log(JSON.stringify({files,schemaVersion}));`;
+  return JSON.parse(run(["docker", "exec", container, "bun", "-e", source]).stdout);
+}
+
+async function assertCompanyReadsArePhysicallyReadOnly(container: string, slug: string): Promise<unknown> {
+  const before = ledgerPhysicalIdentity(container, slug);
+  const repeatedBaseline = ledgerPhysicalIdentity(container, slug);
+  if (JSON.stringify(repeatedBaseline) !== JSON.stringify(before)) {
+    throw new Error(`read-only identity inspection changed SQLite state: ${JSON.stringify({ before, repeatedBaseline })}`);
+  }
+  const paths = [
+    `/api/companies/${slug}/overview?year=2026&asOf=2026-01-01`,
+    `/api/companies/${slug}/dashboard?asOf=2026-01-01`,
+    `/api/companies/${slug}/income-statement?year=2026`,
+  ];
+  for (let pass = 0; pass < 2; pass += 1) {
+    for (const path of paths) {
+      await api(container, path);
+      const after = ledgerPhysicalIdentity(container, slug);
+      if (JSON.stringify(after) !== JSON.stringify(before)) {
+        throw new Error(`read-only route ${path} changed SQLite state: ${JSON.stringify({ before, after })}`);
+      }
+    }
+  }
+  return before;
 }
 
 function syntheticMetadata(invoiceNo: string) {
@@ -124,6 +153,7 @@ try {
   const noTextId = noTextDocument?.document?.id;
   const noTextParse = await api(first, `/api/companies/${slug}/documents/${noTextId}/parse`, { confirm: true });
   if (noTextParse?.parse?.status !== "no_text_layer") throw new Error(`no-text PDF outcome failed: ${JSON.stringify(noTextParse)}`);
+  const firstReadIdentity = await assertCompanyReadsArePhysicallyReadOnly(first, slug);
   run(["docker", "rm", "--force", first]);
 
   run([
@@ -141,7 +171,11 @@ try {
     companiesBody?.companies?.length !== 1 ||
     companiesBody.companies[0]?.slug !== "container-example-aps"
   ) throw new Error(JSON.stringify(companiesBody));
-  console.log("container integration passed: CLI example, canonical-only mounted workspace, constrained networkless non-root read-only runtime, legacy host-path PDF text/layout, cache, no-text outcome, persisted restart");
+  const restartedReadIdentity = await assertCompanyReadsArePhysicallyReadOnly(second, slug);
+  if (JSON.stringify(restartedReadIdentity) !== JSON.stringify(firstReadIdentity)) {
+    throw new Error(`container restart changed SQLite state: ${JSON.stringify({ firstReadIdentity, restartedReadIdentity })}`);
+  }
+  console.log("container integration passed: CLI example, canonical-only mounted workspace, constrained networkless non-root read-only runtime, legacy host-path PDF text/layout, cache, no-text outcome, physically read-only routes, persisted restart");
 } finally {
   run(["docker", "rm", "--force", first], { allowFailure: true });
   run(["docker", "rm", "--force", second], { allowFailure: true });

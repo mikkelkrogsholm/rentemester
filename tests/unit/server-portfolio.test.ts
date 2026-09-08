@@ -20,6 +20,7 @@ import {
 } from "../../src/core/workspace";
 import { companyPaths } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
+import { openLedgerReadOnly } from "../../src/core/ledger-inspection";
 import { postJournalEntry, verifyAuditChain } from "../../src/core/ledger";
 import { ingestDocument } from "../../src/core/documents";
 import { recordException } from "../../src/core/exceptions";
@@ -34,6 +35,15 @@ function dataDirectoryDigest(companyRoot: string) {
     name,
     sha256: createHash("sha256").update(readFileSync(join(dataDir, name))).digest("hex"),
   }));
+}
+
+function schemaVersion(dbPath: string): number {
+  const db = openLedgerReadOnly(dbPath);
+  try {
+    return Number(Object.values(db.query("PRAGMA schema_version").get() as Record<string, unknown>)[0]);
+  } finally {
+    db.close();
+  }
 }
 
 function config(workspaceRoot: string): ServerConfig {
@@ -383,6 +393,39 @@ describe("portfolio aggregation", () => {
       const before = dataDirectoryDigest(companyRoot);
       expect(buildPortfolioOverview(ws, "2026-05-20").companyCount).toBe(1);
       expect(dataDirectoryDigest(companyRoot)).toEqual(before);
+    } finally {
+      rmSync(ws, { recursive: true, force: true });
+    }
+  });
+
+  test("repeated HTTP overview, status and report reads preserve physical SQLite state", async () => {
+    const ws = tmpRoot("company-http-read-only");
+    try {
+      initWorkspace(ws);
+      createCompany(ws, { name: "Physical Read Only ApS", cvr: "DK10000019" });
+      const companyRoot = companyRootForSlug(ws, "physical-read-only-aps");
+      const dbPath = companyPaths(companyRoot).db;
+      const writable = openDb(dbPath);
+      writable.run("PRAGMA wal_checkpoint(TRUNCATE)");
+      writable.close();
+      const beforeFiles = dataDirectoryDigest(companyRoot);
+      const beforeSchemaVersion = schemaVersion(dbPath);
+
+      const endpoints = [
+        "/api/companies/physical-read-only-aps/overview?year=2026&asOf=2026-05-20",
+        "/api/companies/physical-read-only-aps/dashboard?asOf=2026-05-20",
+        "/api/companies/physical-read-only-aps/income-statement?year=2026",
+      ];
+      for (let pass = 0; pass < 2; pass += 1) {
+        for (const endpoint of endpoints) {
+          const response = await handleRequest(new Request(`http://localhost${endpoint}`), config(ws));
+          expect(response.status, endpoint).toBe(200);
+          expect((await response.json()).ok, endpoint).toBe(true);
+        }
+      }
+
+      expect(schemaVersion(dbPath)).toBe(beforeSchemaVersion);
+      expect(dataDirectoryDigest(companyRoot)).toEqual(beforeFiles);
     } finally {
       rmSync(ws, { recursive: true, force: true });
     }

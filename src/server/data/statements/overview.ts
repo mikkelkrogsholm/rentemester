@@ -7,7 +7,7 @@
 import { existsSync } from "node:fs";
 import { companyPaths } from "../../../core/paths";
 import { diffDaysSafe as daysBetween } from "../../../core/dates";
-import { openDb, migrate } from "../../../core/db";
+import { openCurrentLedgerReadOnly } from "../../../core/ledger-inspection";
 import { getCompanySettings } from "../../../core/company";
 import { listExceptions } from "../../../core/exceptions";
 import { buildInvoiceList } from "../../../core/invoice-list";
@@ -117,9 +117,8 @@ export function buildCompanyOverview(
   const selected = years.find((y) => y.label === selectedLabel);
   const isArchivedOnly = selected ? selected.source === "archive" : false;
 
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const company = getCompanySettings(db);
     const attention = buildCompanyAttention(workspaceRoot, entry.slug);
 

@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { companyPaths } from "../../../core/paths";
-import { openDb, migrate } from "../../../core/db";
+import { openCurrentLedgerReadOnly } from "../../../core/ledger-inspection";
 import { getCompanySettings } from "../../../core/company";
 import { buildInvoiceList } from "../../../core/invoice-list";
 import { listCustomers, listVendors } from "../../../core/master-data";
@@ -98,9 +98,8 @@ export function buildCompanyContacts(workspaceRoot: string, slug: string) {
 
   const years = buildCompanyFiscalYears(workspaceRoot, slug).years;
 
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const company = getCompanySettings(db);
 
     // #439 — aggregate open receivables per customer from the same

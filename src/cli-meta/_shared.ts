@@ -48,5 +48,7 @@ export const SIDE_EFFECTING_COMMANDS = new Set([
   "company add",
   "company set-profile",
   "import contacts",
+  "invoice export-public",
+  "invoice export-public-oioubl",
   "local start",
 ]);

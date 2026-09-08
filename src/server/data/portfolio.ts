@@ -11,8 +11,7 @@ import { existsSync } from "node:fs";
 import type { Database } from "bun:sqlite";
 import { companyPaths } from "../../core/paths";
 import { diffDaysSafe as daysBetween } from "../../core/dates";
-import { openDb, migrate } from "../../core/db";
-import { openLedgerReadOnly } from "../../core/ledger-inspection";
+import { openCurrentLedgerReadOnly, openLedgerReadOnly } from "../../core/ledger-inspection";
 import { getCompanySettings } from "../../core/company";
 import { buildInvoiceList, buildOverdueInvoiceList } from "../../core/invoice-list";
 import { listBankTransactions } from "../../core/reconciliation";
@@ -392,9 +391,8 @@ export function buildCompanyDashboardData(
     throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const company = getCompanySettings(db);
     const invoices = buildInvoiceList(db, { status: "open", asOfDate });
     const overdueInvoices = buildOverdueInvoiceList(db, { asOfDate });

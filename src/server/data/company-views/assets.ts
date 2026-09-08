@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { companyPaths } from "../../../core/paths";
-import { openDb, migrate } from "../../../core/db";
+import { openCurrentLedgerReadOnly } from "../../../core/ledger-inspection";
 import { getCompanySettings } from "../../../core/company";
 import {
   buildAssetRegisterReport,
@@ -99,9 +99,8 @@ export function buildCompanyAssets(
     throw ApiError.notFound(`virksomheden '${slug}' har ingen ledger`);
   }
 
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const company = getCompanySettings(db);
     const report = buildAssetRegisterReport(db);
 
@@ -201,9 +200,8 @@ export function buildAssetNextDepreciationPeriod(
     throw ApiError.badRequest("'assetId' must be a positive integer");
   }
   const dbPath = requireCompanyDbPath(workspaceRoot, slug);
-  const db = openDb(dbPath);
+  const db = openCurrentLedgerReadOnly(dbPath);
   try {
-    migrate(db);
     const asset = db.query(
       `SELECT id, cost, useful_life_months, acquisition_date FROM assets WHERE id = ?`,
     ).get(assetId) as {

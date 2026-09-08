@@ -7,7 +7,7 @@ import { existsSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { companyPaths } from "../core/paths";
 import { diffDaysSafe as daysBetween } from "../core/dates";
-import { openDb, migrate } from "../core/db";
+import { openCurrentLedgerReadOnly } from "../core/ledger-inspection";
 import { getCompanySettings } from "../core/company";
 import { buildInvoiceList, buildOverdueInvoiceList } from "../core/invoice-list";
 import { listBankTransactions } from "../core/reconciliation";
@@ -299,8 +299,7 @@ export function register(dispatch: CommandDispatch): void {
     }
 
     const companyRoot = ctx.companyRoot();
-    const db = openDb(companyPaths(companyRoot).db);
-    migrate(db);
+    const db = openCurrentLedgerReadOnly(companyPaths(companyRoot).db);
 
     const company = getCompanySettings(db);
     const invoices = buildInvoiceList(db, { status: "open", asOfDate });
