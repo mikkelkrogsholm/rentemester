@@ -4,7 +4,7 @@
  * objects: a successful interception must exercise the same renderer path as
  * a real server response.
  */
-export const COCKPIT_EVIDENCE_FIXTURE_VERSION = 2;
+export const COCKPIT_EVIDENCE_FIXTURE_VERSION = 3;
 
 const company = { name: "Synthetic Evidence Fixture", cvr: "12345678", country: "DK", currency: "DKK", fiscalYearStartMonth: 1, fiscalYearLabelStrategy: "end-year" };
 const years = [{ label: "2026", start: "2026-01-01", end: "2026-12-31", source: "live" }];
@@ -58,6 +58,29 @@ const journalExplanation = JSON.stringify({ ok: true, explanation: {
   evidence: { entryHash: "synthetic-entry-hash", previousHash: null, createdBy: "system", createdByProgram: "cockpit-evidence", lines: [{ journalLineId: 1, accountNo: "1000", accountName: "Omsætning", accountType: "income", debit: 0, credit: 125, vatCode: null, text: "Salg" }] },
 } });
 
+/** Exact #653 detail DTO returned after the desktop keyboard action opens party-evidence. */
+const partyProfile = JSON.stringify({ ok: true,
+  party: {
+    partyId: "party-evidence", name: "Syntetisk part", kind: "organization",
+    roles: [{ companySlug: "evidence-fixture", role: "vendor", defaults: {} }],
+    aliases: [{ alias: "Syntetisk leverandør", source: "cockpit-evidence", observed_at: "2026-01-15", review_state: "approved", payload_hash: "synthetic-alias-hash" }],
+    assertions: [{ field: "name", value: "Syntetisk part", source: "cockpit-evidence", observed_at: "2026-01-15", review_state: "approved", payload_hash: "synthetic-name-hash" }],
+  },
+  computed: {
+    period: { from: "2026-01-01", to: "2026-09-08" }, asOf: "2026-09-08",
+    sourceCoverage: { documents: 1, bankTransactions: 0, journalEntries: 0, invoices: 0, unmappedLedgerReferences: 0 },
+    purchase: { amount: 125, currency: "mixed" }, sales: { amount: 0, currency: "mixed" }, recentActivity: "2026-01-15",
+  },
+  research: {
+    assertions: [{ field: "name", value: "Syntetisk part", source: "cockpit-evidence", observed_at: "2026-01-15", review_state: "approved", payload_hash: "synthetic-name-hash" }],
+    aliases: [{ alias: "Syntetisk leverandør", source: "cockpit-evidence", observed_at: "2026-01-15", review_state: "approved", payload_hash: "synthetic-alias-hash" }], warnings: [],
+  },
+  links: {
+    documents: [{ kind: "document", id: 1, label: "B-2026-0001", role: "vendor", evidenceKind: "exact_identifier" }],
+    relations: [{ kind: "company_role", type: "vendor", companySlug: "evidence-fixture", href: "/companies/evidence-fixture/workspace-register" }],
+  },
+});
+
 /** The runner uses this finite list verbatim; it never installs a wildcard route. */
 export function evidenceRequests(issue: number, state: EvidenceState, mode?: "desktop" | "mobile" | "zoom"): EvidenceRequest[] {
   const primary: EvidenceRequest = { urlPattern: issue === 650 ? "/api/companies/evidence-fixture/fiscal-years" : ({ 649: "/api/companies/evidence-fixture/attention", 651: "/api/companies/evidence-fixture/changes-since?after=0", 652: "/api/companies/evidence-fixture/journal", 653: "/api/companies/evidence-fixture/party-hub?query=", 654: "/api/companies/evidence-fixture/balance", 655: "/api/companies/evidence-fixture/bank", 656: "/api/companies/evidence-fixture/vat", 657: "/api/companies" } as Record<number, string>)[issue]!, status: state === "warning-or-blocked" ? 403 : state === "error" ? 500 : 200, body: evidenceResponse(issue, state), ...(state === "loading" ? { delayMs: 5000 } : {}) };
@@ -68,6 +91,10 @@ export function evidenceRequests(issue: number, state: EvidenceState, mode?: "de
   if (issue === 652 && state === "normal" && mode === "desktop") return [
     primary,
     { urlPattern: "/api/companies/evidence-fixture/journal/1/explanation", status: 200, body: journalExplanation },
+  ];
+  if (issue === 653 && state === "normal" && mode === "desktop") return [
+    primary,
+    { urlPattern: "/api/companies/evidence-fixture/party-hub/party-evidence", status: 200, body: partyProfile },
   ];
   if (issue !== 650 || state === "loading" || state === "warning-or-blocked" || state === "error") return [primary];
   return [
@@ -118,4 +145,20 @@ export function validateEvidenceFixtures() {
   for (const mode of ["mobile", "zoom"] as const)
     if (evidenceRequests(652, "normal", mode).length !== 1)
       throw new Error(`#652 ${mode} must not declare the unopened explanation request`);
+  const desktopParty = evidenceRequests(653, "normal", "desktop");
+  if (
+    desktopParty.length !== 2 ||
+    desktopParty[0]?.urlPattern !== "/api/companies/evidence-fixture/party-hub?query=" ||
+    desktopParty[1]?.urlPattern !== "/api/companies/evidence-fixture/party-hub/party-evidence" ||
+    desktopParty.some((request) => request.urlPattern.includes("*"))
+  ) throw new Error("#653 desktop must declare its exact party hub and profile requests");
+  const profile = JSON.parse(desktopParty[1].body);
+  if (
+    profile.ok !== true || profile.party?.partyId !== "party-evidence" ||
+    profile.computed?.sourceCoverage?.documents !== 1 || !Array.isArray(profile.links?.documents) ||
+    !Array.isArray(profile.research?.assertions)
+  ) throw new Error("#653 party profile fixture must match the live profile response contract");
+  for (const mode of ["mobile", "zoom"] as const)
+    if (evidenceRequests(653, "normal", mode).length !== 1)
+      throw new Error(`#653 ${mode} must not declare the unopened party profile request`);
 }

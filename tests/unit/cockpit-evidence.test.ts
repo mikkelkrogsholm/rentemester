@@ -159,6 +159,23 @@ test("declares #652's explanation only for the desktop scenario that opens the e
     expect(scenarios.find((item) => item.issue === 652 && item.state === "normal" && item.mode === mode)?.requests)
       .toHaveLength(1);
 });
+test("declares #653's party profile only for the desktop scenario that opens it", () => {
+  const desktop = scenarios.find((item) => item.scenario === "issue-653-normal-desktop")!;
+  expect(desktop.requests?.map((request) => request.urlPattern)).toEqual([
+    "/api/companies/evidence-fixture/party-hub?query=",
+    "/api/companies/evidence-fixture/party-hub/party-evidence",
+  ]);
+  expect(JSON.parse(desktop.requests![1]!.body)).toMatchObject({
+    ok: true,
+    party: { partyId: "party-evidence", name: "Syntetisk part", roles: expect.any(Array) },
+    computed: { sourceCoverage: { documents: 1 } },
+    research: { assertions: expect.any(Array) },
+    links: { documents: expect.any(Array), relations: expect.any(Array) },
+  });
+  for (const mode of ["mobile", "zoom"])
+    expect(scenarios.find((item) => item.issue === 653 && item.state === "normal" && item.mode === mode)?.requests)
+      .toHaveLength(1);
+});
 test("keeps #652-#657 profile copy and live evidence markers in parity", () => {
   for (const profile of scenarioProfiles.filter(({ issue }) => issue >= 652 && issue <= 657)) {
     const source = evidenceViewSources[profile.issue]
@@ -404,6 +421,31 @@ test("requires both exact #652 desktop requests and rejects undeclared explanati
       `declared request was not observed: ${explanation}`,
     );
     scenario.interception.actualRequests = [scenario.endpoint, explanation, "/api/companies/evidence-fixture/journal/2/explanation"];
+    writeFileSync(value.path, JSON.stringify(value.manifest));
+    expect(() => verifyEvidence(value.path)).toThrow("undeclared intercepted request");
+  } finally {
+    rmSync(value.dir, { recursive: true, force: true });
+  }
+});
+test("requires both exact #653 desktop requests and rejects undeclared party detail evidence", () => {
+  const value = fixture();
+  try {
+    const scenario = value.manifest.scenarios.find(
+      (item) => item.scenario === "issue-653-normal-desktop",
+    )!;
+    const profile = "/api/companies/evidence-fixture/party-hub/party-evidence";
+    expect(verifyEvidence(value.path)).toBeDefined();
+    scenario.interception.actualRequests = [profile];
+    writeFileSync(value.path, JSON.stringify(value.manifest));
+    expect(() => verifyEvidence(value.path)).toThrow(
+      `declared request was not observed: ${scenario.endpoint}`,
+    );
+    scenario.interception.actualRequests = [scenario.endpoint];
+    writeFileSync(value.path, JSON.stringify(value.manifest));
+    expect(() => verifyEvidence(value.path)).toThrow(
+      `declared request was not observed: ${profile}`,
+    );
+    scenario.interception.actualRequests = [scenario.endpoint, profile, "/api/companies/evidence-fixture/party-hub/another-party"];
     writeFileSync(value.path, JSON.stringify(value.manifest));
     expect(() => verifyEvidence(value.path)).toThrow("undeclared intercepted request");
   } finally {
