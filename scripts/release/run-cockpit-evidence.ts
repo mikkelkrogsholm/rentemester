@@ -35,6 +35,7 @@ import {
   waitForScenarioHeading,
 } from "./cockpit-evidence-dom-ready";
 import { expectedNetworkError, type ExpectedNetworkError } from "./cockpit-evidence-network-errors";
+import { waitForExactOwnedRequests } from "./cockpit-evidence-owned-requests";
 import { captureFinalizedScreenshot, type Cdp } from "./cockpit-evidence-finalization";
 import {
   horizontalOverflowFailure,
@@ -463,8 +464,15 @@ async function renderScenario(
         `${step.key}: real control activated and new UI state verified`,
       );
     }
-    await Promise.all(interceptions);
     const expectedRequests = scenario.requests ?? [scenario.interception!];
+    await waitForExactOwnedRequests({
+      scenario: scenario.scenario,
+      base,
+      expectedPaths: expectedRequests.map((request) => request.urlPattern),
+      observedUrls: () => liveActualRequests,
+      deadlineMs: POST_ACTION_CONDITION_DEADLINE_MS,
+    });
+    await Promise.all(interceptions);
     for (const request of expectedRequests)
       if (!liveActualRequests.includes(`${base}${request.urlPattern}`))
         throw new Error(`expected exact owned request was not observed: ${request.urlPattern}`);
