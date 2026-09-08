@@ -19,6 +19,7 @@ import { browserUrlMatchesExpected } from "./cockpit-evidence-url";
 import { selectPageDevToolsTarget } from "./cockpit-evidence-cdp-target";
 import { cdpKeyEvents, type EvidenceKey } from "./cockpit-evidence-key-events";
 import {
+  compositeTabbableControlCountExpression,
   focusedStopExpression,
   tabbableControlCountExpression,
   tabTraversalDiagnostics,
@@ -403,8 +404,16 @@ async function renderScenario(
         const tabbableControls = (counted.result as { value?: unknown }).value;
         if (typeof tabbableControls !== "number")
           throw new Error(`${scenario.scenario} could not count tabbable controls`);
+        const countedComposite = await cdp.call("Runtime.evaluate", {
+          expression: compositeTabbableControlCountExpression,
+          returnByValue: true,
+        });
+        const compositeControls = (countedComposite.result as { value?: unknown }).value;
+        if (typeof compositeControls !== "number")
+          throw new Error(`${scenario.scenario} could not count composite tabbable controls`);
+        const traversalLimit = tabTraversalLimit(tabbableControls, compositeControls);
         const result = await traverseTabs({
-          limit: tabTraversalLimit(tabbableControls),
+          limit: traversalLimit,
           dispatchTab: () => dispatchEvidenceKey(cdp, "Tab"),
           focusedStop: async () => {
             const focused = await cdp.call("Runtime.evaluate", {
@@ -420,10 +429,10 @@ async function renderScenario(
         });
         if (!result.reached)
           throw new Error(
-            `${scenario.scenario} core action unreachable after ${result.visited.length} Tabs (${result.reason}; bound ${result.limit} from ${tabbableControls} tabbable controls). Visited focus stops: ${tabTraversalDiagnostics(result.visited)}`,
+            `${scenario.scenario} core action unreachable after ${result.visited.length} Tabs (${result.reason}; bound ${result.limit} from ${tabbableControls} tabbable controls including ${compositeControls} composite controls). Visited focus stops: ${tabTraversalDiagnostics(result.visited)}`,
           );
         keyboardAssertions.push(
-          `Tab traversal reached core action after ${result.tabs} tabs (bound ${tabTraversalLimit(tabbableControls)} from ${tabbableControls} tabbable controls)`,
+          `Tab traversal reached core action after ${result.tabs} tabs (bound ${traversalLimit} from ${tabbableControls} tabbable controls including ${compositeControls} composite controls)`,
         );
         await evaluateBoolean(cdp, expression(step.expectState), `${scenario.scenario} focused core action`);
         continue;

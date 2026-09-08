@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import {
   TAB_TRAVERSAL_HARD_CAP,
+  MAX_CONSECUTIVE_COMPOSITE_TAB_STOPS,
   tabTraversalDiagnostics,
   tabTraversalLimit,
   traverseTabs,
@@ -19,6 +20,26 @@ test("derives a Tab bound above the former 24-control limit", async () => {
     }),
   });
   expect(result).toMatchObject({ reached: true, tabs: 30 });
+});
+
+test("allows a native date input's repeated active-element identity before the target", async () => {
+  expect(tabTraversalLimit(2, 1)).toBe(5);
+  const stops = ["#field-fra", "#field-fra", "#continue"];
+  let current = 0;
+  const result = await traverseTabs({
+    limit: tabTraversalLimit(2, 1),
+    dispatchTab: async () => {},
+    focusedStop: async () => {
+      const identity = stops[current++]!;
+      return {
+        identity,
+        label: identity,
+        isTarget: identity === "#continue",
+        allowsInternalTabStops: identity === "#field-fra",
+      };
+    },
+  });
+  expect(result).toMatchObject({ reached: true, tabs: 3 });
 });
 
 test("stops at the hard cap when a target is unreachable", async () => {
@@ -48,4 +69,20 @@ test("detects focus cycles and reports the visited focus stops", async () => {
   expect(tabTraversalDiagnostics(result.visited)).toBe(
     "1:<button> Menu [menu] -> 2:<input> Search [search] -> 3:<button> Menu [menu]",
   );
+});
+
+test("fails closed when a composite control remains focused beyond its internal-stop allowance", async () => {
+  const result = await traverseTabs({
+    limit: 10,
+    dispatchTab: async () => {},
+    focusedStop: async () => ({
+      identity: "#field-fra",
+      label: "<input> Fra",
+      isTarget: false,
+      allowsInternalTabStops: true,
+    }),
+  });
+  expect(result).toMatchObject({ reached: false, reason: "focus cycle", limit: 10 });
+  if (result.reached) throw new Error("expected an unreachable target");
+  expect(result.visited).toHaveLength(MAX_CONSECUTIVE_COMPOSITE_TAB_STOPS + 1);
 });
