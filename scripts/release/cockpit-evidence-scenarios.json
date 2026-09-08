@@ -34,7 +34,7 @@
       "data": "1 bilagsændring",
       "progressive": "Evidens",
       "taskOutcome": "Ændringer markeret som set",
-      "states": { "normal": "Overblik klar", "loading": "Henter ændringer…", "empty": "Ingen nye data- eller statusændringer siden dit seneste besøg.", "warning-or-blocked": "Overblik kræver opmærksomhed", "error": "Virksomhedsoverblik kunne ikke hentes" }
+      "states": { "normal": "1 ny ændring siden dit seneste besøg.", "loading": "Henter ændringer…", "empty": "Ingen nye data- eller statusændringer siden dit seneste besøg.", "warning-or-blocked": "Overblik kræver opmærksomhed", "error": "Virksomhedsoverblik kunne ikke hentes" }
     },
     {
       "issue": 652,

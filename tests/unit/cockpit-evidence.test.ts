@@ -369,7 +369,7 @@ test("keeps the #651 profile status copy aligned with the live Siden sidst evide
   const status = (state: "normal" | "loading" | "empty" | "warning-or-blocked" | "error") =>
     scenarios.find((scenario) => scenario.issue === 651 && scenario.state === state)?.dom.status.text;
 
-  expect(status("normal")).toBe("Overblik klar");
+  expect(status("normal")).toBe("1 ny ændring siden dit seneste besøg.");
   expect(status("loading")).toBe("Henter ændringer…");
   expect(status("empty")).toBe("Ingen nye data- eller statusændringer siden dit seneste besøg.");
   expect(status("warning-or-blocked")).toBe("Overblik kræver opmærksomhed");
