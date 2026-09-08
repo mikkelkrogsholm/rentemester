@@ -35,6 +35,7 @@ import {
   waitForScenarioHeading,
 } from "./cockpit-evidence-dom-ready";
 import { expectedNetworkError, type ExpectedNetworkError } from "./cockpit-evidence-network-errors";
+import { captureFinalizedScreenshot, type Cdp } from "./cockpit-evidence-finalization";
 import {
   horizontalOverflowFailure,
   horizontalOverflowSnapshotExpression,
@@ -99,15 +100,11 @@ async function freePort() {
   listener.stop();
   return port;
 }
-type Cdp = {
-  call(
-    method: string,
-    params?: Record<string, unknown>,
-  ): Promise<Record<string, unknown>>;
+type EvidenceCdp = Cdp & {
   on(handler: (message: Record<string, unknown>) => void): () => void;
   close(): void;
 };
-async function openCdp(port: number): Promise<Cdp> {
+async function openCdp(port: number): Promise<EvidenceCdp> {
   const targets = (await fetch(`http://127.0.0.1:${port}/json/list`).then((r) =>
     r.json(),
   )) as Array<{
@@ -277,7 +274,7 @@ async function renderScenario(
   const profile = mkdtempSync(join(tmpdir(), "rentemester-cockpit-profile-")),
     port = await freePort();
   let browser: ReturnType<typeof Bun.spawn> | undefined;
-  let cdp!: Cdp;
+  let cdp!: EvidenceCdp;
   try {
     browser = Bun.spawn(
       [
@@ -471,18 +468,13 @@ async function renderScenario(
     for (const request of expectedRequests)
       if (!liveActualRequests.includes(`${base}${request.urlPattern}`))
         throw new Error(`expected exact owned request was not observed: ${request.urlPattern}`);
-    if (consoleErrors.length)
-      throw new Error(
-        `console errors in ${scenario.scenario}: ${consoleErrors.join("\n")}`,
-      );
-    const screenshot = await cdp.call("Page.captureScreenshot", {
-      format: "png",
-      captureBeyondViewport: false,
+    const screenshot = await captureFinalizedScreenshot({
+      cdp,
+      scenario: scenario.scenario,
+      consoleErrors,
     });
-    if (typeof screenshot.data !== "string")
-      throw new Error("Chrome did not return PNG");
     return {
-      png: Uint8Array.fromBase64(screenshot.data),
+      png: Uint8Array.fromBase64(screenshot),
       keyboardAssertions,
       interception: {
         requested: scenario.endpoint,

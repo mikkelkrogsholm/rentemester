@@ -144,6 +144,34 @@ export type EvidenceManifest = {
     }
   >;
 };
+export function incompleteScenarioResultFields(
+  scenario: EvidenceManifest["scenarios"][number],
+): string[] {
+  const failures: string[] = [];
+  if (scenario.keyboard?.length && !scenario.keyboardAssertions?.length)
+    failures.push(
+      `keyboardAssertions: expected non-empty array for ${scenario.keyboard.length} keyboard step(s), got ${JSON.stringify(scenario.keyboardAssertions)}`,
+    );
+  if (!scenario.domAssertions?.length)
+    failures.push(
+      `domAssertions: expected non-empty array, got ${JSON.stringify(scenario.domAssertions)}`,
+    );
+  if (!scenario.interception)
+    failures.push("interception: expected result object, got missing");
+  if (!Array.isArray(scenario.consoleErrors))
+    failures.push(
+      `consoleErrors: expected array, got ${JSON.stringify(scenario.consoleErrors)}`,
+    );
+  else if (scenario.consoleErrors.length)
+    failures.push(
+      `consoleErrors: expected empty array, got ${scenario.consoleErrors.length} entry(s): ${JSON.stringify(scenario.consoleErrors)}`,
+    );
+  if (!Array.isArray(scenario.expectedNetworkErrors))
+    failures.push(
+      `expectedNetworkErrors: expected array, got ${JSON.stringify(scenario.expectedNetworkErrors)}`,
+    );
+  return failures;
+}
 /** Persist request evidence independently of the loopback origin used to capture it. */
 export function normalizeObservedRequestPaths(urls: string[]): string[] {
   const paths: string[] = [];
@@ -420,15 +448,11 @@ export function verifyEvidence(manifestPath: string): EvidenceManifest {
         `scenario ${s.scenario} must map one-to-one to a screenshot artifact`,
       );
     used.add(s.screenshot);
-    if (
-      (s.keyboard?.length && !s.keyboardAssertions?.length) ||
-      !s.domAssertions?.length ||
-      !s.interception ||
-      !Array.isArray(s.consoleErrors) ||
-      s.consoleErrors.length ||
-      !Array.isArray(s.expectedNetworkErrors)
-    )
-      throw new Error(`incomplete scenario result: ${s.scenario}`);
+    const incompleteFields = incompleteScenarioResultFields(s);
+    if (incompleteFields.length)
+      throw new Error(
+        `incomplete scenario result: ${s.scenario}; ${incompleteFields.join("; ")}`,
+      );
     const screenshot = artifacts.get(s.screenshot)!;
     if (
       screenshot.width !== s.capture.width ||

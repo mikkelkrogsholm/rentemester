@@ -7,6 +7,7 @@ import {
   screenshotName,
   sha256,
   normalizeObservedRequestPaths,
+  incompleteScenarioResultFields,
   verifyEvidence,
   type EvidenceManifest,
 } from "../../scripts/release/cockpit-evidence";
@@ -15,6 +16,7 @@ import { initWorkspace } from "../../src/core/workspace";
 import { handleRequest } from "../../src/server/router";
 import { evidenceRequests, evidenceResponse } from "../../scripts/release/cockpit-evidence-fixtures";
 import { browserUrlMatchesExpected } from "../../scripts/release/cockpit-evidence-url";
+import { captureFinalizedScreenshot } from "../../scripts/release/cockpit-evidence-finalization";
 
 const scenarios = parseScenarios(
   join(
@@ -211,6 +213,56 @@ test("normalizes observed request URLs to deduplicated, origin-independent paths
   ])).toEqual([
     "/api/companies/evidence-fixture/fiscal-years",
     "/api/companies/evidence-fixture/posting-drafts?limit=20",
+  ]);
+});
+test("reports every incomplete evidence field with its observed value", () => {
+  const value = fixture();
+  try {
+    const scenario = value.manifest.scenarios.find(
+      (item) => item.scenario === "issue-652-normal-desktop",
+    )!;
+    scenario.keyboardAssertions = [];
+    scenario.domAssertions = [];
+    scenario.interception = undefined as never;
+    scenario.consoleErrors = ["late post-check browser error"];
+    scenario.expectedNetworkErrors = undefined as never;
+    const fields = incompleteScenarioResultFields(scenario);
+    expect(fields).toEqual([
+      "keyboardAssertions: expected non-empty array for 2 keyboard step(s), got []",
+      "domAssertions: expected non-empty array, got []",
+      "interception: expected result object, got missing",
+      'consoleErrors: expected empty array, got 1 entry(s): ["late post-check browser error"]',
+      "expectedNetworkErrors: expected array, got undefined",
+    ]);
+    writeFileSync(value.path, JSON.stringify(value.manifest));
+    expect(() => verifyEvidence(value.path)).toThrow(
+      "incomplete scenario result: issue-652-normal-desktop; " + fields.join("; "),
+    );
+  } finally {
+    rmSync(value.dir, { recursive: true, force: true });
+  }
+});
+test("rejects a late post-check console error emitted during screenshot finalization", async () => {
+  const consoleErrors: string[] = [];
+  const calls: string[] = [];
+  await expect(captureFinalizedScreenshot({
+    scenario: "issue-652-normal-desktop",
+    consoleErrors,
+    cdp: {
+      async call(method) {
+        calls.push(method);
+        if (method === "Page.captureScreenshot") {
+          consoleErrors.push("late post-check browser error");
+          return { data: "iVBORw0KGgo=" };
+        }
+        return {};
+      },
+    },
+  })).rejects.toThrow("console errors in issue-652-normal-desktop: late post-check browser error");
+  expect(calls).toEqual([
+    "Runtime.evaluate",
+    "Page.captureScreenshot",
+    "Runtime.evaluate",
   ]);
 });
 test("compares URL outcomes with a query exactly and retains pathname-only outcomes", () => {
