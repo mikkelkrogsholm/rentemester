@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { rmSync } from "node:fs";
+import { rmSync, symlinkSync } from "node:fs";
 import { createParty, linkPartyRole } from "../../src/core/party-registry";
 import { ingestCorporateRecord, linkCorporateRecord } from "../../src/core/corporate-records";
 import { activateWorkspaceUser, authorizeWorkspaceRoute, grantCompanyMembership } from "../../src/core/workspace-access";
@@ -7,7 +7,7 @@ import { openWorkspaceControlDb } from "../../src/core/workspace-control";
 import { createWorkspaceServicePrincipal, revokeWorkspaceServiceCredential, rotateWorkspaceServiceCredential } from "../../src/core/workspace-service-principals";
 import { proposeCompanyKnowledge, reviewCompanyKnowledge } from "../../src/core/company-knowledge";
 import { createBetterAuthRequestProvider, openWorkspaceBetterAuth, WORKSPACE_SERVICE_PRINCIPAL_HEADER } from "../../src/server/better-auth";
-import { config, get, makeWorkspace } from "./server-api/_shared";
+import { companyRootForSlug, config, get, loadWorkspaceManifest, makeWorkspace, saveWorkspaceManifest } from "./server-api/_shared";
 import { applyOwnershipSnapshot, proposeOwnershipSnapshot, reviewOwnershipSnapshot } from "../../src/core/ownership-graph";
 
 const SECRET = "I0UjL6i0-ScgvjfIgzMKJxPQyDpPXwg2mMKdLW3Y3WQ";
@@ -24,6 +24,44 @@ function record(db: ReturnType<typeof openWorkspaceControlDb>, recordId: string,
 }
 
 describe("workspace registry HTTP access projection", () => {
+  test("the live vendor identity route refuses a registered company symlink outside the workspace", async () => {
+    const workspace = makeWorkspace("registry-containment", []);
+    const outside = makeWorkspace("registry-outside", ["Outside Synthetic"]);
+    try {
+      symlinkSync(companyRootForSlug(outside, "outside-synthetic"), companyRootForSlug(workspace, "escape"));
+      const manifest = loadWorkspaceManifest(workspace);
+      manifest.companies.push({ slug: "escape", name: "Synthetic escape", archived: false });
+      saveWorkspaceManifest(workspace, manifest);
+      const result = await get(config({ workspaceRoot: workspace }), "/api/companies/escape/vendor-identity-enrichments");
+      expect(result.status).toBe(404);
+    } finally { rmSync(workspace, { recursive: true, force: true }); rmSync(outside, { recursive: true, force: true }); }
+  });
+
+  test("ownership review and apply cannot replace stored access scope with caller facts", async () => {
+    const workspace = makeWorkspace("ownership-forged-scope", ["Allowed ApS", "Hidden ApS"]);
+    const runtime = openWorkspaceBetterAuth(workspace, { secret: SECRET, trustedOrigins: [ORIGIN], baseURL: ORIGIN });
+    const db = openWorkspaceControlDb(workspace);
+    try {
+      const facts = [{ owner: { kind: "company" as const, companySlug: "allowed-aps" }, ownedCompanySlug: "hidden-aps", validFrom: "2026-01-01", economicBasisPoints: 10000, controlType: "equity" as const, jurisdiction: "DK", evidenceRefs: ["synthetic"] }];
+      const snapshot = proposeOwnershipSnapshot(db, { snapshotId: "forged-scope", source: "synthetic", observedAt: at, facts, actor: "user:maker", principal: { kind: "local_operator", id: "maker" } });
+      const service = await createWorkspaceServicePrincipal(db, runtime.auth, { displayName: "Synthetic scope reviewer", actor: "user:owner" });
+      activateWorkspaceUser(db, { userId: service.serviceAccountId, workspaceRole: "member", actor: "user:owner" });
+      grantCompanyMembership(db, workspace, { userId: service.serviceAccountId, companySlug: "allowed-aps", role: "owner", actor: "user:owner" });
+      const hosted = config({ workspaceRoot: workspace, deploymentProfile: "hosted", betterAuthProvider: createBetterAuthRequestProvider(runtime.auth), hostedBetterAuth: { secret: SECRET, secrets: [{ version: 1, value: SECRET }], baseURL: ORIGIN, trustedOrigins: [ORIGIN], authEmail: { provider: "http-json-v1", url: "https://mailer.example.test/send", bearerToken: "synthetic-token", from: "auth@example.test" }, rateLimitIpHeader: "x-real-ip" } });
+      const headers = { [WORKSPACE_SERVICE_PRINCIPAL_HEADER]: service.secret, "content-type": "application/json", origin: ORIGIN };
+      const body = { confirm: true, snapshotId: snapshot.snapshotId, snapshotHash: snapshot.snapshotHash, diffHash: snapshot.diffHash, decision: "approved", facts: [{ ...facts[0], ownedCompanySlug: "allowed-aps" }] };
+      const state = () => ["rm_ownership_snapshot_events", "rm_ownership_facts"].map(table => db.query(`SELECT * FROM ${table}`).all());
+      const before = state();
+      for (const action of ["review", "apply"]) {
+        expect((await get(hosted, `/api/companies/allowed-aps/ownership/${action}`, { method: "POST", headers, body: JSON.stringify(body) })).status).toBe(401);
+        expect(state()).toEqual(before);
+      }
+      grantCompanyMembership(db, workspace, { userId: service.serviceAccountId, companySlug: "hidden-aps", role: "owner", actor: "user:owner" });
+      expect((await get(hosted, "/api/companies/allowed-aps/ownership/review", { method: "POST", headers, body: JSON.stringify(body) })).status).toBe(200);
+      expect((await get(hosted, "/api/companies/allowed-aps/ownership/apply", { method: "POST", headers, body: JSON.stringify(body) })).status).toBe(200);
+    } finally { db.close(); runtime.close(); rmSync(workspace, { recursive: true, force: true }); }
+  });
+
   test("serves deterministic Party Hub search/profile only inside the principal workspace and membership", async () => {
     const workspace = makeWorkspace("party-hub-http", ["Allowed ApS", "Hidden ApS"]);
     const foreignWorkspace = makeWorkspace("party-hub-foreign", ["Foreign ApS"]);

@@ -208,7 +208,7 @@ export function RecurringInvoiceTemplateModal({
       return;
     }
 
-    const parsedLines = [];
+    const parsedLines: Array<{ description: string; quantity: number; unitPriceExVat: number }> = [];
     for (const [i, line] of lines.entries()) {
       if (!line.description.trim()) {
         setError(`Linje ${i + 1}: angiv en beskrivelse.`);
@@ -237,7 +237,7 @@ export function RecurringInvoiceTemplateModal({
 
     setBusy(true);
     try {
-      await api.createRecurringInvoiceTemplate(slug, {
+      await outcome.run(() => api.createRecurringInvoiceTemplate(slug, {
         name: name.trim(),
         interval,
         intervalCount: cadenceCount,
@@ -260,7 +260,7 @@ export function RecurringInvoiceTemplateModal({
               }
             : undefined,
         lines: parsedLines,
-      }).catch(outcome.reject);
+      }));
       onCreated();
       guard.dismiss();
     } catch (err) {

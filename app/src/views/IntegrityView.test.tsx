@@ -1,9 +1,10 @@
-import { describe, expect, test } from "bun:test";
-import { screen, within } from "@testing-library/react";
+import { describe, expect, test, vi } from "bun:test";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { IntegrityView } from "./IntegrityView";
 import { renderAt } from "../test/render";
 import { mockFetch } from "../test/fixtures";
+import { stubGlobal } from "../test/globals";
 
 function sample(overrides: Partial<{
   chainOk: boolean;
@@ -67,6 +68,26 @@ function renderView(payload: ReturnType<typeof sample> = sample()) {
 }
 
 describe("IntegrityView (#333)", () => {
+  test("keeps the last integrity result visible during refresh and after refresh failure", async () => {
+    const user = userEvent.setup();
+    let reads = 0;
+    let rejectReload!: (error: Error) => void;
+    const pending = new Promise<Response>((_resolve, reject) => { rejectReload = reject; });
+    stubGlobal("fetch", vi.fn(async () => {
+      reads += 1;
+      return reads === 1 ? Response.json(sample()) : pending;
+    }));
+    renderAt(<IntegrityView />, { route: "/companies/acme-aps/integritet", path: "/companies/:slug/integritet" });
+    expect(await screen.findByText("Bogføringen og backup ser sunde ud")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Verificér igen" }));
+    await waitFor(() => expect(reads).toBe(2));
+    expect(screen.getByText("Bogføringen og backup ser sunde ud")).toBeInTheDocument();
+    await act(async () => { rejectReload(new Error("Synthetic integrity read failure")); });
+    expect(await screen.findByRole("alert")).toHaveTextContent("Den seneste gennemførte kontrol vises fortsat");
+    expect(screen.getByText("Bogføringen og backup ser sunde ud")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Verificér igen" })).toBeEnabled();
+  });
+
   test("viser PASS-status når hash-kæden er hel", async () => {
     renderView(sample());
     expect(await screen.findByText(/OK — kæden er hel/)).toBeInTheDocument();

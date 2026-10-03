@@ -5,7 +5,7 @@
  * database sessions, migrations, backup locks and response mapping stay with
  * their respective transports.
  */
-import { existsSync, realpathSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { companyPaths, type CompanyPaths } from "./paths";
 import {
   companyRootForSlug,
@@ -71,29 +71,9 @@ export function resolveWorkspaceCompany(
   }
 
   const lexicalCompanyRoot = companyRootForSlug(workspaceRoot, entry.slug);
-  // Keep the direct-child legal-isolation invariant explicit at the boundary,
-  // even though companyRootForSlug currently derives the same shape.
+  // The shared path gate includes canonical child identity and symlink checks.
   if (!isCompanyInsideWorkspace(workspaceRoot, lexicalCompanyRoot)) {
     return Object.freeze({ ok: false as const, reason: "PATH_OUTSIDE_WORKSPACE" as const });
-  }
-  // A registered direct child can itself be a symlink. For an existing target,
-  // compare canonical paths so that a manifest entry can never point at another
-  // legal entity outside the workspace. Missing optional targets keep their
-  // established manifest-only resolution semantics.
-  if (existsSync(lexicalCompanyRoot)) {
-    try {
-      const canonicalWorkspaceRoot = realpathSync(workspaceRoot);
-      const canonicalCompanyRoot = realpathSync(lexicalCompanyRoot);
-      const expectedCompanyRoot = companyRootForSlug(canonicalWorkspaceRoot, entry.slug);
-      if (
-        !isCompanyInsideWorkspace(canonicalWorkspaceRoot, canonicalCompanyRoot) ||
-        canonicalCompanyRoot !== expectedCompanyRoot
-      ) {
-        return Object.freeze({ ok: false as const, reason: "PATH_OUTSIDE_WORKSPACE" as const });
-      }
-    } catch {
-      return Object.freeze({ ok: false as const, reason: "PATH_OUTSIDE_WORKSPACE" as const });
-    }
   }
   const companyRoot = lexicalCompanyRoot;
   const paths = companyPaths(companyRoot);

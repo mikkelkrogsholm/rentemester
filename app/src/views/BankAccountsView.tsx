@@ -22,14 +22,13 @@ import { ResponsiveTable } from "../components/CockpitPrimitives";
 
 export function BankAccountsView() {
   const { slug = "" } = useParams();
-  const [refresh, setRefresh] = useState(0);
   const [openCreate, setOpenCreate] = useState(false);
   const [legacyBinding,setLegacyBinding]=useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const state = useAsync<CompanyBankAccounts>(
     (signal) => api.bankAccounts(slug, { signal }),
-    [slug, refresh],
+    [slug],
   );
 
   if (state.loading && !state.data) return <Loading />;
@@ -69,7 +68,7 @@ export function BankAccountsView() {
           {error}
         </div>
       )}
-      {legacyBinding&&<LegacyBankBindingModal slug={slug} accounts={data.accounts} onApplied={()=>setRefresh(value=>value+1)} onClose={()=>setLegacyBinding(false)} />}
+      {legacyBinding&&<LegacyBankBindingModal slug={slug} accounts={data.accounts} onApplied={state.reload} onClose={()=>setLegacyBinding(false)} />}
 
       <section className="card">
         <h3>Bankkonti til den daglige bogføring</h3>
@@ -154,7 +153,7 @@ export function BankAccountsView() {
           onRefresh={state.reload}
           onDone={() => {
             setOpenCreate(false);
-            setRefresh((n) => n + 1);
+            state.reload();
           }}
           onError={(msg) => setError(msg)}
         />
@@ -216,7 +215,7 @@ function CreateBankAccountModal({
   const submit = async (e: React.FormEvent) => {e.preventDefault(); if (outcome.isBlocked()) return;
     setSubmitting(true);
     try {
-      await api.createBankAccount(slug, {
+      await outcome.run(() => api.createBankAccount(slug, {
         name,
         ...(bankName ? { bankName } : {}),
         ...(registrationNo ? { registrationNo } : {}),
@@ -227,7 +226,7 @@ function CreateBankAccountModal({
         ...(customerNo ? { customerNo } : {}),
         ...(currency ? { currency } : {}),
         ...(ledgerAccountNo ? { ledgerAccountNo } : {}),
-      }).catch(outcome.reject);
+      }));
       guard.dismiss();
       onDone();
     } catch (err) {

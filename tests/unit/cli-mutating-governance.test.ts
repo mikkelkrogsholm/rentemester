@@ -17,7 +17,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { MUTATING_COMMANDS, enforceMutationActorPolicy } from "../../src/cli-actor";
+import { MUTATING_COMMANDS, enforceMutationActorPolicy, mutationPolicyScope } from "../../src/cli-actor";
 import { renderGlobalUsage, COMMAND_SPECS } from "../../src/cli-meta";
 
 /**
@@ -119,6 +119,12 @@ describe("MUTATING_COMMANDS governance-klasser (audit AGENT-1/AGENT-2)", () => {
     "gdpr export",
     "gdpr erase",
     "gdpr forget",
+    "company-knowledge propose",
+    "company-knowledge review",
+    "company-knowledge supersede",
+    "ownership propose",
+    "ownership review",
+    "ownership apply",
   ];
 
   test("alle db/audit-skrivende kommandoer er actor-gated (completeness)", () => {
@@ -140,6 +146,22 @@ describe("MUTATING_COMMANDS governance-klasser (audit AGENT-1/AGENT-2)", () => {
         true,
       );
     }
+  });
+
+  test("workspace-only mutations never require an undocumented company", () => {
+    const workspaceMutations = COMMAND_SPECS.filter(spec =>
+      MUTATING_COMMANDS.has(spec.key) && spec.allowedFlags.includes("--workspace") && !spec.allowedFlags.includes("--company"),
+    );
+    expect(workspaceMutations.length).toBeGreaterThan(0);
+    for (const spec of workspaceMutations) {
+      expect(mutationPolicyScope(spec.key), `${spec.key}: ${spec.usage}`).not.toBe("company");
+    }
+    expect(mutationPolicyScope("system restore-backup")).toBe("restore-target");
+    for (const subcommand of ["bootstrap-first", "bootstrap-local-service", "local-service-rotate", "local-service-revoke"]) {
+      expect(mutationPolicyScope(`workspace-access ${subcommand}`)).toBe("workspace-bootstrap");
+    }
+    expect(mutationPolicyScope("group apply-manifest")).toBe("group-policy");
+    expect(mutationPolicyScope("period reopen")).toBe("company");
   });
 });
 

@@ -54,7 +54,7 @@ export function WorkspaceAccessView() {
     event.preventDefault();
     if (outcome.isBlocked()) return; setBusy(true); setError(null); setMessage(null);
     try {
-      await api.createWorkspaceInvitation(input).catch(outcome.reject);
+      await outcome.run(() => api.createWorkspaceInvitation(input));
       setInput((current) => ({ ...current, email: "" }));
       setMessage("Invitationen er sendt."); reload();
     } catch { setError("Invitationen kunne ikke sendes."); }
@@ -65,7 +65,7 @@ export function WorkspaceAccessView() {
     if (outcome.isBlocked()) return;
     setBusy(true); setError(null); setMessage(null);
     try {
-      await api.cancelWorkspaceInvitation(invitationId).catch(outcome.reject);
+      await outcome.run(() => api.cancelWorkspaceInvitation(invitationId));
       setMessage("Invitationen er annulleret."); reload();
     } catch { setError("Invitationen kunne ikke annulleres."); }
     finally { setBusy(false); }
@@ -74,20 +74,20 @@ export function WorkspaceAccessView() {
   async function applyPending() {
     if (!pending || outcome.isBlocked()) return;
     if (pending.kind === "workspace-role") {
-      await api.updateWorkspaceMemberAccess({
+      await outcome.run(() => api.updateWorkspaceMemberAccess({
         action: "set-role", userId: pending.userId, workspaceRole: pending.role,
-      }).catch(outcome.reject);
+      }));
     } else if (pending.kind === "disable") {
-      await api.updateWorkspaceMemberAccess({ action: "disable", userId: pending.userId }).catch(outcome.reject);
+      await outcome.run(() => api.updateWorkspaceMemberAccess({ action: "disable", userId: pending.userId }));
     } else if (pending.kind === "company-role") {
-      await api.updateWorkspaceMemberCompany({
+      await outcome.run(() => api.updateWorkspaceMemberCompany({
         action: "grant", userId: pending.userId,
         companySlug: pending.companySlug, role: pending.role,
-      }).catch(outcome.reject);
+      }));
     } else {
-      await api.updateWorkspaceMemberCompany({
+      await outcome.run(() => api.updateWorkspaceMemberCompany({
         action: "revoke", userId: pending.userId, companySlug: pending.companySlug,
-      }).catch(outcome.reject);
+      }));
     }
     setMessage("Adgangen er opdateret."); setError(null); reload();
   }

@@ -44,7 +44,7 @@ import { buildVatFiling } from "../core/vat-filing";
 import { annualReportDeadline, fiscalYearForDate } from "../core/fiscal-year";
 import { vatPeriodWindowFor, type VatPeriodWindow } from "../core/periods";
 import { isValidIsoDate, diffDays, addDays } from "../core/dates";
-import { formatKroner } from "../cli-format";
+import { formatKronerDa } from "../core/money";
 import {
   AGENT_ACTOR_ID,
   AGENT_PROGRAM,
@@ -339,13 +339,28 @@ function runPhases(db: Database, input: AgentRunInput, report: AgentRunReport): 
     // Only outgoing supplier payments are bookable as expenses here. Customer
     // payments and refunds are settled by their own deterministic features —
     // the agent never improvises a posting for them.
-    const best = row.suggestions
+    const purchaseMatches = row.suggestions
       .filter((s) => s.kind === "purchase_sale")
-      .sort((a, b) => b.confidence - a.confidence)[0];
+      .sort((a, b) => b.confidence - a.confidence);
+    const best = purchaseMatches[0];
 
     if (!best) {
       // No expense candidate at all — leave it for the reconcile phase to
       // surface as an unmatched-bank-transaction exception.
+      continue;
+    }
+    const strongestMatches = purchaseMatches.filter(match => match.confidence === best.confidence);
+    if (best.confidence >= AUTO_BOOK_CONFIDENCE_THRESHOLD && strongestMatches.length > 1) {
+      routeException(db, report, {
+        type: "AGENT_AMBIGUOUS_MATCH",
+        severity: "medium",
+        message:
+          `Banktransaktion ${row.bankTransactionId} matcher bilag ${strongestMatches.map(match => match.documentId).join(", ")} ` +
+          `lige sikkert (${best.confidence.toFixed(2)}) — agenten vælger ikke mellem dem.`,
+        requiredAction: "Gennemgå bilagene, og bogfør betalingen manuelt mod det rette bilag med 'expense book'.",
+        relatedBankTransactionId: row.bankTransactionId,
+        sourceEvidence: { rule: AGENT_RULE_ID, matches: strongestMatches },
+      });
       continue;
     }
     if (best.confidence < AUTO_BOOK_CONFIDENCE_THRESHOLD) {
@@ -740,7 +755,7 @@ function reportVatPeriod(
     daysRemaining,
     ready: periodReady,
     note: periodReady
-      ? `Momsperioden er lukket — momsangivelse klar (momstilsvar ${formatKroner(net)}).`
+      ? `Momsperioden er lukket — momsangivelse klar (momstilsvar ${formatKronerDa(net)}).`
       : periodClosed
         ? `Momsperioden er lukket, men momsangivelsen er blokeret: ${filingError}`
         : `Momsperioden er endnu ikke lukket — luk den med 'period close' før momsangivelse.`,

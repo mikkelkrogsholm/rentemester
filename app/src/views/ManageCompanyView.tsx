@@ -107,9 +107,9 @@ function ManageForm({
     setError(null);
     setNotice(null);
     try {
-      const updated = await api.updateCompany(company.slug, {
+      const updated = await outcome.run(() => api.updateCompany(company.slug, {
         name: name.trim(),
-      }).catch(outcome.reject);
+      }));
       setSavedName(updated.name);
       setName(updated.name);
       setNotice("Visningsnavn opdateret.");
@@ -127,7 +127,7 @@ function ManageForm({
     setError(null);
     setNotice(null);
     try {
-      await api.updateCompany(company.slug, { archived: false }).catch(outcome.reject);
+      await outcome.run(() => api.updateCompany(company.slug, { archived: false }));
       setArchived(false);
       setNotice("Virksomheden er gendannet.");
     } catch (err) {
@@ -143,7 +143,7 @@ function ManageForm({
   // the dialog surfaces the error (and the backup-lock conflict) inline rather
   // than navigating away on a half-finished write.
   async function confirmArchive() {
-    await api.updateCompany(company.slug, { archived: true }).catch(outcome.reject);
+    await outcome.run(() => api.updateCompany(company.slug, { archived: true }));
     onArchivedAway();
   }
 
@@ -318,7 +318,7 @@ function ProfileCard({
     setError(null);
     setNotice(null);
     try {
-      const updated = await api.updateCompanyProfile(slug, {
+      const updated = await outcome.run(() => api.updateCompanyProfile(slug, {
         address: address.trim(),
         postalCode: postalCode.trim(),
         city: city.trim(),
@@ -331,7 +331,7 @@ function ProfileCard({
           accountNo: accountNo.trim(),
           iban: iban.trim(),
         },
-      }).catch(outcome.reject);
+      }));
       setSettings(updated);
       setVatPeriodType(updated.vatPeriodType ?? "none");
       setNotice("Stamdata opdateret.");
@@ -512,7 +512,7 @@ function CvrCard({ slug, initial }: { slug: string; initial: CompanySettings }) 
     setNotice(null);
     setFiscalWarning(null);
     try {
-      const result = await api.syncCvr(slug).catch(outcome.reject);
+      const result = await outcome.run(() => api.syncCvr(slug));
       if (!result.ok) {
         setError(translateCvrError(result.errors[0]));
         return;

@@ -1,3 +1,5 @@
+import { selectBankTransaction } from "./bank-transaction-selection";
+import { TransactionRejectionError, decodeTransactionRejection } from "./transaction-rejection";
 import type { Database } from "bun:sqlite";
 import { postJournalEntry, type JournalPostResult } from "./ledger";
 import { getInvoiceStatus } from "./invoice-payments";
@@ -31,18 +33,6 @@ export type RefundInvoiceToBankResult = JournalPostResult & {
 };
 
 
-function getOutgoingRefundBankTransaction(db: Database, input: RefundInvoiceToBankInput) {
-  if (input.bankTransactionId === undefined && !input.bankTransactionReference) {
-    return { error: "bankTransactionId or bankTransactionReference is required" };
-  }
-  const bank = (input.bankTransactionId !== undefined
-    ? db.query(`SELECT id, transaction_date, amount, text, reference FROM bank_transactions WHERE id = ?`).get(input.bankTransactionId)
-    : db.query(`SELECT id, transaction_date, amount, text, reference FROM bank_transactions WHERE reference = ? ORDER BY id DESC LIMIT 1`).get(input.bankTransactionReference ?? "")) as { id: number; transaction_date: string; amount: number; text: string; reference: string | null } | null;
-  if (!bank) {
-    return { error: input.bankTransactionId !== undefined ? `bank transaction ${input.bankTransactionId} does not exist` : `no bank transaction found with reference ${input.bankTransactionReference}` };
-  }
-  return { bank };
-}
 
 export function refundInvoiceToBank(db: Database, input: RefundInvoiceToBankInput): RefundInvoiceToBankResult {
   if (!Number.isInteger(input.invoiceDocumentId) || input.invoiceDocumentId <= 0) {
@@ -52,7 +42,7 @@ export function refundInvoiceToBank(db: Database, input: RefundInvoiceToBankInpu
     return { ok: false, appliedRules: [RULE_ID], errors: ["bankTransactionId must be a positive integer when present"] };
   }
 
-  const selected = getOutgoingRefundBankTransaction(db, input);
+  const selected = selectBankTransaction(db, input);
   if (selected.error) return { ok: false, appliedRules: [RULE_ID], errors: [selected.error] };
   const bank = selected.bank!;
   const bankAmount = Number(bank.amount);
@@ -93,23 +83,23 @@ export function refundInvoiceToBank(db: Database, input: RefundInvoiceToBankInpu
   try {
     const result = db.transaction(() => {
       const lockedStatus = getInvoiceStatus(db, input.invoiceDocumentId);
-      if (!lockedStatus.ok) throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: lockedStatus.errors }));
+      if (!lockedStatus.ok) throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: lockedStatus.errors });
       const lockedCreditBalance = roundDkk(Math.max(0, -Number(lockedStatus.openBalance ?? 0)));
       if (!(lockedCreditBalance > 0)) {
-        throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: [`invoice ${invoice.invoice_no} has no refundable credit balance`] }));
+        throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: [`invoice ${invoice.invoice_no} has no refundable credit balance`] });
       }
       if (compareDkk(amount, lockedCreditBalance) > 0) {
-        throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: [`refund amount ${amount} exceeds refundable credit balance ${lockedCreditBalance}`] }));
+        throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: [`refund amount ${amount} exceeds refundable credit balance ${lockedCreditBalance}`] });
       }
       const receivable = resolveInvoiceReceivableAccount(db, {
         invoiceDocumentId: input.invoiceDocumentId,
       });
-      if (!receivable.ok) throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: [receivable.error] }));
+      if (!receivable.ok) throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: [receivable.error] });
       if (input.receivableAccountNo && input.receivableAccountNo !== receivable.accountNo) {
-        throw new Error(JSON.stringify({
+        throw new TransactionRejectionError({
           appliedRules: [RULE_ID],
           errors: [`invoice ${invoice.invoice_no} must refund its booked receivable account ${receivable.accountNo}, not ${input.receivableAccountNo}`],
-        }));
+        });
       }
       const carryingBalance = calculateInvoiceReceivableCarryingBalance(db, {
         invoiceDocumentId: input.invoiceDocumentId,
@@ -117,18 +107,18 @@ export function refundInvoiceToBank(db: Database, input: RefundInvoiceToBankInpu
         receivableAccountNo: receivable.accountNo,
       });
       if (compareDkk(carryingBalance, Number(lockedStatus.openBalance ?? 0)) !== 0) {
-        throw new Error(JSON.stringify({
+        throw new TransactionRejectionError({
           appliedRules: [RULE_ID],
           errors: [`invoice ${invoice.invoice_no} domain balance ${roundDkk(Number(lockedStatus.openBalance ?? 0))} DKK does not match receivable ${receivable.accountNo} carrying balance ${carryingBalance} DKK`],
-        }));
+        });
       }
       const bankAccount = resolveSettlementBankAccount(db, {
         bankTransactionId: bank.id,
         requestedAccountNo: input.bankAccountNo,
       });
-      if (!bankAccount.ok) throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: [bankAccount.error] }));
+      if (!bankAccount.ok) throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: [bankAccount.error] });
       if (bankAccount.accountNo === receivable.accountNo) {
-        throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: [`bank ledger ${bankAccount.accountNo} cannot also be the invoice receivable account`] }));
+        throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: [`bank ledger ${bankAccount.accountNo} cannot also be the invoice receivable account`] });
       }
 
       const journal = postJournalEntry(db, {
@@ -144,7 +134,7 @@ export function refundInvoiceToBank(db: Database, input: RefundInvoiceToBankInpu
         ],
       });
       if (!journal.ok || journal.entryId == null) {
-        throw new Error(JSON.stringify({ appliedRules: journal.appliedRules, errors: journal.errors.length > 0 ? journal.errors : ["refund journal posting returned no entry id"] }));
+        throw new TransactionRejectionError({ appliedRules: journal.appliedRules, errors: journal.errors.length > 0 ? journal.errors : ["refund journal posting returned no entry id"] });
       }
 
       const evidence = validateInvoiceJournalEvidence(db, {
@@ -159,7 +149,7 @@ export function refundInvoiceToBank(db: Database, input: RefundInvoiceToBankInpu
           currency: "DKK",
         }],
       });
-      if (!evidence.ok) throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: evidence.errors }));
+      if (!evidence.ok) throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: evidence.errors });
 
       const refund = db.query(
         `INSERT INTO invoice_refunds (invoice_document_id, bank_transaction_id, journal_entry_id, refund_date, amount, currency, note)
@@ -177,7 +167,7 @@ export function refundInvoiceToBank(db: Database, input: RefundInvoiceToBankInpu
       });
 
       const after = getInvoiceStatus(db, input.invoiceDocumentId);
-      if (!after.ok) throw new Error(JSON.stringify({ errors: after.errors }));
+      if (!after.ok) throw new TransactionRejectionError({ errors: after.errors });
       return {
         ...journal,
         refundId: refund.id,
@@ -188,13 +178,11 @@ export function refundInvoiceToBank(db: Database, input: RefundInvoiceToBankInpu
     }).immediate();
     return result;
   } catch (error) {
-    const parsed = typeof error === "object" && error && "message" in error ? (() => {
-      try { return JSON.parse(String((error as any).message)); } catch { return null; }
-    })() : null;
+    const parsed = decodeTransactionRejection(error);
     return {
       ok: false,
-      appliedRules: [...new Set([RULE_ID, ...((parsed?.appliedRules as string[] | undefined) ?? [])])],
-      errors: (parsed?.errors as string[] | undefined) ?? [String(error)],
+      appliedRules: [...new Set([RULE_ID, ...(parsed?.appliedRules ?? [])])],
+      errors: parsed?.errors ?? [String(error)],
     };
   }
 }

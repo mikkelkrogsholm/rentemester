@@ -36,9 +36,11 @@ depend on an earlier one's output.
    benign duplicate) becomes an `AGENT_DOCUMENT_REJECTED` exception.
 2. **book** — import the bank statement (`--bank-csv`), ask the deterministic
    matcher for suggestions, and **book the unambiguous**: a high-confidence
-   match *and* exactly one supplier account rule. Booking goes through the
+   match with a unique highest score *and* exactly one supplier account rule. Booking goes through the
    existing `expense book` feature — the ledger still has the final word.
 3. **route** — **route everything uncertain to the exception queue**:
+   - `AGENT_AMBIGUOUS_MATCH` — multiple documents share the highest score;
+     the agent records the candidates and leaves the bank line unposted.
    - `AGENT_LOW_CONFIDENCE_MATCH` — a match below the auto-book threshold.
    - `AGENT_NO_ACCOUNT_RULE` — a confident match but no account rule applies;
      the agent will not guess an account.

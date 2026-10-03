@@ -58,7 +58,7 @@ export function GdprView() {
     setExportData(null); setReviewedSubject(null);
     setLoading(true);
     try {
-      const data = await api.gdprExport(slug, subject).catch(outcome.reject);
+      const data = await outcome.run(() => api.gdprExport(slug, subject));
       setReviewedSubject(subject);
       setExportData(data);
     } catch (err) {
@@ -74,7 +74,7 @@ export function GdprView() {
     setError(null);
     setErasing(true);
     try {
-      const result = await api.gdprErase(slug, reviewedSubject).catch(outcome.reject);
+      const result = await outcome.run(() => api.gdprErase(slug, reviewedSubject));
       setErasure(result);
       // Re-run export så ejeren ser den opdaterede status.
       try { await refreshExport(); }

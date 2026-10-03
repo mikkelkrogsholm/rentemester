@@ -1,5 +1,5 @@
-import { existsSync, mkdirSync, readFileSync } from "node:fs";
-import { isAbsolute, join, resolve, sep } from "node:path";
+import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync } from "node:fs";
+import { basename, isAbsolute, join, resolve, sep } from "node:path";
 import { writeFileAtomic } from "./atomic-file";
 import { companyPaths } from "./paths";
 import { openLedgerReadOnly } from "./ledger-inspection";
@@ -319,7 +319,8 @@ export function companyRootForSlug(workspaceRoot: string, slug: string): string 
 export function resolveWorkspaceSlug(workspaceRoot: string, slug: string): string | null {
   if (!isValidSlug(slug)) return null;
   if (!findWorkspaceCompany(workspaceRoot, slug)) return null;
-  return companyRootForSlug(workspaceRoot, slug);
+  const companyRoot = companyRootForSlug(workspaceRoot, slug);
+  return isCompanyInsideWorkspace(workspaceRoot, companyRoot) ? companyRoot : null;
 }
 
 /**
@@ -347,6 +348,9 @@ export function registerWorkspaceCompany(
  * True when `companyRoot` is a direct child directory of `workspaceRoot`, i.e.
  * `<workspaceRoot>/<slug>/`. A company nested deeper, or outside the workspace,
  * is not a workspace member and is rejected by the manifest helpers below.
+ * Existing targets must also be the canonical child for their slug: symlink
+ * aliases must never substitute a different legal entity. Missing targets keep
+ * the manifest-only resolution used before company creation.
  */
 export function isCompanyInsideWorkspace(
   workspaceRoot: string,
@@ -355,7 +359,14 @@ export function isCompanyInsideWorkspace(
   const ws = resolve(workspaceRoot);
   const company = resolve(companyRoot);
   const parent = company.slice(0, company.lastIndexOf(sep));
-  return parent === ws && company !== ws;
+  if (parent !== ws || company === ws) return false;
+  try {
+    // lstat also detects a dangling symlink, which realpath must reject.
+    if (!lstatSync(company, { throwIfNoEntry: false })) return true;
+    return realpathSync(company) === join(realpathSync(ws), basename(company));
+  } catch {
+    return false;
+  }
 }
 
 /**

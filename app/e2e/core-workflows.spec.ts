@@ -158,6 +158,26 @@ test("an uncertain invoice issue remains blocked after reload and reconciliation
   fixture.assertComplete();
 });
 
+test("an uncertain invoice issue blocks another tab that was already open", async ({ page, context }) => {
+  const second = await context.newPage();
+  const overrides = { "POST /api/companies/acme-aps/invoices/issue": { status: 500, body: { ok: false, code: "internal", errors: ["Syntetisk mistet svar efter behandling."] } } };
+  const fixtures = [await mockApi(page, { overrides }), await mockApi(second, { overrides })];
+  for (const tab of [page, second]) {
+    await tab.goto(`/companies/${COMPANY_SLUG}/fakturaer/ny?year=2026`);
+    await tab.getByLabel("Fakturadato", { exact: true }).fill("2026-02-01");
+    await tab.getByLabel("Linje 1 beskrivelse", { exact: true }).fill("Syntetisk rådgivning");
+    await tab.getByLabel("Linje 1 antal", { exact: true }).fill("1");
+    await tab.getByLabel("Linje 1 enhedspris", { exact: true }).fill("1000");
+    await expect(tab.getByRole("button", { name: "Udsted faktura", exact: true })).toBeEnabled();
+  }
+  await page.getByRole("button", { name: "Udsted faktura", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Udsted faktura", exact: true })).toBeDisabled();
+  await expect(second.getByRole("button", { name: "Udsted faktura", exact: true })).toBeDisabled();
+  await expect(second.getByRole("alert")).toContainText("andre browserfaner");
+  expect(fixtures.flatMap(fixture => fixture.calls).filter(call => call.method === "POST")).toHaveLength(1);
+  for (const fixture of fixtures) fixture.assertComplete();
+});
+
 test("a company reader can inspect budgets and recurring invoices without write controls", async ({ page }) => {
   const fixture = await mockApi(page, { profile: "hosted", role: "reader" });
   await page.goto(`/companies/${COMPANY_SLUG}/budget?year=2026`);
@@ -172,7 +192,7 @@ test("a company reader can inspect budgets and recurring invoices without write 
   fixture.assertComplete();
 });
 
-test("unavailable session storage blocks invoice writes before an attempt and after reload", async ({ page }) => {
+test("unavailable shared browser storage blocks invoice writes before an attempt and after reload", async ({ page }) => {
   await page.addInitScript(() => {
     Storage.prototype.setItem = () => { throw new DOMException("Synthetic storage denial", "SecurityError"); };
   });

@@ -119,7 +119,7 @@ export function DocumentBookExpenseForm({
     setPreflightBusy(true);
     setError(null);
     try {
-      setPreflight(await api.applyDocumentVatPreflight(slug, documentId).catch(outcome.reject));
+      setPreflight(await outcome.run(() => api.applyDocumentVatPreflight(slug, documentId)));
     } catch (err) {
       setError((err as MaybeApiError)?.message ?? "Momsvalideringen kunne ikke gennemføres.");
     } finally {
@@ -143,12 +143,12 @@ export function DocumentBookExpenseForm({
     setError(null);
     setLocked(null);
     try {
-      const summary = await api.bookDocumentExpense(slug, {
+      const summary = await outcome.run(() => api.bookDocumentExpense(slug, {
         documentId,
         bankTransactionId,
         expenseAccountNo,
         ...(vatTreatment ? { vatTreatment } : {}),
-      }).catch(outcome.reject);
+      }));
       setDone(summary);
       setDirty(false);
       onBooked();

@@ -50,14 +50,13 @@ export function ExceptionsView() {
   const statusRaw = params.get("status") ?? "open";
   const status: "open" | "resolved" | "all" =
     statusRaw === "resolved" || statusRaw === "all" ? statusRaw : "open";
-  const [refresh, setRefresh] = useState(0);
   // Resolve-tilstand: undgå at klikke flere gange på samme række.
   const [resolving, setResolving] = useState<Set<number>>(new Set());
   const [resolveError, setResolveError] = useState<string | null>(null);
 
   const state = useAsync<CompanyExceptions>(
     (signal) => api.exceptions(slug, status, { signal }),
-    [slug, status, refresh],
+    [slug, status],
   );
 
   const setStatus = (next: "open" | "resolved" | "all") => {
@@ -73,8 +72,8 @@ export function ExceptionsView() {
     setResolveError(null);
     setResolving((s) => new Set([...s, row.id]));
     try {
-      await api.resolveException(slug, row.id, "Markeret som løst fra cockpittet").catch(outcome.reject);
-      setRefresh((n) => n + 1);
+      await outcome.run(() => api.resolveException(slug, row.id, "Markeret som løst fra cockpittet"));
+      state.reload();
     } catch (err) {
       setResolveError(
         err instanceof ApiError ? err.message : "Kunne ikke markere som løst.",

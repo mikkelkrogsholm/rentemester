@@ -354,7 +354,7 @@ function BudgetAmountInput({
     setSaving(true);
     setError(null);
     try {
-      await api.setBudget(slug, { accountNo, period, amount: parsed }).catch(outcome.reject);
+      await outcome.run(() => api.setBudget(slug, { accountNo, period, amount: parsed }));
       onSaved();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -428,11 +428,11 @@ function AddBudgetLineForm({
     }
     setSaving(true);
     try {
-      await api.setBudget(slug, {
+      await outcome.run(() => api.setBudget(slug, {
         accountNo: trimmedAcc,
         period,
         amount: parsed,
-      }).catch(outcome.reject);
+      }));
       setAccountNo("");
       setAmount("");
       onSaved();

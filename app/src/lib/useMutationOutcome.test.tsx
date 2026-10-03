@@ -1,5 +1,5 @@
 import { expect, test, vi } from "bun:test";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { MutationMemoryProvider } from "./mutation-memory";
@@ -30,7 +30,7 @@ test("a financial form cannot bypass an uncertain write by remounting or changin
 
 test("denied browser storage blocks writes before an attempt and cannot claim reload protection", async () => {
   sessionStorage.clear();
-  stubGlobal("sessionStorage", { getItem: () => null, setItem: () => { throw new DOMException("Denied", "SecurityError"); } });
+  stubGlobal("localStorage", { getItem: () => null, setItem: () => { throw new DOMException("Denied", "SecurityError"); } });
   const write = vi.fn();
   function Form() {
     const outcome = useMutationOutcome();
@@ -46,4 +46,41 @@ test("denied browser storage blocks writes before an attempt and cannot claim re
     await userEvent.click(screen.getByRole("button", { name: "Udsted" }));
     expect(write).not.toHaveBeenCalled();
     expect(screen.getByRole("button", { name: "Udsted" })).toBeDisabled();
+});
+
+
+test("storage becoming unwritable after mount prevents either provider from sending a request", async () => {
+  const write = vi.fn(async () => {});
+  function Form({ name }: { name: string }) {
+    const outcome = useMutationOutcome();
+    return <><button type="button" disabled={outcome.blocked} onClick={() => { void outcome.run(write).catch(() => {}); }}>Send {name}</button>{outcome.feedback}</>;
+  }
+  render(<><MutationMemoryProvider><Form name="A" /></MutationMemoryProvider><MutationMemoryProvider><Form name="B" /></MutationMemoryProvider></>);
+  const storage = localStorage;
+  stubGlobal("localStorage", { getItem: storage.getItem.bind(storage), setItem: () => { throw new DOMException("Full", "QuotaExceededError"); }, removeItem: storage.removeItem.bind(storage) });
+  await userEvent.click(screen.getByRole("button", { name: "Send A" }));
+  await userEvent.click(screen.getByRole("button", { name: "Send B" }));
+  expect(write).not.toHaveBeenCalled();
+  expect(screen.getByRole("button", { name: "Send A" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Send B" })).toBeDisabled();
+});
+
+test("an unknown response retains the pre-request blocker even if storage fails during the request", async () => {
+  let rejectResponse!: (error: unknown) => void;
+  const response = new Promise<void>((_, reject) => { rejectResponse = reject; });
+  const write = vi.fn(() => response);
+  function Form({ name }: { name: string }) {
+    const outcome = useMutationOutcome();
+    return <><button type="button" disabled={outcome.blocked} onClick={() => { void outcome.run(write).catch(() => {}); }}>Send {name}</button>{outcome.feedback}</>;
+  }
+  render(<><MutationMemoryProvider><Form name="A" /></MutationMemoryProvider><MutationMemoryProvider><Form name="B" /></MutationMemoryProvider></>);
+  await userEvent.click(screen.getByRole("button", { name: "Send A" }));
+  expect(write).toHaveBeenCalledTimes(1);
+  expect(screen.getByRole("button", { name: "Send B" })).toBeDisabled();
+  const storage = localStorage;
+  stubGlobal("localStorage", { getItem: storage.getItem.bind(storage), setItem: () => { throw new DOMException("Denied", "SecurityError"); }, removeItem: storage.removeItem.bind(storage) });
+  await act(async () => { rejectResponse(new ApiError("internal", "Svar mistet", 500)); await response.catch(() => {}); });
+  await userEvent.click(screen.getByRole("button", { name: "Send B" }));
+  expect(write).toHaveBeenCalledTimes(1);
+  expect(screen.getByRole("button", { name: "Send B" })).toBeDisabled();
 });

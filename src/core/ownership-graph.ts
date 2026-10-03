@@ -8,6 +8,7 @@ import { canonicalJson } from "./canonical-json";
  */
 import { createHash, randomUUID } from "node:crypto";
 import type { Database } from "bun:sqlite";
+import { isValidSlug } from "./workspace";
 
 export type OwnershipPrincipal = { kind: "user" | "service_account" | "local_operator"; id: string };
 export type OwnershipEndpoint = { kind: "company"; companySlug: string } | { kind: "party"; partyId: string };
@@ -18,6 +19,30 @@ export type OwnershipFactInput = {
   shareClass?: string; jurisdiction: string; evidenceRefs: string[];
 };
 export type OwnershipSnapshotInput = { snapshotId?: string; source: string; observedAt: string; facts: OwnershipFactInput[]; actor: string; principal: OwnershipPrincipal };
+
+/** Derive authorization scope from proposal facts or the stored immutable snapshot. */
+export function ownershipEndpointSlugs(db: Database | undefined, input: { facts?: unknown; snapshotId?: unknown }): Set<string> {
+  let facts: unknown;
+  if ("facts" in input) facts = input.facts;
+  else {
+    if (!db || typeof input.snapshotId !== "string") throw new Error("ownership snapshot not found");
+    const row = db.query("SELECT canonical_facts FROM rm_ownership_source_snapshots WHERE snapshot_id=?").get(input.snapshotId) as { canonical_facts: string } | null;
+    if (!row) throw new Error("ownership snapshot not found");
+    try { facts = JSON.parse(row.canonical_facts); } catch { throw new Error("ownership snapshot is invalid"); }
+  }
+  if (!Array.isArray(facts)) throw new Error("ownership facts must be an array");
+  const slugs = new Set<string>();
+  for (const raw of facts) {
+    const fact = raw as OwnershipFactInput | null;
+    if (!fact || typeof fact.ownedCompanySlug !== "string" || !isValidSlug(fact.ownedCompanySlug.trim())) throw new Error("ownership fact requires ownedCompanySlug");
+    slugs.add(fact.ownedCompanySlug.trim());
+    if (fact.owner?.kind === "company") {
+      if (typeof fact.owner.companySlug !== "string" || !isValidSlug(fact.owner.companySlug.trim())) throw new Error("company owner requires companySlug");
+      slugs.add(fact.owner.companySlug.trim());
+    }
+  }
+  return slugs;
+}
 const sha = (value: unknown) => createHash("sha256").update(canonical(value)).digest("hex");
 const canonical = (value: unknown): string => value === null || typeof value !== "object" ? JSON.stringify(value) : Array.isArray(value) ? `[${value.map(canonical).join(",")}]` : `{${Object.keys(value as object).sort().map(k => `${JSON.stringify(k)}:${canonical((value as any)[k])}`).join(",")}}`;
 const text = (v: unknown, label: string, max = 256) => { const s = typeof v === "string" ? v.trim() : ""; if (!s || s.length > max) throw new Error(`${label} is required and bounded`); return s; };

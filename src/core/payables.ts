@@ -1,3 +1,4 @@
+import { decodeTransactionRejection, TransactionRejectionError } from "./transaction-rejection";
 /**
  * Kreditorstyring — the accounts-payable open-item register.
  *
@@ -25,12 +26,10 @@ import { postJournalEntry, postJournalEntryInCurrentTransaction, type JournalPos
 import { insertAuditLog } from "./actor";
 import { getCompanySettings } from "./company";
 import { isValidIsoDate as looksLikeIsoDate, diffDays, todayIsoDate } from "./dates";
-import { absDkk, compareDkk, percentOfDkk, roundDkk, subtractDkk, sumDkk } from "./money";
+import { compareDkk, roundDkk, subtractDkk, sumDkk } from "./money";
 import { resolveAccountRole } from "./account-roles";
 import { parsePurchaseVatLinesPayload } from "./documents";
-import { deductibleDanishPurchaseSupplierErrors } from "./supplier-identity";
-import { validSimplifiedPurchaseCompanyContext } from "./document-company-context";
-import { validIncompleteStandardPurchaseVatEvidenceReview } from "./document-purchase-vat-evidence-review";
+import { deductiblePurchaseSupplierErrors, standardPurchaseCompanyContextErrors, uniformDanishPurchaseVatErrors } from "./purchase-vat-evidence";
 
 const RULE_ID = "DK-PAYABLE-001";
 const PAYMENT_RULE_ID = "DK-PAYABLE-PAYMENT-001";
@@ -311,22 +310,10 @@ export function registerPayable(db: Database, input: RegisterPayableInput, inCur
     };
   }
   if (vatTreatment === "standard") {
-    const supplierErrors = deductibleDanishPurchaseSupplierErrors({
-      supplierVatOrCvr: document.sender_vat_cvr,
-      supplierCountryCode: document.supplier_country_code,
-      supplierIdentifierKind: document.supplier_identifier_kind,
-      supplierIdentityStatus: document.supplier_identity_status,
-    });
+    const supplierErrors = deductiblePurchaseSupplierErrors(document);
     if (supplierErrors.length > 0) return { ok: false, appliedRules: [RULE_ID], errors: supplierErrors };
-    try {
-      const payload = document.payload_json ? JSON.parse(document.payload_json) as Record<string, unknown> : {};
-      const invoiceStatesCompany = typeof document.recipient_vat_cvr === "string" && document.recipient_vat_cvr.trim().length > 0;
-      const contextIsValid = payload.danishSimplifiedPurchaseInvoice === true && validSimplifiedPurchaseCompanyContext(db, input.documentId);
-      const reviewedIncomplete = payload.incompleteStandardPurchaseInvoice === true && validIncompleteStandardPurchaseVatEvidenceReview(db, input.documentId);
-      if (document.document_type === "purchase_sale" && !invoiceStatesCompany && !contextIsValid && !reviewedIncomplete) {
-        return { ok: false, appliedRules: [RULE_ID], errors: ["standard purchase VAT requires invoice-stated recipient identity or a valid hash-bound simplified-invoice company context"] };
-      }
-    } catch { return { ok: false, appliedRules: [RULE_ID], errors: ["document payload_json is not valid JSON"] }; }
+    const contextErrors = standardPurchaseCompanyContextErrors(db, input.documentId, document, { requireIncompleteReview: false });
+    if (contextErrors.length > 0) return { ok: false, appliedRules: [RULE_ID], errors: contextErrors };
   }
   if (vatTreatment === "exempt" && vatAmount !== 0) {
     return { ok: false, appliedRules: [RULE_ID], errors: ["exempt payable registration requires document vat_amount = 0"] };
@@ -336,15 +323,8 @@ export function registerPayable(db: Database, input: RegisterPayableInput, inCur
     // The document vat_amount becomes deductible input VAT — it must be
     // consistent with the 25 % rate rather than trusted blindly (a garbled or
     // OCR-extracted amount would otherwise be booked verbatim). 1 øre slack.
-    const documentNetAmount = subtractDkk(grossAmount, vatAmount);
-    const expectedVatAmount = percentOfDkk(documentNetAmount, 25);
-    if (compareDkk(absDkk(subtractDkk(vatAmount, expectedVatAmount)), 0.01) > 0) {
-      return {
-        ok: false,
-        appliedRules: [RULE_ID],
-        errors: [`document ${input.documentId} vat_amount ${vatAmount} is inconsistent with the 25% rate (expected ~${expectedVatAmount} for net ${documentNetAmount})`],
-      };
-    }
+    const vatErrors = uniformDanishPurchaseVatErrors(input.documentId, grossAmount, vatAmount);
+    if (vatErrors.length > 0) return { ok: false, appliedRules: [RULE_ID], errors: vatErrors };
   }
 
   const netAmount = subtractDkk(grossAmount, vatAmount);
@@ -395,7 +375,7 @@ export function registerPayable(db: Database, input: RegisterPayableInput, inCur
         lines,
       });
       if (!journal.ok || journal.entryId == null) {
-        throw new Error(JSON.stringify({ appliedRules: journal.appliedRules, errors: journal.errors }));
+        throw new TransactionRejectionError({ appliedRules: journal.appliedRules, errors: journal.errors });
       }
 
       const inserted = db.query(
@@ -450,7 +430,7 @@ export function registerPayable(db: Database, input: RegisterPayableInput, inCur
     // post-write failure as an exception so it can roll back journal,
     // payable/payment, receipt and audit together.
     if (inCurrentTransaction) throw error;
-    const parsed = parseTransactionError(error);
+    const parsed = decodeTransactionRejection(error);
     return {
       ok: false,
       appliedRules: [...new Set([RULE_ID, ...(parsed?.appliedRules ?? [])])],
@@ -595,7 +575,7 @@ export function payPayableFromBank(db: Database, input: PayPayableInput, inCurre
         ],
       });
       if (!journal.ok || journal.entryId == null) {
-        throw new Error(JSON.stringify({ appliedRules: journal.appliedRules, errors: journal.errors }));
+        throw new TransactionRejectionError({ appliedRules: journal.appliedRules, errors: journal.errors });
       }
 
       const inserted = db.query(
@@ -631,7 +611,7 @@ export function payPayableFromBank(db: Database, input: PayPayableInput, inCurre
     // `{ ok:false }` result after writes have occurred in an outer receipt
     // transaction.
     if (inCurrentTransaction) throw error;
-    const parsed = parseTransactionError(error);
+    const parsed = decodeTransactionRejection(error);
     return {
       ok: false,
       appliedRules: [...new Set([PAYMENT_RULE_ID, ...(parsed?.appliedRules ?? [])])],
@@ -735,15 +715,4 @@ export function buildPayablesList(db: Database, filters: PayablesListFilters = {
     rows,
     errors: [],
   };
-}
-
-function parseTransactionError(error: unknown): { appliedRules?: string[]; errors?: string[] } | null {
-  if (typeof error === "object" && error && "message" in error) {
-    try {
-      return JSON.parse(String((error as { message: unknown }).message));
-    } catch {
-      return null;
-    }
-  }
-  return null;
 }

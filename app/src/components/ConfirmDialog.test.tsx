@@ -37,7 +37,7 @@ describe("ConfirmDialog", () => {
     const first = render(dialog);
     await userEvent.click(screen.getByRole("button", { name: "Send" }));
     await screen.findByText("Svar mistet");
-    const stored = sessionStorage.getItem("rentemester:uncertain-operations:v1")!;
+    const stored = JSON.stringify(Object.entries(localStorage));
     expect(stored).not.toContain("invoice-99");
     expect(stored).not.toContain("Send faktura");
     first.unmount();
@@ -50,7 +50,7 @@ describe("ConfirmDialog", () => {
     await userEvent.click(screen.getByRole("button", { name: "Jeg har kontrolleret resultatet" }));
     expect(screen.getByRole("button", { name: "Send" })).toBeEnabled();
     expect(write).toHaveBeenCalledTimes(1);
-    expect(sessionStorage.getItem("rentemester:uncertain-operations:v1")).toBe("[]");
+    expect(Object.keys(localStorage).filter(key => key.startsWith("rentemester:uncertain-operations:v2:") && !key.endsWith(":probe"))).toEqual([]);
   });
 
   test("validates an email before calling the action", async () => {

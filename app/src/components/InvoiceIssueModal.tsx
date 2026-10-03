@@ -338,12 +338,12 @@ export function InvoiceIssueForm({
     setPending("issue");
     try {
       const extras = buildPartyAndExtras();
-      const summary = await api.issueInvoice(slug, {
+      const summary = await outcome.run(() => api.issueInvoice(slug, {
         issueDate: parsed.issueDate,
         lines: parsed.parsedLines,
         vatRatePercent: parsed.vatNum,
         ...extras,
-      }).catch(outcome.reject);
+      }));
       setDone(summary);
       setDirty(false);
       onIssued();

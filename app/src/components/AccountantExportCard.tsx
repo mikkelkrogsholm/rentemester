@@ -11,10 +11,11 @@ import { Button, Input } from "./ui";
 // belong. The Administrér placement is preserved unchanged; this is purely
 // about making the action discoverable.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
 import { todayIso } from "../lib/format";
 import { Banner } from "./Feedback";
+import { useMutationOutcome } from "../lib/useMutationOutcome";
 
 /**
  * Revisor-eksport — generates the accountant-handoff package and triggers a
@@ -26,6 +27,7 @@ import { Banner } from "./Feedback";
  * sub-period (e.g. one registered VAT period) before generating.
  */
 export function AccountantExportCard({ slug }: { slug: string }) {
+  const outcome = useMutationOutcome(undefined, "accountant-export", `company:${slug}`);
   // Use the LOCAL date — `toISOString()` is UTC and is off-by-one in Danish
   // evening hours (UTC+1/+2), defaulting the export period to tomorrow.
   const today = todayIso();
@@ -40,13 +42,27 @@ export function AccountantExportCard({ slug }: { slug: string }) {
     documentCount: number;
     bankTransactionCount: number;
   } | null>(null);
+  const downloadScope = useRef({ active: true, slug });
+  useEffect(() => {
+    const scope = { active: true, slug };
+    downloadScope.current = scope;
+    setBusy(false);
+    setError(null);
+    setDone(null);
+    return () => { scope.active = false; };
+  }, [slug]);
 
   async function generate() {
+    if (busy || outcome.isBlocked()) return;
+    const scope = downloadScope.current;
     setBusy(true);
     setError(null);
     setDone(null);
     try {
-      const res = await api.accountantExport(slug, { periodStart, periodEnd });
+      const res = await outcome.run(() => api.accountantExport(slug, { periodStart, periodEnd }));
+      // The write may have completed, but its bytes belong only to the view
+      // that requested them. Company navigation/logout must discard late data.
+      if (!scope.active) return;
       // Trigger a browser download from the blob — the response is the only
       // copy of the package that leaves the server.
       const url = URL.createObjectURL(res.blob);
@@ -64,21 +80,24 @@ export function AccountantExportCard({ slug }: { slug: string }) {
         bankTransactionCount: res.bankTransactionCount,
       });
     } catch (err) {
+      if (!scope.active) return;
       const e = err as { message?: string };
       setError(e?.message ?? "Eksporten kunne ikke gennemføres.");
     } finally {
-      setBusy(false);
+      if (scope.active) setBusy(false);
     }
   }
 
   const disabled =
     busy ||
+    outcome.blocked ||
     periodStart.length !== 10 ||
     periodEnd.length !== 10 ||
     periodStart > periodEnd;
 
   return (
     <div className="card accountant-export">
+      {outcome.feedback}
       <h3 className="section-title">Revisor-eksport</h3>
       <p className="muted">
         Pakker journal, bilag, banktransaktioner og audit-log for perioden i én

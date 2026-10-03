@@ -69,7 +69,7 @@ export function CompanyForm({
               accountNo: accountNo.trim() || undefined,
             }
           : undefined;
-      const created = await api.createCompany({
+      const created = await outcome.run(() => api.createCompany({
         name: name.trim(),
         slug: slug.trim() || undefined,
         cvr: cvr.trim() || undefined,
@@ -77,7 +77,7 @@ export function CompanyForm({
         // `"none"` → null so the server creates a not-VAT-registered company.
         vatPeriodType: vatPeriodType === "none" ? null : vatPeriodType,
         ...(payment ? { payment } : {}),
-      }).catch(outcome.reject);
+      }));
       setCreated(true);
       markSaved();
       onCreated(created.slug);

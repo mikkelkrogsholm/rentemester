@@ -123,6 +123,9 @@ export const MUTATING_COMMANDS = new Set([
   "corporate-record link",
   "corporate-record enrich",
   "corporate-record supersede",
+  "company-knowledge propose",
+  "company-knowledge review",
+  "company-knowledge supersede",
   "ownership propose",
   "ownership review",
   "ownership apply",
@@ -238,6 +241,29 @@ export const MUTATING_COMMANDS = new Set([
   "efaktura status",
   // ===== END DIGISENSE E-FAKTURA (#efaktura) =====
 ]);
+
+/** Workspace handlers own target-company policy or trusted local control-plane preflight. */
+const HANDLER_OWNED_MUTATION_POLICY = new Set([
+  "workspace snapshot", "workspace restore",
+  "efaktura modtag-workspace", "recurring-invoice run-workspace",
+  "group propose-mapping", "group approve-mapping", "group revoke-mapping",
+  "group propose-elimination", "group approve-elimination", "group reject-elimination",
+  "group apply-elimination", "group reverse-elimination",
+  "group propose-profile", "group approve-profile", "group revoke-profile",
+  "group propose-disposition", "group approve-disposition", "group link-disposition",
+  "group settle-disposition", "group reopen-disposition", "group supersede-disposition",
+  "ownership propose", "ownership review", "ownership apply",
+  "company-knowledge propose", "company-knowledge review", "company-knowledge supersede",
+]);
+
+export function mutationPolicyScope(commandKey: string): "company" | "restore-target" | "workspace-bootstrap" | "group-policy" | "handler" {
+  if (commandKey === "system restore-backup") return "restore-target";
+  if (commandKey === "workspace-access bootstrap-first" || commandKey === "workspace-access bootstrap-local-service" ||
+      commandKey === "workspace-access local-service-rotate" || commandKey === "workspace-access local-service-revoke") return "workspace-bootstrap";
+  if (commandKey === "group apply-manifest") return "group-policy";
+  if (HANDLER_OWNED_MUTATION_POLICY.has(commandKey) || commandKey.startsWith("party ") || commandKey.startsWith("corporate-record ")) return "handler";
+  return "company";
+}
 
 export function trimToNull(value: string | null | undefined): string | null {
   if (typeof value !== "string") return null;
@@ -422,6 +448,15 @@ export function checkActorAllowlist(root: string, actor: string): ActorAllowlist
   return { allowed: true };
 }
 
+/** Validate attribution before a workspace handler resolves its policy companies. */
+export function requireMutationActorIdentity(cliActor: string | null, fatal: (message: string) => never): string {
+  const explicitActor = cliActor ?? trimToNull(process.env.RENTEMESTER_ACTOR);
+  if (explicitActor && !isCanonicalActorId(explicitActor)) fatal("explicit actor must use canonical format user:<id>, agent:<id>, or system:<id>");
+  const actor = explicitActor ?? inferredMutationActor();
+  if (!actor) fatal("actor required for mutations: pass --actor <user:...|agent:...|system:...> or run with USER/LOGNAME/USERNAME/OPENCLAW_AGENT set");
+  return actor;
+}
+
 export function enforceMutationActorPolicy(
   commandKey: string,
   root: string,
@@ -430,11 +465,9 @@ export function enforceMutationActorPolicy(
   fatal: (message: string) => never,
 ): void {
   if (!MUTATING_COMMANDS.has(commandKey)) return;
+  const resolvedActor = requireMutationActorIdentity(cliActor, fatal);
   const explicitActor = cliActor ?? trimToNull(process.env.RENTEMESTER_ACTOR);
   if (explicitActor) {
-    if (!isCanonicalActorId(explicitActor)) {
-      fatal("explicit actor must use canonical format user:<id>, agent:<id>, or system:<id>");
-    }
     // #283: `system restore-backup` writes to `--target-company`, a path that
     // is normally brand new (the whole point of a restore is to recreate a
     // company from a backup). The allowlist lives in
@@ -473,12 +506,7 @@ export function enforceMutationActorPolicy(
   // explicit one, instead of silently slipping through and writing an actor
   // to the audit trail that the same rule would have rejected if stated
   // explicitly.
-  const derivedActor = inferredMutationActor();
-  if (!derivedActor) {
-    fatal(
-      "actor required for mutations: pass --actor <user:...|agent:...|system:...> or run with USER/LOGNAME/USERNAME/OPENCLAW_AGENT set",
-    );
-  }
+  const derivedActor = resolvedActor;
   // #283 / SEC-3: `system restore-backup` recreates a company from a backup,
   // so its `--target-company` is normally brand new and cannot yet hold a
   // `config/policy.yaml`. The explicit-actor branch above already carves this

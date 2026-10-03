@@ -6,38 +6,7 @@ følger [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Added
-
-- Fælles StyleX-komponenter, genererede designtokens, lokale fonts og et
-  komplet komponentkatalog i `DESIGN.md`.
-- Sidebjælke og mobilnavigation fra det kanoniske ruteregister samt egne
-  sider til fakturaoprettelse, dokumentdetaljer og bilagsbogføring.
-
-### Changed
-
-- Daglige lister bruger fælles filtre, dansk beløbsinput og responsive tabeller.
-- Native dialoger styrer fokus, inert baggrund og beskyttelse af ugemte felter.
-  Afbrudte skrivninger blokeres, indtil deres resultat er kontrolleret.
-- UI-integrationen bevarer nyere partscoverage, importerede tilgodehavender,
-  eksakt plan-godkendelse, kanoniske regnskabsår og fysisk read-only læsninger.
-
-### Fixed
-
-- MCP-tests kontrollerer den faktiske registrerede toolsurface og bruger
-  read-only observationer; CLI-tests vælger en ledig port.
-- Backup-testen synkroniserer med den erhvervede databaselås, så langsom
-  procesopstart ikke giver en falsk fejl.
-- Partsøgning bevarer input og fokus under skift mellem læsetilstande.
-- Kvitteringen for «Markér som set» bevares, når ændringslisten bliver tom.
-- Mobilknapper ombrydes, og navigationens disclosures har selvstændige,
-  tilgængelige udløsere.
-
-### Security
-
-- Opdateret sårbare transitivt installerede versioner af `fast-uri`, `hono`
-  og `ip-address`; dependency-auditten kræver fortsat nul advisories.
-
-## [0.2.0] - 2026-08-24
+## [0.2.0] - 2026-10-03
 
 ### Added
 
@@ -51,6 +20,10 @@ følger [Semantic Versioning](https://semver.org/).
   mens hver juridisk enhed beholder sin egen ledger.
 - Bun 1.4-native cockpit-build og et reproducerbart, non-root OCI-image med
   release-evidens, SBOM og attestering.
+- Fælles StyleX-komponenter, genererede designtokens, lokale fonts og et
+  komplet komponentkatalog i `DESIGN.md`.
+- Sidebjælke og mobilnavigation fra det kanoniske ruteregister samt egne
+  sider til fakturaoprettelse, dokumentdetaljer og bilagsbogføring.
 
 ### Changed
 
@@ -63,12 +36,53 @@ følger [Semantic Versioning](https://semver.org/).
 - Cockpittet accepterer den dokumenterede `local-container`-profil som lokal
   drift uden Better Auth; release-gaten renderer nu den publicerede profil i
   en rigtig headless browser.
+- Daglige lister bruger fælles filtre, dansk beløbsinput og responsive tabeller.
+- Native dialoger styrer fokus, inert baggrund og beskyttelse af ugemte felter.
+  Afbrudte skrivninger blokeres, indtil deres resultat er kontrolleret.
+- UI-integrationen bevarer nyere partscoverage, importerede tilgodehavender,
+  eksakt plan-godkendelse, kanoniske regnskabsår og fysisk read-only læsninger.
+- Fælles API-transport, fakturaserialisering, refresh, CLI-policy-routing og
+  transaktionsafvisning er samlet uden ændring af de understøttede workflows.
+- MCP deler en kontrolleret read-only ledger-livscyklus; den ubrugte
+  Dinero-importgren og runtime-agentens afhængighed af CLI-formatering er fjernet.
+
+### Fixed
+
+- MCP-tests kontrollerer den faktiske registrerede toolsurface og bruger
+  read-only observationer; CLI-tests vælger en ledig port.
+- Backup-testen synkroniserer med den erhvervede databaselås, så langsom
+  procesopstart ikke giver en falsk fejl.
+- Partsøgning bevarer input og fokus under skift mellem læsetilstande.
+- Kvitteringen for «Markér som set» bevares, når ændringslisten bliver tom.
+- Mobilknapper ombrydes, og navigationens disclosures har selvstændige,
+  tilgængelige udløsere.
+- Runtime-agenten bogfører ikke lige stærke bilagsmatches; de sendes til review.
+- Ugyldige journalfelter og beløb, der bliver uendelige ved afrunding, afvises
+  kontrolleret uden bogføring, audit- eller sekvenseffekter.
+- Afskrivning og straksafskrivning før anskaffelsesdatoen afvises.
+- Fakturabetaling, refundering og kravbetaling kræver entydige bankreferencer
+  eller et eksplicit bank-ID; modstridende ID/reference afvises.
+- ZIP-import rydder egne ekstraktionsmapper ved succes, afvisning og exceptions.
+- Backup og restore kræver præcis overensstemmelse mellem dokumentregister
+  og evidensfiler, inklusive hashes; manglende, ændrede og uregistrerede filer afvises.
+- En sen revisoreksport starter ikke download efter navigation væk fra virksomheden.
 
 ### Security
 
 - Tilføjet fail-closed virksomhedsskel, rolle- og MFA-kontroller, sikre
   cookies, CSRF-beskyttelse, login-rate-limit og private dokumentdownloads.
 - Dependency-, licens- og containerkontroller indgår i release-gaten.
+- Opdateret sårbare transitivt installerede versioner af `fast-uri`, `hono`
+  og `ip-address`; dependency-auditten kræver fortsat nul advisories.
+- Virksomhedsresolveren afviser symlinks uden for workspacet, aliaser til andre
+  virksomheder og dangling symlinks.
+- Koncernforslag skrives først efter actor-kontrol for begge virksomheder.
+- Knowledge- og ownership-CLI håndhæver alle berørte virksomheders allowlists
+  for både eksplicitte og miljøudledte actors. HTTP/MCP-review og apply udleder
+  adgangsscope fra det gemte snapshot frem for indsendte facts.
+- Beskyttede browserskrivninger gemmer og verificerer en fælles blokering før
+  requesten sendes. Ukendte udfald forbliver blokeret på tværs af faner; gamle
+  blokeringer uden brugeridentitet bevares indtil eksplicit afklaring.
 
 ## [0.1.0] - 2026-07-19
 

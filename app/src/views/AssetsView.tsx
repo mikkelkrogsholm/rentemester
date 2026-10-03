@@ -430,7 +430,7 @@ function RegisterAssetModal({
       if (!Number.isInteger(docId) || docId <= 0) {
         throw new Error("Vælg et bilag som købsbilag.");
       }
-      await api.registerAsset(slug, {
+      await outcome.run(() => api.registerAsset(slug, {
         name: name.trim(),
         category: category.trim(),
         acquisitionDate,
@@ -438,7 +438,7 @@ function RegisterAssetModal({
         usefulLifeMonths: months,
         purchaseDocumentId: docId,
         ...(note.trim() ? { note: note.trim() } : {}),
-      }).catch(outcome.reject);
+      }));
       guard.dismiss();
       onCreated();
     } catch (err) {
@@ -605,7 +605,7 @@ function WriteOffModal({
           "Hjemmelshenvisningen (tærskelregel) er obligatorisk for straksafskrivning.",
         );
       }
-      await api.writeOffAsset(slug, {
+      await outcome.run(() => api.writeOffAsset(slug, {
         name: name.trim(),
         category: category.trim(),
         acquisitionDate,
@@ -615,7 +615,7 @@ function WriteOffModal({
         expenseAccountNo: expenseAccountNo.trim(),
         thresholdRuleSource: thresholdRuleSource.trim(),
         ...(note.trim() ? { note: note.trim() } : {}),
-      }).catch(outcome.reject);
+      }));
       guard.dismiss();
       onCreated();
     } catch (err) {

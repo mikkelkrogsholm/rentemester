@@ -1,3 +1,4 @@
+import { ownershipEndpointSlugs as ownershipEndpointsFromEvidence } from "../core/ownership-graph";
 import { realpathSync } from "node:fs";
 import { relative, resolve, sep } from "node:path";
 import { AsyncLocalStorage } from "node:async_hooks";
@@ -149,7 +150,7 @@ export async function authorizeMcpTool(context: McpSecurityContext, name: string
     // narrow ownership permission for *every* company endpoint before it can
     // observe, review or apply that relation.  Actors remain audit-only.
     if (name.startsWith("ownership_")) {
-      const endpointSlugs = ownershipEndpointSlugs(db, args);
+      const endpointSlugs = ownershipEndpointSlugs(db, name === "ownership_snapshot_propose" ? { facts: args.facts } : { snapshotId: args.snapshotId });
       const endpointPermission = name === "ownership_snapshot_propose" ? permission : name === "ownership_snapshot_history" ? permission : "company.admin";
       if (!endpointSlugs || ![...endpointSlugs].every((slug) =>
         authorizeWorkspaceRoute(db, context.workspaceRoot, { userId: principal.serviceAccountId, permission: endpointPermission, companySlug: slug }).allowed,
@@ -187,26 +188,8 @@ export async function authorizeMcpTool(context: McpSecurityContext, name: string
 /** Returns every company endpoint in an ownership operation, or null when a
  * stored snapshot cannot be resolved.  Never infer access from the actor. */
 function ownershipEndpointSlugs(db: ReturnType<typeof openWorkspaceControlReadOnlyDb>, args: Record<string, unknown>): Set<string> | null {
-  let facts: unknown[] | null = null;
-  if (Array.isArray(args.facts)) facts = args.facts;
-  else if (typeof args.snapshotId === "string") {
-    const row = db.query("SELECT canonical_facts FROM rm_ownership_source_snapshots WHERE snapshot_id=?").get(args.snapshotId) as { canonical_facts?: string } | null;
-    if (!row?.canonical_facts) return null;
-    try { facts = JSON.parse(row.canonical_facts); } catch { return null; }
-  }
-  if (!facts) return new Set();
-  const result = new Set<string>();
-  for (const raw of facts) {
-    if (!raw || typeof raw !== "object") return null;
-    const fact = raw as { ownedCompanySlug?: unknown; owner?: { kind?: unknown; companySlug?: unknown } };
-    if (typeof fact.ownedCompanySlug !== "string" || !isValidSlug(fact.ownedCompanySlug)) return null;
-    result.add(fact.ownedCompanySlug);
-    if (fact.owner?.kind === "company") {
-      if (typeof fact.owner.companySlug !== "string" || !isValidSlug(fact.owner.companySlug)) return null;
-      result.add(fact.owner.companySlug);
-    }
-  }
-  return result;
+  if (!("facts" in args) && typeof args.snapshotId !== "string") return new Set();
+  try { return ownershipEndpointsFromEvidence(db, args); } catch { return null; }
 }
 
 /**

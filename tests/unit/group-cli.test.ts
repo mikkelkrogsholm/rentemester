@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createCompany } from "../../src/core/company";
@@ -7,7 +8,10 @@ import { openDb } from "../../src/core/db";
 import { postJournalEntry } from "../../src/core/ledger";
 import { companyPaths } from "../../src/core/paths";
 import { companyRootForSlug, initWorkspace } from "../../src/core/workspace";
-import { openWorkspaceControlReadOnlyDb } from "../../src/core/workspace-control";
+import { openWorkspaceControlDb, openWorkspaceControlReadOnlyDb } from "../../src/core/workspace-control";
+import { createParty } from "../../src/core/party-registry";
+import { ingestCorporateRecord } from "../../src/core/corporate-records";
+import { approveIntercompanyDisposition, linkIntercompanyDispositionJournal, proposeIntercompanyDisposition } from "../../src/core/intercompany-dispositions";
 
 function manifest(holding: string, operating: string) {
   return JSON.stringify({ version: 1, groups: [{ id: "synthetic-group", name: "Synthetic group", memberships: [
@@ -18,11 +22,157 @@ function manifest(holding: string, operating: string) {
 
 async function run(args: string[]) {
   const proc = Bun.spawn(["bun", "run", "src/cli.ts", ...args], { cwd: process.cwd(), stdout: "pipe", stderr: "pipe", env: { ...process.env, RENTEMESTER_ACTOR: "" } });
-  const stdout = await new Response(proc.stdout).text();
-  return { exit: await proc.exited, result: JSON.parse(stdout) as { ok: boolean; errors?: string[]; status?: string; mappingId?: string; mappingHash?: string; eliminationId?: string; payloadHash?: string; profileId?: string; profileHash?: string; consolidatedFigures?: unknown[] | null; rows?: unknown[] } };
+  const [stdout, stderr, exit] = await Promise.all([new Response(proc.stdout).text(), new Response(proc.stderr).text(), proc.exited]);
+  if (!stdout) throw new Error(`${args.slice(0, 2).join(" ")} exited ${exit}: ${stderr}`);
+  return { exit, result: JSON.parse(stdout) as { ok: boolean; errors?: string[]; status?: string; mappingId?: string; mappingHash?: string; eliminationId?: string; payloadHash?: string; profileId?: string; profileHash?: string; consolidatedFigures?: unknown[] | null; rows?: unknown[] } };
 }
 
 describe("group CLI workspace-wide authorization", () => {
+  test("an unauthorized disposition proposal leaves no append-only proposal, event or audit", async () => {
+    const workspace = mkdtempSync(join(tmpdir(), "rentemester-disposition-proposal-gate-"));
+    initWorkspace(workspace);
+    const left = createCompany(workspace, { name: "Synthetic Left", onboardingActor: "user:maker" });
+    const right = createCompany(workspace, { name: "Synthetic Right", onboardingActor: "user:maker" });
+    const db = openWorkspaceControlDb(workspace);
+    try {
+      const party = createParty(db, { partyId: "synthetic-party", kind: "organization", name: "Synthetic parties", source: "synthetic", observedAt: "2026-01-01T00:00:00Z", reviewAssertion: "reviewed", actor: "user:maker" });
+      const record = ingestCorporateRecord(db, { recordId: "synthetic-evidence", type: "intercompany_agreement", bytes: new TextEncoder().encode("Synthetic agreement"), filename: "agreement.txt", source: "synthetic", receivedAt: "2026-01-01T00:00:00Z", uploader: "synthetic", actor: "user:maker" });
+      const input = join(workspace, "disposition.json");
+      writeFileSync(input, JSON.stringify({ type: "loan", economicDate: "2026-02-01", amount: 100, currency: "DKK", partyIds: [party.partyId], evidenceRecordIds: [record.recordId], left: { companySlug: left.slug, role: "lender", expectedSide: "receivable" }, right: { companySlug: right.slug, role: "borrower", expectedSide: "payable" } }));
+      const snapshot = () => ["rm_intercompany_dispositions", "rm_intercompany_disposition_events", "workspace_audit"].map(table => db.query(`SELECT * FROM ${table} ORDER BY rowid`).all());
+      const before = snapshot();
+      const args = ["group", "propose-disposition", "--workspace", workspace, "--disposition", input, "--confirm", "yes", "--format", "json"];
+      expect((await run([...args, "--actor", "user:intruder"])).result.ok).toBe(false);
+      expect(snapshot()).toEqual(before);
+      expect((await run([...args, "--actor", "user:maker"])).result.ok).toBe(true);
+      expect(db.query("SELECT COUNT(*) AS count FROM rm_intercompany_dispositions").get()).toEqual({ count: 1 });
+    } finally { db.close(); rmSync(workspace, { recursive: true, force: true }); }
+  });
+  test("disposition lifecycle authorizes both companies and preserves both legal ledgers", async () => {
+    const workspace = mkdtempSync(join(tmpdir(), "rentemester-disposition-lifecycle-cli-"));
+    initWorkspace(workspace);
+    const left = createCompany(workspace, { name: "Synthetic Left", onboardingActor: "agent:group-test" });
+    const right = createCompany(workspace, { name: "Synthetic Right", onboardingActor: "agent:other" });
+    const db = openWorkspaceControlDb(workspace);
+    try {
+      const party = createParty(db, { partyId: "synthetic-party", kind: "organization", name: "Synthetic parties", source: "synthetic", observedAt: "2026-01-01T00:00:00Z", reviewAssertion: "reviewed", actor: "user:maker" });
+      const record = ingestCorporateRecord(db, { recordId: "synthetic-evidence", type: "intercompany_agreement", bytes: new TextEncoder().encode("Synthetic agreement"), filename: "agreement.txt", source: "synthetic", receivedAt: "2026-01-01T00:00:00Z", uploader: "synthetic", actor: "user:maker" });
+      const input = { dispositionId: "synthetic-disposition", type: "loan", economicDate: "2026-02-01", amount: 100, currency: "DKK", partyIds: [party.partyId], evidenceRecordIds: [record.recordId],
+        left: { companySlug: left.slug, role: "lender", expectedSide: "receivable" },
+        right: { companySlug: right.slug, role: "borrower", expectedSide: "payable" } };
+      const proposed = proposeIntercompanyDisposition(db, input, { actor: "user:maker", principal: { kind: "user", id: "maker" } });
+      const approved = approveIntercompanyDisposition(db, input.dispositionId, proposed.payloadHash, { actor: "user:review", principal: { kind: "user", id: "review" } });
+      proposeIntercompanyDisposition(db, { ...input, dispositionId: "synthetic-replacement" }, { actor: "user:maker", principal: { kind: "user", id: "maker" } });
+      for (const [side, company, lines] of [
+        ["left", left, [{ accountNo: "1100", debitAmount: 100 }, { accountNo: "5000", creditAmount: 100 }]],
+        ["right", right, [{ accountNo: "7000", creditAmount: 100 }, { accountNo: "5000", debitAmount: 100 }]],
+      ] as const) {
+        const ledger = openDb(companyPaths(companyRootForSlug(workspace, company.slug)).db);
+        try {
+          const journal = postJournalEntry(ledger, { transactionDate: input.economicDate, text: "Synthetic loan", lines: [...lines] });
+          expect(journal.ok).toBe(true);
+          linkIntercompanyDispositionJournal(db, workspace, { dispositionId: input.dispositionId, payloadHash: approved.payloadHash, side, journalEntryId: journal.entryId!, expectedLedgerHeadHash: journal.entryHash!, actor: "user:link", principal: { kind: "user", id: "link" } });
+          // Finish fixture writes before asserting that lifecycle inspection leaves source bytes untouched.
+          ledger.run("PRAGMA wal_checkpoint(TRUNCATE)");
+        } finally { ledger.close(); }
+      }
+      const hashes = () => [left, right].map(company => {
+        const hash = createHash("sha256");
+        const path = companyPaths(companyRootForSlug(workspace, company.slug)).db;
+        for (const suffix of ["", "-wal", "-shm", "-journal"]) {
+          hash.update(`${suffix}:${existsSync(path + suffix)}\0`);
+          if (existsSync(path + suffix)) hash.update(readFileSync(path + suffix));
+        }
+        return hash.digest("hex");
+      });
+      const before = hashes();
+      const events = () => db.query("SELECT count(*) AS count FROM rm_intercompany_disposition_lifecycle_events").get();
+      const beforeDenied = events();
+      const args = (command: string) => ["group", command, "--workspace", workspace, "--disposition-id", input.dispositionId, "--payload-hash", approved.payloadHash,
+        "--confirm", "yes", "--actor", "agent:group-test", "--format", "json",
+        ...(command === "settle-disposition" ? ["--settlement-evidence-json", JSON.stringify([record.recordId])]
+          : command === "supersede-disposition" ? ["--replacement-disposition-id", "synthetic-replacement", "--reason", "Synthetic replacement"]
+          : ["--reason", "Synthetic reopening"])];
+      for (const command of ["settle-disposition", "reopen-disposition", "supersede-disposition"]) {
+        const denied = await run(args(command));
+        expect(denied.exit).toBe(1);
+        expect(denied.result.errors?.join(" ")).toContain(right.slug);
+        expect(events()).toEqual(beforeDenied);
+        expect(hashes(), `ledgers after denied ${command}`).toEqual(before);
+      }
+      writeFileSync(join(workspace, right.slug, "config", "policy.yaml"), "actor_allowlist:\n  agents:\n    - agent:group-test\n");
+      const settled = await run(args("settle-disposition"));
+      expect(settled).toMatchObject({ exit: 0, result: { ok: true, status: "settled" } });
+      expect(hashes(), "ledgers after successful settlement").toEqual(before);
+      const afterSettlement = events();
+      expect(await run(args("settle-disposition"))).toMatchObject({ exit: 0, result: { status: "settled" } });
+      expect(events()).toEqual(afterSettlement);
+      expect(await run(args("reopen-disposition"))).toMatchObject({ exit: 0, result: { status: "posted" } });
+      const afterReopen = events();
+      expect((await run(args("reopen-disposition"))).exit).toBe(1);
+      expect(events()).toEqual(afterReopen);
+      expect(await run(args("supersede-disposition"))).toMatchObject({ exit: 0, result: { status: "superseded" } });
+      const afterSupersede = events();
+      expect((await run(args("supersede-disposition"))).exit).toBe(1);
+      expect(events()).toEqual(afterSupersede);
+      expect(hashes()).toEqual(before);
+    } finally { db.close(); rmSync(workspace, { recursive: true, force: true }); }
+  }, 30000);
+
+  for (const command of ["settle-disposition", "reopen-disposition", "supersede-disposition"]) {
+    test(`${command} validates actor identity and exact confirmation before disposition access`, async () => {
+      const workspace = mkdtempSync(join(tmpdir(), "rentemester-disposition-gates-"));
+      try {
+        initWorkspace(workspace);
+        openWorkspaceControlDb(workspace).close();
+        const base = ["bun", "run", "src/cli.ts", "group", command, "--workspace", workspace,
+          "--disposition-id", "missing", "--payload-hash", "0".repeat(64), "--format", "json"];
+        for (const [extra, expectedExit, expectedText] of [
+          [["--confirm", "yes", "--actor", "malformed"], 2, "explicit actor must use canonical format"],
+          [["--confirm", "yes"], 2, "actor required for mutations"],
+          [["--confirm", "YES", "--actor", "agent:group-test"], 1, "--confirm yes required"],
+          [["--confirm", "true", "--actor", "agent:group-test"], 1, "--confirm yes required"],
+        ] as const) {
+          const proc = Bun.spawn([...base, ...extra], { cwd: process.cwd(), stdout: "pipe", stderr: "pipe",
+            env: { PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? "" } });
+          const stdout = await new Response(proc.stdout).text();
+          const stderr = await new Response(proc.stderr).text();
+          expect(await proc.exited).toBe(expectedExit);
+          expect(expectedExit === 2 ? stderr : JSON.parse(stdout).errors.join(" ")).toContain(expectedText);
+        }
+      } finally { rmSync(workspace, { recursive: true, force: true }); }
+    });
+
+    test(`${command} resolves the workspace disposition without a synthetic company`, async () => {
+      const workspace = mkdtempSync(join(tmpdir(), "rentemester-disposition-cli-"));
+      try {
+        initWorkspace(workspace);
+        openWorkspaceControlDb(workspace).close();
+        const extra = command === "settle-disposition"
+          ? ["--settlement-evidence-json", "[]"]
+          : command === "supersede-disposition"
+            ? ["--replacement-disposition-id", "missing-replacement", "--reason", "Synthetic correction"]
+            : ["--reason", "Synthetic correction"];
+        const proc = Bun.spawn(["bun", "run", "src/cli.ts", "group", command,
+          "--workspace", workspace, "--disposition-id", "missing-disposition",
+          "--payload-hash", "0".repeat(64), "--confirm", "yes", "--actor", "agent:group-test",
+          "--format", "json", ...extra], {
+          cwd: process.cwd(), stdout: "pipe", stderr: "pipe",
+          env: { ...process.env, RENTEMESTER_COMPANY: "", RENTEMESTER_ACTOR: "" },
+        });
+        const stdout = await new Response(proc.stdout).text();
+        const stderr = await new Response(proc.stderr).text();
+        expect(await proc.exited).toBe(1);
+        expect(stderr).toBe("");
+        expect(JSON.parse(stdout)).toMatchObject({ ok: false, errors: ["disposition not found"] });
+        const db = openWorkspaceControlReadOnlyDb(workspace);
+        try {
+          expect(db.query("SELECT count(*) AS count FROM rm_intercompany_disposition_events").get()).toMatchObject({ count: 0 });
+        } finally { db.close(); }
+      } finally { rmSync(workspace, { recursive: true, force: true }); }
+    });
+  }
+
   test("fails closed until every referenced active company explicitly allowlists the actor", async () => {
     const workspace = mkdtempSync(join(tmpdir(), "rentemester-group-cli-"));
     try {

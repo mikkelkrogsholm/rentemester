@@ -62,7 +62,7 @@ Actoren bestemmes i denne rækkefølge:
    afvises med en klar fejl.
 2. `RENTEMESTER_ACTOR` miljøvariabel — behandles som et eksplicit, kanonisk
    actor-id (samme allowlist-krav som `--actor`).
-3. En **udledt** actor fra miljøet, hvis intet eksplicit er sat (ingen
+3. En **udledt** actor fra miljøet, hvis intet eksplicit er sat (samme
    allowlist-kontrol):
    - `OPENCLAW_AGENT` → `agent:<værdi>`
    - `RENTEMESTER_AGENT` → `agent:<værdi>`
@@ -78,6 +78,18 @@ hvilken kanal mutationen kom igennem; standard `rentemester-cli`).
 
 For `system restore-backup` håndhæves politikken mod `--target-company`-stien,
 ikke `--company`, fordi det er dér data skrives.
+
+Workspace-kommandoerne `company-knowledge propose/review/supersede` og
+`ownership propose/review/apply` kræver aktive, registrerede og initialiserede
+virksomheder. Actoren skal stå i hver berørt virksomheds allowlist, også når
+actoren er udledt fra miljøet. Knowledge review/supersede bruger virksomhedens
+slug fra den gemte assertion; ownership review/apply bruger alle endpoints fra
+det gemte snapshot. Afvisning sker før workspace-kontrolbasen åbnes til skrivning.
+
+Bankafstemning for fakturabetaling, refundering og kravbetaling kræver en
+entydig `bankTransactionReference`. Ved flere rækker med samme reference skal
+`bankTransactionId` angives. Angives begge, skal referencen tilhøre det valgte ID.
+En afvisning bogfører eller afstemmer intet.
 
 ## 2. Exit-koder
 

@@ -10,7 +10,8 @@ import { openDb } from "../../src/core/db";
 import { getCachedCvrLookup } from "../../src/core/cvr";
 import { companyPaths } from "../../src/core/paths";
 import { listWorkspaceCompanies } from "../../src/core/workspace";
-import { withCompanyDb, withCompanyReadOnlyDb } from "../../src/mcp/tool-runtime";
+import { runMcpReadOnlyTool, withCompanyDb, withCompanyDbConfirmed, withCompanyReadOnlyDb } from "../../src/mcp/tool-runtime";
+import { deriveMcpActor } from "../../src/mcp/actor";
 import { successEnvelope } from "../../src/mcp/envelope";
 import { lockGuardServer } from "../../src/mcp/registry";
 import { registerPortfolioTools } from "../../src/mcp/tools/portfolio";
@@ -34,6 +35,68 @@ const server = new McpServer({ name: "readonly-contract", version: "0" });
 function checkpointFixture(path:string) { const db=new Database(path); db.run("PRAGMA wal_checkpoint(TRUNCATE)"); db.close(); }
 
 describe("MCP company read-only opening contract (#586)", () => {
+  test("concurrent confirmed writes do not grant read callbacks a writable handle", async () => {
+    const workspace = mkdtempSync(join(tmpdir(), "rentemester-mcp-opening-isolation-"));
+    let releaseWrite!: () => void;
+    let writeOpened!: () => void;
+    const opened = new Promise<void>(resolve => { writeOpened = resolve; });
+    const release = new Promise<void>(resolve => { releaseWrite = resolve; });
+    let writeResult: Promise<unknown> | undefined;
+    try {
+      const reader = createCompany(workspace, { name: "Synthetic Reader", slug: "reader" });
+      const writer = createCompany(workspace, { name: "Synthetic Writer", slug: "writer", onboardingActor: deriveMcpActor(server.server.getClientVersion()).createdBy });
+      checkpointFixture(companyPaths(reader.companyRoot).db);
+      const before = treeDigest(reader.companyRoot);
+      const inspectRead = ({ db, args }: { db: Database; args: { company: string } }) => {
+        expect(args.company).toBe(reader.companyRoot);
+        expect(() => db.exec("CREATE TABLE forbidden_read_write (id INTEGER)")).toThrow();
+        return successEnvelope({ readOnly: true });
+      };
+      const read = withCompanyDb(server, inspectRead);
+      const explicitRead = withCompanyReadOnlyDb(inspectRead);
+      const write = withCompanyDbConfirmed<{ company: string; confirm?: boolean }>(server, "synthetic_write", async ({ db }) => {
+        db.exec("CREATE TABLE permitted_write (id INTEGER)");
+        writeOpened();
+        await release;
+        // Even inside the write's async context, the registration boundary is read-only.
+        expect((await runMcpReadOnlyTool(() => read({ company: reader.companyRoot }))).structuredContent).toMatchObject({ ok: true });
+        expect((await explicitRead({ company: reader.companyRoot })).structuredContent).toMatchObject({ ok: true });
+        return successEnvelope({ written: true });
+      });
+      writeResult = write({ company: writer.companyRoot, confirm: true });
+      await opened;
+      expect((await read({ company: reader.companyRoot })).structuredContent).toMatchObject({ ok: true });
+      releaseWrite();
+      expect((await writeResult as { structuredContent: unknown }).structuredContent).toMatchObject({ ok: true });
+      expect(treeDigest(reader.companyRoot)).toBe(before);
+    } finally {
+      releaseWrite();
+      await writeResult;
+      rmSync(workspace, { recursive: true, force: true });
+    }
+  });
+
+  test("both read wrappers close handles and redact asynchronous handler failures", async () => {
+    const workspace = mkdtempSync(join(tmpdir(), "rentemester-mcp-read-failure-"));
+    try {
+      const created = createCompany(workspace, { name: "Synthetic Read Failure", slug: "read-failure" });
+      checkpointFixture(companyPaths(created.companyRoot).db);
+      const before = treeDigest(created.companyRoot);
+      let handle: Database | undefined;
+      const fail = async ({ db }: { db: Database }) => {
+        handle = db;
+        await Promise.resolve();
+        throw new Error(`synthetic failure at ${created.companyRoot}/secret`);
+      };
+      for (const call of [withCompanyDb(server, fail), withCompanyReadOnlyDb(fail)]) {
+        const result = await call({ company: created.companyRoot });
+        expect(result.structuredContent).toMatchObject({ ok: false, errors: ["synthetic failure at <path>"] });
+        expect(() => handle!.query("SELECT 1").get()).toThrow();
+        expect(treeDigest(created.companyRoot)).toBe(before);
+      }
+    } finally { rmSync(workspace, { recursive: true, force: true }); }
+  });
+
   test("default shared runtime is snapshot-only for missing, uninitialised and pending ledgers", async () => {
     const workspace = mkdtempSync(join(tmpdir(), "rentemester-readonly-"));
     try {

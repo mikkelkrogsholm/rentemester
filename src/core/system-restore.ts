@@ -5,7 +5,7 @@ import { createHash, createHmac, createPublicKey, randomBytes, timingSafeEqual, 
 import { Database } from "bun:sqlite";
 import { verifyAuditChain } from "./ledger";
 import { companyPaths, ensureCompanyDirs } from "./paths";
-import { backupAsymmetricSignaturePath, backupManifestKeyPath, backupManifestSignaturePath } from "./system-backups";
+import { assertBackupDocumentEvidence, backupAsymmetricSignaturePath, backupManifestKeyPath, backupManifestSignaturePath } from "./system-backups";
 import type { BackupManifest, ManifestFile } from "./system-backups";
 import { isReleaseProvenance } from "./release-provenance";
 import { extractTar } from "./tar";
@@ -364,6 +364,13 @@ function validateRestoredDb(
   };
   if (JSON.stringify(stats) !== JSON.stringify(manifest.ledgerStats)) {
     return { ok: false as const, error: `restored stats ${JSON.stringify(stats)} differ from manifest ${JSON.stringify(manifest.ledgerStats)}` };
+  }
+
+  try {
+    const documents = db.query("SELECT document_no, stored_path, document_type, sha256_hash FROM documents").all() as Array<{ document_no: string | null; stored_path: string | null; document_type: string; sha256_hash: string }>;
+    assertBackupDocumentEvidence(documents, manifest);
+  } catch (error) {
+    return { ok: false as const, error: `restored document evidence verification failed: ${error instanceof Error ? error.message : String(error)}` };
   }
 
   return { ok: true as const };

@@ -6,7 +6,24 @@ import type {
   RecurringInvoiceTemplateInput,
   RecurringInvoicesResponse,
 } from "../types";
-import { ApiError, request, type ReadRequestOptions } from "./_shared";
+import { request, requestBlob, type ReadRequestOptions } from "./_shared";
+
+/** Preview and issue must serialize the exact same invoice facts. */
+function invoiceRequestPayload(input: InvoiceIssueInput) {
+  return {
+    issueDate: input.issueDate,
+    lines: input.lines,
+    ...(input.vatRatePercent !== undefined
+      ? { vatRatePercent: input.vatRatePercent }
+      : {}),
+    ...(input.customerId ? { customerId: input.customerId } : {}),
+    ...(input.invoiceNumber ? { invoiceNumber: input.invoiceNumber } : {}),
+    ...(input.dueDate ? { dueDate: input.dueDate } : {}),
+    ...(input.currency ? { currency: input.currency } : {}),
+    ...(input.seller ? { seller: input.seller } : {}),
+    ...(input.buyer ? { buyer: input.buyer } : {}),
+  };
+}
 
 export const invoicesApi = {
   invoices: (slug: string, year?: string, options?: ReadRequestOptions) =>
@@ -122,55 +139,11 @@ export const invoicesApi = {
     slug: string,
     input: InvoiceIssueInput,
   ): Promise<Blob> => {
-    const body = {
-      issueDate: input.issueDate,
-      lines: input.lines,
-      ...(input.vatRatePercent !== undefined
-        ? { vatRatePercent: input.vatRatePercent }
-        : {}),
-      ...(input.customerId ? { customerId: input.customerId } : {}),
-      ...(input.invoiceNumber ? { invoiceNumber: input.invoiceNumber } : {}),
-      ...(input.dueDate ? { dueDate: input.dueDate } : {}),
-      ...(input.currency ? { currency: input.currency } : {}),
-      ...(input.seller ? { seller: input.seller } : {}),
-      ...(input.buyer ? { buyer: input.buyer } : {}),
-    };
-    let res: Response;
-    try {
-      res = await fetch(
-        `/api/companies/${encodeURIComponent(slug)}/invoices/preview`,
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(body),
-        },
-      );
-    } catch {
-      throw new ApiError(
-        "network",
-        "Kunne ikke nå serveren. Kører `rentemester serve`?",
-        0,
-      );
-    }
-    if (!res.ok) {
-      let message = `HTTP ${res.status}`;
-      let code = "internal";
-      try {
-        // #368: unified envelope — `errors[0]` is the message, `code` is the
-        // top-level enum. Mirrors `_shared.ts`/`accountant.ts`; the old
-        // `{ error: { code, message } }` shape is dead and swallowed errors.
-        const errBody = (await res.json()) as {
-          errors?: unknown;
-          code?: unknown;
-        };
-        if (Array.isArray(errBody.errors) && errBody.errors.length > 0) {
-          message = String(errBody.errors[0]);
-        }
-        if (typeof errBody.code === "string") code = errBody.code;
-      } catch {}
-      throw new ApiError(code, message, res.status);
-    }
-    return await res.blob();
+    const response = await requestBlob(
+      `/api/companies/${encodeURIComponent(slug)}/invoices/preview`,
+      { method: "POST", body: JSON.stringify(invoiceRequestPayload(input)), readOnly: true },
+    );
+    return response.blob;
   },
 
   /**
@@ -185,19 +158,7 @@ export const invoicesApi = {
       `/api/companies/${encodeURIComponent(slug)}/invoices/issue`,
       {
         method: "POST",
-        body: JSON.stringify({
-          issueDate: input.issueDate,
-          lines: input.lines,
-          ...(input.vatRatePercent !== undefined
-            ? { vatRatePercent: input.vatRatePercent }
-            : {}),
-          ...(input.customerId ? { customerId: input.customerId } : {}),
-          ...(input.invoiceNumber ? { invoiceNumber: input.invoiceNumber } : {}),
-          ...(input.dueDate ? { dueDate: input.dueDate } : {}),
-          ...(input.currency ? { currency: input.currency } : {}),
-          ...(input.seller ? { seller: input.seller } : {}),
-          ...(input.buyer ? { buyer: input.buyer } : {}),
-        }),
+        body: JSON.stringify(invoiceRequestPayload(input)),
       },
     ).then((r) => r.invoice),
 

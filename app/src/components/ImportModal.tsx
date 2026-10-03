@@ -73,11 +73,11 @@ export function ImportModal({ slug, onImported, onClose: onDismiss }: ImportModa
     setError(null);
     setLocked(null);
     try {
-      const summary = await api.importData(slug, {
+      const summary = await outcome.run(() => api.importData(slug, {
         fileName,
         content,
         enrichCvr,
-      }).catch(outcome.reject);
+      }));
       setDone(summary);
       onImported();
     } catch (err) {

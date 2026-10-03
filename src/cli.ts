@@ -17,6 +17,7 @@ import {
 } from "./cli-dispatch";
 import {
   MUTATING_COMMANDS,
+  mutationPolicyScope,
   enforceMutationActorPolicy,
   inferredMutationActor,
   trimToNull,
@@ -401,25 +402,16 @@ if (!cmd || cmd === "help") {
   if (MUTATING_COMMANDS.has(commandKey) &&
       !(commandKey === "expense vat-preflight" && applyValue !== "yes") &&
       !(commandKey === "system migrate" && applyValue !== "yes")) {
-    const mutationRoot = commandKey === "system restore-backup"
-      ? trimToNull(parsedArgs.flags.get("--target-company") as string | undefined)
-      // The workspace handler performs an all-target actor + backup preflight
-      // before any network/write. A synthetic --company must not substitute
-      // for those actual target ledgers here.
-      : commandKey === "workspace-access bootstrap-first" || commandKey === "workspace-access bootstrap-local-service" || commandKey === "workspace-access local-service-rotate" || commandKey === "workspace-access local-service-revoke"
-        ? resolveWorkspaceAccessPolicyRoot()
-        : commandKey === "workspace snapshot" || commandKey === "workspace restore"
-          || commandKey.startsWith("party ") || commandKey.startsWith("corporate-record ")
-          ? null
-        : commandKey === "group apply-manifest"
-          ? resolveGroupPolicyRoot()
-        : commandKey === "efaktura modtag-workspace" || commandKey === "recurring-invoice run-workspace" ||
-          commandKey === "group propose-mapping" || commandKey === "group approve-mapping" || commandKey === "group revoke-mapping"
-          || commandKey === "group propose-elimination" || commandKey === "group approve-elimination" || commandKey === "group reject-elimination" || commandKey === "group apply-elimination" || commandKey === "group reverse-elimination"
-          || commandKey === "group propose-profile" || commandKey === "group approve-profile" || commandKey === "group revoke-profile"
-          || commandKey === "group propose-disposition" || commandKey === "group approve-disposition" || commandKey === "group link-disposition"
-        ? null
-        : ctx.companyRoot();
+    let mutationRoot: string | null;
+    switch (mutationPolicyScope(commandKey)) {
+      case "restore-target": mutationRoot = trimToNull(parsedArgs.flags.get("--target-company") as string | undefined); break;
+      case "workspace-bootstrap": mutationRoot = resolveWorkspaceAccessPolicyRoot(); break;
+      case "group-policy": mutationRoot = resolveGroupPolicyRoot(); break;
+      // Workspace handlers own confirmation, target resolution and actor policy
+      // in their existing order, before opening a database for mutation.
+      case "handler": mutationRoot = null; break;
+      case "company": mutationRoot = ctx.companyRoot(); break;
+    }
     if (mutationRoot) {
       enforceMutationActorPolicy(commandKey, mutationRoot, cliActor, cliActorVia, fatal);
     }
