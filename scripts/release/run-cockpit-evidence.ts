@@ -36,6 +36,7 @@ import {
 } from "./cockpit-evidence-dom-ready";
 import { expectedNetworkError, type ExpectedNetworkError } from "./cockpit-evidence-network-errors";
 import { waitForExactOwnedRequests } from "./cockpit-evidence-owned-requests";
+import { assertSettledInterceptions, cancelledNetworkRequestId, settlePausedRequest } from "./cockpit-evidence-interceptions";
 import { captureFinalizedScreenshot, type Cdp } from "./cockpit-evidence-finalization";
 import {
   horizontalOverflowFailure,
@@ -120,6 +121,7 @@ async function openCdp(port: number): Promise<EvidenceCdp> {
       {
         resolve: (v: Record<string, unknown>) => void;
         reject: (e: Error) => void;
+        method: string;
       }
     >(),
     events: Array<(m: Record<string, unknown>) => void> = [];
@@ -147,7 +149,7 @@ async function openCdp(port: number): Promise<EvidenceCdp> {
       m.error
         ? p.reject(
             new Error(
-              `Chrome protocol error: ${String((m.error as { message?: string }).message ?? "")}`,
+              `Chrome protocol error (${p.method}): ${String((m.error as { message?: string }).message ?? "")}`,
             ),
           )
         : p.resolve((m.result ?? {}) as Record<string, unknown>);
@@ -167,6 +169,7 @@ async function openCdp(port: number): Promise<EvidenceCdp> {
           rejectCall(new Error(`CDP timeout: ${method}`));
         }, 15_000);
         pending.set(requestId, {
+          method,
           resolve: (v) => {
             clearTimeout(timer);
             resolveCall(v);
@@ -276,6 +279,7 @@ async function renderScenario(
     port = await freePort();
   let browser: ReturnType<typeof Bun.spawn> | undefined;
   let cdp!: EvidenceCdp;
+  let stopEvents: (() => void) | undefined;
   try {
     browser = Bun.spawn(
       [
@@ -296,8 +300,13 @@ async function renderScenario(
     const liveActualRequests: string[] = [],
       consoleErrors: string[] = [],
       expectedNetworkErrors: ExpectedNetworkError[] = [],
-      interceptions: Promise<unknown>[] = [];
-    const stop = cdp.on((message) => {
+      interceptions: Promise<Error | undefined>[] = [],
+      cancelledNetworkRequests = new Set<string>();
+    stopEvents = cdp.on((message) => {
+      if (message.method === "Network.loadingFailed") {
+        const cancelled = cancelledNetworkRequestId(message.params);
+        if (cancelled) cancelledNetworkRequests.add(cancelled);
+      }
       if (message.method === "Runtime.exceptionThrown")
         consoleErrors.push(JSON.stringify(message.params));
       if (message.method === "Log.entryAdded") {
@@ -309,6 +318,7 @@ async function renderScenario(
       if (message.method !== "Fetch.requestPaused") return;
       const p = message.params as {
         requestId?: string;
+        networkId?: string;
         request?: { url?: string };
       };
       if (!p.requestId) return;
@@ -316,7 +326,13 @@ async function renderScenario(
       const response = ownedRequests.find((request) => p.request?.url === `${base}${request.urlPattern}`);
       if (p.request?.url) liveActualRequests.push(p.request.url);
       interceptions.push(
-        response
+        settlePausedRequest({
+          scenario: scenario.scenario,
+          requestId: p.requestId,
+          networkId: p.networkId,
+          url: p.request?.url,
+          cancelledNetworkRequests,
+          operation: () => response
           ? (async () => {
               if (response.delayMs)
                 await Bun.sleep(response.delayMs);
@@ -332,10 +348,12 @@ async function renderScenario(
               });
             })()
           : cdp.call("Fetch.continueRequest", { requestId: p.requestId }),
+        }),
       );
     });
     await cdp.call("Runtime.enable");
     await cdp.call("Log.enable");
+    await cdp.call("Network.enable");
     await cdp.call("Emulation.setDeviceMetricsOverride", {
       width: scenario.viewport.width,
       height: scenario.viewport.height,
@@ -472,15 +490,24 @@ async function renderScenario(
       observedUrls: () => liveActualRequests,
       deadlineMs: POST_ACTION_CONDITION_DEADLINE_MS,
     });
-    await Promise.all(interceptions);
+    // A loading screenshot must be captured while the delayed reads are still
+    // pending. Other states drain every response, including replacement reads.
+    if (scenario.state !== "loading") await assertSettledInterceptions(interceptions);
     for (const request of expectedRequests)
       if (!liveActualRequests.includes(`${base}${request.urlPattern}`))
         throw new Error(`expected exact owned request was not observed: ${request.urlPattern}`);
+    if (scenario.state === "loading")
+      await evaluateBoolean(cdp, expression(scenario.dom.status), `${scenario.scenario} still loading before screenshot`);
     const screenshot = await captureFinalizedScreenshot({
       cdp,
       scenario: scenario.scenario,
       consoleErrors,
     });
+    if (scenario.state === "loading")
+      await evaluateBoolean(cdp, expression(scenario.dom.status), `${scenario.scenario} still loading after screenshot`);
+    await assertSettledInterceptions(interceptions);
+    if (consoleErrors.length)
+      throw new Error(`console errors in ${scenario.scenario}: ${consoleErrors.join("\n")}`);
     return {
       png: Uint8Array.fromBase64(screenshot),
       keyboardAssertions,
@@ -493,6 +520,7 @@ async function renderScenario(
       domAssertions: assertions.map((a) => a.selector),
     };
   } finally {
+    stopEvents?.();
     try {
       await cdp?.call("Fetch.disable");
     } catch {}
@@ -621,6 +649,7 @@ try {
   const artifacts: EvidenceManifest["artifacts"] = [],
     generated: EvidenceManifest["scenarios"] = [];
   for (const scenario of scenarios) {
+    process.stdout.write(`Cockpit scenario: ${scenario.scenario}\n`);
     const rendered = await renderScenario(chrome, base, scenario),
       name = screenshotName(scenario),
       path = join(output, name);
