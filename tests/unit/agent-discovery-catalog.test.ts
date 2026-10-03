@@ -30,6 +30,21 @@ const REQUIRED_WORKFLOWS = [
 ] as const;
 
 describe("agent runtime catalogue (#584)", () => {
+  test("imports expose a safe read-back for imported receivables without native invoice actions", () => {
+    const workflow = AGENT_WORKFLOWS.find((item) => item.id === "imports-dinero")!;
+    const step = workflow.steps.find((item) => item.operation.surface === "mcp" && item.operation.name === "invoice_imported_receivables");
+    expect(step).toBeDefined();
+    expect(step).toMatchObject({
+      dependsOn: ["apply-import"], expectedSafety: "read", expectedIdempotent: true,
+      requiresActor: false, requiresConfirmation: false, retryClass: "safe-read",
+      inputIdentities: ["company slug/path", "asOf date (YYYY-MM-DD)"],
+      canonicalRecords: ["imported receivable schedules", "source-hash evidence"],
+    });
+    expect(workflow.alternatives.join(" ")).toContain("invoice imported-receivables");
+    expect(workflow.unsupportedBoundaries.join(" ")).toContain("native invoice");
+    expect(workflow.steps.some((item) => item.operation.surface === "mcp" && ["invoice_issue", "invoice_remind", "invoice_settle_bank"].includes(item.operation.name))).toBe(false);
+  });
+
   test("publishes stable capabilities and every required initial workflow with the complete contract", () => {
     expect(AGENT_CATALOGUE_SCHEMA_VERSION).toBe("rentemester-agent-discovery-v1");
     expect(AGENT_CATALOGUE_HASH).toMatch(/^[a-f0-9]{64}$/);

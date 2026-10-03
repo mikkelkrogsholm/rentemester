@@ -243,7 +243,8 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
     write("apply-import", cli("import run"), "Apply the exact validated import.", { dependsOn: ["dry-run"], requiresConfirmation: false, requiredArguments: ["--apply"], outputIdentities: ["import run identity"], canonicalRecords: ["imported ledger records", "source-hash evidence", "import audit"] }),
     write("import-contacts", cli("import contacts"), "Import Dinero contacts idempotently.", { dependsOn: ["supported-systems"], condition: "Optional contacts branch.", expectedIdempotent: true, requiresConfirmation: false, retryClass: "natural-idempotent", canonicalRecords: ["customers", "vendors", "contact import audit"] }),
     read("archive", mcp("import_archive_list"), "Read the retained source archive.", { dependsOn: ["apply-import"] }),
-  ], unsupportedBoundaries: ["No company-specific mapping is inferred.", "Cut-over apply remains CLI-only."] }),
+    read("imported-receivables", mcp("invoice_imported_receivables"), "Read source-evidenced imported receivables and open balances as of an explicit date.", { dependsOn: ["apply-import"], condition: "Use when an imported receivable schedule was supplied.", inputIdentities: ["company slug/path", "asOf date (YYYY-MM-DD)"], canonicalRecords: ["imported receivable schedules", "source-hash evidence"] }),
+  ], alternatives: ["CLI: invoice imported-receivables --company <path> --as-of <YYYY-MM-DD> reads the same imported schedule."], unsupportedBoundaries: ["No company-specific mapping is inferred.", "Cut-over apply remains CLI-only.", "Imported receivables are source records, not native invoices; native invoice issue, reminder and settlement actions do not apply."] }),
   workflow({ id: "privacy-governance", capabilityId: "privacy", title: "GDPR discovery and export", intendedOutcome: "Discover and export data-subject records through audited, confirmed operations.", steps: [
     write("discover", mcp("gdpr_discover"), "Create audited discovery evidence.", { canonicalRecords: ["GDPR audit events"] }),
     write("export", mcp("gdpr_export"), "Create the confirmed subject export.", { dependsOn: ["discover"], canonicalRecords: ["GDPR export audit"] }),
@@ -466,8 +467,8 @@ type SurfaceBaseline = { count: number; hash: string };
  */
 export const AGENT_SURFACE_BASELINES: Record<SurfaceName, SurfaceBaseline> = {
   // Public surface changes require an explicit discovery review.
-  mcp: { count: 213, hash: "eb760824036360abc1e32916708c0bad867ce03d802d067011e53fe3f297774a" },
-  cli: { count: 264, hash: "76b6f357fb52c645f1ca2723fcf0af9380ace8db038a1a4034850a56cb7de896" },
+  mcp: { count: 214, hash: "140e4dbbe69f461805a0f0ec71b76874bd8b0def02789eaa8f33dccc0a703a20" },
+  cli: { count: 265, hash: "8d92dd9cd3a66c487ef06e9ba5bbedeaa8f324a34ecd23e92f0c2bb6e65661f0" },
   http: { count: 208, hash: "af44c2c61c50d8a479a02b1d04ce12ba789aafc3699ab81ea98f7ff4a7cb1160" },
 };
 

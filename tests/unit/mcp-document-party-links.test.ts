@@ -8,6 +8,7 @@ import { createParty, linkPartyRole } from "../../src/core/party-registry";
 import { companyRootForSlug, initWorkspace } from "../../src/core/workspace";
 import { openWorkspaceControlDb } from "../../src/core/workspace-control";
 import { migrate, openDb } from "../../src/core/db";
+import { openLedgerReadOnly } from "../../src/core/ledger-inspection";
 
 const SERVER_PATH = new URL("../../src/mcp/server.ts", import.meta.url).pathname;
 type Rpc = { id?: number; error?: unknown; result?: any };
@@ -63,7 +64,8 @@ let companyRoot = "";
 let client: Client;
 
 function eventCount() {
-  const db = openDb(companyPaths(companyRoot).db);
+  // The observer must not checkpoint WAL or change the mtime it is checking.
+  const db = openLedgerReadOnly(companyPaths(companyRoot).db);
   try { return (db.query("SELECT count(*) AS n FROM document_party_link_events").get() as { n: number }).n; }
   finally { db.close(); }
 }

@@ -10,6 +10,7 @@
 import { describe, expect, test } from "bun:test";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { registerAllTools } from "../../src/mcp/registry";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname.replace(/\/$/, "");
 
@@ -44,6 +45,23 @@ const AGENT_FACING_FILES = [
 ];
 
 describe("MCP tool count in agent-facing docs (#367)", () => {
+  test("read, ordinary write and destructive subtotals match live annotations", () => {
+    const counts = { "Read-tools": 0, "Ordinary write-tools": 0, Destructive: 0 };
+    registerAllTools({
+      registerTool(_name: string, config: { annotations?: { readOnlyHint?: boolean; destructiveHint?: boolean } }) {
+        if (config.annotations?.destructiveHint) counts.Destructive += 1;
+        else if (config.annotations?.readOnlyHint) counts["Read-tools"] += 1;
+        else counts["Ordinary write-tools"] += 1;
+      },
+    } as never);
+    const text = readFileSync(join(REPO_ROOT, "docs/mcp-tool-surface.md"), "utf8");
+    for (const [label, actual] of Object.entries(counts)) {
+      const match = text.match(new RegExp(`- \\*\\*${label}\\*\\*: (\\d+)`));
+      expect(match, `missing ${label} subtotal`).not.toBeNull();
+      expect(Number(match![1]), `${label} must match tools/list annotations`).toBe(actual);
+    }
+  });
+
   test("Total in mcp-tool-surface.md matches src/mcp/tools/*.ts registerTool count", () => {
     const actual = countRegisteredTools();
     const text = readFileSync(

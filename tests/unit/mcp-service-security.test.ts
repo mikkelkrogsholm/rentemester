@@ -14,6 +14,7 @@ import { companyPaths } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { ingestDocument } from "../../src/core/documents";
 import { registerPayableTools } from "../../src/mcp/tools/payable";
+import { registerAllTools } from "../../src/mcp/registry";
 
 const SECRET = "I0UjL6i0-ScgvjfIgzMKJxPQyDpPXwg2mMKdLW3Y3WQ";
 const ORIGIN = "http://127.0.0.1:4319";
@@ -59,6 +60,9 @@ describe("MCP service principal guard", () => {
       const context = createMcpSecurityContextFromEnv(env)!;
       expect(env.RENTEMESTER_SERVICE_PRINCIPAL_TOKEN).toBeUndefined();
       expect(await authorizeMcpTool(context, "accounts_list", { company: "allowed-aps" })).not.toBeNull();
+      expect(await authorizeMcpTool(context, "invoice_imported_receivables", { company: "allowed-aps", asOf: "2026-01-31" })).not.toBeNull();
+      expect(await authorizeMcpTool(context, "invoice_imported_receivables", { company: "hidden-aps", asOf: "2026-01-31" })).toBeNull();
+      expect(await authorizeMcpTool(context, "unknown_tool", { company: "allowed-aps" })).toBeNull();
       expect(await authorizeMcpTool(context, "accounts_add", { company: "allowed-aps" })).toBeNull();
       expect(await authorizeMcpTool(context, "accounts_list", { company: "hidden-aps" })).toBeNull();
       // Fan-out tools cannot use a partly authorized key.  The hidden active
@@ -71,12 +75,17 @@ describe("MCP service principal guard", () => {
       expect(resolveMcpWorkspaceCompany(context, link)).toBeNull();
       await revokeWorkspaceServiceCredential(db, runtime.auth, { serviceAccountId: issued.serviceAccountId, credentialId: issued.credentialId, actor: "user:owner" });
       expect(await authorizeMcpTool(context, "accounts_list", { company: "allowed-aps" })).toBeNull();
+      expect(await authorizeMcpTool(context, "invoice_imported_receivables", { company: "allowed-aps", asOf: "2026-01-31" })).toBeNull();
     } finally { db.close(); runtime.close(); rmSync(workspace, { recursive: true, force: true }); rmSync(outside, { recursive: true, force: true }); }
   });
 
   test("keeps a complete, unique map for the live MCP surface", () => {
-    expect(new Set(Object.keys(MCP_TOOL_PERMISSIONS)).size).toBe(Object.keys(MCP_TOOL_PERMISSIONS).length);
-    expect(Object.keys(MCP_TOOL_PERMISSIONS)).toHaveLength(213);
+    const server = new McpServer({ name: "permission-coverage-test", version: "0.0.0" });
+    registerAllTools(server);
+    const registered = Object.keys((server as unknown as { _registeredTools: Record<string, unknown> })._registeredTools).sort();
+    expect(registered.length).toBeGreaterThan(0);
+    expect(Object.keys(MCP_TOOL_PERMISSIONS).sort()).toEqual(registered);
+    expect(MCP_TOOL_PERMISSIONS.invoice_imported_receivables).toBe("company.read");
   });
 
   test("requires reviewer permission for an atomic dimension replacement", async () => {

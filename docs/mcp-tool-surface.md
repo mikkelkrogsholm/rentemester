@@ -104,7 +104,7 @@ selv ændres ikke.
 
 ## Resultat-shapes (`outputSchema`)
 
-**Alle 213 tools deklarerer et `outputSchema`** (#202). Det er det samme
+**Alle 214 tools deklarerer et `outputSchema`** (#202). Det er det samme
 delte schema for hver tool — konvolutten — så en agent kan læse
 resultat-kontrakten fra `tools/list` *uden* at kalde tool'et først.
 Schemaet er defineret én gang i `src/mcp/envelope.ts` (`envelopeShape`).
@@ -226,10 +226,10 @@ Tallene gælder en kørende `src/mcp/server.ts` (verificeret via `tools/list`).
 Tabellerne nedenfor er den autoritative liste pr. tool — bliver prosa-tal og
 tabel uenige, er det tabellerne (og i sidste ende `tools/list`) der gælder.
 
-- **Read-tools**: 88
-- **Ordinary write-tools**: 120
+- **Read-tools**: 91
+- **Ordinary write-tools**: 122
 - **Destructive**: 1 (`system_restore_backup`)
-- **Total**: **213** (read and write tool counts are verified from the live registry in CI)
+- **Total**: **214** (read and write tool counts are verified from the live registry in CI)
 
 ## Read-tools
 
@@ -285,6 +285,7 @@ Document-party resolution uses exactly one visible state per document: `resolved
 | `invoice_find` | `invoice find` | `{ company, query?, customer?, invoiceNumber?, amount?, asOf? }` | Søger fakturaer på nummer, kunde eller beløb. |
 | `invoice_interest_calc` | `invoice interest` | `{ company, documentId? \| invoiceNumber?, asOf, referenceRate }` | Beregner morarente (uden at registrere). `accruedInterestAmount` er den **inkrementelle** rente der kan opkræves nu (perioden siden sidste registrerede krav, eller fra forfald hvis ingen). Ekstra felter: `priorClaimedInterest`, `totalInterestToDate`, `claimableDays`, `interestFromDate`. |
 | `invoice_interest_correction_calc` | `invoice interest-correction` | `{ company, documentId? \| invoiceNumber? }` | Foreslår en korrektion af for meget opkrævet morarente (read-only). Opstår når en betaling/kreditnota er registreret med virkningsdato inde i et allerede bogført rentekravs vindue. Felter: `hasProposal`, `overClaimedAmount`, `postedInterest`, `lawfulInterest`, `alreadyCorrected`, `throughDate`. |
+| `invoice_imported_receivables` | `invoice imported-receivables` | `{ company, asOf }` | Læser kildebeviste importerede tilgodehavender med åbne saldi på en eksplicit dato. `asOf` er påkrævet i MCP; CLI bruger `--as-of` og ellers dagsdato. Resultatet har `asOfDate`, `boundary`, `count`, `totalOpen` og `rows`. Disse kilderegistre er adskilt fra native fakturaer og kan ikke udstedes, rykkes eller afregnes via native fakturakommandoer. Read-only; kræver `company.read`. |
 | `invoice_list` | `invoice list` | `{ company, status?, from?, to?, customerCvr?, customer?, invoiceNumber?, minAmount?, maxAmount?, asOf? }` | Lister udstedte fakturaer med filtre. |
 | `invoice_overdue` | `invoice overdue` | `{ company, asOf?, minDays? }` | Lister forfaldne, ikke fuldt afregnede fakturaer. |
 | `invoice_status` | `invoice status` | `{ company, documentId? \| invoiceNumber?, asOf? }` | Viser åben saldo og status på en faktura. |
