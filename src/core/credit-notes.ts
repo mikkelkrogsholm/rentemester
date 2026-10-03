@@ -1,3 +1,4 @@
+import { TransactionRejectionError, decodeTransactionRejection } from "./transaction-rejection";
 import { runSql } from "./sqlite";
 import { createHash } from "node:crypto";
 import { mkdirSync } from "node:fs";
@@ -421,7 +422,7 @@ export function issueCreditNote(db: Database, companyRoot: string, input: IssueC
         createdByProgram: input.createdByProgram,
         lines: originalJournalLines,
       });
-      if (!journal.ok) throw new Error(JSON.stringify({ appliedRules: journal.appliedRules, errors: journal.errors }));
+      if (!journal.ok) throw new TransactionRejectionError({ appliedRules: journal.appliedRules, errors: journal.errors });
 
       const receivableAccount = db.query(
         "SELECT id FROM accounts WHERE account_no = ?",
@@ -444,7 +445,7 @@ export function issueCreditNote(db: Database, companyRoot: string, input: IssueC
         invoiceDocumentId: original.id,
       });
       if (!evidence.ok) {
-        throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: evidence.errors }));
+        throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: evidence.errors });
       }
 
       insertAuditLog(db, {
@@ -486,13 +487,11 @@ export function issueCreditNote(db: Database, companyRoot: string, input: IssueC
       storedPath &&
       hasCommittedDocumentAtPath(db, storedPath) === false
     ) removeIfExists(storedPath);
-    const parsed = typeof error === "object" && error && "message" in error ? (() => {
-      try { return JSON.parse(String((error as any).message)); } catch { return null; }
-    })() : null;
+    const parsed = decodeTransactionRejection(error);
     return {
       ok: false,
-      appliedRules: [...new Set([RULE_ID, ...((parsed?.appliedRules as string[] | undefined) ?? [])])],
-      errors: (parsed?.errors as string[] | undefined) ?? [String(error)],
+      appliedRules: [...new Set([RULE_ID, ...(parsed?.appliedRules ?? [])])],
+      errors: parsed?.errors ?? [String(error)],
     };
   }
 }

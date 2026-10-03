@@ -7,7 +7,6 @@ import { ButtonLink, Button, PageHeader } from "../components/ui";
 // Genbruger eksisterende kerne-helpers via /api/companies/:slug/integrity —
 // ingen genimplementering på cockpit-siden.
 
-import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
@@ -16,12 +15,9 @@ import { ErrorState, Loading } from "../components/Feedback";
 
 export function IntegrityView() {
   const { slug = "" } = useParams();
-  // En `refresh`-tæller lader brugeren trykke "Verificér igen" og få cockpittet
-  // til at re-fetche /integrity. Endpointet er idempotent, så det er sikkert.
-  const [refresh, setRefresh] = useState(0);
   const state = useAsync<CompanyIntegrity>(
     (signal) => api.integrity(slug, { signal }),
-    [slug, refresh],
+    [slug],
   );
 
   if (state.loading) return <Loading />;
@@ -37,7 +33,7 @@ export function IntegrityView() {
           <Button variant="secondary"
             type="button"
             className="btn secondary"
-            onClick={() => setRefresh((n) => n + 1)}
+            onClick={state.reload}
           >
             Verificér igen
           </Button>

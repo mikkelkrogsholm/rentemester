@@ -35,7 +35,6 @@ const STATUS_LABEL: Record<string, string> = {
 
 export function PeriodsView() {
   const { slug = "" } = useParams();
-  const [refresh, setRefresh] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [openClose, setOpenClose] = useState(false);
   const [reopenTarget, setReopenTarget] =
@@ -43,10 +42,10 @@ export function PeriodsView() {
 
   const state = useAsync<CompanyPeriods>(
     (signal) => api.periods(slug, { signal }),
-    [slug, refresh],
+    [slug],
   );
 
-  const doneRefresh = () => setRefresh((n) => n + 1);
+  const doneRefresh = state.reload;
 
   if (state.loading && !state.data) return <Loading />;
   if (state.error && !state.data) return <ErrorState message={state.error} onRetry={state.reload} />;

@@ -1,9 +1,10 @@
-import { describe, expect, test } from "bun:test";
-import { screen } from "@testing-library/react";
+import { describe, expect, test, vi } from "bun:test";
+import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ExceptionsView } from "./ExceptionsView";
 import { renderAt } from "../test/render";
 import { mockFetch } from "../test/fixtures";
+import { stubGlobal } from "../test/globals";
 
 function payload(over: Partial<{
   status: "open" | "resolved" | "all";
@@ -81,6 +82,28 @@ function renderView(
 }
 
 describe("ExceptionsView (#332)", () => {
+  test("keeps the same company's rows during a post-mutation reload and after its failure", async () => {
+    const user = userEvent.setup();
+    let reads = 0;
+    let rejectReload!: (error: Error) => void;
+    const pendingReload = new Promise<Response>((_resolve, reject) => { rejectReload = reject; });
+    stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).includes("/exceptions") && init?.method !== "POST") {
+        reads += 1;
+        return reads === 1 ? Response.json(payload()) : pendingReload;
+      }
+      return Response.json({ ok: true, exception: { id: 1, resolved: true } });
+    }));
+    renderAt(<ExceptionsView />, { route: "/companies/acme-aps/undtagelser", path: "/companies/:slug/undtagelser" });
+    const buttons = await screen.findAllByRole("button", { name: /Markér som løst/ });
+    await user.click(buttons[0]!);
+    await waitFor(() => expect(reads).toBe(2));
+    expect(screen.getByText(/Bank-rækken passer ikke til nogen/)).toBeInTheDocument();
+    await act(async () => { rejectReload(new Error("Synthetic read failure")); });
+    expect(await screen.findByRole("alert")).toHaveTextContent("De tidligere hentede undtagelser vises fortsat");
+    expect(screen.getByText(/Bank-rækken passer ikke til nogen/)).toBeInTheDocument();
+  });
+
   test("lister åbne undtagelser med severity-tæller", async () => {
     renderView();
     expect(

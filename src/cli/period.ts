@@ -5,13 +5,7 @@ import { openCommandDb } from "../cli-dispatch";
 import type { CommandContext, CommandDispatch } from "../cli-dispatch";
 import { companyPaths } from "../core/paths";
 import { inspectOpenLedger, openLedgerReadOnly } from "../core/ledger-inspection";
-import {
-  actorMatchesAllowlist,
-  inferredMutationActor,
-  isCanonicalActorId,
-  loadActorAllowlist,
-  trimToNull,
-} from "../cli-actor";
+import { loadActorAllowlist } from "../cli-actor";
 
 function confirmed(ctx: CommandContext): void { if (ctx.arg("--confirm") !== "yes") ctx.fatal("--confirm must be exactly yes"); }
 function withReadOnlyCurrentLedger(ctx: CommandContext, action: (db: ReturnType<typeof openLedgerReadOnly>) => void): void {
@@ -21,43 +15,6 @@ function withReadOnlyCurrentLedger(ctx: CommandContext, action: (db: ReturnType<
     if(schema.status==="corrupt" || schema.status==="newer") { ctx.emitResult({ok:false,errors:["PERIOD_CLOSE_READ_UNAVAILABLE"],schema}); return; }
     action(db);
   } finally { db.close(); }
-}
-
-/**
- * `period reopen` is a controlled, fully audit-logged mutation (#247), but it
- * is not registered in the central `MUTATING_COMMANDS` actor gate. It must
- * still be clearly attributable, so the actor policy is enforced here, in the
- * handler, mirroring `enforceMutationActorPolicy`: an explicit `--actor` must
- * be canonical and in `config/policy.yaml`; otherwise an inferred actor
- * (USER/LOGNAME/USERNAME/OPENCLAW_AGENT) must exist. The resolved actor is exported via
- * `RENTEMESTER_ACTOR` so the core audit log attributes the reopen correctly.
- */
-function enforceReopenActor(ctx: CommandContext, root: string): void {
-  const explicitActor = ctx.cliActor ?? trimToNull(process.env.RENTEMESTER_ACTOR);
-  if (explicitActor) {
-    if (!isCanonicalActorId(explicitActor)) {
-      ctx.fatal("explicit actor must use canonical format user:<id>, agent:<id>, or system:<id>");
-    }
-    const allowlist = loadActorAllowlist(root);
-    // #248: case-insensitive match — an explicit `--actor user:mikkel` and a
-    // derived USER=Mikkel are the same identity; the allowlist must not reject
-    // one form while letting the other through.
-    if (!actorMatchesAllowlist(explicitActor, allowlist)) {
-      ctx.fatal(
-        `actor '${explicitActor}' is not in config/policy.yaml actor_allowlist; add it or run without --actor`,
-      );
-    }
-    process.env.RENTEMESTER_ACTOR = explicitActor;
-    if (ctx.cliActorVia) process.env.RENTEMESTER_ACTOR_VIA = ctx.cliActorVia;
-    else if (!trimToNull(process.env.RENTEMESTER_ACTOR_VIA))
-      process.env.RENTEMESTER_ACTOR_VIA = "rentemester-cli";
-    return;
-  }
-  if (!inferredMutationActor()) {
-    ctx.fatal(
-      "actor required for mutations: pass --actor <user:...|agent:...|system:...> or run with USER/LOGNAME/USERNAME/OPENCLAW_AGENT set",
-    );
-  }
 }
 
 export function register(dispatch: CommandDispatch): void {
@@ -137,8 +94,12 @@ export function register(dispatch: CommandDispatch): void {
       console.error("Missing required --reason <text>");
       process.exit(2);
     }
-    // A reopen must be attributable — enforce the actor before mutating.
-    enforceReopenActor(ctx, ctx.companyRoot());
+    // Preserve reopen's historical explicit-actor refusal without company policy.
+    // Canonical identity and configured allowlist matching belong to the shared gate.
+    const actor = ctx.cliActor ?? ctx.trimToNull(process.env.RENTEMESTER_ACTOR);
+    if (actor && loadActorAllowlist(ctx.companyRoot()).size === 0) {
+      ctx.fatal(`actor '${actor}' is not in config/policy.yaml actor_allowlist; add it or run without --actor`);
+    }
     const db = openCommandDb(ctx);
     migrate(db);
     const result = reopenAccountingPeriod(db, {

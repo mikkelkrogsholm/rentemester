@@ -44,7 +44,7 @@ import { buildVatFiling } from "../core/vat-filing";
 import { annualReportDeadline, fiscalYearForDate } from "../core/fiscal-year";
 import { vatPeriodWindowFor, type VatPeriodWindow } from "../core/periods";
 import { isValidIsoDate, diffDays, addDays } from "../core/dates";
-import { formatKroner } from "../cli-format";
+import { formatKronerDa } from "../core/money";
 import {
   AGENT_ACTOR_ID,
   AGENT_PROGRAM,
@@ -740,7 +740,7 @@ function reportVatPeriod(
     daysRemaining,
     ready: periodReady,
     note: periodReady
-      ? `Momsperioden er lukket — momsangivelse klar (momstilsvar ${formatKroner(net)}).`
+      ? `Momsperioden er lukket — momsangivelse klar (momstilsvar ${formatKronerDa(net)}).`
       : periodClosed
         ? `Momsperioden er lukket, men momsangivelsen er blokeret: ${filingError}`
         : `Momsperioden er endnu ikke lukket — luk den med 'period close' før momsangivelse.`,

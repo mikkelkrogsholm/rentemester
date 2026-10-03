@@ -1,3 +1,4 @@
+import { TransactionRejectionError, decodeTransactionRejection } from "./transaction-rejection";
 import type { Database } from "bun:sqlite";
 import { getInvoiceStatus } from "./invoice-payments";
 import { postJournalEntry, type JournalPostResult } from "./ledger";
@@ -263,23 +264,23 @@ export function writeOffInvoiceBadDebt(db: Database, input: WriteOffInvoiceBadDe
   try {
     const result = db.transaction(() => {
       const lockedStatus = getInvoiceStatus(db, input.invoiceDocumentId, input.writeOffDate);
-      if (!lockedStatus.ok) throw new Error(JSON.stringify({ appliedRules: [RULE_ID, VAT_RULE_ID], errors: lockedStatus.errors }));
+      if (!lockedStatus.ok) throw new TransactionRejectionError({ appliedRules: [RULE_ID, VAT_RULE_ID], errors: lockedStatus.errors });
       const lockedOpenBalance = roundDkk(Number(lockedStatus.openBalance ?? 0));
       if (grossAmount > lockedOpenBalance) {
-        throw new Error(JSON.stringify({
+        throw new TransactionRejectionError({
           appliedRules: [RULE_ID, VAT_RULE_ID],
           errors: [`bad-debt write-off amount ${grossAmount} exceeds open principal balance ${lockedOpenBalance}`],
-        }));
+        });
       }
       const receivable = resolveInvoiceReceivableAccount(db, {
         invoiceDocumentId: input.invoiceDocumentId,
       });
-      if (!receivable.ok) throw new Error(JSON.stringify({ appliedRules: [RULE_ID, VAT_RULE_ID], errors: [receivable.error] }));
+      if (!receivable.ok) throw new TransactionRejectionError({ appliedRules: [RULE_ID, VAT_RULE_ID], errors: [receivable.error] });
       if (input.receivableAccountNo && input.receivableAccountNo !== receivable.accountNo) {
-        throw new Error(JSON.stringify({
+        throw new TransactionRejectionError({
           appliedRules: [RULE_ID, VAT_RULE_ID],
           errors: [`invoice ${invoice.invoice_no} must write off its booked receivable account ${receivable.accountNo}, not ${input.receivableAccountNo}`],
-        }));
+        });
       }
       const carryingBalance = calculateInvoiceReceivableCarryingBalance(db, {
         invoiceDocumentId: input.invoiceDocumentId,
@@ -287,10 +288,10 @@ export function writeOffInvoiceBadDebt(db: Database, input: WriteOffInvoiceBadDe
         receivableAccountNo: receivable.accountNo,
       });
       if (currency === "DKK" && carryingBalance !== lockedOpenBalance) {
-        throw new Error(JSON.stringify({
+        throw new TransactionRejectionError({
           appliedRules: [RULE_ID, VAT_RULE_ID],
           errors: [`invoice ${invoice.invoice_no} domain balance ${lockedOpenBalance} DKK does not match receivable ${receivable.accountNo} carrying balance ${carryingBalance} DKK`],
-        }));
+        });
       }
       const vatAllocation = calculateBadDebtVatAllocation(db, {
         invoiceDocumentId: input.invoiceDocumentId,
@@ -301,10 +302,10 @@ export function writeOffInvoiceBadDebt(db: Database, input: WriteOffInvoiceBadDe
         currency,
       });
       if (!vatAllocation.ok) {
-        throw new Error(JSON.stringify({
+        throw new TransactionRejectionError({
           appliedRules: [RULE_ID, VAT_RULE_ID],
           errors: [vatAllocation.error],
-        }));
+        });
       }
       const vatAmount = vatAllocation.vatAmount;
       const netAmount = roundDkk(grossAmount - vatAmount);
@@ -319,20 +320,20 @@ export function writeOffInvoiceBadDebt(db: Database, input: WriteOffInvoiceBadDe
           paymentForeign: grossAmount,
         });
         if (!relief.ok) {
-          throw new Error(JSON.stringify({
+          throw new TransactionRejectionError({
             appliedRules: [RULE_ID, VAT_RULE_ID],
             errors: [`foreign bad-debt receivable relief cannot be reconstructed: ${relief.error}`],
-          }));
+          });
         }
         grossAmountDkk = relief.amountDkk;
         writeOffFxRateToDkk = roundRate6(grossAmountDkk / grossAmount);
         if (compareDkk(roundDkk(grossAmount * writeOffFxRateToDkk), grossAmountDkk) !== 0) {
-          throw new Error(JSON.stringify({
+          throw new TransactionRejectionError({
             appliedRules: [RULE_ID, VAT_RULE_ID],
             errors: [
               `foreign bad-debt carrying balance ${grossAmountDkk} DKK cannot be represented by the journal's six-decimal FX basis`,
             ],
-          }));
+          });
         }
       }
       const vatAmountDkk = vatAllocation.vatAmountDkk;
@@ -355,7 +356,7 @@ export function writeOffInvoiceBadDebt(db: Database, input: WriteOffInvoiceBadDe
           { accountNo: receivable.accountNo, creditAmount: grossAmountDkk, text: `Write off receivable ${invoice.invoice_no}` },
         ],
       });
-      if (!journal.ok) throw new Error(JSON.stringify({ appliedRules: journal.appliedRules, errors: journal.errors }));
+      if (!journal.ok) throw new TransactionRejectionError({ appliedRules: journal.appliedRules, errors: journal.errors });
 
       const writeOff = db.query(
         `INSERT INTO invoice_bad_debt_writeoffs (invoice_document_id, writeoff_date, gross_amount, net_amount, vat_amount, note, journal_entry_id)
@@ -373,7 +374,7 @@ export function writeOffInvoiceBadDebt(db: Database, input: WriteOffInvoiceBadDe
       });
 
       const after = getInvoiceStatus(db, input.invoiceDocumentId, input.writeOffDate);
-      if (!after.ok) throw new Error(JSON.stringify({ errors: after.errors }));
+      if (!after.ok) throw new TransactionRejectionError({ errors: after.errors });
 
       return {
         ...journal,
@@ -389,13 +390,11 @@ export function writeOffInvoiceBadDebt(db: Database, input: WriteOffInvoiceBadDe
     }).immediate();
     return result;
   } catch (error) {
-    const parsed = typeof error === "object" && error && "message" in error ? (() => {
-      try { return JSON.parse(String((error as any).message)); } catch { return null; }
-    })() : null;
+    const parsed = decodeTransactionRejection(error);
     return {
       ok: false,
-      appliedRules: [...new Set([RULE_ID, VAT_RULE_ID, ...((parsed?.appliedRules as string[] | undefined) ?? [])])],
-      errors: (parsed?.errors as string[] | undefined) ?? [String(error)],
+      appliedRules: [...new Set([RULE_ID, VAT_RULE_ID, ...(parsed?.appliedRules ?? [])])],
+      errors: parsed?.errors ?? [String(error)],
     };
   }
 }

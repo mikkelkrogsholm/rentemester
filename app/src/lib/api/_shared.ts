@@ -31,12 +31,16 @@ function signalAuthExpired(): void {
   }
 }
 
-export async function request<T>(path: string, init?: RequestInit & { readOnly?: boolean }): Promise<T> {
+type ApiRequestOptions = RequestInit & { readOnly?: boolean };
+
+function isWrite(init?: ApiRequestOptions): boolean {
+  return !init?.readOnly && init?.method !== undefined && !["GET", "HEAD"].includes(init.method.toUpperCase());
+}
+
+async function fetchResponse(path: string, init?: ApiRequestOptions): Promise<Response> {
   const { readOnly, ...fetchOptions } = init ?? {};
-  const write = !readOnly && init?.method !== undefined && !["GET", "HEAD"].includes(init.method.toUpperCase());
-  let res: Response;
   try {
-    res = await fetch(path, {
+    return await fetch(path, {
       ...fetchOptions,
       credentials: "same-origin",
       headers: { "content-type": "application/json", ...(init?.headers ?? {}) },
@@ -45,45 +49,56 @@ export async function request<T>(path: string, init?: RequestInit & { readOnly?:
     if (isAborted(cause, init?.signal)) throw cause;
     throw new ApiError(
       "network",
-      write ? "Handlingen kan være gennemført, men serverens resultat kunne ikke bekræftes. Kontrollér status, før du starter en ny handling." : "Kunne ikke nå serveren. Kontrollér forbindelsen og prøv igen.",
+      isWrite(init) ? "Handlingen kan være gennemført, men serverens resultat kunne ikke bekræftes. Kontrollér status, før du starter en ny handling." : "Kunne ikke nå serveren. Kontrollér forbindelsen og prøv igen.",
       0,
     );
   }
+}
 
+/** Decode the same server envelope for JSON responses and binary failures. */
+function responseError(res: Response, body: unknown, fallback: string): ApiError {
+  const env = body && typeof body === "object" ? body as { errors?: unknown; code?: unknown } : undefined;
+  const errors = Array.isArray(env?.errors) ? env.errors.map(String) : [];
+  const code = res.status === 401 ? "unauthorized" : typeof env?.code === "string" ? env.code : "internal";
+  if (code === "unauthorized") signalAuthExpired();
+  return new ApiError(code, errors[0] ?? (res.status === 401 ? "Din session er udløbet. Log ind igen." : fallback), res.status);
+}
+
+function bodyReadError(res: Response, cause: unknown, init?: ApiRequestOptions): unknown {
+  if (isAborted(cause, init?.signal)) return cause;
+  return responseError(res, undefined, isWrite(init)
+    ? "Serverens svar på handlingen kunne ikke læses. Kontrollér status, før du starter en ny handling."
+    : "Serveren gav et ugyldigt svar.");
+}
+
+export async function request<T>(path: string, init?: ApiRequestOptions): Promise<T> {
+  const res = await fetchResponse(path, init);
   let body: unknown;
   try {
     body = await res.json();
   } catch (cause) {
-    if (isAborted(cause, init?.signal)) throw cause;
-    if (res.status === 401) {
-      signalAuthExpired();
-      throw new ApiError("unauthorized", "Din session er udløbet. Log ind igen.", 401);
-    }
-    throw new ApiError("internal", write ? "Serverens svar på handlingen kunne ikke læses. Kontrollér status, før du starter en ny handling." : "Serveren gav et ugyldigt svar.", res.status);
+    throw bodyReadError(res, cause, init);
   }
-
-  if (body && typeof body === "object" && (body as { ok?: unknown }).ok === false) {
-    // #368: cockpit, MCP and CLI all return the same shape now —
-    // `{ ok:false, errors:[string], code?:string }`. The human-readable
-    // message lives in `errors[0]`; `code` is the discrete enum
-    // (`bad_request`, `conflict`, …) for programmatic branching.
-    const env = body as { errors?: unknown; code?: unknown };
-    const errors = Array.isArray(env.errors)
-      ? env.errors.map((e) => String(e))
-      : [];
-    const code = typeof env.code === "string" ? env.code : "internal";
-    const message = errors[0] ?? "Ukendt serverfejl.";
-    if (res.status === 401 || code === "unauthorized") signalAuthExpired();
-    throw new ApiError(res.status === 401 ? "unauthorized" : code, message, res.status);
-  }
-  if (!res.ok) {
-    if (res.status === 401) {
-      signalAuthExpired();
-      throw new ApiError("unauthorized", "Din session er udløbet. Log ind igen.", 401);
-    }
-    throw new ApiError("internal", `HTTP ${res.status}`, res.status);
-  }
+  if (body && typeof body === "object" && (body as { ok?: unknown }).ok === false) throw responseError(res, body, "Ukendt serverfejl.");
+  if (!res.ok) throw responseError(res, undefined, `HTTP ${res.status}`);
   return body as T;
+}
+
+/** Binary success keeps domain headers; transport failures use the canonical seam. */
+export async function requestBlob(path: string, init?: ApiRequestOptions): Promise<{ blob: Blob; headers: Headers }> {
+  const res = await fetchResponse(path, init);
+  if (!res.ok) {
+    let body: unknown;
+    try { body = await res.json(); } catch (cause) {
+      if (isAborted(cause, init?.signal)) throw cause;
+    }
+    throw responseError(res, body, `HTTP ${res.status}`);
+  }
+  try {
+    return { blob: await res.blob(), headers: res.headers };
+  } catch (cause) {
+    throw bodyReadError(res, cause, init);
+  }
 }
 
 /** Picks the filename from a `filename*=UTF-8''…` content-disposition header. */

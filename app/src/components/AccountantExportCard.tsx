@@ -15,6 +15,7 @@ import { useState } from "react";
 import { api } from "../lib/api";
 import { todayIso } from "../lib/format";
 import { Banner } from "./Feedback";
+import { useMutationOutcome } from "../lib/useMutationOutcome";
 
 /**
  * Revisor-eksport — generates the accountant-handoff package and triggers a
@@ -26,6 +27,7 @@ import { Banner } from "./Feedback";
  * sub-period (e.g. one registered VAT period) before generating.
  */
 export function AccountantExportCard({ slug }: { slug: string }) {
+  const outcome = useMutationOutcome(undefined, "accountant-export", `company:${slug}`);
   // Use the LOCAL date — `toISOString()` is UTC and is off-by-one in Danish
   // evening hours (UTC+1/+2), defaulting the export period to tomorrow.
   const today = todayIso();
@@ -42,11 +44,12 @@ export function AccountantExportCard({ slug }: { slug: string }) {
   } | null>(null);
 
   async function generate() {
+    if (busy || outcome.isBlocked()) return;
     setBusy(true);
     setError(null);
     setDone(null);
     try {
-      const res = await api.accountantExport(slug, { periodStart, periodEnd });
+      const res = await api.accountantExport(slug, { periodStart, periodEnd }).catch(outcome.reject);
       // Trigger a browser download from the blob — the response is the only
       // copy of the package that leaves the server.
       const url = URL.createObjectURL(res.blob);
@@ -73,12 +76,14 @@ export function AccountantExportCard({ slug }: { slug: string }) {
 
   const disabled =
     busy ||
+    outcome.blocked ||
     periodStart.length !== 10 ||
     periodEnd.length !== 10 ||
     periodStart > periodEnd;
 
   return (
     <div className="card accountant-export">
+      {outcome.feedback}
       <h3 className="section-title">Revisor-eksport</h3>
       <p className="muted">
         Pakker journal, bilag, banktransaktioner og audit-log for perioden i én

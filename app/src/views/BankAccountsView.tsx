@@ -20,13 +20,12 @@ import { ErrorState, Loading } from "../components/Feedback";
 
 export function BankAccountsView() {
   const { slug = "" } = useParams();
-  const [refresh, setRefresh] = useState(0);
   const [openCreate, setOpenCreate] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const state = useAsync<CompanyBankAccounts>(
     (signal) => api.bankAccounts(slug, { signal }),
-    [slug, refresh],
+    [slug],
   );
 
   if (state.loading && !state.data) return <Loading />;
@@ -141,7 +140,7 @@ export function BankAccountsView() {
           onRefresh={state.reload}
           onDone={() => {
             setOpenCreate(false);
-            setRefresh((n) => n + 1);
+            state.reload();
           }}
           onError={(msg) => setError(msg)}
         />

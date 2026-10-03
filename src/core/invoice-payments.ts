@@ -1,3 +1,4 @@
+import { TransactionRejectionError, decodeTransactionRejection } from "./transaction-rejection";
 import type { Database } from "bun:sqlite";
 import { postJournalEntry } from "./ledger";
 import { insertAuditLog } from "./actor";
@@ -413,27 +414,27 @@ export function applyInvoicePayment(db: Database, input: ApplyInvoicePaymentInpu
         { skipEvidenceValidation: input.journalEntryId !== undefined },
       );
       if (!lockedStatus.ok) {
-        throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: lockedStatus.errors }));
+        throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: lockedStatus.errors });
       }
       const lockedOpenBalance = roundDkk(Number(lockedStatus.openBalance ?? 0));
       if (compareDkk(amount, lockedOpenBalance) > 0) {
-        throw new Error(JSON.stringify({
+        throw new TransactionRejectionError({
           appliedRules: [RULE_ID, CORRECTION_BALANCE_RULE_ID],
           errors: [`payment amount ${amount} exceeds open invoice balance ${lockedOpenBalance}`],
-        }));
+        });
       }
 
       const receivable = resolveInvoiceReceivableAccount(db, {
         invoiceDocumentId: input.invoiceDocumentId,
       });
       if (!receivable.ok) {
-        throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: [receivable.error] }));
+        throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: [receivable.error] });
       }
       if (input.receivableAccountNo && input.receivableAccountNo !== receivable.accountNo) {
-        throw new Error(JSON.stringify({
+        throw new TransactionRejectionError({
           appliedRules: [RULE_ID],
           errors: [`invoice ${invoice.invoice_no} must settle its booked receivable account ${receivable.accountNo}, not ${input.receivableAccountNo}`],
-        }));
+        });
       }
       const carryingBalanceDkk = calculateInvoiceReceivableCarryingBalance(db, {
         invoiceDocumentId: input.invoiceDocumentId,
@@ -441,10 +442,10 @@ export function applyInvoicePayment(db: Database, input: ApplyInvoicePaymentInpu
         receivableAccountNo: receivable.accountNo,
       });
       if (invoiceCurrency === "DKK" && compareDkk(carryingBalanceDkk, lockedOpenBalance) !== 0) {
-        throw new Error(JSON.stringify({
+        throw new TransactionRejectionError({
           appliedRules: [RULE_ID],
           errors: [`invoice ${invoice.invoice_no} domain balance ${lockedOpenBalance} DKK does not match receivable ${receivable.accountNo} carrying balance ${carryingBalanceDkk} DKK`],
-        }));
+        });
       }
 
       let bankAccountNo: string | undefined;
@@ -455,19 +456,19 @@ export function applyInvoicePayment(db: Database, input: ApplyInvoicePaymentInpu
             requestedAccountNo: input.bankAccountNo,
           });
           if (!resolvedBank.ok) {
-            throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: [resolvedBank.error] }));
+            throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: [resolvedBank.error] });
           }
           bankAccountNo = resolvedBank.accountNo;
         } else if (input.bankAccountNo) {
           const compatible = accountRoleCompatibility(db, "bank", input.bankAccountNo);
           if (!compatible.ok) {
-            throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: [compatible.error] }));
+            throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: [compatible.error] });
           }
           bankAccountNo = input.bankAccountNo;
         } else {
           const bankRole = resolveAccountRole(db, "bank");
           if (!bankRole.ok) {
-            throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: [bankRole.error] }));
+            throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: [bankRole.error] });
           }
           bankAccountNo = bankRole.accountNo;
         }
@@ -494,10 +495,10 @@ export function applyInvoicePayment(db: Database, input: ApplyInvoicePaymentInpu
             paymentForeign: amount,
           });
           if (!relief.ok) {
-            throw new Error(JSON.stringify({
+            throw new TransactionRejectionError({
               appliedRules: [RULE_ID, FX_REALISED_RULE_ID],
               errors: [`foreign receivable relief cannot be reconstructed: ${relief.error}`],
-            }));
+            });
           }
           const built = buildForeignPaymentLines({
             invoiceNo: invoice.invoice_no,
@@ -522,20 +523,20 @@ export function applyInvoicePayment(db: Database, input: ApplyInvoicePaymentInpu
           createdByProgram: input.createdByProgram,
           lines,
         });
-        if (!journal.ok || journal.entryId == null) throw new Error(JSON.stringify({ appliedRules: journal.appliedRules, errors: journal.errors }));
+        if (!journal.ok || journal.entryId == null) throw new TransactionRejectionError({ appliedRules: journal.appliedRules, errors: journal.errors });
         journalEntryId = journal.entryId;
       } else {
         const journal = db.query(
           `SELECT id, document_id, source_bank_transaction_id FROM journal_entries WHERE id = ?`
         ).get(journalEntryId) as { id: number; document_id: number | null; source_bank_transaction_id: number | null } | null;
         if (!journal) {
-          throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: [`journal entry ${journalEntryId} does not exist`] }));
+          throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: [`journal entry ${journalEntryId} does not exist`] });
         }
         if (journal.document_id !== input.invoiceDocumentId) {
-          throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: [`journal entry ${journalEntryId} is not linked to invoice document ${input.invoiceDocumentId}`] }));
+          throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: [`journal entry ${journalEntryId} is not linked to invoice document ${input.invoiceDocumentId}`] });
         }
         if ((input.bankTransactionId ?? null) !== (journal.source_bank_transaction_id ?? null)) {
-          throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: [`journal entry ${journalEntryId} bank link does not match invoice payment bank transaction`] }));
+          throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: [`journal entry ${journalEntryId} bank link does not match invoice payment bank transaction`] });
         }
       }
 
@@ -552,7 +553,7 @@ export function applyInvoicePayment(db: Database, input: ApplyInvoicePaymentInpu
         }],
       });
       if (!evidence.ok) {
-        throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: evidence.errors }));
+        throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: evidence.errors });
       }
 
       const paymentId = db.query(
@@ -571,7 +572,7 @@ export function applyInvoicePayment(db: Database, input: ApplyInvoicePaymentInpu
       });
 
       const after = getInvoiceStatus(db, input.invoiceDocumentId);
-      if (!after.ok) throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: after.errors }));
+      if (!after.ok) throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: after.errors });
 
       return {
         ok: true,
@@ -588,13 +589,11 @@ export function applyInvoicePayment(db: Database, input: ApplyInvoicePaymentInpu
     }).immediate();
     return result;
   } catch (error) {
-    const parsed = typeof error === "object" && error && "message" in error ? (() => {
-      try { return JSON.parse(String((error as any).message)); } catch { return null; }
-    })() : null;
+    const parsed = decodeTransactionRejection(error);
     return {
       ok: false,
-      appliedRules: [...new Set([RULE_ID, ...((parsed?.appliedRules as string[] | undefined) ?? [])])],
-      errors: (parsed?.errors as string[] | undefined) ?? [String(error)],
+      appliedRules: [...new Set([RULE_ID, ...(parsed?.appliedRules ?? [])])],
+      errors: parsed?.errors ?? [String(error)],
     };
   }
 }
