@@ -181,3 +181,10 @@ fremtidig schema-opgradering.
 Candidate evidence is digest-bound and deliberately fail-closed. The release workflow authenticates `gh` with `GH_TOKEN`, queries every open `epic:648` issue (pagination limit 1000), and records the exact JSON plus SHA-256 inside the Cockpit manifest. Any related `severity:high` or `severity:critical` issue blocks the candidate.
 
 For every #649–#657 feature, the scenario contract requires normal desktop, 390px, and real 200% browser-zoom/reflow evidence plus loading, empty, blocked, and error states. Feature-owned selectors are intentionally not relaxed while the corresponding UI is unfinished. Each rendered scenario records exact route interception, page-local DOM/status/control/data assertions, natural keyboard task traces, console state and PNG dimensions. The verifier rejects fake, reused, swapped, unsafe, or unreferenced screenshots, and binds the Cockpit manifest/query checksums into `release-manifest.json`.
+
+The browser runner handles cancelled reads through Chrome's `Network.loadingFailed`
+event. An invalid paused Fetch id is accepted only when Chrome explicitly cancelled
+the same request's `Network.RequestId`; unrelated protocol failures still block the
+candidate. Interception errors are captured immediately and replacement requests
+are drained before accepting evidence. Loading screenshots are captured before
+delayed responses settle, with the visible loading state checked around capture.
