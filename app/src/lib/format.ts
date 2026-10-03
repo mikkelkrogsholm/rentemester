@@ -80,9 +80,11 @@ export function formatCurrency(minorUnits: number, currency = "DKK"): string {
  * amount keeps its own currency code.
  */
 export function formatKroner(kroner: number, currency = "DKK"): string {
+  if (!Number.isFinite(kroner)) return "—";
   if (normalizeCurrency(currency) === "DKK") return formatKronerDa(kroner);
   return new Intl.NumberFormat("da-DK", {
     style: "currency",
+    currencyDisplay: "code",
     currency: normalizeCurrency(currency),
     maximumFractionDigits: 2,
   }).format(kroner);

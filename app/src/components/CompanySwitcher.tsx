@@ -1,3 +1,4 @@
+import { Select } from "./ui";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth-context";
 
@@ -16,9 +17,9 @@ export function CompanySwitcher() {
   const current = /^\/companies\/([^/]+)/.exec(location.pathname)?.[1] ?? "";
   return <label className="company-switcher">
     <span>Virksomhed</span>
-    <select aria-label="Skift virksomhed" value={current} onChange={(event) => navigate(`/companies/${event.target.value}`)}>
+    <Select aria-label="Skift virksomhed" value={current} onChange={(event) => navigate(`/companies/${event.target.value}`)}>
       <option value="">Vælg virksomhed</option>
       {context.companies.map((company) => <option key={company.slug} value={company.slug}>{company.name} — {roleLabels[company.role] ?? "Rolle ukendt"}</option>)}
-    </select>
+    </Select>
   </label>;
 }

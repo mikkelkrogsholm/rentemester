@@ -1,3 +1,5 @@
+import { matchPath } from "react-router-dom";
+
 /**
  * The single catalogue of company destinations.  A company route belongs to
  * exactly one task area; both the SPA route table and CompanyNav consume this
@@ -14,7 +16,7 @@ export const COMPANY_TASK_AREAS = [
 
 export type CompanyTaskAreaId = (typeof COMPANY_TASK_AREAS)[number]["id"];
 
-export const COMPANY_ROUTE_DEFINITIONS = [
+const COMPANY_PAGE_ROUTES = [
   { id: "dashboard", segment: "", label: "Overblik", area: "overview" },
   { id: "income-statement", segment: "resultatopgorelse", label: "Resultatopgørelse", area: "reports" },
   { id: "balance", segment: "balance", label: "Balance", area: "reports" },
@@ -25,7 +27,7 @@ export const COMPANY_ROUTE_DEFINITIONS = [
   { id: "journal", segment: "posteringer", label: "Posteringer", area: "bookkeeping" },
   { id: "drafts", segment: "kladder", label: "Kladder", area: "bookkeeping" },
   { id: "posting-rules", segment: "posteringsregler", label: "Posteringsregler", area: "bookkeeping" },
-  { id: "batch-bookkeeping", segment: "batchbogfoering", label: "Bogføring", area: "bookkeeping" },
+  { id: "batch-bookkeeping", segment: "batchbogfoering", label: "Bogføringskø", area: "bookkeeping" },
   { id: "bank", segment: "bank", label: "Bank", area: "bookkeeping" },
   { id: "vat", segment: "moms", label: "Moms", area: "vat-periods" },
   { id: "documents", segment: "bilag", label: "Bilag", area: "bookkeeping" },
@@ -58,6 +60,22 @@ export const COMPANY_ROUTE_DEFINITIONS = [
   label: string;
   area: CompanyTaskAreaId;
 }[];
+
+export const COMPANY_ROUTE_DEFINITIONS = [
+  ...COMPANY_PAGE_ROUTES.map((route) => ({ ...route, kind: "page" as const, parentId: undefined })),
+  { id: "invoice-create", segment: "fakturaer/ny", label: "Udsted faktura", area: "sales", kind: "flow", parentId: "invoices" },
+  { id: "invoice-detail", segment: "fakturaer/:documentId", label: "Fakturadetaljer", area: "sales", kind: "flow", parentId: "invoices" },
+  { id: "document-detail", segment: "bilag/:documentId", label: "Bilagsdetaljer", area: "bookkeeping", kind: "flow", parentId: "documents" },
+  { id: "document-booking", segment: "bilag/:documentId/bogfoer", label: "Bogfør bilag", area: "bookkeeping", kind: "flow", parentId: "documents" },
+] as const;
+
+export type CompanyYearScope = "year" | "company" | "multi-year" | "vat-period";
+export function companyYearScope(id: CompanyRouteId): CompanyYearScope {
+  if (["documents", "document-detail", "workspace-register", "workspace-inbox", "contacts", "invoice-templates", "manage", "accounts", "dimensions", "bank-accounts", "gdpr", "retention", "integrity", "receipt-email", "posting-rules", "drafts", "batch-bookkeeping", "suggestions", "exceptions"].includes(id)) return "company";
+  if (id === "multi-year") return "multi-year";
+  if (id === "vat") return "vat-period";
+  return "year";
+}
 
 export type CompanyRouteId = (typeof COMPANY_ROUTE_DEFINITIONS)[number]["id"];
 export type CompanyRouteDefinition = (typeof COMPANY_ROUTE_DEFINITIONS)[number];
@@ -92,8 +110,5 @@ export function assertCompanyRouteCoverage(registeredRouteIds: readonly string[]
 
 export function companyRouteForPath(pathname: string): CompanyRouteDefinition | undefined {
   if (pathname === "/companies/new" || pathname.startsWith("/companies/new/")) return undefined;
-  const match = pathname.match(/^\/companies\/[^/]+\/?(.*)$/);
-  if (!match) return undefined;
-  const segment = match[1].replace(/\/$/, "");
-  return COMPANY_ROUTE_DEFINITIONS.find((route) => route.segment === segment);
+  return [...COMPANY_ROUTE_DEFINITIONS].sort((a, b) => b.segment.split("/").length - a.segment.split("/").length).find((route) => matchPath({ path: companyRoutePattern(route.segment), end: true }, pathname));
 }

@@ -1,3 +1,4 @@
+import { PageHeader } from "../components/ui";
 // Hjælp og support — cockpittets ene synlige exit-vej for en bruger der står
 // fast (#421). Top-baren peger hertil; siden samler links til www-sitets
 // dokumentation, kontaktformular, GitHub-issues og en kort kom-i-gang-tjekliste.
@@ -26,9 +27,9 @@ function ExternalLink({ href, children }: ExternalLinkProps) {
 export function HelpView() {
   return (
     <section className="help-view">
-      <header className="page-head">
-        <h2>Hjælp og support</h2>
-      </header>
+      <PageHeader title="Hjælp og support">
+
+      </PageHeader>
 
       <p className="muted">
         Står du fast? Her er en samlet vej til dokumentation, kontakt og

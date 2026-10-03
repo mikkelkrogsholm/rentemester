@@ -86,3 +86,18 @@ describe("PortfolioView", () => {
     expect(screen.getByRole("button", { name: /Prøv igen/i })).toBeInTheDocument();
   });
 });
+
+test("unknown bank or VAT data does not imply healthy operation", async () => {
+  mockFetch(portfolioRoute([summary({ actualBankBalance: null, vat: null })]));
+  renderAt(<PortfolioView />);
+  expect(await screen.findByText("Overblik kræver flere oplysninger")).toBeInTheDocument();
+  expect(screen.queryByText("Sund drift")).not.toBeInTheDocument();
+  expect(screen.queryByText("Ingen kendte advarsler")).not.toBeInTheDocument();
+});
+
+test("negative VAT is described as receivable in the portfolio and company card", async () => {
+  mockFetch(portfolioRoute([summary({ vat: { payable: -250, deadline: "2026-09-01", daysRemaining: 10 } })]));
+  renderAt(<PortfolioView />);
+  expect(await screen.findAllByText("Moms til gode")).toHaveLength(2);
+  expect(screen.queryByText("Moms at betale")).not.toBeInTheDocument();
+});

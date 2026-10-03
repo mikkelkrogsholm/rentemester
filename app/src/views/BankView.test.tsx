@@ -23,7 +23,7 @@ describe("BankView — Bank", () => {
     mockFetch(route());
     renderView();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Bank", level: 1 }),
     ).toBeInTheDocument();
     expect(screen.getByText("Bogført saldo")).toBeInTheDocument();
     expect(screen.getByText(/Danske Bank/)).toBeInTheDocument();
@@ -43,7 +43,7 @@ describe("BankView — Bank", () => {
     mockFetch(route());
     renderView();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Bank", level: 1 }),
     ).toBeInTheDocument();
     // The gap banner names the difference and the actual statement balance.
     expect(screen.getByText("Difference")).toBeInTheDocument();
@@ -84,7 +84,7 @@ describe("BankView — Bank", () => {
   test("a live year offers an Importér kontoudtog action", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Bank", level: 1 });
     expect(
       screen.getByRole("button", { name: "Importér kontoudtog" }),
     ).toBeInTheDocument();
@@ -269,7 +269,7 @@ describe("BankView — Bank", () => {
     // q=energinet matches "Indbetaling Energinet"; but status=unmatched
     // excludes it. The only row that survives both filters is none — empty
     // state should be shown.
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Bank", level: 1 });
     expect(
       screen.getByText(/Ingen transaktioner matcher filtrene/i),
     ).toBeInTheDocument();
@@ -298,4 +298,22 @@ describe("BankView — Bank", () => {
       screen.getByRole("button", { name: /Ryd filtre/i }),
     ).toBeInTheDocument();
   });
+});
+
+test("paginates after filtering and resets to the first page when the search changes", async () => {
+  const transactions = Array.from({ length: 60 }, (_, index) => ({
+    id: index + 1, date: "2026-01-15", text: `Synthetic bank post ${index + 1}`,
+    amount: index + 1, runningBalance: null, reconciliationStatus: "matched" as const, journalEntryNo: null,
+  }));
+  mockFetch(route({ transactions }));
+  renderView();
+  await screen.findByText("Synthetic bank post 1");
+  expect(screen.getByText("Synthetic bank post 50")).toBeInTheDocument();
+  expect(screen.queryByText("Synthetic bank post 51")).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Næste" }));
+  expect(screen.getByText("Synthetic bank post 51")).toBeInTheDocument();
+  expect(screen.queryByText("Synthetic bank post 1")).not.toBeInTheDocument();
+  await userEvent.type(screen.getByPlaceholderText(/Søg på tekst/), "post 1");
+  expect(screen.getByText("Synthetic bank post 1")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Forrige" })).toBeDisabled();
 });

@@ -1,5 +1,5 @@
 import type { CfoAnalyticsResponse, CfoAnalyticsScope } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 export type CfoAnalyticsQuery = {
   scope: CfoAnalyticsScope;
@@ -11,10 +11,10 @@ export type CfoAnalyticsQuery = {
 
 /** The Cockpit reads the same versioned report as external HTTP and MCP callers. */
 export const cfoAnalyticsApi = {
-  cfoAnalytics: (input: CfoAnalyticsQuery) => {
+  cfoAnalytics: (input: CfoAnalyticsQuery, options?: ReadRequestOptions) => {
     const params = new URLSearchParams({ scope: input.scope, from: input.from, to: input.to });
     if (input.companySlug) params.append("companySlug", input.companySlug);
     if (input.groupProfileId) params.set("groupProfileId", input.groupProfileId);
-    return request<CfoAnalyticsResponse>(`/api/cfo-analytics?${params.toString()}`);
+    return request<CfoAnalyticsResponse>(`/api/cfo-analytics?${params.toString()}`, options);
   },
 };

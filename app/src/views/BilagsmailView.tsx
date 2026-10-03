@@ -1,3 +1,6 @@
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useUnsavedChanges } from "../lib/useUnsavedChanges";
+import { ButtonLink, Button, Input, PageHeader } from "../components/ui";
 // Bilagsmail view (#348/#350/#351). Tre paneler:
 //   1. Mail-alias — virksomhedens unikke localpart (#350).
 //   2. IMAP-config — host/port/username/password (#348). Skrives til
@@ -9,7 +12,7 @@
 // tabellen viser hvilke dokumenter der allerede er indlæst.
 
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
 import { formatKroner } from "../lib/format";
@@ -22,33 +25,34 @@ export function BilagsmailView() {
   const [refresh, setRefresh] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const state = useAsync<CompanyBilagsmail>(
-    () => api.bilagsmail(slug),
+    (signal) => api.bilagsmail(slug, { signal }),
     [slug, refresh],
   );
 
   const doneRefresh = () => setRefresh((n) => n + 1);
 
-  if (state.loading) return <Loading />;
-  if (state.error) return <ErrorState message={state.error} />;
+  if (state.loading && !state.data) return <Loading />;
+  if (state.error && !state.data) return <ErrorState message={state.error} onRetry={state.reload} />;
   const data = state.data!;
   const currency = data.company.currency || "DKK";
 
   return (
     <section className="bilagsmail-view">
-      <header className="page-head">
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+      <PageHeader title="Bilagsmail" actions={<><div className="row-actions">
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+            Administrér
+          </ButtonLink>
+        </div></>}>
         <div>
-          <h2>{data.company.name}</h2>
+
           <p className="muted">
             {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
             {data.company.country} · Bilagsmail
           </p>
         </div>
-        <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </header>
+
+      </PageHeader>
 
       {error && (
         <div className="callout danger" role="alert">
@@ -89,12 +93,13 @@ function AliasPanel({
 }) {
   const [alias, setAlias] = useState(initial ?? "");
   const [saving, setSaving] = useState(false);
+  const outcome = useMutationOutcome(onDone);
+  useUnsavedChanges(alias !== (initial ?? ""));
 
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const save = async (e: React.FormEvent) => {e.preventDefault(); if (outcome.isBlocked()) return;
     setSaving(true);
     try {
-      await api.setBilagsmailAlias(slug, alias.trim() ? alias.trim() : null);
+      await api.setBilagsmailAlias(slug, alias.trim() ? alias.trim() : null).catch(outcome.reject);
       onDone();
     } catch (err) {
       onError(err instanceof ApiError ? err.message : "Kunne ikke gemme alias.");
@@ -105,6 +110,7 @@ function AliasPanel({
 
   return (
     <section className="card">
+    {outcome.feedback}
       <h3>Mail-alias</h3>
       <p className="muted">
         Virksomhedens unikke localpart i bilagsmail-adressen
@@ -114,7 +120,7 @@ function AliasPanel({
       <form onSubmit={save} className="filter-bar">
         <label>
           Alias
-          <input
+          <Input disabled={outcome.blocked}
             type="text"
             value={alias}
             onChange={(e) => setAlias(e.target.value)}
@@ -122,9 +128,9 @@ function AliasPanel({
             maxLength={64}
           />
         </label>
-        <button type="submit" className="btn primary" disabled={saving}>
+        <Button requiredPermission="company.admin" type="submit" className="btn primary" disabled={outcome.blocked || (saving)}>
           {saving ? "Gemmer …" : "Gem alias"}
-        </button>
+        </Button>
       </form>
     </section>
   );
@@ -151,9 +157,10 @@ function ImapConfigPanel({
   const [mailbox, setMailbox] = useState(status?.mailbox ?? "INBOX");
   const [saving, setSaving] = useState(false);
   const [pendingDelete, setPendingDelete] = useState(false);
+  const outcome = useMutationOutcome(onDone);
+  useUnsavedChanges(Boolean(password) || host !== (status?.host ?? "") || port !== String(status?.port ?? 993) || username !== (status?.username ?? "") || secure !== (status?.secure ?? true) || mailbox !== (status?.mailbox ?? "INBOX"));
 
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const save = async (e: React.FormEvent) => {e.preventDefault(); if (outcome.isBlocked()) return;
     if (!password.trim()) {
       onError("Password er påkrævet — passwordet vises aldrig efter det er gemt.");
       return;
@@ -167,7 +174,7 @@ function ImapConfigPanel({
         password,
         secure,
         mailbox,
-      });
+      }).catch(outcome.reject);
       setPassword(""); // never linger in DOM
       onDone();
     } catch (err) {
@@ -177,10 +184,10 @@ function ImapConfigPanel({
     }
   };
 
-  const remove = async () => {
+  const remove = async () => {if (outcome.isBlocked()) return;
     setSaving(true);
     try {
-      await api.deleteBilagsmailImapConfig(slug);
+      await api.deleteBilagsmailImapConfig(slug).catch(outcome.reject);
       onDone();
     } catch (err) {
       onError(err instanceof ApiError ? err.message : "Kunne ikke slette config.");
@@ -192,6 +199,7 @@ function ImapConfigPanel({
 
   return (
     <section className="card">
+    {outcome.feedback}
       <h3>IMAP-konfiguration</h3>
       <p className="muted">
         Gemmes på disk i <code>config/imap.json</code> (mode 0600) — ALDRIG i
@@ -210,11 +218,11 @@ function ImapConfigPanel({
       <form onSubmit={save}>
         <label>
           Host
-          <input type="text" value={host} onChange={(e) => setHost(e.target.value)} required />
+          <Input disabled={outcome.blocked} type="text" value={host} onChange={(e) => setHost(e.target.value)} required />
         </label>
         <label>
           Port
-          <input
+          <Input disabled={outcome.blocked}
             type="number"
             value={port}
             onChange={(e) => setPort(e.target.value)}
@@ -223,7 +231,7 @@ function ImapConfigPanel({
         </label>
         <label>
           Username
-          <input
+          <Input disabled={outcome.blocked}
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -232,7 +240,7 @@ function ImapConfigPanel({
         </label>
         <label>
           Password (kun ved oprettelse/skift)
-          <input
+          <Input disabled={outcome.blocked}
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -241,14 +249,14 @@ function ImapConfigPanel({
         </label>
         <label>
           Mailbox
-          <input
+          <Input disabled={outcome.blocked}
             type="text"
             value={mailbox}
             onChange={(e) => setMailbox(e.target.value)}
           />
         </label>
         <label className="checkbox">
-          <input
+          <Input disabled={outcome.blocked}
             type="checkbox"
             checked={secure}
             onChange={(e) => setSecure(e.target.checked)}
@@ -256,18 +264,18 @@ function ImapConfigPanel({
           IMAPS (TLS)
         </label>
         <div className="row-actions">
-          <button type="submit" className="btn primary" disabled={saving}>
+          <Button requiredPermission="company.admin" type="submit" className="btn primary" disabled={outcome.blocked || (saving)}>
             {saving ? "Gemmer …" : configured ? "Opdatér" : "Gem"}
-          </button>
+          </Button>
           {configured && (
-            <button
+            <Button requiredPermission="company.admin" variant="danger"
               type="button"
               className="btn secondary danger"
               onClick={() => setPendingDelete(true)}
-              disabled={saving}
+              disabled={outcome.blocked || (saving)}
             >
               Slet config
-            </button>
+            </Button>
           )}
         </div>
       </form>
@@ -286,7 +294,7 @@ function ImapConfigPanel({
           onConfirm={async () => {
             await remove();
           }}
-          onClose={() => setPendingDelete(false)}
+          onClose={() => setPendingDelete(false)} onRefresh={onDone}
         />
       )}
     </section>
@@ -311,7 +319,7 @@ function InboxPanel({
       {inbox.length === 0 ? (
         <p className="muted">Ingen mail-drop-bilag indlæst endnu.</p>
       ) : (
-        <table className="table">
+        <div className="table-scroll"><table className="table">
           <thead>
             <tr>
               <th>ID</th>
@@ -342,7 +350,7 @@ function InboxPanel({
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       )}
     </section>
   );

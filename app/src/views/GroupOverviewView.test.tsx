@@ -37,7 +37,7 @@ describe("GroupOverviewView", () => {
   test("sends an explicit YYYY-MM-DD asOf and renders structure without hidden identities or figures", async () => {
     render(<GroupOverviewView />);
     expect(await screen.findByRole("heading", { name: "Koncernstruktur" })).toBeInTheDocument();
-    expect(groupOverview).toHaveBeenCalledWith(expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/));
+    expect(groupOverview).toHaveBeenCalledWith(expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), expect.objectContaining({ signal: expect.anything() }));
     expect(screen.getByText("Strukturvisning")).toBeInTheDocument();
     expect(screen.getByText("Arkiveret")).toBeInTheDocument();
     expect(screen.getByText(/evidence:/)).toHaveTextContent("evidence-2026-01");
@@ -45,17 +45,17 @@ describe("GroupOverviewView", () => {
     expect(screen.queryByText(/hidden-secret|1000|kr\.|7500/i)).not.toBeInTheDocument();
     expect(screen.getAllByLabelText("Blokeringer")[0]).toHaveTextContent("consolidated reports are not available");
     expect(screen.getByLabelText("Mellemregningsafstemning")).toHaveTextContent("Difference");
-    expect(groupReconciliation).toHaveBeenCalledWith(expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/));
-    expect(groupEliminations).toHaveBeenCalledWith(expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/));
+    expect(groupReconciliation).toHaveBeenCalledWith(expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), expect.objectContaining({ signal: expect.anything() }));
+    expect(groupEliminations).toHaveBeenCalledWith(expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), expect.objectContaining({ signal: expect.anything() }));
   });
 
   test("changes the date through the explicit asOf request", async () => {
     render(<GroupOverviewView />);
     await screen.findByRole("heading", { name: "Koncernstruktur" });
     fireEvent.change(screen.getByLabelText("Pr. dato"), { target: { value: "2026-01-31" } });
-    await waitFor(() => expect(groupOverview).toHaveBeenLastCalledWith("2026-01-31"));
-    await waitFor(() => expect(groupReconciliation).toHaveBeenLastCalledWith("2026-01-31"));
-    await waitFor(() => expect(groupEliminations).toHaveBeenLastCalledWith("2026-01-31"));
+    await waitFor(() => expect(groupOverview).toHaveBeenLastCalledWith("2026-01-31", expect.objectContaining({ signal: expect.anything() })));
+    await waitFor(() => expect(groupReconciliation).toHaveBeenLastCalledWith("2026-01-31", expect.objectContaining({ signal: expect.anything() })));
+    await waitFor(() => expect(groupEliminations).toHaveBeenLastCalledWith("2026-01-31", expect.objectContaining({ signal: expect.anything() })));
   });
 
   test("shows a disposition lifecycle response and fails closed on a server denial", async () => {
@@ -65,7 +65,7 @@ describe("GroupOverviewView", () => {
     fireEvent.change(screen.getByLabelText("Disposition-ID"), { target: { value: "synthetic-disposition" } });
     fireEvent.click(screen.getByRole("button", { name: "Vis status" }));
     expect(await screen.findByText("one_sided_posting")).toBeInTheDocument();
-    expect(intercompanyDispositionStatus).toHaveBeenCalledWith("synthetic-disposition", expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/));
+    expect(intercompanyDispositionStatus).toHaveBeenCalledWith("synthetic-disposition", expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), expect.objectContaining({ signal: expect.anything() }));
     intercompanyDispositionStatus.mockRejectedValueOnce(new Error("unauthorized"));
     fireEvent.click(screen.getByRole("button", { name: "Vis status" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Dispositionen kan ikke vises med din aktuelle adgang.");
@@ -122,7 +122,7 @@ describe("GroupOverviewView", () => {
     expect(screen.getByLabelText("Konsolideret rapport")).toHaveTextContent("100,00 kr");
     expect(screen.getByText(/ledger-head/)).toHaveTextContent("aaaaaaaaaaaaaaaa");
     expect(groupConsolidatedReport).toHaveBeenCalledWith(
-      "approved-profile", expect.stringMatching(/^\d{4}-01-01$/), expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+      "approved-profile", expect.stringMatching(/^\d{4}-01-01$/), expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), expect.objectContaining({ signal: expect.anything() }),
     );
   });
 

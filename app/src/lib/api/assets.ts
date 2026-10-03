@@ -8,7 +8,7 @@ import type {
   AssetWriteOffSummary,
   AssetsResponse,
 } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 // --- Anlæg (fixed assets) — #336 ----------------------------------------
 //
@@ -19,15 +19,15 @@ import { request } from "./_shared";
 
 export const assetsApi = {
   /** GET /api/companies/:slug/assets — the anlægskartotek. */
-  assets: (slug: string) =>
+  assets: (slug: string, options?: ReadRequestOptions) =>
     request<AssetsResponse>(
-      `/api/companies/${encodeURIComponent(slug)}/assets`,
+      `/api/companies/${encodeURIComponent(slug)}/assets`, options,
     ).then((r) => r.assets),
 
   /** GET .../assets/:id/next-depreciation — what posts on a "Beregn afskrivning". */
-  assetNextDepreciation: (slug: string, assetId: number) =>
+  assetNextDepreciation: (slug: string, assetId: number, options?: ReadRequestOptions) =>
     request<AssetNextDepreciationResponse>(
-      `/api/companies/${encodeURIComponent(slug)}/assets/${assetId}/next-depreciation`,
+      `/api/companies/${encodeURIComponent(slug)}/assets/${assetId}/next-depreciation`, options,
     ).then((r) => r.nextDepreciation),
 
   /** POST /api/companies/:slug/assets — registers a capitalised anlæg. */

@@ -1,3 +1,5 @@
+import * as stylex from "@stylexjs/stylex";
+import { ButtonLink, Button, PageHeader } from "../components/ui";
 // Agent-forslag → menneskelig godkendelse-flow (#346).
 //
 // Rentemester's narrative is: agent surfaces, human decides, ledger enforces.
@@ -42,14 +44,14 @@ const SEVERITY_LABEL: Record<AgentSuggestionRow["severity"], string> = {
 export function SuggestionsView() {
   const { slug = "" } = useParams();
   const state = useAsync<CompanyAgentSuggestions>(
-    () => api.agentSuggestions(slug),
+    (signal) => api.agentSuggestions(slug, { signal }),
     [slug],
   );
   const [actionError, setActionError] = useState<string | null>(null);
 
   if (state.loading && !state.data)
     return <Loading label="Henter agent-forslag…" />;
-  if (state.error)
+  if (state.error && !state.data)
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const data = state.data!;
@@ -57,20 +59,21 @@ export function SuggestionsView() {
 
   return (
     <section className="statement">
-      <div className="page-head">
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. De tidligere hentede oplysninger vises fortsat.</div>}
+      <PageHeader title="Forslag" actions={<><div className="row-actions">
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+            Administrér
+          </ButtonLink>
+        </div></>}>
         <div>
-          <h2>{data.company.name}</h2>
+
           <p className="muted">
             {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
             {data.company.country} · {currency} · Agent-forslag
           </p>
         </div>
-        <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </div>
+
+      </PageHeader>
 
       <p className="statement-asof muted">
         Agenten foreslår — du beslutter. Hvert forslag er deterministisk
@@ -116,7 +119,7 @@ export function SuggestionsView() {
         </div>
       ) : null}
 
-      <h3 style={{ marginTop: "1.5rem" }}>Forslag</h3>
+      <h3 {...stylex.props(viewStyles.site0)}>Forslag</h3>
       {data.rows.length === 0 ? (
         <div className="card archived-notice">
           <p className="muted">
@@ -229,23 +232,23 @@ function SuggestionRowView({
       </td>
       <td>
         <strong>{row.kindLabel}</strong>
-        <div className="muted" style={{ fontSize: "0.85em" }}>
+        <div className={["muted", stylex.props(viewStyles.site1).className].filter(Boolean).join(" ")} >
           {row.type}
           {row.agentActor ? ` · ${row.agentActor}` : ""}
         </div>
       </td>
       <td>
-        <p style={{ margin: 0 }}>{row.rationale}</p>
+        <p {...stylex.props(viewStyles.site2)}>{row.rationale}</p>
         {row.requiredAction ? (
           <p
-            className="muted"
-            style={{ margin: "0.25rem 0 0 0", fontSize: "0.9em" }}
+            className={["muted", stylex.props(viewStyles.site3).className].filter(Boolean).join(" ")}
+
           >
             <strong>Foreslået handling:</strong> {row.requiredAction}
           </p>
         ) : null}
         {row.link ? (
-          <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.9em" }}>
+          <p {...stylex.props(viewStyles.site4)}>
             <Link to={`/companies/${slug}/${row.link}`}>
               Åbn relateret side →
             </Link>
@@ -261,7 +264,7 @@ function SuggestionRowView({
       </td>
       <td>
         <div className="row-actions">
-          <button
+          <Button requiredPermission="company.review"
             type="button"
             className="btn"
             onClick={() => setPending("approve")}
@@ -269,8 +272,8 @@ function SuggestionRowView({
             aria-label={`Godkend ${row.kindLabel}`}
           >
             {busy === "approve" ? "Godkender…" : "Godkend"}
-          </button>
-          <button
+          </Button>
+          <Button requiredPermission="company.review" variant="secondary"
             type="button"
             className="btn secondary"
             onClick={() => setPending("reject")}
@@ -278,7 +281,7 @@ function SuggestionRowView({
             aria-label={`Afvis ${row.kindLabel}`}
           >
             {busy === "reject" ? "Afviser…" : "Afvis"}
-          </button>
+          </Button>
         </div>
         {pending === "approve" && (
           <ConfirmDialog
@@ -293,7 +296,7 @@ function SuggestionRowView({
             onConfirm={async () => {
               await doApprove();
             }}
-            onClose={() => setPending(null)}
+            onClose={() => setPending(null)} onRefresh={onChanged}
           />
         )}
         {pending === "reject" && (
@@ -313,10 +316,18 @@ function SuggestionRowView({
             onConfirm={async (note) => {
               await doReject(note);
             }}
-            onClose={() => setPending(null)}
+            onClose={() => setPending(null)} onRefresh={onChanged}
           />
         )}
       </td>
     </tr>
   );
 }
+
+const viewStyles = stylex.create({
+site0: { marginTop: "1.5rem" },
+site1: { fontSize: "0.85em" },
+site2: { margin: 0 },
+site3: { margin: "0.25rem 0 0 0", fontSize: "0.9em" },
+site4: { margin: "0.25rem 0 0 0", fontSize: "0.9em" }
+});

@@ -1,3 +1,8 @@
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { parseDanishAmount } from "../lib/format";
+import { useDiscardGuard } from "../lib/useDiscardGuard";
+import * as stylex from "@stylexjs/stylex";
+import { ButtonLink, Dialog, Button, Input, PageHeader, Select, MoneyInput } from "../components/ui";
 // Anlægskartotek — the per-company fixed-asset view (#336).
 //
 // Renders `/api/companies/:slug/assets`: every capitalised asset with its
@@ -22,7 +27,7 @@
 // re-implements the schedule.
 
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { formatKroner, todayIso } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
@@ -42,14 +47,14 @@ const DEFAULT_THRESHOLD_RULE =
 
 export function AssetsView() {
   const { slug = "" } = useParams();
-  const state = useAsync<CompanyAssets>(() => api.assets(slug), [slug]);
+  const state = useAsync<CompanyAssets>((signal) => api.assets(slug, { signal }), [slug]);
   const [registerOpen, setRegisterOpen] = useState(false);
   const [writeOffOpen, setWriteOffOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
   if (state.loading && !state.data)
     return <Loading label="Henter anlægskartotek…" />;
-  if (state.error)
+  if (state.error && !state.data)
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const data = state.data!;
@@ -57,20 +62,21 @@ export function AssetsView() {
 
   return (
     <section className="statement">
-      <div className="page-head">
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+      <PageHeader title="Anlæg" actions={<><div className="row-actions">
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+            Administrér
+          </ButtonLink>
+        </div></>}>
         <div>
-          <h2>{data.company.name}</h2>
+
           <p className="muted">
             {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
             {data.company.country} · {currency} · Anlæg
           </p>
         </div>
-        <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </div>
+
+      </PageHeader>
 
       <p className="statement-asof muted">
         Anlægskartoteket — kapitaliserede aktiver, deres afskrivninger og
@@ -110,8 +116,8 @@ export function AssetsView() {
         </div>
       </div>
 
-      <div className="row-actions" style={{ marginTop: "1rem" }}>
-        <button
+      <div className={["row-actions", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
+        <Button requiredPermission="company.ledger.post"
           type="button"
           className="btn"
           onClick={() => {
@@ -120,8 +126,8 @@ export function AssetsView() {
           }}
         >
           Registrér anlæg
-        </button>
-        <button
+        </Button>
+        <Button requiredPermission="company.ledger.post" variant="secondary"
           type="button"
           className="btn secondary"
           onClick={() => {
@@ -130,7 +136,7 @@ export function AssetsView() {
           }}
         >
           Straksafskriv
-        </button>
+        </Button>
       </div>
 
       {actionError ? (
@@ -139,7 +145,7 @@ export function AssetsView() {
         </div>
       ) : null}
 
-      <h3 style={{ marginTop: "1.5rem" }}>Kapitaliserede anlæg</h3>
+      <h3 {...stylex.props(viewStyles.site1)}>Kapitaliserede anlæg</h3>
       {data.assets.length === 0 ? (
         <div className="card archived-notice">
           <p className="muted">
@@ -194,7 +200,7 @@ export function AssetsView() {
         </div>
       )}
 
-      <h3 style={{ marginTop: "1.5rem" }}>Straksafskrivninger</h3>
+      <h3 {...stylex.props(viewStyles.site2)}>Straksafskrivninger</h3>
       {data.writeOffs.length === 0 ? (
         <div className="card archived-notice">
           <p className="muted">
@@ -237,6 +243,7 @@ export function AssetsView() {
         <RegisterAssetModal
           slug={slug}
           onClose={() => setRegisterOpen(false)}
+          onRefresh={state.reload}
           onCreated={() => {
             setRegisterOpen(false);
             setActionError(null);
@@ -250,6 +257,7 @@ export function AssetsView() {
         <WriteOffModal
           slug={slug}
           onClose={() => setWriteOffOpen(false)}
+          onRefresh={state.reload}
           onCreated={() => {
             setWriteOffOpen(false);
             setActionError(null);
@@ -320,7 +328,7 @@ function AssetRowView({
         </span>
       </td>
       <td>
-        <button
+        <Button requiredPermission="company.ledger.post" variant="secondary"
           type="button"
           className="btn secondary"
           onClick={() => setPending(true)}
@@ -328,7 +336,7 @@ function AssetRowView({
           aria-label={`Beregn afskrivning for ${row.name}`}
         >
           {busy ? "Bogfører…" : "Beregn afskrivning"}
-        </button>
+        </Button>
         {pending && (
           <ConfirmDialog
             title={`Bogfør afskrivning: ${row.name}`}
@@ -344,7 +352,7 @@ function AssetRowView({
             onConfirm={async () => {
               await doDepreciate();
             }}
-            onClose={() => setPending(false)}
+            onClose={() => setPending(false)} onRefresh={onPosted}
           />
         )}
       </td>
@@ -373,17 +381,19 @@ function WriteOffRow({
 }
 
 function useDocumentPicker(slug: string) {
-  return useAsync<CompanyDocuments>(() => api.documents(slug), [slug]);
+  return useAsync<CompanyDocuments>((signal) => api.documents(slug, { signal }), [slug]);
 }
 
 function RegisterAssetModal({
   slug,
-  onClose,
+  onClose: onDismiss,
+  onRefresh,
   onCreated,
   onError,
 }: {
   slug: string;
   onClose: () => void;
+  onRefresh: () => void;
   onCreated: () => void;
   onError: (msg: string) => void;
 }) {
@@ -399,14 +409,19 @@ function RegisterAssetModal({
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const outcome = useMutationOutcome(onRefresh);
+  const guard = useDiscardGuard(Boolean(name || cost || purchaseDocumentId || note) || category !== "hardware" || acquisitionDate !== todayIso() || usefulLifeMonths !== "36", onDismiss);
+  const { onClose } = guard;
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (outcome.isBlocked()) return;
     setBusy(true);
     try {
-      const costNumber = Number(cost);
+      const costNumber = parseDanishAmount(cost);
       const months = Number(usefulLifeMonths);
       const docId = Number(purchaseDocumentId);
-      if (!Number.isFinite(costNumber) || costNumber <= 0) {
+      if (costNumber === null || costNumber <= 0) {
         throw new Error("Kostprisen skal være et positivt tal.");
       }
       if (!Number.isInteger(months) || months <= 0) {
@@ -423,7 +438,8 @@ function RegisterAssetModal({
         usefulLifeMonths: months,
         purchaseDocumentId: docId,
         ...(note.trim() ? { note: note.trim() } : {}),
-      });
+      }).catch(outcome.reject);
+      guard.dismiss();
       onCreated();
     } catch (err) {
       onError(
@@ -441,13 +457,15 @@ function RegisterAssetModal({
   const docRows: DocumentRow[] = docs.data?.documents ?? [];
 
   return (
-    <div className="modal-overlay" role="dialog" aria-modal="true">
-      <div className="card modal-card">
-        <h3>Registrér nyt anlæg</h3>
+    <Dialog title="Registrér nyt anlæg" onClose={onClose} busy={busy}>
+    {outcome.feedback}
+      {guard.confirmation}
+
+
         <form onSubmit={handleSubmit}>
           <label>
             <span>Navn</span>
-            <input
+            <Input disabled={outcome.blocked}
               type="text"
               required
               value={name}
@@ -456,7 +474,7 @@ function RegisterAssetModal({
           </label>
           <label>
             <span>Kategori</span>
-            <input
+            <Input disabled={outcome.blocked}
               type="text"
               required
               value={category}
@@ -465,7 +483,7 @@ function RegisterAssetModal({
           </label>
           <label>
             <span>Anskaffet (YYYY-MM-DD)</span>
-            <input
+            <Input disabled={outcome.blocked}
               type="date"
               required
               value={acquisitionDate}
@@ -474,18 +492,15 @@ function RegisterAssetModal({
           </label>
           <label>
             <span>Kostpris (kr.)</span>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
+            <MoneyInput disabled={outcome.blocked}
               required
               value={cost}
-              onChange={(e) => setCost(e.target.value)}
+              onValueChange={(e) => setCost(e)}
             />
           </label>
           <label>
             <span>Levetid (måneder, lineær afskrivning)</span>
-            <input
+            <Input disabled={outcome.blocked}
               type="number"
               step="1"
               min="1"
@@ -496,7 +511,7 @@ function RegisterAssetModal({
           </label>
           <label>
             <span>Bilag (købsdokument)</span>
-            <select
+            <Select disabled={outcome.blocked}
               required
               value={purchaseDocumentId}
               onChange={(e) => setPurchaseDocumentId(e.target.value)}
@@ -508,43 +523,45 @@ function RegisterAssetModal({
                   {d.supplierName ?? "ukendt leverandør"}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <label>
             <span>Note (valgfri)</span>
-            <input
+            <Input disabled={outcome.blocked}
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />
           </label>
           <div className="row-actions">
-            <button type="submit" className="btn" disabled={busy}>
+            <Button requiredPermission="company.ledger.post" type="submit" className="btn" disabled={outcome.blocked || (busy)}>
               {busy ? "Opretter…" : "Registrér anlæg"}
-            </button>
-            <button
+            </Button>
+            <Button variant="secondary"
               type="button"
               className="btn secondary"
               onClick={onClose}
               disabled={busy}
             >
               Annullér
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+
+    </Dialog>
   );
 }
 
 function WriteOffModal({
   slug,
-  onClose,
+  onClose: onDismiss,
+  onRefresh,
   onCreated,
   onError,
 }: {
   slug: string;
   onClose: () => void;
+  onRefresh: () => void;
   onCreated: () => void;
   onError: (msg: string) => void;
 }) {
@@ -566,13 +583,18 @@ function WriteOffModal({
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const outcome = useMutationOutcome(onRefresh);
+  const guard = useDiscardGuard(Boolean(name || cost || purchaseDocumentId || note) || category !== "smaaanskaffelser" || acquisitionDate !== todayIso() || transactionDate !== todayIso() || expenseAccountNo !== DEFAULT_EXPENSE_ACCOUNT || thresholdRuleSource !== DEFAULT_THRESHOLD_RULE, onDismiss);
+  const { onClose } = guard;
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (outcome.isBlocked()) return;
     setBusy(true);
     try {
-      const costNumber = Number(cost);
+      const costNumber = parseDanishAmount(cost);
       const docId = Number(purchaseDocumentId);
-      if (!Number.isFinite(costNumber) || costNumber <= 0) {
+      if (costNumber === null || costNumber <= 0) {
         throw new Error("Beløbet skal være positivt.");
       }
       if (!Number.isInteger(docId) || docId <= 0) {
@@ -593,7 +615,8 @@ function WriteOffModal({
         expenseAccountNo: expenseAccountNo.trim(),
         thresholdRuleSource: thresholdRuleSource.trim(),
         ...(note.trim() ? { note: note.trim() } : {}),
-      });
+      }).catch(outcome.reject);
+      guard.dismiss();
       onCreated();
     } catch (err) {
       onError(
@@ -611,9 +634,11 @@ function WriteOffModal({
   const docRows: DocumentRow[] = docs.data?.documents ?? [];
 
   return (
-    <div className="modal-overlay" role="dialog" aria-modal="true">
-      <div className="card modal-card">
-        <h3>Straksafskriv småanskaffelse</h3>
+    <Dialog title="Straksafskriv småanskaffelse" onClose={onClose} busy={busy}>
+    {outcome.feedback}
+      {guard.confirmation}
+
+
         <p className="muted">
           Straksafskrivning er en skattemæssig vurdering — du bekræfter med en
           eksplicit hjemmelshenvisning, og handlingen bogføres som en udgift
@@ -622,7 +647,7 @@ function WriteOffModal({
         <form onSubmit={handleSubmit}>
           <label>
             <span>Navn</span>
-            <input
+            <Input disabled={outcome.blocked}
               type="text"
               required
               value={name}
@@ -631,7 +656,7 @@ function WriteOffModal({
           </label>
           <label>
             <span>Kategori</span>
-            <input
+            <Input disabled={outcome.blocked}
               type="text"
               required
               value={category}
@@ -640,7 +665,7 @@ function WriteOffModal({
           </label>
           <label>
             <span>Anskaffet (YYYY-MM-DD)</span>
-            <input
+            <Input disabled={outcome.blocked}
               type="date"
               required
               value={acquisitionDate}
@@ -649,7 +674,7 @@ function WriteOffModal({
           </label>
           <label>
             <span>Bogføringsdato</span>
-            <input
+            <Input disabled={outcome.blocked}
               type="date"
               required
               value={transactionDate}
@@ -658,18 +683,15 @@ function WriteOffModal({
           </label>
           <label>
             <span>Beløb (kr.)</span>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
+            <MoneyInput disabled={outcome.blocked}
               required
               value={cost}
-              onChange={(e) => setCost(e.target.value)}
+              onValueChange={(e) => setCost(e)}
             />
           </label>
           <label>
             <span>Bilag (købsdokument)</span>
-            <select
+            <Select disabled={outcome.blocked}
               required
               value={purchaseDocumentId}
               onChange={(e) => setPurchaseDocumentId(e.target.value)}
@@ -681,11 +703,11 @@ function WriteOffModal({
                   {d.supplierName ?? "ukendt leverandør"}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <label>
             <span>Udgiftskonto</span>
-            <input
+            <Input disabled={outcome.blocked}
               type="text"
               required
               value={expenseAccountNo}
@@ -694,7 +716,7 @@ function WriteOffModal({
           </label>
           <label>
             <span>Hjemmelshenvisning (tærskelregel)</span>
-            <input
+            <Input disabled={outcome.blocked}
               type="text"
               required
               value={thresholdRuleSource}
@@ -703,27 +725,33 @@ function WriteOffModal({
           </label>
           <label>
             <span>Note (valgfri)</span>
-            <input
+            <Input disabled={outcome.blocked}
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />
           </label>
           <div className="row-actions">
-            <button type="submit" className="btn" disabled={busy}>
+            <Button requiredPermission="company.ledger.post" type="submit" className="btn" disabled={outcome.blocked || (busy)}>
               {busy ? "Bogfører…" : "Straksafskriv"}
-            </button>
-            <button
+            </Button>
+            <Button variant="secondary"
               type="button"
               className="btn secondary"
               onClick={onClose}
               disabled={busy}
             >
               Annullér
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+
+    </Dialog>
   );
 }
+
+const viewStyles = stylex.create({
+site0: { marginTop: "1rem" },
+site1: { marginTop: "1.5rem" },
+site2: { marginTop: "1.5rem" }
+});

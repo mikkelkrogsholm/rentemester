@@ -1,3 +1,4 @@
+import { ButtonLink, PageHeader } from "../components/ui";
 // Resultatopgørelse — the per-company income statement (cockpit-redesign it. 2).
 //
 // Renders `/api/companies/:slug/income-statement?year=`: income accounts and
@@ -22,7 +23,7 @@ export function IncomeStatementView() {
   const { slug = "" } = useParams();
   const { year, setYear } = useCompanyYear();
   const state = useAsync<CompanyIncomeStatement>(
-    () => api.incomeStatement(slug, year),
+    (signal) => api.incomeStatement(slug, year, { signal }),
     [slug, year],
   );
 
@@ -38,15 +39,7 @@ export function IncomeStatementView() {
 
   return (
     <section className="statement">
-      <div className="page-head">
-        <div>
-          <h2>{s.company.name}</h2>
-          <p className="muted">
-            {s.company.cvr ? `CVR ${s.company.cvr} · ` : ""}
-            {s.company.country} · {currency} · Resultatopgørelse
-          </p>
-        </div>
-        <div className="row-actions">
+      <PageHeader title="Resultatopgørelse" actions={<><div className="row-actions">
           {/* #372 — CSV-eksport til Excel/Numbers/Sheets.
               #463 — PDF-eksport, ren printbar uden cockpit-chrome. */}
           <a
@@ -63,11 +56,19 @@ export function IncomeStatementView() {
           >
             Hent PDF
           </a>
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
-          </Link>
+          </ButtonLink>
+        </div></>}>
+        <div>
+
+          <p className="muted">
+            {s.company.cvr ? `CVR ${s.company.cvr} · ` : ""}
+            {s.company.country} · {currency} · Resultatopgørelse
+          </p>
         </div>
-      </div>
+
+      </PageHeader>
 
       <CompanyNav
         slug={slug}
@@ -80,7 +81,7 @@ export function IncomeStatementView() {
         <ArchivedBanner year={s.selectedYear} source={s.archivedSource} />
       )}
       <div className="card statement-card">
-        <table className="data statement-table">
+        <div className="table-scroll"><table className="data statement-table">
           <thead>
             <tr>
               <th>Konto</th>
@@ -118,7 +119,7 @@ export function IncomeStatementView() {
               </td>
             </tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
     </section>
   );

@@ -1,10 +1,11 @@
+import { ButtonLink, PageHeader } from "../components/ui";
 // Portfolio overview — the workspace-level landing page.
 //
 // A cross-company roll-up strip answers "how is the whole portfolio doing",
 // and one card per company shows the headline health an owner judges a
 // company on. Companies that need attention sort to the top and are flagged.
 
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { formatKroner, sortByAttention } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
@@ -14,7 +15,7 @@ import { Onboarding } from "./Onboarding";
 
 export function PortfolioView() {
   const navigate = useNavigate();
-  const state = useAsync(() => api.portfolio(), []);
+  const state = useAsync((signal) => api.portfolio(undefined, { signal }), []);
 
   if (state.loading) return <Loading label="Henter portefølje…" />;
   if (state.error)
@@ -46,19 +47,19 @@ export function PortfolioView() {
 
   return (
     <section>
-      <div className="page-head">
+      <PageHeader title="Portefølje" actions={<><ButtonLink className="btn" to="/companies/new">
+          Tilføj virksomhed
+        </ButtonLink></>}>
         <div>
-          <h2>Portefølje</h2>
+
           <p className="muted">
             {portfolio.companyCount} virksomhed
             {portfolio.companyCount === 1 ? "" : "er"} · {needAttention} kræver
             opmærksomhed · pr. {portfolio.asOf}
           </p>
         </div>
-        <Link className="btn" to="/companies/new">
-          Tilføj virksomhed
-        </Link>
-      </div>
+
+      </PageHeader>
 
       {rollup && (
         <div className="rollup-strip" role="group" aria-label="Tværgående overblik">
@@ -77,7 +78,7 @@ export function PortfolioView() {
             </span>
           </div>
           <div className="rollup-cell">
-            <span className="rollup-label">Moms at betale</span>
+            <span className="rollup-label">{rollup.vatPayable < 0 ? "Moms til gode" : "Moms at betale"}</span>
             <span className="rollup-value">
               {formatKroner(rollup.vatPayable)}
             </span>

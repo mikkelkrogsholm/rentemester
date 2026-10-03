@@ -6,74 +6,29 @@
    document rather than a generic SaaS dashboard. No shadows, no gradients,
    near-square shapes, sparing accent. Amounts use a tabular monospace.
 
-   This is the FOUNDATION token layer (cockpit-redesign iteration 0). Views are
-   redesigned in later iterations; here we only establish tokens + base styles.
+   Tokens are generated from DESIGN.md. StyleX owns shared controls and local
+   component styles; this stylesheet owns semantic report and responsive layout.
    ========================================================================== */
 
-:root {
-  /* ---- colour (DESIGN.md palette) ------------------------------------- */
-  --color-paper: #f4f1eb;
-  --color-paper-raised: #fbf8f3;
-  --color-ink: #1b1a17;
-  --color-ink-muted: #4c4740;
-  --color-accent: #a6332a;
-  --color-on-accent: #f4f1eb;
-  --color-danger: #8f2a22;
-  --color-success: #2e5e4e;
-  --color-warning: #8a5a12;
-  --color-info: #2d5673;
-  --color-accent-soft: #e8d7d3;
-  --color-danger-soft: #eed9d6;
-  --color-success-soft: #dce8e1;
-  --color-warning-soft: #eee3d1;
-  --color-info-soft: #d9e4eb;
-  /* Hairline borders are an ink-muted tint, not a hard line. */
-  --color-border: #d8d2c6;
-  --color-border-strong: #b7af9f;
+@import "@fontsource/ibm-plex-sans/latin-400.css";
+@import "@fontsource/ibm-plex-sans/latin-500.css";
+@import "@fontsource/ibm-plex-sans/latin-600.css";
+@import "@fontsource/ibm-plex-sans/latin-700.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
+@import "@fontsource/source-serif-4/latin-500.css";
+@import "@fontsource/source-serif-4/latin-600.css";
+@import "@fontsource/source-serif-4/latin-700.css";
+@import "./design/tokens.css";
 
-  /* ---- typography ----------------------------------------------------- */
-  --font-headline: "Source Serif 4", "Iowan Old Style", Georgia, serif;
-  --font-body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --text-size-body: 16px;
-  --text-line-height: 1.5;
-  --text-size-xs: 11px;
-  --text-size-sm: 13px;
-  --text-size-md: 14px;
-  --text-size-lg: 18px;
-  --text-size-xl: 22px;
-  --text-size-2xl: 28px;
+@layer reset, base, legacy, layout;
+@layer base {
+:root {
   --text-weight-regular: 400;
   --text-weight-medium: 500;
   --text-weight-semibold: 600;
   --text-weight-bold: 700;
-
-  /* ---- spacing (8px grid, DESIGN.md) ---------------------------------- */
-  --space-xxs: 4px;
-  --space-xs: 8px;
-  --space-sm: 12px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-  --space-2xl: 48px;
-
-  /* ---- radius (near-square, DESIGN.md) -------------------------------- */
-  --radius-sm: 2px;
-  --radius-md: 4px;
-  --radius-lg: 8px;
-
-  /* ---- elevation -----------------------------------------------------
-     DESIGN.md: no shadows or glass in v1 — hierarchy comes from spacing,
-     borders and paper tones. The token exists so depth stays centralised. */
   --shadow-none: none;
-
-  /* ---- layout --------------------------------------------------------- */
-  --layout-max-width: 1100px;
-
-  /* ---- semantic role aliases -----------------------------------------
-     The rest of the stylesheet references these roles, never raw colours,
-     so a future theme is a single edit here. */
   --bg: var(--color-paper);
   --surface: var(--color-paper-raised);
   --surface-2: var(--color-paper);
@@ -88,12 +43,13 @@
   --ok: var(--color-success);
   --info: var(--color-info);
   --radius: var(--radius-md);
-
   color-scheme: light;
   font-family: var(--font-body);
   font-size: var(--text-size-body);
   line-height: var(--text-line-height);
 }
+}
+@layer legacy {
 
 /* ==========================================================================
    Base element styles
@@ -230,12 +186,10 @@ td.num,
 .account-revoke { border: 0; background: transparent; color: var(--text-dim); font-size: var(--text-size-xs); text-decoration: underline; }
 .account-error { color: var(--critical); font-size: var(--text-size-xs); max-width: 220px; }
 .company-switcher select { max-width: 190px; }
-.session-panel { position: absolute; z-index: 20; right: 0; top: calc(100% + var(--space-xs)); width: min(360px, 90vw); padding: var(--space-sm); border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); box-shadow: var(--shadow-none); }
-.session-panel h2 { margin: 0 0 var(--space-xs); font-size: var(--text-size-md); }
-.session-panel ul { display: grid; gap: var(--space-xs); margin: 0; padding: 0; list-style: none; }
-.session-panel li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); }
-.session-panel li span { display: grid; }
-.session-panel small { color: var(--text-dim); }
+.account-panel ul { display: grid; gap: var(--space-sm); margin: 0 0 var(--space-md); padding: 0; list-style: none; }
+.account-panel li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-sm); }
+.account-panel li span { display: grid; }
+.account-panel small { color: var(--text-dim); }
 
 .auth-panel { max-width: 460px; margin: 12vh auto 0; padding: var(--space-lg); }
 .auth-panel h1 { margin-top: 0; }
@@ -279,41 +233,6 @@ td.num,
 .group-card ul, .group-blockers ul { margin-top: 0; }
 .group-readiness { font-size: var(--text-size-sm); font-weight: var(--text-weight-medium); }
 .group-readiness.blocked { color: var(--color-danger); }
-
-/* ==========================================================================
-   Buttons (DESIGN.md: near-square, no pill buttons)
-   ========================================================================== */
-
-.btn {
-  background: var(--color-ink);
-  color: var(--color-paper);
-  border: 1px solid var(--color-ink);
-  border-radius: var(--radius-md);
-  padding: var(--space-xs) var(--space-md);
-  font-size: var(--text-size-md);
-  font-weight: var(--text-weight-medium);
-}
-.btn:hover {
-  background: var(--color-ink-muted);
-  border-color: var(--color-ink-muted);
-}
-.btn.secondary {
-  background: var(--surface);
-  color: var(--text);
-  border-color: var(--border-strong);
-}
-.btn.secondary:hover {
-  background: var(--bg);
-}
-.btn.danger {
-  background: var(--color-danger);
-  border-color: var(--color-danger);
-  color: var(--color-paper);
-}
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
 /* ==========================================================================
    Banners & state
@@ -643,36 +562,6 @@ td.num,
    Modal dialog (#213) — shared by the Cockpit write actions
    ========================================================================== */
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(27, 26, 23, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-md);
-  z-index: 100;
-}
-.modal {
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
-  width: 100%;
-  max-width: 460px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-}
-/* A `.card` rendered inside `.modal-overlay` (AssetsView's wider forms).
-   Without the max-width the flex-centered card would stretch to the full
-   overlay width on large screens. Audit UI-1. */
-.modal-card {
-  width: 100%;
-  max-width: 560px;
-  max-height: calc(100vh - 2 * var(--space-md));
-  overflow-y: auto;
-}
 /* Title row with a Luk button on the right (MileageRegisterModal). */
 .modal-head {
   display: flex;
@@ -753,7 +642,7 @@ td.num,
 .invoice-line-row .modal-field {
   min-width: 0;
 }
-.invoice-line-row .btn {
+.invoice-line-row button {
   grid-column: 1 / -1;
   justify-self: start;
 }
@@ -793,7 +682,7 @@ td.num,
   font-size: var(--text-size-sm);
   color: var(--text-dim);
 }
-.task-row .btn {
+.task-row button {
   flex: none;
   padding: var(--space-xxs) var(--space-sm);
   font-size: var(--text-size-sm);
@@ -1063,7 +952,7 @@ table.data.compact tr:last-child td {
   margin: 0 0 var(--space-xs);
   font-size: var(--text-size-lg);
 }
-.archived-notice .btn {
+.archived-notice a {
   margin-top: var(--space-md);
 }
 
@@ -1788,4 +1677,114 @@ table.statement-table td.num.muted {
 }
 .help-view .help-grid li + li {
   margin-top: var(--space-xs);
+}
+
+}
+
+/* Responsive patterns retained as the semantic layout for domain pages. */
+@layer layout {
+  .workspace-layout { grid-template-columns: minmax(0, 1fr); }
+  .topbar { max-width: 1440px; margin-inline: auto; padding: 12px 24px; border-bottom: 1px solid var(--border); gap: 16px; align-items: center; }
+  .brand { font-family: var(--font-headline); font-size: 22px; color: var(--text); white-space: nowrap; }
+  .global-navigation { margin-left: auto; }
+  .global-navigation summary { cursor: pointer; padding: 8px 12px; border: 1px solid var(--border-strong); border-radius: 4px; list-style: none; }
+  .global-links { display: grid; min-width: 220px; gap: 8px; padding: 16px; background: var(--surface); border: 1px solid var(--border); position: absolute; z-index: 30; right: 16px; }
+  .skip-link { position: absolute; left: 16px; top: -100px; background: var(--surface); padding: 12px; z-index: 100; }
+  .skip-link:focus { top: 8px; }
+  .mobile-menu-trigger, .mobile-filter-toggle { display: none; }
+  .company-context .year-selector { margin: 0; }
+  .statement, .dashboard, .portfolio { min-width: 0; }
+  .page-head { flex-wrap: wrap; }
+  .card-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); }
+  .kpi-value, .amount, td.amount, .metric-value { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .kpi-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .kpi { min-width: 0; }
+  .kpi-value { max-width: 100%; overflow-x: auto; }
+  .table-wrap { max-width: 100%; overflow-x: auto; }
+  .filter-bar, .ui-filter-fields { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+  .filter-bar label, .ui-filter-fields label { display: grid; gap: 4px; min-width: 140px; flex: 1 1 140px; }
+  .filter-bar input, .filter-bar select { width: 100%; }
+  .ui-filter-fields input, .ui-filter-fields select { width: 100%; }
+  .workflow-with-document { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 24px; align-items: start; }
+  .workflow-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-md); min-width: 0; }
+  .workflow-form > * { min-width: 0; max-width: 100%; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: var(--space-md); }
+  .form-grid > label { display: grid; gap: var(--space-xxs); min-width: 0; }
+  .full-width { grid-column: 1 / -1; }
+  .workflow-progress { display: flex; flex-wrap: wrap; gap: var(--space-sm); list-style: none; padding: 0; margin-block: var(--space-md); }
+  .workflow-document { padding: 16px; background: var(--surface); border: 1px solid var(--border); min-width: 0; }
+  .document-preview { width: 100%; min-height: 450px; border: 1px solid var(--border); }
+  .invoice-lines { border-top: 1px solid var(--border); padding-top: 16px; }
+  .workflow-page .modal-actions { background: var(--bg); padding-block: 16px; }
+  html:has(dialog[open]) { overflow: hidden; }
+  @media (max-width: 1023px) {
+    .mobile-menu-trigger { display: inline-flex; }
+    .topbar { padding: 8px 16px; }
+    .workflow-with-document { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 639px) {
+    .topbar { flex-wrap: wrap; gap: 8px; }
+    .topbar .brand { font-size: 20px; }
+    .topbar .build-version { display: none; }
+    .company-context { align-items: flex-start; }
+    .company-context label { display: grid; gap: 4px; }
+    .company-context select { max-width: 100%; }
+    .kpi-row { grid-template-columns: minmax(0, 1fr); }
+    .kpi, .kpi.emphasised { padding: var(--space-md); }
+    .kpi .kpi-value, .kpi.emphasised .kpi-value { font-size: var(--text-size-xl); }
+    .mobile-filter-toggle { display: inline-flex; }
+    .ui-filter-fields { display: none; margin-top: 12px; }
+    .ui-filter-fields.expanded { display: grid; grid-template-columns: minmax(0, 1fr); }
+    .ui-filter-fields label { min-width: 0; }
+    .filter-bar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+    .filter-bar label { min-width: 0; }
+    .daily-table, .daily-table tbody { display: block; width: 100%; }
+    .daily-table thead { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .daily-table tr { display: grid; border: 1px solid var(--border); background: var(--surface); margin-block: 12px; padding: 8px; }
+    .daily-table td { display: grid; grid-template-columns: minmax(90px, 0.4fr) minmax(0, 1fr); gap: 8px; padding: 8px; border: 0; min-width: 0; text-align: left; white-space: normal; overflow-wrap: anywhere; }
+    .daily-table td::before { content: attr(data-label); font: 500 14px var(--font-body); color: var(--text-dim); }
+    .daily-table td .amount { white-space: nowrap; }
+    .row-actions { flex-wrap: wrap; }
+    .modal-actions { flex-wrap: wrap; }
+    .account-menu { width: 100%; flex-wrap: wrap; }
+    .account-email { max-width: 100%; overflow-wrap: anywhere; }
+  }
+  @media print {
+    .topbar, aside, .company-context, .row-actions, .ui-filter-bar { display: none !important; }
+    .cockpit-layout { display: block; }
+    .table-wrap { overflow: visible; }
+  }
+}
+@layer layout {
+  .lock-message { margin: 4px 0 0; }
+  .accountant-export { margin-top: 24px; max-width: 460px; }
+  .section-title { margin-top: 0; }
+  .gallery { max-width: 1100px; margin-inline: auto; padding: 24px; }
+  .gallery section { margin-block: 32px; }
+  .gallery-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 24px; }
+}
+
+@layer layout {
+  .app-shell { padding: 0 0 48px; }
+  .topbar { margin-bottom: 0; }
+  .brand .build-version { color: var(--text-dim); }
+  @media (max-width: 639px) {
+    .app-shell { padding-inline: 0; }
+    .ui-filter-fields { display: grid; grid-template-columns: minmax(0, 1fr); }
+    .ui-filter-fields:not(.expanded) > :not(:first-child) { display: none; }
+    .daily-list table, .daily-list tbody { display: block; width: 100%; }
+    .daily-list thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .daily-list tr { display: grid; padding: 8px; margin-block: 12px; border: 1px solid var(--border); background: var(--surface); }
+    .daily-list td { display: grid; grid-template-columns: minmax(90px, 0.4fr) minmax(0, 1fr); gap: 8px; border: 0; padding: 8px; text-align: left; white-space: normal; overflow-wrap: anywhere; }
+    .daily-list td::before { content: attr(data-label); font: 500 14px var(--font-body); color: var(--text-dim); }
+  }
+}
+
+@layer layout {
+  .navigation-dialog-actions { position: sticky; top: 0; z-index: 1; display: flex; justify-content: flex-end; padding-block: var(--space-xs); margin-bottom: var(--space-xs); background: var(--surface); border-bottom: 1px solid var(--border); }
+  .chart-data { margin-top: var(--space-md); }
+  .chart-data summary { min-height: 44px; cursor: pointer; padding-block: var(--space-xs); }
+  @media (prefers-reduced-motion: reduce) {
+    .kpi-link, .status-card-link, .company-areas button, .company-destinations a { transition: none; }
+  }
 }

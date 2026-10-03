@@ -4,31 +4,34 @@ import type {
   JournalResponse,
   TrialBalanceResponse,
 } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 export const statementsApi = {
-  incomeStatement: (slug: string, year?: string) =>
+  incomeStatement: (slug: string, year?: string, options?: ReadRequestOptions) =>
     request<IncomeStatementResponse>(
       `/api/companies/${encodeURIComponent(slug)}/income-statement${
         year ? `?year=${encodeURIComponent(year)}` : ""
       }`,
+      options,
     ).then((r) => r.incomeStatement),
 
-  balance: (slug: string, year?: string) =>
+  balance: (slug: string, year?: string, options?: ReadRequestOptions) =>
     request<BalanceResponse>(
       `/api/companies/${encodeURIComponent(slug)}/balance${
         year ? `?year=${encodeURIComponent(year)}` : ""
       }`,
+      options,
     ).then((r) => r.balance),
 
-  trialBalance: (slug: string, year?: string) =>
+  trialBalance: (slug: string, year?: string, options?: ReadRequestOptions) =>
     request<TrialBalanceResponse>(
       `/api/companies/${encodeURIComponent(slug)}/trial-balance${
         year ? `?year=${encodeURIComponent(year)}` : ""
       }`,
+      options,
     ).then((r) => r.trialBalance),
 
-  journal: (slug: string, year?: string, account?: string) => {
+  journal: (slug: string, year?: string, account?: string, options?: ReadRequestOptions) => {
     const params = new URLSearchParams();
     if (year) params.set("year", year);
     if (account) params.set("account", account);
@@ -37,6 +40,7 @@ export const statementsApi = {
       `/api/companies/${encodeURIComponent(slug)}/journal${
         query ? `?${query}` : ""
       }`,
+      options,
     ).then((r) => r.journal);
   },
 

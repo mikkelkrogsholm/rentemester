@@ -1,3 +1,4 @@
+import { ButtonLink, Button, Input, PageHeader, Select, Pagination, FilterBar } from "../components/ui";
 // Bank — the per-company bank transactions (cockpit-redesign iteration 3).
 //
 // Renders `/api/companies/:slug/bank?year=`: the imported bank_transactions
@@ -15,7 +16,7 @@
 // — og hvor mange af dem der er afstemt vs. uafstemte.
 
 import { useMemo, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { formatDateDa, formatKroner } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
@@ -52,7 +53,7 @@ export function BankView() {
   const { slug = "" } = useParams();
   const { year, setYear } = useCompanyYear();
   const [params, setParams] = useSearchParams();
-  const state = useAsync<CompanyBank>(() => api.bank(slug, year), [slug, year]);
+  const state = useAsync<CompanyBank>((signal) => api.bank(slug, year, { signal }), [slug, year]);
   // True while the bank-CSV-import modal (#213, slice 2) is open.
   const [importing, setImporting] = useState(false);
   // The unmatched row currently being settled from the cockpit (#365). Null
@@ -72,9 +73,10 @@ export function BankView() {
   // #451 — sorter for the date/amount columns. Default is the import order
   // (chronological as inserted); only after the owner clicks a column-header
   // do we override that order.
-  const [sort, setSort] = useState<{ key: SortKey; dir: SortDir } | null>(
-    null,
-  );
+  const sortKey = params.get("sort");
+  const sort: { key: SortKey; dir: SortDir } | null = sortKey === "date" || sortKey === "amount"
+    ? { key: sortKey, dir: params.get("direction") === "desc" ? "desc" : "asc" } : null;
+
 
   function setFilter(key: (typeof FILTER_PARAM_KEYS)[number], value: string) {
     const next = new URLSearchParams(params);
@@ -83,12 +85,14 @@ export function BankView() {
     } else {
       next.set(key, value);
     }
+    next.delete("page");
     setParams(next, { replace: true });
   }
 
   function clearAllFilters() {
     const next = new URLSearchParams(params);
     for (const k of FILTER_PARAM_KEYS) next.delete(k);
+    next.delete("page");
     setParams(next, { replace: true });
   }
 
@@ -100,11 +104,11 @@ export function BankView() {
     transactionId !== null;
 
   function toggleSort(key: SortKey) {
-    setSort((prev) => {
-      if (!prev || prev.key !== key) return { key, dir: "asc" };
-      if (prev.dir === "asc") return { key, dir: "desc" };
-      return null;
-    });
+    const next = new URLSearchParams(params);
+    if (!sort || sort.key !== key) { next.set("sort", key); next.set("direction", "asc"); }
+    else if (sort.dir === "asc") next.set("direction", "desc");
+    else { next.delete("sort"); next.delete("direction"); }
+    next.delete("page"); setParams(next, { replace: true });
   }
 
   function sortIndicator(key: SortKey): string {
@@ -151,8 +155,18 @@ export function BankView() {
     return out;
   }, [filteredTransactions, sort]);
 
+  const requestedSize = Number(params.get("pageSize"));
+  const pageSize = [25, 50, 100].includes(requestedSize) ? requestedSize : 50;
+  const requestedPage = Number(params.get("page"));
+  const page = Math.min(Math.max(1, Number.isSafeInteger(requestedPage) ? requestedPage : 1), Math.max(1, Math.ceil(sortedTransactions.length / pageSize)));
+  const pageTransactions = sortedTransactions.slice((page - 1) * pageSize, page * pageSize);
+  function changePage(value: number, size = pageSize) {
+    const next = new URLSearchParams(params);
+    next.set("page", String(value)); next.set("pageSize", String(size)); setParams(next, { replace: true });
+  }
+
   if (state.loading && !state.data) return <Loading label="Henter bank…" />;
-  if (state.error)
+  if (state.error && !state.data)
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const b = state.data!;
@@ -160,31 +174,32 @@ export function BankView() {
 
   return (
     <section className="statement">
-      <div className="page-head">
-        <div>
-          <h2>{b.company.name}</h2>
-          <p className="muted">
-            {b.company.cvr ? `CVR ${b.company.cvr} · ` : ""}
-            {b.company.country} · {currency} · Bank
-          </p>
-        </div>
-        <div className="row-actions">
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+      <PageHeader title="Bank" actions={<><div className="row-actions">
           {/* The bank-import write action — hidden for an archived (read-only)
               year, where no live ledger is available to import into. */}
           {!b.archived && (
-            <button
+            <Button requiredPermission="company.ledger.post"
               type="button"
               className="btn"
               onClick={() => setImporting(true)}
             >
               Importér kontoudtog
-            </button>
+            </Button>
           )}
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
-          </Link>
+          </ButtonLink>
+        </div></>}>
+        <div>
+
+          <p className="muted">
+            {b.company.cvr ? `CVR ${b.company.cvr} · ` : ""}
+            {b.company.country} · {currency} · Bank
+          </p>
         </div>
-      </div>
+
+      </PageHeader>
 
       <CompanyNav
         slug={slug}
@@ -226,6 +241,7 @@ export function BankView() {
           ariaSort={ariaSort}
           toggleSort={toggleSort}
           sortedTransactions={sortedTransactions}
+          pageTransactions={pageTransactions}
         />
       ) : (
         <>
@@ -294,64 +310,64 @@ export function BankView() {
             hasActiveFilter={hasActiveFilter}
           />
 
-          <div className="card statement-card table-scroll">
-            <table className="data statement-table">
+          <div className="card statement-card table-scroll daily-list">
+            <table role="table" className="data statement-table">
               <thead>
-                <tr>
-                  <th scope="col" aria-sort={ariaSort("date")}>
-                    <button
+                <tr role="row">
+                  <th role="columnheader" scope="col" aria-sort={ariaSort("date")}>
+                    <Button
                       type="button"
                       className="th-sort"
                       onClick={() => toggleSort("date")}
                       aria-label="Sortér efter dato"
                     >
                       Dato{sortIndicator("date")}
-                    </button>
+                    </Button>
                   </th>
-                  <th scope="col">Tekst</th>
-                  <th className="num" scope="col" aria-sort={ariaSort("amount")}>
-                    <button
+                  <th role="columnheader" scope="col">Tekst</th>
+                  <th role="columnheader" className="num" scope="col" aria-sort={ariaSort("amount")}>
+                    <Button
                       type="button"
                       className="th-sort"
                       onClick={() => toggleSort("amount")}
                       aria-label="Sortér efter beløb"
                     >
                       Beløb{sortIndicator("amount")}
-                    </button>
+                    </Button>
                   </th>
-                  <th className="num" scope="col">Saldo</th>
-                  <th scope="col">Afstemning</th>
+                  <th role="columnheader" className="num" scope="col">Saldo</th>
+                  <th role="columnheader" scope="col">Afstemning</th>
                 </tr>
               </thead>
               <tbody>
                 {sortedTransactions.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="empty-inline">
+                  <tr role="row">
+                    <td role="cell" colSpan={5} className="empty-inline">
                       {hasActiveFilter
                         ? "Ingen transaktioner matcher filtrene."
                         : "Ingen banktransaktioner i året."}
                     </td>
                   </tr>
                 ) : (
-                  sortedTransactions.map((tx) => (
-                    <tr key={tx.id}>
-                      <td className="entry-date">{tx.date}</td>
-                      <td>{tx.text}</td>
-                      <td className="num">
+                  pageTransactions.map((tx) => (
+                    <tr role="row" key={tx.id}>
+                      <td data-label="Dato" role="cell" className="entry-date">{tx.date}</td>
+                      <td data-label="Tekst" role="cell">{tx.text}</td>
+                      <td data-label="Beløb" role="cell" className="num">
                         {formatKroner(tx.amount, currency)}
                       </td>
-                      <td className="num">
+                      <td data-label="Saldo" role="cell" className="num">
                         {tx.runningBalance === null
                           ? "—"
                           : formatKroner(tx.runningBalance, currency)}
                       </td>
-                      <td>
+                      <td data-label="Afstemning" role="cell">
                         {tx.reconciliationStatus === "matched" ? (
-                          <div className="row-actions"><span className="flag ok">Afstemt{tx.journalEntryNo ? ` · ${tx.journalEntryNo}` : ""}</span><button type="button" className="btn secondary" onClick={() => setCorrecting({ id: tx.id, text: tx.text, journalEntryNo: tx.journalEntryNo })}>Ret</button></div>
+                          <div className="row-actions"><span className="flag ok">Afstemt{tx.journalEntryNo ? ` · ${tx.journalEntryNo}` : ""}</span><Button requiredPermission="company.ledger.post" variant="secondary" type="button" className="btn secondary" onClick={() => setCorrecting({ id: tx.id, text: tx.text, journalEntryNo: tx.journalEntryNo })}>Ret</Button></div>
                         ) : (
                           <div className="row-actions">
                             <span className="flag warning">Uafstemt</span>
-                            <button
+                            <Button requiredPermission="company.ledger.post" variant="secondary"
                               type="button"
                               className="btn secondary"
                               onClick={() =>
@@ -365,7 +381,7 @@ export function BankView() {
                               }
                             >
                               Bogfør
-                            </button>
+                            </Button>
                           </div>
                         )}
                       </td>
@@ -377,6 +393,7 @@ export function BankView() {
           </div>
         </>
       )}
+      <Pagination total={sortedTransactions.length} page={page} pageSize={pageSize} onPageChange={value => changePage(value)} onPageSizeChange={size => changePage(1, size)} />
     </section>
   );
 }
@@ -389,7 +406,6 @@ function BankFilterBar({
   fromDate,
   toDate,
   status,
-  hasActiveFilter,
   setFilter,
   clearAllFilters,
   // #UI-18 — the archived branch has no reconciliation column (afstemning for
@@ -410,10 +426,10 @@ function BankFilterBar({
   showStatusFilter?: boolean;
 }) {
   return (
-    <div className="journal-filter-bar card" role="search">
+    <FilterBar activeCount={[q, fromDate, toDate, status !== "all" ? status : ""].filter(Boolean).length} onReset={clearAllFilters}><div className="journal-filter-bar" role="search">
       <label className="journal-filter-field journal-filter-field--search">
         <span className="muted">Søg</span>
-        <input
+        <Input
           type="search"
           value={q}
           placeholder="Søg på tekst eller posteringsnr…"
@@ -422,7 +438,7 @@ function BankFilterBar({
       </label>
       <label className="journal-filter-field">
         <span className="muted">Fra</span>
-        <input
+        <Input
           type="date"
           value={fromDate}
           onChange={(e) => setFilter("from", e.target.value)}
@@ -430,7 +446,7 @@ function BankFilterBar({
       </label>
       <label className="journal-filter-field">
         <span className="muted">Til</span>
-        <input
+        <Input
           type="date"
           value={toDate}
           onChange={(e) => setFilter("to", e.target.value)}
@@ -439,26 +455,18 @@ function BankFilterBar({
       {showStatusFilter && (
         <label className="journal-filter-field">
           <span className="muted">Status</span>
-          <select
+          <Select
             value={status}
             onChange={(e) => setFilter("status", e.target.value)}
           >
             <option value="all">Alle</option>
             <option value="matched">Kun afstemte</option>
             <option value="unmatched">Kun uafstemte</option>
-          </select>
+          </Select>
         </label>
       )}
-      {hasActiveFilter && (
-        <button
-          type="button"
-          className="btn secondary"
-          onClick={clearAllFilters}
-        >
-          Ryd filtre
-        </button>
-      )}
-    </div>
+
+    </div></FilterBar>
   );
 }
 
@@ -582,6 +590,7 @@ function ArchivedBankView({
   ariaSort,
   toggleSort,
   sortedTransactions,
+  pageTransactions,
 }: {
   bank: CompanyBank;
   currency: string;
@@ -599,6 +608,7 @@ function ArchivedBankView({
   sortIndicator: (key: SortKey) => string;
   toggleSort: (key: SortKey) => void;
   sortedTransactions: BankTransactionRow[];
+  pageTransactions: BankTransactionRow[];
 }) {
   // The statement's closing balance for an archived year is the running
   // balance after its last imported transaction — exact, unlike a cross-year
@@ -651,50 +661,50 @@ function ArchivedBankView({
         hasActiveFilter={hasActiveFilter}
       />
 
-      <div className="card statement-card table-scroll">
-        <table className="data statement-table">
+      <div className="card statement-card table-scroll daily-list">
+        <table role="table" className="data statement-table">
           <thead>
-            <tr>
-              <th scope="col" aria-sort={ariaSort("date")}>
-                <button
+            <tr role="row">
+              <th role="columnheader" scope="col" aria-sort={ariaSort("date")}>
+                <Button
                   type="button"
                   className="th-sort"
                   onClick={() => toggleSort("date")}
                   aria-label="Sortér efter dato"
                 >
                   Dato{sortIndicator("date")}
-                </button>
+                </Button>
               </th>
-              <th scope="col">Tekst</th>
-              <th className="num" scope="col" aria-sort={ariaSort("amount")}>
-                <button
+              <th role="columnheader" scope="col">Tekst</th>
+              <th role="columnheader" className="num" scope="col" aria-sort={ariaSort("amount")}>
+                <Button
                   type="button"
                   className="th-sort"
                   onClick={() => toggleSort("amount")}
                   aria-label="Sortér efter beløb"
                 >
                   Beløb{sortIndicator("amount")}
-                </button>
+                </Button>
               </th>
-              <th className="num" scope="col">Saldo</th>
+              <th role="columnheader" className="num" scope="col">Saldo</th>
             </tr>
           </thead>
           <tbody>
             {sortedTransactions.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="empty-inline">
+              <tr role="row">
+                <td role="cell" colSpan={4} className="empty-inline">
                   {hasActiveFilter
                     ? "Ingen transaktioner matcher filtrene."
                     : `Ingen banktransaktioner importeret for ${bank.selectedYear}.`}
                 </td>
               </tr>
             ) : (
-              sortedTransactions.map((tx) => (
-                <tr key={tx.id}>
-                  <td className="entry-date">{tx.date}</td>
-                  <td>{tx.text}</td>
-                  <td className="num">{formatKroner(tx.amount, currency)}</td>
-                  <td className="num">
+              pageTransactions.map((tx) => (
+                <tr role="row" key={tx.id}>
+                  <td data-label="Dato" role="cell" className="entry-date">{tx.date}</td>
+                  <td data-label="Tekst" role="cell">{tx.text}</td>
+                  <td data-label="Beløb" role="cell" className="num">{formatKroner(tx.amount, currency)}</td>
+                  <td data-label="Saldo" role="cell" className="num">
                     {tx.runningBalance === null
                       ? "—"
                       : formatKroner(tx.runningBalance, currency)}

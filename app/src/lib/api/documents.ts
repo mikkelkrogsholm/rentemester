@@ -1,30 +1,34 @@
 import type { DocumentsResponse } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 export const documentsApi = {
-  documents: (slug: string) =>
+  documents: (slug: string, options?: ReadRequestOptions) =>
     request<DocumentsResponse>(
       `/api/companies/${encodeURIComponent(slug)}/documents`,
+      options,
     ).then((r) => r.documents),
 
   /** #588: review-only party-link state, kept separate from invoice facts. */
-  documentPartyLinks: (slug: string, status?: "linked" | "unlinked" | "resolved" | "internal_no_external_party" | "unresolved") =>
+  documentPartyLinks: (slug: string, status?: "linked" | "unlinked" | "resolved" | "internal_no_external_party" | "unresolved", options?: ReadRequestOptions) =>
     request<{ ok: true; links: Array<{ id: number; document_no: string | null; linked: 0 | 1; resolution_state: "resolved" | "internal_no_external_party" | "unresolved" }> }>(
       `/api/companies/${encodeURIComponent(slug)}/documents/party-links${status ? `?status=${status}` : ""}`,
+      options,
     ).then((r) => r.links),
 
-  documentPartyLinkHistory: (slug: string, documentId: number) =>
+  documentPartyLinkHistory: (slug: string, documentId: number, options?: ReadRequestOptions) =>
     request<{ ok: true; links: Array<Record<string, unknown>> }>(
       `/api/companies/${encodeURIComponent(slug)}/documents/${documentId}/party-links`,
+      options,
     ).then((r) => r.links),
 
-  searchCanonicalParties: (slug: string, query: string) =>
+  searchCanonicalParties: (slug: string, query: string, options?: ReadRequestOptions) =>
     request<{ ok: true; rows: Array<{ partyId: string; name: string }>; count: number }>(
       `/api/companies/${encodeURIComponent(slug)}/workspace-parties?query=${encodeURIComponent(query)}`,
+      options,
     ),
 
-  planDocumentPartyLink: (slug: string, input: Record<string, unknown>) =>
-    request<{ ok: boolean; plan?: { planHash: string }; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-links/plan`, { method: "POST", body: JSON.stringify(input) }),
+  planDocumentPartyLink: (slug: string, input: Record<string, unknown>, options?: ReadRequestOptions) =>
+    request<{ ok: boolean; plan?: { planHash: string }; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-links/plan`, { method: "POST", body: JSON.stringify(input), readOnly: true, signal: options?.signal }),
 
   applyDocumentPartyLink: (slug: string, input: Record<string, unknown>) =>
     request<{ ok: boolean; id?: number; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-links/apply`, { method: "POST", body: JSON.stringify(input) }),
@@ -87,15 +91,17 @@ export const documentsApi = {
    * to prefill, the bookable expense accounts and the unmatched outgoing
    * bank transactions the owner can pair the bilag with.
    */
-  documentBookingOptions: (slug: string, documentId: number) =>
+  documentBookingOptions: (slug: string, documentId: number, options?: ReadRequestOptions) =>
     request<{ ok: true; options: DocumentBookingOptions }>(
       `/api/companies/${encodeURIComponent(slug)}/documents/${documentId}/booking-options`,
+      options,
     ).then((r) => r.options),
 
   /** Read-only preflight: no provider call and no state change. */
-  documentVatPreflight: (slug: string, documentId: number) =>
+  documentVatPreflight: (slug: string, documentId: number, options?: ReadRequestOptions) =>
     request<{ ok: true; preflight: DocumentVatPreflight }>(
       `/api/companies/${encodeURIComponent(slug)}/documents/${documentId}/vat-preflight`,
+      options,
     ).then((r) => r.preflight),
 
   /** Actor-attributed provider call, gated by the same mutation boundary as posting. */

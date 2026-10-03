@@ -24,7 +24,7 @@ describe("TrialBalanceView — Saldobalance", () => {
     mockFetch(route());
     renderView();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Saldobalance", level: 1 }),
     ).toBeInTheDocument();
     expect(screen.getByText("Debet")).toBeInTheDocument();
     expect(screen.getByText("Kredit")).toBeInTheDocument();

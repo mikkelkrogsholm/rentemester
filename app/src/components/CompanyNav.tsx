@@ -1,3 +1,4 @@
+import { Button, Select } from "./ui";
 // Per-company chrome shared by every company view (cockpit-redesign it. 2).
 //
 // Two concerns live here so the four company views stay declarative:
@@ -17,6 +18,9 @@ import {
   useContext,
   useEffect,
   useState,
+  useCallback,
+  useMemo,
+  useId,
   type ReactNode,
 } from "react";
 import type { FiscalYearEntry } from "../lib/types";
@@ -65,15 +69,18 @@ export function accountPostingsTo(
   return `/companies/${slug}/posteringer?${params.toString()}`;
 }
 
-const CompanyNavigationShellContext = createContext(false);
+type YearControl = { owner: string; slug: string; years: FiscalYearEntry[]; selected: string };
+type ShellContext = { controls: YearControl | null; register: (control: YearControl) => void; unregister: (owner: string) => void };
+const CompanyNavigationShellContext = createContext<ShellContext | null>(null);
+export function useCompanyShell() { return useContext(CompanyNavigationShellContext); }
 
 /** Marks routes that already receive the shared navigation from the app shell. */
 export function CompanyNavigationShell({ children }: { children: ReactNode }) {
-  return (
-    <CompanyNavigationShellContext.Provider value={true}>
-      {children}
-    </CompanyNavigationShellContext.Provider>
-  );
+  const [controls, setControls] = useState<YearControl | null>(null);
+  const register = useCallback((control: YearControl) => setControls((previous) => previous?.owner === control.owner && previous.slug === control.slug && previous.selected === control.selected && JSON.stringify(previous.years) === JSON.stringify(control.years) ? previous : control), []);
+  const unregister = useCallback((_owner: string) => { /* Keep company metadata while the next year is loading. */ }, []);
+  const value = useMemo(() => ({ controls, register, unregister }), [controls, register, unregister]);
+  return <CompanyNavigationShellContext.Provider value={value}>{children}</CompanyNavigationShellContext.Provider>;
 }
 
 /** Task navigation shared by every company route, including pages without a year selector. */
@@ -94,7 +101,7 @@ export function CompanyTaskNavigation({
   const currentRoute = companyRouteForPath(location.pathname);
   const slug = location.pathname.match(/^\/companies\/([^/]+)/)?.[1];
   const visibleRoutes = COMPANY_ROUTE_DEFINITIONS.filter(
-    (route) => !visibleRouteIds || visibleRouteIds.includes(route.id),
+    (route) => route.kind === "page" && (!visibleRouteIds || visibleRouteIds.includes(route.id)),
   );
   const visibleAreas = COMPANY_TASK_AREAS.filter((area) =>
     visibleRoutes.some((route) => route.area === area.id),
@@ -118,7 +125,7 @@ export function CompanyTaskNavigation({
           const active = area.id === selectedArea;
           const current = area.id === currentRoute.area;
           return (
-            <button
+            <Button
               key={area.id}
               type="button"
               className={[active && "active", current && "current"]
@@ -130,7 +137,7 @@ export function CompanyTaskNavigation({
               onClick={() => setSelectedArea(area.id)}
             >
               {area.label}
-            </button>
+            </Button>
           );
         })}
       </nav>
@@ -153,6 +160,7 @@ export function CompanyTaskNavigation({
 
 /** The fiscal-year control retained by year-aware company views. */
 export function CompanyNav({
+  slug,
   years,
   selectedYear,
   onYearChange,
@@ -162,10 +170,16 @@ export function CompanyNav({
   selectedYear: string;
   onYearChange: (year: string) => void;
 }) {
-  const hasShellNavigation = useContext(CompanyNavigationShellContext);
+  const shell = useContext(CompanyNavigationShellContext);
+  const owner = useId();
+  const register = shell?.register;
+  const unregister = shell?.unregister;
+  useEffect(() => { register?.({ owner, slug, years, selected: selectedYear }); }, [register, owner, slug, years, selectedYear]);
+  useEffect(() => () => unregister?.(owner), [unregister, owner]);
+  if (shell) return null;
   return (
     <>
-      {!hasShellNavigation && <CompanyTaskNavigation />}
+      <CompanyTaskNavigation />
       <div className="company-year-controls">
         <YearSelector
           years={years}
@@ -190,7 +204,7 @@ export function YearSelector({
   return (
     <label className="year-selector">
       <span className="ys-label">Regnskabsår</span>
-      <select
+      <Select
         value={selected}
         onChange={(e) => onChange(e.target.value)}
         aria-label="Vælg regnskabsår"
@@ -201,7 +215,7 @@ export function YearSelector({
             {y.source === "archive" ? " (arkiv)" : ""}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   );
 }

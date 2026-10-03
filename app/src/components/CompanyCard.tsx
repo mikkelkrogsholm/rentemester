@@ -59,7 +59,7 @@ export function CompanyCard({ company }: { company: CompanySummary }) {
             <span className="m-value">{formatKroner(company.omsaetning)}</span>
           </div>
           <div className="cc-metric">
-            <span className="m-label">Moms at betale</span>
+            <span className="m-label">{company.vat && company.vat.payable < 0 ? "Moms til gode" : "Moms at betale"}</span>
             <span className="m-value">
               {company.vat ? formatKroner(company.vat.payable) : "—"}
             </span>
@@ -102,7 +102,7 @@ export function CompanyCard({ company }: { company: CompanySummary }) {
 
       <div className="flags">
         {flags.length === 0 ? (
-          <span className="flag ok">Sund drift</span>
+          company.archived ? <span className="flag">Arkiveret regnskab</span> : company.actualBankBalance === null || company.vat === null ? <span className="flag">Overblik kræver flere oplysninger</span> : <span className="flag ok">Ingen kendte advarsler</span>
         ) : (
           flags.map((f) =>
             // #420 — flag med et `to`-felt er klikbare: ejeren får et konkret

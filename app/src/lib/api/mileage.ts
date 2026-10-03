@@ -3,15 +3,15 @@ import type {
   MileageEntrySummary,
   MileageResponse,
 } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 export const mileageApi = {
   /** Mileage register (Kørsel, #335) for the selected fiscal year. */
-  mileage: (slug: string, year?: string) =>
+  mileage: (slug: string, year?: string, options?: ReadRequestOptions) =>
     request<MileageResponse>(
       `/api/companies/${encodeURIComponent(slug)}/mileage${
         year ? `?year=${encodeURIComponent(year)}` : ""
-      }`,
+      }`, options,
     ).then((r) => r.mileage),
 
   /**

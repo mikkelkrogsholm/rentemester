@@ -1,3 +1,6 @@
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useDiscardGuard } from "../lib/useDiscardGuard";
+import { ButtonLink, Dialog, Button, Input, PageHeader } from "../components/ui";
 // Bankkonti + CSV-mapping-profiler (#345).
 //
 // Per-virksomhed liste over registrerede bankkonti + de indbyggede
@@ -9,7 +12,7 @@
 // foregår fortsat via BankImportModal som genbruger profilerne.
 
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
 import type { BankAccount, CompanyBankAccounts } from "../lib/types";
@@ -22,26 +25,19 @@ export function BankAccountsView() {
   const [error, setError] = useState<string | null>(null);
 
   const state = useAsync<CompanyBankAccounts>(
-    () => api.bankAccounts(slug),
+    (signal) => api.bankAccounts(slug, { signal }),
     [slug, refresh],
   );
 
-  if (state.loading) return <Loading />;
-  if (state.error) return <ErrorState message={state.error} />;
+  if (state.loading && !state.data) return <Loading />;
+  if (state.error && !state.data) return <ErrorState message={state.error} onRetry={state.reload} />;
   const data = state.data!;
 
   return (
     <section className="bank-accounts-view">
-      <header className="page-head">
-        <div>
-          <h2>{data.company.name}</h2>
-          <p className="muted">
-            {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
-            {data.company.country} · Bankkonti
-          </p>
-        </div>
-        <div className="row-actions">
-          <button
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+      <PageHeader title="Bankkonti" actions={<><div className="row-actions">
+          <Button requiredPermission="company.admin"
             type="button"
             className="btn primary"
             onClick={() => {
@@ -50,12 +46,20 @@ export function BankAccountsView() {
             }}
           >
             Opret bankkonto …
-          </button>
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
+          </Button>
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
-          </Link>
+          </ButtonLink>
+        </div></>}>
+        <div>
+
+          <p className="muted">
+            {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
+            {data.company.country} · Bankkonti
+          </p>
         </div>
-      </header>
+
+      </PageHeader>
 
       {error && (
         <div className="callout danger" role="alert">
@@ -71,7 +75,7 @@ export function BankAccountsView() {
             <code>BankImportModal</code> eller CLI'ens <code>bank import</code>.
           </p>
         ) : (
-          <table className="table">
+          <div className="table-scroll"><table className="table">
             <thead>
               <tr>
                 <th>Navn</th>
@@ -91,7 +95,7 @@ export function BankAccountsView() {
                 <BankAccountRow key={a.id} account={a} />
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </section>
 
@@ -102,7 +106,7 @@ export function BankAccountsView() {
           genbruger disse hard-kodede mapping-profiler. Pr.-konto mapping-
           override er en follow-up.
         </p>
-        <table className="table">
+        <div className="table-scroll"><table className="table">
           <thead>
             <tr>
               <th>Profil-navn</th>
@@ -127,13 +131,14 @@ export function BankAccountsView() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </section>
 
       {openCreate && (
         <CreateBankAccountModal
           slug={slug}
           onClose={() => setOpenCreate(false)}
+          onRefresh={state.reload}
           onDone={() => {
             setOpenCreate(false);
             setRefresh((n) => n + 1);
@@ -168,12 +173,14 @@ function BankAccountRow({ account }: { account: BankAccount }) {
 
 function CreateBankAccountModal({
   slug,
-  onClose,
+  onClose: onDismiss,
+  onRefresh,
   onDone,
   onError,
 }: {
   slug: string;
   onClose: () => void;
+  onRefresh: () => void;
   onDone: () => void;
   onError: (msg: string) => void;
 }) {
@@ -189,8 +196,11 @@ function CreateBankAccountModal({
   const [ledgerAccountNo, setLedgerAccountNo] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const outcome = useMutationOutcome(onRefresh);
+  const guard = useDiscardGuard(Boolean(name || bankName || registrationNo || accountNo || iban || bic || accountOwner || customerNo || ledgerAccountNo), onDismiss);
+  const { onClose } = guard;
+
+  const submit = async (e: React.FormEvent) => {e.preventDefault(); if (outcome.isBlocked()) return;
     setSubmitting(true);
     try {
       await api.createBankAccount(slug, {
@@ -204,7 +214,8 @@ function CreateBankAccountModal({
         ...(customerNo ? { customerNo } : {}),
         ...(currency ? { currency } : {}),
         ...(ledgerAccountNo ? { ledgerAccountNo } : {}),
-      });
+      }).catch(outcome.reject);
+      guard.dismiss();
       onDone();
     } catch (err) {
       onError(
@@ -215,13 +226,15 @@ function CreateBankAccountModal({
   };
 
   return (
-    <div className="modal-overlay" role="dialog" aria-modal="true">
-      <div className="modal">
-        <h3>Opret bankkonto</h3>
+    <Dialog title="Opret bankkonto" onClose={onClose} busy={submitting}>
+    {outcome.feedback}
+      {guard.confirmation}
+
+
         <form onSubmit={submit}>
           <label>
             Navn (påkrævet)
-            <input
+            <Input disabled={outcome.blocked}
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -231,7 +244,7 @@ function CreateBankAccountModal({
           </label>
           <label>
             Bank-navn
-            <input
+            <Input disabled={outcome.blocked}
               type="text"
               value={bankName}
               onChange={(e) => setBankName(e.target.value)}
@@ -240,7 +253,7 @@ function CreateBankAccountModal({
           </label>
           <label>
             Reg.nr.
-            <input
+            <Input disabled={outcome.blocked}
               type="text"
               value={registrationNo}
               onChange={(e) => setRegistrationNo(e.target.value)}
@@ -249,7 +262,7 @@ function CreateBankAccountModal({
           </label>
           <label>
             Konto-nr.
-            <input
+            <Input disabled={outcome.blocked}
               type="text"
               value={accountNo}
               onChange={(e) => setAccountNo(e.target.value)}
@@ -257,19 +270,19 @@ function CreateBankAccountModal({
           </label>
           <label>
             IBAN
-            <input
+            <Input disabled={outcome.blocked}
               type="text"
               value={iban}
               onChange={(e) => setIban(e.target.value)}
               placeholder="DK…"
             />
           </label>
-          <label>SWIFT/BIC<input type="text" value={bic} onChange={(e) => setBic(e.target.value)} /></label>
-          <label>Kontoejer<input type="text" value={accountOwner} onChange={(e) => setAccountOwner(e.target.value)} /></label>
-          <label>Bank-kundenr.<input type="text" value={customerNo} onChange={(e) => setCustomerNo(e.target.value)} /></label>
+          <label>SWIFT/BIC<Input disabled={outcome.blocked} type="text" value={bic} onChange={(e) => setBic(e.target.value)} /></label>
+          <label>Kontoejer<Input disabled={outcome.blocked} type="text" value={accountOwner} onChange={(e) => setAccountOwner(e.target.value)} /></label>
+          <label>Bank-kundenr.<Input disabled={outcome.blocked} type="text" value={customerNo} onChange={(e) => setCustomerNo(e.target.value)} /></label>
           <label>
             Valuta
-            <input
+            <Input disabled={outcome.blocked}
               type="text"
               value={currency}
               onChange={(e) => setCurrency(e.target.value.toUpperCase())}
@@ -278,7 +291,7 @@ function CreateBankAccountModal({
           </label>
           <label>
             Ledger-konto (valgfri)
-            <input
+            <Input disabled={outcome.blocked}
               type="text"
               value={ledgerAccountNo}
               onChange={(e) => setLedgerAccountNo(e.target.value)}
@@ -286,19 +299,19 @@ function CreateBankAccountModal({
             />
           </label>
           <div className="row-actions">
-            <button
+            <Button requiredPermission="company.admin"
               type="submit"
               className="btn primary"
-              disabled={submitting || !name.trim()}
+              disabled={outcome.blocked || (submitting || !name.trim())}
             >
               {submitting ? "Opretter …" : "Opret bankkonto"}
-            </button>
-            <button type="button" className="btn secondary" onClick={onClose}>
+            </Button>
+            <Button variant="secondary" type="button" className="btn secondary" onClick={onClose}>
               Annullér
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+
+    </Dialog>
   );
 }

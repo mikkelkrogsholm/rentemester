@@ -32,7 +32,7 @@ describe("JournalView — Posteringer", () => {
     mockFetch(route());
     renderView();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Posteringer", level: 1 }),
     ).toBeInTheDocument();
     expect(screen.getByText("B-2026-0001")).toBeInTheDocument();
     expect(screen.getByText("Salg af ydelse")).toBeInTheDocument();
@@ -202,7 +202,7 @@ describe("JournalView — #396 filter-bar", () => {
   test("a filter-bar with fritekstsøgning, datointerval and beløb is rendered", async () => {
     mockFetch(multiEntryJournal());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Posteringer", level: 1 });
     expect(screen.getByPlaceholderText(/Søg/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Fra/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Til/i)).toBeInTheDocument();
@@ -303,7 +303,7 @@ describe("JournalView — #396 filter-bar", () => {
         "/companies/acme-aps/posteringer?q=printer&from=2026-01-01&to=2026-12-31&amountMin=100&amountMax=5000",
       path: "/companies/:slug/posteringer",
     });
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Posteringer", level: 1 });
     const search = screen.getByPlaceholderText(/Søg/i) as HTMLInputElement;
     expect(search.value).toBe("printer");
     expect((screen.getByLabelText(/Fra/i) as HTMLInputElement).value).toBe(

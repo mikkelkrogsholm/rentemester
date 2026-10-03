@@ -1,3 +1,4 @@
+import { ButtonLink, PageHeader } from "../components/ui";
 // Balance — the per-company balance sheet (cockpit-redesign iteration 2).
 //
 // Renders `/api/companies/:slug/balance?year=`: assets, liabilities and equity
@@ -34,7 +35,7 @@ export function BalanceView() {
   const { slug = "" } = useParams();
   const { year, setYear } = useCompanyYear();
   const state = useAsync<CompanyBalance>(
-    () => api.balance(slug, year),
+    (signal) => api.balance(slug, year, { signal }),
     [slug, year],
   );
 
@@ -48,15 +49,7 @@ export function BalanceView() {
 
   return (
     <section className="statement">
-      <div className="page-head">
-        <div>
-          <h2>{b.company.name}</h2>
-          <p className="muted">
-            {b.company.cvr ? `CVR ${b.company.cvr} · ` : ""}
-            {b.company.country} · {currency} · Balance
-          </p>
-        </div>
-        <div className="row-actions">
+      <PageHeader title="Balance" actions={<><div className="row-actions">
           {/* #372 — "Hent CSV". #463 — "Hent PDF" som ren printbar version. */}
           <a
             className="btn secondary"
@@ -72,11 +65,19 @@ export function BalanceView() {
           >
             Hent PDF
           </a>
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
-          </Link>
+          </ButtonLink>
+        </div></>}>
+        <div>
+
+          <p className="muted">
+            {b.company.cvr ? `CVR ${b.company.cvr} · ` : ""}
+            {b.company.country} · {currency} · Balance
+          </p>
         </div>
-      </div>
+
+      </PageHeader>
 
       <CompanyNav
         slug={slug}
@@ -90,7 +91,7 @@ export function BalanceView() {
       )}
       <p className="statement-asof muted">Pr. {b.asOfDate}</p>
       <div className="card statement-card">
-        <table className="data statement-table">
+        <div className="table-scroll"><table className="data statement-table">
           <thead>
             <tr>
               <th>Konto</th>
@@ -140,7 +141,7 @@ export function BalanceView() {
               </td>
             </tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
       <BalanceCheck balanced={b.balanced} />
     </section>

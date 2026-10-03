@@ -1,3 +1,4 @@
+import { ButtonLink, PageHeader } from "../components/ui";
 // Om arkivet — an explainer for the read-only #197 archive (Runde 3, it. 11).
 //
 // Before Runde 3 the core views could only render the live year, so this tab
@@ -20,7 +21,7 @@ export function ArchiveView() {
   const { year, setYear } = useCompanyYear();
 
   const yearsState = useAsync<FiscalYearEntry[]>(
-    () => api.fiscalYears(slug),
+    (signal) => api.fiscalYears(slug, { signal }),
     [slug],
   );
 
@@ -43,17 +44,17 @@ export function ArchiveView() {
 
   return (
     <section className="statement">
-      <div className="page-head">
+      <PageHeader title="Arkiv" actions={<><div className="row-actions">
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+            Administrér
+          </ButtonLink>
+        </div></>}>
         <div>
-          <h2>Om arkivet</h2>
+
           <p className="muted">Tidligere regnskabsår · skrivebeskyttet</p>
         </div>
-        <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </div>
+
+      </PageHeader>
 
       <CompanyNav
         slug={slug}

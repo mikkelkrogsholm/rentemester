@@ -1,11 +1,14 @@
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useUnsavedChanges } from "../lib/useUnsavedChanges";
+import { ButtonLink, Button, Input, PageHeader } from "../components/ui";
 import { useState, type FormEvent } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import type { AccountingDraft, AccountingDraftLine, AccountingDraftPayload } from "../lib/types";
 import { useAsync } from "../lib/useAsync";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { ErrorState, Loading } from "../components/Feedback";
-import { formatKroner, todayIso } from "../lib/format";
+import { formatKroner, parseDanishAmount, todayIso } from "../lib/format";
 
 type LineForm = { accountNo: string; debitAmount: string; creditAmount: string; vatCode: string; text: string };
 const EMPTY_LINE: LineForm = { accountNo: "", debitAmount: "", creditAmount: "", vatCode: "", text: "" };
@@ -25,8 +28,8 @@ function optionalPositiveInteger(value: string): number | undefined {
 
 function amount(value: string): number | undefined {
   if (!value.trim()) return undefined;
-  const parsed = Number(value.replace(",", "."));
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : Number.NaN;
+  const parsed = parseDanishAmount(value);
+  return parsed !== null && parsed > 0 ? parsed : Number.NaN;
 }
 
 function toPayload(input: { date: string; text: string; documentId: string; bankId: string; lines: LineForm[] }): AccountingDraftPayload {
@@ -59,7 +62,7 @@ function toPayload(input: { date: string; text: string; documentId: string; bank
 
 export function AccountingDraftsView() {
   const { slug = "" } = useParams();
-  const state = useAsync(() => api.accountingDrafts(slug), [slug]);
+  const state = useAsync((signal) => api.accountingDrafts(slug, { signal }), [slug]);
   const [draftId, setDraftId] = useState("");
   const [date, setDate] = useState(todayIso());
   const [text, setText] = useState("");
@@ -71,14 +74,18 @@ export function AccountingDraftsView() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [pending, setPending] = useState<{ kind: "submit" | "reject" | "approve"; draft: AccountingDraft } | null>(null);
 
+  const outcome = useMutationOutcome(state.reload);
+  useUnsavedChanges(Boolean(draftId || text || documentId || bankId || lines.some(line => line.accountNo || line.debitAmount || line.creditAmount || line.vatCode || line.text)));
+
   async function create(event: FormEvent) {
     event.preventDefault();
+    if (outcome.isBlocked()) return;
     setBusy(true);
     setActionError(null);
     try {
       const payload = toPayload({ date, text, documentId, bankId, lines });
-      if (editing) await api.reviseAccountingDraft(slug, editing, payload);
-      else await api.createAccountingDraft(slug, draftId, payload);
+      if (editing) await api.reviseAccountingDraft(slug, editing, payload).catch(outcome.reject);
+      else await api.createAccountingDraft(slug, draftId, payload).catch(outcome.reject);
       setDraftId(""); setText(""); setDocumentId(""); setBankId("");
       setLines([{ ...EMPTY_LINE }, { ...EMPTY_LINE }]);
       setEditing(null);
@@ -123,40 +130,42 @@ export function AccountingDraftsView() {
   }
 
   if (state.loading && !state.data) return <Loading label="Henter bogføringskladder…" />;
-  if (state.error) return <ErrorState message={state.error} onRetry={state.reload} />;
+  if (state.error && !state.data) return <ErrorState message={state.error} onRetry={state.reload} />;
 
   return <section className="statement accounting-drafts-view">
-    <div className="page-head"><div><h2>Bogføringskladder</h2><p className="muted">Kladde → indsendelse → uafhængig godkendelse → atomisk bogføring</p></div><Link className="btn secondary" to={`/companies/${slug}/posteringer`}>Se bogførte posteringer</Link></div>
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+    {outcome.feedback}
+    <PageHeader title="Bogføringskladder" actions={<><ButtonLink className="btn secondary" to={`/companies/${slug}/posteringer`}>Se bogførte posteringer</ButtonLink></>}><div><p className="muted">Kladde → indsendelse → uafhængig godkendelse → atomisk bogføring</p></div></PageHeader>
     <p className="muted">Den indsendte version låses med en SHA-256-identitet. Godkenderen skal være en anden bruger end forfatteren og indsenderen.</p>
     {actionError && <div className="card archived-notice" role="alert"><p>{actionError}</p></div>}
 
     <form className="card accounting-draft-form" onSubmit={create}>
       <h3>{editing ? `Ny version af ${editing.id}` : "Ny kladde"}</h3>
       <div className="form-grid">
-        <label>Kladde-id<input required disabled={editing !== null} pattern="[a-z][a-z0-9-]{0,63}" value={draftId} onChange={(event) => setDraftId(event.target.value.toLowerCase())} placeholder="fx bank-2026-08-001" /></label>
-        <label>Dato<input required type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label>
-        <label className="full-width">Tekst<input required value={text} onChange={(event) => setText(event.target.value)} /></label>
-        <label>Bilags-id (valgfrit)<input inputMode="numeric" value={documentId} onChange={(event) => setDocumentId(event.target.value)} /></label>
-        <label>Bankpost-id (valgfrit)<input inputMode="numeric" value={bankId} onChange={(event) => setBankId(event.target.value)} /></label>
+        <label>Kladde-id<Input required disabled={outcome.blocked || (editing !== null)} pattern="[a-z][a-z0-9-]{0,63}" value={draftId} onChange={(event) => setDraftId(event.target.value.toLowerCase())} placeholder="fx bank-2026-08-001" /></label>
+        <label>Dato<Input disabled={outcome.blocked} required type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label>
+        <label className="full-width">Tekst<Input disabled={outcome.blocked} required value={text} onChange={(event) => setText(event.target.value)} /></label>
+        <label>Bilags-id (valgfrit)<Input disabled={outcome.blocked} inputMode="numeric" value={documentId} onChange={(event) => setDocumentId(event.target.value)} /></label>
+        <label>Bankpost-id (valgfrit)<Input disabled={outcome.blocked} inputMode="numeric" value={bankId} onChange={(event) => setBankId(event.target.value)} /></label>
       </div>
       <div className="table-scroll"><table className="data"><thead><tr><th>Konto</th><th>Debet</th><th>Kredit</th><th>Momskode</th><th>Linjetekst</th><th /></tr></thead><tbody>{lines.map((line, index) => <tr key={index}>
-        <td><input aria-label={`Konto linje ${index + 1}`} value={line.accountNo} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, accountNo: event.target.value } : item))} /></td>
-        <td><input aria-label={`Debet linje ${index + 1}`} inputMode="decimal" value={line.debitAmount} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, debitAmount: event.target.value, creditAmount: event.target.value ? "" : item.creditAmount } : item))} /></td>
-        <td><input aria-label={`Kredit linje ${index + 1}`} inputMode="decimal" value={line.creditAmount} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, creditAmount: event.target.value, debitAmount: event.target.value ? "" : item.debitAmount } : item))} /></td>
-        <td><input aria-label={`Momskode linje ${index + 1}`} value={line.vatCode} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, vatCode: event.target.value } : item))} /></td>
-        <td><input aria-label={`Tekst linje ${index + 1}`} value={line.text} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, text: event.target.value } : item))} /></td>
-        <td><button type="button" className="btn secondary" disabled={lines.length <= 2} onClick={() => setLines((current) => current.filter((_, i) => i !== index))}>Fjern</button></td>
+        <td><Input disabled={outcome.blocked} aria-label={`Konto linje ${index + 1}`} value={line.accountNo} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, accountNo: event.target.value } : item))} /></td>
+        <td><Input disabled={outcome.blocked} aria-label={`Debet linje ${index + 1}`} inputMode="decimal" value={line.debitAmount} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, debitAmount: event.target.value, creditAmount: event.target.value ? "" : item.creditAmount } : item))} /></td>
+        <td><Input disabled={outcome.blocked} aria-label={`Kredit linje ${index + 1}`} inputMode="decimal" value={line.creditAmount} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, creditAmount: event.target.value, debitAmount: event.target.value ? "" : item.debitAmount } : item))} /></td>
+        <td><Input disabled={outcome.blocked} aria-label={`Momskode linje ${index + 1}`} value={line.vatCode} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, vatCode: event.target.value } : item))} /></td>
+        <td><Input disabled={outcome.blocked} aria-label={`Tekst linje ${index + 1}`} value={line.text} onChange={(event) => setLines((current) => current.map((item, i) => i === index ? { ...item, text: event.target.value } : item))} /></td>
+        <td><Button variant="secondary" type="button" className="btn secondary" disabled={lines.length <= 2} onClick={() => setLines((current) => current.filter((_, i) => i !== index))}>Fjern</Button></td>
       </tr>)}</tbody></table></div>
-      <div className="row-actions"><button type="button" className="btn secondary" onClick={() => setLines((current) => [...current, { ...EMPTY_LINE }])}>Tilføj linje</button>{editing && <button type="button" className="btn secondary" onClick={() => { setEditing(null); setDraftId(""); setText(""); setDocumentId(""); setBankId(""); setLines([{ ...EMPTY_LINE }, { ...EMPTY_LINE }]); }}>Annullér revision</button>}<button className="btn" type="submit" disabled={busy}>{busy ? "Gemmer…" : editing ? "Gem ny version" : "Opret kladde"}</button></div>
+      <div className="row-actions"><Button variant="secondary" type="button" className="btn secondary" onClick={() => setLines((current) => [...current, { ...EMPTY_LINE }])}>Tilføj linje</Button>{editing && <Button variant="secondary" type="button" className="btn secondary" onClick={() => { setEditing(null); setDraftId(""); setText(""); setDocumentId(""); setBankId(""); setLines([{ ...EMPTY_LINE }, { ...EMPTY_LINE }]); }}>Annullér revision</Button>}<Button requiredPermission="company.draft.write" className="btn" type="submit" disabled={outcome.blocked || (busy)}>{busy ? "Gemmer…" : editing ? "Gem ny version" : "Opret kladde"}</Button></div>
     </form>
 
     <section className="card"><h3>Kladder ({state.data!.length})</h3>{state.data!.length === 0 ? <p className="muted">Ingen kladder endnu.</p> : <div className="table-scroll"><table className="data"><thead><tr><th>Id / version</th><th>Status</th><th>Dato og tekst</th><th>Beløb</th><th>Evidens</th><th>Handling</th></tr></thead><tbody>{state.data!.map((draft) => <tr key={draft.id}>
       <td><strong>{draft.id}</strong><div className="muted">v{draft.version}</div></td><td><span className={`pill ${draft.status === "approved_posted" ? "ok" : draft.status === "rejected" ? "warn" : ""}`}>{STATUS_LABEL[draft.status]}</span>{draft.reason && <div className="muted">{draft.reason}</div>}</td>
       <td>{draft.payload.transactionDate}<div className="muted">{draft.payload.text}</div></td><td className="num">{formatKroner(draft.payload.lines.reduce((sum, line) => sum + (line.debitAmount ?? 0), 0))}</td>
       <td><code title={draft.eventHash}>{draft.eventHash.slice(0, 12)}…</code>{draft.journalEntryId && <div className="muted">Journal #{draft.journalEntryId}</div>}</td>
-      <td><div className="row-actions">{(draft.status === "created" || draft.status === "revised") && <><button className="btn" type="button" onClick={() => setPending({ kind: "submit", draft })}>Indsend</button><button className="btn secondary" type="button" onClick={() => edit(draft)}>Redigér ny version</button></>}{draft.status === "rejected" && <button className="btn secondary" type="button" onClick={() => edit(draft)}>Ret og opret ny version</button>}{draft.status === "submitted" && <><button className="btn" type="button" onClick={() => setPending({ kind: "approve", draft })}>Godkend og bogfør</button><button className="btn secondary" type="button" onClick={() => setPending({ kind: "reject", draft })}>Afvis</button></>}</div></td>
+      <td><div className="row-actions">{(draft.status === "created" || draft.status === "revised") && <><Button disabled={outcome.blocked} requiredPermission="company.draft.write" className="btn" type="button" onClick={() => setPending({ kind: "submit", draft })}>Indsend</Button><Button disabled={outcome.blocked} requiredPermission="company.draft.write" variant="secondary" className="btn secondary" type="button" onClick={() => edit(draft)}>Redigér ny version</Button></>}{draft.status === "rejected" && <Button disabled={outcome.blocked} requiredPermission="company.draft.write" variant="secondary" className="btn secondary" type="button" onClick={() => edit(draft)}>Ret og opret ny version</Button>}{draft.status === "submitted" && <><Button disabled={outcome.blocked} requiredPermission="company.review" className="btn" type="button" onClick={() => setPending({ kind: "approve", draft })}>Godkend og bogfør</Button><Button disabled={outcome.blocked} requiredPermission="company.review" variant="secondary" className="btn secondary" type="button" onClick={() => setPending({ kind: "reject", draft })}>Afvis</Button></>}</div></td>
     </tr>)}</tbody></table></div>}</section>
 
-    {pending && <ConfirmDialog title={pending.kind === "approve" ? "Godkend og bogfør" : pending.kind === "reject" ? "Afvis kladde" : "Indsend kladde"} body={<p>{pending.kind === "approve" ? "Den præcise indsendte version bogføres irreversibelt og audit-logges." : pending.kind === "reject" ? "Kladdeversionen afvises; skriv hvorfor." : "Den aktuelle version låses til uafhængigt review."}</p>} confirmLabel={pending.kind === "approve" ? "Godkend og bogfør" : pending.kind === "reject" ? "Afvis" : "Indsend"} confirmKind={pending.kind === "reject" ? "danger" : "primary"} noteLabel={pending.kind === "reject" ? "Begrundelse" : undefined} onConfirm={(note) => action(pending.kind, pending.draft, note)} onClose={() => setPending(null)} />}
+    {pending && <ConfirmDialog title={pending.kind === "approve" ? "Godkend og bogfør" : pending.kind === "reject" ? "Afvis kladde" : "Indsend kladde"} body={<p>{pending.kind === "approve" ? "Den præcise indsendte version bogføres irreversibelt og audit-logges." : pending.kind === "reject" ? "Kladdeversionen afvises; skriv hvorfor." : "Den aktuelle version låses til uafhængigt review."}</p>} confirmLabel={pending.kind === "approve" ? "Godkend og bogfør" : pending.kind === "reject" ? "Afvis" : "Indsend"} confirmKind={pending.kind === "reject" ? "danger" : "primary"} noteLabel={pending.kind === "reject" ? "Begrundelse" : undefined} onConfirm={(note) => action(pending.kind, pending.draft, note)} onClose={() => setPending(null)} onRefresh={state.reload} />}
   </section>;
 }

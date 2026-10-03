@@ -1,3 +1,4 @@
+import { ButtonLink, Button, PageHeader } from "../components/ui";
 // Exceptions queue view (#332) — per-virksomhed kø af undtagelser (unmatched
 // bank-rows, blokerede write-flows, dokumenter uden bilag-pligt-link osv.).
 // Listen kommer fra det nye GET /api/companies/:slug/exceptions endpoint;
@@ -5,9 +6,10 @@
 // slice 1) og bruges af 'Marker som løst'-knappen.
 
 import { useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
+import { useMutationOutcome } from "../lib/useMutationOutcome";
 import type { CompanyExceptions, ExceptionRow } from "../lib/types";
 import { ErrorState, Loading } from "../components/Feedback";
 
@@ -54,7 +56,7 @@ export function ExceptionsView() {
   const [resolveError, setResolveError] = useState<string | null>(null);
 
   const state = useAsync<CompanyExceptions>(
-    () => api.exceptions(slug, status),
+    (signal) => api.exceptions(slug, status, { signal }),
     [slug, status, refresh],
   );
 
@@ -65,12 +67,13 @@ export function ExceptionsView() {
     setParams(updated, { replace: true });
   };
 
+  const outcome = useMutationOutcome(state.reload);
   const resolve = async (row: ExceptionRow) => {
-    if (resolving.has(row.id)) return;
+    if (resolving.has(row.id) || outcome.isBlocked()) return;
     setResolveError(null);
     setResolving((s) => new Set([...s, row.id]));
     try {
-      await api.resolveException(slug, row.id, "Markeret som løst fra cockpittet");
+      await api.resolveException(slug, row.id, "Markeret som løst fra cockpittet").catch(outcome.reject);
       setRefresh((n) => n + 1);
     } catch (err) {
       setResolveError(
@@ -89,40 +92,43 @@ export function ExceptionsView() {
   // BankView) — only show the spinner on the FIRST load, never on a refresh.
   if (state.loading && !state.data) return <Loading />;
   // `onRetry` so a failed load is not a dead end — the owner can re-run it.
-  if (state.error)
+  if (state.error && !state.data)
     return <ErrorState message={state.error} onRetry={state.reload} />;
   const data = state.data!;
   const rows = data.rows;
 
   return (
     <section className="exceptions-view">
-      <header className="page-head">
+      {outcome.feedback}
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. De tidligere hentede undtagelser vises fortsat.</div>}
+      <PageHeader title="Undtagelser" actions={<><div className="row-actions">
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+            Administrér
+          </ButtonLink>
+        </div></>}>
         <div>
-          <h2>{data.company.name}</h2>
+
           <p className="muted">
             {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
             {data.company.country} · Undtagelser
           </p>
         </div>
-        <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </header>
+
+      </PageHeader>
 
       <section className="card">
         <h3>Status</h3>
         <div className="filter-bar">
           {STATUS_TABS.map((t) => (
-            <button
+            <Button
               key={t.value}
+              aria-pressed={status === t.value}
               type="button"
               className={`btn small ${status === t.value ? "primary" : "secondary"}`}
               onClick={() => setStatus(t.value)}
             >
               {t.label}
-            </button>
+            </Button>
           ))}
         </div>
         <p className="muted">
@@ -148,7 +154,7 @@ export function ExceptionsView() {
           <p className="muted">Ingen undtagelser i denne status.</p>
         </div>
       ) : (
-        <table className="table">
+        <div className="table-scroll"><table className="table">
           <thead>
             <tr>
               <th>ID</th>
@@ -177,14 +183,14 @@ export function ExceptionsView() {
                 <td className="muted">{row.createdAt}</td>
                 <td>
                   {row.status === "open" ? (
-                    <button
+                    <Button requiredPermission="company.review" variant="secondary"
                       type="button"
                       className="btn small secondary"
                       onClick={() => resolve(row)}
-                      disabled={resolving.has(row.id)}
+                      disabled={resolving.has(row.id) || outcome.blocked}
                     >
                       {resolving.has(row.id) ? "Markerer …" : "Markér som løst"}
-                    </button>
+                    </Button>
                   ) : (
                     <span className="muted">
                       Løst{row.resolvedAt ? ` ${row.resolvedAt}` : ""}
@@ -195,7 +201,7 @@ export function ExceptionsView() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       )}
     </section>
   );

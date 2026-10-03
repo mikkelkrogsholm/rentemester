@@ -1,3 +1,7 @@
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useDiscardGuard } from "../lib/useDiscardGuard";
+import * as stylex from "@stylexjs/stylex";
+import { Button, Dialog, Input } from "./ui";
 // BankImportModal — the human bank-CSV-import action for the Cockpit (#213, slice 2).
 //
 // A person opens this from the Bank view, picks a bank-statement CSV file, and
@@ -10,7 +14,7 @@
 // field, so it cannot be reused directly for a file upload) and reuses the
 // shared `LockBanner` for a 409 backup-lock rejection.
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { api, type BankImportSummary } from "../lib/api";
 import { Banner } from "./Feedback";
 import { LockBanner } from "./LockBanner";
@@ -42,7 +46,7 @@ export type BankImportModalProps = {
   onClose: () => void;
 };
 
-export function BankImportModal({ slug, onImported, onClose }: BankImportModalProps) {
+export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankImportModalProps) {
   const [fileName, setFileName] = useState<string | null>(null);
   const [csvContent, setCsvContent] = useState<string | null>(null);
   const [account, setAccount] = useState("");
@@ -54,14 +58,11 @@ export function BankImportModal({ slug, onImported, onClose }: BankImportModalPr
   const closeRef = useRef<HTMLButtonElement>(null);
 
   // Move focus into the dialog and let Escape dismiss it — basic modal hygiene.
-  useEffect(() => {
-    closeRef.current?.focus();
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape" && !busy) onClose();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [busy, onClose]);
+
+
+  const outcome = useMutationOutcome(onImported);
+  const guard = useDiscardGuard(!done && Boolean(csvContent || account || profile), onDismiss);
+  const { onClose } = guard;
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -83,6 +84,7 @@ export function BankImportModal({ slug, onImported, onClose }: BankImportModalPr
   }
 
   async function handleImport() {
+    if (outcome.isBlocked()) return;
     if (!csvContent) {
       setError("Vælg en CSV-fil først.");
       return;
@@ -95,7 +97,7 @@ export function BankImportModal({ slug, onImported, onClose }: BankImportModalPr
         csvContent,
         account: account.trim() || undefined,
         profile: profile.trim() || undefined,
-      });
+      }).catch(outcome.reject);
       setDone(summary);
       onImported();
     } catch (err) {
@@ -110,21 +112,11 @@ export function BankImportModal({ slug, onImported, onClose }: BankImportModalPr
   }
 
   return (
-    <div
-      className="modal-overlay"
-      role="presentation"
-      onClick={() => {
-        if (!busy) onClose();
-      }}
-    >
-      <div
-        className="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Importér kontoudtog"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="modal-title">Importér kontoudtog</h3>
+    <Dialog title="Importér kontoudtog" onClose={onClose} busy={busy} initialFocusRef={closeRef}>
+    {outcome.feedback}
+      {guard.confirmation}
+
+
 
         {done ? (
           // After a successful import the modal becomes a short receipt.
@@ -153,14 +145,14 @@ export function BankImportModal({ slug, onImported, onClose }: BankImportModalPr
               </Banner>
             )}
             <div className="modal-actions">
-              <button
+              <Button
                 type="button"
                 className="btn"
                 ref={closeRef}
                 onClick={onClose}
               >
                 Luk
-              </button>
+              </Button>
             </div>
           </>
         ) : (
@@ -171,7 +163,7 @@ export function BankImportModal({ slug, onImported, onClose }: BankImportModalPr
                 springes automatisk over. Uafstemte transaktioner bliver til
                 opgaver.
               </p>
-              <p className="muted" style={{ marginTop: "0.5rem" }}>
+              <p className={["muted", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
                 Eksportér som CSV fra netbanken med standardindstillinger.
                 Filen må gerne være UTF-8 eller Latin-1; importeren forsøger
                 begge og auto-detekterer komma, semikolon og tabulator.{" "}
@@ -184,7 +176,7 @@ export function BankImportModal({ slug, onImported, onClose }: BankImportModalPr
                 </a>
                 .
               </p>
-              <p className="muted" style={{ marginTop: "0.5rem" }}>
+              <p className={["muted", stylex.props(viewStyles.site1).className].filter(Boolean).join(" ")} >
                 <strong>Understøttede bankprofiler:</strong>{" "}
                 {SUPPORTED_BANK_PROFILES.map((p, i) => (
                   <span key={p.name}>
@@ -202,27 +194,27 @@ export function BankImportModal({ slug, onImported, onClose }: BankImportModalPr
 
             <label className="modal-field">
               CSV-fil
-              <input
+              <Input
                 type="file"
                 accept=".csv,text/csv"
                 onChange={handleFile}
-                disabled={busy}
+                disabled={outcome.blocked || (busy)}
               />
             </label>
             {fileName && (
-              <p className="muted" style={{ margin: 0 }}>
+              <p className={["muted", stylex.props(viewStyles.site2).className].filter(Boolean).join(" ")} >
                 Valgt: {fileName}
               </p>
             )}
 
             <label className="modal-field">
               Bankkonto (valgfri)
-              <input
+              <Input
                 type="text"
                 value={account}
                 placeholder="fx hovedkonto eller 1234-5678901234"
                 onChange={(e) => setAccount(e.target.value)}
-                disabled={busy}
+                disabled={outcome.blocked || (busy)}
               />
               <span className="field-hint">
                 Kun nødvendigt hvis virksomheden har flere bankkonti og du vil
@@ -233,12 +225,12 @@ export function BankImportModal({ slug, onImported, onClose }: BankImportModalPr
 
             <label className="modal-field">
               Bankformat (valgfri)
-              <input
+              <Input
                 type="text"
                 value={profile}
                 placeholder="fx danske-bank"
                 onChange={(e) => setProfile(e.target.value)}
-                disabled={busy}
+                disabled={outcome.blocked || (busy)}
               />
               <span className="field-hint">
                 Lad feltet stå tomt — importeren forsøger automatisk at
@@ -250,26 +242,32 @@ export function BankImportModal({ slug, onImported, onClose }: BankImportModalPr
             </label>
 
             <div className="modal-actions">
-              <button
+              <Button variant="secondary"
                 type="button"
                 className="btn secondary"
                 onClick={onClose}
                 disabled={busy}
               >
                 Annullér
-              </button>
-              <button
+              </Button>
+              <Button requiredPermission="company.ledger.post"
                 type="button"
                 className="btn"
                 onClick={handleImport}
-                disabled={busy || !csvContent}
+                disabled={outcome.blocked || (busy || !csvContent)}
               >
                 {busy ? "Importerer…" : "Importér"}
-              </button>
+              </Button>
             </div>
           </>
         )}
-      </div>
-    </div>
+
+    </Dialog>
   );
 }
+
+const viewStyles = stylex.create({
+site0: { marginTop: "0.5rem" },
+site1: { marginTop: "0.5rem" },
+site2: { margin: 0 }
+});

@@ -1,3 +1,5 @@
+import * as stylex from "@stylexjs/stylex";
+import { ButtonLink, Button, Input, Select, FilterBar, Pagination, PageHeader } from "../components/ui";
 // Kontakter — the per-company customers and vendors (cockpit-redesign it. 5).
 //
 // Renders `/api/companies/:slug/contacts`: the master data — customers (kunder)
@@ -14,7 +16,7 @@
 // Importér button remains for one-off CSV migrations.
 
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
 import { formatKroner } from "../lib/format";
@@ -59,9 +61,20 @@ export function ContactsView() {
   const { slug = "" } = useParams();
   const { year, setYear } = useCompanyYear();
   const state = useAsync<CompanyContacts>(
-    () => api.contacts(slug),
+    (signal) => api.contacts(slug, { signal }),
     [slug],
   );
+  const [params, setParams] = useSearchParams();
+  const query = params.get("q") ?? "";
+  const kindFilter = params.get("kind") ?? "all";
+  function setContactFilter(key: "q" | "kind", value: string) {
+    const next = new URLSearchParams(params);
+    if (value && value !== "all") next.set(key, value); else next.delete(key);
+    next.delete("page"); setParams(next, { replace: true });
+  }
+  function changePage(value: number, size: number) {
+    const next = new URLSearchParams(params); next.set("page", String(value)); next.set("pageSize", String(size)); setParams(next, { replace: true });
+  }
   // True while the generic file-import modal is open.
   const [importing, setImporting] = useState(false);
   // The create/edit modal — undefined when closed.
@@ -74,7 +87,7 @@ export function ContactsView() {
 
   if (state.loading && !state.data)
     return <Loading label="Henter kontakter…" />;
-  if (state.error)
+  if (state.error && !state.data)
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const c = state.data!;
@@ -85,6 +98,19 @@ export function ContactsView() {
     c.fiscalYears[0]?.label ??
     String(new Date().getFullYear());
   const total = c.customers.length + c.vendors.length;
+  const needle = query.trim().toLocaleLowerCase("da");
+  const matches = (row: { name: string; vatOrCvr: string | null; email?: string | null }) => !needle || [row.name, row.vatOrCvr, row.email].some(value => value?.toLocaleLowerCase("da").includes(needle));
+  const customers = kindFilter === "vendors" ? [] : c.customers.filter(matches).sort((a, b) => a.name.localeCompare(b.name, "da"));
+  const vendors = kindFilter === "customers" ? [] : c.vendors.filter(matches).sort((a, b) => a.name.localeCompare(b.name, "da"));
+  const filteredTotal = customers.length + vendors.length;
+  const requestedSize = Number(params.get("pageSize"));
+  const pageSize = [25, 50, 100].includes(requestedSize) ? requestedSize : 50;
+  const requestedPage = Number(params.get("page"));
+  const page = Math.min(Math.max(1, Number.isSafeInteger(requestedPage) ? requestedPage : 1), Math.max(1, Math.ceil(filteredTotal / pageSize)));
+  const first = (page - 1) * pageSize;
+  const pageCustomers = customers.slice(first, first + pageSize);
+  const pageVendors = vendors.slice(Math.max(0, first - customers.length), Math.max(0, first + pageSize - customers.length));
+
 
   function openCreate(kind: ContactKind) {
     setModal({ kind } as ModalState);
@@ -108,41 +134,42 @@ export function ContactsView() {
 
   return (
     <section className="statement">
-      <div className="page-head">
-        <div>
-          <h2>{c.company.name}</h2>
-          <p className="muted">
-            {c.company.cvr ? `CVR ${c.company.cvr} · ` : ""}
-            {c.company.country} · {currency} · Kontakter
-          </p>
-        </div>
-        <div className="row-actions">
-          <button
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+      <PageHeader title="Kontakter" actions={<><div className="row-actions">
+          <Button requiredPermission="company.master-data"
             type="button"
             className="btn"
             onClick={() => openCreate("customer")}
           >
             Tilføj kunde
-          </button>
-          <button
+          </Button>
+          <Button requiredPermission="company.master-data"
             type="button"
             className="btn"
             onClick={() => openCreate("vendor")}
           >
             Tilføj leverandør
-          </button>
-          <button
+          </Button>
+          <Button requiredPermission="company.ledger.post" variant="secondary"
             type="button"
             className="btn secondary"
             onClick={() => setImporting(true)}
           >
             Importér
-          </button>
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
+          </Button>
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
-          </Link>
+          </ButtonLink>
+        </div></>}>
+        <div>
+
+          <p className="muted">
+            {c.company.cvr ? `CVR ${c.company.cvr} · ` : ""}
+            {c.company.country} · {currency} · Kontakter
+          </p>
         </div>
-      </div>
+
+      </PageHeader>
 
       <CompanyNav
         slug={slug}
@@ -207,10 +234,15 @@ export function ContactsView() {
             // Reload so the deleted row disappears immediately.
             state.reload();
           }}
-          onClose={() => setPendingDelete(undefined)}
+          onClose={() => setPendingDelete(undefined)} onRefresh={state.reload}
         />
       )}
 
+      <FilterBar activeCount={Number(Boolean(query)) + Number(kindFilter !== "all")} onReset={() => { const next = new URLSearchParams(params); next.delete("q"); next.delete("kind"); next.delete("page"); setParams(next, { replace: true }); }}>
+        <label>Søg kontakter<Input type="search" value={query} onChange={event => setContactFilter("q", event.target.value)} placeholder="Navn, CVR eller e-mail" /></label>
+        <label>Kontakttype<Select value={kindFilter} onChange={event => setContactFilter("kind", event.target.value)}><option value="all">Alle kontakter</option><option value="customers">Kunder</option><option value="vendors">Leverandører</option></Select></label>
+      </FilterBar>
+      {total > 0 && filteredTotal === 0 && <p role="status">Ingen kontakter matcher filtrene.</p>}
       {total === 0 ? (
         <div className="card archived-notice">
           <h3>Ingen kontakter endnu</h3>
@@ -220,21 +252,21 @@ export function ContactsView() {
             for at oprette stamdata — eller «Importér» til at hente kontakter
             fra et tidligere bogføringssystem.
           </p>
-          <div className="row-actions" style={{ marginTop: "1rem" }}>
-            <button
+          <div className={["row-actions", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
+            <Button requiredPermission="company.master-data"
               type="button"
               className="btn"
               onClick={() => openCreate("customer")}
             >
               Tilføj kunde
-            </button>
-            <button
+            </Button>
+            <Button requiredPermission="company.master-data"
               type="button"
               className="btn"
               onClick={() => openCreate("vendor")}
             >
               Tilføj leverandør
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
@@ -248,23 +280,24 @@ export function ContactsView() {
 
           <div className="section">
             <h3>Kunder</h3>
-            <CustomerTable
-              customers={c.customers}
+            {pageCustomers.length === 0 && customers.length > 0 ? <p className="muted">Kunderne vises på en anden side.</p> : <CustomerTable
+              customers={pageCustomers}
               onEdit={openEditCustomer}
               onDelete={openDeleteCustomer}
-            />
+            />}
           </div>
 
           <div className="section">
             <h3>Leverandører</h3>
-            <VendorTable
-              vendors={c.vendors}
+            {pageVendors.length === 0 && vendors.length > 0 ? <p className="muted">Leverandørerne vises på en anden side.</p> : <VendorTable
+              vendors={pageVendors}
               onEdit={openEditVendor}
               onDelete={openDeleteVendor}
-            />
+            />}
           </div>
         </>
       )}
+      {total > 0 && <Pagination total={filteredTotal} page={page} pageSize={pageSize} onPageChange={value => changePage(value, pageSize)} onPageSizeChange={size => changePage(1, size)} />}
     </section>
   );
 }
@@ -279,35 +312,35 @@ function CustomerTable({
   onDelete: (row: ContactCustomerRow) => void;
 }) {
   return (
-    <div className="card statement-card table-scroll">
-      <table className="data statement-table">
+    <div className="card statement-card table-scroll daily-list">
+      <table role="table" className="data statement-table">
         <thead>
-          <tr>
-            <th>Navn</th>
-            <th>CVR / moms-nr.</th>
-            <th>E-mail</th>
-            <th>Valuta</th>
-            <th className="num">Betalingsfrist</th>
-            <th className="num">Udestående</th>
+          <tr role="row">
+            <th role="columnheader">Navn</th>
+            <th role="columnheader">CVR / moms-nr.</th>
+            <th role="columnheader">E-mail</th>
+            <th role="columnheader">Valuta</th>
+            <th role="columnheader" className="num">Betalingsfrist</th>
+            <th role="columnheader" className="num">Udestående</th>
             <th aria-label="Handlinger" />
           </tr>
         </thead>
         <tbody>
           {customers.length === 0 ? (
-            <tr>
-              <td colSpan={7} className="empty-inline">
+            <tr role="row">
+              <td role="cell" colSpan={7} className="empty-inline">
                 Ingen kunder registreret.
               </td>
             </tr>
           ) : (
             customers.map((row) => (
-              <tr key={row.id}>
-                <td>{row.name}</td>
-                <td className="account-no">{row.vatOrCvr ?? "—"}</td>
-                <td>{row.email ?? "—"}</td>
-                <td>{row.defaultCurrency}</td>
-                <td className="num">{row.paymentTermsDays} dage</td>
-                <td className="num">
+              <tr role="row" key={row.id}>
+                <td data-label="Navn" role="cell">{row.name}</td>
+                <td data-label="CVR / moms-nr." role="cell" className="account-no">{row.vatOrCvr ?? "—"}</td>
+                <td data-label="E-mail" role="cell">{row.email ?? "—"}</td>
+                <td data-label="Valuta" role="cell">{row.defaultCurrency}</td>
+                <td data-label="Betalingsfrist" role="cell" className="num">{row.paymentTermsDays} dage</td>
+                <td data-label="Udestående" role="cell" className="num">
                   {row.openInvoiceCount === 0 ? (
                     <span className="muted">—</span>
                   ) : (
@@ -331,23 +364,23 @@ function CustomerTable({
                     </>
                   )}
                 </td>
-                <td className="num row-actions">
-                  <button
+                <td data-label="Oplysning" role="cell" className="num row-actions">
+                  <Button requiredPermission="company.master-data" variant="secondary"
                     type="button"
                     className="btn secondary"
                     onClick={() => onEdit(row)}
                     aria-label={`Redigér ${row.name}`}
                   >
                     Redigér
-                  </button>
-                  <button
+                  </Button>
+                  <Button requiredPermission="company.master-data" variant="danger"
                     type="button"
                     className="btn danger"
                     onClick={() => onDelete(row)}
                     aria-label={`Slet ${row.name}`}
                   >
                     Slet
-                  </button>
+                  </Button>
                 </td>
               </tr>
             ))
@@ -368,55 +401,55 @@ function VendorTable({
   onDelete: (row: ContactVendorRow) => void;
 }) {
   return (
-    <div className="card statement-card table-scroll">
-      <table className="data statement-table">
+    <div className="card statement-card table-scroll daily-list">
+      <table role="table" className="data statement-table">
         <thead>
-          <tr>
-            <th>Navn</th>
-            <th>CVR / moms-nr.</th>
-            <th>Standard udgiftskonto</th>
-            <th>Momsbehandling</th>
+          <tr role="row">
+            <th role="columnheader">Navn</th>
+            <th role="columnheader">CVR / moms-nr.</th>
+            <th role="columnheader">Standard udgiftskonto</th>
+            <th role="columnheader">Momsbehandling</th>
             <th aria-label="Handlinger" />
           </tr>
         </thead>
         <tbody>
           {vendors.length === 0 ? (
-            <tr>
-              <td colSpan={5} className="empty-inline">
+            <tr role="row">
+              <td role="cell" colSpan={5} className="empty-inline">
                 Ingen leverandører registreret.
               </td>
             </tr>
           ) : (
             vendors.map((row) => (
-              <tr key={row.id}>
-                <td>{row.name}</td>
-                <td className="account-no">{row.vatOrCvr ?? "—"}</td>
-                <td className="account-no">
+              <tr role="row" key={row.id}>
+                <td data-label="Navn" role="cell">{row.name}</td>
+                <td data-label="CVR / moms-nr." role="cell" className="account-no">{row.vatOrCvr ?? "—"}</td>
+                <td data-label="Standard udgiftskonto" role="cell" className="account-no">
                   {row.defaultExpenseAccount ?? "—"}
                 </td>
-                <td>
+                <td data-label="Momsbehandling" role="cell">
                   {row.defaultVatTreatment
                     ? VAT_TREATMENT_LABELS[row.defaultVatTreatment] ??
                       row.defaultVatTreatment
                     : "—"}
                 </td>
-                <td className="num row-actions">
-                  <button
+                <td data-label="Oplysning" role="cell" className="num row-actions">
+                  <Button requiredPermission="company.master-data" variant="secondary"
                     type="button"
                     className="btn secondary"
                     onClick={() => onEdit(row)}
                     aria-label={`Redigér ${row.name}`}
                   >
                     Redigér
-                  </button>
-                  <button
+                  </Button>
+                  <Button requiredPermission="company.master-data" variant="danger"
                     type="button"
                     className="btn danger"
                     onClick={() => onDelete(row)}
                     aria-label={`Slet ${row.name}`}
                   >
                     Slet
-                  </button>
+                  </Button>
                 </td>
               </tr>
             ))
@@ -426,3 +459,7 @@ function VendorTable({
     </div>
   );
 }
+
+const viewStyles = stylex.create({
+site0: { marginTop: "1rem" }
+});

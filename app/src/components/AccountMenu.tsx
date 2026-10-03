@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { Button, Dialog, Field, Input } from "./ui";
+import { ConfirmDialog } from "./ConfirmDialog";
+import { usePendingChanges } from "../lib/useUnsavedChanges";
+import { useId, useRef, useState } from "react";
 import { authClient } from "../lib/auth-client";
 import { useAuth } from "../lib/auth-context";
 
@@ -29,6 +32,8 @@ function createdLabel(value: string | Date): string {
 
 export function AccountMenu() {
   const { session, currentSessionId, context, clear, refresh } = useAuth();
+  const pendingChanges = usePendingChanges();
+  const [confirmation, setConfirmation] = useState<"sign-out" | "all" | ListedSession | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -37,28 +42,36 @@ export function AccountMenu() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const sessionsId = useId();
+  const passwordId = useId();
+  const sessionsTrigger = useRef<HTMLButtonElement>(null);
+  const passwordTrigger = useRef<HTMLButtonElement>(null);
+  const closePassword = () => {
+    setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+    setShowPassword(false); setError(null);
+  };
   if (!session) return null;
-  const signOut = async () => {
+  const signOut = async (reportFailure = false) => {
     setBusy(true); setError(null);
     try {
       const result = await authClient.signOut();
       if (result.error) throw new Error("sign out failed");
       clear();
-    } catch { setError("Kunne ikke logge ud. Prøv igen."); }
+    } catch { const message = "Kunne ikke logge ud. Prøv igen."; setError(message); if (reportFailure) throw new Error(message); }
     finally { setBusy(false); }
   };
   const revokeAll = async () => {
-    if (!window.confirm("Log ud på alle enheder? Du skal logge ind igen.")) return;
     setBusy(true); setError(null);
     try {
       const result = await authClient.revokeSessions();
       if (result.error) throw new Error("revoke failed");
       clear();
-    } catch { setError("Kunne ikke logge ud på alle enheder. Din nuværende session er stadig aktiv."); }
+    } catch { const message = "Kunne ikke logge ud på alle enheder. Din nuværende session er stadig aktiv."; throw new Error(message); }
     finally { setBusy(false); }
   };
   const showSessions = async () => {
     if (sessions) { setSessions(null); return; }
+    closePassword();
     setBusy(true); setError(null);
     try {
       const result = await authClient.listSessions();
@@ -71,13 +84,12 @@ export function AccountMenu() {
     finally { setBusy(false); }
   };
   const revokeOne = async (listed: ListedSession) => {
-    if (!window.confirm("Afslut denne session? Enheden skal logge ind igen.")) return;
     setBusy(true); setError(null);
     try {
       const result = await authClient.revokeSession({ token: listed.token });
       if (result.error) throw new Error("revoke failed");
       setSessions((current) => current?.filter((entry) => entry.id !== listed.id) ?? null);
-    } catch { setError("Kunne ikke afslutte sessionen."); }
+    } catch { const message = "Kunne ikke afslutte sessionen."; throw new Error(message); }
     finally { setBusy(false); }
   };
   const changePassword = async () => {
@@ -103,26 +115,34 @@ export function AccountMenu() {
   };
   return <div className="account-menu" role="group" aria-label="Konto">
     <span className="account-identity"><span className="account-email">{session.email}</span><span className="account-role">{workspaceRoleLabel(context?.workspaceRole)}</span></span>
-    <button className="btn secondary" type="button" onClick={() => void signOut()} disabled={busy}>Log ud</button>
-    <button className="account-revoke" type="button" onClick={() => void showSessions()} disabled={busy}>{sessions ? "Skjul sessioner" : "Sessioner"}</button>
-    <button className="account-revoke" type="button" onClick={() => setShowPassword((shown) => !shown)} disabled={busy}>{showPassword ? "Luk" : "Skift adgangskode"}</button>
-    {sessions && <section className="session-panel" aria-label="Aktive sessioner">
-      <h2>Aktive sessioner</h2>
+    <Button className="btn secondary" type="button" onClick={() => pendingChanges ? setConfirmation("sign-out") : void signOut()} disabled={busy}>Log ud</Button>
+    <Button ref={sessionsTrigger} className="account-revoke" type="button" aria-haspopup="dialog" aria-expanded={sessions !== null} aria-controls={sessionsId} onClick={() => void showSessions()} disabled={busy}>Sessioner</Button>
+    <Button ref={passwordTrigger} className="account-revoke" type="button" aria-haspopup="dialog" aria-expanded={showPassword} aria-controls={passwordId} onClick={() => { setSessions(null); setError(null); setMessage(null); setShowPassword(true); }} disabled={busy}>Skift adgangskode</Button>
+    {sessions && <Dialog id={sessionsId} title="Aktive sessioner" onClose={() => setSessions(null)} busy={busy} returnFocusRef={sessionsTrigger}>
+      <div className="account-panel">
       {sessions.length === 0 && <p>Ingen aktive sessioner.</p>}
       <ul>{sessions.map((listed) => <li key={listed.id}>
         <span><strong>{listed.id === currentSessionId ? "Denne enhed" : deviceHint(listed.userAgent)}</strong><small>{createdLabel(listed.createdAt)}</small></span>
-        {listed.id !== currentSessionId && <button type="button" className="account-revoke" disabled={busy} onClick={() => void revokeOne(listed)}>Afslut</button>}
+        {listed.id !== currentSessionId && <Button type="button" className="account-revoke" disabled={busy} onClick={() => setConfirmation(listed)}>Afslut</Button>}
       </li>)}</ul>
-      <button className="account-revoke" type="button" onClick={() => void revokeAll()} disabled={busy}>Log ud på alle enheder</button>
-    </section>}
-    {showPassword && <section className="session-panel" aria-label="Skift adgangskode">
-      <h2>Skift adgangskode</h2>
-      <label>Nuværende adgangskode<input type="password" autoComplete="current-password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} disabled={busy} /></label>
-      <label>Ny adgangskode<input type="password" autoComplete="new-password" minLength={12} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} disabled={busy} /></label>
-      <label>Gentag ny adgangskode<input type="password" autoComplete="new-password" minLength={12} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} disabled={busy} /></label>
-      <button className="btn" type="button" onClick={() => void changePassword()} disabled={busy || !currentPassword || !newPassword || !confirmPassword}>Skift adgangskode</button>
-    </section>}
+      <Button className="account-revoke" type="button" onClick={() => setConfirmation("all")} disabled={busy}>Log ud på alle enheder</Button>
+      <div className="modal-actions"><Button variant="secondary" onClick={() => setSessions(null)} disabled={busy}>Luk</Button></div>
+      </div>
+    </Dialog>}
+    {showPassword && <Dialog id={passwordId} title="Skift adgangskode" onClose={closePassword} busy={busy} returnFocusRef={passwordTrigger}>
+      <form className="workflow-form" onSubmit={(event) => { event.preventDefault(); void changePassword(); }}>
+        {error && <p role="alert" className="banner error">{error}</p>}
+        <Field label="Nuværende adgangskode"><Input type="password" autoComplete="current-password" required value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} disabled={busy} /></Field>
+        <Field label="Ny adgangskode" help="Mindst 12 tegn. Andre enheder skal logge ind igen."><Input type="password" autoComplete="new-password" minLength={12} required value={newPassword} onChange={(event) => setNewPassword(event.target.value)} disabled={busy} /></Field>
+        <Field label="Gentag ny adgangskode"><Input type="password" autoComplete="new-password" minLength={12} required value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} disabled={busy} /></Field>
+        <div className="modal-actions">
+          <Button variant="secondary" onClick={closePassword} disabled={busy}>Annullér</Button>
+          <Button type="submit" busy={busy} disabled={!currentPassword || !newPassword || !confirmPassword}>Skift adgangskode</Button>
+        </div>
+      </form>
+    </Dialog>}
+    {confirmation && <ConfirmDialog title={confirmation === "sign-out" ? "Log ud?" : confirmation === "all" ? "Log ud på alle enheder?" : "Afslut session?"} body={<p>{confirmation === "all" ? "Alle enheder skal logge ind igen." : confirmation === "sign-out" ? "Du bliver logget ud." : "Denne enhed skal logge ind igen."}{pendingChanges ? " Du har ændringer, som ikke er gemt, og de bliver kasseret." : ""}</p>} confirmLabel={typeof confirmation === "object" ? "Afslut session" : "Log ud"} confirmKind="danger" onClose={() => setConfirmation(null)} onConfirm={async () => { if (confirmation === "all") await revokeAll(); else if (confirmation === "sign-out") await signOut(true); else await revokeOne(confirmation); }} />}
     {message && <span role="status" className="account-message">{message}</span>}
-    {error && <span role="alert" className="account-error">{error}</span>}
+    {error && !showPassword && <span role="alert" className="account-error">{error}</span>}
   </div>;
 }

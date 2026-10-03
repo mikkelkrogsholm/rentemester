@@ -1,3 +1,7 @@
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useDiscardGuard } from "../lib/useDiscardGuard";
+import * as stylex from "@stylexjs/stylex";
+import { Button, Dialog, Input, Textarea } from "./ui";
 // MileageRegisterModal — the human "Registrér kørsel" action for the Cockpit
 // (#335).
 //
@@ -9,7 +13,7 @@
 // audit data — the schema's triggers refuse any update or delete — so the
 // body carries `confirm: true`.
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { api } from "../lib/api";
 import { formatKroner, parseDanishAmount, todayIso } from "../lib/format";
 import type { MileageEntrySummary } from "../lib/types";
@@ -30,7 +34,7 @@ export type MileageRegisterModalProps = {
 export function MileageRegisterModal({
   slug,
   onRegistered,
-  onClose,
+  onClose: onDismiss,
 }: MileageRegisterModalProps) {
   const [tripDate, setTripDate] = useState(todayIso());
   const [purpose, setPurpose] = useState("");
@@ -55,14 +59,11 @@ export function MileageRegisterModal({
   const closeRef = useRef<HTMLButtonElement>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    (firstFieldRef.current ?? closeRef.current)?.focus();
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape" && !busy) onClose();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [busy, onClose]);
+
+
+  const outcome = useMutationOutcome(onRegistered);
+  const guard = useDiscardGuard(!done && (Boolean(purpose || fromLocation || toLocation || kilometers || driver || ratePerKm || rateBasis || rateSource || notes) || tripDate !== todayIso() || vehicle !== "Privat bil"), onDismiss);
+  const { onClose } = guard;
 
   function reset() {
     // Keep the vehicle + rate-basis fields so repeat trips are quick to log.
@@ -78,6 +79,7 @@ export function MileageRegisterModal({
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (outcome.isBlocked()) return;
     setError(null);
     setLocked(null);
 
@@ -112,7 +114,7 @@ export function MileageRegisterModal({
         rateBasis: rateBasis.trim(),
         ...(rateSource.trim() ? { rateSource: rateSource.trim() } : {}),
         ...(notes.trim() ? { notes: notes.trim() } : {}),
-      });
+      }).catch(outcome.reject);
       setDone(result);
       onRegistered();
     } catch (err) {
@@ -136,16 +138,13 @@ export function MileageRegisterModal({
     kmPreview !== null && ratePreview !== null ? kmPreview * ratePreview : null;
 
   return (
-    <div
-      className="modal-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Registrér kørsel"
-    >
-      <div className="modal">
+    <Dialog title="Registrér kørsel" onClose={onClose} busy={busy} initialFocusRef={firstFieldRef}>
+    {outcome.feedback}
+      {guard.confirmation}
+
         <div className="modal-head">
-          <h3>Registrér kørsel</h3>
-          <button
+
+          <Button variant="secondary"
             type="button"
             ref={closeRef}
             className="btn secondary"
@@ -153,7 +152,7 @@ export function MileageRegisterModal({
             disabled={busy}
           >
             Luk
-          </button>
+          </Button>
         </div>
 
         {locked && <LockBanner message={locked} />}
@@ -168,13 +167,13 @@ export function MileageRegisterModal({
                 : "—"}{" "}
               i godtgørelsesgrundlag.
             </Banner>
-            <div className="row-actions" style={{ marginTop: "0.75rem" }}>
-              <button type="button" className="btn" onClick={reset}>
+            <div className={["row-actions", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
+              <Button type="button" className="btn" onClick={reset}>
                 Registrér en til
-              </button>
-              <button type="button" className="btn secondary" onClick={onClose}>
+              </Button>
+              <Button variant="secondary" type="button" className="btn secondary" onClick={onClose}>
                 Færdig
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
@@ -182,7 +181,7 @@ export function MileageRegisterModal({
             <div className="form-grid">
               <label>
                 <span>Dato</span>
-                <input
+                <Input disabled={outcome.blocked}
                   ref={firstFieldRef}
                   type="date"
                   value={tripDate}
@@ -192,7 +191,7 @@ export function MileageRegisterModal({
               </label>
               <label>
                 <span>Formål</span>
-                <input
+                <Input disabled={outcome.blocked}
                   type="text"
                   value={purpose}
                   onChange={(e) => setPurpose(e.target.value)}
@@ -202,7 +201,7 @@ export function MileageRegisterModal({
               </label>
               <label>
                 <span>Fra-adresse</span>
-                <input
+                <Input disabled={outcome.blocked}
                   type="text"
                   value={fromLocation}
                   onChange={(e) => setFromLocation(e.target.value)}
@@ -212,7 +211,7 @@ export function MileageRegisterModal({
               </label>
               <label>
                 <span>Til-adresse</span>
-                <input
+                <Input disabled={outcome.blocked}
                   type="text"
                   value={toLocation}
                   onChange={(e) => setToLocation(e.target.value)}
@@ -222,7 +221,7 @@ export function MileageRegisterModal({
               </label>
               <label>
                 <span>Antal km</span>
-                <input
+                <Input disabled={outcome.blocked}
                   type="number"
                   step="0.1"
                   min="0"
@@ -233,7 +232,7 @@ export function MileageRegisterModal({
               </label>
               <label>
                 <span>Køretøj</span>
-                <input
+                <Input disabled={outcome.blocked}
                   type="text"
                   value={vehicle}
                   onChange={(e) => setVehicle(e.target.value)}
@@ -243,7 +242,7 @@ export function MileageRegisterModal({
               </label>
               <label>
                 <span>Chauffør</span>
-                <input
+                <Input disabled={outcome.blocked}
                   type="text"
                   value={driver}
                   onChange={(e) => setDriver(e.target.value)}
@@ -252,7 +251,7 @@ export function MileageRegisterModal({
               </label>
               <label>
                 <span>Takst (kr/km)</span>
-                <input
+                <Input disabled={outcome.blocked}
                   type="number"
                   step="0.01"
                   min="0"
@@ -263,7 +262,7 @@ export function MileageRegisterModal({
               </label>
               <label className="span-2">
                 <span>Takst-grundlag</span>
-                <input
+                <Input disabled={outcome.blocked}
                   type="text"
                   value={rateBasis}
                   onChange={(e) => setRateBasis(e.target.value)}
@@ -285,7 +284,7 @@ export function MileageRegisterModal({
               </label>
               <label className="span-2">
                 <span>Takst-kilde (valgfri)</span>
-                <input
+                <Input disabled={outcome.blocked}
                   type="url"
                   value={rateSource}
                   onChange={(e) => setRateSource(e.target.value)}
@@ -294,7 +293,7 @@ export function MileageRegisterModal({
               </label>
               <label className="span-2">
                 <span>Noter (valgfri)</span>
-                <textarea
+                <Textarea disabled={outcome.blocked}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
@@ -303,29 +302,35 @@ export function MileageRegisterModal({
             </div>
 
             {amountBasis !== null && amountBasis > 0 && (
-              <p className="muted" style={{ marginTop: "0.5rem" }}>
+              <p className={["muted", stylex.props(viewStyles.site1).className].filter(Boolean).join(" ")} >
                 Godtgørelsesgrundlag: {formatKroner(amountBasis, "DKK")} (km ×
                 takst). Beløbet er dokumentation — kørselsregisteret bogfører
                 aldrig direkte.
               </p>
             )}
 
-            <div className="row-actions" style={{ marginTop: "0.75rem" }}>
-              <button type="submit" className="btn" disabled={busy}>
+            <div className={["row-actions", stylex.props(viewStyles.site2).className].filter(Boolean).join(" ")} >
+              <Button requiredPermission="company.ledger.post" type="submit" className="btn" disabled={outcome.blocked || (busy)}>
                 {busy ? "Registrerer…" : "Registrér kørsel"}
-              </button>
-              <button
+              </Button>
+              <Button variant="secondary"
                 type="button"
                 className="btn secondary"
                 onClick={onClose}
                 disabled={busy}
               >
                 Annullér
-              </button>
+              </Button>
             </div>
           </form>
         )}
-      </div>
-    </div>
+
+    </Dialog>
   );
 }
+
+const viewStyles = stylex.create({
+site0: { marginTop: "0.75rem" },
+site1: { marginTop: "0.5rem" },
+site2: { marginTop: "0.75rem" }
+});

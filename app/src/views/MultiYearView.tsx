@@ -1,3 +1,4 @@
+import { ButtonLink, PageHeader } from "../components/ui";
 // Flerårsoversigt — a multi-year comparison (cockpit-redesign iteration 4;
 // enriched in Runde 3, iteration 11; #452: år-over-år Δ-kolonner).
 //
@@ -15,7 +16,7 @@
 // live year shows "(ej sammenligneligt — år til dato)"; a 0-denominator
 // renders "—" rather than NaN/∞.
 
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { formatKroner, formatPercent } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
@@ -29,7 +30,7 @@ export function MultiYearView() {
   const { slug = "" } = useParams();
   const { setYear } = useCompanyYear();
   const state = useAsync<CompanyMultiYear>(
-    () => api.multiYear(slug),
+    (signal) => api.multiYear(slug, { signal }),
     [slug],
   );
 
@@ -75,20 +76,20 @@ export function MultiYearView() {
 
   return (
     <section className="statement">
-      <div className="page-head">
+      <PageHeader title="Flerårsoverblik" actions={<><div className="row-actions">
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+            Administrér
+          </ButtonLink>
+        </div></>}>
         <div>
-          <h2>{m.company.name}</h2>
+
           <p className="muted">
             {m.company.cvr ? `CVR ${m.company.cvr} · ` : ""}
             {m.company.country} · {currency} · Flerårsoversigt
           </p>
         </div>
-        <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </div>
+
+      </PageHeader>
 
       <CompanyNav
         slug={slug}
@@ -110,10 +111,11 @@ export function MultiYearView() {
           <div className="section">
             <h3>Resultat — omsætning, udgifter og resultat</h3>
             <div className="card chart-card">
-              <MultiYearChart years={m.years} currentYear={currentYear} />
+              <MultiYearChart years={m.years} currentYear={currentYear} currency={currency} dataTableId="multiyear-result" />
             </div>
             <div className="card statement-card table-scroll">
-              <table className="data statement-table">
+              <table id="multiyear-result" className="data statement-table">
+                <caption>Omsætning, udgifter og resultat pr. regnskabsår ({currency})</caption>
                 <thead>
                   <tr>
                     <th>Regnskabsår</th>
@@ -216,10 +218,11 @@ export function MultiYearView() {
           <div className="section">
             <h3>Balance — balancesum og egenkapital</h3>
             <div className="card chart-card">
-              <MultiYearBalanceChart years={m.years} currentYear={currentYear} />
+              <MultiYearBalanceChart years={m.years} currentYear={currentYear} currency={currency} dataTableId="multiyear-balance" />
             </div>
             <div className="card statement-card table-scroll">
-              <table className="data statement-table">
+              <table id="multiyear-balance" className="data statement-table">
+                <caption>Balancesum og egenkapital pr. regnskabsår ({currency})</caption>
                 <thead>
                   <tr>
                     <th>Regnskabsår</th>

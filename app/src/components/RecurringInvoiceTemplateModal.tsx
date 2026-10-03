@@ -1,3 +1,8 @@
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { parseDanishAmount } from "../lib/format";
+import { useDiscardGuard } from "../lib/useDiscardGuard";
+import * as stylex from "@stylexjs/stylex";
+import { Button, Dialog, Input, Select, MoneyInput } from "./ui";
 // RecurringInvoiceTemplateModal — the human-driven create-flow for a
 // recurring-invoice template from the Cockpit (#386).
 //
@@ -89,7 +94,7 @@ const DELIVERY_MODE_OPTIONS: Array<{
 export function RecurringInvoiceTemplateModal({
   slug,
   onCreated,
-  onClose,
+  onClose: onDismiss,
 }: RecurringInvoiceTemplateModalProps) {
   const [name, setName] = useState("");
   const [interval, setInterval] = useState<RecurringInterval>("monthly");
@@ -118,18 +123,15 @@ export function RecurringInvoiceTemplateModal({
   const closeRef = useRef<HTMLButtonElement>(null);
 
   // Modal hygiene: focus the close button and let Escape dismiss.
-  useEffect(() => {
-    closeRef.current?.focus();
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape" && !busy) onClose();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [busy, onClose]);
+
 
   // Best-effort load of the customer list — same pattern as InvoiceIssueModal.
   // If the lookup fails the picker stays empty and the owner types the buyer
   // manually; template creation must not be blocked by a side-channel.
+  const outcome = useMutationOutcome(onCreated);
+  const guard = useDiscardGuard(Boolean(name || firstIssueDate || buyerName || buyerAddress || buyerVat || notes || selectedCustomerId) || interval !== "monthly" || intervalCount !== "1" || deliveryChannel !== "manual" || paymentTermsDays !== "30" || deliveryPeriodMode !== "issue_month" || vatRatePercent !== "25" || currency !== "DKK" || JSON.stringify(lines) !== JSON.stringify([EMPTY_LINE]), onDismiss);
+  const { onClose } = guard;
+
   useEffect(() => {
     let cancelled = false;
     api
@@ -174,6 +176,7 @@ export function RecurringInvoiceTemplateModal({
   }
 
   async function handleCreate() {
+    if (outcome.isBlocked()) return;
     setError(null);
     setLocked(null);
 
@@ -212,14 +215,14 @@ export function RecurringInvoiceTemplateModal({
         return;
       }
       const quantity = Number(line.quantity);
-      const unitPrice = Number(line.unitPriceExVat);
+      const unitPrice = parseDanishAmount(line.unitPriceExVat);
       if (!line.quantity.trim() || !Number.isFinite(quantity) || quantity <= 0) {
         setError(`Linje ${i + 1}: antal skal være et positivt tal.`);
         return;
       }
       if (
         !line.unitPriceExVat.trim() ||
-        !Number.isFinite(unitPrice) ||
+        unitPrice === null ||
         unitPrice < 0
       ) {
         setError(`Linje ${i + 1}: enhedspris skal være et tal større end eller lig 0.`);
@@ -257,9 +260,9 @@ export function RecurringInvoiceTemplateModal({
               }
             : undefined,
         lines: parsedLines,
-      });
+      }).catch(outcome.reject);
       onCreated();
-      onClose();
+      guard.dismiss();
     } catch (err) {
       const e = err as MaybeApiError;
       const message = e?.message ?? "Skabelonen kunne ikke oprettes.";
@@ -271,21 +274,11 @@ export function RecurringInvoiceTemplateModal({
   }
 
   return (
-    <div
-      className="modal-overlay"
-      role="presentation"
-      onClick={() => {
-        if (!busy) onClose();
-      }}
-    >
-      <div
-        className="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Opret faktura-skabelon"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="modal-title">Opret faktura-skabelon</h3>
+    <Dialog title="Opret faktura-skabelon" onClose={onClose} busy={busy} initialFocusRef={closeRef}>
+    {outcome.feedback}
+      {guard.confirmation}
+
+
 
         <div className="modal-body">
           <p>
@@ -301,12 +294,12 @@ export function RecurringInvoiceTemplateModal({
 
         <label className="modal-field">
           Navn
-          <input
+          <Input
             type="text"
             value={name}
             placeholder="fx 'ABC ApS · månedligt abonnement'"
             onChange={(e) => setName(e.target.value)}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
             aria-label="Skabelonens navn"
           />
         </label>
@@ -314,10 +307,10 @@ export function RecurringInvoiceTemplateModal({
         <div className="modal-field-grid">
           <label className="modal-field">
             Interval
-            <select
+            <Select
               value={interval}
               onChange={(e) => setInterval(e.target.value as RecurringInterval)}
-              disabled={busy}
+              disabled={outcome.blocked || (busy)}
               aria-label="Interval"
             >
               {INTERVAL_OPTIONS.map((opt) => (
@@ -325,28 +318,28 @@ export function RecurringInvoiceTemplateModal({
                   {opt.label}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <label className="modal-field">
             Gentag hver
-            <input
+            <Input
               type="number"
               min="1"
               max="120"
               inputMode="numeric"
               value={intervalCount}
               onChange={(e) => setIntervalCount(e.target.value)}
-              disabled={busy}
+              disabled={outcome.blocked || (busy)}
               aria-label="Gentag hver"
             />
           </label>
           <label className="modal-field">
             Første udstedelsesdato
-            <input
+            <Input
               type="date"
               value={firstIssueDate}
               onChange={(e) => setFirstIssueDate(e.target.value)}
-              disabled={busy}
+              disabled={outcome.blocked || (busy)}
               aria-label="Første udstedelsesdato"
             />
           </label>
@@ -354,17 +347,17 @@ export function RecurringInvoiceTemplateModal({
 
         <label className="modal-field">
           Afsendelseskanal
-          <select
+          <Select
             value={deliveryChannel}
             onChange={(e) => setDeliveryChannel(e.target.value as RecurringDeliveryChannel)}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
             aria-label="Afsendelseskanal"
           >
             {DELIVERY_CHANNEL_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
-          </select>
-          <span className="muted" style={{ fontSize: "0.85em" }}>
+          </Select>
+          <span className={["muted", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
             Manuel opretter kun fakturaen. E-mail og e-faktura afsendes af den eksterne scheduler, når kanalen er konfigureret.
           </span>
         </label>
@@ -372,23 +365,23 @@ export function RecurringInvoiceTemplateModal({
         <div className="modal-field-grid">
           <label className="modal-field">
             Betalingsfrist (dage)
-            <input
+            <Input
               type="number"
               inputMode="numeric"
               value={paymentTermsDays}
               onChange={(e) => setPaymentTermsDays(e.target.value)}
-              disabled={busy}
+              disabled={outcome.blocked || (busy)}
               aria-label="Betalingsfrist i dage"
             />
           </label>
           <label className="modal-field">
             Momssats (%)
-            <input
+            <Input
               type="number"
               inputMode="decimal"
               value={vatRatePercent}
               onChange={(e) => setVatRatePercent(e.target.value)}
-              disabled={busy}
+              disabled={outcome.blocked || (busy)}
               aria-label="Momssats i procent"
             />
           </label>
@@ -396,12 +389,12 @@ export function RecurringInvoiceTemplateModal({
 
         <label className="modal-field">
           Leveringsperiode
-          <select
+          <Select
             value={deliveryPeriodMode}
             onChange={(e) =>
               setDeliveryPeriodMode(e.target.value as DeliveryPeriodMode)
             }
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
             aria-label="Leveringsperiode"
           >
             {DELIVERY_MODE_OPTIONS.map((opt) => (
@@ -409,8 +402,8 @@ export function RecurringInvoiceTemplateModal({
                 {opt.label}
               </option>
             ))}
-          </select>
-          <span className="muted" style={{ fontSize: "0.85em" }}>
+          </Select>
+          <span className={["muted", stylex.props(viewStyles.site1).className].filter(Boolean).join(" ")} >
             {
               DELIVERY_MODE_OPTIONS.find((opt) => opt.value === deliveryPeriodMode)
                 ?.hint
@@ -420,11 +413,11 @@ export function RecurringInvoiceTemplateModal({
 
         <label className="modal-field">
           Valuta
-          <input
+          <Input
             type="text"
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
             aria-label="Valuta"
           />
         </label>
@@ -432,10 +425,10 @@ export function RecurringInvoiceTemplateModal({
         {customers.length > 0 && (
           <label className="modal-field">
             Vælg kunde
-            <select
+            <Select
               value={selectedCustomerId}
               onChange={(e) => selectCustomer(e.target.value)}
-              disabled={busy}
+              disabled={outcome.blocked || (busy)}
               aria-label="Vælg kunde"
             >
               <option value="">— Ny kunde (indtast nedenfor) —</option>
@@ -445,63 +438,63 @@ export function RecurringInvoiceTemplateModal({
                   {c.vatOrCvr ? ` · ${c.vatOrCvr}` : ""}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
         )}
 
         <div className="modal-field-grid">
           <label className="modal-field">
             Kunde
-            <input
+            <Input
               type="text"
               value={buyerName}
               placeholder="Navn"
               onChange={(e) => setBuyerName(e.target.value)}
-              disabled={busy}
+              disabled={outcome.blocked || (busy)}
               aria-label="Kundens navn"
             />
           </label>
           <label className="modal-field">
             Kunde CVR/moms
-            <input
+            <Input
               type="text"
               value={buyerVat}
               onChange={(e) => setBuyerVat(e.target.value)}
-              disabled={busy}
+              disabled={outcome.blocked || (busy)}
               aria-label="Kundens CVR eller momsnummer"
             />
           </label>
         </div>
         <label className="modal-field">
           Kundeadresse
-          <input
+          <Input
             type="text"
             value={buyerAddress}
             onChange={(e) => setBuyerAddress(e.target.value)}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
             aria-label="Kundens adresse"
           />
         </label>
 
-        <fieldset className="modal-field" style={{ border: "none", padding: 0 }}>
+        <fieldset className={["modal-field", stylex.props(viewStyles.site2).className].filter(Boolean).join(" ")} >
           <legend>Fakturalinjer</legend>
           {lines.map((line, index) => (
             <div key={index} className="invoice-line-row">
               <label className="modal-field">
                 Beskrivelse
-                <input
+                <Input
                   type="text"
                   value={line.description}
                   aria-label={`Linje ${index + 1} beskrivelse`}
                   onChange={(e) =>
                     updateLine(index, { description: e.target.value })
                   }
-                  disabled={busy}
+                  disabled={outcome.blocked || (busy)}
                 />
               </label>
               <label className="modal-field">
                 Antal
-                <input
+                <Input
                   type="number"
                   inputMode="decimal"
                   value={line.quantity}
@@ -509,24 +502,23 @@ export function RecurringInvoiceTemplateModal({
                   onChange={(e) =>
                     updateLine(index, { quantity: e.target.value })
                   }
-                  disabled={busy}
+                  disabled={outcome.blocked || (busy)}
                 />
               </label>
               <label className="modal-field">
                 Enhedspris ekskl. moms
-                <input
-                  type="number"
+                <MoneyInput
                   inputMode="decimal"
                   value={line.unitPriceExVat}
                   aria-label={`Linje ${index + 1} enhedspris`}
-                  onChange={(e) =>
-                    updateLine(index, { unitPriceExVat: e.target.value })
+                  onValueChange={(e) =>
+                    updateLine(index, { unitPriceExVat: e })
                   }
-                  disabled={busy}
+                  disabled={outcome.blocked || (busy)}
                 />
               </label>
               {lines.length > 1 && (
-                <button
+                <Button variant="secondary"
                   type="button"
                   className="btn secondary"
                   onClick={() => removeLine(index)}
@@ -534,34 +526,34 @@ export function RecurringInvoiceTemplateModal({
                   aria-label={`Fjern linje ${index + 1}`}
                 >
                   Fjern
-                </button>
+                </Button>
               )}
             </div>
           ))}
-          <button
+          <Button variant="secondary"
             type="button"
             className="btn secondary"
             onClick={addLine}
             disabled={busy}
           >
             Tilføj linje
-          </button>
+          </Button>
         </fieldset>
 
         <label className="modal-field">
           Note (valgfri)
-          <input
+          <Input
             type="text"
             value={notes}
             placeholder="fx 'Faktura sendes på e-mail'"
             onChange={(e) => setNotes(e.target.value)}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
             aria-label="Note"
           />
         </label>
 
         <div className="modal-actions">
-          <button
+          <Button variant="secondary"
             type="button"
             className="btn secondary"
             ref={closeRef}
@@ -569,17 +561,23 @@ export function RecurringInvoiceTemplateModal({
             disabled={busy}
           >
             Annullér
-          </button>
-          <button
+          </Button>
+          <Button requiredPermission="company.draft.write"
             type="button"
             className="btn"
             onClick={handleCreate}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
           >
             {busy ? "Opretter…" : "Opret skabelon"}
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+
+    </Dialog>
   );
 }
+
+const viewStyles = stylex.create({
+site0: { fontSize: "0.85em" },
+site1: { fontSize: "0.85em" },
+site2: { border: "none", padding: 0 }
+});

@@ -4,10 +4,77 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { ApiError } from "../lib/api";
+import { MutationMemoryProvider } from "../lib/mutation-memory";
 
 function noop() {}
 
 describe("ConfirmDialog", () => {
+  test("cannot repeat an unknown operation by closing and reopening its confirmation", async () => {
+    sessionStorage.clear();
+    const write = vi.fn(async () => { throw new ApiError("network", "Svar mistet", 0); });
+    const refresh = vi.fn(async () => {});
+    function Harness() {
+      const [open, setOpen] = useState(false);
+      return <MutationMemoryProvider><button type="button" onClick={() => setOpen(true)}>Åbn handling</button>{open && <ConfirmDialog title="Afstem faktura" operationKey="invoice-42" body="x" confirmLabel="Afstem" onConfirm={write} onRefresh={refresh} onClose={() => setOpen(false)} />}</MutationMemoryProvider>;
+    }
+    render(<Harness />);
+    await userEvent.click(screen.getByRole("button", { name: "Åbn handling" }));
+    await userEvent.click(screen.getByRole("button", { name: "Afstem" }));
+    await screen.findByText("Svar mistet");
+    await userEvent.click(screen.getByRole("button", { name: "Annullér" }));
+    await userEvent.click(screen.getByRole("button", { name: "Åbn handling" }));
+    expect(screen.getByRole("button", { name: "Afstem" })).toBeDisabled();
+    await userEvent.click(screen.getByRole("button", { name: "Kontrollér status" }));
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("button", { name: "Afstem" })).toBeDisabled();
+    expect(write).toHaveBeenCalledTimes(1);
+  });
+
+  test("remount keeps an uncertain operation blocked until explicit reconciliation without sending a write", async () => {
+    sessionStorage.clear();
+    const write = vi.fn(async () => { throw new ApiError("network", "Svar mistet", 0); });
+    const dialog = <MutationMemoryProvider><ConfirmDialog title="Send faktura" operationKey="invoice-99" body="x" confirmLabel="Send" onConfirm={write} onClose={noop} /></MutationMemoryProvider>;
+    const first = render(dialog);
+    await userEvent.click(screen.getByRole("button", { name: "Send" }));
+    await screen.findByText("Svar mistet");
+    const stored = sessionStorage.getItem("rentemester:uncertain-operations:v1")!;
+    expect(stored).not.toContain("invoice-99");
+    expect(stored).not.toContain("Send faktura");
+    first.unmount();
+    render(dialog);
+    expect(screen.getByRole("button", { name: "Send" })).toBeDisabled();
+    await userEvent.click(screen.getByRole("button", { name: "Resultatet er afklaret" }));
+    await userEvent.click(screen.getByRole("button", { name: "Behold blokering" }));
+    expect(screen.getByRole("button", { name: "Send" })).toBeDisabled();
+    await userEvent.click(screen.getByRole("button", { name: "Resultatet er afklaret" }));
+    await userEvent.click(screen.getByRole("button", { name: "Jeg har kontrolleret resultatet" }));
+    expect(screen.getByRole("button", { name: "Send" })).toBeEnabled();
+    expect(write).toHaveBeenCalledTimes(1);
+    expect(sessionStorage.getItem("rentemester:uncertain-operations:v1")).toBe("[]");
+  });
+
+  test("validates an email before calling the action", async () => {
+    const write = vi.fn(async () => {});
+    render(<ConfirmDialog title="Send faktura" body="x" confirmLabel="Send" noteLabel="Modtager" noteInputType="email" onConfirm={write} onClose={noop} />);
+    await userEvent.type(screen.getByLabelText("Modtager"), "invalid");
+    await userEvent.click(screen.getByRole("button", { name: "Send" }));
+    expect(write).not.toHaveBeenCalled();
+    await userEvent.clear(screen.getByLabelText("Modtager"));
+    await userEvent.type(screen.getByLabelText("Modtager"), "recipient@example.test");
+    await userEvent.click(screen.getByRole("button", { name: "Send" }));
+    expect(write).toHaveBeenCalledWith("recipient@example.test");
+  });
+
+  test("asks before discarding an edited confirmation note", async () => {
+    const close = vi.fn();
+    render(<ConfirmDialog title="Kreditér" body="x" confirmLabel="Kreditér nu" noteLabel="Begrundelse" onConfirm={async () => {}} onClose={close} />);
+    await userEvent.type(screen.getByLabelText("Begrundelse"), "Varer returneret");
+    await userEvent.click(screen.getByRole("button", { name: "Annullér" }));
+    expect(close).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog", { name: "Kassér ændringer?" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Kassér ændringer" }));
+    expect(close).toHaveBeenCalledTimes(1);
+  });
   test("renders the title, body and confirm label", () => {
     render(
       <ConfirmDialog

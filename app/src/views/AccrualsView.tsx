@@ -1,3 +1,4 @@
+import { ButtonLink, PageHeader } from "../components/ui";
 // Periodisering / accrual register (#337).
 //
 // Read-only view: per-virksomhed liste over registrerede accruals med
@@ -8,7 +9,7 @@
 // follow-ups — kernens CLI (`accrual register` / `accrual recognize`)
 // dækker dem indtil videre.
 
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
 import { formatKroner } from "../lib/format";
@@ -27,7 +28,7 @@ const TYPE_LABEL: Record<AccrualRegisterRow["accrualType"], string> = {
 export function AccrualsView() {
   const { slug = "" } = useParams();
   const state = useAsync<CompanyAccrualsResponse["accruals"]>(
-    () => api.accruals(slug),
+    (signal) => api.accruals(slug, { signal }),
     [slug],
   );
 
@@ -39,20 +40,20 @@ export function AccrualsView() {
 
   return (
     <section className="accruals-view">
-      <header className="page-head">
+      <PageHeader title="Periodisering" actions={<><div className="row-actions">
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+            Administrér
+          </ButtonLink>
+        </div></>}>
         <div>
-          <h2>{data.company.name}</h2>
+
           <p className="muted">
             {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
             {data.company.country} · {currency} · Periodisering
           </p>
         </div>
-        <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </header>
+
+      </PageHeader>
 
       <p className="muted">
         Periodeafgrænsningsposter (PAP): forudbetalte omkostninger,
@@ -85,7 +86,7 @@ export function AccrualsView() {
             CLI'ens <code>accrual register</code>.
           </p>
         ) : (
-          <table className="table">
+          <div className="table-scroll"><table className="table">
             <thead>
               <tr>
                 <th>Type</th>
@@ -104,7 +105,7 @@ export function AccrualsView() {
                 <AccrualRow key={a.accrualId} row={a} currency={currency} />
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </section>
     </section>

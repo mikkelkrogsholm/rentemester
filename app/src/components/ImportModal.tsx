@@ -1,3 +1,7 @@
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useDiscardGuard } from "../lib/useDiscardGuard";
+import * as stylex from "@stylexjs/stylex";
+import { Button, Dialog, Input } from "./ui";
 // ImportModal — the cockpit's generic, source-recognising file-import.
 //
 // A person migrating from another accounting system picks an export file; the
@@ -6,7 +10,7 @@
 // importer. The modal owns the file picker, the CVR-enrich opt-in, the busy
 // state and the post-import receipt — it mirrors `BankImportModal`'s shape.
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { api, type DataImportSummary } from "../lib/api";
 import { Banner } from "./Feedback";
 import { LockBanner } from "./LockBanner";
@@ -23,7 +27,7 @@ export type ImportModalProps = {
   onClose: () => void;
 };
 
-export function ImportModal({ slug, onImported, onClose }: ImportModalProps) {
+export function ImportModal({ slug, onImported, onClose: onDismiss }: ImportModalProps) {
   const [fileName, setFileName] = useState<string | null>(null);
   const [content, setContent] = useState<string | null>(null);
   const [enrichCvr, setEnrichCvr] = useState(true);
@@ -34,14 +38,11 @@ export function ImportModal({ slug, onImported, onClose }: ImportModalProps) {
   const closeRef = useRef<HTMLButtonElement>(null);
 
   // Move focus into the dialog and let Escape dismiss it — basic modal hygiene.
-  useEffect(() => {
-    closeRef.current?.focus();
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape" && !busy) onClose();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [busy, onClose]);
+
+
+  const outcome = useMutationOutcome(onImported);
+  const guard = useDiscardGuard(!done && Boolean(content), onDismiss);
+  const { onClose } = guard;
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -63,6 +64,7 @@ export function ImportModal({ slug, onImported, onClose }: ImportModalProps) {
   }
 
   async function handleImport() {
+    if (outcome.isBlocked()) return;
     if (!content || !fileName) {
       setError("Vælg en fil først.");
       return;
@@ -75,7 +77,7 @@ export function ImportModal({ slug, onImported, onClose }: ImportModalProps) {
         fileName,
         content,
         enrichCvr,
-      });
+      }).catch(outcome.reject);
       setDone(summary);
       onImported();
     } catch (err) {
@@ -90,21 +92,11 @@ export function ImportModal({ slug, onImported, onClose }: ImportModalProps) {
   }
 
   return (
-    <div
-      className="modal-overlay"
-      role="presentation"
-      onClick={() => {
-        if (!busy) onClose();
-      }}
-    >
-      <div
-        className="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Importér fil"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="modal-title">Importér fil</h3>
+    <Dialog title="Importér fil" onClose={onClose} busy={busy} initialFocusRef={closeRef}>
+    {outcome.feedback}
+      {guard.confirmation}
+
+
 
         {done ? (
           <ImportReceipt done={done} closeRef={closeRef} onClose={onClose} />
@@ -123,51 +115,51 @@ export function ImportModal({ slug, onImported, onClose }: ImportModalProps) {
 
             <label className="modal-field">
               Fil
-              <input
+              <Input
                 type="file"
                 accept=".csv,text/csv"
                 onChange={handleFile}
-                disabled={busy}
+                disabled={outcome.blocked || (busy)}
               />
             </label>
             {fileName && (
-              <p className="muted" style={{ margin: 0 }}>
+              <p className={["muted", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
                 Valgt: {fileName}
               </p>
             )}
 
             <label className="modal-field modal-checkbox">
-              <input
+              <Input
                 type="checkbox"
                 checked={enrichCvr}
                 onChange={(e) => setEnrichCvr(e.target.checked)}
-                disabled={busy}
+                disabled={outcome.blocked || (busy)}
               />
               Berig danske virksomheder med adresse m.m. fra CVR-registeret
             </label>
 
             <div className="modal-actions">
-              <button
+              <Button variant="secondary"
                 type="button"
                 className="btn secondary"
                 onClick={onClose}
                 disabled={busy}
               >
                 Annullér
-              </button>
-              <button
+              </Button>
+              <Button requiredPermission="company.ledger.post"
                 type="button"
                 className="btn"
                 onClick={handleImport}
-                disabled={busy || !content}
+                disabled={outcome.blocked || (busy || !content)}
               >
                 {busy ? "Importerer…" : "Importér"}
-              </button>
+              </Button>
             </div>
           </>
         )}
-      </div>
-    </div>
+
+    </Dialog>
   );
 }
 
@@ -237,15 +229,19 @@ function ImportReceipt({
       )}
 
       <div className="modal-actions">
-        <button
+        <Button
           type="button"
           className="btn"
           ref={closeRef}
           onClick={onClose}
         >
           Luk
-        </button>
+        </Button>
       </div>
     </>
   );
 }
+
+const viewStyles = stylex.create({
+site0: { margin: 0 }
+});

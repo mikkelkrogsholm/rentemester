@@ -1,3 +1,4 @@
+import { ButtonLink, Button, Input, PageHeader } from "../components/ui";
 // Kontoplan view (#344) — read-only per-virksomhed liste over alle konti
 // (nummer, navn, type, normal-saldo, evt. moms-mapping) med søg + filter pr.
 // type, og en kort summary pr. type. Genbruger eksisterende
@@ -8,7 +9,7 @@
 // følger som follow-up. Read-side er nu fuld.
 
 import { useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
 import type { AccountRole, AccountRoleResolution, AccountRow, CompanyAccounts } from "../lib/types";
@@ -42,7 +43,7 @@ const ACCOUNT_ROLE_STATUS_LABELS = {
 
 export function AccountsView() {
   const { slug = "" } = useParams();
-  const state = useAsync<CompanyAccounts>(() => api.accounts(slug), [slug]);
+  const state = useAsync<CompanyAccounts>((signal) => api.accounts(slug, { signal }), [slug]);
   const [typeFilter, setTypeFilter] = useState<string>("");
   const [search, setSearch] = useState("");
 
@@ -65,20 +66,20 @@ export function AccountsView() {
 
   return (
     <section className="accounts-view">
-      <header className="page-head">
+      <PageHeader title="Kontoplan" actions={<><div className="row-actions">
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+            Administrér
+          </ButtonLink>
+        </div></>}>
         <div>
-          <h2>{data.company.name}</h2>
+
           <p className="muted">
             {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
             {data.company.country} · {data.company.currency} · Kontoplan
           </p>
         </div>
-        <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </header>
+
+      </PageHeader>
 
       <p className="muted">
         {data.accounts.length} konti i kontoplanen. Kontoplanen kommer som
@@ -94,7 +95,7 @@ export function AccountsView() {
           {Object.entries(data.byType)
             .sort((a, b) => a[0].localeCompare(b[0]))
             .map(([type, count]) => (
-              <button
+              <Button
                 key={type}
                 type="button"
                 className={`btn small ${typeFilter === type ? "primary" : "secondary"}`}
@@ -103,16 +104,16 @@ export function AccountsView() {
                 }
               >
                 {TYPE_LABELS[type] ?? type}: {count}
-              </button>
+              </Button>
             ))}
           {typeFilter !== "" && (
-            <button
+            <Button variant="secondary"
               type="button"
               className="btn small secondary"
               onClick={() => setTypeFilter("")}
             >
               Nulstil filter
-            </button>
+            </Button>
           )}
         </div>
       </section>
@@ -126,7 +127,7 @@ export function AccountsView() {
         <div className="filter-bar">
           <label>
             Søg{" "}
-            <input
+            <Input
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -135,7 +136,7 @@ export function AccountsView() {
           </label>
         </div>
 
-        <table className="table">
+        <div className="table-scroll"><table className="table">
           <thead>
             <tr>
               <th>Kontonr.</th>
@@ -158,7 +159,7 @@ export function AccountsView() {
               </tr>
             )}
           </tbody>
-        </table>
+        </table></div>
       </section>
     </section>
   );
@@ -179,7 +180,7 @@ function AccountRolesCard({ accountRoles }: Pick<CompanyAccounts, "accountRoles"
             : "Manglende roller skal bekræftes af et menneske, før bogføring fortsætter."}
         </p>
       )}
-      <table className="table">
+      <div className="table-scroll"><table className="table">
         <thead>
           <tr>
             <th>Rolle</th>
@@ -191,7 +192,7 @@ function AccountRolesCard({ accountRoles }: Pick<CompanyAccounts, "accountRoles"
             <AccountRoleResolutionRow key={resolution.role} resolution={resolution} />
           ))}
         </tbody>
-      </table>
+      </table></div>
       {accountRoles.proposals.length > 0 && <p className="muted">Importforslag: {accountRoles.proposals.map((proposal) => `${ACCOUNT_ROLE_LABELS[proposal.role]} → ${proposal.accountNo} (${proposal.source})`).join(", ")}</p>}
       {accountRoles.reasons.length > 0 && <p className="warning">{accountRoles.reasons.map((reason) => `${ACCOUNT_ROLE_LABELS[reason.role]}: ${reason.reason}`).join(" · ")}</p>}
     </section>

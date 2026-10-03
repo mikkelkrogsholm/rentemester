@@ -1,3 +1,4 @@
+import { ButtonLink, PageHeader } from "../components/ui";
 // Retention status view (#343) — per-virksomhed read-only side der viser
 // hvor langt 5-års bogføringspligten er kommet for hver data-domæne. Bygger
 // på det eksisterende `buildRetentionStatusReport` i kernen (ingen
@@ -18,7 +19,7 @@ const TABLE_LABELS: Record<string, string> = {
 
 export function RetentionView() {
   const { slug = "" } = useParams();
-  const state = useAsync<CompanyRetention>(() => api.retention(slug), [slug]);
+  const state = useAsync<CompanyRetention>((signal) => api.retention(slug, { signal }), [slug]);
 
   if (state.loading) return <Loading />;
   if (state.error) return <ErrorState message={state.error} />;
@@ -28,20 +29,20 @@ export function RetentionView() {
 
   return (
     <section className="retention-view">
-      <header className="page-head">
+      <PageHeader title="Opbevaring" actions={<><div className="row-actions">
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+            Administrér
+          </ButtonLink>
+        </div></>}>
         <div>
-          <h2>{r.company.name}</h2>
+
           <p className="muted">
             {r.company.cvr ? `CVR ${r.company.cvr} · ` : ""}
             {r.company.country} · Retention (5-års bogføringspligt)
           </p>
         </div>
-        <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </header>
+
+      </PageHeader>
 
       <p className="muted">
         Pr. {r.report.asOf}. Hver data-domæne skal opbevares i 5 år efter udløb
@@ -58,7 +59,7 @@ export function RetentionView() {
         </div>
       )}
 
-      <table className="table">
+      <div className="table-scroll"><table className="table">
         <thead>
           <tr>
             <th>Domæne</th>
@@ -79,7 +80,7 @@ export function RetentionView() {
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
 
       <section className="card">
         <h3>Lovgrundlag</h3>

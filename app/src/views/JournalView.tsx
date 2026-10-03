@@ -1,3 +1,5 @@
+import * as stylex from "@stylexjs/stylex";
+import { ButtonLink, Button, Input, PageHeader } from "../components/ui";
 // Posteringer — the per-company journal (cockpit-redesign iteration 3).
 //
 // Renders `/api/companies/:slug/journal?year=`: the posted journal entries for
@@ -11,11 +13,13 @@
 // ejeren kan dele linket eller komme tilbage til samme udsnit.
 
 import { useMemo, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { formatKroner } from "../lib/format";
 // #379 — the EntryRow needs the slug to build the bilag-file URL on the fly.
 import { useAsync } from "../lib/useAsync";
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useDiscardGuard } from "../lib/useDiscardGuard";
 import type { CompanyJournal, JournalEntry } from "../lib/types";
 import { ErrorState, Loading } from "../components/Feedback";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -72,7 +76,7 @@ export function JournalView() {
     journalLineId !== null;
 
   const state = useAsync<CompanyJournal>(
-    () => api.journal(slug, year, account),
+    (signal) => api.journal(slug, year, account, { signal }),
     [slug, year, account],
   );
 
@@ -98,7 +102,7 @@ export function JournalView() {
 
   if (state.loading && !state.data)
     return <Loading label="Henter posteringer…" />;
-  if (state.error)
+  if (state.error && !state.data)
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const j = state.data!;
@@ -108,15 +112,8 @@ export function JournalView() {
 
   return (
     <section className="statement">
-      <div className="page-head">
-        <div>
-          <h2>{j.company.name}</h2>
-          <p className="muted">
-            {j.company.cvr ? `CVR ${j.company.cvr} · ` : ""}
-            {j.company.country} · {currency} · Posteringer
-          </p>
-        </div>
-        <div className="row-actions">
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. De tidligere hentede oplysninger vises fortsat.</div>}
+      <PageHeader title="Posteringer" actions={<><div className="row-actions">
           {/* #465 — revisor-anmodning: hele kassekladden som CSV. URL'en
               bærer den aktive konto-drilldown med, så ejeren kan eksportere
               "kun denne konto"-udsnittet direkte. */}
@@ -127,11 +124,19 @@ export function JournalView() {
           >
             Hent CSV
           </a>
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
-          </Link>
+          </ButtonLink>
+        </div></>}>
+        <div>
+
+          <p className="muted">
+            {j.company.cvr ? `CVR ${j.company.cvr} · ` : ""}
+            {j.company.country} · {currency} · Posteringer
+          </p>
         </div>
-      </div>
+
+      </PageHeader>
 
       <CompanyNav
         slug={slug}
@@ -150,20 +155,20 @@ export function JournalView() {
             <span className="account-no">{j.accountFilter.accountNo}</span>{" "}
             {j.accountFilter.name}
           </p>
-          <button
+          <Button requiredPermission="company.review" variant="secondary"
             type="button"
             className="btn secondary"
             onClick={clearAccount}
           >
             Vis alle posteringer
-          </button>
+          </Button>
         </div>
       )}
 
       <div className="journal-filter-bar card" role="search">
         <label className="journal-filter-field journal-filter-field--search">
           <span className="muted">Søg</span>
-          <input
+          <Input
             type="search"
             value={q}
             placeholder="Søg på tekst, bilagsnummer eller konto…"
@@ -172,7 +177,7 @@ export function JournalView() {
         </label>
         <label className="journal-filter-field">
           <span className="muted">Fra</span>
-          <input
+          <Input
             type="date"
             value={fromDate}
             onChange={(e) => setFilter("from", e.target.value)}
@@ -180,7 +185,7 @@ export function JournalView() {
         </label>
         <label className="journal-filter-field">
           <span className="muted">Til</span>
-          <input
+          <Input
             type="date"
             value={toDate}
             onChange={(e) => setFilter("to", e.target.value)}
@@ -188,7 +193,7 @@ export function JournalView() {
         </label>
         <label className="journal-filter-field">
           <span className="muted">Beløb min</span>
-          <input
+          <Input
             type="number"
             inputMode="decimal"
             value={amountMin}
@@ -198,7 +203,7 @@ export function JournalView() {
         </label>
         <label className="journal-filter-field">
           <span className="muted">Beløb maks</span>
-          <input
+          <Input
             type="number"
             inputMode="decimal"
             value={amountMax}
@@ -207,13 +212,13 @@ export function JournalView() {
           />
         </label>
         {hasActiveFilter && (
-          <button
+          <Button requiredPermission="company.review" variant="secondary"
             type="button"
             className="btn secondary"
             onClick={clearAllFilters}
           >
             Ryd filtre
-          </button>
+          </Button>
         )}
       </div>
 
@@ -225,7 +230,7 @@ export function JournalView() {
       </p>
       {filteredEntries.length === 0 ? (
         <div className="card statement-card">
-          <p className="empty-inline" style={{ padding: "var(--space-md)" }}>
+          <p className={["empty-inline", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
             {hasActiveFilter
               ? "Ingen posteringer matcher filtrene."
               : j.accountFilter
@@ -283,7 +288,7 @@ function EntryRow({
   const hasDocument = !archived && entry.documentId !== null;
   return (
     <li className={`entry-item${open ? " open" : ""}`}>
-      <button
+      <Button
         type="button"
         className="entry-summary"
         aria-expanded={open}
@@ -298,7 +303,7 @@ function EntryRow({
         <span className="entry-total num">
           {formatKroner(entry.total, currency)}
         </span>
-      </button>
+      </Button>
       {open && (
         <div className="entry-lines table-scroll">
           <table className="data statement-table">
@@ -385,14 +390,15 @@ function currentAssignment(events: AssignmentEvent[]): AssignmentEvent | null {
 }
 
 function DimensionAssignments({ slug, journalLineId }: { slug: string; journalLineId: number }) {
-  const state = useAsync<AssignmentEvent[]>(() => api.dimensionAssignments(slug, journalLineId) as Promise<AssignmentEvent[]>, [slug, journalLineId]);
+  const state = useAsync<AssignmentEvent[]>((signal) => api.dimensionAssignments(slug, journalLineId, { signal }) as Promise<AssignmentEvent[]>, [slug, journalLineId]);
   if (state.loading && !state.data) return <span className="muted">Henter dimensioner…</span>;
-  if (state.error) return <span className="muted">Dimensionshistorik kunne ikke hentes</span>;
+  if (state.error && !state.data) return <span className="muted">Dimensionshistorik kunne ikke hentes</span>;
   const events = state.data ?? [];
   const current = currentAssignment(events);
   if (!current) return <span className="muted">Ingen godkendt dimension</span>;
   const allocations = parseAllocations(current.allocations_json);
   return <details className="dimension-assignment">
+    {state.error && <p role="alert">Dimensionshistorik kunne ikke opdateres. Den tidligere hentede historik vises fortsat.</p>}
     <summary>{allocations.map((item) => `${item.dimensionId}: ${item.memberId}`).join(", ") || "Godkendt dimension"}</summary>
     <p className="muted">
       Kilde: {current.source} · plan-hash <code>{current.plan_hash}</code><br />
@@ -416,6 +422,10 @@ function DimensionReview({ slug, journalLineId, current, onChanged }: { slug: st
   const [reviewed, setReviewed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmSupersede, setConfirmSupersede] = useState(false);
+  const outcome = useMutationOutcome(onChanged);
+  const guard = useDiscardGuard(editing && JSON.stringify(allocations) !== JSON.stringify(parseAllocations(current.allocations_json)), () => {
+    setEditing(false); setPlan(null); setReviewed(false); setConfirmSupersede(false); setAllocations(parseAllocations(current.allocations_json));
+  });
 
   function change(index: number, key: keyof Allocation, value: string) {
     setPlan(null); setReviewed(false);
@@ -423,6 +433,7 @@ function DimensionReview({ slug, journalLineId, current, onChanged }: { slug: st
       ? { ...row, [key]: key === "amountMinor" ? Number(value) : value } : row));
   }
   async function makePlan() {
+    if (outcome.isBlocked()) return;
     setError(null);
     try {
       const result = await api.planDimensionAssignment(slug, { journalLineId, allocations, source: "reviewed" });
@@ -431,23 +442,29 @@ function DimensionReview({ slug, journalLineId, current, onChanged }: { slug: st
     } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)); }
   }
   async function replace(reason: string) {
+    if (outcome.isBlocked()) return;
     if (!reason.trim()) throw new Error("Skriv en begrundelse for korrektionen.");
     if (!plan || !reviewed) throw new Error("Gennemgå først den præcise plan.");
-    await api.replaceDimensionAssignment(slug, { journalLineId, expectedAssignmentId: current.id, allocations, source: "reviewed", planHash: plan.planHash, reason, idempotencyKey: `cockpit-dimension-replace-${current.id}-${plan.planHash}` });
-    setEditing(false); setPlan(null); setReviewed(false); setConfirmSupersede(false); onChanged();
+    await api.replaceDimensionAssignment(slug, { journalLineId, expectedAssignmentId: current.id, allocations, source: "reviewed", planHash: plan.planHash, reason, idempotencyKey: `cockpit-dimension-replace-${current.id}-${plan.planHash}` }).catch(outcome.reject);
+    guard.dismiss(); onChanged();
   }
-  if (!editing) return <button type="button" className="btn secondary" onClick={() => setEditing(true)}>Gennemgå og ret</button>;
+  if (!editing) return <>{outcome.feedback}<Button requiredPermission="company.review" disabled={outcome.blocked} variant="secondary" type="button" className="btn secondary" onClick={() => setEditing(true)}>Gennemgå og ret</Button></>;
   return <div className="dimension-review card">
+    {outcome.feedback}{guard.confirmation}
     <p><strong>Ret dimensionsklassifikation</strong></p>
     <p className="muted">Posteringen ændres aldrig. Den nuværende tildeling supersederes og den reviewede plan anvendes atomisk med begrundelse.</p>
     {allocations.map((allocation, index) => <div className="row-actions" key={`${allocation.dimensionId}-${index}`}>
-      <label>Dimension<input aria-label={`Dimension ${index + 1}`} value={allocation.dimensionId} onChange={(event) => change(index, "dimensionId", event.target.value)} /></label>
-      <label>Medlem<input aria-label={`Medlem ${index + 1}`} value={allocation.memberId} onChange={(event) => change(index, "memberId", event.target.value)} /></label>
-      <label>Øre<input aria-label={`Øre ${index + 1}`} type="number" value={allocation.amountMinor} onChange={(event) => change(index, "amountMinor", event.target.value)} /></label>
+      <label>Dimension<Input disabled={outcome.blocked} aria-label={`Dimension ${index + 1}`} value={allocation.dimensionId} onChange={(event) => change(index, "dimensionId", event.target.value)} /></label>
+      <label>Medlem<Input disabled={outcome.blocked} aria-label={`Medlem ${index + 1}`} value={allocation.memberId} onChange={(event) => change(index, "memberId", event.target.value)} /></label>
+      <label>Øre<Input disabled={outcome.blocked} aria-label={`Øre ${index + 1}`} type="number" value={allocation.amountMinor} onChange={(event) => change(index, "amountMinor", event.target.value)} /></label>
     </div>)}
-    <div className="row-actions"><button type="button" className="btn secondary" onClick={() => void makePlan()}>Validér revideret plan</button><button type="button" className="btn secondary" onClick={() => setEditing(false)}>Annullér</button></div>
-    {plan && <div className="card"><p>Plan-hash: <code>{plan.planHash}</code></p><label><input type="checkbox" checked={reviewed} onChange={(event) => setReviewed(event.target.checked)} /> Jeg har gennemgået den præcise plan.</label><button type="button" className="btn secondary" disabled={!reviewed} onClick={() => setConfirmSupersede(true)}>Erstat nuværende tildeling atomisk</button></div>}
+    <div className="row-actions"><Button variant="secondary" type="button" className="btn secondary" disabled={outcome.blocked} onClick={() => void makePlan()}>Validér revideret plan</Button><Button variant="secondary" type="button" className="btn secondary" onClick={guard.onClose}>Annullér</Button></div>
+    {plan && <div className="card"><p>Plan-hash: <code>{plan.planHash}</code></p><label><Input disabled={outcome.blocked} type="checkbox" checked={reviewed} onChange={(event) => setReviewed(event.target.checked)} /> Jeg har gennemgået den præcise plan.</label><Button variant="secondary" type="button" className="btn secondary" requiredPermission="company.review" disabled={!reviewed || outcome.blocked} onClick={() => setConfirmSupersede(true)}>Erstat nuværende tildeling atomisk</Button></div>}
     {error && <p className="muted" role="alert">{error}</p>}
-    {confirmSupersede && <ConfirmDialog title="Erstat dimensionsklassifikation" body={<p>Den nuværende klassifikation bevares i revisionssporet. Supersession og den præcise, hash-bundne erstatning gemmes atomisk, så linjen aldrig står uden en aktuel tildeling.</p>} confirmLabel="Erstat tildeling" confirmKind="danger" noteLabel="Begrundelse" onConfirm={replace} onClose={() => setConfirmSupersede(false)} />}
+    {confirmSupersede && <ConfirmDialog title="Erstat dimensionsklassifikation" body={<p>Den nuværende klassifikation bevares i revisionssporet. Supersession og den præcise, hash-bundne erstatning gemmes atomisk, så linjen aldrig står uden en aktuel tildeling.</p>} confirmLabel="Erstat tildeling" confirmKind="danger" noteLabel="Begrundelse" onConfirm={replace} onClose={() => setConfirmSupersede(false)} onRefresh={onChanged} />}
   </div>;
 }
+
+const viewStyles = stylex.create({
+site0: { padding: "var(--space-md)" }
+});

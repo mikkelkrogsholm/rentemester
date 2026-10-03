@@ -52,7 +52,7 @@ describe("BudgetView — Budget", () => {
     mockFetch(route());
     renderView();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Budget", level: 1 }),
     ).toBeInTheDocument();
     // The two budget lines from the fixture sum to 12.000 kr.
     expect(screen.getByText(/Samlet budget/i)).toBeInTheDocument();
@@ -86,9 +86,9 @@ describe("BudgetView — Budget", () => {
   test("offers a Sammenlign med faktisk toggle that swaps to the comparison table", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Budget", level: 1 });
     await userEvent.click(
-      screen.getByRole("tab", { name: /Sammenlign med faktisk/i }),
+      screen.getByRole("button", { name: /Sammenlign med faktisk/i }),
     );
     // Now the comparison table is rendered with budget, faktisk and afvigelse.
     expect(
@@ -105,9 +105,9 @@ describe("BudgetView — Budget", () => {
   test("the comparison table reports variance in kr AND as a percentage", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Budget", level: 1 });
     await userEvent.click(
-      screen.getByRole("tab", { name: /Sammenlign med faktisk/i }),
+      screen.getByRole("button", { name: /Sammenlign med faktisk/i }),
     );
     // The fixture's June line: budget 5000, actual 4000, variance 1000, 20%.
     // Intl in da-DK renders the percentage as "20 %" (with a non-breaking
@@ -119,8 +119,8 @@ describe("BudgetView — Budget", () => {
   test("compares a selected approved dimension with honest account-budget context and a journal drilldown", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
-    await userEvent.click(screen.getByRole("tab", { name: /Sammenlign med faktisk/i }));
+    await screen.findByRole("heading", { name: "Budget", level: 1 });
+    await userEvent.click(screen.getByRole("button", { name: /Sammenlign med faktisk/i }));
     const selector = await screen.findByLabelText("Filter dimension");
     await userEvent.selectOptions(selector, "project:alpha");
     expect(screen.getByRole("heading", { name: /Dimensioner mod konto-budget/i })).toBeInTheDocument();
@@ -132,8 +132,8 @@ describe("BudgetView — Budget", () => {
   test("shows a dimension budget and variance only for a reviewed allocation", async () => {
     mockFetch(route({ budgetDimensionActuals: { dimensionBudgets: [{ id: 7, dimensionId: "project", memberId: "alpha", accountNo: "2200", period: "2026-06", budget: 3000, sourceRef: "review:synthetic" }] } }));
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
-    await userEvent.click(screen.getByRole("tab", { name: /Sammenlign med faktisk/i }));
+    await screen.findByRole("heading", { name: "Budget", level: 1 });
+    await userEvent.click(screen.getByRole("button", { name: /Sammenlign med faktisk/i }));
     await userEvent.selectOptions(await screen.findByLabelText("Filter dimension"), "project:alpha");
     expect(screen.getByText(/3\.000,00/)).toBeInTheDocument();
     expect(screen.getByText(/600,00/)).toBeInTheDocument();
@@ -144,7 +144,7 @@ describe("BudgetView — Budget", () => {
   test("Tilføj budgetlinje appends a new revision via POST", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Budget", level: 1 });
 
     await userEvent.type(screen.getByLabelText(/Kontonr/i), "2300");
     await userEvent.type(screen.getByLabelText("Beløb"), "1500");

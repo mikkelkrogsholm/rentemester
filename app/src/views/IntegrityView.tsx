@@ -1,3 +1,4 @@
+import { ButtonLink, Button, PageHeader } from "../components/ui";
 // Integritet & backup-panel (#333).
 //
 // Per-virksomhed read-only panel der viser SMB-ejeren hash-kædens status,
@@ -19,12 +20,12 @@ export function IntegrityView() {
   // til at re-fetche /integrity. Endpointet er idempotent, så det er sikkert.
   const [refresh, setRefresh] = useState(0);
   const state = useAsync<CompanyIntegrity>(
-    () => api.integrity(slug),
+    (signal) => api.integrity(slug, { signal }),
     [slug, refresh],
   );
 
   if (state.loading) return <Loading />;
-  if (state.error) return <ErrorState message={state.error} />;
+  if (state.error) return <ErrorState message={state.error} onRetry={state.reload} />;
   const data = state.data!;
 
   const chainOk = data.auditChain.ok;
@@ -32,27 +33,27 @@ export function IntegrityView() {
 
   return (
     <section className="integrity-view">
-      <header className="page-head">
-        <div>
-          <h2>{data.company.name}</h2>
-          <p className="muted">
-            {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
-            {data.company.country} · Integritet &amp; backup
-          </p>
-        </div>
-        <div className="row-actions">
-          <button
+      <PageHeader title="Integritet" actions={<><div className="row-actions">
+          <Button variant="secondary"
             type="button"
             className="btn secondary"
             onClick={() => setRefresh((n) => n + 1)}
           >
             Verificér igen
-          </button>
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
+          </Button>
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
-          </Link>
+          </ButtonLink>
+        </div></>}>
+        <div>
+
+          <p className="muted">
+            {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
+            {data.company.country} · Integritet &amp; backup
+          </p>
         </div>
-      </header>
+
+      </PageHeader>
 
       {!chainOk && (
         <div className="callout danger">
@@ -82,7 +83,7 @@ export function IntegrityView() {
           det opdages. Verificeres på hvert kald — det er sikkert at trykke
           "Verificér igen".
         </p>
-        <table className="table">
+        <div className="table-scroll"><table className="table">
           <tbody>
             <tr>
               <th>Status</th>
@@ -95,7 +96,7 @@ export function IntegrityView() {
               <td>{data.auditChain.entries}</td>
             </tr>
           </tbody>
-        </table>
+        </table></div>
         {data.auditChain.errors.length > 0 && (
           <details open>
             <summary>
@@ -115,7 +116,7 @@ export function IntegrityView() {
 
       <section className="card">
         <h3>Backup-status</h3>
-        <table className="table">
+        <div className="table-scroll"><table className="table">
           <tbody>
             <tr>
               <th>Seneste backup</th>
@@ -154,7 +155,7 @@ export function IntegrityView() {
               <td>{data.backup.checkedAt}</td>
             </tr>
           </tbody>
-        </table>
+        </table></div>
       </section>
 
       <section className="card">
@@ -166,7 +167,7 @@ export function IntegrityView() {
             registrere en EU/EØS-host (bogføringsloven § 15, stk. 1).
           </p>
         ) : (
-          <table className="table">
+          <div className="table-scroll"><table className="table">
             <thead>
               <tr>
                 <th>Label</th>
@@ -191,7 +192,7 @@ export function IntegrityView() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </section>
 

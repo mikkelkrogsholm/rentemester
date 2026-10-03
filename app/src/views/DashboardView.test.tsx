@@ -29,7 +29,7 @@ describe("DashboardView — Overblik", () => {
     mockFetch(overviewRoute());
     renderDashboard();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Overblik", level: 1 }),
     ).toBeInTheDocument();
     expect(screen.getByText("Omsætning")).toBeInTheDocument();
     expect(screen.getByText("Udgifter")).toBeInTheDocument();
@@ -91,7 +91,7 @@ describe("DashboardView — Overblik", () => {
   test("the Bank card shows the actual balance, booked balance and difference", async () => {
     mockFetch(overviewRoute());
     renderDashboard();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Overblik", level: 1 });
     const bankCard = screen
       .getByRole("heading", { name: "Bank" })
       .closest(".status-card")!;
@@ -270,7 +270,7 @@ describe("DashboardView — empty-state next-step CTA (#395)", () => {
       }),
     );
     renderDashboard();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Overblik", level: 1 });
     expect(
       screen.queryByRole("heading", { name: /Sådan kommer du i gang/ }),
     ).not.toBeInTheDocument();
@@ -475,7 +475,7 @@ describe("DashboardView — revisor-eksport discoverable (#373)", () => {
     mockFetch(overviewRoute());
     renderDashboard();
     // Wait for the page to load.
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Overblik", level: 1 });
     // The card surfaces a clear heading and the "Generér og download" button.
     expect(
       screen.getByRole("heading", { name: /Revisor-eksport/i }),

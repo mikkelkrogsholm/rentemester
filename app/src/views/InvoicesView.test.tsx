@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { InvoicesView } from "./InvoicesView";
 import { renderAt } from "../test/render";
 import { invoices, mockFetch } from "../test/fixtures";
+import { stubGlobal } from "../test/globals";
 
 function route(over = {}) {
   return {
@@ -23,11 +24,11 @@ describe("InvoicesView — Fakturaer", () => {
     mockFetch(route());
     renderView();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Fakturaer" }),
     ).toBeInTheDocument();
     expect(screen.getByText("2026-00001")).toBeInTheDocument();
-    expect(screen.getByText("Betalt")).toBeInTheDocument();
-    expect(screen.getByText(/Forfalden/)).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "Betalt" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: /Forfalden/ })).toBeInTheDocument();
   });
 
   test("an overdue-by-one-day row reads '1 dag', not '1 dage'", async () => {
@@ -58,8 +59,8 @@ describe("InvoicesView — Fakturaer", () => {
       }),
     );
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
-    const cell = screen.getByText(/Forfalden/).closest("td")!;
+    await screen.findByRole("heading", { name: "Fakturaer" });
+    const cell = screen.getByRole("cell", { name: /Forfalden/ }).closest("td")!;
     expect(cell.textContent).toMatch(/·\s*1 dag\b/);
     expect(cell.textContent).not.toMatch(/1 dage/);
   });
@@ -96,16 +97,15 @@ describe("InvoicesView — Fakturaer", () => {
 // --------------------------------------------------------------------------
 
 describe("InvoicesView — write actions", () => {
-  test("the Udsted faktura action opens the issue modal", async () => {
+  test("the Udsted faktura action links to the full-page flow with year and return context", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
-    await userEvent.click(
-      screen.getByRole("button", { name: "Udsted faktura" }),
-    );
-    expect(
-      screen.getByRole("dialog", { name: "Udsted faktura" }),
-    ).toBeInTheDocument();
+    await screen.findByRole("heading", { name: "Fakturaer" });
+    const link = screen.getByRole("link", { name: "Udsted faktura" });
+    const target = new URL(link.getAttribute("href")!, "https://rentemester.invalid");
+    expect(target.pathname).toBe("/companies/acme-aps/fakturaer/ny");
+    expect(target.searchParams.get("year")).toBe("2026");
+    expect(target.searchParams.get("returnTo")).toBe("/companies/acme-aps/fakturaer?year=2026");
   });
 
   test("the Udsted faktura action is hidden for an archived year", async () => {
@@ -113,7 +113,7 @@ describe("InvoicesView — write actions", () => {
     renderView();
     await screen.findByText(/Fakturaer er ikke tilgængelige for 2025/);
     expect(
-      screen.queryByRole("button", { name: "Udsted faktura" }),
+      screen.queryByRole("link", { name: "Udsted faktura" }),
     ).not.toBeInTheDocument();
   });
 
@@ -143,7 +143,7 @@ describe("InvoicesView — write actions", () => {
       }),
     );
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     expect(
       screen.queryAllByRole("button", { name: "Bogfør" }),
     ).toHaveLength(0);
@@ -164,7 +164,7 @@ describe("InvoicesView — write actions", () => {
       },
     });
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     // Only the second (overdue, open-balance) invoice offers "Afstem".
     await userEvent.click(screen.getByRole("button", { name: "Afstem" }));
     await userEvent.type(
@@ -193,7 +193,7 @@ describe("InvoicesView — write actions", () => {
   test("each invoice row offers Hent PDF pointing at the cockpit PDF route", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     const links = screen.getAllByRole("link", { name: "Hent PDF" });
     // The default fixture renders two invoices.
     expect(links.length).toBeGreaterThanOrEqual(2);
@@ -208,7 +208,7 @@ describe("InvoicesView — write actions", () => {
   test("Afstem is offered only for invoices with an open balance", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     // Fixture: invoice 1 is paid (openBalance 0), invoice 2 is overdue
     // (openBalance 6250) — so exactly one "Afstem" button is rendered.
     expect(screen.getAllByRole("button", { name: "Afstem" })).toHaveLength(1);
@@ -239,7 +239,7 @@ describe("InvoicesView — write actions", () => {
       }),
     );
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     // Krediter is hidden for credited / refunded / written_off — those three
     // are non-creditable terminal states. Four rows remain (open, paid,
     // overpaid, overdue) where the action is offered.
@@ -307,7 +307,7 @@ describe("InvoicesView — write actions", () => {
       }),
     );
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     expect(
       screen.getAllByRole("button", { name: "Send e-faktura" }),
     ).toHaveLength(1);
@@ -341,7 +341,7 @@ describe("InvoicesView — write actions", () => {
       }),
     );
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     expect(
       screen.queryByRole("button", { name: "Send e-faktura" }),
     ).not.toBeInTheDocument();
@@ -359,7 +359,7 @@ describe("InvoicesView — write actions", () => {
       effectiveDueDate: "2026-04-14", overdueDays: 0,
     }] }));
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     expect(screen.getByText("E-faktura køsat — afventer status")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Opdatér leveringsstatus" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Send e-faktura" })).not.toBeInTheDocument();
@@ -376,7 +376,7 @@ describe("InvoicesView — write actions", () => {
       effectiveDueDate: "2026-04-14", overdueDays: 0,
     }] }));
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     expect(screen.getByText("E-faktura fejlede — kan prøves igen")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Send e-faktura" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Opdatér leveringsstatus" })).not.toBeInTheDocument();
@@ -393,7 +393,7 @@ describe("InvoicesView — write actions", () => {
       effectiveDueDate: "2026-04-14", overdueDays: 0,
     }] }));
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     expect(screen.getByText("E-faktura afvist — send ikke igen")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Send e-faktura" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Opdatér leveringsstatus" })).not.toBeInTheDocument();
@@ -410,7 +410,7 @@ describe("InvoicesView — write actions", () => {
       effectiveDueDate: "2026-04-14", overdueDays: 0,
     }] }));
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     expect(screen.getByText("E-faktura-status ukendt — afklar manuelt")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Send e-faktura" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Opdatér leveringsstatus" })).not.toBeInTheDocument();
@@ -464,7 +464,7 @@ describe("InvoicesView — write actions", () => {
       },
     });
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     await userEvent.click(
       screen.getByRole("button", { name: "Send e-faktura" }),
     );
@@ -542,7 +542,7 @@ describe("InvoicesView — write actions", () => {
       }),
     );
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     expect(
       screen.getAllByRole("button", { name: "Send på mail" }),
     ).toHaveLength(1);
@@ -582,7 +582,7 @@ describe("InvoicesView — write actions", () => {
       }),
     );
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     // #UI-8 — the "Sendt {dato}" badge shows the Danish date form.
     expect(screen.getByText(/Sendt 20\. mar\. 2026/)).toBeInTheDocument();
   });
@@ -625,7 +625,7 @@ describe("InvoicesView — write actions", () => {
       },
     });
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     await userEvent.click(
       screen.getByRole("button", { name: "Send på mail" }),
     );
@@ -729,7 +729,7 @@ describe("InvoicesView — write actions", () => {
       }),
     );
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     expect(
       screen.getAllByRole("button", { name: "Send rykker" }),
     ).toHaveLength(1);
@@ -771,7 +771,7 @@ describe("InvoicesView — write actions", () => {
       }),
     );
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     expect(
       screen.queryByRole("button", { name: "Send rykker" }),
     ).not.toBeInTheDocument();
@@ -827,7 +827,7 @@ describe("InvoicesView — write actions", () => {
       },
     });
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     await userEvent.click(
       screen.getByRole("button", { name: "Send rykker" }),
     );
@@ -877,7 +877,7 @@ describe("InvoicesView — write actions", () => {
       },
     });
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Fakturaer" });
     // Both fixture invoices are creditable; click the first Krediter button.
     await userEvent.click(screen.getAllByRole("button", { name: "Kreditér" })[0]!);
     await userEvent.type(
@@ -902,5 +902,39 @@ describe("InvoicesView — write actions", () => {
       // Write-irreversible — the body must carry confirm: true.
       expect(sent.confirm).toBe(true);
     });
+  });
+});
+
+describe("InvoicesView — currency accuracy", () => {
+  test("mixed currencies never receive an invented combined amount", async () => {
+    const rows = invoices().invoices;
+    mockFetch(route({ invoices: [{ ...rows[0]!, grossAmount: 1234.56, currency: "EUR" }, { ...rows[1]!, grossAmount: 500, currency: "DKK" }], totalGross: 1734.56 }));
+    renderView();
+    await screen.findByRole("heading", { name: "Fakturaer" });
+    expect(screen.getByText(/Fakturaer i flere valutaer/)).toBeInTheDocument();
+    expect(screen.getByText(/1.234,56\sEUR/)).toBeInTheDocument();
+    expect(screen.queryByText(/1.734,56/)).not.toBeInTheDocument();
+  });
+});
+
+describe("InvoicesView — uncertain delivery recovery", () => {
+  test("read-only status refresh never repeats an interrupted invoice email", async () => {
+    const row = { ...invoices().invoices[0]!, customerEmail: "kunde@example.test" };
+    mockFetch(route({ invoices: [row] }));
+    const originalFetch = globalThis.fetch;
+    const fetchSpy = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).endsWith("/invoices/send-email")) return Promise.reject(new TypeError("connection lost"));
+      return originalFetch(input, init);
+    });
+    stubGlobal("fetch", fetchSpy);
+    renderView();
+    await userEvent.click(await screen.findByRole("button", { name: "Send på mail" }));
+    const dialog = screen.getByRole("dialog", { name: "Send faktura på mail" });
+    await userEvent.click(within(dialog).getByRole("button", { name: "Send faktura" }));
+    expect(await within(dialog).findByText(/Serverens resultat kunne ikke bekræftes/)).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "Send faktura" })).toBeDisabled();
+    await userEvent.click(within(dialog).getByRole("button", { name: "Kontrollér status" }));
+    await waitFor(() => expect(fetchSpy.mock.calls.filter((call) => String(call[0]).includes("/invoices") && !String(call[0]).includes("send-email"))).toHaveLength(2));
+    expect(fetchSpy.mock.calls.filter((call) => String(call[0]).endsWith("/invoices/send-email"))).toHaveLength(1);
   });
 });

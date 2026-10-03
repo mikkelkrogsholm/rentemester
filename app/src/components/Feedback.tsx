@@ -1,8 +1,9 @@
+import { Button } from "./ui";
 // Small shared presentational components for loading / error / empty states
 // and inline banners. Kept tiny and prop-driven so views stay declarative.
 
 export function Loading({ label = "Indlæser…" }: { label?: string }) {
-  return <div className="state-msg">{label}</div>;
+  return <div className="state-msg" role="status">{label}</div>;
 }
 
 export function ErrorState({
@@ -18,9 +19,9 @@ export function ErrorState({
         {message}
       </p>
       {onRetry && (
-        <button className="btn secondary" type="button" onClick={onRetry}>
+        <Button className="btn secondary" type="button" onClick={onRetry}>
           Prøv igen
-        </button>
+        </Button>
       )}
     </div>
   );

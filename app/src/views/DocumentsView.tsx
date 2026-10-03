@@ -14,22 +14,26 @@
 // kolonnerne har sorter-handles og en "Ryd filtre"-knap dukker op når et
 // filter er aktivt.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
-import { formatKroner } from "../lib/format";
+import { useCapabilities } from "../lib/useCapabilities";
 import { useAsync } from "../lib/useAsync";
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useUnsavedChanges } from "../lib/useUnsavedChanges";
 import type {
   CompanyDocuments,
   DocumentRow,
   FiscalYearEntry,
 } from "../lib/types";
-import { ErrorState, Loading } from "../components/Feedback";
+import { Banner, ErrorState, Loading } from "../components/Feedback";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { DocumentIngestModal } from "../components/DocumentIngestModal";
-import { DocumentBookExpenseModal } from "../components/DocumentBookExpenseModal";
+import { ConfirmDialog } from "../components/ConfirmDialog";
+import { ButtonLink, Button, Input, Select, Amount, PageHeader, Pagination, FilterBar } from "../components/ui";
+import { listPagination, listReturnTo, workflowTo } from "./workflow-navigation";
 
-type DocumentsPage = {
+export type DocumentsPage = {
   documents: CompanyDocuments;
   fiscalYears: FiscalYearEntry[];
 };
@@ -71,8 +75,9 @@ function isTypeFilter(v: string): v is TypeFilter {
   );
 }
 
-function documentAmount(doc: DocumentRow): number | null {
+export function documentAmount(doc: DocumentRow & { associations?: DocumentRow[] }): number | null {
   if (doc.amountIncVat !== null) return doc.amountIncVat;
+  if (doc.associations && doc.associations.filter((entry) => entry.journalEntryNo).length > 1) return null;
   if (doc.journalEntryTotal !== null) return doc.journalEntryTotal;
   return null;
 }
@@ -107,28 +112,52 @@ function documentMatchesText(doc: DocumentRow, needle: string): boolean {
   return false;
 }
 
-export function DocumentsView() {
-  const { slug = "" } = useParams();
+export type GroupedDocument = DocumentRow & { associations: DocumentRow[] };
+
+/** One row per original document; each linked posting remains available. */
+export function groupDocuments(rows: DocumentRow[]): GroupedDocument[] {
+  const groups = new Map<number, GroupedDocument>();
+  for (const row of rows) {
+    const existing = groups.get(row.id);
+    if (!existing) {
+      groups.set(row.id, { ...row, associations: [row] });
+      continue;
+    }
+    if (!existing.associations.some((entry) => entry.journalEntryId === row.journalEntryId && entry.journalEntryNo === row.journalEntryNo && entry.voucherRef === row.voucherRef)) existing.associations.push(row);
+    // Representative posting identifies booked documents without summing relations.
+    if (!existing.journalEntryNo && row.journalEntryNo) {
+      existing.journalEntryNo = row.journalEntryNo;
+      existing.journalEntryId = row.journalEntryId;
+      existing.journalEntryText = row.journalEntryText;
+      existing.journalEntryTotal = row.journalEntryTotal;
+      existing.voucherRef = row.voucherRef;
+    }
+    existing.hasFile ||= row.hasFile;
+  }
+  return [...groups.values()];
+}
+
+export function DocumentsView({ detail = false }: { detail?: boolean } = {}) {
+  const { slug = "", documentId: routeDocumentId } = useParams();
+  const { can } = useCapabilities(slug);
   const { year, setYear } = useCompanyYear();
   const [params, setParams] = useSearchParams();
-  const documentId = Number(params.get("documentId")) || null;
+  const parsedDocumentId = Number(detail ? routeDocumentId : params.get("documentId"));
+  const documentId = Number.isSafeInteger(parsedDocumentId) && parsedDocumentId > 0 ? parsedDocumentId : null;
   const state = useAsync<DocumentsPage>(
-    async () => {
+    async (signal) => {
       const [documents, fiscalYears] = await Promise.all([
-        api.documents(slug),
-        api.fiscalYears(slug),
+        api.documents(slug, { signal }),
+        api.fiscalYears(slug, { signal }),
       ]);
       return { documents, fiscalYears };
     },
     [slug],
   );
-  const partyLinks = useAsync(() => api.documentPartyLinks(slug), [slug]);
+  const partyLinks = useAsync((signal) => api.documentPartyLinks(slug, undefined, { signal }), [slug]);
   // True while the document-intake modal (#213, slice 3) is open.
   const [ingesting, setIngesting] = useState(false);
-  // Holds the bilag id whose Bogfør-modal is open (#407); null when none.
-  const [bookingDocumentId, setBookingDocumentId] = useState<number | null>(
-    null,
-  );
+  const [confirmingInternal, setConfirmingInternal] = useState(false);
   // #588: a deliberately small, reviewed flow. A person selects a document,
   // sees its recorded identity, then selects a visible canonical party. Names
   // only help find a candidate; the server still requires exact evidence.
@@ -140,6 +169,14 @@ export function DocumentsView() {
   const [partyError, setPartyError] = useState<string | null>(null);
   const [partyBusy, setPartyBusy] = useState(false);
   const [partyConfirmed, setPartyConfirmed] = useState(false);
+  const [reviewScope, setReviewScope] = useState<string | null>(null);
+  const currentScope = `${slug}:${year ?? "default"}`;
+  const partyOutcome = useMutationOutcome(() => { partyLinks.reload(); state.reload(); });
+  const markPartySaved = useUnsavedChanges(partyReviewId !== null && selectedPartyId !== "" && reviewScope === currentScope);
+  useEffect(() => {
+    setReviewScope(currentScope);
+    setPartyReviewId(null); setPartyPlan(null); setPartyConfirmed(false); setConfirmingInternal(false); setIngesting(false);
+  }, [currentScope]);
 
   // --- #433 filter-bar params (client-side; reflected in URL) ---------------
   const q = params.get("q") ?? "";
@@ -155,9 +192,8 @@ export function DocumentsView() {
   // #433 — sorter for the date/amount columns. Default is the order returned
   // by the server (the document id), which is what the page used to do; only
   // after the owner clicks a column-header do we override that order.
-  const [sort, setSort] = useState<{ key: SortKey; dir: SortDir } | null>(
-    null,
-  );
+  const sortKey = params.get("sort");
+  const sort: { key: SortKey; dir: SortDir } | null = sortKey === "date" || sortKey === "amount" ? { key: sortKey, dir: params.get("dir") === "desc" ? "desc" : "asc" } : null;
 
   function setFilter(key: (typeof FILTER_PARAM_KEYS)[number], value: string) {
     const next = new URLSearchParams(params);
@@ -166,12 +202,13 @@ export function DocumentsView() {
     } else {
       next.set(key, value);
     }
+    next.delete("page");
     setParams(next, { replace: true });
   }
 
   function clearAllFilters() {
     const next = new URLSearchParams(params);
-    for (const k of FILTER_PARAM_KEYS) next.delete(k);
+    for (const k of [...FILTER_PARAM_KEYS, "documentId", "page"]) next.delete(k);
     setParams(next, { replace: true });
   }
 
@@ -185,11 +222,19 @@ export function DocumentsView() {
     documentId !== null;
 
   function toggleSort(key: SortKey) {
-    setSort((prev) => {
-      if (!prev || prev.key !== key) return { key, dir: "asc" };
-      if (prev.dir === "asc") return { key, dir: "desc" };
-      return null;
-    });
+    const next = new URLSearchParams(params);
+    if (sort?.key === key && sort.dir === "desc") { next.delete("sort"); next.delete("dir"); }
+    else { next.set("sort", key); next.set("dir", sort?.key === key ? "desc" : "asc"); }
+    next.delete("page");
+    setParams(next, { replace: true });
+  }
+
+  function setSorting(key: string, direction?: string) {
+    const next = new URLSearchParams(params);
+    if (key === "default") { next.delete("sort"); next.delete("dir"); }
+    else { next.set("sort", key); next.set("dir", direction ?? sort?.dir ?? "asc"); }
+    next.delete("page");
+    setParams(next, { replace: true });
   }
 
   function sortIndicator(key: SortKey): string {
@@ -197,34 +242,35 @@ export function DocumentsView() {
     return sort.dir === "asc" ? " ▲" : " ▼";
   }
 
-  const allDocuments = state.data?.documents.documents ?? [];
+  const allDocuments = useMemo(() => groupDocuments(state.data?.documents.documents ?? []), [state.data?.documents.documents]);
   const linkedIds = useMemo(() => new Set((partyLinks.data ?? []).filter((link) => link.linked === 1).map((link) => link.id)), [partyLinks.data]);
   const internalNoPartyIds = useMemo(() => new Set((partyLinks.data ?? []).filter((link) => link.resolution_state === "internal_no_external_party").map((link) => link.id)), [partyLinks.data]);
 
   const filteredDocuments = useMemo(() => {
+    if (detail && documentId === null) return [];
     if (!hasActiveFilter) return allDocuments;
     const needle = q.trim().toLowerCase();
     return allDocuments.filter((doc) => {
       if (documentId !== null && doc.id !== documentId) return false;
-      if (needle !== "" && !documentMatchesText(doc, needle)) return false;
-      if (fromDate !== "") {
+      if (!detail && needle !== "" && !doc.associations.some((association) => documentMatchesText(association, needle))) return false;
+      if (!detail && fromDate !== "") {
         if (!doc.invoiceDate || doc.invoiceDate < fromDate) return false;
       }
-      if (toDate !== "") {
+      if (!detail && toDate !== "") {
         if (!doc.invoiceDate || doc.invoiceDate > toDate) return false;
       }
-      if (status === "booked" && doc.journalEntryNo === null) return false;
-      if (status === "unbooked" && doc.journalEntryNo !== null) return false;
-      if (type !== "all" && doc.documentType !== type) return false;
-      if (party === "linked" && !linkedIds.has(doc.id)) return false;
-      if (party === "unlinked" && (linkedIds.has(doc.id) || internalNoPartyIds.has(doc.id))) return false;
-      if (party === "internal_no_external_party" && !internalNoPartyIds.has(doc.id)) return false;
+      if (!detail && status === "booked" && doc.journalEntryNo === null) return false;
+      if (!detail && status === "unbooked" && doc.journalEntryNo !== null) return false;
+      if (!detail && type !== "all" && doc.documentType !== type) return false;
+      if (!detail && party === "linked" && !linkedIds.has(doc.id)) return false;
+      if (!detail && party === "unlinked" && (linkedIds.has(doc.id) || internalNoPartyIds.has(doc.id))) return false;
+      if (!detail && party === "internal_no_external_party" && !internalNoPartyIds.has(doc.id)) return false;
       // Ambiguity is intentionally not inferred: it needs an explicit reviewed
       // plan conflict, so this view offers the bounded unlinked review queue.
-      if (party === "ambiguous") return false;
+      if (!detail && party === "ambiguous") return false;
       return true;
     });
-  }, [allDocuments, hasActiveFilter, q, fromDate, toDate, status, type, party, documentId, linkedIds, internalNoPartyIds]);
+  }, [allDocuments, hasActiveFilter, q, fromDate, toDate, status, type, party, documentId, linkedIds, internalNoPartyIds, detail]);
 
   const sortedDocuments = useMemo(() => {
     if (!sort) return filteredDocuments;
@@ -249,7 +295,7 @@ export function DocumentsView() {
   }, [filteredDocuments, sort]);
 
   if (state.loading && !state.data) return <Loading label="Henter bilag…" />;
-  if (state.error)
+  if (state.error && !state.data)
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const { documents: d, fiscalYears } = state.data!;
@@ -264,11 +310,22 @@ export function DocumentsView() {
   const selectedYearArchived =
     fiscalYears.find((y) => y.label === selectedYear)?.source === "archive";
 
-  const totalCount = d.documents.length;
+  const totalCount = allDocuments.length;
+  const bookedCount = allDocuments.filter((doc) => doc.journalEntryNo !== null).length;
+  const pagination = listPagination(params, sortedDocuments.length);
+  const visibleDocuments = detail ? sortedDocuments : sortedDocuments.slice(pagination.offset, pagination.offset + pagination.pageSize);
+  const returnTo = listReturnTo(slug, "bilag", params.get("returnTo"), year);
+  function setPageParam(key: "page" | "pageSize", value: number) {
+    const next = new URLSearchParams(params); next.set(key, String(value));
+    if (key === "pageSize") next.delete("page");
+    setParams(next, { replace: true });
+  }
   const matchCount = sortedDocuments.length;
-  const reviewedDocument = partyReviewId === null ? null : allDocuments.find((doc) => doc.id === partyReviewId) ?? null;
+  const reviewedDocument = partyReviewId === null || reviewScope !== currentScope ? null : allDocuments.find((doc) => doc.id === partyReviewId) ?? null;
 
   async function beginPartyReview(doc: DocumentRow) {
+    if (partyOutcome.isBlocked()) return;
+    setReviewScope(currentScope);
     setPartyReviewId(doc.id);
     setSelectedPartyId("");
     setPartyRole("vendor");
@@ -300,10 +357,12 @@ export function DocumentsView() {
   }
 
   async function planPartyLink() {
+    if (partyOutcome.isBlocked()) return;
     if (!reviewedDocument || !selectedPartyId) return;
     setPartyBusy(true);
     setPartyError(null);
     setPartyPlan(null);
+    setPartyConfirmed(false);
     try {
       const result = await api.planDocumentPartyLink(slug, identityInput(reviewedDocument));
       if (!result.ok || !result.plan) {
@@ -319,7 +378,7 @@ export function DocumentsView() {
   }
 
   async function applyPartyLink() {
-    if (!reviewedDocument || !partyPlan || !partyConfirmed) return;
+    if (partyOutcome.isBlocked() || partyBusy || !reviewedDocument || !partyPlan || !partyConfirmed) return;
     setPartyBusy(true);
     setPartyError(null);
     try {
@@ -329,7 +388,7 @@ export function DocumentsView() {
         confirm: true,
         // A UI retry remains safe for this exact reviewed plan.
         idempotencyKey: `document-party-link-${reviewedDocument.id}-${partyPlan.planHash}`,
-      });
+      }).catch(partyOutcome.reject);
       if (!result.ok) {
         setPartyError(result.errors?.join(", ") ?? "Koblingen kunne ikke gemmes.");
         return;
@@ -337,6 +396,7 @@ export function DocumentsView() {
       await Promise.all([partyLinks.reload(), state.reload()]);
       // Inspect after the write so the visible status/history is current.
       await api.documentPartyLinkHistory(slug, reviewedDocument.id);
+      markPartySaved();
       setPartyReviewId(null);
     } catch (error) {
       setPartyError(error instanceof Error ? error.message : "Koblingen kunne ikke gemmes.");
@@ -346,38 +406,25 @@ export function DocumentsView() {
   }
 
   async function confirmInternalNoParty() {
-    if (!reviewedDocument || reviewedDocument.documentType !== "internal_voucher" || !window.confirm("Bekræft at dette interne bilag bevidst ikke har en ekstern part.")) return;
-    setPartyBusy(true); setPartyError(null);
-    try { const result = await api.confirmInternalNoExternalParty(slug, { documentId: reviewedDocument.id, reason: "Confirmed in Documents Cockpit", idempotencyKey: `internal-no-party-${reviewedDocument.id}`, confirm: true }); if (!result.ok) { setPartyError(result.errors?.join(", ") ?? "Beslutningen kunne ikke gemmes."); return; } await partyLinks.reload(); setPartyReviewId(null); }
-    catch (error) { setPartyError(error instanceof Error ? error.message : "Beslutningen kunne ikke gemmes."); }
-    finally { setPartyBusy(false); }
+    if (partyOutcome.isBlocked() || !reviewedDocument || reviewedDocument.documentType !== "internal_voucher") return;
+    const result = await api.confirmInternalNoExternalParty(slug, {
+      documentId: reviewedDocument.id,
+      reason: "Bekræftet via bilagsgennemgang.",
+      idempotencyKey: `internal-no-party-${reviewedDocument.id}`,
+      confirm: true,
+    }).catch(partyOutcome.reject);
+    if (!result.ok) throw new Error(result.errors?.join(", ") ?? "Beslutningen kunne ikke gemmes.");
+    await partyLinks.reload();
+    setPartyReviewId(null);
   }
 
   return (
     <section className="statement">
-      <div className="page-head">
-        <div>
-          <h2>{d.company.name}</h2>
-          <p className="muted">
-            {d.company.cvr ? `CVR ${d.company.cvr} · ` : ""}
-            {d.company.country} · {currency} · Bilag
-          </p>
-        </div>
-        <div className="row-actions">
-          {!selectedYearArchived && (
-            <button
-              type="button"
-              className="btn"
-              onClick={() => setIngesting(true)}
-            >
-              Indlæs bilag
-            </button>
-          )}
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </div>
+      {state.error && <Banner kind="warning">Status kunne ikke opdateres: {state.error} De tidligere hentede bilag vises fortsat.</Banner>}
+      {partyOutcome.feedback}
+      <PageHeader title={detail ? `Bilag ${sortedDocuments[0]?.documentNo ?? documentId ?? ""}` : "Bilag"}
+        description={`${d.company.name} · ${currency} · Alle bilag på tværs af regnskabsår`}
+        actions={detail ? <ButtonLink className="btn secondary" to={returnTo}>Tilbage til bilag</ButtonLink> : !selectedYearArchived && can("company.documents.upload") ? <Button onClick={() => setIngesting(true)}>Indlæs bilag</Button> : undefined} />
 
       <CompanyNav
         slug={slug}
@@ -394,19 +441,18 @@ export function DocumentsView() {
         />
       )}
 
-      {bookingDocumentId !== null && (
-        <DocumentBookExpenseModal
-          slug={slug}
-          documentId={bookingDocumentId}
-          onBooked={state.reload}
-          onClose={() => setBookingDocumentId(null)}
-        />
-      )}
+      {confirmingInternal && reviewedDocument && !selectedYearArchived && can("company.master-data") && <ConfirmDialog
+        title="Bekræft internt bilag uden ekstern part"
+        body={<p>Bekræft at bilag {reviewedDocument.documentNo ?? reviewedDocument.id} bevidst ikke har en ekstern part. Beslutningen registreres i revisionssporet.</p>}
+        confirmLabel="Bekræft ingen ekstern part"
+        onConfirm={confirmInternalNoParty}
+        onRefresh={() => { partyLinks.reload(); state.reload(); }}
+        onClose={() => setConfirmingInternal(false)} />}
 
-      <div className="journal-filter-bar card" role="search">
+      {!detail && <FilterBar activeCount={[q, fromDate, toDate, status === "all" ? "" : status, type === "all" ? "" : type, party === "all" ? "" : party].filter(Boolean).length} onReset={clearAllFilters}>
         <label className="journal-filter-field journal-filter-field--search">
           <span className="muted">Søg</span>
-          <input
+          <Input
             type="search"
             value={q}
             placeholder="Søg på leverandør, bilagsnr., faktura eller posteringstekst…"
@@ -415,25 +461,25 @@ export function DocumentsView() {
         </label>
         <label className="journal-filter-field">
           <span className="muted">Fra</span>
-          <input
+          <Input
             type="date"
             value={fromDate}
             onChange={(e) => setFilter("from", e.target.value)}
           />
         </label>
         <label className="journal-filter-field">
-          <span className="muted">Kanonisk part</span>
-          <select value={party} onChange={(e) => setFilter("party", e.target.value)}>
+          <span className="muted">Registreret modpart</span>
+          <Select value={party} onChange={(e) => setFilter("party", e.target.value)}>
             <option value="all">Alle</option>
             <option value="linked">Koblet</option>
             <option value="unlinked">Mangler review</option>
             <option value="internal_no_external_party">Internt uden ekstern part</option>
             <option value="ambiguous">Tvetydige (kræver review)</option>
-          </select>
+          </Select>
         </label>
         <label className="journal-filter-field">
           <span className="muted">Til</span>
-          <input
+          <Input
             type="date"
             value={toDate}
             onChange={(e) => setFilter("to", e.target.value)}
@@ -441,18 +487,18 @@ export function DocumentsView() {
         </label>
         <label className="journal-filter-field">
           <span className="muted">Status</span>
-          <select
+          <Select
             value={status}
             onChange={(e) => setFilter("status", e.target.value)}
           >
             <option value="all">Alle</option>
             <option value="booked">Bogført</option>
             <option value="unbooked">Kun ubehandlede</option>
-          </select>
+          </Select>
         </label>
         <label className="journal-filter-field">
           <span className="muted">Type</span>
-          <select
+          <Select
             value={type}
             onChange={(e) => setFilter("type", e.target.value)}
           >
@@ -460,103 +506,98 @@ export function DocumentsView() {
             <option value="purchase_sale">Køb/salg</option>
             <option value="cash_register_receipt">Kassebon</option>
             <option value="internal_voucher">Internt bilag</option>
-          </select>
+          </Select>
         </label>
-        {hasActiveFilter && (
-          <button
-            type="button"
-            className="btn secondary"
-            onClick={clearAllFilters}
-          >
-            Ryd filtre
-          </button>
-        )}
-      </div>
+
+        <label className="journal-filter-field">Sortering<Select value={sort?.key ?? "default"} onChange={(event) => setSorting(event.target.value)}><option value="default">Nyeste indlæsning</option><option value="date">Fakturadato</option><option value="amount">Beløb</option></Select></label>
+        {sort && <label className="journal-filter-field">Rækkefølge<Select value={sort.dir} onChange={(event) => setSorting(sort.key, event.target.value)}><option value="asc">Stigende</option><option value="desc">Faldende</option></Select></label>}
+      </FilterBar>}
 
       <p className="statement-asof muted">
         {hasActiveFilter
           ? `${matchCount} af ${totalCount} bilag matcher`
           : `${totalCount} bilag`}
         {" · "}
-        {d.linkedCount} bogført · {d.unlinkedCount} ubehandlet
+        {bookedCount} bogført · {totalCount - bookedCount} ubehandlet
       </p>
 
-      {reviewedDocument && (
-        <section className="card" aria-label="Gennemgå kanonisk part">
+      {reviewedDocument && !selectedYearArchived && can("company.master-data") && (
+        <section className="card" aria-label="Gennemgå registreret modpart">
           <div className="page-head">
             <div>
-              <h3>Gennemgå kanonisk part</h3>
+              <h3>Gennemgå registreret modpart</h3>
               <p className="muted">Bilag {reviewedDocument.documentNo ?? `#${reviewedDocument.id}`}. Navne er kun søgehjælp — koblingen kræver den uforanderlige identitet nedenfor.</p>
             </div>
-            <button type="button" className="btn secondary" onClick={() => setPartyReviewId(null)}>Luk</button>
+            <Button type="button" className="btn secondary" onClick={() => setPartyReviewId(null)}>Luk</Button>
           </div>
           <dl className="key-value-list">
             <div><dt>Identitet på bilaget</dt><dd>{reviewedDocument.supplierCountryCode ?? "—"} · {reviewedDocument.supplierIdentifierKind ?? "—"} · {reviewedDocument.supplierVatOrCvr ?? "Ingen verificerbar identifikator"}</dd></div>
             <div><dt>Bevis</dt><dd>Originalfilen og bogføringen ændres ikke. Planen binder bilagets hash til den valgte part.</dd></div>
           </dl>
           <div className="row-actions">
-            <label>Rolle <select value={partyRole} onChange={(event) => { setPartyRole(event.target.value as "vendor" | "customer"); setPartyPlan(null); }}><option value="vendor">Leverandør</option><option value="customer">Kunde</option></select></label>
-            <label>Vælg kanonisk part <select aria-label="Vælg kanonisk part" value={selectedPartyId} onChange={(event) => { setSelectedPartyId(event.target.value); setPartyPlan(null); }} disabled={partyBusy}><option value="">Vælg en synlig part…</option>{partyCandidates.map((candidate) => <option key={candidate.partyId} value={candidate.partyId}>{candidate.name}</option>)}</select></label>
-            <button type="button" className="btn secondary" disabled={partyBusy || !selectedPartyId || !reviewedDocument.supplierVatOrCvr} onClick={planPartyLink}>Vis plan</button>
+            <label>Rolle <Select value={partyRole} onChange={(event) => { setPartyRole(event.target.value as "vendor" | "customer"); setPartyPlan(null); setPartyConfirmed(false); }}><option value="vendor">Leverandør</option><option value="customer">Kunde</option></Select></label>
+            <label>Vælg registreret modpart <Select aria-label="Vælg registreret modpart" value={selectedPartyId} onChange={(event) => { setSelectedPartyId(event.target.value); setPartyPlan(null); setPartyConfirmed(false); }} disabled={partyBusy || partyOutcome.blocked}><option value="">Vælg en synlig part…</option>{partyCandidates.map((candidate) => <option key={candidate.partyId} value={candidate.partyId}>{candidate.name}</option>)}</Select></label>
+            <Button type="button" className="btn secondary" disabled={partyOutcome.blocked || partyBusy || !selectedPartyId || !reviewedDocument.supplierVatOrCvr} onClick={planPartyLink}>Vis plan</Button>
           </div>
           {!reviewedDocument.supplierVatOrCvr && <p className="flag warning">Bilaget har ingen verificerbar identifikator. Navne alene kan ikke kobles.</p>}
           {partyError && <p className="flag warning" role="alert">{partyError}</p>}
-          {partyPlan && <div className="card"><p><strong>Plan klar</strong> — {partyPlan.partySnapshot?.name ?? "Valgt part"}; bevis: {partyPlan.evidence?.kind ?? "exact_identifier"}.</p><p className="muted">Plan-hash: <code>{partyPlan.planHash}</code></p><label><input type="checkbox" checked={partyConfirmed} onChange={(event) => setPartyConfirmed(event.target.checked)} /> Jeg har gennemgået planen og vil oprette den append-only kobling.</label><div className="row-actions"><button type="button" className="btn" disabled={partyBusy || !partyConfirmed} onClick={applyPartyLink}>Bekræft og anvend</button></div></div>}
-          {reviewedDocument.documentType === "internal_voucher" && <div className="card"><p className="muted">Interne bilag kan bekræftes uden ekstern part. Beslutningen er append-only og ændrer ikke bilag, moms eller journal.</p><button type="button" className="btn secondary" disabled={partyBusy} onClick={confirmInternalNoParty}>Bekræft ingen ekstern part</button></div>}
+          {partyPlan && <div className="card"><p><strong>Plan klar</strong> — {partyPlan.partySnapshot?.name ?? "Valgt part"}; bevis: {partyPlan.evidence?.kind ?? "exact_identifier"}.</p><p className="muted">Plan-hash: <code>{partyPlan.planHash}</code></p><label><Input type="checkbox" disabled={partyBusy || partyOutcome.blocked} checked={partyConfirmed} onChange={(event) => setPartyConfirmed(event.target.checked)} /> Jeg har gennemgået planen og vil oprette den append-only kobling.</label><div className="row-actions"><Button type="button" className="btn" disabled={partyOutcome.blocked || partyBusy || !partyConfirmed} onClick={applyPartyLink}>Bekræft og anvend</Button></div></div>}
+          {reviewedDocument.documentType === "internal_voucher" && <div className="card"><p className="muted">Interne bilag kan bekræftes uden ekstern part. Beslutningen er append-only og ændrer ikke bilag, moms eller journal.</p><Button type="button" className="btn secondary" disabled={partyBusy || partyOutcome.blocked} onClick={() => setConfirmingInternal(true)}>Bekræft ingen ekstern part</Button></div>}
         </section>
       )}
 
+      {detail && sortedDocuments.length === 0 && <div className="card" role="status"><h2>Bilaget findes ikke</h2><p>Gå tilbage til bilagslisten og vælg et eksisterende bilag.</p></div>}
       <div className="card statement-card table-scroll">
-        <table className="data statement-table">
-          <thead>
-            <tr>
+        <table className="data statement-table daily-table" role="table">
+          <thead role="rowgroup">
+            <tr role="row">
               <th>Bilagsnr.</th>
               <th>Type</th>
               <th>Modpart / grundlag</th>
               <th>Faktura</th>
               <th>
-                <button
+                <Button
                   type="button"
                   className="th-sort"
                   onClick={() => toggleSort("date")}
                   aria-label="Sortér efter dato"
                 >
                   Dato{sortIndicator("date")}
-                </button>
+                </Button>
               </th>
               <th className="num">
-                <button
+                <Button
                   type="button"
                   className="th-sort"
                   onClick={() => toggleSort("amount")}
                   aria-label="Sortér efter beløb"
                 >
                   Beløb inkl. moms{sortIndicator("amount")}
-                </button>
+                </Button>
               </th>
               <th>Postering</th>
               <th>Bilagsfil</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody role="rowgroup">
             {sortedDocuments.length === 0 ? (
-              <tr>
+              <tr role="row">
                 <td colSpan={8} className="empty-inline">
                   {hasActiveFilter
                     ? "Ingen bilag matcher filtrene."
-                    : "Ingen bilag ingested endnu."}
+                    : "Ingen bilag indlæst endnu."}
                 </td>
               </tr>
             ) : (
-              sortedDocuments.map((doc) => (
-                <tr key={doc.id}>
-                  <td className="account-no">
-                    {doc.documentNo ?? `#${doc.id}`}
+              visibleDocuments.map((doc) => (
+                <tr role="row" key={doc.id}>
+                  <td role="cell" data-label="Bilag" className="account-no">
+                    <Link to={workflowTo(slug, "bilag", String(doc.id), params, selectedYear)}>{doc.documentNo ?? `#${doc.id}`}</Link>
                   </td>
-                  <td>
+                  <td role="cell" data-label="Type">
                     {DOC_TYPE_LABELS[doc.documentType] ?? doc.documentType}
                   </td>
-                  <td>
+                  <td role="cell" data-label="Modpart / grundlag">
                     <div>
                       {doc.documentType === "internal_voucher"
                         ? `Bankpost #${doc.sourceBankTransactionId ?? "—"}`
@@ -567,48 +608,26 @@ export function DocumentsView() {
                     ) : null}
                     {(doc.supplierCountryCode || doc.supplierIdentifierKind || doc.supplierIdentityStatus) && (
                       <div className="muted">
-                        {doc.supplierCountryCode ?? "—"} · {doc.supplierIdentifierKind ?? "—"} · {doc.supplierIdentityStatus ?? "—"}
+                        {doc.supplierCountryCode ?? "—"} · {doc.supplierIdentifierKind ?? "—"} · {doc.supplierIdentityStatus === "resolved" ? "Identitet bekræftet" : doc.supplierIdentityStatus ? "Identitet kræver gennemgang" : "—"}
                       </div>
                     )}
-                    <div className="muted">{internalNoPartyIds.has(doc.id) ? "Bekræftet internt bilag uden ekstern part" : linkedIds.has(doc.id) ? "Kanonisk part koblet" : "Kanonisk part ikke koblet — gennemgå før anvendelse"}</div>
-                    {!linkedIds.has(doc.id) && !internalNoPartyIds.has(doc.id) && <button type="button" className="btn small secondary" onClick={() => beginPartyReview(doc)}>Gennemgå part</button>}
+                    <div className="muted">{internalNoPartyIds.has(doc.id) ? "Bekræftet internt bilag uden ekstern part" : linkedIds.has(doc.id) ? "Registreret modpart koblet" : "Registreret modpart ikke koblet — gennemgå før anvendelse"}</div>
+                    {!selectedYearArchived && can("company.master-data") && !linkedIds.has(doc.id) && !internalNoPartyIds.has(doc.id) && <Button type="button" className="btn small secondary" disabled={partyBusy || partyOutcome.blocked} onClick={() => beginPartyReview(doc)}>Gennemgå part</Button>}
                   </td>
-                  <td>{doc.invoiceNo ?? "—"}</td>
-                  <td className="entry-date">{doc.invoiceDate ?? "—"}</td>
-                  <td className="num">
-                    {doc.amountIncVat !== null
-                      ? formatKroner(doc.amountIncVat, doc.currency)
-                      : doc.journalEntryTotal !== null
-                        ? formatKroner(doc.journalEntryTotal, doc.currency)
-                        : "—"}
-                  </td>
-                  <td>
-                    {doc.journalEntryNo ? (
-                      <div className="doc-posting">
-                        <span className="flag ok">
-                          {doc.journalEntryNo}
-                          {doc.voucherRef ? ` · bilag ${doc.voucherRef}` : ""}
-                        </span>
-                        {doc.journalEntryText ? (
-                          <span className="doc-posting-text muted">
-                            {doc.journalEntryText}
-                          </span>
-                        ) : null}
+                  <td role="cell" data-label="Faktura">{doc.invoiceNo ?? "—"}</td>
+                  <td role="cell" data-label="Dato" className="entry-date">{doc.invoiceDate ?? "—"}</td>
+                  <td role="cell" data-label="Beløb inkl. moms" className="num"><Amount value={documentAmount(doc)} currency={doc.amountIncVat !== null ? doc.currency : "DKK"} />{doc.amountIncVat === null && doc.associations.filter((entry) => entry.journalEntryNo).length > 1 && <span className="muted">Se de tilknyttede posteringer</span>}</td>
+                  <td role="cell" data-label="Postering">
+                    {doc.journalEntryNo ? doc.associations.filter((association) => association.journalEntryNo).map((association) => (
+                      <div className="doc-posting" key={`${association.journalEntryId}-${association.voucherRef}`}>
+                        <span className="flag ok">{association.journalEntryNo}{association.voucherRef ? ` · bilag ${association.voucherRef}` : ""}</span>
+                        {association.journalEntryText && <span className="doc-posting-text muted">{association.journalEntryText}</span>}
+                        {detail && <Amount value={association.journalEntryTotal} currency="DKK" />}
                       </div>
-                    ) : (
-                      <div className="doc-posting">
-                        <span className="flag warning">Ikke bogført</span>
-                        {!selectedYearArchived && (
-                          <button
-                            type="button"
-                            className="btn small"
-                            onClick={() => setBookingDocumentId(doc.id)}
-                          >
-                            Bogfør bilag
-                          </button>
-                        )}
-                      </div>
-                    )}
+                    )) : <div className="doc-posting"><span className="flag warning">Ikke bogført</span>
+                      {!selectedYearArchived && can("company.ledger.post") && <ButtonLink className="btn small" to={workflowTo(slug, "bilag", `${doc.id}/bogfoer`, params, selectedYear)}>Bogfør bilag</ButtonLink>}
+                    </div>}
+
                   </td>
                   <td>
                     {doc.hasFile ? (
@@ -629,6 +648,9 @@ export function DocumentsView() {
           </tbody>
         </table>
       </div>
+      {!detail && <Pagination total={matchCount} {...pagination} onPageChange={(page) => setPageParam("page", page)} onPageSizeChange={(size) => setPageParam("pageSize", size)} />}
     </section>
   );
 }
+
+export function DocumentDetailView() { return <DocumentsView detail />; }

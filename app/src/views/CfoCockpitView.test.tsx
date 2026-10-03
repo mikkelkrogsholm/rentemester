@@ -36,7 +36,7 @@ describe("CfoCockpitView", () => {
     expect(screen.getByText(/Stale-status kan ikke udledes/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Bank" })).toHaveAttribute("href", "/companies/alpha/bank");
     expect(screen.getByRole("link", { name: "Postering J-1" })).toHaveAttribute("href", "/companies/alpha/posteringer?account=4200");
-    expect(cfoAnalytics).toHaveBeenCalledWith(expect.objectContaining({ scope: "company", companySlug: "alpha" }));
+    expect(cfoAnalytics).toHaveBeenCalledWith(expect.objectContaining({ scope: "company", companySlug: "alpha" }), expect.objectContaining({ signal: expect.anything() }));
   });
 
   test("labels portfolio as non-consolidated and never shows a hidden aggregate", async () => {

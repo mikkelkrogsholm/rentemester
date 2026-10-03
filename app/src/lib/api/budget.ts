@@ -4,7 +4,7 @@ import type {
   BudgetVsActualResponse,
   SetBudgetInput,
 } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 export const budgetApi = {
   /**
@@ -12,11 +12,11 @@ export const budgetApi = {
    * Drives the Budget input grid in the cockpit. The server collapses every
    * (account, period) pair to the newest revision before returning.
    */
-  budget: (slug: string, year?: string) =>
+  budget: (slug: string, year?: string, options?: ReadRequestOptions) =>
     request<BudgetResponse>(
       `/api/companies/${encodeURIComponent(slug)}/budget${
         year ? `?year=${encodeURIComponent(year)}` : ""
-      }`,
+      }`, options,
     ).then((r) => r.budget),
 
   /**
@@ -24,20 +24,20 @@ export const budgetApi = {
    * of the same `buildBudgetVsActual` core the CLI report uses, so every
    * surface gets the same numbers and the same sign convention.
    */
-  budgetVsActual: (slug: string, year?: string) =>
+  budgetVsActual: (slug: string, year?: string, options?: ReadRequestOptions) =>
     request<BudgetVsActualResponse>(
       `/api/companies/${encodeURIComponent(slug)}/budget-vs-actual${
         year ? `?year=${encodeURIComponent(year)}` : ""
-      }`,
+      }`, options,
     ).then((r) => r.budgetVsActual),
 
   /** Current approved dimension actuals. This is deliberately separate from
    * budget-vs-actual because budget lines have no dimension allocation model. */
-  budgetDimensionActuals: (slug: string, year?: string) =>
+  budgetDimensionActuals: (slug: string, year?: string, options?: ReadRequestOptions) =>
     request<BudgetDimensionActualsResponse>(
       `/api/companies/${encodeURIComponent(slug)}/budget-dimension-actuals${
         year ? `?year=${encodeURIComponent(year)}` : ""
-      }`,
+      }`, options,
     ).then((r) => r.budgetDimensionActuals),
 
   /**

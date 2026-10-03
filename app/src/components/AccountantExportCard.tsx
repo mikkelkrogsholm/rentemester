@@ -1,3 +1,4 @@
+import { Button, Input } from "./ui";
 // Revisor-eksport — the accountant-handoff package card.
 //
 // Generates the same .tar export the CLI's `system export-accountant` produces,
@@ -77,16 +78,16 @@ export function AccountantExportCard({ slug }: { slug: string }) {
     periodStart > periodEnd;
 
   return (
-    <div className="card" style={{ marginTop: 24, maxWidth: 460 }}>
-      <h3 style={{ marginTop: 0 }}>Revisor-eksport</h3>
+    <div className="card accountant-export">
+      <h3 className="section-title">Revisor-eksport</h3>
       <p className="muted">
         Pakker journal, bilag, banktransaktioner og audit-log for perioden i én
-        .tar-fil, du kan sende til din revisor. Genereres deterministisk og
-        forlader ikke din maskine før du klikker «Generér».
+        .tar-fil. Serveren danner pakken, når du klikker «Generér og download».
+        Du vælger selv, hvordan du deler den med din revisor.
       </p>
       <label>
         Fra
-        <input
+        <Input
           type="date"
           value={periodStart}
           onChange={(e) => setPeriodStart(e.target.value)}
@@ -95,7 +96,7 @@ export function AccountantExportCard({ slug }: { slug: string }) {
       </label>
       <label>
         Til
-        <input
+        <Input
           type="date"
           value={periodEnd}
           onChange={(e) => setPeriodEnd(e.target.value)}
@@ -111,14 +112,15 @@ export function AccountantExportCard({ slug }: { slug: string }) {
         </Banner>
       )}
       <div className="row-actions">
-        <button
+        <Button
+          requiredPermission="company.export"
           className="btn"
           onClick={generate}
           disabled={disabled}
           type="button"
         >
           {busy ? "Genererer…" : "Generér og download"}
-        </button>
+        </Button>
       </div>
     </div>
   );

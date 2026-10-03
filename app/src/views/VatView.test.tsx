@@ -25,7 +25,7 @@ describe("VatView — Moms", () => {
     mockFetch(route());
     renderView();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Moms", level: 1 }),
     ).toBeInTheDocument();
     expect(
       screen.getByText("Udgående moms før tab (kontrol)"),

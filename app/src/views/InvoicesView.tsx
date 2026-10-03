@@ -21,9 +21,10 @@
 // double-post. The action was removed from the cockpit; ledger reposting
 // remains available via `invoice post` in the CLI for the rare repair case.
 
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
+import { useCapabilities } from "../lib/useCapabilities";
 import { formatDateDa, formatKroner, todayIso } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
 import type {
@@ -31,10 +32,11 @@ import type {
   CompanyInvoices,
   InvoiceStatus,
 } from "../lib/types";
-import { ErrorState, Loading } from "../components/Feedback";
+import { Banner, ErrorState, Loading } from "../components/Feedback";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { ConfirmDialog } from "../components/ConfirmDialog";
-import { InvoiceIssueModal } from "../components/InvoiceIssueModal";
+import { ButtonLink, Button, Input, Select, Amount, PageHeader, Pagination, FilterBar } from "../components/ui";
+import { listPagination, listReturnTo, workflowTo } from "./workflow-navigation";
 
 // #UI-16 — the statutory late-payment reminder fee (rentel. § 9b), in kroner.
 // One named constant, rendered through `formatKroner`, so the two places that
@@ -55,15 +57,16 @@ const STATUS_META: Record<
   overdue: { label: "Forfalden", tone: "critical" },
 };
 
-export function InvoicesView() {
-  const { slug = "" } = useParams();
+export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
+  const { slug = "", documentId } = useParams();
+  const { can } = useCapabilities(slug);
+  const [params, setParams] = useSearchParams();
+  const [interactionScope, setInteractionScope] = useState<string | null>(null);
   const { year, setYear } = useCompanyYear();
   const state = useAsync<CompanyInvoices>(
-    () => api.invoices(slug, year),
+    (signal) => api.invoices(slug, year, { signal }),
     [slug, year],
   );
-  // True while the invoice-issue modal (#213, slice 4) is open.
-  const [issuing, setIssuing] = useState(false);
   // The invoice row whose "Afstem" ConfirmDialog is open, if any.
   const [settling, setSettling] = useState<CompanyInvoiceRow | null>(null);
   // The invoice row whose "Krediter" ConfirmDialog is open, if any (#412).
@@ -79,42 +82,67 @@ export function InvoicesView() {
   // Default ON because the typical SMB owner WANTS the fee booked — it's the
   // whole point of having a registered reminder for the legal trail.
   const [reminderBookFee, setReminderBookFee] = useState(true);
+  const currentScope = `${slug}:${year ?? state.data?.selectedYear ?? "default"}`;
+  const inCurrentScope = interactionScope === currentScope;
+  useEffect(() => {
+    setInteractionScope(currentScope);
+    setSettling(null); setCrediting(null); setSendingPublic(null); setCheckingPublicStatus(null); setSendingEmail(null); setSendingReminder(null); setReminderBookFee(true);
+  }, [currentScope]);
+
+  const q = params.get("q") ?? "";
+  const status = params.get("status") ?? "all";
+  const from = params.get("from") ?? "";
+  const to = params.get("to") ?? "";
+  const sort = params.get("sort");
+  const dir = params.get("dir") === "desc" ? -1 : 1;
+  const filtered = useMemo(() => {
+    const rows = (state.data?.invoices ?? []).filter((row) => {
+      if (detail) return row.documentId === Number(documentId);
+      const needle = q.trim().toLocaleLowerCase("da");
+      return (!needle || [row.invoiceNo, row.customerName ?? ""].some((value) => value.toLocaleLowerCase("da").includes(needle))) &&
+        (status === "all" || !Object.hasOwn(STATUS_META, status) || row.status === status) &&
+        (!from || Boolean(row.invoiceDate && row.invoiceDate >= from)) &&
+        (!to || Boolean(row.invoiceDate && row.invoiceDate <= to));
+    });
+    if (sort === "date" || sort === "amount" || sort === "due") rows.sort((a, b) => dir * (sort === "amount" ? a.grossAmount - b.grossAmount : (sort === "date" ? a.invoiceDate ?? "" : a.effectiveDueDate ?? "").localeCompare(sort === "date" ? b.invoiceDate ?? "" : b.effectiveDueDate ?? "")));
+    return rows;
+  }, [state.data?.invoices, detail, documentId, q, status, from, to, sort, dir]);
+  const pagination = listPagination(params, filtered.length);
+  const visible = detail ? filtered : filtered.slice(pagination.offset, pagination.offset + pagination.pageSize);
+  function setListParam(key: string, value: string) {
+    const next = new URLSearchParams(params);
+    if (value === "" || value === "all") next.delete(key); else next.set(key, value);
+    if (key !== "page") next.delete("page");
+    setParams(next, { replace: true });
+  }
+  function clearFilters() {
+    const next = new URLSearchParams(params);
+    for (const key of ["q", "status", "from", "to", "page"]) next.delete(key);
+    setParams(next, { replace: true });
+  }
+  function toggleSort(key: string) {
+    const next = new URLSearchParams(params);
+    next.set("sort", key); next.set("dir", sort === key && dir === 1 ? "desc" : "asc"); next.delete("page");
+    setParams(next, { replace: true });
+  }
 
   if (state.loading && !state.data)
     return <Loading label="Henter fakturaer…" />;
-  if (state.error)
+  if (state.error && !state.data)
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const inv = state.data!;
   const currency = inv.company.currency || "DKK";
+  const invoiceCurrencies = new Set(inv.invoices.map((row) => (row.currency || currency).trim().toUpperCase()));
+  const multipleCurrencies = invoiceCurrencies.size > 1;
+  const totalsCurrency = invoiceCurrencies.size === 1 ? [...invoiceCurrencies][0]! : currency;
 
   return (
     <section className="statement">
-      <div className="page-head">
-        <div>
-          <h2>{inv.company.name}</h2>
-          <p className="muted">
-            {inv.company.cvr ? `CVR ${inv.company.cvr} · ` : ""}
-            {inv.company.country} · {currency} · Fakturaer
-          </p>
-        </div>
-        <div className="row-actions">
-          {/* The issue write action — hidden for an archived (read-only) year,
-              where no live ledger is available to issue into. */}
-          {!inv.archived && (
-            <button
-              type="button"
-              className="btn"
-              onClick={() => setIssuing(true)}
-            >
-              Udsted faktura
-            </button>
-          )}
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </div>
+      {state.error && <Banner kind="warning">Status kunne ikke opdateres: {state.error} De tidligere hentede fakturaer vises fortsat.</Banner>}
+      <PageHeader title={detail ? `Faktura ${filtered[0]?.invoiceNo ?? documentId ?? ""}` : "Fakturaer"}
+        description={`${inv.company.name} · ${currency} · Regnskabsår ${inv.selectedYear}`}
+        actions={detail ? <ButtonLink className="btn secondary" to={listReturnTo(slug, "fakturaer", params.get("returnTo"), inv.selectedYear)}>Tilbage til fakturaer</ButtonLink> : !inv.archived && can("company.draft.write") ? <ButtonLink className="btn" to={workflowTo(slug, "fakturaer", "ny", params, inv.selectedYear)}>Udsted faktura</ButtonLink> : undefined} />
 
       <CompanyNav
         slug={slug}
@@ -123,16 +151,8 @@ export function InvoicesView() {
         onYearChange={setYear}
       />
 
-      {issuing && (
-        <InvoiceIssueModal
-          slug={slug}
-          onIssued={state.reload}
-          onClose={() => setIssuing(false)}
-        />
-      )}
-
-      {settling && (
-        <ConfirmDialog
+      {settling && inCurrentScope && (
+        <ConfirmDialog operationKey={String(settling.documentId)}
           title="Afstem faktura mod bankbetaling"
           body={
             <p>
@@ -158,6 +178,7 @@ export function InvoicesView() {
             });
             state.reload();
           }}
+          onRefresh={state.reload}
           onClose={() => setSettling(null)}
         />
       )}
@@ -166,8 +187,8 @@ export function InvoicesView() {
           journal entry (and a new credit-note document), so the action is
           write-irreversible. A begrundelse is required for the audit trail —
           a blank value blocks the call before it reaches the server. */}
-      {crediting && (
-        <ConfirmDialog
+      {crediting && inCurrentScope && (
+        <ConfirmDialog operationKey={String(crediting.documentId)}
           title="Udsted kreditnota"
           body={
             <p>
@@ -198,6 +219,7 @@ export function InvoicesView() {
             });
             state.reload();
           }}
+          onRefresh={state.reload}
           onClose={() => setCrediting(null)}
         />
       )}
@@ -211,8 +233,8 @@ export function InvoicesView() {
           to that flag.
           The server resolves the selected company's DigiSense identity and
           transmits now; no transport identity or credentials come from the UI. */}
-      {sendingPublic && (
-        <ConfirmDialog
+      {sendingPublic && inCurrentScope && (
+        <ConfirmDialog operationKey={String(sendingPublic.documentId)}
           title="Send e-faktura"
           body={
             <div>
@@ -249,12 +271,13 @@ export function InvoicesView() {
             });
             state.reload();
           }}
+          onRefresh={state.reload}
           onClose={() => setSendingPublic(null)}
         />
       )}
 
-      {checkingPublicStatus && (
-        <ConfirmDialog
+      {checkingPublicStatus && inCurrentScope && (
+        <ConfirmDialog operationKey={String(checkingPublicStatus.documentId)}
           title="Opdatér leveringsstatus"
           body={<p>Kontrollér leveringsstatus for <strong>{checkingPublicStatus.invoiceNo}</strong>. Handlingen observerer kun den eksisterende DigiSense-afsendelse og sender ikke fakturaen igen.</p>}
           confirmLabel="Kontrollér status"
@@ -263,6 +286,7 @@ export function InvoicesView() {
             await api.refreshEInvoiceStatus(slug, { invoiceDocumentId: checkingPublicStatus.documentId });
             state.reload();
           }}
+          onRefresh={state.reload}
           onClose={() => setCheckingPublicStatus(null)}
         />
       )}
@@ -276,8 +300,8 @@ export function InvoicesView() {
           Replaces the missing CLI step `invoice send` — SMB owners no
           longer need to download the PDF and open their mail client to get
           the invoice out to the customer. */}
-      {sendingEmail && (
-        <ConfirmDialog
+      {sendingEmail && inCurrentScope && (
+        <ConfirmDialog operationKey={String(sendingEmail.documentId)}
           title="Send faktura på mail"
           body={
             <div>
@@ -323,6 +347,7 @@ export function InvoicesView() {
             });
             state.reload();
           }}
+          onRefresh={state.reload}
           onClose={() => setSendingEmail(null)}
         />
       )}
@@ -337,11 +362,11 @@ export function InvoicesView() {
           e-mail. Write-irreversible (registers a reminder, optionally
           appends a journal entry, always appends an `email_send_log` +
           `audit_log` row) — `confirm: true` is set by the API client. */}
-      {sendingReminder && (() => {
+      {sendingReminder && inCurrentScope && (() => {
         const nextSeq = (sendingReminder.lastReminderSequence ?? 0) + 1;
         const ord = nextSeq === 1 ? "1." : nextSeq === 2 ? "2." : "3.";
         return (
-          <ConfirmDialog
+          <ConfirmDialog operationKey={String(sendingReminder.documentId)}
             title="Send rykker til kunden"
             body={
               <div>
@@ -374,7 +399,7 @@ export function InvoicesView() {
                   </div>
                 </dl>
                 <label className="modal-checkbox">
-                  <input
+                  <Input
                     type="checkbox"
                     checked={reminderBookFee}
                     onChange={(e) => setReminderBookFee(e.target.checked)}
@@ -410,6 +435,7 @@ export function InvoicesView() {
               });
               state.reload();
             }}
+            onRefresh={state.reload}
             onClose={() => {
               setSendingReminder(null);
               setReminderBookFee(true);
@@ -420,7 +446,7 @@ export function InvoicesView() {
 
       {inv.archived ? (
         <ArchivedNotice year={inv.selectedYear} />
-      ) : inv.invoices.length === 0 ? (
+      ) : detail && filtered.length === 0 ? (<div className="card" role="status"><h2>Fakturaen findes ikke i {inv.selectedYear}</h2><p>Vælg det relevante regnskabsår eller gå tilbage til fakturaoversigten.</p></div>) : inv.invoices.length === 0 ? (
         <div className="card archived-notice">
           <h3>Ingen fakturaer endnu</h3>
           <p className="muted">
@@ -431,11 +457,11 @@ export function InvoicesView() {
         </div>
       ) : (
         <>
-          <div className="status-grid invoices-summary">
+          {!detail && <div className="status-grid invoices-summary">
             <div className="card status-card">
               <h3>Faktureret i alt</h3>
               <div className="status-figure">
-                {formatKroner(inv.totalGross, currency)}
+                {multipleCurrencies ? <span className="muted">Fakturaer i flere valutaer — se beløbene på den enkelte faktura.</span> : <Amount value={inv.totalGross} currency={totalsCurrency} />}
               </div>
               <p className="muted status-note">
                 {inv.invoices.length}{" "}
@@ -450,7 +476,7 @@ export function InvoicesView() {
                   inv.totalOpen > 0 ? " status-alert" : ""
                 }`}
               >
-                {formatKroner(inv.totalOpen, currency)}
+                {multipleCurrencies ? <span className="muted">Udestående vises i den enkelte fakturas valuta.</span> : <Amount value={inv.totalOpen} currency={totalsCurrency} />}
               </div>
               <p className="muted status-note">
                 {inv.overdueCount > 0
@@ -460,27 +486,39 @@ export function InvoicesView() {
                   : "Ingen forfaldne fakturaer"}
               </p>
             </div>
-          </div>
+          </div>}
+
+          {!detail && <FilterBar activeCount={[q, from, to, status === "all" ? "" : status].filter(Boolean).length} onReset={clearFilters}>
+            <label className="journal-filter-field journal-filter-field--search">Søg<Input type="search" value={q} placeholder="Kunde eller fakturanummer…" onChange={(event) => setListParam("q", event.target.value)} /></label>
+            <label className="journal-filter-field">Status<Select value={Object.hasOwn(STATUS_META, status) ? status : "all"} onChange={(event) => setListParam("status", event.target.value)}><option value="all">Alle</option>{Object.entries(STATUS_META).map(([value, meta]) => <option key={value} value={value}>{meta.label}</option>)}</Select></label>
+            <label className="journal-filter-field">Fra<Input type="date" value={from} onChange={(event) => setListParam("from", event.target.value)} /></label>
+            <label className="journal-filter-field">Til<Input type="date" value={to} onChange={(event) => setListParam("to", event.target.value)} /></label>
+            <label className="journal-filter-field">Sortering<Select value={sort === "date" || sort === "amount" || sort === "due" ? sort : "default"} onChange={(event) => { const next = new URLSearchParams(params); if (event.target.value === "default") { next.delete("sort"); next.delete("dir"); } else { next.set("sort", event.target.value); next.set("dir", params.get("dir") === "desc" ? "desc" : "asc"); } next.delete("page"); setParams(next, { replace: true }); }}><option value="default">Nyeste faktura</option><option value="date">Fakturadato</option><option value="due">Forfaldsdato</option><option value="amount">Beløb</option></Select></label>
+            {(sort === "date" || sort === "amount" || sort === "due") && <label className="journal-filter-field">Rækkefølge<Select value={dir === -1 ? "desc" : "asc"} onChange={(event) => setListParam("dir", event.target.value)}><option value="asc">Stigende</option><option value="desc">Faldende</option></Select></label>}
+          </FilterBar>}
+          {!detail && <p className="statement-asof muted">{filtered.length} af {inv.invoices.length} fakturaer matcher</p>}
 
           <div className="card statement-card table-scroll">
-            <table className="data statement-table">
-              <thead>
-                <tr>
+            <table className="data statement-table daily-table" role="table">
+              <thead role="rowgroup">
+                <tr role="row">
                   <th>Fakturanr.</th>
                   <th>Kunde</th>
-                  <th>Dato</th>
-                  <th>Forfald</th>
-                  <th className="num">Beløb inkl. moms</th>
+                  <th><Button className="th-sort" onClick={() => toggleSort("date")} aria-label="Sortér efter dato">Dato{sort === "date" ? dir === 1 ? " ▲" : " ▼" : ""}</Button></th>
+                  <th><Button className="th-sort" onClick={() => toggleSort("due")} aria-label="Sortér efter forfald">Forfald{sort === "due" ? dir === 1 ? " ▲" : " ▼" : ""}</Button></th>
+                  <th className="num"><Button className="th-sort" onClick={() => toggleSort("amount")} aria-label="Sortér efter beløb">Beløb inkl. moms{sort === "amount" ? dir === 1 ? " ▲" : " ▼" : ""}</Button></th>
                   <th className="num">Udestående</th>
                   <th>Status</th>
                   <th>Handlinger</th>
                 </tr>
               </thead>
-              <tbody>
-                {inv.invoices.map((row) => {
-                  const meta = STATUS_META[row.status];
+              <tbody role="rowgroup">
+                {visible.length === 0 && <tr role="row"><td colSpan={8} className="empty-inline">Ingen fakturaer matcher filtrene.</td></tr>}
+                {visible.map((row) => {
+                  const knownStatus = Object.hasOwn(STATUS_META, row.status);
+                  const meta = STATUS_META[row.status] ?? { label: "Ukendt status", tone: "neutral" };
                   // Settlement only makes sense while a balance is open.
-                  const canSettle = row.openBalance > 0;
+                  const canSettle = knownStatus && row.openBalance > 0;
                   // #412: Krediter is offered for any posted invoice that has
                   // not already been written off / refunded / fully credited.
                   // A partial credit reduces the open balance but leaves the
@@ -488,7 +526,7 @@ export function InvoicesView() {
                   // remain creditable until the core refuses on "already fully
                   // credited" (mapped to a 409 by the mutation pipeline).
                   const canCredit =
-                    row.status !== "credited" &&
+                    knownStatus && row.status !== "credited" &&
                     row.status !== "refunded" &&
                     row.status !== "written_off";
                   // #428: A fresh send is offered only when the buyer
@@ -519,22 +557,20 @@ export function InvoicesView() {
                     Boolean(row.customerEmail) &&
                     reminderSeq < 3;
                   return (
-                    <tr key={row.documentId}>
-                      <td className="account-no">{row.invoiceNo}</td>
-                      <td>{row.customerName ?? "—"}</td>
-                      <td className="entry-date">{row.invoiceDate ?? "—"}</td>
-                      <td className="entry-date">
+                    <tr role="row" key={row.documentId}>
+                      <td role="cell" data-label="Faktura" className="account-no"><Link to={workflowTo(slug, "fakturaer", String(row.documentId), params, inv.selectedYear)}>{row.invoiceNo}</Link></td>
+                      <td role="cell" data-label="Kunde">{row.customerName ?? "—"}</td>
+                      <td role="cell" data-label="Dato" className="entry-date">{row.invoiceDate ?? "—"}</td>
+                      <td role="cell" data-label="Forfald" className="entry-date">
                         {row.effectiveDueDate ?? "—"}
                       </td>
-                      <td className="num">
-                        {formatKroner(row.grossAmount, currency)}
+                      <td role="cell" data-label="Beløb inkl. moms" className="num">
+                        <Amount value={row.grossAmount} currency={row.currency || currency} />
                       </td>
-                      <td className="num">
-                        {row.openBalance > 0
-                          ? formatKroner(row.openBalance, currency)
-                          : "—"}
+                      <td role="cell" data-label="Udestående" className="num">
+                        <Amount value={row.openBalance} currency={row.currency || currency} />
                       </td>
-                      <td>
+                      <td role="cell" data-label="Status">
                         <span className={`flag ${meta.tone}`}>
                           {meta.label}
                           {/* Singular/plural — "· 1 dage" is wrong Danish. */}
@@ -544,6 +580,7 @@ export function InvoicesView() {
                               }`
                             : ""}
                         </span>
+                        {!knownStatus && <details><summary>Teknisk status</summary><code>{row.status}</code></details>}
                         {/* #429 — surface a "Sendt {dato}" flag once the
                             invoice has been emailed from the cockpit so the
                             owner can see at a glance whether the customer
@@ -601,11 +638,11 @@ export function InvoicesView() {
                                   ? "E-faktura-status ukendt — afklar manuelt"
                                 : row.peppolStatus.status === "in_progress"
                                   ? "E-faktura afsendes"
-                                  : "E-faktura fejlede — kan prøves igen"}
+                                  : row.peppolStatus.status === "retryable" ? "E-faktura fejlede — kan prøves igen" : "Ukendt leveringsstatus — afklar manuelt"}
                           </span>
                         )}
                       </td>
-                      <td>
+                      <td role="cell" data-label="Handlinger">
                         <div className="row-actions">
                           {/* #378: the PDF link is the primary action — the
                               whole point of issuing an invoice is to send it
@@ -619,27 +656,27 @@ export function InvoicesView() {
                           >
                             Hent PDF
                           </a>
-                          {canSettle && (
-                            <button
+                          {!inv.archived && can("company.ledger.post") && canSettle && (
+                            <Button
                               type="button"
                               className="btn secondary"
-                              onClick={() => setSettling(row)}
+                              onClick={() => { setInteractionScope(currentScope); setSettling(row); }}
                             >
                               Afstem
-                            </button>
+                            </Button>
                           )}
                           {/* #412: per-row Krediter button. The action is
                               hidden for an archived (read-only) year — every
                               write-action in this view is — and for rows
                               already credited/refunded/written off. */}
-                          {!inv.archived && canCredit && (
-                            <button
+                          {!inv.archived && can("company.ledger.post") && canCredit && (
+                            <Button
                               type="button"
                               className="btn secondary"
-                              onClick={() => setCrediting(row)}
+                              onClick={() => { setInteractionScope(currentScope); setCrediting(row); }}
                             >
                               Kreditér
-                            </button>
+                            </Button>
                           )}
                           {/* #428 — "Send e-faktura" is shown ONLY when
                               the customer has an EAN-number on file (a public
@@ -647,19 +684,19 @@ export function InvoicesView() {
                               invoice has been acknowledged by the access
                               point. A queued delivery has its own status-only
                               action and can never be redelivered from here. */}
-                          {!inv.archived && canSendPublic && (
-                            <button
+                          {!inv.archived && can("company.external-send") && canSendPublic && (
+                            <Button
                               type="button"
                               className="btn secondary"
-                              onClick={() => setSendingPublic(row)}
+                              onClick={() => { setInteractionScope(currentScope); setSendingPublic(row); }}
                             >
                               Send e-faktura
-                            </button>
+                            </Button>
                           )}
-                          {!inv.archived && canCheckPublicStatus && (
-                            <button type="button" className="btn secondary" onClick={() => setCheckingPublicStatus(row)}>
+                          {!inv.archived && can("company.external-send") && canCheckPublicStatus && (
+                            <Button type="button" className="btn secondary" onClick={() => { setInteractionScope(currentScope); setCheckingPublicStatus(row); }}>
                               Opdatér leveringsstatus
-                            </button>
+                            </Button>
                           )}
                           {/* #429 — "Send på mail" is shown ONLY when the
                               customer has an e-mail on the kontaktkort.
@@ -668,14 +705,14 @@ export function InvoicesView() {
                               `invoice send` so SMB owners no longer have to
                               download the PDF and open their own mail
                               client to get the invoice out to the customer. */}
-                          {!inv.archived && canSendEmail && (
-                            <button
+                          {!inv.archived && can("company.external-send") && canSendEmail && (
+                            <Button
                               type="button"
                               className="btn secondary"
-                              onClick={() => setSendingEmail(row)}
+                              onClick={() => { setInteractionScope(currentScope); setSendingEmail(row); }}
                             >
                               Send på mail
-                            </button>
+                            </Button>
                           )}
                           {/* #434 — "Send rykker" is shown ONLY for overdue
                               rows where the customer has an e-mail AND the
@@ -685,14 +722,14 @@ export function InvoicesView() {
                               ConfirmDialog with the recipient, days
                               overdue, reminder number and a fee-booking
                               checkbox. */}
-                          {!inv.archived && canSendReminder && (
-                            <button
+                          {!inv.archived && can("company.external-send") && canSendReminder && (
+                            <Button
                               type="button"
                               className="btn secondary"
-                              onClick={() => setSendingReminder(row)}
+                              onClick={() => { setInteractionScope(currentScope); setSendingReminder(row); }}
                             >
                               Send rykker
-                            </button>
+                            </Button>
                           )}
                         </div>
                       </td>
@@ -702,6 +739,7 @@ export function InvoicesView() {
               </tbody>
             </table>
           </div>
+          {!detail && <Pagination total={filtered.length} {...pagination} onPageChange={(page) => setListParam("page", String(page))} onPageSizeChange={(size) => setListParam("pageSize", String(size))} />}
         </>
       )}
     </section>
@@ -721,3 +759,5 @@ function ArchivedNotice({ year }: { year: string }) {
     </div>
   );
 }
+
+export function InvoiceDetailView() { return <InvoicesView detail />; }

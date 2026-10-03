@@ -1,12 +1,8 @@
 // Regression guard for the modal CSS contract (audit 2026-06-11, UI-1).
 //
-// Six dialogs used to render `className="modal-backdrop"` while styles.css
-// only defines `.modal-overlay` — so the dialogs appeared without the
-// fixed overlay/centering and the background stayed interactive despite
-// `aria-modal="true"`. This test scans every component/view source file for
-// `modal-*` classes used in `className` literals and asserts each one is
-// actually defined as a selector in styles.css, so an undefined modal class
-// can never silently ship again.
+// Dialog chrome now belongs to the native StyleX Dialog. Keep the old audit
+// regression: no view can recreate an inert-looking, interactive backdrop.
+// Semantic modal content layout classes still have their CSS contract checked.
 import { describe, expect, test } from "bun:test";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -45,12 +41,12 @@ describe("modal CSS contract (audit UI-1)", () => {
   const css = readFileSync(join(SRC_DIR, "styles.css"), "utf8");
   const tsxFiles = collectTsxFiles(SRC_DIR);
 
-  test("the scan actually sees the known modal dialogs", () => {
-    // Guard against the scanner itself rotting: the suite MUST cover the
-    // shared overlay class used by every cockpit dialog.
+  test("the scan sees form layouts and no view recreates legacy modal chrome", () => {
     const all = tsxFiles.flatMap((f) => modalClassesIn(readFileSync(f, "utf8")));
-    expect(all).toContain("modal-overlay");
-    expect(all).toContain("modal");
+    expect(all).toContain("modal-field");
+    expect(all).toContain("modal-actions");
+    expect(all).not.toContain("modal-overlay");
+    expect(all).not.toContain("modal");
   });
 
   test("no component uses the undefined legacy class modal-backdrop", () => {

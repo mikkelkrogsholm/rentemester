@@ -18,4 +18,13 @@ describe("production license gate", () => {
       MIT: [{ name: "missing-version", versions: [], license: "MIT" }],
     })).toThrow("invalid package metadata");
   });
+  test("normalizes only the reviewed css-mediaquery release's BSD metadata", () => {
+    expect(verifyProductionLicenses({ BSD: [{ name: "css-mediaquery", versions: ["0.1.2"], license: "BSD" }] }))
+      .toEqual({ licenses: ["BSD-3-Clause"], packages: 1 });
+    for (const entry of [
+      { name: "different-package", versions: ["0.1.2"], license: "BSD" },
+      { name: "css-mediaquery", versions: ["0.1.3"], license: "BSD" },
+      { name: "css-mediaquery", versions: ["0.1.2", "0.1.3"], license: "BSD" },
+    ]) expect(() => verifyProductionLicenses({ BSD: [entry] })).toThrow("unapproved license");
+  });
 });

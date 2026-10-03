@@ -1,3 +1,4 @@
+import { ButtonLink, Button, PageHeader } from "../components/ui";
 // Overblik — the per-company overview dashboard (cockpit-redesign iteration 1).
 //
 // Renders `/api/companies/:slug/overview?year=`: three headline KPI cards
@@ -29,12 +30,12 @@ export function DashboardView() {
   const { slug = "" } = useParams();
   const { year, setYear } = useCompanyYear();
   const state = useAsync<CompanyOverview>(
-    () => api.overview(slug, year),
+    (signal) => api.overview(slug, year, undefined, { signal }),
     [slug, year],
   );
 
   if (state.loading && !state.data) return <Loading label="Henter overblik…" />;
-  if (state.error)
+  if (state.error && !state.data)
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const o = state.data!;
@@ -43,20 +44,21 @@ export function DashboardView() {
 
   return (
     <section className="overview">
-      <div className="page-head">
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. De tidligere hentede oplysninger vises fortsat.</div>}
+      <PageHeader title="Overblik" actions={<><div className="row-actions">
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+            Administrér
+          </ButtonLink>
+        </div></>}>
         <div>
-          <h2>{o.company.name}</h2>
+
           <p className="muted">
             {o.company.cvr ? `CVR ${o.company.cvr} · ` : ""}
             {o.company.country} · {currency} · Overblik
           </p>
         </div>
-        <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </div>
+
+      </PageHeader>
 
       <CompanyNav
         slug={slug}
@@ -75,6 +77,41 @@ export function DashboardView() {
           ? `Senest bogført pr. ${formatDateDa(o.lastPostedDate)}`
           : "Ingen posteringer bogført endnu"}
       </p>
+
+      <div className="status-grid">
+        {o.archived ? (
+          // An archived year has no live bank / VAT / exception data — show an
+          // honest "not available" card rather than faking a zero.
+          <ArchivedUnavailableCard />
+        ) : (
+          <>
+            <ExceptionsCard
+              slug={slug}
+              exceptions={o.exceptions}
+              archived={o.archived}
+              onResolved={state.reload}
+            />
+            <VatCard
+              vat={o.vat}
+              currency={currency}
+              to={statementTo(slug, "moms", o.selectedYear)}
+            />
+            <BankCard
+              bank={o.bank}
+              currency={currency}
+              to={statementTo(slug, "bank", o.selectedYear)}
+            />
+
+            <ReceivablesCard
+              receivables={o.receivables}
+              currency={currency}
+              to={statementTo(slug, "fakturaer", o.selectedYear)}
+            />
+
+          </>
+        )}
+        <RecentEntriesCard entries={o.recentEntries} currency={currency} />
+      </div>
 
       <div className="kpi-row">
         <KpiCard
@@ -104,41 +141,8 @@ export function DashboardView() {
       <div className="section">
         <h3>Indtægter og udgifter — {o.selectedYear}</h3>
         <div className="card chart-card">
-          <PnlChart months={o.profitAndLoss.months} />
+          <PnlChart months={o.profitAndLoss.months} currency={currency} />
         </div>
-      </div>
-
-      <div className="status-grid">
-        {o.archived ? (
-          // An archived year has no live bank / VAT / exception data — show an
-          // honest "not available" card rather than faking a zero.
-          <ArchivedUnavailableCard />
-        ) : (
-          <>
-            <BankCard
-              bank={o.bank}
-              currency={currency}
-              to={statementTo(slug, "bank", o.selectedYear)}
-            />
-            <VatCard
-              vat={o.vat}
-              currency={currency}
-              to={statementTo(slug, "moms", o.selectedYear)}
-            />
-            <ReceivablesCard
-              receivables={o.receivables}
-              currency={currency}
-              to={statementTo(slug, "fakturaer", o.selectedYear)}
-            />
-            <ExceptionsCard
-              slug={slug}
-              exceptions={o.exceptions}
-              archived={o.archived}
-              onResolved={state.reload}
-            />
-          </>
-        )}
-        <RecentEntriesCard entries={o.recentEntries} currency={currency} />
       </div>
 
       {/* #373 — Revisor-eksport is one of the headline year-end actions; it
@@ -183,15 +187,15 @@ function GetStartedCard({ slug }: { slug: string }) {
         — du kan altid bruge agenten eller kommandolinjen i stedet.
       </p>
       <div className="get-started-actions">
-        <Link className="btn primary" to={`/companies/${slug}/bilag`}>
+        <ButtonLink className="btn primary" to={`/companies/${slug}/bilag`}>
           Indlæs dit første bilag
-        </Link>
-        <Link className="btn secondary" to={`/companies/${slug}/bank`}>
+        </ButtonLink>
+        <ButtonLink className="btn secondary" to={`/companies/${slug}/bank`}>
           Importér bankudtog
-        </Link>
-        <Link className="btn secondary" to={`/companies/${slug}/fakturaer`}>
+        </ButtonLink>
+        <ButtonLink className="btn secondary" to={`/companies/${slug}/fakturaer`}>
           Udsted din første faktura
-        </Link>
+        </ButtonLink>
       </div>
     </div>
   );
@@ -542,13 +546,13 @@ function ExceptionsCard({
                       </p>
                     )}
                   </div>
-                  <button
+                  <Button requiredPermission="company.review" variant="secondary"
                     type="button"
                     className="btn secondary"
                     onClick={() => setResolving(row)}
                   >
                     Markér som gennemgået
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
@@ -591,7 +595,7 @@ function ExceptionsCard({
             await api.resolveException(slug, resolving.id, note || undefined);
             onResolved();
           }}
-          onClose={() => setResolving(null)}
+          onClose={() => setResolving(null)} onRefresh={onResolved}
         />
       )}
     </StatusCard>

@@ -1,3 +1,4 @@
+import { ButtonLink, PageHeader } from "../components/ui";
 // Saldobalance — the per-company trial balance (cockpit-redesign iteration 2).
 //
 // Renders `/api/companies/:slug/trial-balance?year=`: a table of every account
@@ -22,7 +23,7 @@ export function TrialBalanceView() {
   const { slug = "" } = useParams();
   const { year, setYear } = useCompanyYear();
   const state = useAsync<CompanyTrialBalance>(
-    () => api.trialBalance(slug, year),
+    (signal) => api.trialBalance(slug, year, { signal }),
     [slug, year],
   );
 
@@ -36,15 +37,7 @@ export function TrialBalanceView() {
 
   return (
     <section className="statement">
-      <div className="page-head">
-        <div>
-          <h2>{t.company.name}</h2>
-          <p className="muted">
-            {t.company.cvr ? `CVR ${t.company.cvr} · ` : ""}
-            {t.company.country} · {currency} · Saldobalance
-          </p>
-        </div>
-        <div className="row-actions">
+      <PageHeader title="Saldobalance" actions={<><div className="row-actions">
           {/* #372 — "Hent CSV". #463 — "Hent PDF" som printbar version. */}
           <a
             className="btn secondary"
@@ -60,11 +53,19 @@ export function TrialBalanceView() {
           >
             Hent PDF
           </a>
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
-          </Link>
+          </ButtonLink>
+        </div></>}>
+        <div>
+
+          <p className="muted">
+            {t.company.cvr ? `CVR ${t.company.cvr} · ` : ""}
+            {t.company.country} · {currency} · Saldobalance
+          </p>
         </div>
-      </div>
+
+      </PageHeader>
 
       <CompanyNav
         slug={slug}

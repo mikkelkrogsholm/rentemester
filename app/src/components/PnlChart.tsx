@@ -1,3 +1,4 @@
+import { designTokens } from "../../../src/design/tokens";
 // Month-by-month income-vs-expense bar chart for the Overblik (P&L graph).
 //
 // Chart.js is registered once here. Colours are pulled from the cockpit
@@ -14,19 +15,23 @@ import {
   type ChartData,
   type ChartOptions,
 } from "chart.js";
+import { Amount, DataTable } from "./ui";
 import { Bar } from "react-chartjs-2";
 import type { OverviewMonth } from "../lib/types";
-import { CHART_AXIS_NUMBER, CHART_CURRENCY } from "./chart-format";
+import { useChartFonts } from "./useChartFonts";
+import { CHART_AXIS_NUMBER, chartCurrency } from "./chart-format";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 // DESIGN.md palette — kept in sync with app/src/styles.css tokens.
-const INK_MUTED = "#4c4740";
-const INCOME = "#2e5e4e"; // --color-success
-const EXPENSE = "#a6332a"; // --color-accent
-const BORDER = "#d8d2c6"; // --color-border
+const INK_MUTED = designTokens.colors.inkMuted;
+const INCOME = designTokens.colors.success; // --color-success
+const EXPENSE = designTokens.colors.accent; // --color-accent
+const BORDER = designTokens.colors.border; // --color-border
 
-export function PnlChart({ months }: { months: OverviewMonth[] }) {
+export function PnlChart({ months, currency = "DKK" }: { months: OverviewMonth[]; currency?: string }) {
+  const chartRef = useChartFonts<"bar">();
+  const currencyFormat = chartCurrency(currency);
   const data: ChartData<"bar"> = {
     labels: months.map((m) => m.label),
     datasets: [
@@ -47,6 +52,7 @@ export function PnlChart({ months }: { months: OverviewMonth[] }) {
 
   const options: ChartOptions<"bar"> = {
     responsive: true,
+    animation: false,
     maintainAspectRatio: false,
     interaction: { mode: "index", intersect: false },
     plugins: {
@@ -57,13 +63,13 @@ export function PnlChart({ months }: { months: OverviewMonth[] }) {
           color: INK_MUTED,
           boxWidth: 12,
           boxHeight: 12,
-          font: { family: "IBM Plex Sans", size: 13 },
+          font: { family: designTokens.typography.bodyFamily, size: Number.parseInt(designTokens.typography.sizeSm) },
         },
       },
       tooltip: {
         callbacks: {
           label: (ctx) =>
-            `${ctx.dataset.label}: ${CHART_CURRENCY.format(Number(ctx.parsed.y))}`,
+            `${ctx.dataset.label}: ${currencyFormat.format(Number(ctx.parsed.y))}`,
         },
       },
     },
@@ -72,7 +78,7 @@ export function PnlChart({ months }: { months: OverviewMonth[] }) {
         grid: { display: false },
         ticks: {
           color: INK_MUTED,
-          font: { family: "IBM Plex Sans", size: 12 },
+          font: { family: designTokens.typography.bodyFamily, size: Number.parseInt(designTokens.typography.sizeXs) },
         },
       },
       y: {
@@ -87,7 +93,7 @@ export function PnlChart({ months }: { months: OverviewMonth[] }) {
         grid: { color: BORDER },
         ticks: {
           color: INK_MUTED,
-          font: { family: "IBM Plex Mono", size: 11 },
+          font: { family: designTokens.typography.monoFamily, size: Number.parseInt(designTokens.typography.sizeXs) },
           callback: (value) => CHART_AXIS_NUMBER.format(Number(value)),
         },
       },
@@ -99,8 +105,18 @@ export function PnlChart({ months }: { months: OverviewMonth[] }) {
   // the canvas tracks this box exactly — no collapse on mobile, no
   // unbounded growth on desktop.
   return (
-    <div className="pnl-chart">
-      <Bar data={data} options={options} />
-    </div>
+    <>
+      <div className="pnl-chart">
+        <Bar ref={chartRef} role="img" aria-label={`Månedlige indtægter og udgifter i ${currency}. Alle værdier findes i tabellen nedenfor.`} data={data} options={options} />
+      </div>
+      <details className="chart-data">
+        <summary>Se indtægter og udgifter som tabel</summary>
+        <DataTable caption={`Månedlige indtægter og udgifter (${currency})`} rows={months} rowKey={(month) => month.month} columns={[
+          { id: "month", label: "Måned", render: (month) => month.label },
+          { id: "income", label: "Indtægter", render: (month) => <Amount value={month.income} currency={currency} /> },
+          { id: "expense", label: "Udgifter", render: (month) => <Amount value={month.expense} currency={currency} /> },
+        ]} />
+      </details>
+    </>
   );
 }

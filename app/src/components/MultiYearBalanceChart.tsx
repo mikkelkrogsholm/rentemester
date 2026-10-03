@@ -1,3 +1,4 @@
+import { designTokens } from "../../../src/design/tokens";
 // Multi-year balance-sheet trend chart for the Flerårsoversigt (Runde 3, it. 11).
 //
 // A grouped bar chart of balancesum (total assets) and egenkapital (equity)
@@ -12,22 +13,29 @@ import {
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import type { MultiYearRow } from "../lib/types";
-import { CHART_AXIS_NUMBER, CHART_CURRENCY } from "./chart-format";
+import { useChartFonts } from "./useChartFonts";
+import { CHART_AXIS_NUMBER, chartCurrency } from "./chart-format";
 
 // DESIGN.md palette — kept in sync with app/src/styles.css tokens.
-const INK_MUTED = "#4c4740";
-const ASSETS = "#2d5673"; // --color-info (sober blue)
-const EQUITY = "#2e5e4e"; // --color-success
-const BORDER = "#d8d2c6"; // --color-border
+const INK_MUTED = designTokens.colors.inkMuted;
+const ASSETS = designTokens.colors.info; // --color-info (sober blue)
+const EQUITY = designTokens.colors.success; // --color-success
+const BORDER = designTokens.colors.border; // --color-border
 
 export function MultiYearBalanceChart({
   years,
   currentYear,
+  currency = "DKK",
+  dataTableId,
 }: {
   years: MultiYearRow[];
   /** The live/current fiscal year — labelled "(år til dato)" as it is partial. */
   currentYear?: string | null;
+  currency?: string;
+  dataTableId?: string;
 }) {
+  const chartRef = useChartFonts<"bar">();
+  const currencyFormat = chartCurrency(currency);
   const data: ChartData<"bar"> = {
     labels: years.map((y) =>
       y.year === currentYear ? [y.year, "(år til dato)"] : y.year,
@@ -50,6 +58,7 @@ export function MultiYearBalanceChart({
 
   const options: ChartOptions<"bar"> = {
     responsive: true,
+    animation: false,
     maintainAspectRatio: false,
     interaction: { mode: "index", intersect: false },
     plugins: {
@@ -60,13 +69,13 @@ export function MultiYearBalanceChart({
           color: INK_MUTED,
           boxWidth: 12,
           boxHeight: 12,
-          font: { family: "IBM Plex Sans", size: 13 },
+          font: { family: designTokens.typography.bodyFamily, size: Number.parseInt(designTokens.typography.sizeSm) },
         },
       },
       tooltip: {
         callbacks: {
           label: (ctx) =>
-            `${ctx.dataset.label}: ${CHART_CURRENCY.format(Number(ctx.parsed.y))}`,
+            `${ctx.dataset.label}: ${currencyFormat.format(Number(ctx.parsed.y))}`,
         },
       },
     },
@@ -75,7 +84,7 @@ export function MultiYearBalanceChart({
         grid: { display: false },
         ticks: {
           color: INK_MUTED,
-          font: { family: "IBM Plex Sans", size: 12 },
+          font: { family: designTokens.typography.bodyFamily, size: Number.parseInt(designTokens.typography.sizeXs) },
         },
       },
       y: {
@@ -88,7 +97,7 @@ export function MultiYearBalanceChart({
         grid: { color: BORDER },
         ticks: {
           color: INK_MUTED,
-          font: { family: "IBM Plex Mono", size: 11 },
+          font: { family: designTokens.typography.monoFamily, size: Number.parseInt(designTokens.typography.sizeXs) },
           callback: (value) => CHART_AXIS_NUMBER.format(Number(value)),
         },
       },
@@ -99,7 +108,7 @@ export function MultiYearBalanceChart({
   // viewport width — no collapse on mobile, no unbounded growth on desktop.
   return (
     <div className="pnl-chart">
-      <Bar data={data} options={options} />
+      <Bar ref={chartRef} role="img" aria-label={`Balancesum og egenkapital pr. regnskabsår i ${currency}. Alle værdier findes i tabellen nedenfor.`} aria-details={dataTableId} data={data} options={options} />
     </div>
   );
 }

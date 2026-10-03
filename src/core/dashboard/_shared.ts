@@ -1,3 +1,4 @@
+import { designTokens } from "../../design/tokens";
 // Shared types, tokens, and pure helpers for the dashboard render-engine.
 //
 // Everything here is consumed by 2+ section files. The render-engine stays
@@ -125,43 +126,19 @@ export type RenderOptions = {
 };
 
 // --------------------------------------------------------------------------
-// Constants — DESIGN.md tokens duplicated inline for deterministic rendering
-// --------------------------------------------------------------------------
-//
-// These MUST stay in sync with DESIGN.md. tests/unit/design-tokens.test.ts
-// covers the source file; the dashboard-render snapshot test catches drift
-// here. If you change DESIGN.md, update both.
-
+// Presentation tokens are generated from the same source as the cockpit.
 export const TOKENS = {
-  paper: "#F4F1EB",
-  paperRaised: "#FBF8F3",
-  ink: "#1B1A17",
-  inkMuted: "#4C4740",
-  accent: "#A6332A",
-  onAccent: "#F4F1EB",
-  danger: "#8F2A22",
-  success: "#2E5E4E",
-  warning: "#8A5A12",
-  info: "#2D5673",
-  accentSoft: "#E8D7D3",
-  dangerSoft: "#EED9D6",
-  successSoft: "#DCE8E1",
-  warningSoft: "#EEE3D1",
-  infoSoft: "#D9E4EB",
-  headlineFamily: "Source Serif 4",
-  bodyFamily: "IBM Plex Sans",
-  monoFamily: "IBM Plex Mono",
-  bodySize: "16px",
-  bodyLineHeight: "1.5",
-  spaceXxs: "4px",
-  spaceXs: "8px",
-  spaceSm: "12px",
-  spaceMd: "16px",
-  spaceLg: "24px",
-  spaceXl: "32px",
-  roundedSm: "2px",
-  roundedMd: "4px",
-  roundedLg: "8px",
+  ...designTokens.colors,
+  ...designTokens.typography,
+  spaceXxs: designTokens.spacing.xxs,
+  spaceXs: designTokens.spacing.xs,
+  spaceSm: designTokens.spacing.sm,
+  spaceMd: designTokens.spacing.md,
+  spaceLg: designTokens.spacing.lg,
+  spaceXl: designTokens.spacing.xl,
+  roundedSm: designTokens.rounded.sm,
+  roundedMd: designTokens.rounded.md,
+  roundedLg: designTokens.rounded.lg,
 };
 
 export const MONTH_NAMES_DK = [

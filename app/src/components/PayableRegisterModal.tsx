@@ -1,3 +1,6 @@
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useDiscardGuard } from "../lib/useDiscardGuard";
+import { Button, Dialog, Input, Select, Textarea } from "./ui";
 // PayableRegisterModal — the cockpit's "Registrér leverandørfaktura"-modal
 // (#340). Opens from the Leverandørfaktura-arbejdsbordet and turns an
 // ingested purchase document (bilag) into a kreditorpost.
@@ -58,7 +61,7 @@ export function PayableRegisterModal({
   slug,
   payables,
   onRegistered,
-  onClose,
+  onClose: onDismiss,
 }: PayableRegisterModalProps) {
   const docs: UnregisteredPurchaseDocumentRow[] = payables.unregisteredDocuments;
   const accounts: PayableExpenseAccountOption[] = payables.expenseAccounts;
@@ -86,6 +89,10 @@ export function PayableRegisterModal({
   const [locked, setLocked] = useState<string | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
+  const outcome = useMutationOutcome(onRegistered);
+  const guard = useDiscardGuard(Boolean(expenseAccountNo || vatTreatment || vendorId || note) || documentId !== (docs[0]?.id ?? "") || dueDate !== addDays(docs[0]?.invoiceDate ?? todayIso(), 30), onDismiss);
+  const { onClose } = guard;
+
   // When the document picker changes, refresh the prefilled bill/due dates so
   // a freshly-picked bilag shows the right window without a manual edit.
   useEffect(() => {
@@ -96,32 +103,17 @@ export function PayableRegisterModal({
   }, [selectedInvoiceDate]);
 
   // Basic modal hygiene: focus + Escape-to-close.
-  useEffect(() => {
-    closeRef.current?.focus();
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape" && !busy) onClose();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [busy, onClose]);
+
 
   // No bilag to register? Surface a calm guidance state instead of a broken
   // form — the owner has to ingest a bilag before there is anything to do here.
   if (docs.length === 0) {
     return (
-      <div
-        className="modal-overlay"
-        role="presentation"
-        onClick={onClose}
-      >
-        <div
-          className="modal"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Registrér leverandørfaktura"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h3 className="modal-title">Registrér leverandørfaktura</h3>
+      <Dialog title="Registrér leverandørfaktura" onClose={onClose} busy={busy} initialFocusRef={closeRef}>
+    {outcome.feedback}
+      {guard.confirmation}
+
+
           <div className="modal-body">
             <p>
               Der er ingen indlæste leverandørfakturaer at registrere. Læg en
@@ -129,21 +121,22 @@ export function PayableRegisterModal({
             </p>
           </div>
           <div className="modal-actions">
-            <button
+            <Button variant="secondary"
               ref={closeRef}
               type="button"
               className="btn secondary"
               onClick={onClose}
             >
               Luk
-            </button>
+            </Button>
           </div>
-        </div>
-      </div>
+
+      </Dialog>
     );
   }
 
   async function handleRegister() {
+    if (outcome.isBlocked()) return;
     if (typeof documentId !== "number") {
       setError("Vælg en leverandørfaktura at registrere.");
       return;
@@ -172,11 +165,11 @@ export function PayableRegisterModal({
         ...(vatTreatment ? { vatTreatment } : {}),
         ...(typeof vendorId === "number" ? { vendorId } : {}),
         ...(note.trim() ? { note: note.trim() } : {}),
-      });
+      }).catch(outcome.reject);
       // Closes the modal and asks the list view to reload — the new payable
       // is now in the kreditorliste with status "open".
       onRegistered();
-      onClose();
+      guard.dismiss();
       // Avoid unused-variable warning while keeping the typed return for tests
       void summary;
     } catch (err) {
@@ -189,21 +182,11 @@ export function PayableRegisterModal({
   }
 
   return (
-    <div
-      className="modal-overlay"
-      role="presentation"
-      onClick={() => {
-        if (!busy) onClose();
-      }}
-    >
-      <div
-        className="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Registrér leverandørfaktura"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="modal-title">Registrér leverandørfaktura</h3>
+    <Dialog title="Registrér leverandørfaktura" onClose={onClose} busy={busy} initialFocusRef={closeRef}>
+    {outcome.feedback}
+      {guard.confirmation}
+
+
         <div className="modal-body">
           <p>
             Vælg den indlæste leverandørfaktura og hvilken udgiftskonto den
@@ -217,10 +200,10 @@ export function PayableRegisterModal({
 
         <label className="modal-field">
           Leverandørfaktura (bilag)
-          <select
+          <Select
             value={documentId}
             onChange={(e) => setDocumentId(Number(e.target.value))}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
             aria-label="Vælg bilag"
           >
             {docs.map((d) => (
@@ -232,35 +215,35 @@ export function PayableRegisterModal({
                     : "")}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
 
         <label className="modal-field">
           Bilagsdato
-          <input
+          <Input
             type="date"
             value={billDate}
             onChange={(e) => setBillDate(e.target.value)}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
           />
         </label>
 
         <label className="modal-field">
           Forfaldsdato
-          <input
+          <Input
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
           />
         </label>
 
         <label className="modal-field">
           Udgiftskonto
-          <select
+          <Select
             value={expenseAccountNo}
             onChange={(e) => setExpenseAccountNo(e.target.value)}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
             aria-label="Vælg udgiftskonto"
           >
             <option value="">— vælg konto —</option>
@@ -269,34 +252,34 @@ export function PayableRegisterModal({
                 {a.accountNo} · {a.name}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
 
         <label className="modal-field">
           Momsbehandling
-          <select
+          <Select
             value={vatTreatment}
             onChange={(e) =>
               setVatTreatment(e.target.value as "" | "standard" | "exempt")
             }
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
             aria-label="Vælg momsbehandling"
           >
             <option value="">Auto (bestemt af bilagets momsbeløb)</option>
             <option value="standard">Standard (25% købsmoms)</option>
             <option value="exempt">Momsfri</option>
-          </select>
+          </Select>
         </label>
 
         {vendors.length > 0 && (
           <label className="modal-field">
             Leverandør (valgfri)
-            <select
+            <Select
               value={vendorId}
               onChange={(e) =>
                 setVendorId(e.target.value ? Number(e.target.value) : "")
               }
-              disabled={busy}
+              disabled={outcome.blocked || (busy)}
               aria-label="Vælg leverandør"
             >
               <option value="">— ingen leverandør valgt —</option>
@@ -305,23 +288,23 @@ export function PayableRegisterModal({
                   {v.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
         )}
 
         <label className="modal-field">
           Note (valgfri)
-          <textarea
+          <Textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
             rows={2}
             placeholder="Fri tekst til revisionssporet"
           />
         </label>
 
         <div className="modal-actions">
-          <button
+          <Button variant="secondary"
             ref={closeRef}
             type="button"
             className="btn secondary"
@@ -329,18 +312,18 @@ export function PayableRegisterModal({
             disabled={busy}
           >
             Annullér
-          </button>
-          <button
+          </Button>
+          <Button requiredPermission="company.ledger.post"
             type="button"
             className="btn"
             onClick={handleRegister}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
           >
             {busy ? "Arbejder…" : "Registrér leverandørfaktura"}
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+
+    </Dialog>
   );
 }
 

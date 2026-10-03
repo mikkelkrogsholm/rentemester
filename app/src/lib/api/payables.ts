@@ -8,7 +8,7 @@ import type {
   DirectBankPayableCorrectionInput,
   DirectBankPayableCorrectionPlan,
 } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 // --- Leverandørfaktura (payables) — #340 --------------------------------
 
@@ -18,13 +18,13 @@ export const payablesApi = {
    * `core/payables.ts#buildPayablesList` plus the modal picker rows
    * (unregistered purchase documents, expense accounts, vendors).
    */
-  payables: (slug: string, status?: PayableListStatusFilter, asOf?: string) => {
+  payables: (slug: string, status?: PayableListStatusFilter, asOf?: string, options?: ReadRequestOptions) => {
     const params = new URLSearchParams();
     if (status) params.set("status", status);
     if (asOf) params.set("asOf", asOf);
     const qs = params.toString();
     return request<PayablesResponse>(
-      `/api/companies/${encodeURIComponent(slug)}/payables${qs ? `?${qs}` : ""}`,
+      `/api/companies/${encodeURIComponent(slug)}/payables${qs ? `?${qs}` : ""}`, options,
     ).then((r) => r.payables);
   },
 
@@ -74,8 +74,8 @@ export const payablesApi = {
       },
     ).then((r) => r.payment),
 
-  planDirectBankPayableCorrection: (slug: string, input: DirectBankPayableCorrectionInput) =>
-    request<{ ok: true; plan: DirectBankPayableCorrectionPlan }>(`/api/companies/${encodeURIComponent(slug)}/payables/direct-bank-correction/plan`, { method:"POST", body:JSON.stringify(input) }).then((r)=>r.plan),
+  planDirectBankPayableCorrection: (slug: string, input: DirectBankPayableCorrectionInput, options?: ReadRequestOptions) =>
+    request<{ ok: true; plan: DirectBankPayableCorrectionPlan }>(`/api/companies/${encodeURIComponent(slug)}/payables/direct-bank-correction/plan`, { method:"POST", body:JSON.stringify(input), readOnly: true, signal: options?.signal }).then((r)=>r.plan),
 
   applyDirectBankPayableCorrection: (slug: string, input: DirectBankPayableCorrectionInput & { planHash:string; reason:string; idempotencyKey:string }) =>
     request<{ ok:true; correction:Record<string,unknown> }>(`/api/companies/${encodeURIComponent(slug)}/payables/direct-bank-correction/apply`, { method:"POST", headers:{"idempotency-key":input.idempotencyKey}, body:JSON.stringify({...input,confirm:true}) }).then((r)=>r.correction),

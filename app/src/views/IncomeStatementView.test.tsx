@@ -25,7 +25,7 @@ describe("IncomeStatementView — Resultatopgørelse", () => {
     mockFetch(route());
     renderView();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Resultatopgørelse", level: 1 }),
     ).toBeInTheDocument();
     expect(screen.getByText("Indtægter")).toBeInTheDocument();
     expect(screen.getByText("Udgifter")).toBeInTheDocument();

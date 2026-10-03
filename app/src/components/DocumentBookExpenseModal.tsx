@@ -26,6 +26,11 @@ import {
 import { formatKroner } from "../lib/format";
 import { Banner } from "./Feedback";
 import { LockBanner } from "./LockBanner";
+import { Button, Select, Dialog } from "./ui";
+import { useDiscardGuard } from "../lib/useDiscardGuard";
+import { useAsync } from "../lib/useAsync";
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import type { DocumentRow } from "../lib/types";
 
 export type DocumentBookExpenseModalProps = {
   slug: string;
@@ -47,14 +52,16 @@ const VAT_TREATMENT_LABELS: Record<ExpenseVatTreatment, string> = {
   non_deductible: "Ikke fradragsberettiget (momsen absorberes i udgiften)",
 };
 
-export function DocumentBookExpenseModal({
+export function DocumentBookExpenseForm({
   slug,
   documentId,
   onBooked,
   onClose,
-}: DocumentBookExpenseModalProps) {
-  const [options, setOptions] = useState<DocumentBookingOptions | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  presentation = "dialog",
+}: DocumentBookExpenseModalProps & { presentation?: "dialog" | "page" }) {
+  const optionsState = useAsync<DocumentBookingOptions>((signal) => api.documentBookingOptions(slug, documentId, { signal }), [slug, documentId]);
+  const options = optionsState.data;
+  const loadError = optionsState.error;
   const [expenseAccountNo, setExpenseAccountNo] = useState<string>("");
   const [bankTransactionId, setBankTransactionId] = useState<number | "">("");
   const [vatTreatment, setVatTreatment] = useState<ExpenseVatTreatment | "">(
@@ -67,53 +74,37 @@ export function DocumentBookExpenseModal({
   const [preflight, setPreflight] = useState<DocumentVatPreflight | null>(null);
   const [preflightBusy, setPreflightBusy] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const [dirty, setDirty] = useState(false);
+  const [readBack, setReadBack] = useState<DocumentRow[] | null>(null);
+  const outcome = useMutationOutcome(async () => {
+    const documents = await api.documents(slug);
+    setReadBack(documents.documents.filter(document => document.id === documentId));
+  }, `book-document:${slug}:${documentId}`);
+  const uncertain = outcome.blocked;
+  const submitRef = useRef(false);
+  const guard = useDiscardGuard(dirty && !done, onClose);
 
-  // Load the picker rows + the bilag once.
+  // Server options remain the source for all account/bank choices and hints.
   useEffect(() => {
-    let cancelled = false;
-    api
-      .documentBookingOptions(slug, documentId)
-      .then((res) => {
-        if (cancelled) return;
-        setOptions(res);
-        if (
-          res.document.documentType === "internal_voucher" &&
-          res.document.sourceBankTransactionId !== null
-        ) {
-          setBankTransactionId(res.document.sourceBankTransactionId);
-          setVatTreatment("exempt");
-          return;
-        }
-        // Pre-select the only candidate if there is exactly one outgoing tx
-        // that matches the bilag's gross amount — the same hint
-        // BankReconcileModal uses to remove a click when there is no choice.
-        const gross = res.document.amountIncVat;
-        if (gross !== null) {
-          const exact = res.unmatchedOutgoingBank.filter(
-            (t) => {
-              const documentCurrency = res.document.currency.toUpperCase();
-              const bankCurrency = t.currency.toUpperCase();
-              if (bankCurrency === documentCurrency) {
-                return Math.abs(Math.abs(t.amount) - Math.abs(gross)) < 0.005;
-              }
-              if (bankCurrency === "DKK" && documentCurrency !== "DKK" && t.fxRateToDkk && t.fxRateToDkk > 0) {
-                return Math.abs(Math.abs(t.amount) - Math.abs(gross * t.fxRateToDkk)) < 0.005;
-              }
-              return false;
-            },
-          );
-          if (exact.length === 1) setBankTransactionId(exact[0]!.id);
-        }
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        const e = err as MaybeApiError;
-        setLoadError(e?.message ?? "Bogføringsdata kunne ikke hentes.");
+    if (!options) return;
+    const res = options;
+    if (res.document.documentType === "internal_voucher" && res.document.sourceBankTransactionId !== null) {
+      setBankTransactionId(res.document.sourceBankTransactionId);
+      setVatTreatment("exempt");
+      return;
+    }
+    const gross = res.document.amountIncVat;
+    if (gross !== null) {
+      const exact = res.unmatchedOutgoingBank.filter((transaction) => {
+        const documentCurrency = res.document.currency.toUpperCase();
+        const bankCurrency = transaction.currency.toUpperCase();
+        if (bankCurrency === documentCurrency) return Math.abs(Math.abs(transaction.amount) - Math.abs(gross)) < 0.005;
+        if (bankCurrency === "DKK" && documentCurrency !== "DKK" && transaction.fxRateToDkk && transaction.fxRateToDkk > 0) return Math.abs(Math.abs(transaction.amount) - Math.abs(gross * transaction.fxRateToDkk)) < 0.005;
+        return false;
       });
-    return () => {
-      cancelled = true;
-    };
-  }, [slug, documentId]);
+      if (exact.length === 1) setBankTransactionId((previous) => previous === "" ? exact[0]!.id : previous);
+    }
+  }, [options]);
 
   useEffect(() => {
     let cancelled = false;
@@ -124,10 +115,11 @@ export function DocumentBookExpenseModal({
   }, [slug, documentId]);
 
   async function applyPreflight() {
+    if (outcome.isBlocked() || preflightBusy) return;
     setPreflightBusy(true);
     setError(null);
     try {
-      setPreflight(await api.applyDocumentVatPreflight(slug, documentId));
+      setPreflight(await api.applyDocumentVatPreflight(slug, documentId).catch(outcome.reject));
     } catch (err) {
       setError((err as MaybeApiError)?.message ?? "Momsvalideringen kunne ikke gennemføres.");
     } finally {
@@ -135,17 +127,9 @@ export function DocumentBookExpenseModal({
     }
   }
 
-  // Move focus into the dialog and let Escape dismiss it — basic modal hygiene.
-  useEffect(() => {
-    closeRef.current?.focus();
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape" && !busy) onClose();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [busy, onClose]);
 
   async function handleBook() {
+    if (submitRef.current || done || outcome.isBlocked()) return;
     if (!expenseAccountNo) {
       setError("Vælg en udgiftskonto.");
       return;
@@ -154,6 +138,7 @@ export function DocumentBookExpenseModal({
       setError("Vælg en banktransaktion at parre bilaget med.");
       return;
     }
+    submitRef.current = true;
     setBusy(true);
     setError(null);
     setLocked(null);
@@ -163,15 +148,18 @@ export function DocumentBookExpenseModal({
         bankTransactionId,
         expenseAccountNo,
         ...(vatTreatment ? { vatTreatment } : {}),
-      });
+      }).catch(outcome.reject);
       setDone(summary);
+      setDirty(false);
       onBooked();
     } catch (err) {
       const e = err as MaybeApiError;
-      const message = e?.message ?? "Bogføringen kunne ikke gennemføres.";
+      const outcomeUncertain = e?.code === "network" || e?.code === "internal";
+      const message = outcomeUncertain ? "Serverens resultat kunne ikke bekræftes. Kontrollér bilaget og posteringerne, før du bogfører igen." : e?.message ?? "Bogføringen kunne ikke gennemføres.";
       if (e?.code === "conflict") setLocked(message);
       else setError(message);
     } finally {
+      submitRef.current = false;
       setBusy(false);
     }
   }
@@ -184,22 +172,8 @@ export function DocumentBookExpenseModal({
     options !== null && options.expenseAccounts.length === 0;
 
   return (
-    <div
-      className="modal-overlay"
-      role="presentation"
-      onClick={() => {
-        if (!busy) onClose();
-      }}
-    >
-      <div
-        className="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Bogfør bilag"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="modal-title">Bogfør bilag</h3>
-
+    <Dialog title="Bogfør bilag" onClose={guard.onClose} busy={busy} mode={presentation} initialFocusRef={closeRef}>
+      <div className="workflow-form" onChange={() => setDirty(true)}>
         {done ? (
           <>
             <div className="modal-body">
@@ -226,14 +200,14 @@ export function DocumentBookExpenseModal({
               )}
             </div>
             <div className="modal-actions">
-              <button
+              <Button
                 type="button"
                 className="btn"
                 ref={closeRef}
-                onClick={onClose}
+                onClick={guard.dismiss}
               >
                 Luk
-              </button>
+              </Button>
             </div>
           </>
         ) : (
@@ -277,14 +251,14 @@ export function DocumentBookExpenseModal({
                   )}
                   {preflight && (
                     <div className="muted" role="status">
-                      Moms-preflight: {preflight.derivedRegion}
+                      Momsvalidering: {{ DK: "Danmark", EU: "EU", NON_EU: "Uden for EU", CONFLICT: "Modstridende landeoplysninger" }[preflight.derivedRegion]}
                       {preflight.requiredValidation ? ` · kræver ${preflight.requiredValidation}` : " · ingen ekstern validering kræves"}
                       {preflight.cache.freshUntil ? ` · evidens gyldig til ${preflight.cache.freshUntil}` : ""}.
-                      {preflight.errors[0] ? ` ${preflight.errors[0]}` : " Klar til bogføring."}
+                      {preflight.errors[0] ? ` ${preflight.errors[0]}` : preflight.ok ? " Momsoplysningerne er valideret." : " Momsoplysningerne skal afklares før bogføring."}
                       {preflight.applyWouldCallProvider && (
-                        <button type="button" className="btn btn-secondary" disabled={busy || preflightBusy} onClick={() => void applyPreflight()}>
+                        <Button type="button" className="btn btn-secondary" disabled={busy || preflightBusy} requiredPermission="company.external-lookup" onClick={() => void applyPreflight() }>
                           {preflightBusy ? "Validerer…" : "Hent momsvalidering"}
-                        </button>
+                        </Button>
                       )}
                     </div>
                   )}
@@ -294,23 +268,29 @@ export function DocumentBookExpenseModal({
 
             {locked && <LockBanner message={locked} />}
             {error && <Banner kind="error">{error}</Banner>}
-            {loadError && <Banner kind="error">{loadError}</Banner>}
+            {outcome.feedback}
+            {readBack && uncertain && <section className="card" role="status" aria-label="Bilagsstatus fra serveren">
+              <h2>Bilagsstatus fra serveren</h2>
+              {readBack.some(document => document.journalEntryId !== null) ? <><p>Serveren viser følgende tilknyttede posteringer. Kontrollér, at de svarer til din handling.</p><ul>{readBack.filter(document => document.journalEntryId !== null).map((document, index) => <li key={`${document.journalEntryId}:${index}`}>{document.journalEntryNo ?? `Journalpost ${document.journalEntryId}`} · {document.journalEntryText ?? "Ingen posteringstekst"}</li>)}</ul></> : <p>Serveren viser endnu ingen tilknyttede posteringer. Det afklarer ikke i sig selv den afbrudte handling.</p>}
+              <p>Bogføring er fortsat blokeret. Gennemgå bilagsdetaljerne og revisionssporet ved tvivl.</p>
+            </section>}
+            {loadError && <Banner kind="error">{loadError} <Button variant="secondary" onClick={optionsState.reload}>Prøv igen</Button></Banner>}
 
             <label className="modal-field">
               Udgiftskonto
               {options === null ? (
-                <select disabled>
+                <Select disabled>
                   <option>Henter konti…</option>
-                </select>
+                </Select>
               ) : noAccounts ? (
-                <select disabled>
+                <Select disabled>
                   <option>Ingen udgiftskonti — kør først kontoplanen.</option>
-                </select>
+                </Select>
               ) : (
-                <select
+                <Select
                   value={expenseAccountNo}
                   onChange={(e) => setExpenseAccountNo(e.target.value)}
-                  disabled={busy}
+                  disabled={busy || uncertain}
                 >
                   <option value="">— vælg konto —</option>
                   {options.expenseAccounts.map((a) => (
@@ -318,25 +298,25 @@ export function DocumentBookExpenseModal({
                       {a.accountNo} · {a.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               )}
             </label>
 
             <label className="modal-field">
               Banktransaktion (uafstemt, udgående)
               {options === null ? (
-                <select disabled>
+                <Select disabled>
                   <option>Henter banktransaktioner…</option>
-                </select>
+                </Select>
               ) : noneToMatch ? (
-                <select disabled>
+                <Select disabled>
                   <option>
                     Ingen uafstemte udgående banktransaktioner — importér først
                     bank-CSV.
                   </option>
-                </select>
+                </Select>
               ) : (
-                <select
+                <Select
                   value={
                     bankTransactionId === "" ? "" : String(bankTransactionId)
                   }
@@ -344,7 +324,7 @@ export function DocumentBookExpenseModal({
                     const v = e.target.value;
                     setBankTransactionId(v === "" ? "" : Number(v));
                   }}
-                  disabled={busy || doc?.documentType === "internal_voucher"}
+                  disabled={busy || uncertain || doc?.documentType === "internal_voucher"}
                 >
                   <option value="">— vælg banktransaktion —</option>
                   {options.unmatchedOutgoingBank.map((t) => (
@@ -353,13 +333,13 @@ export function DocumentBookExpenseModal({
                       {formatKroner(t.amount, t.currency)}
                     </option>
                   ))}
-                </select>
+                </Select>
               )}
             </label>
 
             <label className="modal-field">
               Moms-behandling (valgfri — udledes ellers af kontoen)
-              <select
+              <Select
                 value={vatTreatment}
                 onChange={(e) =>
                   setVatTreatment(
@@ -369,7 +349,7 @@ export function DocumentBookExpenseModal({
                   )
                 }
                 disabled={
-                  busy ||
+                  busy || uncertain || preflight?.ok === false || preflightBusy ||
                   options === null ||
                   doc?.documentType === "internal_voucher"
                 }
@@ -382,25 +362,25 @@ export function DocumentBookExpenseModal({
                     </option>
                   ),
                 )}
-              </select>
+              </Select>
             </label>
 
             <div className="modal-actions">
-              <button
+              <Button
                 type="button"
                 className="btn secondary"
-                onClick={onClose}
-                disabled={busy}
+                onClick={guard.onClose}
+                disabled={busy || uncertain}
                 ref={closeRef}
               >
                 Annullér
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 className="btn"
-                onClick={handleBook}
+                requiredPermission="company.ledger.post" onClick={handleBook}
                 disabled={
-                  busy ||
+                  busy || uncertain || preflight?.ok === false || preflightBusy ||
                   options === null ||
                   noneToMatch ||
                   noAccounts ||
@@ -409,12 +389,13 @@ export function DocumentBookExpenseModal({
                 }
               >
                 {busy ? "Bogfører…" : "Bogfør"}
-              </button>
+              </Button>
             </div>
           </>
         )}
       </div>
-    </div>
+      {guard.confirmation}
+    </Dialog>
   );
 }
 
@@ -422,3 +403,8 @@ export function DocumentBookExpenseModal({
 // the runtime branch reads `code`/`message` off the thrown value rather than
 // instance-checking, mirroring `BankReconcileModal`'s shape.
 void ApiError;
+
+/** Compatibility wrapper for callers that still need a short dialog. */
+export function DocumentBookExpenseModal(props: DocumentBookExpenseModalProps) {
+  return <DocumentBookExpenseForm {...props} presentation="dialog" />;
+}

@@ -1,3 +1,4 @@
+import { ButtonLink, Button, Input, PageHeader } from "../components/ui";
 // Moms — the per-company VAT return (cockpit-redesign iteration 3).
 //
 // Renders `/api/companies/:slug/vat?year=` for the registered VAT cadence —
@@ -20,7 +21,7 @@ import { ConfirmDialog } from "../components/ConfirmDialog";
 export function VatView() {
   const { slug = "" } = useParams();
   const { year, setYear } = useCompanyYear();
-  const state = useAsync<CompanyVat>(() => api.vat(slug, year), [slug, year]);
+  const state = useAsync<CompanyVat>((signal) => api.vat(slug, year, { signal }), [slug, year]);
   // True while the close-period ConfirmDialog is open (#287).
   const [closing, setClosing] = useState(false);
   // True while the reopen-period ConfirmDialog is open (#301).
@@ -31,7 +32,7 @@ export function VatView() {
   const [closedNotice, setClosedNotice] = useState<string | null>(null);
 
   if (state.loading && !state.data) return <Loading label="Henter moms…" />;
-  if (state.error)
+  if (state.error && !state.data)
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const v = state.data!;
@@ -45,15 +46,16 @@ export function VatView() {
   if (!v.vatRegistered) {
     return (
       <section className="statement">
-        <div className="page-head">
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. De tidligere hentede oplysninger vises fortsat.</div>}
+        <PageHeader title="Moms">
           <div>
-            <h2>{v.company.name}</h2>
+
             <p className="muted">
               {v.company.cvr ? `CVR ${v.company.cvr} · ` : ""}
               {v.company.country} · {currency} · Moms
             </p>
           </div>
-        </div>
+        </PageHeader>
         <CompanyNav
           slug={slug}
           years={v.fiscalYears}
@@ -85,22 +87,15 @@ export function VatView() {
 
   return (
     <section className="statement">
-      <div className="page-head">
-        <div>
-          <h2>{v.company.name}</h2>
-          <p className="muted">
-            {v.company.cvr ? `CVR ${v.company.cvr} · ` : ""}
-            {v.company.country} · {currency} · Moms
-          </p>
-        </div>
-        <div className="row-actions">
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. De tidligere hentede oplysninger vises fortsat.</div>}
+      <PageHeader title="Moms" actions={<><div className="row-actions">
           {/* #287: closing the VAT period is the prerequisite for a
               momsangivelse — hidden for an archived (read-only) year. Once the
               period is closed the action becomes a reopen instead (#301). */}
           {!v.archived &&
             v.periodStatus === "open" &&
             v.vatReportErrors.length === 0 && (
-            <button
+            <Button requiredPermission="company.review"
               type="button"
               className="btn"
               onClick={() => {
@@ -109,16 +104,16 @@ export function VatView() {
               }}
             >
               Luk momsperiode
-            </button>
+            </Button>
           )}
           {canReopen && (
-            <button
+            <Button requiredPermission="company.review" variant="secondary"
               type="button"
               className="btn secondary"
               onClick={() => setReopening(true)}
             >
               Genåbn momsperiode
-            </button>
+            </Button>
           )}
           {/* #464 — moms-rapport som printbar PDF inkl. SKAT-rubrikker + frist. */}
           <a
@@ -128,11 +123,19 @@ export function VatView() {
           >
             Hent PDF
           </a>
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
-          </Link>
+          </ButtonLink>
+        </div></>}>
+        <div>
+
+          <p className="muted">
+            {v.company.cvr ? `CVR ${v.company.cvr} · ` : ""}
+            {v.company.country} · {currency} · Moms
+          </p>
         </div>
-      </div>
+
+      </PageHeader>
 
       <CompanyNav
         slug={slug}
@@ -179,7 +182,7 @@ export function VatView() {
                     perioden, når den er forbi.
                   </Banner>
                   <label className="confirm-ack">
-                    <input
+                    <Input
                       type="checkbox"
                       checked={futureEndAcknowledged}
                       onChange={(e) =>
@@ -228,13 +231,14 @@ export function VatView() {
             setClosedNotice(`Momsperioden er lukket — tallene genindlæses nu.`);
             state.reload();
           }}
-          onClose={() => setClosing(false)}
+          onClose={() => setClosing(false)} onRefresh={state.reload}
         />
       )}
 
       {reopening && (
         <ReopenDialog
           vat={v}
+          onRefresh={state.reload}
           onReopened={(label) => {
             setClosedNotice(
               `Momsperioden ${label} er genåbnet — bogføring i perioden er tilladt igen.`,
@@ -264,7 +268,7 @@ export function VatView() {
             </Banner>
           )}
           <div className="card statement-card">
-            <table className="data statement-table">
+            <div className="table-scroll"><table className="data statement-table">
               <tbody>
                 <tr>
                   <td>Udgående moms før tab (kontrol)</td>
@@ -299,7 +303,7 @@ export function VatView() {
                   <td className="num">{formatKroner(v.payable, currency)}</td>
                 </tr>
               </tbody>
-            </table>
+            </table></div>
           </div>
 
           <div className="card statement-card vat-deadline">
@@ -407,7 +411,7 @@ function CopyRubrikButton({
           Kopieret
         </span>
       )}
-      <button
+      <Button
         type="button"
         className="rubrik-copy-btn"
         onClick={handleCopy}
@@ -420,7 +424,7 @@ function CopyRubrikButton({
         }
       >
         Kopier
-      </button>
+      </Button>
     </span>
   );
 }
@@ -480,7 +484,7 @@ function RubrikkerCard({
             ? "SKAT-rubrikker (foreløbige — åben periode)"
             : "SKAT-rubrikker (momsangivelse)"}
         </h3>
-        <button
+        <Button
           type="button"
           className="rubrik-copy-csv"
           onClick={copyAllAsCsv}
@@ -492,7 +496,7 @@ function RubrikkerCard({
           }
         >
           {copiedLabel === "__csv__" ? "Kopieret" : "Kopier alle som CSV"}
-        </button>
+        </Button>
       </div>
       <p className="muted statement-note">
         {provisional ? (
@@ -510,7 +514,7 @@ function RubrikkerCard({
           </>
         )}
       </p>
-      <table className="data statement-table">
+      <div className="table-scroll"><table className="data statement-table">
         <tbody>
           {rubrikRow("Salgsmoms", rubrikker.salgsmoms)}
           {rubrikRow(
@@ -528,8 +532,8 @@ function RubrikkerCard({
             `statement-result ${owedPositive ? "positive" : "negative"}`,
           )}
         </tbody>
-      </table>
-      <table className="data statement-table">
+      </table></div>
+      <div className="table-scroll"><table className="data statement-table">
         <tbody>
           {rubrikRow(
             "Rubrik A — varer og ydelser købt i udlandet",
@@ -541,7 +545,7 @@ function RubrikkerCard({
           )}
           {rubrikRow("Rubrik C — øvrige momsfrie salg", rubrikker.rubrikC)}
         </tbody>
-      </table>
+      </table></div>
     </div>
   );
 }
@@ -555,10 +559,12 @@ function RubrikkerCard({
 function ReopenDialog({
   vat,
   onReopened,
+  onRefresh,
   onClose,
 }: {
   vat: CompanyVatRegistered;
   onReopened: (label: string) => void;
+  onRefresh: () => void;
   onClose: () => void;
 }) {
   return (
@@ -599,7 +605,7 @@ function ReopenDialog({
         });
         onReopened(vat.periodLabel);
       }}
-      onClose={onClose}
+      onClose={onClose} onRefresh={onRefresh}
     />
   );
 }

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { authClient } from "./auth-client";
 import { ApiError, request } from "./api/_shared";
+import type { CompanyRole, WorkspaceRole } from "../../../src/core/access-permissions";
 
 export type SessionUser = {
   id: string;
@@ -11,11 +12,11 @@ export type SessionUser = {
 
 export type SessionContext = {
   user: SessionUser;
-  workspaceRole: "workspace_owner" | "member";
-  companies: Array<{ slug: string; name: string; role: string; archived: boolean }>;
+  workspaceRole: WorkspaceRole;
+  companies: Array<{ slug: string; name: string; role: CompanyRole; archived: boolean }>;
 };
 
-type AuthState = {
+export type AuthState = {
   loading: boolean;
   hosted: boolean;
   session: SessionUser | null;
@@ -84,7 +85,12 @@ export function AuthProvider({ hosted, children }: { hosted: boolean; children: 
 }
 
 export function useAuth(): AuthState {
-  const value = useContext(AuthContext);
+  const value = useOptionalAuth();
   if (!value) throw new Error("useAuth must be used within AuthProvider");
   return value;
+}
+
+/** Shared presentation components can also render in the standalone gallery. */
+export function useOptionalAuth(): AuthState | null {
+  return useContext(AuthContext);
 }

@@ -42,7 +42,7 @@ describe("release workflow security contract", () => {
 
   test("keeps full suites local while GitHub builds the cockpit", () => {
     expect(packageJson.scripts["test:parallel"]).toBe("bun test --parallel=4 --timeout=20000 --only-failures");
-    expect(appPackageJson.scripts["test:parallel"]).toBe("bun test --parallel --timeout=20000 --only-failures");
+    expect(appPackageJson.scripts["test:parallel"]).toBe("bun test --isolate --timeout=20000 --only-failures");
     expect(packageJson.scripts["verify:local"]).toContain("bun run test:parallel");
     expect(packageJson.scripts["verify:local"]).toContain("bun run cockpit:test:parallel");
     expect(testWorkflow).not.toContain("run: bun test\n");

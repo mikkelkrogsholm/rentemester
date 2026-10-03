@@ -1,3 +1,4 @@
+import { ButtonLink, Button, PageHeader } from "../components/ui";
 // Leverandørfaktura-arbejdsbordet (#340) — the cockpit's payable workbench.
 //
 // Renders `/api/companies/:slug/payables`: the kreditorliste from
@@ -19,7 +20,7 @@
 // backup lock and actor attribution included.
 
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { formatKroner } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
@@ -54,7 +55,7 @@ export function PayablesView() {
   const { setYear } = useCompanyYear();
   const [filter, setFilter] = useState<PayableListStatusFilter>("open");
   const state = useAsync<CompanyPayables>(
-    () => api.payables(slug, filter),
+    (signal) => api.payables(slug, filter, undefined, { signal }),
     [slug, filter],
   );
   const [registering, setRegistering] = useState(false);
@@ -64,7 +65,7 @@ export function PayablesView() {
   if (state.loading && !state.data) {
     return <Loading label="Henter leverandørfakturaer…" />;
   }
-  if (state.error) {
+  if (state.error && !state.data) {
     return <ErrorState message={state.error} onRetry={state.reload} />;
   }
 
@@ -73,30 +74,31 @@ export function PayablesView() {
 
   return (
     <section className="statement">
-      <div className="page-head">
-        <div>
-          <h2>{view.company.name}</h2>
-          <p className="muted">
-            {view.company.cvr ? `CVR ${view.company.cvr} · ` : ""}
-            {view.company.country} · {currency} · Leverandørfakturaer
-          </p>
-        </div>
-        <div className="row-actions">
-          <button
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+      <PageHeader title="Leverandørfakturaer" actions={<><div className="row-actions">
+          <Button requiredPermission="company.ledger.post"
             type="button"
             className="btn"
             onClick={() => setRegistering(true)}
           >
             Registrér leverandørfaktura
-          </button>
-          <button type="button" className="btn secondary" disabled={view.unregisteredDocuments.length===0} onClick={()=>setCorrecting(true)}>
+          </Button>
+          <Button requiredPermission="company.ledger.post" variant="secondary" type="button" className="btn secondary" disabled={view.unregisteredDocuments.length===0} onClick={()=>setCorrecting(true)}>
             Ret direkte bankkøb
-          </button>
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
+          </Button>
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
-          </Link>
+          </ButtonLink>
+        </div></>}>
+        <div>
+
+          <p className="muted">
+            {view.company.cvr ? `CVR ${view.company.cvr} · ` : ""}
+            {view.company.country} · {currency} · Leverandørfakturaer
+          </p>
         </div>
-      </div>
+
+      </PageHeader>
 
       <CompanyNav
         slug={slug}
@@ -152,7 +154,7 @@ export function PayablesView() {
             });
             state.reload();
           }}
-          onClose={() => setPaying(null)}
+          onClose={() => setPaying(null)} onRefresh={state.reload}
         />
       )}
 
@@ -200,7 +202,7 @@ export function PayablesView() {
         aria-label="Filtrér leverandørfakturaer på status"
       >
         {FILTERS.map((f) => (
-          <button
+          <Button
             key={f.value}
             type="button"
             className={`btn pill${filter === f.value ? " active" : ""}`}
@@ -208,7 +210,7 @@ export function PayablesView() {
             aria-pressed={filter === f.value}
           >
             {f.label}
-          </button>
+          </Button>
         ))}
       </nav>
 
@@ -283,13 +285,13 @@ export function PayablesView() {
                     <td>
                       <div className="row-actions">
                         {canPay && (
-                          <button
+                          <Button requiredPermission="company.ledger.post" variant="secondary"
                             type="button"
                             className="btn secondary"
                             onClick={() => setPaying(row)}
                           >
                             Markér betalt
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </td>
