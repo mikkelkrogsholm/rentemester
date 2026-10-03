@@ -1,3 +1,4 @@
+import { decodeTransactionRejection, TransactionRejectionError } from "./transaction-rejection";
 /**
  * Fixed-asset workflows (#124 depreciation, #125 immediate write-off).
  *
@@ -333,7 +334,7 @@ export function postDepreciationPeriod(db: Database, input: PostDepreciationPeri
           { accountNo: asset.accumulated_depreciation_account_no, creditAmount: periodAmount, text: `Accumulated depreciation ${asset.name}` },
         ],
       });
-      if (!journal.ok) throw new Error(JSON.stringify({ appliedRules: journal.appliedRules, errors: journal.errors }));
+      if (!journal.ok) throw new TransactionRejectionError({ appliedRules: journal.appliedRules, errors: journal.errors });
 
       const entry = db.query(
         `INSERT INTO asset_depreciation_entries (asset_id, period_index, transaction_date, amount, journal_entry_id)
@@ -360,13 +361,11 @@ export function postDepreciationPeriod(db: Database, input: PostDepreciationPeri
     })();
     return result;
   } catch (error) {
-    const parsed = typeof error === "object" && error && "message" in error ? (() => {
-      try { return JSON.parse(String((error as any).message)); } catch { return null; }
-    })() : null;
+    const parsed = decodeTransactionRejection(error);
     return {
       ok: false,
-      appliedRules: [...new Set([DEPR_RULE_ID, ...((parsed?.appliedRules as string[] | undefined) ?? [])])],
-      errors: (parsed?.errors as string[] | undefined) ?? [String(error)],
+      appliedRules: [...new Set([DEPR_RULE_ID, ...(parsed?.appliedRules ?? [])])],
+      errors: parsed?.errors ?? [String(error)],
     };
   }
 }
@@ -584,7 +583,7 @@ export function postImmediateWriteOff(db: Database, input: ImmediateWriteOffInpu
           { accountNo: paymentAccountNo, creditAmount: cost, text: `Write-off settlement ${input.name.trim()}` },
         ],
       });
-      if (!journal.ok) throw new Error(JSON.stringify({ appliedRules: journal.appliedRules, errors: journal.errors }));
+      if (!journal.ok) throw new TransactionRejectionError({ appliedRules: journal.appliedRules, errors: journal.errors });
 
       const writeOff = db.query(
         `INSERT INTO asset_writeoffs (
@@ -625,13 +624,11 @@ export function postImmediateWriteOff(db: Database, input: ImmediateWriteOffInpu
     })();
     return result;
   } catch (error) {
-    const parsed = typeof error === "object" && error && "message" in error ? (() => {
-      try { return JSON.parse(String((error as any).message)); } catch { return null; }
-    })() : null;
+    const parsed = decodeTransactionRejection(error);
     return {
       ok: false,
-      appliedRules: [...new Set([WRITEOFF_RULE_ID, ...((parsed?.appliedRules as string[] | undefined) ?? [])])],
-      errors: (parsed?.errors as string[] | undefined) ?? [String(error)],
+      appliedRules: [...new Set([WRITEOFF_RULE_ID, ...(parsed?.appliedRules ?? [])])],
+      errors: parsed?.errors ?? [String(error)],
     };
   }
 }

@@ -660,10 +660,8 @@ export function runImportFromSource(
   if (!parsed.ok || !parsed.source) {
     return failParse(parsed.errors, resolved);
   }
-  let archivePreflight: RollForwardResult | undefined;
   if (parser.system === "dinero" && typeof parser.parseSource === "function") {
     const preflight = preflightDineroArchive(db, resolved, parsed.source);
-    archivePreflight = preflight.rollForward;
     if (preflight.errors.length > 0) return failParse(preflight.errors, resolved);
     const atomic = runDineroV4(db, resolved, parsed.source as ImportSource, options);
     if (resolved.archiveIntegrity) atomic.archiveIntegrity = resolved.archiveIntegrity;
@@ -672,22 +670,6 @@ export function runImportFromSource(
   const result = runImport(db, parsed.source as ImportSource, options);
   if (resolved.archiveIntegrity) result.archiveIntegrity = resolved.archiveIntegrity;
 
-  // --- pre-cut-over fiscal-year archive (#197) -----------------------------
-  // A Dinero export spans several fiscal years; only the cut-over year was
-  // posted above. The EARLIER years are archived as read-only reference data
-  // (outside the live ledger) and their closing `SaldoBalance` is checked for
-  // roll-forward consistency into the next year's opening balance. Archiving
-  // is purely additive: it never affects whether the ledger import succeeded.
-  if (result.ok && !result.dryRun && parser.system === "dinero" && typeof parser.parseSource === "function") {
-    archivePreCutOverYears(db, resolved, result, archivePreflight);
-    // --- bilag (receipts) ingest (#196) ------------------------------------
-    // A Dinero export ships the actual receipts. Ingest each cut-over-year
-    // bilag through the documents pipeline, link it to its voucher's journal
-    // entry, and flag every unbooked receipt in the exception queue. Like
-    // archiving this is purely additive — it never changes the ledger import
-    // outcome.
-    ingestBilag(db, resolved, result, companyRootFor(db, options));
-  }
   return result;
 }
 
@@ -744,66 +726,4 @@ function companyRootFor(db: Database, options: ImportOptions): string | null {
     return dirname(dirname(filename));
   }
   return null;
-}
-
-/**
- * Ingests the Dinero export's bilag (receipts) and records the outcome on the
- * `ImportResult` — `bilag` counts plus the bilag-ingest audit lines. A missing
- * company root (in-memory ledger) skips ingest with an audit note; bilag ingest
- * never changes whether the ledger import succeeded.
- */
-function ingestBilag(
-  db: Database,
-  resolved: MultiArtifactSource,
-  result: ImportResult,
-  companyRoot: string | null,
-): void {
-  if (!companyRoot) {
-    result.auditTrail.push(
-      "Bilag ingest skipped: no company root available for receipt storage",
-    );
-    return;
-  }
-  const bilag = ingestDineroBilag(db, companyRoot, resolved, result);
-  for (const line of bilag.auditTrail) result.auditTrail.push(line);
-  for (const error of bilag.errors) {
-    result.auditTrail.push(`Bilag ingest warning: ${error}`);
-  }
-  result.bilag = {
-    linkedCount: bilag.linked.length,
-    unmatchedCount: bilag.unmatched.length,
-    duplicateCount: bilag.duplicates.length,
-    unbookedCount: bilag.unbooked.length,
-  };
-}
-
-/**
- * Archives the pre-cut-over fiscal years of a resolved Dinero export and runs
- * the closing-balance roll-forward consistency check, appending both outcomes
- * to the `ImportResult.auditTrail`. The archive lives in the `import_archive_*`
- * tables, entirely outside the hash-chained live journal (#197).
- */
-function archivePreCutOverYears(
-  db: Database,
-  resolved: MultiArtifactSource,
-  result: ImportResult,
-  preflight?: RollForwardResult,
-): void {
-  const archive = archiveDineroYears(db, resolved);
-  for (const line of archive.auditTrail) result.auditTrail.push(line);
-  if (!archive.ok) {
-    for (const error of archive.errors) {
-      result.auditTrail.push(`Archive warning: ${error}`);
-    }
-    return;
-  }
-  const rollForward = preflight ?? checkRollForward(db, resolved);
-  for (const line of describeRollForward(rollForward)) result.auditTrail.push(line);
-  if (!rollForward.ok) {
-    result.auditTrail.push(
-      `Roll-forward check FAILED: ${rollForward.breaks.length} break(s) flagged — review required`,
-    );
-  } else if (rollForward.steps.length > 0) {
-    result.auditTrail.push("Roll-forward check passed: archived years carry forward consistently");
-  }
 }

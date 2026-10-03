@@ -1,8 +1,8 @@
 /** Workspace-scoped party and corporate-record lifecycle (#573/#575).
  *
  * These commands deliberately open only the workspace control database: they
- * never open or mutate a company ledger.  `--actor` is enforced centrally for
- * every write and `--confirm yes` makes the append-only boundary explicit.
+ * never open or mutate a company ledger. Confirmation and canonical actor
+ * identity are checked here before opening the control database for writes.
  */
 import { readFileSync } from "node:fs";
 import { companyRootForSlug, resolveWorkspaceRoot, resolveWorkspaceSlug } from "../core/workspace";
@@ -21,10 +21,14 @@ import { applyVendorIdentityEnrichment, listVendorIdentityEnrichments, planVendo
 import { partyHub, partyProfile } from "../core/party-hub";
 import type { CommandContext, CommandDispatch } from "../cli-dispatch";
 import { authorizeMcpTool, createMcpSecurityContextFromEnv } from "../mcp/security";
+import { requireMutationActorIdentity } from "../cli-actor";
 
 const need = (ctx: CommandContext, flag: string) => { const v = ctx.trimToNull(ctx.arg(flag)); if (!v) ctx.fatal(`${flag} is required`); return v!; };
-const actor = (ctx: CommandContext) => ctx.cliActor ?? process.env.RENTEMESTER_ACTOR ?? ctx.inferredMutationActor() ?? (() => { ctx.fatal("actor required for mutations"); })();
-const confirm = (ctx: CommandContext) => { if (ctx.arg("--confirm") !== "yes") ctx.fatal("--confirm must be exactly yes"); };
+const actor = (ctx: CommandContext) => requireMutationActorIdentity(ctx.cliActor, ctx.fatal);
+const confirm = (ctx: CommandContext) => {
+  if (ctx.arg("--confirm") !== "yes") ctx.fatal("--confirm must be exactly yes");
+  actor(ctx);
+};
 const json = (ctx: CommandContext, flag: string): Record<string, unknown> => { try { const v = JSON.parse(readFileSync(need(ctx, flag), "utf8")); if (!v || typeof v !== "object" || Array.isArray(v)) throw new Error("must be an object"); return v as Record<string, unknown>; } catch (e) { ctx.fatal(`${flag} must be a readable JSON object: ${e instanceof Error ? e.message : String(e)}`); } };
 const workspace = (ctx: CommandContext) => resolveWorkspaceRoot(need(ctx, "--workspace"));
 const principal=(ctx:CommandContext)=>({kind:"local_operator" as const,id:need(ctx,"--principal-id")});

@@ -7,7 +7,6 @@ import { ButtonLink, Button, PageHeader } from "../components/ui";
 // Genbruger eksisterende kerne-helpers via /api/companies/:slug/integrity —
 // ingen genimplementering på cockpit-siden.
 
-import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
@@ -16,16 +15,13 @@ import { ErrorState, Loading } from "../components/Feedback";
 
 export function IntegrityView() {
   const { slug = "" } = useParams();
-  // En `refresh`-tæller lader brugeren trykke "Verificér igen" og få cockpittet
-  // til at re-fetche /integrity. Endpointet er idempotent, så det er sikkert.
-  const [refresh, setRefresh] = useState(0);
   const state = useAsync<CompanyIntegrity>(
     (signal) => api.integrity(slug, { signal }),
-    [slug, refresh],
+    [slug],
   );
 
-  if (state.loading) return <Loading />;
-  if (state.error) return <ErrorState message={state.error} onRetry={state.reload} />;
+  if (state.loading && !state.data) return <Loading />;
+  if (state.error && !state.data) return <ErrorState message={state.error} onRetry={state.reload} />;
   const data = state.data!;
 
   const chainOk = data.auditChain.ok;
@@ -37,7 +33,7 @@ export function IntegrityView() {
           <Button variant="secondary"
             type="button"
             className="btn secondary"
-            onClick={() => setRefresh((n) => n + 1)}
+            onClick={state.reload}
           >
             Verificér igen
           </Button>
@@ -54,6 +50,16 @@ export function IntegrityView() {
         </div>
 
       </PageHeader>
+
+      {state.loading && (
+        <p className="muted" role="status">Kontrollen opdateres. Den seneste gennemførte kontrol vises fortsat.</p>
+      )}
+      {state.error && (
+        <div className="callout warn" role="alert">
+          <strong>Kontrollen kunne ikke opdateres.</strong> {state.error}{" "}
+          Den seneste gennemførte kontrol vises fortsat. Vælg Verificér igen for at prøve igen.
+        </div>
+      )}
 
       {!chainOk && (
         <div className="callout danger">

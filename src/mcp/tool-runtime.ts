@@ -198,6 +198,27 @@ export function strictMcpReadOnlyHandler<T extends (...args: never[]) => unknown
   return markCompanyRuntime(callback, "readonly");
 }
 
+/** Own the snapshot handle and schema gate; wrappers retain their actor/error policy. */
+async function withReadLedger(
+  dbPath: string,
+  handler: (db: Database) => Envelope | Promise<Envelope>,
+  allowSchemaNotCurrent = false,
+): Promise<Envelope> {
+  const db = openLedgerReadOnly(dbPath);
+  try {
+    const schema = inspectOpenLedger(db);
+    if (schema.status !== "current" && !allowSchemaNotCurrent) {
+      return errorEnvelopeWithData(
+        `schema_${schema.status}: current=${schema.currentVersion} required=${schema.requiredVersion}`,
+        { schema },
+      );
+    }
+    return await handler(db);
+  } finally {
+    db.close();
+  }
+}
+
 export function withCompanyDb<TArgs extends { company: string }>(
   server: McpServer,
   handler: (ctx: { db: Database; actor: McpActor; args: TArgs }) => Envelope | Promise<Envelope>,
@@ -248,18 +269,12 @@ export function withCompanyDb<TArgs extends { company: string }>(
     let db: Database | undefined;
     try {
       if (readOnly) {
-        db = openLedgerReadOnly(dbPath);
-        const schema = inspectOpenLedger(db);
-        if (schema.status !== "current") {
-          return envelopeToCallResult(errorEnvelopeWithData(
-            `schema_${schema.status}: current=${schema.currentVersion} required=${schema.requiredVersion}`,
-            { schema },
-          ));
-        }
-      } else {
-        db = openDb(dbPath);
-        migrate(db);
+        return envelopeToCallResult(await withReadLedger(dbPath, (snapshot) =>
+          handler({ db: snapshot, actor, args: { ...args, company: companyRoot } }),
+        ));
       }
+      db = openDb(dbPath);
+      migrate(db);
       // Hand the handler the *resolved* company directory under `args.company`
       // so tools that pass it on to core APIs (e.g. `getBackupComplianceStatus`,
       // `issueInvoice`) keep working whether a slug or a raw path was supplied.
@@ -380,21 +395,13 @@ export function withCompanyReadOnlyDb<TArgs extends { company: string }>(
     if (!existsSync(resolved.companyRoot) || !existsSync(dbPath)) {
       return envelopeToCallResult(errorEnvelope("company path does not exist or is not initialized"));
     }
-    let db: Database | undefined;
     try {
-      db = openLedgerReadOnly(dbPath);
-      const schema = inspectOpenLedger(db);
-      if (schema.status !== "current" && !options.allowSchemaNotCurrent) {
-        return envelopeToCallResult(errorEnvelopeWithData(
-          `schema_${schema.status}: current=${schema.currentVersion} required=${schema.requiredVersion}`,
-          { schema },
-        ));
-      }
-      return envelopeToCallResult(await handler({ db, args: { ...args, company: resolved.companyRoot } }));
+      return envelopeToCallResult(await withReadLedger(dbPath, (db) =>
+        handler({ db, args: { ...args, company: resolved.companyRoot } }),
+        options.allowSchemaNotCurrent,
+      ));
     } catch (error) {
       return envelopeToCallResult(safeErrorEnvelope("withCompanyReadOnlyDb", error instanceof Error ? error.message : String(error)));
-    } finally {
-      db?.close();
     }
   }, "readonly");
 }

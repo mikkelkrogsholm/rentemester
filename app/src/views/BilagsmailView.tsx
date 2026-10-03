@@ -22,14 +22,13 @@ import { ConfirmDialog } from "../components/ConfirmDialog";
 
 export function BilagsmailView() {
   const { slug = "" } = useParams();
-  const [refresh, setRefresh] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const state = useAsync<CompanyBilagsmail>(
     (signal) => api.bilagsmail(slug, { signal }),
-    [slug, refresh],
+    [slug],
   );
 
-  const doneRefresh = () => setRefresh((n) => n + 1);
+  const doneRefresh = state.reload;
 
   if (state.loading && !state.data) return <Loading />;
   if (state.error && !state.data) return <ErrorState message={state.error} onRetry={state.reload} />;

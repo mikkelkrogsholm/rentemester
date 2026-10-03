@@ -1,4 +1,4 @@
-import { ApiError, parseFilenameFromContentDisposition } from "./_shared";
+import { requestBlob, parseFilenameFromContentDisposition } from "./_shared";
 
 export const accountantApi = {
   /**
@@ -11,36 +11,18 @@ export const accountantApi = {
     slug: string,
     input: { periodStart: string; periodEnd: string },
   ): Promise<AccountantExportResult> => {
-    const res = await fetch(
+    const res = await requestBlob(
       `/api/companies/${encodeURIComponent(slug)}/accountant-export`,
       {
         method: "POST",
-        headers: { "content-type": "application/json" },
         body: JSON.stringify({ ...input, confirm: true }),
       },
     );
-    if (!res.ok) {
-      let message = `HTTP ${res.status}`;
-      let code = "internal";
-      try {
-        // #368: unified envelope — `errors[0]` is the message, `code` is the
-        // top-level enum.
-        const body = (await res.json()) as {
-          errors?: unknown;
-          code?: unknown;
-        };
-        if (Array.isArray(body.errors) && body.errors.length > 0) {
-          message = String(body.errors[0]);
-        }
-        if (typeof body.code === "string") code = body.code;
-      } catch {}
-      throw new ApiError(code, message, res.status);
-    }
     const filename =
       parseFilenameFromContentDisposition(res.headers.get("content-disposition")) ??
       `revisor-eksport-${slug}-${input.periodStart}-${input.periodEnd}.tar`;
     return {
-      blob: await res.blob(),
+      blob: res.blob,
       filename,
       journalEntryCount: Number(
         res.headers.get("x-rentemester-journal-entries") ?? 0,

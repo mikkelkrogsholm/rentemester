@@ -9,12 +9,10 @@ import {
   postRepresentationPurchase,
   postRepresentationPurchaseInCurrentTransaction,
 } from "./vat";
-import { absDkk, compareDkk, fromOre, normalizeCurrency, percentOfDkk, roundDkk, roundRate6, subtractDkk, toOre } from "./money";
+import { compareDkk, fromOre, normalizeCurrency, roundDkk, roundRate6, subtractDkk, toOre } from "./money";
 import { resolveAccountRole } from "./account-roles";
 import { parsePurchaseVatLinesPayload, type PurchaseVatLine } from "./documents";
-import { deductibleDanishPurchaseSupplierErrors } from "./supplier-identity";
-import { validSimplifiedPurchaseCompanyContext } from "./document-company-context";
-import { validIncompleteStandardPurchaseVatEvidenceReview } from "./document-purchase-vat-evidence-review";
+import { deductiblePurchaseSupplierErrors, standardPurchaseCompanyContextErrors, uniformDanishPurchaseVatErrors } from "./purchase-vat-evidence";
 
 /**
  * `non_deductible` (DK-VAT-NON-DEDUCTIBLE-001 / Momsloven § 37) is the
@@ -344,30 +342,15 @@ function bookExpenseFromBankInternal(db: Database, input: BookExpenseFromBankInp
     };
   }
   if (vatTreatment === "standard" || vatTreatment === "representation") {
-    const supplierErrors = deductibleDanishPurchaseSupplierErrors({
-      supplierVatOrCvr: document.sender_vat_cvr,
-      supplierCountryCode: document.supplier_country_code,
-      supplierIdentifierKind: document.supplier_identifier_kind,
-      supplierIdentityStatus: document.supplier_identity_status,
-    });
+    const supplierErrors = deductiblePurchaseSupplierErrors(document);
     if (supplierErrors.length > 0) return { ok: false, appliedRules: [], errors: supplierErrors };
   }
   // A stated simplified-invoice fact can only support standard purchase VAT
   // through a separately hash-bound company context. It never replaces the
   // supplier identity checks above and ordinary documents get no exception.
   if (vatTreatment === "standard") {
-    try {
-      const payload = document.payload_json ? JSON.parse(document.payload_json) as Record<string, unknown> : {};
-      if (payload.incompleteStandardPurchaseInvoice === true) {
-        if (!validIncompleteStandardPurchaseVatEvidenceReview(db, input.documentId)) return { ok: false, appliedRules: [], errors: ["incomplete standard invoice requires a valid hash-bound VAT evidence review before input-VAT deduction"] };
-      }
-      const invoiceStatesCompany = typeof document.recipient_vat_cvr === "string" && document.recipient_vat_cvr.trim().length > 0;
-      const contextIsValid = (payload.danishSimplifiedPurchaseInvoice === true && validSimplifiedPurchaseCompanyContext(db, input.documentId))
-        || (payload.incompleteStandardPurchaseInvoice === true && validIncompleteStandardPurchaseVatEvidenceReview(db, input.documentId));
-      if (document.document_type === "purchase_sale" && !invoiceStatesCompany && !contextIsValid) {
-        return { ok: false, appliedRules: [], errors: ["standard purchase VAT requires invoice-stated recipient identity or a valid hash-bound simplified-invoice company context"] };
-      }
-    } catch { return { ok: false, appliedRules: [], errors: ["document payload_json is not valid JSON"] }; }
+    const contextErrors = standardPurchaseCompanyContextErrors(db, input.documentId, document, { requireIncompleteReview: true });
+    if (contextErrors.length > 0) return { ok: false, appliedRules: [], errors: contextErrors };
   }
   const transactionDate = input.transactionDate ?? bank.transaction_date;
   if (
@@ -454,15 +437,8 @@ function bookExpenseFromBankInternal(db: Database, input: BookExpenseFromBankInp
   // currency (the 25% ratio is currency-independent), allowing 1 øre of
   // rounding slack.
   if (vatTreatment === "standard" || vatTreatment === "representation") {
-    const documentNetAmount = subtractDkk(grossAmount, vatAmount);
-    const expectedVatAmount = percentOfDkk(documentNetAmount, 25);
-    if (compareDkk(absDkk(subtractDkk(vatAmount, expectedVatAmount)), 0.01) > 0) {
-      return {
-        ok: false,
-        appliedRules: [],
-        errors: [`document ${input.documentId} vat_amount ${vatAmount} is inconsistent with the 25% rate (expected ~${expectedVatAmount} for net ${documentNetAmount})`],
-      };
-    }
+    const vatErrors = uniformDanishPurchaseVatErrors(input.documentId, grossAmount, vatAmount);
+    if (vatErrors.length > 0) return { ok: false, appliedRules: [], errors: vatErrors };
   }
 
   if (vatTreatment === "standard") {

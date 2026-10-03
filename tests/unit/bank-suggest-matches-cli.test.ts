@@ -106,7 +106,7 @@ describe("bank suggest-matches CLI", () => {
     rmSync(root, { recursive: true, force: true });
     rmSync(inbox, { recursive: true, force: true });
 
-    expect(listed.exitCode).toBe(0);
+    expect(listed.exitCode, `bank suggest-matches failed: ${listed.stderr || listed.stdout}`).toBe(0);
     expect(listed.stderr).toBe("");
     const listedJson = JSON.parse(listed.stdout);
     expect(listedJson.count).toBe(2);

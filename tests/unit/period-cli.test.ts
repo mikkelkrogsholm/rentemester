@@ -1,6 +1,6 @@
 // Tests: src/cli/period.ts, src/cli.ts (period CLI)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -81,6 +81,68 @@ describe("period close CLI", () => {
 });
 
 describe("period reopen CLI (#247)", () => {
+  test("reopen preserves explicit and derived machine actor behavior without company policy", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-periodreopen-no-policy-"));
+    const company = join(root, "company");
+    try {
+      await Bun.$`bun run src/cli.ts init --company ${company} --vat-period month`.quiet();
+      const { readiness, review } = await reviewReadiness(company, "2026-05-01", "2026-05-31");
+      await Bun.$`bun run src/cli.ts period close --company ${company} --from 2026-05-01 --to 2026-05-31 --packet-hash ${readiness.hash} --review-id ${review.id} --confirm yes --actor user:ejer`.quiet();
+      unlinkSync(join(company, "config", "policy.yaml"));
+      for (const actor of ["agent:synthetic", "system:synthetic"]) {
+        const proc = Bun.spawn(["bun", "run", "src/cli.ts", "period", "reopen", "--company", company,
+          "--from", "2026-05-01", "--to", "2026-05-31", "--reason", "Synthetic late evidence",
+          "--actor", actor, "--format", "json"], { cwd: process.cwd(), stdout: "pipe", stderr: "pipe" });
+        expect(await new Response(proc.stdout).text()).toBe("");
+        expect(await new Response(proc.stderr).text()).toContain("actor_allowlist");
+        expect(await proc.exited).toBe(2);
+      }
+      const proc = Bun.spawn(["bun", "run", "src/cli.ts", "period", "reopen", "--company", company,
+        "--from", "2026-05-01", "--to", "2026-05-31", "--reason", "Synthetic late evidence", "--format", "json"], {
+        cwd: process.cwd(), stdout: "pipe", stderr: "pipe",
+        env: { PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? "", RENTEMESTER_AGENT: "synthetic" },
+      });
+      const result = JSON.parse(await new Response(proc.stdout).text());
+      expect(await new Response(proc.stderr).text()).toBe("");
+      expect(await proc.exited).toBe(0);
+      expect(result).toMatchObject({ ok: true, effectiveStatus: "open", reopenedBy: "agent:synthetic via rentemester-cli" });
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("central actor policy rejects malformed and unallowlisted actors and attributes a derived actor", async () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-periodreopen-policy-"));
+    const company = join(root, "company");
+    try {
+      await Bun.$`bun run src/cli.ts init --company ${company} --vat-period month`.quiet();
+      const { readiness, review } = await reviewReadiness(company, "2026-05-01", "2026-05-31");
+      await Bun.$`bun run src/cli.ts period close --company ${company} --from 2026-05-01 --to 2026-05-31 --packet-hash ${readiness.hash} --review-id ${review.id} --confirm yes --actor user:ejer`.quiet();
+      const base = ["bun", "run", "src/cli.ts", "period", "reopen", "--company", company,
+        "--from", "2026-05-01", "--to", "2026-05-31", "--reason", "Synthetic late evidence", "--format", "json"];
+      for (const [extra, user, expected] of [
+        [["--actor", "malformed"], "ejer", "explicit actor must use canonical format"],
+        [["--actor", "user:outsider"], "ejer", "actor_allowlist"],
+        [[], "outsider", "actor_allowlist"],
+      ] as const) {
+        const proc = Bun.spawn([...base, ...extra], {
+          cwd: process.cwd(), stdout: "pipe", stderr: "pipe",
+          env: { PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? "", USER: user },
+        });
+        expect(await new Response(proc.stdout).text()).toBe("");
+        expect(await new Response(proc.stderr).text()).toContain(expected);
+        expect(await proc.exited).toBe(2);
+      }
+      // The denied attempts must leave the closed period available to this one reopen.
+      const proc = Bun.spawn(base, {
+        cwd: process.cwd(), stdout: "pipe", stderr: "pipe",
+        env: { PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? "", USER: "ejer" },
+      });
+      const result = JSON.parse(await new Response(proc.stdout).text());
+      expect(await new Response(proc.stderr).text()).toBe("");
+      expect(await proc.exited).toBe(0);
+      expect(result).toMatchObject({ ok: true, effectiveStatus: "open", reopenedBy: "user:ejer via rentemester-cli" });
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
   test("requires an actor, then reopens a closed period and unblocks posting", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-periodreopen-"));
     const company = join(root, "company");

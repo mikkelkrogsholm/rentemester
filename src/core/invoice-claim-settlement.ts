@@ -1,3 +1,4 @@
+import { TransactionRejectionError, decodeTransactionRejection } from "./transaction-rejection";
 import type { Database } from "bun:sqlite";
 import { getInvoiceStatus } from "./invoice-payments";
 import { postJournalEntry, type JournalPostResult } from "./ledger";
@@ -93,14 +94,14 @@ export function settleInvoiceClaimsFromBank(db: Database, input: SettleInvoiceCl
   try {
     const result = db.transaction(() => {
       const lockedStatus = getInvoiceStatus(db, input.invoiceDocumentId);
-      if (!lockedStatus.ok) throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: lockedStatus.errors }));
+      if (!lockedStatus.ok) throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: lockedStatus.errors });
       const lockedPrincipalOpen = roundDkk(Number(lockedStatus.openBalance ?? 0));
       const lockedClaimOpen = roundDkk(Number(lockedStatus.claimOpenBalance ?? 0));
       if (lockedPrincipalOpen !== 0) {
-        throw new Error(JSON.stringify({
+        throw new TransactionRejectionError({
           appliedRules: [RULE_ID],
           errors: [`invoice ${invoice.invoice_no} still has principal open balance ${lockedPrincipalOpen}; settle principal before claim receipts`],
-        }));
+        });
       }
 
       const claimBalances = calculateClaimReceivableBalances(db, {
@@ -108,38 +109,38 @@ export function settleInvoiceClaimsFromBank(db: Database, input: SettleInvoiceCl
         asOfDate: claimEvidenceDate,
       });
       if (!claimBalances.ok) {
-        throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: claimBalances.errors }));
+        throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: claimBalances.errors });
       }
       if (compareDkk(claimBalances.totalDkk, lockedClaimOpen) !== 0) {
-        throw new Error(JSON.stringify({
+        throw new TransactionRejectionError({
           appliedRules: [RULE_ID],
           errors: [`invoice ${invoice.invoice_no} claim balance ${lockedClaimOpen} DKK does not match ledger-backed claim receivables ${claimBalances.totalDkk} DKK`],
-        }));
+        });
       }
       if (compareDkk(amount, claimBalances.totalDkk) > 0) {
-        throw new Error(JSON.stringify({
+        throw new TransactionRejectionError({
           appliedRules: [RULE_ID],
           errors: [`claim receipt amount ${amount} exceeds ledger-backed claim balance ${claimBalances.totalDkk}`],
-        }));
+        });
       }
       const allocation = allocateClaimReceipt(claimBalances.balances, amount);
-      if (!allocation.ok) throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: [allocation.error] }));
+      if (!allocation.ok) throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: [allocation.error] });
       if (
         input.receivableAccountNo &&
         allocation.credits.some((credit) => credit.accountNo !== input.receivableAccountNo)
       ) {
-        throw new Error(JSON.stringify({
+        throw new TransactionRejectionError({
           appliedRules: [RULE_ID],
           errors: [`claim receipt must clear its ledger-backed receivable account(s) ${allocation.credits.map((row) => row.accountNo).join(", ")}, not ${input.receivableAccountNo}`],
-        }));
+        });
       }
       const bankAccount = resolveSettlementBankAccount(db, {
         bankTransactionId: bank.id,
         requestedAccountNo: input.bankAccountNo,
       });
-      if (!bankAccount.ok) throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: [bankAccount.error] }));
+      if (!bankAccount.ok) throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: [bankAccount.error] });
       if (allocation.credits.some((credit) => credit.accountNo === bankAccount.accountNo)) {
-        throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: [`bank ledger ${bankAccount.accountNo} cannot also be the claim receivable account`] }));
+        throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: [`bank ledger ${bankAccount.accountNo} cannot also be the claim receivable account`] });
       }
 
       const journal = postJournalEntry(db, {
@@ -159,7 +160,7 @@ export function settleInvoiceClaimsFromBank(db: Database, input: SettleInvoiceCl
         ],
       });
       if (!journal.ok || journal.entryId == null) {
-        throw new Error(JSON.stringify({ appliedRules: journal.appliedRules, errors: journal.errors.length > 0 ? journal.errors : ["claim settlement journal posting returned no entry id"] }));
+        throw new TransactionRejectionError({ appliedRules: journal.appliedRules, errors: journal.errors.length > 0 ? journal.errors : ["claim settlement journal posting returned no entry id"] });
       }
 
       const evidence = validateInvoiceJournalEvidence(db, {
@@ -174,7 +175,7 @@ export function settleInvoiceClaimsFromBank(db: Database, input: SettleInvoiceCl
           currency: "DKK",
         }],
       });
-      if (!evidence.ok) throw new Error(JSON.stringify({ appliedRules: [RULE_ID], errors: evidence.errors }));
+      if (!evidence.ok) throw new TransactionRejectionError({ appliedRules: [RULE_ID], errors: evidence.errors });
 
       const payment = db.query(
         `INSERT INTO invoice_claim_payments (invoice_document_id, bank_transaction_id, journal_entry_id, payment_date, amount, currency, note)
@@ -192,7 +193,7 @@ export function settleInvoiceClaimsFromBank(db: Database, input: SettleInvoiceCl
       });
 
       const after = getInvoiceStatus(db, input.invoiceDocumentId);
-      if (!after.ok) throw new Error(JSON.stringify({ errors: after.errors }));
+      if (!after.ok) throw new TransactionRejectionError({ errors: after.errors });
 
       return {
         ...journal,
@@ -204,13 +205,11 @@ export function settleInvoiceClaimsFromBank(db: Database, input: SettleInvoiceCl
     }).immediate();
     return result;
   } catch (error) {
-    const parsed = typeof error === "object" && error && "message" in error ? (() => {
-      try { return JSON.parse(String((error as any).message)); } catch { return null; }
-    })() : null;
+    const parsed = decodeTransactionRejection(error);
     return {
       ok: false,
-      appliedRules: [...new Set([RULE_ID, ...((parsed?.appliedRules as string[] | undefined) ?? [])])],
-      errors: (parsed?.errors as string[] | undefined) ?? [String(error)],
+      appliedRules: [...new Set([RULE_ID, ...(parsed?.appliedRules ?? [])])],
+      errors: parsed?.errors ?? [String(error)],
     };
   }
 }

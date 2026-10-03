@@ -3,6 +3,7 @@ import type { Database } from "bun:sqlite";
 import { postJournalEntry, type JournalPostResult } from "./ledger";
 import { getInvoiceStatus } from "./invoice-payments";
 import { insertAuditLog } from "./actor";
+import { decodeTransactionRejection, TransactionRejectionError } from "./transaction-rejection";
 import { isValidIsoDate as looksLikeIsoDate, diffDays } from "./dates";
 import { addDkk, compareDkk, cumulativeInterestDkk, fromOre, roundDkk, subtractDkk, toOre } from "./money";
 import { accountRoleCompatibility, resolveAccountRole } from "./account-roles";
@@ -1452,7 +1453,7 @@ export function postInterestCorrection(db: Database, input: PostInterestCorrecti
         invoiceDocumentId: input.invoiceDocumentId,
       });
       if (!verifiedReceivables.ok || !verifiedInterestReceivables.ok || !verifiedIncomes.ok || !verifiedPlan.ok) {
-        throw new Error(JSON.stringify({
+        throw new TransactionRejectionError({
           appliedRules: [BOOKKEEPING_RULE_ID],
           errors: [
             ...(!verifiedReceivables.ok ? verifiedReceivables.errors : []),
@@ -1460,14 +1461,14 @@ export function postInterestCorrection(db: Database, input: PostInterestCorrecti
             ...(!verifiedIncomes.ok ? verifiedIncomes.errors : []),
             ...(!verifiedPlan.ok ? verifiedPlan.errors : []),
           ],
-        }));
+        });
       }
       const statusAfter = getInvoiceStatus(db, input.invoiceDocumentId, transactionDate);
       if (!statusAfter.ok) {
-        throw new Error(JSON.stringify({
+        throw new TransactionRejectionError({
           appliedRules: [BOOKKEEPING_RULE_ID],
           errors: statusAfter.errors,
-        }));
+        });
       }
       return {
         ...journal,
@@ -1480,9 +1481,7 @@ export function postInterestCorrection(db: Database, input: PostInterestCorrecti
       };
     }).immediate();
   } catch (error) {
-    const parsed = typeof error === "object" && error && "message" in error ? (() => {
-      try { return JSON.parse(String((error as any).message)); } catch { return null; }
-    })() : null;
+    const parsed = decodeTransactionRejection(error);
     return {
       ok: false,
       invoiceDocumentId: input.invoiceDocumentId,

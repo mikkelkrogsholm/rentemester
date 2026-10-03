@@ -1,6 +1,10 @@
 # Graphify
 
-Rentemester has a committed Graphify code graph in `graphify-out/graph.json`.
+Rentemester has a Graphify knowledge graph in `graphify-out/graph.json`.
+The rebuild workflow uses Graphify 0.9.74: local AST extraction for
+code and SQL, plus semantic extraction of documentation, rules, example
+documents, and images through Codex agents. Luna performs the initial semantic
+pass, with Sol repairing document chunks that need more detail.
 
 Use it before broad codebase searches:
 
@@ -10,20 +14,38 @@ graphify explain "postIssuedInvoiceToLedger"
 graphify path "issueInvoice()" "postJournalEntry()"
 ```
 
-The current graph was built with AST-only extraction:
+Refresh code relationships locally without an LLM:
 
 ```bash
 graphify update . --no-cluster
 ```
 
-Full semantic extraction, `GRAPH_REPORT.md`, and `graph.html` require an LLM
-API key in the environment, for example `GEMINI_API_KEY`, `OPENAI_API_KEY`,
-`ANTHROPIC_API_KEY`, `MOONSHOT_API_KEY`, or `DEEPSEEK_API_KEY`:
+For a full semantic rebuild inside Codex, invoke the Graphify skill on the
+project. The skill can use the session's agents without a separate API key.
+Code updates do not semantically re-read changed documentation; run the full
+skill again when that material needs refreshing.
+
+The headless CLI instead uses a configured LLM backend:
 
 ```bash
 graphify extract .
 ```
 
-Local git hooks are installed in `.git/hooks` to refresh the graph after
-commits and checkouts. Those hooks are local machine state, not committed repo
-files.
+Pass `--force` for an intentional full replacement. Upgrade the CLI, including
+the SQL parser needed for the ledger schema, and refresh the installed skill:
+
+```bash
+uv tool install --force 'graphifyy[sql]@latest'
+graphify install --platform codex
+graphify install --platform agents
+```
+
+The interactive view is `graphify-out/graph.html`; `GRAPH_REPORT.md` describes
+communities and important connections. Local Git hooks, if configured, are
+machine state rather than committed repository files. Check their status with
+`graphify hook status`.
+
+Build provenance, source fingerprints and limitations are recorded in
+`graphify-out/build-info.json`; graph diagnostics are in
+`graphify-out/graph-health.json`. Native-agent token usage may be unavailable;
+this must be reported explicitly rather than as zero semantic cost.
