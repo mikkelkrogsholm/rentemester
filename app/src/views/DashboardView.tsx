@@ -1,3 +1,4 @@
+import { ButtonLink, Button, PageHeader } from "../components/ui";
 // Overblik — the per-company overview dashboard (cockpit-redesign iteration 1).
 //
 // Renders `/api/companies/:slug/overview?year=`: three headline KPI cards
@@ -38,7 +39,7 @@ export function DashboardView() {
     () => Number(window.localStorage.getItem(seenKey) ?? "0") || 0,
   );
   const state = useAsync<CompanyOverview>(
-    () => api.overview(slug, year),
+    (signal) => api.overview(slug, year, undefined, { signal }),
     [slug, year],
   );
   const changes = useAsync(() => api.changesSince(slug, seen), [slug, seen]);
@@ -51,7 +52,7 @@ export function DashboardView() {
   }, [changes.error, seenKey]);
 
   if (state.loading && !state.data) return <Loading label="Henter overblik…" />;
-  if (state.error)
+  if (state.error && !state.data)
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const o = state.data!;
@@ -71,20 +72,21 @@ export function DashboardView() {
 
   return (
     <section className="overview" data-cockpit-page="dashboard" data-evidence-issue="651">
-      <div className="page-head">
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. De tidligere hentede oplysninger vises fortsat.</div>}
+      <PageHeader title="Overblik" actions={<><div className="row-actions">
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+            Administrér
+          </ButtonLink>
+        </div></>}>
         <div>
-          <h2>{o.company.name}</h2>
+
           <p className="muted">
             {o.company.cvr ? `CVR ${o.company.cvr} · ` : ""}
             {o.company.country} · {currency} · Overblik
           </p>
         </div>
-        <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </div>
+
+      </PageHeader>
 
       <CompanyNav
         slug={slug}
@@ -115,7 +117,8 @@ export function DashboardView() {
         {changes.loading && <p className="muted" data-evidence-status="loading">Henter ændringer…</p>}
         {changes.error && <p role="alert" data-evidence-status={/403|forbudt|adgang/i.test(changes.error) ? "warning-or-blocked" : "error"}>{/403|forbudt|adgang/i.test(changes.error) ? "Overblik kræver opmærksomhed" : "Virksomhedsoverblik kunne ikke hentes"}</p>}
         {changes.data && changes.data.events.length === 0 && <p className="muted" data-evidence-status="empty">Ingen nye data- eller statusændringer siden dit seneste besøg.</p>}
-        {changes.data && changes.data.events.length > 0 && <ChangesSummary changes={changes.data} onSeen={markSeen} seenNotice={seenNotice} />}
+        {changes.data && changes.data.events.length > 0 && <ChangesSummary changes={changes.data} onSeen={markSeen} />}
+        {seenNotice && <p role="status" data-evidence-task-outcome>Ændringer markeret som set</p>}
         {changes.data && seen === 0 && <p className="muted">Første besøg: ændringer vises fra begyndelsen af det tilgængelige revisionsspor.</p>}
       </section>
 
@@ -151,7 +154,7 @@ export function DashboardView() {
           {o.profitAndLoss.months.length > 0 ? <Chart definition={chartDefinition} ariaLabel="Omsætning pr. måned" ariaDescription={`Omsætning i regnskabsår ${o.selectedYear}`} height={260} /> : <p className="muted">Ingen måneder at vise endnu.</p>}
           <table data-evidence-data><caption className="sr-only">Omsætning pr. måned, regnskabsår {o.selectedYear}</caption><thead><tr><th>Måned</th><th>Beløb (kr.)</th></tr></thead><tbody>{o.profitAndLoss.months.map((month) => <tr key={month.month}><td>{month.label}</td><td>{formatKroner(month.income, currency)}</td></tr>)}</tbody></table>
           <Link to={statementTo(slug, "resultatopgorelse", o.selectedYear)} data-evidence-progressive>Se underliggende resultatopgørelse</Link>
-          <PnlChart months={o.profitAndLoss.months} />
+          <PnlChart months={o.profitAndLoss.months} currency={currency} />
         </div>
       </div>
 
@@ -218,11 +221,9 @@ const changeCategoryLabels: readonly [prefix: string, singular: string, plural: 
 function ChangesSummary({
   changes,
   onSeen,
-  seenNotice,
 }: {
   changes: ChangesSince;
   onSeen: () => void;
-  seenNotice: boolean;
 }) {
   const counts = new Map<string, { count: number; singular: string; plural: string }>();
   for (const event of changes.events) {
@@ -245,8 +246,7 @@ function ChangesSummary({
       <summary>Evidens</summary>
       <ul>{changes.events.map((event) => <li key={event.id}><strong>{event.eventType}</strong>: {event.message} <span className="muted">· {event.actor} · {event.createdAt}</span></li>)}</ul>
     </details>
-    <button className="btn secondary" type="button" onClick={onSeen} data-evidence-core-action>Markér som set</button>
-    {seenNotice && <p data-evidence-task-outcome>Ændringer markeret som set</p>}
+    <Button className="btn secondary" type="button" onClick={onSeen} data-evidence-core-action>Markér som set</Button>
   </>;
 }
 
@@ -277,15 +277,15 @@ function GetStartedCard({ slug }: { slug: string }) {
         — du kan altid bruge agenten eller kommandolinjen i stedet.
       </p>
       <div className="get-started-actions">
-        <Link className="btn primary" to={`/companies/${slug}/bilag`}>
+        <ButtonLink className="btn primary" to={`/companies/${slug}/bilag`}>
           Indlæs dit første bilag
-        </Link>
-        <Link className="btn secondary" to={`/companies/${slug}/bank`}>
+        </ButtonLink>
+        <ButtonLink className="btn secondary" to={`/companies/${slug}/bank`}>
           Importér bankudtog
-        </Link>
-        <Link className="btn secondary" to={`/companies/${slug}/fakturaer`}>
+        </ButtonLink>
+        <ButtonLink className="btn secondary" to={`/companies/${slug}/fakturaer`}>
           Udsted din første faktura
-        </Link>
+        </ButtonLink>
       </div>
     </div>
   );
@@ -642,13 +642,13 @@ function ExceptionsCard({
                       </p>
                     )}
                   </div>
-                  <button
+                  <Button requiredPermission="company.review" variant="secondary"
                     type="button"
                     className="btn secondary"
                     onClick={() => setResolving(row)}
                   >
                     Markér som gennemgået
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
@@ -691,7 +691,7 @@ function ExceptionsCard({
             await api.resolveException(slug, resolving.id, note || undefined);
             onResolved();
           }}
-          onClose={() => setResolving(null)}
+          onClose={() => setResolving(null)} onRefresh={onResolved}
         />
       )}
     </StatusCard>

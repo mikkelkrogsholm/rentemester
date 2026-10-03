@@ -30,7 +30,7 @@ describe("LiquidityView — Likviditet", () => {
     mockFetch(route());
     renderView();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Likviditet", level: 1 }),
     ).toBeInTheDocument();
     expect(screen.getByText("Primo-saldo")).toBeInTheDocument();
     expect(screen.getByText("Ultimo-saldo")).toBeInTheDocument();

@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "bun:test";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { InvoiceIssueModal } from "./InvoiceIssueModal";
 import { companySettings, contacts, mockFetch } from "../test/fixtures";
@@ -665,4 +665,100 @@ describe("InvoiceIssueModal", () => {
       ).not.toBeInTheDocument();
     });
   });
+});
+
+describe("InvoiceIssueModal — complete amount and uncertain write handling", () => {
+  test("keeps Danish thousands and decimal separators until the canonical parser submits", async () => {
+    mockFetch(issueRoute());
+    render(<InvoiceIssueModal slug="acme-aps" onIssued={noop} onClose={noop} />);
+    await fillMinimal();
+    const price = screen.getByLabelText("Linje 1 enhedspris");
+    await userEvent.clear(price);
+    await userEvent.type(price, "1.234,56");
+    expect(price).toHaveValue("1.234,56");
+    await userEvent.click(screen.getByRole("button", { name: "Udsted faktura" }));
+    await screen.findByText(/udstedt/);
+    const calls = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
+    const call = calls.find((entry) => String(entry[0]).endsWith("/invoices/issue"))!;
+    expect(JSON.parse(String((call[1] as RequestInit).body)).lines[0].unitPriceExVat).toBe(1234.56);
+  });
+  test("an interrupted issue is not silently retryable and keeps the user's fields", async () => {
+    mockFetch(companyRoute());
+    const originalFetch = globalThis.fetch;
+    const fetchSpy = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).endsWith("/invoices/issue")) return Promise.reject(new TypeError("connection lost"));
+      return originalFetch(input, init);
+    });
+    stubGlobal("fetch", fetchSpy);
+    const onIssued = vi.fn();
+    render(<InvoiceIssueModal slug="acme-aps" onIssued={onIssued} onClose={noop} />);
+    await fillMinimal();
+    await userEvent.click(screen.getByRole("button", { name: "Udsted faktura" }));
+    expect(await screen.findByText(/Kontrollér fakturaoversigten/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Udsted faktura" })).toBeDisabled();
+    expect(screen.getByLabelText("Linje 1 beskrivelse")).toHaveValue("Bogføring maj");
+    expect(fetchSpy.mock.calls.filter((entry) => String(entry[0]).endsWith("/invoices/issue"))).toHaveLength(1);
+    expect(onIssued).not.toHaveBeenCalled();
+  });
+});
+
+describe("InvoiceIssueModal — unsaved dismiss protection", () => {
+  test("cancel preserves edits until an explicit discard, and nested Escape keeps the form", async () => {
+    mockFetch(companyRoute());
+    const onClose = vi.fn();
+    render(<InvoiceIssueModal slug="acme-aps" onIssued={noop} onClose={onClose} />);
+    await fillMinimal();
+    const cancel = screen.getByRole("button", { name: "Annullér" });
+    await userEvent.click(cancel);
+    const confirmation = screen.getByRole("dialog", { name: "Kassér ændringer?" });
+    expect(onClose).not.toHaveBeenCalled();
+    await userEvent.click(within(confirmation).getByRole("button", { name: "Annullér" }));
+    expect(screen.queryByRole("dialog", { name: "Kassér ændringer?" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Linje 1 beskrivelse")).toHaveValue("Bogføring maj");
+    expect(onClose).not.toHaveBeenCalled();
+
+    await userEvent.click(cancel);
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog", { name: "Kassér ændringer?" })).not.toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Udsted faktura" })).toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+
+    await userEvent.click(cancel);
+    await userEvent.click(within(screen.getByRole("dialog", { name: "Kassér ændringer?" })).getByRole("button", { name: "Kassér ændringer" }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+    const calls = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
+    expect(calls.some((call) => String(call[0]).endsWith("/invoices/issue"))).toBe(false);
+  });
+  test("Escape asks before discarding an edited invoice", async () => {
+    mockFetch(companyRoute());
+    const onClose = vi.fn();
+    render(<InvoiceIssueModal slug="acme-aps" onIssued={noop} onClose={onClose} />);
+    await userEvent.type(screen.getByLabelText("Kunde"), "Ny kunde");
+    await userEvent.keyboard("{Escape}");
+    expect(screen.getByRole("dialog", { name: "Kassér ændringer?" })).toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Kunde")).toHaveValue("Ny kunde");
+  });
+  test("a confirmed issued receipt closes without asking to discard", async () => {
+    mockFetch(issueRoute());
+    const onClose = vi.fn();
+    render(<InvoiceIssueModal slug="acme-aps" onIssued={noop} onClose={onClose} />);
+    await fillMinimal();
+    await userEvent.click(screen.getByRole("button", { name: "Udsted faktura" }));
+    await screen.findByText(/udstedt/);
+    await userEvent.click(screen.getByRole("button", { name: "Luk" }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("dialog", { name: "Kassér ændringer?" })).not.toBeInTheDocument();
+  });
+});
+
+test("an edited invoice is protected when the native dialog backdrop is clicked", async () => {
+  mockFetch(companyRoute());
+  const onClose = vi.fn();
+  render(<InvoiceIssueModal slug="acme-aps" onIssued={noop} onClose={onClose} />);
+  await userEvent.type(screen.getByLabelText("Kunde"), "Ny kunde");
+  fireEvent.click(screen.getByRole("dialog", { name: "Udsted faktura" }), { clientX: -10, clientY: -10 });
+  expect(screen.getByRole("dialog", { name: "Kassér ændringer?" })).toBeInTheDocument();
+  expect(onClose).not.toHaveBeenCalled();
+  expect(screen.getByLabelText("Kunde")).toHaveValue("Ny kunde");
 });

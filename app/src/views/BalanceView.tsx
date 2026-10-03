@@ -1,3 +1,4 @@
+import { ButtonLink, PageHeader} from "../components/ui";
 // Balance — the per-company balance sheet (cockpit-redesign iteration 2).
 //
 // Renders `/api/companies/:slug/balance?year=`: assets, liabilities and equity
@@ -35,7 +36,7 @@ export function BalanceView() {
   const { slug = "" } = useParams();
   const { year, setYear } = useCompanyYear();
   const state = useAsync<CompanyBalance>(
-    () => api.balance(slug, year),
+    (signal) => api.balance(slug, year, { signal }),
     [slug, year],
   );
 
@@ -49,17 +50,7 @@ export function BalanceView() {
 
   return (
     <section className="statement" data-cockpit-page="balance" data-evidence-issue="654">
-      <div className="page-head">
-        <div>
-          <h2>{b.company.name}</h2>
-          <h3 data-evidence-heading>Balance</h3>
-          <p className="muted" data-evidence-status={b.assets.lines.length || b.liabilities.lines.length || b.equity.lines.length ? "normal" : "empty"}>{b.assets.lines.length || b.liabilities.lines.length || b.equity.lines.length ? "Aktuel bogføring" : "Ingen balanceposter i perioden"}</p>
-          <p className="muted">
-            {b.company.cvr ? `CVR ${b.company.cvr} · ` : ""}
-            {b.company.country} · {currency} · Balance
-          </p>
-        </div>
-        <div className="row-actions">
+      <PageHeader evidenceHeading title="Balance" actions={<><div className="row-actions">
           {/* #372 — "Hent CSV". #463 — "Hent PDF" som ren printbar version. */}
           <a
             className="btn secondary"
@@ -75,11 +66,19 @@ export function BalanceView() {
           >
             Hent PDF
           </a>
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
-          </Link>
+          </ButtonLink>
+        </div></>}>
+        <div>
+
+          <p className="muted">
+            {b.company.cvr ? `CVR ${b.company.cvr} · ` : ""}
+            {b.company.country} · {currency} · Balance
+          </p>
         </div>
-      </div>
+
+      <p className="muted">{b.company.name} · {currency}</p><p className="muted" data-evidence-status={b.assets.lines.length || b.liabilities.lines.length || b.equity.lines.length ? "normal" : "empty"}>{b.assets.lines.length || b.liabilities.lines.length || b.equity.lines.length ? "Aktuel bogføring" : "Ingen balanceposter i perioden"}</p></PageHeader>
 
       <CompanyNav
         slug={slug}

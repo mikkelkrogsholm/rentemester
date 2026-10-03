@@ -4,14 +4,14 @@ import type {
   PortfolioResponse,
   RulesResponse,
 } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 export const systemApi = {
-  health: () => request<HealthResponse>("/api/health"),
+  health: (options?: ReadRequestOptions) => request<HealthResponse>("/api/health", options),
 
-  portfolio: (asOf?: string) =>
+  portfolio: (asOf?: string, options?: ReadRequestOptions) =>
     request<PortfolioResponse>(
-      `/api/portfolio${asOf ? `?asOf=${encodeURIComponent(asOf)}` : ""}`,
+      `/api/portfolio${asOf ? `?asOf=${encodeURIComponent(asOf)}` : ""}`, options,
     ).then((r) => r.portfolio),
 
   /**
@@ -20,15 +20,15 @@ export const systemApi = {
    * vise SMB-ejeren hvilke regler der styrer bogføringen og hvor de er hentet
    * fra.
    */
-  rules: () => request<RulesResponse>("/api/rules"),
+  rules: (options?: ReadRequestOptions) => request<RulesResponse>("/api/rules", options),
 
   /**
    * #402 — whether the server has CVR_USERNAME/CVR_PASSWORD set, so the
    * cockpit can disable "Hent fra CVR" with a friendly note instead of
    * letting the owner trigger a silent failure.
    */
-  cvrStatus: () =>
-    request<CvrSystemStatusResponse>("/api/system/cvr-status").then(
+  cvrStatus: (options?: ReadRequestOptions) =>
+    request<CvrSystemStatusResponse>("/api/system/cvr-status", options).then(
       (r) => r.cvrStatus,
     ),
 };

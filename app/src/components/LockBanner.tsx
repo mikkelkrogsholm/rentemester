@@ -14,7 +14,7 @@ export function LockBanner({ message }: { message: string }) {
   return (
     <Banner kind="warning">
       <strong>Bogføringen er låst</strong>
-      <p style={{ margin: "4px 0 0" }}>{message}</p>
+      <p className="lock-message">{message}</p>
     </Banner>
   );
 }

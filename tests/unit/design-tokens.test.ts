@@ -1,6 +1,6 @@
 // Tests: src/core/dashboard.ts (dashboard design tokens)
 import { describe, expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const DESIGN_PATH = join(process.cwd(), "DESIGN.md");
@@ -63,6 +63,32 @@ describe("DESIGN.md token contract", () => {
     const headings = Array.from(body.matchAll(/^##\s+(.+)$/gm)).map((match) => match[1]!.trim());
     expect(headings).toEqual(HEADING_ORDER);
   });
+
+  test("active field boundaries and focus remain visible on both paper surfaces", () => {
+    const { frontMatter } = parseDesign(readFileSync(DESIGN_PATH, "utf8"));
+    const { colors } = frontMatter;
+    for (const surface of [colors.paper, colors.paperRaised]) {
+      expect(contrast(colors.borderStrong, surface), "active field boundary").toBeGreaterThanOrEqual(3);
+      expect(contrast(colors.info, surface), "control focus").toBeGreaterThanOrEqual(3);
+      expect(contrast(colors.accent, surface), "navigation focus").toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  test("every shared React component has an explicit design catalogue entry", () => {
+    const { body } = parseDesign(readFileSync(DESIGN_PATH, "utf8"));
+    const catalogue = body.split("### Fælles primitives")[1]?.split("### Dialog- og formularadfærd")[0] ?? "";
+    const directory = join(process.cwd(), "app/src/components");
+    const files = [...readdirSync(directory).filter((name) => name.endsWith(".tsx") && !name.endsWith(".test.tsx")), "ui/index.tsx"];
+    const undocumented = files.flatMap((file) => {
+      const source = readFileSync(join(directory, file), "utf8");
+      return [...source.matchAll(/^export (?:function|const) ([A-Z]\w*)/gm)]
+        .map((match) => match[1]!)
+        .filter((name) => !catalogue.includes(`\`${name}\``))
+        .map((name) => `${file}: ${name}`);
+    });
+    expect(catalogue).not.toBe("");
+    expect(undocumented, "Document new shared components in DESIGN.md").toEqual([]);
+  });
 });
 
 function parseDesign(markdown: string) {
@@ -104,7 +130,7 @@ function parseYaml(yaml: string) {
 }
 
 function toCamel(input: string) {
-  return input.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+  return input.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
 }
 
 function parseScalar(value: string) {

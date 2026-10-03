@@ -1,36 +1,40 @@
 import type { DocumentsResponse } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 export const documentsApi = {
-  documents: (slug: string) =>
+  documents: (slug: string, options?: ReadRequestOptions) =>
     request<DocumentsResponse>(
       `/api/companies/${encodeURIComponent(slug)}/documents`,
+      options,
     ).then((r) => r.documents),
 
   /** #588: review-only party-link state, kept separate from invoice facts. */
-  documentPartyLinks: (slug: string, status?: "linked" | "unlinked" | "resolved" | "source_observed" | "unresolved_external_party" | "internal_no_external_party" | "unresolved") =>
+  documentPartyLinks: (slug: string, status?: "linked" | "unlinked" | "resolved" | "source_observed" | "unresolved_external_party" | "internal_no_external_party" | "unresolved", options?: ReadRequestOptions) =>
     request<{ ok: true; links: Array<{ id: number; document_no: string | null; linked: 0 | 1; resolution_state: "resolved" | "source_observed" | "unresolved_external_party" | "internal_no_external_party" | "unresolved" }> }>(
       `/api/companies/${encodeURIComponent(slug)}/documents/party-links${status ? `?status=${status}` : ""}`,
+      options,
     ).then((r) => r.links),
 
-  documentPartyLinkHistory: (slug: string, documentId: number) =>
+  documentPartyLinkHistory: (slug: string, documentId: number, options?: ReadRequestOptions) =>
     request<{ ok: true; links: Array<Record<string, unknown>> }>(
       `/api/companies/${encodeURIComponent(slug)}/documents/${documentId}/party-links`,
+      options,
     ).then((r) => r.links),
 
-  searchCanonicalParties: (slug: string, query: string) =>
+  searchCanonicalParties: (slug: string, query: string, options?: ReadRequestOptions) =>
     request<{ ok: true; rows: Array<{ partyId: string; name: string }>; count: number }>(
       `/api/companies/${encodeURIComponent(slug)}/workspace-parties?query=${encodeURIComponent(query)}`,
+      options,
     ),
 
-  planDocumentPartyLink: (slug: string, input: Record<string, unknown>) =>
-    request<{ ok: boolean; plan?: { planHash: string }; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-links/plan`, { method: "POST", body: JSON.stringify(input) }),
+  planDocumentPartyLink: (slug: string, input: Record<string, unknown>, options?: ReadRequestOptions) =>
+    request<{ ok: boolean; plan?: { planHash: string }; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-links/plan`, { method: "POST", body: JSON.stringify(input), readOnly: true, signal: options?.signal }),
 
   applyDocumentPartyLink: (slug: string, input: Record<string, unknown>) =>
       request<{ ok: boolean; id?: number; errors?: string[] }>(`/api/companies/${encodeURIComponent(slug)}/documents/party-links/apply`, { method: "POST", body: JSON.stringify(input) }),
 
-  partyCoverage: (slug:string)=>request<{ok:true;rows:Array<{bankTransactionId:number;transactionHash:string;documentId:number|null;documentHash?:string|null;status:"linked"|"source_observed"|"unresolved_external_party"|"resolved_no_external_party"|"exact_candidate"|"ambiguous"|"missing_source";candidate:null|{partyId?:string;role?:string;provenance?:string;candidates?:Array<{partyId:string;role?:string;provenance:string}>};currentDecision?:{id:number;decisionHash:string;provenance?:string};reason:string;nextAction:string|null}>;totals:Record<"linked"|"source_observed"|"unresolved_external_party"|"resolved_no_external_party"|"exact_candidate"|"ambiguous"|"missing_source",number>;populationHash:string;planHash:string}>(`/api/companies/${encodeURIComponent(slug)}/documents/party-coverage`),
-  planPartyCoverage: (slug:string,decisions?:Array<Record<string,unknown>>)=>request<{ok:true;plan:{planHash:string;operations:Array<Record<string,unknown>>}}>(`/api/companies/${encodeURIComponent(slug)}/documents/party-coverage/plan`,{method:"POST",body:JSON.stringify({decisions})}),
+  partyCoverage: (slug:string, options?: ReadRequestOptions)=>request<{ok:true;rows:Array<{bankTransactionId:number;transactionHash:string;documentId:number|null;documentHash?:string|null;status:"linked"|"source_observed"|"unresolved_external_party"|"resolved_no_external_party"|"exact_candidate"|"ambiguous"|"missing_source";candidate:null|{partyId?:string;role?:string;provenance?:string;candidates?:Array<{partyId:string;role?:string;provenance:string}>};currentDecision?:{id:number;decisionHash:string;provenance?:string};reason:string;nextAction:string|null}>;totals:Record<"linked"|"source_observed"|"unresolved_external_party"|"resolved_no_external_party"|"exact_candidate"|"ambiguous"|"missing_source",number>;populationHash:string;planHash:string}>(`/api/companies/${encodeURIComponent(slug)}/documents/party-coverage`, options),
+  planPartyCoverage: (slug:string,decisions?:Array<Record<string,unknown>>, options?: ReadRequestOptions)=>request<{ok:true;plan:{planHash:string;operations:Array<Record<string,unknown>>}}>(`/api/companies/${encodeURIComponent(slug)}/documents/party-coverage/plan`,{method:"POST",body:JSON.stringify({decisions}), readOnly:true, signal:options?.signal}),
   applyPartyCoverage: (slug:string,input:{planHash:string;idempotencyKey:string;confirm:true;decisions?:Array<Record<string,unknown>>})=>request<{ok:boolean;applied:number;errors?:string[]}>(`/api/companies/${encodeURIComponent(slug)}/documents/party-coverage/apply`,{method:"POST",body:JSON.stringify(input)}),
 
   confirmInternalNoExternalParty: (slug: string, input: Record<string, unknown>) =>
@@ -98,15 +102,17 @@ export const documentsApi = {
    * to prefill, the bookable expense accounts and the unmatched outgoing
    * bank transactions the owner can pair the bilag with.
    */
-  documentBookingOptions: (slug: string, documentId: number) =>
+  documentBookingOptions: (slug: string, documentId: number, options?: ReadRequestOptions) =>
     request<{ ok: true; options: DocumentBookingOptions }>(
       `/api/companies/${encodeURIComponent(slug)}/documents/${documentId}/booking-options`,
+      options,
     ).then((r) => r.options),
 
   /** Read-only preflight: no provider call and no state change. */
-  documentVatPreflight: (slug: string, documentId: number) =>
+  documentVatPreflight: (slug: string, documentId: number, options?: ReadRequestOptions) =>
     request<{ ok: true; preflight: DocumentVatPreflight }>(
       `/api/companies/${encodeURIComponent(slug)}/documents/${documentId}/vat-preflight`,
+      options,
     ).then((r) => r.preflight),
 
   /** Actor-attributed provider call, gated by the same mutation boundary as posting. */

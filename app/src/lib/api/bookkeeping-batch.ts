@@ -1,4 +1,4 @@
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 const path = (slug: string) => `/api/companies/${encodeURIComponent(slug)}/bookkeeping-batch`;
 
@@ -13,15 +13,15 @@ export type BatchRunState = { run?: { runId: number; plan: string }; revisions: 
 export type BatchRunResponse = { ok: true; dryRun?: true; runId: number; duplicate?: boolean; plan: BookkeepingPlan; state: BatchRunState };
 export type BatchApprovalResponse = { ok: true; state: BatchRunState };
 export type BatchApplyResponse = { ok: true; runId: number; results: unknown[]; checks: unknown[]; state?: BatchRunState };
-export type WorkbenchInput = { from: string; to: string; status?: WorkbenchStatus; documentQuality?: "matched" | "missing"; account?: string; vatTreatment?: string; dimension?: string; cursor?: number; limit?: number; search?: string };
+export type WorkbenchInput = { from: string; to: string; bankAccountId?: number; partyId?: string; status?: WorkbenchStatus; documentQuality?: "matched" | "missing"; account?: string; vatTreatment?: string; dimension?: string; cursor?: number; limit?: number; search?: string };
 
 const query = (input: Record<string, string | number | undefined>) => new URLSearchParams(Object.entries(input).filter(([, value]) => value !== undefined).map(([key, value]) => [key, String(value)])).toString();
 
 export const bookkeepingBatchApi = {
-  bookkeepingWorkbench: (slug: string, input: WorkbenchInput) => request<WorkbenchResponse>(`/api/companies/${encodeURIComponent(slug)}/bookkeeping-workbench?${query(input)}`),
-  bookkeepingBatchPlan: (slug: string, input: BatchScope) => request<BatchPlanResponse>(`${path(slug)}?${query(input)}`),
+  bookkeepingWorkbench: (slug: string, input: WorkbenchInput, options?: ReadRequestOptions) => request<WorkbenchResponse>(`/api/companies/${encodeURIComponent(slug)}/bookkeeping-workbench?${query(input)}`, options),
+  bookkeepingBatchPlan: (slug: string, input: BatchScope, options?: ReadRequestOptions) => request<BatchPlanResponse>(`${path(slug)}?${query(input)}`, options),
   bookkeepingBatchPersist: (slug: string, input: BatchScope & { runKey: string }) => request<BatchRunResponse>(`${path(slug)}/persist`, { method: "POST", body: JSON.stringify({ ...input, confirm: true }) }),
   bookkeepingBatchApprove: (slug: string, input: { runId: number; planHash: string }) => request<BatchApprovalResponse>(`${path(slug)}/approve`, { method: "POST", body: JSON.stringify({ ...input, confirm: true }) }),
   bookkeepingBatchApply: (slug: string, input: { runId: number; planHash: string }) => request<BatchApplyResponse>(`${path(slug)}/apply`, { method: "POST", body: JSON.stringify({ ...input, confirm: true }) }),
-  bookkeepingBatchStatus: (slug: string, runId: number) => request<{ ok: true; state: BatchRunState }>(`${path(slug)}/runs/${runId}`),
+  bookkeepingBatchStatus: (slug: string, runId: number, options?: ReadRequestOptions) => request<{ ok: true; state: BatchRunState }>(`${path(slug)}/runs/${runId}`, options),
 };

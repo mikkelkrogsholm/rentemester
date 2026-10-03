@@ -16,9 +16,12 @@
 import { useEffect, useRef, useState } from "react";
 import { api, type InvoiceIssueSummary } from "../lib/api";
 import { formatKroner, parseDanishAmount } from "../lib/format";
-import type { ContactCustomerRow } from "../lib/types";
+import type { ContactCustomerRow, CompanyInvoices } from "../lib/types";
 import { Banner } from "./Feedback";
 import { LockBanner } from "./LockBanner";
+import { Button, Input, Select, Dialog } from "./ui";
+import { useDiscardGuard } from "../lib/useDiscardGuard";
+import { useMutationOutcome } from "../lib/useMutationOutcome";
 
 /** Shape of the API error the cockpit's `api.ts` throws. */
 type MaybeApiError = { code?: string; message?: string };
@@ -26,6 +29,8 @@ type MaybeApiError = { code?: string; message?: string };
 export type InvoiceIssueModalProps = {
   /** Company slug the invoice targets. */
   slug: string;
+  /** Selected fiscal year for authoritative read-back. */
+  year?: string;
   /** Re-runs the Fakturaer view load after a successful issue. */
   onIssued: () => void;
   /** Closes the modal without acting. */
@@ -45,11 +50,13 @@ const EMPTY_LINE: LineDraft = {
   unitPriceExVat: "",
 };
 
-export function InvoiceIssueModal({
+export function InvoiceIssueForm({
   slug,
+  year,
   onIssued,
   onClose,
-}: InvoiceIssueModalProps) {
+  presentation = "dialog",
+}: InvoiceIssueModalProps & { presentation?: "dialog" | "page" }) {
   const [issueDate, setIssueDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [vatRatePercent, setVatRatePercent] = useState("25");
@@ -83,16 +90,18 @@ export function InvoiceIssueModal({
   // settings have loaded; false once a payment account is confirmed present.
   const [missingPayment, setMissingPayment] = useState<boolean | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const [dirty, setDirty] = useState(false);
+  const [readBack, setReadBack] = useState<CompanyInvoices | null>(null);
+  const outcome = useMutationOutcome(async () => { setReadBack(await api.invoices(slug, year)); }, `invoice-issue:${slug}`);
+  const uncertain = outcome.blocked;
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const submitRef = useRef(false);
+  const dateRef = useRef<HTMLInputElement>(null);
+  const vatRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
+  const guard = useDiscardGuard(dirty && !done, onClose);
+  useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
 
-  // Move focus into the dialog and let Escape dismiss it — basic modal hygiene.
-  useEffect(() => {
-    closeRef.current?.focus();
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape" && !busy) onClose();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [busy, onClose]);
 
   // #380: load the contact list so the modal can offer a "Vælg kunde" picker.
   // The fetch is best-effort: any failure leaves the dropdown empty and the
@@ -174,10 +183,12 @@ export function InvoiceIssueModal({
   }
 
   function addLine() {
+    setDirty(true);
     setLines((prev) => [...prev, { ...EMPTY_LINE }]);
   }
 
   function removeLine(index: number) {
+    setDirty(true);
     setLines((prev) =>
       prev.length === 1 ? prev : prev.filter((_, i) => i !== index),
     );
@@ -206,27 +217,32 @@ export function InvoiceIssueModal({
     | null {
     if (!issueDate.trim()) {
       setError("Angiv en fakturadato.");
+      dateRef.current?.focus();
       return null;
     }
     const vatNum = Number(vatRatePercent);
     if (!Number.isFinite(vatNum) || vatNum < 0) {
       setError("Momssats skal være et tal (procent, fx 25).");
+      vatRef.current?.focus();
       return null;
     }
     const parsedLines = [];
     for (const [i, line] of lines.entries()) {
       if (!line.description.trim()) {
         setError(`Linje ${i + 1}: angiv en beskrivelse.`);
+        formRef.current?.querySelector<HTMLInputElement>(`[aria-label="Linje ${i + 1} beskrivelse"]`)?.focus();
         return null;
       }
       const quantity = parseDanishAmount(line.quantity);
       const unitPrice = parseDanishAmount(line.unitPriceExVat);
       if (quantity === null) {
         setError(`Linje ${i + 1}: antal skal være et tal.`);
+        formRef.current?.querySelector<HTMLInputElement>(`[aria-label="Linje ${i + 1} antal"]`)?.focus();
         return null;
       }
       if (unitPrice === null) {
         setError(`Linje ${i + 1}: enhedspris skal være et tal.`);
+        formRef.current?.querySelector<HTMLInputElement>(`[aria-label="Linje ${i + 1} enhedspris"]`)?.focus();
         return null;
       }
       parsedLines.push({
@@ -277,6 +293,7 @@ export function InvoiceIssueModal({
    * server-side renderer runs.
    */
   async function handlePreview() {
+    if (submitRef.current || done) return;
     setError(null);
     setLocked(null);
 
@@ -284,6 +301,7 @@ export function InvoiceIssueModal({
     if (!parsed) return;
     const extras = buildPartyAndExtras();
 
+    submitRef.current = true;
     setPending("preview");
     try {
       const blob = await api.previewInvoice(slug, {
@@ -293,28 +311,30 @@ export function InvoiceIssueModal({
         ...extras,
       });
       const url = URL.createObjectURL(blob);
-      // Open in a new tab; revoke the object URL shortly after so the browser
-      // can garbage-collect the blob. The PDF stays visible in the tab
-      // because the browser has already created a stream/copy by then.
+      // Keep a fallback link for browsers that block the asynchronous popup.
+      // The blob is released on replacement or unmount.
       window.open(url, "_blank", "noopener");
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      setPreviewUrl(url);
     } catch (err) {
       const e = err as MaybeApiError;
       const message = e?.message ?? "Forhåndsvisningen kunne ikke hentes.";
       if (e?.code === "conflict") setLocked(message);
       else setError(message);
     } finally {
+      submitRef.current = false;
       setPending(null);
     }
   }
 
   async function handleIssue() {
+    if (submitRef.current || done || outcome.isBlocked()) return;
     setError(null);
     setLocked(null);
 
     const parsed = buildPayload();
     if (!parsed) return;
 
+    submitRef.current = true;
     setPending("issue");
     try {
       const extras = buildPartyAndExtras();
@@ -323,37 +343,26 @@ export function InvoiceIssueModal({
         lines: parsed.parsedLines,
         vatRatePercent: parsed.vatNum,
         ...extras,
-      });
+      }).catch(outcome.reject);
       setDone(summary);
+      setDirty(false);
       onIssued();
     } catch (err) {
       const e = err as MaybeApiError;
-      const message = e?.message ?? "Fakturaen kunne ikke udstedes.";
+      const outcomeUncertain = e?.code === "network" || e?.code === "internal";
+      const message = outcomeUncertain ? "Serverens resultat kunne ikke bekræftes. Kontrollér fakturaoversigten, før du udsteder igen." : e?.message ?? "Fakturaen kunne ikke udstedes.";
       // A 409 conflict from the backup lock is shown kindly, not as an error.
       if (e?.code === "conflict") setLocked(message);
       else setError(message);
     } finally {
+      submitRef.current = false;
       setPending(null);
     }
   }
 
   return (
-    <div
-      className="modal-overlay"
-      role="presentation"
-      onClick={() => {
-        if (!busy) onClose();
-      }}
-    >
-      <div
-        className="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Udsted faktura"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="modal-title">Udsted faktura</h3>
-
+    <Dialog title="Udsted faktura" onClose={guard.onClose} busy={busy} mode={presentation} initialFocusRef={closeRef}>
+      <div className="workflow-form" ref={formRef} onChange={() => setDirty(true)}>
         {done ? (
           // After a successful issue the modal becomes a short receipt that
           // shows the human exactly what Rentemester computed.
@@ -403,14 +412,14 @@ export function InvoiceIssueModal({
                   Hent PDF
                 </a>
               )}
-              <button
+              <Button
                 type="button"
                 className="btn"
                 ref={closeRef}
-                onClick={onClose}
+                onClick={guard.dismiss}
               >
                 Luk
-              </button>
+              </Button>
             </div>
           </>
         ) : (
@@ -425,6 +434,14 @@ export function InvoiceIssueModal({
 
             {locked && <LockBanner message={locked} />}
             {error && <Banner kind="error">{error}</Banner>}
+            {outcome.feedback}
+            {readBack && uncertain && <section className="card" role="status" aria-label="Fakturastatus fra serveren">
+              <h2>Seneste fakturaer fra serveren</h2>
+              <p>Regnskabsår {readBack.selectedYear}: {readBack.invoices.length} fakturaer. Sammenhold dato, kunde og beløb med din handling. Listen afgør ikke automatisk, om den afbrudte udstedelse blev gennemført.</p>
+              <ul>{[...readBack.invoices].sort((a, b) => b.documentId - a.documentId).slice(0, 5).map(invoice => <li key={invoice.documentId}>{invoice.invoiceNo} · {invoice.invoiceDate ?? "Dato ukendt"} · {invoice.customerName ?? "Kunde ukendt"} · {formatKroner(invoice.grossAmount, invoice.currency)}</li>)}</ul>
+              <p>Ved tvivl: gennemgå den fulde fakturaoversigt og revisionssporet. Udstedelse er fortsat blokeret.</p>
+            </section>}
+            {previewUrl && <p className="muted">Forhåndsvisningen er klar. <a href={previewUrl} target="_blank" rel="noopener">Åbn forhåndsvisning</a>, hvis browseren ikke åbnede PDF’en.</p>}
             {missingPayment && (
               <Banner kind="warning">
                 Virksomheden har ingen bankkonto registreret — fakturaen
@@ -436,20 +453,22 @@ export function InvoiceIssueModal({
             <div className="modal-field-grid">
               <label className="modal-field">
                 Fakturadato
-                <input
+                <Input
                   type="date"
+                  ref={dateRef}
+                  aria-invalid={error === "Angiv en fakturadato."}
                   value={issueDate}
                   onChange={(e) => setIssueDate(e.target.value)}
-                  disabled={busy}
+                  disabled={busy || uncertain}
                 />
               </label>
               <label className="modal-field">
                 Forfaldsdato (valgfri)
-                <input
+                <Input
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  disabled={busy}
+                  disabled={busy || uncertain}
                 />
               </label>
             </div>
@@ -457,21 +476,22 @@ export function InvoiceIssueModal({
             <div className="modal-field-grid">
               <label className="modal-field">
                 Momssats (%)
-                <input
-                  type="number"
+                <Input
+                  type="text"
                   inputMode="decimal"
+                  ref={vatRef}
                   value={vatRatePercent}
                   onChange={(e) => setVatRatePercent(e.target.value)}
-                  disabled={busy}
+                  disabled={busy || uncertain}
                 />
               </label>
               <label className="modal-field">
                 Valuta
-                <input
+                <Input
                   type="text"
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value)}
-                  disabled={busy}
+                  disabled={busy || uncertain}
                 />
               </label>
             </div>
@@ -479,41 +499,41 @@ export function InvoiceIssueModal({
             <div className="modal-field-grid">
               <label className="modal-field">
                 Sælger
-                <input
+                <Input
                   type="text"
                   value={sellerName}
                   placeholder="Navn"
                   onChange={(e) => setSellerName(e.target.value)}
-                  disabled={busy}
+                  disabled={busy || uncertain}
                 />
               </label>
               <label className="modal-field">
                 Sælger CVR/moms
-                <input
+                <Input
                   type="text"
                   value={sellerVat}
                   onChange={(e) => setSellerVat(e.target.value)}
-                  disabled={busy}
+                  disabled={busy || uncertain}
                 />
               </label>
             </div>
             <label className="modal-field">
               Sælgeradresse
-              <input
+              <Input
                 type="text"
                 value={sellerAddress}
                 onChange={(e) => setSellerAddress(e.target.value)}
-                disabled={busy}
+                disabled={busy || uncertain}
               />
             </label>
 
             {customers.length > 0 && (
               <label className="modal-field">
                 Vælg kunde
-                <select
+                <Select
                   value={selectedCustomerId}
                   onChange={(e) => selectCustomer(e.target.value)}
-                  disabled={busy}
+                  disabled={busy || uncertain}
                   aria-label="Vælg kunde"
                 >
                   <option value="">— Ny kunde (indtast nedenfor) —</option>
@@ -523,141 +543,147 @@ export function InvoiceIssueModal({
                       {c.vatOrCvr ? ` · ${c.vatOrCvr}` : ""}
                     </option>
                   ))}
-                </select>
+                </Select>
               </label>
             )}
 
             <div className="modal-field-grid">
               <label className="modal-field">
                 Kunde
-                <input
+                <Input
                   type="text"
                   value={buyerName}
                   placeholder="Navn"
                   onChange={(e) => setBuyerName(e.target.value)}
-                  disabled={busy}
+                  disabled={busy || uncertain}
                 />
               </label>
               <label className="modal-field">
                 Kunde CVR/moms
-                <input
+                <Input
                   type="text"
                   value={buyerVat}
                   onChange={(e) => setBuyerVat(e.target.value)}
-                  disabled={busy}
+                  disabled={busy || uncertain}
                 />
               </label>
             </div>
             <label className="modal-field">
               Kundeadresse
-              <input
+              <Input
                 type="text"
                 value={buyerAddress}
                 onChange={(e) => setBuyerAddress(e.target.value)}
-                disabled={busy}
+                disabled={busy || uncertain}
               />
             </label>
 
-            <fieldset className="modal-field" style={{ border: "none", padding: 0 }}>
+            <fieldset className="modal-field invoice-lines">
               <legend>Fakturalinjer</legend>
               {lines.map((line, index) => (
                 <div key={index} className="invoice-line-row">
                   <label className="modal-field">
                     Beskrivelse
-                    <input
+                    <Input
                       type="text"
                       value={line.description}
                       aria-label={`Linje ${index + 1} beskrivelse`}
                       onChange={(e) =>
                         updateLine(index, { description: e.target.value })
                       }
-                      disabled={busy}
+                      disabled={busy || uncertain}
                     />
                   </label>
                   <label className="modal-field">
                     Antal
-                    <input
-                      type="number"
+                    <Input
+                      type="text"
                       inputMode="decimal"
                       value={line.quantity}
                       aria-label={`Linje ${index + 1} antal`}
                       onChange={(e) =>
                         updateLine(index, { quantity: e.target.value })
                       }
-                      disabled={busy}
+                      disabled={busy || uncertain}
                     />
                   </label>
                   <label className="modal-field">
                     Enhedspris ekskl. moms
-                    <input
-                      type="number"
+                    <Input
+                      type="text"
                       inputMode="decimal"
                       value={line.unitPriceExVat}
                       aria-label={`Linje ${index + 1} enhedspris`}
                       onChange={(e) =>
                         updateLine(index, { unitPriceExVat: e.target.value })
                       }
-                      disabled={busy}
+                      disabled={busy || uncertain}
                     />
                   </label>
                   {lines.length > 1 && (
-                    <button
+                    <Button
                       type="button"
                       className="btn secondary"
                       onClick={() => removeLine(index)}
-                      disabled={busy}
+                      disabled={busy || uncertain}
                       aria-label={`Fjern linje ${index + 1}`}
                     >
                       Fjern
-                    </button>
+                    </Button>
                   )}
                 </div>
               ))}
-              <button
+              <Button
                 type="button"
                 className="btn secondary"
                 onClick={addLine}
-                disabled={busy}
+                disabled={busy || uncertain}
               >
                 Tilføj linje
-              </button>
+              </Button>
             </fieldset>
 
             <div className="modal-actions">
-              <button
+              <Button
                 type="button"
                 className="btn secondary"
-                onClick={onClose}
-                disabled={busy}
+                onClick={guard.onClose}
+                disabled={busy || uncertain}
               >
                 Annullér
-              </button>
+              </Button>
               {/* #440 — Forhåndsvis renders the customer-facing PDF without
                   drawing a sequence number, writing a documents row, or
                   appending to audit_log. The owner can verify layout +
                   amounts BEFORE clicking Udsted. */}
-              <button
+              <Button
                 type="button"
                 className="btn secondary"
                 onClick={handlePreview}
-                disabled={busy}
+                disabled={busy || uncertain}
               >
                 {/* Only swap the label on the button actually in flight — both
                     stay disabled while either action runs (#440). */}
                 {pending === "preview" ? "Henter…" : "Forhåndsvis"}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 className="btn"
-                onClick={handleIssue}
-                disabled={busy}
+                requiredPermission="company.draft.write" onClick={handleIssue}
+                disabled={busy || uncertain}
               >
                 {pending === "issue" ? "Udsteder…" : "Udsted faktura"}
-              </button>
+              </Button>
             </div>
           </>
         )}
       </div>
-    </div>
+      {guard.confirmation}
+    </Dialog>
   );
+}
+
+/** Compatibility wrapper for callers that still need a short dialog. */
+export function InvoiceIssueModal(props: InvoiceIssueModalProps) {
+  return <InvoiceIssueForm {...props} presentation="dialog" />;
 }

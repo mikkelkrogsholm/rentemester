@@ -27,7 +27,7 @@ describe("MileageView — Kørsel (#335)", () => {
     mockFetch(route());
     renderView();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Kørsel", level: 1 }),
     ).toBeInTheDocument();
     // Both trips are rendered with their date + purpose in the entries table.
     expect(screen.getByText("Møde Odense")).toBeInTheDocument();

@@ -1,5 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from "bun:test";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { stubGlobal } from "./test/globals";
@@ -212,11 +212,11 @@ describe("hosted cockpit auth shell", () => {
     hostedFetch(); renderApp(); const user = userEvent.setup();
     await screen.findByText("owner@example.test");
     await user.click(screen.getByRole("button", { name: "Sessioner" }));
-    vi.spyOn(window, "confirm").mockReturnValueOnce(false);
     await user.click(screen.getByRole("button", { name: "Log ud på alle enheder" }));
     expect(authMocks.revokeSessions).not.toHaveBeenCalled();
-    vi.spyOn(window, "confirm").mockReturnValueOnce(true);
+    await user.click(within(screen.getByRole("dialog", { name: "Log ud på alle enheder?" })).getByRole("button", { name: "Annullér" }));
     await user.click(screen.getByRole("button", { name: "Log ud på alle enheder" }));
+    await user.click(within(screen.getByRole("dialog", { name: "Log ud på alle enheder?" })).getByRole("button", { name: "Log ud" }));
     expect(authMocks.revokeSessions).toHaveBeenCalledTimes(1);
     expect(await screen.findByRole("heading", { name: "Log ind" })).toBeInTheDocument();
   });
@@ -225,9 +225,10 @@ describe("hosted cockpit auth shell", () => {
     authMocks.getSession.mockResolvedValue({ data: { user: { id: "u1", email: "owner@example.test", emailVerified: true, twoFactorEnabled: true } } });
     authMocks.revokeSessions.mockResolvedValue({ data: null, error: { message: "provider detail" } });
     hostedFetch(); renderApp(); const user = userEvent.setup();
-    await screen.findByText("owner@example.test"); vi.spyOn(window, "confirm").mockReturnValue(true);
+    await screen.findByText("owner@example.test");
     await user.click(screen.getByRole("button", { name: "Sessioner" }));
     await user.click(screen.getByRole("button", { name: "Log ud på alle enheder" }));
+    await user.click(within(screen.getByRole("dialog", { name: "Log ud på alle enheder?" })).getByRole("button", { name: "Log ud" }));
     expect(await screen.findByText("Kunne ikke logge ud på alle enheder. Din nuværende session er stadig aktiv.")).toBeInTheDocument();
     expect(screen.getByText("owner@example.test")).toBeInTheDocument();
   });
@@ -247,8 +248,8 @@ describe("hosted cockpit auth shell", () => {
     expect(await screen.findByText("Denne enhed")).toBeInTheDocument();
     expect(screen.getByText("Chrome")).toBeInTheDocument();
     expect(screen.queryByText(/never-render|secret raw agent/)).not.toBeInTheDocument();
-    vi.spyOn(window, "confirm").mockReturnValueOnce(true);
     await user.click(screen.getByRole("button", { name: "Afslut" }));
+    await user.click(within(screen.getByRole("dialog", { name: "Afslut session?" })).getByRole("button", { name: "Afslut session" }));
     expect(authMocks.revokeSession).toHaveBeenCalledWith({ token: "never-render-other-token" });
     expect(screen.queryByText("Chrome")).not.toBeInTheDocument();
   });
@@ -261,11 +262,11 @@ describe("hosted cockpit auth shell", () => {
     hostedFetch(); renderApp(); const user = userEvent.setup();
     await screen.findByText("owner@example.test");
     await user.click(screen.getByRole("button", { name: "Skift adgangskode" }));
-    const panel = screen.getByRole("region", { name: "Skift adgangskode" });
+    const panel = screen.getByRole("dialog", { name: "Skift adgangskode" });
     await user.type(screen.getByLabelText("Nuværende adgangskode"), "current-password-secret");
     await user.type(screen.getByLabelText("Ny adgangskode"), "new-password-secret");
     await user.type(screen.getByLabelText("Gentag ny adgangskode"), "new-password-secret");
-    await user.click(panel.querySelector("button")!);
+    await user.click(within(panel).getByRole("button", { name: "Skift adgangskode" }));
     expect(authMocks.changePassword).toHaveBeenCalledWith({
       currentPassword: "current-password-secret",
       newPassword: "new-password-secret",
@@ -273,6 +274,33 @@ describe("hosted cockpit auth shell", () => {
     });
     expect(await screen.findByText(/alle tidligere sessioner er afsluttet/)).toBeInTheDocument();
     expect(screen.queryByDisplayValue(/password-secret/)).not.toBeInTheDocument();
+  });
+
+  test("account dialogs relate to their triggers and dismiss password fields without retaining secrets", async () => {
+    authMocks.getSession.mockResolvedValue({ data: { user: { id: "u1", email: "owner@example.test", emailVerified: true, twoFactorEnabled: true } } });
+    hostedFetch(); renderApp(); const user = userEvent.setup();
+    await screen.findByText("owner@example.test");
+    const sessions = screen.getByRole("button", { name: "Sessioner" });
+    expect(sessions).toHaveAttribute("aria-expanded", "false");
+    await user.click(sessions);
+    const sessionsDialog = await screen.findByRole("dialog", { name: "Aktive sessioner" });
+    expect(sessions).toHaveAttribute("aria-controls", sessionsDialog.id);
+    expect(sessions).toHaveAttribute("aria-expanded", "true");
+    await user.click(within(sessionsDialog).getByRole("button", { name: "Luk" }));
+    expect(sessions).toHaveFocus();
+    const password = screen.getByRole("button", { name: "Skift adgangskode" });
+    await user.click(password);
+    const dialog = screen.getByRole("dialog", { name: "Skift adgangskode" });
+    expect(password).toHaveAttribute("aria-controls", dialog.id);
+    expect(password).toHaveAttribute("aria-expanded", "true");
+    await user.type(screen.getByLabelText("Nuværende adgangskode"), "ephemeral-secret");
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(password).toHaveFocus();
+    expect(password).toHaveAttribute("aria-expanded", "false");
+    await user.click(password);
+    expect(screen.getByLabelText("Nuværende adgangskode")).toHaveValue("");
+    expect(authMocks.changePassword).not.toHaveBeenCalled();
   });
 
   test("company switcher contains only server-authorized memberships", async () => {

@@ -6,6 +6,28 @@ import { mockFetch } from "../test/fixtures";
 import { stubGlobal } from "../test/globals";
 
 describe("CompanyForm", () => {
+  test("checks an uncertain creation without repeating it or navigating before review", async () => {
+    let posts = 0;
+    const fetchMock = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method === "POST") { posts++; throw new TypeError("offline after write"); }
+      return new Response(JSON.stringify({ ok: true, companies: [{ slug: "gamma-aps", name: "Gamma ApS", archived: false }] }), { headers: { "content-type": "application/json" } });
+    });
+    stubGlobal("fetch", fetchMock);
+    const onCreated = vi.fn();
+    render(<CompanyForm onCreated={onCreated} />);
+    await userEvent.type(screen.getByLabelText(/Virksomhedsnavn/i), "Gamma ApS");
+    await userEvent.click(screen.getByRole("button", { name: "Opret virksomhed" }));
+    expect(await screen.findByText(/en ny skrivning er blokeret/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Virksomhedsnavn/i)).toHaveValue("Gamma ApS");
+    expect(screen.getByRole("button", { name: "Opret virksomhed" })).toBeDisabled();
+    await userEvent.click(screen.getByRole("button", { name: "Kontrollér status" }));
+    const open = await screen.findByRole("button", { name: "Åbn Gamma ApS" });
+    expect(onCreated).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Opret virksomhed" }));
+    expect(posts).toBe(1);
+    await userEvent.click(open);
+    expect(onCreated).toHaveBeenCalledWith("gamma-aps");
+  });
   test("POSTs the entered company and reports the created slug", async () => {
     mockFetch({
       "POST /api/companies": { company: { slug: "gamma-aps", name: "Gamma ApS" } },

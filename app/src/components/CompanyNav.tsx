@@ -12,7 +12,8 @@
 //     into six task areas; only the active area's destinations are shown.
 
 import { NavLink, useLocation, useSearchParams } from "react-router-dom";
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useMemo, useId, type ReactNode } from "react";
+import { Select } from "./ui";
 import type { FiscalYearEntry } from "../lib/types";
 import { companyRouteForPath } from "../company-route-path";
 import type { CompanyRouteId } from "../company-route-registry";
@@ -68,12 +69,18 @@ export function accountPostingsTo(
   return `/companies/${slug}/posteringer?${params.toString()}`;
 }
 
-const CompanyNavigationShellContext = createContext<{
+type YearControl = { owner: string; slug: string; years: FiscalYearEntry[]; selected: string };
+type ShellContext = {
   navigation: CompanyRouteNavigationProjection;
   rendersNavigation: boolean;
-} | undefined>(undefined);
+  controls: YearControl | null;
+  register: (control: YearControl) => void;
+  unregister: (owner: string) => void;
+};
+const CompanyNavigationShellContext = createContext<ShellContext | null>(null);
+export function useCompanyShell() { return useContext(CompanyNavigationShellContext); }
 
-/** Supplies the route registry's navigation projection to company views. */
+/** Supplies main's navigation projection and centralized fiscal-year control. */
 export function CompanyNavigationShell({
   children,
   navigation,
@@ -81,14 +88,13 @@ export function CompanyNavigationShell({
 }: {
   children: ReactNode;
   navigation: CompanyRouteNavigationProjection;
-  /** App renders the shared navigation above its Routes; isolated hosts do not. */
   rendersNavigation?: boolean;
 }) {
-  return (
-    <CompanyNavigationShellContext.Provider value={{ navigation, rendersNavigation }}>
-      {children}
-    </CompanyNavigationShellContext.Provider>
-  );
+  const [controls, setControls] = useState<YearControl | null>(null);
+  const register = useCallback((control: YearControl) => setControls((previous) => previous?.owner === control.owner && previous.slug === control.slug && previous.selected === control.selected && JSON.stringify(previous.years) === JSON.stringify(control.years) ? previous : control), []);
+  const unregister = useCallback((_owner: string) => { /* Keep company metadata while the next year is loading. */ }, []);
+  const value = useMemo(() => ({ navigation, rendersNavigation, controls, register, unregister }), [navigation, rendersNavigation, controls, register, unregister]);
+  return <CompanyNavigationShellContext.Provider value={value}>{children}</CompanyNavigationShellContext.Provider>;
 }
 
 /** Task navigation shared by every company route, including pages without a year selector. */
@@ -144,6 +150,7 @@ export function CompanyTaskNavigation({
 
 /** The fiscal-year control retained by year-aware company views. */
 export function CompanyNav({
+  slug,
   years,
   selectedYear,
   onYearChange,
@@ -154,9 +161,15 @@ export function CompanyNav({
   onYearChange: (year: string) => void;
 }) {
   const shellNavigation = useContext(CompanyNavigationShellContext);
+  const owner = useId();
+  const register = shellNavigation?.register;
+  const unregister = shellNavigation?.unregister;
+  useEffect(() => { register?.({ owner, slug, years, selected: selectedYear }); }, [register, owner, slug, years, selectedYear]);
+  useEffect(() => () => unregister?.(owner), [unregister, owner]);
+  if (shellNavigation?.rendersNavigation) return null;
   return (
     <>
-      {!shellNavigation?.rendersNavigation && <CompanyTaskNavigation />}
+      <CompanyTaskNavigation />
       <div className="company-year-controls">
         <YearSelector
           years={years}
@@ -182,7 +195,7 @@ export function YearSelector({
   return (
     <label className="year-selector">
       <span className="ys-label">Regnskabsår</span>
-      <select
+      <Select
         value={selected}
         onChange={(e) => onChange(e.target.value)}
         aria-label="Vælg regnskabsår"
@@ -193,7 +206,7 @@ export function YearSelector({
             {y.source === "archive" ? " (arkiv)" : ""}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   );
 }

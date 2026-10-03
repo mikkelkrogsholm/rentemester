@@ -6,19 +6,20 @@ import type {
   RecurringInvoiceTemplateInput,
   RecurringInvoicesResponse,
 } from "../types";
-import { ApiError, request } from "./_shared";
+import { ApiError, request, type ReadRequestOptions } from "./_shared";
 
 export const invoicesApi = {
-  invoices: (slug: string, year?: string) =>
+  invoices: (slug: string, year?: string, options?: ReadRequestOptions) =>
     request<InvoicesResponse>(
       `/api/companies/${encodeURIComponent(slug)}/invoices${
         year ? `?year=${encodeURIComponent(year)}` : ""
       }`,
+      options,
     ).then((r) => r.invoices),
 
-  importedReceivables: (slug: string, asOf: string) =>
+  importedReceivables: (slug: string, asOf: string, options?: ReadRequestOptions) =>
     request<ImportedReceivablesResponse>(
-      `/api/companies/${encodeURIComponent(slug)}/imported-receivables?asOf=${encodeURIComponent(asOf)}`,
+      `/api/companies/${encodeURIComponent(slug)}/imported-receivables?asOf=${encodeURIComponent(asOf)}`, options,
     ).then((r) => r.importedReceivables),
 
   planImportedReceivableSettlement: (slug: string, input: { scheduleHash: string; externalInvoiceId: string; bankTransactionId: number }) =>
@@ -42,9 +43,10 @@ export const invoicesApi = {
     `/api/companies/${encodeURIComponent(slug)}/invoices/${id}/pdf`,
 
   /** Recurring-invoice templates + their past generations for a company. */
-  recurringInvoices: (slug: string) =>
+  recurringInvoices: (slug: string, options?: ReadRequestOptions) =>
     request<RecurringInvoicesResponse>(
       `/api/companies/${encodeURIComponent(slug)}/recurring-invoices`,
+      options,
     ).then((r) => r.recurringInvoices),
 
   /**

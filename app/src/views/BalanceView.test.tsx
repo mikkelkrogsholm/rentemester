@@ -22,7 +22,7 @@ describe("BalanceView — Balance", () => {
     mockFetch(route());
     renderView();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Balance", level: 1 }),
     ).toBeInTheDocument();
     expect(screen.getByText("Aktiver")).toBeInTheDocument();
     expect(screen.getByText("Passiver")).toBeInTheDocument();

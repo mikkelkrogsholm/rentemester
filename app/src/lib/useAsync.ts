@@ -1,53 +1,93 @@
-// A minimal data-fetching hook. The cockpit has a handful of read endpoints
-// and no caching needs, so a tiny `loading | error | data` state machine —
-// with a `reload` to re-run after a mutation — is all that is warranted.
-
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type AsyncState<T> = {
   data: T | null;
   loading: boolean;
+  /** A reload of the same resource can keep its previous data visible. */
+  refreshing: boolean;
   error: string | null;
+  /** The original structured API error, when available. */
+  failure: Error | null;
   /** Re-runs the loader; used after a mutation invalidates the data. */
   reload: () => void;
 };
 
+export type AsyncOptions = {
+  /** An additional identity for loaders whose resource is not fully in deps. */
+  resourceKey?: unknown;
+};
+
+type Snapshot<T> = {
+  deps: readonly unknown[];
+  resourceKey: unknown;
+  tick: number;
+  data: T | null;
+  loading: boolean;
+  failure: Error | null;
+};
+
+function sameResource<T>(snapshot: Snapshot<T>, deps: readonly unknown[], resourceKey: unknown): boolean {
+  return Object.is(snapshot.resourceKey, resourceKey) && snapshot.deps.length === deps.length &&
+    snapshot.deps.every((value, index) => Object.is(value, deps[index]));
+}
+
+/**
+ * A small, uncached read state machine. Resource identity is checked during
+ * render so the previous company's data is never exposed while effects catch
+ * up. Cancellation is local to a read; ledger writes are not retried or aborted.
+ */
 export function useAsync<T>(
-  loader: () => Promise<T>,
+  loader: (signal: AbortSignal) => Promise<T>,
   deps: readonly unknown[],
+  options: AsyncOptions = {},
 ): AsyncState<T> {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const resourceKey = options.resourceKey;
   const [tick, setTick] = useState(0);
-  // Keep the latest loader without making it a hook dependency.
+  const [snapshot, setSnapshot] = useState<Snapshot<T>>(() => ({
+    deps: [...deps], resourceKey, tick, data: null, loading: true, failure: null,
+  }));
   const loaderRef = useRef(loader);
   loaderRef.current = loader;
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: compare caller dependency values, not the newly allocated array itself.
   useEffect(() => {
-    // Reading the generation makes reloads an explicit effect input.
-    void tick;
     let cancelled = false;
-    setLoading(true);
-    setError(null);
-    loaderRef.current()
-      .then((result) => {
-        if (!cancelled) setData(result);
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : String(err));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    const controller = new AbortController();
+    const identity = { deps: [...deps], resourceKey, tick };
+    setSnapshot(previous => ({
+      ...identity,
+      data: sameResource(previous, deps, resourceKey) ? previous.data : null,
+      loading: true,
+      failure: null,
+    }));
+
+    const load = loaderRef.current;
+    // The async boundary also normalizes a synchronous loader error.
+    void (async () => {
+      if (cancelled) return;
+      const result = await load(controller.signal);
+      if (!cancelled) setSnapshot({ ...identity, data: result, loading: false, failure: null });
+    })().catch((cause: unknown) => {
+      if (!cancelled) {
+        const failure = cause instanceof Error ? cause : new Error(String(cause));
+        setSnapshot(previous => ({
+          ...identity,
+          data: sameResource(previous, deps, resourceKey) ? previous.data : null,
+          loading: false,
+          failure,
+        }));
+      }
+    });
     return () => {
       cancelled = true;
+      controller.abort();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...deps, tick]);
+  }, [...deps, resourceKey, tick]);
 
-  const reload = useCallback(() => setTick((t) => t + 1), []);
-  return { data, loading, error, reload };
+  const reload = useCallback(() => setTick(value => value + 1), []);
+  const matches = sameResource(snapshot, deps, resourceKey);
+  const data = matches ? snapshot.data : null;
+  const loading = !matches || snapshot.tick !== tick || snapshot.loading;
+  const failure = matches && snapshot.tick === tick ? snapshot.failure : null;
+  return { data, loading, refreshing: loading && data !== null, error: failure?.message ?? null, failure, reload };
 }

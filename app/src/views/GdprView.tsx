@@ -1,3 +1,4 @@
+import { ButtonLink, Button, Input, PageHeader } from "../components/ui";
 // GDPR export + forget UI (#334).
 //
 // Per-virksomhed view der hjælper ejeren med at besvare en indsigtsanmodning
@@ -6,7 +7,7 @@
 // eraseGdprSubject — kernen håndterer 5-års retention og audit-log'ing.
 
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import type {
   CompanyGdpr,
@@ -14,6 +15,8 @@ import type {
   GdprExportRecord,
 } from "../lib/types";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useCapabilities } from "../lib/useCapabilities";
 
 const SOURCE_LABEL: Record<string, string> = {
   customers: "Kunde",
@@ -27,6 +30,7 @@ const SOURCE_LABEL: Record<string, string> = {
 
 export function GdprView() {
   const { slug = "" } = useParams();
+  const { can } = useCapabilities(slug);
   const [cvr, setCvr] = useState("");
   const [name, setName] = useState("");
   const [exportData, setExportData] = useState<CompanyGdpr | null>(null);
@@ -35,17 +39,27 @@ export function GdprView() {
   const [erasing, setErasing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingErase, setPendingErase] = useState(false);
+  const [reviewedSubject, setReviewedSubject] = useState<{ cvr?: string; name?: string } | null>(null);
+  const refreshExport = async () => {
+    if (!reviewedSubject) return;
+    const data = await api.gdprExport(slug, reviewedSubject);
+    setExportData(data);
+  };
+  // Even a GDPR lookup appends an attributed audit event. It is never used as
+  // a read-only retry/status button after an interrupted write.
+  const outcome = useMutationOutcome();
 
   const runExport = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading || outcome.isBlocked() || !can("company.export")) return;
+    const subject = { cvr: cvr.trim() || undefined, name: name.trim() || undefined };
     setError(null);
     setErasure(null);
+    setExportData(null); setReviewedSubject(null);
     setLoading(true);
     try {
-      const data = await api.gdprExport(slug, {
-        cvr: cvr.trim() || undefined,
-        name: name.trim() || undefined,
-      });
+      const data = await api.gdprExport(slug, subject).catch(outcome.reject);
+      setReviewedSubject(subject);
       setExportData(data);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Indsigtsopslag fejlede.");
@@ -56,21 +70,15 @@ export function GdprView() {
   };
 
   const runErase = async () => {
-    if (!exportData) return;
+    if (!exportData || !reviewedSubject || outcome.isBlocked() || !can("company.admin")) return;
     setError(null);
     setErasing(true);
     try {
-      const result = await api.gdprErase(slug, {
-        cvr: cvr.trim() || undefined,
-        name: name.trim() || undefined,
-      });
+      const result = await api.gdprErase(slug, reviewedSubject).catch(outcome.reject);
       setErasure(result);
       // Re-run export så ejeren ser den opdaterede status.
-      const refreshed = await api.gdprExport(slug, {
-        cvr: cvr.trim() || undefined,
-        name: name.trim() || undefined,
-      });
-      setExportData(refreshed);
+      try { await refreshExport(); }
+      catch { setError("Anonymiseringen er gennemført, men den opdaterede indsigt kunne ikke hentes."); }
     } catch (err) {
       setError(
         err instanceof ApiError ? err.message : "Anonymisering fejlede.",
@@ -83,50 +91,53 @@ export function GdprView() {
 
   return (
     <section className="gdpr-view" data-cockpit-page="gdpr" data-evidence-issue="655">
-      <header className="page-head">
+      {outcome.feedback}
+      <PageHeader title="GDPR-indsigt" actions={<><div className="row-actions">
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+            Administrér
+          </ButtonLink>
+        </div></>}>
         <div>
-          <h2>GDPR</h2>
+
           <p className="muted">
             Find personoplysninger om en person eller virksomhed (kunde eller
             leverandør) og anonymisér dem hvor bogføringspligten ikke længere
             kræver dem.
           </p>
         </div>
-        <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </header>
+
+      </PageHeader>
 
       <section className="card">
         <h3>Find oplysninger</h3>
         <form onSubmit={runExport} className="filter-bar">
           <label>
             CVR
-            <input
+            <Input
+              disabled={loading || erasing || outcome.blocked}
               type="text"
               value={cvr}
-              onChange={(e) => setCvr(e.target.value)}
+              onChange={(e) => { setCvr(e.target.value); setExportData(null); setReviewedSubject(null); setErasure(null); }}
               placeholder="DK…"
             />
           </label>
           <label>
             Navn
-            <input
+            <Input
+              disabled={loading || erasing || outcome.blocked}
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => { setName(e.target.value); setExportData(null); setReviewedSubject(null); setErasure(null); }}
               placeholder="fx 'Acme ApS'"
             />
           </label>
-          <button
+          <Button requiredPermission="company.export"
             type="submit"
             className="btn primary"
-            disabled={loading || (!cvr.trim() && !name.trim())}
+            disabled={outcome.blocked || loading || (!cvr.trim() && !name.trim())}
           >
             {loading ? "Søger …" : "Find oplysninger"}
-          </button>
+          </Button>
         </form>
         <p className="muted">
           Mindst ét felt er påkrævet. Navnesøgning skelner mellem store og små
@@ -143,7 +154,7 @@ export function GdprView() {
       {exportData && (
         <ExportPanel
           data={exportData}
-          erasing={erasing}
+          erasing={erasing || outcome.blocked}
           onErase={() => setPendingErase(true)}
         />
       )}
@@ -155,7 +166,7 @@ export function GdprView() {
           title="Bekræft anonymisering"
           body={
             <p>
-              Konsekvens: Anonymisering erstatter de viste, tilladte
+              Anonymisér det gennemgåede subjekt {reviewedSubject?.cvr || reviewedSubject?.name}. Konsekvens: Anonymisering erstatter de viste, tilladte
               personoplysninger med en spærret markering. Rækker, der stadig er
               bogføringspligtige, springes over. Handlingen kan ikke fortrydes.
             </p>
@@ -203,7 +214,7 @@ function ExportPanel({
         </p>
       ) : (
         <>
-          <table className="table">
+          <div className="table-scroll"><table className="table">
             <thead>
               <tr>
                 <th>Kilde</th>
@@ -220,7 +231,7 @@ function ExportPanel({
                 <RecordRow key={`${r.source}-${r.sourceRowId}-${i}`} row={r} />
               ))}
             </tbody>
-          </table>
+          </table></div>
           <section className="card" aria-labelledby="anonymisering-heading">
             <h4 id="anonymisering-heading">Anonymisering</h4>
             <p>
@@ -228,16 +239,16 @@ function ExportPanel({
             </p>
             <p className="muted">Konsekvens: Tilladte personoplysninger erstattes permanent med en spærret markering. Gennemgå resultatet ovenfor før du fortsætter.</p>
             <div className="row-actions">
-              <button
+              <Button
                 type="button"
-                className="btn danger"
+                variant="danger" requiredPermission="company.admin" className="btn danger"
                 onClick={onErase}
                 disabled={erasing || erasable === 0}
               >
                 {erasing
                   ? "Anonymiserer …"
                   : `Anonymisér de ${erasable} mulige rækker`}
-              </button>
+              </Button>
             </div>
           </section>
         </>
@@ -282,7 +293,7 @@ function ErasureSummary({ result }: { result: GdprErasureResult }) {
       {result.refused.length > 0 && (
         <>
           <h4>Afviste rækker</h4>
-          <table className="table">
+          <div className="table-scroll"><table className="table">
             <thead>
               <tr>
                 <th>Kilde</th>
@@ -301,7 +312,7 @@ function ErasureSummary({ result }: { result: GdprErasureResult }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </>
       )}
     </section>

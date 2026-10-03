@@ -1,3 +1,4 @@
+import { ButtonLink } from "./components/ui";
 // App shell + routing for the cockpit SPA (#171).
 //
 // Routes:
@@ -25,7 +26,7 @@
 // The per-company views share a sub-navigation and a fiscal-year selector
 // (`CompanyNav`); the chosen year is carried in the URL as `?year=`.
 
-import { NavLink, Route, Routes, Link, useLocation } from "react-router-dom";
+import { NavLink, Route, Routes, Link, useLocation, useParams, useSearchParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./lib/auth-context";
 import { api } from "./lib/api";
 import { useAsync } from "./lib/useAsync";
@@ -33,6 +34,9 @@ import { ForgotPasswordView, LoginView, ResetPasswordView, VerificationRecoveryV
 import { MfaEnrollmentView, VerificationRequiredView } from "./views/MfaEnrollmentView";
 import { AccountMenu } from "./components/AccountMenu";
 import { CompanySwitcher } from "./components/CompanySwitcher";
+import { CockpitLayout, SkipLink } from "./components/AppChrome";
+import { useCapabilities } from "./lib/useCapabilities";
+import { ErrorState } from "./components/Feedback";
 import packageJson from "../package.json";
 import { PortfolioView } from "./views/PortfolioView";
 import { AddCompanyView } from "./views/AddCompanyView";
@@ -42,27 +46,23 @@ import { GroupOverviewView } from "./views/GroupOverviewView";
 import { InvitationView } from "./views/InvitationView";
 import { WorkspaceAccessView } from "./views/WorkspaceAccessView";
 import { CfoCockpitView } from "./views/CfoCockpitView";
-import { PartyProfileView } from "./views/PartyHubView";
 import {
   CompanyNavigationShell,
-  CompanyTaskNavigation,
 } from "./components/CompanyNav";
+import { cloneElement, type ReactElement } from "react";
 import {
   COMPANY_ROUTE_REGISTRY,
+  COMPANY_FLOW_ROUTE_REGISTRY,
   COMPANY_TASK_AREAS,
   companyRoutePattern,
+  companyRouteForPath,
+  type CompanyRouteId,
 } from "./company-route-registry";
 
-const COMPANY_NAVIGATION = {
-  routes: COMPANY_ROUTE_REGISTRY,
-  areas: COMPANY_TASK_AREAS,
-};
-// Detail route belongs to the Party Hub; fixed company pages remain owned by
-// the route registry below.
-const partyProfilePath = "/companies/:slug/parter/:partyId";
+const COMPANY_NAVIGATION = { routes: COMPANY_ROUTE_REGISTRY, areas: COMPANY_TASK_AREAS };
 
 export function App() {
-  const health = useAsync(() => api.health(), []);
+  const health = useAsync((signal) => api.health({ signal }), []);
   const profile = health.data?.deploymentProfile;
   if (health.loading) return <div className="state-msg">Starter Rentemester…</div>;
   // This gate deliberately has no fallback. A reverse proxy error or an old
@@ -95,17 +95,14 @@ function AuthRecoveryRoutes() {
 
 function CockpitApp() {
   const { hosted, context } = useAuth();
+  const location = useLocation();
   const canManageWorkspace = !hosted || context?.workspaceRole === "workspace_owner";
   return (
     <div className="app-shell">
       <header className="topbar">
-        <h1>
-          Rentemester <span className="brand-dot">Cockpit</span>{" "}
-          <span className="build-version" title="Installeret Rentemester-version">
-            v{packageJson.version}
-          </span>
-        </h1>
-        <nav>
+        <SkipLink />
+        <Link className="brand" to="/">Rentemester <span className="build-version" title="Installeret Rentemester-version">v{packageJson.version}</span></Link>
+        <nav className="global-navigation" aria-label="Workspace"><details><summary>Workspace</summary><div className="global-links">
           <NavLink to="/" end>
             Portefølje
           </NavLink>
@@ -115,45 +112,57 @@ function CockpitApp() {
           {hosted && canManageWorkspace && <NavLink to="/adgang">Brugere</NavLink>}
           <NavLink to="/lovgrundlag">Lovgrundlag</NavLink>
           <NavLink to="/help">Hjælp</NavLink>
-        </nav>
-        {hosted && <CompanySwitcher />}
+        </div></details></nav>
+        {hosted && !companyRouteForPath(location.pathname) && <CompanySwitcher />}
         {hosted && <AccountMenu />}
       </header>
 
-      <main>
-        <CompanyNavigationShell navigation={COMPANY_NAVIGATION} rendersNavigation>
-          <CompanyTaskNavigation />
+      <CompanyNavigationShell navigation={COMPANY_NAVIGATION} rendersNavigation>
+        <CockpitLayout>
           <Routes>
             <Route path="/" element={<PortfolioView />} />
             {hosted && <Route path="/cfo" element={<CfoCockpitView />} />}
-            <Route path="/companies/new" element={<AddCompanyView />} />
-            <Route path={partyProfilePath} element={<PartyProfileView />} />
+            <Route path="/companies/new" element={canManageWorkspace ? <AddCompanyView /> : <ErrorState message="Du har ikke adgang til at oprette virksomheder." />} />
             {hosted && canManageWorkspace && <Route path="/koncernstruktur" element={<GroupOverviewView />} />}
             {hosted && canManageWorkspace && <Route path="/adgang" element={<WorkspaceAccessView />} />}
             {COMPANY_ROUTE_REGISTRY.map((route) => (
               <Route
                 key={route.id}
                 path={companyRoutePattern(route.segment)}
-                element={route.element}
+                element={<CompanyRouteGate id={route.id}>{route.element}</CompanyRouteGate>}
               />
+            ))}
+            {COMPANY_FLOW_ROUTE_REGISTRY.map((route) => (
+              <Route key={route.id} path={companyRoutePattern(route.segment)} element={<CompanyRouteGate id={route.id}>{route.element}</CompanyRouteGate>} />
             ))}
             <Route path="/help" element={<HelpView />} />
             <Route path="/lovgrundlag" element={<RulesView />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </CompanyNavigationShell>
-      </main>
+        </CockpitLayout>
+      </CompanyNavigationShell>
     </div>
   );
+}
+
+function CompanyRouteGate({ id, children }: { id: CompanyRouteId; children: ReactElement }) {
+  const { slug, documentId, partyId } = useParams();
+  const [params] = useSearchParams();
+  const { can } = useCapabilities(slug);
+  const permission = id === "manage" ? "company.admin" : id === "invoice-create" ? "company.draft.write" : id === "document-booking" ? "company.ledger.post" : "company.read";
+  if (!can(permission)) return <ErrorState message="Din adgang giver ikke rettighed til denne side. Vælg en anden side i menuen." />;
+  // Reset local forms and manually loaded results at the resource boundary.
+  // Read hooks also mask stale snapshots during render and abort old requests.
+  return cloneElement(children, { key: `${id}:${slug}:${documentId ?? partyId ?? ""}:${params.get("year") ?? ""}` });
 }
 
 function NotFound() {
   return (
     <section className="state-msg">
       <p>Siden findes ikke.</p>
-      <Link className="btn secondary" to="/">
+      <ButtonLink className="btn secondary" to="/">
         Til porteføljen
-      </Link>
+      </ButtonLink>
     </section>
   );
 }

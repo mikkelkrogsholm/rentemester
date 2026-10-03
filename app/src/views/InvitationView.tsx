@@ -1,3 +1,4 @@
+import { Button, Input } from "../components/ui";
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { api } from "../lib/api";
@@ -44,9 +45,9 @@ export function InvitationView() {
       <p>Opret din bruger. Virksomhedsdata åbnes først efter e-mailbekræftelse og MFA.</p>
       {error && <p className="banner error" role="alert">{error}</p>}
       <form onSubmit={submit}>
-        <label>Navn<input aria-label="Navn" autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} required /></label>
-        <label>Adgangskode<input aria-label="Adgangskode" autoComplete="new-password" type="password" minLength={12} value={password} onChange={(event) => setPassword(event.target.value)} required /></label>
-        <button className="btn" type="submit" disabled={busy}>{busy ? "Accepterer…" : "Acceptér invitation"}</button>
+        <label>Navn<Input aria-label="Navn" autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} required /></label>
+        <label>Adgangskode<Input aria-label="Adgangskode" autoComplete="new-password" type="password" minLength={12} value={password} onChange={(event) => setPassword(event.target.value)} required /></label>
+        <Button className="btn" type="submit" disabled={busy}>{busy ? "Accepterer…" : "Acceptér invitation"}</Button>
       </form>
     </>}
   </AuthPanel>;

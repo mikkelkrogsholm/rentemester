@@ -1,3 +1,7 @@
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useUnsavedChanges } from "../lib/useUnsavedChanges";
+import * as stylex from "@stylexjs/stylex";
+import { ButtonLink, Button, Input, PageHeader } from "../components/ui";
 // Faktura-skabeloner — the cockpit surface for recurring-invoice templates.
 //
 // The deterministic core (createRecurringInvoiceTemplate / generateRecurringInvoice
@@ -15,8 +19,9 @@
 // template's history.
 
 import { useState } from "react";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { RecurringInvoiceTemplateModal } from "../components/RecurringInvoiceTemplateModal";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
 import type {
@@ -51,10 +56,10 @@ export function RecurringInvoicesView() {
   // by both the page-head primary button and the empty-state CTA.
   const [createOpen, setCreateOpen] = useState(false);
   const state = useAsync<Page>(
-    async () => {
+    async (signal) => {
       const [recurringInvoices, fiscalYears] = await Promise.all([
-        api.recurringInvoices(slug),
-        api.fiscalYears(slug),
+        api.recurringInvoices(slug, { signal }),
+        api.fiscalYears(slug, { signal }),
       ]);
       return { recurringInvoices, fiscalYears };
     },
@@ -63,7 +68,7 @@ export function RecurringInvoicesView() {
 
   if (state.loading && !state.data)
     return <Loading label="Henter skabeloner…" />;
-  if (state.error)
+  if (state.error && !state.data)
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const { recurringInvoices: r, fiscalYears } = state.data!;
@@ -83,30 +88,31 @@ export function RecurringInvoicesView() {
 
   return (
     <section className="statement" data-cockpit-page="invoice-templates" data-evidence-issue="655">
-      <div className="page-head">
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+      <PageHeader title="Faktura-skabeloner" actions={<><div className={["row-actions", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
+          {!selectedYearArchived && (
+            <Button requiredPermission="company.draft.write"
+              type="button"
+              className="btn"
+              onClick={() => setCreateOpen(true)}
+            >
+              Opret skabelon
+            </Button>
+          )}
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/fakturaer`}>
+            Tilbage til fakturaer
+          </ButtonLink>
+        </div></>}>
         <div>
-          <h2>Faktura-skabeloner</h2>
+
           <p className="muted">
             Gentagne fakturaer — den næste i hver række kan udstedes med ét
             klik. Generering er idempotent: et nyt klik på samme periode
             udsteder ikke en ny faktura.
           </p>
         </div>
-        <div className="row-actions" style={{ gap: 8 }}>
-          {!selectedYearArchived && (
-            <button
-              type="button"
-              className="btn"
-              onClick={() => setCreateOpen(true)}
-            >
-              Opret skabelon
-            </button>
-          )}
-          <Link className="btn secondary" to={`/companies/${slug}/fakturaer`}>
-            Tilbage til fakturaer
-          </Link>
-        </div>
-      </div>
+
+      </PageHeader>
 
       <CompanyNav
         slug={slug}
@@ -130,13 +136,13 @@ export function RecurringInvoicesView() {
               en skabelon.
             </p>
           ) : (
-            <button
+            <Button requiredPermission="company.draft.write"
               type="button"
               className="btn"
               onClick={() => setCreateOpen(true)}
             >
               Opret skabelon
-            </button>
+            </Button>
           )}
         </div>
       ) : (
@@ -192,12 +198,17 @@ function TemplateCard({
   onReload: () => void;
 }) {
   const [asOfDate, setAsOfDate] = useState(template.nextIssueDate);
+  const [savedAsOfDate, setSavedAsOfDate] = useState(template.nextIssueDate);
   const [busy, setBusy] = useState(false);
   const [retireBusy, setRetireBusy] = useState(false);
+  const [retiring, setRetiring] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
+  const outcome = useMutationOutcome(onReload);
+  const markDateSaved = useUnsavedChanges(asOfDate !== savedAsOfDate);
   async function generate() {
+    if (outcome.isBlocked()) return;
     setBusy(true);
     setError(null);
     setNotice(null);
@@ -206,7 +217,7 @@ function TemplateCard({
         slug,
         template.id,
         asOfDate,
-      );
+      ).catch(outcome.reject);
       if (result.created) {
         setNotice(
           `Udstedte faktura ${result.invoiceNumber ?? ""} for ${result.issueDate ?? asOfDate}.`,
@@ -216,7 +227,7 @@ function TemplateCard({
           `Eksisterende faktura ${result.invoiceNumber ?? ""} blev returneret — perioden var allerede genereret.`,
         );
       }
-      onReload();
+      setSavedAsOfDate(asOfDate); markDateSaved(); onReload();
     } catch (err) {
       const e = err as { message?: string };
       setError(e?.message ?? "Genereringen kunne ikke gennemføres.");
@@ -231,44 +242,31 @@ function TemplateCard({
    * cannot be mutated. To change terms, the owner creates a new template
    * — historical generations on the old template are preserved untouched.
    */
-  async function retire() {
-    // eslint-disable-next-line no-alert
-    const confirmed = window.confirm(
-      `Deaktivér skabelonen "${template.name}"?\n\n` +
-        "En deaktiveret skabelon kan ikke generere flere fakturaer og kan ikke " +
-        "genaktiveres (skabeloner er append-only). Tidligere genererede fakturaer " +
-        "ændres ikke. Hvis kunden bare har ændret beløb/frekvens: deaktivér her " +
-        "og opret en ny skabelon med de rette vilkår.",
-    );
-    if (!confirmed) return;
+  async function retire(reason: string) {
+    if (outcome.isBlocked()) return;
     setRetireBusy(true);
     setError(null);
     setNotice(null);
     try {
-      // eslint-disable-next-line no-alert
-      const reason =
-        window.prompt(
-          "Kort årsag (valgfri — vises i revisionssporet):",
-          "",
-        ) ?? undefined;
       await api.retireRecurringInvoiceTemplate(
         slug,
         template.id,
         reason && reason.trim().length > 0 ? reason.trim() : undefined,
-      );
+      ).catch(outcome.reject);
       setNotice(`Skabelonen "${template.name}" er deaktiveret.`);
+      setRetiring(false);
       onReload();
     } catch (err) {
-      const e = err as { message?: string };
-      setError(e?.message ?? "Skabelonen kunne ikke deaktiveres.");
+      throw err;
     } finally {
       setRetireBusy(false);
     }
   }
 
   return (
-    <div className="card" style={{ marginBottom: 16 }}>
-      <h4 style={{ marginTop: 0 }}>
+    <div className={["card", stylex.props(viewStyles.site1).className].filter(Boolean).join(" ")} >
+    {outcome.feedback}
+      <h4 {...stylex.props(viewStyles.site2)}>
         {template.name}{" "}
         {!template.active && <span className="muted">(tilbagetrukken)</span>}
       </h4>
@@ -280,48 +278,58 @@ function TemplateCard({
       </p>
 
       {template.active && (
-        <div className="row-actions" style={{ alignItems: "center", gap: 12 }}>
+        <div className={["row-actions", stylex.props(viewStyles.site3).className].filter(Boolean).join(" ")} >
           <label>
             Udsted som af
-            <input
+            <Input
               type="date"
               value={asOfDate}
               onChange={(e) => setAsOfDate(e.target.value)}
-              disabled={busy || retireBusy}
+              disabled={outcome.blocked || (busy || retireBusy)}
             />
           </label>
-          <button
+          <Button requiredPermission="company.draft.write"
             className="btn"
             onClick={generate}
-            disabled={busy || retireBusy || asOfDate.length !== 10}
+            disabled={outcome.blocked || (busy || retireBusy || asOfDate.length !== 10)}
             type="button"
           >
             {busy ? "Genererer…" : "Generér"}
-          </button>
-          <button
+          </Button>
+          <Button requiredPermission="company.draft.write" variant="secondary"
             className="btn secondary"
-            onClick={retire}
-            disabled={busy || retireBusy}
+            onClick={() => setRetiring(true)}
+            disabled={outcome.blocked || busy || retireBusy}
             type="button"
             aria-label={`Deaktivér skabelonen ${template.name}`}
           >
             {retireBusy ? "Deaktiverer…" : "Deaktivér"}
-          </button>
+          </Button>
         </div>
       )}
 
       {!template.active && (
-        <p className="muted" style={{ fontStyle: "italic" }}>
+        <p className={["muted", stylex.props(viewStyles.site4).className].filter(Boolean).join(" ")} >
           Skabelonen er deaktiveret og kan ikke længere generere fakturaer.
           Tidligere genererede fakturaer (nedenfor) er bevaret uændret.
         </p>
       )}
 
+      {retiring && <ConfirmDialog
+        title={`Deaktivér skabelonen ${template.name}?`}
+        body={<p>Skabelonen kan ikke genaktiveres og kan ikke generere flere fakturaer. Tidligere fakturaer og revisionshistorik bevares. Opret en ny skabelon, hvis beløb eller frekvens skal ændres.</p>}
+        confirmLabel="Deaktivér skabelon"
+        confirmKind="danger"
+        noteLabel="Årsag (valgfri)"
+        onConfirm={retire}
+        onClose={() => setRetiring(false)} onRefresh={onReload}
+      />}
+
       {error && <Banner kind="error">{error}</Banner>}
       {notice && <Banner kind="success">{notice}</Banner>}
 
       {template.generations.length > 0 && (
-        <div className="table-scroll" style={{ marginTop: 12 }}>
+        <div className={["table-scroll", stylex.props(viewStyles.site5).className].filter(Boolean).join(" ")} >
           <table className="data statement-table responsive-table" aria-label="Udstedte fakturaer fra skabelonen">
             <thead>
               <tr>
@@ -351,3 +359,12 @@ function TemplateCard({
     </div>
   );
 }
+
+const viewStyles = stylex.create({
+site0: { gap: 8 },
+site1: { marginBottom: 16 },
+site2: { marginTop: 0 },
+site3: { alignItems: "center", gap: 12 },
+site4: { fontStyle: "italic" },
+site5: { marginTop: 12 }
+});

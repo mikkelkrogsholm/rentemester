@@ -1,3 +1,5 @@
+import * as stylex from "@stylexjs/stylex";
+import { PageHeader } from "../components/ui";
 // First-run onboarding. Shown when the workspace has no companies yet — it
 // explains the cockpit's scope (overview + write actions: invoicing, bank CSV
 // import, document intake) and presents the create-company form.
@@ -11,18 +13,18 @@ export function Onboarding({
 }) {
   return (
     <section>
-      <div className="page-head">
+      <PageHeader title="Velkommen til Rentemester">
         <div>
-          <h2>Velkommen til Rentemester</h2>
+
           <p className="muted">
             Du har endnu ikke oprettet nogen virksomheder. Opret din første for
             at komme i gang.
           </p>
         </div>
-      </div>
+      </PageHeader>
 
-      <div className="card" style={{ marginBottom: 20 }}>
-        <p className="muted" style={{ marginTop: 0 }}>
+      <div className={["card", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
+        <p className={["muted", stylex.props(viewStyles.site1).className].filter(Boolean).join(" ")} >
           Cockpittet er dit kontrolpanel: du opretter og overvåger virksomheder
           her. Du kan også bogføre direkte i cockpittet — udstede fakturaer,
           importere bankudtog (CSV) og indlæse bilag. Et par mere tekniske
@@ -36,3 +38,8 @@ export function Onboarding({
     </section>
   );
 }
+
+const viewStyles = stylex.create({
+site0: { marginBottom: 20 },
+site1: { marginTop: 0 }
+});

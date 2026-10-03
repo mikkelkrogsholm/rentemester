@@ -203,7 +203,9 @@ test("keeps #652-#657 profile copy and live evidence markers in parity", () => {
       "data-evidence-data",
       "data-evidence-progressive",
     ])
-      expect(source).toContain(marker);
+      if (marker === "data-evidence-heading" && source.includes("evidenceHeading")) {
+        expect(readFileSync(join(projectRoot, "app/src/components/ui/index.tsx"), "utf8")).toContain(marker);
+      } else expect(source).toContain(marker);
     if (typeof profile.taskOutcome === "string") {
       expect(source).toContain("data-evidence-task-outcome");
       expect(source).toContain(profile.taskOutcome);

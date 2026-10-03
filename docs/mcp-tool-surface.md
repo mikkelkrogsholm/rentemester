@@ -253,8 +253,8 @@ Tallene gælder en kørende `src/mcp/server.ts` (verificeret via `tools/list`).
 Tabellerne nedenfor er den autoritative liste pr. tool — bliver prosa-tal og
 tabel uenige, er det tabellerne (og i sidste ende `tools/list`) der gælder.
 
-- **Read-tools**: 91
-- **Ordinary write-tools**: 122
+- **Read-tools**: 110
+- **Ordinary write-tools**: 138
 - **Destructive**: 1 (`system_restore_backup`)
 - **Total**: **249** (read and write tool counts are verified from the live registry in CI)
 

@@ -11,9 +11,9 @@ describe("cockpit Bun 1.4 cutover", () => {
     expect(packageJson.engines).toEqual({ bun: "1.4.0" });
     expect(packageJson.scripts).toMatchObject({
       dev: "bun --hot scripts/serve.ts",
-      build: "tsc --noEmit && bun run scripts/build.ts",
+      build: "bun run design:check && tsc --noEmit && bun run scripts/build.ts",
       test: "bun test --isolate",
-      "test:parallel": "bun test --parallel --timeout=20000 --only-failures",
+      "test:parallel": "bun test --isolate --timeout=20000 --only-failures",
     });
     for (const name of ["vite", "vitest", "@vitejs/plugin-react"]) {
       expect(packageJson.dependencies?.[name]).toBeUndefined();

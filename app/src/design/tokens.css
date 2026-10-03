@@ -1,0 +1,42 @@
+/* Generated from DESIGN.md. */
+:root {
+  --color-paper: #F4F1EB;
+  --color-paper-raised: #FBF8F3;
+  --color-ink: #1B1A17;
+  --color-ink-muted: #4C4740;
+  --color-accent: #A6332A;
+  --color-on-accent: #F4F1EB;
+  --color-danger: #8F2A22;
+  --color-success: #2E5E4E;
+  --color-warning: #8A5A12;
+  --color-info: #2D5673;
+  --color-accent-soft: #E8D7D3;
+  --color-danger-soft: #EED9D6;
+  --color-success-soft: #DCE8E1;
+  --color-warning-soft: #EEE3D1;
+  --color-info-soft: #D9E4EB;
+  --color-border: #D8D2C6;
+  --color-border-strong: #8F887D;
+  --space-xxs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --font-headline: "Source Serif 4", Georgia, serif;
+  --font-body: "IBM Plex Sans", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+  --text-size-xs: 12px;
+  --text-size-sm: 14px;
+  --text-size-md: 16px;
+  --text-size-lg: 18px;
+  --text-size-xl: 24px;
+  --text-size-2xl: 32px;
+  --text-size-body: 16px;
+  --text-line-height: 1.5;
+  --layout-max-width: 1440px;
+}

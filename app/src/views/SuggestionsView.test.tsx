@@ -34,7 +34,7 @@ describe("SuggestionsView — Agent-forslag (#346)", () => {
     mockFetch(route());
     renderView();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Forslag", level: 1 }),
     ).toBeInTheDocument();
     expect(
       screen.getByText("Overforfalden kreditorpost"),

@@ -6,6 +6,7 @@ import { renderAt } from "../test/render";
 import { restoreGlobals } from "../test/globals";
 
 vi.mock("../lib/auth-context", () => ({
+  useOptionalAuth: () => ({ hosted: false }),
   useAuth: () => ({
     context: {
       workspaceRole: "workspace_owner",

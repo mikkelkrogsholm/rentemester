@@ -117,7 +117,7 @@ describe("ExceptionsView (#332)", () => {
     const løste = await screen.findByRole("button", { name: /Løste/ });
     await user.click(løste);
     // 'primary'-klassen indikerer at status er aktiv.
-    expect(løste.className).toContain("primary");
+    expect(screen.getByRole("button", { name: /Løste/ })).toHaveAttribute("aria-pressed", "true");
   });
 
   test("viser næste skridt for hver undtagelse", async () => {

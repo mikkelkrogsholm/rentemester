@@ -6,6 +6,8 @@
 import type { ReactElement } from "react";
 import { AccountingDraftsView } from "./views/AccountingDraftsView";
 import { AttentionView } from "./views/AttentionView";
+import { InvoiceCreateView } from "./views/InvoiceCreateView";
+import { DocumentBookingView } from "./views/DocumentBookingView";
 import { AccountingApprovalPolicyView } from "./views/AccountingApprovalPolicyView";
 import { AccountsView } from "./views/AccountsView";
 import { AccrualsView } from "./views/AccrualsView";
@@ -21,11 +23,11 @@ import { BudgetView } from "./views/BudgetView";
 import { ContactsView } from "./views/ContactsView";
 import { DashboardView } from "./views/DashboardView";
 import { DimensionsView } from "./views/DimensionsView";
-import { DocumentsView } from "./views/DocumentsView";
+import { DocumentsView, DocumentDetailView } from "./views/DocumentsView";
 import { ExceptionsView } from "./views/ExceptionsView";
 import { GdprView } from "./views/GdprView";
 import { IncomeStatementView } from "./views/IncomeStatementView";
-import { InvoicesView } from "./views/InvoicesView";
+import { InvoicesView, InvoiceDetailView } from "./views/InvoicesView";
 import { IntegrityView } from "./views/IntegrityView";
 import { JournalView } from "./views/JournalView";
 import { LiquidityView } from "./views/LiquidityView";
@@ -44,7 +46,7 @@ import { TrialBalanceView } from "./views/TrialBalanceView";
 import { VatView } from "./views/VatView";
 import { WorkspaceInboxView } from "./views/WorkspaceInboxView";
 import { WorkspaceRegistryView } from "./views/WorkspaceRegistryView";
-import { PartyHubView } from "./views/PartyHubView";
+import { PartyHubView, PartyProfileView } from "./views/PartyHubView";
 import {
   companyRouteForPath as findCompanyRouteForPath,
   type CompanyRoutePathDescriptor,
@@ -130,8 +132,30 @@ export const COMPANY_ROUTE_REGISTRY = [
   { id: "receipt-email", segment: "bilagsmail", label: "Bilagsmail", area: "administration", element: <BilagsmailView />, administrationGroup: "daily", administrationPurpose: "Modtag bilag i én fælles indbakke.", administrationNextStep: "Vælg bilagsmail" },
 ] as const satisfies readonly CompanyRouteDescriptor[];
 
-export type CompanyRouteId = (typeof COMPANY_ROUTE_REGISTRY)[number]["id"];
-export type CompanyRouteDefinition = Omit<(typeof COMPANY_ROUTE_REGISTRY)[number], "element">;
+/** Fixed pages retain main's exhaustive page inventory; flows inherit a page. */
+export const COMPANY_FLOW_ROUTE_REGISTRY = [
+  { id: "invoice-create", segment: "fakturaer/ny", label: "Udsted faktura", area: "invoices", kind: "flow", parentId: "invoices", element: <InvoiceCreateView /> },
+  { id: "invoice-detail", segment: "fakturaer/:documentId", label: "Fakturadetaljer", area: "invoices", kind: "flow", parentId: "invoices", element: <InvoiceDetailView /> },
+  { id: "document-detail", segment: "bilag/:documentId", label: "Bilagsdetaljer", area: "money-documents", kind: "flow", parentId: "documents", element: <DocumentDetailView /> },
+  { id: "document-booking", segment: "bilag/:documentId/bogfoer", label: "Bogfør bilag", area: "money-documents", kind: "flow", parentId: "documents", element: <DocumentBookingView /> },
+  { id: "party-profile", segment: "parter/:partyId", label: "Partsprofil", area: "knowledge", kind: "flow", parentId: "party-hub", element: <PartyProfileView /> },
+] as const satisfies readonly (CompanyRouteDescriptor & { kind: "flow"; parentId: (typeof COMPANY_ROUTE_REGISTRY)[number]["id"] })[];
+
+export const COMPANY_ROUTE_DEFINITIONS = [
+  ...COMPANY_ROUTE_REGISTRY.map((route) => ({ ...route, kind: "page" as const, parentId: undefined })),
+  ...COMPANY_FLOW_ROUTE_REGISTRY,
+] as const;
+
+export type CompanyRouteId = (typeof COMPANY_ROUTE_DEFINITIONS)[number]["id"];
+export type CompanyRouteDefinition = Omit<(typeof COMPANY_ROUTE_DEFINITIONS)[number], "element">;
+export type CompanyYearScope = "year" | "company" | "multi-year" | "vat-period";
+export function companyYearScope(id: CompanyRouteId): CompanyYearScope {
+  if (["attention", "purchase-overview", "approval-policy", "party-hub", "party-profile", "documents", "document-detail", "workspace-register", "workspace-inbox", "contacts", "invoice-templates", "manage", "accounts", "dimensions", "bank-accounts", "gdpr", "retention", "integrity", "receipt-email", "posting-rules", "drafts", "suggestions", "exceptions"].includes(id)) return "company";
+  if (id === "multi-year") return "multi-year";
+  if (id === "vat") return "vat-period";
+  // The batch workbench on main uses the selected canonical fiscal period.
+  return "year";
+}
 
 export function companyRoutePattern(segment: string): string {
   return segment ? `/companies/:slug/${segment}` : "/companies/:slug";
@@ -139,16 +163,16 @@ export function companyRoutePattern(segment: string): string {
 
 /** Fails closed if the single route registry becomes internally inconsistent. */
 export function assertCompanyRouteRegistry() {
-  const duplicateIds = COMPANY_ROUTE_REGISTRY.filter(
+  const duplicateIds = COMPANY_ROUTE_DEFINITIONS.filter(
     (route, index, routes) => routes.findIndex((candidate) => candidate.id === route.id) !== index,
   );
-  const duplicateSegments = COMPANY_ROUTE_REGISTRY.filter(
+  const duplicateSegments = COMPANY_ROUTE_DEFINITIONS.filter(
     (route, index, routes) => routes.findIndex((candidate) => candidate.segment === route.segment) !== index,
   );
-  const invalidAreas = COMPANY_ROUTE_REGISTRY.filter(
+  const invalidAreas = COMPANY_ROUTE_DEFINITIONS.filter(
     (route) => !COMPANY_TASK_AREAS.some((area) => area.id === route.area),
   );
-  const missingElements = COMPANY_ROUTE_REGISTRY.filter((route) => !route.element);
+  const missingElements = COMPANY_ROUTE_DEFINITIONS.filter((route) => !route.element);
 
   if (duplicateIds.length || duplicateSegments.length || invalidAreas.length || missingElements.length) {
     throw new Error(
@@ -158,5 +182,5 @@ export function assertCompanyRouteRegistry() {
 }
 
 export function companyRouteForPath(pathname: string): CompanyRouteDefinition | undefined {
-  return findCompanyRouteForPath(pathname, COMPANY_ROUTE_REGISTRY);
+  return findCompanyRouteForPath(pathname, COMPANY_ROUTE_DEFINITIONS);
 }

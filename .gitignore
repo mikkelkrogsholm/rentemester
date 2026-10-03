@@ -41,3 +41,8 @@ helheim/
 
 # Private noter (møder, samtaler, research) — ikke i git
 notes/
+
+# UI verification / development artifacts
+app/test-results/
+app/playwright-report/
+app/.cache/

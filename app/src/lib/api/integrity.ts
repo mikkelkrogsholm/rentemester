@@ -1,5 +1,5 @@
 import type { IntegrityResponse } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 export const integrityApi = {
   /**
@@ -7,8 +7,8 @@ export const integrityApi = {
    * `verifyAuditChain` (read-only) hver gang og returnerer den aktuelle
    * status sammen med backup-compliance og destinations.
    */
-  integrity: (slug: string) =>
+  integrity: (slug: string, options?: ReadRequestOptions) =>
     request<IntegrityResponse>(
-      `/api/companies/${encodeURIComponent(slug)}/integrity`,
+      `/api/companies/${encodeURIComponent(slug)}/integrity`, options,
     ).then((r) => r.integrity),
 };

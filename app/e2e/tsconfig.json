@@ -1,0 +1,5 @@
+{
+  "extends": "../tsconfig.json",
+  "include": ["*.ts", "../playwright.config.ts"],
+  "exclude": ["artifacts", "snapshots"]
+}

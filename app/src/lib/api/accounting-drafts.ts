@@ -1,13 +1,13 @@
 import type { AccountingDraft, AccountingDraftPayload } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 function path(slug: string, suffix = ""): string {
   return `/api/companies/${encodeURIComponent(slug)}/accounting-drafts${suffix}`;
 }
 
 export const accountingDraftsApi = {
-  accountingDrafts: (slug: string) =>
-    request<{ ok: true; accountingDrafts: AccountingDraft[] }>(path(slug))
+  accountingDrafts: (slug: string, options?: ReadRequestOptions) =>
+    request<{ ok: true; accountingDrafts: AccountingDraft[] }>(path(slug), options)
       .then((response) => response.accountingDrafts),
 
   createAccountingDraft: (slug: string, draftId: string, payload: AccountingDraftPayload) =>

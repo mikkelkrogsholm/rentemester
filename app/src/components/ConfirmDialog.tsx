@@ -10,7 +10,12 @@
 // reuse it. The `confirmKind` prop lets a destructive action render a danger
 // button; slice 1's resolve-exception action is non-destructive.
 
-import { useEffect, useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
+import { UNSAFE_LocationContext } from "react-router-dom";
+import { useMutationBlock } from "../lib/mutation-memory";
+import { UnknownMutationNotice } from "./UnknownMutationNotice";
+import { useUnsavedChanges } from "../lib/useUnsavedChanges";
+import { Button, Dialog, Input, Textarea } from "./ui";
 import { Banner } from "./Feedback";
 import { LockBanner } from "./LockBanner";
 
@@ -34,8 +39,8 @@ export type ConfirmDialogProps = {
    */
   noteInitialValue?: string;
   /**
-   * When `"email"` the note field renders as a single-line `<input
-   * type="email">` instead of the default `<textarea>` — used by #429 so the
+   * When `"email"` the note field renders as a single-line `<Input
+   * type="email">` instead of the default `<Textarea>` — used by #429 so the
    * cockpit gets browser-native e-mail validation on the recipient field.
    */
   noteInputType?: "textarea" | "email";
@@ -47,6 +52,11 @@ export type ConfirmDialogProps = {
   onConfirm: (note: string) => Promise<void>;
   /** Closes the dialog without acting. */
   onClose: () => void;
+  /** A read-only refresh after a transport failure; never repeats the write. */
+  onRefresh?: () => unknown | Promise<unknown>;
+  /** Stable identity within the route, e.g. invoice document id. */
+  operationKey?: string;
+  closeOnConfirm?: boolean;
 };
 
 /** Shape of the API error the cockpit's `api.ts` throws. */
@@ -63,117 +73,79 @@ export function ConfirmDialog({
   noteInputType = "textarea",
   onConfirm,
   onClose,
+  onRefresh,
+  operationKey = "",
+  closeOnConfirm = true,
 }: ConfirmDialogProps) {
   const [note, setNote] = useState(noteInitialValue ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const location = useContext(UNSAFE_LocationContext)?.location;
+  const key = `${location?.pathname ?? ""}:${title}:${operationKey}`;
+  const outcome = useMutationBlock(key);
+  const uncertain = outcome.blocked;
+  const attempted = useRef(false);
+  const [checkingDiscard, setCheckingDiscard] = useState(false);
+  const [completed, setCompleted] = useState(false);
+  const dirty = Boolean(noteLabel) && !completed && note !== (noteInitialValue ?? "");
+  const markSaved = useUnsavedChanges(dirty);
   const [locked, setLocked] = useState<string | null>(null);
   const confirmRef = useRef<HTMLButtonElement>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
-
-  // Move focus into the dialog and let Escape dismiss it — basic modal hygiene
-  // — plus a Tab focus-trap and focus-return to the trigger on close (#UI-12).
-  useEffect(() => {
-    // Remember whatever was focused before the dialog opened so we can hand
-    // focus back to it on unmount — an assistive-tech user is otherwise dumped
-    // at the top of the document.
-    const previouslyFocused = document.activeElement as HTMLElement | null;
-    confirmRef.current?.focus();
-
-    function focusableElements(): HTMLElement[] {
-      const root = dialogRef.current;
-      if (!root) return [];
-      return Array.from(
-        root.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-        ),
-      ).filter((el) => !el.hasAttribute("disabled"));
-    }
-
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape" && !busy) {
-        onClose();
-        return;
-      }
-      if (e.key !== "Tab") return;
-      // Keep Tab/Shift+Tab cycling inside the dialog rather than escaping to
-      // the page behind the overlay.
-      const focusable = focusableElements();
-      if (focusable.length === 0) return;
-      const first = focusable[0]!;
-      const last = focusable[focusable.length - 1]!;
-      const active = document.activeElement;
-      if (e.shiftKey && active === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && active === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    }
-    window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      previouslyFocused?.focus?.();
-    };
-  }, [busy, onClose]);
-
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const noteRef = useRef<HTMLInputElement>(null);
+  function requestClose() {
+    if (busy) return;
+    if (dirty) setCheckingDiscard(true); else onClose();
+  }
   async function handleConfirm() {
+    if (attempted.current || outcome.isBlocked()) return;
+    if (noteInputType === "email" && noteRef.current && !noteRef.current.reportValidity()) return;
+    attempted.current = true;
     setBusy(true);
     setError(null);
     setLocked(null);
     try {
       await onConfirm(note.trim());
-      onClose();
+      setCompleted(true); markSaved();
+      if (closeOnConfirm) onClose();
     } catch (err) {
       const e = err as MaybeApiError;
+      if (e?.code === "network" || e?.code === "internal") outcome.block();
       const message = e?.message ?? "Handlingen kunne ikke gennemføres.";
       // A 409 conflict from the backup lock is shown kindly, not as an error.
       if (e?.code === "conflict") setLocked(message);
       else setError(message);
       setBusy(false);
-    }
+    } finally { attempted.current = false; }
   }
 
   return (
-    <div
-      className="modal-overlay"
-      role="presentation"
-      onClick={() => {
-        if (!busy) onClose();
-      }}
-    >
-      <div
-        ref={dialogRef}
-        className="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="modal-title">{title}</h3>
+    <Dialog title={title} onClose={requestClose} busy={busy} initialFocusRef={confirmKind === "danger" ? cancelRef : confirmRef}>
+        {checkingDiscard && <ConfirmDialog title="Kassér ændringer?" body="Du har ændringer, som ikke er gemt. Hvis du lukker formularen, bliver de kasseret." confirmLabel="Kassér ændringer" confirmKind="danger" onClose={() => setCheckingDiscard(false)} onConfirm={async () => { markSaved(); setCompleted(true); onClose(); }} />}
         <div className="modal-body">{body}</div>
 
         {locked && <LockBanner message={locked} />}
         {error && <Banner kind="error">{error}</Banner>}
+        {uncertain && <UnknownMutationNotice onRefresh={onRefresh} onRelease={() => { outcome.release(); setError(null); }} persistent={outcome.persistent} verifyPersistence={outcome.verifyPersistence} />}
 
         {noteLabel && (
           <label className="modal-field">
             {noteLabel}
             {noteInputType === "email" ? (
-              <input
+              <Input
+                ref={noteRef}
                 type="email"
                 value={note}
                 placeholder={notePlaceholder}
                 onChange={(e) => setNote(e.target.value)}
-                disabled={busy}
+                disabled={busy || uncertain}
               />
             ) : (
-              <textarea
+              <Textarea
                 value={note}
                 placeholder={notePlaceholder}
                 onChange={(e) => setNote(e.target.value)}
-                disabled={busy}
+                disabled={busy || uncertain}
                 rows={3}
               />
             )}
@@ -181,25 +153,25 @@ export function ConfirmDialog({
         )}
 
         <div className="modal-actions">
-          <button
+          <Button
+            ref={cancelRef}
             type="button"
             className="btn secondary"
-            onClick={onClose}
+            onClick={requestClose}
             disabled={busy}
           >
             Annullér
-          </button>
-          <button
+          </Button>
+          <Button
             ref={confirmRef}
             type="button"
             className={`btn${confirmKind === "danger" ? " danger" : ""}`}
             onClick={handleConfirm}
-            disabled={busy}
+            disabled={busy || uncertain}
           >
             {busy ? "Arbejder…" : confirmLabel}
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+    </Dialog>
   );
 }

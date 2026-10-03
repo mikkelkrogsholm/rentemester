@@ -1,3 +1,5 @@
+import * as stylex from "@stylexjs/stylex";
+import { ButtonLink, Button, PageHeader } from "../components/ui";
 // Kørsel — the per-company mileage register (#335).
 //
 // Renders `/api/companies/:slug/mileage?year=`: a deterministic mileage log
@@ -14,7 +16,7 @@
 // DocumentsView): historical mileage is read-only.
 
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { formatKroner } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
@@ -27,14 +29,14 @@ export function MileageView() {
   const { slug = "" } = useParams();
   const { year, setYear } = useCompanyYear();
   const state = useAsync<CompanyMileage>(
-    () => api.mileage(slug, year),
+    (signal) => api.mileage(slug, year, { signal }),
     [slug, year],
   );
   const [registering, setRegistering] = useState(false);
 
   if (state.loading && !state.data)
     return <Loading label="Henter kørselsregister…" />;
-  if (state.error)
+  if (state.error && !state.data)
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const m = state.data!;
@@ -44,29 +46,30 @@ export function MileageView() {
 
   return (
     <section className="statement" data-cockpit-page="mileage" data-evidence-issue="655">
-      <div className="page-head">
-        <div>
-          <h2>{m.company.name}</h2>
-          <p className="muted">
-            {m.company.cvr ? `CVR ${m.company.cvr} · ` : ""}
-            {m.company.country} · {currency} · Kørsel
-          </p>
-        </div>
-        <div className="row-actions">
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+      <PageHeader title="Kørsel" actions={<><div className="row-actions">
           {!archived && (
-            <button
+            <Button requiredPermission="company.ledger.post"
               type="button"
               className="btn"
               onClick={() => setRegistering(true)}
             >
               Registrér kørsel
-            </button>
+            </Button>
           )}
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
-          </Link>
+          </ButtonLink>
+        </div></>}>
+        <div>
+
+          <p className="muted">
+            {m.company.cvr ? `CVR ${m.company.cvr} · ` : ""}
+            {m.company.country} · {currency} · Kørsel
+          </p>
         </div>
-      </div>
+
+      </PageHeader>
 
       <CompanyNav
         slug={slug}
@@ -222,7 +225,7 @@ function MonthlyBreakdown({
   if (mileage.months.every((m) => m.tripCount === 0)) return null;
   return (
     <div className="card statement-card table-scroll">
-      <h3 style={{ margin: "0.25rem 0 0.5rem" }}>Sum pr. måned</h3>
+      <h3 {...stylex.props(viewStyles.site0)}>Sum pr. måned</h3>
       <table className="data statement-table">
         <thead>
           <tr>
@@ -267,10 +270,10 @@ function EmptyState({
         Rentemester gemmer registret som dokumentation og udregner aldrig en
         skattesats for dig.
       </p>
-      <div className="row-actions" style={{ marginTop: "0.5rem" }}>
-        <button type="button" className="btn" onClick={onRegister}>
+      <div className={["row-actions", stylex.props(viewStyles.site1).className].filter(Boolean).join(" ")} >
+        <Button type="button" className="btn" onClick={onRegister}>
           Registrér første kørsel
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -288,3 +291,8 @@ function ArchivedNotice({ year }: { year: string }) {
     </div>
   );
 }
+
+const viewStyles = stylex.create({
+site0: { margin: "0.25rem 0 0.5rem" },
+site1: { marginTop: "0.5rem" }
+});

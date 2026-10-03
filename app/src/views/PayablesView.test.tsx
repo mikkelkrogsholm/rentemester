@@ -23,7 +23,7 @@ describe("PayablesView — Leverandørfaktura-arbejdsbordet", () => {
     mockFetch(route());
     renderView();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Leverandørfakturaer", level: 1 }),
     ).toBeInTheDocument();
     expect(screen.getByText("Software ApS")).toBeInTheDocument();
     expect(screen.getByText("Telco A/S")).toBeInTheDocument();
@@ -37,7 +37,7 @@ describe("PayablesView — Leverandørfaktura-arbejdsbordet", () => {
   test("surfaces the summary totals (skyldig, forfaldne, ikke forfaldne)", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Leverandørfakturaer", level: 1 });
     // Three status cards — the headlines must all appear above the table.
     // "Forfaldne" also appears as a filter pill button, so scope the assertion
     // to the heading rendering inside the summary card.
@@ -67,7 +67,7 @@ describe("PayablesView — Leverandørfaktura-arbejdsbordet", () => {
       "GET /api/companies/acme-aps/payables": { payables: payables() },
     });
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Leverandørfakturaer", level: 1 });
     await userEvent.click(screen.getByRole("button", { name: "Forfaldne" }));
     await waitFor(() => {
       const calls = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
@@ -79,7 +79,7 @@ describe("PayablesView — Leverandørfaktura-arbejdsbordet", () => {
   test("the Registrér leverandørfaktura action opens the register modal", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Leverandørfakturaer", level: 1 });
     await userEvent.click(
       screen.getByRole("button", { name: "Registrér leverandørfaktura" }),
     );
@@ -95,7 +95,7 @@ describe("PayablesView — Leverandørfaktura-arbejdsbordet", () => {
       "POST /api/companies/acme-aps/payables/direct-bank-correction/apply": { correction: { ok:true,id:1 } },
     });
     renderView();
-    await screen.findByRole("heading",{name:"Acme ApS"});
+    await screen.findByRole("heading", { name: "Leverandørfakturaer", level: 1 });
     await userEvent.click(screen.getByRole("button",{name:"Ret direkte bankkøb"}));
     const dialog=screen.getByRole("dialog",{name:"Ret direkte bankkøb"});
     await userEvent.type(within(dialog).getByLabelText("Banktransaktions-id"),"777");
@@ -115,7 +115,7 @@ describe("PayablesView — Leverandørfaktura-arbejdsbordet", () => {
   test("the per-row Markér betalt action opens the pay confirm dialog", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Leverandørfakturaer", level: 1 });
     const payButtons = screen.getAllByRole("button", { name: "Markér betalt" });
     expect(payButtons.length).toBeGreaterThan(0);
     await userEvent.click(payButtons[0]!);
@@ -153,7 +153,7 @@ describe("PayablesView — Leverandørfaktura-arbejdsbordet", () => {
       }),
     );
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Leverandørfakturaer", level: 1 });
     expect(
       screen.queryAllByRole("button", { name: "Markér betalt" }),
     ).toHaveLength(0);
@@ -177,7 +177,7 @@ describe("PayablesView — Leverandørfaktura-arbejdsbordet", () => {
       },
     });
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Leverandørfakturaer", level: 1 });
     const payButtons = screen.getAllByRole("button", { name: "Markér betalt" });
     await userEvent.click(payButtons[0]!);
     const input = screen.getByLabelText("Banktransaktions-id");
@@ -207,7 +207,7 @@ describe("PayablesView — Leverandørfaktura-arbejdsbordet", () => {
   test("pay rejects a blank/non-numeric bank id with a friendly message", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Leverandørfakturaer", level: 1 });
     const payButtons = screen.getAllByRole("button", { name: "Markér betalt" });
     await userEvent.click(payButtons[0]!);
     // No id typed — confirm should surface the validation message without

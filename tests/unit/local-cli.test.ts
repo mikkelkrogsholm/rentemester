@@ -14,7 +14,11 @@ function tmpRoot(label: string) {
 }
 
 function testPort() {
-  return 4700 + Math.floor(Math.random() * 500);
+  // Ask the OS for an available port instead of colliding with desktop services.
+  const reservation = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch: () => new Response(null, { status: 503 }) });
+  const port = reservation.port;
+  reservation.stop(true);
+  return port;
 }
 
 async function waitForServer(url: string, deadlineMs = 5000): Promise<boolean> {

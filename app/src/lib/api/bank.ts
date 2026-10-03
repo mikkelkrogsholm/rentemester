@@ -1,13 +1,14 @@
 import type { BankAccountsResponse, BankResponse } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 export const bankApi = {
   /**
    * #345 — Bankkonti + CSV-mapping-profiler (read).
    */
-  bankAccounts: (slug: string) =>
+  bankAccounts: (slug: string, options?: ReadRequestOptions) =>
     request<BankAccountsResponse>(
       `/api/companies/${encodeURIComponent(slug)}/bank-accounts`,
+      options,
     ).then((r) => r.bankAccounts),
 
   /**
@@ -35,15 +36,16 @@ export const bankApi = {
       },
     ).then((r) => r.bankAccount),
 
-  bank: (slug: string, year?: string) =>
+  bank: (slug: string, year?: string, options?: ReadRequestOptions) =>
     request<BankResponse>(
       `/api/companies/${encodeURIComponent(slug)}/bank${
         year ? `?year=${encodeURIComponent(year)}` : ""
       }`,
+      options,
     ).then((r) => r.bank),
 
-  correctionPlan: (slug:string, bankTransactionId:number, replacementJournalEntryId:number) =>
-    request<{ok:true;plan:unknown}>(`/api/companies/${encodeURIComponent(slug)}/bank/reconciliation-correction-plan?bankTransactionId=${bankTransactionId}&replacementJournalEntryId=${replacementJournalEntryId}`).then(r=>r.plan),
+  correctionPlan: (slug:string, bankTransactionId:number, replacementJournalEntryId:number, options?: ReadRequestOptions) =>
+    request<{ok:true;plan:unknown}>(`/api/companies/${encodeURIComponent(slug)}/bank/reconciliation-correction-plan?bankTransactionId=${bankTransactionId}&replacementJournalEntryId=${replacementJournalEntryId}`, options).then(r=>r.plan),
 
   applyCorrection: (slug:string, input:{bankTransactionId:number;replacementJournalEntryId:number;expectedReconciliationId:string;planHash:string;reason:string;idempotencyKey:string}) =>
     request<{ok:true;correction:unknown}>(`/api/companies/${encodeURIComponent(slug)}/bank/reconciliation-correction`,{method:"POST",body:JSON.stringify({...input,confirm:true})}).then(r=>r.correction),

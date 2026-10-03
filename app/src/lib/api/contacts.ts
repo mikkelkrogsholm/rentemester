@@ -4,12 +4,13 @@ import type {
   CvrLookupResult,
   VendorInput,
 } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 export const contactsApi = {
-  contacts: (slug: string) =>
+  contacts: (slug: string, options?: ReadRequestOptions) =>
     request<ContactsResponse>(
       `/api/companies/${encodeURIComponent(slug)}/contacts`,
+      options,
     ).then((r) => r.contacts),
 
   /**
@@ -73,8 +74,8 @@ export const contactsApi = {
    * snapshot. A missing-credentials response is returned with `ok:false`
    * inside the envelope so the modal can show a calm hint, not an error.
    */
-  cvrLookup: (slug: string, cvr: string) =>
+  cvrLookup: (slug: string, cvr: string, options?: ReadRequestOptions) =>
     request<{ ok: true; cvr: CvrLookupResult }>(
-      `/api/companies/${encodeURIComponent(slug)}/cvr-lookup?cvr=${encodeURIComponent(cvr)}`,
+      `/api/companies/${encodeURIComponent(slug)}/cvr-lookup?cvr=${encodeURIComponent(cvr)}`, options,
     ).then((r) => r.cvr),
 };

@@ -37,7 +37,7 @@ describe("MultiYearView — Flerårsoversigt", () => {
   test("renders a P&L row per fiscal year", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Flerårsoverblik", level: 1 });
     const rows = sectionRows(/Resultat — omsætning/);
     // Header row + one per year (archive 2023–25, live 2026).
     expect(rows).toHaveLength(5);
@@ -49,7 +49,7 @@ describe("MultiYearView — Flerårsoversigt", () => {
   test("marks archived years with an arkiv tag", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Flerårsoverblik", level: 1 });
     const rows = sectionRows(/Resultat — omsætning/);
     const row2025 = rows.find((r) => r.textContent?.includes("2025"))!;
     expect(within(row2025).getByText("arkiv")).toBeInTheDocument();
@@ -66,7 +66,7 @@ describe("MultiYearView — Flerårsoversigt", () => {
   test("shows the balance-sheet development per year", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Flerårsoverblik", level: 1 });
     expect(
       screen.getByRole("heading", { name: /Balance — balancesum/ }),
     ).toBeInTheDocument();
@@ -79,7 +79,7 @@ describe("MultiYearView — Flerårsoversigt", () => {
   test("shows key ratios per year as percentages", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Flerårsoverblik", level: 1 });
     const rows = sectionRows(/Nøgletal pr. regnskabsår/);
     expect(rows).toHaveLength(5);
     expect(screen.getByText("Overskudsgrad")).toBeInTheDocument();
@@ -96,14 +96,14 @@ describe("MultiYearView — Flerårsoversigt", () => {
   test("renders the P&L and balance trend charts", async () => {
     mockFetch(route());
     const { container } = renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Flerårsoverblik", level: 1 });
     expect(container.querySelectorAll("canvas")).toHaveLength(2);
   });
 
   test("marks the live/current year as '(år til dato)'", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Flerårsoverblik", level: 1 });
     const rows = sectionRows(/Resultat — omsætning/);
     const row2026 = rows.find((r) => r.textContent?.includes("2026"))!;
     expect(within(row2026).getByText("(år til dato)")).toBeInTheDocument();
@@ -124,7 +124,7 @@ describe("MultiYearView — Flerårsoversigt", () => {
   test("resultat-tabellen får Δ (kr) og Δ (%) kolonner i headeren", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Flerårsoverblik", level: 1 });
     const table = screen
       .getByRole("heading", { name: /Resultat — omsætning/ })
       .closest(".section")!
@@ -139,7 +139,7 @@ describe("MultiYearView — Flerårsoversigt", () => {
   test("resultat-tabellen viser normal vækst fra 2023 til 2024 (omsætning +7.000 kr / +22,6 %)", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Flerårsoverblik", level: 1 });
     const rows = sectionRows(/Resultat — omsætning/);
     const row2024 = rows.find((r) => r.textContent?.includes("2024"))!;
     // 38000 − 31000 = +7.000 kr (vises som "+7.000,00 kr.")
@@ -151,7 +151,7 @@ describe("MultiYearView — Flerårsoversigt", () => {
   test("det ældste år viser '—' i Δ-kolonnerne (ingen forrige år at sammenligne med)", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Flerårsoverblik", level: 1 });
     const rows = sectionRows(/Resultat — omsætning/);
     const row2023 = rows.find((r) => r.textContent?.includes("2023"))!;
     // 4 numeriske celler + 3 mål × 2 Δ-kolonner = 4 dash-celler (omsætning/udgifter/resultat Δ + 1 fra Δ-pct? nej).
@@ -165,7 +165,7 @@ describe("MultiYearView — Flerårsoversigt", () => {
   test("partielt 'år til dato' viser '(ej sammenligneligt — år til dato)' i Δ-kolonnerne", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Flerårsoverblik", level: 1 });
     const rows = sectionRows(/Resultat — omsætning/);
     const row2026 = rows.find((r) => r.textContent?.includes("2026"))!;
     expect(
@@ -192,7 +192,7 @@ describe("MultiYearView — Flerårsoversigt", () => {
       }),
     );
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Flerårsoverblik", level: 1 });
     expect(screen.queryByText(/Δ \(kr\)/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Δ \(%\)/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Δ \(pp\)/)).not.toBeInTheDocument();
@@ -228,7 +228,7 @@ describe("MultiYearView — Flerårsoversigt", () => {
       }),
     );
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Flerårsoverblik", level: 1 });
     const rows = sectionRows(/Resultat — omsætning/);
     const row2025 = rows.find((r) => r.textContent?.includes("2025"))!;
     // Δ kr findes for omsætning (+10.000,00 kr.); men Δ % er '—' fordi forrige år er 0.
@@ -240,7 +240,7 @@ describe("MultiYearView — Flerårsoversigt", () => {
   test("nøgletal-tabellen viser Δ som procentpoint (pp), ikke procent", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Flerårsoverblik", level: 1 });
     const ratioSection = screen
       .getByRole("heading", { name: /Nøgletal pr. regnskabsår/ })
       .closest(".section")!;
@@ -257,7 +257,7 @@ describe("MultiYearView — Flerårsoversigt", () => {
   test("balance-tabellen får Δ-kolonner for balancesum og egenkapital", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Flerårsoverblik", level: 1 });
     const section = screen
       .getByRole("heading", { name: /Balance — balancesum/ })
       .closest(".section")!;

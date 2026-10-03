@@ -1,12 +1,12 @@
 import type { VatResponse } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 export const vatApi = {
-  vat: (slug: string, year?: string) =>
+  vat: (slug: string, year?: string, options?: ReadRequestOptions) =>
     request<VatResponse>(
       `/api/companies/${encodeURIComponent(slug)}/vat${
         year ? `?year=${encodeURIComponent(year)}` : ""
-      }`,
+      }`, options,
     ).then((r) => r.vat),
 
   /**

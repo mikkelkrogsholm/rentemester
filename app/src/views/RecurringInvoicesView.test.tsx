@@ -11,7 +11,7 @@
 // and refreshes the list on success. The CLI snippet that used to live in
 // the empty-state is gone.
 
-import { describe, expect, test, vi, beforeEach, afterEach } from "bun:test";
+import { describe, expect, test, vi, afterEach } from "bun:test";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RecurringInvoicesView } from "./RecurringInvoicesView";
@@ -73,10 +73,7 @@ function renderView() {
 }
 
 describe("RecurringInvoicesView — Faktura-skabeloner", () => {
-  beforeEach(() => {
-    vi.spyOn(window, "confirm").mockReturnValue(true);
-    vi.spyOn(window, "prompt").mockReturnValue("Kontrakt opsagt");
-  });
+
 
   afterEach(() => {
     vi.restoreAllMocks();
@@ -128,8 +125,9 @@ describe("RecurringInvoicesView — Faktura-skabeloner", () => {
       screen.getByRole("button", { name: /Deaktivér skabelonen/ }),
     );
 
-    expect(window.confirm).toHaveBeenCalled();
-    expect(window.prompt).toHaveBeenCalled();
+    const dialog = await screen.findByRole("dialog", { name: /Deaktivér skabelonen/ });
+    await userEvent.type(within(dialog).getByLabelText("Årsag (valgfri)"), "Kontrakt opsagt");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Deaktivér skabelon" }));
 
     await waitFor(() => {
       const calls = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
@@ -154,7 +152,6 @@ describe("RecurringInvoicesView — Faktura-skabeloner", () => {
   });
 
   test("Cancelling the confirm dialog skips the API call", async () => {
-    vi.spyOn(window, "confirm").mockReturnValue(false);
     mockFetch(routes());
     renderView();
     await screen.findByText("ABC ApS · månedligt abonnement");
@@ -162,6 +159,8 @@ describe("RecurringInvoicesView — Faktura-skabeloner", () => {
     await userEvent.click(
       screen.getByRole("button", { name: /Deaktivér skabelonen/ }),
     );
+    const dialog = await screen.findByRole("dialog", { name: /Deaktivér skabelonen/ });
+    await userEvent.click(within(dialog).getByRole("button", { name: "Annullér" }));
 
     const calls = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
     const retireCall = calls.find(
@@ -187,14 +186,15 @@ describe("RecurringInvoicesView — Faktura-skabeloner", () => {
     await userEvent.click(
       screen.getByRole("button", { name: /Deaktivér skabelonen/ }),
     );
+    const dialog = await screen.findByRole("dialog", { name: /Deaktivér skabelonen/ });
+    await userEvent.click(within(dialog).getByRole("button", { name: "Deaktivér skabelon" }));
 
     expect(
       await screen.findByText(/Skabelonen kunne ikke deaktiveres/),
     ).toBeInTheDocument();
   });
 
-  test("An empty reason in the prompt is omitted from the request body", async () => {
-    (window.prompt as ReturnType<typeof vi.fn>).mockReturnValue("");
+  test("An empty reason in the dialog is omitted from the request body", async () => {
     mockFetch({
       ...routes(),
       "POST /api/companies/acme-aps/recurring-invoices/7/retire": {
@@ -207,6 +207,8 @@ describe("RecurringInvoicesView — Faktura-skabeloner", () => {
     await userEvent.click(
       screen.getByRole("button", { name: /Deaktivér skabelonen/ }),
     );
+    const dialog = await screen.findByRole("dialog", { name: /Deaktivér skabelonen/ });
+    await userEvent.click(within(dialog).getByRole("button", { name: "Deaktivér skabelon" }));
 
     await waitFor(() => {
       const calls = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
@@ -334,7 +336,7 @@ describe("RecurringInvoicesView — Faktura-skabeloner", () => {
     await userEvent.type(screen.getByLabelText(/Linje 1 antal/), "1");
     await userEvent.type(
       screen.getByLabelText(/Linje 1 enhedspris/),
-      "1500",
+      "1.500,25",
     );
 
     const dialog = await screen.findByRole("dialog", {
@@ -363,7 +365,7 @@ describe("RecurringInvoicesView — Faktura-skabeloner", () => {
       expect(body.lines).toHaveLength(1);
       expect(body.lines[0].description).toBe("Månedlig ydelse");
       expect(body.lines[0].quantity).toBe(1);
-      expect(body.lines[0].unitPriceExVat).toBe(1500);
+      expect(body.lines[0].unitPriceExVat).toBe(1500.25);
     });
   });
 
