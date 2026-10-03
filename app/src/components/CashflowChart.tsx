@@ -1,3 +1,4 @@
+import { designTokens } from "../../../src/design/tokens";
 // Liquidity chart for the Likviditet view (cockpit-redesign it. 8).
 //
 // A combined chart: monthly indbetalinger / udbetalinger as bars (left axis),
@@ -22,7 +23,8 @@ import {
 } from "chart.js";
 import { Chart } from "react-chartjs-2";
 import type { CashflowMonth } from "../lib/types";
-import { CHART_AXIS_NUMBER, CHART_CURRENCY, CHART_MONO_FONT, CHART_SANS_FONT } from "./chart-format";
+import { useChartFonts } from "./useChartFonts";
+import { CHART_AXIS_NUMBER, chartCurrency } from "./chart-format";
 
 // The generic <Chart> component does not auto-register controllers, so this
 // mixed bar+line chart registers everything it needs itself — self-contained,
@@ -40,11 +42,11 @@ ChartJS.register(
 );
 
 // DESIGN.md palette — kept in sync with app/src/styles.css tokens.
-const INK_MUTED = "#4c4740";
-const INCOME = "#2e5e4e"; // --color-success
-const EXPENSE = "#a6332a"; // --color-accent
-const BALANCE = "#2d5673"; // --color-info (sober blue)
-const BORDER = "#d8d2c6"; // --color-border
+const INK_MUTED = designTokens.colors.inkMuted;
+const INCOME = designTokens.colors.success; // --color-success
+const EXPENSE = designTokens.colors.accent; // --color-accent
+const BALANCE = designTokens.colors.info; // --color-info (sober blue)
+const BORDER = designTokens.colors.border; // --color-border
 
 /**
  * `months` drives the ind/ud bars; `balanceByMonth` is the bank balance at the
@@ -54,10 +56,16 @@ const BORDER = "#d8d2c6"; // --color-border
 export function CashflowChart({
   months,
   balanceByMonth,
+  currency = "DKK",
+  dataTableId,
 }: {
   months: CashflowMonth[];
   balanceByMonth: Array<number | null>;
+  currency?: string;
+  dataTableId?: string;
 }) {
+  const chartRef = useChartFonts<"bar" | "line">();
+  const currencyFormat = chartCurrency(currency);
   const data: ChartData<"bar" | "line"> = {
     labels: months.map((m) => m.label),
     datasets: [
@@ -98,6 +106,7 @@ export function CashflowChart({
 
   const options: ChartOptions<"bar" | "line"> = {
     responsive: true,
+    animation: false,
     maintainAspectRatio: false,
     interaction: { mode: "index", intersect: false },
     plugins: {
@@ -108,7 +117,7 @@ export function CashflowChart({
           color: INK_MUTED,
           boxWidth: 12,
           boxHeight: 12,
-          font: { family: CHART_SANS_FONT, size: 13 },
+          font: { family: designTokens.typography.bodyFamily, size: Number.parseInt(designTokens.typography.sizeSm) },
         },
       },
       tooltip: {
@@ -116,7 +125,7 @@ export function CashflowChart({
           label: (ctx) => {
             const value = ctx.parsed.y;
             if (value === null || value === undefined) return "";
-            return `${ctx.dataset.label}: ${CHART_CURRENCY.format(Number(value))}`;
+            return `${ctx.dataset.label}: ${currencyFormat.format(Number(value))}`;
           },
         },
       },
@@ -126,21 +135,21 @@ export function CashflowChart({
         grid: { display: false },
         ticks: {
           color: INK_MUTED,
-          font: { family: CHART_SANS_FONT, size: 12 },
+          font: { family: designTokens.typography.bodyFamily, size: Number.parseInt(designTokens.typography.sizeXs) },
         },
       },
       y: {
         beginAtZero: true,
         position: "left",
-        // A fixed gutter keeps axis labels from clipping with local font
-        // metrics — the same trick `PnlChart` uses.
+        // A fixed gutter so the axis labels never clip before the web font
+        // loads — the same trick `PnlChart` uses.
         afterFit: (scale) => {
           scale.width = 76;
         },
         grid: { color: BORDER },
         ticks: {
           color: INK_MUTED,
-          font: { family: CHART_MONO_FONT, size: 11 },
+          font: { family: designTokens.typography.monoFamily, size: Number.parseInt(designTokens.typography.sizeXs) },
           callback: (value) => CHART_AXIS_NUMBER.format(Number(value)),
         },
       },
@@ -152,7 +161,7 @@ export function CashflowChart({
         grid: { display: false },
         ticks: {
           color: BALANCE,
-          font: { family: CHART_MONO_FONT, size: 11 },
+          font: { family: designTokens.typography.monoFamily, size: Number.parseInt(designTokens.typography.sizeXs) },
           callback: (value) => CHART_AXIS_NUMBER.format(Number(value)),
         },
       },
@@ -163,7 +172,7 @@ export function CashflowChart({
   // viewport width — no collapse on mobile, no unbounded growth on desktop.
   return (
     <div className="pnl-chart">
-      <Chart type="bar" data={data} options={options} />
+      <Chart ref={chartRef} type="bar" role="img" aria-label={`Månedlige indbetalinger, udbetalinger og banksaldo i ${currency}. Alle værdier findes i tabellen nedenfor.`} aria-details={dataTableId} data={data} options={options} />
     </div>
   );
 }

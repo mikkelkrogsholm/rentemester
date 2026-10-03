@@ -7,18 +7,18 @@ import type {
   PeriodCloseReadinessResponse,
   PeriodCloseReviewResponse,
 } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 export const periodsApi = {
   /**
    * #342 — Periodelås-liste (read).
    */
-  periods: (slug: string) =>
+  periods: (slug: string, options?: ReadRequestOptions) =>
     request<PeriodsResponse>(
-      `/api/companies/${encodeURIComponent(slug)}/periods`,
+      `/api/companies/${encodeURIComponent(slug)}/periods`, options,
     ).then((r) => r.periods),
-  closeReadiness: (slug: string, periodStart: string, periodEnd: string) =>
-    request<PeriodCloseReadinessResponse>(`/api/companies/${encodeURIComponent(slug)}/periods/close-readiness?from=${encodeURIComponent(periodStart)}&to=${encodeURIComponent(periodEnd)}`).then((r) => r.packet),
+  closeReadiness: (slug: string, periodStart: string, periodEnd: string, options?: ReadRequestOptions) =>
+    request<PeriodCloseReadinessResponse>(`/api/companies/${encodeURIComponent(slug)}/periods/close-readiness?from=${encodeURIComponent(periodStart)}&to=${encodeURIComponent(periodEnd)}`, options).then((r) => r.packet),
   reviewCloseReadiness: (slug: string, periodStart: string, periodEnd: string) =>
     request<PeriodCloseReviewResponse>(`/api/companies/${encodeURIComponent(slug)}/periods/close-review`, { method: "POST", body: JSON.stringify({ periodStart, periodEnd, confirm: true }) }).then((r) => r.review),
 

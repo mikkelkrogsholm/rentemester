@@ -1,3 +1,4 @@
+import { Input, PageHeader, Select } from "../components/ui";
 // Lovgrundlag-viewer (#347) — workspace-level read-only side der viser de
 // danske regler Rentemester anvender, med klikbar SHA-256-citation pr.
 // provision og deep-links til retsinformation.dk.
@@ -17,7 +18,7 @@ import type {
 import { ErrorState, Loading } from "../components/Feedback";
 
 export function RulesView() {
-  const state = useAsync<RulesResponse>(() => api.rules(), []);
+  const state = useAsync<RulesResponse>((signal) => api.rules({ signal }), []);
   const [bundleFilter, setBundleFilter] = useState<string>("");
   const [search, setSearch] = useState("");
 
@@ -49,9 +50,9 @@ export function RulesView() {
 
   return (
     <section className="rules-view">
-      <header className="page-head">
+      <PageHeader title="Lovgrundlag">
         <div>
-          <h2>Lovgrundlag</h2>
+
           <p className="muted">
             Rentemester citerer linje for linje fra retsinformation.dk via
             SHA-256-fingeraftryk. Siden viser hvilke regler der p.t. styrer
@@ -59,11 +60,11 @@ export function RulesView() {
             regler kan kun ændres ved en PR i <code>rules/dk/</code>.
           </p>
         </div>
-      </header>
+      </PageHeader>
 
       <section className="card">
         <h3>Aktive regelbundler</h3>
-        <table className="table">
+        <div className="table-scroll"><table className="table">
           <thead>
             <tr>
               <th>Bundle</th>
@@ -86,7 +87,7 @@ export function RulesView() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </section>
 
       <section className="card">
@@ -94,7 +95,7 @@ export function RulesView() {
         <div className="filter-bar">
           <label>
             Bundle{" "}
-            <select
+            <Select
               value={bundleFilter}
               onChange={(e) => setBundleFilter(e.target.value)}
             >
@@ -104,11 +105,11 @@ export function RulesView() {
                   {b.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <label>
             Søg{" "}
-            <input
+            <Input
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -166,7 +167,7 @@ function RuleEntry({
             ({source.authority})
           </p>
         )}
-        <table className="table provisions">
+        <div className="table-scroll"><table className="table provisions">
           <thead>
             <tr>
               <th>Paragraf</th>
@@ -183,7 +184,7 @@ function RuleEntry({
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </details>
     </li>
   );

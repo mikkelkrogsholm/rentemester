@@ -29,7 +29,7 @@ describe("PurchaseOverviewView", () => {
     await userEvent.click(screen.getByRole("button", { name: "Åbn case" }));
     expect((globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.some(([, init]) => init?.method === "POST")).toBe(false);
     const dialog = await screen.findByRole("dialog", { name: "Åbn foreløbig købscase" });
-    await userEvent.click(dialog.querySelector<HTMLButtonElement>("button.btn:not(.secondary)")!);
+    await userEvent.click(dialog.querySelector<HTMLButtonElement>('button[data-variant="primary"]')!);
     const call = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find(([url, init]) => String(url).endsWith("/purchase-cases") && init?.method === "POST");
     expect(JSON.parse(String((call![1] as RequestInit).body))).toMatchObject({ source: { kind: "bank_transaction", id: 7 }, documentationOutcome: "unresolved", confirm: true });
   });
@@ -46,7 +46,7 @@ describe("PurchaseOverviewView", () => {
     expect(screen.queryByLabelText("Kilde-id")).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "Åbn case" }));
     const dialog = await screen.findByRole("dialog", { name: "Åbn foreløbig købscase" });
-    await userEvent.click(dialog.querySelector<HTMLButtonElement>("button.btn:not(.secondary)")!);
+    await userEvent.click(dialog.querySelector<HTMLButtonElement>('button[data-variant="primary"]')!);
     const call = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find(([url, init]) => String(url).endsWith("/purchase-cases") && init?.method === "POST");
     expect(JSON.parse(String((call![1] as RequestInit).body))).toMatchObject({ source: { kind: "document", id: 7 }, confirm: true });
   });
@@ -79,7 +79,7 @@ describe("PurchaseOverviewView", () => {
     await screen.findByText("Review almindeligt bilag");
     await userEvent.click(screen.getByRole("button", { name: "Review almindeligt bilag" }));
     const dialog = await screen.findByRole("dialog", { name: "Review købscase" });
-    await userEvent.click(dialog.querySelector<HTMLButtonElement>("button.btn:not(.secondary)")!);
+    await userEvent.click(dialog.querySelector<HTMLButtonElement>('button[data-variant="primary"]')!);
     const call = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find(([url, init]) => String(url).endsWith("/purchase-1/review") && init?.method === "POST");
     expect(JSON.parse(String((call![1] as RequestInit).body))).toMatchObject({ expectedVersion: 1, expectedSourceFingerprint: "a".repeat(64), documentationOutcome: "ordinary_evidence_sufficient", confirm: true });
   });
@@ -98,7 +98,7 @@ describe("PurchaseOverviewView", () => {
     await userEvent.click(screen.getByRole("button", { name: "Genvurdér ændret kilde" }));
     const dialog = await screen.findByRole("dialog", { name: "Genvurdér ændret købskilde" });
     await userEvent.type(screen.getByLabelText("Begrundelse for genvurdering"), "Kilden er opdateret");
-    await userEvent.click(dialog.querySelector<HTMLButtonElement>("button.btn:not(.secondary)")!);
+    await userEvent.click(dialog.querySelector<HTMLButtonElement>('button[data-variant="primary"]')!);
     const call = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find(([url, init]) => String(url).endsWith("/purchase-1/reassess") && init?.method === "POST");
     expect(JSON.parse(String((call![1] as RequestInit).body))).toMatchObject({ expectedVersion: 1, expectedSourceFingerprint: "a".repeat(64), currentSourceFingerprint: "c".repeat(64), reason: "Kilden er opdateret", confirm: true });
   });
@@ -117,7 +117,7 @@ describe("PurchaseOverviewView", () => {
     await userEvent.click(screen.getAllByLabelText("Vælg")[0]!);
     await userEvent.click(screen.getByRole("button", { name: "Review 1 valgt" }));
     const dialog = await screen.findByRole("dialog", { name: "Review købsdokumentation" });
-    await userEvent.click(dialog.querySelector<HTMLButtonElement>("button.btn:not(.secondary)")!);
+    await userEvent.click(dialog.querySelector<HTMLButtonElement>('button[data-variant="primary"]')!);
     const call = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find(([url, init]) => String(url).endsWith("/group-review") && init?.method === "POST");
     expect(JSON.parse(String((call![1] as RequestInit).body)).members).toEqual([{ caseId: "purchase-2", expectedVersion: 2, expectedSourceFingerprint: "c".repeat(64) }]);
   });
@@ -134,7 +134,7 @@ describe("PurchaseOverviewView", () => {
     await screen.findByText("Review almindeligt bilag");
     await userEvent.click(screen.getByRole("button", { name: "Review almindeligt bilag" }));
     const dialog = await screen.findByRole("dialog", { name: "Review købscase" });
-    await userEvent.click(dialog.querySelector<HTMLButtonElement>("button.btn:not(.secondary)")!);
+    await userEvent.click(dialog.querySelector<HTMLButtonElement>('button[data-variant="primary"]')!);
     expect(await screen.findByText("Din rolle har ikke adgang")).toBeTruthy();
     expect(screen.getByRole("dialog", { name: "Review købscase" })).toBeTruthy();
   });

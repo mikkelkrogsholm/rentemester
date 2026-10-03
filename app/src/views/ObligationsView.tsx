@@ -1,3 +1,4 @@
+import { ButtonLink, Button, PageHeader } from "../components/ui";
 // Forpligtelser — the per-company obligations view (cockpit-redesign it. 7).
 //
 // Renders `/api/companies/:slug/obligations?year=`: the "hvad skylder jeg og
@@ -8,7 +9,7 @@
 // a summary card above the table. All money fields are kroner — `formatKroner`
 // is used throughout.
 
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { formatKroner, tastSelvNumber } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
@@ -20,7 +21,7 @@ export function ObligationsView() {
   const { slug = "" } = useParams();
   const { year, setYear } = useCompanyYear();
   const state = useAsync<CompanyObligations>(
-    () => api.obligations(slug, year),
+    (signal) => api.obligations(slug, year, { signal }),
     [slug, year],
   );
 
@@ -34,20 +35,20 @@ export function ObligationsView() {
 
   return (
     <section className="statement" data-cockpit-page="obligations" data-evidence-issue="655">
-      <div className="page-head">
+      <PageHeader title="Forpligtelser" actions={<><div className="row-actions">
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+            Administrér
+          </ButtonLink>
+        </div></>}>
         <div>
-          <h2>{o.company.name}</h2>
+
           <p className="muted">
             {o.company.cvr ? `CVR ${o.company.cvr} · ` : ""}
             {o.company.country} · {currency} · Forpligtelser
           </p>
         </div>
-        <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </div>
+
+      </PageHeader>
 
       <CompanyNav
         slug={slug}
@@ -242,19 +243,19 @@ function ObligationActions({
         </a>
       )}
       {row.kind === "vat" && (
-        <Link className="btn small secondary" to={`/companies/${slug}/moms`}>
+        <ButtonLink className="btn small secondary" to={`/companies/${slug}/moms`}>
           SKAT-rubrikker
-        </Link>
+        </ButtonLink>
       )}
       {row.kind !== "annual-report" && (
-        <button
+        <Button variant="secondary"
           type="button"
           className="btn small secondary"
           onClick={copyAmount}
           aria-label={`Kopiér beløb (${formatKroner(row.amount, currency)})`}
         >
           Kopiér beløb
-        </button>
+        </Button>
       )}
     </div>
   );

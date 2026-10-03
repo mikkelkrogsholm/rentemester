@@ -61,11 +61,21 @@ describe("system backups", () => {
     migrate(db);
 
     const writerScript = join(companyRoot, "writer.ts");
+    const readyPath = join(companyRoot, "writer-ready");
+    const startPath = join(companyRoot, "writer-start");
+    const attemptedPath = join(companyRoot, "writer-attempted");
     writeFileSync(writerScript, `
-      await Bun.sleep(50);
+      const { existsSync, writeFileSync } = await import("node:fs");
       const { openDb } = await import(${JSON.stringify(join(process.cwd(), "src/core/db.ts"))});
       const db = openDb(process.argv[2]);
+      writeFileSync(process.argv[3], "ready");
+      const deadline = Date.now() + 5000;
+      while (!existsSync(process.argv[4])) {
+        if (Date.now() > deadline) throw new Error("backup lock was never acquired");
+        await Bun.sleep(5);
+      }
       const started = Date.now();
+      writeFileSync(process.argv[5], "attempted");
       db.run(
         "INSERT INTO bank_transactions (transaction_date, booking_date, text, amount, currency, reference, import_batch_id, source_file_hash, transaction_hash) VALUES (?, ?, ?, ?, 'DKK', ?, ?, ?, ?)",
         "2026-05-17",
@@ -81,13 +91,33 @@ describe("system backups", () => {
       db.close();
     `);
 
-    const writer = Bun.spawn(["bun", "run", writerScript, paths.db], {
+    const writer = Bun.spawn(["bun", "run", writerScript, paths.db, readyPath, startPath, attemptedPath], {
       cwd: process.cwd(),
       stdout: "pipe",
       stderr: "pipe",
     });
 
+    // Synchronize on process readiness and the acquired lock, not import timing.
+    const readyDeadline = Date.now() + 5000;
+    while (!existsSync(readyPath)) {
+      if (Date.now() > readyDeadline) { writer.kill(); throw new Error("writer did not become ready"); }
+      await Bun.sleep(5);
+    }
+    const originalExec = db.exec.bind(db);
+    db.exec = (sql) => {
+      const result = originalExec(sql);
+      if (sql === "BEGIN IMMEDIATE;") {
+        writeFileSync(startPath, "locked");
+        const attemptDeadline = Date.now() + 5000;
+        while (!existsSync(attemptedPath)) {
+          if (Date.now() > attemptDeadline) { writer.kill(); throw new Error("writer did not attempt its locked write"); }
+          Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5);
+        }
+      }
+      return result;
+    };
     const backup = createSystemBackup(db, companyRoot, { createdAt: "2026-05-17T02:09:00.000Z", debugHoldMs: 400 });
+    db.exec = originalExec;
     expect(backup.ok).toBe(true);
 
     const writerStdout = await new Response(writer.stdout).text();

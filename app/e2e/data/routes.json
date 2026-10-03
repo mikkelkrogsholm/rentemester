@@ -1,0 +1,368 @@
+[
+  {
+    "id": "dashboard",
+    "segment": "",
+    "label": "Status",
+    "area": "status",
+    "kind": "page"
+  },
+  {
+    "id": "attention",
+    "segment": "opmaerksomhed",
+    "label": "Kræver opmærksomhed",
+    "area": "attention",
+    "kind": "page"
+  },
+  {
+    "id": "journal",
+    "segment": "posteringer",
+    "label": "Posteringer",
+    "area": "money-documents",
+    "kind": "page"
+  },
+  {
+    "id": "drafts",
+    "segment": "kladder",
+    "label": "Kladder",
+    "area": "money-documents",
+    "kind": "page"
+  },
+  {
+    "id": "approval-policy",
+    "segment": "godkendelsespolitik",
+    "label": "Godkendelsespolitik",
+    "area": "administration",
+    "administrationGroup": "advanced",
+    "administrationPurpose": "Fastlæg sikker godkendelse af bogføring.",
+    "administrationNextStep": "Gennemgå godkendelsespolitik",
+    "kind": "page"
+  },
+  {
+    "id": "posting-rules",
+    "segment": "posteringsregler",
+    "label": "Posteringsregler",
+    "area": "administration",
+    "administrationGroup": "advanced",
+    "administrationPurpose": "Gennemgå automatiske bogføringsregler.",
+    "administrationNextStep": "Gennemgå posteringsregler",
+    "kind": "page"
+  },
+  {
+    "id": "batch-bookkeeping",
+    "segment": "batchbogfoering",
+    "label": "Bogføring",
+    "area": "money-documents",
+    "kind": "page"
+  },
+  {
+    "id": "bank",
+    "segment": "bank",
+    "label": "Bank",
+    "area": "money-documents",
+    "kind": "page"
+  },
+  {
+    "id": "documents",
+    "segment": "bilag",
+    "label": "Bilag",
+    "area": "money-documents",
+    "kind": "page"
+  },
+  {
+    "id": "payables",
+    "segment": "leverandoerfaktura",
+    "label": "Leverandørfaktura",
+    "area": "invoices",
+    "kind": "page"
+  },
+  {
+    "id": "purchase-overview",
+    "segment": "koebsoverblik",
+    "label": "Købsoverblik",
+    "area": "money-documents",
+    "kind": "page"
+  },
+  {
+    "id": "mileage",
+    "segment": "koersel",
+    "label": "Kørsel",
+    "area": "money-documents",
+    "kind": "page"
+  },
+  {
+    "id": "assets",
+    "segment": "anlaeg",
+    "label": "Anlæg",
+    "area": "money-documents",
+    "kind": "page"
+  },
+  {
+    "id": "suggestions",
+    "segment": "agent-forslag",
+    "label": "Agent-forslag",
+    "area": "attention",
+    "kind": "page"
+  },
+  {
+    "id": "exceptions",
+    "segment": "undtagelser",
+    "label": "Undtagelser",
+    "area": "attention",
+    "kind": "page"
+  },
+  {
+    "id": "invoices",
+    "segment": "fakturaer",
+    "label": "Fakturaer",
+    "area": "invoices",
+    "kind": "page"
+  },
+  {
+    "id": "invoice-templates",
+    "segment": "faktura-skabeloner",
+    "label": "Skabeloner",
+    "area": "invoices",
+    "kind": "page"
+  },
+  {
+    "id": "contacts",
+    "segment": "kontakter",
+    "label": "Kontakter",
+    "area": "knowledge",
+    "kind": "page"
+  },
+  {
+    "id": "party-hub",
+    "segment": "parter",
+    "label": "Parter",
+    "area": "knowledge",
+    "kind": "page"
+  },
+  {
+    "id": "vat",
+    "segment": "moms",
+    "label": "Moms",
+    "area": "vat-deadlines",
+    "kind": "page"
+  },
+  {
+    "id": "period-lock",
+    "segment": "periodelas",
+    "label": "Periodelås",
+    "area": "vat-deadlines",
+    "kind": "page"
+  },
+  {
+    "id": "accruals",
+    "segment": "periodisering",
+    "label": "Periodisering",
+    "area": "vat-deadlines",
+    "kind": "page"
+  },
+  {
+    "id": "income-statement",
+    "segment": "resultatopgorelse",
+    "label": "Resultatopgørelse",
+    "area": "reports",
+    "kind": "page"
+  },
+  {
+    "id": "balance",
+    "segment": "balance",
+    "label": "Balance",
+    "area": "reports",
+    "kind": "page"
+  },
+  {
+    "id": "trial-balance",
+    "segment": "saldobalance",
+    "label": "Saldobalance",
+    "area": "reports",
+    "kind": "page"
+  },
+  {
+    "id": "obligations",
+    "segment": "forpligtelser",
+    "label": "Forpligtelser",
+    "area": "reports",
+    "kind": "page"
+  },
+  {
+    "id": "liquidity",
+    "segment": "likviditet",
+    "label": "Likviditet",
+    "area": "reports",
+    "kind": "page"
+  },
+  {
+    "id": "budget",
+    "segment": "budget",
+    "label": "Budget",
+    "area": "reports",
+    "kind": "page"
+  },
+  {
+    "id": "multi-year",
+    "segment": "fleraar",
+    "label": "Flerår",
+    "area": "reports",
+    "kind": "page"
+  },
+  {
+    "id": "annual-report",
+    "segment": "aarsrapport",
+    "label": "Årsrapport",
+    "area": "reports",
+    "kind": "page"
+  },
+  {
+    "id": "workspace-register",
+    "segment": "workspace-register",
+    "label": "Styring og dokumentation",
+    "area": "administration",
+    "administrationGroup": "advanced",
+    "administrationPurpose": "Fælles styring, governance og dokumentation.",
+    "administrationNextStep": "Åbn styringen",
+    "kind": "page"
+  },
+  {
+    "id": "workspace-inbox",
+    "segment": "workspace-inbox",
+    "label": "Fælles indbakke",
+    "area": "administration",
+    "administrationGroup": "daily",
+    "administrationPurpose": "Fælles indbakke for arbejdsområdet.",
+    "administrationNextStep": "Åbn indbakken",
+    "kind": "page"
+  },
+  {
+    "id": "archive",
+    "segment": "arkiv",
+    "label": "Arkiv",
+    "area": "administration",
+    "administrationGroup": "advanced",
+    "administrationPurpose": "Læs tidligere, skrivebeskyttede regnskabsår.",
+    "administrationNextStep": "Se arkivet",
+    "kind": "page"
+  },
+  {
+    "id": "manage",
+    "segment": "manage",
+    "label": "Virksomhedsprofil",
+    "area": "administration",
+    "administrationGroup": "profile",
+    "administrationPurpose": "Redigér virksomhedens stamdata og betalingsoplysninger.",
+    "administrationNextStep": "Redigér profil",
+    "kind": "page"
+  },
+  {
+    "id": "retention",
+    "segment": "retention",
+    "label": "Opbevaring",
+    "area": "administration",
+    "administrationGroup": "advanced",
+    "administrationPurpose": "Se opbevaringspligt og udløb.",
+    "administrationNextStep": "Gennemgå opbevaring",
+    "kind": "page"
+  },
+  {
+    "id": "integrity",
+    "segment": "integritet",
+    "label": "Integritet og backup",
+    "area": "administration",
+    "administrationGroup": "advanced",
+    "administrationPurpose": "Kontrollér bogføringens integritet og backup.",
+    "administrationNextStep": "Verificér integritet",
+    "kind": "page"
+  },
+  {
+    "id": "accounts",
+    "segment": "kontoplan",
+    "label": "Kontoplan",
+    "area": "administration",
+    "administrationGroup": "daily",
+    "administrationPurpose": "Find og gennemgå konti til bogføring.",
+    "administrationNextStep": "Gennemgå kontoplan",
+    "kind": "page"
+  },
+  {
+    "id": "dimensions",
+    "segment": "dimensioner",
+    "label": "Dimensioner",
+    "area": "administration",
+    "administrationGroup": "daily",
+    "administrationPurpose": "Organisér bogføring efter fx projekt eller afdeling.",
+    "administrationNextStep": "Opret dimension",
+    "kind": "page"
+  },
+  {
+    "id": "bank-accounts",
+    "segment": "bankkonti",
+    "label": "Bankkonti",
+    "area": "administration",
+    "administrationGroup": "daily",
+    "administrationPurpose": "Registrér konti, der bruges i bankarbejdet.",
+    "administrationNextStep": "Opret bankkonto",
+    "kind": "page"
+  },
+  {
+    "id": "gdpr",
+    "segment": "gdpr",
+    "label": "GDPR",
+    "area": "administration",
+    "administrationGroup": "advanced",
+    "administrationPurpose": "Find og håndtér personoplysninger sikkert.",
+    "administrationNextStep": "Find oplysninger",
+    "kind": "page"
+  },
+  {
+    "id": "receipt-email",
+    "segment": "bilagsmail",
+    "label": "Bilagsmail",
+    "area": "administration",
+    "administrationGroup": "daily",
+    "administrationPurpose": "Modtag bilag i én fælles indbakke.",
+    "administrationNextStep": "Vælg bilagsmail",
+    "kind": "page"
+  },
+  {
+    "id": "invoice-create",
+    "segment": "fakturaer/ny",
+    "label": "Udsted faktura",
+    "area": "invoices",
+    "kind": "flow",
+    "parentId": "invoices"
+  },
+  {
+    "id": "invoice-detail",
+    "segment": "fakturaer/:documentId",
+    "label": "Fakturadetaljer",
+    "area": "invoices",
+    "kind": "flow",
+    "parentId": "invoices"
+  },
+  {
+    "id": "document-detail",
+    "segment": "bilag/:documentId",
+    "label": "Bilagsdetaljer",
+    "area": "money-documents",
+    "kind": "flow",
+    "parentId": "documents"
+  },
+  {
+    "id": "document-booking",
+    "segment": "bilag/:documentId/bogfoer",
+    "label": "Bogfør bilag",
+    "area": "money-documents",
+    "kind": "flow",
+    "parentId": "documents"
+  },
+  {
+    "id": "party-profile",
+    "segment": "parter/:partyId",
+    "label": "Partsprofil",
+    "area": "knowledge",
+    "kind": "flow",
+    "parentId": "party-hub"
+  }
+]

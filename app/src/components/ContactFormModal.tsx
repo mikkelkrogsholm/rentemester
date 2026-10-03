@@ -1,3 +1,7 @@
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useDiscardGuard } from "../lib/useDiscardGuard";
+import * as stylex from "@stylexjs/stylex";
+import { Button, Dialog, Input, Select, Textarea } from "./ui";
 // ContactFormModal — create or edit a customer/vendor from the Cockpit (#390).
 //
 // Until now the Kontakter page only exposed Import + Administrér; the only
@@ -9,7 +13,7 @@
 // Danish CVR is entered, so the data the momsangivelse later rests on is
 // correct from the start.
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { api } from "../lib/api";
 import type {
   ContactCustomerRow,
@@ -138,7 +142,7 @@ export function ContactFormModal({
   customer,
   vendor,
   onSaved,
-  onClose,
+  onClose: onDismiss,
 }: ContactFormModalProps) {
   const editing = Boolean(customer ?? vendor);
   const [form, setForm] = useState<FormState>(() => {
@@ -154,14 +158,11 @@ export function ContactFormModal({
   const closeRef = useRef<HTMLButtonElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    (nameRef.current ?? closeRef.current)?.focus();
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape" && !busy) onClose();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [busy, onClose]);
+
+
+  const outcome = useMutationOutcome(onSaved);
+  const guard = useDiscardGuard(JSON.stringify(form) !== JSON.stringify(customer ? customerToForm(customer) : vendor ? vendorToForm(vendor) : emptyForm()), onDismiss);
+  const { onClose } = guard;
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -216,6 +217,7 @@ export function ContactFormModal({
   }
 
   async function handleSave() {
+    if (outcome.isBlocked()) return;
     setError(null);
     setLocked(null);
     if (!form.name.trim()) {
@@ -252,9 +254,9 @@ export function ContactFormModal({
         if (notes !== undefined) input.notes = notes;
 
         if (customer) {
-          await api.updateCustomer(slug, customer.id, input);
+          await api.updateCustomer(slug, customer.id, input).catch(outcome.reject);
         } else {
-          await api.createCustomer(slug, input);
+          await api.createCustomer(slug, input).catch(outcome.reject);
         }
       } else {
         const input: VendorInput = { name: form.name.trim() };
@@ -279,13 +281,13 @@ export function ContactFormModal({
         if (notes !== undefined) input.notes = notes;
 
         if (vendor) {
-          await api.updateVendor(slug, vendor.id, input);
+          await api.updateVendor(slug, vendor.id, input).catch(outcome.reject);
         } else {
-          await api.createVendor(slug, input);
+          await api.createVendor(slug, input).catch(outcome.reject);
         }
       }
       onSaved();
-      onClose();
+      guard.dismiss();
     } catch (err) {
       const e = err as MaybeApiError;
       const message = e?.message ?? "Kontakten kunne ikke gemmes.";
@@ -304,21 +306,11 @@ export function ContactFormModal({
       : "Tilføj leverandør";
 
   return (
-    <div
-      className="modal-overlay"
-      role="presentation"
-      onClick={() => {
-        if (!busy) onClose();
-      }}
-    >
-      <div
-        className="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="modal-title">{title}</h3>
+    <Dialog title={title} onClose={onClose} busy={busy} initialFocusRef={nameRef}>
+    {outcome.feedback}
+      {guard.confirmation}
+
+
 
         {locked && <LockBanner message={locked} />}
         {error && <Banner kind="error">{error}</Banner>}
@@ -326,28 +318,28 @@ export function ContactFormModal({
 
         <label className="modal-field">
           Navn
-          <input
+          <Input
             ref={nameRef}
             type="text"
             value={form.name}
             onChange={(e) => update("name", e.target.value)}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
             required
           />
         </label>
 
         <label className="modal-field">
           CVR / moms-nr.
-          <div style={{ display: "flex", gap: "0.5rem" }}>
-            <input
+          <div {...stylex.props(viewStyles.site0)}>
+            <Input
               type="text"
               value={form.vatOrCvr}
               onChange={(e) => update("vatOrCvr", e.target.value)}
-              disabled={busy}
+              disabled={outcome.blocked || (busy)}
               placeholder="DK12345678 eller 12345678"
-              style={{ flex: 1 }}
+              {...stylex.props(viewStyles.site1)}
             />
-            <button
+            <Button requiredPermission="company.external-lookup" variant="secondary"
               type="button"
               className="btn secondary"
               onClick={handleCvrLookup}
@@ -355,47 +347,47 @@ export function ContactFormModal({
               title="Slå CVR-nummeret op og udfyld navn + adresse"
             >
               {cvrBusy ? "Slår op…" : "Slå CVR op"}
-            </button>
+            </Button>
           </div>
         </label>
 
         <label className="modal-field">
           E-mail
-          <input
+          <Input
             type="email"
             value={form.email}
             onChange={(e) => update("email", e.target.value)}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
           />
         </label>
 
         <label className="modal-field">
           Telefon
-          <input
+          <Input
             type="tel"
             value={form.phone}
             onChange={(e) => update("phone", e.target.value)}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
           />
         </label>
 
         <label className="modal-field">
           Adresse
-          <input
+          <Input
             type="text"
             value={form.address}
             onChange={(e) => update("address", e.target.value)}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
           />
         </label>
 
         <label className="modal-field">
           Hjemmeside
-          <input
+          <Input
             type="url"
             value={form.website}
             onChange={(e) => update("website", e.target.value)}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
           />
         </label>
 
@@ -403,35 +395,35 @@ export function ContactFormModal({
         <>
             <label className="modal-field">
               EAN-nummer (offentlige kunder)
-              <input
+              <Input
                 type="text"
                 value={form.eanNumber}
                 onChange={(e) => update("eanNumber", e.target.value)}
-                disabled={busy}
+                disabled={outcome.blocked || (busy)}
                 placeholder="13 cifre"
               />
             </label>
 
             <label className="modal-field">
               Betalingsfrist (dage)
-              <input
+              <Input
                 type="number"
                 min="1"
                 value={form.paymentTermsDays}
                 onChange={(e) => update("paymentTermsDays", e.target.value)}
-                disabled={busy}
+                disabled={outcome.blocked || (busy)}
               />
             </label>
 
             <label className="modal-field">
               Valuta
-              <input
+              <Input
                 type="text"
                 value={form.defaultCurrency}
                 onChange={(e) =>
                   update("defaultCurrency", e.target.value.toUpperCase())
                 }
-                disabled={busy}
+                disabled={outcome.blocked || (busy)}
                 maxLength={3}
                 placeholder="DKK"
               />
@@ -441,56 +433,56 @@ export function ContactFormModal({
           <>
             <label className="modal-field">
               Leverandørland (ISO)
-              <input type="text" value={form.countryCode} onChange={(e) => update("countryCode", e.target.value.toUpperCase())} maxLength={2} placeholder="DK, DE, US" disabled={busy} />
+              <Input type="text" value={form.countryCode} onChange={(e) => update("countryCode", e.target.value.toUpperCase())} maxLength={2} placeholder="DK, DE, US" disabled={outcome.blocked || (busy)} />
             </label>
             <label className="modal-field">
               Leverandøridentitet
-              <select value={form.identifierKind} onChange={(e) => update("identifierKind", e.target.value as FormState["identifierKind"])} disabled={busy}>
+              <Select value={form.identifierKind} onChange={(e) => update("identifierKind", e.target.value as FormState["identifierKind"])} disabled={outcome.blocked || (busy)}>
                 <option value="">Ikke klassificeret</option><option value="dk_cvr">Dansk CVR</option><option value="eu_vat">EU-momsnr.</option><option value="non_eu">Ikke-EU</option>
-              </select>
+              </Select>
             </label>
             <label className="modal-field">
               Standard udgiftskonto
-              <input
+              <Input
                 type="text"
                 value={form.defaultExpenseAccount}
                 onChange={(e) =>
                   update("defaultExpenseAccount", e.target.value)
                 }
-                disabled={busy}
+                disabled={outcome.blocked || (busy)}
                 placeholder="fx 3000"
               />
             </label>
 
             <label className="modal-field">
               Momsbehandling
-              <select
+              <Select
                 value={form.defaultVatTreatment}
                 onChange={(e) => update("defaultVatTreatment", e.target.value)}
-                disabled={busy}
+                disabled={outcome.blocked || (busy)}
               >
                 {VAT_TREATMENT_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
           </>
         )}
 
         <label className="modal-field">
           Noter
-          <textarea
+          <Textarea
             value={form.notes}
             onChange={(e) => update("notes", e.target.value)}
-            disabled={busy}
+            disabled={outcome.blocked || (busy)}
             rows={2}
           />
         </label>
 
         <div className="modal-actions">
-          <button
+          <Button variant="secondary"
             ref={closeRef}
             type="button"
             className="btn secondary"
@@ -498,17 +490,22 @@ export function ContactFormModal({
             disabled={busy}
           >
             Annullér
-          </button>
-          <button
+          </Button>
+          <Button requiredPermission="company.master-data"
             type="button"
             className="btn"
             onClick={handleSave}
-            disabled={busy || !form.name.trim()}
+            disabled={outcome.blocked || (busy || !form.name.trim())}
           >
             {busy ? "Gemmer…" : editing ? "Gem ændringer" : "Opret"}
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+
+    </Dialog>
   );
 }
+
+const viewStyles = stylex.create({
+site0: { display: "flex", gap: "0.5rem" },
+site1: { flex: 1 }
+});

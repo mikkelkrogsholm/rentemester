@@ -1,3 +1,7 @@
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useUnsavedChanges } from "../lib/useUnsavedChanges";
+import * as stylex from "@stylexjs/stylex";
+import { ButtonLink, Button, Input, PageHeader, Select } from "../components/ui";
 // Company management — rename the display name, sync CVR stamdata, and
 // archive/restore.
 //
@@ -40,20 +44,21 @@ const VAT_PERIOD_OPTIONS: Array<{ value: VatPeriodType | "none"; label: string }
 export function ManageCompanyView() {
   const { slug = "" } = useParams();
   const navigate = useNavigate();
-  const state = useAsync(async () => {
-    const companies = await api.companies();
+  const state = useAsync(async (signal) => {
+    const companies = await api.companies({ signal });
     const found = companies.find((c) => c.slug === slug);
     if (!found) throw new ApiError("not_found", "Virksomheden findes ikke.", 404);
-    const settings = await api.companySettings(slug);
+    const settings = await api.companySettings(slug, { signal });
     return { found, settings };
   }, [slug]);
 
-  if (state.loading) return <section data-evidence-issue="657"><h2 data-evidence-heading>Administration</h2><p data-evidence-status="loading">Henter virksomhedsprofil</p><Loading /></section>;
-  if (state.error)
+  if (state.loading && !state.data) return <section data-evidence-issue="657"><h2 data-evidence-heading>Administration</h2><p data-evidence-status="loading">Henter virksomhedsprofil</p><Loading /></section>;
+  if (state.error && !state.data)
     return <section data-evidence-issue="657"><h2 data-evidence-heading>Administration</h2><p data-evidence-status={/403|forbudt|adgang/i.test(state.error) ? "warning-or-blocked" : "error"}>{/403|forbudt|adgang/i.test(state.error) ? "Virksomhedsprofil kræver afklaring" : "Virksomhedsprofil kunne ikke hentes"}</p><ErrorState message={state.error} onRetry={state.reload} /></section>;
 
   return (
     <ManageForm
+      onRefresh={state.reload}
       company={state.data!.found}
       settings={state.data!.settings}
       onArchivedAway={() => navigate("/")}
@@ -66,10 +71,12 @@ function hasIncompleteAdministrativeProfile(settings: CompanySettings) {
 }
 
 function ManageForm({
+  onRefresh,
   company,
   settings,
   onArchivedAway,
 }: {
+  onRefresh: () => void;
   company: CompanyEntry;
   settings: CompanySettings;
   onArchivedAway: () => void;
@@ -90,15 +97,19 @@ function ManageForm({
   const renameDisabled =
     busy || name.trim().length === 0 || name.trim() === savedName;
 
+  const outcome = useMutationOutcome(onRefresh);
+  useUnsavedChanges(name.trim() !== savedName.trim());
+
   async function rename(e: React.FormEvent) {
     e.preventDefault();
+    if (outcome.isBlocked()) return;
     setBusy(true);
     setError(null);
     setNotice(null);
     try {
       const updated = await api.updateCompany(company.slug, {
         name: name.trim(),
-      });
+      }).catch(outcome.reject);
       setSavedName(updated.name);
       setName(updated.name);
       setNotice("Visningsnavn opdateret.");
@@ -111,11 +122,12 @@ function ManageForm({
 
   // Restoring is non-destructive and keeps the owner on the page — one click.
   async function restoreCompany() {
+    if (outcome.isBlocked()) return;
     setBusy(true);
     setError(null);
     setNotice(null);
     try {
-      await api.updateCompany(company.slug, { archived: false });
+      await api.updateCompany(company.slug, { archived: false }).catch(outcome.reject);
       setArchived(false);
       setNotice("Virksomheden er gendannet.");
     } catch (err) {
@@ -131,24 +143,24 @@ function ManageForm({
   // the dialog surfaces the error (and the backup-lock conflict) inline rather
   // than navigating away on a half-finished write.
   async function confirmArchive() {
-    await api.updateCompany(company.slug, { archived: true });
+    await api.updateCompany(company.slug, { archived: true }).catch(outcome.reject);
     onArchivedAway();
   }
 
   return (
     <section data-cockpit-page="manage" data-evidence-issue="657">
-      <div className="page-head">
+    {outcome.feedback}
+      <PageHeader evidenceHeading title="Administration" actions={<><ButtonLink className="btn secondary" to={`/companies/${company.slug}`}>
+          Tilbage til regnskab
+        </ButtonLink></>}>
         <div>
-          <h2 data-evidence-heading>Administration</h2>
-          <p className="muted" data-evidence-status={hasIncompleteAdministrativeProfile(settings) ? "empty" : "normal"}>{hasIncompleteAdministrativeProfile(settings) ? "Ingen administrationsoplysninger endnu" : "Administration klar"}</p>
+
           <p className="muted">
             Hold virksomhedens profil og den daglige opsætning på plads.
           </p>
         </div>
-        <Link className="btn secondary" to={`/companies/${company.slug}`}>
-          Tilbage til regnskab
-        </Link>
-      </div>
+
+      <p className="muted" data-evidence-status={hasIncompleteAdministrativeProfile(settings) ? "empty" : "normal"}>{hasIncompleteAdministrativeProfile(settings) ? "Ingen administrationsoplysninger endnu" : "Administration klar"}</p></PageHeader>
 
       {error && <Banner kind="error">{error}</Banner>}
       {notice && <Banner kind="success">{notice}</Banner>}
@@ -159,7 +171,7 @@ function ManageForm({
       <form className="form" onSubmit={rename} aria-label="Omdøb virksomhed">
         <label>
           Visningsnavn
-          <input
+          <Input disabled={outcome.blocked}
             name="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -169,9 +181,9 @@ function ManageForm({
           </span>
         </label>
         <div className="row-actions">
-          <button className="btn" type="submit" disabled={renameDisabled}>
+          <Button requiredPermission="company.admin" className="btn" type="submit" disabled={outcome.blocked || (renameDisabled)}>
             Gem navn
-          </button>
+          </Button>
         </div>
       </form>
 
@@ -206,8 +218,8 @@ function ManageForm({
         <summary>System- og livscyklusindstillinger</summary>
       <AccountantExportCard slug={company.slug} />
 
-      <div className="card" style={{ marginTop: 24, maxWidth: 460 }}>
-        <h3 style={{ marginTop: 0 }}>
+      <div className={["card", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
+        <h3 {...stylex.props(viewStyles.site1)}>
           {archived ? "Gendan virksomhed" : "Arkivér virksomhed"}
         </h3>
         <p className="muted">
@@ -215,16 +227,16 @@ function ManageForm({
             ? "Virksomheden er arkiveret. Gendan den for at vise den i porteføljen igen."
             : "Arkivering skjuler virksomheden fra den aktive portefølje. Regnskabsdata slettes aldrig og kan gendannes."}
         </p>
-        <button
+        <Button requiredPermission="company.admin" variant="secondary"
           className="btn secondary"
           type="button"
           onClick={
             archived ? restoreCompany : () => setConfirmingArchive(true)
           }
-          disabled={busy}
+          disabled={outcome.blocked || (busy)}
         >
           {archived ? "Gendan virksomhed" : "Arkivér virksomhed"}
-        </button>
+        </Button>
       </div>
 
       {confirmingArchive && (
@@ -240,7 +252,7 @@ function ManageForm({
           confirmLabel="Arkivér virksomhed"
           confirmKind="danger"
           onConfirm={confirmArchive}
-          onClose={() => setConfirmingArchive(false)}
+          onClose={() => setConfirmingArchive(false)} onRefresh={onRefresh}
         />
       )}
       </details>
@@ -296,8 +308,12 @@ function ProfileCard({
         settings.payment.iban),
   );
 
+  const outcome = useMutationOutcome(async () => { await api.companySettings(slug); setNotice("Gemte stamdata er hentet. Indtastningerne i formularen er bevaret."); });
+  useUnsavedChanges(address.trim() !== (settings.address ?? "") || postalCode.trim() !== (settings.postalCode ?? "") || city.trim() !== (settings.city ?? "") || vatPeriodType !== (settings.vatPeriodType ?? "none") || bankName.trim() !== (settings.payment?.bankName ?? "") || registrationNo.trim() !== (settings.payment?.registrationNo ?? "") || accountNo.trim() !== (settings.payment?.accountNo ?? "") || iban.trim() !== (settings.payment?.iban ?? ""));
+
   async function save(e: React.FormEvent) {
     e.preventDefault();
+    if (outcome.isBlocked()) return;
     setBusy(true);
     setError(null);
     setNotice(null);
@@ -315,7 +331,7 @@ function ProfileCard({
           accountNo: accountNo.trim(),
           iban: iban.trim(),
         },
-      });
+      }).catch(outcome.reject);
       setSettings(updated);
       setVatPeriodType(updated.vatPeriodType ?? "none");
       setNotice("Stamdata opdateret.");
@@ -331,8 +347,9 @@ function ProfileCard({
   }
 
   return (
-    <div className="card" style={{ marginTop: 24, maxWidth: 460 }}>
-      <h3 style={{ marginTop: 0 }}>Stamdata og bankoplysninger</h3>
+    <div className={["card", stylex.props(viewStyles.site2).className].filter(Boolean).join(" ")} >
+    {outcome.feedback}
+      <h3 {...stylex.props(viewStyles.site3)}>Stamdata og bankoplysninger</h3>
       <p className="muted">
         Virksomhedens egen adresse og bankkonto. Bankkontoen vises som
         betalingsoplysninger på alle fakturaer du udsteder.
@@ -350,7 +367,7 @@ function ProfileCard({
       <form className="form" onSubmit={save} aria-label="Rediger stamdata">
         <label>
           Adresse
-          <input
+          <Input disabled={outcome.blocked}
             name="address"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
@@ -359,7 +376,7 @@ function ProfileCard({
         </label>
         <label>
           Postnummer
-          <input
+          <Input disabled={outcome.blocked}
             name="postalCode"
             value={postalCode}
             onChange={(e) => setPostalCode(e.target.value)}
@@ -368,7 +385,7 @@ function ProfileCard({
         </label>
         <label>
           By
-          <input
+          <Input disabled={outcome.blocked}
             name="city"
             value={city}
             onChange={(e) => setCity(e.target.value)}
@@ -377,7 +394,7 @@ function ProfileCard({
         </label>
         <label>
           Momsperiode
-          <select
+          <Select disabled={outcome.blocked}
             name="vatPeriodType"
             value={vatPeriodType}
             onChange={(e) =>
@@ -389,7 +406,7 @@ function ProfileCard({
                 {o.label}
               </option>
             ))}
-          </select>
+          </Select>
           <span className="field-hint">
             Den momsperiode virksomheden er registreret for hos SKAT.
             Momsperioder og -frister følger dette valg. Vælg «Ikke
@@ -399,7 +416,7 @@ function ProfileCard({
         </label>
         <label>
           Pengeinstitut
-          <input
+          <Input disabled={outcome.blocked}
             name="bankName"
             value={bankName}
             onChange={(e) => setBankName(e.target.value)}
@@ -408,7 +425,7 @@ function ProfileCard({
         </label>
         <label>
           Registreringsnummer
-          <input
+          <Input disabled={outcome.blocked}
             name="registrationNo"
             value={registrationNo}
             onChange={(e) => setRegistrationNo(e.target.value)}
@@ -417,7 +434,7 @@ function ProfileCard({
         </label>
         <label>
           Kontonummer
-          <input
+          <Input disabled={outcome.blocked}
             name="accountNo"
             value={accountNo}
             onChange={(e) => setAccountNo(e.target.value)}
@@ -426,7 +443,7 @@ function ProfileCard({
         </label>
         <label>
           IBAN (valgfrit)
-          <input
+          <Input disabled={outcome.blocked}
             name="iban"
             value={iban}
             onChange={(e) => setIban(e.target.value)}
@@ -437,9 +454,9 @@ function ProfileCard({
           </span>
         </label>
         <div className="row-actions">
-          <button className="btn" type="submit" disabled={busy}>
+          <Button requiredPermission="company.admin" className="btn" type="submit" disabled={outcome.blocked || (busy)}>
             {busy ? "Gemmer…" : "Gem stamdata"}
-          </button>
+          </Button>
         </div>
       </form>
     </div>
@@ -487,13 +504,15 @@ function CvrCard({ slug, initial }: { slug: string; initial: CompanySettings }) 
     };
   }, []);
 
+  const outcome = useMutationOutcome(async () => { await api.companySettings(slug); setNotice("Gemte CVR-oplysninger er hentet. Kontrollér oplysningerne ved næste åbning af formularen."); });
   async function sync() {
+    if (outcome.isBlocked()) return;
     setBusy(true);
     setError(null);
     setNotice(null);
     setFiscalWarning(null);
     try {
-      const result = await api.syncCvr(slug);
+      const result = await api.syncCvr(slug).catch(outcome.reject);
       if (!result.ok) {
         setError(translateCvrError(result.errors[0]));
         return;
@@ -533,8 +552,9 @@ function CvrCard({ slug, initial }: { slug: string; initial: CompanySettings }) 
       : undefined;
 
   return (
-    <div className="card" style={{ marginTop: 24, maxWidth: 460 }}>
-      <h3 style={{ marginTop: 0 }}>CVR-stamdata</h3>
+    <div className={["card", stylex.props(viewStyles.site4).className].filter(Boolean).join(" ")} >
+    {outcome.feedback}
+      <h3 {...stylex.props(viewStyles.site5)}>CVR-stamdata</h3>
 
       {error && <Banner kind="error">{error}</Banner>}
       {notice && <Banner kind="success">{notice}</Banner>}
@@ -603,7 +623,7 @@ function CvrCard({ slug, initial }: { slug: string; initial: CompanySettings }) 
         </dl>
       )}
 
-      <button
+      <Button requiredPermission="company.external-lookup" variant="secondary"
         className="btn secondary"
         type="button"
         onClick={sync}
@@ -611,7 +631,7 @@ function CvrCard({ slug, initial }: { slug: string; initial: CompanySettings }) 
         title={buttonTitle}
       >
         {busy ? "Henter…" : "Hent fra CVR"}
-      </button>
+      </Button>
       <p className="field-hint">
         Kræver dit virk.dk-login. Konfigurér det én gang under CVR-login —{" "}
         regnskabsåret ændres aldrig automatisk.
@@ -658,3 +678,12 @@ function cvrAddressLine(settings: CompanySettings): string | null {
   const full = [settings.address, cityLine].filter((p) => p && p.length > 0).join(", ");
   return full.length > 0 ? full : null;
 }
+
+const viewStyles = stylex.create({
+site0: { marginTop: 24, maxWidth: 460 },
+site1: { marginTop: 0 },
+site2: { marginTop: 24, maxWidth: 460 },
+site3: { marginTop: 0 },
+site4: { marginTop: 24, maxWidth: 460 },
+site5: { marginTop: 0 }
+});

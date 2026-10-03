@@ -1,3 +1,6 @@
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useDiscardGuard } from "../lib/useDiscardGuard";
+import { Button, Dialog, Select } from "./ui";
 // BankReconcileModal — the cockpit's one-click match of an unmatched bank row
 // against an open sales invoice (#365).
 //
@@ -53,18 +56,23 @@ export function BankReconcileModal({
   slug,
   transaction,
   onReconciled,
-  onClose,
+  onClose: onDismiss,
 }: BankReconcileModalProps) {
   const [openInvoices, setOpenInvoices] = useState<CompanyInvoiceRow[] | null>(
     null,
   );
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<number | "">("");
+  const [selectionChanged, setSelectionChanged] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [locked, setLocked] = useState<string | null>(null);
   const [done, setDone] = useState<InvoiceSettleSummary | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+
+  const outcome = useMutationOutcome(onReconciled);
+  const guard = useDiscardGuard(!done && selectionChanged, onDismiss);
+  const { onClose } = guard;
 
   // Load the company's invoices once; filter to those with an open balance.
   useEffect(() => {
@@ -89,16 +97,10 @@ export function BankReconcileModal({
   }, [slug]);
 
   // Move focus into the dialog and let Escape dismiss it — basic modal hygiene.
-  useEffect(() => {
-    closeRef.current?.focus();
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape" && !busy) onClose();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [busy, onClose]);
+
 
   async function handleBook() {
+    if (outcome.isBlocked()) return;
     if (typeof selectedId !== "number") {
       setError("Vælg en faktura at matche mod.");
       return;
@@ -111,7 +113,7 @@ export function BankReconcileModal({
         invoiceDocumentId: selectedId,
         bankTransactionId: transaction.id,
         paymentDate: transaction.date,
-      });
+      }).catch(outcome.reject);
       setDone(summary);
       onReconciled();
     } catch (err) {
@@ -128,21 +130,11 @@ export function BankReconcileModal({
   const noneMatchable = openInvoices !== null && openInvoices.length === 0;
 
   return (
-    <div
-      className="modal-overlay"
-      role="presentation"
-      onClick={() => {
-        if (!busy) onClose();
-      }}
-    >
-      <div
-        className="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Bogfør banktransaktion"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="modal-title">Bogfør banktransaktion</h3>
+    <Dialog title="Bogfør banktransaktion" onClose={onClose} busy={busy} initialFocusRef={closeRef}>
+    {outcome.feedback}
+      {guard.confirmation}
+
+
 
         {done ? (
           <>
@@ -159,14 +151,14 @@ export function BankReconcileModal({
               )}
             </div>
             <div className="modal-actions">
-              <button
+              <Button
                 type="button"
                 className="btn"
                 ref={closeRef}
                 onClick={onClose}
               >
                 Luk
-              </button>
+              </Button>
             </div>
           </>
         ) : (
@@ -190,21 +182,22 @@ export function BankReconcileModal({
             <label className="modal-field">
               Match mod faktura
               {openInvoices === null ? (
-                <select disabled>
+                <Select disabled>
                   <option>Henter fakturaer…</option>
-                </select>
+                </Select>
               ) : noneMatchable ? (
-                <select disabled>
+                <Select disabled>
                   <option>Ingen åbne fakturaer at matche mod</option>
-                </select>
+                </Select>
               ) : (
-                <select
+                <Select
                   value={selectedId === "" ? "" : String(selectedId)}
                   onChange={(e) => {
+                    setSelectionChanged(true);
                     const v = e.target.value;
                     setSelectedId(v === "" ? "" : Number(v));
                   }}
-                  disabled={busy}
+                  disabled={outcome.blocked || (busy)}
                 >
                   <option value="">— vælg faktura —</option>
                   {openInvoices.map((inv) => (
@@ -214,37 +207,37 @@ export function BankReconcileModal({
                       {formatKroner(inv.openBalance, inv.currency)} åben
                     </option>
                   ))}
-                </select>
+                </Select>
               )}
             </label>
 
             <div className="modal-actions">
-              <button
+              <Button variant="secondary"
                 type="button"
                 className="btn secondary"
                 onClick={onClose}
                 disabled={busy}
               >
                 Annullér
-              </button>
-              <button
+              </Button>
+              <Button requiredPermission="company.ledger.post"
                 type="button"
                 className="btn"
                 onClick={handleBook}
                 disabled={
-                  busy ||
+                  outcome.blocked || (busy ||
                   noneMatchable ||
                   openInvoices === null ||
-                  typeof selectedId !== "number"
+                  typeof selectedId !== "number")
                 }
               >
                 {busy ? "Bogfører…" : "Bogfør"}
-              </button>
+              </Button>
             </div>
           </>
         )}
-      </div>
-    </div>
+
+    </Dialog>
   );
 }
 

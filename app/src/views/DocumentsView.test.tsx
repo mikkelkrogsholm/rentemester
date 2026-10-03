@@ -77,7 +77,7 @@ describe("DocumentsView — Bilag", () => {
     expect(await screen.findByText(/Navne er kun søgehjælp/)).toBeInTheDocument();
     await screen.findByRole("option", { name: "Leverandør ApS" });
     expect(screen.getByRole("button", { name: "Vis plan" })).toBeDisabled();
-    await userEvent.selectOptions(screen.getByLabelText("Vælg kanonisk part"), "party-1");
+    await userEvent.selectOptions(screen.getByLabelText("Vælg registreret modpart"), "party-1");
     await userEvent.click(screen.getByRole("button", { name: "Vis plan" }));
     expect(await screen.findByText("Plan klar")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Bekræft og anvend" })).toBeDisabled();
@@ -90,7 +90,7 @@ describe("DocumentsView — Bilag", () => {
     mockFetch(route());
     renderView();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Bilag" }),
     ).toBeInTheDocument();
     expect(screen.getByText("DOC-2026-000001")).toBeInTheDocument();
     expect(screen.getByText("Leverandør ApS")).toBeInTheDocument();
@@ -223,7 +223,7 @@ describe("DocumentsView — Bilag", () => {
   test("a live year offers an Indlæs bilag action", async () => {
     mockFetch(route());
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Bilag" });
     expect(
       screen.getByRole("button", { name: "Indlæs bilag" }),
     ).toBeInTheDocument();
@@ -233,7 +233,7 @@ describe("DocumentsView — Bilag", () => {
     mockFetch(route());
     // The URL pins the archived year 2025; its fiscal-year source is `archive`.
     renderView("/companies/acme-aps/bilag?year=2025");
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Bilag" });
     expect(
       screen.queryByRole("button", { name: "Indlæs bilag" }),
     ).not.toBeInTheDocument();
@@ -269,7 +269,7 @@ describe("DocumentsView — Bilag", () => {
       }),
     );
     renderView();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Bilag" });
     expect(
       screen.queryByRole("link", { name: "Åbn bilag" }),
     ).not.toBeInTheDocument();
@@ -381,5 +381,45 @@ describe("DocumentsView — Bilag", () => {
     await screen.findByText("Energinet");
     expect(screen.queryByText("Brother Nordic")).not.toBeInTheDocument();
     expect(screen.queryByText("Føtex")).not.toBeInTheDocument();
+  });
+});
+
+describe("DocumentsView — unique documents and full-page links", () => {
+  test("groups associations without double counting and searches every posting", async () => {
+    const first = documents().documents[0]!;
+    mockFetch(route({ documents: [first, { ...first, journalEntryNo: "B-2026-0003", journalEntryId: 3, journalEntryText: "Anden tilknyttet postering", voucherRef: "3" }] }));
+    renderView();
+    expect(await screen.findByText("DOC-2026-000001")).toBeInTheDocument();
+    expect(screen.getAllByText("DOC-2026-000001")).toHaveLength(1);
+    expect(screen.getByText(/1 bilag/)).toHaveTextContent("1 bogført · 0 ubehandlet");
+    expect(screen.getByText(/B-2026-0002/)).toBeInTheDocument();
+    expect(screen.getByText(/B-2026-0003/)).toBeInTheDocument();
+    expect(screen.getAllByText(/1.250,00/)).toHaveLength(1);
+    await userEvent.type(screen.getByPlaceholderText(/Søg på leverandør/), "anden tilknyttet");
+    expect(screen.getByText("DOC-2026-000001")).toBeInTheDocument();
+  });
+  test("unbooked action links to its full-page flow with exact list context", async () => {
+    const first = documents().documents[0]!;
+    mockFetch(route({ documents: [{ ...first, journalEntryNo: null, journalEntryId: null, journalEntryTotal: null }], linkedCount: 0, unlinkedCount: 1 }));
+    renderView("/companies/acme-aps/bilag?year=2026&status=unbooked&q=leverandør&sort=amount&dir=desc");
+    const link = await screen.findByRole("link", { name: "Bogfør bilag" });
+    const target = new URL(link.getAttribute("href")!, "https://rentemester.invalid");
+    expect(target.pathname).toBe("/companies/acme-aps/bilag/1/bogfoer");
+    const back = new URL(target.searchParams.get("returnTo")!, "https://rentemester.invalid");
+    expect(back.searchParams.get("q")).toBe("leverandør");
+    expect(back.searchParams.get("status")).toBe("unbooked");
+    expect(back.searchParams.get("sort")).toBe("amount");
+  });
+  test("filters before pagination and resets page after a search change", async () => {
+    const first = documents().documents[0]!;
+    const rows = Array.from({ length: 60 }, (_, index) => ({ ...first, id: index + 1, documentNo: `DOC-${String(index + 1).padStart(3, "0")}` }));
+    mockFetch(route({ documents: rows }));
+    renderView("/companies/acme-aps/bilag?page=2");
+    await screen.findByText("DOC-051");
+    expect(screen.queryByText("DOC-001")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("row")).toHaveLength(11);
+    await userEvent.type(screen.getByPlaceholderText(/Søg på leverandør/), "DOC-001");
+    expect(screen.getByText("DOC-001")).toBeInTheDocument();
+    expect(screen.getByText("Side 1 af 1")).toBeInTheDocument();
   });
 });

@@ -1,3 +1,7 @@
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useDiscardGuard } from "../lib/useDiscardGuard";
+import { useCapabilities } from "../lib/useCapabilities";
+import { ButtonLink, Dialog, Button, Input, PageHeader, Select, Textarea } from "../components/ui";
 // Periodelås view (#342) — per-virksomhed regnskabsperioder med
 // effective status (åben/lukket/indberettet), 'Luk periode'-knap +
 // 'Genåbn periode'-knap. Cockpittet er en tynd skal over de
@@ -5,7 +9,7 @@
 // endpoints — ingen ny core-logik introduceres.
 
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { todayIso } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
@@ -38,28 +42,21 @@ export function PeriodsView() {
     useState<AccountingPeriodRow | null>(null);
 
   const state = useAsync<CompanyPeriods>(
-    () => api.periods(slug),
+    (signal) => api.periods(slug, { signal }),
     [slug, refresh],
   );
 
   const doneRefresh = () => setRefresh((n) => n + 1);
 
-  if (state.loading) return <Loading />;
-  if (state.error) return <ErrorState message={state.error} />;
+  if (state.loading && !state.data) return <Loading />;
+  if (state.error && !state.data) return <ErrorState message={state.error} onRetry={state.reload} />;
   const data = state.data!;
 
   return (
     <section className="periods-view" data-cockpit-page="period-lock" data-evidence-issue="655">
-      <header className="page-head">
-        <div>
-          <h2>{data.company.name}</h2>
-          <p className="muted">
-            {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
-            {data.company.country} · Periodelås
-          </p>
-        </div>
-        <div className="row-actions">
-          <button
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+      <PageHeader title="Perioder og låsning" actions={<><div className="row-actions">
+          <Button requiredPermission="company.review"
             type="button"
             className="btn primary"
             onClick={() => {
@@ -68,12 +65,20 @@ export function PeriodsView() {
             }}
           >
             Luk periode …
-          </button>
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
+          </Button>
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
-          </Link>
+          </ButtonLink>
+        </div></>}>
+        <div>
+
+          <p className="muted">
+            {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
+            {data.company.country} · Periodelås
+          </p>
         </div>
-      </header>
+
+      </PageHeader>
 
       <p className="muted">
         En lukket periode kan ikke modtage nye posteringer. En indberettet
@@ -134,7 +139,7 @@ export function PeriodsView() {
                   <td className="muted">{p.reference ?? "—"}</td>
                   <td>
                     {p.effectiveStatus === "closed" && (
-                      <button
+                      <Button requiredPermission="company.review" variant="secondary"
                         type="button"
                         className="btn small secondary"
                         onClick={() => {
@@ -143,7 +148,7 @@ export function PeriodsView() {
                         }}
                       >
                         Genåbn …
-                      </button>
+                      </Button>
                     )}
                     {p.effectiveStatus === "reported" && (
                       <span className="muted">
@@ -162,6 +167,7 @@ export function PeriodsView() {
         <ClosePeriodModal
           slug={slug}
           onClose={() => setOpenClose(false)}
+          onRefresh={state.reload}
           onDone={() => {
             setOpenClose(false);
             doneRefresh();
@@ -174,6 +180,7 @@ export function PeriodsView() {
           slug={slug}
           target={reopenTarget}
           onClose={() => setReopenTarget(null)}
+          onRefresh={state.reload}
           onDone={() => {
             setReopenTarget(null);
             doneRefresh();
@@ -187,15 +194,18 @@ export function PeriodsView() {
 
 function ClosePeriodModal({
   slug,
-  onClose,
+  onClose: onDismiss,
+  onRefresh,
   onDone,
   onError,
 }: {
   slug: string;
   onClose: () => void;
+  onRefresh: () => void;
   onDone: () => void;
   onError: (msg: string) => void;
 }) {
+  const { can } = useCapabilities();
   const [periodStart, setPeriodStart] = useState("");
   const [periodEnd, setPeriodEnd] = useState("");
   const [kind, setKind] = useState<AccountingPeriodKind>("vat_period");
@@ -210,8 +220,11 @@ function ClosePeriodModal({
   const [futureEndAcknowledged, setFutureEndAcknowledged] = useState(false);
   const periodEndsInFuture = periodEnd !== "" && periodEnd > todayIso();
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const outcome = useMutationOutcome(onRefresh);
+  const guard = useDiscardGuard(Boolean(periodStart || periodEnd || reference || packet || force || forceReason || futureEndAcknowledged) || kind !== "vat_period", onDismiss);
+  const { onClose } = guard;
+
+  const submit = async (e: React.FormEvent) => {e.preventDefault(); if (outcome.isBlocked()) return;
     if (periodEndsInFuture && !futureEndAcknowledged) {
       onError(
         "Bekræft først at du vil lukke en periode der ikke er afsluttet endnu — sæt flueben i feltet nedenfor.",
@@ -225,7 +238,7 @@ function ClosePeriodModal({
         setSubmitting(false);
         return;
       }
-      const review = await api.reviewCloseReadiness(slug, periodStart, periodEnd);
+      const review = await api.reviewCloseReadiness(slug, periodStart, periodEnd).catch(outcome.reject);
       if (review.packet.hash !== packet.hash) {
         setPacket(review.packet);
         onError("Grundlaget ændrede sig. Kontrollér den nye packet før lukning.");
@@ -240,7 +253,8 @@ function ClosePeriodModal({
         packetHash: review.packet.hash,
         reviewId: review.id,
         ...(force ? { force: true, reason: forceReason } : {}),
-      });
+      }).catch(outcome.reject);
+      guard.dismiss();
       onDone();
     } catch (err) {
       onError(
@@ -251,13 +265,15 @@ function ClosePeriodModal({
   };
 
   return (
-    <div className="modal-overlay" role="dialog" aria-modal="true">
-      <div className="modal">
-        <h3>Luk periode</h3>
+    <Dialog title="Luk periode" onClose={onClose} busy={submitting}>
+    {outcome.feedback}
+      {guard.confirmation}
+
+
         <form onSubmit={submit}>
           <label>
             Start (YYYY-MM-DD)
-            <input
+            <Input disabled={outcome.blocked}
               type="date"
               value={periodStart}
               onChange={(e) => setPeriodStart(e.target.value)}
@@ -268,13 +284,13 @@ function ClosePeriodModal({
             <p className="muted">Kontrolleret: {packet.blockers} blokeringer, {packet.warnings} advarsler. Gennemgå resultatet og vælg derefter “Gem review og luk”.</p>
             {packet.blockers > 0 && <>
               <div className="callout danger">Blokeringer: {packet.items.filter((item) => item.status === "blocked" || item.status === "unavailable").map((item) => item.code).join(", ")}</div>
-              <label className="confirm-ack"><input type="checkbox" checked={force} onChange={(e) => setForce(e.target.checked)} /> Anmod om force-lukning af alene fravigelige blokeringer</label>
-              {force && <label>Begrundelse for force-lukning<textarea value={forceReason} onChange={(e) => setForceReason(e.target.value)} required rows={2} /></label>}
+              {can("company.period.force-close") && <label className="confirm-ack"><Input disabled={outcome.blocked} type="checkbox" checked={force} onChange={(e) => setForce(e.target.checked)} /> Anmod om force-lukning af alene fravigelige blokeringer</label>}
+              {force && <label>Begrundelse for force-lukning<Textarea disabled={outcome.blocked} value={forceReason} onChange={(e) => setForceReason(e.target.value)} required rows={2} /></label>}
             </>}
           </>}
           <label>
             Slut (YYYY-MM-DD)
-            <input
+            <Input disabled={outcome.blocked}
               type="date"
               value={periodEnd}
               onChange={(e) => setPeriodEnd(e.target.value)}
@@ -283,18 +299,18 @@ function ClosePeriodModal({
           </label>
           <label>
             Type
-            <select
+            <Select disabled={outcome.blocked}
               value={kind}
               onChange={(e) => setKind(e.target.value as AccountingPeriodKind)}
             >
               <option value="vat_period">Momsperiode</option>
               <option value="fiscal_year">Regnskabsår</option>
               <option value="custom">Andet</option>
-            </select>
+            </Select>
           </label>
           <label>
             Reference (valgfri)
-            <input
+            <Input disabled={outcome.blocked}
               type="text"
               value={reference}
               onChange={(e) => setReference(e.target.value)}
@@ -313,7 +329,7 @@ function ClosePeriodModal({
                 forbi. En periode lukket ved en fejl kan genåbnes herfra.
               </div>
               <label className="confirm-ack">
-                <input
+                <Input disabled={outcome.blocked}
                   type="checkbox"
                   checked={futureEndAcknowledged}
                   onChange={(e) => setFutureEndAcknowledged(e.target.checked)}
@@ -324,43 +340,48 @@ function ClosePeriodModal({
             </>
           )}
           <div className="row-actions">
-            <button
+            <Button requiredPermission={force ? "company.period.force-close" : "company.review"}
               type="submit"
               className="btn primary"
               disabled={
-                submitting || (periodEndsInFuture && !futureEndAcknowledged) || (packet?.blockers !== 0 && (!force || !forceReason.trim()))
+                outcome.blocked || (submitting || (periodEndsInFuture && !futureEndAcknowledged) || (packet?.blockers !== 0 && (!force || !forceReason.trim())))
               }
             >
               {submitting ? "Arbejder …" : packet ? "Gem review og luk" : "Kontrollér"}
-            </button>
-            <button type="button" className="btn secondary" onClick={onClose}>
+            </Button>
+            <Button variant="secondary" type="button" className="btn secondary" onClick={onClose}>
               Annullér
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+
+    </Dialog>
   );
 }
 
 function ReopenPeriodModal({
   slug,
   target,
-  onClose,
+  onClose: onDismiss,
+  onRefresh,
   onDone,
   onError,
 }: {
   slug: string;
   target: AccountingPeriodRow;
   onClose: () => void;
+  onRefresh: () => void;
   onDone: () => void;
   onError: (msg: string) => void;
 }) {
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const outcome = useMutationOutcome(onRefresh);
+  const guard = useDiscardGuard(Boolean(reason), onDismiss);
+  const { onClose } = guard;
+
+  const submit = async (e: React.FormEvent) => {e.preventDefault(); if (outcome.isBlocked()) return;
     setSubmitting(true);
     try {
       await api.reopenPeriod(slug, {
@@ -368,7 +389,8 @@ function ReopenPeriodModal({
         periodEnd: target.periodEnd,
         kind: target.kind,
         reason,
-      });
+      }).catch(outcome.reject);
+      guard.dismiss();
       onDone();
     } catch (err) {
       onError(
@@ -379,9 +401,11 @@ function ReopenPeriodModal({
   };
 
   return (
-    <div className="modal-overlay" role="dialog" aria-modal="true">
-      <div className="modal">
-        <h3>Genåbn periode</h3>
+    <Dialog title="Genåbn periode" onClose={onClose} busy={submitting}>
+    {outcome.feedback}
+      {guard.confirmation}
+
+
         <p className="muted">
           {target.periodStart} – {target.periodEnd} ({KIND_LABEL[target.kind]})
           . Din begrundelse gemmes ordret i revisionssporet.
@@ -389,7 +413,7 @@ function ReopenPeriodModal({
         <form onSubmit={submit}>
           <label>
             Begrundelse (påkrævet)
-            <textarea
+            <Textarea disabled={outcome.blocked}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
@@ -398,19 +422,19 @@ function ReopenPeriodModal({
             />
           </label>
           <div className="row-actions">
-            <button
+            <Button requiredPermission="company.review"
               type="submit"
               className="btn primary"
-              disabled={submitting || !reason.trim()}
+              disabled={outcome.blocked || (submitting || !reason.trim())}
             >
               {submitting ? "Genåbner …" : "Genåbn periode"}
-            </button>
-            <button type="button" className="btn secondary" onClick={onClose}>
+            </Button>
+            <Button variant="secondary" type="button" className="btn secondary" onClick={onClose}>
               Annullér
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+
+    </Dialog>
   );
 }

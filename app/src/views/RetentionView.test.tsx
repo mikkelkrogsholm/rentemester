@@ -62,7 +62,7 @@ function renderView() {
 describe("RetentionView (#343)", () => {
   test("viser totals, udløbne og næste udløb pr. domæne", async () => {
     renderView();
-    expect(await screen.findByText(/Acme ApS/)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", {name: "Opbevaring", level: 1})).toBeInTheDocument();
     // Bilag-rækken
     const bilagRow = (
       await screen.findByRole("cell", { name: "Bilag" })
@@ -109,7 +109,7 @@ describe("RetentionView (#343)", () => {
 
   test("read-only — ingen oprettelses-/redigerings-knapper", async () => {
     renderView();
-    await screen.findByText(/Acme ApS/);
+    await screen.findByRole("heading", {name: "Opbevaring", level: 1});
     expect(
       screen.queryByRole("button", { name: /Opret|Rediger|Slet|Tilføj|Anonymis/i }),
     ).not.toBeInTheDocument();

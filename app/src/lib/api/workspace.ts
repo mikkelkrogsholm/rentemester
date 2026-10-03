@@ -4,11 +4,11 @@ import type {
   WorkspaceInvitationInput,
   WorkspaceMember,
 } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 export const workspaceApi = {
-  workspaceInvitations: () =>
-    request<{ ok: true; invitations: WorkspaceInvitation[] }>("/api/workspace/invitations")
+  workspaceInvitations: (options?: ReadRequestOptions) =>
+    request<{ ok: true; invitations: WorkspaceInvitation[] }>("/api/workspace/invitations", options)
       .then((result) => result.invitations),
   createWorkspaceInvitation: (input: WorkspaceInvitationInput) =>
     request<{ ok: true; invitation: WorkspaceInvitation }>("/api/workspace/invitations", {
@@ -25,8 +25,8 @@ export const workspaceApi = {
       "/api/invitations/claim",
       { method: "POST", body: JSON.stringify(input) },
     ),
-  workspaceMembers: () =>
-    request<{ ok: true; members: WorkspaceMember[] }>("/api/workspace/members")
+  workspaceMembers: (options?: ReadRequestOptions) =>
+    request<{ ok: true; members: WorkspaceMember[] }>("/api/workspace/members", options)
       .then((result) => result.members),
   updateWorkspaceMemberAccess: (input: {
     userId: string;

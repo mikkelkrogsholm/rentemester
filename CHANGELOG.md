@@ -8,7 +8,34 @@ følger [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-- Plads til ændringer, der endnu ikke indgår i en godkendt release.
+- Fælles StyleX-komponenter, genererede designtokens, lokale fonts og et
+  komplet komponentkatalog i `DESIGN.md`.
+- Sidebjælke og mobilnavigation fra det kanoniske ruteregister samt egne
+  sider til fakturaoprettelse, dokumentdetaljer og bilagsbogføring.
+
+### Changed
+
+- Daglige lister bruger fælles filtre, dansk beløbsinput og responsive tabeller.
+- Native dialoger styrer fokus, inert baggrund og beskyttelse af ugemte felter.
+  Afbrudte skrivninger blokeres, indtil deres resultat er kontrolleret.
+- UI-integrationen bevarer nyere partscoverage, importerede tilgodehavender,
+  eksakt plan-godkendelse, kanoniske regnskabsår og fysisk read-only læsninger.
+
+### Fixed
+
+- MCP-tests kontrollerer den faktiske registrerede toolsurface og bruger
+  read-only observationer; CLI-tests vælger en ledig port.
+- Backup-testen synkroniserer med den erhvervede databaselås, så langsom
+  procesopstart ikke giver en falsk fejl.
+- Partsøgning bevarer input og fokus under skift mellem læsetilstande.
+- Kvitteringen for «Markér som set» bevares, når ændringslisten bliver tom.
+- Mobilknapper ombrydes, og navigationens disclosures har selvstændige,
+  tilgængelige udløsere.
+
+### Security
+
+- Opdateret sårbare transitivt installerede versioner af `fast-uri`, `hono`
+  og `ip-address`; dependency-auditten kræver fortsat nul advisories.
 
 ## [0.2.0] - 2026-08-24
 

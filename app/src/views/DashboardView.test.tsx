@@ -31,7 +31,7 @@ describe("DashboardView — Overblik", () => {
     mockFetch(overviewRoute());
     renderDashboard();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Overblik", level: 1 }),
     ).toBeInTheDocument();
     expect(screen.getByText("Omsætning")).toBeInTheDocument();
     expect(screen.getByText("Udgifter")).toBeInTheDocument();
@@ -93,7 +93,7 @@ describe("DashboardView — Overblik", () => {
   test("the Bank card shows the actual balance, booked balance and difference", async () => {
     mockFetch(overviewRoute());
     renderDashboard();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Overblik", level: 1 });
     const bankCard = screen
       .getByRole("heading", { name: "Bank" })
       .closest(".status-card")!;
@@ -162,6 +162,22 @@ describe("DashboardView — Overblik", () => {
     expect(within(evidence as HTMLElement).getByText(/document_ingest/)).toBeInTheDocument();
     expect(within(evidence as HTMLElement).getByText(/agent:test/)).toBeInTheDocument();
     expect(evidence).not.toHaveAttribute("open");
+  });
+
+  test("keeps the seen receipt after the refreshed change list becomes empty", async () => {
+    const key = "rentemester:changes:local:workspace:acme-aps";
+    window.localStorage.removeItem(key);
+    const routes = overviewRoute({}, { events: [{ id: 1, eventType: "document_ingest", entityType: "document", entityId: "1", message: "Synthetic change", actor: "system:test", createdAt: "2026-01-15T00:00:00Z" }], cursor: 1 });
+    mockFetch(routes);
+    renderDashboard();
+    const markSeen = await screen.findByRole("button", { name: "Markér som set" });
+    routes["GET /api/companies/acme-aps/changes-since"] = { changes: { events: [], cursor: 1 } };
+    await userEvent.click(markSeen);
+    expect(await screen.findByText("Ingen nye data- eller statusændringer siden dit seneste besøg.")).toBeInTheDocument();
+    expect(screen.getByText("Ændringer markeret som set")).toHaveAttribute("role", "status");
+    expect(window.localStorage.getItem(key)).toBe("1");
+    expect((fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.every(([, init]) => !init?.method || init.method === "GET")).toBe(true);
+    window.localStorage.removeItem(key);
   });
 
   test("requests only later changes after a previous visit", async () => {
@@ -315,7 +331,7 @@ describe("DashboardView — empty-state next-step CTA (#395)", () => {
       }),
     );
     renderDashboard();
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Overblik", level: 1 });
     expect(
       screen.queryByRole("heading", { name: /Sådan kommer du i gang/ }),
     ).not.toBeInTheDocument();
@@ -520,7 +536,7 @@ describe("DashboardView — revisor-eksport discoverable (#373)", () => {
     mockFetch(overviewRoute());
     renderDashboard();
     // Wait for the page to load.
-    await screen.findByRole("heading", { name: "Acme ApS" });
+    await screen.findByRole("heading", { name: "Overblik", level: 1 });
     // The card surfaces a clear heading and the "Generér og download" button.
     expect(
       screen.getByRole("heading", { name: /Revisor-eksport/i }),

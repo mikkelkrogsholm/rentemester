@@ -1,5 +1,5 @@
 import type { ExceptionsResponse } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 export const exceptionsApi = {
   attention: (slug: string) => request<import("../types").AttentionResponse>(`/api/companies/${encodeURIComponent(slug)}/attention`).then((r) => r.attention),
@@ -7,12 +7,12 @@ export const exceptionsApi = {
    * #332 — Exceptions queue list. Default status er 'open' så cockpittet
    * altid starter på det aktive arbejde.
    */
-  exceptions: (slug: string, status?: "open" | "resolved" | "all") => {
+  exceptions: (slug: string, status?: "open" | "resolved" | "all", options?: ReadRequestOptions) => {
     const params = new URLSearchParams();
     if (status) params.set("status", status);
     const qs = params.toString();
     return request<ExceptionsResponse>(
-      `/api/companies/${encodeURIComponent(slug)}/exceptions${qs ? `?${qs}` : ""}`,
+      `/api/companies/${encodeURIComponent(slug)}/exceptions${qs ? `?${qs}` : ""}`, options,
     ).then((r) => r.exceptions);
   },
 
@@ -39,9 +39,9 @@ export const exceptionsApi = {
 
 export const agentSuggestionsApi = {
   /** GET /api/companies/:slug/agent-suggestions — the open agent-forslag queue. */
-  agentSuggestions: (slug: string) =>
+  agentSuggestions: (slug: string, options?: ReadRequestOptions) =>
     request<import("../types").AgentSuggestionsResponse>(
-      `/api/companies/${encodeURIComponent(slug)}/agent-suggestions`,
+      `/api/companies/${encodeURIComponent(slug)}/agent-suggestions`, options,
     ).then((r) => r.agentSuggestions),
 
   /** POST .../agent-suggestions/:id/approve — owner accepts the suggestion. */

@@ -6,11 +6,11 @@ import type {
   SyncCvrResponse,
   UpdateCompanyInput,
 } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 export const companiesApi = {
-  companies: () =>
-    request<CompanyListResponse>("/api/companies").then((r) => r.companies),
+  companies: (options?: ReadRequestOptions) =>
+    request<CompanyListResponse>("/api/companies", options).then((r) => r.companies),
 
   createCompany: (input: CreateCompanyInput) =>
     request<{ ok: true; company: { slug: string; name: string } }>(
@@ -24,9 +24,10 @@ export const companiesApi = {
       { method: "PATCH", body: JSON.stringify(input) },
     ).then((r) => r.company),
 
-  companySettings: (slug: string) =>
+  companySettings: (slug: string, options?: ReadRequestOptions) =>
     request<CompanySettingsResponse>(
       `/api/companies/${encodeURIComponent(slug)}/company`,
+      options,
     ).then((r) => r.company),
 
   /**

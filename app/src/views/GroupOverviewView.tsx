@@ -1,3 +1,4 @@
+import { Button, Input, PageHeader, Select } from "../components/ui";
 import { useState } from "react";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
@@ -13,16 +14,17 @@ export function GroupOverviewView() {
   const [from, setFrom] = useState(() => `${currentIsoDate().slice(0, 4)}-01-01`);
   const [selectedProfileId, setSelectedProfileId] = useState("");
   const [dispositionId, setDispositionId] = useState("");
-  const [dispositionStatus, setDispositionStatus] = useState<any>(null);
-  const [dispositionError, setDispositionError] = useState("");
-  const state = useAsync(() => api.groupOverview(asOf), [asOf]);
-  const reconciliationState = useAsync(() => api.groupReconciliation(asOf), [asOf]);
-  const eliminationState = useAsync(() => api.groupEliminations(asOf), [asOf]);
-  const profileState = useAsync(() => api.groupReportProfiles(asOf), [asOf]);
+  const [queriedDispositionId, setQueriedDispositionId] = useState("");
+  const dispositionState = useAsync((signal) => queriedDispositionId ? api.intercompanyDispositionStatus(queriedDispositionId, asOf, { signal }) : Promise.resolve(null), [queriedDispositionId, asOf]);
+  const dispositionStatus = dispositionState.data;
+  const state = useAsync((signal) => api.groupOverview(asOf, { signal }), [asOf]);
+  const reconciliationState = useAsync((signal) => api.groupReconciliation(asOf, { signal }), [asOf]);
+  const eliminationState = useAsync((signal) => api.groupEliminations(asOf, { signal }), [asOf]);
+  const profileState = useAsync((signal) => api.groupReportProfiles(asOf, { signal }), [asOf]);
   const effectiveProfileId = selectedProfileId || profileState.data?.profiles[0]?.id || "";
   const reportState = useAsync(
-    () => effectiveProfileId
-      ? api.groupConsolidatedReport(effectiveProfileId, from, asOf)
+    (signal) => effectiveProfileId
+      ? api.groupConsolidatedReport(effectiveProfileId, from, asOf, { signal })
       : Promise.resolve(null),
     [effectiveProfileId, from, asOf],
   );
@@ -35,17 +37,17 @@ export function GroupOverviewView() {
   const profiles = profileState.data!.profiles;
   const report = reportState.data;
   if (overview.consolidatedFigures !== null || overview.rawCompanySums !== null || overview.consolidationStatus !== "not-available") {
-    return <ErrorState message="Koncernstrukturen kan ikke vises sikkert." />;
+    return <ErrorState message="Koncernstrukturen kan ikke vises sikkert." onRetry={() => { state.reload(); reconciliationState.reload(); eliminationState.reload(); profileState.reload(); reportState.reload(); }} />;
   }
 
   return <section className="group-overview">
-    <div className="page-head">
+    <PageHeader title="Koncernstruktur">
       <div>
-        <h2>Koncernstruktur</h2>
+
         <p className="muted">Datoafgrænset struktur, afstemning og godkendte read-only koncernrapporter.</p>
       </div>
-      <label className="group-as-of">Pr. dato<input aria-label="Pr. dato" type="date" value={asOf} onChange={(event) => setAsOf(event.target.value)} required /></label>
-    </div>
+      <label className="group-as-of">Pr. dato<Input aria-label="Pr. dato" type="date" value={asOf} onChange={(event) => setAsOf(event.target.value)} required /></label>
+    </PageHeader>
     <div className="banner warning" role="status"><strong>Strukturvisning</strong><br />Strukturen indeholder ingen økonomiske tal. Tal vises kun nedenfor, når en godkendt rapportprofil består alle kontroller.</div>
     {overview.manifestStatus !== "ready" && <div className="banner warning" role="status">Strukturen er blokeret eller ikke konfigureret. Konsoliderede rapporter er ikke tilgængelige.</div>}
     {overview.blockers.length > 0 && <Blockers blockers={overview.blockers} />}
@@ -60,13 +62,13 @@ export function GroupOverviewView() {
     <section className="group-reconciliation" aria-label="Mellemregningsafstemning">
       <h3>Mellemregningsafstemning</h3>
       <p className="muted">Kun godkendte, eksplicitte kontomappings. Beløb sammenlignes eksakt og kun i samme funktionsvaluta.</p>
-      {reconciliation.rows.length === 0 ? <p className="muted">Ingen aktive, godkendte mappings på den valgte dato.</p> : <div className="table-wrap"><table><thead><tr><th>Mapping</th><th>Venstre</th><th>Højre</th><th>Difference</th><th>Status</th></tr></thead><tbody>{reconciliation.rows.map((row, index) => <tr key={row.mappingId ?? `blocked-${index}`}>
+      {reconciliation.rows.length === 0 ? <p className="muted">Ingen aktive, godkendte mappings på den valgte dato.</p> : <div className="table-wrap"><div className="table-scroll"><table><thead><tr><th>Mapping</th><th>Venstre</th><th>Højre</th><th>Difference</th><th>Status</th></tr></thead><tbody>{reconciliation.rows.map((row, index) => <tr key={row.mappingId ?? `blocked-${index}`}>
         <td>{row.mappingId ?? "Skjult"}</td>
         <td>{row.left ? `${row.left.companySlug}: ${row.left.balance.toFixed(2)} ${row.left.currency}` : "Ikke synlig"}</td>
         <td>{row.right ? `${row.right.companySlug}: ${row.right.balance.toFixed(2)} ${row.right.currency}` : "Ikke synlig"}</td>
         <td>{row.difference == null ? "—" : row.difference.toFixed(2)}</td>
         <td><strong>{row.status === "matched" ? "Afstemt" : row.status === "mismatch" ? "Difference" : "Ikke sammenlignelig"}</strong>{row.blockers.length > 0 && <div className="muted">{row.blockers.join(" · ")}</div>}</td>
-      </tr>)}</tbody></table></div>}
+      </tr>)}</tbody></table></div></div>}
     </section>
     <section className="group-eliminations" aria-label="Elimineringer">
       <h3>Elimineringer</h3>
@@ -76,11 +78,11 @@ export function GroupOverviewView() {
     <section className="group-dispositions" aria-label="Intercompany dispositioner">
       <h3>Intercompany dispositioner</h3>
       <p className="muted">To juridiske ledgers forbliver adskilte. Denne lifecycle viser og binder kun dokumenteret evidence; den bogfører og eliminerer aldrig selv.</p>
-      <form onSubmit={(event) => { event.preventDefault(); setDispositionError(""); if (!dispositionId.trim()) return; api.intercompanyDispositionStatus(dispositionId.trim(), asOf).then(setDispositionStatus).catch(() => setDispositionError("Dispositionen kan ikke vises med din aktuelle adgang.")); }}>
-        <label>Disposition-ID<input aria-label="Disposition-ID" value={dispositionId} onChange={(event) => setDispositionId(event.target.value)} required /></label><button type="submit">Vis status</button>
+      <form onSubmit={(event) => { event.preventDefault(); if (!dispositionId.trim()) return; setQueriedDispositionId(dispositionId.trim()); dispositionState.reload(); }}>
+        <label>Disposition-ID<Input aria-label="Disposition-ID" value={dispositionId} onChange={(event) => { setDispositionId(event.target.value); setQueriedDispositionId(""); }} required /></label><Button busy={dispositionState.loading} type="submit">Vis status</Button>
       </form>
-      {dispositionError && <p className="error" role="alert">{dispositionError}</p>}
-      {dispositionStatus && <div className="banner warning" role="status"><strong>{dispositionStatus.status}</strong>{Array.isArray(dispositionStatus.exceptions) && dispositionStatus.exceptions.length > 0 && <ul>{dispositionStatus.exceptions.map((exception:any,index:number)=><li key={index}>{exception.kind}</li>)}</ul>}</div>}
+      {dispositionState.error && <p className="error" role="alert">Dispositionen kan ikke vises med din aktuelle adgang.</p>}
+      {dispositionStatus && <div className="banner warning" role="status"><strong>{dispositionStatus.status}</strong>{Array.isArray(dispositionStatus.exceptions) && dispositionStatus.exceptions.length > 0 && <ul>{dispositionStatus.exceptions.map((exception,index)=><li key={index}>{exception.kind}</li>)}</ul>}</div>}
       <p className="muted">Plan, forslag, godkendelse, link, settlement, supersession og reopen bruger den samme confirmed API/MCP-lifecycle med adgang til begge selskaber.</p>
     </section>
     <section className="group-report" aria-label="Konsolideret rapport">
@@ -88,12 +90,12 @@ export function GroupOverviewView() {
       <p className="muted">Read-only visning. Selskabernes hovedbøger ændres ikke, og kun godkendte profiler med fuld selskabssynlighed kan vælges.</p>
       {profiles.length === 0 ? <p className="muted">Ingen aktiv, godkendt rapportprofil på den valgte dato.</p> : <>
         <div className="group-report-controls">
-          <label>Rapportprofil<select aria-label="Rapportprofil" value={effectiveProfileId} onChange={(event) => setSelectedProfileId(event.target.value)}>{profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.id} · {profile.currency}</option>)}</select></label>
-          <label>Fra dato<input aria-label="Fra dato" type="date" value={from} max={asOf} onChange={(event) => setFrom(event.target.value)} required /></label>
+          <label>Rapportprofil<Select aria-label="Rapportprofil" value={effectiveProfileId} onChange={(event) => setSelectedProfileId(event.target.value)}>{profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.id} · {profile.currency}</option>)}</Select></label>
+          <label>Fra dato<Input aria-label="Fra dato" type="date" value={from} max={asOf} onChange={(event) => setFrom(event.target.value)} required /></label>
         </div>
         {report?.status === "blocked" ? <Blockers blockers={report.blockers} /> : report?.consolidatedFigures ? <>
           <div className="banner success" role="status"><strong>Kontrolleret koncernrapport</strong><br />Periode {report.period.from} til {report.period.to} · {report.currency}</div>
-          <div className="table-wrap"><table><thead><tr><th>Rapportlinje</th><th>Rå selskabssum</th><th>Eliminering</th><th>Konsolideret</th></tr></thead><tbody>{report.consolidatedFigures.map((line) => <tr key={line.lineId}><td>{line.label}</td><td>{formatGroupAmount(line.rawCompanySum, report.currency!)}</td><td>{formatGroupAmount(line.eliminationAdjustment, report.currency!)}</td><td><strong>{formatGroupAmount(line.consolidatedAmount, report.currency!)}</strong></td></tr>)}</tbody></table></div>
+          <div className="table-wrap"><div className="table-scroll"><table><thead><tr><th>Rapportlinje</th><th>Rå selskabssum</th><th>Eliminering</th><th>Konsolideret</th></tr></thead><tbody>{report.consolidatedFigures.map((line) => <tr key={line.lineId}><td>{line.label}</td><td>{formatGroupAmount(line.rawCompanySum, report.currency!)}</td><td>{formatGroupAmount(line.eliminationAdjustment, report.currency!)}</td><td><strong>{formatGroupAmount(line.consolidatedAmount, report.currency!)}</strong></td></tr>)}</tbody></table></div></div>
           <details><summary>Kildeevidens</summary><ul>{report.sourceSnapshots.map((snapshot) => <li key={snapshot.companySlug}><code>{snapshot.companySlug}</code> · {snapshot.entryCount} poster · ledger-head <code>{snapshot.ledgerHeadHash?.slice(0, 16) ?? "tom"}</code></li>)}</ul></details>
         </> : null}
       </>}

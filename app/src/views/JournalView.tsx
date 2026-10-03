@@ -1,3 +1,4 @@
+import { ButtonLink, Button, Input, PageHeader } from "../components/ui";
 // Posteringer — the per-company journal (cockpit-redesign iteration 3).
 //
 // Renders `/api/companies/:slug/journal?year=`: the posted journal entries for
@@ -11,17 +12,19 @@
 // ejeren kan dele linket eller komme tilbage til samme udsnit.
 
 import { useMemo, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { formatKroner } from "../lib/format";
 // #379 — the EntryRow needs the slug to build the bilag-file URL on the fly.
 import { useAsync } from "../lib/useAsync";
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useDiscardGuard } from "../lib/useDiscardGuard";
 import type { CompanyJournal, JournalEntry } from "../lib/types";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { ArchivedBanner } from "../components/ArchivedBanner";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { PartyLink } from "../components/PartyLink";
-import { FilterBar, FormField, PageHeaderActions, PageState } from "../components/CockpitPrimitives";
+import { FilterBar, FormField, PageState } from "../components/CockpitPrimitives";
 
 const FILTER_PARAM_KEYS = ["q", "from", "to", "amountMin", "amountMax", "journalEntryId", "journalLineId"] as const;
 
@@ -75,7 +78,7 @@ export function JournalView() {
     journalLineId !== null;
 
   const state = useAsync<CompanyJournal>(
-    () => api.journal(slug, year, account),
+    (signal) => api.journal(slug, year, account, { signal }),
     [slug, year, account],
   );
 
@@ -113,17 +116,8 @@ export function JournalView() {
 
   return (
     <section className="statement" data-cockpit-page="journal" data-evidence-issue="652">
-      <div className="page-head">
-        <div>
-          <h2>{j.company.name}</h2>
-          <h3 data-evidence-heading>Posteringer</h3>
-          <p className="muted" data-evidence-status={filteredEntries.length ? "normal" : "empty"}>{filteredEntries.length ? "Posteringer klar" : "Ingen posteringer i perioden"}</p>
-          <p className="muted">
-            {j.company.cvr ? `CVR ${j.company.cvr} · ` : ""}
-            {j.company.country} · {currency} · Posteringer
-          </p>
-        </div>
-        <PageHeaderActions>
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. De tidligere hentede oplysninger vises fortsat.</div>}
+      <PageHeader evidenceHeading title="Posteringer" actions={<><div className="row-actions">
           {/* #465 — revisor-anmodning: hele kassekladden som CSV. URL'en
               bærer den aktive konto-drilldown med, så ejeren kan eksportere
               "kun denne konto"-udsnittet direkte. */}
@@ -134,11 +128,19 @@ export function JournalView() {
           >
             Hent CSV
           </a>
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
-          </Link>
-        </PageHeaderActions>
-      </div>
+          </ButtonLink>
+        </div></>}>
+        <div>
+          <p data-evidence-status={filteredEntries.length ? "normal" : "empty"}>{filteredEntries.length ? "Posteringer klar" : "Ingen posteringer i perioden"}</p>
+          <p className="muted">
+            {j.company.cvr ? `CVR ${j.company.cvr} · ` : ""}
+            {j.company.country} · {currency} · Posteringer
+          </p>
+        </div>
+
+      </PageHeader>
 
       <CompanyNav
         slug={slug}
@@ -157,13 +159,13 @@ export function JournalView() {
             <span className="account-no">{j.accountFilter.accountNo}</span>{" "}
             {j.accountFilter.name}
           </p>
-          <button
+          <Button variant="secondary"
             type="button"
             className="btn secondary"
             onClick={clearAccount}
           >
             Vis alle posteringer
-          </button>
+          </Button>
         </div>
       )}
 
@@ -171,19 +173,19 @@ export function JournalView() {
         q && `Søgning: ${q}`, fromDate && `Fra: ${fromDate}`, toDate && `Til: ${toDate}`,
         amountMin && `Beløb fra: ${amountMin}`, amountMax && `Beløb til: ${amountMax}`,
       ].filter(Boolean) as string[]} onReset={clearAllFilters} resetLabel="Ryd filtre" advanced={<><FormField label="Beløb min">
-          <input
+          <Input
             type="number"
             inputMode="decimal" value={amountMin} placeholder="0" onChange={(e) => setFilter("amountMin", e.target.value)}
           />
         </FormField><FormField label="Beløb maks">
-          <input
+          <Input
             type="number"
             inputMode="decimal" value={amountMax} placeholder="∞" onChange={(e) => setFilter("amountMax", e.target.value)}
           />
         </FormField></>}>
-        <FormField label="Søg"><input type="search" value={q} placeholder="Søg på tekst, bilagsnummer eller konto…" onChange={(e) => setFilter("q", e.target.value)} /></FormField>
-        <FormField label="Fra"><input type="date" value={fromDate} onChange={(e) => setFilter("from", e.target.value)} /></FormField>
-        <FormField label="Til"><input type="date" value={toDate} onChange={(e) => setFilter("to", e.target.value)} /></FormField>
+        <FormField label="Søg"><Input type="search" value={q} placeholder="Søg på tekst, bilagsnummer eller konto…" onChange={(e) => setFilter("q", e.target.value)} /></FormField>
+        <FormField label="Fra"><Input type="date" value={fromDate} onChange={(e) => setFilter("from", e.target.value)} /></FormField>
+        <FormField label="Til"><Input type="date" value={toDate} onChange={(e) => setFilter("to", e.target.value)} /></FormField>
       </FilterBar>
       <details data-evidence-progressive><summary>Forklar posten</summary><p>Åbn en postering for at se kontering og dokumenteret grundlag.</p></details>
 
@@ -257,7 +259,7 @@ function EntryRow({
   const hasDocument = !archived && entry.documentId !== null;
   return (
     <li className={`entry-item${open ? " open" : ""}`}>
-      <button
+      <Button
         type="button"
         className="entry-summary"
         aria-expanded={open}
@@ -275,7 +277,7 @@ function EntryRow({
         <span className="entry-total num">
           {formatKroner(entry.total, currency)}
         </span>
-      </button>
+      </Button>
       {open && <p data-evidence-task-outcome>Forklaring åbnet</p>}
       {open && (
         <div className="entry-lines table-scroll">
@@ -378,14 +380,15 @@ function currentAssignment(events: AssignmentEvent[]): AssignmentEvent | null {
 }
 
 function DimensionAssignments({ slug, journalLineId }: { slug: string; journalLineId: number }) {
-  const state = useAsync<AssignmentEvent[]>(() => api.dimensionAssignments(slug, journalLineId) as Promise<AssignmentEvent[]>, [slug, journalLineId]);
+  const state = useAsync<AssignmentEvent[]>((signal) => api.dimensionAssignments(slug, journalLineId, { signal }) as Promise<AssignmentEvent[]>, [slug, journalLineId]);
   if (state.loading && !state.data) return <span className="muted">Henter dimensioner…</span>;
-  if (state.error) return <span className="muted">Dimensionshistorik kunne ikke hentes</span>;
+  if (state.error && !state.data) return <span className="muted">Dimensionshistorik kunne ikke hentes</span>;
   const events = state.data ?? [];
   const current = currentAssignment(events);
   if (!current) return <span className="muted">Ingen godkendt dimension</span>;
   const allocations = parseAllocations(current.allocations_json);
   return <details className="dimension-assignment">
+    {state.error && <p role="alert">Dimensionshistorik kunne ikke opdateres. Den tidligere hentede historik vises fortsat.</p>}
     <summary>{allocations.map((item) => `${item.dimensionId}: ${item.memberId}`).join(", ") || "Godkendt dimension"}</summary>
     <p className="muted">
       Kilde: {current.source} · plan-hash <code>{current.plan_hash}</code><br />
@@ -409,6 +412,10 @@ function DimensionReview({ slug, journalLineId, current, onChanged }: { slug: st
   const [reviewed, setReviewed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmSupersede, setConfirmSupersede] = useState(false);
+  const outcome = useMutationOutcome(onChanged);
+  const guard = useDiscardGuard(editing && JSON.stringify(allocations) !== JSON.stringify(parseAllocations(current.allocations_json)), () => {
+    setEditing(false); setPlan(null); setReviewed(false); setConfirmSupersede(false); setAllocations(parseAllocations(current.allocations_json));
+  });
 
   function change(index: number, key: keyof Allocation, value: string) {
     setPlan(null); setReviewed(false);
@@ -416,6 +423,7 @@ function DimensionReview({ slug, journalLineId, current, onChanged }: { slug: st
       ? { ...row, [key]: key === "amountMinor" ? Number(value) : value } : row));
   }
   async function makePlan() {
+    if (outcome.isBlocked()) return;
     setError(null);
     try {
       const result = await api.planDimensionAssignment(slug, { journalLineId, allocations, source: "reviewed" });
@@ -424,23 +432,25 @@ function DimensionReview({ slug, journalLineId, current, onChanged }: { slug: st
     } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)); }
   }
   async function replace(reason: string) {
+    if (outcome.isBlocked()) return;
     if (!reason.trim()) throw new Error("Skriv en begrundelse for korrektionen.");
     if (!plan || !reviewed) throw new Error("Gennemgå først den præcise plan.");
-    await api.replaceDimensionAssignment(slug, { journalLineId, expectedAssignmentId: current.id, allocations, source: "reviewed", planHash: plan.planHash, reason, idempotencyKey: `cockpit-dimension-replace-${current.id}-${plan.planHash}` });
-    setEditing(false); setPlan(null); setReviewed(false); setConfirmSupersede(false); onChanged();
+    await api.replaceDimensionAssignment(slug, { journalLineId, expectedAssignmentId: current.id, allocations, source: "reviewed", planHash: plan.planHash, reason, idempotencyKey: `cockpit-dimension-replace-${current.id}-${plan.planHash}` }).catch(outcome.reject);
+    guard.dismiss(); onChanged();
   }
-  if (!editing) return <button type="button" className="btn secondary" onClick={() => setEditing(true)}>Gennemgå og ret</button>;
+  if (!editing) return <>{outcome.feedback}<Button requiredPermission="company.review" disabled={outcome.blocked} variant="secondary" type="button" className="btn secondary" onClick={() => setEditing(true)}>Gennemgå og ret</Button></>;
   return <div className="dimension-review card">
+    {outcome.feedback}{guard.confirmation}
     <p><strong>Ret dimensionsklassifikation</strong></p>
     <p className="muted">Posteringen ændres aldrig. Den nuværende tildeling supersederes og den reviewede plan anvendes atomisk med begrundelse.</p>
     {allocations.map((allocation, index) => <div className="row-actions" key={`${allocation.dimensionId}-${index}`}>
-      <label>Dimension<input aria-label={`Dimension ${index + 1}`} value={allocation.dimensionId} onChange={(event) => change(index, "dimensionId", event.target.value)} /></label>
-      <label>Medlem<input aria-label={`Medlem ${index + 1}`} value={allocation.memberId} onChange={(event) => change(index, "memberId", event.target.value)} /></label>
-      <label>Øre<input aria-label={`Øre ${index + 1}`} type="number" value={allocation.amountMinor} onChange={(event) => change(index, "amountMinor", event.target.value)} /></label>
+      <label>Dimension<Input disabled={outcome.blocked} aria-label={`Dimension ${index + 1}`} value={allocation.dimensionId} onChange={(event) => change(index, "dimensionId", event.target.value)} /></label>
+      <label>Medlem<Input disabled={outcome.blocked} aria-label={`Medlem ${index + 1}`} value={allocation.memberId} onChange={(event) => change(index, "memberId", event.target.value)} /></label>
+      <label>Øre<Input disabled={outcome.blocked} aria-label={`Øre ${index + 1}`} type="number" value={allocation.amountMinor} onChange={(event) => change(index, "amountMinor", event.target.value)} /></label>
     </div>)}
-    <div className="row-actions"><button type="button" className="btn secondary" onClick={() => void makePlan()}>Validér revideret plan</button><button type="button" className="btn secondary" onClick={() => setEditing(false)}>Annullér</button></div>
-    {plan && <div className="card"><p>Plan-hash: <code>{plan.planHash}</code></p><label><input type="checkbox" checked={reviewed} onChange={(event) => setReviewed(event.target.checked)} /> Jeg har gennemgået den præcise plan.</label><button type="button" className="btn secondary" disabled={!reviewed} onClick={() => setConfirmSupersede(true)}>Erstat nuværende tildeling atomisk</button></div>}
+    <div className="row-actions"><Button variant="secondary" type="button" className="btn secondary" disabled={outcome.blocked} onClick={() => void makePlan()}>Validér revideret plan</Button><Button variant="secondary" type="button" className="btn secondary" onClick={guard.onClose}>Annullér</Button></div>
+    {plan && <div className="card"><p>Plan-hash: <code>{plan.planHash}</code></p><label><Input disabled={outcome.blocked} type="checkbox" checked={reviewed} onChange={(event) => setReviewed(event.target.checked)} /> Jeg har gennemgået den præcise plan.</label><Button variant="secondary" type="button" className="btn secondary" requiredPermission="company.review" disabled={!reviewed || outcome.blocked} onClick={() => setConfirmSupersede(true)}>Erstat nuværende tildeling atomisk</Button></div>}
     {error && <p className="muted" role="alert">{error}</p>}
-    {confirmSupersede && <ConfirmDialog title="Erstat dimensionsklassifikation" body={<p>Den nuværende klassifikation bevares i revisionssporet. Supersession og den præcise, hash-bundne erstatning gemmes atomisk, så linjen aldrig står uden en aktuel tildeling.</p>} confirmLabel="Erstat tildeling" confirmKind="danger" noteLabel="Begrundelse" onConfirm={replace} onClose={() => setConfirmSupersede(false)} />}
+    {confirmSupersede && <ConfirmDialog title="Erstat dimensionsklassifikation" body={<p>Den nuværende klassifikation bevares i revisionssporet. Supersession og den præcise, hash-bundne erstatning gemmes atomisk, så linjen aldrig står uden en aktuel tildeling.</p>} confirmLabel="Erstat tildeling" confirmKind="danger" noteLabel="Begrundelse" onConfirm={replace} onClose={() => setConfirmSupersede(false)} onRefresh={onChanged} />}
   </div>;
 }

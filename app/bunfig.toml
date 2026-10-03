@@ -1,2 +1,6 @@
 [test]
-preload = ["./src/test/dom.ts", "./src/test/setup.ts"]
+root = "src"
+preload = ["./src/test/stylex.ts", "./src/test/dom.ts", "./src/test/setup.ts"]
+
+[serve.static]
+plugins = ["./scripts/stylex-bun.ts"]

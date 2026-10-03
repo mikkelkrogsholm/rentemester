@@ -36,7 +36,7 @@ describe("AssetsView — Anlægskartotek (#336)", () => {
     mockFetch(route());
     renderView();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Anlæg", level: 1 }),
     ).toBeInTheDocument();
     expect(screen.getByText("MacBook Pro")).toBeInTheDocument();
     expect(screen.getByText("Server rack")).toBeInTheDocument();
@@ -201,4 +201,20 @@ describe("AssetsView — Anlægskartotek (#336)", () => {
       screen.getByText(/Hjemmelshenvisning \(tærskelregel\)/),
     ).toBeInTheDocument();
   });
+});
+
+
+test("asset registration accepts Danish decimal and thousands separators", async () => {
+  mockFetch({ ...route(), "POST /api/companies/acme-aps/assets": { asset: { id: 42 } } });
+  renderView();
+  await userEvent.click(await screen.findByRole("button", { name: "Registrér anlæg" }));
+  const dialog = screen.getByRole("dialog", { name: "Registrér nyt anlæg" });
+  await userEvent.type(within(dialog).getByLabelText("Navn"), "Synthetic equipment");
+  await userEvent.type(within(dialog).getByLabelText("Kostpris (kr.)"), "1.234,56");
+  await userEvent.selectOptions(within(dialog).getByLabelText("Bilag (købsdokument)"), "1");
+  await userEvent.click(within(dialog).getByRole("button", { name: "Registrér anlæg" }));
+  const create = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find(([url, init]) => String(url).endsWith("/assets") && init?.method === "POST");
+  expect(create).toBeDefined();
+  expect(JSON.parse(String((create![1] as RequestInit).body)).cost).toBe(1234.56);
+  expect(screen.queryByRole("dialog", { name: "Kassér ændringer?" })).not.toBeInTheDocument();
 });

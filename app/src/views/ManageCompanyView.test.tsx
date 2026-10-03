@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ManageCompanyView } from "./ManageCompanyView";
 import { renderAt } from "../test/render";
@@ -124,9 +124,7 @@ describe("ManageCompanyView", () => {
       screen.getByRole("dialog", { name: /Arkivér virksomhed/i }),
     ).toBeInTheDocument();
     // Confirming inside the dialog runs the archive write and redirects home.
-    const confirm = screen
-      .getByRole("dialog")
-      .querySelector("button.btn.danger") as HTMLButtonElement;
+    const confirm = within(screen.getByRole("dialog", { name: "Arkivér virksomhed" })).getByRole("button", { name: "Arkivér virksomhed" });
     await userEvent.click(confirm);
     await waitFor(() => expect(archivePatchCount()).toBe(1));
   });

@@ -4,6 +4,13 @@
 // `request<T>(...)`. Re-exported from `app/src/lib/api.ts` so external callers
 // keep importing it from the barrel.
 
+/** Optional cancellation belongs to one read request, never shared state. */
+export type ReadRequestOptions = Pick<RequestInit, "signal">;
+
+function isAborted(cause: unknown, signal: AbortSignal | null | undefined): boolean {
+  return signal?.aborted === true || (cause instanceof Error && cause.name === "AbortError");
+}
+
 /** A failed API call — carries the backend error code for precise handling. */
 export class ApiError extends Error {
   readonly code: string;
@@ -24,18 +31,21 @@ function signalAuthExpired(): void {
   }
 }
 
-export async function request<T>(path: string, init?: RequestInit): Promise<T> {
+export async function request<T>(path: string, init?: RequestInit & { readOnly?: boolean }): Promise<T> {
+  const { readOnly, ...fetchOptions } = init ?? {};
+  const write = !readOnly && init?.method !== undefined && !["GET", "HEAD"].includes(init.method.toUpperCase());
   let res: Response;
   try {
     res = await fetch(path, {
-      ...init,
+      ...fetchOptions,
       credentials: "same-origin",
       headers: { "content-type": "application/json", ...(init?.headers ?? {}) },
     });
-  } catch {
+  } catch (cause) {
+    if (isAborted(cause, init?.signal)) throw cause;
     throw new ApiError(
       "network",
-      "Kunne ikke nå serveren. Kører `rentemester serve`?",
+      write ? "Handlingen kan være gennemført, men serverens resultat kunne ikke bekræftes. Kontrollér status, før du starter en ny handling." : "Kunne ikke nå serveren. Kontrollér forbindelsen og prøv igen.",
       0,
     );
   }
@@ -43,12 +53,13 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let body: unknown;
   try {
     body = await res.json();
-  } catch {
+  } catch (cause) {
+    if (isAborted(cause, init?.signal)) throw cause;
     if (res.status === 401) {
       signalAuthExpired();
       throw new ApiError("unauthorized", "Din session er udløbet. Log ind igen.", 401);
     }
-    throw new ApiError("internal", "Serveren gav et ugyldigt svar.", res.status);
+    throw new ApiError("internal", write ? "Serverens svar på handlingen kunne ikke læses. Kontrollér status, før du starter en ny handling." : "Serveren gav et ugyldigt svar.", res.status);
   }
 
   if (body && typeof body === "object" && (body as { ok?: unknown }).ok === false) {

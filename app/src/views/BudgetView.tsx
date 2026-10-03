@@ -1,3 +1,6 @@
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useUnsavedChanges } from "../lib/useUnsavedChanges";
+import { ButtonLink, Button, Input, PageHeader, Select } from "../components/ui";
 // Budget — the per-company budget vs. faktisk view (#339).
 //
 // Two faces of the same data, toggled by a single switch:
@@ -22,6 +25,7 @@ import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { formatKroner, formatPercent, parseDanishAmount } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
+import { useCapabilities } from "../lib/useCapabilities";
 import type {
   CompanyBudget,
   CompanyBudgetLine,
@@ -53,13 +57,13 @@ export function BudgetView() {
   const { year, setYear } = useCompanyYear();
   const [mode, setMode] = useState<"plan" | "compare">("plan");
 
-  const plan = useAsync<CompanyBudget>(() => api.budget(slug, year), [slug, year, mode]);
+  const plan = useAsync<CompanyBudget>((signal) => api.budget(slug, year, { signal }), [slug, year, mode]);
   const compare = useAsync<CompanyBudgetVsActual>(
-    () => api.budgetVsActual(slug, year),
+    (signal) => api.budgetVsActual(slug, year, { signal }),
     [slug, year, mode],
   );
   const dimensionActuals = useAsync<CompanyBudgetDimensionActuals | null>(
-    () => mode === "compare" ? api.budgetDimensionActuals(slug, year) : Promise.resolve(null),
+    (signal) => mode === "compare" ? api.budgetDimensionActuals(slug, year, { signal }) : Promise.resolve(null),
     [slug, year, mode],
   );
 
@@ -69,27 +73,28 @@ export function BudgetView() {
   const state = mode === "plan" ? plan : compare;
 
   if (state.loading && !state.data) return <Loading label="Henter budget…" />;
-  if (state.error) return <ErrorState message={state.error} onRetry={state.reload} />;
+  if (state.error && !state.data) return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const data = state.data!;
   const currency = data.company.currency || "DKK";
 
   return (
     <section className="statement" data-cockpit-page="budget" data-evidence-issue="655">
-      <div className="page-head">
+      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. Din formular er bevaret; oplysningerne bag den er fra den seneste gennemførte læsning.</div>}
+      <PageHeader title="Budget" actions={<><div className="row-actions">
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+            Administrér
+          </ButtonLink>
+        </div></>}>
         <div>
-          <h2>{data.company.name}</h2>
+
           <p className="muted">
             {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
             {data.company.country} · {currency} · Budget
           </p>
         </div>
-        <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </div>
+
+      </PageHeader>
 
       <CompanyNav
         slug={slug}
@@ -98,25 +103,23 @@ export function BudgetView() {
         onYearChange={setYear}
       />
 
-      <div className="budget-toolbar" role="tablist" aria-label="Budget-visning">
-        <button
+      <div className="budget-toolbar" role="group" aria-label="Budget-visning">
+        <Button
           type="button"
-          role="tab"
-          aria-selected={mode === "plan"}
+          aria-pressed={mode === "plan"}
           className={`btn ${mode === "plan" ? "primary" : "secondary"}`}
           onClick={() => setMode("plan")}
         >
           Budget
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          role="tab"
-          aria-selected={mode === "compare"}
+          aria-pressed={mode === "compare"}
           className={`btn ${mode === "compare" ? "primary" : "secondary"}`}
           onClick={() => setMode("compare")}
         >
           Sammenlign med faktisk
-        </button>
+        </Button>
       </div>
 
       {data.archived ? (
@@ -173,7 +176,7 @@ function DimensionBudgetComparison({ slug, data, currency }: {
     <h3>Dimensioner mod konto-budget</h3>
     <p className="muted">En dimensionsvariance vises kun, når der findes en eksplicit reviewet fordeling, som stemmer præcist med konto-budgettet. Ellers er budgettet konto-niveau og kan ikke sammenlignes som dimensionsbudget.</p>
     {data.dimensionOptions.length === 0 ? <p className="muted">Ingen godkendte dimensionsklassifikationer i perioden.</p> : <>
-      <label>Filter dimension<select aria-label="Filter dimension" value={selection} onChange={(event) => setSelection(event.target.value)}><option value="">Vælg dimension eller medlem</option>{data.dimensionOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+      <label>Filter dimension<Select aria-label="Filter dimension" value={selection} onChange={(event) => setSelection(event.target.value)}><option value="">Vælg dimension eller medlem</option>{data.dimensionOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</Select></label>
       {selection !== "" && <div className="table-scroll"><table className="data statement-table"><thead><tr><th>Konto</th><th>Måned</th><th className="num">Dimensionsaktual</th><th className="num">Dimensionsbudget</th><th className="num">Variance</th><th className="num">Kontoaktual</th><th>Kilde</th></tr></thead><tbody>{rows.length === 0 ? <tr><td colSpan={7} className="muted">Ingen godkendte tildelinger for dette filter.</td></tr> : rows.map((row) => { const key = `${row.accountNo}\u001f${row.period}`; const reviewedBudget=dimensionBudget.get(key); return <tr key={key}><td className="account-no">{row.accountNo}</td><td>{periodLabel(row.period)}</td><td className="num">{formatKroner(row.actual, currency)}</td>{reviewedBudget ? <><td className="num">{formatKroner(reviewedBudget.budget, currency)}</td><td className="num">{formatKroner(reviewedBudget.budget-row.actual, currency)}</td></> : <><td className="num muted">Ikke understøttet</td><td className="num muted">—</td></>}<td className="num">{formatKroner(accountActual.get(key) ?? 0, currency)}</td><td><Link to={`/companies/${slug}/posteringer?journalLineId=${row.journalLineIds[0]}`}>Journal-linje {row.journalLineIds[0]}</Link>{reviewedBudget && <><br /><span className="muted">{reviewedBudget.sourceRef}</span></>}</td></tr>; })}</tbody></table></div>}
     </>}
   </section>;
@@ -314,20 +317,27 @@ function BudgetAmountInput({
   initialAmount: number | null;
   onSaved: () => void;
 }) {
+  const { can } = useCapabilities(slug);
+  const editable = can("company.admin");
   const [value, setValue] = useState<string>(
     initialAmount === null ? "" : String(initialAmount),
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const outcome = useMutationOutcome(onSaved);
   // Keep the displayed value in sync when the parent reloads — a save returns
   // fresh data and the cell must reflect it, not a stale initial render.
   useEffect(() => {
+    if (outcome.blocked) return;
     setValue(initialAmount === null ? "" : String(initialAmount));
-  }, [initialAmount]);
+  }, [initialAmount, outcome.blocked]);
 
   const lastSaved = initialAmount === null ? "" : String(initialAmount);
 
+  useUnsavedChanges(value.trim() !== lastSaved.trim());
+
   async function commit() {
+    if (!editable || saving || outcome.isBlocked()) return;
     if (value.trim() === lastSaved.trim()) return;
     const trimmed = value.trim();
     if (trimmed.length === 0) {
@@ -344,7 +354,7 @@ function BudgetAmountInput({
     setSaving(true);
     setError(null);
     try {
-      await api.setBudget(slug, { accountNo, period, amount: parsed });
+      await api.setBudget(slug, { accountNo, period, amount: parsed }).catch(outcome.reject);
       onSaved();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -354,8 +364,9 @@ function BudgetAmountInput({
   }
 
   return (
-    <span className="budget-input-wrap">
-      <input
+    <div className="budget-input-wrap">
+      {outcome.feedback}
+      <Input
         type="text"
         inputMode="decimal"
         className="budget-input"
@@ -366,14 +377,15 @@ function BudgetAmountInput({
           if (e.key === "Enter") (e.target as HTMLInputElement).blur();
         }}
         aria-label={`Budget for konto ${accountNo} ${period}`}
-        disabled={saving}
+        disabled={saving || outcome.blocked}
+        readOnly={!editable}
       />
       {error ? (
         <span className="muted budget-cell-error" role="alert">
           {error}
         </span>
       ) : null}
-    </span>
+    </div>
   );
 }
 
@@ -397,8 +409,12 @@ function AddBudgetLineForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const outcome = useMutationOutcome(onSaved);
+  useUnsavedChanges(Boolean(accountNo || amount));
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (outcome.isBlocked()) return;
     setError(null);
     const trimmedAcc = accountNo.trim();
     if (!trimmedAcc) {
@@ -416,7 +432,7 @@ function AddBudgetLineForm({
         accountNo: trimmedAcc,
         period,
         amount: parsed,
-      });
+      }).catch(outcome.reject);
       setAccountNo("");
       setAmount("");
       onSaved();
@@ -429,6 +445,7 @@ function AddBudgetLineForm({
 
   return (
     <form className="card budget-add-form" onSubmit={submit}>
+    {outcome.feedback}
       <h3>Tilføj budgetlinje</h3>
       <p className="muted">
         Vælg en konto fra kontoplanen og en måned, og angiv det planlagte
@@ -438,7 +455,7 @@ function AddBudgetLineForm({
       <div className="form-row">
         <label>
           Konto
-          <input
+          <Input disabled={outcome.blocked}
             type="text"
             value={accountNo}
             onChange={(e) => setAccountNo(e.target.value)}
@@ -448,7 +465,7 @@ function AddBudgetLineForm({
         </label>
         <label>
           Måned
-          <select
+          <Select disabled={outcome.blocked}
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
             aria-label="Måned"
@@ -458,11 +475,11 @@ function AddBudgetLineForm({
                 {periodLabel(p)}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
         <label>
           Beløb (kr)
-          <input
+          <Input disabled={outcome.blocked}
             type="text"
             inputMode="decimal"
             value={amount}
@@ -471,9 +488,9 @@ function AddBudgetLineForm({
             aria-label="Beløb"
           />
         </label>
-        <button type="submit" className="btn primary" disabled={saving}>
+        <Button requiredPermission="company.admin" type="submit" className="btn primary" disabled={outcome.blocked || (saving)}>
           {saving ? "Gemmer…" : "Tilføj budgetlinje"}
-        </button>
+        </Button>
       </div>
       {error ? (
         <p className="muted budget-form-error" role="alert">

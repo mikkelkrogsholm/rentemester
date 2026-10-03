@@ -1,9 +1,10 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test, vi } from "bun:test";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { GdprView } from "./GdprView";
 import { renderAt } from "../test/render";
 import { mockFetch } from "../test/fixtures";
+import { stubGlobal } from "../test/globals";
 
 function exportPayload(records: any[] = []) {
   return {
@@ -39,6 +40,33 @@ function renderView(record = exportPayload()) {
 }
 
 describe("GdprView (#334)", () => {
+  test("invalidates a reviewed subject on edit and erases only the newly reviewed query", async () => {
+    const erasures: Array<Record<string, unknown>> = [];
+    stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL, init?: RequestInit) => {
+      const query = JSON.parse(String(init?.body));
+      if (String(url).endsWith("/erase")) {
+        erasures.push(query);
+        return new Response(JSON.stringify({ ok: true, gdprErasure: { ok: true, erasedCount: 1, refusedCount: 0, alreadyErasedCount: 0, erased: [], refused: [], errors: [], subject: { cvr: query.cvr, name: null }, asOf: "2026-01-01" } }), { headers: { "content-type": "application/json" } });
+      }
+      const payload = exportPayload([{ source: "vendors", sourceRowId: 1, label: "Synthetic subject", personalData: { vatOrCvr: query.cvr }, retainUntil: null, underRetention: false, erased: false, erasable: true }]);
+      payload.gdpr.export.subject.cvr = query.cvr;
+      return new Response(JSON.stringify(payload), { headers: { "content-type": "application/json" } });
+    }));
+    renderAt(<GdprView />, { route: "/companies/acme-aps/gdpr", path: "/companies/:slug/gdpr" });
+    const cvr = screen.getByPlaceholderText("DK…");
+    await userEvent.type(cvr, "DK11111111");
+    await userEvent.click(screen.getByRole("button", { name: "Find oplysninger" }));
+    await screen.findByRole("button", { name: /Anonymisér/ });
+    await userEvent.clear(cvr);
+    await userEvent.type(cvr, "DK22222222");
+    expect(screen.queryByRole("button", { name: /Anonymisér/ })).not.toBeInTheDocument();
+    expect(erasures).toHaveLength(0);
+    await userEvent.click(screen.getByRole("button", { name: "Find oplysninger" }));
+    await userEvent.click(await screen.findByRole("button", { name: /Anonymisér/ }));
+    expect(screen.getByRole("dialog")).toHaveTextContent("DK22222222");
+    await userEvent.click(screen.getByRole("button", { name: "Anonymisér nu" }));
+    expect(erasures).toEqual([{ cvr: "DK22222222", confirm: true }]);
+  });
   test("kræver mindst ét felt før knappen er klikbar", async () => {
     renderView();
     const submit = await screen.findByRole("button", {

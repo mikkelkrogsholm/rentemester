@@ -8,6 +8,7 @@ import { createParty, linkPartyRole } from "../../src/core/party-registry";
 import { companyRootForSlug, initWorkspace } from "../../src/core/workspace";
 import { openWorkspaceControlDb } from "../../src/core/workspace-control";
 import { migrate, openDb } from "../../src/core/db";
+import { openLedgerReadOnly } from "../../src/core/ledger-inspection";
 import { createVendor } from "../../src/core/master-data";
 import { addBankAccount } from "../../src/core/bank";
 import { postJournalEntry, seedAccounts } from "../../src/core/ledger";
@@ -75,7 +76,8 @@ let reviewedSourceDocumentId: number;
 let coverageDocumentId: number;
 
 function eventCount() {
-  const db = openDb(companyPaths(companyRoot).db);
+  // The observer must not checkpoint WAL or mutate the ledger it is checking.
+  const db = openLedgerReadOnly(companyPaths(companyRoot).db);
   try { return (db.query("SELECT count(*) AS n FROM document_party_link_events").get() as { n: number }).n; }
   finally { db.close(); }
 }

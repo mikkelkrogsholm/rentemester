@@ -24,11 +24,12 @@ describe("BookkeepingBatchView", () => {
   });
 
   test("keeps preview, persist, approval and apply as separate progressive requests", async () => {
-    mockFetch(routes({ "POST /api/companies/acme-aps/bookkeeping-batch/persist": { runId: 7, plan, state: { revisions: [], attempts: [], receipts: [] } }, "POST /api/companies/acme-aps/bookkeeping-batch/approve": { state: { revisions: [{}], attempts: [], receipts: [] } }, "POST /api/companies/acme-aps/bookkeeping-batch/apply": { runId: 7, results: [], checks: [], state: { revisions: [{}], attempts: [], receipts: [] } } })); renderView();
+    mockFetch(routes({ "POST /api/companies/acme-aps/bookkeeping-batch/persist": { runId: 7, plan, state: { revisions: [], attempts: [], receipts: [] } }, "POST /api/companies/acme-aps/bookkeeping-batch/approve": { state: { revisions: [{ planHash: plan.planHash, approvedAt: "2026-01-01T00:00:00.000Z" }], attempts: [], receipts: [] } }, "POST /api/companies/acme-aps/bookkeeping-batch/apply": { runId: 7, results: [], checks: [], state: { revisions: [{ planHash: plan.planHash, approvedAt: "2026-01-01T00:00:00.000Z" }], attempts: [], receipts: [] } } })); renderView();
     await screen.findByRole("link", { name: "Åbn Bank" });
     await userEvent.click(screen.getByRole("button", { name: "Forhåndsvis samlet dry run" }));
     await screen.findByText("Samlet dry run forhåndsvist");
     await userEvent.click(screen.getByRole("button", { name: "Gem eksakt plan" }));
+    expect(screen.getByRole("button", { name: "Bogfør" })).toBeDisabled();
     await userEvent.click(screen.getByRole("button", { name: "Godkend" }));
     await userEvent.click(screen.getByRole("button", { name: "Bogfør" }));
     await screen.findByText("Kørselsresultat");
@@ -80,8 +81,68 @@ describe("BookkeepingBatchView", () => {
 
   test("restores the durable run from a runId drilldown", async () => {
     const restored = { ...plan, scope: { accountingFrom: "2026-01-01", accountingTo: "2026-12-31", bankFrom: "2026-01-01", bankTo: "2026-12-31" } };
-    mockFetch({ ...routes(), "GET /api/companies/acme-aps/bookkeeping-batch/runs/7": { state: { run: { runId: 7, plan: JSON.stringify(restored) }, revisions: [{}], attempts: [], receipts: [] } } });
+    mockFetch({ ...routes(), "GET /api/companies/acme-aps/bookkeeping-batch/runs/7": { state: { run: { runId: 7, plan: JSON.stringify(restored) }, revisions: [{ planHash: plan.planHash, approvedAt: "2026-01-01T00:00:00.000Z" }], attempts: [], receipts: [] } } });
     renderAt(<BookkeepingBatchView />, { route: "/companies/acme-aps/batchbogfoering?runId=7", path: "/companies/:slug/batchbogfoering" });
     await screen.findByText("Varig historik"); expect(screen.getByText(/Revisioner: 1/)).toBeInTheDocument();
   });
+});
+
+test("a restored approval only enables apply for the exact plan hash", async () => {
+  mockFetch({
+    ...routes(),
+    "GET /api/companies/acme-aps/bookkeeping-batch/runs/7": { state: {
+      run: { plan: JSON.stringify({ ...plan, bankFrom: "2026-01-01", bankTo: "2026-12-31" }) },
+      revisions: [{ planHash: "b".repeat(64), approvedAt: "2026-01-31T10:00:00Z" }], attempts: [], receipts: [],
+    } },
+  });
+  renderAt(<BookkeepingBatchView />, { route: "/companies/acme-aps/batchbogfoering?runId=7", path: "/companies/:slug/batchbogfoering" });
+  await screen.findByText("Varig historik");
+  expect(screen.getByRole("button", { name: "Bogfør" })).toBeDisabled();
+  expect(screen.getByText("Kanonisk periode: 2026-01-01 – 2026-12-31")).toBeInTheDocument();
+});
+
+test("changing the canonical year invalidates a restored approved plan", async () => {
+  mockFetch({
+    ...routes(),
+    "GET /api/companies/acme-aps/bookkeeping-batch/runs/7": { state: {
+      run: { plan: JSON.stringify({ ...plan, bankFrom: "2026-01-01", bankTo: "2026-12-31" }) },
+      revisions: [{ planHash: plan.planHash, approvedAt: "2026-01-31T10:00:00Z" }], attempts: [], receipts: [],
+    } },
+  });
+  renderAt(<BookkeepingBatchView />, { route: "/companies/acme-aps/batchbogfoering?runId=7", path: "/companies/:slug/batchbogfoering" });
+  await screen.findByText("Varig historik");
+  expect(screen.getByRole("button", { name: "Bogfør" })).toBeEnabled();
+  await userEvent.selectOptions(screen.getByLabelText("Vælg regnskabsår"), "2025");
+  expect(screen.getByRole("button", { name: "Bogfør" })).toBeDisabled();
+  expect(screen.queryByText("Varig historik")).not.toBeInTheDocument();
+});
+
+
+for (const code of ["network", "internal"]) test(`batch apply remains blocked after ${code}, including a successful status read`, async () => {
+  const restored = { ...plan, bankFrom: "2026-01-01", bankTo: "2026-12-31" };
+  const durable = { run: { plan: JSON.stringify(restored) }, revisions: [{ planHash: plan.planHash, approvedAt: "2026-01-31T10:00:00Z" }], attempts: [], receipts: [] };
+  mockFetch({ ...routes(), "GET /api/companies/acme-aps/bookkeeping-batch/runs/7": { state: durable }, "POST /api/companies/acme-aps/bookkeeping-batch/apply": { __error: { code, message: "Synthetic interrupted response" } } });
+  renderAt(<BookkeepingBatchView />, { route: "/companies/acme-aps/batchbogfoering?runId=7", path: "/companies/:slug/batchbogfoering" });
+  await screen.findByText("Varig historik");
+  const write = screen.getByRole("button", { name: "Bogfør" });
+  await userEvent.click(write);
+  expect(await screen.findByText(/Serverens resultat kunne ikke bekræftes/)).toBeInTheDocument();
+  expect(write).toBeDisabled();
+  await userEvent.click(screen.getByRole("button", { name: "Kontrollér status" }));
+  await userEvent.click(write);
+  expect(write).toBeDisabled();
+  expect(screen.getByText("Kanonisk periode: 2026-01-01 – 2026-12-31")).toBeInTheDocument();
+  const writes = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.filter(([url, init]) => String(url).endsWith("/apply") && init?.method === "POST");
+  expect(writes).toHaveLength(1);
+  expect(JSON.parse(String((writes[0]![1] as RequestInit).body))).toMatchObject({ runId: 7, planHash: plan.planHash });
+});
+
+
+test("a read-only batch load failure never becomes an unknown mutation", async () => {
+  mockFetch({ ...routes(), "GET /api/companies/acme-aps/bookkeeping-workbench": { __error: { code: "network", message: "Synthetic read failure" } }, "GET /api/companies/acme-aps/bookkeeping-batch": { dryRun: true, plan } });
+  renderAt(<BookkeepingBatchView />, { route: "/companies/acme-aps/batchbogfoering?from=2026-01-01&to=2026-01-31", path: "/companies/:slug/batchbogfoering" });
+
+  expect(await screen.findByText("Synthetic read failure")).toBeInTheDocument();
+  expect(screen.queryByText(/Serverens resultat kunne ikke bekræftes/)).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Forhåndsvis samlet dry run" })).toBeEnabled();
 });

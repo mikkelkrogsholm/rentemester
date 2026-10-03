@@ -9,14 +9,21 @@
   "description": "Interactive cockpit (control panel) for the Rentemester workspace API (#171).",
   "scripts": {
     "dev": "bun --hot scripts/serve.ts",
-    "build": "tsc --noEmit && bun run scripts/build.ts",
+    "build": "bun run design:check && tsc --noEmit && bun run scripts/build.ts",
     "preview": "bun run scripts/serve.ts --preview",
     "test": "bun test --isolate",
-    "test:parallel": "bun test --parallel --timeout=20000 --only-failures",
-    "test:watch": "bun test --watch --isolate"
+    "test:parallel": "bun test --isolate --timeout=20000 --only-failures",
+    "test:watch": "bun test --watch --isolate",
+    "design:check": "bun run ../scripts/design-tokens.ts --check",
+    "test:browser": "bun run design:check && bun scripts/browser-fixtures.ts --check && tsc --noEmit -p e2e/tsconfig.json && bun run build && playwright test",
+    "gallery": "bun --hot scripts/gallery.ts"
   },
   "dependencies": {
     "@tanstack/react-charts": "0.16.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
+    "@fontsource/source-serif-4": "^5.3.0",
+    "@stylexjs/stylex": "^0.19.1",
     "better-auth": "1.7.1",
     "chart.js": "^4.5.1",
     "react": "^18.3.1",
@@ -25,16 +32,24 @@
     "react-router-dom": "7.18.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@babel/core": "^7",
+    "@babel/plugin-syntax-typescript": "^7",
     "@happy-dom/global-registrator": "20.11.6",
+    "@playwright/test": "^1.63.0",
+    "@stylexjs/babel-plugin": "^0.19.1",
+    "@stylexjs/unplugin": "^0.19.1",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",
+    "@types/babel__core": "^7.20.5",
     "@types/bun": "1.4.0",
     "@types/node": "^22.0.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "happy-dom": "20.11.6",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "unplugin": "^2.3.11"
   }
 }

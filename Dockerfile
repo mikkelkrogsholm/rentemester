@@ -14,6 +14,11 @@ COPY package.json bun.lock bunfig.toml ./
 COPY app/package.json app/bunfig.toml ./app/
 RUN bun install --frozen-lockfile
 COPY app/ ./app/
+# The cockpit checks generated tokens and shares the browser-safe permission policy.
+COPY DESIGN.md ./
+COPY scripts/design-tokens.ts ./scripts/design-tokens.ts
+COPY src/design ./src/design
+COPY src/core/access-permissions.ts ./src/core/access-permissions.ts
 RUN bun run cockpit:build \
     && find app/dist -print0 | xargs -0 touch -d "${RENTEMESTER_BUILT_AT}"
 

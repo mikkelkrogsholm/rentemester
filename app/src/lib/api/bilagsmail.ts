@@ -1,13 +1,13 @@
 import type { BilagsmailResponse } from "../types";
-import { request } from "./_shared";
+import { request, type ReadRequestOptions } from "./_shared";
 
 export const bilagsmailApi = {
   /**
    * #348/#350/#351 — Bilagsmail read state (config, alias, inbox).
    */
-  bilagsmail: (slug: string) =>
+  bilagsmail: (slug: string, options?: ReadRequestOptions) =>
     request<BilagsmailResponse>(
-      `/api/companies/${encodeURIComponent(slug)}/bilagsmail`,
+      `/api/companies/${encodeURIComponent(slug)}/bilagsmail`, options,
     ).then((r) => r.bilagsmail),
 
   /** #348 — Save the per-company IMAP config to disk. */

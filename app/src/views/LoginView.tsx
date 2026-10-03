@@ -1,3 +1,4 @@
+import { Button, Input } from "../components/ui";
 import { FormEvent, useEffect, useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { authClient } from "../lib/auth-client";
@@ -41,11 +42,11 @@ export function LoginView() {
     {error && <p className="banner error" role="alert">{error}</p>}
     {needsTotp ? <form onSubmit={verify}>
       <p>{verificationMethod === "totp" ? "Indtast koden fra din autentifikator-app." : "Indtast én af dine recovery codes."}</p>
-      <label>{verificationMethod === "totp" ? "Engangskode" : "Recovery code"}<input aria-label={verificationMethod === "totp" ? "Engangskode" : "Recovery code"} inputMode={verificationMethod === "totp" ? "numeric" : "text"} autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value)} required /></label>
-      <button className="btn" type="submit" disabled={busy}>Bekræft</button>
-      <button className="btn secondary" type="button" disabled={busy} onClick={() => { setCode(""); setError(null); setVerificationMethod((current) => current === "totp" ? "backup" : "totp"); }}>{verificationMethod === "totp" ? "Brug recovery code" : "Brug autentifikator-kode"}</button>
+      <label>{verificationMethod === "totp" ? "Engangskode" : "Recovery code"}<Input aria-label={verificationMethod === "totp" ? "Engangskode" : "Recovery code"} inputMode={verificationMethod === "totp" ? "numeric" : "text"} autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value)} required /></label>
+      <Button className="btn" type="submit" disabled={busy}>Bekræft</Button>
+      <Button variant="secondary" className="btn secondary" type="button" disabled={busy} onClick={() => { setCode(""); setError(null); setVerificationMethod((current) => current === "totp" ? "backup" : "totp"); }}>{verificationMethod === "totp" ? "Brug recovery code" : "Brug autentifikator-kode"}</Button>
     </form>
-      : <form onSubmit={submit}><label>E-mail<input aria-label="E-mail" autoComplete="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label><label>Adgangskode<input aria-label="Adgangskode" autoComplete="current-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label><button className="btn" type="submit" disabled={busy}>Log ind</button><p><Link to="/forgot-password">Glemt adgangskode?</Link></p><p><Link to="/verify-email">Send bekræftelsesmail igen</Link></p></form>}
+      : <form onSubmit={submit}><label>E-mail<Input aria-label="E-mail" autoComplete="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label><label>Adgangskode<Input aria-label="Adgangskode" autoComplete="current-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label><Button className="btn" type="submit" disabled={busy}>Log ind</Button><p><Link to="/forgot-password">Glemt adgangskode?</Link></p><p><Link to="/verify-email">Send bekræftelsesmail igen</Link></p></form>}
   </AuthPanel>;
 }
 
@@ -60,7 +61,7 @@ export function ForgotPasswordView() {
     catch { /* Deliberately identical response to prevent account enumeration. */ }
     finally { setEmail(""); setSubmitted(true); }
   };
-  return <AuthPanel title="Nulstil adgangskode"><p>Indtast din e-mailadresse, så sender vi et reset-link, hvis den kan bruges.</p>{submitted && <p role="status">{recoveryMessage}</p>}<form onSubmit={submit}><label>E-mail<input aria-label="E-mail" autoComplete="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label><button className="btn" type="submit">Send reset-link</button></form><p><Link to="/">Tilbage til login</Link></p></AuthPanel>;
+  return <AuthPanel title="Nulstil adgangskode"><p>Indtast din e-mailadresse, så sender vi et reset-link, hvis den kan bruges.</p>{submitted && <p role="status">{recoveryMessage}</p>}<form onSubmit={submit}><label>E-mail<Input aria-label="E-mail" autoComplete="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label><Button className="btn" type="submit">Send reset-link</Button></form><p><Link to="/">Tilbage til login</Link></p></AuthPanel>;
 }
 
 export function VerificationRecoveryView() {
@@ -72,7 +73,7 @@ export function VerificationRecoveryView() {
     catch { /* Deliberately identical response to prevent account enumeration. */ }
     finally { setEmail(""); setSubmitted(true); }
   };
-  return <AuthPanel title="Bekræft din e-mail"><p>Indtast din e-mailadresse for at få en ny bekræftelsesmail.</p>{submitted && <p role="status">{recoveryMessage}</p>}<form onSubmit={submit}><label>E-mail<input aria-label="E-mail" autoComplete="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label><button className="btn" type="submit">Send bekræftelsesmail</button></form><p><Link to="/">Tilbage til login</Link></p></AuthPanel>;
+  return <AuthPanel title="Bekræft din e-mail"><p>Indtast din e-mailadresse for at få en ny bekræftelsesmail.</p>{submitted && <p role="status">{recoveryMessage}</p>}<form onSubmit={submit}><label>E-mail<Input aria-label="E-mail" autoComplete="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label><Button className="btn" type="submit">Send bekræftelsesmail</Button></form><p><Link to="/">Tilbage til login</Link></p></AuthPanel>;
 }
 
 export function ResetPasswordView() {
@@ -92,9 +93,9 @@ export function ResetPasswordView() {
       setPassword(""); setToken(""); setComplete(true);
     } catch { setPassword(""); setError("Linket er ugyldigt eller udløbet. Anmod om et nyt reset-link."); }
   };
-  return <AuthPanel title="Vælg ny adgangskode">{complete ? <><p role="status">Din adgangskode er opdateret. Log ind igen.</p><p><Link to="/">Til login</Link></p></> : <><p>Vælg en ny adgangskode på mindst 12 tegn.</p>{error && <p className="banner error" role="alert">{error}</p>}<form onSubmit={submit}><label>Ny adgangskode<input aria-label="Ny adgangskode" autoComplete="new-password" type="password" minLength={12} value={password} onChange={(event) => setPassword(event.target.value)} required /></label><button className="btn" type="submit">Opdater adgangskode</button></form></>}</AuthPanel>;
+  return <AuthPanel title="Vælg ny adgangskode">{complete ? <><p role="status">Din adgangskode er opdateret. Log ind igen.</p><p><Link to="/">Til login</Link></p></> : <><p>Vælg en ny adgangskode på mindst 12 tegn.</p>{error && <p className="banner error" role="alert">{error}</p>}<form onSubmit={submit}><label>Ny adgangskode<Input aria-label="Ny adgangskode" autoComplete="new-password" type="password" minLength={12} value={password} onChange={(event) => setPassword(event.target.value)} required /></label><Button className="btn" type="submit">Opdater adgangskode</Button></form></>}</AuthPanel>;
 }
 
 export function AuthPanel({ title, children }: { title: string; children: ReactNode }) {
-  return <main className="auth-panel"><section className="card"><h1>Rentemester</h1><h2>{title}</h2>{children}</section></main>;
+  return <main className="auth-panel"><section className="card"><p className="eyebrow">Rentemester</p><h1>{title}</h1>{children}</section></main>;
 }

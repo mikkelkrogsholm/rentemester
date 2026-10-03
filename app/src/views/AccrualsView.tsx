@@ -1,3 +1,4 @@
+import { ButtonLink, PageHeader, Button } from "../components/ui";
 // Periodisering / accrual register (#337).
 //
 // Read-only view: per-virksomhed liste over registrerede accruals med
@@ -28,7 +29,7 @@ const TYPE_LABEL: Record<AccrualRegisterRow["accrualType"], string> = {
 export function AccrualsView() {
   const { slug = "" } = useParams();
   const state = useAsync<CompanyAccrualsResponse["accruals"]>(
-    () => api.accruals(slug),
+    (signal) => api.accruals(slug, { signal }),
     [slug],
   );
 
@@ -40,20 +41,20 @@ export function AccrualsView() {
 
   return (
     <section className="accruals-view" data-cockpit-page="accruals" data-evidence-issue="655">
-      <header className="page-head">
+      <PageHeader title="Periodisering" actions={<><div className="row-actions">
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+            Administrér
+          </ButtonLink>
+        </div></>}>
         <div>
-          <h2>{data.company.name}</h2>
+
           <p className="muted">
             {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
             {data.company.country} · {currency} · Periodisering
           </p>
         </div>
-        <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </header>
+
+      </PageHeader>
 
       <section className="card"><div className="statement-card-head"><h3>Sikker næste handling</h3><StatusChip tone="info">Kræver review</StatusChip></div><p>Rentemester bogfører ikke en periodisering fra denne side. Gennemgå først opgaven og brug derefter den eksisterende agent-/review-arbejdsgang.</p><Link className="btn secondary" to={`/companies/${slug}/opmaerksomhed`}>Åbn opgaver der kræver opmærksomhed</Link><CopySafeStep slug={slug} /></section>
 
@@ -106,7 +107,7 @@ export function AccrualsView() {
 function CopySafeStep({ slug }: { slug: string }) {
   const [copied, setCopied] = useState(false);
   const text = `Åbn Cockpit → ${slug} → Opgaver der kræver opmærksomhed. Gennemgå bilag og forslag, lav dry run og bekræft først derefter en periodisering.`;
-  return <button type="button" className="btn secondary" onClick={async () => { try { await navigator.clipboard.writeText(text); setCopied(true); } catch { /* visible text remains safe */ } }}>{copied ? "Kopieret" : "Kopiér sikker næste handling"}</button>;
+  return <Button type="button" className="btn secondary" onClick={async () => { try { await navigator.clipboard.writeText(text); setCopied(true); } catch { /* visible text remains safe */ } }}>{copied ? "Kopieret" : "Kopiér sikker næste handling"}</Button>;
 }
 
 function AccrualRow({

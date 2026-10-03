@@ -1,3 +1,4 @@
+import { ButtonLink, Button, PageHeader, Select } from "../components/ui";
 // Årsrapport-builder UI (#338).
 //
 // Per-virksomhed view der bygger en regnskabsklasse-B-årsrapport for et
@@ -22,7 +23,7 @@ export function AnnualReportView() {
   const today = new Date();
   const defaultYear = today.getUTCFullYear() - 1;
   const [selectedYear, setSelectedYear] = useState(String(defaultYear));
-  const readiness = useAsync(() => api.annualReport(slug, "", "", selectedYear), [slug, selectedYear]);
+  const readiness = useAsync((signal) => api.annualReport(slug, "", "", selectedYear, { signal }), [slug, selectedYear]);
   const [data, setData] = useState<CompanyAnnualReportResponse["annualReport"] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,33 +45,33 @@ export function AnnualReportView() {
 
   return (
     <section className="annual-report-view" data-cockpit-page="annual-report" data-evidence-issue="655">
-      <header className="page-head">
+      <PageHeader title="Årsrapport" actions={<><div className="row-actions">
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+            Administrér
+          </ButtonLink>
+        </div></>}>
         <div>
-          <h2>Årsrapport (regnskabsklasse B)</h2>
+
           <p className="muted">
             Forbereder en årsrapport for et lukket regnskabsår. Rentemester
             samler resultatopgørelse, balance og noter — den endelige aflæsning
             sker hos revisor.
           </p>
         </div>
-        <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </Link>
-        </div>
-      </header>
+
+      </PageHeader>
 
       <section className="card">
         <h3>Vælg regnskabsår</h3>
         <form onSubmit={build} className="filter-bar">
           <label htmlFor="annual-year">Regnskabsår
-            <select id="annual-year" value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
+            <Select id="annual-year" value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
               {[0, 1, 2, 3, 4].map(offset => <option key={defaultYear - offset} value={defaultYear - offset}>{defaultYear - offset}</option>)}
-            </select>
+            </Select>
           </label>
-          <button type="submit" className="btn primary" disabled={loading || readiness.loading || readiness.data?.readiness?.status === "Ikke klar"} title={readiness.data?.readiness?.status === "Ikke klar" ? "Ret readiness-kontrollerne før build" : undefined}>
+          <Button type="submit" className="btn primary" disabled={loading || readiness.loading || readiness.data?.readiness?.status === "Ikke klar"} title={readiness.data?.readiness?.status === "Ikke klar" ? "Ret readiness-kontrollerne før build" : undefined}>
             {loading ? "Bygger …" : "Byg årsrapport"}
-          </button>
+          </Button>
         </form>
       </section>
 
@@ -112,7 +113,7 @@ function ReportPanel({ report }: { report: AnnualReport }) {
         <h3>
           Stamdata pr. {report.fiscalYearStart} — {report.fiscalYearEnd}
         </h3>
-        <table className="table">
+        <div className="table-scroll"><table className="table">
           <tbody>
             <tr>
               <th>Virksomhed</th>
@@ -131,13 +132,13 @@ function ReportPanel({ report }: { report: AnnualReport }) {
               <td>{report.company.currency}</td>
             </tr>
           </tbody>
-        </table>
+        </table></div>
       </section>
 
       {report.profitAndLoss && (
         <section className="card">
           <h3>Resultatopgørelse</h3>
-          <table className="table">
+          <div className="table-scroll"><table className="table">
             <tbody>
               <tr>
                 <th>Indtægter i alt</th>
@@ -158,14 +159,14 @@ function ReportPanel({ report }: { report: AnnualReport }) {
                 </td>
               </tr>
             </tbody>
-          </table>
+          </table></div>
         </section>
       )}
 
       {report.balanceSheet && (
         <section className="card">
           <h3>Balance ultimo {report.fiscalYearEnd}</h3>
-          <table className="table">
+          <div className="table-scroll"><table className="table">
             <tbody>
               <tr>
                 <th>Aktiver i alt</th>
@@ -189,7 +190,7 @@ function ReportPanel({ report }: { report: AnnualReport }) {
                 </td>
               </tr>
             </tbody>
-          </table>
+          </table></div>
         </section>
       )}
 

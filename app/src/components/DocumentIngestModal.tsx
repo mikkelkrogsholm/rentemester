@@ -1,3 +1,8 @@
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { parseDanishAmount } from "../lib/format";
+import { useDiscardGuard } from "../lib/useDiscardGuard";
+import * as stylex from "@stylexjs/stylex";
+import { Button, Dialog, Input, Select, Textarea, MoneyInput } from "./ui";
 // DocumentIngestModal — the human document-intake action for the Cockpit
 // (#213, slice 3).
 //
@@ -11,7 +16,7 @@
 // rendering — it mirrors `ConfirmDialog`'s shape and reuses the shared
 // `LockBanner` for a 409 backup-lock rejection.
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { api, type DocumentIngestMetadata } from "../lib/api";
 import { Banner } from "./Feedback";
 import { LockBanner } from "./LockBanner";
@@ -49,7 +54,7 @@ async function fileToBase64(file: File): Promise<string> {
 export function DocumentIngestModal({
   slug,
   onIngested,
-  onClose,
+  onClose: onDismiss,
 }: DocumentIngestModalProps) {
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileBase64, setFileBase64] = useState<string | null>(null);
@@ -86,14 +91,11 @@ export function DocumentIngestModal({
   const closeRef = useRef<HTMLButtonElement>(null);
 
   // Move focus into the dialog and let Escape dismiss it — basic modal hygiene.
-  useEffect(() => {
-    closeRef.current?.focus();
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape" && !busy) onClose();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [busy, onClose]);
+
+
+  const outcome = useMutationOutcome(onIngested);
+  const guard = useDiscardGuard(!done && (Boolean(fileBase64 || invoiceNo || issueDate || amountIncVat || vatAmount || senderName || senderAddress || senderVat || senderCountryCode || senderIdentifierKind || recipientName || recipientAddress || recipientVat || deliveryDescription || accountingRationale || sourceBankTransactionId || reverseChargeWordingExcerpt || reverseChargeWordingLocation || payrollPeriod || payrollReference || purchaseVatLines.length || internalVoucherKind !== "bank_evidenced") || currency !== "DKK" || documentType !== "purchase_sale" || source !== "cockpit-upload"), onDismiss);
+  const { onClose } = guard;
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -121,6 +123,7 @@ export function DocumentIngestModal({
   const isNonCashBalanceCorrection = isInternalVoucher && internalVoucherKind === "non_cash_balance_correction";
 
   async function handleIngest() {
+    if (outcome.isBlocked()) return;
     if (!fileBase64 || !fileName) {
       setError("Vælg en bilagsfil først.");
       return;
@@ -129,13 +132,13 @@ export function DocumentIngestModal({
       setError("Angiv en kilde.");
       return;
     }
-    const amountNum = amountIncVat.trim() ? Number(amountIncVat) : undefined;
-    const vatNum = vatAmount.trim() ? Number(vatAmount) : undefined;
-    if (amountNum !== undefined && !Number.isFinite(amountNum)) {
+    const amountNum = amountIncVat.trim() ? parseDanishAmount(amountIncVat) : undefined;
+    const vatNum = vatAmount.trim() ? parseDanishAmount(vatAmount) : undefined;
+    if (amountNum === null) {
       setError("Beløb inkl. moms skal være et tal.");
       return;
     }
-    if (vatNum !== undefined && !Number.isFinite(vatNum)) {
+    if (vatNum === null) {
       setError("Momsbeløb skal være et tal.");
       return;
     }
@@ -167,12 +170,12 @@ export function DocumentIngestModal({
     let parsedPurchaseVatLines: NonNullable<DocumentIngestMetadata["purchaseVatLines"]> = [];
     try {
       parsedPurchaseVatLines = isPurchaseSale ? purchaseVatLines.map((line, index) => {
-        const netAmount = Number(line.netAmount);
-        const lineVatAmount = line.vatAmount.trim() === "" ? 0 : Number(line.vatAmount);
-        if (!line.netAmount.trim() || !Number.isFinite(netAmount) || netAmount < 0) {
+        const netAmount = parseDanishAmount(line.netAmount);
+        const lineVatAmount = line.vatAmount.trim() === "" ? 0 : parseDanishAmount(line.vatAmount);
+        if (!line.netAmount.trim() || netAmount === null || netAmount < 0) {
           throw new Error(`Nettobeløb på momslinje ${index + 1} skal være et ikke-negativt tal.`);
         }
-        if (!Number.isFinite(lineVatAmount) || lineVatAmount < 0) {
+        if (lineVatAmount === null || lineVatAmount < 0) {
           throw new Error(`Momsbeløb på momslinje ${index + 1} skal være et ikke-negativt tal.`);
         }
         return {
@@ -246,7 +249,7 @@ export function DocumentIngestModal({
         fileName,
         fileBase64,
         metadata,
-      });
+      }).catch(outcome.reject);
       setDone({ documentNo: result.documentNo });
       onIngested();
     } catch (err) {
@@ -260,21 +263,11 @@ export function DocumentIngestModal({
   }
 
   return (
-    <div
-      className="modal-overlay"
-      role="presentation"
-      onClick={() => {
-        if (!busy) onClose();
-      }}
-    >
-      <div
-        className="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Indlæs bilag"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="modal-title">Indlæs bilag</h3>
+    <Dialog title="Indlæs bilag" onClose={onClose} busy={busy} initialFocusRef={closeRef}>
+    {outcome.feedback}
+      {guard.confirmation}
+
+
 
         {done ? (
           <>
@@ -285,14 +278,14 @@ export function DocumentIngestModal({
               </p>
             </div>
             <div className="modal-actions">
-              <button
+              <Button
                 type="button"
                 className="btn"
                 ref={closeRef}
                 onClick={onClose}
               >
                 Luk
-              </button>
+              </Button>
             </div>
           </>
         ) : (
@@ -300,8 +293,9 @@ export function DocumentIngestModal({
             <div className="modal-body">
               <p>
                 Vælg en bilagsfil (PDF, billede eller tekst) og udfyld
-                oplysningerne. Interne bilag skal bindes til den importerede
-                bankpost, der udgør det primære bevis.
+                oplysningerne. Bankdokumenterede interne bilag skal bindes til den importerede
+                bankpost. Balancekorrektioner uden bankbevægelse kræver en
+                særskilt regnskabsmæssig begrundelse.
               </p>
             </div>
 
@@ -310,15 +304,15 @@ export function DocumentIngestModal({
 
             <label className="modal-field">
               Bilagsfil
-              <input
+              <Input
                 type="file"
                 accept=".pdf,.png,.jpg,.jpeg,.txt,application/pdf,image/png,image/jpeg,text/plain"
                 onChange={handleFile}
-                disabled={busy}
+                disabled={outcome.blocked || (busy)}
               />
             </label>
             {fileName && (
-              <p className="muted" style={{ margin: 0 }}>
+              <p className={["muted", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
                 Valgt: {fileName}
               </p>
             )}
@@ -326,51 +320,51 @@ export function DocumentIngestModal({
             <div className="modal-field-grid">
               <label className="modal-field">
                 Bilagstype
-                <select
+                <Select
                   value={documentType}
                   onChange={(e) =>
                     setDocumentType(
                       e.target.value as DocumentIngestMetadata["documentType"],
                     )
                   }
-                  disabled={busy}
+                  disabled={outcome.blocked || (busy)}
                 >
                   <option value="purchase_sale">Køb/salg</option>
                   <option value="cash_register_receipt">Kassebon</option>
                   <option value="internal_voucher">Internt bilag</option>
                   <option value="external_accounting_evidence">Eksternt lønbilag</option>
-                </select>
+                </Select>
               </label>
               <label className="modal-field">
                 Kilde
-                <input
+                <Input
                   type="text"
                   value={source}
                   onChange={(e) => setSource(e.target.value)}
-                  disabled={busy}
+                  disabled={outcome.blocked || (busy)}
                 />
               </label>
             </div>
 
-            {isExternalPayroll && <div className="modal-field-grid"><label className="modal-field">Lønperiode<input type="month" value={payrollPeriod} onChange={(e) => setPayrollPeriod(e.target.value)} disabled={busy} /></label><label className="modal-field">Ekstern lønreference<input type="text" value={payrollReference} onChange={(e) => setPayrollReference(e.target.value)} disabled={busy} /></label></div>}
+            {isExternalPayroll && <div className="modal-field-grid"><label className="modal-field">Lønperiode<Input type="month" value={payrollPeriod} onChange={(e) => setPayrollPeriod(e.target.value)} disabled={outcome.blocked || busy} /></label><label className="modal-field">Ekstern lønreference<Input type="text" value={payrollReference} onChange={(e) => setPayrollReference(e.target.value)} disabled={outcome.blocked || busy} /></label></div>}
 
             <div className="modal-field-grid">
               <label className="modal-field">
                 Bilagsdato{isPurchaseSale || isInternalVoucher || isExternalPayroll ? "" : " (valgfri)"}
-                <input
+                <Input
                   type="date"
                   value={issueDate}
                   onChange={(e) => setIssueDate(e.target.value)}
-                  disabled={busy}
+                  disabled={outcome.blocked || (busy)}
                 />
               </label>
               <label className="modal-field">
                 Fakturanr. (valgfri)
-                <input
+                <Input
                   type="text"
                   value={invoiceNo}
                   onChange={(e) => setInvoiceNo(e.target.value)}
-                  disabled={busy}
+                  disabled={outcome.blocked || (busy)}
                 />
               </label>
             </div>
@@ -382,22 +376,20 @@ export function DocumentIngestModal({
                   : isExternalPayroll
                     ? "Samlet lønrapport (debet/kredit)"
                   : `Beløb inkl. moms${isPurchaseSale ? "" : " (valgfri)"}`}
-                <input
-                  type="number"
+                <MoneyInput
                   inputMode="decimal"
                   value={amountIncVat}
-                  onChange={(e) => setAmountIncVat(e.target.value)}
-                  disabled={busy}
+                  onValueChange={(e) => setAmountIncVat(e)}
+                  disabled={outcome.blocked || (busy)}
                 />
               </label>
               <label className="modal-field">
                 Momsbeløb{isInternalVoucher || isExternalPayroll ? " (altid 0)" : isPurchaseSale ? "" : " (valgfri)"}
-                <input
-                  type="number"
+                <MoneyInput
                   inputMode="decimal"
                   value={vatAmount}
-                  onChange={(e) => setVatAmount(e.target.value)}
-                  disabled={busy || isInternalVoucher || isExternalPayroll}
+                  onValueChange={(e) => setVatAmount(e)}
+                  disabled={outcome.blocked || (busy || isInternalVoucher || isExternalPayroll)}
                   placeholder={isInternalVoucher || isExternalPayroll ? "0" : undefined}
                 />
               </label>
@@ -405,22 +397,22 @@ export function DocumentIngestModal({
 
             <label className="modal-field">
               Valuta
-              <input
+              <Input
                 type="text"
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                disabled={busy}
+                disabled={outcome.blocked || (busy)}
               />
             </label>
 
             {(isPurchaseSale || isInternalVoucher) && (
               <label className="modal-field">
                 {isInternalVoucher ? "Beskrivelse" : "Beskrivelse af leverance"}
-                <input
+                <Input
                   type="text"
                   value={deliveryDescription}
                   onChange={(e) => setDeliveryDescription(e.target.value)}
-                  disabled={busy}
+                  disabled={outcome.blocked || (busy)}
                 />
               </label>
             )}
@@ -429,31 +421,31 @@ export function DocumentIngestModal({
               <>
                 <label className="modal-field">
                   Intern bilagstype
-                  <select value={internalVoucherKind} onChange={(e) => setInternalVoucherKind(e.target.value as "bank_evidenced" | "non_cash_balance_correction")} disabled={busy}>
+                  <Select value={internalVoucherKind} onChange={(e) => setInternalVoucherKind(e.target.value as "bank_evidenced" | "non_cash_balance_correction")} disabled={outcome.blocked || busy}>
                     <option value="bank_evidenced">Bankdokumenteret</option>
                     <option value="non_cash_balance_correction">Balancekorrektion uden bankbevægelse</option>
-                  </select>
+                  </Select>
                 </label>
                 {isNonCashBalanceCorrection && <p className="muted">Kun to balancekonti, dato, valuta og beløb skal senere stemme præcist med journalen. Moms er altid 0.</p>}
                 {!isNonCashBalanceCorrection &&
                 <label className="modal-field">
                   Banktransaktions-id
-                  <input
+                  <Input
                     type="number"
                     min="1"
                     step="1"
                     value={sourceBankTransactionId}
                     onChange={(e) => setSourceBankTransactionId(e.target.value)}
-                    disabled={busy}
+                    disabled={outcome.blocked || (busy)}
                   />
                 </label>
                 }
                 <label className="modal-field">
                   Regnskabsmæssig begrundelse
-                  <textarea
+                  <Textarea
                     value={accountingRationale}
                     onChange={(e) => setAccountingRationale(e.target.value)}
-                    disabled={busy}
+                    disabled={outcome.blocked || (busy)}
                     maxLength={2000}
                   />
                 </label>
@@ -471,54 +463,52 @@ export function DocumentIngestModal({
                   <div className="modal-field-grid" key={index}>
                     <label className="modal-field">
                       Momsart {index + 1}
-                      <select
+                      <Select
                         value={line.classification}
                         onChange={(e) => setPurchaseVatLines((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, classification: e.target.value as EditablePurchaseVatLine["classification"] } : item))}
-                        disabled={busy}
+                        disabled={outcome.blocked || (busy)}
                       >
                         <option value="dk_purchase_25">Dansk køb, 25 %</option>
                         <option value="exempt">Momsfrit/udlæg</option>
-                      </select>
+                      </Select>
                     </label>
                     <label className="modal-field">
                       Nettobeløb {index + 1}
-                      <input
-                        type="number"
+                      <MoneyInput
                         inputMode="decimal"
                         value={line.netAmount}
-                        onChange={(e) => setPurchaseVatLines((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, netAmount: e.target.value } : item))}
-                        disabled={busy}
+                        onValueChange={(e) => setPurchaseVatLines((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, netAmount: e } : item))}
+                        disabled={outcome.blocked || (busy)}
                       />
                     </label>
                     <label className="modal-field">
                       Momsbeløb {index + 1}
-                      <input
-                        type="number"
+                      <MoneyInput
                         inputMode="decimal"
                         value={line.vatAmount}
-                        onChange={(e) => setPurchaseVatLines((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, vatAmount: e.target.value } : item))}
-                        disabled={busy}
+                        onValueChange={(e) => setPurchaseVatLines((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, vatAmount: e } : item))}
+                        disabled={outcome.blocked || (busy)}
                       />
                     </label>
-                    <button
+                    <Button variant="secondary"
                       type="button"
                       className="btn secondary"
                       aria-label={`Fjern momslinje ${index + 1}`}
                       onClick={() => setPurchaseVatLines((current) => current.filter((_, itemIndex) => itemIndex !== index))}
-                      disabled={busy}
+                      disabled={outcome.blocked || busy}
                     >
                       Fjern
-                    </button>
+                    </Button>
                   </div>
                 ))}
-                <button
+                <Button variant="secondary"
                   type="button"
                   className="btn secondary"
                   onClick={() => setPurchaseVatLines((current) => [...current, { classification: "dk_purchase_25", netAmount: "", vatAmount: "" }])}
-                  disabled={busy}
+                  disabled={outcome.blocked || busy}
                 >
                   Tilføj momslinje
-                </button>
+                </Button>
               </fieldset>
             )}
 
@@ -527,82 +517,82 @@ export function DocumentIngestModal({
                 <div className="modal-field-grid">
                   <label className="modal-field">
                     Afsender
-                    <input
+                    <Input
                       type="text"
                       value={senderName}
                       placeholder="Navn"
                       onChange={(e) => setSenderName(e.target.value)}
-                      disabled={busy}
+                      disabled={outcome.blocked || (busy)}
                     />
                   </label>
                   <label className="modal-field">
                     Afsender CVR/moms
-                    <input
+                    <Input
                       type="text"
                       value={senderVat}
                       onChange={(e) => setSenderVat(e.target.value)}
-                      disabled={busy}
+                      disabled={outcome.blocked || (busy)}
                     />
                   </label>
                   <label className="modal-field">
                     Leverandørland (ISO)
-                    <input type="text" value={senderCountryCode} onChange={(e) => setSenderCountryCode(e.target.value.toUpperCase())} placeholder="US" maxLength={2} disabled={busy} />
+                    <Input type="text" value={senderCountryCode} onChange={(e) => setSenderCountryCode(e.target.value.toUpperCase())} placeholder="US" maxLength={2} disabled={outcome.blocked || (busy)} />
                   </label>
                   <label className="modal-field">
                     Identitetstype
-                    <select value={senderIdentifierKind} onChange={(e) => setSenderIdentifierKind(e.target.value as typeof senderIdentifierKind)} disabled={busy}>
+                    <Select value={senderIdentifierKind} onChange={(e) => setSenderIdentifierKind(e.target.value as typeof senderIdentifierKind)} disabled={outcome.blocked || (busy)}>
                       <option value="">Vælg</option><option value="dk_cvr">Dansk CVR</option><option value="eu_vat">EU-momsnr.</option><option value="non_eu">Ikke-EU</option>
-                    </select>
+                    </Select>
                   </label>
                 </div>
                 <label className="modal-field">
                   Afsenderadresse
-                  <input
+                  <Input
                     type="text"
                     value={senderAddress}
                     onChange={(e) => setSenderAddress(e.target.value)}
-                    disabled={busy}
+                    disabled={outcome.blocked || (busy)}
                   />
                 </label>
                 <div className="modal-field-grid">
                   <label className="modal-field">
                     Modtager
-                    <input
+                    <Input
                       type="text"
                       value={recipientName}
                       placeholder="Navn"
                       onChange={(e) => setRecipientName(e.target.value)}
-                      disabled={busy}
+                      disabled={outcome.blocked || (busy)}
                     />
                   </label>
                   <label className="modal-field">
                     Modtager CVR/moms
-                    <input
+                    <Input
                       type="text"
                       value={recipientVat}
                       onChange={(e) => setRecipientVat(e.target.value)}
-                      disabled={busy}
+                      disabled={outcome.blocked || (busy)}
                     />
                   </label>
                 </div>
                 <label className="modal-field">
                   Modtageradresse
-                  <input
+                  <Input
                     type="text"
                     value={recipientAddress}
                     onChange={(e) => setRecipientAddress(e.target.value)}
-                    disabled={busy}
+                    disabled={outcome.blocked || (busy)}
                   />
                 </label>
                 {isPurchaseSale && senderIdentifierKind === "non_eu" && (
                   <div className="modal-field-grid">
                     <label className="modal-field">
                       Ordlyd om omvendt betalingspligt (valgfri)
-                      <input value={reverseChargeWordingExcerpt} onChange={(e) => setReverseChargeWordingExcerpt(e.target.value)} placeholder="Citat fra bilaget" disabled={busy} />
+                      <Input value={reverseChargeWordingExcerpt} onChange={(e) => setReverseChargeWordingExcerpt(e.target.value)} placeholder="Citat fra bilaget" disabled={outcome.blocked || busy} />
                     </label>
                     <label className="modal-field">
                       Placering på bilaget
-                      <input value={reverseChargeWordingLocation} onChange={(e) => setReverseChargeWordingLocation(e.target.value)} placeholder="Fx side 1" disabled={busy} />
+                      <Input value={reverseChargeWordingLocation} onChange={(e) => setReverseChargeWordingLocation(e.target.value)} placeholder="Fx side 1" disabled={outcome.blocked || busy} />
                     </label>
                   </div>
                 )}
@@ -610,26 +600,30 @@ export function DocumentIngestModal({
             )}
 
             <div className="modal-actions">
-              <button
+              <Button variant="secondary"
                 type="button"
                 className="btn secondary"
                 onClick={onClose}
-                disabled={busy}
+                disabled={outcome.blocked || busy}
               >
                 Annullér
-              </button>
-              <button
+              </Button>
+              <Button requiredPermission="company.documents.upload"
                 type="button"
                 className="btn"
                 onClick={handleIngest}
-                disabled={busy || !fileBase64}
+                disabled={outcome.blocked || (busy || !fileBase64)}
               >
                 {busy ? "Indlæser…" : "Indlæs bilag"}
-              </button>
+              </Button>
             </div>
           </>
         )}
-      </div>
-    </div>
+
+    </Dialog>
   );
 }
+
+const viewStyles = stylex.create({
+site0: { margin: 0 }
+});

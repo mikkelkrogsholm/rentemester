@@ -24,7 +24,7 @@ describe("ObligationsView — Forpligtelser", () => {
     mockFetch(route());
     renderView();
     expect(
-      await screen.findByRole("heading", { name: "Acme ApS" }),
+      await screen.findByRole("heading", { name: "Forpligtelser", level: 1 }),
     ).toBeInTheDocument();
     expect(screen.getByText("Moms — Q2 2026")).toBeInTheDocument();
     expect(screen.getByText("Skyldig selskabsskat")).toBeInTheDocument();
