@@ -33,7 +33,7 @@ export function BankCorrectionModal({ slug, transaction, onApplied, onClose: onD
     if (outcome.isBlocked()) return;
     if (!plan || !plan.ok || !confirmed || !reason.trim() || !idempotencyKey.trim()) return;
     setBusy(true); setError(null);
-    try { await api.applyCorrection(slug, { bankTransactionId: transaction.id, replacementJournalEntryId: replacementId, expectedReconciliationId: plan.plan.reconciliationId, planHash: plan.plan.planHash, reason: reason.trim(), idempotencyKey: idempotencyKey.trim() }).catch(outcome.reject); onApplied(); guard.dismiss(); }
+    try { await outcome.run(() => api.applyCorrection(slug, { bankTransactionId: transaction.id, replacementJournalEntryId: replacementId, expectedReconciliationId: plan.plan.reconciliationId, planHash: plan.plan.planHash, reason: reason.trim(), idempotencyKey: idempotencyKey.trim() })); onApplied(); guard.dismiss(); }
     catch (cause) { setError(cause instanceof Error ? cause.message.slice(0, 500) : "Korrektionen blev afvist."); }
     finally { setBusy(false); }
   }

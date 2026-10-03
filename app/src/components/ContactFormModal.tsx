@@ -254,9 +254,9 @@ export function ContactFormModal({
         if (notes !== undefined) input.notes = notes;
 
         if (customer) {
-          await api.updateCustomer(slug, customer.id, input).catch(outcome.reject);
+          await outcome.run(() => api.updateCustomer(slug, customer.id, input));
         } else {
-          await api.createCustomer(slug, input).catch(outcome.reject);
+          await outcome.run(() => api.createCustomer(slug, input));
         }
       } else {
         const input: VendorInput = { name: form.name.trim() };
@@ -281,9 +281,9 @@ export function ContactFormModal({
         if (notes !== undefined) input.notes = notes;
 
         if (vendor) {
-          await api.updateVendor(slug, vendor.id, input).catch(outcome.reject);
+          await outcome.run(() => api.updateVendor(slug, vendor.id, input));
         } else {
-          await api.createVendor(slug, input).catch(outcome.reject);
+          await outcome.run(() => api.createVendor(slug, input));
         }
       }
       onSaved();

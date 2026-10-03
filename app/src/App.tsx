@@ -29,6 +29,7 @@ import { ButtonLink } from "./components/ui";
 import { NavLink, Route, Routes, Link, useLocation, useParams, useSearchParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./lib/auth-context";
 import { api } from "./lib/api";
+import { MutationMemoryProvider } from "./lib/mutation-memory";
 import { useAsync } from "./lib/useAsync";
 import { ForgotPasswordView, LoginView, ResetPasswordView, VerificationRecoveryView } from "./views/LoginView";
 import { MfaEnrollmentView, VerificationRequiredView } from "./views/MfaEnrollmentView";
@@ -79,14 +80,14 @@ export function App() {
 function AuthGate() {
   const { hosted, loading, session, context } = useAuth();
   const location = useLocation();
-  if (!hosted) return <CockpitApp />;
+  if (!hosted) return <MutationMemoryProvider><CockpitApp /></MutationMemoryProvider>;
   if (loading) return <div className="state-msg">Kontrollerer din session…</div>;
   if (location.pathname === "/invite") return <InvitationView />;
   if (!session) return <AuthRecoveryRoutes />;
   if (!session.emailVerified) return <VerificationRequiredView />;
   if (!session.twoFactorEnabled) return <MfaEnrollmentView />;
   if (!context) return <div className="state-msg">Indlæser din adgang…</div>;
-  return <CockpitApp />;
+  return <MutationMemoryProvider key={session.id} scope={`user:${session.id}`}><CockpitApp /></MutationMemoryProvider>;
 }
 
 function AuthRecoveryRoutes() {

@@ -237,14 +237,14 @@ function ClosePeriodModal({
         setSubmitting(false);
         return;
       }
-      const review = await api.reviewCloseReadiness(slug, periodStart, periodEnd).catch(outcome.reject);
+      const review = await outcome.run(() => api.reviewCloseReadiness(slug, periodStart, periodEnd));
       if (review.packet.hash !== packet.hash) {
         setPacket(review.packet);
         onError("Grundlaget ændrede sig. Kontrollér den nye packet før lukning.");
         setSubmitting(false);
         return;
       }
-      await api.closePeriod(slug, {
+      await outcome.run(() => api.closePeriod(slug, {
         periodStart,
         periodEnd,
         kind,
@@ -252,7 +252,7 @@ function ClosePeriodModal({
         packetHash: review.packet.hash,
         reviewId: review.id,
         ...(force ? { force: true, reason: forceReason } : {}),
-      }).catch(outcome.reject);
+      }));
       guard.dismiss();
       onDone();
     } catch (err) {
@@ -383,12 +383,12 @@ function ReopenPeriodModal({
   const submit = async (e: React.FormEvent) => {e.preventDefault(); if (outcome.isBlocked()) return;
     setSubmitting(true);
     try {
-      await api.reopenPeriod(slug, {
+      await outcome.run(() => api.reopenPeriod(slug, {
         periodStart: target.periodStart,
         periodEnd: target.periodEnd,
         kind: target.kind,
         reason,
-      }).catch(outcome.reject);
+      }));
       guard.dismiss();
       onDone();
     } catch (err) {

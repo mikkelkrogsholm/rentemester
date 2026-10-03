@@ -63,6 +63,15 @@ export function isIssuedDocumentEvidence(documentType: string): boolean {
     documentType === "credit_note";
 }
 
+/** The canonical store identity remains valid when evidence is rebased on restore. */
+export function registeredDocumentEvidenceLocation(storedPath: string, documentType: string) {
+  const relativeStore = isIssuedDocumentEvidence(documentType)
+    ? (["invoices", "issued"] as const)
+    : (["documents", "originals"] as const);
+  const filename = evidencePathParts(storedPath, relativeStore).at(-1)!;
+  return { relativeStore, filename };
+}
+
 type StableStat = { dev: number; ino: number; size: number; mtimeMs: number; ctimeMs: number };
 
 function stableStat(fd: number, maxBytes = MAX_DOCUMENT_BYTES): StableStat {
@@ -160,11 +169,7 @@ export function snapshotRegisteredDocumentEvidence(
   if (!/^[a-f0-9]{64}$/.test(expectedSha256) || !input.documentType) {
     throw new DocumentEvidenceError("invalid_metadata");
   }
-  const relativeStore = isIssuedDocumentEvidence(input.documentType)
-    ? (["invoices", "issued"] as const)
-    : (["documents", "originals"] as const);
-  const parts = evidencePathParts(input.storedPath, relativeStore);
-  const filename = parts.at(-1)!;
+  const { relativeStore, filename } = registeredDocumentEvidenceLocation(input.storedPath, input.documentType);
   const maxBytes = input.maxBytes ?? DOCUMENT_EVIDENCE_MAX_BYTES;
   if (!Number.isSafeInteger(maxBytes) || maxBytes < 1) {
     throw new DocumentEvidenceError("invalid_metadata");

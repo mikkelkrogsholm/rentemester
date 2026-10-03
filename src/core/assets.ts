@@ -293,6 +293,9 @@ export function postDepreciationPeriod(db: Database, input: PostDepreciationPeri
 
   const asset = loadAsset(db, input.assetId);
   if (!asset) return { ok: false, appliedRules: [DEPR_RULE_ID], errors: [`asset ${input.assetId} does not exist`] };
+  if (input.transactionDate < asset.acquisition_date) {
+    return { ok: false, appliedRules: [DEPR_RULE_ID], errors: [`transactionDate must not precede asset acquisitionDate ${asset.acquisition_date}`] };
+  }
 
   const schedule = computeDepreciationSchedule({
     cost: Number(asset.cost),
@@ -490,6 +493,9 @@ export function postImmediateWriteOff(db: Database, input: ImmediateWriteOffInpu
   if (!Number.isInteger(input.purchaseDocumentId) || input.purchaseDocumentId <= 0) errors.push("purchaseDocumentId must be a positive integer");
   if (typeof input.expenseAccountNo !== "string" || input.expenseAccountNo.trim().length === 0) errors.push("expenseAccountNo is required");
   if (errors.length > 0) return { ok: false, appliedRules: [WRITEOFF_RULE_ID], errors };
+  if (input.transactionDate < input.acquisitionDate) {
+    return { ok: false, appliedRules: [WRITEOFF_RULE_ID], errors: ["transactionDate must not precede acquisitionDate"] };
+  }
 
   // Explicit confirmation is mandatory — straksafskrivning is a tax-treatment
   // choice the user/advisor must own deliberately.

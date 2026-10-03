@@ -215,7 +215,7 @@ function CreateBankAccountModal({
   const submit = async (e: React.FormEvent) => {e.preventDefault(); if (outcome.isBlocked()) return;
     setSubmitting(true);
     try {
-      await api.createBankAccount(slug, {
+      await outcome.run(() => api.createBankAccount(slug, {
         name,
         ...(bankName ? { bankName } : {}),
         ...(registrationNo ? { registrationNo } : {}),
@@ -226,7 +226,7 @@ function CreateBankAccountModal({
         ...(customerNo ? { customerNo } : {}),
         ...(currency ? { currency } : {}),
         ...(ledgerAccountNo ? { ledgerAccountNo } : {}),
-      }).catch(outcome.reject);
+      }));
       guard.dismiss();
       onDone();
     } catch (err) {

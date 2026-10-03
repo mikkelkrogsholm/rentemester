@@ -72,7 +72,18 @@ export function register(dispatch: CommandDispatch): void {
   // not call a company posting command or accept an elimination amount.
   dispatch.on("group", "propose-disposition", (ctx) => {
     if ((ctx.arg("--confirm") ?? "").trim().toLowerCase() !== "yes") { ctx.emitResult({ ok: false, errors: ["--confirm yes required to propose intercompany disposition"] }); return; }
-    try { const workspace=resolveWorkspaceRoot(required(ctx,"--workspace")), audit=actorInput(ctx), db=openWorkspaceControlDb(workspace); try { const result=proposeIntercompanyDisposition(db,readManifest(required(ctx,"--disposition")),{actor:audit.createdBy,principal:{kind:"user",id:audit.createdBy}}); assertCompanySlugsAuthorize(workspace,[result.disposition.left.companySlug,result.disposition.right.companySlug],audit.createdBy,"group propose-disposition"); ctx.emitResult({ok:true,...result}); } finally {db.close();} } catch(error) {ctx.emitResult({ok:false,errors:[error instanceof Error?error.message:"disposition proposal failed"]});}
+    try {
+      const workspace = resolveWorkspaceRoot(required(ctx, "--workspace"));
+      const audit = dispositionActorInput(ctx);
+      const reader = openWorkspaceControlReadOnlyDb(workspace);
+      let planned: ReturnType<typeof planIntercompanyDisposition>;
+      try { planned = planIntercompanyDisposition(reader, readManifest(required(ctx, "--disposition"))); }
+      finally { reader.close(); }
+      assertCompanySlugsAuthorize(workspace, [planned.disposition.left.companySlug, planned.disposition.right.companySlug], audit.createdBy, "group propose-disposition");
+      const db = openWorkspaceControlDb(workspace);
+      try { ctx.emitResult({ ok: true, ...proposeIntercompanyDisposition(db, planned.disposition, { actor: audit.createdBy, principal: { kind: "user", id: audit.createdBy } }) }); }
+      finally { db.close(); }
+    } catch (error) { ctx.emitResult({ ok: false, errors: [error instanceof Error ? error.message : "disposition proposal failed"] }); }
   });
   dispatch.on("group", "plan-disposition", (ctx) => { try { const db=openWorkspaceControlReadOnlyDb(resolveWorkspaceRoot(required(ctx,"--workspace"))); try { ctx.emitResult(planIntercompanyDisposition(db,readManifest(required(ctx,"--disposition")))); } finally {db.close();} } catch(error) {ctx.emitResult({ok:false,errors:[error instanceof Error?error.message:"disposition dry-run failed"]});} });
   dispatch.on("group", "approve-disposition", (ctx) => {

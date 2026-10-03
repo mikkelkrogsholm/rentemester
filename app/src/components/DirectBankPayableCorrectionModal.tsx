@@ -27,7 +27,7 @@ export function DirectBankPayableCorrectionModal({slug,payables,onApplied,onClos
   const correctionKey = useRef<string>();
   const input=():DirectBankPayableCorrectionInput=>({documentId,bankTransactionId:Number(bankTransactionId),billDate,dueDate,expenseAccountNo,vatTreatment:"standard"});
   const review=async()=>{setBusy(true);setError(null);try{setPlan(await api.planDirectBankPayableCorrection(slug,input()));}catch(e){setError(e instanceof Error?e.message:"Planen kunne ikke oprettes");}finally{setBusy(false);}};
-  const apply=async()=>{if (outcome.isBlocked()) return;if(!plan)return;if (!correctionKey.current) correctionKey.current = crypto.randomUUID();setBusy(true);setError(null);try{await api.applyDirectBankPayableCorrection(slug,{...input(),planHash:plan.planHash,reason,idempotencyKey:correctionKey.current}).catch(outcome.reject);onApplied();guard.dismiss();}catch(e){setError(e instanceof Error?e.message:"Korrektionen kunne ikke gennemføres");}finally{setBusy(false);}};
+  const apply=async()=>{if (outcome.isBlocked()) return;if(!plan)return;if (!correctionKey.current) correctionKey.current = crypto.randomUUID();setBusy(true);setError(null);try{await outcome.run(() => api.applyDirectBankPayableCorrection(slug,{...input(),planHash:plan.planHash,reason,idempotencyKey:correctionKey.current!}));onApplied();guard.dismiss();}catch(e){setError(e instanceof Error?e.message:"Korrektionen kunne ikke gennemføres");}finally{setBusy(false);}};
   return <Dialog title="Ret direkte bankkøb" onClose={onClose} busy={busy}>
     {outcome.feedback}
       {guard.confirmation}

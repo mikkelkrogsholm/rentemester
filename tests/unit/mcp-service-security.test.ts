@@ -14,6 +14,7 @@ import { companyPaths } from "../../src/core/paths";
 import { openDb, migrate } from "../../src/core/db";
 import { ingestDocument } from "../../src/core/documents";
 import { registerPayableTools } from "../../src/mcp/tools/payable";
+import { proposeOwnershipSnapshot } from "../../src/core/ownership-graph";
 import { registerAllTools } from "../../src/mcp/registry";
 
 const SECRET = "I0UjL6i0-ScgvjfIgzMKJxPQyDpPXwg2mMKdLW3Y3WQ";
@@ -47,6 +48,28 @@ describe("MCP service principal guard", () => {
       expect(await authorizeMcpTool(contextFor(issued.secret),"ownership_graph_query",{company:"allowed-aps",asOf:"2026-02-01"})).not.toBeNull();expect(await authorizeMcpTool(contextFor(issued.secret),"ownership_snapshot_propose",args)).toBeNull();grantCompanyMembership(db,workspace,{userId:issued.serviceAccountId,companySlug:"hidden-aps",role:"reviewer",actor:"user:owner"});expect(await authorizeMcpTool(contextFor(issued.secret),"ownership_snapshot_propose",args)).not.toBeNull();const rotated=await rotateWorkspaceServiceCredential(db,runtime.auth,{serviceAccountId:issued.serviceAccountId,credentialId:issued.credentialId,actor:"user:owner"});expect(await authorizeMcpTool(contextFor(issued.secret),"ownership_snapshot_propose",args)).toBeNull();expect(await authorizeMcpTool(contextFor(rotated.secret),"ownership_snapshot_propose",args)).not.toBeNull();await revokeWorkspaceServiceCredential(db,runtime.auth,{serviceAccountId:issued.serviceAccountId,credentialId:rotated.credentialId,actor:"user:owner"});expect(await authorizeMcpTool(contextFor(rotated.secret),"ownership_snapshot_propose",args)).toBeNull();
     } finally {db.close();runtime.close();rmSync(workspace,{recursive:true,force:true});}
   });
+  test("review and apply authorize stored snapshot endpoints even if caller supplies decoy facts", async () => {
+    const workspace = makeWorkspace("mcp-ownership-forged-scope", ["Allowed ApS", "Hidden ApS"]);
+    const runtime = openWorkspaceBetterAuth(workspace, { secret: SECRET, trustedOrigins: [ORIGIN], baseURL: ORIGIN });
+    const db = openWorkspaceControlDb(workspace);
+    try {
+      const facts = [{ owner: { kind: "company" as const, companySlug: "allowed-aps" }, ownedCompanySlug: "hidden-aps", validFrom: "2026-01-01", economicBasisPoints: 10000, controlType: "equity" as const, jurisdiction: "DK", evidenceRefs: ["synthetic"] }];
+      const snapshot = proposeOwnershipSnapshot(db, { snapshotId: "forged-scope", source: "synthetic", observedAt: "2026-01-01T00:00:00Z", facts, actor: "user:maker", principal: { kind: "local_operator", id: "maker" } });
+      const issued = await createWorkspaceServicePrincipal(db, runtime.auth, { displayName: "Synthetic scope reviewer", actor: "user:owner" });
+      activateWorkspaceUser(db, { userId: issued.serviceAccountId, workspaceRole: "member", actor: "user:owner" });
+      grantCompanyMembership(db, workspace, { userId: issued.serviceAccountId, companySlug: "allowed-aps", role: "owner", actor: "user:owner" });
+      const context = createMcpSecurityContextFromEnv({ RENTEMESTER_WORKSPACE: workspace, RENTEMESTER_SERVICE_PRINCIPAL_TOKEN: issued.secret })!;
+      const args = { company: "allowed-aps", snapshotId: snapshot.snapshotId, snapshotHash: snapshot.snapshotHash, diffHash: snapshot.diffHash, decision: "approved", confirm: true, facts: [{ ...facts[0], ownedCompanySlug: "allowed-aps" }] };
+      const before = db.query("SELECT * FROM rm_ownership_snapshot_events").all();
+      for (const tool of ["ownership_snapshot_review", "ownership_snapshot_apply"]) {
+        expect(await authorizeMcpTool(context, tool, args)).toBeNull();
+        expect(db.query("SELECT * FROM rm_ownership_snapshot_events").all()).toEqual(before);
+      }
+      grantCompanyMembership(db, workspace, { userId: issued.serviceAccountId, companySlug: "hidden-aps", role: "owner", actor: "user:owner" });
+      for (const tool of ["ownership_snapshot_review", "ownership_snapshot_apply"]) expect(await authorizeMcpTool(context, tool, args)).not.toBeNull();
+    } finally { db.close(); runtime.close(); rmSync(workspace, { recursive: true, force: true }); }
+  });
+
   test("captures token, revalidates revocation, and confines company paths", async () => {
     const workspace = makeWorkspace("mcp-service-guard", ["Allowed ApS", "Hidden ApS"]);
     const outside = mkdtempSync(join(tmpdir(), "rentemester-mcp-outside-"));

@@ -9,8 +9,8 @@ import { companyRootForSlug, resolveWorkspaceRoot, resolveWorkspaceSlug } from "
 import { openWorkspaceControlDb, openWorkspaceControlReadOnlyDb } from "../core/workspace-control";
 import { approvePartyMerge, createParty, inspectParty, linkPartyRole, proposePartyMerge, searchParties } from "../core/party-registry";
 import { enrichCorporateRecord, ingestCorporateRecord, inspectCorporateRecord, linkCorporateRecord, listCorporateRecords, readCorporateRecordBytes, supersedeCorporateRecord } from "../core/corporate-records";
-import { companyKnowledgeHistory, proposeCompanyKnowledge, queryCompanyKnowledge, reviewCompanyKnowledge, supersedeCompanyKnowledge } from "../core/company-knowledge";
-import { applyOwnershipSnapshot, ownershipHistory, projectExactCompanyOwnership, proposeOwnershipSnapshot, queryOwnershipGraph, reviewOwnershipSnapshot } from "../core/ownership-graph";
+import { companyKnowledgeHistory, inspectCompanyKnowledgeAssertion, proposeCompanyKnowledge, queryCompanyKnowledge, reviewCompanyKnowledge, supersedeCompanyKnowledge } from "../core/company-knowledge";
+import { applyOwnershipSnapshot, ownershipEndpointSlugs, ownershipHistory, projectExactCompanyOwnership, proposeOwnershipSnapshot, queryOwnershipGraph, reviewOwnershipSnapshot } from "../core/ownership-graph";
 import { getAccountingApprovalPolicy, setAccountingApprovalPolicy } from "../core/accounting-approval-policy";
 import { approveWorkspaceInboxAssignment, completeWorkspaceInboxAssignment, ingestWorkspaceInboxSource, inspectWorkspaceInboxSource, listWorkspaceInboxSources } from "../core/workspace-document-inbox";
 import { companyPaths } from "../core/paths";
@@ -21,7 +21,8 @@ import { applyVendorIdentityEnrichment, listVendorIdentityEnrichments, planVendo
 import { partyHub, partyProfile } from "../core/party-hub";
 import type { CommandContext, CommandDispatch } from "../cli-dispatch";
 import { authorizeMcpTool, createMcpSecurityContextFromEnv } from "../mcp/security";
-import { requireMutationActorIdentity } from "../cli-actor";
+import { checkActorAllowlist, requireMutationActorIdentity } from "../cli-actor";
+import { resolveWorkspaceCompany } from "../core/workspace-company-resolver";
 
 const need = (ctx: CommandContext, flag: string) => { const v = ctx.trimToNull(ctx.arg(flag)); if (!v) ctx.fatal(`${flag} is required`); return v!; };
 const actor = (ctx: CommandContext) => requireMutationActorIdentity(ctx.cliActor, ctx.fatal);
@@ -32,6 +33,34 @@ const confirm = (ctx: CommandContext) => {
 const json = (ctx: CommandContext, flag: string): Record<string, unknown> => { try { const v = JSON.parse(readFileSync(need(ctx, flag), "utf8")); if (!v || typeof v !== "object" || Array.isArray(v)) throw new Error("must be an object"); return v as Record<string, unknown>; } catch (e) { ctx.fatal(`${flag} must be a readable JSON object: ${e instanceof Error ? e.message : String(e)}`); } };
 const workspace = (ctx: CommandContext) => resolveWorkspaceRoot(need(ctx, "--workspace"));
 const principal=(ctx:CommandContext)=>({kind:"local_operator" as const,id:need(ctx,"--principal-id")});
+
+function authorizeCompanies(ctx: CommandContext, root: string, slugs: Iterable<string>): void {
+  const identity = actor(ctx);
+  for (const slug of new Set(slugs)) {
+    const resolved = resolveWorkspaceCompany(root, slug, { selection: "registered", archived: "deny", ledger: "required" });
+    if (!resolved.ok) ctx.fatal(`active workspace company '${slug}' is unavailable`);
+    if (resolved.ok) {
+      const allowed = checkActorAllowlist(resolved.company.companyRoot, identity);
+      if (!allowed.allowed) ctx.fatal(allowed.reason);
+    }
+  }
+}
+
+function knowledgeCompany(root: string, assertionId: string): string {
+  const reader = openWorkspaceControlReadOnlyDb(root);
+  try {
+    const assertion = inspectCompanyKnowledgeAssertion(reader, assertionId);
+    if (!assertion) throw new Error("company knowledge assertion not found");
+    return assertion.companySlug;
+  } finally { reader.close(); }
+}
+
+function ownershipCompanies(root: string, input: { facts?: unknown; snapshotId?: unknown }): Set<string> {
+  if ("facts" in input) return ownershipEndpointSlugs(undefined, input);
+  const reader = openWorkspaceControlReadOnlyDb(root);
+  try { return ownershipEndpointSlugs(reader, input); }
+  finally { reader.close(); }
+}
 
 export function register(dispatch: CommandDispatch): void {
   const enrichmentInput = (ctx: CommandContext) => ({
@@ -111,15 +140,15 @@ export function register(dispatch: CommandDispatch): void {
   dispatch.on("corporate-record", "enrich", (ctx) => { confirm(ctx); const db=openWorkspaceControlDb(workspace(ctx)); try { ctx.emitResult({ok:true,payloadHash:enrichCorporateRecord(db,{recordId:need(ctx,"--record-id"),assertion:need(ctx,"--assertion"),actor:actor(ctx)})}); } finally {db.close();} });
   dispatch.on("corporate-record", "supersede", (ctx) => { confirm(ctx); const db=openWorkspaceControlDb(workspace(ctx)); try { ctx.emitResult({ok:true,payloadHash:supersedeCorporateRecord(db,{recordId:need(ctx,"--record-id"),replacementRecordId:need(ctx,"--replacement-record-id"),reason:need(ctx,"--reason"),actor:actor(ctx)})}); } finally {db.close();} });
   dispatch.on("company-knowledge", "context", (ctx) => { const db=openWorkspaceControlReadOnlyDb(workspace(ctx));try{const company=need(ctx,"--company");ctx.emitResult({ok:true,context:queryCompanyKnowledge(db,{companySlug:company,asOf:need(ctx,"--as-of"),includeProposed:ctx.arg("--include-proposed")==="yes"}),history:companyKnowledgeHistory(db,company)});}finally{db.close();} });
-  dispatch.on("company-knowledge", "propose", (ctx) => { confirm(ctx);const db=openWorkspaceControlDb(workspace(ctx));try{ctx.emitResult({ok:true,assertion:proposeCompanyKnowledge(db,{...json(ctx,"--input"),companySlug:need(ctx,"--company"),actor:actor(ctx),principal:principal(ctx)}as any)});}finally{db.close();} });
-  dispatch.on("company-knowledge", "review", (ctx) => { confirm(ctx);const db=openWorkspaceControlDb(workspace(ctx));try{ctx.emitResult({ok:true,assertion:reviewCompanyKnowledge(db,{assertionId:need(ctx,"--assertion-id"),decision:need(ctx,"--decision") as any,reason:ctx.arg("--reason")??undefined,actor:actor(ctx),principal:principal(ctx)})});}finally{db.close();} });
-  dispatch.on("company-knowledge", "supersede", (ctx) => { confirm(ctx);const db=openWorkspaceControlDb(workspace(ctx));try{ctx.emitResult({ok:true,...supersedeCompanyKnowledge(db,{assertionId:need(ctx,"--assertion-id"),replacement:json(ctx,"--replacement") as any,actor:actor(ctx),principal:principal(ctx)})});}finally{db.close();} });
+  dispatch.on("company-knowledge", "propose", (ctx) => { confirm(ctx);const root=workspace(ctx);authorizeCompanies(ctx,root,[need(ctx,"--company")]);const db=openWorkspaceControlDb(root);try{ctx.emitResult({ok:true,assertion:proposeCompanyKnowledge(db,{...json(ctx,"--input"),companySlug:need(ctx,"--company"),actor:actor(ctx),principal:principal(ctx)}as any)});}finally{db.close();} });
+  dispatch.on("company-knowledge", "review", (ctx) => { confirm(ctx);const root=workspace(ctx);authorizeCompanies(ctx,root,[knowledgeCompany(root,need(ctx,"--assertion-id"))]);const db=openWorkspaceControlDb(root);try{ctx.emitResult({ok:true,assertion:reviewCompanyKnowledge(db,{assertionId:need(ctx,"--assertion-id"),decision:need(ctx,"--decision") as any,reason:ctx.arg("--reason")??undefined,actor:actor(ctx),principal:principal(ctx)})});}finally{db.close();} });
+  dispatch.on("company-knowledge", "supersede", (ctx) => { confirm(ctx);const root=workspace(ctx);authorizeCompanies(ctx,root,[knowledgeCompany(root,need(ctx,"--assertion-id"))]);const db=openWorkspaceControlDb(root);try{ctx.emitResult({ok:true,...supersedeCompanyKnowledge(db,{assertionId:need(ctx,"--assertion-id"),replacement:json(ctx,"--replacement") as any,actor:actor(ctx),principal:principal(ctx)})});}finally{db.close();} });
   // Ownership is workspace control-plane data. These commands never alter a
   // company ledger or the v1 group manifest; apply only accepts exact hashes.
   dispatch.on("ownership", "query", (ctx) => { const db=openWorkspaceControlReadOnlyDb(workspace(ctx));try{ctx.emitResult({ok:true,...queryOwnershipGraph(db,{asOf:need(ctx,"--as-of"),visibleCompanySlugs:new Set([need(ctx,"--company")])})});}finally{db.close();} });
-  dispatch.on("ownership", "propose", (ctx) => { confirm(ctx); const db=openWorkspaceControlDb(workspace(ctx));try{const input=json(ctx,"--input");ctx.emitResult({ok:true,snapshot:proposeOwnershipSnapshot(db,{...input,actor:actor(ctx),principal:principal(ctx)}as any)});}finally{db.close();} });
-  dispatch.on("ownership", "review", (ctx) => { confirm(ctx);const db=openWorkspaceControlDb(workspace(ctx));try{ctx.emitResult({ok:true,snapshot:reviewOwnershipSnapshot(db,{snapshotId:need(ctx,"--snapshot-id"),decision:need(ctx,"--decision") as any,actor:actor(ctx),principal:principal(ctx)})});}finally{db.close();} });
-  dispatch.on("ownership", "apply", (ctx) => { confirm(ctx);const db=openWorkspaceControlDb(workspace(ctx));try{ctx.emitResult({ok:true,...applyOwnershipSnapshot(db,{snapshotId:need(ctx,"--snapshot-id"),snapshotHash:need(ctx,"--snapshot-hash"),diffHash:need(ctx,"--diff-hash"),actor:actor(ctx),principal:principal(ctx),authorized:true})});}finally{db.close();} });
+  dispatch.on("ownership", "propose", (ctx) => { confirm(ctx); const root=workspace(ctx),input=json(ctx,"--input");authorizeCompanies(ctx,root,ownershipCompanies(root,{facts:input.facts}));const db=openWorkspaceControlDb(root);try{ctx.emitResult({ok:true,snapshot:proposeOwnershipSnapshot(db,{...input,actor:actor(ctx),principal:principal(ctx)}as any)});}finally{db.close();} });
+  dispatch.on("ownership", "review", (ctx) => { confirm(ctx);const root=workspace(ctx);authorizeCompanies(ctx,root,ownershipCompanies(root,{snapshotId:need(ctx,"--snapshot-id")}));const db=openWorkspaceControlDb(root);try{ctx.emitResult({ok:true,snapshot:reviewOwnershipSnapshot(db,{snapshotId:need(ctx,"--snapshot-id"),decision:need(ctx,"--decision") as any,actor:actor(ctx),principal:principal(ctx)})});}finally{db.close();} });
+  dispatch.on("ownership", "apply", (ctx) => { confirm(ctx);const root=workspace(ctx);authorizeCompanies(ctx,root,ownershipCompanies(root,{snapshotId:need(ctx,"--snapshot-id")}));const db=openWorkspaceControlDb(root);try{ctx.emitResult({ok:true,...applyOwnershipSnapshot(db,{snapshotId:need(ctx,"--snapshot-id"),snapshotHash:need(ctx,"--snapshot-hash"),diffHash:need(ctx,"--diff-hash"),actor:actor(ctx),principal:principal(ctx),authorized:true})});}finally{db.close();} });
   dispatch.on("ownership", "history", (ctx) => { const db=openWorkspaceControlReadOnlyDb(workspace(ctx));try{ctx.emitResult({ok:true,history:ownershipHistory(db,ctx.arg("--snapshot-id"))});}finally{db.close();} });
   dispatch.on("ownership", "projection", (ctx) => { const db=openWorkspaceControlReadOnlyDb(workspace(ctx));try{ctx.emitResult({ok:true,projection:projectExactCompanyOwnership(db,need(ctx,"--as-of"))});}finally{db.close();} });
   // #577: workspace inbox sources are immutable control-plane evidence. No

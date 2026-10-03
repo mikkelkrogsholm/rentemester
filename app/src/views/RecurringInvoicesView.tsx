@@ -213,11 +213,11 @@ function TemplateCard({
     setError(null);
     setNotice(null);
     try {
-      const result = await api.generateRecurringInvoice(
+      const result = await outcome.run(() => api.generateRecurringInvoice(
         slug,
         template.id,
         asOfDate,
-      ).catch(outcome.reject);
+      ));
       if (result.created) {
         setNotice(
           `Udstedte faktura ${result.invoiceNumber ?? ""} for ${result.issueDate ?? asOfDate}.`,
@@ -248,11 +248,11 @@ function TemplateCard({
     setError(null);
     setNotice(null);
     try {
-      await api.retireRecurringInvoiceTemplate(
+      await outcome.run(() => api.retireRecurringInvoiceTemplate(
         slug,
         template.id,
         reason && reason.trim().length > 0 ? reason.trim() : undefined,
-      ).catch(outcome.reject);
+      ));
       setNotice(`Skabelonen "${template.name}" er deaktiveret.`);
       setRetiring(false);
       onReload();

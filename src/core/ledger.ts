@@ -435,8 +435,21 @@ function validateJournalEntryWithPolicy(
 ) {
   const errors: string[] = [];
   const appliedRules: string[] = [LEDGER_RULES.BALANCED, LEDGER_RULES.APPEND_ONLY];
-  const lines = payload.lines ?? [];
-  const currency = (payload.currency ?? 'DKK').trim().toUpperCase();
+  const lines = Array.isArray(payload.lines) ? payload.lines : [];
+  const currency = typeof payload.currency === "string" ? payload.currency.trim().toUpperCase() : "DKK";
+
+  // CLI and draft inputs are JSON objects, not necessarily typed journal
+  // payloads. Reject unsafe shapes before any downstream line/string access.
+  if (payload.currency != null && typeof payload.currency !== "string") errors.push("currency must be a 3-letter ISO code when present");
+  if (!Array.isArray(payload.lines)) errors.push("at least two journal lines are required");
+  lines.forEach((line, idx) => {
+    if (typeof line !== "object" || line === null || Array.isArray(line)) {
+      errors.push(`lines[${idx}] must be a journal line object`);
+    } else if (!Number.isFinite(normalizeAmount(line.debitAmount)) || !Number.isFinite(normalizeAmount(line.creditAmount))) {
+      errors.push(`lines[${idx}] amounts must remain finite after rounding`);
+    }
+  });
+  if (errors.length > 0) return { ok: false, appliedRules, errors };
 
   if (!looksLikeIsoDate(payload.transactionDate)) errors.push("transactionDate must be present in YYYY-MM-DD format");
   if (typeof payload.text !== "string" || payload.text.trim().length === 0) errors.push("text is required");

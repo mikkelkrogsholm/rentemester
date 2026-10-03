@@ -11,6 +11,47 @@ import { backupManifestKeyPath, createSystemBackup, getBackupComplianceStatus } 
 import { writeFileAtomic } from "../../src/core/atomic-file";
 
 describe("system backups", () => {
+  for (const corruption of ["missing", "tampered"] as const) {
+    test(`rejects ${corruption} document evidence before publishing a signed manifest or success audit`, () => {
+      const root = mkdtempSync(join(tmpdir(), "rentemester-backup-incomplete-"));
+      const paths = ensureCompanyDirs(root);
+      const db = openDb(paths.db);
+      try {
+        migrate(db);
+        const source = join(root, "synthetic.txt");
+        writeFileSync(source, "Synthetic receipt");
+        const doc = ingestDocument(db, root, source, { source: "email", documentType: "cash_register_receipt", issueDate: "2026-05-16", deliveryDescription: "Synthetic goods", amountIncVat: 125, currency: "DKK", sender: { name: "Synthetic Shop" }, vatAmount: 25 });
+        expect(doc.ok).toBe(true);
+        const stored = join(paths.documentsOriginals, readdirSync(paths.documentsOriginals)[0]!);
+        if (corruption === "missing") rmSync(stored); else writeFileSync(stored, "Tampered receipt");
+        const audit = db.query("SELECT * FROM audit_log").all();
+        const result = createSystemBackup(db, root, { createdAt: "2026-05-17T02:09:00.000Z" });
+        expect(result.ok).toBe(false);
+        expect(result.errors.join(" ")).toContain("copied evidence is missing or does not match");
+        expect(existsSync(join(paths.backups, "backup-20260517T020900Z"))).toBe(false);
+        expect(db.query("SELECT * FROM audit_log").all()).toEqual(audit);
+      } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+    });
+  }
+  for (const store of ["documentsOriginals", "invoicesIssued"] as const) {
+    test(`rejects unregistered files in ${store} without publishing or auditing a backup`, () => {
+      const root = mkdtempSync(join(tmpdir(), "rentemester-backup-orphan-"));
+      const paths = ensureCompanyDirs(root);
+      const db = openDb(paths.db);
+      try {
+        migrate(db);
+        const orphan = join(paths[store], "orphan-sensitive.txt");
+        writeFileSync(orphan, "Synthetic unregistered evidence");
+        const audit = db.query("SELECT * FROM audit_log").all();
+        const result = createSystemBackup(db, root, { createdAt: "2026-05-17T02:09:00.000Z" });
+        expect(result.ok).toBe(false);
+        expect(result.errors.join(" ")).toContain("not registered");
+        expect(existsSync(join(paths.backups, "backup-20260517T020900Z"))).toBe(false);
+        expect(existsSync(orphan)).toBe(true);
+        expect(db.query("SELECT * FROM audit_log").all()).toEqual(audit);
+      } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+    });
+  }
   test("creates a full backup snapshot with manifest and copied documents", () => {
     const companyRoot = mkdtempSync(join(tmpdir(), "rentemester-backup-"));
     const inboxRoot = mkdtempSync(join(tmpdir(), "rentemester-backup-inbox-"));

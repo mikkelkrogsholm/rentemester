@@ -1,3 +1,4 @@
+import { selectBankTransaction } from "./bank-transaction-selection";
 import { TransactionRejectionError, decodeTransactionRejection } from "./transaction-rejection";
 import type { Database } from "bun:sqlite";
 import { postJournalEntry, type JournalPostResult } from "./ledger";
@@ -32,18 +33,6 @@ export type RefundInvoiceToBankResult = JournalPostResult & {
 };
 
 
-function getOutgoingRefundBankTransaction(db: Database, input: RefundInvoiceToBankInput) {
-  if (input.bankTransactionId === undefined && !input.bankTransactionReference) {
-    return { error: "bankTransactionId or bankTransactionReference is required" };
-  }
-  const bank = (input.bankTransactionId !== undefined
-    ? db.query(`SELECT id, transaction_date, amount, text, reference FROM bank_transactions WHERE id = ?`).get(input.bankTransactionId)
-    : db.query(`SELECT id, transaction_date, amount, text, reference FROM bank_transactions WHERE reference = ? ORDER BY id DESC LIMIT 1`).get(input.bankTransactionReference ?? "")) as { id: number; transaction_date: string; amount: number; text: string; reference: string | null } | null;
-  if (!bank) {
-    return { error: input.bankTransactionId !== undefined ? `bank transaction ${input.bankTransactionId} does not exist` : `no bank transaction found with reference ${input.bankTransactionReference}` };
-  }
-  return { bank };
-}
 
 export function refundInvoiceToBank(db: Database, input: RefundInvoiceToBankInput): RefundInvoiceToBankResult {
   if (!Number.isInteger(input.invoiceDocumentId) || input.invoiceDocumentId <= 0) {
@@ -53,7 +42,7 @@ export function refundInvoiceToBank(db: Database, input: RefundInvoiceToBankInpu
     return { ok: false, appliedRules: [RULE_ID], errors: ["bankTransactionId must be a positive integer when present"] };
   }
 
-  const selected = getOutgoingRefundBankTransaction(db, input);
+  const selected = selectBankTransaction(db, input);
   if (selected.error) return { ok: false, appliedRules: [RULE_ID], errors: [selected.error] };
   const bank = selected.bank!;
   const bankAmount = Number(bank.amount);

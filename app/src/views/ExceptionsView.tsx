@@ -72,7 +72,7 @@ export function ExceptionsView() {
     setResolveError(null);
     setResolving((s) => new Set([...s, row.id]));
     try {
-      await api.resolveException(slug, row.id, "Markeret som løst fra cockpittet").catch(outcome.reject);
+      await outcome.run(() => api.resolveException(slug, row.id, "Markeret som løst fra cockpittet"));
       state.reload();
     } catch (err) {
       setResolveError(

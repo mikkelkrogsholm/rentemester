@@ -102,7 +102,7 @@ export function MileageRegisterModal({
 
     setBusy(true);
     try {
-      const result = await api.createMileageEntry(slug, {
+      const result = await outcome.run(() => api.createMileageEntry(slug, {
         tripDate,
         purpose: purpose.trim(),
         fromLocation: fromLocation.trim(),
@@ -114,7 +114,7 @@ export function MileageRegisterModal({
         rateBasis: rateBasis.trim(),
         ...(rateSource.trim() ? { rateSource: rateSource.trim() } : {}),
         ...(notes.trim() ? { notes: notes.trim() } : {}),
-      }).catch(outcome.reject);
+      }));
       setDone(result);
       onRegistered();
     } catch (err) {

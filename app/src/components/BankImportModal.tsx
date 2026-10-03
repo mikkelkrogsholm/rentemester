@@ -94,12 +94,12 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
     setError(null);
     setLocked(null);
     try {
-      const summary = await api.importBank(slug, {
+      const summary = await outcome.run(() => api.importBank(slug, {
         csvContent,
         account: account.trim() || undefined,
         profile: profile.trim() || undefined,
         statementOrder: profile.trim() ? undefined : statementOrder || undefined,
-      }).catch(outcome.reject);
+      }));
       setDone(summary);
       onImported();
     } catch (err) {

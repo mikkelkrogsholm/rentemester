@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, symlinkSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createCompany } from "../../src/core/company";
-import { isCompanyInsideWorkspace, initWorkspace, loadWorkspaceManifest, saveWorkspaceManifest } from "../../src/core/workspace";
+import { isCompanyInsideWorkspace, initWorkspace, loadWorkspaceManifest, resolveWorkspaceSlug, saveWorkspaceManifest } from "../../src/core/workspace";
 import { resolveWorkspaceCompany } from "../../src/core/workspace-company-resolver";
 
 function workspace(): string { return mkdtempSync(join(tmpdir(), "rentemester-company-resolver-")); }
@@ -69,6 +69,8 @@ describe("workspace company resolver", () => {
       });
       symlinkSync(outside, join(root, "escape"));
 
+      expect(resolveWorkspaceSlug(root, "escape")).toBeNull();
+      expect(isCompanyInsideWorkspace(root, join(root, "escape"))).toBe(false);
       expect(resolveWorkspaceCompany(root, "escape", registered)).toEqual({
         ok: false,
         reason: "PATH_OUTSIDE_WORKSPACE",
@@ -77,5 +79,25 @@ describe("workspace company resolver", () => {
       rmSync(root, { recursive: true, force: true });
       rmSync(outside, { recursive: true, force: true });
     }
+  });
+
+  test("rejects another company's symlink alias and a dangling outside target", () => {
+    const root = workspace();
+    try {
+      initWorkspace(root);
+      const live = createCompany(root, { name: "Live ApS" });
+      const manifest = loadWorkspaceManifest(root);
+      saveWorkspaceManifest(root, { ...manifest, companies: [...manifest.companies,
+        { slug: "alias", name: "Alias ApS", createdAt: "2026-01-01T00:00:00.000Z", archived: false },
+        { slug: "dangling", name: "Dangling ApS", createdAt: "2026-01-01T00:00:00.000Z", archived: false },
+      ] });
+      symlinkSync(live.companyRoot, join(root, "alias"));
+      symlinkSync(join(root, "missing", "outside"), join(root, "dangling"));
+      for (const slug of ["alias", "dangling"]) {
+        expect(resolveWorkspaceSlug(root, slug)).toBeNull();
+        expect(resolveWorkspaceCompany(root, slug, registered)).toEqual({ ok: false, reason: "PATH_OUTSIDE_WORKSPACE" });
+      }
+      expect(resolveWorkspaceSlug(root, live.slug)).toBe(live.companyRoot);
+    } finally { rmSync(root, { recursive: true, force: true }); }
   });
 });

@@ -435,7 +435,7 @@ function DimensionReview({ slug, journalLineId, current, onChanged }: { slug: st
     if (outcome.isBlocked()) return;
     if (!reason.trim()) throw new Error("Skriv en begrundelse for korrektionen.");
     if (!plan || !reviewed) throw new Error("Gennemgå først den præcise plan.");
-    await api.replaceDimensionAssignment(slug, { journalLineId, expectedAssignmentId: current.id, allocations, source: "reviewed", planHash: plan.planHash, reason, idempotencyKey: `cockpit-dimension-replace-${current.id}-${plan.planHash}` }).catch(outcome.reject);
+    await outcome.run(() => api.replaceDimensionAssignment(slug, { journalLineId, expectedAssignmentId: current.id, allocations, source: "reviewed", planHash: plan.planHash, reason, idempotencyKey: `cockpit-dimension-replace-${current.id}-${plan.planHash}` }));
     guard.dismiss(); onChanged();
   }
   if (!editing) return <>{outcome.feedback}<Button requiredPermission="company.review" disabled={outcome.blocked} variant="secondary" type="button" className="btn secondary" onClick={() => setEditing(true)}>Gennemgå og ret</Button></>;

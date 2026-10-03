@@ -87,8 +87,8 @@ export function AccountingDraftsView() {
     setActionError(null);
     try {
       const payload = toPayload({ date, text, documentId, bankId, lines });
-      if (editing) await api.reviseAccountingDraft(slug, editing, payload).catch(outcome.reject);
-      else await api.createAccountingDraft(slug, draftId, payload).catch(outcome.reject);
+      if (editing) await outcome.run(() => api.reviseAccountingDraft(slug, editing, payload));
+      else await outcome.run(() => api.createAccountingDraft(slug, draftId, payload));
       setDraftId(""); setText(""); setDocumentId(""); setBankId("");
       setLines([{ ...EMPTY_LINE }, { ...EMPTY_LINE }]);
       setEditing(null);

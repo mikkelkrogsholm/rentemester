@@ -162,10 +162,10 @@ export function BookkeepingBatchView() {
     if (action === "persist" && !persistedRunKey.current) persistedRunKey.current = `cockpit:${crypto.randomUUID()}`;
     actionInFlight.current = true; setBusy(true); setError(undefined);
     try {
-      if (action === "persist") { setRun({ ...await api.bookkeepingBatchPersist(slug, { ...scope, runKey: persistedRunKey.current! }).catch(outcome.reject), companySlug: slug }); setNotice("Eksakt plan gemt til review"); }
-      else if (action === "approve" && run) { setRun({ ...run, ...await api.bookkeepingBatchApprove(slug, { runId: run.runId, planHash: run.plan.planHash }).catch(outcome.reject) }); setNotice("Eksakt plan godkendt"); }
+      if (action === "persist") { setRun({ ...await outcome.run(() => api.bookkeepingBatchPersist(slug, { ...scope, runKey: persistedRunKey.current! })), companySlug: slug }); setNotice("Eksakt plan gemt til review"); }
+      else if (action === "approve" && run) { setRun({ ...run, ...await outcome.run(() => api.bookkeepingBatchApprove(slug, { runId: run.runId, planHash: run.plan.planHash })) }); setNotice("Eksakt plan godkendt"); }
       else if (run) {
-        const response = await api.bookkeepingBatchApply(slug, { runId: run.runId, planHash: run.plan.planHash }).catch(outcome.reject);
+        const response = await outcome.run(() => api.bookkeepingBatchApply(slug, { runId: run.runId, planHash: run.plan.planHash }));
         setResult(response); setNotice("Bogføring gennemført"); if (response.state) setRun({ ...run, state: response.state });
         await refresh(0);
       }

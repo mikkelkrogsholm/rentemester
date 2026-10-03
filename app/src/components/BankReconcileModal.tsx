@@ -109,11 +109,11 @@ export function BankReconcileModal({
     setError(null);
     setLocked(null);
     try {
-      const summary = await api.settleInvoice(slug, {
+      const summary = await outcome.run(() => api.settleInvoice(slug, {
         invoiceDocumentId: selectedId,
         bankTransactionId: transaction.id,
         paymentDate: transaction.date,
-      }).catch(outcome.reject);
+      }));
       setDone(summary);
       onReconciled();
     } catch (err) {

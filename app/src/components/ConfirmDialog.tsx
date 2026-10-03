@@ -83,7 +83,7 @@ export function ConfirmDialog({
   const location = useContext(UNSAFE_LocationContext)?.location;
   const key = `${location?.pathname ?? ""}:${title}:${operationKey}`;
   const outcome = useMutationBlock(key);
-  const uncertain = outcome.blocked;
+  const uncertain = outcome.blocked && !busy;
   const attempted = useRef(false);
   const [checkingDiscard, setCheckingDiscard] = useState(false);
   const [completed, setCompleted] = useState(false);
@@ -100,17 +100,20 @@ export function ConfirmDialog({
   async function handleConfirm() {
     if (attempted.current || outcome.isBlocked()) return;
     if (noteInputType === "email" && noteRef.current && !noteRef.current.reportValidity()) return;
+    if (!outcome.begin()) return;
     attempted.current = true;
     setBusy(true);
     setError(null);
     setLocked(null);
     try {
       await onConfirm(note.trim());
+      outcome.release();
       setCompleted(true); markSaved();
       if (closeOnConfirm) onClose();
     } catch (err) {
       const e = err as MaybeApiError;
       if (e?.code === "network" || e?.code === "internal") outcome.block();
+      else outcome.release();
       const message = e?.message ?? "Handlingen kunne ikke gennemføres.";
       // A 409 conflict from the backup lock is shown kindly, not as an error.
       if (e?.code === "conflict") setLocked(message);

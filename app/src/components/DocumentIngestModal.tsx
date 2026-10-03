@@ -245,11 +245,11 @@ export function DocumentIngestModal({
     setError(null);
     setLocked(null);
     try {
-      const result = await api.ingestDocument(slug, {
+      const result = await outcome.run(() => api.ingestDocument(slug, {
         fileName,
         fileBase64,
         metadata,
-      }).catch(outcome.reject);
+      }));
       setDone({ documentNo: result.documentNo });
       onIngested();
     } catch (err) {

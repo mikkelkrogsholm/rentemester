@@ -157,7 +157,7 @@ export function PayableRegisterModal({
     setError(null);
     setLocked(null);
     try {
-      const summary: PayableRegisterSummary = await api.registerPayable(slug, {
+      const summary: PayableRegisterSummary = await outcome.run(() => api.registerPayable(slug, {
         documentId,
         billDate,
         dueDate,
@@ -165,7 +165,7 @@ export function PayableRegisterModal({
         ...(vatTreatment ? { vatTreatment } : {}),
         ...(typeof vendorId === "number" ? { vendorId } : {}),
         ...(note.trim() ? { note: note.trim() } : {}),
-      }).catch(outcome.reject);
+      }));
       // Closes the modal and asks the list view to reload — the new payable
       // is now in the kreditorliste with status "open".
       onRegistered();

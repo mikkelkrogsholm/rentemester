@@ -103,7 +103,7 @@ function AliasPanel({
   const save = async (e: React.FormEvent) => {e.preventDefault(); if (outcome.isBlocked()) return;
     setSaving(true);
     try {
-      await api.setBilagsmailAlias(slug, alias.trim() ? alias.trim() : null).catch(outcome.reject);
+      await outcome.run(() => api.setBilagsmailAlias(slug, alias.trim() ? alias.trim() : null));
       onDone();
     } catch (err) {
       onError(err instanceof ApiError ? err.message : "Kunne ikke gemme alias.");
@@ -169,14 +169,14 @@ function ImapConfigPanel({
     }
     setSaving(true);
     try {
-      await api.saveBilagsmailImapConfig(slug, {
+      await outcome.run(() => api.saveBilagsmailImapConfig(slug, {
         host,
         port: Number(port),
         username,
         password,
         secure,
         mailbox,
-      }).catch(outcome.reject);
+      }));
       setPassword(""); // never linger in DOM
       onDone();
     } catch (err) {
@@ -189,7 +189,7 @@ function ImapConfigPanel({
   const remove = async () => {if (outcome.isBlocked()) return;
     setSaving(true);
     try {
-      await api.deleteBilagsmailImapConfig(slug).catch(outcome.reject);
+      await outcome.run(() => api.deleteBilagsmailImapConfig(slug));
       onDone();
     } catch (err) {
       onError(err instanceof ApiError ? err.message : "Kunne ikke slette config.");

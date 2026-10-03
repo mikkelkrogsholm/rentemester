@@ -1,355 +1,19 @@
 {
-  "raw_extraction": {
-    "node_count": 10261,
-    "unverified_node_count": 0,
-    "raw_edge_count": 39349,
-    "non_object_edges": 0,
-    "missing_endpoint_edges": 0,
-    "dangling_endpoint_edges": 734,
-    "external_reference_edges": 2180,
-    "self_loop_edges": 60,
-    "valid_candidate_edges": 36435,
-    "exact_duplicate_edges": 91,
-    "directed_unique_endpoint_pairs": 34877,
-    "directed_same_endpoint_collapsed_edges": 1558,
-    "undirected_unique_endpoint_pairs": 34825,
-    "undirected_same_endpoint_collapsed_edges": 1610,
-    "same_endpoint_group_count": 1505,
-    "relation_variant_groups": 985,
-    "source_file_variant_groups": 0,
-    "source_location_variant_groups": 456,
-    "context_variant_groups": 319,
-    "post_build_graph_type": "Graph",
-    "post_build_node_count": 10697,
-    "post_build_edge_count": 37663,
-    "post_build_error": "",
-    "producer_suppression": {
-      "path": "/Users/mikkelfreltoftkrogsholm/.local/share/uv/tools/graphifyy/lib/python3.12/site-packages/graphify/extract.py",
-      "total_sites": 12,
-      "sites": [
-        {
-          "line": 1676,
-          "name": "seen_ids",
-          "tuple_arity": 0,
-          "sample": "seen_ids = {n[\"id\"] for n in nodes}"
-        },
-        {
-          "line": 2209,
-          "name": "seen_ids",
-          "tuple_arity": 0,
-          "sample": "seen_ids = {n[\"id\"] for n in nodes}"
-        },
-        {
-          "line": 2211,
-          "name": "seen_doc_refs",
-          "tuple_arity": 0,
-          "sample": "seen_doc_refs: set[str] = set()"
-        },
-        {
-          "line": 2628,
-          "name": "seen_ids",
-          "tuple_arity": 0,
-          "sample": "seen_ids: set[str] = {n[\"id\"] for n in nodes}"
-        },
-        {
-          "line": 2775,
-          "name": "seen_ids",
-          "tuple_arity": 0,
-          "sample": "seen_ids = {n.get(\"id\") for n in nodes}"
-        },
-        {
-          "line": 3501,
-          "name": "seen_keys",
-          "tuple_arity": 0,
-          "sample": "seen_keys: set[tuple] = set()"
-        },
-        {
-          "line": 3670,
-          "name": "seen_keys",
-          "tuple_arity": 0,
-          "sample": "seen_keys: set[tuple] = set()"
-        },
-        {
-          "line": 5777,
-          "name": "seen_ids",
-          "tuple_arity": 0,
-          "sample": "seen_ids: set[str] = set()"
-        },
-        {
-          "line": 5885,
-          "name": "seen_ids",
-          "tuple_arity": 0,
-          "sample": "seen_ids: set[str] = set()"
-        },
-        {
-          "line": 5964,
-          "name": "seen_ids",
-          "tuple_arity": 0,
-          "sample": "seen_ids: set[str] = set()"
-        },
-        {
-          "line": 6479,
-          "name": "seen_ids",
-          "tuple_arity": 0,
-          "sample": "seen_ids: set[str] = set()"
-        },
-        {
-          "line": 6480,
-          "name": "seen_edges",
-          "tuple_arity": 4,
-          "sample": "seen_edges: set[tuple[str, str, str, str | None]] = set()"
-        }
-      ],
-      "error": ""
-    },
-    "examples": [
-      {
-        "source": "tests_unit_auth_email_http_json_v1_test",
-        "target": "tests_unit_auth_email_http_json_v1_test_fetch",
-        "edge_count": 6,
-        "relations": [
-          "contains"
-        ],
-        "source_files": [
-          "tests/unit/auth-email-http-json-v1.test.ts"
-        ],
-        "source_locations": [
-          "L103",
-          "L24",
-          "L53",
-          "L74",
-          "L87",
-          "L95"
-        ],
-        "contexts": [
-          ""
-        ]
-      },
-      {
-        "source": "tests_unit_backup_governance_test",
-        "target": "tests_unit_backup_governance_test_getobject",
-        "edge_count": 5,
-        "relations": [
-          "contains"
-        ],
-        "source_files": [
-          "tests/unit/backup-governance.test.ts"
-        ],
-        "source_locations": [
-          "L232",
-          "L274",
-          "L295",
-          "L312",
-          "L325"
-        ],
-        "contexts": [
-          ""
-        ]
-      },
-      {
-        "source": "tests_unit_backup_governance_test",
-        "target": "tests_unit_backup_governance_test_readobjectcontent",
-        "edge_count": 5,
-        "relations": [
-          "contains"
-        ],
-        "source_files": [
-          "tests/unit/backup-governance.test.ts"
-        ],
-        "source_locations": [
-          "L245",
-          "L274",
-          "L295",
-          "L312",
-          "L325"
-        ],
-        "contexts": [
-          ""
-        ]
-      },
-      {
-        "source": "tests_unit_digisense_workspace_test",
-        "target": "tests_unit_digisense_workspace_test_pollcompany",
-        "edge_count": 5,
-        "relations": [
-          "contains"
-        ],
-        "source_files": [
-          "tests/unit/digisense-workspace.test.ts"
-        ],
-        "source_locations": [
-          "L31",
-          "L50",
-          "L67",
-          "L81",
-          "L97"
-        ],
-        "contexts": [
-          ""
-        ]
-      },
-      {
-        "source": "src_cli_meta",
-        "target": "src_cli_meta_shared",
-        "edge_count": 4,
-        "relations": [
-          "imports_from",
-          "re_exports"
-        ],
-        "source_files": [
-          "src/cli-meta.ts"
-        ],
-        "source_locations": [
-          "L2",
-          "L38",
-          "L39"
-        ],
-        "contexts": [
-          "export",
-          "import",
-          "re-export"
-        ]
-      }
-    ]
-  },
-  "semantic_extraction": {
-    "node_count": 633,
-    "unverified_node_count": 0,
-    "raw_edge_count": 959,
-    "non_object_edges": 0,
-    "missing_endpoint_edges": 0,
-    "dangling_endpoint_edges": 0,
-    "external_reference_edges": 0,
-    "self_loop_edges": 0,
-    "valid_candidate_edges": 959,
-    "exact_duplicate_edges": 0,
-    "directed_unique_endpoint_pairs": 958,
-    "directed_same_endpoint_collapsed_edges": 1,
-    "undirected_unique_endpoint_pairs": 924,
-    "undirected_same_endpoint_collapsed_edges": 35,
-    "same_endpoint_group_count": 1,
-    "relation_variant_groups": 0,
-    "source_file_variant_groups": 0,
-    "source_location_variant_groups": 1,
-    "context_variant_groups": 0,
-    "post_build_graph_type": "Graph",
-    "post_build_node_count": 633,
-    "post_build_edge_count": 924,
-    "post_build_error": "",
-    "producer_suppression": {
-      "path": "/Users/mikkelfreltoftkrogsholm/.local/share/uv/tools/graphifyy/lib/python3.12/site-packages/graphify/extract.py",
-      "total_sites": 12,
-      "sites": [
-        {
-          "line": 1676,
-          "name": "seen_ids",
-          "tuple_arity": 0,
-          "sample": "seen_ids = {n[\"id\"] for n in nodes}"
-        },
-        {
-          "line": 2209,
-          "name": "seen_ids",
-          "tuple_arity": 0,
-          "sample": "seen_ids = {n[\"id\"] for n in nodes}"
-        },
-        {
-          "line": 2211,
-          "name": "seen_doc_refs",
-          "tuple_arity": 0,
-          "sample": "seen_doc_refs: set[str] = set()"
-        },
-        {
-          "line": 2628,
-          "name": "seen_ids",
-          "tuple_arity": 0,
-          "sample": "seen_ids: set[str] = {n[\"id\"] for n in nodes}"
-        },
-        {
-          "line": 2775,
-          "name": "seen_ids",
-          "tuple_arity": 0,
-          "sample": "seen_ids = {n.get(\"id\") for n in nodes}"
-        },
-        {
-          "line": 3501,
-          "name": "seen_keys",
-          "tuple_arity": 0,
-          "sample": "seen_keys: set[tuple] = set()"
-        },
-        {
-          "line": 3670,
-          "name": "seen_keys",
-          "tuple_arity": 0,
-          "sample": "seen_keys: set[tuple] = set()"
-        },
-        {
-          "line": 5777,
-          "name": "seen_ids",
-          "tuple_arity": 0,
-          "sample": "seen_ids: set[str] = set()"
-        },
-        {
-          "line": 5885,
-          "name": "seen_ids",
-          "tuple_arity": 0,
-          "sample": "seen_ids: set[str] = set()"
-        },
-        {
-          "line": 5964,
-          "name": "seen_ids",
-          "tuple_arity": 0,
-          "sample": "seen_ids: set[str] = set()"
-        },
-        {
-          "line": 6479,
-          "name": "seen_ids",
-          "tuple_arity": 0,
-          "sample": "seen_ids: set[str] = set()"
-        },
-        {
-          "line": 6480,
-          "name": "seen_edges",
-          "tuple_arity": 4,
-          "sample": "seen_edges: set[tuple[str, str, str, str | None]] = set()"
-        }
-      ],
-      "error": ""
-    },
-    "examples": [
-      {
-        "source": "_github_workflows_release_promote_evidence",
-        "target": "github_workflows_release_candidate_digest_evidence",
-        "edge_count": 2,
-        "relations": [
-          "references"
-        ],
-        "source_files": [
-          "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rentemester-simplification/rentemester/.github/workflows/release-promote.yml"
-        ],
-        "source_locations": [
-          "lines 102-111",
-          "lines 94-100"
-        ],
-        "contexts": [
-          ""
-        ]
-      }
-    ]
-  },
+  "checked_at_utc": "2026-10-03T14:14:06.816655+00:00",
   "persisted_graph": {
-    "node_count": 10697,
+    "node_count": 10721,
     "unverified_node_count": 0,
-    "raw_edge_count": 37663,
+    "raw_edge_count": 37832,
     "non_object_edges": 0,
     "missing_endpoint_edges": 0,
     "dangling_endpoint_edges": 0,
     "external_reference_edges": 0,
     "self_loop_edges": 60,
-    "valid_candidate_edges": 37663,
+    "valid_candidate_edges": 37832,
     "exact_duplicate_edges": 0,
-    "directed_unique_endpoint_pairs": 37663,
+    "directed_unique_endpoint_pairs": 37832,
     "directed_same_endpoint_collapsed_edges": 0,
-    "undirected_unique_endpoint_pairs": 37663,
+    "undirected_unique_endpoint_pairs": 37832,
     "undirected_same_endpoint_collapsed_edges": 0,
     "same_endpoint_group_count": 0,
     "relation_variant_groups": 0,
@@ -357,8 +21,8 @@
     "source_location_variant_groups": 0,
     "context_variant_groups": 0,
     "post_build_graph_type": "Graph",
-    "post_build_node_count": 10697,
-    "post_build_edge_count": 37663,
+    "post_build_node_count": 10721,
+    "post_build_edge_count": 37832,
     "post_build_error": "",
     "producer_suppression": {
       "path": "/Users/mikkelfreltoftkrogsholm/.local/share/uv/tools/graphifyy/lib/python3.12/site-packages/graphify/extract.py",
@@ -441,8 +105,21 @@
     },
     "examples": []
   },
+  "semantic_graph": {
+    "retained_nodes": 1069,
+    "retained_edges": 918,
+    "pending_sources": [
+      "docs/cli-contract.md",
+      "docs/refactoring-progress.md",
+      "docs/review-adversarial-2026-10-03.md",
+      "docs/runtime-agent-contract.md"
+    ]
+  },
   "limitations": [
-    "Undirected graphs collapse repeated/reverse edges; counts below expose this.",
-    "The AST parser may reference unresolved external symbols; the built graph explicitly represents them."
+    "AST update only; pending semantic source changes are listed explicitly.",
+    "Semantic source hashes are historical extraction fingerprints, not a new semantic verification.",
+    "Previous refactor-verification.json records historical acceptance and does not cover subsequent repairs.",
+    "Raw extraction diagnostics were not regenerated by this incremental CLI update; persisted graph diagnostics are current.",
+    "Native semantic token usage remains unavailable."
   ]
 }

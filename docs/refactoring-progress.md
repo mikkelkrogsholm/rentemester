@@ -13,6 +13,9 @@ commit `2896aafe99cec716325bdfc3a9949e24dc2bd90a`. The source tree, graph health
 and final verification are recorded in `graphify-out/refactor-verification.json`.
 That machine-readable record supplies the final gate status and exact counts;
 temporary logs are supporting local evidence, not product prerequisites.
+That record is historical refactor acceptance. The subsequent requested review
+and defect repairs are recorded in [review-adversarial-2026-10-03.md](review-adversarial-2026-10-03.md)
+and `graphify-out/review-verification.json`.
 
 ## Finite improvement list
 

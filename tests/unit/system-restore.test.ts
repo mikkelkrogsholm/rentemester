@@ -64,13 +64,16 @@ function restoreStagingEntries(root: string) {
 
 const provenanceHash = (letter: string) => letter.repeat(64);
 
-function seedV4Provenance(db: Database) {
-  db.query("INSERT INTO documents (id, source, sha256_hash) VALUES (1, 'test', ?)").run(provenanceHash("c"));
+function seedV4Provenance(db: Database, companyRoot: string) {
+  const storedPath = join(ensureCompanyDirs(companyRoot).documentsOriginals, "synthetic.pdf");
+  writeFileSync(storedPath, "synthetic");
+  const documentHash = sha256File(storedPath);
+  db.query("INSERT INTO documents (id, source, stored_path, sha256_hash) VALUES (1, 'test', ?, ?)").run(storedPath, documentHash);
   db.query("INSERT INTO dinero_import_sources (id, raw_sha256, raw_size_bytes, canonical_listing_sha256, canonical_listing_count) VALUES (1, ?, 9, ?, 1)").run(provenanceHash("a"), provenanceHash("b"));
   db.query("INSERT INTO dinero_import_inventories (id, source_id, source_raw_sha256, canonical_listing_sha256, canonical_listing_count, entry_count, total_size_bytes) VALUES (1, 1, ?, ?, 1, 1, 9)").run(provenanceHash("a"), provenanceHash("b"));
-  db.query("INSERT INTO dinero_import_inventory_entries (inventory_id, entry_path, entry_size_bytes, entry_sha256) VALUES (1, 'docs/a.pdf', 9, ?)").run(provenanceHash("c"));
+  db.query("INSERT INTO dinero_import_inventory_entries (inventory_id, entry_path, entry_size_bytes, entry_sha256) VALUES (1, 'docs/a.pdf', 9, ?)").run(documentHash);
   db.query("INSERT INTO dinero_import_attempts (id, inventory_id, source_id, source_raw_sha256, parser_contract, actor, cutover_date, outcome, result_sha256) VALUES (1, 1, 1, ?, 'v1', 'agent:test', '2025-01-01', 'accepted', ?)").run(provenanceHash("a"), provenanceHash("e"));
-  db.query("INSERT INTO dinero_import_document_links (attempt_id, inventory_id, entry_path, entry_sha256, document_id, disposition) VALUES (1, 1, 'docs/a.pdf', ?, 1, 'linked')").run(provenanceHash("c"));
+  db.query("INSERT INTO dinero_import_document_links (attempt_id, inventory_id, entry_path, entry_sha256, document_id, disposition) VALUES (1, 1, 'docs/a.pdf', ?, 1, 'linked')").run(documentHash);
 }
 
 describe("system restore", () => {
@@ -425,13 +428,36 @@ describe("system restore", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
+  test("rejects a re-signed backup containing an unregistered document file before target swap", () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-restore-orphan-"));
+    const companyRoot = join(root, "company");
+    const target = join(root, "restored");
+    const db = openDb(ensureCompanyDirs(companyRoot).db);
+    try {
+      migrate(db);
+      const backup = createSystemBackup(db, companyRoot, { createdAt: "2026-05-17T02:39:00.000Z" });
+      expect(backup.ok).toBe(true);
+      const orphan = join(backup.backupDir!, "documents-originals", "orphan.txt");
+      mkdirSync(join(backup.backupDir!, "documents-originals"), { recursive: true });
+      writeFileSync(orphan, "Synthetic unregistered evidence");
+      const manifest = JSON.parse(readFileSync(backup.manifestPath!, "utf8"));
+      manifest.copiedFiles.documentsOriginals.push({ path: "documents-originals/orphan.txt", sha256: sha256File(orphan), sizeBytes: statSync(orphan).size });
+      rewriteSignedManifest(companyRoot, backup.backupDir!, manifest);
+      const restored = restoreSystemBackup({ backupDir: backup.backupDir!, targetCompanyRoot: target });
+      expect(restored.ok).toBe(false);
+      expect(restored.errors.join(" ")).toContain("not registered");
+      expect(existsSync(join(target, "data", "ledger.sqlite"))).toBe(false);
+      expect(restoreStagingEntries(root)).toEqual([]);
+    } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+  });
+
   test("rejects a re-signed v4 backup whose linked document digest no longer matches its source entry", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-restore-v4-provenance-tamper-"));
     const companyRoot = join(root, "company");
     const restoredRoot = join(root, "restored-company");
     const db = openDb(ensureCompanyDirs(companyRoot).db);
     migrate(db);
-    seedV4Provenance(db);
+    seedV4Provenance(db, companyRoot);
     const backup = createSystemBackup(db, companyRoot, { createdAt: "2026-05-17T02:39:00.000Z" });
     db.close();
     expect(backup.ok).toBe(true);
