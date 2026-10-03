@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "status": "verified",
+  "version": "0.2.0",
+  "verified_at_utc": "2026-10-03T14:38:23.680941+00:00",
+  "preparation_parent_commit": "06231790ee9336d07829f50d9518a6a674715b02",
+  "built_from_uncommitted_preparation": true,
+  "command": "bun run verify:local",
+  "exit_code": 0,
+  "exit_status_evidence": "Captured tools.write_stdin terminal exit_code 0 for live session 32328.",
+  "log_name": "candidate-verify-local.log",
+  "log_sha256": "b1c0759930a949f656e67d4c661e49f600e72b76ee2ae0ecd1c5506bc9874ab9",
+  "counts": {
+    "backend": {
+      "passed": 2954,
+      "failed": 0,
+      "files": 460
+    },
+    "cockpit": {
+      "passed": 643,
+      "failed": 0,
+      "files": 77
+    },
+    "browser": {
+      "passed": 179,
+      "failed": 0
+    }
+  },
+  "release_contract_tests": {
+    "passed": 19,
+    "failed": 0
+  },
+  "verified_non_graph_source_files": 1701,
+  "source_snapshot_sha256": "2d9a91bb93f902a2c2193cab90278be044b23c909430736bc3d1edc5aa00f8de",
+  "source_snapshot_basis": "graphify-out/review-verification.json source_sha256 plus source_delta_sha256",
+  "source_delta_sha256": {
+    "CHANGELOG.md": "99b6d1b7871ff9ed7cd30e18410414150e734504ef37822b98ab0481a91eac94"
+  },
+  "production_code_unchanged_since_review": true,
+  "source_snapshot_unchanged": true,
+  "oci_image": "sha256:22ffbd937745b62122db1ba129efe626ce77c031e72398691178089613b1cb5f",
+  "oci_archive": "sha256:0e5edd749972a1f9491622058b2e5a97c6480e0dd18facbe17a565987cdd999d",
+  "distribution": "New run-unique 0.2.0 candidate; publishing workflow must build the exact current main HEAD after merge.",
+  "approval_status": "not reviewed by Digisense",
+  "limitations": [
+    "This is local candidate preflight evidence; the hosted release manifest supplies the authoritative published digest and main commit.",
+    "Semantic graph refresh is pending for five changed/new documents; code AST remains unchanged since review."
+  ]
+}

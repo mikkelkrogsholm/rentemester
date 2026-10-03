@@ -109,6 +109,7 @@
     "retained_nodes": 1069,
     "retained_edges": 918,
     "pending_sources": [
+      "CHANGELOG.md",
       "docs/cli-contract.md",
       "docs/refactoring-progress.md",
       "docs/review-adversarial-2026-10-03.md",
