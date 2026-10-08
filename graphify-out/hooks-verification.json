@@ -37,5 +37,41 @@
     "Claude strict read guard denies only the first applicable read per session.",
     "Codex query-first behavior is an agent instruction, not a mechanical tool gate."
   ],
-  "verification_scope": "synthetic repository using installed shared hooks"
+  "verification_scope": "synthetic repository using installed shared hooks",
+  "dependency_patch": {
+    "verified_at_utc": "2026-10-08T07:51:34.049608+00:00",
+    "source_base_commit": "9be7e9cdf23891c6854b44a337147fb621bfb78d",
+    "changed_inputs_sha256": {
+      "bun.lock": "b126559f27a564a67594a2346abbf5e7b159343369ef12cb58ec59ef2cd7b4bf",
+      "package.json": "c3b89220706b1059cb3a690a41c0c7b731eada1d4ef5400c378db61df4fc5c0d"
+    },
+    "sdk": {
+      "minimum": "1.31.0",
+      "resolved": "1.32.1",
+      "advisory": "https://github.com/advisories/GHSA-6qxp-vccf-f47h"
+    },
+    "proxy_addr": {
+      "resolved": "2.0.8",
+      "advisory": "https://github.com/advisories/GHSA-jqcg-44mw-7w3h"
+    },
+    "verification": {
+      "command": "bun run verify:local",
+      "exit_code": 0,
+      "log_sha256": "aa47895363ebb3983d8ef1ba6c6529ce793cd6e4b7bfa7e3cbbb2ea9078cffec",
+      "backend_tests": 2954,
+      "cockpit_tests": 643,
+      "browser_tests": 179,
+      "dependency_audit_advisories": 0,
+      "container_integration": "passed",
+      "container_reproducibility": "passed"
+    },
+    "graph_update": {
+      "command": "graphify update .",
+      "exit_code": 0,
+      "topology_changed": false,
+      "log_sha256": "d3ef2ddb368470ed92e5b4a1fc3896718e40182e867ff609fe1270b44e79c17e"
+    },
+    "oauth_client_migration_required": false,
+    "oauth_client_usage": "No SDK OAuth client credential providers/storage; production uses server over stdio."
+  }
 }
