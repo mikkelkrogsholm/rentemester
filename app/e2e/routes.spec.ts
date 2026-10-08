@@ -73,7 +73,17 @@ for (const route of pageRoutes) {
     const suffix = route.segment ? `/${route.segment}` : "";
     await page.goto(`/companies/${COMPANY_SLUG}${suffix}?year=2026`);
     await expect(page.getByRole("main")).toContainText(routeEvidence[route.id]);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+    const layout = await page.evaluate(() => ({
+      fits: document.documentElement.scrollWidth <= window.innerWidth + 1,
+      overflow: Array.from(document.querySelectorAll("main *")).filter(element => {
+        if (element.getBoundingClientRect().right <= window.innerWidth + 1) return false;
+        for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+          if (["auto", "scroll", "hidden", "clip"].includes(getComputedStyle(parent).overflowX)) return false;
+        }
+        return true;
+      }).slice(0, 8).map(element => ({ tag: element.tagName, ui: element.getAttribute("data-ui"), text: element.textContent?.slice(0, 80), width: element.getBoundingClientRect().width })),
+    }));
+    expect(layout.fits, JSON.stringify(layout.overflow)).toBe(true);
     expect(errors).toEqual([]);
     await page.screenshot({ path: testInfo.outputPath(`${route.id}-320.png`), fullPage: true });
     fixture.assertComplete();

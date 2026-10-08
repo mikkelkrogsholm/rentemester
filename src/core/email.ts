@@ -248,7 +248,44 @@ function resolveRecipientEmail(
  * a non-existent invoice, or a transport error (no success row is written).
  * The original invoice payload is never mutated.
  */
+const activeDeliveries = new WeakSet<Database>();
+
 export function sendInvoiceEmail(
+  db: Database,
+  companyRoot: string,
+  input: SendInvoiceEmailInput,
+): SendInvoiceEmailResult {
+  const busy = (): SendInvoiceEmailResult => ({
+    ok: false, appliedRules: [RULE_ID],
+    errors: ["invoice email delivery already in progress; retry after the recorded result"],
+  });
+  if (activeDeliveries.has(db)) return busy();
+  // SMTP cannot be undone by a caller rolling back its surrounding transaction.
+  if (db.inTransaction) return {
+    ok: false, appliedRules: [RULE_ID], errors: ["invoice email delivery requires an independent transaction; finish the transaction before sending"],
+  };
+  activeDeliveries.add(db);
+  try {
+    // Keep the receipt check, synchronous transport and append-only receipt in
+    // one write transaction. A second connection cannot pass the check while
+    // the first is delivering. The guard also rejects same-connection reentry.
+    const result = db.transaction(() => sendInvoiceEmailLocked(db, companyRoot, input)).immediate();
+    // The successful receipt is durable before the supplementary audit event.
+    // An audit failure must never erase evidence of an external delivery.
+    if (result.ok && result.duplicate === false) insertAuditLog(db, {
+      eventType: "invoice_email_send", entityType: "document", entityId: input.invoiceDocumentId,
+      message: `Sent ${input.kind} email for invoice ${result.invoiceNumber} to ${result.recipient} via ${input.smtp.host.trim()} (message-id ${result.messageId})`,
+    });
+    return result;
+  } catch (error) {
+    if (error instanceof Error && "code" in error && error.code === "SQLITE_BUSY") return busy();
+    throw error;
+  } finally {
+    activeDeliveries.delete(db);
+  }
+}
+
+function sendInvoiceEmailLocked(
   db: Database,
   companyRoot: string,
   input: SendInvoiceEmailInput,
@@ -413,14 +450,6 @@ export function sendInvoiceEmail(
     input.smtp.host.trim(),
   );
 
-  insertAuditLog(db, {
-    eventType: "invoice_email_send",
-    entityType: "document",
-    entityId: input.invoiceDocumentId,
-    message:
-      `Sent ${input.kind} email for invoice ${invoiceNumber} to ${recipient} ` +
-      `via ${input.smtp.host.trim()} (message-id ${message.messageId})`,
-  });
 
   return {
     ok: true,

@@ -40,7 +40,7 @@ export function payablesSection(payables: PayablesListResult): string {
       ? ` · heraf overforfalden <span ${documentAttr("mono")}>${escapeHtml(formatDkk(payables.overdueOpenBalance))}</span>`
       : "") +
     `</div>`;
-  return `${summary}<table ${documentAttr("table")}>
+  return `${summary}<div ${documentAttr("tableScroll")} tabindex="0" role="region" aria-label="Regnskabstabel"><table ${documentAttr("table")}>
   <thead>
     <tr ${documentAttr("tr")}>
       <th ${documentAttr("th")}>Bilagsnr.</th>
@@ -53,6 +53,6 @@ export function payablesSection(payables: PayablesListResult): string {
   <tbody>
 ${rows}
   </tbody>
-</table>
+</table></div>
 ${overflowRow}`;
 }

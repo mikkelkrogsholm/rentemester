@@ -216,7 +216,7 @@ test("targets #656's native summary control and verifies its Enter-revealed outc
   const source = readFileSync(join(projectRoot, "app/src/views/VatView.tsx"), "utf8");
   const scenario = scenarios.find((item) => item.scenario === "issue-656-normal-desktop");
 
-  expect(source).toContain('<details data-evidence-progressive><summary data-evidence-core-action>Gennemgå momsparathed</summary><p data-evidence-task-outcome>Se lukkegrundlag</p></details>');
+  expect(source).toMatch(/<details[\s\S]*?data-evidence-progressive[\s\S]*?<summary[\s\S]*?data-evidence-core-action[\s\S]*?>\s*Gennemgå momsparathed\s*<\/summary>[\s\S]*?data-evidence-task-outcome[\s\S]*?>\s*Se lukkegrundlag/);
   expect(scenario?.keyboard).toEqual([
     {
       key: "Tab",

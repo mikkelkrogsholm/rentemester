@@ -38,7 +38,9 @@ export const chartStyles = stylex.create({
   grid: { stroke: colors.border, strokeWidth: 1 },
   baseline: { stroke: colors.borderStrong, strokeWidth: 1 },
   axis: { fill: colors.inkMuted, fontFamily: typography.monoFamily, fontSize: 12, fontVariantNumeric: "tabular-nums" },
-  category: { fill: colors.inkMuted, fontFamily: typography.bodyFamily, fontSize: 12 },
+  axisLeft: { textAnchor: "end" },
+  axisRight: { textAnchor: "start" },
+  category: { textAnchor: "middle", fill: colors.inkMuted, fontFamily: typography.bodyFamily, fontSize: 12 },
   success: { fill: colors.success, stroke: colors.success, backgroundColor: colors.success },
   accent: { fill: colors.accent, stroke: colors.accent, backgroundColor: colors.accent },
   info: { fill: colors.info, stroke: colors.info, backgroundColor: colors.info },
@@ -163,8 +165,8 @@ export function CategoricalChart({ labels, series, currency = "DKK", label, data
     <p id={`${id}-instructions`} {...stylex.props(chartStyles.srOnly)}>Brug venstre og højre piletast til at vælge periode, Home til den første og End til den sidste. Værdierne findes også i tabellen.</p>
     <svg ref={svg} {...stylex.props(chartStyles.svg, height === "line" && chartStyles.short)} viewBox={`0 0 ${size.width} ${size.height}`} role="img" aria-label={label} aria-details={dataTableId} aria-describedby={`${id}-instructions ${id}-values`} tabIndex={labels.length ? 0 : undefined} onKeyDown={onKeyDown} onFocus={() => { if (labels.length) setActive((current) => current ?? 0); }} onPointerMove={onPointer} onPointerDown={onPointer} onPointerLeave={() => { if (!touchSelection) setActive(null); }}>
       <title>{label}</title>
-      {left.ticks.map((tick) => <g key={tick} aria-hidden="true"><line {...stylex.props(chartStyles.grid, tick === 0 && chartStyles.baseline)} x1={leftEdge} x2={rightEdge} y1={y(tick)} y2={y(tick)} /><text {...stylex.props(chartStyles.axis)} x={leftEdge - 10} y={y(tick) + 4} textAnchor="end">{left.format.format(tick)}</text></g>)}
-      {hasRight && right.ticks.map((tick) => <text key={tick} aria-hidden="true" {...stylex.props(chartStyles.axis, chartStyles.info)} x={rightEdge + 10} y={y(tick, "right") + 4} textAnchor="start">{right.format.format(tick)}</text>)}
+      {left.ticks.map((tick) => <g key={tick} aria-hidden="true"><line {...stylex.props(chartStyles.grid, tick === 0 && chartStyles.baseline)} x1={leftEdge} x2={rightEdge} y1={y(tick)} y2={y(tick)} /><text {...stylex.props(chartStyles.axis, chartStyles.axisLeft)} x={leftEdge - 10} y={y(tick) + 4}>{left.format.format(tick)}</text></g>)}
+      {hasRight && right.ticks.map((tick) => <text key={tick} aria-hidden="true" {...stylex.props(chartStyles.axis, chartStyles.info, chartStyles.axisRight)} x={rightEdge + 10} y={y(tick, "right") + 4}>{right.format.format(tick)}</text>)}
       {bars.map((item, seriesIndex) => <g key={item.id} aria-hidden="true" data-series={item.id}>{item.values.map((value, index) => known(value) && index < labels.length ? <rect key={index} {...stylex.props(chartStyles[item.tone], chartStyles.bar)} x={x(index) + (seriesIndex - bars.length / 2) * barWidth} y={Math.min(y(0, item.axis), y(value, item.axis))} width={Math.max(1, barWidth - 1)} height={Math.abs(y(value, item.axis) - y(0, item.axis))} rx={2} data-category={index} data-value={value} /> : null)}</g>)}
       {visible.filter((item) => item.kind === "line").map((item) => {
         // Keep each category's position; connect known values across missing balances.
@@ -172,7 +174,7 @@ export function CategoricalChart({ labels, series, currency = "DKK", label, data
         return <g key={item.id} aria-hidden="true" data-series={item.id}>{points.length > 1 && <path {...stylex.props(chartStyles[item.tone], chartStyles.line)} d={curve(points)} />}{points.map((point) => <circle key={point.index} {...stylex.props(chartStyles[item.tone], chartStyles.point)} cx={point.x} cy={point.y} r={point.index === selected ? 4 : 3} data-category={point.index} data-value={point.value} />)}</g>;
       })}
       {selected !== null && <line aria-hidden="true" {...stylex.props(chartStyles.selected)} x1={x(selected)} x2={x(selected)} y1={top} y2={bottom} />}
-      {labels.map((category, index) => (index % labelEvery === 0 || index === labels.length - 1) && <text key={index} aria-hidden="true" {...stylex.props(chartStyles.category)} x={x(index)} y={bottom + 20} textAnchor="middle">{[category].flat().map((line, lineIndex) => <tspan key={lineIndex} x={x(index)} dy={lineIndex ? 14 : 0}>{line}</tspan>)}</text>)}
+      {labels.map((category, index) => (index % labelEvery === 0 || index === labels.length - 1) && <text key={index} aria-hidden="true" {...stylex.props(chartStyles.category)} x={x(index)} y={bottom + 20}>{[category].flat().map((line, lineIndex) => <tspan key={lineIndex} x={x(index)} dy={lineIndex ? 14 : 0}>{line}</tspan>)}</text>)}
     </svg>
     {!labels.length && <p {...stylex.props(chartStyles.empty)}>Ingen data at vise endnu.</p>}
     {labels.length > 0 && !visible.length && <p {...stylex.props(chartStyles.empty)}>Vælg en serie for at vise grafen.</p>}

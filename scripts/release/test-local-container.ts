@@ -67,6 +67,42 @@ function syntheticMetadata(invoiceNo: string) {
     recipient: { name: "Container Example ApS", address: "Testvej 2, 2100 København Ø", vatOrCvr: "DK12345678" } };
 }
 
+async function assertStylexPdfRendering(container: string, slug: string): Promise<void> {
+  const issued = await api(container, `/api/companies/${slug}/invoices/issue`, {
+    issueDate: "2026-05-16", dueDate: "2026-06-15", currency: "DKK",
+    seller: { name: "Container Økonomi ApS", address: "Æblevej 1, København Ø", vatOrCvr: "DK10000001" },
+    buyer: { name: "Żółć S.A.", address: "Łódź, Bærvej 2" },
+    lines: Array.from({ length: 75 }, (_, index) => ({ description: `Rådgivning ${index + 1}`, quantity: 1, unitPriceExVat: 100 })),
+  });
+  if (!Number.isInteger(issued?.invoice?.documentId)) throw new Error("container invoice issuance failed");
+  const source = `
+    import {parsePdfBytes} from "./src/core/document-pdf-parser";
+    import {buildIssuedInvoicePdf} from "./src/core/invoice-pdf";
+    import {buildStatementPdf} from "./src/server/data/statement-pdf";
+    import {renderDocumentPdf} from "./src/design/pdf-render";
+    import {openLedgerReadOnly} from "./src/core/ledger-inspection";
+    const db=openLedgerReadOnly(${JSON.stringify(`/workspace/${slug}/data/ledger.sqlite`)});
+    const row=db.query("SELECT payload_json FROM documents WHERE id=?").get(${issued.invoice.documentId});
+    db.close();
+    const payload=JSON.parse(row.payload_json);
+    const first=buildIssuedInvoicePdf(payload), second=buildIssuedInvoicePdf(payload);
+    if(!first.equals(second))throw new Error("container PDF bytes are nondeterministic");
+    const response=await fetch(${JSON.stringify(`http://127.0.0.1:4319/api/companies/${slug}/invoices/${issued.invoice.documentId}/pdf`)});
+    if(!response.ok)throw new Error("container issued PDF download failed");
+    const bytes=new Uint8Array(await response.arrayBuffer()), parsed=await parsePdfBytes(bytes);
+    const text=parsed.pages.map(page=>page.text).join("\\n");
+    if(parsed.status!=="ok"||parsed.pages.length<3||!text.includes("Żółć S.A.")||!text.includes("Rådgivning 75")||!text.includes("København Ø"))throw new Error("container PDF pagination/font/text failure");
+    const report=buildStatementPdf({title:"Resultatopgørelse",company:{name:"Container Økonomi ApS",cvr:"10000001",currency:"DKK"},yearLabel:"2025/2026",generatedAtIsoDate:"2026-05-16",rows:Array.from({length:130},(_,i)=>({kind:"line",label:"Regnskabslinje "+(i+1),amount:"-100,00 DKK"}))});
+    const reportParsed=await parsePdfBytes(report);
+    if(reportParsed.pages.length<3||!reportParsed.pages.some(page=>page.text.includes("Regnskabslinje 130")))throw new Error("container statement PDF failed");
+    let timedOut=false;
+    try{renderDocumentPdf({html:"hello",title:"Synthetic",date:"2026-05-16",footer:""},{timeoutMs:1});}catch(error){timedOut=error.message.includes("timed out");}
+    if(!timedOut)throw new Error("container PDF timeout failed");
+    console.log("StyleX Takumi container PDF verified: fonts, selectable text, pagination, deterministic bytes and timeout");
+  `;
+  console.log(run(["docker", "exec", container, "bun", "-e", source]).stdout.trim());
+}
+
 async function waitForContainerReadiness(container: string): Promise<void> {
   for (let attempt = 0; attempt < 100; attempt += 1) {
     try {
@@ -153,6 +189,7 @@ try {
   const noTextId = noTextDocument?.document?.id;
   const noTextParse = await api(first, `/api/companies/${slug}/documents/${noTextId}/parse`, { confirm: true });
   if (noTextParse?.parse?.status !== "no_text_layer") throw new Error(`no-text PDF outcome failed: ${JSON.stringify(noTextParse)}`);
+  await assertStylexPdfRendering(first, slug);
   const firstReadIdentity = await assertCompanyReadsArePhysicallyReadOnly(first, slug);
   run(["docker", "rm", "--force", first]);
 

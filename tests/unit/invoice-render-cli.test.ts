@@ -33,7 +33,7 @@ describe("invoice PDF rendering", () => {
     const strings = await pdfStrings(pdf);
 
     // Trailing legally-required content must survive into the rendered PDF.
-    expect(strings).toContain("Total");
+    expect(await extractPdfText(pdf)).toContain("Total");
     // #225: customer-facing amounts use Danish number format (10.000,00).
     expect(strings).toContain("10.000,00 DKK");
     expect(strings.join("\n")).toContain("Omvendt betalingspligt");
@@ -60,12 +60,12 @@ describe("invoice PDF rendering", () => {
     expect(text).toContain("KØBER");
     expect(text).not.toContain("Saelger");
     expect(text).not.toContain("Koeber");
-    // æ ø å Æ Ø Å survive into the content stream as single WinAnsi bytes.
+    // The complete names and descriptions survive in the selectable text layer.
     const strings = (await pdfStrings(pdf)).join("\n");
     expect(strings).toContain("Smør & Brød ApS");
     expect(strings).toContain("Æblevej 3, 2100 København Ø");
     expect(strings).toContain("Rådgivning på dansk");
-    // The fonts must declare WinAnsiEncoding so viewers map those bytes right.
+    // Embedded font mapping preserves the recipient name.
     expect(text).toContain("Køber A/S");
   });
 
@@ -156,7 +156,7 @@ describe("invoice PDF rendering", () => {
       totals: { netAmount: 1000, vatRate: 0.25, vatAmount: 250, grossAmount: 1250 },
     } as any);
     const strings = await pdfStrings(pdf);
-    const footer = strings.find((s) => s.includes("Side"));
+    const footer = (await extractPdfText(pdf)).split("\n").find((s) => s.includes("Faktura 2026-0012") && s.includes("Side"));
     expect(footer).toBe("Faktura 2026-0012 - Side 1 af 1");
     // No broken/exotic glyph in the footer.
     expect(footer).not.toContain("?");

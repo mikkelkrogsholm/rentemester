@@ -112,7 +112,7 @@ function backupSection(input: ComplianceReportInput): string {
     .join("\n");
   const destTable = destinations.length === 0
     ? `<p ${documentAttr("muted")}>Ingen destinationer registreret.</p>`
-    : `<table ${documentAttr("guideTable")}><thead><tr><th ${documentAttr("guideTh")}>Label</th><th ${documentAttr("guideTh")}>Type</th><th ${documentAttr("guideTh")}>EU/EØS</th><th ${documentAttr("guideTh")}>IT-sikkerhed</th></tr></thead><tbody>${destinations}</tbody></table>`;
+    : `<div ${documentAttr("tableScroll")} tabindex="0" role="region" aria-label="Regnskabstabel"><table ${documentAttr("guideTable")}><thead><tr><th ${documentAttr("guideTh")}>Label</th><th ${documentAttr("guideTh")}>Type</th><th ${documentAttr("guideTh")}>EU/EØS</th><th ${documentAttr("guideTh")}>IT-sikkerhed</th></tr></thead><tbody>${destinations}</tbody></table></div>`;
   return `<section ${documentAttr("card")}>
 <h2 ${documentAttr("guideH2")}>2. Opbevaring og backup</h2>
 <div ${documentAttr("metric")}><span ${documentAttr("muted")}>Backup-pligt opfyldt</span><span ${documentAttr("metricValue")}>${overallPill}</span></div>
@@ -145,10 +145,10 @@ function retentionSection(input: ComplianceReportInput): string {
   return `<section ${documentAttr("card")}>
 <h2 ${documentAttr("guideH2")}>3. Opbevaringsfrist (5 år)</h2>
 <div ${documentAttr("metric")}><span ${documentAttr("muted")}>Status pr. ${escapeHtml(r.asOf)}</span><span ${documentAttr("metricValue")}>${overallPill}</span></div>
-<table ${documentAttr("guideTable")}>
+<div ${documentAttr("tableScroll")} tabindex="0" role="region" aria-label="Regnskabstabel"><table ${documentAttr("guideTable")}>
 <thead><tr><th ${documentAttr("guideTh")}>Materiale</th><th ${documentAttr("guideTh")}>Total</th><th ${documentAttr("guideTh")}>Udløbet</th><th ${documentAttr("guideTh")}>Næste udløb</th><th ${documentAttr("guideTh")}>Ældste udløbet</th></tr></thead>
 <tbody>${rows}</tbody>
-</table>
+</table></div>
 <p ${documentAttr("muted")}>Retain-until beregnes som udgangen af regnskabsåret plus 5 kalenderår. Bogføringsposter, dokumenter og banktransaktioner får hver deres deadline. Materiale inden for fristen kan ikke slettes — heller ikke ved en GDPR-anmodning (§ 13 stk. 1).</p>
 <p ${documentAttr("law")}><strong>Hjemmel:</strong> Bogføringsloven § 12 stk. 1. Liste: <code ${documentAttr("code")}>rentemester retention status</code>.</p>
 </section>`;
@@ -195,10 +195,10 @@ function coverageSection(input: ComplianceReportInput): string {
 <div ${documentAttr("metric")}><span ${documentAttr("muted")}>Closure / drift / scope errors</span><span ${documentAttr("metricValue")}>${integrityPill} (${c.closureErrors.length}/${c.driftErrors.length}/${c.scopeErrors.length})</span></div>
 <div ${documentAttr("metric")}><span ${documentAttr("muted")}>Uncited regler (allowlisted)</span><span ${documentAttr("metricValue")}>${c.uncitedRules.length}</span></div>
 <p ${documentAttr("muted")}>Tallet måler hvor stor en del af de in-scope danske lovbestemmelser der citeres af en eksekverbar regel. Tælleren stiger når en ny paragraf cites; nævneren er den scope-erklærede delmængde af lovkorpusset (se <code ${documentAttr("code")}>sources/scope.yaml</code>).</p>
-<table ${documentAttr("guideTable")}>
+<div ${documentAttr("tableScroll")} tabindex="0" role="region" aria-label="Regnskabstabel"><table ${documentAttr("guideTable")}>
 <thead><tr><th ${documentAttr("guideTh")}>Kilde</th><th ${documentAttr("guideTh")}>Citeret / In-scope</th></tr></thead>
 <tbody>${perSourceRows}</tbody>
-</table>
+</table></div>
 <p ${documentAttr("muted")}>Kommando: <code ${documentAttr("code")}>rentemester reg coverage</code>. Verbatim citation-review: <code ${documentAttr("code")}>rentemester reg citations</code>.</p>
 </section>`;
 }
@@ -237,7 +237,7 @@ function citationsSection(input: ComplianceReportInput): string {
       .join("\n");
     blocks.push(
       `<h3 ${documentAttr("guideH3")}>${escapeHtml(category)}</h3>` +
-      `<table ${documentAttr("guideTable")}><thead><tr><th ${documentAttr("guideTh")}>Regel</th><th ${documentAttr("guideTh")}>Citation</th></tr></thead><tbody>${ruleRows}</tbody></table>`,
+      `<div ${documentAttr("tableScroll")} tabindex="0" role="region" aria-label="Regnskabstabel"><table ${documentAttr("guideTable")}><thead><tr><th ${documentAttr("guideTh")}>Regel</th><th ${documentAttr("guideTh")}>Citation</th></tr></thead><tbody>${ruleRows}</tbody></table></div>`,
     );
   }
   return `<section ${documentAttr("card")}>
@@ -280,7 +280,7 @@ export function renderComplianceReport(input: ComplianceReportInput): string {
     ? `Regnskabsår: ${escapeHtml(input.fiscalYearLabel)} · `
     : "";
   return `<!doctype html>
-<html lang="da">
+<html lang="da" ${documentAttr("root")}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

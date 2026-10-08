@@ -232,7 +232,7 @@ describe("renderDashboard — structure", () => {
 
   test("emits a complete HTML5 document", () => {
     expect(html.startsWith("<!DOCTYPE html>")).toBe(true);
-    expect(html).toContain("<html lang=\"da\">");
+    expect(html).toMatch(/<html lang="da" class="[^"]+">/);
     expect(html).toContain("<head>");
     expect(html).toContain("</head>");
     expect(html).toMatch(/<body\b[^>]*>/);

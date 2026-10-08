@@ -6,13 +6,16 @@ const headlineFont = `"${tokens.typography.headlineFamily}", Georgia, "Times New
 const monoFont = `"${tokens.typography.monoFamily}", "SF Mono", Menlo, Consolas, monospace`;
 
 const s = stylex.create({
+  faviconBackground: { fill: tokens.colors.ink },
+  faviconText: { fill: tokens.colors.paper, fontSize: 18, textAnchor: "middle", fontFamily: "sans-serif" },
   base: { boxSizing: "border-box" },
+  tableScroll: { maxWidth: "100%", overflowX: { default: "auto", "@media print": "visible" }, outline: { default: null, ":focus-visible": "2px solid" }, outlineColor: { default: null, ":focus-visible": tokens.colors.info } },
   body: { margin: 0, padding: 0, backgroundColor: { default: tokens.colors.paper, "@media print": "#fff" }, color: tokens.colors.ink, fontFamily: bodyFont, fontSize: tokens.typography.bodySize, lineHeight: 1.5 },
   page: { boxSizing: "border-box", maxWidth: 960, margin: "0 auto", padding: { default: "32px 24px", "@media print": 16 } },
   headline: { fontFamily: headlineFont, fontWeight: 600, letterSpacing: "-0.01em" },
   h1: { margin: "0 0 8px", fontFamily: headlineFont, fontWeight: 600, fontSize: 24 },
   h2: { fontFamily: headlineFont, fontSize: 18, fontWeight: 600, margin: "0 0 12px", borderBottom: "1px solid " + tokens.colors.inkMuted, paddingBottom: 8 },
-  mono: { fontFamily: monoFont, fontVariantNumeric: "tabular-nums", fontFeatureSettings: '"tnum" 1' },
+  mono: { overflowWrap: "anywhere", fontFamily: monoFont, fontVariantNumeric: "tabular-nums", fontFeatureSettings: '"tnum" 1' },
   amount: { textAlign: "right", whiteSpace: "nowrap" },
   amountLg: { fontSize: 28, lineHeight: 1.1, color: tokens.colors.ink },
   labelSm: { fontFamily: bodyFont, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: tokens.colors.inkMuted },
@@ -45,10 +48,10 @@ const s = stylex.create({
   muted: { color: tokens.colors.inkMuted },
   empty: { color: tokens.colors.inkMuted, fontStyle: "italic", padding: "12px 0" },
   footer: { backgroundColor: tokens.colors.paperRaised, border: "1px solid " + tokens.colors.inkMuted, borderRadius: 4, padding: 16, color: tokens.colors.inkMuted, fontSize: 12, marginTop: 24 },
-  row: { display: "flex", justifyContent: "space-between", gap: 16 },
+  row: { display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 16 },
   provenance: { marginTop: 8, color: tokens.colors.inkMuted, fontSize: 11 },
   summary: { cursor: "pointer", letterSpacing: "0.04em" },
-  activity: { display: "grid", gridTemplateColumns: "auto auto auto 1fr", gap: "8px 16px", fontSize: 14 },
+  activity: { display: "grid", gridTemplateColumns: { default: "auto auto auto minmax(0, 1fr)", "@media (max-width: 640px)": "1fr" }, overflowWrap: "anywhere", gap: "8px 16px", fontSize: 14 },
   time: { color: tokens.colors.ink, whiteSpace: "nowrap" },
   event: { color: tokens.colors.ink, fontWeight: 500 },
   overflow: { marginTop: 8, fontSize: 13 },
@@ -71,7 +74,7 @@ const s = stylex.create({
   ok: { color: tokens.colors.success },
   warn: { color: tokens.colors.warning },
   bad: { color: tokens.colors.danger },
-  metric: { display: "flex", justifyContent: "space-between", borderBottom: { default: "1px solid " + tokens.colors.border, ":last-child": "none" }, padding: "6px 0" },
+  metric: { display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "space-between", borderBottom: { default: "1px solid " + tokens.colors.border, ":last-child": "none" }, padding: "6px 0" },
   law: { color: tokens.colors.inkMuted, fontSize: 13, marginTop: 8, borderLeft: "3px solid " + tokens.colors.accent, padding: "4px 10px", backgroundColor: "#F8F2E9" },
   guideFooter: { marginTop: 40, color: tokens.colors.inkMuted, fontSize: 13, borderTop: "1px solid " + tokens.colors.border, paddingTop: 16 },
   lockReason: { color: tokens.colors.danger, marginTop: 12 },
@@ -99,6 +102,10 @@ const s = stylex.create({
 });
 
 export const attributes = {
+  faviconBackground: stylex.attrs(s.faviconBackground),
+  faviconText: stylex.attrs(s.faviconText),
+  root: stylex.attrs(s.base),
+  tableScroll: stylex.attrs(s.base, s.tableScroll),
   body: stylex.attrs(s.base, s.body),
   page: stylex.attrs(s.base, s.page),
   h1: stylex.attrs(s.base, s.h1),

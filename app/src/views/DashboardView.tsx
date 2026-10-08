@@ -297,7 +297,7 @@ function ArchivedUnavailableCard() {
   return (
     <div {...stylex.props(styles.card, styles.statusCard)} data-card="status">
       <h3 {...stylex.props(styles.heading)}>Bank, moms og opgaver</h3>
-      <p {...stylex.props(styles.muted, styles.statusNote)}>
+      <p {...stylex.props(styles.muted, styles.statusNote)} data-note>
         Bankafstemning, momsopgørelse og opgavekøen bygger på den aktive
         ledger og er ikke tilgængelige for et arkiveret regnskabsår.
         Resultatopgørelse, balance, saldobalance og posteringer vises ud fra
@@ -439,13 +439,13 @@ function BankCard({
         {actualBalance === null && ambiguous ? "—" : formatKroner(actualBalance ?? balance, currency)}
       </div>
       {actualBalance === null ? (
-        <p {...stylex.props(styles.muted, styles.statusNote)}>
+        <p {...stylex.props(styles.muted, styles.statusNote)} data-note>
           {ambiguous
             ? "Kontoudtogets rækkefølge eller løbende saldo kan ikke bevises. Se Bank og kontrollér eksporten — Rentemester viser ingen gættet saldo."
             : "Bogført saldo på bank- og kassekonti — intet kontoudtog importeret"}
         </p>
       ) : (
-        <p {...stylex.props(styles.muted, styles.statusNote)}>
+        <p {...stylex.props(styles.muted, styles.statusNote)} data-note>
           Kontoudtog {formatKroner(actualBalance, currency)} · Bogført{" "}
           {formatKroner(balance, currency)}
           {difference !== null && (
@@ -502,11 +502,11 @@ function VatCard({
       <div {...stylex.props(styles.statusFigure)} data-figure>
         {formatKroner(vat.payable, currency)}
       </div>
-      <p {...stylex.props(styles.muted, styles.statusNote)}>
+      <p {...stylex.props(styles.muted, styles.statusNote)} data-note>
         Momsperiode {vat.periodLabel} ({vat.periodStart} – {vat.periodEnd}) · {periodStatus} ·{" "}
         {vat.payable >= 0 ? "at betale" : "tilgode"}
       </p>
-      <p {...stylex.props(styles.muted, styles.statusNote)}>
+      <p {...stylex.props(styles.muted, styles.statusNote)} data-note>
         Indberettes og betales til SKAT senest {vat.deadline} ·{" "}
         <span {...stylex.props(tone === "ok" ? styles.success : styles.warning)}>
           {countdown}
@@ -535,7 +535,7 @@ function ReceivablesCard({
       >
         {formatKroner(openTotal, currency)}
       </div>
-      <p {...stylex.props(styles.muted, styles.statusNote)}>
+      <p {...stylex.props(styles.muted, styles.statusNote)} data-note>
         {openCount === 0
           ? "Ingen udestående fakturaer — ingen skylder dig penge."
           : `${openCount} ${
@@ -578,7 +578,7 @@ function ExceptionsCard({
         {attentionCount}
       </div>
       {attentionCount === 0 ? (
-        <p {...stylex.props(styles.muted, styles.statusNote)}>Ingen åbne opgaver.</p>
+        <p {...stylex.props(styles.muted, styles.statusNote)} data-note>Ingen åbne opgaver.</p>
       ) : (
         <>
           <p {...stylex.props(styles.paragraph)}><Link {...stylex.props(styles.link)} to={`/companies/${slug}/opmaerksomhed`}>Se alle opgaver</Link></p>
@@ -697,7 +697,7 @@ function RecentEntriesCard({
   return (
     <StatusCard title="Seneste posteringer">
       {entries.length === 0 ? (
-        <p {...stylex.props(styles.muted, styles.statusNote)}>Ingen posteringer i året endnu.</p>
+        <p {...stylex.props(styles.muted, styles.statusNote)} data-note>Ingen posteringer i året endnu.</p>
       ) : (
         <ul {...stylex.props(styles.recentEntries)}>
           {entries.map((e) => (

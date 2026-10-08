@@ -46,3 +46,10 @@ notes/
 app/test-results/
 app/playwright-report/
 app/.cache/
+
+# StyleX website compiler products and browser evidence
+www/.stylex/
+www/.astro/
+www/public/_stylex/
+www/test-results/
+www/playwright-report/

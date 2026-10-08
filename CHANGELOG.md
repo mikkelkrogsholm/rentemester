@@ -6,6 +6,29 @@ følger [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-08
+
+### Changed
+
+- Al ejet styling i cockpit, login, hjemmeside, HTML-eksporter, vejledninger,
+  iXBRL, PDF'er og SVG/OG-skabeloner defineres nu i StyleX. DESIGN.md er fælles
+  tokenkilde; en CI-kontrol afviser parallelle stylingmekanismer.
+- Portefølje og Opgaver ligger direkte i den globale navigation. Opgavers
+  scope, visninger, filtre og handlinger har tydelige, valgte tilstande.
+- Grafer bruger fælles React/SVG-komponenter med bevaret serievalg,
+  tastatur/touch, tabeller, ukendte værdier og dobbelte akser.
+- Faktura- og rapport-PDF'er bruger lokale pdfcn-komponenter og
+  takumi-pdf 0.15.0 gennem en afgrænset, synkron Bun-renderproces.
+- Lokale skrifter, offline HTML og scriptfri iXBRL erstatter eksterne
+  fontstylesheets. Latin-Extended dækkes; udækkede PDF-tegn afvises.
+
+### Fixed
+
+- Fakturaafsendelse genbruger det udstedte, hashkontrollerede PDF-bevis og
+  historiske sendekvitteringer efter rendererændringer.
+- Samtidige afsendelser kan ikke begge passere kvitteringskontrollen og
+  sende samme faktura; gentagelser genbruger den registrerede effekt.
+
 ## [0.3.0] - 2026-10-08
 
 ### Added

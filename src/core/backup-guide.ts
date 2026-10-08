@@ -113,8 +113,8 @@ function statusSection(governance: BackupGovernanceStatus): string {
       })
       .join("");
     destinationTable =
-      `<table ${documentAttr("guideTable")}><thead><tr><th ${documentAttr("guideTh")}>Destination</th><th ${documentAttr("guideTh")}>Type</th><th ${documentAttr("guideTh")}>EU/EØS</th>` +
-      `<th ${documentAttr("guideTh")}>Ikke-nærtstående</th><th ${documentAttr("guideTh")}>§4</th></tr></thead><tbody>${body}</tbody></table>`;
+      `<div ${documentAttr("tableScroll")} tabindex="0" role="region" aria-label="Regnskabstabel"><table ${documentAttr("guideTable")}><thead><tr><th ${documentAttr("guideTh")}>Destination</th><th ${documentAttr("guideTh")}>Type</th><th ${documentAttr("guideTh")}>EU/EØS</th>` +
+      `<th ${documentAttr("guideTh")}>Ikke-nærtstående</th><th ${documentAttr("guideTh")}>§4</th></tr></thead><tbody>${body}</tbody></table></div>`;
   }
 
   return (
@@ -134,7 +134,7 @@ function statusSection(governance: BackupGovernanceStatus): string {
 export function renderBackupGuide(input: BackupGuideInput): string {
   const { governance } = input;
   return `<!doctype html>
-<html lang="da">
+<html lang="da" ${documentAttr("root")}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

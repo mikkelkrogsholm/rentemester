@@ -1,3 +1,4 @@
+import { version as productVersion } from "../../package.json";
 import { createHash } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -108,7 +109,7 @@ describe("release evidence scripts", () => {
     const directory = mkdtempSync(join(tmpdir(), "rentemester-release-evidence-"));
     try {
       const created = runScript("scripts/release/create-manifest.ts", [], {
-        RELEASE_VERSION: "0.3.0",
+        RELEASE_VERSION: productVersion,
         RELEASE_GIT_COMMIT: commit,
         RELEASE_BUILT_AT: builtAt,
         RELEASE_IMAGE_REPOSITORY: "ghcr.io/mikkelkrogsholm/rentemester",
@@ -145,7 +146,7 @@ describe("release evidence scripts", () => {
         reviewer: { organization: "Digisense", name: "Test reviewer" },
         releaseManifestDigest,
         imageDigest,
-        version: "0.3.0",
+        version: productVersion,
         gitCommit: commit,
       };
       const approvalPath = join(directory, "approval.json");
@@ -156,7 +157,7 @@ describe("release evidence scripts", () => {
         [manifestPath, approvalPath],
       );
       expect(verified.status).toBe(0);
-      expect(verified.stdout).toContain("Digisense approved 0.3.0");
+      expect(verified.stdout).toContain(`Digisense approved ${productVersion}`);
 
       const manifest = JSON.parse(created.stdout);
       manifest.evidence.cockpitEvidenceSha256 = "sha256:not-a-checksum";
@@ -211,7 +212,7 @@ describe("release evidence scripts", () => {
       const cockpitEvidenceSha256 = fixtureSha256(evidencePath);
       const cockpitRegressionQuerySha256 = fixtureSha256(regressionQueryPath);
       const created = runScript("scripts/release/create-manifest.ts", [], {
-        RELEASE_VERSION: "0.3.0",
+        RELEASE_VERSION: productVersion,
         RELEASE_GIT_COMMIT: commit,
         RELEASE_BUILT_AT: builtAt,
         RELEASE_IMAGE_REPOSITORY: "ghcr.io/example/rentemester",
@@ -241,7 +242,7 @@ describe("release evidence scripts", () => {
 
   test("refuses release evidence without an explicit runtime identity", () => {
     const created = runScript("scripts/release/create-manifest.ts", [], {
-      RELEASE_VERSION: "0.3.0",
+      RELEASE_VERSION: productVersion,
       RELEASE_GIT_COMMIT: commit,
       RELEASE_BUILT_AT: builtAt,
       RELEASE_IMAGE_REPOSITORY: "ghcr.io/mikkelkrogsholm/rentemester",
@@ -264,7 +265,7 @@ describe("release evidence scripts", () => {
 
   test("refuses release evidence without a checksum for the extracted SBOM", () => {
     const created = runScript("scripts/release/create-manifest.ts", [], {
-      RELEASE_VERSION: "0.3.0",
+      RELEASE_VERSION: productVersion,
       RELEASE_GIT_COMMIT: commit,
       RELEASE_BUILT_AT: builtAt,
       RELEASE_IMAGE_REPOSITORY: "ghcr.io/mikkelkrogsholm/rentemester",
@@ -287,7 +288,7 @@ describe("release evidence scripts", () => {
 
   test("refuses release evidence without the lockfile-bound supply-chain checksum", () => {
     const created = runScript("scripts/release/create-manifest.ts", [], {
-      RELEASE_VERSION: "0.3.0",
+      RELEASE_VERSION: productVersion,
       RELEASE_GIT_COMMIT: commit,
       RELEASE_BUILT_AT: builtAt,
       RELEASE_IMAGE_REPOSITORY: "ghcr.io/mikkelkrogsholm/rentemester",
@@ -310,7 +311,7 @@ describe("release evidence scripts", () => {
 
   test("refuses release evidence without the digest-bound agent-discovery checksum", () => {
     const created = runScript("scripts/release/create-manifest.ts", [], {
-      RELEASE_VERSION: "0.3.0",
+      RELEASE_VERSION: productVersion,
       RELEASE_GIT_COMMIT: commit,
       RELEASE_BUILT_AT: builtAt,
       RELEASE_IMAGE_REPOSITORY: "ghcr.io/mikkelkrogsholm/rentemester",

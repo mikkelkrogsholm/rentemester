@@ -175,15 +175,15 @@ function renderFactRow(fact: ResolvedFact): string {
   const safeValue = escapeXml(value);
   if (element.kind === "monetary") {
     return (
-      `    <tr><th>${escapeXml(element.label)}</th>` +
-      `<td><ix:nonFraction name="${escapeXml(element.name)}" ` +
+      `    <tr><th ${documentAttr("guideTh")}>${escapeXml(element.label)}</th>` +
+      `<td ${documentAttr("guideCell")}><ix:nonFraction name="${escapeXml(element.name)}" ` +
       `contextRef="${escapeXml(element.context)}" unitRef="DKK" decimals="2">${safeValue}` +
       `</ix:nonFraction></td></tr>`
     );
   }
   return (
-    `    <tr><th>${escapeXml(element.label)}</th>` +
-    `<td><ix:nonNumeric name="${escapeXml(element.name)}" ` +
+    `    <tr><th ${documentAttr("guideTh")}>${escapeXml(element.label)}</th>` +
+    `<td ${documentAttr("guideCell")}><ix:nonNumeric name="${escapeXml(element.name)}" ` +
     `contextRef="${escapeXml(element.context)}">${safeValue}</ix:nonNumeric></td></tr>`
   );
 }
@@ -329,13 +329,13 @@ export function generateIxbrl(report: AnnualReport): GenerateIxbrlResult {
       .filter((f) => f.element.section === section)
       .map(renderFactRow)
       .join("\n");
-    return [`    <h2>${escapeXml(heading)}</h2>`, "    <table>", rows, "    </table>"].join("\n");
+    return [`    <h2 ${documentAttr("guideH2")}>${escapeXml(heading)}</h2>`, `    <div ${documentAttr("tableScroll")} tabindex="0" role="region" aria-label="Regnskabstabel"><table ${documentAttr("guideTable")}>`, rows, "    </table></div>"].join("\n");
   }).join("\n");
 
   const noteRows = report.notes
     .map(
       (note) =>
-        `    <tr><th>${escapeXml(note.title)}</th><td>${escapeXml(note.body)}</td></tr>`,
+        `    <tr><th ${documentAttr("guideTh")}>${escapeXml(note.title)}</th><td ${documentAttr("guideCell")}>${escapeXml(note.body)}</td></tr>`,
     )
     .join("\n");
 
@@ -347,26 +347,26 @@ export function generateIxbrl(report: AnnualReport): GenerateIxbrlResult {
   const m = (value: number): string => formatAmount(value) ?? "0.00";
   const cmpCell = (value: number): string => (cmp.available ? escapeXml(m(value)) : "—");
   const comparisonBlock = [
-    `    <h2>Sammenligningstal (foregaaende regnskabsaar ${escapeXml(cmp.fiscalYearStart)} — ${escapeXml(cmp.fiscalYearEnd)})</h2>`,
-    "    <table>",
-    `    <tr><th>Nettoomsaetning</th><td>${cmpCell(cmp.totalIncome)}</td></tr>`,
-    `    <tr><th>Omkostninger</th><td>${cmpCell(cmp.totalExpense)}</td></tr>`,
-    `    <tr><th>Aarets resultat</th><td>${cmpCell(cmp.aretsResultat)}</td></tr>`,
-    `    <tr><th>Aktiver i alt</th><td>${cmpCell(cmp.totalAssets)}</td></tr>`,
-    `    <tr><th>Egenkapital i alt</th><td>${cmpCell(cmp.equity)}</td></tr>`,
-    `    <tr><th>Passiver i alt</th><td>${cmpCell(cmp.totalLiabilitiesAndEquity)}</td></tr>`,
-    "    </table>",
+    `    <h2 ${documentAttr("guideH2")}>Sammenligningstal (foregaaende regnskabsaar ${escapeXml(cmp.fiscalYearStart)} — ${escapeXml(cmp.fiscalYearEnd)})</h2>`,
+    `    <div ${documentAttr("tableScroll")} tabindex="0" role="region" aria-label="Regnskabstabel"><table ${documentAttr("guideTable")}>`,
+    `    <tr><th ${documentAttr("guideTh")}>Nettoomsaetning</th><td ${documentAttr("guideCell")}>${cmpCell(cmp.totalIncome)}</td></tr>`,
+    `    <tr><th ${documentAttr("guideTh")}>Omkostninger</th><td ${documentAttr("guideCell")}>${cmpCell(cmp.totalExpense)}</td></tr>`,
+    `    <tr><th ${documentAttr("guideTh")}>Aarets resultat</th><td ${documentAttr("guideCell")}>${cmpCell(cmp.aretsResultat)}</td></tr>`,
+    `    <tr><th ${documentAttr("guideTh")}>Aktiver i alt</th><td ${documentAttr("guideCell")}>${cmpCell(cmp.totalAssets)}</td></tr>`,
+    `    <tr><th ${documentAttr("guideTh")}>Egenkapital i alt</th><td ${documentAttr("guideCell")}>${cmpCell(cmp.equity)}</td></tr>`,
+    `    <tr><th ${documentAttr("guideTh")}>Passiver i alt</th><td ${documentAttr("guideCell")}>${cmpCell(cmp.totalLiabilitiesAndEquity)}</td></tr>`,
+    "    </table></div>",
   ].join("\n");
 
   // The average-employees note (ÅRL §24) surfaced explicitly. Sourced from the
   // notes skeleton so the iXBRL stays in lock-step with the assembled report.
   const employeesNote = report.notes.find((n) => n.id === "average-employees");
   const employeesBlock = [
-    "    <h2>Gennemsnitligt antal beskaeftigede</h2>",
-    "    <table>",
-    `    <tr><th>${escapeXml(employeesNote?.title ?? "Gennemsnitligt antal beskaeftigede")}</th>` +
-      `<td>${escapeXml(employeesNote?.body ?? "Udfyldes af ejer eller revisor.")}</td></tr>`,
-    "    </table>",
+    `    <h2 ${documentAttr("guideH2")}>Gennemsnitligt antal beskaeftigede</h2>`,
+    `    <div ${documentAttr("tableScroll")} tabindex="0" role="region" aria-label="Regnskabstabel"><table ${documentAttr("guideTable")}>`,
+    `    <tr><th ${documentAttr("guideTh")}>${escapeXml(employeesNote?.title ?? "Gennemsnitligt antal beskaeftigede")}</th>` +
+      `<td ${documentAttr("guideCell")}>${escapeXml(employeesNote?.body ?? "Udfyldes af ejer eller revisor.")}</td></tr>`,
+    "    </table></div>",
   ].join("\n");
 
   // The iXBRL hidden header carries the two xbrli contexts and the DKK unit:
@@ -376,7 +376,7 @@ export function generateIxbrl(report: AnnualReport): GenerateIxbrlResult {
   // the document is fully determined by its input.
   const xhtml = [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<html xmlns="http://www.w3.org/1999/xhtml"',
+    `<html ${documentAttr("root")} xmlns="http://www.w3.org/1999/xhtml"`,
     '      xmlns:ix="http://www.xbrl.org/2013/inlineXBRL"',
     '      xmlns:xbrli="http://www.xbrl.org/2003/instance"',
     `      xmlns:ar="${escapeXml(ns)}">`,
@@ -385,7 +385,7 @@ export function generateIxbrl(report: AnnualReport): GenerateIxbrlResult {
     `    <meta name="rentemester-ixbrl-taxonomy" content="${escapeXml(taxonomy.name)} v${escapeXml(taxonomy.version)}"/>`,
     `    <style type="text/css">${escapeXml(documentCss)}</style>`,
     "  </head>",
-    "  <body>",
+    `  <body ${documentAttr("body")}>`,
     `    <div ${documentAttr("hidden")}>`,
     '      <ix:header>',
     '        <ix:references/>',
@@ -413,10 +413,11 @@ export function generateIxbrl(report: AnnualReport): GenerateIxbrlResult {
     "        </ix:resources>",
     "      </ix:header>",
     "    </div>",
-    `    <h1>Arsrapport ${escapeXml(report.fiscalYearStart)} — ${escapeXml(report.fiscalYearEnd)}</h1>`,
-    "    <p>Regnskabsklasse B (micro/small). Forberedt af Rentemester; " +
+    `    <main ${documentAttr("guideMain")}>`,
+    `    <h1 ${documentAttr("guideH1")}>Arsrapport ${escapeXml(report.fiscalYearStart)} — ${escapeXml(report.fiscalYearEnd)}</h1>`,
+    `    <p ${documentAttr("muted")}>Regnskabsklasse B (micro/small). Forberedt af Rentemester; ` +
       "ejer eller revisor gennemgar og indberetter.</p>",
-    `    <p>iXBRL-taksonomi: ${escapeXml(taxonomy.name)} v${escapeXml(taxonomy.version)} ` +
+    `    <p ${documentAttr("muted")}>iXBRL-taksonomi: ${escapeXml(taxonomy.name)} v${escapeXml(taxonomy.version)} ` +
       "— et afgraenset udsnit under det rentemester-lokale `ar:`-namespace, IKKE " +
       "Erhvervsstyrelsens officielle taksonomi. Dokumentet kan derfor IKKE " +
       "indberettes digitalt til Erhvervsstyrelsen/Virk endnu; det er en forberedt " +
@@ -424,10 +425,11 @@ export function generateIxbrl(report: AnnualReport): GenerateIxbrlResult {
     sectionBlocks,
     comparisonBlock,
     employeesBlock,
-    "    <h2>Noter (skelet)</h2>",
-    "    <table>",
+    `    <h2 ${documentAttr("guideH2")}>Noter (skelet)</h2>`,
+    `    <div ${documentAttr("tableScroll")} tabindex="0" role="region" aria-label="Regnskabstabel"><table ${documentAttr("guideTable")}>`,
     noteRows,
-    "    </table>",
+    "    </table></div>",
+    "    </main>",
     "  </body>",
     "</html>",
     "",

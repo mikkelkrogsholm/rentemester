@@ -26,6 +26,16 @@ describe("portable static StyleX precompiler", () => {
     expect(Object.keys(compiled.attributes.selected!)).toEqual(["class"]);
   });
 
+  test("preserves authored backgrounds and borders in Bun instead of silently dropping shorthands", () => {
+    const source = `import * as stylex from "@stylexjs/stylex";
+      const s = stylex.create({ card: { background: "linear-gradient(red, blue)", border: "1px solid black", borderBottom: "2px solid green" } });
+      export const attributes = { card: stylex.attrs(s.card) };`;
+    const compiled = compileStylex(source, "src/design/synthetic.stylex.ts", dependencies);
+    expect(compiled.css).toContain("background:linear-gradient(red,blue)");
+    expect(compiled.css).toContain("border:1px solid black");
+    expect(compiled.css).toContain("border-bottom:2px solid green");
+  });
+
   test("requires portable filenames and self-contained authoring inputs", () => {
     expect(() => compileStylex("", "/absolute/path.ts", dependencies)).toThrow("repository-relative");
     expect(() => compileStylex('import data from "./runtime"; export const attributes = data;', "synthetic.ts", dependencies)).toThrow("self-contained");

@@ -6,8 +6,8 @@ import { renderAt } from "../test/render";
 import { overview, mockFetch } from "../test/fixtures";
 import type { ChangesSince } from "../lib/types";
 
-// The P&L chart needs a real <canvas> 2D context, which happy-dom lacks —
-// stub it so the view's data wiring is what the specs exercise.
+// The shared SVG renderer has its own interaction tests; these specs exercise
+// the overview data wiring and mutation recovery.
 vi.mock("../components/PnlChart", () => ({
   PnlChart: () => <div data-testid="pnl-chart" />,
 }));
@@ -33,7 +33,7 @@ describe("DashboardView — Overblik", () => {
     expect(
       await screen.findByRole("heading", { name: "Overblik", level: 1 }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Omsætning")).toBeInTheDocument();
+    expect(screen.getByText("Omsætning", { selector: "[data-kpi-label]" })).toBeInTheDocument();
     expect(screen.getByText("Udgifter")).toBeInTheDocument();
     expect(screen.getByText("Resultat")).toBeInTheDocument();
   });
@@ -41,7 +41,7 @@ describe("DashboardView — Overblik", () => {
   test("shows the ground-truth result figure", async () => {
     mockFetch(overviewRoute());
     renderDashboard();
-    const result = (await screen.findByText("Resultat")).closest(".kpi")!;
+    const result = (await screen.findByText("Resultat")).closest('[data-kpi]')!;
     expect(
       within(result as HTMLElement).getByText(/13\.234,82/),
     ).toBeInTheDocument();
@@ -53,7 +53,7 @@ describe("DashboardView — Overblik", () => {
     expect(await screen.findByTestId("pnl-chart")).toBeInTheDocument();
     const vat = screen
       .getByRole("heading", { name: "Moms" })
-      .closest(".status-card")!;
+      .closest('[data-card="status"]')!;
     expect(within(vat as HTMLElement).getByText(/3\.371,00/)).toBeInTheDocument();
     expect(
       within(vat as HTMLElement).getByText(/Q2 2026/),
@@ -96,12 +96,12 @@ describe("DashboardView — Overblik", () => {
     await screen.findByRole("heading", { name: "Overblik", level: 1 });
     const bankCard = screen
       .getByRole("heading", { name: "Bank" })
-      .closest(".status-card")!;
+      .closest('[data-card="status"]')!;
     // Headline figure is the actual statement balance.
-    const figure = bankCard.querySelector(".status-figure")!;
+    const figure = bankCard.querySelector('[data-figure]')!;
     expect(figure.textContent).toMatch(/23\.654,75/);
     // The note carries the booked figure and the unreconciled gap.
-    const note = bankCard.querySelector(".status-note")!;
+    const note = bankCard.querySelector('[data-note]')!;
     expect(note.textContent).toMatch(/Bogført.*41\.388,03/);
     expect(
       within(bankCard as HTMLElement).getByText(/ikke afstemt/),
@@ -143,8 +143,8 @@ describe("DashboardView — Overblik", () => {
     renderDashboard();
     expect(await screen.findByRole("heading", { name: "1 forhold kræver opmærksomhed" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Se krævende handlinger" })).toHaveAttribute("href", "/companies/acme-aps/opmaerksomhed");
-    const tasks = screen.getByRole("heading", { name: "Opgaver" }).closest(".status-card")!;
-    expect(within(tasks as HTMLElement).getByText("1", { selector: ".status-figure" })).toBeInTheDocument();
+    const tasks = screen.getByRole("heading", { name: "Opgaver" }).closest('[data-card="status"]')!;
+    expect(within(tasks as HTMLElement).getByText("1", { selector: '[data-figure]' })).toBeInTheDocument();
     expect(within(tasks as HTMLElement).getByRole("link", { name: "Se alle opgaver" })).toBeInTheDocument();
   });
 
@@ -205,7 +205,7 @@ describe("DashboardView — Overblik", () => {
       await screen.findByText(/Arkiveret regnskabsår 2025 — skrivebeskyttet/),
     ).toBeInTheDocument();
     // The KPI cards still render from the archived figures.
-    expect(screen.getByText("Omsætning")).toBeInTheDocument();
+    expect(screen.getByText("Omsætning", { selector: "[data-kpi-label]" })).toBeInTheDocument();
     expect(screen.getByText("Resultat")).toBeInTheDocument();
     // Live-only data is honestly marked unavailable rather than faked.
     expect(
@@ -234,7 +234,7 @@ describe("DashboardView — Overblik", () => {
     expect(await screen.findByText("Overskudsgrad")).toBeInTheDocument();
     expect(screen.queryByText("Bruttomargin")).not.toBeInTheDocument();
     expect(screen.getByText("Egenkapitalandel")).toBeInTheDocument();
-    const margin = screen.getByText("Overskudsgrad").closest(".key-figure")!;
+    const margin = screen.getByText("Overskudsgrad").closest('[data-key-figure]')!;
     expect(
       within(margin as HTMLElement).getByText(/74,2\s*%/),
     ).toBeInTheDocument();
@@ -243,7 +243,7 @@ describe("DashboardView — Overblik", () => {
   test("the KPI cards drill into the Resultatopgørelse, carrying the year", async () => {
     mockFetch(overviewRoute());
     renderDashboard();
-    const omsaetning = (await screen.findByText("Omsætning")).closest("a")!;
+    const omsaetning = (await screen.findByText("Omsætning", { selector: "[data-kpi-label]" })).closest("a")!;
     expect(omsaetning).toHaveAttribute(
       "href",
       "/companies/acme-aps/resultatopgorelse?year=2026",

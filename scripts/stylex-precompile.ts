@@ -35,6 +35,8 @@ export function compileStylex(
       dev: false,
       useCSSLayers: false,
       enableMediaQueryOrder: false,
+      styleResolution: "application-order",
+      propertyValidationMode: "throw",
     }]],
   });
   if (!compiled?.code) throw new Error(`StyleX produced no module for ${filename}`);

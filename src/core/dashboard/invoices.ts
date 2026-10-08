@@ -35,7 +35,7 @@ export function invoiceTable(result: InvoiceListResult, maxRows = 10): string {
   const overflowRow = overflow > 0
     ? `<div ${documentAttr("overflow")}>… og ${overflow} yderligere</div>`
     : "";
-  return `<table ${documentAttr("table")}>
+  return `<div ${documentAttr("tableScroll")} tabindex="0" role="region" aria-label="Regnskabstabel"><table ${documentAttr("table")}>
   <thead>
     <tr ${documentAttr("tr")}>
       <th ${documentAttr("th")}>Fakturanr.</th>
@@ -48,7 +48,7 @@ export function invoiceTable(result: InvoiceListResult, maxRows = 10): string {
   <tbody>
 ${rows}
   </tbody>
-</table>
+</table></div>
 ${overflowRow}`;
 }
 

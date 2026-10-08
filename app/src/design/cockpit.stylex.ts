@@ -160,6 +160,7 @@ export const cockpitStyles = stylex.create({
 		padding: spacing.lg,
 	},
 	authPanelH1: {
+		overflowWrap: "anywhere",
 		marginTop: "0",
 	},
 	totpUri: {
@@ -1749,7 +1750,6 @@ export const cockpitStyles = stylex.create({
 		background: "transparent",
 		fontFamily: "inherit",
 		textAlign: "left",
-		transition: "color 0.12s ease",
 		maxWidth: {
 			default: null,
 			"@media (max-width: 640px)": "100%",
@@ -2168,7 +2168,7 @@ export const cockpitStyles = stylex.create({
 		},
 		display: {
 			default: null,
-			"@media (max-width: 640px)": "block",
+			"@media (min-width: 640px) and (max-width: 640px)": "block",
 			"@media (max-width: 639px)": "grid",
 		},
 		width: {
@@ -2181,7 +2181,7 @@ export const cockpitStyles = stylex.create({
 		},
 		padding: {
 			default: null,
-			"@media (max-width: 640px)": spacing.sm,
+			"@media (min-width: 640px) and (max-width: 640px)": spacing.sm,
 			"@media (max-width: 639px)": "8px",
 		},
 		borderBottom: {
@@ -2358,7 +2358,7 @@ export const cockpitStyles = stylex.create({
 		},
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		position: {
@@ -2391,7 +2391,7 @@ export const cockpitStyles = stylex.create({
 		},
 		display: {
 			default: null,
-			"@media (max-width: 640px)": {
+			"@media (min-width: 640px) and (max-width: 640px)": {
 				default: "grid",
 				":empty": "none",
 			},
@@ -2407,12 +2407,12 @@ export const cockpitStyles = stylex.create({
 		},
 		gridTemplateColumns: {
 			default: null,
-			"@media (max-width: 640px)": "minmax(7rem, 42%) minmax(0, 1fr)",
+			"@media (min-width: 640px) and (max-width: 640px)": "minmax(7rem, 42%) minmax(0, 1fr)",
 			"@media (max-width: 639px)": "minmax(90px, 0.4fr) minmax(0, 1fr)",
 		},
 		gap: {
 			default: null,
-			"@media (max-width: 640px)": spacing.xs,
+			"@media (min-width: 640px) and (max-width: 640px)": spacing.xs,
 			"@media (max-width: 639px)": "8px",
 		},
 		border: {
@@ -2507,7 +2507,7 @@ export const cockpitStyles = stylex.create({
 		},
 		display: {
 			default: null,
-			"@media (max-width: 640px)": {
+			"@media (min-width: 640px) and (max-width: 640px)": {
 				default: "grid",
 				":empty": "none",
 			},
@@ -2523,17 +2523,17 @@ export const cockpitStyles = stylex.create({
 		},
 		gridTemplateColumns: {
 			default: null,
-			"@media (max-width: 640px)": "minmax(7rem, 42%) minmax(0, 1fr)",
+			"@media (min-width: 640px) and (max-width: 640px)": "minmax(7rem, 42%) minmax(0, 1fr)",
 			"@media (max-width: 639px)": "minmax(90px, 0.4fr) minmax(0, 1fr)",
 		},
 		gap: {
 			default: null,
-			"@media (max-width: 640px)": spacing.xs,
+			"@media (min-width: 640px) and (max-width: 640px)": spacing.xs,
 			"@media (max-width: 639px)": "8px",
 		},
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		border: {
@@ -2646,7 +2646,7 @@ export const cockpitStyles = stylex.create({
 		},
 		display: {
 			default: null,
-			"@media (max-width: 640px)": {
+			"@media (min-width: 640px) and (max-width: 640px)": {
 				default: "grid",
 				":empty": "none",
 			},
@@ -2662,17 +2662,17 @@ export const cockpitStyles = stylex.create({
 		},
 		gridTemplateColumns: {
 			default: null,
-			"@media (max-width: 640px)": "minmax(7rem, 42%) minmax(0, 1fr)",
+			"@media (min-width: 640px) and (max-width: 640px)": "minmax(7rem, 42%) minmax(0, 1fr)",
 			"@media (max-width: 639px)": "minmax(90px, 0.4fr) minmax(0, 1fr)",
 		},
 		gap: {
 			default: null,
-			"@media (max-width: 640px)": spacing.xs,
+			"@media (min-width: 640px) and (max-width: 640px)": spacing.xs,
 			"@media (max-width: 639px)": "8px",
 		},
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		border: {
@@ -2784,7 +2784,7 @@ export const cockpitStyles = stylex.create({
 		},
 		display: {
 			default: null,
-			"@media (max-width: 640px)": {
+			"@media (min-width: 640px) and (max-width: 640px)": {
 				default: "grid",
 				":empty": "none",
 			},
@@ -2800,17 +2800,17 @@ export const cockpitStyles = stylex.create({
 		},
 		gridTemplateColumns: {
 			default: null,
-			"@media (max-width: 640px)": "minmax(7rem, 42%) minmax(0, 1fr)",
+			"@media (min-width: 640px) and (max-width: 640px)": "minmax(7rem, 42%) minmax(0, 1fr)",
 			"@media (max-width: 639px)": "minmax(90px, 0.4fr) minmax(0, 1fr)",
 		},
 		gap: {
 			default: null,
-			"@media (max-width: 640px)": spacing.xs,
+			"@media (min-width: 640px) and (max-width: 640px)": spacing.xs,
 			"@media (max-width: 639px)": "8px",
 		},
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		border: {
@@ -2925,7 +2925,7 @@ export const cockpitStyles = stylex.create({
 		},
 		display: {
 			default: "flex",
-			"@media (max-width: 640px)": {
+			"@media (min-width: 640px) and (max-width: 640px)": {
 				default: "grid",
 				":empty": "none",
 			},
@@ -2942,7 +2942,7 @@ export const cockpitStyles = stylex.create({
 		},
 		gridTemplateColumns: {
 			default: null,
-			"@media (max-width: 640px)": "minmax(7rem, 42%) minmax(0, 1fr)",
+			"@media (min-width: 640px) and (max-width: 640px)": "minmax(7rem, 42%) minmax(0, 1fr)",
 			"@media (max-width: 639px)": "minmax(90px, 0.4fr) minmax(0, 1fr)",
 		},
 		gap: {
@@ -2951,7 +2951,7 @@ export const cockpitStyles = stylex.create({
 		},
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		border: {
@@ -3282,7 +3282,6 @@ export const cockpitStyles = stylex.create({
 		marginBottom: spacing.lg,
 		gridTemplateColumns: {
 			default: "repeat(2, 1fr)",
-			"@media (max-width: 880px)": "repeat(2, 1fr)",
 			"@media (max-width: 640px)": "1fr",
 		},
 		display: "grid",
@@ -3399,7 +3398,7 @@ export const cockpitStyles = stylex.create({
 		fontSize: typography.sizeSm,
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		textAlign: {
@@ -3502,7 +3501,7 @@ export const cockpitStyles = stylex.create({
 		},
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		borderBottom: `1px solid ${colors.border}`,
@@ -3585,7 +3584,7 @@ export const cockpitStyles = stylex.create({
 		},
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		borderBottom: `1px solid ${colors.border}`,
@@ -3681,7 +3680,7 @@ export const cockpitStyles = stylex.create({
 		},
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		borderBottom: `1px solid ${colors.border}`,
@@ -3870,7 +3869,7 @@ export const cockpitStyles = stylex.create({
 		fontSize: typography.sizeSm,
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		textAlign: {
@@ -3945,7 +3944,7 @@ export const cockpitStyles = stylex.create({
 		},
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		borderBottom: `1px solid ${colors.border}`,
@@ -4000,7 +3999,7 @@ export const cockpitStyles = stylex.create({
 		},
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		borderBottom: `1px solid ${colors.border}`,
@@ -4068,7 +4067,7 @@ export const cockpitStyles = stylex.create({
 		},
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		borderBottom: `1px solid ${colors.border}`,
@@ -4232,7 +4231,7 @@ export const cockpitStyles = stylex.create({
 		fontSize: typography.sizeSm,
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		textAlign: {
@@ -4327,7 +4326,7 @@ export const cockpitStyles = stylex.create({
 		},
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		borderBottom: `1px solid ${colors.border}`,
@@ -4426,7 +4425,7 @@ export const cockpitStyles = stylex.create({
 		},
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		borderBottom: `1px solid ${colors.border}`,
@@ -4536,7 +4535,7 @@ export const cockpitStyles = stylex.create({
 		},
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		borderBottom: `1px solid ${colors.border}`,
@@ -4625,7 +4624,7 @@ export const cockpitStyles = stylex.create({
 		},
 		padding: {
 			default: `${spacing.xs} ${spacing.md}`,
-			"@media (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
+			"@media (min-width: 640px) and (max-width: 640px)": `${spacing.xs} ${spacing.sm}`,
 			"@media (max-width: 639px)": "8px",
 		},
 		borderBottom: `1px solid ${colors.border}`,
@@ -5270,7 +5269,6 @@ export const cockpitStyles = stylex.create({
 		width: "100%",
 		minWidth: {
 			default: null,
-			"@media (max-width: 520px)": "640px",
 			"@media (max-width: 640px)": "0",
 		},
 		display: {
@@ -5715,7 +5713,6 @@ export const cockpitStyles = stylex.create({
 		width: "100%",
 		minWidth: {
 			default: null,
-			"@media (max-width: 520px)": "640px",
 			"@media (max-width: 640px)": "0",
 		},
 		display: {
@@ -8314,7 +8311,6 @@ export const cockpitStyles = stylex.create({
 		},
 		minWidth: {
 			default: null,
-			"@media (max-width: 520px)": "640px",
 			"@media (max-width: 640px)": "0",
 		},
 		display: {

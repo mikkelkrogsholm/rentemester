@@ -772,7 +772,7 @@ export function AccountingDraftsView() {
 					onReset={() => setStatusFilter("")}
 				>
 					<label
-						{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+						{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.filterBarLabel)}
 					>
 						Status{" "}
 						<Select

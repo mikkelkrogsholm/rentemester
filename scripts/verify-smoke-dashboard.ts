@@ -24,7 +24,7 @@ if (stat.size < 1024) {
 const html = readFileSync(path, "utf8");
 const checks: Array<[string, boolean]> = [
   ["doctype", html.startsWith("<!DOCTYPE html>")],
-  ["html_lang_da", html.includes('<html lang="da">')],
+  ["html_lang_da", /<html\b[^>]*\blang="da"[^>]*>/.test(html)],
   ["body_open", /<body\b[^>]*>/.test(html)],
   ["body_close", html.includes("</body>")],
   ["html_close", html.trimEnd().endsWith("</html>")],

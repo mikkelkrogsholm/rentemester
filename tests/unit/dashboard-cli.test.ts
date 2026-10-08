@@ -44,7 +44,7 @@ describe("dashboard CLI", () => {
 
     const html = readFileSync(outPath, "utf8");
     expect(html.startsWith("<!DOCTYPE html>")).toBe(true);
-    expect(html).toContain('<html lang="da">');
+    expect(html).toMatch(/<html lang="da" class="[^"]+">/);
     expect(html).toContain("Rentemester company");
     expect(html).toContain("CVR DK12345678");
     expect(html).toMatch(/<header\b[^>]*>/);

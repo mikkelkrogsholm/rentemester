@@ -75,7 +75,7 @@ export function renderDashboard(input: DashboardInput, _options: RenderOptions =
   const rendered = sections.join("\n");
 
   return `<!DOCTYPE html>
-<html lang="da">
+<html lang="da" ${documentAttr("root")}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

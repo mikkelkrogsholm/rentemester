@@ -186,6 +186,99 @@ describe("sendInvoiceEmail", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
+  test("serializes competing connections before transport and preserves the receipt on retry", () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-email-concurrent-"));
+    const path = ensureCompanyDirs(root).db;
+    const db = openDb(path);
+    migrate(db);
+    const documentId = seedIssuedInvoice(root, db);
+    const competitor = openDb(path);
+    competitor.run("PRAGMA busy_timeout = 1");
+    const { transport, sent } = fakeTransport();
+    const input = { invoiceDocumentId: documentId, kind: "invoice" as const,
+      to: "kunde@example.test", smtp: SMTP_CONFIG, transport };
+    let competingResult: ReturnType<typeof sendInvoiceEmail> | undefined;
+    try {
+      const result = sendInvoiceEmail(db, root, { ...input, transport: {
+        send(message) {
+          competingResult = sendInvoiceEmail(competitor, root, input);
+          return transport.send(message);
+        },
+      } });
+      expect(result.ok).toBe(true);
+      expect(competingResult?.ok).toBe(false);
+      expect(competingResult?.errors.join(" ")).toContain("already in progress");
+      const retry = sendInvoiceEmail(competitor, root, input);
+      expect(retry.ok).toBe(true);
+      expect(retry.duplicate).toBe(true);
+      expect(retry.messageId).toBe(result.messageId);
+      expect(sent).toHaveLength(1);
+      expect(db.query("SELECT COUNT(*) AS n FROM email_send_log").get()).toEqual({ n: 1 });
+    } finally {
+      competitor.close(); db.close(); rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  test("rejects same-connection reentry and releases its guard after transport failure", () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-email-reentry-"));
+    const db = openDb(ensureCompanyDirs(root).db);
+    migrate(db);
+    const documentId = seedIssuedInvoice(root, db);
+    const { transport, sent } = fakeTransport();
+    const input = { invoiceDocumentId: documentId, kind: "invoice" as const,
+      to: "kunde@example.test", smtp: SMTP_CONFIG, transport };
+    try {
+      const failed = sendInvoiceEmail(db, root, { ...input, transport: {
+        send() {
+          expect(sendInvoiceEmail(db, root, input).ok).toBe(false);
+          return { ok: false, error: "synthetic rejection" };
+        },
+      } });
+      expect(failed.ok).toBe(false);
+      expect(db.query("SELECT COUNT(*) AS n FROM email_send_log").get()).toEqual({ n: 0 });
+      expect(sendInvoiceEmail(db, root, input).ok).toBe(true);
+      expect(sent).toHaveLength(1);
+    } finally {
+      db.close(); rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  test("retains a successful delivery receipt if supplementary audit fails", () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-email-audit-"));
+    const db = openDb(ensureCompanyDirs(root).db);
+    migrate(db);
+    const documentId = seedIssuedInvoice(root, db);
+    const { transport, sent } = fakeTransport();
+    const input = { invoiceDocumentId: documentId, kind: "invoice" as const,
+      to: "kunde@example.test", smtp: SMTP_CONFIG, transport };
+    try {
+      db.exec("CREATE TRIGGER synthetic_send_audit_failure BEFORE INSERT ON audit_log WHEN NEW.event_type='invoice_email_send' BEGIN SELECT RAISE(ABORT,'synthetic audit failure'); END");
+      expect(() => sendInvoiceEmail(db, root, input)).toThrow("synthetic audit failure");
+      expect(db.query("SELECT COUNT(*) AS n FROM email_send_log").get()).toEqual({ n: 1 });
+      db.exec("DROP TRIGGER synthetic_send_audit_failure");
+      const retry = sendInvoiceEmail(db, root, input);
+      expect(retry.ok).toBe(true);
+      expect(retry.duplicate).toBe(true);
+      expect(sent).toHaveLength(1);
+    } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("refuses external delivery inside a rollbackable caller transaction", () => {
+    const root = mkdtempSync(join(tmpdir(), "rentemester-email-outer-"));
+    const db = openDb(ensureCompanyDirs(root).db);
+    migrate(db);
+    const documentId = seedIssuedInvoice(root, db);
+    const { transport, sent } = fakeTransport();
+    try {
+      db.transaction(() => {
+        const result = sendInvoiceEmail(db, root, { invoiceDocumentId: documentId, kind: "invoice", to: "kunde@example.test", smtp: SMTP_CONFIG, transport });
+        expect(result.ok).toBe(false);
+        expect(result.errors.join(" ")).toContain("independent transaction");
+      }).immediate();
+      expect(sent).toHaveLength(0);
+    } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+  });
+
   test("fails clearly when the recipient email is missing", () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-email-no-recipient-"));
     const db = openDb(ensureCompanyDirs(root).db);
