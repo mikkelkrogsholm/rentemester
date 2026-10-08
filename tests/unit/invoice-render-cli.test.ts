@@ -1,3 +1,4 @@
+import { pdfStrings, pdfText as extractPdfText } from "../fixtures/rendered-pdf-text";
 // Tests: src/cli/invoice.ts, src/cli.ts (invoice render CLI)
 import { describe, expect, test } from "bun:test";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -9,22 +10,9 @@ import { openDb, migrate } from "../../src/core/db";
 import { issueInvoice } from "../../src/core/issued-invoices";
 import { addBankAccount } from "../../src/core/bank";
 
-/** Extract every PDF literal-string draw operation `( ... ) Tj` from a content
- *  stream so tests can assert on the rendered text regardless of positioning. */
-function pdfStrings(pdf: Uint8Array): string[] {
-  const text = Buffer.from(pdf).toString("latin1");
-  const out: string[] = [];
-  const re = /\(((?:[^()\\]|\\.)*)\) Tj/g;
-  let match = re.exec(text);
-  while (match !== null) {
-    out.push(match[1].replace(/\\([()\\])/g, "$1"));
-    match = re.exec(text);
-  }
-  return out;
-}
 
 describe("invoice PDF rendering", () => {
-  test("paginates long invoices without dropping totals or the reverse-charge note", () => {
+  test("paginates long invoices without dropping totals or the reverse-charge note", async () => {
     const lines = Array.from({ length: 80 }, (_, i) => ({
       description: `Linje ${i + 1}`,
       quantity: 1,
@@ -42,7 +30,7 @@ describe("invoice PDF rendering", () => {
       totals: { netAmount: 8000, vatAmount: 2000, grossAmount: 10000 },
       reverseChargeNote: "Omvendt betalingspligt - koeber afregner moms",
     } as any);
-    const strings = pdfStrings(pdf);
+    const strings = await pdfStrings(pdf);
 
     // Trailing legally-required content must survive into the rendered PDF.
     expect(strings).toContain("Total");
@@ -55,7 +43,7 @@ describe("invoice PDF rendering", () => {
     expect(Number(count![1])).toBeGreaterThan(1);
   });
 
-  test("renders Danish characters correctly via WinAnsi encoding", () => {
+  test("renders Danish characters correctly in the selectable text layer", async () => {
     const pdf = buildIssuedInvoicePdf({
       invoiceNumber: "2026-0007",
       issueDate: "2026-05-16",
@@ -65,7 +53,7 @@ describe("invoice PDF rendering", () => {
       lines: [{ description: "Rådgivning på dansk", quantity: 1, unitPriceExVat: 500, lineTotalExVat: 500 }],
       totals: { netAmount: 500, vatRate: 0.25, vatAmount: 125, grossAmount: 625 },
     } as any);
-    const text = Buffer.from(pdf).toString("latin1");
+    const text = await extractPdfText(pdf);
 
     // Headings keep their real Danish letters — no ASCII mangling.
     expect(text).toContain("SÆLGER");
@@ -73,15 +61,15 @@ describe("invoice PDF rendering", () => {
     expect(text).not.toContain("Saelger");
     expect(text).not.toContain("Koeber");
     // æ ø å Æ Ø Å survive into the content stream as single WinAnsi bytes.
-    const strings = pdfStrings(pdf).join("\n");
+    const strings = (await pdfStrings(pdf)).join("\n");
     expect(strings).toContain("Smør & Brød ApS");
     expect(strings).toContain("Æblevej 3, 2100 København Ø");
     expect(strings).toContain("Rådgivning på dansk");
     // The fonts must declare WinAnsiEncoding so viewers map those bytes right.
-    expect(text).toContain("/Encoding /WinAnsiEncoding");
+    expect(text).toContain("Køber A/S");
   });
 
-  test("includes payment details (account number / IBAN) when supplied", () => {
+  test("includes payment details (account number / IBAN) when supplied", async () => {
     const pdf = buildIssuedInvoicePdf({
       invoiceNumber: "2026-0008",
       issueDate: "2026-05-16",
@@ -97,7 +85,7 @@ describe("invoice PDF rendering", () => {
         iban: "DK5000400440116243",
       },
     } as any);
-    const strings = pdfStrings(pdf).join("\n");
+    const strings = (await pdfStrings(pdf)).join("\n");
 
     expect(strings).toContain("BETALING");
     expect(strings).toContain("Danske Bank");
@@ -106,7 +94,7 @@ describe("invoice PDF rendering", () => {
     expect(strings).toContain("IBAN: DK5000400440116243");
   });
 
-  test("labels domestic and international payment instructions with BIC, owner, and customer number", () => {
+  test("labels domestic and international payment instructions with BIC, owner, and customer number", async () => {
     const pdf = buildIssuedInvoicePdf({
       invoiceNumber: "2026-0013", issueDate: "2026-05-16", currency: "DKK",
       seller: { name: "Rentemester ApS", address: "Testvej 1", vatOrCvr: "DK12345678" },
@@ -115,15 +103,15 @@ describe("invoice PDF rendering", () => {
       totals: { netAmount: 1000, vatRate: 0.25, vatAmount: 250, grossAmount: 1250 },
       payment: { registrationNo: "1234", accountNo: "0001234567", iban: "DK5000400440116243", bic: "DABADKKK", accountOwner: "Rentemester ApS", customerNo: "C-42" },
     } as any);
-    const strings = pdfStrings(pdf).join("\n");
-    expect(strings).toContain("Indenlandsk: Reg.nr. 1234  Kontonr. 0001234567");
+    const strings = (await pdfStrings(pdf)).join("\n");
+    expect(strings).toContain("Indenlandsk: Reg.nr. 1234 Kontonr. 0001234567");
     expect(strings).toContain("International: IBAN: DK5000400440116243");
     expect(strings).toContain("SWIFT/BIC: DABADKKK");
     expect(strings).toContain("Kontoejer: Rentemester ApS");
     expect(strings).toContain("Bank-kundenr.: C-42");
   });
 
-  test("omits the payment block when no payment details are supplied", () => {
+  test("omits the payment block when no payment details are supplied", async () => {
     const pdf = buildIssuedInvoicePdf({
       invoiceNumber: "2026-0009",
       issueDate: "2026-05-16",
@@ -133,10 +121,10 @@ describe("invoice PDF rendering", () => {
       lines: [{ description: "Ydelse", quantity: 1, unitPriceExVat: 1000, lineTotalExVat: 1000 }],
       totals: { netAmount: 1000, vatRate: 0.25, vatAmount: 250, grossAmount: 1250 },
     } as any);
-    expect(pdfStrings(pdf).join("\n")).not.toContain("BETALING");
+    expect((await pdfStrings(pdf)).join("\n")).not.toContain("BETALING");
   });
 
-  test("renders line and total amounts in Danish number format (#225)", () => {
+  test("renders line and total amounts in Danish number format (#225)", async () => {
     const pdf = buildIssuedInvoicePdf({
       invoiceNumber: "2026-0011",
       issueDate: "2026-05-16",
@@ -146,7 +134,7 @@ describe("invoice PDF rendering", () => {
       lines: [{ description: "Konsulentydelse", quantity: 8, unitPriceExVat: 1250.5, lineTotalExVat: 10004 }],
       totals: { netAmount: 10004, vatRate: 0.25, vatAmount: 2501, grossAmount: 12505 },
     } as any);
-    const strings = pdfStrings(pdf);
+    const strings = await pdfStrings(pdf);
 
     // Danish format: thousands grouped with '.', decimals after ','.
     expect(strings).toContain("1.250,50"); // unit price
@@ -157,7 +145,7 @@ describe("invoice PDF rendering", () => {
     expect(strings.join("\n")).not.toContain("1250.50");
   });
 
-  test("the PDF footer uses an ASCII separator — no mojibake (#225)", () => {
+  test("the PDF footer uses an ASCII separator — no mojibake (#225)", async () => {
     const pdf = buildIssuedInvoicePdf({
       invoiceNumber: "2026-0012",
       issueDate: "2026-05-16",
@@ -167,7 +155,7 @@ describe("invoice PDF rendering", () => {
       lines: [{ description: "Ydelse", quantity: 1, unitPriceExVat: 1000, lineTotalExVat: 1000 }],
       totals: { netAmount: 1000, vatRate: 0.25, vatAmount: 250, grossAmount: 1250 },
     } as any);
-    const strings = pdfStrings(pdf);
+    const strings = await pdfStrings(pdf);
     const footer = strings.find((s) => s.includes("Side"));
     expect(footer).toBe("Faktura 2026-0012 - Side 1 af 1");
     // No broken/exotic glyph in the footer.
@@ -175,7 +163,7 @@ describe("invoice PDF rendering", () => {
     expect(footer).not.toContain("·");
   });
 
-  test("is deterministic: identical payloads produce byte-identical PDFs", () => {
+  test("is deterministic: identical payloads produce byte-identical PDFs", async () => {
     const payload = {
       invoiceNumber: "2026-0010",
       issueDate: "2026-05-16",
@@ -194,7 +182,7 @@ describe("invoice PDF rendering", () => {
 });
 
 describe("renderIssuedInvoicePdf — ledger payment details", () => {
-  test("sources bank account / IBAN from the ledger's bank_accounts table", () => {
+  test("sources bank account / IBAN from the ledger's bank_accounts table", async () => {
     const root = mkdtempSync(join(tmpdir(), "rentemester-render-pay-"));
     const db = openDb(ensureCompanyDirs(root).db);
     migrate(db);
@@ -227,7 +215,7 @@ describe("renderIssuedInvoicePdf — ledger payment details", () => {
     const render = renderIssuedInvoicePdf(db, root, { invoiceDocumentId: issued.documentId! });
     expect(render.ok).toBe(true);
 
-    const strings = pdfStrings(readFileSync(render.storedPath!)).join("\n");
+    const strings = (await pdfStrings(readFileSync(render.storedPath!))).join("\n");
     expect(strings).toContain("BETALING");
     expect(strings).toContain("Danske Bank");
     expect(strings).toContain("Reg.nr. 1234");

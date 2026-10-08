@@ -1,3 +1,4 @@
+import { documentAttr } from "../../design/document-html";
 // "Seneste aktivitet" — the audit-log strip, translated to plain Danish.
 
 import type { AuditLogRow } from "../audit-log";
@@ -115,15 +116,15 @@ export function activityMessageDanish(message: string): string {
 
 export function activityList(rows: AuditLogRow[]): string {
   if (rows.length === 0) {
-    return `<div class="empty-state">Ingen aktivitet endnu</div>`;
+    return `<div ${documentAttr("empty")}>Ingen aktivitet endnu</div>`;
   }
   const items = rows.slice(0, 10).map((row) =>
-    `  <div class="time">${escapeHtml(formatTimestampShort(row.createdAt))}</div>
-  <div class="actor">${escapeHtml(row.actor)}</div>
-  <div class="event">${escapeHtml(activityEventLabel(row.eventType))}</div>
-  <div class="message">${escapeHtml(activityMessageDanish(row.message))}</div>`
+    `  <div ${documentAttr("time")}>${escapeHtml(formatTimestampShort(row.createdAt))}</div>
+  <div ${documentAttr("muted")}>${escapeHtml(row.actor)}</div>
+  <div ${documentAttr("event")}>${escapeHtml(activityEventLabel(row.eventType))}</div>
+  <div ${documentAttr("muted")}>${escapeHtml(activityMessageDanish(row.message))}</div>`
   ).join("\n");
-  return `<div class="activity-log">
+  return `<div ${documentAttr("activity")}>
 ${items}
 </div>`;
 }

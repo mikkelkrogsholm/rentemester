@@ -1,3 +1,4 @@
+import { documentAttr } from "../../design/document-html";
 // Budget & liquidity card — budget-vs-actual for the current period plus the
 // liquidity forecast for the coming months.
 
@@ -25,22 +26,22 @@ export function budgetLiquiditySection(
     // − budget). Their sum is therefore the correct favourability figure.
     const favourability = budget!.lines.reduce((sum, line) => sum + line.variance, 0);
     const pill = favourability >= 0
-      ? `<span class="pill success">budget overholdt</span>`
-      : `<span class="pill warning">budgetafvigelse</span>`;
-    parts.push(`<div class="status-row">
+      ? `<span ${documentAttr("pillSuccess")}>budget overholdt</span>`
+      : `<span ${documentAttr("pillWarning")}>budgetafvigelse</span>`;
+    parts.push(`<div ${documentAttr("statusRow")}>
     <div>
-      <div class="label">Budget vs. faktisk · ${escapeHtml(budget!.periodStart)}</div>
-      <div class="detail">budget <span class="mono">${escapeHtml(formatDkk(budget!.totalBudget))}</span> · faktisk <span class="mono">${escapeHtml(formatDkk(budget!.totalActual))}</span></div>
+      <div ${documentAttr("label")}>Budget vs. faktisk · ${escapeHtml(budget!.periodStart)}</div>
+      <div ${documentAttr("detail")}>budget <span ${documentAttr("mono")}>${escapeHtml(formatDkk(budget!.totalBudget))}</span> · faktisk <span ${documentAttr("mono")}>${escapeHtml(formatDkk(budget!.totalActual))}</span></div>
     </div>
-    <div>${pill} <span class="muted">${escapeHtml(formatDkk(favourability))}</span></div>
+    <div>${pill} <span ${documentAttr("muted")}>${escapeHtml(formatDkk(favourability))}</span></div>
   </div>`);
   } else {
-    parts.push(`<div class="status-row">
+    parts.push(`<div ${documentAttr("statusRow")}>
     <div>
-      <div class="label">Budget vs. faktisk</div>
-      <div class="detail">Intet budget sat for perioden</div>
+      <div ${documentAttr("label")}>Budget vs. faktisk</div>
+      <div ${documentAttr("detail")}>Intet budget sat for perioden</div>
     </div>
-    <div><span class="pill neutral">—</span></div>
+    <div><span ${documentAttr("pillNeutral")}>—</span></div>
   </div>`);
   }
 
@@ -54,22 +55,22 @@ export function budgetLiquiditySection(
     // A projected balance dipping below zero is the one thing the owner must
     // see — surface it as a danger pill.
     const pill = lowest < 0
-      ? `<span class="pill danger">negativ likviditet</span>`
-      : `<span class="pill success">positiv</span>`;
-    parts.push(`<div class="status-row">
+      ? `<span ${documentAttr("pillDanger")}>negativ likviditet</span>`
+      : `<span ${documentAttr("pillSuccess")}>positiv</span>`;
+    parts.push(`<div ${documentAttr("statusRow")}>
     <div>
-      <div class="label">Likviditetsprognose · ${liquidity!.periods.length} måneder</div>
-      <div class="detail">projiceret saldo ${escapeHtml(final.period)} <span class="mono">${escapeHtml(formatDkk(final.closingBalance))}</span>${lowest < 0 ? ` · laveste <span class="mono">${escapeHtml(formatDkk(lowest))}</span>` : ""}</div>
+      <div ${documentAttr("label")}>Likviditetsprognose · ${liquidity!.periods.length} måneder</div>
+      <div ${documentAttr("detail")}>projiceret saldo ${escapeHtml(final.period)} <span ${documentAttr("mono")}>${escapeHtml(formatDkk(final.closingBalance))}</span>${lowest < 0 ? ` · laveste <span ${documentAttr("mono")}>${escapeHtml(formatDkk(lowest))}</span>` : ""}</div>
     </div>
     <div>${pill}</div>
   </div>`);
   } else {
-    parts.push(`<div class="status-row">
+    parts.push(`<div ${documentAttr("statusRow")}>
     <div>
-      <div class="label">Likviditetsprognose</div>
-      <div class="detail">Ingen prognosedata</div>
+      <div ${documentAttr("label")}>Likviditetsprognose</div>
+      <div ${documentAttr("detail")}>Ingen prognosedata</div>
     </div>
-    <div><span class="pill neutral">—</span></div>
+    <div><span ${documentAttr("pillNeutral")}>—</span></div>
   </div>`);
   }
 

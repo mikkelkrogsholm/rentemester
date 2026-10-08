@@ -1,6 +1,6 @@
 // Tests: src/core/email.ts (#180 email delivery)
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ensureCompanyDirs } from "../../src/core/paths";
@@ -286,5 +286,45 @@ describe("sendInvoiceEmail", () => {
 
     db.close();
     rmSync(root, { recursive: true, force: true });
+  });
+
+  test("attaches the issued immutable bytes and rejects evidence corruption before SMTP", () => {
+    const root = mkdtempSync(join(tmpdir(), "stylex-email-proof-"));
+    const db = openDb(ensureCompanyDirs(root).db);
+    try {
+      migrate(db);
+      const documentId = seedIssuedInvoice(root, db);
+      const evidence = db.query("SELECT stored_path FROM documents WHERE document_type = 'issued_invoice_pdf'").get() as { stored_path: string };
+      const bytes = readFileSync(evidence.stored_path);
+      const { transport, sent } = fakeTransport();
+      const first = sendInvoiceEmail(db, root, { invoiceDocumentId: documentId, kind: "invoice", to: "original@example.test", smtp: SMTP_CONFIG, transport });
+      expect(first.ok).toBe(true);
+      const attachment = sent[0]!.rawMessage.split("Content-Type: application/pdf")[1]!.split("\r\n\r\n")[1]!.split("\r\n--")[0]!.replace(/\s/g, "");
+      expect(Buffer.from(attachment, "base64").equals(bytes)).toBe(true);
+      writeFileSync(evidence.stored_path, "%PDF-tampered");
+      const corrupt = sendInvoiceEmail(db, root, { invoiceDocumentId: documentId, kind: "invoice", to: "another@example.test", smtp: SMTP_CONFIG, transport });
+      expect(corrupt.ok).toBe(false);
+      expect(corrupt.errors.join(" ")).toContain("integrity");
+      expect(sent).toHaveLength(1);
+    } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("a historical send log preserves its message id across renderer migration", () => {
+    const root = mkdtempSync(join(tmpdir(), "stylex-email-history-"));
+    const db = openDb(ensureCompanyDirs(root).db);
+    try {
+      migrate(db);
+      const documentId = seedIssuedInvoice(root, db);
+      db.run(`INSERT INTO email_send_log (invoice_document_id,invoice_no,kind,recipient,sender,subject,message_id,body_sha256,smtp_host)
+        VALUES (?, '2026-0001','invoice','old@example.test',?,'Historisk faktura','<legacy-renderer@example.test>',?,'smtp.example.test')`,
+        [documentId, SMTP_CONFIG.fromAddress, "0".repeat(64)]);
+      const { transport, sent } = fakeTransport();
+      const result = sendInvoiceEmail(db, root, { invoiceDocumentId: documentId, kind: "invoice", to: "old@example.test", smtp: SMTP_CONFIG, transport });
+      expect(result.ok).toBe(true);
+      expect(result.duplicate).toBe(true);
+      expect(result.messageId).toBe("<legacy-renderer@example.test>");
+      expect(sent).toHaveLength(0);
+      expect(db.query("SELECT COUNT(*) AS n FROM email_send_log").get()).toEqual({ n: 1 });
+    } finally { db.close(); rmSync(root, { recursive: true, force: true }); }
   });
 });

@@ -19,7 +19,7 @@ import { runSql } from "./sqlite";
 import { createHash } from "node:crypto";
 import type { Database } from "bun:sqlite";
 import type { InvoicePayload } from "./invoice";
-import { buildIssuedInvoicePdf } from "./invoice-pdf";
+import { snapshotRegisteredDocumentEvidence } from "./document-storage";
 import { insertAuditLog } from "./actor";
 
 const RULE_ID = "DK-EMAIL-DELIVERY-001";
@@ -250,7 +250,7 @@ function resolveRecipientEmail(
  */
 export function sendInvoiceEmail(
   db: Database,
-  _companyRoot: string,
+  companyRoot: string,
   input: SendInvoiceEmailInput,
 ): SendInvoiceEmailResult {
   if (input.kind !== "invoice" && input.kind !== "reminder") {
@@ -321,11 +321,37 @@ export function sendInvoiceEmail(
     };
   }
 
-  const pdfBytes = buildIssuedInvoicePdf({
-    ...payload,
-    invoiceNumber,
-    status: payload.status ?? invoice.status ?? "issued",
-  });
+  // A renderer migration must not retransmit an already recorded delivery.
+  // The immutable invoice and recipient/sender/kind identify the same send,
+  // including logs whose attachment was produced by the historical renderer.
+  const recorded = db.query(`SELECT recipient, subject, message_id FROM email_send_log
+    WHERE invoice_document_id = ? AND kind = ? AND recipient = ? AND sender = ?
+    ORDER BY id ASC LIMIT 1`).get(input.invoiceDocumentId, input.kind, recipient, input.smtp.fromAddress.trim()) as
+    { recipient: string; subject: string; message_id: string } | null;
+  if (recorded) return {
+    ok: true, invoiceNumber, kind: input.kind, recipient: recorded.recipient,
+    subject: recorded.subject, messageId: recorded.message_id, duplicate: true,
+    appliedRules: [RULE_ID], errors: [],
+  };
+
+  // An attachment must be the legal evidence issued at the time of sale.
+  // Never rebuild it with a newer renderer or today's payment master data.
+  const evidence = db.query(`SELECT sha256_hash, stored_path, payload_json FROM documents
+    WHERE document_type = 'issued_invoice_pdf' AND invoice_no = ? ORDER BY id ASC`)
+    .all(invoiceNumber) as Array<{ sha256_hash: string; stored_path: string | null; payload_json: string | null }>;
+  if (evidence.length !== 1 || evidence[0]!.payload_json !== invoice.payload_json) {
+    return { ok: false, appliedRules: [RULE_ID], errors: ["issued invoice PDF evidence is missing, ambiguous or not bound to the invoice snapshot"] };
+  }
+  let pdfBytes: Buffer;
+  try {
+    pdfBytes = snapshotRegisteredDocumentEvidence(companyRoot, {
+      storedPath: evidence[0]!.stored_path ?? "", expectedSha256: evidence[0]!.sha256_hash,
+      documentType: "issued_invoice_pdf",
+    }).bytes;
+    if (!pdfBytes.subarray(0, 5).equals(Buffer.from("%PDF-"))) throw new Error("invalid evidence");
+  } catch {
+    return { ok: false, appliedRules: [RULE_ID], errors: ["issued invoice PDF evidence fails integrity verification; refusing to send"] };
+  }
   const message = buildInvoiceEmailMessage({
     smtp: input.smtp,
     to: recipient,

@@ -1,3 +1,4 @@
+import { documentAttr } from "../../design/document-html";
 // Page header — company name, dashboard date, backup-age label, CVR.
 
 import {
@@ -15,12 +16,12 @@ export function header(input: DashboardInput): string {
     ? "Backup: ingen registreret"
     : `Backup: ${daysAgoLabel(backupDays)}`;
   const cvrLine = company.cvr
-    ? `<div class="cvr">CVR ${escapeHtml(company.cvr)}</div>`
+    ? `<div ${documentAttr("cvr")}>CVR ${escapeHtml(company.cvr)}</div>`
     : "";
-  return `<header class="header">
+  return `<header ${documentAttr("header")}>
   <div>
-    <h1>${escapeHtml(company.name)}</h1>
-    <div class="meta">Dashboard · ${escapeHtml(dateLong)} · ${escapeHtml(backupLabel)}</div>
+    <h1 ${documentAttr("h1")}>${escapeHtml(company.name)}</h1>
+    <div ${documentAttr("meta")}>Dashboard · ${escapeHtml(dateLong)} · ${escapeHtml(backupLabel)}</div>
   </div>
   ${cvrLine}
 </header>`;

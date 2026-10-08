@@ -1,16 +1,17 @@
+import { documentAttr } from "../../design/document-html";
 // Open-invoices (debitor) table + status pill.
 
 import type { InvoiceListResult, InvoiceListRow } from "../invoice-list";
 import { escapeHtml, formatDateShort, formatDkk } from "./_shared";
 
 function invoiceStatusPill(row: InvoiceListRow): string {
-  if (row.isOverdue) return `<span class="pill danger">overdue${row.overdueDays > 0 ? ` (${row.overdueDays} d)` : ""}</span>`;
-  return `<span class="pill success">open</span>`;
+  if (row.isOverdue) return `<span ${documentAttr("pillDanger")}>overdue${row.overdueDays > 0 ? ` (${row.overdueDays} d)` : ""}</span>`;
+  return `<span ${documentAttr("pillSuccess")}>open</span>`;
 }
 
 export function invoiceTable(result: InvoiceListResult, maxRows = 10): string {
   if (result.rows.length === 0) {
-    return `<div class="empty-state">Ingen åbne fakturaer</div>`;
+    return `<div ${documentAttr("empty")}>Ingen åbne fakturaer</div>`;
   }
   const sorted = [...result.rows].sort((a, b) => {
     const ad = a.effectiveDueDate ?? "9999-99-99";
@@ -23,25 +24,25 @@ export function invoiceTable(result: InvoiceListResult, maxRows = 10): string {
   const overflow = sorted.length - visible.length;
   const rows = visible.map((row) => {
     const customer = row.customerName ?? row.customerCvr ?? "—";
-    return `<tr>
-  <td class="mono">${escapeHtml(row.invoiceNumber)}</td>
-  <td>${escapeHtml(customer)}</td>
-  <td class="amount">${escapeHtml(formatDkk(row.openBalance))}</td>
-  <td class="amount mono">${escapeHtml(formatDateShort(row.effectiveDueDate))}</td>
-  <td class="center">${invoiceStatusPill(row)}</td>
+    return `<tr ${documentAttr("tr")}>
+  <td ${documentAttr("cellMono")}>${escapeHtml(row.invoiceNumber)}</td>
+  <td ${documentAttr("cell")}>${escapeHtml(customer)}</td>
+  <td ${documentAttr("cellAmount")}>${escapeHtml(formatDkk(row.openBalance))}</td>
+  <td ${documentAttr("cellAmount")}>${escapeHtml(formatDateShort(row.effectiveDueDate))}</td>
+  <td ${documentAttr("cellCenter")}>${invoiceStatusPill(row)}</td>
 </tr>`;
   }).join("\n");
   const overflowRow = overflow > 0
-    ? `<div class="muted" style="margin-top: var(--space-xs); font-size: 13px;">… og ${overflow} yderligere</div>`
+    ? `<div ${documentAttr("overflow")}>… og ${overflow} yderligere</div>`
     : "";
-  return `<table class="dash-table">
+  return `<table ${documentAttr("table")}>
   <thead>
-    <tr>
-      <th>Fakturanr.</th>
-      <th>Kunde</th>
-      <th class="amount">Beløb</th>
-      <th class="amount">Forfald</th>
-      <th class="center">Status</th>
+    <tr ${documentAttr("tr")}>
+      <th ${documentAttr("th")}>Fakturanr.</th>
+      <th ${documentAttr("th")}>Kunde</th>
+      <th ${documentAttr("thAmount")}>Beløb</th>
+      <th ${documentAttr("thAmount")}>Forfald</th>
+      <th ${documentAttr("thCenter")}>Status</th>
     </tr>
   </thead>
   <tbody>

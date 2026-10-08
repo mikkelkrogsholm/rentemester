@@ -1,3 +1,4 @@
+import { documentAttr, documentCss } from "../design/document-html";
 // iXBRL generation (#177): deterministic inline-XBRL output for a Danish
 // regnskabsklasse-B (micro/small) arsrapport.
 //
@@ -382,9 +383,10 @@ export function generateIxbrl(report: AnnualReport): GenerateIxbrlResult {
     "  <head>",
     "    <title>Arsrapport (regnskabsklasse B) — forberedt af Rentemester</title>",
     `    <meta name="rentemester-ixbrl-taxonomy" content="${escapeXml(taxonomy.name)} v${escapeXml(taxonomy.version)}"/>`,
+    `    <style type="text/css">${escapeXml(documentCss)}</style>`,
     "  </head>",
     "  <body>",
-    '    <div style="display:none">',
+    `    <div ${documentAttr("hidden")}>`,
     '      <ix:header>',
     '        <ix:references/>',
     '        <ix:resources>',

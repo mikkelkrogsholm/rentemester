@@ -47,8 +47,8 @@ describe("dashboard CLI", () => {
     expect(html).toContain('<html lang="da">');
     expect(html).toContain("Rentemester company");
     expect(html).toContain("CVR DK12345678");
-    expect(html).toContain('<header class="header">');
-    expect(html).toContain('<section class="metrics">');
+    expect(html).toMatch(/<header\b[^>]*>/);
+    expect(html).toMatch(/<section\b[^>]*>/);
     expect(html).toContain("Næste deadline");
     expect(html).toContain("Åbne fakturaer");
     expect(html).toContain("Seneste aktivitet");
@@ -172,9 +172,9 @@ describe("dashboard CLI", () => {
     expect(html).toContain("5.400,00 kr.");
     expect(html).not.toContain("Q2 2026");
     // The "Næste deadline" card carries the real payable, not 0,00.
-    const cardMatch = /<div class="deadline-card">[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/.exec(html);
+    const cardMatch = /<h2[^>]*>Næste deadline<\/h2>[\s\S]*?<\/section>/.exec(html);
     expect(cardMatch).not.toBeNull();
-    expect(cardMatch![0]).toMatch(/amount-lg">5\.400,00 kr\.</);
+    expect(cardMatch![0]).toContain("5.400,00 kr.");
 
     rmSync(root, { recursive: true, force: true });
   });
