@@ -1,13 +1,11 @@
 {
-  "graphify_version": "0.9.74",
-  "generated_at_utc": "2026-10-03T14:14:06.816655+00:00",
-  "base_commit": "270e94e076ef8bca303c64c2ee1c88d1b5cdb2c8",
-  "built_from_uncommitted_candidate": true,
+  "graphify_version": "0.9.75",
+  "generated_at_utc": "2026-10-08T07:37:35.790921+00:00",
+  "base_commit": "693c5db003a3d0f9e7fe340edb4d115f80f5c89e",
   "source_sha256": {
-    ".claude/settings.json": "9dcccd8371bf0ef1dafb1688efa0bdbf8a43d546eee2470457cccaddd9cb1708",
+    ".claude/settings.json": "cef94ea03778f39eca5b0505523a52bbae709f568362c96091aee22b4980fa62",
     ".codex/agents/integration-review.toml": "87eccf02398ad8465eaf1e8f005adf9dcfb4bbb9a183b769bfa093049ad6cf55",
     ".codex/agents/virksomhedsejer-review.toml": "7d5432da6196ff6d182091d40c54d441231cf88d2cec3e6d677e75f8ec13f10a",
-    ".codex/hooks.json": "7a6e0aea4270ebc4d50620d55e0f34129be10de286670c6db0f80f69d4d97dba",
     ".dockerignore": "6980bb24ac213d5c112eefbef9610fd77a8fba73587a05206722012b35aa0b96",
     ".env.example": "b893e64f36abb16d21fdca7cd6892c61f58fa764ba6e517c03273664ec18ba74",
     ".github/workflows/release-candidate.yml": "ae23f50657b3ffcd8c80cf6745a63af282ee9f8e470d5f2edcb35212c4e85103",
@@ -17,7 +15,7 @@
     ".github/workflows/www.yml": "b3144f39049465c1c6aff1b3bf9a4e245eb1caae419a4c8a0633b02e65bd0384",
     ".gitignore": "1c8797e380191d2e1ed69c26a1c73480a6f752e0a0c6a9f879079436d364ab82",
     ".graphifyignore": "d2e6988a377ddc6c1d285c32f476edac6107a0ecacab50953bf764b3e8c8a12b",
-    "AGENTS.md": "6dcd161ddbd907e26c167d6db196dfc46683c353b1589956b744ba1af62aa02a",
+    "AGENTS.md": "bb467b32f4bcbb075bf3033edc7cb3a72be0b749701a3d4732991351eb199843",
     "AUDIT_REPORT_2026-06-11.md": "7d783c3426e5c86d63d1da88c2ba1282e27f093b02a2b4b9852fccaf555ba38c",
     "CHANGELOG.md": "99b6d1b7871ff9ed7cd30e18410414150e734504ef37822b98ab0481a91eac94",
     "CLAUDE.md": "cc04244d2adf637fd302bedaf2459b577f93ddad310c67e57b0a8b962b5c61d4",
@@ -334,7 +332,7 @@
     "bin/rentemester": "4c118e70bdd802aec96f29b142db31658473d06fdd7437e62425e1c8b9e4af45",
     "bin/rentemester-mcp": "3e1a47c365d418e92c6d9e368c76ad35168fcac9084a5a3da1cfd944f1bbc8f2",
     "biome.json": "a40f1af987259000cf6f41f86e6888c7dd1847c9a27866b83713664f2cf7f159",
-    "bun.lock": "e7b5f45ce59469135758045fc20c497426ee38fa36969328171ec2a69b952fe2",
+    "bun.lock": "b126559f27a564a67594a2346abbf5e7b159343369ef12cb58ec59ef2cd7b4bf",
     "bunfig.toml": "6cbf8df1ad49945159e3575239f0a6b4430749286473fa7f74cdd09a6e20b5b8",
     "docker-compose.example.yml": "fadf5091bd07f58fde7992959cae3a18973b41df0f8b62839360d77b8646083e",
     "docs/ROADMAP-FROM-REVIEWS.md": "3c6f859b6a91b0086a515ec24b4b2cc71d9d488b623a568bea3b6bf3be96fd74",
@@ -363,7 +361,7 @@
     "docs/document-scanning.md": "c4c5026edee088f874bdf397f3b0a4d0b98e08ea3c2b508586dc053815aaf276",
     "docs/efaktura-digisense.md": "daf7f5b69ef36e5e33680cf5588b1bf857051160f5ef4c96e4ed06563949cece",
     "docs/external-accounting-evidence.md": "9faf4172b9d334936bbe26a0fb8ef00702cfdf5e587b102670e4810ce35e3d08",
-    "docs/graphify.md": "b45f8f4b07672825ed2310ded4c00cac137abea5cabf148bf2930ef2421f7026",
+    "docs/graphify.md": "4718b5c9284c32eb97828e54dab078b85ac559f5babb9657bff061ad3a626b3a",
     "docs/group-structure.md": "02f09f79357971e3f625f73425c6cd6e711706573e697506f281b6c35e968504",
     "docs/incomplete-purchase-evidence.md": "5858c015967d0eb7795cd41260de4b4465648ba4052aa90acd2855f3b2631ba6",
     "docs/legal-source-workflow.md": "0673d411a1b189986e043e149c2ecf3ca94603ba7fb008f0c2f46b71a0d444c9",
@@ -455,7 +453,7 @@
     "examples/representation-purchase.json": "cc07b2167b0b8fddf9c45d0c4ed772e2fff1921f4979c563637337c0232e35ba",
     "examples/vendor-invoice.metadata.json": "f27bfc8b835301320cdaf841a8262b42b6154427d65f227807f05768562b08f8",
     "examples/vendor-invoice.txt": "632033c5a98a5eda31a6ad948d88fb5e2bd6737a4576a3e0bdd941369d71594a",
-    "package.json": "39bcd5540c5a63e0b4fa2fa3dfd0d985f2dfc10ca493e8b45581063b0c77f139",
+    "package.json": "c3b89220706b1059cb3a690a41c0c7b731eada1d4ef5400c378db61df4fc5c0d",
     "rentemester.md": "44c0f8fac2fef9f0b5fb82d6fa810b4ef2831e856bf30e1c4f126e0ff90f9d01",
     "rules/dk/annual-report.yaml": "627cbd14566c25c6af721cbf1d9155d323b57190ed32100c3c07bc1011897bdd",
     "rules/dk/bank.yaml": "e6d0a7698f37eeddcbdb8f97a9e298724761397b89e262752627a57943660d32",
@@ -1704,20 +1702,22 @@
     "www/src/site-map.ts": "b6623b564800f578b3a0d05189fe174db055ee3fd77fb3a4fc780f868baf1acb",
     "www/src/styles/global.css": "3bc2b3809e7967a1e318af1f08fefccd80ddff2a5b1843c639e865b88d5f40a7",
     "www/tailwind.config.mjs": "38aa2f1d98fbc6f79fb90e0421a63a0cc8c030a208b34865aad8cb38393de251",
-    "www/tsconfig.json": "efa75aad0e2700a840ea4b4d3cd7e2825d098e76590f6ea01238e8a6f0913fde"
+    "www/tsconfig.json": "efa75aad0e2700a840ea4b4d3cd7e2825d098e76590f6ea01238e8a6f0913fde",
+    ".gitattributes": "d1580533de3f8a648e168aa83833886a092e0e07cee9da22df8aea2c31a4e428"
   },
-  "graph_sha256": "4b804a865ecbac21ccb2e804cb06984bc61bdeffadcfd04993774ad2700cf973",
-  "nodes": 10721,
-  "edges": 37832,
-  "communities": 432,
+  "graph_sha256": "08e38667481be8fb5dd18515516bc5ccd9dc49ede7d3faace48ca617993e5e81",
+  "nodes": 10731,
+  "edges": 37837,
+  "communities": 445,
   "structural": {
     "command": "graphify update .",
     "status": "updated",
-    "log_sha256": "115bbac8e041e98736ebe6c49f4dac388968081ae2f43e9eaacc51ff3bd5b5eb",
-    "failed_sources": []
+    "log_sha256": "7bf86d8b37f745606d0b2c1bbc7b7d73fb978c9c5c00553275956c53e40ced8b",
+    "failed_sources": [],
+    "warning": "218 files yielded no modeled symbols; this is not complete symbol coverage."
   },
   "semantic": {
-    "status": "retained_with_pending_document_changes",
+    "status": "scoped_sources_refreshed_with_previous_pending_sources",
     "source_sha256": {
       ".github/workflows/release-candidate.yml": "ae23f50657b3ffcd8c80cf6745a63af282ee9f8e470d5f2edcb35212c4e85103",
       ".github/workflows/release-promote.yml": "8eb70665fdb8b05abd61d7f0ef4e6c6d7bb4d1d2b10fdada7abc127ef8e70797",
@@ -1898,6 +1898,10 @@
         "rules_dk_bookkeeping_yaml_document": "rules/dk/bookkeeping.yaml",
         "rules_dk_vat_yaml_document": "rules/dk/vat.yaml"
       }
+    },
+    "refreshed_sources": {
+      "AGENTS.md": "bb467b32f4bcbb075bf3033edc7cb3a72be0b749701a3d4732991351eb199843",
+      "docs/graphify.md": "4718b5c9284c32eb97828e54dab078b85ac559f5babb9657bff061ad3a626b3a"
     }
   },
   "community_labels": "Retained where membership is stable; otherwise Graphify hub-derived navigation labels",
@@ -1905,16 +1909,60 @@
     "persisted_endpoints_valid": true
   },
   "limitations": [
-    "AST update only; pending semantic source changes are listed explicitly.",
-    "Semantic source hashes are historical extraction fingerprints, not a new semantic verification.",
-    "Previous refactor-verification.json records historical acceptance and does not cover subsequent repairs.",
-    "Raw extraction diagnostics were not regenerated by this incremental CLI update; persisted graph diagnostics are current.",
-    "Native semantic token usage remains unavailable."
+    "Only AGENTS.md and docs/graphify.md were semantically refreshed; previously pending sources remain pending.",
+    "Native semantic token usage is unavailable.",
+    "Historical refactor/review acceptance records do not verify later changes."
   ],
-  "candidate_preparation": {
+  "built_from_uncommitted_changes": true,
+  "previous_candidate_preparation": {
     "parent_commit": "06231790ee9336d07829f50d9518a6a674715b02",
     "version": "0.2.0",
     "only_non_graph_source_change": "CHANGELOG.md",
     "code_ast_unchanged": true
+  },
+  "hooks_setup": {
+    "verified_at_utc": "2026-10-08T07:37:35.790921+00:00",
+    "graphify_version": "0.9.75",
+    "refresh_scope": "ast_and_scoped_semantic",
+    "git_hooks": "installed_in_shared_git_directory_and_verified_in_synthetic_primary_repository",
+    "linked_worktrees": "native_hooks_skip; explicit_agent_update_required",
+    "claude_guards": "search_nudge_and_once_per_session_strict_read_verified",
+    "codex": "AGENTS.md_and_skill; obsolete_noop_hook_removed"
+  },
+  "dependency_patch": {
+    "verified_at_utc": "2026-10-08T07:51:34.049608+00:00",
+    "source_base_commit": "9be7e9cdf23891c6854b44a337147fb621bfb78d",
+    "changed_inputs_sha256": {
+      "bun.lock": "b126559f27a564a67594a2346abbf5e7b159343369ef12cb58ec59ef2cd7b4bf",
+      "package.json": "c3b89220706b1059cb3a690a41c0c7b731eada1d4ef5400c378db61df4fc5c0d"
+    },
+    "sdk": {
+      "minimum": "1.31.0",
+      "resolved": "1.32.1",
+      "advisory": "https://github.com/advisories/GHSA-6qxp-vccf-f47h"
+    },
+    "proxy_addr": {
+      "resolved": "2.0.8",
+      "advisory": "https://github.com/advisories/GHSA-jqcg-44mw-7w3h"
+    },
+    "verification": {
+      "command": "bun run verify:local",
+      "exit_code": 0,
+      "log_sha256": "aa47895363ebb3983d8ef1ba6c6529ce793cd6e4b7bfa7e3cbbb2ea9078cffec",
+      "backend_tests": 2954,
+      "cockpit_tests": 643,
+      "browser_tests": 179,
+      "dependency_audit_advisories": 0,
+      "container_integration": "passed",
+      "container_reproducibility": "passed"
+    },
+    "graph_update": {
+      "command": "graphify update .",
+      "exit_code": 0,
+      "topology_changed": false,
+      "log_sha256": "d3ef2ddb368470ed92e5b4a1fc3896718e40182e867ff609fe1270b44e79c17e"
+    },
+    "oauth_client_migration_required": false,
+    "oauth_client_usage": "No SDK OAuth client credential providers/storage; production uses server over stdio."
   }
 }
