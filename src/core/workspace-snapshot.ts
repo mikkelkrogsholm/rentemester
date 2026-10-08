@@ -32,6 +32,7 @@ import { createTar, dirToTarEntries, extractTar, readTar } from "./tar";
 import { getReleaseProvenance, isReleaseProvenance, type ReleaseProvenance } from "./release-provenance";
 import { promoteTempFileExclusive, writeFileAtomic, writeTempFileFor } from "./atomic-file";
 import { removePathWithRetry, renamePathWithRetry } from "./fs-cleanup";
+import { exportTaskSnapshot, parseTaskSnapshot, restoreTaskSnapshot } from "./task-snapshot";
 
 const SNAPSHOT_RULE_ID = "RENTEMESTER-WORKSPACE-SNAPSHOT-001";
 const SAFE_PORTABLE_CONFIG = new Set(["backup-lock.json", "backup-manifest.pub", "policy.yaml"]);
@@ -63,6 +64,8 @@ export type WorkspaceSnapshotManifestV1 = {
   /** Append-only, workspace-only intercompany evidence lifecycle; no credentials. */
   intercompanyDispositions?: ManifestFile;
   workspaceInbox?: ManifestFile;
+  /** Task history, planning and delivery evidence; runtime and credentials are excluded. */
+  tasks?: ManifestFile;
   companies: Array<{
     slug: string;
     name: string;
@@ -155,6 +158,18 @@ export function createWorkspaceSnapshot(
     let workspaceRegistry: ManifestFile | undefined;
     let intercompanyDispositions: ManifestFile | undefined;
     let workspaceInbox: ManifestFile | undefined;
+    let tasks: ManifestFile | undefined;
+    if (existsSync(controlDbPath)) {
+      const controlDb = openWorkspaceControlDb(workspaceRoot);
+      try {
+        const snapshot = exportTaskSnapshot(controlDb, new Set(companies.map((company) => company.slug)));
+        if (snapshot) {
+          const path = join(staging, "tasks.json");
+          writeFileAtomic(path, `${JSON.stringify(snapshot)}\n`);
+          tasks = fileEvidence(staging, path);
+        }
+      } finally { controlDb.close(); }
+    }
     if (existsSync(controlDbPath)) {
       const controlDb = openWorkspaceControlDb(workspaceRoot);
       try {
@@ -263,6 +278,7 @@ export function createWorkspaceSnapshot(
       ...(workspaceRegistry ? { workspaceRegistry } : {}),
       ...(intercompanyDispositions ? { intercompanyDispositions } : {}),
       ...(workspaceInbox ? { workspaceInbox } : {}),
+      ...(tasks ? { tasks } : {}),
       companies: companyEntries.sort((a, b) => a.slug.localeCompare(b.slug)),
     };
     writeFileAtomic(join(staging, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
@@ -307,6 +323,7 @@ function parseManifest(raw: string): WorkspaceSnapshotManifestV1 | null {
       (value.workspaceRegistry !== undefined && !isManifestFile(value.workspaceRegistry)) ||
       (value.intercompanyDispositions !== undefined && !isManifestFile(value.intercompanyDispositions)) ||
       (value.workspaceInbox !== undefined && !isManifestFile(value.workspaceInbox)) ||
+      (value.tasks !== undefined && (!isManifestFile(value.tasks) || value.tasks.path !== "tasks.json")) ||
       !Array.isArray(value.companies) || value.companies.length === 0) return null;
     const slugs = new Set<string>();
     for (const company of value.companies) {
@@ -374,10 +391,10 @@ export function restoreWorkspaceSnapshot(input: {
     const manifestPath = join(extracted, "manifest.json");
     const manifest = existsSync(manifestPath) ? parseManifest(readFileSync(manifestPath, "utf8")) : null;
     if (!manifest) throw new Error("workspace snapshot manifest is invalid");
-    const expected = ["manifest.json", manifest.workspaceManifest.path, manifest.accessPlan.path, ...(manifest.companyKnowledge ? [manifest.companyKnowledge.path] : []), ...(manifest.ownershipGraph ? [manifest.ownershipGraph.path] : []), ...(manifest.workspaceRegistry ? [manifest.workspaceRegistry.path] : []), ...(manifest.intercompanyDispositions ? [manifest.intercompanyDispositions.path] : []), ...(manifest.workspaceInbox ? [manifest.workspaceInbox.path] : []),
+    const expected = ["manifest.json", manifest.workspaceManifest.path, manifest.accessPlan.path, ...(manifest.companyKnowledge ? [manifest.companyKnowledge.path] : []), ...(manifest.ownershipGraph ? [manifest.ownershipGraph.path] : []), ...(manifest.workspaceRegistry ? [manifest.workspaceRegistry.path] : []), ...(manifest.intercompanyDispositions ? [manifest.intercompanyDispositions.path] : []), ...(manifest.workspaceInbox ? [manifest.workspaceInbox.path] : []), ...(manifest.tasks ? [manifest.tasks.path] : []),
       ...manifest.companies.map((company) => company.backup.path)].sort();
     if (JSON.stringify(written) !== JSON.stringify(expected)) throw new Error("workspace snapshot contains unlisted files");
-    for (const file of [manifest.workspaceManifest, manifest.accessPlan, ...(manifest.companyKnowledge ? [manifest.companyKnowledge] : []), ...(manifest.ownershipGraph ? [manifest.ownershipGraph] : []), ...(manifest.workspaceRegistry ? [manifest.workspaceRegistry] : []), ...(manifest.intercompanyDispositions ? [manifest.intercompanyDispositions] : []), ...(manifest.workspaceInbox ? [manifest.workspaceInbox] : []), ...manifest.companies.map((company) => company.backup)]) {
+    for (const file of [manifest.workspaceManifest, manifest.accessPlan, ...(manifest.companyKnowledge ? [manifest.companyKnowledge] : []), ...(manifest.ownershipGraph ? [manifest.ownershipGraph] : []), ...(manifest.workspaceRegistry ? [manifest.workspaceRegistry] : []), ...(manifest.intercompanyDispositions ? [manifest.intercompanyDispositions] : []), ...(manifest.workspaceInbox ? [manifest.workspaceInbox] : []), ...(manifest.tasks ? [manifest.tasks] : []), ...manifest.companies.map((company) => company.backup)]) {
       const error = verifyFile(extracted, file);
       if (error) throw new Error(error);
     }
@@ -393,6 +410,7 @@ export function restoreWorkspaceSnapshot(input: {
     );
     if (!accessPlan) throw new Error("workspace access recovery plan is invalid");
 
+    const taskSnapshot = manifest.tasks ? parseTaskSnapshot(readFileSync(join(extracted, manifest.tasks.path), "utf8"), new Set(declared.keys())) : null;
     initWorkspace(staging);
     saveWorkspaceManifest(staging, sourceManifest as WorkspaceManifest);
     if (manifest.workspaceRegistry) {
@@ -464,6 +482,10 @@ export function restoreWorkspaceSnapshot(input: {
         });
         if (!restored.ok) throw new Error(restored.errors.join("; "));
       } finally { removePathWithRetry(companySource); }
+    }
+    if (taskSnapshot) {
+      const controlDb = openWorkspaceControlDb(staging);
+      try { restoreTaskSnapshot(controlDb, taskSnapshot, new Set(declared.keys())); } finally { controlDb.close(); }
     }
     const recoveryDir = join(staging, ".rentemester");
     mkdirSync(recoveryDir, { recursive: true });
