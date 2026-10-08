@@ -319,6 +319,11 @@ export function assertWorkspaceControlPrimitives(db: Database): void {
     "rm_intercompany_disposition_events",
     "rm_intercompany_disposition_journal_links",
     "rm_intercompany_disposition_lifecycle_events",
+    "rm_task_events",
+    "rm_task_board_events",
+    "rm_task_series_events",
+    "rm_task_receipts",
+    "rm_task_notifications",
   ]) {
     if (!tableExists(db, table)) {
       throw new Error(`workspace control access table '${table}' is missing`);

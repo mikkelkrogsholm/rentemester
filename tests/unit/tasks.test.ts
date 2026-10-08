@@ -20,6 +20,17 @@ function source(state: TaskSource["state"] = "open", hash = "a"): TaskSource { r
 function code(action: () => unknown) { try { action(); return "success"; } catch (error) { if (error instanceof TaskError) return error.code; throw error; } }
 
 describe("workspace task domain", () => {
+  test("cards, notes and named assignees reject identity/payment details and evidence controls cannot be removed", () => {
+    const { db } = fixture();
+    for (const title of ["Honorar 010101-1234", "Betal DK50 0040 0440 1162 43", "Bankkonto 1234-1234567890"]) expect(code(() => createTask(db, draft({ title }), context(`privacy-${title.length}`)))).toBe("private_data");
+    const task = createTask(db, draft({ evidenceRequired: true, verificationRequired: true, relevance: "unknown" }), context("controlled"));
+    expect(code(() => updateTask(db, task.taskId, { assignee: { kind: "external", name: "Revisor 010101-1234" } }, context("private-assignee", 1)))).toBe("private_data");
+    expect(code(() => completeTask(db, task.taskId, { outcome: "exception", note: "Bankkonto 1234-1234567890" }, context("private-note", 1)))).toBe("private_data");
+    expect(code(() => updateTask(db, task.taskId, { evidenceRequired: false }, context("no-evidence", 1)))).toBe("invalid_input");
+    expect(code(() => updateTask(db, task.taskId, { verificationRequired: false }, context("no-verification", 1)))).toBe("invalid_input");
+    const clarified = updateTask(db, task.taskId, { verificationRequired: false, relevance: "relevant", description: "Rådgiverens resultat er kontrolleret mod kvitteringen.", references: [{ kind: "external_receipt", ref: "SYNTHETIC-RECEIPT" }] }, context("clarified", 1));
+    expect(clarified.verificationRequired).toBe(false);
+  });
   test("minimal creation has explicit scope and does not touch a company ledger", () => {
     const { db, root } = fixture();
     const ledger = join(root, "synthetic-alpha", "ledger.sqlite"); mkdirSync(join(root, "synthetic-alpha")); writeFileSync(ledger, "ledger sentinel");

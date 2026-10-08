@@ -9,12 +9,21 @@ export class TaskError extends Error {
 export const TASK_STATUSES: TaskStatus[] = ["open", "in_progress", "waiting", "done"];
 const SLUG = /^[a-z0-9][a-z0-9-]{0,119}$/;
 const ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$/;
-const ACTOR = /^(user|agent|system):[A-Za-z0-9][A-Za-z0-9._:@-]{0,149}$/;
+const ACTOR = /^(user|agent|system):\S.+$/;
 function fail(message: string): never { throw new TaskError("invalid_input", message); }
 export function taskText(value: unknown, field: string, maximum: number, required = false): string {
   if (typeof value !== "string" || value.length > maximum || /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(value)) fail(`Invalid ${field}`);
   if (required && !value.trim()) fail(`${field} is required`);
   return value.trim();
+}
+/** Task cards and notes are not an identity or payment-data store. */
+export function taskContentText(value: unknown, field: string, maximum: number, required = false): string {
+  const text = taskText(value, field, maximum, required);
+  const cpr = /\b(?:0[1-9]|[12]\d|3[01])(?:0[1-9]|1[0-2])\d{2}[- ]?\d{4}\b/;
+  const iban = /\b[A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]){11,30}\b/;
+  const account = /\b(?:reg(?:istrerings)?\.?\s*(?:nr\.?)?|konto(?:nummer)?|bankkonto)\s*[:#]?\s*\d[\d -]{6,}\d\b/i;
+  if (cpr.test(text) || iban.test(text) || account.test(text)) throw new TaskError("private_data", "CPR og fulde betalingsoplysninger skal gemmes i den beskyttede kilde. Brug en sikker produktreference i opgaven.");
+  return text;
 }
 export function taskId(value: unknown, field = "id"): string {
   if (typeof value !== "string" || !ID.test(value)) fail(`Invalid ${field}`);
@@ -64,6 +73,7 @@ export function taskPayloadHash(value: unknown): string { return createHash("sha
 /** Holds the SQLite writer lock across the receipt lookup, effect and receipt insert. */
 export function executeTaskMutation<T>(db: Database, operation: string, payload: unknown, ctx: TaskMutationContext, apply: (now: string) => T): T {
   if (!ctx || !ACTOR.test(ctx.actor)) fail("Actor is required");
+  taskText(ctx.actor, "actor", 160, true);
   taskText(ctx.principal, "principal", 160, true);
   taskId(ctx.idempotencyKey, "idempotencyKey");
   taskText(operation, "operation", 80, true);
@@ -74,9 +84,12 @@ export function executeTaskMutation<T>(db: Database, operation: string, payload:
     const prior = db.query("SELECT operation,payload_hash,result_json FROM rm_task_receipts WHERE principal=? AND idempotency_key=?").get(ctx.principal, ctx.idempotencyKey) as { operation: string; payload_hash: string; result_json: string } | null;
     if (prior) {
       if (prior.operation !== operation || prior.payload_hash !== payloadHash) throw new TaskError("idempotency_conflict", "Idempotency key was already used for another request");
-      return JSON.parse(prior.result_json) as T;
+      const result = JSON.parse(prior.result_json) as T;
+      ctx.authorizeResult?.(result);
+      return result;
     }
     const result = apply(now);
+    ctx.authorizeResult?.(result);
     const json = canonicalJson(cleanObject(result));
     if (json.length > 2_000_000) fail("Mutation result is too large");
     db.query("INSERT INTO rm_task_receipts(principal,idempotency_key,operation,payload_hash,result_json,created_at) VALUES(?,?,?,?,?,?)").run(ctx.principal, ctx.idempotencyKey, operation, payloadHash, json, now);
@@ -145,8 +158,8 @@ function validateFields(input: TaskPatch, scope: TaskScope): TaskPatch {
   if (!input || typeof input !== "object" || Array.isArray(input)) fail("Invalid task patch");
   const result: TaskPatch = {};
   for (const key of Object.keys(input)) if (!PATCH_FIELDS.includes(key)) fail(`Unsupported task field: ${key}`);
-  if (input.title !== undefined) result.title = taskText(input.title, "title", 240, true);
-  for (const key of ["description", "nextAction", "waitingOn"] as const) if (input[key] !== undefined) result[key] = taskText(input[key], key, key === "description" ? 8000 : 2000);
+  if (input.title !== undefined) result.title = taskContentText(input.title, "title", 240, true);
+  for (const key of ["description", "nextAction", "waitingOn"] as const) if (input[key] !== undefined) result[key] = taskContentText(input[key], key, key === "description" ? 8000 : 2000);
   if (input.scope !== undefined) result.scope = validateTaskScope(input.scope);
   if (input.workDate !== undefined) result.workDate = input.workDate === null ? null : taskDate(input.workDate, "workDate");
   if (input.deadline !== undefined) {
@@ -154,7 +167,7 @@ function validateFields(input: TaskPatch, scope: TaskScope): TaskPatch {
     if (d === null) result.deadline = null;
     else {
       if (!d || !["statutory", "agreement", "internal"].includes(d.kind) || !["confirmed", "unconfirmed"].includes(d.certainty)) fail("Invalid deadline");
-      result.deadline = { date: taskDate(d.date), kind: d.kind, certainty: d.certainty, basis: taskText(d.basis, "deadline basis", 2000, true), ...(d.ruleId ? { ruleId: taskId(d.ruleId, "ruleId") } : {}) };
+      result.deadline = { date: taskDate(d.date), kind: d.kind, certainty: d.certainty, basis: taskContentText(d.basis, "deadline basis", 2000, true), ...(d.ruleId ? { ruleId: taskId(d.ruleId, "ruleId") } : {}) };
     }
   }
   if (input.period !== undefined) {
@@ -162,7 +175,7 @@ function validateFields(input: TaskPatch, scope: TaskScope): TaskPatch {
     else {
       const from = taskDate(input.period?.from), to = taskDate(input.period?.to);
       if (from > to) fail("Period ends before its start");
-      result.period = { from, to, label: taskText(input.period.label, "period label", 240, true) };
+      result.period = { from, to, label: taskContentText(input.period.label, "period label", 240, true) };
     }
   }
   if (input.references !== undefined) result.references = validateTaskReferences(input.references, scope);
@@ -175,8 +188,8 @@ function validateFields(input: TaskPatch, scope: TaskScope): TaskPatch {
   if (input.assignee !== undefined) {
     const a = input.assignee;
     if (a === null) result.assignee = null;
-    else if (a?.kind === "member") result.assignee = { kind: "member", userId: taskId(a.userId, "userId"), name: taskText(a.name, "assignee name", 240, true) };
-    else if (a?.kind === "external") result.assignee = { kind: "external", name: taskText(a.name, "assignee name", 240, true) };
+    else if (a?.kind === "member") result.assignee = { kind: "member", userId: taskId(a.userId, "userId"), name: taskContentText(a.name, "assignee name", 240, true) };
+    else if (a?.kind === "external") result.assignee = { kind: "external", name: taskContentText(a.name, "assignee name", 240, true) };
     else fail("Invalid assignee");
   }
   if (input.reminders !== undefined) {
@@ -201,7 +214,7 @@ export function validateTaskDraft(input: TaskDraft): TaskDraft {
   for (const key of Object.keys(input)) if (!PATCH_FIELDS.includes(key) && !extra.includes(key)) fail(`Unsupported task field: ${key}`);
   const scope = validateTaskScope(input.scope);
   const fields = Object.fromEntries(Object.entries(input).filter(([key]) => PATCH_FIELDS.includes(key))) as TaskPatch;
-  const result = { ...validateFields(fields, scope), title: taskText(input.title, "title", 240, true), scope } as TaskDraft;
+  const result = { ...validateFields(fields, scope), title: taskContentText(input.title, "title", 240, true), scope } as TaskDraft;
   if (input.taskId !== undefined) result.taskId = taskId(input.taskId, "taskId");
   if (input.type !== undefined) { if (!["ad_hoc", "routine", "obligation"].includes(input.type)) fail("Invalid task type"); result.type = input.type; }
   if (input.origin !== undefined) { if (!["manual", "system", "proposal"].includes(input.origin)) fail("Invalid task origin"); result.origin = input.origin; }
@@ -212,7 +225,9 @@ export function validateTaskDraft(input: TaskDraft): TaskDraft {
     const s = input.source;
     if (typeof s.companySlug !== "string" || !SLUG.test(s.companySlug) || !taskScopeCompanies(scope).includes(s.companySlug) || !["open", "resolved", "unknown"].includes(s.state)) fail("Invalid source scope or state");
     if (typeof s.ref !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._:/-]{0,239}$/.test(s.ref) || s.ref.includes("..") || s.ref.includes("://")) fail("Invalid source reference");
-    if (typeof s.href !== "string" || !s.href.startsWith(`/companies/${s.companySlug}/`) || s.href.includes("..") || !/^\/[A-Za-z0-9/._:-]+$/.test(s.href)) fail("Source requires a safe company product route");
+    if (typeof s.href !== "string" || s.href.length > 500 || !s.href.startsWith(`/companies/${s.companySlug}/`) || s.href.includes("..")) fail("Source requires a safe company product route");
+    const href = new URL(s.href, "https://rentemester.invalid");
+    if (href.origin !== "https://rentemester.invalid" || href.hash || !/^\/[A-Za-z0-9/._:-]+$/.test(href.pathname) || [...href.searchParams].some(([key, value]) => key !== "runId" || !/^\d{1,12}$/.test(value))) fail("Source requires a safe company product route");
     if (typeof s.contentHash !== "string" || !/^[a-f0-9]{64}$/.test(s.contentHash)) fail("Invalid source content hash");
     result.source = { kind: taskId(s.kind, "source kind"), identity: taskId(s.identity, "source identity"), companySlug: s.companySlug, ref: taskText(s.ref, "source ref", 240, true), state: s.state, contentHash: s.contentHash, href: s.href };
   }
@@ -244,9 +259,10 @@ export function updateTask(db: Database, id: string, patch: TaskPatch, ctx: Task
     if (prior.origin === "proposal" && patch.relevance === "relevant") task.origin = "system";
     validateTaskReferences(task.references, scope);
     if (task.source && !taskScopeCompanies(scope).includes(task.source.companySlug)) fail("Source company is outside the new scope");
-    if (task.source && patch.evidenceRequired === false && prior.evidenceRequired) fail("Source evidence requirement cannot be removed");
+    if (patch.evidenceRequired === false && prior.evidenceRequired) fail("Evidence requirement cannot be removed; record a documented exception instead");
     if (patch.relevance === "not_relevant" && prior.relevance !== "not_relevant") fail("Record non-applicability with a reason through completion");
     if (prior.source?.state === "unknown" && patch.verificationRequired === false) fail("Source must be verified first");
+    if (!prior.source && prior.verificationRequired && patch.verificationRequired === false && !(patch.relevance === "relevant" && patch.references?.length && patch.description?.trim())) fail("Clarifying an external result requires relevance, evidence and a documented explanation");
     if (prior.deadline?.kind === "statutory" && canonicalJson(prior.deadline) !== canonicalJson(task.deadline) && (!task.deadline || task.deadline.basis === prior.deadline.basis)) fail("Changing a statutory deadline requires a new visible basis");
     if (canonicalJson(prior.scope) !== canonicalJson(scope)) task.columnId = placement(db, scope, task.status);
     if (task.source?.state === "unknown" || task.relevance === "unknown") task.verificationRequired = true;
@@ -278,10 +294,11 @@ export function completeTask(db: Database, id: string, input: TaskCompletionInpu
     if (!input || typeof input !== "object" || Array.isArray(input)) fail("Invalid task completion");
     for (const key of Object.keys(input)) if (!["outcome", "note", "references"].includes(key)) fail(`Unsupported completion field: ${key}`);
     if (!["completed", "not_relevant", "cancelled", "exception"].includes(input.outcome)) fail("Invalid completion outcome");
-    const note = taskText(input.note, "completion note", 8000, true);
+    const note = taskContentText(input.note, "completion note", 8000, true);
     let references = validateTaskReferences(input.references ?? [], prior.scope);
     const check = validateSourceCheck(ctx.sourceCheck, now);
-    if (prior.source && input.outcome !== "exception" && input.outcome !== "cancelled" && check?.state !== "resolved") throw new TaskError("source_unresolved", "Authoritative source has not confirmed completion");
+    const clarifiedNonApplicability = input.outcome === "not_relevant" && check?.state === "unknown" && ["annual_reporting", "vat_registration"].includes(prior.source?.kind ?? "");
+    if (prior.source && input.outcome !== "exception" && input.outcome !== "cancelled" && !clarifiedNonApplicability && check?.state !== "resolved") throw new TaskError("source_unresolved", "Authoritative source has not confirmed completion");
     if (input.outcome === "completed" && prior.relevance === "unknown") throw new TaskError("relevance_unknown", "Task relevance must be clarified before completion");
     if (input.outcome === "completed" && prior.verificationRequired && !prior.source) throw new TaskError("verification_required", "External result must be verified before completion");
     const sourceEvidence = check?.state === "resolved" ? validateTaskReferences(check.evidence ?? [], prior.scope) : [];
@@ -294,7 +311,7 @@ export function completeTask(db: Database, id: string, input: TaskCompletionInpu
 }
 export function reopenTask(db: Database, id: string, reason: string, ctx: TaskMutationContext): Task {
   return executeTaskMutation(db, "task-reopen", { id, reason }, ctx, (now) => {
-    const prior = existing(db, id, ctx); taskText(reason, "reopen reason", 2000, true);
+    const prior = existing(db, id, ctx); taskContentText(reason, "reopen reason", 2000, true);
     if (prior.status !== "done") throw new TaskError("not_completed", "Task is not complete");
     const task: Task = { ...prior, status: "open", columnId: placement(db, prior.scope, "open"), workspaceColumnId: prior.workspaceColumnId ? placement(db, { kind: "workspace", companySlugs: [] }, "open") : null, completion: null, relevance: prior.relevance === "not_relevant" ? "unknown" : prior.relevance, version: prior.version + 1, updatedAt: now };
     if (task.relevance === "unknown") task.verificationRequired = true;
@@ -313,6 +330,7 @@ export function syncSourceTask(db: Database, input: TaskDraft, ctx: TaskMutation
       appendTaskEvent(db, task, "source_created", ctx); return task;
     }
     const prior = JSON.parse(row.payload_json) as Task;
+    if (ctx.expectedVersion !== undefined) assertTaskVersion(prior, ctx);
     if (canonicalJson(prior.source) === canonicalJson(source)) return prior;
     const task: Task = { ...prior, source, verificationRequired: source.state === "unknown" || prior.relevance === "unknown", version: prior.version + 1, updatedAt: now };
     if (source.state !== "resolved" && prior.status === "done") {

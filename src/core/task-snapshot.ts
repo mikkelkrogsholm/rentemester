@@ -1,6 +1,6 @@
 import type { Database } from "bun:sqlite";
 import { canonicalJson } from "./canonical-json";
-import { appendTaskEvent, listTasks, TASK_STATUSES, taskDate, taskId, taskInstant, taskText, validateTaskDraft, validateTaskReferences, validateTaskScope } from "./tasks";
+import { appendTaskEvent, listTasks, TASK_STATUSES, taskDate, taskId, taskInstant, taskText, taskContentText, validateTaskDraft, validateTaskReferences, validateTaskScope } from "./tasks";
 import { insertWorkspaceAudit } from "./workspace-control";
 import type { Task, TaskBoard, TaskCompletion, TaskMutationContext, TaskNotification, TaskSeries, TaskScope } from "./tasks-types";
 
@@ -39,7 +39,7 @@ function json(value: Cell): unknown {
 }
 function actor(value: unknown): string {
   const checked = taskText(value, "snapshot actor", 160, true);
-  if (!/^(user|agent|system):[A-Za-z0-9][A-Za-z0-9._:@-]{0,149}$/.test(checked)) invalid("Invalid task snapshot actor");
+  if (!/^(user|agent|system):\S.+$/.test(checked)) invalid("Invalid task snapshot actor");
   return checked;
 }
 function scope(value: unknown, companySlugs?: ReadonlySet<string>): void {
@@ -53,7 +53,7 @@ function completion(value: unknown, task: Task): void {
   exactKeys(value, ["outcome", "note", "references", "assurance", "at", "actor"]);
   const result = value as TaskCompletion;
   if (task.status !== "done" || !["completed", "not_relevant", "cancelled", "exception"].includes(result.outcome) || !["user_reported", "product_verified"].includes(result.assurance)) invalid();
-  taskText(result.note, "completion note", 8000, true); taskInstant(result.at); actor(result.actor);
+  taskContentText(result.note, "completion note", 8000, true); taskInstant(result.at); actor(result.actor);
   validateTaskReferences(result.references, task.scope); nestedFields({ references: result.references });
   if (result.assurance === "product_verified" && (!task.source || task.source.state !== "resolved" || !result.references.length || result.outcome !== "completed")) invalid("Invalid verified task evidence");
 }
@@ -95,7 +95,7 @@ function board(value: unknown, companySlugs?: ReadonlySet<string>): TaskBoard {
   if (!Array.isArray(checked.columns) || checked.columns.length < 4 || checked.columns.length > 40) invalid();
   const ids = new Set<string>();
   for (const column of checked.columns) {
-    exactKeys(column, ["columnId", "name", "status", "isDefault"]); taskId(column.columnId); taskText(column.name, "column name", 160, true); boolean(column.isDefault);
+    exactKeys(column, ["columnId", "name", "status", "isDefault"]); taskId(column.columnId); taskContentText(column.name, "column name", 160, true); boolean(column.isDefault);
     if (!TASK_STATUSES.includes(column.status) || ids.has(column.columnId)) invalid(); ids.add(column.columnId);
   }
   for (const status of TASK_STATUSES) if (checked.columns.filter((column) => column.status === status && column.isDefault).length !== 1) invalid();
@@ -104,7 +104,7 @@ function board(value: unknown, companySlugs?: ReadonlySet<string>): TaskBoard {
 function series(value: unknown, companySlugs?: ReadonlySet<string>): TaskSeries {
   exactKeys(value, SERIES_KEYS);
   const checked = value as TaskSeries;
-  taskId(checked.seriesId); integer(checked.version, "series version"); taskText(checked.title, "series title", 240, true); scope(checked.scope, companySlugs); taskInstant(checked.updatedAt);
+  taskId(checked.seriesId); integer(checked.version, "series version"); taskContentText(checked.title, "series title", 240, true); scope(checked.scope, companySlugs); taskInstant(checked.updatedAt);
   if (!["month", "quarter", "year", "custom"].includes(checked.cadence) || !["calendar", "fiscal"].includes(checked.anchor) || !["relevant", "unknown", "activity"].includes(checked.relevance)) invalid();
   integer(checked.every, "cadence", 1, 120); integer(checked.fiscalYearStartMonth, "fiscal year start", 1, 12); integer(checked.workDayOffset, "work offset", -3660, 3660);
   if (checked.deadlineDayOffset !== null) integer(checked.deadlineDayOffset, "deadline offset", -3660, 3660);
@@ -116,7 +116,7 @@ function notification(value: unknown): TaskNotification {
   exactKeys(value, ["notificationId", "recipientId", "taskId", "reminderId", "slotKey", "createdAt", "title"]);
   const checked = value as TaskNotification;
   for (const id of [checked.notificationId, checked.recipientId, checked.taskId, checked.reminderId]) taskId(id);
-  taskText(checked.slotKey, "notification slot", 200, true); taskText(checked.title, "notification title", 240, true); taskInstant(checked.createdAt);
+  taskText(checked.slotKey, "notification slot", 200, true); taskContentText(checked.title, "notification title", 240, true); taskInstant(checked.createdAt);
   return checked;
 }
 const TASK_OPERATIONS = new Set(["task-create", "task-update", "task-move", "task-complete", "task-reopen", "task-source-sync", "reminder-set"]);

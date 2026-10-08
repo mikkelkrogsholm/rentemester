@@ -1,6 +1,6 @@
 import type { Database } from "bun:sqlite";
 import { canonicalJson } from "./canonical-json";
-import { appendTaskEvent, executeTaskMutation, getTask, listTasks, TASK_STATUSES, TaskError, taskId, taskPayloadHash, taskText, validateTaskScope } from "./tasks";
+import { appendTaskEvent, executeTaskMutation, getTask, listTasks, TASK_STATUSES, TaskError, taskId, taskPayloadHash, taskContentText, validateTaskScope } from "./tasks";
 import type { Task, TaskBoard, TaskBoardDraft, TaskBoardPreview, TaskMutationContext, TaskScope } from "./tasks-types";
 const LABELS = { open: "Åben", in_progress: "I gang", waiting: "Afventer", done: "Færdig" };
 export function defaultTaskBoard(scope: TaskScope): TaskBoard {
@@ -27,7 +27,7 @@ function validateBoard(input: TaskBoardDraft): TaskBoardDraft {
     if (!column || !TASK_STATUSES.includes(column.status) || typeof column.isDefault !== "boolean") throw new TaskError("invalid_input", "Invalid board column");
     const columnId = taskId(column.columnId, "columnId");
     if (ids.has(columnId)) throw new TaskError("invalid_input", "Column ids must be unique"); ids.add(columnId);
-    return { columnId, name: taskText(column.name, "column name", 160, true), status: column.status, isDefault: column.isDefault };
+    return { columnId, name: taskContentText(column.name, "column name", 160, true), status: column.status, isDefault: column.isDefault };
   });
   for (const status of TASK_STATUSES) if (columns.filter((column) => column.status === status && column.isDefault).length !== 1) throw new TaskError("invalid_input", "Each status requires exactly one visible default column");
   const relocations = input.relocations ?? {};
@@ -45,13 +45,16 @@ function tasksOnBoard(db: Database, scope: TaskScope): Task[] {
 }
 function changes(db: Database, input: TaskBoardDraft) {
   const draft = validateBoard(input), prior = getTaskBoard(db, draft.boardId) ?? defaultTaskBoard(draft.scope);
-  const tasks = tasksOnBoard(db, draft.scope);
+  // Renaming/reordering cannot affect a task. Its public receipt must also be
+  // independent of inaccessible workload, including deterministic preview hashes.
+  const structural = prior.columns.some(column => !draft.columns.some(next => next.columnId === column.columnId && next.status === column.status));
+  const tasks = structural ? tasksOnBoard(db, draft.scope) : [];
   const affected: Array<{ task: Task; columnId: string; from: Task["status"]; to: Task["status"] }> = [];
   for (const task of tasks) {
     const oldColumn = columnForTask(task, prior);
     let columnId = oldColumn;
     if (!draft.columns.some((column) => column.columnId === oldColumn)) {
-      columnId = draft.relocations?.[oldColumn] ?? "";
+      columnId = draft.relocations && Object.hasOwn(draft.relocations, oldColumn) ? draft.relocations[oldColumn]! : "";
       if (!columnId) throw new TaskError("relocation_required", "Move every populated removed column to a retained column");
     }
     const nextColumn = draft.columns.find((column) => column.columnId === columnId)!;

@@ -12,7 +12,7 @@ import { seedAccounts, postJournalEntry } from "../../src/core/ledger";
 import { addBankAccount } from "../../src/core/bank";
 import { linkBankTransactionToJournal } from "../../src/core/bank-journal-reconciliation";
 import { approveBookkeepingBatchPlan, createBookkeepingBatchRun, planBookkeepingBatch } from "../../src/core/bookkeeping-batch";
-import { completeTask, getTask, listTasks, taskHistory } from "../../src/core/tasks";
+import { completeTask, getTask, listTasks, taskHistory, reopenTask } from "../../src/core/tasks";
 import { checkTaskSource, SOURCE_COVERAGE, syncTaskSources } from "../../src/core/task-sources";
 
 const roots: string[] = [];
@@ -75,6 +75,10 @@ describe("canonical task sources", () => {
     expect(syncTaskSources(db, root, syncInput).resolved).toBe(1);
     const closed = getTask(db, task.taskId)!;
     expect(closed).toMatchObject({ status: "done", completion: { assurance: "product_verified" } });
+    const reopened = reopenTask(db, task.taskId, "Følg op på rådgiverens bilag", { actor: "agent:test", principal: "synthetic", idempotencyKey: "intentional-reopen", expectedVersion: closed.version });
+    expect(syncTaskSources(db, root, syncInput).resolved).toBe(0);
+    expect(getTask(db, task.taskId)?.status).toBe("open");
+    completeTask(db, task.taskId, { outcome: "completed", note: "Opfølgningen er dokumenteret" }, { actor: "agent:test", principal: "synthetic", idempotencyKey: "follow-up-complete", expectedVersion: reopened.version, sourceCheck: checkTaskSource(root, reopened) });
     ledger.query("INSERT INTO exceptions(type,severity,status,related_bank_transaction_id,message) VALUES('review_needed','high','open',1,'Synthetic recurring problem')").run();
     expect(syncTaskSources(db, root, syncInput).reopened).toBe(1);
     expect(getTask(db, task.taskId)?.status).toBe("open");

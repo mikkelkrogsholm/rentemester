@@ -39,10 +39,10 @@ function ledgerIdentity(db: Database): string {
 
 function period(from: string, to: string): TaskPeriod { return { from, to, label: `${from} – ${to}` }; }
 function companyReference(companySlug: string, kind: TaskReference["kind"], ref: string): TaskReference { return { companySlug, kind, ref }; }
-function sourceHref(companySlug: string, kind: string): string {
+function sourceHref(companySlug: string, kind: string, ref: string): string {
   const route = kind === "bank_work" ? "batchbogfoering" : kind === "exception" ? "undtagelser"
     : kind === "vat_filing" || kind === "vat_registration" ? "moms" : kind === "batch_approval" ? "batchbogfoering" : "periodelas";
-  return `/companies/${companySlug}/${route}`;
+  return `/companies/${companySlug}/${route}${kind === "batch_approval" ? `?runId=${encodeURIComponent(ref)}` : ""}`;
 }
 
 function observation(companySlug: string, uuid: string, input: {
@@ -50,7 +50,7 @@ function observation(companySlug: string, uuid: string, input: {
   period?: TaskPeriod; references?: TaskReference[]; deadline?: Task["deadline"]; type?: Task["type"]; relevance?: Task["relevance"]; origin?: Task["origin"];
 }): SourceObservation {
   const source: TaskSource = { kind: input.kind, identity: `${uuid}:${input.kind}:${input.ref}`, companySlug,
-    ref: input.ref, state: input.check.state, contentHash: digest(input.content), href: sourceHref(companySlug, input.kind) };
+    ref: input.ref, state: input.check.state, contentHash: digest(input.content), href: sourceHref(companySlug, input.kind, input.ref) };
   return { check: input.check, draft: { title: input.title, scope: { kind: "company", companySlug }, nextAction: input.nextAction,
     type: input.type ?? "ad_hoc", origin: input.origin ?? "system", source, period: input.period ?? null,
     references: input.references ?? [], deadline: input.deadline ?? null, evidenceRequired: true,
@@ -297,7 +297,7 @@ export function syncTaskSources(db: Database, workspaceRoot: string, input: { co
       let after = syncSourceTask(db, observation.draft, { actor: input.actor, principal: input.principal,
         idempotencyKey: `source:${digest([observation.draft.source.identity, observation.draft.source.contentHash, observation.check.state, before?.version ?? 0])}`,
         expectedVersion: before?.version, sourceCheck: observation.check });
-      if (after.status !== "done" && observation.check.state === "resolved" && observation.check.evidence?.length) {
+      if (after.status !== "done" && before?.source?.state !== "resolved" && observation.check.state === "resolved" && observation.check.evidence?.length) {
         after = completeTask(db, after.taskId, { outcome: "completed", note: "Kildens aktuelle resultat er registreret.", references: observation.check.evidence }, {
           actor: input.actor, principal: input.principal, expectedVersion: after.version,
           sourceCheck: observation.check,

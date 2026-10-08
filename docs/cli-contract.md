@@ -288,7 +288,7 @@ aldrig begge. `--companies` er en kommasepareret slugliste. `--include-archived`
 | `tasks sync` | `tasks_sync` | `companySlugs?`, `asOfDate?`, `idempotencyKey` |
 | `tasks reminder` | `tasks_reminder_set` | `taskId`, `reminder`, `expectedVersion`, `idempotencyKey` |
 | `tasks notifications`, `tasks runtime` | `tasks_notifications`, `tasks_runtime` | Ingen forretningsfelter |
-| `tasks run` | `tasks_run` | `asOfDate?`, `idempotencyKey` |
+| `tasks run` | `tasks_run` | `companySlugs?`, `asOfDate?`, `idempotencyKey` |
 | `task-series list` | `task_series_list` | `companySlugs?`, `includeArchived?` |
 | `task-series save` | `task_series_save` | `series`, `expectedVersion`, `idempotencyKey` |
 | `task-series project` | `task_series_project` | `from`, `to`, `companySlugs?`, `includeArchived?` |

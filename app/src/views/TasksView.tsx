@@ -11,6 +11,7 @@ import { boardFor, canWriteScope, outcomeLabel, referenceHref, scopeLabel, statu
 import { BoardEditor, CompletionEditor, ReminderEditor, SeriesEditor, TaskEditor, taskAssignees } from './TaskForms';
 
 const styles = stylex.create({
+  inlineLink: { textDecorationLine: 'underline' },
   page: { minWidth: 0, overflowWrap: 'anywhere' }, toolbar: { display: 'flex', flexWrap: 'wrap', gap: spacing.sm, alignItems: 'end', marginBottom: spacing.md },
   filters: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))', gap: spacing.sm, marginBlock: spacing.md },
   list: { display: 'grid', gap: spacing.sm, padding: 0, listStyle: 'none' }, card: { minWidth: 0, display: 'grid', gap: spacing.xs, padding: spacing.md, backgroundColor: colors.paperRaised, borderWidth: 1, borderStyle: 'solid', borderColor: colors.border, borderRadius: rounded.md },
@@ -37,6 +38,8 @@ export function TasksView() {
   const { slug } = useParams();
   const location = useLocation();
   const [params, setParams] = useSearchParams();
+  const listParams = new URLSearchParams(params); listParams.set('view', 'list');
+  const listHref = `${location.pathname}?${listParams}`;
   const view = tabs.some(([tab]) => tab === params.get('view')) ? params.get('view') as ViewName : 'list';
   const calendarMode = ['month', 'week', 'agenda'].includes(params.get('calendar') ?? '') ? params.get('calendar')! : typeof window !== 'undefined' && window.matchMedia?.('(max-width: 639px)').matches ? 'agenda' : 'month';
   const date = validDate(params.get('date'));
@@ -114,7 +117,7 @@ export function TasksView() {
     })}</div></>}
     {view === 'calendar' && <><div {...stylex.props(styles.toolbar)}><Field label="Kalenderdato"><Input type="date" value={date} onChange={event => setParam('date', event.target.value)} /></Field><Field label="Kalendervisning"><Select value={calendarMode} onChange={event => setParam('calendar', event.target.value)}><option value="month">Måned</option><option value="week">Uge</option><option value="agenda">Agenda</option></Select></Field></div><h2>{calendarMode === 'week' ? `${range.from} – ${range.to}` : monthName(date.slice(0, 7))}</h2><Calendar tasks={tasks} projections={data.projections} data={data} returnTo={returnTo} range={range} mode={calendarMode} />
       <h2>Uden dato ({tasks.filter(task => !task.workDate && !task.deadline).length})</h2><TaskList tasks={tasks.filter(task => !task.workDate && !task.deadline)} data={data} returnTo={returnTo} onSaved={state.reload} />
-      <p>Arbejdsdato og frist vises særskilt. Hver opgave tæller én gang i oversigten. <Link to={`${location.pathname}?view=list`}>Se også udestående arbejde uden for kalenderperioden</Link>.</p>
+      <p>Arbejdsdato og frist vises særskilt. Hver opgave tæller én gang i oversigten. <Link {...stylex.props(styles.inlineLink)} to={listHref}>Se også udestående arbejde uden for kalenderperioden</Link>.</p>
     </>}
     {view === 'wheel' && <><div {...stylex.props(styles.toolbar)}><Field label="Årshjulets startår"><Input type="number" min={1900} max={9998} value={wheelYear} onChange={event => setParam('wheelYear', event.target.value)} /></Field><Field label="Årshjulets startmåned"><Select value={wheelMonth} onChange={event => setParam('wheelStartMonth', event.target.value)}>{Array.from({ length: 12 }, (_, i) => <option key={i} value={i + 1}>{monthName(`2026-${String(i + 1).padStart(2, '0')}`).split(' ')[0]}</option>)}</Select></Field>
       {(data.companies.some(company => company.canManage) || data.canManageWorkspace) && <Button onClick={() => setSeriesEditor('new')}>Opret rutine</Button>}
@@ -122,7 +125,7 @@ export function TasksView() {
     </div><p>Perioder følger hver rutines kalender- eller regnskabsår. Forventede gentagelser er planlægning; de er endnu ikke konkrete opgaver. Frister med ukendt grundlag skal afklares.</p>
       <YearWheel data={data} tasks={tasks} range={range} returnTo={returnTo} />
       <h2>Rutiner</h2>{data.series.length === 0 ? <p>Ingen rutiner oprettet.</p> : <ul {...stylex.props(styles.list)}>{data.series.map(series => <li key={series.seriesId} {...stylex.props(styles.card)}><h3>{series.title}</h3><p>{scopeLabel(series.scope, data)} · {series.active ? 'Aktiv' : 'Pauseret'} · {series.anchor === 'fiscal' ? 'Regnskabsperioder' : 'Kalenderperioder'}</p>{canWriteScope(series.scope, data, true) && <Button variant="secondary" onClick={() => setSeriesEditor(series)}>Redigér eller pausér fremtidige gentagelser</Button>}</li>)}</ul>}
-      <p><Link to={`${location.pathname}?view=list`}>Se alle udestående forekomster, også fra tidligere år</Link></p>
+      <p><Link {...stylex.props(styles.inlineLink)} to={listHref}>Se alle udestående forekomster, også fra tidligere år</Link></p>
     </>}
     <details className="card"><summary>Kildedækning og grundlag</summary><p>Opgaver viser arbejdsstatus. Regnskabets korrekthed og overholdelse skal verificeres ved kilden.</p>{data.sourceCoverage.length > 0 ? <ul>{data.sourceCoverage.map(source => <li key={source}>{source}</li>)}</ul> : <p>Kildedækning er ikke verificeret. Brug Opdatér fra kilder for at hente kendt arbejde.</p>}</details>
     {editor && <TaskEditor view={data} initialScope={initialScope} onSaved={state.reload} onClose={() => setEditor(false)} />}

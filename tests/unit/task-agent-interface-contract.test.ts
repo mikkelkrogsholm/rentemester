@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -10,6 +10,8 @@ import { registerAllTools } from "../../src/mcp/registry";
 import { taskSpecs } from "../../src/cli-meta/task-specs";
 import { MUTATING_COMMANDS, mutationPolicyScope } from "../../src/cli-actor";
 import { capabilityIdsForOperation, describeWorkflow } from "../../src/agent-discovery-catalog";
+import { initWorkspace } from "../../src/core/workspace";
+import { openWorkspaceControlDb } from "../../src/core/workspace-control";
 
 const root = new URL("../..", import.meta.url).pathname;
 async function cli(args: string[], env: Record<string, string> = {}) {
@@ -19,6 +21,25 @@ async function cli(args: string[], env: Record<string, string> = {}) {
 }
 
 describe("task agent interfaces", () => {
+  test("real CLI and MCP share a durable identity, completion history and exact retry", async () => {
+    const workspace = mkdtempSync(join(tmpdir(), "tasks-cross-interface-"));
+    const server = new McpServer({ name: "task-live", version: "1" });
+    const client = new Client({ name: "synthetic", version: "1.0" });
+    try {
+      initWorkspace(workspace); openWorkspaceControlDb(workspace).close(); mkdirSync(join(workspace, "config"), { recursive: true });
+      writeFileSync(join(workspace, "config", "policy.yaml"), "actor_allowlist:\n  users:\n    - synthetic\n  agents:\n    - synthetic/1.0\n");
+      const file = join(workspace, "task-create.json");
+      writeFileSync(file, JSON.stringify({ title: "Synthetic cross-interface task", scope: { kind: "workspace", companySlugs: [] }, idempotencyKey: "cross-create" }));
+      const args = ["tasks", "create", "--workspace", workspace, "--input", file, "--actor", "user:synthetic", "--json"];
+      const created = await cli(args); expect(created.exit).toBe(0); const first = JSON.parse(created.stdout).task;
+      expect(JSON.parse((await cli(args)).stdout).task.taskId).toBe(first.taskId);
+      registerAllTools(server, undefined, { profile: "full" });
+      const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair(); const connection = server.connect(serverTransport); await client.connect(clientTransport); await connection;
+      const read = await client.callTool({ name: "tasks_get", arguments: { workspace, taskId: first.taskId } }); expect(read.structuredContent).toMatchObject({ ok: true, data: { task: { taskId: first.taskId, version: 1 } } });
+      const completed = await client.callTool({ name: "tasks_complete", arguments: { workspace, taskId: first.taskId, expectedVersion: 1, outcome: "completed", note: "Synthetic external confirmation", idempotencyKey: "cross-complete", confirm: true } }); expect(completed.structuredContent).toMatchObject({ ok: true, data: { task: { status: "done", version: 2 } } });
+      const reread = await cli(["tasks", "get", "--workspace", workspace, "--task-id", first.taskId, "--json"]); expect(reread.exit).toBe(0); expect(JSON.parse(reread.stdout)).toMatchObject({ task: { taskId: first.taskId, status: "done" }, history: [{ version: 1 }, { version: 2 }] });
+    } finally { await client.close(); await server.close(); rmSync(workspace, { recursive: true, force: true }); }
+  });
   test("all operations have exact schemas, live permission metadata and correct mutation routing", () => {
     const registry = registerAllTools(new McpServer({ name: "task-contract", version: "1" }));
     const taskNames = Object.values(TASK_MCP_NAMES);

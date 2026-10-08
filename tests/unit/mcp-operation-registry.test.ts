@@ -145,8 +145,8 @@ describe("authoritative MCP operation registry (#647)", () => {
     try {
       const directAbout = await full.client.callTool({ name: "meta_about", arguments: {} });
       const gatewayAbout = await compact.client.callTool({ name: "agent_operation_read", arguments: { operation: "system_server_about", input: {} } });
-      expect(directAbout.structuredContent).toMatchObject({ ok: true, data: { serverName: "rentemester-mcp", serverVersion: "0.2.0" } });
-      expect(gatewayAbout.structuredContent).toMatchObject({ ok: true, data: { serverName: "rentemester-mcp", serverVersion: "0.2.0" } });
+      expect(directAbout.structuredContent).toMatchObject({ ok: true, data: { serverName: "rentemester-mcp", serverVersion: "0.3.0" } });
+      expect(gatewayAbout.structuredContent).toMatchObject({ ok: true, data: { serverName: "rentemester-mcp", serverVersion: "0.3.0" } });
 
       const directDomainError = await full.client.callTool({ name: "accounts_list", arguments: { company: "missing-company" } });
       const gatewayDomainError = await compact.client.callTool({ name: "agent_operation_read", arguments: { operation: "accounting_account_list", input: { company: "missing-company" } } });

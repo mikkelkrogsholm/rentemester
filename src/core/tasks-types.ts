@@ -22,8 +22,8 @@ export type Task = {
 export type TaskDraft = Pick<Task, "title" | "scope"> & Partial<Omit<Task, "taskId" | "version" | "createdAt" | "updatedAt" | "completion">> & { taskId?: string };
 export type TaskPatch = Partial<Pick<Task, "title" | "description" | "nextAction" | "scope" | "assignee" | "waitingOn" | "workDate" | "deadline" | "period" | "references" | "evidenceRequired" | "relevance" | "verificationRequired" | "reminders">>;
 export type TaskCompletionInput = { outcome: TaskCompletion["outcome"]; note: string; references?: TaskReference[] };
-export type TaskMutationContext = { actor: string; principal: string; idempotencyKey: string; expectedVersion?: number; now?: string; sourceCheck?: TaskSourceCheck };
-export type TaskEvent = { taskId: string; version: number; operation: string; actor: string; principal: string; at: string; task: Task };
+export type TaskMutationContext = { actor: string; principal: string; idempotencyKey: string; expectedVersion?: number; now?: string; sourceCheck?: TaskSourceCheck; authorize?: () => void; authorizeResult?: (result: unknown) => void };
+export type TaskEvent = { taskId: string; version: number; operation: string; reason?: string; actor: string; principal: string; at: string; task: Task };
 export type TaskQuery = { companySlugs?: string[]; includeArchived?: boolean; status?: TaskStatus; type?: Task["type"]; search?: string; assigneeId?: string; from?: string; to?: string; undated?: boolean; unassigned?: boolean; showDone?: boolean };
 export type TaskColumn = { columnId: string; name: string; status: TaskStatus; isDefault: boolean };
 export type TaskBoard = { boardId: string; version: number; scope: TaskScope; columns: TaskColumn[]; updatedAt: string };
@@ -40,9 +40,9 @@ export type TaskRuntimeStatus = { running: boolean; lastTickAt: string | null; l
 export type TasksView = { tasks: Task[]; count: number; boards: TaskBoard[]; series: TaskSeries[]; projections: TaskProjection[];
   companies: Array<{ slug: string; name: string; archived: boolean; canWrite: boolean; canManage: boolean }>;
   currentUserId: string; canManageWorkspace: boolean; runtime: TaskRuntimeStatus; notifications: TaskNotification[];
-  sourceCoverage: string[] };
+  assignees: Array<{ userId: string; name: string }>; sourceCoverage: string[] };
 /** Identity comes from the transport, never from the task request body. */
-export type TaskIdentity = { principal: string; actor?: string; userId?: string; local: boolean };
+export type TaskIdentity = { principal: string; actor?: string; userId?: string; local: boolean; enforceActorPolicy?: boolean };
 export type TaskOperation = "list" | "get" | "history" | "create" | "update" | "move" | "complete" | "reopen" | "sync"
   | "series-list" | "series-save" | "series-project" | "series-materialize" | "boards-list" | "boards-preview" | "boards-save"
   | "reminder-set" | "notifications" | "runtime-status" | "run";

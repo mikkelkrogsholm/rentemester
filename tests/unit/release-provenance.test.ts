@@ -53,7 +53,7 @@ describe("release provenance", () => {
 
   test("combines product, schema and rule identities", () => {
     const provenance = getReleaseProvenance();
-    expect(provenance.product.version).toBe("0.2.0");
+    expect(provenance.product.version).toBe("0.3.0");
     expect(provenance.product.bunVersion).toBeNull();
     expect(provenance.product.baseImageDigest).toBeNull();
     expect(provenance.schema.version).toBe(CURRENT_SCHEMA_VERSION);

@@ -2,7 +2,7 @@ import type { Database } from "bun:sqlite";
 import { createHash } from "node:crypto";
 import { canonicalJson } from "./canonical-json";
 import { addDays, isValidIsoDate } from "./dates";
-import { createTask, executeTaskMutation, getTask, listTasks, taskId, TaskError, validateTaskDraft } from "./tasks";
+import { createTask, executeTaskMutation, getTask, listTasks, taskId, taskContentText, TaskError, validateTaskDraft } from "./tasks";
 import type { TaskMutationContext, TaskPeriod, TaskProjection, TaskScope, TaskSeries, TaskSeriesDraft } from "./tasks-types";
 
 function selected(scope: TaskScope, companySlugs?: string[], includeWorkspace = false): boolean {
@@ -62,7 +62,7 @@ export function saveTaskSeries(db: Database, input: TaskSeriesDraft, ctx: TaskMu
       throw new TaskError("version_conflict", "Rutinen er ændret; genindlæs den aktuelle version før redigering.");
     }
     if (current && canonicalJson(current.scope) !== canonicalJson(input.scope)) throw new TaskError("invalid_input", "En eksisterende rutine kan ikke flyttes til et andet scope.");
-    const series: TaskSeries = { ...input, title: input.title.trim(), version: (current?.version ?? 0) + 1, updatedAt: now };
+    const series: TaskSeries = { ...input, title: taskContentText(input.title, "series title", 240, true), version: (current?.version ?? 0) + 1, updatedAt: now };
     db.query("INSERT INTO rm_task_series_events(series_id,version,payload_json,actor,principal,created_at) VALUES(?,?,?,?,?,?)")
       .run(series.seriesId, series.version, canonicalJson(series), ctx.actor, ctx.principal, now);
     return series;
@@ -98,7 +98,7 @@ function project(series: TaskSeries, month: number, db: Database): TaskProjectio
     ...(series.template.deadline?.ruleId ? { ruleId: series.template.deadline.ruleId } : {}),
   };
   return { projectionId, seriesId: series.seriesId, title: concrete?.title ?? series.title,
-    scope: series.scope, period: concrete?.period ?? period, workDate: concrete?.workDate ?? addDays(from, series.workDayOffset),
+    scope: concrete?.scope ?? series.scope, period: concrete?.period ?? period, workDate: concrete?.workDate ?? addDays(from, series.workDayOffset),
     deadline: concrete?.deadline ?? deadline, relevance: series.relevance, concreteTaskId: concrete?.taskId ?? null };
 }
 
@@ -148,7 +148,7 @@ export function materializeTaskSeries(db: Database, input: { asOfDate: string; a
     const versions = seriesVersions(db, current.seriesId);
     const startDate = versions.map(item => item.startDate).sort()[0]!;
     if (startDate > input.asOfDate) continue;
-    for (const projection of projectTaskSeries(db, { from: startDate, to: input.asOfDate, companySlugs: input.companySlugs, includeWorkspace: input.includeWorkspace }).filter(item => item.seriesId === current.seriesId)) {
+    for (const projection of projectTaskSeries(db, { from: startDate, to: input.asOfDate, companySlugs: input.companySlugs, includeWorkspace: input.includeWorkspace }).filter(item => item.seriesId === current.seriesId && selected(item.scope, input.companySlugs, input.includeWorkspace))) {
       if (projection.workDate > input.asOfDate) continue;
       if (projection.concreteTaskId) { result.existing++; result.taskIds.push(projection.concreteTaskId); continue; }
       const series = [...versions].reverse().find(item => item.version === 1 || item.updatedAt.slice(0, 10) <= projection.workDate)!;
