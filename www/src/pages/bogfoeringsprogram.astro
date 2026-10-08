@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/PageHero.astro";
 import SeoEvidence from "../components/SeoEvidence.astro";
@@ -33,8 +34,8 @@ const jsonLd = {
     lead="Rentemester er et bogføringsprogram under udvikling til danske freelancere, konsulenter og små ApS'er. Målet er at automatisere rutinerne, men bevare en hård, kontrollerbar bogføringskerne."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Et bogføringsprogram må ikke være kreativt. Det skal kunne tage imod bilag og banklinjer, bogføre efter faste regler, stoppe usikre cases og bevare et revisionsspor. Rentemester er bygget omkring netop den disciplin.
     </p>
 
@@ -51,46 +52,46 @@ const jsonLd = {
       ]}
     />
 
-    <h2>Den korte forklaring</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Den korte forklaring</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester arbejder med tre lag: input fra bilag, bank og fakturaer; danske regler som kode; og en append-only ledger. AI kan hjælpe med arbejdet, men den kan ikke bogføre udenom valideringerne.
     </p>
 
-    <h2>Hverdagsflowet</h2>
-    <ol>
-      <li>Banktransaktioner importeres fra CSV.</li>
-      <li>Bilag indlæses med metadata og SHA-256 hash.</li>
-      <li>Systemet foreslår match mellem banklinjer, bilag og fakturaer.</li>
-      <li>Sikre posteringer bogføres i dobbelt bogholderi.</li>
-      <li>Usikre eller blokerede cases kan registreres som exceptions.</li>
-      <li>Momsrapport, dashboard, backup og eksport kan genereres efterfølgende.</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hverdagsflowet</h2>
+    <ol {...sx.pages_bogfoeringsprogram_ol1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Banktransaktioner importeres fra CSV.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Bilag indlæses med metadata og SHA-256 hash.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Systemet foreslår match mellem banklinjer, bilag og fakturaer.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Sikre posteringer bogføres i dobbelt bogholderi.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Usikre eller blokerede cases kan registreres som exceptions.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Momsrapport, dashboard, backup og eksport kan genereres efterfølgende.</li>
     </ol>
 
-    <h2>Hvad er særligt ved Rentemester?</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad er særligt ved Rentemester?</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Mange bogføringsprogrammer starter med en brugerflade. Rentemester starter med ledgeren. Det gør projektet langsommere at gøre pænt, men stærkere som fundament: bogføringen skal være korrekt, testbar og mulig at verificere før der bygges convenience ovenpå.
     </p>
 
-    <h2>Funktioner der allerede findes</h2>
-    <ul>
-      <li>journalposteringer med krav om balance</li>
-      <li>reverseringer i stedet for sletning</li>
-      <li>periodelås</li>
-      <li>dokumentkrav for indtægter og udgifter</li>
-      <li>fremmed valuta med DKK-grundlag</li>
-      <li>momsrapport og særlige momsflows</li>
-      <li>backup og restore med signaturkontrol</li>
-      <li>agentadgang via MCP-tools med confirm-gates</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Funktioner der allerede findes</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>journalposteringer med krav om balance</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>reverseringer i stedet for sletning</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>periodelås</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>dokumentkrav for indtægter og udgifter</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>fremmed valuta med DKK-grundlag</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>momsrapport og særlige momsflows</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>backup og restore med signaturkontrol</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>agentadgang via MCP-tools med confirm-gates</li>
     </ul>
 
-    <h2>Hvornår giver det mening?</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvornår giver det mening?</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester giver mest mening, hvis du vil forstå, teste eller bidrage til et dansk open source bogføringssystem. Det er også relevant hvis du bygger lokale agent-workflows og har brug for et bogføringsværktøj med strukturerede operationer i stedet for fritekst. Det er ikke klar som plug-and-play erstatning for et etableret bogføringsprogram.
     </p>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
-      Se <a href="/saadan-virker-det">arkitekturen</a>, <a href="/funktioner">funktionerne</a> og <a href="/docs/installation">installationen</a>. Koden ligger på <a href={SITE.github} rel="noopener" target="_blank">GitHub</a>, og alle seriøse produktclaims bør kunne spores til tests eller roadmap.
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Se <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/saadan-virker-det">arkitekturen</a>, <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/funktioner">funktionerne</a> og <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/docs/installation">installationen</a>. Koden ligger på <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={SITE.github} rel="noopener" target="_blank">GitHub</a>, og alle seriøse produktclaims bør kunne spores til tests eller roadmap.
     </p>
   </article>
 </BaseLayout>

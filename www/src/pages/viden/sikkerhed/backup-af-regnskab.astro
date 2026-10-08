@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="En regnskabsbackup er ikke bare en kopi. Den skal kunne verificeres, gendannes og dokumentere hvilke filer og data den indeholder."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Mange opdager først backup-problemer, når noget allerede er tabt. For bogføring er det ekstra kritisk, fordi ledger, bilag, fakturaer og konfiguration skal hænge sammen. En backup uden restore-test er kun et håb.
     </p>
 
@@ -37,21 +38,21 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Hvad bør med i backup?</h2>
-    <ul>
-      <li>ledger-database</li>
-      <li>bilag og originale dokumenter</li>
-      <li>udstedte fakturaer og kreditnotaer</li>
-      <li>konfiguration og virksomhedsmapping</li>
-      <li>manifest med checksums</li>
-      <li>mulighed for restore-verifikation</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad bør med i backup?</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>ledger-database</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>bilag og originale dokumenter</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>udstedte fakturaer og kreditnotaer</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>konfiguration og virksomhedsmapping</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>manifest med checksums</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>mulighed for restore-verifikation</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har backup, backup-status, restore, HMAC-signering, optional ed25519-signatur og standalone signaturverifikation i testede flows. Siden lover ikke hosted backup-service; den beskriver lokale, verificerbare backup-mekanismer i kildekoden.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Det praktiske mål er, at en backup kan flyttes til en anden mappe, verificeres og gendannes uden at brugeren skal gætte hvilke filer der hører sammen. Det er især vigtigt, når bilag og database lever side om side.
     </p>
   </article>

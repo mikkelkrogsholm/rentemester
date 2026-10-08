@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="Rentemester kan samle en årsrapport for et lukket regnskabsår og generere iXBRL, men outputtet skal forstås som forberedelse. Ejer eller revisor skal stadig gennemgå og indberette."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       En årsrapport er ikke bare en pæn opsummering af dashboard-tal. Den kræver et afsluttet regnskabsår, balancerede bøger, virksomhedsstamdata og klare felter for resultat, balance og notegrundlag.
     </p>
 
@@ -40,18 +41,18 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Forudsætninger</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Forudsætninger</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemesters regel kræver et fuldt låst regnskabsår, balancerede bøger og registreret CVR, før en klasse B-årsrapport kan samles. Det reducerer risikoen for at rapporten bygges på halvfærdige tal.
     </p>
 
-    <h2>iXBRL som output</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>iXBRL som output</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Grafen viser en iXBRL-generator, der kan materialisere et struktureret output fra årsrapportens felter. Det er nyttigt til maskinlæsbarhed, men det ændrer ikke på at rapporten skal vurderes fagligt.
     </p>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       CLI-flowet samler resultatopgørelse, balance, noteskelet og ledelsespåtegning for et lukket regnskabsår. Rentemester forbereder materialet; ejer, bogholder eller revisor ejer den endelige gennemgang og indberetning.
     </p>
   </article>

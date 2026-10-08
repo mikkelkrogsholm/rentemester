@@ -24,14 +24,14 @@ if (stat.size < 1024) {
 const html = readFileSync(path, "utf8");
 const checks: Array<[string, boolean]> = [
   ["doctype", html.startsWith("<!DOCTYPE html>")],
-  ["html_lang_da", html.includes('<html lang="da">')],
-  ["body_open", html.includes("<body>")],
+  ["html_lang_da", /<html\b[^>]*\blang="da"[^>]*>/.test(html)],
+  ["body_open", /<body\b[^>]*>/.test(html)],
   ["body_close", html.includes("</body>")],
   ["html_close", html.trimEnd().endsWith("</html>")],
-  ["has_header", html.includes('<header class="header">')],
-  ["has_metrics", html.includes('<section class="metrics">')],
-  ["has_footer", html.includes('<footer class="footer">')],
-  ["no_script", !/<script/i.test(html)],
+  ["has_header", /<header\b[^>]*>/.test(html)],
+  ["has_metrics", /<section\b[^>]*>/.test(html)],
+  ["has_footer", /<footer\b[^>]*>/.test(html)],
+  ["offline_fonts", html.includes("new FontFace") && !html.includes("https://fonts.")],
 ];
 
 const failed = checks.filter(([, ok]) => !ok);

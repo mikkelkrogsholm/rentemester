@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="Bankafstemning handler om at sikre, at bankens bevægelser matcher fakturaer, køb, udlæg og betalinger. Uafstemte banklinjer er ofte de første tegn på manglende bilag eller fejl."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       En bankkonto viser hvad der faktisk er betalt. Bogføringen viser hvorfor beløbet findes. Bankafstemning forbinder de to. Hvis der står en betaling i banken uden bilag eller faktura, er opgaven ikke færdig.
     </p>
 
@@ -37,22 +38,22 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Hvad skal matches?</h2>
-    <ul>
-      <li>kundebetalinger mod fakturaer</li>
-      <li>leverandørbetalinger mod bilag eller fakturaer</li>
-      <li>gebyrer og kortbetalinger mod afregninger</li>
-      <li>udlæg og refusioner mod dokumentation</li>
-      <li>åbne poster der kræver manuel forklaring</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad skal matches?</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>kundebetalinger mod fakturaer</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>leverandørbetalinger mod bilag eller fakturaer</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>gebyrer og kortbetalinger mod afregninger</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>udlæg og refusioner mod dokumentation</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>åbne poster der kræver manuel forklaring</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester kan importere bank-CSV, liste og filtrere banktransaktioner, foreslå matches og afstemme mod dokumenterede flows. Umatchede linjer kan synliggøres som exceptions, så de ikke forsvinder som skjulte fejl.
     </p>
 
-    <h2>Hvorfor det betyder noget</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvorfor det betyder noget</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Små virksomheder får ofte rod i regnskabet, når banklinjer bogføres hurtigt uden dokumentation. En stærk afstemning gør det tydeligt, hvad der mangler, og giver bogholderen et bedre udgangspunkt end en mappe med tilfældige bilag.
     </p>
   </article>

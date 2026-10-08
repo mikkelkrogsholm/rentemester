@@ -7,10 +7,11 @@
 // at hjælpe-siden indeholder de centrale ressourcer.
 
 import { describe, expect, test } from "bun:test";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { App } from "./App";
 import { mockFetch } from "./test/fixtures";
+import packageJson from "../package.json";
 
 function renderApp(route = "/help") {
   return render(
@@ -49,7 +50,8 @@ describe("App topbar", () => {
     });
     renderApp("/");
     await screen.findByRole("form", { name: /Opret virksomhed/i });
-    expect(screen.getByText("v0.3.0")).toBeInTheDocument();
+    expect(screen.getByText(`v${packageJson.version}`)).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Workspace", { selector: "summary" }));
     const helpLink = screen.getByRole("link", { name: /^Hjælp$/i });
     expect(helpLink).toBeInTheDocument();
     expect(helpLink.getAttribute("href")).toBe("/help");

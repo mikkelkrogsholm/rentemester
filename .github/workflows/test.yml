@@ -36,6 +36,9 @@ jobs:
       - name: Verify agent discovery coverage
         run: bun run agent-discovery:coverage
 
+      - name: Verify StyleX ownership and generated document styles
+        run: bun run stylex:check
+
       - name: Lint TypeScript and React sources
         run: bun run lint
 

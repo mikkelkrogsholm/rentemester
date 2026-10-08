@@ -61,6 +61,44 @@ export const designTokens = {
     "md": "4px",
     "lg": "8px"
   },
+  "marketing": {
+    "colors": {
+      "surfaceContainerLow": "#191c22",
+      "error": "#ffb4ab",
+      "surface": "#10131a",
+      "parchmentText": "#e2e8f0",
+      "inkBlack": "#05070A",
+      "deepNavy": "#0b0e14",
+      "surfaceContainer": "#1d2026",
+      "onSurface": "#e1e2eb",
+      "onSurfaceVariant": "#d1c5b4",
+      "outline": "#9a8f80",
+      "outlineVariant": "#4e4639",
+      "brassGold": "#c5a059",
+      "cyberBlue": "#00D1FF",
+      "primary": "#e9c176",
+      "primaryFixed": "#ffdea5",
+      "onPrimaryContainer": "#4e3700",
+      "elementBorder": "#e5e7eb"
+    },
+    "typography": {
+      "utilityHeadline": "'EB Garamond', Georgia, serif",
+      "utilityBody": "'Hanken Grotesk', system-ui, sans-serif",
+      "utilityMono": "'JetBrains Mono', ui-monospace, monospace",
+      "baseBody": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "baseMono": "\"SFMono-Regular\", Consolas, \"Liberation Mono\", ui-monospace, monospace",
+      "baseHeadline": "Georgia, \"Times New Roman\", serif",
+      "headline": "Georgia, EB Garamond, serif",
+      "body": "Hanken Grotesk, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "layout": {
+      "maxWidth": "1280px",
+      "marginMobile": "16px",
+      "marginDesktop": "64px",
+      "gutter": "24px"
+    }
+  },
   "components": {
     "buttonPrimary": {
       "backgroundColor": "#1B1A17",

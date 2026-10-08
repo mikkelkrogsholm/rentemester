@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -16,8 +17,8 @@ import { SITE } from "../../../consts";
 >
   <PageHero eyebrow="Debitorer" title="Fakturastatus skal beregnes, ikke gættes" lead="En faktura kan være åben, betalt, forfalden, delvist krediteret, refunderet eller tabt. Status skal komme fra bogførte hændelser, ikke manuelle labels." />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Fakturastatus er vigtig for likviditet og opfølgning. Hvis status bare er et felt, nogen kan ændre, mister du forbindelsen til betalinger, kreditnotaer, rykkerkrav og tab. Derfor bør status beregnes fra hændelser.
     </p>
 
@@ -33,22 +34,22 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Status bør afhænge af</h2>
-    <ul>
-      <li>oprindeligt fakturabeløb</li>
-      <li>betalinger</li>
-      <li>kreditnotaer</li>
-      <li>refunderinger</li>
-      <li>rykkerkrav, renter og kompensation</li>
-      <li>bad-debt write-off</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Status bør afhænge af</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>oprindeligt fakturabeløb</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>betalinger</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>kreditnotaer</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>refunderinger</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>rykkerkrav, renter og kompensation</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>bad-debt write-off</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har testede statusflows, der beregner åben saldo ud fra faktura, betalinger, kreditnotaer, refunds, claims og write-offs. Det gør status til et resultat af ledgeren, ikke et pyntet dashboardfelt.
     </p>
-    <p>
-      Det er især vigtigt ved delbetalinger, kreditnotaer og <a href="/viden/debitorer/refundering">refunderinger</a>, hvor den åbne saldo ellers let kan blive forkert. En statusvisning skal derfor kunne forklare både hovedstol og særskilte krav som rykkergebyr eller renter.
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Det er især vigtigt ved delbetalinger, kreditnotaer og <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/viden/debitorer/refundering">refunderinger</a>, hvor den åbne saldo ellers let kan blive forkert. En statusvisning skal derfor kunne forklare både hovedstol og særskilte krav som rykkergebyr eller renter.
     </p>
   </article>
 </BaseLayout>

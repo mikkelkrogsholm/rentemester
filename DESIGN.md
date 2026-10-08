@@ -54,6 +54,40 @@ rounded:
   sm: "2px"
   md: "4px"
   lg: "8px"
+marketing:
+  colors:
+    surfaceContainerLow: "#191c22"
+    error: "#ffb4ab"
+    surface: "#10131a"
+    parchmentText: "#e2e8f0"
+    inkBlack: "#05070A"
+    deepNavy: "#0b0e14"
+    surfaceContainer: "#1d2026"
+    onSurface: "#e1e2eb"
+    onSurfaceVariant: "#d1c5b4"
+    outline: "#9a8f80"
+    outlineVariant: "#4e4639"
+    brassGold: "#c5a059"
+    cyberBlue: "#00D1FF"
+    primary: "#e9c176"
+    primaryFixed: "#ffdea5"
+    onPrimaryContainer: "#4e3700"
+    elementBorder: "#e5e7eb"
+  typography:
+    utilityHeadline: "'EB Garamond', Georgia, serif"
+    utilityBody: "'Hanken Grotesk', system-ui, sans-serif"
+    utilityMono: "'JetBrains Mono', ui-monospace, monospace"
+    baseBody: "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif"
+    baseMono: "\"SFMono-Regular\", Consolas, \"Liberation Mono\", ui-monospace, monospace"
+    baseHeadline: "Georgia, \"Times New Roman\", serif"
+    headline: "Georgia, EB Garamond, serif"
+    body: "Hanken Grotesk, sans-serif"
+    mono: "JetBrains Mono, monospace"
+  layout:
+    maxWidth: "1280px"
+    marginMobile: "16px"
+    marginDesktop: "64px"
+    gutter: "24px"
 components:
   button-primary:
     background-color: "{colors.ink}"
@@ -163,7 +197,7 @@ components:
 
 Rentemester skal ligne en moderne dansk bekendtgørelse mere end et SaaS-dashboard. Ro frem for stimulering, dokument-følelse frem for app-følelse, og determinisme er også en æstetisk beslutning. Brugeren skal kunne forstå virksomhed, periode, datagrundlag og konsekvens, før en handling udføres.
 
-Denne fil er den autoritative designkontrakt for cockpit, regnskabsoutput og PDF. [www/DESIGN.md](www/DESIGN.md) gælder marketingwebsitet. YAML-felterne genererer `src/design/tokens.ts`, `app/src/design/tokens.stylex.ts` og CSS-broen via `bun scripts/design-tokens.ts`. Genererede filer redigeres gennem denne kilde; `bun run design:check` afviser drift. Denne fils komponentkatalog og adfærdsregler er fælles; [docs/ui-refactor.md](docs/ui-refactor.md) dokumenterer rutedækning, accept og konkrete verificeringsgrænser.
+Denne fil er den autoritative designkontrakt for cockpit, hjemmeside, regnskabsoutput og PDF. Marketingrollernes værdier ligger i YAML-feltet `marketing`; hjemmesidens kontrakt henviser hertil. YAML-felterne genererer `src/design/tokens.ts` og `app/src/design/tokens.stylex.ts` via `bun scripts/design-tokens.ts`. Dokumenter og hjemmeside bruger fælles StyleX-precompilering. Genererede filer redigeres gennem denne kilde; `bun run design:check` afviser drift. Denne fils komponentkatalog og adfærdsregler er fælles; [docs/ui-refactor.md](docs/ui-refactor.md) dokumenterer rutedækning, accept og konkrete verificeringsgrænser.
 
 Regnskabstal og produktdefaults er generelle. Virksomhedsnavne, CVR, kontomappinger, saldi og lokale policyvalg tilhører workspacet. Gallerier og versionsstyrede fixtures bruger syntetiske data.
 
@@ -219,7 +253,7 @@ Almindelige controls og navigationslinks har et produktmål på mindst 44 px hø
 
 ### Ejerskab og implementering
 
-Cockpit ejer fælles primitives i [app/src/components/ui/index.tsx](app/src/components/ui/index.tsx) og domænekomponenter i `app/src/components`. StyleX kompilerer komponent- og lokale styles; semantiske rapportlayouts og responsive recordmønstre ligger i CSS-laget. Rapporter, CLI-human-output og PDF deler betydning og tokenkilde; de behøver deres egen semantiske rendering.
+Cockpit ejer fælles primitives i [app/src/components/ui/index.tsx](app/src/components/ui/index.tsx) og domænekomponenter i `app/src/components`. Al ejet visuel styling defineres i StyleX: komponenter, responsive rapportlayouts, hjemmeside, HTML-eksporter, SVG-grafer og PDF-skabeloner. Compilerens CSS er et buildprodukt. Rapporter og PDF deler betydning og tokenkilde og bevarer deres semantiske rendering; CLI-tekst er tekstoutput.
 
 Komponentgalleriet startes med `bun run --cwd app gallery`. Det viser syntetiske controls, felter, beløb, status og native dialoger og indgår ikke i produktionsruterne. Galleriet er en visuel prøveflade; browsermatricen og komponenttests dækker produktflows.
 
@@ -293,10 +327,11 @@ Læsesvar tilhører virksomhed, dokument og periode. Gamle data skjules ved kont
 
 | Komponent/familie | Brug og kontrakt |
 |---|---|
-| `PnlChart` | Månedlige indtægter/udgifter med navngivet canvas og native fold-ud-tabel med de samme værdier. Valuta følger den viste rapport. |
-| `CashflowChart` | Ind-/udbetalinger og banksaldo med navngivet canvas, eksplicit valuta og reference til månedstabellen, som også viser banksaldo. Null er manglende saldo, ikke nul. Saldi summeres aldrig mellem måneder. |
-| `MultiYearChart`, `MultiYearBalanceChart` | Navngivet canvas med aria-details-reference til den fulde resultat-/balancetabel. År vises i rækkefølge; delvist live-år mærkes år til dato i både graf og tabel. |
-| `chartCurrency`, `CHART_AXIS_NUMBER` | Fælles dansk tooltip-/akseformat. Tooltip har rapportens valuta; kort akseformat må kun bruges, når grafens enhed er tydelig. Legend er 14 px, akser 12 px fra tokens. `useChartFonts` indlæser de lokale graffonts og gentegner uden animation, så canvas ikke fastholder fallback-skrift ved første besøg. |
+| `CategoricalChart` | Fælles SVG-tegneflade med kategorier, serievalg, dobbelte akser og tastatur-, hover- og touchinspektion. StyleX definerer al visuel styling; koordinater og kurver er data. |
+| `PnlChart` | Månedlige indtægter/udgifter med navngivet SVG og native fold-ud-tabel med de samme værdier. Valuta følger den viste rapport. |
+| `CashflowChart` | Ind-/udbetalinger og banksaldo med navngivet SVG, eksplicit valuta og reference til månedstabellen, som også viser banksaldo. Null er manglende saldo, ikke nul. Saldi summeres aldrig mellem måneder. |
+| `MultiYearChart`, `MultiYearBalanceChart` | Navngivet SVG med aria-details-reference til den fulde resultat-/balancetabel. År vises i rækkefølge; delvist live-år mærkes år til dato i både graf og tabel. |
+| `chartCurrency`, `CHART_AXIS_NUMBER` | Fælles dansk tooltip-/akseformat. Tooltip har rapportens valuta; kort akseformat må kun bruges, når grafens enhed er tydelig. Legend er 14 px, akser 12 px fra tokens. SVG-grafer bruger de lokalt registrerede skrifter direkte. Serieknapper bevarer skjul/vis, og kategoriinspektion virker med tastatur, hover og touch. |
 | `CompanyCard` | Virksomhedsidentitet, regnskabsscope, nøgletal og opgaver med semantiske links. Manglende ledger eller delvis dækning forklares før aggregerede tal. |
 | `CompanyForm` | Fælles stamdata ved onboarding, oprettelse og administration. Felter og defaults er generelle; kontekst, validering og adgang bestemmer det konkrete workflow. |
 | `AccountantExportCard` | Forklar eksportens indhold, periode og modtagerformål; brug præcis export-permission. Download er en handling med sin egen status og fejl. |
@@ -328,3 +363,13 @@ Don't: brug emoji, gradients, chatbobler, mørkt tema i v1, pill-buttons, pynt p
 Adgang til en workspace giver ikke automatisk ejeradgang til dens virksomheder. UI skjuler handlinger, der ikke er tilladt, men serveren afgør altid adgang, periodekontroller, revisionsgrundlag, planhash og bogføring. Automatisk browserkontrol er ikke en attest for fuld WCAG-overholdelse.
 
 Reglerne om kontrast, klikmål og modalitet bygger på [W3C: Non-text Contrast](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html), [W3C: Target Size (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html) og [WAI-ARIA: Modal Dialog Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/). Strukturerede graftabeller forbindes med [WAI-ARIA: aria-details](https://www.w3.org/TR/wai-aria-1.2/#aria-details), så tabelstrukturen bevares. Produktspecifikke valg som 44 px controls, varm palette og lange sideflows er Rentemesters egne designbeslutninger.
+
+### StyleX som eneste stylingkilde
+
+Brug direkte `stylex.props`/`stylex.attrs` og eksplicitte komponentvarianter. En permanent oversætter fra gamle klassestrenge til StyleX er ikke en migrering. Statisk HTML og Astro bruger attributkort, som er sammensat af StyleX før serialisering; sammensæt ikke kompilerede klassestrenge manuelt.
+
+Root/body, fokus, udskrift, responsivt layout og reduced motion følger samme kontrakt. FontFace registrerer lokale fontressourcer; fontvalg defineres i StyleX. SVG-koordinater, path-data og PDF-sideformat er dokumentdata. Farver, streger, tekst og layout er styles.
+
+Portefølje og Opgaver er synlige workspaceindgange. Virksomhedens mobile navigation hedder Selskabsmenu. Opgaver viser scope, visningsvalg, aktive filtre og handlinger som forskellige grupper; Opret opgave er den primære handling. Visningsknapper bruger aria-pressed. Filtre og kilde-retur bevares i URL'en.
+
+`bun run stylex:check` kontrollerer ejerskab og genererede dokumentstyles. Se `docs/stylex-migration.md` for buildveje, eksportkompatibilitet og verifikation.

@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="I en append-only ledger bliver posteringer tilføjet, ikke omskrevet. Fejl rettes med nye posteringer, så historikken stadig kan læses."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Det kan virke tungt at lave en modpostering i stedet for bare at rette en fejl direkte. Men direkte redigering gør det svært at forstå, hvad der faktisk skete. En append-only model bevarer både fejlen, rettelsen og forklaringen.
     </p>
 
@@ -37,13 +38,13 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Hvorfor er det vigtigt?</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvorfor er det vigtigt?</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Bogføring er ikke kun et aktuelt tal. Det er en historik over beslutninger, dokumenter og betalinger. Hvis historikken kan overskrives, bliver det svært at opdage manipulation, fejl eller misforståelser.
     </p>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har databasebeskyttelser og tests, der forhindrer mutation af bogførte linjer og dokumenter, når de først indgår i ledgeren. Reverseringer og rettelser skal være nye hændelser. Det gør audit-trailen længere, men mere troværdig.
     </p>
   </article>

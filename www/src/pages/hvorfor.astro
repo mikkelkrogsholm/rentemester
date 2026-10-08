@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/PageHero.astro";
 import { SITE } from "../consts";
@@ -32,59 +33,59 @@ const jsonLd = {
     lead="Bogføring skal være enkelt nok til at en lille virksomhed selv kan klare det — uden at gå på kompromis med korrekthed eller revisorens krav. Det her er hvorfor projektet eksisterer."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <h2>Det er aften, og bilagene venter</h2>
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Det er aften, og bilagene venter</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Tusindvis af danske mikrovirksomheder og freelancere sidder hver uge med samme problem: en stak bilag, en bankkonto, og et bogføringsprogram der enten er for dyrt, for kompliceret, eller begge dele. Aftenen går med at klikke i en webapp, lede efter den rigtige konto, og håbe man har valgt det rigtige momsfelt.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Det er ikke kun et teknisk problem. Det er et tillidsproblem. Små virksomheder får ofte enten lukkede systemer de ikke kan efterprøve, eller tunge arbejdsgange bygget til større organisationer.
     </p>
 
-    <h2>AI'en kan gøre arbejdet — men ikke afgøre reglerne</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>AI'en kan gøre arbejdet — men ikke afgøre reglerne</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Sprogmodeller er gode til at læse bilag, foreslå kontering og matche transaktioner. De er katastrofale til at have det sidste ord i et regnskab. De hallucinerer, glemmer, og kan ikke holdes ansvarlige.
     </p>
-    <p>
-      Rentemesters svar er at adskille de to. <strong>AI-agenten</strong> hjælper — hurtigt, fleksibelt, sprogligt. <strong>Reglerne</strong> afgør — deterministiske, læsbare, versionsstyrede. Hvis agenten foreslår noget reglerne ikke tillader, bliver det stoppet og du får spørgsmålet stillet. Hvis reglerne mangler en sag, åbner du et issue.
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Rentemesters svar er at adskille de to. <strong {...sx.pages_viden_frister_moms_strong1}>AI-agenten</strong> hjælper — hurtigt, fleksibelt, sprogligt. <strong {...sx.pages_viden_frister_moms_strong1}>Reglerne</strong> afgør — deterministiske, læsbare, versionsstyrede. Hvis agenten foreslår noget reglerne ikke tillader, bliver det stoppet og du får spørgsmålet stillet. Hvis reglerne mangler en sag, åbner du et issue.
     </p>
 
-    <h2>Hvorfor open source er afgørende</h2>
-    <p>
-      Et bogføringssystem er virksomhedens fundament. Du skal kunne stole på det. Og du skal kunne <em>verificere</em> at det er korrekt — ikke bare tage en leverandørs ord for det.
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvorfor open source er afgørende</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Et bogføringssystem er virksomhedens fundament. Du skal kunne stole på det. Og du skal kunne <em {...sx.pages_docs_foersteFaktura_em1}>verificere</em> at det er korrekt — ikke bare tage en leverandørs ord for det.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Når kildekoden ligger åbent på GitHub:
     </p>
-    <ul>
-      <li>Din revisor kan inspicere logikken bag enhver postering.</li>
-      <li>Når dansk bogføringspraksis ændrer sig, kan reglerne opdateres af fællesskabet — ikke kun af én leverandør.</li>
-      <li>Du kan tage dine data og gå når som helst. Der er ingen lock-in fordi der er ingen leverandør at låses inde hos.</li>
-      <li>Sikkerhed er noget mange øjne kan kigge på, ikke en marketingpåstand.</li>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Din revisor kan inspicere logikken bag enhver postering.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Når dansk bogføringspraksis ændrer sig, kan reglerne opdateres af fællesskabet — ikke kun af én leverandør.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Du kan tage dine data og gå når som helst. Der er ingen lock-in fordi der er ingen leverandør at låses inde hos.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Sikkerhed er noget mange øjne kan kigge på, ikke en marketingpåstand.</li>
     </ul>
 
-    <h2>Determinisme er ikke en mode</h2>
-    <p>
-      Rentemester er bygget på en disciplin der gælder hele vejen ned: <strong>samme input → samme output</strong>. Ledgeren er append-only og signeret med ed25519. Dashboardet er deterministisk — to kørsler giver bit-for-bit identisk HTML. Reglerne er ren kode uden skjulte side-effekter.
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Determinisme er ikke en mode</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Rentemester er bygget på en disciplin der gælder hele vejen ned: <strong {...sx.pages_viden_frister_moms_strong1}>samme input → samme output</strong>. Ledgeren er append-only og signeret med ed25519. Dashboardet er deterministisk — to kørsler giver bit-for-bit identisk HTML. Reglerne er ren kode uden skjulte side-effekter.
     </p>
-    <p>
-      Den disciplin er ikke teknisk pedanteri. Den er hele pointen: når du senere skal bevise overfor Skat eller en revisor at et regnskab står ved magt, skal du kunne pege på <em>præcis hvilke regler der gjaldt hvornår</em> og <em>præcis hvad systemet beregnede</em>. Det kan du kun hvis intet er tilfældigt.
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Den disciplin er ikke teknisk pedanteri. Den er hele pointen: når du senere skal bevise overfor Skat eller en revisor at et regnskab står ved magt, skal du kunne pege på <em {...sx.pages_docs_foersteFaktura_em1}>præcis hvilke regler der gjaldt hvornår</em> og <em {...sx.pages_docs_foersteFaktura_em1}>præcis hvad systemet beregnede</em>. Det kan du kun hvis intet er tilfældigt.
     </p>
 
-    <h2>Hvad det <em>ikke</em> er</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad det <em {...sx.pages_docs_foersteFaktura_em1}>ikke</em> er</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester er ikke et produkt vi sælger. Der er ingen virksomhed bag der tilbyder hosted version, support eller priser. Det er ikke et færdigt værktøj for ikke-tekniske brugere — endnu. Det er ikke beregnet til lønadministration, lagerstyring eller komplekse internationale forhold.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Det er et fællesskabsprojekt, udviklet offentligt under MIT-licens. Hvis ideen giver mening, så klon koden, prøv den mod virkelige bilag og hjælp med at gøre reglerne skarpere.
     </p>
 
-    <h2>Hvad du kan gøre nu</h2>
-    <ul>
-      <li>Læs <a href="/saadan-virker-det">arkitekturen</a> og se om designet giver mening.</li>
-      <li><a href="/docs/installation">Installer det lokalt</a> og prøv at køre en demo-virksomhed igennem.</li>
-      <li>Åbn et issue på <a href={SITE.github} rel="noopener" target="_blank">GitHub</a> hvis du finder en fejl eller har en idé.</li>
-      <li>Hvis du er revisor eller bogholder: udfordr reglerne i <code>rules/dk/</code>. Det er der projektet bliver bedre.</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad du kan gøre nu</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Læs <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/saadan-virker-det">arkitekturen</a> og se om designet giver mening.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/docs/installation">Installer det lokalt</a> og prøv at køre en demo-virksomhed igennem.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Åbn et issue på <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={SITE.github} rel="noopener" target="_blank">GitHub</a> hvis du finder en fejl eller har en idé.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Hvis du er revisor eller bogholder: udfordr reglerne i <code {...sx.pages_sikkerhed_code1}>rules/dk/</code>. Det er der projektet bliver bedre.</li>
     </ul>
   </article>
 </BaseLayout>

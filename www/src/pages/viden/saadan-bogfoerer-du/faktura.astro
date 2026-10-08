@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -33,8 +34,8 @@ const jsonLd = {
     lead="En faktura er både et salgsdokument og grundlag for bogføring. Den skal kunne valideres, bogføres, matches mod betaling og rettes med kreditnota eller modpostering hvis noget går galt."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Bogføring af en faktura starter før pengene rammer banken. Først skal fakturaen være korrekt: kunde, fakturanummer, dato, levering, linjer, moms og totaler skal hænge sammen. Derefter kan salget bogføres på debitor, omsætning og eventuel salgsmoms.
     </p>
 
@@ -50,21 +51,21 @@ const jsonLd = {
       ]}
     />
 
-    <h2>Typisk bogføring</h2>
-    <pre><code>Debet: debitorer 1.250 kr.
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Typisk bogføring</h2>
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>Debet: debitorer 1.250 kr.
 Kredit: omsætning 1.000 kr.
 Kredit: salgsmoms 250 kr.</code></pre>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Når kunden betaler, bogføres betalingen typisk fra debitor til bank. Det er vigtigt at adskille fakturaens opståen fra betalingen, så du kan se åbne, forfaldne og betalte fakturaer.
     </p>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har validering, udstedelse, PDF-rendering, bogføring, status, betaling, rykkerflow, renter, kompensation, kreditnota, refundering og tab på debitor i den nuværende kodebase. Det betyder ikke, at projektet er færdigt SaaS; det betyder at fakturaflowet er et af de bedst dækkede områder i koden.
     </p>
 
-    <h2>Fejl og rettelser</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Fejl og rettelser</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Hvis en faktura er forkert, bør historikken ikke overskrives. Brug kreditnota eller en tydelig modpostering, så både kunden, bogholderen og en senere audit kan se hvad der skete. Det er mere besværligt end at redigere direkte, men langt mere robust.
     </p>
   </article>

@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -16,8 +17,8 @@ import { SITE } from "../../../consts";
 >
   <PageHero eyebrow="Moms" title="Momsindberetning starter med dokumenterede tal" lead="Indberetningen er sidste skridt. Før den kommer bilag, fakturaer, momsbehandling, bankafstemning og en rapport, der kan forklares." />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Momsindberetning bør ikke være en manuel gætteøvelse. Tallene skal komme fra bogføringen og kunne følges tilbage til dokumentation. Hvis et beløb i momsrapporten ikke kan forklares, er det et tegn på et bogføringsproblem før det er et indberetningsproblem.
     </p>
 
@@ -33,20 +34,20 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Før du indberetter</h2>
-    <ul>
-      <li>afstem bank og åbne poster</li>
-      <li>kontrollér momsperioden</li>
-      <li>gennemgå uafklarede bilag</li>
-      <li>kontrollér EU-køb og reverse charge</li>
-      <li>gem rapporten som dokumentation</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Før du indberetter</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>afstem bank og åbne poster</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>kontrollér momsperioden</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>gennemgå uafklarede bilag</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>kontrollér EU-køb og reverse charge</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>gem rapporten som dokumentation</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester kan beregne en momsrapport for en periode, men siden lover ikke automatisk indsendelse til TastSelv eller myndighedsportal. Den korrekte claim er lokal rapportering og dokumenteret grundlag, ikke fuld automatisk indberetning.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Det betyder, at workflowet stopper før myndighedsindsendelsen. Brugeren skal selv kontrollere perioden, åbne poster og eventuelle usikre momskoder, og derefter indberette i Skattestyrelsens løsning med rapporten som dokumentation.
     </p>
   </article>

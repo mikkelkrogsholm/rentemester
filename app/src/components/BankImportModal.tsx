@@ -1,6 +1,7 @@
-import { useMutationOutcome } from "../lib/useMutationOutcome";
-import { useDiscardGuard } from "../lib/useDiscardGuard";
 import * as stylex from "@stylexjs/stylex";
+import { cockpitStyles } from "../design/cockpit.stylex";
+import { useDiscardGuard } from "../lib/useDiscardGuard";
+import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { Button, Dialog, Input, Select } from "./ui";
 // BankImportModal — the human bank-CSV-import action for the Cockpit (#213, slice 2).
 //
@@ -33,255 +34,434 @@ type MaybeApiError = { code?: string; message?: string };
  * Keep this in sync with `listBankProfileNames()` in the core. When a new
  * profile is added, append it here so the cockpit explains what is supported.
  */
-const SUPPORTED_BANK_PROFILES: ReadonlyArray<{ name: string; label: string }> = [
-  { name: "danske-bank", label: "Danske Bank (semikolon-CSV, UTF-8)" },
-];
+const SUPPORTED_BANK_PROFILES: ReadonlyArray<{ name: string; label: string }> =
+	[{ name: "danske-bank", label: "Danske Bank (semikolon-CSV, UTF-8)" }];
 
 export type BankImportModalProps = {
-  /** Company slug the import targets. */
-  slug: string;
-  /** Re-runs the Bank view load after a successful import. */
-  onImported: () => void;
-  /** Closes the modal without acting. */
-  onClose: () => void;
+	/** Company slug the import targets. */
+	slug: string;
+	/** Re-runs the Bank view load after a successful import. */
+	onImported: () => void;
+	/** Closes the modal without acting. */
+	onClose: () => void;
 };
 
-export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankImportModalProps) {
-  const [fileName, setFileName] = useState<string | null>(null);
-  const [csvContent, setCsvContent] = useState<string | null>(null);
-  const [account, setAccount] = useState("");
-  const [profile, setProfile] = useState("");
-  const [statementOrder, setStatementOrder] = useState<"" | "ascending" | "descending">("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [locked, setLocked] = useState<string | null>(null);
-  const [done, setDone] = useState<BankImportSummary | null>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
+export function BankImportModal({
+	slug,
+	onImported,
+	onClose: onDismiss,
+}: BankImportModalProps) {
+	const [fileName, setFileName] = useState<string | null>(null);
+	const [csvContent, setCsvContent] = useState<string | null>(null);
+	const [account, setAccount] = useState("");
+	const [profile, setProfile] = useState("");
+	const [statementOrder, setStatementOrder] = useState<
+		"" | "ascending" | "descending"
+	>("");
+	const [busy, setBusy] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [locked, setLocked] = useState<string | null>(null);
+	const [done, setDone] = useState<BankImportSummary | null>(null);
+	const closeRef = useRef<HTMLButtonElement>(null);
 
-  // Move focus into the dialog and let Escape dismiss it — basic modal hygiene.
+	// Move focus into the dialog and let Escape dismiss it — basic modal hygiene.
 
+	const outcome = useMutationOutcome(onImported);
+	const guard = useDiscardGuard(
+		!done && Boolean(csvContent || account || profile || statementOrder),
+		onDismiss,
+	);
+	const { onClose } = guard;
 
-  const outcome = useMutationOutcome(onImported);
-  const guard = useDiscardGuard(!done && Boolean(csvContent || account || profile || statementOrder), onDismiss);
-  const { onClose } = guard;
+	async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+		const file = e.target.files?.[0];
+		setError(null);
+		if (!file) {
+			setFileName(null);
+			setCsvContent(null);
+			return;
+		}
+		try {
+			const text = await file.text();
+			setFileName(file.name);
+			setCsvContent(text);
+		} catch {
+			setError("Filen kunne ikke læses.");
+			setFileName(null);
+			setCsvContent(null);
+		}
+	}
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    setError(null);
-    if (!file) {
-      setFileName(null);
-      setCsvContent(null);
-      return;
-    }
-    try {
-      const text = await file.text();
-      setFileName(file.name);
-      setCsvContent(text);
-    } catch {
-      setError("Filen kunne ikke læses.");
-      setFileName(null);
-      setCsvContent(null);
-    }
-  }
+	async function handleImport() {
+		if (outcome.isBlocked()) return;
+		if (!csvContent) {
+			setError("Vælg en CSV-fil først.");
+			return;
+		}
+		setBusy(true);
+		setError(null);
+		setLocked(null);
+		try {
+			const summary = await outcome.run(() =>
+				api.importBank(slug, {
+					csvContent,
+					account: account.trim() || undefined,
+					profile: profile.trim() || undefined,
+					statementOrder: profile.trim()
+						? undefined
+						: statementOrder || undefined,
+				}),
+			);
+			setDone(summary);
+			onImported();
+		} catch (err) {
+			const e = err as MaybeApiError;
+			const message = e?.message ?? "Importen kunne ikke gennemføres.";
+			// A 409 conflict from the backup lock is shown kindly, not as an error.
+			if (e?.code === "conflict") setLocked(message);
+			else setError(message);
+		} finally {
+			setBusy(false);
+		}
+	}
 
-  async function handleImport() {
-    if (outcome.isBlocked()) return;
-    if (!csvContent) {
-      setError("Vælg en CSV-fil først.");
-      return;
-    }
-    setBusy(true);
-    setError(null);
-    setLocked(null);
-    try {
-      const summary = await outcome.run(() => api.importBank(slug, {
-        csvContent,
-        account: account.trim() || undefined,
-        profile: profile.trim() || undefined,
-        statementOrder: profile.trim() ? undefined : statementOrder || undefined,
-      }));
-      setDone(summary);
-      onImported();
-    } catch (err) {
-      const e = err as MaybeApiError;
-      const message = e?.message ?? "Importen kunne ikke gennemføres.";
-      // A 409 conflict from the backup lock is shown kindly, not as an error.
-      if (e?.code === "conflict") setLocked(message);
-      else setError(message);
-    } finally {
-      setBusy(false);
-    }
-  }
+	return (
+		<Dialog
+			evidenceTaskOutcome
+			title="Importér kontoudtog"
+			onClose={onClose}
+			busy={busy}
+			initialFocusRef={closeRef}
+			xstyle={[cockpitStyles.element, cockpitStyles.focusVisible]}
+		>
+			{outcome.feedback}
+			{guard.confirmation}
 
-  return (
-    <Dialog evidenceTaskOutcome title="Importér kontoudtog" onClose={onClose} busy={busy} initialFocusRef={closeRef}>
-    {outcome.feedback}
-      {guard.confirmation}
+			{done ? (
+				// After a successful import the modal becomes a short receipt.
+				<>
+					<div
+						data-evidence-task-outcome
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalBody,
+						)}
+					>
+						<p
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalBodyP,
+							)}
+						>
+							{done.imported}{" "}
+							{done.imported === 1 ? "transaktion" : "transaktioner"} importeret
+							{done.skippedDuplicates > 0
+								? ` · ${done.skippedDuplicates} dublet${
+										done.skippedDuplicates === 1 ? "" : "ter"
+									} sprunget over`
+								: ""}
+							{done.exceptionsCreated > 0
+								? ` · ${done.exceptionsCreated} ny${
+										done.exceptionsCreated === 1 ? "" : "e"
+									} opgave${done.exceptionsCreated === 1 ? "" : "r"}`
+								: ""}
+							.
+						</p>
+					</div>
+					{done.balanceWarnings.length > 0 && (
+						<Banner kind="warning">{done.balanceWarnings.join(" ")}</Banner>
+					)}
+					<div
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalActions,
+						)}
+					>
+						<Button
+							type="button"
+							ref={closeRef}
+							onClick={onClose}
+							xstyle={[cockpitStyles.buttonComposition]}
+						>
+							Luk
+						</Button>
+					</div>
+				</>
+			) : (
+				<>
+					<div
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalBody,
+						)}
+					>
+						<p
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalBodyP,
+							)}
+						>
+							Vælg en bank-CSV. Transaktionerne lægges i regnskabet — dubletter
+							springes automatisk over. Uafstemte transaktioner bliver til
+							opgaver.
+						</p>
+						<p
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.muted,
+								cockpitStyles.modalBodyP,
+								viewStyles.site0,
+							)}
+						>
+							Eksportér som CSV fra netbanken med standardindstillinger. Filen
+							må gerne være UTF-8 eller Latin-1; importeren forsøger begge og
+							auto-detekterer komma, semikolon og tabulator.{" "}
+							<a
+								href="https://rentemester.dk/docs/bank-import"
+								target="_blank"
+								rel="noreferrer noopener"
+								{...stylex.props(cockpitStyles.aComposition)}
+							>
+								Læs mere om CSV-formatet
+							</a>
+							.
+						</p>
+						<p
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.muted,
+								cockpitStyles.modalBodyP,
+								viewStyles.site1,
+							)}
+						>
+							<strong
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}
+							>
+								Understøttede bankprofiler:
+							</strong>{" "}
+							{SUPPORTED_BANK_PROFILES.map((p, i) => (
+								<span
+									key={p.name}
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}
+								>
+									{i > 0 ? ", " : ""}
+									<code
+										{...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.code,
+										)}
+									>
+										{p.name}
+									</code>{" "}
+									({p.label})
+								</span>
+							))}
+							. Andre danske banker virker ofte uden profil — importeren læser
+							standard-CSV med danske kolonnenavne.
+						</p>
+					</div>
 
+					{locked && <LockBanner message={locked} />}
+					{error && <Banner kind="error">{error}</Banner>}
 
+					<label
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalField,
+						)}
+					>
+						CSV-fil
+						<Input
+							type="file"
+							accept=".csv,text/csv"
+							onChange={handleFile}
+							disabled={outcome.blocked || busy}
+							xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+						/>
+					</label>
 
-        {done ? (
-          // After a successful import the modal becomes a short receipt.
-          <>
-            <div className="modal-body" data-evidence-task-outcome>
-              <p>
-                {done.imported}{" "}
-                {done.imported === 1 ? "transaktion" : "transaktioner"}{" "}
-                importeret
-                {done.skippedDuplicates > 0
-                  ? ` · ${done.skippedDuplicates} dublet${
-                      done.skippedDuplicates === 1 ? "" : "ter"
-                    } sprunget over`
-                  : ""}
-                {done.exceptionsCreated > 0
-                  ? ` · ${done.exceptionsCreated} ny${
-                      done.exceptionsCreated === 1 ? "" : "e"
-                    } opgave${done.exceptionsCreated === 1 ? "" : "r"}`
-                  : ""}
-                .
-              </p>
-            </div>
-            {done.balanceWarnings.length > 0 && (
-              <Banner kind="warning">
-                {done.balanceWarnings.join(" ")}
-              </Banner>
-            )}
-            <div className="modal-actions">
-              <Button
-                type="button"
-                className="btn"
-                ref={closeRef}
-                onClick={onClose}
-              >
-                Luk
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="modal-body">
-              <p>
-                Vælg en bank-CSV. Transaktionerne lægges i regnskabet — dubletter
-                springes automatisk over. Uafstemte transaktioner bliver til
-                opgaver.
-              </p>
-              <p className={["muted", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
-                Eksportér som CSV fra netbanken med standardindstillinger.
-                Filen må gerne være UTF-8 eller Latin-1; importeren forsøger
-                begge og auto-detekterer komma, semikolon og tabulator.{" "}
-                <a
-                  href="https://rentemester.dk/docs/bank-import"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  Læs mere om CSV-formatet
-                </a>
-                .
-              </p>
-              <p className={["muted", stylex.props(viewStyles.site1).className].filter(Boolean).join(" ")} >
-                <strong>Understøttede bankprofiler:</strong>{" "}
-                {SUPPORTED_BANK_PROFILES.map((p, i) => (
-                  <span key={p.name}>
-                    {i > 0 ? ", " : ""}
-                    <code>{p.name}</code> ({p.label})
-                  </span>
-                ))}
-                . Andre danske banker virker ofte uden profil — importeren
-                læser standard-CSV med danske kolonnenavne.
-              </p>
-            </div>
+					<label
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalField,
+						)}
+					>
+						Rækkefølge i kontoudtoget (valgfri)
+						<Select
+							aria-label="Rækkefølge i kontoudtoget (valgfri)"
+							value={statementOrder}
+							onChange={(e) =>
+								setStatementOrder(
+									e.target.value as "" | "ascending" | "descending",
+								)
+							}
+							disabled={outcome.blocked || busy || Boolean(profile.trim())}
+							xstyle={[cockpitStyles.modalFieldSelectFocusComposition]}
+						>
+							<option
+								value=""
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}
+							>
+								Ukendt / ingen løbende saldo
+							</option>
+							<option
+								value="ascending"
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}
+							>
+								Ældste række først
+							</option>
+							<option
+								value="descending"
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}
+							>
+								Nyeste række først
+							</option>
+						</Select>
+						<span
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.fieldHint,
+							)}
+						>
+							Vælg kun dette for en standard-CSV, når banken dokumenterer
+							rækkefølgen. Det gør samme-dags saldoen verificerbar; ellers vises
+							den som ukendt frem for at blive gættet. En bankprofil angiver
+							selv rækkefølgen.
+						</span>
+					</label>
+					{fileName && (
+						<p
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.muted,
+								viewStyles.site2,
+							)}
+						>
+							Valgt: {fileName}
+						</p>
+					)}
 
-            {locked && <LockBanner message={locked} />}
-            {error && <Banner kind="error">{error}</Banner>}
+					<label
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalField,
+						)}
+					>
+						Bankkonto (valgfri)
+						<Input
+							type="text"
+							value={account}
+							placeholder="fx hovedkonto eller 1234-5678901234"
+							onChange={(e) => setAccount(e.target.value)}
+							disabled={outcome.blocked || busy}
+							xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+						/>
+						<span
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.fieldHint,
+							)}
+						>
+							Kun nødvendigt hvis virksomheden har flere bankkonti og du vil
+							styre præcis hvilken konto transaktionerne lægges på. Lad feltet
+							stå tomt for at bruge standardkontoen.
+						</span>
+					</label>
 
-            <label className="modal-field">
-              CSV-fil
-              <Input
-                type="file"
-                accept=".csv,text/csv"
-                onChange={handleFile}
-                disabled={outcome.blocked || (busy)}
-              />
-            </label>
+					<label
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalField,
+						)}
+					>
+						Bankformat (valgfri)
+						<Input
+							type="text"
+							value={profile}
+							placeholder="fx danske-bank"
+							onChange={(e) => setProfile(e.target.value)}
+							disabled={outcome.blocked || busy}
+							xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+						/>
+						<span
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.fieldHint,
+							)}
+						>
+							Lad feltet stå tomt — importeren forsøger automatisk at genkende
+							formatet for de fleste danske bank-CSV'er. Angiv kun et formatnavn
+							(se listen ovenfor), hvis autogenkendelsen fejler. Andre banker
+							virker også, hvis du vælger eksport som standard-CSV — sig til
+							hvis din ikke virker.
+						</span>
+					</label>
 
-            <label className="modal-field">
-              Rækkefølge i kontoudtoget (valgfri)
-              <Select aria-label="Rækkefølge i kontoudtoget (valgfri)" value={statementOrder} onChange={(e) => setStatementOrder(e.target.value as "" | "ascending" | "descending")} disabled={outcome.blocked || busy || Boolean(profile.trim())}>
-                <option value="">Ukendt / ingen løbende saldo</option>
-                <option value="ascending">Ældste række først</option>
-                <option value="descending">Nyeste række først</option>
-              </Select>
-              <span className="field-hint">
-                Vælg kun dette for en standard-CSV, når banken dokumenterer rækkefølgen. Det gør samme-dags saldoen verificerbar; ellers vises den som ukendt frem for at blive gættet. En bankprofil angiver selv rækkefølgen.
-              </span>
-            </label>
-            {fileName && (
-              <p className={["muted", stylex.props(viewStyles.site2).className].filter(Boolean).join(" ")} >
-                Valgt: {fileName}
-              </p>
-            )}
-
-            <label className="modal-field">
-              Bankkonto (valgfri)
-              <Input
-                type="text"
-                value={account}
-                placeholder="fx hovedkonto eller 1234-5678901234"
-                onChange={(e) => setAccount(e.target.value)}
-                disabled={outcome.blocked || (busy)}
-              />
-              <span className="field-hint">
-                Kun nødvendigt hvis virksomheden har flere bankkonti og du vil
-                styre præcis hvilken konto transaktionerne lægges på. Lad
-                feltet stå tomt for at bruge standardkontoen.
-              </span>
-            </label>
-
-            <label className="modal-field">
-              Bankformat (valgfri)
-              <Input
-                type="text"
-                value={profile}
-                placeholder="fx danske-bank"
-                onChange={(e) => setProfile(e.target.value)}
-                disabled={outcome.blocked || (busy)}
-              />
-              <span className="field-hint">
-                Lad feltet stå tomt — importeren forsøger automatisk at
-                genkende formatet for de fleste danske bank-CSV'er. Angiv kun
-                et formatnavn (se listen ovenfor), hvis autogenkendelsen fejler.
-                Andre banker virker også, hvis du vælger eksport som
-                standard-CSV — sig til hvis din ikke virker.
-              </span>
-            </label>
-
-            <div className="modal-actions">
-              <Button variant="secondary"
-                type="button"
-                className="btn secondary"
-                onClick={onClose}
-                disabled={busy}
-              >
-                Annullér
-              </Button>
-              <Button requiredPermission="company.ledger.post"
-                type="button"
-                className="btn"
-                onClick={handleImport}
-                disabled={outcome.blocked || (busy || !csvContent)}
-              >
-                {busy ? "Importerer…" : "Importér"}
-              </Button>
-            </div>
-          </>
-        )}
-
-    </Dialog>
-  );
+					<div
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalActions,
+						)}
+					>
+						<Button
+							variant="secondary"
+							type="button"
+							onClick={onClose}
+							disabled={busy}
+							xstyle={[cockpitStyles.buttonComposition]}
+						>
+							Annullér
+						</Button>
+						<Button
+							requiredPermission="company.ledger.post"
+							type="button"
+							onClick={handleImport}
+							disabled={outcome.blocked || busy || !csvContent}
+							xstyle={[cockpitStyles.buttonComposition]}
+						>
+							{busy ? "Importerer…" : "Importér"}
+						</Button>
+					</div>
+				</>
+			)}
+		</Dialog>
+	);
 }
 
 const viewStyles = stylex.create({
-site0: { marginTop: "0.5rem" },
-site1: { marginTop: "0.5rem" },
-site2: { margin: 0 }
+	site0: { marginTop: "0.5rem" },
+	site1: { marginTop: "0.5rem" },
+	site2: { margin: 0 },
 });

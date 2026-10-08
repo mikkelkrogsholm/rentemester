@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SeoEvidence from "../components/SeoEvidence.astro";
 import { SITE } from "../consts";
@@ -50,70 +51,70 @@ const jsonLd = {
   jsonLd={jsonLd}
 >
   <!-- HERO -->
-  <section class="relative overflow-hidden">
-    <div class="absolute inset-0 -z-10">
-      <div class="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[1200px] max-w-[150vw] aspect-square bg-primary/[0.07] rounded-full blur-[140px]"></div>
-      <div class="absolute top-[40%] right-[-10%] w-[500px] aspect-square bg-cyber-blue/[0.05] rounded-full blur-[120px]"></div>
+  <section {...sx.pages_index_section1}>
+    <div {...sx.components_PageHero_div2}>
+      <div {...sx.pages_index_div2}></div>
+      <div {...sx.pages_index_div3}></div>
     </div>
-    <div class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop pt-20 md:pt-28 pb-20 md:pb-28">
-      <div class="max-w-3xl">
-        <div class="inline-flex items-center gap-3 mb-8">
-          <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue bg-cyber-blue/10 border border-cyber-blue/30 px-3 py-1.5">
+    <div {...sx.pages_index_div4}>
+      <div {...sx.components_PageHero_div5}>
+        <div {...sx.pages_index_div5}>
+          <span {...sx.pages_index_span6}>
             Open source · MIT
           </span>
-          <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-on-surface-variant">
+          <span {...sx.pages_index_span7}>
             v0.0.1 · under udvikling
           </span>
         </div>
 
-        <h1 class="font-serif text-[44px] sm:text-[56px] md:text-[72px] leading-[1.05] tracking-[-0.02em] text-on-background font-semibold mb-6">
-          En åben AI-bogholder<br/>for dansk bogføring
+        <h1 {...sx.pages_index_h18}>
+          En åben AI-bogholder<br {...sx.pages_index_br9}/>for dansk bogføring
         </h1>
 
-        <p class="text-on-surface-variant text-lg md:text-xl leading-relaxed max-w-2xl mb-4">
-          Rentemester er <strong class="text-primary font-semibold">agent-first bogføring</strong> til danske freelancere, mikrovirksomheder og små ApS’er. En AI-agent kan gøre rutinearbejdet; danske regler som kode afgør hvad der må bogføres; en append-only ledger gør historikken efterprøvbar.
+        <p {...sx.pages_index_p10}>
+          Rentemester er <strong {...sx.pages_index_strong11}>agent-first bogføring</strong> til danske freelancere, mikrovirksomheder og små ApS’er. En AI-agent kan gøre rutinearbejdet; danske regler som kode afgør hvad der må bogføres; en append-only ledger gør historikken efterprøvbar.
         </p>
-        <p class="text-on-surface-variant text-base md:text-lg mb-4 max-w-2xl">
-          Det kan bruges <strong class="text-on-background">på to måder</strong>: <strong class="text-on-background">agent-betjent</strong>, hvor en autonom agent driver bogholderiet for dig, eller <strong class="text-on-background">menneske-betjent</strong>, hvor du selv styrer hver kommando. Samme kerne, samme regler, samme reviderbare spor.
+        <p {...sx.pages_index_p12}>
+          Det kan bruges <strong {...sx.pages_index_strong13}>på to måder</strong>: <strong {...sx.pages_index_strong13}>agent-betjent</strong>, hvor en autonom agent driver bogholderiet for dig, eller <strong {...sx.pages_index_strong13}>menneske-betjent</strong>, hvor du selv styrer hver kommando. Samme kerne, samme regler, samme reviderbare spor.
         </p>
-        <p class="text-on-surface-variant text-base md:text-lg mb-10 max-w-2xl">
+        <p {...sx.pages_index_p14}>
           Ambitionen er rolig: et system der kan hjælpe med rutinerne, holde sig inden for eksplicitte regler og forklare hver eneste postering. Projektet er åbent, fordi tillid kræver gennemsigtighed.
         </p>
 
-        <div class="flex flex-col sm:flex-row gap-3">
+        <div {...sx.pages_index_div15}>
           <a
             href={SITE.github}
             rel="noopener me"
             target="_blank"
-            class="inline-flex items-center justify-center gap-2 bg-brass-gold text-ink-black font-mono text-[12px] uppercase tracking-[0.15em] font-bold px-8 py-4 transition-all hover:shadow-[0_0_24px_rgba(197,160,89,0.35)] active:scale-[0.98]"
+            {...sx.pages_index_a16}
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-              <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/>
+            <svg {...sx.components_Footer_svg7} width="16" height="16" viewBox="0 0 16 16"  aria-hidden="true">
+              <path {...sx.components_Footer_path8} d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/>
             </svg>
             Se projektet
           </a>
           <a
             href="#agent-brief"
-            class="inline-flex items-center justify-center gap-2 border border-cyber-blue/60 text-cyber-blue font-mono text-[12px] uppercase tracking-[0.15em] px-8 py-4 transition-all hover:bg-cyber-blue/5 hover:border-cyber-blue"
+            {...sx.pages_index_a17}
           >
             Lad din agent bidrage →
           </a>
         </div>
 
         <!-- Quick install snippet -->
-        <div class="mt-12 max-w-2xl">
-          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-outline mb-2">Klon og kør lokalt</div>
-          <div class="bg-deep-navy border border-outline-variant/20 px-5 py-4 font-mono text-[13px] text-parchment-text overflow-x-auto">
-            <div><span class="text-outline select-none">$ </span><span class="text-cyber-blue">git</span> clone {SITE.github}.git</div>
-            <div><span class="text-outline select-none">$ </span><span class="text-cyber-blue">cd</span> rentemester &amp;&amp; <span class="text-cyber-blue">bun</span> install</div>
-            <div><span class="text-outline select-none">$ </span><span class="text-cyber-blue">bun</span> run src/cli.ts init --company ./min-virksomhed</div>
+        <div {...sx.pages_index_div18}>
+          <div {...sx.pages_index_div19}>Klon og kør lokalt</div>
+          <div {...sx.pages_index_div20} tabindex="0" role="region" aria-label="Klon og kør lokalt">
+            <div {...sx.components_Footer_div9}><span {...sx.pages_index_span21}>$ </span><span {...sx.pages_index_span22}>git</span> clone {SITE.github}.git</div>
+            <div {...sx.components_Footer_div9}><span {...sx.pages_index_span21}>$ </span><span {...sx.pages_index_span22}>cd</span> rentemester &amp;&amp; <span {...sx.pages_index_span22}>bun</span> install</div>
+            <div {...sx.components_Footer_div9}><span {...sx.pages_index_span21}>$ </span><span {...sx.pages_index_span22}>bun</span> run src/cli.ts init --company ./min-virksomhed</div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop">
+  <section {...sx.pages_index_section23}>
     <SeoEvidence
       sources={[
         { href: SITE.github, label: "GitHub-repository", external: true },
@@ -129,17 +130,17 @@ const jsonLd = {
   </section>
 
   <!-- OPEN SOURCE CALLOUT -->
-  <section class="border-y border-outline-variant/15 bg-deep-navy/40">
-    <div class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-16 md:py-20">
-      <div class="grid md:grid-cols-3 gap-10 md:gap-16">
-        <div class="md:col-span-1">
-          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Læs først</div>
-          <h2 class="font-serif text-3xl md:text-4xl text-primary leading-tight">Ikke SaaS. Ikke lock-in. Bare kildekode.</h2>
+  <section {...sx.pages_index_section24}>
+    <div {...sx.pages_index_div25}>
+      <div {...sx.pages_index_div26}>
+        <div {...sx.pages_index_div27}>
+          <div {...sx.pages_index_div28}>Læs først</div>
+          <h2 {...sx.pages_index_h229}>Ikke SaaS. Ikke lock-in. Bare kildekode.</h2>
         </div>
-        <div class="md:col-span-2 prose-da">
-          <p>Rentemester er et <strong>fællesskabsdrevet open source projekt</strong>. Ingen licenssalg, ingen SaaS-tilmelding, ingen skjult forretningsmodel. Alt foregår offentligt på GitHub under MIT-licens.</p>
-          <p>Du kan klone repoet, læse koden, køre systemet lokalt og åbne et issue eller en pull request når noget mangler. Projektet bliver stærkere jo flere der prøver reglerne af mod virkelige danske bilag.</p>
-          <p>Det betyder også: ingen telemetri, ingen cloud-afhængighed, ingen lock-in. Dine bogføringsdata er dine — i en lokal SQLite-fil du selv ejer.</p>
+        <div {...sx.pages_index_div30}>
+          <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Rentemester er et <strong {...sx.pages_viden_frister_moms_strong1}>fællesskabsdrevet open source projekt</strong>. Ingen licenssalg, ingen SaaS-tilmelding, ingen skjult forretningsmodel. Alt foregår offentligt på GitHub under MIT-licens.</p>
+          <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Du kan klone repoet, læse koden, køre systemet lokalt og åbne et issue eller en pull request når noget mangler. Projektet bliver stærkere jo flere der prøver reglerne af mod virkelige danske bilag.</p>
+          <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Det betyder også: ingen telemetri, ingen cloud-afhængighed, ingen lock-in. Dine bogføringsdata er dine — i en lokal SQLite-fil du selv ejer.</p>
         </div>
       </div>
     </div>
@@ -147,20 +148,20 @@ const jsonLd = {
 
 
   <!-- REJSEN MOD V1 -->
-  <section id="roadmap" class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28">
-    <div class="grid lg:grid-cols-[0.9fr_1.3fr] gap-12 lg:gap-20 items-start">
-      <div class="lg:sticky lg:top-8">
-        <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Rejsen mod v1</div>
-        <h2 class="font-serif text-4xl md:text-5xl text-on-background leading-tight mb-5">Et produkt med ro. Et projekt med puls.</h2>
-        <p class="text-on-surface-variant text-lg leading-relaxed mb-6">
+  <section id="roadmap" {...sx.pages_index_section31}>
+    <div {...sx.pages_index_div32}>
+      <div {...sx.pages_index_div33}>
+        <div {...sx.pages_index_div28}>Rejsen mod v1</div>
+        <h2 {...sx.pages_index_h234}>Et produkt med ro. Et projekt med puls.</h2>
+        <p {...sx.pages_index_p35}>
           Bogholderi skal føles stabilt. Udviklingen må gerne være synlig. Derfor viser Rentemester både hvad der virker nu, hvad der er næste station, og hvad v1 skal kunne før nogen bør stole tungt på det.
         </p>
-        <p class="text-on-surface-variant leading-relaxed">
+        <p {...sx.pages_index_p36}>
           Projektet begyndte natten til søndag. Roadmappet er ikke pynt — det er arbejdsfladen for udviklere, revisorer, bogholdere, brugere og agenter.
         </p>
       </div>
 
-      <div class="metro-map" aria-label="Roadmap mod version 1">
+      <div {...sx.pages_index_div37} aria-label="Roadmap mod version 1">
         {[
           { status: "live", day: "Nat 0", title: "Første ledger", body: "CLI, SQLite, dobbelt bogholderi og testbar kerne." },
           { status: "live", day: "Dag 1", title: "Danske regler som kode", body: "Bilag, kontoplan, momslogik og valideringer får faste tests." },
@@ -173,15 +174,15 @@ const jsonLd = {
           { status: "future", day: "v0.5", title: "Åbne bankfeeds og plugins", body: "CSV virker nu. Senere kommer PSD2/open banking og forsigtige integrationer til fx PayPal, Zettle og Shopify." },
           { status: "future", day: "v1", title: "Danmarks bedste bogholder", body: "Ikke fordi den gætter bedst. Fordi den arbejder mest disciplineret, dokumenterer alt og stopper når den bør." },
         ].map((stop) => (
-          <article class={`metro-stop ${stop.status}`}>
-            <div class="metro-node" aria-hidden="true"></div>
-            <div class="bg-surface-container border border-outline-variant/15 p-6 md:p-7">
-              <div class="flex items-center justify-between gap-4 mb-3">
-                <span class="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">{stop.day}</span>
-                <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-on-surface-variant">{stop.status === "live" ? "bygget" : stop.status === "now" ? "i gang" : stop.status === "next" ? "næste" : "planlagt"}</span>
+          <article {...sx.pages_index_article38}>
+            <div {...(stop.status === "live" ? sx.pages_index_div39_live : stop.status === "now" ? sx.pages_index_div40_now : stop.status === "next" ? sx.pages_index_div41_next : sx.pages_index_div42_future)} aria-hidden="true"></div>
+            <div {...sx.pages_index_div43}>
+              <div {...sx.pages_index_div44}>
+                <span {...sx.pages_index_span45}>{stop.day}</span>
+                <span {...sx.pages_index_span46}>{stop.status === "live" ? "bygget" : stop.status === "now" ? "i gang" : stop.status === "next" ? "næste" : "planlagt"}</span>
               </div>
-              <h3 class="font-serif text-2xl text-on-background mb-2">{stop.title}</h3>
-              <p class="text-on-surface-variant leading-relaxed text-[15px]">{stop.body}</p>
+              <h3 {...sx.pages_index_h347}>{stop.title}</h3>
+              <p {...sx.pages_index_p48}>{stop.body}</p>
             </div>
           </article>
         ))}
@@ -190,22 +191,22 @@ const jsonLd = {
   </section>
 
   <!-- AGENT BRIEF -->
-  <section id="agent-brief" class="border-y border-outline-variant/15 bg-deep-navy/40">
-    <div class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-24">
-      <div class="grid lg:grid-cols-[1fr_1.15fr] gap-12 lg:gap-20 items-start">
-        <div>
-          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">For agents</div>
-          <h2 class="font-serif text-4xl md:text-5xl text-primary leading-tight mb-5">Peg din agent på projektet</h2>
-          <p class="text-parchment-text text-lg leading-relaxed mb-5">
+  <section id="agent-brief" {...sx.pages_index_section24}>
+    <div {...sx.pages_index_div49}>
+      <div {...sx.pages_index_div50}>
+        <div {...sx.components_Footer_div9}>
+          <div {...sx.pages_index_div28}>For agents</div>
+          <h2 {...sx.pages_index_h251}>Peg din agent på projektet</h2>
+          <p {...sx.pages_index_p52}>
             Rentemester skal kunne udvikles uden møder. En agent skal kunne læse siden, forstå målet, finde en åben station og levere en lille, testet forbedring.
           </p>
-          <p class="text-on-surface-variant leading-relaxed">
+          <p {...sx.pages_index_p36}>
             Det er ikke et trick. Det er en måde at gøre open source praktisk igen: klare regler, små opgaver, acceptance criteria og tests før selvtillid.
           </p>
         </div>
-        <div class="bg-ink-black border border-cyber-blue/25 p-6 md:p-8 shadow-[0_0_40px_rgba(0,209,255,0.06)]">
-          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-outline mb-4">Prompt til din agent</div>
-          <pre class="whitespace-pre-wrap font-mono text-[13px] leading-relaxed text-parchment-text"><code>{`Læs https://rentemester.dk/llms.txt først. Den er altid den opdaterede agent-brief.
+        <div {...sx.pages_index_div53}>
+          <div {...sx.components_Footer_div10}>Prompt til din agent</div>
+          <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_index_pre54}><code {...sx.pages_index_code55}>{`Læs https://rentemester.dk/llms.txt først. Den er altid den opdaterede agent-brief.
 
 Læs derefter repoet: https://github.com/mikkelkrogsholm/rentemester
 
@@ -215,68 +216,68 @@ Vælg én lille opgave fra roadmap, issues eller CONTRIBUTING.md.
 Opfind aldrig danske bogføringsregler. Brug kilder, tests og eksisterende mønstre.
 
 Lav en minimal ændring. Kør tests. Forklar hvad du ændrede, hvorfor det er sikkert, og hvad der stadig mangler.`}</code></pre>
-          <div class="mt-6 flex flex-col sm:flex-row gap-3">
-            <a href={`${SITE.github}/blob/main/CONTRIBUTING.md`} rel="noopener" target="_blank" class="inline-flex items-center justify-center bg-brass-gold text-ink-black font-mono text-[12px] uppercase tracking-[0.15em] font-bold px-5 py-3 hover:brightness-110">Bidragsguide ↗</a>
-            <a href={`${SITE.github}/issues`} rel="noopener" target="_blank" class="inline-flex items-center justify-center border border-cyber-blue/60 text-cyber-blue font-mono text-[12px] uppercase tracking-[0.15em] px-5 py-3 hover:bg-cyber-blue/5">Åbne opgaver ↗</a>
+          <div {...sx.pages_index_div56}>
+            <a href={`${SITE.github}/blob/main/CONTRIBUTING.md`} rel="noopener" target="_blank" {...sx.pages_index_a57}>Bidragsguide ↗</a>
+            <a href={`${SITE.github}/issues`} rel="noopener" target="_blank" {...sx.pages_index_a58}>Åbne opgaver ↗</a>
           </div>
         </div>
       </div>
     </div>
   </section>
   <!-- TRINITY: AGENT · REGLER · LEDGER -->
-  <section class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28">
-    <div class="max-w-2xl mb-14 md:mb-20">
-      <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Arkitektur</div>
-      <h2 class="font-serif text-4xl md:text-5xl text-on-background leading-tight mb-4">Tre lag der ikke kan snyde hinanden</h2>
-      <p class="text-on-surface-variant text-lg leading-relaxed">
+  <section {...sx.pages_index_section31}>
+    <div {...sx.pages_index_div59}>
+      <div {...sx.pages_index_div28}>Arkitektur</div>
+      <h2 {...sx.pages_index_h260}>Tre lag der ikke kan snyde hinanden</h2>
+      <p {...sx.pages_index_p61}>
         AI’en er assistenten, ikke dommeren. Hver postering går gennem versionerede danske regler og lander i en ledger der ikke kan overskrives — kun udvides.
       </p>
     </div>
 
-    <div class="grid gap-gutter md:grid-cols-3">
-      <article class="bg-surface-container border border-outline-variant/15 p-8 md:p-10 ai-glow-card">
-        <div class="flex items-start justify-between mb-8">
-          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">01 · Agent</div>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#e9c176" stroke-width="1.4" aria-hidden="true">
-            <rect x="3" y="6" width="18" height="14" rx="2"/>
-            <circle cx="8" cy="13" r="1.5" fill="#e9c176"/>
-            <circle cx="16" cy="13" r="1.5" fill="#e9c176"/>
-            <line x1="12" y1="2" x2="12" y2="6"/>
-            <circle cx="12" cy="2" r="1" fill="#e9c176"/>
+    <div {...sx.pages_index_div62}>
+      <article {...sx.pages_index_article63}>
+        <div {...sx.pages_index_div64}>
+          <div {...sx.pages_index_div65}>01 · Agent</div>
+          <svg {...sx.pages_index_svg66} width="32" height="32" viewBox="0 0 24 24"    aria-hidden="true">
+            <rect {...sx.pages_index_rect67} x="3" y="6" width="18" height="14" rx="2"/>
+            <circle {...sx.pages_index_circle68} cx="8" cy="13" r="1.5" />
+            <circle {...sx.pages_index_circle68} cx="16" cy="13" r="1.5" />
+            <line {...sx.components_Header_line11} x1="12" y1="2" x2="12" y2="6"/>
+            <circle {...sx.pages_index_circle68} cx="12" cy="2" r="1" />
           </svg>
         </div>
-        <h3 class="font-serif text-2xl text-on-background mb-3">Agenten handler</h3>
-        <p class="text-on-surface-variant leading-relaxed">
+        <h3 {...sx.pages_index_h369}>Agenten handler</h3>
+        <p {...sx.pages_index_p36}>
           Læser bilag, matcher banklinjer, foreslår konti og forbereder strukturerede handlinger. Når noget er uklart, stopper den og beder om beslutning.
         </p>
       </article>
 
-      <article class="bg-surface-container border border-outline-variant/15 p-8 md:p-10">
-        <div class="flex items-start justify-between mb-8">
-          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue">02 · Regler</div>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00D1FF" stroke-width="1.4" aria-hidden="true">
-            <path d="M12 2L4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"/>
-            <path d="M9 12l2 2 4-4"/>
+      <article {...sx.pages_index_article70}>
+        <div {...sx.pages_index_div64}>
+          <div {...sx.pages_index_div71}>02 · Regler</div>
+          <svg {...sx.pages_index_svg72} width="32" height="32" viewBox="0 0 24 24"    aria-hidden="true">
+            <path {...sx.components_Footer_path8} d="M12 2L4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"/>
+            <path {...sx.components_Footer_path8} d="M9 12l2 2 4-4"/>
           </svg>
         </div>
-        <h3 class="font-serif text-2xl text-on-background mb-3">Reglerne afgør</h3>
-        <p class="text-on-surface-variant leading-relaxed">
-          Danske bogførings- og momsregler ligger som versioneret kode i <code class="font-mono text-[13px] bg-deep-navy text-primary px-1.5 py-0.5">rules/dk/</code>. De kan testes, læses og udfordres.
+        <h3 {...sx.pages_index_h369}>Reglerne afgør</h3>
+        <p {...sx.pages_index_p36}>
+          Danske bogførings- og momsregler ligger som versioneret kode i <code {...sx.pages_index_code73}>rules/dk/</code>. De kan testes, læses og udfordres.
         </p>
       </article>
 
-      <article class="bg-surface-container border border-outline-variant/15 p-8 md:p-10">
-        <div class="flex items-start justify-between mb-8">
-          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-primary-fixed-dim">03 · Ledger</div>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffdea5" stroke-width="1.4" aria-hidden="true">
-            <rect x="4" y="4" width="16" height="16" rx="1"/>
-            <line x1="4" y1="9" x2="20" y2="9"/>
-            <line x1="4" y1="14" x2="20" y2="14"/>
-            <line x1="9" y1="4" x2="9" y2="20"/>
+      <article {...sx.pages_index_article70}>
+        <div {...sx.pages_index_div64}>
+          <div {...sx.pages_index_div74}>03 · Ledger</div>
+          <svg {...sx.pages_index_svg75} width="32" height="32" viewBox="0 0 24 24"    aria-hidden="true">
+            <rect {...sx.pages_index_rect67} x="4" y="4" width="16" height="16" rx="1"/>
+            <line {...sx.components_Header_line11} x1="4" y1="9" x2="20" y2="9"/>
+            <line {...sx.components_Header_line11} x1="4" y1="14" x2="20" y2="14"/>
+            <line {...sx.components_Header_line11} x1="9" y1="4" x2="9" y2="20"/>
           </svg>
         </div>
-        <h3 class="font-serif text-2xl text-on-background mb-3">Ledgeren husker</h3>
-        <p class="text-on-surface-variant leading-relaxed">
+        <h3 {...sx.pages_index_h369}>Ledgeren husker</h3>
+        <p {...sx.pages_index_p36}>
           Append-only kassebog med hash-kæde og valgfri ed25519-signering. Fejl rettes med modposter, og revisor kan verificere kæden.
         </p>
       </article>
@@ -284,36 +285,36 @@ Lav en minimal ændring. Kør tests. Forklar hvad du ændrede, hvorfor det er si
   </section>
 
   <!-- COCKPIT -->
-  <section id="cockpit" class="border-t border-outline-variant/15">
-    <div class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28">
-      <div class="grid lg:grid-cols-[1.1fr_1fr] gap-12 lg:gap-20 items-start">
-        <div>
-          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Cockpittet</div>
-          <h2 class="font-serif text-4xl md:text-5xl text-on-background leading-tight mb-5">En grafisk brugerflade — ikke kun terminal</h2>
-          <p class="text-on-surface-variant text-lg leading-relaxed mb-5">
-            Rentemester har et lokalt <strong class="text-on-background">cockpit</strong> — et web-baseret kontrolpanel der lever oven på samme ledger og samme regler som CLI'en. Hvis du foretrækker at klikke, behøver du ikke leve i terminalen.
+  <section id="cockpit" {...sx.pages_index_section76}>
+    <div {...sx.pages_index_div77}>
+      <div {...sx.pages_index_div78}>
+        <div {...sx.components_Footer_div9}>
+          <div {...sx.pages_index_div28}>Cockpittet</div>
+          <h2 {...sx.pages_index_h234}>En grafisk brugerflade — ikke kun terminal</h2>
+          <p {...sx.pages_index_p79}>
+            Rentemester har et lokalt <strong {...sx.pages_index_strong13}>cockpit</strong> — et web-baseret kontrolpanel der lever oven på samme ledger og samme regler som CLI'en. Hvis du foretrækker at klikke, behøver du ikke leve i terminalen.
           </p>
-          <p class="text-on-surface-variant leading-relaxed mb-6">
+          <p {...sx.pages_index_p80}>
             Overblik, resultatopgørelse, balance, bilag, bank, fakturaer, moms og forpligtelser — alt sammen i en browser, og hver handling skriver tilbage i den samme append-only historik. CLI og cockpit er to ansigter på den samme bogholder.
           </p>
-          <div class="bg-deep-navy border border-outline-variant/20 px-5 py-4 font-mono text-[13px] text-parchment-text overflow-x-auto mb-6">
-            <div><span class="text-outline select-none">$ </span><span class="text-cyber-blue">bun</span> run src/cli.ts serve --workspace ./min-workspace</div>
-            <div><span class="text-outline select-none">$ </span><span class="text-cyber-blue">cd</span> app &amp;&amp; <span class="text-cyber-blue">bun</span> install &amp;&amp; <span class="text-cyber-blue">bun</span> run dev</div>
-            <div class="text-outline mt-2"># åbn http://localhost:5319</div>
+          <div {...sx.pages_index_div81}>
+            <div {...sx.components_Footer_div9}><span {...sx.pages_index_span21}>$ </span><span {...sx.pages_index_span22}>bun</span> run src/cli.ts serve --workspace ./min-workspace</div>
+            <div {...sx.components_Footer_div9}><span {...sx.pages_index_span21}>$ </span><span {...sx.pages_index_span22}>cd</span> app &amp;&amp; <span {...sx.pages_index_span22}>bun</span> install &amp;&amp; <span {...sx.pages_index_span22}>bun</span> run dev</div>
+            <div {...sx.pages_index_div82}># åbn http://localhost:5319</div>
           </div>
-          <a href="/docs" class="inline-flex items-center justify-center gap-2 border border-cyber-blue/60 text-cyber-blue font-mono text-[12px] uppercase tracking-[0.15em] px-6 py-3 transition-all hover:bg-cyber-blue/5">
+          <a href="/docs" {...sx.pages_index_a83}>
             Se docs &amp; daglig brug →
           </a>
         </div>
-        <div class="bg-surface-container border border-outline-variant/15 p-8">
-          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-outline mb-6">Hvad du finder i cockpittet</div>
-          <ul class="space-y-3 text-on-surface-variant">
-            <li class="flex gap-3"><span class="font-mono text-primary shrink-0">→</span><span><strong class="text-on-background">Overblik</strong> — likviditet, åbne fakturaer, exceptions, næste momsfrist</span></li>
-            <li class="flex gap-3"><span class="font-mono text-primary shrink-0">→</span><span><strong class="text-on-background">Bilag</strong> — søg, filtrér, åbn dokumenter direkte i browseren</span></li>
-            <li class="flex gap-3"><span class="font-mono text-primary shrink-0">→</span><span><strong class="text-on-background">Bank</strong> — importér CSV og match transaktioner mod bilag &amp; fakturaer</span></li>
-            <li class="flex gap-3"><span class="font-mono text-primary shrink-0">→</span><span><strong class="text-on-background">Fakturaer</strong> — udsted, send på e-mail, kreditnota og rykkere</span></li>
-            <li class="flex gap-3"><span class="font-mono text-primary shrink-0">→</span><span><strong class="text-on-background">Moms &amp; forpligtelser</strong> — rubrikker, frister og status</span></li>
-            <li class="flex gap-3"><span class="font-mono text-primary shrink-0">→</span><span><strong class="text-on-background">Posteringer</strong>, <strong class="text-on-background">kontakter</strong> og indbygget hjælp</span></li>
+        <div {...sx.pages_index_div84}>
+          <div {...sx.pages_index_div85}>Hvad du finder i cockpittet</div>
+          <ul {...sx.pages_index_ul86}>
+            <li {...sx.pages_index_li87}><span {...sx.pages_index_span88}>→</span><span {...sx.layouts_BaseLayout_span8}><strong {...sx.pages_index_strong13}>Overblik</strong> — likviditet, åbne fakturaer, exceptions, næste momsfrist</span></li>
+            <li {...sx.pages_index_li87}><span {...sx.pages_index_span88}>→</span><span {...sx.layouts_BaseLayout_span8}><strong {...sx.pages_index_strong13}>Bilag</strong> — søg, filtrér, åbn dokumenter direkte i browseren</span></li>
+            <li {...sx.pages_index_li87}><span {...sx.pages_index_span88}>→</span><span {...sx.layouts_BaseLayout_span8}><strong {...sx.pages_index_strong13}>Bank</strong> — importér CSV og match transaktioner mod bilag &amp; fakturaer</span></li>
+            <li {...sx.pages_index_li87}><span {...sx.pages_index_span88}>→</span><span {...sx.layouts_BaseLayout_span8}><strong {...sx.pages_index_strong13}>Fakturaer</strong> — udsted, send på e-mail, kreditnota og rykkere</span></li>
+            <li {...sx.pages_index_li87}><span {...sx.pages_index_span88}>→</span><span {...sx.layouts_BaseLayout_span8}><strong {...sx.pages_index_strong13}>Moms &amp; forpligtelser</strong> — rubrikker, frister og status</span></li>
+            <li {...sx.pages_index_li87}><span {...sx.pages_index_span88}>→</span><span {...sx.layouts_BaseLayout_span8}><strong {...sx.pages_index_strong13}>Posteringer</strong>, <strong {...sx.pages_index_strong13}>kontakter</strong> og indbygget hjælp</span></li>
           </ul>
         </div>
       </div>
@@ -321,19 +322,19 @@ Lav en minimal ændring. Kør tests. Forklar hvad du ændrede, hvorfor det er si
   </section>
 
   <!-- FUNKTIONER -->
-  <section class="border-t border-outline-variant/15 bg-deep-navy/30">
-    <div class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28">
-      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
-        <div class="max-w-xl">
-          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Funktioner</div>
-          <h2 class="font-serif text-4xl md:text-5xl text-on-background leading-tight">Bygget til danske hverdagsbilag</h2>
+  <section {...sx.pages_index_section89}>
+    <div {...sx.pages_index_div77}>
+      <div {...sx.pages_index_div90}>
+        <div {...sx.pages_index_div91}>
+          <div {...sx.pages_index_div28}>Funktioner</div>
+          <h2 {...sx.pages_index_h292}>Bygget til danske hverdagsbilag</h2>
         </div>
-        <a href="/funktioner" class="font-mono text-[12px] uppercase tracking-[0.15em] text-primary hover:text-cyber-blue self-start md:self-end">
+        <a href="/funktioner" {...sx.pages_index_a93}>
           Se alle funktioner →
         </a>
       </div>
 
-      <div class="grid gap-gutter sm:grid-cols-2 lg:grid-cols-4">
+      <div {...sx.pages_index_div94}>
         {[
           { t: "Bilagsmail", d: "Indlæs bilag fra .eml-filer/maildrop eller direkte fra en e-mailkonto via IMAP. Usikre cases lander i exception-køen." },
           { t: "Bankimport", d: "CSV-import fra danske banker. Deterministiske forslag til matchning af linjer med bilag." },
@@ -349,9 +350,9 @@ Lav en minimal ændring. Kør tests. Forklar hvad du ændrede, hvorfor det er si
           { t: "Plugins", d: "Roadmap: robust integration med PayPal, Zettle, Shopify og andre API’er." },
           { t: "MCP-server", d: "MCP-kompatible klienter taler med Rentemester via en struktureret tool-protokol." },
         ].map((f) => (
-          <article class="bg-surface-container border border-outline-variant/10 p-6 hover:border-primary/40 transition-colors">
-            <div class="font-mono text-[11px] uppercase tracking-[0.15em] text-primary mb-2">{f.t}</div>
-            <p class="text-on-surface-variant text-[15px] leading-relaxed">{f.d}</p>
+          <article {...sx.pages_index_article95}>
+            <div {...sx.pages_index_div96}>{f.t}</div>
+            <p {...sx.pages_index_p97}>{f.d}</p>
           </article>
         ))}
       </div>
@@ -359,103 +360,103 @@ Lav en minimal ændring. Kør tests. Forklar hvad du ændrede, hvorfor det er si
   </section>
 
   <!-- HVEM ER DET TIL -->
-  <section class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28">
-    <div class="max-w-2xl mb-14">
-      <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Målgruppe</div>
-      <h2 class="font-serif text-4xl md:text-5xl text-on-background leading-tight mb-4">Lavet til små danske virksomheder</h2>
-      <p class="text-on-surface-variant text-lg leading-relaxed">
+  <section {...sx.pages_index_section31}>
+    <div {...sx.pages_index_div98}>
+      <div {...sx.pages_index_div28}>Målgruppe</div>
+      <h2 {...sx.pages_index_h260}>Lavet til små danske virksomheder</h2>
+      <p {...sx.pages_index_p61}>
         Simple forhold, dansk moms, behov for revisor-eksport. Ikke til store koncerner, lønadministration eller komplekse internationale opsætninger.
       </p>
     </div>
 
-    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+    <div {...sx.pages_index_div99}>
       {[
         { t: "Freelancere", d: "Konsulenter og selvstændige der vil bruge minimal tid på administration." },
         { t: "Enkeltmandsvirksomhed", d: "Almindelig drift, dansk moms, få bilag i ugen." },
         { t: "Små ApS'er", d: "Få ansatte, behov for ordentligt audit-trail til årsregnskab." },
         { t: "Iværksættere", d: "Starter op og vil have styr på det fra dag ét uden lock-in." },
       ].map((p) => (
-        <article class="bg-surface-container-low border border-outline-variant/10 p-6">
-          <h3 class="font-serif text-xl text-primary mb-2">{p.t}</h3>
-          <p class="text-on-surface-variant text-[15px] leading-relaxed">{p.d}</p>
+        <article {...sx.pages_index_article100}>
+          <h3 {...sx.pages_index_h3101}>{p.t}</h3>
+          <p {...sx.pages_index_p97}>{p.d}</p>
         </article>
       ))}
     </div>
   </section>
 
   <!-- TILLID -->
-  <section class="border-y border-outline-variant/15 relative overflow-hidden">
-    <div class="absolute inset-0 -z-10">
-      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] aspect-square bg-primary/5 rounded-full blur-[120px]"></div>
+  <section {...sx.pages_index_section102}>
+    <div {...sx.components_PageHero_div2}>
+      <div {...sx.pages_index_div103}></div>
     </div>
-    <div class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28 text-center">
-      <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Tillid uden tro</div>
-      <h2 class="font-serif text-4xl md:text-5xl text-primary leading-tight mb-6">AI’en må ikke gætte bogføringen på plads</h2>
-      <p class="text-parchment-text text-lg md:text-xl leading-relaxed mb-12">
+    <div {...sx.pages_index_div104}>
+      <div {...sx.pages_index_div28}>Tillid uden tro</div>
+      <h2 {...sx.pages_index_h2105}>AI’en må ikke gætte bogføringen på plads</h2>
+      <p {...sx.pages_index_p106}>
         Bogføring er ikke et sted for sproglig selvtillid. Rentemesters kerne er deterministisk: hver postering valideres mod danske regler, dobbelt bogholderi skal balancere, og ledgeren kan verificeres kryptografisk. Hvis AI’en er usikker, bliver arbejdet til et spørgsmål — ikke en postering.
       </p>
-      <div class="grid grid-cols-3 gap-6 max-w-md mx-auto">
-        <div>
-          <div class="font-mono text-3xl md:text-4xl text-primary font-bold mb-2">100%</div>
-          <div class="font-mono text-[11px] uppercase tracking-[0.15em] text-on-surface-variant">Dansk regelsæt</div>
+      <div {...sx.pages_index_div107}>
+        <div {...sx.components_Footer_div9}>
+          <div {...sx.pages_index_div108}>100%</div>
+          <div {...sx.pages_index_div109}>Dansk regelsæt</div>
         </div>
-        <div>
-          <div class="font-mono text-3xl md:text-4xl text-primary font-bold mb-2">∞</div>
-          <div class="font-mono text-[11px] uppercase tracking-[0.15em] text-on-surface-variant">Audit-trail</div>
+        <div {...sx.components_Footer_div9}>
+          <div {...sx.pages_index_div108}>∞</div>
+          <div {...sx.pages_index_div109}>Audit-trail</div>
         </div>
-        <div>
-          <div class="font-mono text-3xl md:text-4xl text-primary font-bold mb-2">0</div>
-          <div class="font-mono text-[11px] uppercase tracking-[0.15em] text-on-surface-variant">AI-gæt</div>
+        <div {...sx.components_Footer_div9}>
+          <div {...sx.pages_index_div108}>0</div>
+          <div {...sx.pages_index_div109}>AI-gæt</div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- BIDRAG -->
-  <section class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28">
-    <div class="grid md:grid-cols-2 gap-12 md:gap-20 items-start">
-      <div>
-        <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Bidrag</div>
-        <h2 class="font-serif text-4xl md:text-5xl text-on-background leading-tight mb-6">Projektet vokser når flere er med</h2>
-        <p class="text-on-surface-variant text-lg leading-relaxed mb-6">
+  <section {...sx.pages_index_section31}>
+    <div {...sx.pages_index_div110}>
+      <div {...sx.components_Footer_div9}>
+        <div {...sx.pages_index_div28}>Bidrag</div>
+        <h2 {...sx.pages_index_h2111}>Projektet vokser når flere er med</h2>
+        <p {...sx.pages_index_p35}>
           Du behøver ikke være udvikler for at hjælpe. Revisorer og bogholdere kan udfordre regler. Brugere kan rapportere mærkværdige bilagsformater. Udviklere kan tilføje integrationer.
         </p>
-        <div class="flex flex-col sm:flex-row gap-3">
-          <a href={`${SITE.github}/blob/main/CONTRIBUTING.md`} rel="noopener" target="_blank" class="inline-flex items-center justify-center gap-2 bg-brass-gold text-ink-black font-mono text-[12px] uppercase tracking-[0.15em] font-bold px-6 py-3 transition-all hover:brightness-110">
+        <div {...sx.pages_index_div15}>
+          <a href={`${SITE.github}/blob/main/CONTRIBUTING.md`} rel="noopener" target="_blank" {...sx.pages_index_a112}>
             Læs bidragsguide ↗
           </a>
-          <a href={`${SITE.github}/issues`} rel="noopener" target="_blank" class="inline-flex items-center justify-center gap-2 border border-cyber-blue/60 text-cyber-blue font-mono text-[12px] uppercase tracking-[0.15em] px-6 py-3 transition-all hover:bg-cyber-blue/5">
+          <a href={`${SITE.github}/issues`} rel="noopener" target="_blank" {...sx.pages_index_a83}>
             Åbne issues ↗
           </a>
         </div>
       </div>
-      <div class="bg-surface-container-low border border-outline-variant/15 p-8">
-        <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-outline mb-6">Sådan bidrager du</div>
-        <ol class="space-y-5 text-on-surface-variant">
-          <li class="flex gap-4"><span class="font-mono text-primary shrink-0 w-6">01</span><span><strong class="text-on-background">Fork eller klon</strong> repoet fra GitHub og kør <code class="font-mono text-[13px] bg-deep-navy text-primary px-1.5 py-0.5">bun test</code>.</span></li>
-          <li class="flex gap-4"><span class="font-mono text-primary shrink-0 w-6">02</span><span><strong class="text-on-background">Skriv failing proof først</strong> — en test der demonstrerer problemet eller ønsket adfærd.</span></li>
-          <li class="flex gap-4"><span class="font-mono text-primary shrink-0 w-6">03</span><span><strong class="text-on-background">Lav minimal patch</strong> der får testen til at passe. Hold ændringen lille og fokuseret.</span></li>
-          <li class="flex gap-4"><span class="font-mono text-primary shrink-0 w-6">04</span><span><strong class="text-on-background">Åbn en pull request</strong>. Bun test + smoke-build skal være grønne.</span></li>
+      <div {...sx.pages_index_div113}>
+        <div {...sx.pages_index_div85}>Sådan bidrager du</div>
+        <ol {...sx.pages_index_ol114}>
+          <li {...sx.pages_index_li115}><span {...sx.pages_index_span116}>01</span><span {...sx.layouts_BaseLayout_span8}><strong {...sx.pages_index_strong13}>Fork eller klon</strong> repoet fra GitHub og kør <code {...sx.pages_index_code73}>bun test</code>.</span></li>
+          <li {...sx.pages_index_li115}><span {...sx.pages_index_span116}>02</span><span {...sx.layouts_BaseLayout_span8}><strong {...sx.pages_index_strong13}>Skriv failing proof først</strong> — en test der demonstrerer problemet eller ønsket adfærd.</span></li>
+          <li {...sx.pages_index_li115}><span {...sx.pages_index_span116}>03</span><span {...sx.layouts_BaseLayout_span8}><strong {...sx.pages_index_strong13}>Lav minimal patch</strong> der får testen til at passe. Hold ændringen lille og fokuseret.</span></li>
+          <li {...sx.pages_index_li115}><span {...sx.pages_index_span116}>04</span><span {...sx.layouts_BaseLayout_span8}><strong {...sx.pages_index_strong13}>Åbn en pull request</strong>. Bun test + smoke-build skal være grønne.</span></li>
         </ol>
       </div>
     </div>
   </section>
 
   <!-- FAQ -->
-  <section class="border-t border-outline-variant/15 bg-deep-navy/30">
-    <div class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28">
-      <div class="mb-14">
-        <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Ofte stillede spørgsmål</div>
-        <h2 class="font-serif text-4xl md:text-5xl text-on-background leading-tight">Spørgsmål før du går i gang</h2>
+  <section {...sx.pages_index_section89}>
+    <div {...sx.pages_index_div117}>
+      <div {...sx.pages_index_div118}>
+        <div {...sx.pages_index_div28}>Ofte stillede spørgsmål</div>
+        <h2 {...sx.pages_index_h292}>Spørgsmål før du går i gang</h2>
       </div>
-      <div class="space-y-4">
+      <div {...sx.pages_index_div119}>
         {faq.map((item) => (
-          <details class="group bg-surface-container-low border border-outline-variant/15 hover:border-primary/30 transition-colors">
-            <summary class="cursor-pointer list-none flex items-start gap-4 p-6">
-              <span class="font-mono text-primary mt-1 group-open:rotate-45 transition-transform">+</span>
-              <span class="font-serif text-xl text-on-background flex-1">{item.q}</span>
+          <details {...sx.pages_index_details120}>
+            <summary {...sx.pages_index_summary121}>
+              <span {...sx.pages_index_span122}>+</span>
+              <span {...sx.pages_index_span123}>{item.q}</span>
             </summary>
-            <p class="px-6 pb-6 pl-14 text-on-surface-variant leading-relaxed">{item.a}</p>
+            <p {...sx.pages_index_p124}>{item.a}</p>
           </details>
         ))}
       </div>
@@ -463,16 +464,16 @@ Lav en minimal ændring. Kør tests. Forklar hvad du ændrede, hvorfor det er si
   </section>
 
   <!-- CTA -->
-  <section class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-20 md:py-28 text-center">
-    <h2 class="font-serif text-4xl md:text-5xl text-on-background leading-tight mb-6">Klar til at prøve det lokalt?</h2>
-    <p class="text-on-surface-variant text-lg max-w-xl mx-auto mb-10">
+  <section {...sx.pages_index_section125}>
+    <h2 {...sx.pages_index_h2111}>Klar til at prøve det lokalt?</h2>
+    <p {...sx.pages_index_p126}>
       Kildekoden ligger åbent. Klon repoet, kør smoke-flowet, og åbn et issue hvis noget ikke holder i mødet med dine bilag.
     </p>
-    <div class="flex flex-col sm:flex-row gap-3 justify-center">
-      <a href={SITE.github} rel="noopener me" target="_blank" class="inline-flex items-center justify-center gap-2 bg-brass-gold text-ink-black font-mono text-[12px] uppercase tracking-[0.15em] font-bold px-8 py-4 transition-all hover:shadow-[0_0_24px_rgba(197,160,89,0.35)]">
+    <div {...sx.pages_404_div5}>
+      <a href={SITE.github} rel="noopener me" target="_blank" {...sx.pages_index_a127}>
         Se på GitHub ↗
       </a>
-      <a href="/docs" class="inline-flex items-center justify-center gap-2 border border-cyber-blue/60 text-cyber-blue font-mono text-[12px] uppercase tracking-[0.15em] px-8 py-4 transition-all hover:bg-cyber-blue/5">
+      <a href="/docs" {...sx.pages_404_a7}>
         Docs &amp; installation
       </a>
     </div>

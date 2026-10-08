@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import { VIDEN_SECTIONS } from "../site-map";
 
 interface Props {
@@ -15,22 +16,22 @@ const links = siblingLinks.slice(0, 8);
 ---
 
 {currentSection && links.length > 0 && (
-  <aside class="border-t border-outline-variant/20 bg-surface-container-low/40">
-    <div class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-10 md:py-12">
-      <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-outline mb-4">
+  <aside {...sx.components_KnowledgeSectionLinks_aside1}>
+    <div {...sx.components_KnowledgeSectionLinks_div2}>
+      <div {...sx.components_Footer_div10}>
         Mere om {currentSection.title.toLocaleLowerCase("da-DK")}
       </div>
-      <div class="grid sm:grid-cols-2 gap-3">
+      <div {...sx.components_KnowledgeSectionLinks_div3}>
         {links.map((link) => (
           <a
             href={link.href}
-            class="border border-outline-variant/15 bg-surface-container px-4 py-3 text-[15px] text-on-surface-variant hover:border-primary/40 hover:text-primary transition-colors"
+            {...sx.components_KnowledgeSectionLinks_a4}
           >
             {link.label} →
           </a>
         ))}
       </div>
-      <a href="/viden" class="inline-flex mt-6 font-mono text-[12px] uppercase tracking-[0.1em] text-cyber-blue hover:text-primary">
+      <a href="/viden" {...sx.components_KnowledgeSectionLinks_a5}>
         Alle vidensider →
       </a>
     </div>

@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="CVR-opslag kan udfylde navn, adresse og virksomhedsstatus, men bogføringen skal vide hvornår data blev hentet, og brugeren skal kunne overstyre felter der er relevante for faktura eller bilag."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       CVR-registeret er nyttigt til stamdata, men det er ikke en erstatning for den konkrete aftale, faktura eller leverandørrelation. Derfor bør CVR-data behandles som et lokalt snapshot, der kan hjælpe med udfyldning og kontrol.
     </p>
 
@@ -40,18 +41,18 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Hvad CVR-opslag kan bruges til</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad CVR-opslag kan bruges til</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester kan normalisere CVR-numre, slå virksomheder op og gemme et lokalt snapshot. Det bruges til egen virksomheds stamdata og til kunde-/leverandørposter, hvor et CVR-nummer kan udfylde tomme felter.
     </p>
 
-    <h2>Eksplicit input vinder</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Eksplicit input vinder</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Hvis brugeren angiver navn, adresse, email eller andre felter, bør de ikke overskrives blindt af registerdata. Det er vigtigt, fordi faktura- og leverandøroplysninger ofte afspejler en konkret kontrakt, afdeling eller betalingsproces.
     </p>
 
-    <h2>Credentials bliver udenfor</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Credentials bliver udenfor</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       CVR-adgang kræver brugerens egne credentials. Rentemester beskriver og tester opslag/caching, men credentials skal komme fra miljø eller konfiguration og må ikke blive en del af ledgeren.
     </p>
   </article>

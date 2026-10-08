@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="Rentemester kan arbejde med flere lokale virksomhedsmapper og samle portfolio-data til cockpit-visning. Det er ikke det samme som hosted multi-tenant SaaS."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Når et system håndterer flere virksomheder, skal hver virksomheds data, regnskabsår, arkiv og indstillinger holdes adskilt. Ellers bliver rapporter og auditspor svære at stole på.
     </p>
 
@@ -40,18 +41,18 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Workspace-manifestet</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Workspace-manifestet</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har workspace-logik til at initialisere et root, registrere virksomheder, validere slugs, adoptere eksisterende company directories og markere virksomheder som arkiverede.
     </p>
 
-    <h2>Portfolio og cockpit</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Portfolio og cockpit</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Serverlaget kan bygge portfolio-overblik og company dashboard-data på tværs af lokale selskaber. Cockpit-visningen er en læse- og styringsoverflade oven på lokale data, ikke et løfte om cloud-hosting eller delt database mellem kunder.
     </p>
 
-    <h2>Arkiverede år</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Arkiverede år</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Grafen viser også arkivdata fra importerede regnskabsår. Cockpittet kan læse de arkiverede balancer og posteringer som referencedata, mens den aktive ledger forbliver afgrænset til virksomhedens aktuelle bogføring.
     </p>
   </article>

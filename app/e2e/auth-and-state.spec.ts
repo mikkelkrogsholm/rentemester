@@ -33,14 +33,49 @@ for (const item of [
   { path: `/companies/${COMPANY_SLUG}/bilag`, session: "unverified", title: "Bekræft din e-mail" },
   { path: `/companies/${COMPANY_SLUG}/bilag`, session: "mfa-required", title: "Opsæt totrinsbekræftelse" },
 ] as const) {
-  test(`hosted ${item.session} shows ${item.title}`, async ({ page }) => {
-    const fixture = await mockApi(page, { profile: "hosted", session: item.session });
-    await page.goto(item.path);
-    await expect(page.getByRole("main")).toContainText(item.title);
-    await expect(page.getByText("DOC-2026-000001")).toHaveCount(0);
-    expect(fixture.calls.some((call) => call.path.endsWith("/documents"))).toBe(false);
-    fixture.assertComplete();
-  });
+  for (const width of [1440, 320]) {
+    test(`hosted ${item.session} shows ${item.title} with keyboard focus at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 844 });
+      const fixture = await mockApi(page, { profile: "hosted", session: item.session,
+        overrides: item.session === "unverified" ? {
+          "POST /api/auth/send-verification-email": { body: { status: true } },
+        } : undefined,
+      });
+      await page.goto(item.path);
+      const main = page.getByRole("main");
+      await expect(main).toContainText(item.title);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+      const firstControl = item.session === "unverified"
+        ? main.getByRole("button", { name: "Send bekræftelsesmail igen", exact: true })
+        : main.locator("input").first();
+      await expect(firstControl).toBeVisible();
+      // Safari's default Tab navigation skips buttons; its native Space activation
+      // remains available after focus is explicitly placed on the recovery action.
+      if (item.session === "unverified") await firstControl.focus();
+      else await page.keyboard.press("Tab");
+      await expect(firstControl).toBeFocused();
+      await expect(firstControl).toHaveCSS("outline-style", "solid");
+      await expect(firstControl).toHaveCSS("outline-width", "2px");
+      const field = await firstControl.boundingBox();
+      expect(field?.width).toBeGreaterThan(0);
+      expect(field!.x + field!.width).toBeLessThanOrEqual(width + 1);
+      if (item.session === "unverified") {
+        await page.keyboard.press("Space");
+        await expect(main.getByRole("button", { name: "E-mail sendt", exact: true })).toBeVisible();
+      } else {
+        await page.keyboard.type("synthetic-focus");
+        await expect(firstControl).toHaveValue("synthetic-focus");
+      }
+      await expect(page.getByText("DOC-2026-000001")).toHaveCount(0);
+      expect(fixture.calls.some((call) => call.path.endsWith("/documents"))).toBe(false);
+      const writes = fixture.calls.filter(call => call.method !== "GET");
+      if (item.session === "unverified") {
+        expect(writes).toHaveLength(1);
+        expect(writes[0].path).toBe("/api/auth/send-verification-email");
+      } else expect(writes).toEqual([]);
+      fixture.assertComplete();
+    });
+  }
 }
 
 test("recovery keeps the same public result for unknown accounts", async ({ page }) => {

@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../.stylex/site-stylex";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/PageHero.astro";
 import SeoEvidence from "../../components/SeoEvidence.astro";
@@ -19,29 +20,29 @@ import { VIDEN_SECTIONS } from "../../site-map";
     lead="Rentemesters videnssider samler praktiske svar om moms, bilag, faktura, frister og regnskab. Målet er klare svar, konkrete eksempler og links til hvordan systemet håndterer det."
   />
 
-  <section class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16">
-    <div class="max-w-3xl mb-10 prose-da">
-      <p>
+  <section {...sx.pages_viden_index_section1}>
+    <div {...sx.pages_viden_index_div2}>
+      <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
         Videnshubben er bygget som praktisk indgang til dansk bogføring for små virksomheder. Hver side skal enten forklare en regel, vise et konkret regneeksempel eller pege på hvordan Rentemester håndterer flowet i kildekoden.
       </p>
-      <p>
+      <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
         De juridiske sider bruger officielle kilder som Retsinformation og Skattestyrelsen, og produktpåstande holdes adskilt fra roadmap. Hvis en funktion ikke er testet og merged, skal den ikke beskrives som færdig.
       </p>
-      <p>
+      <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
         Strukturen er bevidst smal i første version. Moms-siderne dækker satser og frister, fordi de er almindelige søgeintentioner med tydelige kilder. Udlægs-guiden dækker et hverdagsflow, hvor bilag, formål og fradrag ofte bliver blandet sammen. Værktøjssiderne skal give praktisk nytte, ikke bare forklare begreber.
       </p>
-      <p>
+      <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
         Nye sider bør kun tilføjes, når de kan bære deres egen værdi: konkrete eksempler, kildehenvisninger, intern linking og en tydelig grænse mellem hvad loven siger, hvad god praksis er, og hvad Rentemester faktisk understøtter i kodebasen.
       </p>
     </div>
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+    <div {...sx.pages_viden_index_div3}>
       {VIDEN_SECTIONS.map((section) => (
-        <article class="bg-surface-container border border-outline-variant/15 p-7">
-          <h2 class="font-serif text-2xl text-primary mb-4">{section.title}</h2>
-          <ul class="space-y-3">
+        <article {...sx.pages_viden_index_article4}>
+          <h2 {...sx.pages_viden_index_h25}>{section.title}</h2>
+          <ul {...sx.pages_viden_index_ul6}>
             {section.links.map((link) => (
-              <li>
-                <a href={link.href} class="text-cyber-blue hover:text-primary">{link.label} →</a>
+              <li {...sx.pages_viden_index_li7}>
+                <a href={link.href} {...sx.pages_viden_index_a8}>{link.label} →</a>
               </li>
             ))}
           </ul>

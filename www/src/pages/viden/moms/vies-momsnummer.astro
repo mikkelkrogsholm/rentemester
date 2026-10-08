@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -22,8 +23,8 @@ const skatEuKoebUrl = "https://skat.dk/erhverv/moms/moms-ved-handel-med-udlandet
     lead="Ved EU-handel bør momsnumre ikke bare indtastes og glemmes. VIES-kontrol hjælper med at dokumentere, at modpartens momsnummer var valideret på tidspunktet for behandlingen."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Når en dansk virksomhed handler med en EU-virksomhed, er momsnummeret en central del af dokumentationen. Det skal stå korrekt på fakturaen, og virksomheden bør kunne vise, at nummeret er kontrolleret, hvis reverse charge eller EU-momsbehandling bruges.
     </p>
 
@@ -39,16 +40,16 @@ const skatEuKoebUrl = "https://skat.dk/erhverv/moms/moms-ved-handel-med-udlandet
       ]}
     />
 
-    <h2>Hvad betyder det i praksis?</h2>
-    <ul>
-      <li>Dit eget momsnummer bør stå korrekt på fakturaen.</li>
-      <li>Leverandørens momsnummer bør kontrolleres.</li>
-      <li>Kontrollen bør gemmes med tidspunkt og resultat.</li>
-      <li>Ugyldig eller manglende validering bør stoppe automatisk bogføring.</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad betyder det i praksis?</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Dit eget momsnummer bør stå korrekt på fakturaen.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Leverandørens momsnummer bør kontrolleres.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Kontrollen bør gemmes med tidspunkt og resultat.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Ugyldig eller manglende validering bør stoppe automatisk bogføring.</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester kræver cached VIES-validering før visse reverse-charge flows kan bogføres. Det gør momsnummeret til dokumenteret input i stedet for fri tekst. Hvis validering mangler, skal flowet stoppe og afklares.
     </p>
   </article>

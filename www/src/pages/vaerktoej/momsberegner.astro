@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../.stylex/site-stylex";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/PageHero.astro";
 import SeoEvidence from "../../components/SeoEvidence.astro";
@@ -30,64 +31,64 @@ const skatMomssatsUrl = "https://info.skat.dk/data.aspx?oid=1921136";
     lead="Beregn dansk 25 procent moms begge veje: fra ekskl. moms til inkl. moms, eller fra inkl. moms til momsbeløb og nettopris."
   />
 
-  <section class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16">
-    <div class="grid lg:grid-cols-[1fr_0.9fr] gap-8 lg:gap-12 items-start">
-      <div class="bg-surface-container border border-outline-variant/15 p-7 md:p-9">
-        <form id="vat-calculator" class="space-y-6">
-          <div>
-            <label for="amount" class="block font-mono text-[11px] uppercase tracking-[0.2em] text-primary mb-2">Beløb</label>
-            <input id="amount" name="amount" inputmode="decimal" value="1000" class="w-full bg-ink-black border border-outline-variant/40 px-4 py-3 text-on-background font-mono text-lg" />
+  <section {...sx.pages_viden_index_section1}>
+    <div {...sx.pages_vaerktoej_momsberegner_div1}>
+      <div {...sx.pages_vaerktoej_momsberegner_div2}>
+        <form id="vat-calculator" {...sx.pages_vaerktoej_momsberegner_form3}>
+          <div {...sx.pages_vaerktoej_momsberegner_div4}>
+            <label for="amount" {...sx.pages_vaerktoej_momsberegner_label5}>Beløb</label>
+            <input id="amount" name="amount" inputmode="decimal" value="1000" {...sx.pages_vaerktoej_momsberegner_input6} />
           </div>
-          <fieldset>
-            <legend class="font-mono text-[11px] uppercase tracking-[0.2em] text-primary mb-3">Beløbet er</legend>
-            <div class="grid sm:grid-cols-2 gap-3">
-              <label class="flex items-center gap-3 border border-outline-variant/30 bg-deep-navy px-4 py-3">
-                <input type="radio" name="mode" value="ex" checked />
-                <span>Ekskl. moms</span>
+          <fieldset {...sx.pages_vaerktoej_momsberegner_fieldset7}>
+            <legend {...sx.pages_vaerktoej_momsberegner_legend8}>Beløbet er</legend>
+            <div {...sx.components_KnowledgeSectionLinks_div3}>
+              <label {...sx.pages_vaerktoej_momsberegner_label9}>
+                <input {...sx.pages_vaerktoej_momsberegner_input10} type="radio" name="mode" value="ex" checked />
+                <span {...sx.layouts_BaseLayout_span8}>Ekskl. moms</span>
               </label>
-              <label class="flex items-center gap-3 border border-outline-variant/30 bg-deep-navy px-4 py-3">
-                <input type="radio" name="mode" value="inc" />
-                <span>Inkl. moms</span>
+              <label {...sx.pages_vaerktoej_momsberegner_label9}>
+                <input {...sx.pages_vaerktoej_momsberegner_input10} type="radio" name="mode" value="inc" />
+                <span {...sx.layouts_BaseLayout_span8}>Inkl. moms</span>
               </label>
             </div>
           </fieldset>
         </form>
 
-        <div class="grid sm:grid-cols-3 gap-4 mt-8" aria-live="polite">
-          <div class="bg-ink-black border border-outline-variant/20 p-5">
-            <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-outline mb-2">Ekskl. moms</div>
-            <div id="result-net" class="font-serif text-2xl text-on-background">1.000,00 kr.</div>
+        <div {...sx.pages_vaerktoej_momsberegner_div11} aria-live="polite">
+          <div {...sx.pages_vaerktoej_momsberegner_div12}>
+            <div {...sx.pages_vaerktoej_momsberegner_div13}>Ekskl. moms</div>
+            <div id="result-net" {...sx.pages_vaerktoej_momsberegner_div14}>1.000,00 kr.</div>
           </div>
-          <div class="bg-ink-black border border-outline-variant/20 p-5">
-            <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-outline mb-2">Moms</div>
-            <div id="result-vat" class="font-serif text-2xl text-primary">250,00 kr.</div>
+          <div {...sx.pages_vaerktoej_momsberegner_div12}>
+            <div {...sx.pages_vaerktoej_momsberegner_div13}>Moms</div>
+            <div id="result-vat" {...sx.pages_vaerktoej_momsberegner_div15}>250,00 kr.</div>
           </div>
-          <div class="bg-ink-black border border-outline-variant/20 p-5">
-            <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-outline mb-2">Inkl. moms</div>
-            <div id="result-gross" class="font-serif text-2xl text-on-background">1.250,00 kr.</div>
+          <div {...sx.pages_vaerktoej_momsberegner_div12}>
+            <div {...sx.pages_vaerktoej_momsberegner_div13}>Inkl. moms</div>
+            <div id="result-gross" {...sx.pages_vaerktoej_momsberegner_div14}>1.250,00 kr.</div>
           </div>
         </div>
       </div>
 
-      <article class="prose-da">
-        <h2>Sådan regner du dansk moms</h2>
-        <p>Den normale danske momssats er 25 procent. Fra nettopris til bruttopris lægger du 25 procent til. Fra bruttopris til momsbeløb udgør momsen 20 procent af beløbet inklusiv moms. Kilden er <a href={skatMomssatsUrl} rel="noopener" target="_blank">Skattestyrelsens juridiske vejledning om momssatsen</a>.</p>
-        <h3>Eksempel</h3>
-        <p>1.000 kr. ekskl. moms bliver 1.250 kr. inkl. moms. Momsen er 250 kr.</p>
-        <h3>Formler</h3>
-        <ul>
-          <li>Pris inkl. moms = pris ekskl. moms × 1,25</li>
-          <li>Momsbeløb = pris ekskl. moms × 0,25</li>
-          <li>Pris ekskl. moms = pris inkl. moms / 1,25</li>
-          <li>Momsbeløb i en bruttopris = pris inkl. moms × 0,20</li>
+      <article {...sx.pages_vaerktoej_momsberegner_article16}>
+        <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan regner du dansk moms</h2>
+        <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Den normale danske momssats er 25 procent. Fra nettopris til bruttopris lægger du 25 procent til. Fra bruttopris til momsbeløb udgør momsen 20 procent af beløbet inklusiv moms. Kilden er <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={skatMomssatsUrl} rel="noopener" target="_blank">Skattestyrelsens juridiske vejledning om momssatsen</a>.</p>
+        <h3 {...sx.pages_viden_fakturering_eFakturaOffentlig_h31}>Eksempel</h3>
+        <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>1.000 kr. ekskl. moms bliver 1.250 kr. inkl. moms. Momsen er 250 kr.</p>
+        <h3 {...sx.pages_viden_fakturering_eFakturaOffentlig_h31}>Formler</h3>
+        <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+          <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Pris inkl. moms = pris ekskl. moms × 1,25</li>
+          <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Momsbeløb = pris ekskl. moms × 0,25</li>
+          <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Pris ekskl. moms = pris inkl. moms / 1,25</li>
+          <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Momsbeløb i en bruttopris = pris inkl. moms × 0,20</li>
         </ul>
-        <h3>Hvornår er den ikke nok?</h3>
-        <p>Beregneren dækker almindelig 25 procent dansk moms. Brug ikke resultatet ukritisk til momsfritagelser, EU reverse charge, repræsentation, delvist fradrag, importmoms eller blandet privat/erhverv.</p>
-        <h3>Hvorfor 20 procent af bruttoprisen?</h3>
-        <p>Når en pris allerede indeholder 25 procent moms, er bruttoprisen 125 procent af nettoprisen. Momsdelen er derfor 25 ud af 125, altså 20 procent af bruttobeløbet. Det er den fejl mange laver, når de forsøger at trække 25 procent fra en pris inklusiv moms.</p>
-        <h3>Praktisk brug</h3>
-        <p>Brug beregneren til hurtige kontroller af fakturalinjer, tilbud, kvitteringer og små regneeksempler. Ved bogføring skal beløbet stadig passe med bilaget, momskoden og den konkrete fradragsret.</p>
-        <p>Læs også <a href="/viden/moms/satser">momssatser i Danmark</a> og <a href="/viden/frister/moms">momsfrister</a>.</p>
+        <h3 {...sx.pages_viden_fakturering_eFakturaOffentlig_h31}>Hvornår er den ikke nok?</h3>
+        <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Beregneren dækker almindelig 25 procent dansk moms. Brug ikke resultatet ukritisk til momsfritagelser, EU reverse charge, repræsentation, delvist fradrag, importmoms eller blandet privat/erhverv.</p>
+        <h3 {...sx.pages_viden_fakturering_eFakturaOffentlig_h31}>Hvorfor 20 procent af bruttoprisen?</h3>
+        <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Når en pris allerede indeholder 25 procent moms, er bruttoprisen 125 procent af nettoprisen. Momsdelen er derfor 25 ud af 125, altså 20 procent af bruttobeløbet. Det er den fejl mange laver, når de forsøger at trække 25 procent fra en pris inklusiv moms.</p>
+        <h3 {...sx.pages_viden_fakturering_eFakturaOffentlig_h31}>Praktisk brug</h3>
+        <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Brug beregneren til hurtige kontroller af fakturalinjer, tilbud, kvitteringer og små regneeksempler. Ved bogføring skal beløbet stadig passe med bilaget, momskoden og den konkrete fradragsret.</p>
+        <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Læs også <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/viden/moms/satser">momssatser i Danmark</a> og <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/viden/frister/moms">momsfrister</a>.</p>
       </article>
     </div>
     <SeoEvidence

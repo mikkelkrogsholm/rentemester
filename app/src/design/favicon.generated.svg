@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><style data-stylex="compiled">.xis53pw{border:1px solid #4C4740}
+.x1mtc34l{border:1px solid #D8D2C6}
+.xjgi5au{margin:0 0 12px}
+.xwd23ue{margin:0 0 4px}
+.x1q6ys4k{margin:0 0 8px}
+.x19bbpc0{margin:0 auto}
+.x1ghz6dp{margin:0}
+.xhv1u6h{margin:16px 0}
+.x1e3loky{margin:18px 0 6px}
+.x3grmcm{margin:32px 0 12px}
+.x1qk52y6{margin:4px 0}
+.x14kudrl{margin:8px 0}
+.x1717udv{padding:0}
+.xp41m2r{padding:12px 0}
+.x14hcewi{padding:16px 20px}
+.x1tamke2{padding:16px}
+.x1e41zw8{padding:1px 5px}
+.xggk2y7{padding:24px}
+.x1rbdj2j{padding:2px 10px}
+.xmfpazt{padding:2px 8px}
+.x8m5dha{padding:32px 24px 64px}
+.x1tfrs4t{padding:32px 24px}
+.x1v9t41d{padding:4px 10px}
+.xokocfn{padding:6px 0}
+.x18tqr4w{padding:6px 8px}
+.x153ncpu{padding:8px 12px}
+.x1py1ajr{padding:8px 6px}
+@media print{.xdonue1.xdonue1{padding:16px}}
+.x3ax777:not(#\#){border-bottom:1px solid #4C4740}
+.x4iifgd:not(#\#){border-bottom:1px solid #D8D2C6}
+.xjpoft:not(#\#){border-color:#8F2A22}
+.x13qnglf:not(#\#){border-color:#A6332A}
+.x15btfso:not(#\#){border-left:3px solid #A6332A}
+.x1cum3z5:not(#\#){border-radius:2px}
+.x18zih8k:not(#\#){border-radius:3px}
+.x12oqio5:not(#\#){border-radius:4px}
+.xur7f20:not(#\#){border-radius:8px}
+.x1e6avla:not(#\#){border-radius:999px}
+.x1ix977w:not(#\#){border-top:1px solid #D8D2C6}
+.x1v2ro7d:not(#\#){gap:12px}
+.xou54vl:not(#\#){gap:16px}
+.x1665zp3:not(#\#){gap:24px}
+.x1fkiil2:not(#\#){gap:8px 16px}
+.x167g77z:not(#\#){gap:8px}
+.x1h2kci9:focus-visible:not(#\#){outline:2px solid}
+.x1rix2v9:last-child:not(#\#){border-bottom:none}
+.x6s0dn4:not(#\#):not(#\#){align-items:center}
+.x1cy8zhl:not(#\#):not(#\#){align-items:flex-start}
+.xust7hp:not(#\#):not(#\#){background-color:#DCE8E1}
+.x1g3q4ms:not(#\#):not(#\#){background-color:#EED9D6}
+.x3y741x:not(#\#):not(#\#){background-color:#EEE3D1}
+.x1exlaww:not(#\#):not(#\#){background-color:#EFEAE0}
+.x18uuaso:not(#\#):not(#\#){background-color:#F4F1EB}
+.x1hnaarz:not(#\#):not(#\#){background-color:#F8F2E9}
+.x1unyc0x:not(#\#):not(#\#){background-color:#FBF8F3}
+.x1mwwwfo:not(#\#):not(#\#){border-collapse:collapse}
+.x9f619:not(#\#):not(#\#){box-sizing:border-box}
+.x1qgqlal:not(#\#):not(#\#){break-inside:avoid}
+.xalutqh:not(#\#):not(#\#){color:#1B1A17}
+.x1gecvnp:not(#\#):not(#\#){color:#2E5E4E}
+.x1se9eb:not(#\#):not(#\#){color:#4C4740}
+.x1nvqsyq:not(#\#):not(#\#){color:#8A5A12}
+.x1t01c1c:not(#\#):not(#\#){color:#8F2A22}
+.x1ypdohk:not(#\#):not(#\#){cursor:pointer}
+.x78zum5:not(#\#):not(#\#){display:flex}
+.xrvj5dj:not(#\#):not(#\#){display:grid}
+.x1rg5ohu:not(#\#):not(#\#){display:inline-block}
+.x1s85apg:not(#\#):not(#\#){display:none}
+.x10hnlno:not(#\#):not(#\#){fill:#1B1A17}
+.xut9cor:not(#\#):not(#\#){fill:#F4F1EB}
+.x1r8uery:not(#\#):not(#\#){flex-basis:0}
+.x1q0g3np:not(#\#):not(#\#){flex-direction:row}
+.x1iyjqo2:not(#\#):not(#\#){flex-grow:1}
+.x1a02dak:not(#\#):not(#\#){flex-wrap:wrap}
+.x7at14c:not(#\#):not(#\#){font-family:"IBM Plex Mono","SF Mono",Menlo,Consolas,monospace}
+.x1kgr59r:not(#\#):not(#\#){font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.x1pg0ydx:not(#\#):not(#\#){font-family:"Source Serif 4",Georgia,"Times New Roman",serif}
+.x6icuqf:not(#\#):not(#\#){font-family:sans-serif}
+.xze423w:not(#\#):not(#\#){font-feature-settings:"tnum" 1}
+.x1k6wstc:not(#\#):not(#\#){font-size:10px}
+.x1j6dyjg:not(#\#):not(#\#){font-size:11px}
+.xfifm61:not(#\#):not(#\#){font-size:12px}
+.x4z9k3i:not(#\#):not(#\#){font-size:13px}
+.xif65rj:not(#\#):not(#\#){font-size:14px}
+.x1jvydc1:not(#\#):not(#\#){font-size:15px}
+.x1j61zf2:not(#\#):not(#\#){font-size:16px}
+.xosj86m:not(#\#):not(#\#){font-size:18px}
+.xew7ush:not(#\#):not(#\#){font-size:21px}
+.x1pvqxga:not(#\#):not(#\#){font-size:24px}
+.xneq65o:not(#\#):not(#\#){font-size:28px}
+.x1ulgg28:not(#\#):not(#\#){font-size:30px}
+.x1k4tb9n:not(#\#):not(#\#){font-style:italic}
+.xss6m8b:not(#\#):not(#\#){font-variant-numeric:tabular-nums}
+.xk50ysn:not(#\#):not(#\#){font-weight:500}
+.x1s688f:not(#\#):not(#\#){font-weight:600}
+.x1c0xe4h:not(#\#):not(#\#){grid-template-columns:auto auto auto minmax(0,1fr)}
+.xl501l6:not(#\#):not(#\#){grid-template-columns:repeat(4,1fr)}
+.x1qughib:not(#\#):not(#\#){justify-content:space-between}
+.xjat59b:not(#\#):not(#\#){letter-spacing:-0.01em}
+.x16q24ku:not(#\#):not(#\#){letter-spacing:.02em}
+.x1vyo3qp:not(#\#):not(#\#){letter-spacing:.04em}
+.x9pfba7:not(#\#):not(#\#){letter-spacing:.08em}
+.x1159mfc:not(#\#):not(#\#){line-height:1.1}
+.x37zpob:not(#\#):not(#\#){line-height:1.4}
+.x1evy7pa:not(#\#):not(#\#){line-height:1.5}
+.x1jjo3f5:not(#\#):not(#\#){line-height:1.55}
+.xj0a0fe:not(#\#):not(#\#){overflow-wrap:anywhere}
+.x2b8uid:not(#\#):not(#\#){text-align:center}
+.xdpxx8g:not(#\#):not(#\#){text-align:left}
+.x1hr2gdg:not(#\#):not(#\#){text-align:right}
+.xw6cgo0:not(#\#):not(#\#){text-anchor:middle}
+.xtvhhri:not(#\#):not(#\#){text-transform:uppercase}
+.x16dsc37:not(#\#):not(#\#){vertical-align:top}
+.xuxw1ft:not(#\#):not(#\#){white-space:nowrap}
+.x126k92a:not(#\#):not(#\#){white-space:pre-wrap}
+.xbmds8r:focus-visible:not(#\#):not(#\#){outline-color:#2D5673}
+.x1yqqrih:nth-child(even):not(#\#):not(#\#){background-color:#FBF8F3}
+@media print{.x1b5ou05.x1b5ou05:not(#\#):not(#\#){background-color:#fff}}
+@media print{.x13spgsm.x13spgsm:not(#\#):not(#\#){break-inside:avoid}}
+@media (max-width: 640px){.xreyasp.xreyasp:not(#\#):not(#\#){grid-template-columns:1fr}}
+@media (max-width: 640px){.xy9gnua.xy9gnua:not(#\#):not(#\#){grid-template-columns:repeat(2,1fr)}}
+.xod5an3:not(#\#):not(#\#):not(#\#){margin-bottom:12px}
+.x1yztbdb:not(#\#):not(#\#):not(#\#){margin-bottom:16px}
+.x1hq5gj4:not(#\#):not(#\#):not(#\#){margin-bottom:24px}
+.x1e56ztr:not(#\#):not(#\#):not(#\#){margin-bottom:8px}
+.x8x9d4c:not(#\#):not(#\#):not(#\#){margin-left:auto}
+.x14vqqas:not(#\#):not(#\#):not(#\#){margin-top:12px}
+.xw7yly9:not(#\#):not(#\#):not(#\#){margin-top:16px}
+.xqui205:not(#\#):not(#\#):not(#\#){margin-top:24px}
+.x1tfhste:not(#\#):not(#\#):not(#\#){margin-top:40px}
+.x1gslohp:not(#\#):not(#\#):not(#\#){margin-top:4px}
+.x1xmf6yo:not(#\#):not(#\#):not(#\#){margin-top:8px}
+.x193iq5w:not(#\#):not(#\#):not(#\#){max-width:100%}
+.x18k543f:not(#\#):not(#\#):not(#\#){max-width:820px}
+.x1uedy8c:not(#\#):not(#\#):not(#\#){max-width:880px}
+.xyzno7u:not(#\#):not(#\#):not(#\#){max-width:960px}
+.xw2csxc:not(#\#):not(#\#):not(#\#){overflow-x:auto}
+.x1l90r2v:not(#\#):not(#\#):not(#\#){padding-bottom:16px}
+.x10b6aqq:not(#\#):not(#\#):not(#\#){padding-bottom:6px}
+.xwib8y2:not(#\#):not(#\#):not(#\#){padding-bottom:8px}
+.x5tiur9:not(#\#):not(#\#):not(#\#){padding-left:20px}
+.xyamay9:not(#\#):not(#\#):not(#\#){padding-top:16px}
+.xh8yej3:not(#\#):not(#\#):not(#\#){width:100%}
+.x1b42p2t:not(#\#):not(#\#):not(#\#){width:46%}
+.xycev2y:not(#\#):not(#\#):not(#\#){width:60%}
+@media print{.xifltxc.xifltxc:not(#\#):not(#\#):not(#\#){overflow-x:visible}}</style><rect width="32" height="32" rx="2" class="x10hnlno"/><text x="16" y="22" class="xut9cor xosj86m xw6cgo0 x6icuqf">R</text></svg>

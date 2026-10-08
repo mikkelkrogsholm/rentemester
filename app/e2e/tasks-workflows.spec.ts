@@ -221,3 +221,30 @@ test('failed source sync preserves uncertainty on an empty first load', async ({
   await expect(page.getByRole('alert')).toContainText('En tom liste betyder ikke, at arbejdet er afsluttet.');
   fixture.assertComplete();
 });
+
+
+test('task navigation separates scope, view and filters and keeps their URL context visible', async ({ page }) => {
+  const { fixture } = await taskFixture(page);
+  await page.goto('/opgaver?view=kanban&companySlug=acme-aps&search=Afstem&date=2026-10-08');
+  const navigation = page.getByRole('navigation', { name: 'Workspace', exact: true });
+  await expect(navigation.getByRole('link', { name: 'Portefølje', exact: true })).toBeVisible();
+  await expect(navigation.getByRole('link', { name: 'Opgaver', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('note', { name: 'Opgavernes selskabsscope' })).toContainText('Acme ApS');
+  const filters = page.getByRole('group', { name: 'Aktive opgavefiltre' });
+  await expect(filters).toContainText('Acme ApS');
+  await expect(filters).toContainText('Søg: Afstem');
+  const views = page.getByRole('group', { name: 'Opgavevisning' });
+  await expect(views.getByRole('button', { name: 'Kanban', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await views.getByRole('button', { name: 'Kalender', exact: true }).click();
+  await expect(views.getByRole('button', { name: 'Kalender', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page).toHaveURL(/companySlug=acme-aps.*search=Afstem.*date=2026-10-08/);
+  const quick = page.getByRole('group', { name: 'Hurtigfiltre' });
+  await quick.getByRole('button', { name: 'Denne måned', exact: true }).click();
+  await expect(quick.getByRole('button', { name: 'Denne måned', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await filters.getByRole('button', { name: 'Ryd filtre', exact: true }).click();
+  await expect(filters).toHaveCount(0);
+  await expect(page).toHaveURL(/view=calendar&date=2026-10-08/);
+  await expect(page.getByRole('note', { name: 'Opgavernes selskabsscope' })).toContainText('Alle selskaber');
+  expect(fixture.calls.filter(call => call.method !== 'GET')).toEqual([]);
+  fixture.assertComplete();
+});

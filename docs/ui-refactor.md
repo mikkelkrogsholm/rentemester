@@ -103,7 +103,7 @@ Permissions i tabellen er forkortet: `read` = `company.read`, `documents.read/up
 
 ## Implementerede fælles kontrakter
 
-`DESIGN.md` er tokenkilden. Generatoren afviser ukendte referencer og cykler og skriver TypeScript til statiske rapporter/diagrammer, StyleX-variabler til React og en CSS-bro til semantiske layouts. `design:check` afviser drift. Ingen virksomhedsdata indgår i tokens eller produktdefaults.
+`DESIGN.md` er tokenkilden. Generatoren afviser ukendte referencer og cykler og skriver TypeScript til statiske rapporter/diagrammer, StyleX-variabler til React; selvstændige dokumenter bruger prekompilerede StyleX-attributkort og CSS. `design:check` afviser drift. Ingen virksomhedsdata indgår i tokens eller produktdefaults.
 
 De fælles komponenter ejer native controls, varianter, fokus, beløb, overskrifter, status, sideskift og kvitteringer. Domænesiderne beholder deres eksisterende serverkontrakter. StyleX kompileres med den native Bun-adapter; transformkørsler serialiseres, fordi adapterens samtidige CSS-skrivninger ellers kan overskrive den sidste komplette fil. Produktionsbuildet afviser manglende designvariabler og linker den kompilerede CSS med indholdshash. Browserchecks undersøger den faktiske CSS: 248 px sidebar, Source Serif 4, 32 px H1, 44 px controls og designfarver.
 
@@ -166,6 +166,11 @@ Auditresultatet vedrører de allerede installerede versioner af `fast-uri`, `hon
 Manuel skærmlæserkontrol og faktisk 200 % browserzoom er endnu ikke udført. Mobilreflow, tastatur, inert/fokus og axe-checks er automatiseret; resultaterne dækker de anførte tests og syntetiske tilstande, ikke en generel attest for alle kombinationer eller fuld WCAG-overholdelse. Der er ikke deployet eller skrevet til virkelige virksomhedsdata.
 
 ## Ekstra designreview 3. oktober 2026
+
+Denne sektion er historisk evidens fra 3. oktober. Migreringen 8. oktober
+erstatter de nævnte canvasgrafer og CSS-tokenbroen med direkte StyleX og fælles
+SVG-komponenter. Den aktuelle metode, navigation og integrerede verifikation
+er dokumenteret i [StyleX-migreringen](stylex-migration.md).
 
 Den fælles designkontrakt er gennemgået med et uafhængigt komponent-/tilgængelighedsreview og efterfølgende integreret kontrol. `DESIGN.md` dokumenterer nu alle 52 offentlige React-komponenter fra 29 fælles kildefiler, deres familier og relevante helpers. Kataloget omfatter primitives, shell/navigation, kontomenu, alle domænedialoger/formularer, feedback, grafer, virksomhedskort/-formular og revisor-eksport. Det præciserer brug, varianter, datakontekst, responsive mønstre, tastatur, fokus, permissions og asynkrone tilstande.
 

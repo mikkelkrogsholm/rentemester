@@ -1,3 +1,5 @@
+import * as stylex from "@stylexjs/stylex";
+import { cockpitStyles } from "../design/cockpit.stylex";
 import { Button, Input } from "./ui";
 // Revisor-eksport — the accountant-handoff package card.
 //
@@ -14,8 +16,8 @@ import { Button, Input } from "./ui";
 import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
 import { todayIso } from "../lib/format";
-import { Banner } from "./Feedback";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { Banner } from "./Feedback";
 
 /**
  * Revisor-eksport — generates the accountant-handoff package and triggers a
@@ -27,120 +29,162 @@ import { useMutationOutcome } from "../lib/useMutationOutcome";
  * sub-period (e.g. one registered VAT period) before generating.
  */
 export function AccountantExportCard({ slug }: { slug: string }) {
-  const outcome = useMutationOutcome(undefined, "accountant-export", `company:${slug}`);
-  // Use the LOCAL date — `toISOString()` is UTC and is off-by-one in Danish
-  // evening hours (UTC+1/+2), defaulting the export period to tomorrow.
-  const today = todayIso();
-  const yearStart = `${today.slice(0, 4)}-01-01`;
-  const [periodStart, setPeriodStart] = useState(yearStart);
-  const [periodEnd, setPeriodEnd] = useState(today);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState<{
-    filename: string;
-    journalEntryCount: number;
-    documentCount: number;
-    bankTransactionCount: number;
-  } | null>(null);
-  const downloadScope = useRef({ active: true, slug });
-  useEffect(() => {
-    const scope = { active: true, slug };
-    downloadScope.current = scope;
-    setBusy(false);
-    setError(null);
-    setDone(null);
-    return () => { scope.active = false; };
-  }, [slug]);
+	const outcome = useMutationOutcome(
+		undefined,
+		"accountant-export",
+		`company:${slug}`,
+	);
+	// Use the LOCAL date — `toISOString()` is UTC and is off-by-one in Danish
+	// evening hours (UTC+1/+2), defaulting the export period to tomorrow.
+	const today = todayIso();
+	const yearStart = `${today.slice(0, 4)}-01-01`;
+	const [periodStart, setPeriodStart] = useState(yearStart);
+	const [periodEnd, setPeriodEnd] = useState(today);
+	const [busy, setBusy] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [done, setDone] = useState<{
+		filename: string;
+		journalEntryCount: number;
+		documentCount: number;
+		bankTransactionCount: number;
+	} | null>(null);
+	const downloadScope = useRef({ active: true, slug });
+	useEffect(() => {
+		const scope = { active: true, slug };
+		downloadScope.current = scope;
+		setBusy(false);
+		setError(null);
+		setDone(null);
+		return () => {
+			scope.active = false;
+		};
+	}, [slug]);
 
-  async function generate() {
-    if (busy || outcome.isBlocked()) return;
-    const scope = downloadScope.current;
-    setBusy(true);
-    setError(null);
-    setDone(null);
-    try {
-      const res = await outcome.run(() => api.accountantExport(slug, { periodStart, periodEnd }));
-      // The write may have completed, but its bytes belong only to the view
-      // that requested them. Company navigation/logout must discard late data.
-      if (!scope.active) return;
-      // Trigger a browser download from the blob — the response is the only
-      // copy of the package that leaves the server.
-      const url = URL.createObjectURL(res.blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = res.filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      setDone({
-        filename: res.filename,
-        journalEntryCount: res.journalEntryCount,
-        documentCount: res.documentCount,
-        bankTransactionCount: res.bankTransactionCount,
-      });
-    } catch (err) {
-      if (!scope.active) return;
-      const e = err as { message?: string };
-      setError(e?.message ?? "Eksporten kunne ikke gennemføres.");
-    } finally {
-      if (scope.active) setBusy(false);
-    }
-  }
+	async function generate() {
+		if (busy || outcome.isBlocked()) return;
+		const scope = downloadScope.current;
+		setBusy(true);
+		setError(null);
+		setDone(null);
+		try {
+			const res = await outcome.run(() =>
+				api.accountantExport(slug, { periodStart, periodEnd }),
+			);
+			// The write may have completed, but its bytes belong only to the view
+			// that requested them. Company navigation/logout must discard late data.
+			if (!scope.active) return;
+			// Trigger a browser download from the blob — the response is the only
+			// copy of the package that leaves the server.
+			const url = URL.createObjectURL(res.blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = res.filename;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+			setDone({
+				filename: res.filename,
+				journalEntryCount: res.journalEntryCount,
+				documentCount: res.documentCount,
+				bankTransactionCount: res.bankTransactionCount,
+			});
+		} catch (err) {
+			if (!scope.active) return;
+			const e = err as { message?: string };
+			setError(e?.message ?? "Eksporten kunne ikke gennemføres.");
+		} finally {
+			if (scope.active) setBusy(false);
+		}
+	}
 
-  const disabled =
-    busy ||
-    outcome.blocked ||
-    periodStart.length !== 10 ||
-    periodEnd.length !== 10 ||
-    periodStart > periodEnd;
+	const disabled =
+		busy ||
+		outcome.blocked ||
+		periodStart.length !== 10 ||
+		periodEnd.length !== 10 ||
+		periodStart > periodEnd;
 
-  return (
-    <div className="card accountant-export">
-      {outcome.feedback}
-      <h3 className="section-title">Revisor-eksport</h3>
-      <p className="muted">
-        Pakker journal, bilag, banktransaktioner og audit-log for perioden i én
-        .tar-fil. Serveren danner pakken, når du klikker «Generér og download».
-        Du vælger selv, hvordan du deler den med din revisor.
-      </p>
-      <label>
-        Fra
-        <Input
-          type="date"
-          value={periodStart}
-          onChange={(e) => setPeriodStart(e.target.value)}
-          disabled={busy}
-        />
-      </label>
-      <label>
-        Til
-        <Input
-          type="date"
-          value={periodEnd}
-          onChange={(e) => setPeriodEnd(e.target.value)}
-          disabled={busy}
-        />
-      </label>
-      {error && <Banner kind="error">{error}</Banner>}
-      {done && (
-        <Banner kind="success">
-          Hentede {done.filename} — {done.journalEntryCount} posteringer,{" "}
-          {done.documentCount} bilag, {done.bankTransactionCount}{" "}
-          banktransaktioner.
-        </Banner>
-      )}
-      <div className="row-actions">
-        <Button
-          requiredPermission="company.export"
-          className="btn"
-          onClick={generate}
-          disabled={disabled}
-          type="button"
-        >
-          {busy ? "Genererer…" : "Generér og download"}
-        </Button>
-      </div>
-    </div>
-  );
+	return (
+		<div
+			{...stylex.props(
+				cockpitStyles.element,
+				cockpitStyles.focusVisible,
+				cockpitStyles.card,
+				cockpitStyles.accountantExport,
+			)}
+		>
+			{outcome.feedback}
+			<h3
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.h3,
+					cockpitStyles.sectionTitle,
+				)}
+			>
+				Revisor-eksport
+			</h3>
+			<p
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.muted,
+				)}
+			>
+				Pakker journal, bilag, banktransaktioner og audit-log for perioden i én
+				.tar-fil. Serveren danner pakken, når du klikker «Generér og download».
+				Du vælger selv, hvordan du deler den med din revisor.
+			</p>
+			<label
+				{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+			>
+				Fra
+				<Input
+					type="date"
+					value={periodStart}
+					onChange={(e) => setPeriodStart(e.target.value)}
+					disabled={busy}
+					xstyle={[cockpitStyles.inputComposition]}
+				/>
+			</label>
+			<label
+				{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+			>
+				Til
+				<Input
+					type="date"
+					value={periodEnd}
+					onChange={(e) => setPeriodEnd(e.target.value)}
+					disabled={busy}
+					xstyle={[cockpitStyles.inputComposition]}
+				/>
+			</label>
+			{error && <Banner kind="error">{error}</Banner>}
+			{done && (
+				<Banner kind="success">
+					Hentede {done.filename} — {done.journalEntryCount} posteringer,{" "}
+					{done.documentCount} bilag, {done.bankTransactionCount}{" "}
+					banktransaktioner.
+				</Banner>
+			)}
+			<div
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.rowActions,
+				)}
+			>
+				<Button
+					requiredPermission="company.export"
+					onClick={generate}
+					disabled={disabled}
+					type="button"
+					xstyle={[cockpitStyles.buttonComposition]}
+				>
+					{busy ? "Genererer…" : "Generér og download"}
+				</Button>
+			</div>
+		</div>
+	);
 }

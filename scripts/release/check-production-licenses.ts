@@ -46,8 +46,12 @@ export function verifyProductionLicenses(report: unknown): {
       // css-mediaquery 0.1.2 labels its package "BSD". Its bundled Yahoo 2014
       // LICENSE explicitly contains the three BSD clauses. Scope this verified
       // normalization to that exact release; other vague BSD metadata fails.
-      const normalized = license === "BSD" && entry.name === "css-mediaquery" &&
+      let normalized = license === "BSD" && entry.name === "css-mediaquery" &&
         entry.versions.every((version) => version === "0.1.2") ? "BSD-3-Clause" : license;
+      // A choice between already approved permissive licenses adds no new
+      // license permission. Accept only this exact SPDX expression and record
+      // the MIT choice; unknown expressions and AND combinations still fail.
+      if (normalized === "(MIT OR Apache-2.0)") normalized = "MIT";
       if (!ALLOWED_PRODUCTION_LICENSES.has(normalized)) {
         throw new Error(`production dependency uses an unapproved license: ${license}`);
       }

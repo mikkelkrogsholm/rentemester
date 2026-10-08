@@ -1,4 +1,6 @@
-import { ButtonLink, Button, PageHeader } from "../components/ui";
+import * as stylex from "@stylexjs/stylex";
+import { Button, ButtonLink, PageHeader } from "../components/ui";
+import { cockpitStyles } from "../design/cockpit.stylex";
 // Forpligtelser — the per-company obligations view (cockpit-redesign it. 7).
 //
 // Renders `/api/companies/:slug/obligations?year=`: the "hvad skylder jeg og
@@ -10,146 +12,375 @@ import { ButtonLink, Button, PageHeader } from "../components/ui";
 // is used throughout.
 
 import { useParams } from "react-router-dom";
+import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
+import { ErrorState, Loading } from "../components/Feedback";
 import { api } from "../lib/api";
 import { formatKroner, tastSelvNumber } from "../lib/format";
-import { useAsync } from "../lib/useAsync";
 import type { CompanyObligations, ObligationRow } from "../lib/types";
-import { ErrorState, Loading } from "../components/Feedback";
-import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
+import { useAsync } from "../lib/useAsync";
 
 export function ObligationsView() {
-  const { slug = "" } = useParams();
-  const { year, setYear } = useCompanyYear();
-  const state = useAsync<CompanyObligations>(
-    (signal) => api.obligations(slug, year, { signal }),
-    [slug, year],
-  );
+	const { slug = "" } = useParams();
+	const { year, setYear } = useCompanyYear();
+	const state = useAsync<CompanyObligations>(
+		(signal) => api.obligations(slug, year, { signal }),
+		[slug, year],
+	);
 
-  if (state.loading && !state.data)
-    return <Loading label="Henter forpligtelser…" />;
-  if (state.error)
-    return <ErrorState message={state.error} onRetry={state.reload} />;
+	if (state.loading && !state.data)
+		return <Loading label="Henter forpligtelser…" />;
+	if (state.error)
+		return <ErrorState message={state.error} onRetry={state.reload} />;
 
-  const o = state.data!;
-  const currency = o.company.currency || "DKK";
+	const o = state.data!;
+	const currency = o.company.currency || "DKK";
 
-  return (
-    <section className="statement" data-cockpit-page="obligations" data-evidence-issue="655">
-      <PageHeader title="Forpligtelser" actions={<><ButtonLink variant="secondary" to={`/companies/${slug}/opgaver`}>Planlæg i Opgaver</ButtonLink><div className="row-actions">
-          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </ButtonLink>
-        </div></>}>
-        <div>
+	return (
+		<section
+			data-cockpit-page="obligations"
+			data-evidence-issue="655"
+			{...stylex.props(
+				cockpitStyles.element,
+				cockpitStyles.focusVisible,
+				cockpitStyles.statement,
+			)}
+		>
+			<PageHeader
+				title="Forpligtelser"
+				actions={
+					<>
+						<ButtonLink
+							variant="secondary"
+							to={`/companies/${slug}/opgaver`}
+							xstyle={[cockpitStyles.aComposition]}
+						>
+							Planlæg i Opgaver
+						</ButtonLink>
+						<div
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.rowActions,
+							)}
+						>
+							<ButtonLink
+								to={`/companies/${slug}/manage`}
+								variant={"secondary"}
+								xstyle={[cockpitStyles.statementBtnComposition2]}
+							>
+								Administrér
+							</ButtonLink>
+						</div>
+					</>
+				}
+			>
+				<div
+					{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+				>
+					<p
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.muted,
+						)}
+					>
+						{o.company.cvr ? `CVR ${o.company.cvr} · ` : ""}
+						{o.company.country} · {currency} · Forpligtelser
+					</p>
+				</div>
+			</PageHeader>
 
-          <p className="muted">
-            {o.company.cvr ? `CVR ${o.company.cvr} · ` : ""}
-            {o.company.country} · {currency} · Forpligtelser
-          </p>
-        </div>
+			<CompanyNav
+				slug={slug}
+				years={o.fiscalYears}
+				selectedYear={o.selectedYear}
+				onYearChange={setYear}
+			/>
 
-      </PageHeader>
+			{o.archived ? (
+				<ArchivedNotice year={o.selectedYear} />
+			) : o.obligations.length === 0 ? (
+				<div
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.card,
+						cockpitStyles.archivedNotice,
+					)}
+				>
+					<h3
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.h3,
+							cockpitStyles.archivedNoticeH3,
+						)}
+					>
+						Ingen forpligtelser
+					</h3>
+					<p
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.muted,
+						)}
+					>
+						Der er ingen udestående moms, skat eller kreditorgæld i
+						regnskabsåret {o.selectedYear}. Skyldige beløb vises her, så snart
+						de er bogført.
+					</p>
+				</div>
+			) : (
+				<>
+					<p
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.muted,
+							cockpitStyles.statementAsof,
+						)}
+					>
+						Hvad virksomheden skylder — regnskabsår {o.selectedYear}
+					</p>
 
-      <CompanyNav
-        slug={slug}
-        years={o.fiscalYears}
-        selectedYear={o.selectedYear}
-        onYearChange={setYear}
-      />
+					<div
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.invoicesSummary,
+							cockpitStyles.statusGrid,
+						)}
+					>
+						<div
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.card,
+								cockpitStyles.statusCard,
+							)}
+						>
+							<h3
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.h3,
+									cockpitStyles.statusCardH3,
+								)}
+							>
+								Skyldige beløb i alt
+							</h3>
+							<div
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.statusFigure,
+									o.totalOwed > 0 && cockpitStyles.statusFigureStatusAlert,
+								)}
+							>
+								{formatKroner(o.totalOwed, currency)}
+							</div>
+							<p
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.muted,
+									cockpitStyles.statusNote,
+								)}
+							>
+								{o.obligations.length}{" "}
+								{o.obligations.length === 1 ? "forpligtelse" : "forpligtelser"}{" "}
+								· sorteret efter frist
+							</p>
+						</div>
+					</div>
 
-      {o.archived ? (
-        <ArchivedNotice year={o.selectedYear} />
-      ) : o.obligations.length === 0 ? (
-        <div className="card archived-notice">
-          <h3>Ingen forpligtelser</h3>
-          <p className="muted">
-            Der er ingen udestående moms, skat eller kreditorgæld i
-            regnskabsåret {o.selectedYear}. Skyldige beløb vises her, så snart
-            de er bogført.
-          </p>
-        </div>
-      ) : (
-        <>
-          <p className="statement-asof muted">
-            Hvad virksomheden skylder — regnskabsår {o.selectedYear}
-          </p>
-
-          <div className="status-grid invoices-summary">
-            <div className="card status-card">
-              <h3>Skyldige beløb i alt</h3>
-              <div
-                className={`status-figure${
-                  o.totalOwed > 0 ? " status-alert" : ""
-                }`}
-              >
-                {formatKroner(o.totalOwed, currency)}
-              </div>
-              <p className="muted status-note">
-                {o.obligations.length}{" "}
-                {o.obligations.length === 1 ? "forpligtelse" : "forpligtelser"}{" "}
-                · sorteret efter frist
-              </p>
-            </div>
-          </div>
-
-          <div className="card statement-card table-scroll">
-            <table className="data statement-table">
-              <thead>
-                <tr>
-                  <th>Forpligtelse</th>
-                  <th>Konto</th>
-                  <th>Frist</th>
-                  <th>Status</th>
-                  <th className="num">Skyldigt beløb</th>
-                  <th>Handlinger</th>
-                </tr>
-              </thead>
-              <tbody>
-                {o.obligations.map((row, i) => (
-                  <tr key={`${row.kind}-${row.accountNo ?? i}`}>
-                    <td>{row.label}</td>
-                    <td className="account-no">{row.accountNo ?? "—"}</td>
-                    <td className="entry-date">{row.dueDate ?? "—"}</td>
-                    <td>
-                      <DeadlineFlag row={row} />
-                    </td>
-                    <td className="num">
-                      {/* The annual-report row is a filing DEADLINE, not a
+					<div
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.card,
+							cockpitStyles.statementCard,
+							cockpitStyles.tableScroll,
+						)}
+						data-ui="statement-card"
+					>
+						<table
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.tableData,
+								cockpitStyles.tableStatementTable,
+								cockpitStyles.statementTableScrollTable,
+							)}
+						>
+							<thead
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}
+							>
+								<tr
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}
+								>
+									<th
+										{...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition,
+										)}
+									>
+										Forpligtelse
+									</th>
+									<th
+										{...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition,
+										)}
+									>
+										Konto
+									</th>
+									<th
+										{...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition,
+										)}
+									>
+										Frist
+									</th>
+									<th
+										{...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition,
+										)}
+									>
+										Status
+									</th>
+									<th
+										{...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition2,
+										)}
+									>
+										Skyldigt beløb
+									</th>
+									<th
+										{...stylex.props(
+											cockpitStyles.statementTableScrollTableThComposition,
+										)}
+									>
+										Handlinger
+									</th>
+								</tr>
+							</thead>
+							<tbody
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}
+							>
+								{o.obligations.map((row, i) => (
+									<tr
+										key={`${row.kind}-${row.accountNo ?? i}`}
+										{...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}
+									>
+										<td
+											{...stylex.props(
+												cockpitStyles.statementTableScrollTableTdComposition,
+											)}
+										>
+											{row.label}
+										</td>
+										<td
+											{...stylex.props(
+												cockpitStyles.tableStatementTableTdAccountNoComposition,
+											)}
+										>
+											{row.accountNo ?? "—"}
+										</td>
+										<td
+											{...stylex.props(
+												cockpitStyles.statementTableScrollTableTdComposition9,
+											)}
+										>
+											{row.dueDate ?? "—"}
+										</td>
+										<td
+											{...stylex.props(
+												cockpitStyles.statementTableScrollTableTdComposition,
+											)}
+										>
+											<DeadlineFlag row={row} />
+										</td>
+										<td
+											{...stylex.props(cockpitStyles.tableDataTdNumComposition)}
+										>
+											{/* The annual-report row is a filing DEADLINE, not a
                           debt — it has no kroner amount, so show a dash. */}
-                      {row.kind === "annual-report"
-                        ? "—"
-                        : formatKroner(row.amount, currency)}
-                    </td>
-                    <td>
-                      <ObligationActions
-                        row={row}
-                        slug={slug}
-                        currency={currency}
-                      />
-                    </td>
-                  </tr>
-                ))}
-                <tr className="statement-result negative">
-                  <td colSpan={4}>Skyldige beløb i alt</td>
-                  <td className="num">
-                    {formatKroner(o.totalOwed, currency)}
-                  </td>
-                  <td></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <p className="statement-check ok">
-            Beløbene er læst direkte fra ledgeren. Frister vises hvor de kan
-            udledes — moms efter virksomhedens momsperiode (måned, kvartal eller
-            halvår), selskabsskat efter indkomståret, og årsrapporten til
-            Erhvervsstyrelsen efter regnskabsåret; øvrige poster har ingen kendt
-            dato.
-          </p>
-        </>
-      )}
-    </section>
-  );
+											{row.kind === "annual-report"
+												? "—"
+												: formatKroner(row.amount, currency)}
+										</td>
+										<td
+											{...stylex.props(
+												cockpitStyles.statementTableScrollTableTdComposition,
+											)}
+										>
+											<ObligationActions
+												row={row}
+												slug={slug}
+												currency={currency}
+											/>
+										</td>
+									</tr>
+								))}
+								<tr
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}
+								>
+									<td
+										colSpan={4}
+										{...stylex.props(
+											cockpitStyles.statementTableScrollTableTdComposition10,
+										)}
+									>
+										Skyldige beløb i alt
+									</td>
+									<td
+										{...stylex.props(
+											cockpitStyles.statementResultNegativeTdNumComposition,
+										)}
+									>
+										{formatKroner(o.totalOwed, currency)}
+									</td>
+									<td
+										{...stylex.props(
+											cockpitStyles.statementTableScrollTableTdComposition10,
+										)}
+									></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<p
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.statementCheck,
+							cockpitStyles.statementCheckOk,
+						)}
+					>
+						Beløbene er læst direkte fra ledgeren. Frister vises hvor de kan
+						udledes — moms efter virksomhedens momsperiode (måned, kvartal eller
+						halvår), selskabsskat efter indkomståret, og årsrapporten til
+						Erhvervsstyrelsen efter regnskabsåret; øvrige poster har ingen kendt
+						dato.
+					</p>
+				</>
+			)}
+		</section>
+	);
 }
 
 /**
@@ -158,26 +389,63 @@ export function ObligationsView() {
  * neutral "Ingen frist" for a dateless payable.
  */
 function DeadlineFlag({ row }: { row: ObligationRow }) {
-  if (row.dueDate === null || row.daysRemaining === null) {
-    return <span className="flag neutral">Ingen frist</span>;
-  }
-  const days = row.daysRemaining;
-  if (days < 0) {
-    return (
-      <span className="flag critical">
-        Overskredet {Math.abs(days)} {Math.abs(days) === 1 ? "dag" : "dage"}
-      </span>
-    );
-  }
-  if (days === 0) {
-    return <span className="flag critical">Frist i dag</span>;
-  }
-  const tone = days <= 30 ? "warning" : "ok";
-  return (
-    <span className={`flag ${tone}`}>
-      {days} {days === 1 ? "dag" : "dage"} tilbage
-    </span>
-  );
+	if (row.dueDate === null || row.daysRemaining === null) {
+		return (
+			<span
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.flag,
+					cockpitStyles.flagNeutral,
+				)}
+			>
+				Ingen frist
+			</span>
+		);
+	}
+	const days = row.daysRemaining;
+	if (days < 0) {
+		return (
+			<span
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.flag,
+					cockpitStyles.flagCritical,
+				)}
+			>
+				Overskredet {Math.abs(days)} {Math.abs(days) === 1 ? "dag" : "dage"}
+			</span>
+		);
+	}
+	if (days === 0) {
+		return (
+			<span
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.flag,
+					cockpitStyles.flagCritical,
+				)}
+			>
+				Frist i dag
+			</span>
+		);
+	}
+	const tone = days <= 30 ? "warning" : "ok";
+	return (
+		<span
+			{...stylex.props(
+				cockpitStyles.element,
+				cockpitStyles.focusVisible,
+				cockpitStyles.flag,
+				tone === "warning" && cockpitStyles.flagWarning,
+				tone === "ok" && cockpitStyles.flagOk,
+			)}
+		>
+			{days} {days === 1 ? "dag" : "dage"} tilbage
+		</span>
+	);
 }
 
 /**
@@ -194,83 +462,118 @@ function DeadlineFlag({ row }: { row: ObligationRow }) {
  * implementeret her — det er et write-flow med actor + audit-event og
  * spores som follow-up.
  */
-const EXTERNAL_LINK: Partial<Record<ObligationRow["kind"], { href: string; label: string }>> = {
-  vat: {
-    href: "https://www.skat.dk/erhverv/moms",
-    label: "Indberet på skat.dk",
-  },
-  "corporation-tax": {
-    href: "https://www.skat.dk/erhverv/selskabsskat",
-    label: "Selskabsskat på skat.dk",
-  },
-  "annual-report": {
-    href: "https://indberet.virk.dk",
-    label: "Indberet på virk.dk",
-  },
+const EXTERNAL_LINK: Partial<
+	Record<ObligationRow["kind"], { href: string; label: string }>
+> = {
+	vat: {
+		href: "https://www.skat.dk/erhverv/moms",
+		label: "Indberet på skat.dk",
+	},
+	"corporation-tax": {
+		href: "https://www.skat.dk/erhverv/selskabsskat",
+		label: "Selskabsskat på skat.dk",
+	},
+	"annual-report": {
+		href: "https://indberet.virk.dk",
+		label: "Indberet på virk.dk",
+	},
 };
 
 function ObligationActions({
-  row,
-  slug,
-  currency,
+	row,
+	slug,
+	currency,
 }: {
-  row: ObligationRow;
-  slug: string;
-  currency: string;
+	row: ObligationRow;
+	slug: string;
+	currency: string;
 }) {
-  const external = EXTERNAL_LINK[row.kind];
-  const copyAmount = async () => {
-    if (row.kind === "annual-report") return;
-    // #UI-10: share the SKAT TastSelv number format with VatView — no thousand
-    // separator, whole kroner as bare integers — so the two copy buttons agree.
-    const text = tastSelvNumber(row.amount);
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {
-      // Clipboard API may be blocked (Safari permission, http) — silent fail.
-    }
-  };
-  return (
-    <div className="row-actions inline-actions">
-      {external && (
-        <a
-          className="btn small secondary"
-          href={external.href}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {external.label}
-        </a>
-      )}
-      {row.kind === "vat" && (
-        <ButtonLink className="btn small secondary" to={`/companies/${slug}/moms`}>
-          SKAT-rubrikker
-        </ButtonLink>
-      )}
-      {row.kind !== "annual-report" && (
-        <Button variant="secondary"
-          type="button"
-          className="btn small secondary"
-          onClick={copyAmount}
-          aria-label={`Kopiér beløb (${formatKroner(row.amount, currency)})`}
-        >
-          Kopiér beløb
-        </Button>
-      )}
-    </div>
-  );
+	const external = EXTERNAL_LINK[row.kind];
+	const copyAmount = async () => {
+		if (row.kind === "annual-report") return;
+		// #UI-10: share the SKAT TastSelv number format with VatView — no thousand
+		// separator, whole kroner as bare integers — so the two copy buttons agree.
+		const text = tastSelvNumber(row.amount);
+		try {
+			await navigator.clipboard.writeText(text);
+		} catch {
+			// Clipboard API may be blocked (Safari permission, http) — silent fail.
+		}
+	};
+	return (
+		<div
+			{...stylex.props(
+				cockpitStyles.element,
+				cockpitStyles.focusVisible,
+				cockpitStyles.rowActions,
+			)}
+		>
+			{external && (
+				<a
+					href={external.href}
+					target="_blank"
+					rel="noopener noreferrer"
+					{...stylex.props(cockpitStyles.aComposition)}
+				>
+					{external.label}
+				</a>
+			)}
+			{row.kind === "vat" && (
+				<ButtonLink
+					to={`/companies/${slug}/moms`}
+					variant={"secondary"}
+					xstyle={[cockpitStyles.aComposition]}
+				>
+					SKAT-rubrikker
+				</ButtonLink>
+			)}
+			{row.kind !== "annual-report" && (
+				<Button
+					variant="secondary"
+					type="button"
+					onClick={copyAmount}
+					aria-label={`Kopiér beløb (${formatKroner(row.amount, currency)})`}
+					xstyle={[cockpitStyles.buttonComposition]}
+				>
+					Kopiér beløb
+				</Button>
+			)}
+		</div>
+	);
 }
 
 function ArchivedNotice({ year }: { year: string }) {
-  return (
-    <div className="card archived-notice">
-      <h3>Forpligtelser er ikke tilgængelige for {year}</h3>
-      <p className="muted">
-        {year} er et arkiveret regnskabsår. Forpligtelser — moms, selskabsskat
-        og kreditorgæld med forfaldsdato — opgøres kun for den aktive ledger og
-        vises derfor ikke for et arkiveret år. Resultatopgørelse, balance,
-        saldobalance og posteringer for {year} er tilgængelige.
-      </p>
-    </div>
-  );
+	return (
+		<div
+			{...stylex.props(
+				cockpitStyles.element,
+				cockpitStyles.focusVisible,
+				cockpitStyles.card,
+				cockpitStyles.archivedNotice,
+			)}
+		>
+			<h3
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.h3,
+					cockpitStyles.archivedNoticeH3,
+				)}
+			>
+				Forpligtelser er ikke tilgængelige for {year}
+			</h3>
+			<p
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.muted,
+				)}
+			>
+				{year} er et arkiveret regnskabsår. Forpligtelser — moms, selskabsskat
+				og kreditorgæld med forfaldsdato — opgøres kun for den aktive ledger og
+				vises derfor ikke for et arkiveret år. Resultatopgørelse, balance,
+				saldobalance og posteringer for {year} er tilgængelige.
+			</p>
+		</div>
+	);
 }

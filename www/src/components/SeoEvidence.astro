@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import { SITE } from "../consts";
 
 type LinkItem = {
@@ -26,49 +27,49 @@ const {
 } = Astro.props;
 ---
 
-<aside class="seo-evidence my-12 border-y border-outline-variant/20 py-7">
-  <p class="mb-6 font-mono text-[12px] uppercase tracking-[0.12em] text-outline">
-    Af <a href="/om" rel="author" class="text-primary hover:text-cyber-blue">{SITE.author}</a>
-    · Publiceret <time datetime={published}>{published}</time>
-    · Opdateret <time datetime={updated}>{updated}</time>
+<aside {...sx.components_SeoEvidence_aside1}>
+  <p {...sx.components_SeoEvidence_p2}>
+    Af <a href="/om" rel="author" {...sx.components_SeoEvidence_a3}>{SITE.author}</a>
+    · Publiceret <time {...sx.components_SeoEvidence_time4} datetime={published}>{published}</time>
+    · Opdateret <time {...sx.components_SeoEvidence_time4} datetime={updated}>{updated}</time>
   </p>
-  <div class="grid md:grid-cols-[0.75fr_1fr] gap-8">
-    <div>
-      <div class="font-mono text-[11px] uppercase tracking-[0.18em] text-cyber-blue mb-3">Kvalitetssikring</div>
-      <dl class="space-y-2 text-[15px] text-on-surface-variant">
-        <div>
-          <dt class="inline text-outline">Udgivet: </dt>
-          <dd class="inline text-on-surface"><time datetime={published}>{published}</time></dd>
+  <div {...sx.components_SeoEvidence_div5}>
+    <div {...sx.components_SeoEvidence_div6}>
+      <div {...sx.components_SeoEvidence_div7}>Kvalitetssikring</div>
+      <dl {...sx.components_SeoEvidence_dl8}>
+        <div {...sx.components_SeoEvidence_div9}>
+          <dt {...sx.components_SeoEvidence_dt10}>Udgivet: </dt>
+          <dd {...sx.components_SeoEvidence_dd11}><time {...sx.components_SeoEvidence_time4} datetime={published}>{published}</time></dd>
         </div>
-        <div>
-          <dt class="inline text-outline">Sidst opdateret: </dt>
-          <dd class="inline text-on-surface"><time datetime={updated}>{updated}</time></dd>
+        <div {...sx.components_SeoEvidence_div9}>
+          <dt {...sx.components_SeoEvidence_dt10}>Sidst opdateret: </dt>
+          <dd {...sx.components_SeoEvidence_dd11}><time {...sx.components_SeoEvidence_time4} datetime={updated}>{updated}</time></dd>
         </div>
-        <div>
-          <dt class="inline text-outline">Forfatter: </dt>
-          <dd class="inline text-on-surface" itemprop="author" itemscope itemtype="https://schema.org/Person">
-            <span itemprop="name">{SITE.author}</span>
+        <div {...sx.components_SeoEvidence_div9}>
+          <dt {...sx.components_SeoEvidence_dt10}>Forfatter: </dt>
+          <dd {...sx.components_SeoEvidence_dd11} itemprop="author" itemscope itemtype="https://schema.org/Person">
+            <span {...sx.components_SeoEvidence_span12} itemprop="name">{SITE.author}</span>
           </dd>
         </div>
-        <div>
-          <dt class="inline text-outline">Fagligt gennemgået af: </dt>
-          <dd class="inline text-on-surface">{reviewed}</dd>
+        <div {...sx.components_SeoEvidence_div9}>
+          <dt {...sx.components_SeoEvidence_dt10}>Fagligt gennemgået af: </dt>
+          <dd {...sx.components_SeoEvidence_dd11}>{reviewed}</dd>
         </div>
-        <div>
-          <dt class="inline text-outline">Status: </dt>
-          <dd class="inline text-on-surface">{status}</dd>
+        <div {...sx.components_SeoEvidence_div9}>
+          <dt {...sx.components_SeoEvidence_dt10}>Status: </dt>
+          <dd {...sx.components_SeoEvidence_dd11}>{status}</dd>
         </div>
       </dl>
     </div>
 
-    <div class="grid sm:grid-cols-2 gap-7">
+    <div {...sx.components_SeoEvidence_div13}>
       {sources.length > 0 && (
-        <div>
-          <div class="font-mono text-[11px] uppercase tracking-[0.18em] text-primary mb-3">Kilder</div>
-          <ul class="space-y-2">
+        <div {...sx.components_SeoEvidence_div6}>
+          <div {...sx.components_SeoEvidence_div14}>Kilder</div>
+          <ul {...sx.components_SeoEvidence_ul15}>
             {sources.map((source) => (
-              <li>
-                <a href={source.href} rel={source.external ? "noopener" : undefined} target={source.external ? "_blank" : undefined}>
+              <li {...sx.components_SeoEvidence_li16}>
+                <a {...sx.components_SeoEvidence_a17} href={source.href} rel={source.external ? "noopener" : undefined} target={source.external ? "_blank" : undefined}>
                   {source.label}{source.external ? " ↗" : ""}
                 </a>
               </li>
@@ -78,12 +79,12 @@ const {
       )}
 
       {related.length > 0 && (
-        <div>
-          <div class="font-mono text-[11px] uppercase tracking-[0.18em] text-primary mb-3">Relateret</div>
-          <ul class="space-y-2">
+        <div {...sx.components_SeoEvidence_div6}>
+          <div {...sx.components_SeoEvidence_div14}>Relateret</div>
+          <ul {...sx.components_SeoEvidence_ul15}>
             {related.map((link) => (
-              <li>
-                <a href={link.href} rel={link.external ? "noopener" : undefined} target={link.external ? "_blank" : undefined}>
+              <li {...sx.components_SeoEvidence_li16}>
+                <a {...sx.components_SeoEvidence_a17} href={link.href} rel={link.external ? "noopener" : undefined} target={link.external ? "_blank" : undefined}>
                   {link.label}{link.external ? " ↗" : ""}
                 </a>
               </li>

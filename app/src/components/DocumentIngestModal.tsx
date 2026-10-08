@@ -1,8 +1,9 @@
-import { useMutationOutcome } from "../lib/useMutationOutcome";
+import * as stylex from "@stylexjs/stylex";
+import { cockpitStyles } from "../design/cockpit.stylex";
 import { parseDanishAmount } from "../lib/format";
 import { useDiscardGuard } from "../lib/useDiscardGuard";
-import * as stylex from "@stylexjs/stylex";
-import { Button, Dialog, Input, Select, Textarea, MoneyInput } from "./ui";
+import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { Button, Dialog, Input, MoneyInput, Select, Textarea } from "./ui";
 // DocumentIngestModal — the human document-intake action for the Cockpit
 // (#213, slice 3).
 //
@@ -25,605 +26,1246 @@ import { LockBanner } from "./LockBanner";
 type MaybeApiError = { code?: string; message?: string };
 
 type EditablePurchaseVatLine = {
-  classification: "dk_purchase_25" | "exempt";
-  netAmount: string;
-  vatAmount: string;
+	classification: "dk_purchase_25" | "exempt";
+	netAmount: string;
+	vatAmount: string;
 };
 
 export type DocumentIngestModalProps = {
-  /** Company slug the ingest targets. */
-  slug: string;
-  /** Re-runs the Bilag view load after a successful ingest. */
-  onIngested: () => void;
-  /** Closes the modal without acting. */
-  onClose: () => void;
+	/** Company slug the ingest targets. */
+	slug: string;
+	/** Re-runs the Bilag view load after a successful ingest. */
+	onIngested: () => void;
+	/** Closes the modal without acting. */
+	onClose: () => void;
 };
 
 /** Reads a (possibly binary) file as a base64 string, chunked to stay safe. */
 async function fileToBase64(file: File): Promise<string> {
-  const buffer = await file.arrayBuffer();
-  const bytes = new Uint8Array(buffer);
-  let binary = "";
-  const CHUNK = 0x8000;
-  for (let i = 0; i < bytes.length; i += CHUNK) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
-  }
-  return btoa(binary);
+	const buffer = await file.arrayBuffer();
+	const bytes = new Uint8Array(buffer);
+	let binary = "";
+	const CHUNK = 0x8000;
+	for (let i = 0; i < bytes.length; i += CHUNK) {
+		binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+	}
+	return btoa(binary);
 }
 
 export function DocumentIngestModal({
-  slug,
-  onIngested,
-  onClose: onDismiss,
+	slug,
+	onIngested,
+	onClose: onDismiss,
 }: DocumentIngestModalProps) {
-  const [fileName, setFileName] = useState<string | null>(null);
-  const [fileBase64, setFileBase64] = useState<string | null>(null);
-  const [documentType, setDocumentType] =
-    useState<DocumentIngestMetadata["documentType"]>("purchase_sale");
-  const [source, setSource] = useState("cockpit-upload");
-  const [issueDate, setIssueDate] = useState("");
-  const [invoiceNo, setInvoiceNo] = useState("");
-  const [deliveryDescription, setDeliveryDescription] = useState("");
-  const [amountIncVat, setAmountIncVat] = useState("");
-  const [vatAmount, setVatAmount] = useState("");
-  const [currency, setCurrency] = useState("DKK");
-  const [senderName, setSenderName] = useState("");
-  const [senderAddress, setSenderAddress] = useState("");
-  const [senderVat, setSenderVat] = useState("");
-  const [senderCountryCode, setSenderCountryCode] = useState("");
-  const [senderIdentifierKind, setSenderIdentifierKind] = useState<"" | "dk_cvr" | "eu_vat" | "non_eu">("");
-  const [recipientName, setRecipientName] = useState("");
-  const [recipientAddress, setRecipientAddress] = useState("");
-  const [recipientVat, setRecipientVat] = useState("");
-  const [reverseChargeWordingExcerpt, setReverseChargeWordingExcerpt] = useState("");
-  const [reverseChargeWordingLocation, setReverseChargeWordingLocation] = useState("");
-  const [purchaseVatLines, setPurchaseVatLines] = useState<EditablePurchaseVatLine[]>([]);
-  const [sourceBankTransactionId, setSourceBankTransactionId] = useState("");
-  const [internalVoucherKind, setInternalVoucherKind] = useState<"bank_evidenced" | "non_cash_balance_correction">("bank_evidenced");
-  const [accountingRationale, setAccountingRationale] = useState("");
-  const [payrollPeriod, setPayrollPeriod] = useState("");
-  const [payrollReference, setPayrollReference] = useState("");
+	const [fileName, setFileName] = useState<string | null>(null);
+	const [fileBase64, setFileBase64] = useState<string | null>(null);
+	const [documentType, setDocumentType] =
+		useState<DocumentIngestMetadata["documentType"]>("purchase_sale");
+	const [source, setSource] = useState("cockpit-upload");
+	const [issueDate, setIssueDate] = useState("");
+	const [invoiceNo, setInvoiceNo] = useState("");
+	const [deliveryDescription, setDeliveryDescription] = useState("");
+	const [amountIncVat, setAmountIncVat] = useState("");
+	const [vatAmount, setVatAmount] = useState("");
+	const [currency, setCurrency] = useState("DKK");
+	const [senderName, setSenderName] = useState("");
+	const [senderAddress, setSenderAddress] = useState("");
+	const [senderVat, setSenderVat] = useState("");
+	const [senderCountryCode, setSenderCountryCode] = useState("");
+	const [senderIdentifierKind, setSenderIdentifierKind] = useState<
+		"" | "dk_cvr" | "eu_vat" | "non_eu"
+	>("");
+	const [recipientName, setRecipientName] = useState("");
+	const [recipientAddress, setRecipientAddress] = useState("");
+	const [recipientVat, setRecipientVat] = useState("");
+	const [reverseChargeWordingExcerpt, setReverseChargeWordingExcerpt] =
+		useState("");
+	const [reverseChargeWordingLocation, setReverseChargeWordingLocation] =
+		useState("");
+	const [purchaseVatLines, setPurchaseVatLines] = useState<
+		EditablePurchaseVatLine[]
+	>([]);
+	const [sourceBankTransactionId, setSourceBankTransactionId] = useState("");
+	const [internalVoucherKind, setInternalVoucherKind] = useState<
+		"bank_evidenced" | "non_cash_balance_correction"
+	>("bank_evidenced");
+	const [accountingRationale, setAccountingRationale] = useState("");
+	const [payrollPeriod, setPayrollPeriod] = useState("");
+	const [payrollReference, setPayrollReference] = useState("");
 
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [locked, setLocked] = useState<string | null>(null);
-  const [done, setDone] = useState<{ documentNo: string | null } | null>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
+	const [busy, setBusy] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [locked, setLocked] = useState<string | null>(null);
+	const [done, setDone] = useState<{ documentNo: string | null } | null>(null);
+	const closeRef = useRef<HTMLButtonElement>(null);
 
-  // Move focus into the dialog and let Escape dismiss it — basic modal hygiene.
+	// Move focus into the dialog and let Escape dismiss it — basic modal hygiene.
 
+	const outcome = useMutationOutcome(onIngested);
+	const guard = useDiscardGuard(
+		!done &&
+			(Boolean(
+				fileBase64 ||
+					invoiceNo ||
+					issueDate ||
+					amountIncVat ||
+					vatAmount ||
+					senderName ||
+					senderAddress ||
+					senderVat ||
+					senderCountryCode ||
+					senderIdentifierKind ||
+					recipientName ||
+					recipientAddress ||
+					recipientVat ||
+					deliveryDescription ||
+					accountingRationale ||
+					sourceBankTransactionId ||
+					reverseChargeWordingExcerpt ||
+					reverseChargeWordingLocation ||
+					payrollPeriod ||
+					payrollReference ||
+					purchaseVatLines.length ||
+					internalVoucherKind !== "bank_evidenced",
+			) ||
+				currency !== "DKK" ||
+				documentType !== "purchase_sale" ||
+				source !== "cockpit-upload"),
+		onDismiss,
+	);
+	const { onClose } = guard;
 
-  const outcome = useMutationOutcome(onIngested);
-  const guard = useDiscardGuard(!done && (Boolean(fileBase64 || invoiceNo || issueDate || amountIncVat || vatAmount || senderName || senderAddress || senderVat || senderCountryCode || senderIdentifierKind || recipientName || recipientAddress || recipientVat || deliveryDescription || accountingRationale || sourceBankTransactionId || reverseChargeWordingExcerpt || reverseChargeWordingLocation || payrollPeriod || payrollReference || purchaseVatLines.length || internalVoucherKind !== "bank_evidenced") || currency !== "DKK" || documentType !== "purchase_sale" || source !== "cockpit-upload"), onDismiss);
-  const { onClose } = guard;
+	async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+		const file = e.target.files?.[0];
+		setError(null);
+		if (!file) {
+			setFileName(null);
+			setFileBase64(null);
+			return;
+		}
+		try {
+			setFileBase64(await fileToBase64(file));
+			setFileName(file.name);
+		} catch {
+			setError("Filen kunne ikke læses.");
+			setFileName(null);
+			setFileBase64(null);
+		}
+	}
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    setError(null);
-    if (!file) {
-      setFileName(null);
-      setFileBase64(null);
-      return;
-    }
-    try {
-      setFileBase64(await fileToBase64(file));
-      setFileName(file.name);
-    } catch {
-      setError("Filen kunne ikke læses.");
-      setFileName(null);
-      setFileBase64(null);
-    }
-  }
+	// A cash-register receipt is exempt from the full statutory field set, so
+	// those inputs are only required (and only shown as required) for køb/salg.
+	const isPurchaseSale = documentType === "purchase_sale";
+	const isInternalVoucher = documentType === "internal_voucher";
+	const isExternalPayroll = documentType === "external_accounting_evidence";
+	const isNonCashBalanceCorrection =
+		isInternalVoucher && internalVoucherKind === "non_cash_balance_correction";
 
-  // A cash-register receipt is exempt from the full statutory field set, so
-  // those inputs are only required (and only shown as required) for køb/salg.
-  const isPurchaseSale = documentType === "purchase_sale";
-  const isInternalVoucher = documentType === "internal_voucher";
-  const isExternalPayroll = documentType === "external_accounting_evidence";
-  const isNonCashBalanceCorrection = isInternalVoucher && internalVoucherKind === "non_cash_balance_correction";
+	async function handleIngest() {
+		if (outcome.isBlocked()) return;
+		if (!fileBase64 || !fileName) {
+			setError("Vælg en bilagsfil først.");
+			return;
+		}
+		if (!source.trim()) {
+			setError("Angiv en kilde.");
+			return;
+		}
+		const amountNum = amountIncVat.trim()
+			? parseDanishAmount(amountIncVat)
+			: undefined;
+		const vatNum = vatAmount.trim() ? parseDanishAmount(vatAmount) : undefined;
+		if (amountNum === null) {
+			setError("Beløb inkl. moms skal være et tal.");
+			return;
+		}
+		if (vatNum === null) {
+			setError("Momsbeløb skal være et tal.");
+			return;
+		}
+		const bankTransactionId = sourceBankTransactionId.trim()
+			? Number(sourceBankTransactionId)
+			: undefined;
+		if (
+			isInternalVoucher &&
+			!isNonCashBalanceCorrection &&
+			(!Number.isInteger(bankTransactionId) || Number(bankTransactionId) <= 0)
+		) {
+			setError("Angiv den importerede banktransaktions id.");
+			return;
+		}
+		if (
+			isInternalVoucher &&
+			(!issueDate.trim() ||
+				!deliveryDescription.trim() ||
+				!(Number(amountNum) > 0))
+		) {
+			setError("Internt bilag kræver dato, beskrivelse og et positivt beløb.");
+			return;
+		}
+		if (isInternalVoucher && !accountingRationale.trim()) {
+			setError("Angiv den regnskabsmæssige begrundelse.");
+			return;
+		}
+		if (
+			isExternalPayroll &&
+			(!issueDate.trim() ||
+				!recipientName.trim() ||
+				!senderName.trim() ||
+				!/^\d{4}-(0[1-9]|1[0-2])$/.test(payrollPeriod) ||
+				!payrollReference.trim() ||
+				!(Number(amountNum) > 0))
+		) {
+			setError(
+				"Eksternt lønbilag kræver rapportdato, udsteder, virksomhed, lønperiode, ekstern reference og samlet beløb.",
+			);
+			return;
+		}
+		let parsedPurchaseVatLines: NonNullable<
+			DocumentIngestMetadata["purchaseVatLines"]
+		> = [];
+		try {
+			parsedPurchaseVatLines = isPurchaseSale
+				? purchaseVatLines.map((line, index) => {
+						const netAmount = parseDanishAmount(line.netAmount);
+						const lineVatAmount =
+							line.vatAmount.trim() === ""
+								? 0
+								: parseDanishAmount(line.vatAmount);
+						if (!line.netAmount.trim() || netAmount === null || netAmount < 0) {
+							throw new Error(
+								`Nettobeløb på momslinje ${index + 1} skal være et ikke-negativt tal.`,
+							);
+						}
+						if (lineVatAmount === null || lineVatAmount < 0) {
+							throw new Error(
+								`Momsbeløb på momslinje ${index + 1} skal være et ikke-negativt tal.`,
+							);
+						}
+						return {
+							classification: line.classification,
+							netAmount,
+							vatAmount: lineVatAmount,
+						};
+					})
+				: [];
+		} catch (lineError) {
+			setError(
+				lineError instanceof Error
+					? lineError.message
+					: "Momsfordelingen er ugyldig.",
+			);
+			return;
+		}
 
-  async function handleIngest() {
-    if (outcome.isBlocked()) return;
-    if (!fileBase64 || !fileName) {
-      setError("Vælg en bilagsfil først.");
-      return;
-    }
-    if (!source.trim()) {
-      setError("Angiv en kilde.");
-      return;
-    }
-    const amountNum = amountIncVat.trim() ? parseDanishAmount(amountIncVat) : undefined;
-    const vatNum = vatAmount.trim() ? parseDanishAmount(vatAmount) : undefined;
-    if (amountNum === null) {
-      setError("Beløb inkl. moms skal være et tal.");
-      return;
-    }
-    if (vatNum === null) {
-      setError("Momsbeløb skal være et tal.");
-      return;
-    }
-    const bankTransactionId = sourceBankTransactionId.trim()
-      ? Number(sourceBankTransactionId)
-      : undefined;
-    if (
-      isInternalVoucher && !isNonCashBalanceCorrection &&
-      (!Number.isInteger(bankTransactionId) || Number(bankTransactionId) <= 0)
-    ) {
-      setError("Angiv den importerede banktransaktions id.");
-      return;
-    }
-    if (
-      isInternalVoucher &&
-      (!issueDate.trim() || !deliveryDescription.trim() || !(Number(amountNum) > 0))
-    ) {
-      setError("Internt bilag kræver dato, beskrivelse og et positivt beløb.");
-      return;
-    }
-    if (isInternalVoucher && !accountingRationale.trim()) {
-      setError("Angiv den regnskabsmæssige begrundelse.");
-      return;
-    }
-    if (isExternalPayroll && (!issueDate.trim() || !recipientName.trim() || !senderName.trim() || !/^\d{4}-(0[1-9]|1[0-2])$/.test(payrollPeriod) || !payrollReference.trim() || !(Number(amountNum) > 0))) {
-      setError("Eksternt lønbilag kræver rapportdato, udsteder, virksomhed, lønperiode, ekstern reference og samlet beløb.");
-      return;
-    }
-    let parsedPurchaseVatLines: NonNullable<DocumentIngestMetadata["purchaseVatLines"]> = [];
-    try {
-      parsedPurchaseVatLines = isPurchaseSale ? purchaseVatLines.map((line, index) => {
-        const netAmount = parseDanishAmount(line.netAmount);
-        const lineVatAmount = line.vatAmount.trim() === "" ? 0 : parseDanishAmount(line.vatAmount);
-        if (!line.netAmount.trim() || netAmount === null || netAmount < 0) {
-          throw new Error(`Nettobeløb på momslinje ${index + 1} skal være et ikke-negativt tal.`);
-        }
-        if (lineVatAmount === null || lineVatAmount < 0) {
-          throw new Error(`Momsbeløb på momslinje ${index + 1} skal være et ikke-negativt tal.`);
-        }
-        return {
-          classification: line.classification,
-          netAmount,
-          vatAmount: lineVatAmount,
-        };
-      }) : [];
-    } catch (lineError) {
-      setError(lineError instanceof Error ? lineError.message : "Momsfordelingen er ugyldig.");
-      return;
-    }
+		const metadata: DocumentIngestMetadata = {
+			source: source.trim(),
+			documentType,
+			currency: currency.trim() || "DKK",
+		};
+		if (issueDate.trim()) metadata.issueDate = issueDate.trim();
+		if (invoiceNo.trim()) metadata.invoiceNo = invoiceNo.trim();
+		if (deliveryDescription.trim())
+			metadata.deliveryDescription = deliveryDescription.trim();
+		if (amountNum !== undefined) metadata.amountIncVat = amountNum;
+		if (isInternalVoucher || isExternalPayroll) metadata.vatAmount = 0;
+		else if (vatNum !== undefined) metadata.vatAmount = vatNum;
+		if (isInternalVoucher) {
+			metadata.internalVoucherKind = internalVoucherKind;
+			if (!isNonCashBalanceCorrection)
+				metadata.sourceBankTransactionId = bankTransactionId!;
+			metadata.accountingRationale = accountingRationale.trim();
+		}
+		if (isExternalPayroll)
+			metadata.externalAccountingEvidence = {
+				category: "payroll",
+				accountingPeriod: payrollPeriod,
+				externalReference: payrollReference.trim(),
+				totals: { debitAmount: amountNum!, creditAmount: amountNum! },
+			};
+		if (isPurchaseSale && parsedPurchaseVatLines.length > 0) {
+			metadata.purchaseVatLines = parsedPurchaseVatLines;
+		}
+		if (
+			isPurchaseSale &&
+			(reverseChargeWordingExcerpt.trim() ||
+				reverseChargeWordingLocation.trim())
+		) {
+			if (
+				!reverseChargeWordingExcerpt.trim() ||
+				!reverseChargeWordingLocation.trim()
+			) {
+				setError(
+					"Angiv både ordlyd og placering på bilaget for omvendt betalingspligt.",
+				);
+				return;
+			}
+			metadata.reverseChargeWordingEvidence = {
+				excerpt: reverseChargeWordingExcerpt.trim(),
+				location: reverseChargeWordingLocation.trim(),
+			};
+		}
+		if (
+			senderName.trim() ||
+			senderAddress.trim() ||
+			senderVat.trim() ||
+			senderCountryCode.trim() ||
+			senderIdentifierKind
+		) {
+			metadata.sender = {
+				name: senderName.trim() || undefined,
+				address: senderAddress.trim() || undefined,
+				vatOrCvr: senderVat.trim() || undefined,
+				countryCode: senderCountryCode.trim() || undefined,
+				identifierKind: senderIdentifierKind || undefined,
+			};
+		}
+		if (
+			recipientName.trim() ||
+			recipientAddress.trim() ||
+			recipientVat.trim()
+		) {
+			metadata.recipient = {
+				name: recipientName.trim() || undefined,
+				address: recipientAddress.trim() || undefined,
+				vatOrCvr: recipientVat.trim() || undefined,
+			};
+		}
 
-    const metadata: DocumentIngestMetadata = {
-      source: source.trim(),
-      documentType,
-      currency: currency.trim() || "DKK",
-    };
-    if (issueDate.trim()) metadata.issueDate = issueDate.trim();
-    if (invoiceNo.trim()) metadata.invoiceNo = invoiceNo.trim();
-    if (deliveryDescription.trim())
-      metadata.deliveryDescription = deliveryDescription.trim();
-    if (amountNum !== undefined) metadata.amountIncVat = amountNum;
-    if (isInternalVoucher || isExternalPayroll) metadata.vatAmount = 0;
-    else if (vatNum !== undefined) metadata.vatAmount = vatNum;
-    if (isInternalVoucher) {
-      metadata.internalVoucherKind = internalVoucherKind;
-      if (!isNonCashBalanceCorrection) metadata.sourceBankTransactionId = bankTransactionId!;
-      metadata.accountingRationale = accountingRationale.trim();
-    }
-    if (isExternalPayroll) metadata.externalAccountingEvidence = { category: "payroll", accountingPeriod: payrollPeriod, externalReference: payrollReference.trim(), totals: { debitAmount: amountNum!, creditAmount: amountNum! } };
-    if (isPurchaseSale && parsedPurchaseVatLines.length > 0) {
-      metadata.purchaseVatLines = parsedPurchaseVatLines;
-    }
-    if (isPurchaseSale && (reverseChargeWordingExcerpt.trim() || reverseChargeWordingLocation.trim())) {
-      if (!reverseChargeWordingExcerpt.trim() || !reverseChargeWordingLocation.trim()) {
-        setError("Angiv både ordlyd og placering på bilaget for omvendt betalingspligt.");
-        return;
-      }
-      metadata.reverseChargeWordingEvidence = {
-        excerpt: reverseChargeWordingExcerpt.trim(),
-        location: reverseChargeWordingLocation.trim(),
-      };
-    }
-    if (senderName.trim() || senderAddress.trim() || senderVat.trim() || senderCountryCode.trim() || senderIdentifierKind) {
-      metadata.sender = {
-        name: senderName.trim() || undefined,
-        address: senderAddress.trim() || undefined,
-        vatOrCvr: senderVat.trim() || undefined,
-        countryCode: senderCountryCode.trim() || undefined,
-        identifierKind: senderIdentifierKind || undefined,
-      };
-    }
-    if (
-      recipientName.trim() ||
-      recipientAddress.trim() ||
-      recipientVat.trim()
-    ) {
-      metadata.recipient = {
-        name: recipientName.trim() || undefined,
-        address: recipientAddress.trim() || undefined,
-        vatOrCvr: recipientVat.trim() || undefined,
-      };
-    }
+		setBusy(true);
+		setError(null);
+		setLocked(null);
+		try {
+			const result = await outcome.run(() =>
+				api.ingestDocument(slug, {
+					fileName,
+					fileBase64,
+					metadata,
+				}),
+			);
+			setDone({ documentNo: result.documentNo });
+			onIngested();
+		} catch (err) {
+			const e = err as MaybeApiError;
+			const message = e?.message ?? "Bilaget kunne ikke indlæses.";
+			if (e?.code === "conflict") setLocked(message);
+			else setError(message);
+		} finally {
+			setBusy(false);
+		}
+	}
 
-    setBusy(true);
-    setError(null);
-    setLocked(null);
-    try {
-      const result = await outcome.run(() => api.ingestDocument(slug, {
-        fileName,
-        fileBase64,
-        metadata,
-      }));
-      setDone({ documentNo: result.documentNo });
-      onIngested();
-    } catch (err) {
-      const e = err as MaybeApiError;
-      const message = e?.message ?? "Bilaget kunne ikke indlæses.";
-      if (e?.code === "conflict") setLocked(message);
-      else setError(message);
-    } finally {
-      setBusy(false);
-    }
-  }
+	return (
+		<Dialog
+			title="Indlæs bilag"
+			onClose={onClose}
+			busy={busy}
+			initialFocusRef={closeRef}
+			xstyle={[cockpitStyles.element, cockpitStyles.focusVisible]}
+		>
+			{outcome.feedback}
+			{guard.confirmation}
 
-  return (
-    <Dialog title="Indlæs bilag" onClose={onClose} busy={busy} initialFocusRef={closeRef}>
-    {outcome.feedback}
-      {guard.confirmation}
+			{done ? (
+				<>
+					<div
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalBody,
+						)}
+					>
+						<p
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalBodyP,
+							)}
+						>
+							Bilaget er indlæst
+							{done.documentNo ? ` som ${done.documentNo}` : ""}.
+						</p>
+					</div>
+					<div
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalActions,
+						)}
+					>
+						<Button
+							type="button"
+							ref={closeRef}
+							onClick={onClose}
+							xstyle={[cockpitStyles.buttonComposition]}
+						>
+							Luk
+						</Button>
+					</div>
+				</>
+			) : (
+				<>
+					<div
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalBody,
+						)}
+					>
+						<p
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalBodyP,
+							)}
+						>
+							Vælg en bilagsfil (PDF, billede eller tekst) og udfyld
+							oplysningerne. Bankdokumenterede interne bilag skal bindes til den
+							importerede bankpost. Balancekorrektioner uden bankbevægelse
+							kræver en særskilt regnskabsmæssig begrundelse.
+						</p>
+					</div>
 
+					{locked && <LockBanner message={locked} />}
+					{error && <Banner kind="error">{error}</Banner>}
 
+					<label
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalField,
+						)}
+					>
+						Bilagsfil
+						<Input
+							type="file"
+							accept=".pdf,.png,.jpg,.jpeg,.txt,application/pdf,image/png,image/jpeg,text/plain"
+							onChange={handleFile}
+							disabled={outcome.blocked || busy}
+							xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+						/>
+					</label>
+					{fileName && (
+						<p
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.muted,
+								viewStyles.site0,
+							)}
+						>
+							Valgt: {fileName}
+						</p>
+					)}
 
-        {done ? (
-          <>
-            <div className="modal-body">
-              <p>
-                Bilaget er indlæst
-                {done.documentNo ? ` som ${done.documentNo}` : ""}.
-              </p>
-            </div>
-            <div className="modal-actions">
-              <Button
-                type="button"
-                className="btn"
-                ref={closeRef}
-                onClick={onClose}
-              >
-                Luk
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="modal-body">
-              <p>
-                Vælg en bilagsfil (PDF, billede eller tekst) og udfyld
-                oplysningerne. Bankdokumenterede interne bilag skal bindes til den importerede
-                bankpost. Balancekorrektioner uden bankbevægelse kræver en
-                særskilt regnskabsmæssig begrundelse.
-              </p>
-            </div>
+					<div
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalFieldGrid,
+						)}
+					>
+						<label
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalField,
+								cockpitStyles.modalFieldGridModalField,
+							)}
+						>
+							Bilagstype
+							<Select
+								value={documentType}
+								onChange={(e) =>
+									setDocumentType(
+										e.target.value as DocumentIngestMetadata["documentType"],
+									)
+								}
+								disabled={outcome.blocked || busy}
+								xstyle={[cockpitStyles.modalFieldSelectFocusComposition]}
+							>
+								<option
+									value="purchase_sale"
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}
+								>
+									Køb/salg
+								</option>
+								<option
+									value="cash_register_receipt"
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}
+								>
+									Kassebon
+								</option>
+								<option
+									value="internal_voucher"
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}
+								>
+									Internt bilag
+								</option>
+								<option
+									value="external_accounting_evidence"
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}
+								>
+									Eksternt lønbilag
+								</option>
+							</Select>
+						</label>
+						<label
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalField,
+								cockpitStyles.modalFieldGridModalField,
+							)}
+						>
+							Kilde
+							<Input
+								type="text"
+								value={source}
+								onChange={(e) => setSource(e.target.value)}
+								disabled={outcome.blocked || busy}
+								xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+							/>
+						</label>
+					</div>
 
-            {locked && <LockBanner message={locked} />}
-            {error && <Banner kind="error">{error}</Banner>}
+					{isExternalPayroll && (
+						<div
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalFieldGrid,
+							)}
+						>
+							<label
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.modalField,
+									cockpitStyles.modalFieldGridModalField,
+								)}
+							>
+								Lønperiode
+								<Input
+									type="month"
+									value={payrollPeriod}
+									onChange={(e) => setPayrollPeriod(e.target.value)}
+									disabled={outcome.blocked || busy}
+									xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+								/>
+							</label>
+							<label
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.modalField,
+									cockpitStyles.modalFieldGridModalField,
+								)}
+							>
+								Ekstern lønreference
+								<Input
+									type="text"
+									value={payrollReference}
+									onChange={(e) => setPayrollReference(e.target.value)}
+									disabled={outcome.blocked || busy}
+									xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+								/>
+							</label>
+						</div>
+					)}
 
-            <label className="modal-field">
-              Bilagsfil
-              <Input
-                type="file"
-                accept=".pdf,.png,.jpg,.jpeg,.txt,application/pdf,image/png,image/jpeg,text/plain"
-                onChange={handleFile}
-                disabled={outcome.blocked || (busy)}
-              />
-            </label>
-            {fileName && (
-              <p className={["muted", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
-                Valgt: {fileName}
-              </p>
-            )}
+					<div
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalFieldGrid,
+						)}
+					>
+						<label
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalField,
+								cockpitStyles.modalFieldGridModalField,
+							)}
+						>
+							Bilagsdato
+							{isPurchaseSale || isInternalVoucher || isExternalPayroll
+								? ""
+								: " (valgfri)"}
+							<Input
+								type="date"
+								value={issueDate}
+								onChange={(e) => setIssueDate(e.target.value)}
+								disabled={outcome.blocked || busy}
+								xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+							/>
+						</label>
+						<label
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalField,
+								cockpitStyles.modalFieldGridModalField,
+							)}
+						>
+							Fakturanr. (valgfri)
+							<Input
+								type="text"
+								value={invoiceNo}
+								onChange={(e) => setInvoiceNo(e.target.value)}
+								disabled={outcome.blocked || busy}
+								xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+							/>
+						</label>
+					</div>
 
-            <div className="modal-field-grid">
-              <label className="modal-field">
-                Bilagstype
-                <Select
-                  value={documentType}
-                  onChange={(e) =>
-                    setDocumentType(
-                      e.target.value as DocumentIngestMetadata["documentType"],
-                    )
-                  }
-                  disabled={outcome.blocked || (busy)}
-                >
-                  <option value="purchase_sale">Køb/salg</option>
-                  <option value="cash_register_receipt">Kassebon</option>
-                  <option value="internal_voucher">Internt bilag</option>
-                  <option value="external_accounting_evidence">Eksternt lønbilag</option>
-                </Select>
-              </label>
-              <label className="modal-field">
-                Kilde
-                <Input
-                  type="text"
-                  value={source}
-                  onChange={(e) => setSource(e.target.value)}
-                  disabled={outcome.blocked || (busy)}
-                />
-              </label>
-            </div>
+					<div
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalFieldGrid,
+						)}
+					>
+						<label
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalField,
+								cockpitStyles.modalFieldGridModalField,
+							)}
+						>
+							{isInternalVoucher
+								? "Beløb"
+								: isExternalPayroll
+									? "Samlet lønrapport (debet/kredit)"
+									: `Beløb inkl. moms${isPurchaseSale ? "" : " (valgfri)"}`}
+							<MoneyInput
+								inputMode="decimal"
+								value={amountIncVat}
+								onValueChange={(e) => setAmountIncVat(e)}
+								disabled={outcome.blocked || busy}
+							/>
+						</label>
+						<label
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalField,
+								cockpitStyles.modalFieldGridModalField,
+							)}
+						>
+							Momsbeløb
+							{isInternalVoucher || isExternalPayroll
+								? " (altid 0)"
+								: isPurchaseSale
+									? ""
+									: " (valgfri)"}
+							<MoneyInput
+								inputMode="decimal"
+								value={vatAmount}
+								onValueChange={(e) => setVatAmount(e)}
+								disabled={
+									outcome.blocked ||
+									busy || isInternalVoucher ||
+									isExternalPayroll
+								}
+								placeholder={
+									isInternalVoucher || isExternalPayroll ? "0" : undefined
+								}
+							/>
+						</label>
+					</div>
 
-            {isExternalPayroll && <div className="modal-field-grid"><label className="modal-field">Lønperiode<Input type="month" value={payrollPeriod} onChange={(e) => setPayrollPeriod(e.target.value)} disabled={outcome.blocked || busy} /></label><label className="modal-field">Ekstern lønreference<Input type="text" value={payrollReference} onChange={(e) => setPayrollReference(e.target.value)} disabled={outcome.blocked || busy} /></label></div>}
+					<label
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalField,
+						)}
+					>
+						Valuta
+						<Input
+							type="text"
+							value={currency}
+							onChange={(e) => setCurrency(e.target.value)}
+							disabled={outcome.blocked || busy}
+							xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+						/>
+					</label>
 
-            <div className="modal-field-grid">
-              <label className="modal-field">
-                Bilagsdato{isPurchaseSale || isInternalVoucher || isExternalPayroll ? "" : " (valgfri)"}
-                <Input
-                  type="date"
-                  value={issueDate}
-                  onChange={(e) => setIssueDate(e.target.value)}
-                  disabled={outcome.blocked || (busy)}
-                />
-              </label>
-              <label className="modal-field">
-                Fakturanr. (valgfri)
-                <Input
-                  type="text"
-                  value={invoiceNo}
-                  onChange={(e) => setInvoiceNo(e.target.value)}
-                  disabled={outcome.blocked || (busy)}
-                />
-              </label>
-            </div>
+					{(isPurchaseSale || isInternalVoucher) && (
+						<label
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalField,
+							)}
+						>
+							{isInternalVoucher ? "Beskrivelse" : "Beskrivelse af leverance"}
+							<Input
+								type="text"
+								value={deliveryDescription}
+								onChange={(e) => setDeliveryDescription(e.target.value)}
+								disabled={outcome.blocked || busy}
+								xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+							/>
+						</label>
+					)}
 
-            <div className="modal-field-grid">
-              <label className="modal-field">
-                {isInternalVoucher
-                  ? "Beløb"
-                  : isExternalPayroll
-                    ? "Samlet lønrapport (debet/kredit)"
-                  : `Beløb inkl. moms${isPurchaseSale ? "" : " (valgfri)"}`}
-                <MoneyInput
-                  inputMode="decimal"
-                  value={amountIncVat}
-                  onValueChange={(e) => setAmountIncVat(e)}
-                  disabled={outcome.blocked || (busy)}
-                />
-              </label>
-              <label className="modal-field">
-                Momsbeløb{isInternalVoucher || isExternalPayroll ? " (altid 0)" : isPurchaseSale ? "" : " (valgfri)"}
-                <MoneyInput
-                  inputMode="decimal"
-                  value={vatAmount}
-                  onValueChange={(e) => setVatAmount(e)}
-                  disabled={outcome.blocked || (busy || isInternalVoucher || isExternalPayroll)}
-                  placeholder={isInternalVoucher || isExternalPayroll ? "0" : undefined}
-                />
-              </label>
-            </div>
+					{isInternalVoucher && (
+						<>
+							<label
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.modalField,
+								)}
+							>
+								Intern bilagstype
+								<Select
+									value={internalVoucherKind}
+									onChange={(e) =>
+										setInternalVoucherKind(
+											e.target.value as
+												| "bank_evidenced"
+												| "non_cash_balance_correction",
+										)
+									}
+									disabled={outcome.blocked || busy}
+									xstyle={[cockpitStyles.modalFieldSelectFocusComposition]}
+								>
+									<option
+										value="bank_evidenced"
+										{...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}
+									>
+										Bankdokumenteret
+									</option>
+									<option
+										value="non_cash_balance_correction"
+										{...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+										)}
+									>
+										Balancekorrektion uden bankbevægelse
+									</option>
+								</Select>
+							</label>
+							{isNonCashBalanceCorrection && (
+								<p
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.muted,
+									)}
+								>
+									Kun to balancekonti, dato, valuta og beløb skal senere stemme
+									præcist med journalen. Moms er altid 0.
+								</p>
+							)}
+							{!isNonCashBalanceCorrection && (
+								<label
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.modalField,
+									)}
+								>
+									Banktransaktions-id
+									<Input
+										type="number"
+										min="1"
+										step="1"
+										value={sourceBankTransactionId}
+										onChange={(e) => setSourceBankTransactionId(e.target.value)}
+										disabled={outcome.blocked || busy}
+										xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+									/>
+								</label>
+							)}
+							<label
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.modalField,
+								)}
+							>
+								Regnskabsmæssig begrundelse
+								<Textarea
+									value={accountingRationale}
+									onChange={(e) => setAccountingRationale(e.target.value)}
+									disabled={outcome.blocked || busy}
+									maxLength={2000}
+									xstyle={[cockpitStyles.modalFieldTextareaFocusComposition]}
+								/>
+							</label>
+						</>
+					)}
 
-            <label className="modal-field">
-              Valuta
-              <Input
-                type="text"
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                disabled={outcome.blocked || (busy)}
-              />
-            </label>
+					{(isPurchaseSale || isExternalPayroll) && (
+						<fieldset
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalField,
+							)}
+						>
+							<legend
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}
+							>
+								Momsfordeling (valgfri)
+							</legend>
+							<p
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.muted,
+								)}
+							>
+								Brug linjer når kun en del af fakturaen er momspligtig. Summen
+								af nettobeløb og moms skal svare til fakturaens total.
+							</p>
+							{purchaseVatLines.map((line, index) => (
+								<div
+									key={index}
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.modalFieldGrid,
+									)}
+								>
+									<label
+										{...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.modalField,
+											cockpitStyles.modalFieldGridModalField,
+										)}
+									>
+										Momsart {index + 1}
+										<Select
+											value={line.classification}
+											onChange={(e) =>
+												setPurchaseVatLines((current) =>
+													current.map((item, itemIndex) =>
+														itemIndex === index
+															? {
+																	...item,
+																	classification: e.target
+																		.value as EditablePurchaseVatLine["classification"],
+																}
+															: item,
+													),
+												)
+											}
+											disabled={outcome.blocked || busy}
+											xstyle={[cockpitStyles.modalFieldSelectFocusComposition]}
+										>
+											<option
+												value="dk_purchase_25"
+												{...stylex.props(
+													cockpitStyles.element,
+													cockpitStyles.focusVisible,
+												)}
+											>
+												Dansk køb, 25 %
+											</option>
+											<option
+												value="exempt"
+												{...stylex.props(
+													cockpitStyles.element,
+													cockpitStyles.focusVisible,
+												)}
+											>
+												Momsfrit/udlæg
+											</option>
+										</Select>
+									</label>
+									<label
+										{...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.modalField,
+											cockpitStyles.modalFieldGridModalField,
+										)}
+									>
+										Nettobeløb {index + 1}
+										<MoneyInput
+											inputMode="decimal"
+											value={line.netAmount}
+											onValueChange={(e) =>
+												setPurchaseVatLines((current) =>
+													current.map((item, itemIndex) =>
+														itemIndex === index
+															? { ...item, netAmount: e }
+															: item,
+													),
+												)
+											}
+											disabled={outcome.blocked || busy}
+										/>
+									</label>
+									<label
+										{...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.modalField,
+											cockpitStyles.modalFieldGridModalField,
+										)}
+									>
+										Momsbeløb {index + 1}
+										<MoneyInput
+											inputMode="decimal"
+											value={line.vatAmount}
+											onValueChange={(e) =>
+												setPurchaseVatLines((current) =>
+													current.map((item, itemIndex) =>
+														itemIndex === index
+															? { ...item, vatAmount: e }
+															: item,
+													),
+												)
+											}
+											disabled={outcome.blocked || busy}
+										/>
+									</label>
+									<Button
+										variant="secondary"
+										type="button"
+										aria-label={`Fjern momslinje ${index + 1}`}
+										onClick={() =>
+											setPurchaseVatLines((current) =>
+												current.filter((_, itemIndex) => itemIndex !== index),
+											)
+										}
+										disabled={outcome.blocked || busy}
+										xstyle={[cockpitStyles.buttonComposition]}
+									>
+										Fjern
+									</Button>
+								</div>
+							))}
+							<Button
+								variant="secondary"
+								type="button"
+								onClick={() =>
+									setPurchaseVatLines((current) => [
+										...current,
+										{
+											classification: "dk_purchase_25",
+											netAmount: "",
+											vatAmount: "",
+										},
+									])
+								}
+								disabled={outcome.blocked || busy}
+								xstyle={[cockpitStyles.buttonComposition]}
+							>
+								Tilføj momslinje
+							</Button>
+						</fieldset>
+					)}
 
-            {(isPurchaseSale || isInternalVoucher) && (
-              <label className="modal-field">
-                {isInternalVoucher ? "Beskrivelse" : "Beskrivelse af leverance"}
-                <Input
-                  type="text"
-                  value={deliveryDescription}
-                  onChange={(e) => setDeliveryDescription(e.target.value)}
-                  disabled={outcome.blocked || (busy)}
-                />
-              </label>
-            )}
+					{(isPurchaseSale || isExternalPayroll) && (
+						<>
+							<div
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.modalFieldGrid,
+								)}
+							>
+								<label
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.modalField,
+										cockpitStyles.modalFieldGridModalField,
+									)}
+								>
+									Afsender
+									<Input
+										type="text"
+										value={senderName}
+										placeholder="Navn"
+										onChange={(e) => setSenderName(e.target.value)}
+										disabled={outcome.blocked || busy}
+										xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+									/>
+								</label>
+								<label
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.modalField,
+										cockpitStyles.modalFieldGridModalField,
+									)}
+								>
+									Afsender CVR/moms
+									<Input
+										type="text"
+										value={senderVat}
+										onChange={(e) => setSenderVat(e.target.value)}
+										disabled={outcome.blocked || busy}
+										xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+									/>
+								</label>
+								<label
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.modalField,
+										cockpitStyles.modalFieldGridModalField,
+									)}
+								>
+									Leverandørland (ISO)
+									<Input
+										type="text"
+										value={senderCountryCode}
+										onChange={(e) =>
+											setSenderCountryCode(e.target.value.toUpperCase())
+										}
+										placeholder="US"
+										maxLength={2}
+										disabled={outcome.blocked || busy}
+										xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+									/>
+								</label>
+								<label
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.modalField,
+										cockpitStyles.modalFieldGridModalField,
+									)}
+								>
+									Identitetstype
+									<Select
+										value={senderIdentifierKind}
+										onChange={(e) =>
+											setSenderIdentifierKind(
+												e.target.value as typeof senderIdentifierKind,
+											)
+										}
+										disabled={outcome.blocked || busy}
+										xstyle={[cockpitStyles.modalFieldSelectFocusComposition]}
+									>
+										<option
+											value=""
+											{...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}
+										>
+											Vælg
+										</option>
+										<option
+											value="dk_cvr"
+											{...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}
+										>
+											Dansk CVR
+										</option>
+										<option
+											value="eu_vat"
+											{...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}
+										>
+											EU-momsnr.
+										</option>
+										<option
+											value="non_eu"
+											{...stylex.props(
+												cockpitStyles.element,
+												cockpitStyles.focusVisible,
+											)}
+										>
+											Ikke-EU
+										</option>
+									</Select>
+								</label>
+							</div>
+							<label
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.modalField,
+								)}
+							>
+								Afsenderadresse
+								<Input
+									type="text"
+									value={senderAddress}
+									onChange={(e) => setSenderAddress(e.target.value)}
+									disabled={outcome.blocked || busy}
+									xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+								/>
+							</label>
+							<div
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.modalFieldGrid,
+								)}
+							>
+								<label
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.modalField,
+										cockpitStyles.modalFieldGridModalField,
+									)}
+								>
+									Modtager
+									<Input
+										type="text"
+										value={recipientName}
+										placeholder="Navn"
+										onChange={(e) => setRecipientName(e.target.value)}
+										disabled={outcome.blocked || busy}
+										xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+									/>
+								</label>
+								<label
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.modalField,
+										cockpitStyles.modalFieldGridModalField,
+									)}
+								>
+									Modtager CVR/moms
+									<Input
+										type="text"
+										value={recipientVat}
+										onChange={(e) => setRecipientVat(e.target.value)}
+										disabled={outcome.blocked || busy}
+										xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+									/>
+								</label>
+							</div>
+							<label
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+									cockpitStyles.modalField,
+								)}
+							>
+								Modtageradresse
+								<Input
+									type="text"
+									value={recipientAddress}
+									onChange={(e) => setRecipientAddress(e.target.value)}
+									disabled={outcome.blocked || busy}
+									xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+								/>
+							</label>
+							{isPurchaseSale && senderIdentifierKind === "non_eu" && (
+								<div
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.modalFieldGrid,
+									)}
+								>
+									<label
+										{...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.modalField,
+											cockpitStyles.modalFieldGridModalField,
+										)}
+									>
+										Ordlyd om omvendt betalingspligt (valgfri)
+										<Input
+											value={reverseChargeWordingExcerpt}
+											onChange={(e) =>
+												setReverseChargeWordingExcerpt(e.target.value)
+											}
+											placeholder="Citat fra bilaget"
+											disabled={outcome.blocked || busy}
+											xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+										/>
+									</label>
+									<label
+										{...stylex.props(
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.modalField,
+											cockpitStyles.modalFieldGridModalField,
+										)}
+									>
+										Placering på bilaget
+										<Input
+											value={reverseChargeWordingLocation}
+											onChange={(e) =>
+												setReverseChargeWordingLocation(e.target.value)
+											}
+											placeholder="Fx side 1"
+											disabled={outcome.blocked || busy}
+											xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+										/>
+									</label>
+								</div>
+							)}
+						</>
+					)}
 
-            {isInternalVoucher && (
-              <>
-                <label className="modal-field">
-                  Intern bilagstype
-                  <Select value={internalVoucherKind} onChange={(e) => setInternalVoucherKind(e.target.value as "bank_evidenced" | "non_cash_balance_correction")} disabled={outcome.blocked || busy}>
-                    <option value="bank_evidenced">Bankdokumenteret</option>
-                    <option value="non_cash_balance_correction">Balancekorrektion uden bankbevægelse</option>
-                  </Select>
-                </label>
-                {isNonCashBalanceCorrection && <p className="muted">Kun to balancekonti, dato, valuta og beløb skal senere stemme præcist med journalen. Moms er altid 0.</p>}
-                {!isNonCashBalanceCorrection &&
-                <label className="modal-field">
-                  Banktransaktions-id
-                  <Input
-                    type="number"
-                    min="1"
-                    step="1"
-                    value={sourceBankTransactionId}
-                    onChange={(e) => setSourceBankTransactionId(e.target.value)}
-                    disabled={outcome.blocked || (busy)}
-                  />
-                </label>
-                }
-                <label className="modal-field">
-                  Regnskabsmæssig begrundelse
-                  <Textarea
-                    value={accountingRationale}
-                    onChange={(e) => setAccountingRationale(e.target.value)}
-                    disabled={outcome.blocked || (busy)}
-                    maxLength={2000}
-                  />
-                </label>
-              </>
-            )}
-
-            {(isPurchaseSale || isExternalPayroll) && (
-              <fieldset className="modal-field">
-                <legend>Momsfordeling (valgfri)</legend>
-                <p className="muted">
-                  Brug linjer når kun en del af fakturaen er momspligtig. Summen
-                  af nettobeløb og moms skal svare til fakturaens total.
-                </p>
-                {purchaseVatLines.map((line, index) => (
-                  <div className="modal-field-grid" key={index}>
-                    <label className="modal-field">
-                      Momsart {index + 1}
-                      <Select
-                        value={line.classification}
-                        onChange={(e) => setPurchaseVatLines((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, classification: e.target.value as EditablePurchaseVatLine["classification"] } : item))}
-                        disabled={outcome.blocked || (busy)}
-                      >
-                        <option value="dk_purchase_25">Dansk køb, 25 %</option>
-                        <option value="exempt">Momsfrit/udlæg</option>
-                      </Select>
-                    </label>
-                    <label className="modal-field">
-                      Nettobeløb {index + 1}
-                      <MoneyInput
-                        inputMode="decimal"
-                        value={line.netAmount}
-                        onValueChange={(e) => setPurchaseVatLines((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, netAmount: e } : item))}
-                        disabled={outcome.blocked || (busy)}
-                      />
-                    </label>
-                    <label className="modal-field">
-                      Momsbeløb {index + 1}
-                      <MoneyInput
-                        inputMode="decimal"
-                        value={line.vatAmount}
-                        onValueChange={(e) => setPurchaseVatLines((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, vatAmount: e } : item))}
-                        disabled={outcome.blocked || (busy)}
-                      />
-                    </label>
-                    <Button variant="secondary"
-                      type="button"
-                      className="btn secondary"
-                      aria-label={`Fjern momslinje ${index + 1}`}
-                      onClick={() => setPurchaseVatLines((current) => current.filter((_, itemIndex) => itemIndex !== index))}
-                      disabled={outcome.blocked || busy}
-                    >
-                      Fjern
-                    </Button>
-                  </div>
-                ))}
-                <Button variant="secondary"
-                  type="button"
-                  className="btn secondary"
-                  onClick={() => setPurchaseVatLines((current) => [...current, { classification: "dk_purchase_25", netAmount: "", vatAmount: "" }])}
-                  disabled={outcome.blocked || busy}
-                >
-                  Tilføj momslinje
-                </Button>
-              </fieldset>
-            )}
-
-            {(isPurchaseSale || isExternalPayroll) && (
-              <>
-                <div className="modal-field-grid">
-                  <label className="modal-field">
-                    Afsender
-                    <Input
-                      type="text"
-                      value={senderName}
-                      placeholder="Navn"
-                      onChange={(e) => setSenderName(e.target.value)}
-                      disabled={outcome.blocked || (busy)}
-                    />
-                  </label>
-                  <label className="modal-field">
-                    Afsender CVR/moms
-                    <Input
-                      type="text"
-                      value={senderVat}
-                      onChange={(e) => setSenderVat(e.target.value)}
-                      disabled={outcome.blocked || (busy)}
-                    />
-                  </label>
-                  <label className="modal-field">
-                    Leverandørland (ISO)
-                    <Input type="text" value={senderCountryCode} onChange={(e) => setSenderCountryCode(e.target.value.toUpperCase())} placeholder="US" maxLength={2} disabled={outcome.blocked || (busy)} />
-                  </label>
-                  <label className="modal-field">
-                    Identitetstype
-                    <Select value={senderIdentifierKind} onChange={(e) => setSenderIdentifierKind(e.target.value as typeof senderIdentifierKind)} disabled={outcome.blocked || (busy)}>
-                      <option value="">Vælg</option><option value="dk_cvr">Dansk CVR</option><option value="eu_vat">EU-momsnr.</option><option value="non_eu">Ikke-EU</option>
-                    </Select>
-                  </label>
-                </div>
-                <label className="modal-field">
-                  Afsenderadresse
-                  <Input
-                    type="text"
-                    value={senderAddress}
-                    onChange={(e) => setSenderAddress(e.target.value)}
-                    disabled={outcome.blocked || (busy)}
-                  />
-                </label>
-                <div className="modal-field-grid">
-                  <label className="modal-field">
-                    Modtager
-                    <Input
-                      type="text"
-                      value={recipientName}
-                      placeholder="Navn"
-                      onChange={(e) => setRecipientName(e.target.value)}
-                      disabled={outcome.blocked || (busy)}
-                    />
-                  </label>
-                  <label className="modal-field">
-                    Modtager CVR/moms
-                    <Input
-                      type="text"
-                      value={recipientVat}
-                      onChange={(e) => setRecipientVat(e.target.value)}
-                      disabled={outcome.blocked || (busy)}
-                    />
-                  </label>
-                </div>
-                <label className="modal-field">
-                  Modtageradresse
-                  <Input
-                    type="text"
-                    value={recipientAddress}
-                    onChange={(e) => setRecipientAddress(e.target.value)}
-                    disabled={outcome.blocked || (busy)}
-                  />
-                </label>
-                {isPurchaseSale && senderIdentifierKind === "non_eu" && (
-                  <div className="modal-field-grid">
-                    <label className="modal-field">
-                      Ordlyd om omvendt betalingspligt (valgfri)
-                      <Input value={reverseChargeWordingExcerpt} onChange={(e) => setReverseChargeWordingExcerpt(e.target.value)} placeholder="Citat fra bilaget" disabled={outcome.blocked || busy} />
-                    </label>
-                    <label className="modal-field">
-                      Placering på bilaget
-                      <Input value={reverseChargeWordingLocation} onChange={(e) => setReverseChargeWordingLocation(e.target.value)} placeholder="Fx side 1" disabled={outcome.blocked || busy} />
-                    </label>
-                  </div>
-                )}
-              </>
-            )}
-
-            <div className="modal-actions">
-              <Button variant="secondary"
-                type="button"
-                className="btn secondary"
-                onClick={onClose}
-                disabled={outcome.blocked || busy}
-              >
-                Annullér
-              </Button>
-              <Button requiredPermission="company.documents.upload"
-                type="button"
-                className="btn"
-                onClick={handleIngest}
-                disabled={outcome.blocked || (busy || !fileBase64)}
-              >
-                {busy ? "Indlæser…" : "Indlæs bilag"}
-              </Button>
-            </div>
-          </>
-        )}
-
-    </Dialog>
-  );
+					<div
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalActions,
+						)}
+					>
+						<Button
+							variant="secondary"
+							type="button"
+							onClick={onClose}
+							disabled={outcome.blocked || busy}
+							xstyle={[cockpitStyles.buttonComposition]}
+						>
+							Annullér
+						</Button>
+						<Button
+							requiredPermission="company.documents.upload"
+							type="button"
+							onClick={handleIngest}
+							disabled={outcome.blocked || busy || !fileBase64}
+							xstyle={[cockpitStyles.buttonComposition]}
+						>
+							{busy ? "Indlæser…" : "Indlæs bilag"}
+						</Button>
+					</div>
+				</>
+			)}
+		</Dialog>
+	);
 }
 
 const viewStyles = stylex.create({
-site0: { margin: 0 }
+	site0: { margin: 0 },
 });

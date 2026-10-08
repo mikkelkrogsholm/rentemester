@@ -4,19 +4,27 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
+    "dev": "bun --bun astro dev",
+    "start": "bun --bun astro dev",
+    "build": "bun --bun astro build",
+    "preview": "bun --bun astro preview",
     "astro": "astro",
     "content:coverage": "bun run scripts/check-graph-content-coverage.ts",
     "site:check": "bun run scripts/check-site-map.ts",
-    "og": "bun run scripts/generate-og.ts"
+    "og": "bun run scripts/generate-og.ts",
+    "stylex:build": "bun scripts/stylex-build.ts",
+    "test": "bun test tests",
+    "test:browser": "bun run build && playwright test"
   },
   "dependencies": {
-    "astro": "^5.1.0",
     "@astrojs/sitemap": "^3.2.1",
-    "@astrojs/tailwind": "^5.1.5",
-    "tailwindcss": "^3.4.17"
+    "@stylexjs/stylex": "0.19.1",
+    "astro": "^5.1.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@babel/core": "^7",
+    "@playwright/test": "1.63.0",
+    "@stylexjs/babel-plugin": "0.19.1"
   }
 }

@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="Et overskud på papiret kan stadig give en presset bankkonto. Rentemester skelner mellem budget, faktisk bogføring og en forsigtig likviditetsprognose."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Små virksomheder styrer ofte efter kontoen i banken. Det er forståeligt, men ikke nok. Budgettet viser forventningen, resultatet viser periodens bogføring, og likviditeten viser om der faktisk er penge til kommende betalinger.
     </p>
 
@@ -41,23 +42,23 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Hvad prognosen bygger på</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad prognosen bygger på</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       En nyttig likviditetsprognose bør starte i den bogførte bankbalance og derefter lægge kendte eller sandsynlige pengestrømme ovenpå. Det kan være åbne kundefakturaer, gentagne fakturaer, budgetterede omkostninger og kendte kreditorbetalinger.
     </p>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har budgetlogik og en likviditetsprognose, der kan samle bankbalance, fakturaflow, gentagne indtægter og budgetterede omkostninger. Dashboardet bruger det som et styringssignal, ikke som et løfte om fremtiden.
     </p>
 
-    <h2>Eksempel</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Eksempel</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Hvis banken viser 42.000 kr., der ligger to åbne kundefakturaer på 30.000 kr., og der forventes 18.000 kr. i faste omkostninger næste måned, kan prognosen vise et mere praktisk billede end resultatopgørelsen alene.
     </p>
 
-    <h2>Begrænsning</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Begrænsning</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Prognosen er kun så god som inputtet. Manglende bankimport, uregistrerede kreditorer, usikre betalingsdatoer eller private hævninger kan gøre billedet forkert. Derfor bør likviditet vises med tydelige forudsætninger og ikke som en absolut sandhed.
     </p>
   </article>
