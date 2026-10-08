@@ -1,23 +1,54 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <style data-stylex="compiled">.x1bnugb9{fill:#00D1FF}
+.xmkext3{fill:#05070A}
+.x1cbvg33{fill:#9a8f80}
+.x194404v{fill:#c5a059}
+.xkau8mi{fill:#d1c5b4}
+.xc9xck7{fill:#e1e2eb}
+.x7ot6ta{fill:#e9c176}
+.xbh8q5q{fill:none}
+.x1mn6ejr{fill:url(#cyber)}
+.x1jr8cq4{fill:url(#glow)}
+.x1dypbfe{font-family:Georgia,EB Garamond,serif}
+.xxwf5mu{font-family:Hanken Grotesk,sans-serif}
+.x1yf88jl{font-family:JetBrains Mono,monospace}
+.xyywni2{font-size:100px}
+.xwsyq91{font-size:20px}
+.x1i1m3gp{font-size:22px}
+.xneq65o{font-size:28px}
+.xqozcyj{font-size:36px}
+.x1s688f{font-weight:600}
+.x16gzlzp{letter-spacing:4px}
+.xti2d7y{opacity:.4}
+.x197sbye{opacity:.6}
+.x1wtiu6j{stop-color:#00D1FF}
+.x7r4ghp{stop-color:#05070A}
+.x1b96dxk{stop-color:#e9c176}
+.xnhoc4o{stop-opacity:.1}
+.xmx0y1z{stop-opacity:.14}
+.xkb0e9j{stop-opacity:0}
+.xh5gk07{stroke:#c5a059}
+.xnpr05h{stroke-width:1}
+.xw6cgo0{text-anchor:middle}</style>
   <defs>
     <radialGradient id="glow" cx="50%" cy="40%" r="60%">
-      <stop offset="0%" stop-color="#e9c176" stop-opacity="0.14"/>
-      <stop offset="100%" stop-color="#05070A" stop-opacity="0"/>
+      <stop offset="0%" class="x1b96dxk xmx0y1z"/>
+      <stop offset="100%" class="x7r4ghp xkb0e9j"/>
     </radialGradient>
     <radialGradient id="cyber" cx="80%" cy="80%" r="30%">
-      <stop offset="0%" stop-color="#00D1FF" stop-opacity="0.10"/>
-      <stop offset="100%" stop-color="#05070A" stop-opacity="0"/>
+      <stop offset="0%" class="x1wtiu6j xnhoc4o"/>
+      <stop offset="100%" class="x7r4ghp xkb0e9j"/>
     </radialGradient>
   </defs>
-  <rect width="1200" height="630" fill="#05070A"/>
-  <rect width="1200" height="630" fill="url(#glow)"/>
-  <rect width="1200" height="630" fill="url(#cyber)"/>
-  <text x="80" y="120" font-family="JetBrains Mono, monospace" font-size="20" font-weight="600" fill="#00D1FF" letter-spacing="4">DOKUMENTATION</text>
-  <text x="80" y="290" font-family="Georgia, 'EB Garamond', serif" font-size="100" font-weight="600" fill="#e1e2eb">Installer</text>
-  <text x="80" y="400" font-family="Georgia, 'EB Garamond', serif" font-size="100" font-weight="600" fill="#e9c176">på fem minutter</text>
-  <line x1="80" y1="450" x2="600" y2="450" stroke="#C5A059" stroke-width="1" opacity="0.4"/>
-  <text x="80" y="510" font-family="Hanken Grotesk, sans-serif" font-size="28" fill="#d1c5b4">Bun + git clone + bun install. Det er det.</text>
-  <text x="80" y="570" font-family="JetBrains Mono, monospace" font-size="22" fill="#9a8f80">rentemester.dk · github.com/mikkelkrogsholm/rentemester</text>
-  <rect x="1060" y="80" width="60" height="60" fill="none" stroke="#C5A059" stroke-width="1" opacity="0.4"/>
-  <text x="1090" y="118" font-family="Georgia, 'EB Garamond', serif" font-size="36" font-weight="600" fill="#e9c176" text-anchor="middle">R</text>
+  <rect width="1200" height="630" class="xmkext3"/>
+  <rect width="1200" height="630" class="x1jr8cq4"/>
+  <rect width="1200" height="630" class="x1mn6ejr"/>
+  <text x="80" y="120" class="x1yf88jl xwsyq91 x1s688f x1bnugb9 x16gzlzp">DOKUMENTATION</text>
+  <text x="80" y="290" class="x1dypbfe xyywni2 x1s688f xc9xck7">Installer</text>
+  <text x="80" y="400" class="x1dypbfe xyywni2 x1s688f x7ot6ta">på fem minutter</text>
+  <line x1="80" y1="450" x2="600" y2="450" class="xh5gk07 xnpr05h xti2d7y"/>
+  <text x="80" y="510" class="xxwf5mu xneq65o xkau8mi">Bun + git clone + bun install. Det er det.</text>
+  <text x="80" y="570" class="x1yf88jl x1i1m3gp x1cbvg33">rentemester.dk · github.com/mikkelkrogsholm/rentemester</text>
+  <rect x="1060" y="80" width="60" height="60" class="xbh8q5q xh5gk07 xnpr05h xti2d7y"/>
+  <text x="1090" y="118" class="x1dypbfe xqozcyj x1s688f x7ot6ta xw6cgo0">R</text>
 </svg>

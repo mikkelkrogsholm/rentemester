@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/PageHero.astro";
 import SeoEvidence from "../components/SeoEvidence.astro";
@@ -56,8 +57,8 @@ const jsonLd = [
 >
   <PageHero eyebrow={page.eyebrow} title={page.h1} lead={page.lead} />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Bogføring for et lille ApS handler ikke kun om at få tallene ind. Selskabets økonomi skal være adskilt, bilag skal kunne findes, banklinjer skal afstemmes, og rettelser skal kunne forklares efterfølgende. Rentemester er bygget mod den type verifiérbart kontrolspor.
     </p>
 
@@ -77,44 +78,44 @@ const jsonLd = [
       ]}
     />
 
-    <h2>Det et lille ApS typisk har brug for</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Det et lille ApS typisk har brug for</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Mange små ApS'er har en relativt enkel drift, men højere krav til adskillelse og dokumentation end en privatøkonomi-lignende freelancehverdag. Derfor bør systemet prioritere sporbarhed og eksport lige så højt som hastighed.
     </p>
-    <ul>
-      <li>Fakturaer, betalinger og kreditnotaer skal hænge sammen.</li>
-      <li>Køb og bilag skal være dokumenteret med stabil reference og hash.</li>
-      <li>Moms skal kunne opsummeres pr. periode og spores tilbage til posteringer.</li>
-      <li>Bankafstemning skal gøre åbne poster synlige.</li>
-      <li>Rettelser skal ske med modposteringer og audit trail.</li>
-      <li>Materiale skal kunne eksporteres til bogholder, revisor eller intern gennemgang.</li>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Fakturaer, betalinger og kreditnotaer skal hænge sammen.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Køb og bilag skal være dokumenteret med stabil reference og hash.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Moms skal kunne opsummeres pr. periode og spores tilbage til posteringer.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Bankafstemning skal gøre åbne poster synlige.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Rettelser skal ske med modposteringer og audit trail.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Materiale skal kunne eksporteres til bogholder, revisor eller intern gennemgang.</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har lokal ledger, append-only bogføring, fakturaflow, bilag, bank-CSV import, momsrapport, audit-verifikation, backup/restore og eksport/handoff i kodebasen. Det gør projektet relevant for små ApS'er, der vil have et gennemskueligt og inspecterbart regnskabsflow.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Det er samtidig vigtigt at sige præcist hvad siden ikke lover: Rentemester er ikke en færdig årsrapportmaskine, ikke et lønsystem, ikke et lager- eller POS-system og ikke et registreret standardbogføringssystem.
     </p>
 
-    <h2>Begrænsninger og ansvar</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Begrænsninger og ansvar</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       ApS'er er typisk omfattet af krav, som ikke bør afgøres ud fra en produkttekst. Brug Erhvervsstyrelsens fortegnelse og vejledning, hvis du skal vurdere om et bogføringssystem opfylder kravene, og involver bogholder eller revisor ved konkrete selskabsspørgsmål.
     </p>
 
-    <h2>Næste skridt</h2>
-    <ul>
-      <li><a href="/funktioner">Se Rentemesters funktioner</a></li>
-      <li><a href="/sikkerhed">Læs om sikkerhed og lokal datakontrol</a></li>
-      <li><a href="/docs/installation">Installer projektet lokalt</a></li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Næste skridt</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/funktioner">Se Rentemesters funktioner</a></li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/sikkerhed">Læs om sikkerhed og lokal datakontrol</a></li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/docs/installation">Installer projektet lokalt</a></li>
     </ul>
 
-    <h2>Ofte stillede spørgsmål</h2>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Ofte stillede spørgsmål</h2>
     {faq.map((item) => (
       <>
-        <h3>{item.q}</h3>
-        <p>{item.a}</p>
+        <h3 {...sx.pages_viden_fakturering_eFakturaOffentlig_h31}>{item.q}</h3>
+        <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>{item.a}</p>
       </>
     ))}
   </article>

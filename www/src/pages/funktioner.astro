@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/PageHero.astro";
 import SeoEvidence from "../components/SeoEvidence.astro";
@@ -111,18 +112,18 @@ const groups = [
     lead="En oversigt over funktionerne i Rentemester, grupperet efter hvor de hører hjemme i workflow'et. Roadmap-punkter er markeret direkte i teksten."
   />
 
-  <div class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-20 space-y-16">
+  <div {...sx.pages_funktioner_div1}>
     {groups.map((g) => (
-      <section>
-        <div class="mb-8 max-w-2xl">
-          <h2 class="font-serif text-3xl md:text-4xl text-primary mb-2">{g.title}</h2>
-          <p class="text-on-surface-variant">{g.intro}</p>
+      <section {...sx.pages_funktioner_section2}>
+        <div {...sx.pages_funktioner_div3}>
+          <h2 {...sx.pages_funktioner_h24}>{g.title}</h2>
+          <p {...sx.pages_funktioner_p5}>{g.intro}</p>
         </div>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-gutter">
+        <div {...sx.pages_funktioner_div6}>
           {g.items.map((item) => (
-            <article class="bg-surface-container border border-outline-variant/10 p-6 hover:border-primary/30 transition-colors">
-              <h3 class="font-serif text-xl text-on-background mb-2">{item.t}</h3>
-              <p class="text-on-surface-variant text-[15px] leading-relaxed">{item.d}</p>
+            <article {...sx.pages_funktioner_article7}>
+              <h3 {...sx.pages_funktioner_h38}>{item.t}</h3>
+              <p {...sx.pages_index_p97}>{item.d}</p>
             </article>
           ))}
         </div>

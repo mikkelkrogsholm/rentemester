@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="Periodeafgrænsning flytter ikke penge. Den flytter regnskabseffekten, så en forudbetaling eller forudfaktureret indtægt indregnes over de perioder den faktisk vedrører."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Mange små virksomheder betaler software, forsikring eller hosting for flere måneder ad gangen. Hvis hele beløbet rammer resultatet på betalingsdagen, kan måneds- og kvartalsrapporter blive misvisende. Periodeafgrænsning parkerer beløbet på balancen og indregner det gradvist.
     </p>
 
@@ -40,23 +41,23 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Hvornår bruges det?</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvornår bruges det?</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Typiske cases er årsabonnementer, forsikringer, husleje betalt forud eller indtægter der faktureres før ydelsen leveres. Pointen er at rapporten for hver periode skal vise den del af udgiften eller indtægten, der hører til perioden.
     </p>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester opretter først en balanceret park-postering på en balancekonto. Derefter kan systemet indregne faste perioder deterministisk, så delbeløbene summerer præcist til totalen. Eventuelle øreafrundinger lander i sidste periode i stedet for at skabe skjulte differencer.
     </p>
 
-    <h2>Eksempel</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Eksempel</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       En softwarelicens på 12.000 kr. dækker januar til december. I stedet for at belaste januar med hele udgiften, kan Rentemester parkere beløbet og indregne 1.000 kr. pr. måned. Hver indregning er en selvstændig postering med auditspor.
     </p>
 
-    <h2>Begrænsning</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Begrænsning</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Systemet kan lave den deterministiske fordeling, men det skal stadig afgøres om en konkret faktura faktisk skal periodiseres. Det valg bør være eksplicit, især ved blandede ydelser, delperioder eller beløb hvor væsentlighed er en faglig vurdering.
     </p>
   </article>

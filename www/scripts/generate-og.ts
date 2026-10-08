@@ -1,7 +1,13 @@
 #!/usr/bin/env bun
 import { mkdir, writeFile } from "node:fs/promises";
-import { join, dirname } from "node:path";
+import { join } from "node:path";
 import { $ } from "bun";
+
+import { compileWebsite } from "./stylex-build";
+
+await compileWebsite();
+const { attributes: sx, css } = await import("../.stylex/og-stylex");
+const attrs = (value: Record<string, string>) => Object.entries(value).map(([key, value]) => `${key}="${escapeXml(value)}"`).join(" ");
 
 interface Variant {
   slug: string;
@@ -56,32 +62,41 @@ function buildSvg(v: Variant): string {
   const line1 = escapeXml(v.title[0]);
   const line2 = escapeXml(v.title[1] ?? "");
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <style data-stylex="compiled">${css}</style>
   <defs>
     <radialGradient id="glow" cx="50%" cy="40%" r="60%">
-      <stop offset="0%" stop-color="#e9c176" stop-opacity="0.14"/>
-      <stop offset="100%" stop-color="#05070A" stop-opacity="0"/>
+      <stop offset="0%" ${attrs(sx.glowStart)}/>
+      <stop offset="100%" ${attrs(sx.glowEnd)}/>
     </radialGradient>
     <radialGradient id="cyber" cx="80%" cy="80%" r="30%">
-      <stop offset="0%" stop-color="#00D1FF" stop-opacity="0.10"/>
-      <stop offset="100%" stop-color="#05070A" stop-opacity="0"/>
+      <stop offset="0%" ${attrs(sx.cyberStart)}/>
+      <stop offset="100%" ${attrs(sx.cyberEnd)}/>
     </radialGradient>
   </defs>
-  <rect width="1200" height="630" fill="#05070A"/>
-  <rect width="1200" height="630" fill="url(#glow)"/>
-  <rect width="1200" height="630" fill="url(#cyber)"/>
-  <text x="80" y="120" font-family="JetBrains Mono, monospace" font-size="20" font-weight="600" fill="#00D1FF" letter-spacing="4">${escapeXml(v.eyebrow)}</text>
-  <text x="80" y="290" font-family="Georgia, 'EB Garamond', serif" font-size="100" font-weight="600" fill="#e1e2eb">${line1}</text>
-  ${line2 ? `<text x="80" y="400" font-family="Georgia, 'EB Garamond', serif" font-size="100" font-weight="600" fill="#e9c176">${line2}</text>` : ""}
-  <line x1="80" y1="450" x2="600" y2="450" stroke="#C5A059" stroke-width="1" opacity="0.4"/>
-  <text x="80" y="510" font-family="Hanken Grotesk, sans-serif" font-size="28" fill="#d1c5b4">${escapeXml(v.subtitle)}</text>
-  <text x="80" y="570" font-family="JetBrains Mono, monospace" font-size="22" fill="#9a8f80">rentemester.dk · github.com/mikkelkrogsholm/rentemester</text>
-  <rect x="1060" y="80" width="60" height="60" fill="none" stroke="#C5A059" stroke-width="1" opacity="0.4"/>
-  <text x="1090" y="118" font-family="Georgia, 'EB Garamond', serif" font-size="36" font-weight="600" fill="#e9c176" text-anchor="middle">R</text>
+  <rect width="1200" height="630" ${attrs(sx.background)}/>
+  <rect width="1200" height="630" ${attrs(sx.glowLayer)}/>
+  <rect width="1200" height="630" ${attrs(sx.cyberLayer)}/>
+  <text x="80" y="120" ${attrs(sx.eyebrow)}>${escapeXml(v.eyebrow)}</text>
+  <text x="80" y="290" ${attrs(sx.title)}>${line1}</text>
+  ${line2 ? `<text x="80" y="400" ${attrs(sx.titleAccent)}>${line2}</text>` : ""}
+  <line x1="80" y1="450" x2="600" y2="450" ${attrs(sx.line)}/>
+  <text x="80" y="510" ${attrs(sx.subtitle)}>${escapeXml(v.subtitle)}</text>
+  <text x="80" y="570" ${attrs(sx.footer)}>rentemester.dk · github.com/mikkelkrogsholm/rentemester</text>
+  <rect x="1060" y="80" width="60" height="60" ${attrs(sx.monogramFrame)}/>
+  <text x="1090" y="118" ${attrs(sx.monogram)}>R</text>
 </svg>`;
 }
 
 const publicDir = join(import.meta.dir, "..", "public");
 await mkdir(publicDir, { recursive: true });
+
+await writeFile(join(publicDir, "favicon.svg"), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+<style data-stylex="compiled">${css}</style>
+<rect width="32" height="32" ${attrs(sx.background)}/>
+<text x="16" y="23" ${attrs(sx.faviconText)}>R</text>
+<rect x="4" y="27" width="24" height="1" ${attrs(sx.faviconLine)}/>
+</svg>
+`);
 
 for (const v of variants) {
   const svgPath = join(publicDir, `${v.slug}.svg`);

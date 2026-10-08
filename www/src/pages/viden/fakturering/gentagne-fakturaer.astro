@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="Et gentaget fakturaflow bør ikke skjule baggrundsautomatik. Rentemester bruger skabeloner og eksplicit generering, så hver periodefaktura kan forklares og genskabes."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Gentagne fakturaer bruges ofte til faste ydelser, abonnementslignende aftaler eller løbende konsulentretainers. Den regnskabsmæssige risiko er dobbelt: samme periode må ikke faktureres to gange, og skabelonens indhold må ikke ændre sig usynligt undervejs.
     </p>
 
@@ -40,18 +41,18 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Skabelonen er ikke en bagdør</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Skabelonen er ikke en bagdør</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       I Rentemester er en recurring invoice template en append-only specifikation: interval, kunde, linjer, moms og leveringsperiode skal være valideret, før skabelonen kan bruges. Det gør skabelonen til en forklarlig kilde, ikke bare en genvej til at kopiere en gammel faktura.
     </p>
 
-    <h2>Generering er eksplicit</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Generering er eksplicit</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester materialiserer ikke fakturaer lydløst i baggrunden. Den nuværende model kræver en eksplicit generate-kommando for en given dato. Perioden afledes deterministisk fra skabelonen, og template/period-linket forhindrer dubletter ved gentagen kørsel.
     </p>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Koden har CLI- og MCP-overflade til at oprette, liste og generere gentagne fakturaer. Det er et template- og genereringsflow, ikke et færdigt abonnementsprodukt med betalingskort, dunning, prisskift og hosted automation.
     </p>
   </article>

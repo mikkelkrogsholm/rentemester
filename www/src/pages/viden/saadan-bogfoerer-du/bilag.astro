@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -22,8 +23,8 @@ const bogfoeringslovenUrl = "https://www.retsinformation.dk/eli/lta/2022/700";
     lead="Et bilag skal forklare posteringen. Det er ikke nok at kende beløbet; dato, leverandør, formål, moms og dokumentation skal kunne findes igen."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Bilag er forbindelsen mellem virkeligheden og bogføringen. Hvis et køb mangler bilag, eller formålet er uklart, bør det ikke bogføres automatisk. Det skal markeres til afklaring, så fejlen ikke skjules.
     </p>
 
@@ -40,23 +41,23 @@ const bogfoeringslovenUrl = "https://www.retsinformation.dk/eli/lta/2022/700";
       ]}
     />
 
-    <h2>Minimumsoplysninger</h2>
-    <ul>
-      <li>dato</li>
-      <li>leverandør eller kunde</li>
-      <li>beløb og valuta</li>
-      <li>moms hvis relevant</li>
-      <li>formål eller relation til virksomheden</li>
-      <li>fil eller original dokumentation</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Minimumsoplysninger</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>dato</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>leverandør eller kunde</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>beløb og valuta</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>moms hvis relevant</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>formål eller relation til virksomheden</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>fil eller original dokumentation</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester kan ingest'e bilag, beregne SHA-256 hash, gemme metadata og blokere mangelfulde eller dublerede bilag i testede flows. Pointen er ikke bare filopbevaring; pointen er at knytte bilaget til en bogført postering og kunne kontrollere det senere.
     </p>
 
-    <h2>Hvornår skal du stoppe?</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvornår skal du stoppe?</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Stop ved manglende fakturanummer, ukendt leverandør, uklart erhvervsmæssigt formål, usikker moms eller privat/erhverv-blanding. Det er bedre at have en synlig exception end en pæn, men forkert, bogføring.
     </p>
   </article>

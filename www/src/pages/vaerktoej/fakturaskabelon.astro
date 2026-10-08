@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../.stylex/site-stylex";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/PageHero.astro";
 import SeoEvidence from "../../components/SeoEvidence.astro";
@@ -34,8 +35,8 @@ const jsonLd = {
     lead="En faktura skal være mere end et pænt dokument. Den skal have nok oplysninger til at kunne bogføres, betales, kontrolleres og matches mod bank."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Brug denne side som tjekliste for fakturaer. Rentemester kan validere og udstede fakturaer i kodebasen, men hvis du laver en manuel faktura, bør de samme oplysninger stadig være tydelige.
     </p>
 
@@ -51,22 +52,22 @@ const jsonLd = {
       ]}
     />
 
-    <h2>Felter der bør være med</h2>
-    <ul>
-      <li>fakturanummer og dato</li>
-      <li>sælgerens navn, adresse og CVR</li>
-      <li>kundens navn og adresse</li>
-      <li>leveringsdato eller leveringsperiode</li>
-      <li>beskrivelse af ydelsen eller varen</li>
-      <li>netto, moms og total</li>
-      <li>betalingsfrist og betalingsoplysninger</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Felter der bør være med</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>fakturanummer og dato</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>sælgerens navn, adresse og CVR</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>kundens navn og adresse</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>leveringsdato eller leveringsperiode</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>beskrivelse af ydelsen eller varen</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>netto, moms og total</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>betalingsfrist og betalingsoplysninger</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har fakturavalidering, udstedelse, PDF-rendering, bogføring, status og betalinger i den nuværende kodebase. Siden fungerer som manuel tjekliste, ikke som download af en færdig skabelon endnu.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Når fakturaen bogføres i systemet, bør den hænge sammen med debitor, omsætning, moms og senere bankbetaling. Det er den sammenhæng, der gør fakturaen nyttig som regnskabsmateriale og ikke bare som et dokument sendt til kunden.
     </p>
   </article>

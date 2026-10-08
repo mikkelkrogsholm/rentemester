@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -16,8 +17,8 @@ import { SITE } from "../../../consts";
 >
   <PageHero eyebrow="Begreb" title="Afstemning finder forskellen mellem system og virkelighed" lead="Afstemning er kontrollen af, at bogføringen passer med bank, bilag, fakturaer og rapporter. Den bør ske løbende, ikke først ved momsfrist eller årsafslutning." />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Afstemning betyder, at du sammenholder to kilder og forklarer forskelle. Det kan være bank mod ledger, faktura mod betaling, momsrapport mod posteringer eller bilag mod journal. Uforklarede differencer bør ikke ignoreres.
     </p>
 
@@ -33,22 +34,22 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Typiske afstemninger</h2>
-    <ul>
-      <li>bankkonto mod bogført bankkonto</li>
-      <li>åbne kundefakturaer mod betalinger</li>
-      <li>leverandørfakturaer mod bankbetalinger</li>
-      <li>momsrapport mod momsrelaterede posteringer</li>
-      <li>bilag mod journalposter</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Typiske afstemninger</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>bankkonto mod bogført bankkonto</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>åbne kundefakturaer mod betalinger</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>leverandørfakturaer mod bankbetalinger</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>momsrapport mod momsrelaterede posteringer</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>bilag mod journalposter</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har bankreconciliation, audit-verifikation og rapporter, der kan vise unmatched banklinjer og kontrollerbare totalsummer. Det erstatter ikke faglig vurdering, men gør mangler synlige tidligere.
     </p>
 
-    <h2>Hvorfor det er vigtigt</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvorfor det er vigtigt</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Uden afstemning kan regnskabet se komplet ud, selv om der mangler bilag, betalinger eller korrektioner. En god afstemning gør fejl til konkrete opgaver: find bilaget, match betalingen, ret perioden eller forklar differencen.
     </p>
   </article>

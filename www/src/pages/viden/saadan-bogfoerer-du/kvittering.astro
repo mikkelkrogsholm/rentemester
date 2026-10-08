@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -16,8 +17,8 @@ import { SITE } from "../../../consts";
 >
   <PageHero eyebrow="Sådan bogfører du" title="Kvitteringer skal have formål, ikke kun beløb" lead="En kvittering dokumenterer et køb, men bogføringen kræver også formål, konto, momsbehandling og sammenhæng til betaling eller udlæg." />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Kvitteringer er ofte små, men de skaber mange fejl. Et billede af en bon er ikke nok, hvis leverandør, dato, moms eller erhvervsmæssigt formål ikke kan læses. Derfor bør kvitteringer behandles som bilag med krav til metadata.
     </p>
 
@@ -33,22 +34,22 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Minimum for en god kvittering</h2>
-    <ul>
-      <li>dato og leverandør</li>
-      <li>bruttobeløb og eventuel moms</li>
-      <li>hvad der er købt</li>
-      <li>hvem der har betalt</li>
-      <li>hvilket erhvervsmæssigt formål købet har</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Minimum for en god kvittering</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>dato og leverandør</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>bruttobeløb og eventuel moms</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>hvad der er købt</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>hvem der har betalt</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>hvilket erhvervsmæssigt formål købet har</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester kan modtage bilag med strukturerede metadata og afvise mangelfulde dokumenter i testede flows. Det hjælper især ved udlæg, repræsentation og udenlandske kvitteringer, hvor forkert momsbehandling ellers let skjules.
     </p>
 
-    <h2>Hvornår skal kvitteringen ikke bogføres automatisk?</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvornår skal kvitteringen ikke bogføres automatisk?</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Stop hvis købet kan være privat, hvis formålet ikke er oplyst, hvis momsen er uklar, eller hvis kvitteringen ikke kan læses. En synlig afklaringsopgave er bedre end en hurtig postering, som revisor eller myndighed senere ikke kan følge.
     </p>
   </article>

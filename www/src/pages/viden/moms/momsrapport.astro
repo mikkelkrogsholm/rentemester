@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -16,8 +17,8 @@ import { SITE } from "../../../consts";
 >
   <PageHero eyebrow="Moms" title="Momsrapporten skal kunne spores tilbage til posteringer" lead="En momsrapport er kun nyttig, hvis tallene kan spores tilbage til fakturaer, bilag og journalposter. Ellers bliver indberetningen svær at kontrollere." />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       En momsrapport samler momsgrundlag og momsbeløb for en periode. Den bør vise salgsmoms, købsmoms, EU-køb, reverse charge og eventuelle særlige forhold som repræsentation eller tab på debitorer, hvis de findes i perioden.
     </p>
 
@@ -34,21 +35,21 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Hvad skal rapporten kunne forklare?</h2>
-    <ul>
-      <li>hvilken periode rapporten dækker</li>
-      <li>hvilke journalposter der er medtaget</li>
-      <li>hvilke poster der er reverseret eller korrigeret</li>
-      <li>hvordan salgsmoms og købsmoms er beregnet</li>
-      <li>om reverse charge eller særlige fradragsregler påvirker tallene</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad skal rapporten kunne forklare?</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>hvilken periode rapporten dækker</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>hvilke journalposter der er medtaget</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>hvilke poster der er reverseret eller korrigeret</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>hvordan salgsmoms og købsmoms er beregnet</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>om reverse charge eller særlige fradragsregler påvirker tallene</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har momsrapportering i kodebasen med testede flows for almindelig moms, EU reverse charge, repræsentation og bad-debt relief. Rapporten er deterministisk og bygger på journalposter, ikke på manuelle tekstnoter.
     </p>
-    <p>
-      Rapporten er et kontrolgrundlag, ikke en automatisk indsendelse. Brug den til at se periodens salgsmoms, købsmoms og særlige momsbevægelser, og afstem tallene mod bilag og bank før du går videre til <a href="/viden/moms/momsindberetning">momsindberetningen</a>.
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Rapporten er et kontrolgrundlag, ikke en automatisk indsendelse. Brug den til at se periodens salgsmoms, købsmoms og særlige momsbevægelser, og afstem tallene mod bilag og bank før du går videre til <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/viden/moms/momsindberetning">momsindberetningen</a>.
     </p>
   </article>
 </BaseLayout>

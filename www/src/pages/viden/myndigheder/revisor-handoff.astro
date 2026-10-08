@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="En bogholder eller revisor har brug for materiale, der kan efterprøves: journal, bilag, fakturaer, bank, moms og audit. Ikke bare screenshots fra et system."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       God handoff handler om at reducere tid brugt på at spørge efter manglende bilag. Hvis materialet er samlet med referencer og manifest, kan rådgiveren hurtigere se hvad der er bogført, hvad der mangler, og hvor risikoen ligger.
     </p>
 
@@ -37,18 +38,18 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Hvad bør med?</h2>
-    <ul>
-      <li>kontoplan og journal</li>
-      <li>bilag og fakturaer</li>
-      <li>banktransaktioner og afstemning</li>
-      <li>momsrapport</li>
-      <li>exceptions og åbne spørgsmål</li>
-      <li>audit-verifikation</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad bør med?</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>kontoplan og journal</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>bilag og fakturaer</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>banktransaktioner og afstemning</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>momsrapport</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>exceptions og åbne spørgsmål</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>audit-verifikation</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har et lokalt accountant handoff-flow med tydelig filgrænse. Hosted reviewer access er roadmap, ikke live. Det er vigtigt, fordi siden ikke må love adgangsstyring eller portal, før den findes og er gated på main.
     </p>
   </article>

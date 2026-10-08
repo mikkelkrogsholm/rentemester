@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -22,8 +23,8 @@ const skatReprUrl = "https://info.skat.dk/data.aspx?oid=2085708";
     lead="Repræsentation kræver ekstra forsigtighed. Bilaget skal vise hvem, hvad og hvorfor, og momsfradrag er ikke det samme som almindelige driftsudgifter."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Repræsentation er en af de poster, hvor automatisering let bliver farlig. Et restaurantbilag eller en gave kan være erhvervsmæssigt begrundet, men moms- og skattebehandling afhænger af den konkrete situation.
     </p>
 
@@ -39,20 +40,20 @@ const skatReprUrl = "https://info.skat.dk/data.aspx?oid=2085708";
       ]}
     />
 
-    <h2>Hvad bør bilaget vise?</h2>
-    <ul>
-      <li>dato og leverandør</li>
-      <li>beløb og eventuel moms</li>
-      <li>hvem der deltog eller modtog ydelsen</li>
-      <li>det erhvervsmæssige formål</li>
-      <li>om der er privat element eller blandet formål</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad bør bilaget vise?</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>dato og leverandør</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>beløb og eventuel moms</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>hvem der deltog eller modtog ydelsen</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>det erhvervsmæssige formål</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>om der er privat element eller blandet formål</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har et testet flow for repræsentationsmoms, hvor fradraget behandles konservativt i momsrapporten. Siden skal ikke love, at alle repræsentationsudgifter kan klassificeres automatisk; usikre tilfælde skal stoppe som exception.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Den praktiske arbejdsgang bør derfor være strengere end ved almindelige software- eller kontorudgifter. Mangler deltager, formål eller tydelig erhvervsmæssig begrundelse, er det bedre at markere bilaget til manuel gennemgang end at lade en agent vælge konto og moms automatisk.
     </p>
   </article>

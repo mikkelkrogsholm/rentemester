@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="Et audit trail viser hvad der er sket i regnskabet, hvornår det skete, og hvilken dokumentation der ligger bag. Det er forskellen på bogføring, der kan forklares, og tal der bare står i en database."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       I små virksomheder bliver audit trail ofte først vigtigt, når noget går galt: en manglende faktura, en forkert momsbehandling, en betaling der ikke matcher, eller et bilag der ikke kan findes. Men sporbarhed skal bygges ind fra start.
     </p>
 
@@ -37,18 +38,18 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Hvad bør et audit trail vise?</h2>
-    <ul>
-      <li>hvilken postering der blev oprettet</li>
-      <li>hvilket bilag eller hvilken faktura der dokumenterer den</li>
-      <li>hvem eller hvad der udførte handlingen</li>
-      <li>hvornår handlingen skete</li>
-      <li>hvordan rettelser er lavet</li>
-      <li>om historikken stadig verificerer</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad bør et audit trail vise?</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>hvilken postering der blev oprettet</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>hvilket bilag eller hvilken faktura der dokumenterer den</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>hvem eller hvad der udførte handlingen</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>hvornår handlingen skete</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>hvordan rettelser er lavet</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>om historikken stadig verificerer</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester bruger append-only posteringer, hash-kæde, audit-verifikation og dokumentreferencer. Hvis nogen ændrer en bogført linje direkte, skal audit-verifikation kunne opdage det. Det er en af grundene til at projektet ikke bygger på fri AI-redigering af regnskabstal.
     </p>
   </article>

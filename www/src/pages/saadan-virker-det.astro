@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/PageHero.astro";
 import { SITE } from "../consts";
@@ -66,50 +67,50 @@ const jsonLd = {
     lead="Tre lag der holder hinanden ærlige: en AI-agent der hjælper, danske regler der validerer, og en append-only ledger der husker. Her er flowet fra bilag til rapport."
   />
 
-  <section class="max-w-container mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-20">
-    <div class="grid md:grid-cols-2 gap-6 md:gap-10">
+  <section {...sx.pages_saadanVirkerDet_section1}>
+    <div {...sx.pages_saadanVirkerDet_div2}>
       {steps.map((s) => (
-        <article class="bg-surface-container border border-outline-variant/15 p-8 ai-glow-card">
-          <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-primary mb-4">Trin {s.n}</div>
-          <h2 class="font-serif text-2xl text-on-background mb-3">{s.t}</h2>
-          <p class="text-on-surface-variant leading-relaxed">{s.d}</p>
+        <article {...sx.pages_saadanVirkerDet_article3}>
+          <div {...sx.pages_saadanVirkerDet_div4}>Trin {s.n}</div>
+          <h2 {...sx.pages_saadanVirkerDet_h25}>{s.t}</h2>
+          <p {...sx.pages_index_p36}>{s.d}</p>
         </article>
       ))}
     </div>
   </section>
 
-  <section class="border-t border-outline-variant/15 bg-deep-navy/30">
-    <div class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-16 md:py-24">
-      <h2 class="font-serif text-3xl md:text-4xl text-primary mb-6">Det tekniske fundament</h2>
-      <dl class="space-y-6">
-        <div>
-          <dt class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-2">Sprog &amp; runtime</dt>
-          <dd class="text-on-surface-variant leading-relaxed">TypeScript på Bun. Ingen Node-afhængigheder, ingen build-step for at køre. <code class="font-mono text-[13px] bg-deep-navy text-primary px-1.5 py-0.5">bun install</code> og du er kørende.</dd>
+  <section {...sx.pages_index_section89}>
+    <div {...sx.pages_saadanVirkerDet_div6}>
+      <h2 {...sx.pages_saadanVirkerDet_h27}>Det tekniske fundament</h2>
+      <dl {...sx.pages_saadanVirkerDet_dl8}>
+        <div {...sx.pages_vaerktoej_momsberegner_div4}>
+          <dt {...sx.pages_saadanVirkerDet_dt9}>Sprog &amp; runtime</dt>
+          <dd {...sx.pages_saadanVirkerDet_dd10}>TypeScript på Bun. Ingen Node-afhængigheder, ingen build-step for at køre. <code {...sx.pages_index_code73}>bun install</code> og du er kørende.</dd>
         </div>
-        <div>
-          <dt class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-2">Ledger</dt>
-          <dd class="text-on-surface-variant leading-relaxed">SQLite, append-only. Hver postering er hashet og kædet til den forrige. Ledgeren signeres opt-in med ed25519, så en tredjepart kan verificere integriteten uden adgang til private nøgler.</dd>
+        <div {...sx.pages_vaerktoej_momsberegner_div4}>
+          <dt {...sx.pages_saadanVirkerDet_dt9}>Ledger</dt>
+          <dd {...sx.pages_saadanVirkerDet_dd10}>SQLite, append-only. Hver postering er hashet og kædet til den forrige. Ledgeren signeres opt-in med ed25519, så en tredjepart kan verificere integriteten uden adgang til private nøgler.</dd>
         </div>
-        <div>
-          <dt class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-2">Regler</dt>
-          <dd class="text-on-surface-variant leading-relaxed">Almindelige TypeScript-moduler i <code class="font-mono text-[13px] bg-deep-navy text-primary px-1.5 py-0.5">rules/dk/</code>. Læsbare for revisorer der kan kode bare lidt, testbare som almindelig kode, versionsstyrede via git.</dd>
+        <div {...sx.pages_vaerktoej_momsberegner_div4}>
+          <dt {...sx.pages_saadanVirkerDet_dt9}>Regler</dt>
+          <dd {...sx.pages_saadanVirkerDet_dd10}>Almindelige TypeScript-moduler i <code {...sx.pages_index_code73}>rules/dk/</code>. Læsbare for revisorer der kan kode bare lidt, testbare som almindelig kode, versionsstyrede via git.</dd>
         </div>
-        <div>
-          <dt class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-2">Agent</dt>
-          <dd class="text-on-surface-variant leading-relaxed">Modelagnostisk. Eksponeres som MCP-server så kompatible klienter kan arbejde gennem en stram operations-protokol — ikke fri tekst ind i ledgeren.</dd>
+        <div {...sx.pages_vaerktoej_momsberegner_div4}>
+          <dt {...sx.pages_saadanVirkerDet_dt9}>Agent</dt>
+          <dd {...sx.pages_saadanVirkerDet_dd10}>Modelagnostisk. Eksponeres som MCP-server så kompatible klienter kan arbejde gennem en stram operations-protokol — ikke fri tekst ind i ledgeren.</dd>
         </div>
-        <div>
-          <dt class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-2">Output</dt>
-          <dd class="text-on-surface-variant leading-relaxed">Dashboard som ren HTML (deterministisk render), myndigheds-/audit-eksport som JSON+CSV, og momsrapporter som struktureret afstemningsgrundlag.</dd>
+        <div {...sx.pages_vaerktoej_momsberegner_div4}>
+          <dt {...sx.pages_saadanVirkerDet_dt9}>Output</dt>
+          <dd {...sx.pages_saadanVirkerDet_dd10}>Dashboard som ren HTML (deterministisk render), myndigheds-/audit-eksport som JSON+CSV, og momsrapporter som struktureret afstemningsgrundlag.</dd>
         </div>
       </dl>
 
-      <div class="mt-12 border-t border-outline-variant/15 pt-8">
-        <div class="font-mono text-[11px] uppercase tracking-[0.2em] text-cyber-blue mb-3">Konkrete how-to-guides</div>
-        <p class="text-on-surface-variant leading-relaxed mb-4">
+      <div {...sx.pages_saadanVirkerDet_div11}>
+        <div {...sx.pages_index_div28}>Konkrete how-to-guides</div>
+        <p {...sx.pages_saadanVirkerDet_p12}>
           Vil du se det i praksis? Docs-oversigten har korte guides til de almindeligste hverdagsflows — installation, første faktura, bank-import og momsangivelse.
         </p>
-        <a href="/docs" class="inline-flex items-center justify-center gap-2 border border-cyber-blue/60 text-cyber-blue font-mono text-[12px] uppercase tracking-[0.15em] px-6 py-3 transition-all hover:bg-cyber-blue/5">
+        <a href="/docs" {...sx.pages_index_a83}>
           Se docs &amp; daglig brug →
         </a>
       </div>

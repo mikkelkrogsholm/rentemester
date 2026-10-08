@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="Rentemester kan udlede et selskabsskattegrundlag fra et låst regnskabsår, men skatteopgørelsen er et review-flow. Ikke en automatisk indberetning."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Når året er lukket, skal virksomheden kunne se et klart udgangspunkt for skat. Det kræver at årsrapporten bygger på balancerede bøger, at korrektioner ikke skjules, og at poster med faglig usikkerhed bliver markeret til gennemgang.
     </p>
 
@@ -41,23 +42,23 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Hvad systemet kan forberede</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad systemet kan forberede</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester kan bygge et deterministisk skattegrundlag fra et låst regnskabsår og den årsrapport, der er samlet fra ledgeren. Det giver et stabilt udgangspunkt for ejer eller revisor, fordi tallene kan spores tilbage til bogføringen.
     </p>
 
-    <h2>Needs-review er en feature</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Needs-review er en feature</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Ikke alle skattemæssige justeringer bør afgøres automatisk. Poster med usikker behandling skal markeres som needs-review, så de bliver vurderet eksplicit i stedet for at blive indregnet som om systemet kendte svaret.
     </p>
 
-    <h2>Eksempel</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Eksempel</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Hvis årsrapporten viser et resultat før skat, kan Rentemester forberede selskabsskattegrundlaget og samtidig markere poster, hvor fradrag, skattemæssig periodisering eller klassifikation kræver gennemgang. Outputtet er et review-grundlag, ikke en færdig selvangivelse.
     </p>
 
-    <h2>Begrænsning</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Begrænsning</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester indberetter ikke skat for dig og erstatter ikke revisor eller skatterådgiver. Skatteopgørelsen må kun bruges som kontrollerbart forarbejde, hvor de usikre dele er synlige og kan behandles fagligt.
     </p>
   </article>

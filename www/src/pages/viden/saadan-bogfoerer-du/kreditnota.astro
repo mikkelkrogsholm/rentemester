@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="En kreditnota er den rigtige måde at rette eller reducere en faktura på. Den skal hænge sammen med den oprindelige faktura og bogføres, så omsætning, moms og debitor bliver korrigeret sporbar."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       En kreditnota bør ikke behandles som et løst negativt salg. Den skal knyttes til den faktura, den korrigerer. Det gør det muligt at beregne resterende saldo, se hvad kunden skylder, og forklare rettelsen senere.
     </p>
 
@@ -37,21 +38,21 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Typisk bogføring</h2>
-    <pre><code>Debet: omsætning
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Typisk bogføring</h2>
+    <pre tabindex="0" aria-label="Kodeeksempel" {...sx.pages_viden_saadanBogfoererDu_udlaeg_pre2}><code {...sx.pages_viden_saadanBogfoererDu_udlaeg_code3}>Debet: omsætning
 Debet: salgsmoms
 Kredit: debitorer</code></pre>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Ved delkreditering skal beløbet kun reducere den del af fakturaen, der faktisk krediteres. Hvis fakturaen allerede er betalt, kan kreditnotaen i stedet skabe et beløb, der skal refunderes eller modregnes.
     </p>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har testet flow for kreditnotaer, herunder kobling til oprindelig faktura, bogføring af reverserende salgslinjer og beregning af åben saldo sammen med betalinger. Siden lover ikke fuld automatisk vurdering af enhver kundetvist; den beskriver det bogføringstekniske flow, koden understøtter.
     </p>
 
-    <h2>God praksis</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>God praksis</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Skriv tydeligt hvorfor kreditnotaen udstedes. En intern note eller reference til aftalen med kunden gør senere afstemning markant lettere. Hvis kreditnotaen skyldes forkert momsbehandling, bør den kontrolleres manuelt før bogføring.
     </p>
   </article>

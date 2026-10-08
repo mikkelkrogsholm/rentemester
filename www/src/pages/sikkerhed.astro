@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/PageHero.astro";
 import { SITE } from "../consts";
@@ -18,38 +19,38 @@ import { SITE } from "../consts";
     lead="Hvis du har fundet en sikkerhedsfejl i Rentemester, så følg processen her — ikke et offentligt issue."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <h2>Sådan rapporterer du</h2>
-    <p>
-      Send en email til <a href={`mailto:${SITE.email}`}>{SITE.email}</a> med emnefelt der starter med <code>[SECURITY]</code>. Inkludér:
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan rapporterer du</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Send en email til <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={`mailto:${SITE.email}`}>{SITE.email}</a> med emnefelt der starter med <code {...sx.pages_sikkerhed_code1}>[SECURITY]</code>. Inkludér:
     </p>
-    <ul>
-      <li>En beskrivelse af problemet og potentielt impact.</li>
-      <li>Steps to reproduce hvis muligt.</li>
-      <li>Den version / commit du har fundet det på.</li>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>En beskrivelse af problemet og potentielt impact.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Steps to reproduce hvis muligt.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Den version / commit du har fundet det på.</li>
     </ul>
 
-    <h2>Hvad du kan forvente</h2>
-    <ul>
-      <li>Bekræftelse på modtagelse inden for 72 timer.</li>
-      <li>En vurdering af problemet og en plan for fix.</li>
-      <li>Kredit for fundet, hvis du ønsker det — i changelog eller release notes.</li>
-      <li>En koordineret offentliggørelse når fixet er ude.</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad du kan forvente</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Bekræftelse på modtagelse inden for 72 timer.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>En vurdering af problemet og en plan for fix.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Kredit for fundet, hvis du ønsker det — i changelog eller release notes.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>En koordineret offentliggørelse når fixet er ude.</li>
     </ul>
 
-    <h2>Scope</h2>
-    <p>
-      Politikken dækker selve Rentemester-koden i <a href={SITE.github} rel="noopener" target="_blank">{SITE.githubRaw}</a>. Den dækker ikke tredjepartsafhængigheder direkte — de skal rapporteres til de relevante projekter — men hvis en sårbarhed i en afhængighed eksponeres på en særlig måde af Rentemester, er det relevant.
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Scope</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Politikken dækker selve Rentemester-koden i <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={SITE.github} rel="noopener" target="_blank">{SITE.githubRaw}</a>. Den dækker ikke tredjepartsafhængigheder direkte — de skal rapporteres til de relevante projekter — men hvis en sårbarhed i en afhængighed eksponeres på en særlig måde af Rentemester, er det relevant.
     </p>
 
-    <h2>security.txt</h2>
-    <p>
-      Den maskinlæsbare version af denne politik ligger på <a href="/.well-known/security.txt"><code>/.well-known/security.txt</code></a>.
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>security.txt</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
+      Den maskinlæsbare version af denne politik ligger på <a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/.well-known/security.txt"><code {...sx.pages_sikkerhed_code1}>/.well-known/security.txt</code></a>.
     </p>
 
-    <h2>Ansvarlig afprøvning</h2>
-    <p>Hold testen til egen installation, egne data og de offentlige interfaces i projektet. Forsøg ikke at tilgå andres regnskabsdata, tokens, backups eller private repositories. Hvis du er i tvivl om scope, så spørg først via security-mailen.</p>
-    <p>Gode rapporter er reproducerbare og nøgterne: kort resumé, impact, trin-for-trin reproduktion, forventet adfærd, faktisk adfærd og eventuel patch-idé. Undgå screenshots med persondata eller rigtige bilag, medmindre de er anonymiserede.</p>
-    <p>Rapportér hellere én skarp sårbarhed end en lang liste af usikre observationer. Hvis problemet kræver koordineret publicering, aftales tidslinjen pr. mail, så brugere kan opdatere før detaljer bliver offentlige.</p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Ansvarlig afprøvning</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Hold testen til egen installation, egne data og de offentlige interfaces i projektet. Forsøg ikke at tilgå andres regnskabsdata, tokens, backups eller private repositories. Hvis du er i tvivl om scope, så spørg først via security-mailen.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Gode rapporter er reproducerbare og nøgterne: kort resumé, impact, trin-for-trin reproduktion, forventet adfærd, faktisk adfærd og eventuel patch-idé. Undgå screenshots med persondata eller rigtige bilag, medmindre de er anonymiserede.</p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>Rapportér hellere én skarp sårbarhed end en lang liste af usikre observationer. Hvis problemet kræver koordineret publicering, aftales tidslinjen pr. mail, så brugere kan opdatere før detaljer bliver offentlige.</p>
   </article>
 </BaseLayout>

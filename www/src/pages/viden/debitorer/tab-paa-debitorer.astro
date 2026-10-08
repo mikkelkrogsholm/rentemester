@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../../.stylex/site-stylex";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/PageHero.astro";
 import SeoEvidence from "../../../components/SeoEvidence.astro";
@@ -20,8 +21,8 @@ import { SITE } from "../../../consts";
     lead="Når en kunde ikke betaler, skal tabet håndteres som en dokumenteret regnskabshændelse. Det kræver åben saldo, vurdering, eventuel momsregulering og sporbar bogføring."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Tab på debitorer opstår, når en faktura ikke kan inddrives. Det er ikke det samme som en kreditnota. Kreditnota retter et salg; tab på debitorer håndterer et krav, der stadig var reelt, men som ikke bliver betalt.
     </p>
 
@@ -37,17 +38,17 @@ import { SITE } from "../../../consts";
       ]}
     />
 
-    <h2>Før du bogfører tabet</h2>
-    <ul>
-      <li>Kontroller den oprindelige faktura og åben saldo.</li>
-      <li>Dokumentér hvorfor kravet vurderes tabt.</li>
-      <li>Adskil tabet fra kreditnota og almindelig betaling.</li>
-      <li>Vurder momsbehandlingen fagligt ved tvivl.</li>
-      <li>Bevar sporbarhed til faktura og eventuelle rykkerkrav.</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Før du bogfører tabet</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Kontroller den oprindelige faktura og åben saldo.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Dokumentér hvorfor kravet vurderes tabt.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Adskil tabet fra kreditnota og almindelig betaling.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Vurder momsbehandlingen fagligt ved tvivl.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Bevar sporbarhed til faktura og eventuelle rykkerkrav.</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester har et testet write-off flow for tab på debitorer, hvor åben saldo reduceres, tabet bogføres og momsrelief håndteres deterministisk for standard-rated fakturaer. Siden lover ikke automatisk juridisk vurdering af om et krav faktisk er tabt; den beskriver den bogføringstekniske behandling, koden understøtter.
     </p>
   </article>

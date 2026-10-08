@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../../.stylex/site-stylex";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/PageHero.astro";
 import SeoEvidence from "../../components/SeoEvidence.astro";
@@ -22,8 +23,8 @@ const bogfoeringslovenUrl = "https://www.retsinformation.dk/eli/lta/2022/700";
     lead="Bogføringsloven handler i praksis om at registrere transaktioner løbende, gemme dokumentation, kunne afstemme og bevare regnskabsmaterialet. Her er den korte, praktiske version."
   />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Bogføringsloven er rammen for hvordan virksomheder skal registrere økonomiske hændelser og opbevare materialet. Denne side er ikke juridisk rådgivning; brug den som tjekliste og gå til lovtekst eller rådgiver ved konkrete tvivlsspørgsmål.
     </p>
 
@@ -39,22 +40,22 @@ const bogfoeringslovenUrl = "https://www.retsinformation.dk/eli/lta/2022/700";
       ]}
     />
 
-    <h2>De praktiske krav</h2>
-    <ul>
-      <li>Registrér virksomhedens transaktioner løbende og nøjagtigt.</li>
-      <li>Gem bilag der dokumenterer posteringerne.</li>
-      <li>Afstem bank, kasse og andre relevante beholdninger.</li>
-      <li>Opbevar regnskabsmateriale digitalt og sikkert når reglerne kræver det.</li>
-      <li>Sørg for at rettelser kan forklares og spores.</li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>De praktiske krav</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Registrér virksomhedens transaktioner løbende og nøjagtigt.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Gem bilag der dokumenterer posteringerne.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Afstem bank, kasse og andre relevante beholdninger.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Opbevar regnskabsmateriale digitalt og sikkert når reglerne kræver det.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Sørg for at rettelser kan forklares og spores.</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester modellerer bogføring som append-only posteringer med dokumentation, hash-chain og audit-verifikation. Det betyder, at rettelser bør ske gennem nye posteringer og ikke ved at skjule historikken.
     </p>
 
-    <h2>Hvad kræver faglig vurdering?</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvad kræver faglig vurdering?</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Kontoplan, fradrag, moms, privat andel, selskabsforhold og digitale systemkrav afhænger af virksomheden. Rentemester kan understøtte arbejdsgangen teknisk, men erstatter ikke vurderingen af om din konkrete virksomhed opfylder alle krav.
     </p>
   </article>

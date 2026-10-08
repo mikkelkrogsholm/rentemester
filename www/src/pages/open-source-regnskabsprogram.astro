@@ -1,4 +1,5 @@
 ---
+import { attributes as sx } from "../../.stylex/site-stylex";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/PageHero.astro";
 import SeoEvidence from "../components/SeoEvidence.astro";
@@ -56,8 +57,8 @@ const jsonLd = [
 >
   <PageHero eyebrow={page.eyebrow} title={page.h1} lead={page.lead} />
 
-  <article class="max-w-3xl mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-16 prose-da">
-    <p>
+  <article {...sx.pages_viden_regnskab_skatteopgoerelse_article1}>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Et open source-regnskabsprogram skal ikke bare være gratis software. Det skal gøre bogføringen lettere at efterprøve. Rentemester bruger åben kildekode, lokale data og verifiérbar historik som modvægt til sorte bokse i både klassisk SaaS og AI-baseret automatisering.
     </p>
 
@@ -77,43 +78,43 @@ const jsonLd = [
       ]}
     />
 
-    <h2>Hvor open source gør en forskel</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Hvor open source gør en forskel</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Bogføring består af beslutninger, regler og dokumentation. Når systemet er lukket, må brugeren stole på leverandørens forklaring. Når koden er åben, kan regler, kontoplan, eksport, audit og dataflow inspiceres direkte.
     </p>
-    <ul>
-      <li>Regler kan læses, testes og ændres i versionskontrol.</li>
-      <li>Posteringer kan valideres mod en append-only ledger.</li>
-      <li>Data ligger i en lokal virksomhedsmappe frem for kun i en leverandørkonto.</li>
-      <li>Eksport og handoff kan prioriteres som kernefunktioner, ikke nødudgange.</li>
-      <li>AI-assistance kan begrænses til strukturerede handlinger i stedet for fritekstbeslutninger.</li>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Regler kan læses, testes og ændres i versionskontrol.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Posteringer kan valideres mod en append-only ledger.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Data ligger i en lokal virksomhedsmappe frem for kun i en leverandørkonto.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>Eksport og handoff kan prioriteres som kernefunktioner, ikke nødudgange.</li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}>AI-assistance kan begrænses til strukturerede handlinger i stedet for fritekstbeslutninger.</li>
     </ul>
 
-    <h2>Sådan håndterer Rentemester det</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Sådan håndterer Rentemester det</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Rentemester er skrevet i TypeScript/Bun og bruger lokal SQLite, append-only bogføring, hash-chain/audit-verifikation, bilag, bankimport, faktura, momsrapport, eksport, backup/restore og MCP-server til AI-klienter. Det er kernen i produktpåstanden på siden.
     </p>
-    <p>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Projektet er MIT-licenseret og offentligt på GitHub. Det gør det muligt at læse, køre, teste og bidrage til koden uden at vente på en kommerciel leverandør.
     </p>
 
-    <h2>Begrænsninger og ansvar</h2>
-    <p>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Begrænsninger og ansvar</h2>
+    <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>
       Open source er ikke det samme som compliance. Rentemester er ikke et registreret digitalt standardbogføringssystem, og projektet lover ikke færdig drift for alle virksomheder. Krav til digital bogføring skal vurderes efter Erhvervsstyrelsens aktuelle regler og din virksomheds konkrete forhold.
     </p>
 
-    <h2>Næste skridt</h2>
-    <ul>
-      <li><a href="/docs/installation">Installer Rentemester lokalt</a></li>
-      <li><a href="/saadan-virker-det">Se hvordan systemet virker</a></li>
-      <li><a href={SITE.github} rel="noopener" target="_blank">Læs koden på GitHub</a></li>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Næste skridt</h2>
+    <ul {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_ul1}>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/docs/installation">Installer Rentemester lokalt</a></li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href="/saadan-virker-det">Se hvordan systemet virker</a></li>
+      <li {...sx.pages_viden_saadanBogfoererDu_leverandoerfaktura_li2}><a {...sx.pages_viden_saadanBogfoererDu_udlaeg_a1} href={SITE.github} rel="noopener" target="_blank">Læs koden på GitHub</a></li>
     </ul>
 
-    <h2>Ofte stillede spørgsmål</h2>
+    <h2 {...sx.pages_viden_regnskab_skatteopgoerelse_h23}>Ofte stillede spørgsmål</h2>
     {faq.map((item) => (
       <>
-        <h3>{item.q}</h3>
-        <p>{item.a}</p>
+        <h3 {...sx.pages_viden_fakturering_eFakturaOffentlig_h31}>{item.q}</h3>
+        <p {...sx.pages_viden_regnskab_skatteopgoerelse_p2}>{item.a}</p>
       </>
     ))}
   </article>
