@@ -1,0 +1,41 @@
+{
+  "verified_at_utc": "2026-10-08T07:37:35.790921+00:00",
+  "graphify_version": "0.9.75",
+  "hooks": {
+    "status": "verified",
+    "postCommit": {
+      "commit": "e9866051488da48859812546b6d2643809de62d9",
+      "expectedSymbol": "hook_after_commit",
+      "nodeCount": 2,
+      "status": "verified"
+    },
+    "postCheckout": {
+      "commit": "c2e24e893c3fa84acc7c1cc089641e7c90541dd2",
+      "expectedSymbol": "hook_before_commit",
+      "nodeCount": 2,
+      "status": "verified"
+    }
+  },
+  "tool_guards": {
+    "status": "verified",
+    "search_nudge": true,
+    "first_applicable_read_denied": true,
+    "subsequent_read_soft_nudge": true
+  },
+  "semantic_refresh": {
+    "sources": [
+      "AGENTS.md",
+      "docs/graphify.md"
+    ],
+    "nodes": 18,
+    "edges": 17,
+    "native_token_usage_available": false
+  },
+  "primary_branch_preserved": "codex/rentemester-simplification-old-base",
+  "limitations": [
+    "Native Git hooks deliberately skip linked worktrees.",
+    "Claude strict read guard denies only the first applicable read per session.",
+    "Codex query-first behavior is an agent instruction, not a mechanical tool gate."
+  ],
+  "verification_scope": "synthetic repository using installed shared hooks"
+}
