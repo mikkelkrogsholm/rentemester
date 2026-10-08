@@ -9,12 +9,11 @@ import { ButtonLink, Button, PageHeader } from "../components/ui";
 // All `/overview` money fields are kroner, so `formatKroner` is used
 // throughout (never `formatCurrency`, which expects minor units).
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
+import * as stylex from "@stylexjs/stylex";
+import { dashboardStyles as styles } from "./DashboardView.stylex";
+import { CategoricalChart, chartStyles } from "../components/CategoricalChart";
 import { Link, useParams } from "react-router-dom";
-import { Chart } from "@tanstack/react-charts";
-import { defineChart, lineY } from "@tanstack/charts";
-import { scaleLinear } from "@tanstack/charts/scales/linear";
-import { scalePoint } from "@tanstack/charts/scales/point";
 import { api } from "../lib/api";
 import { formatDateDa, formatKroner, formatPercent } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
@@ -33,6 +32,7 @@ import { AccountantExportCard } from "../components/AccountantExportCard";
 
 export function DashboardView() {
   const { slug = "" } = useParams();
+  const revenueDataId = useId();
   const { year, setYear } = useCompanyYear();
   const seenKey = `rentemester:changes:local:workspace:${slug}`;
   const [seen, setSeen] = useState(
@@ -56,10 +56,6 @@ export function DashboardView() {
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const o = state.data!;
-  const chartDefinition = defineChart({
-    marks: [lineY(o.profitAndLoss.months, { x: "label", y: "income" })],
-    scales: { x: { scale: scalePoint }, y: { scale: scaleLinear, nice: true, grid: true, axis: { label: "Omsætning (kr.)" } } },
-  });
   const markSeen = () => {
     if (changes.data) {
       window.localStorage.setItem(seenKey, String(changes.data.cursor));
@@ -71,16 +67,16 @@ export function DashboardView() {
   const positive = o.profitAndLoss.resultat >= 0;
 
   return (
-    <section className="overview" data-cockpit-page="dashboard" data-evidence-issue="651">
-      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. De tidligere hentede oplysninger vises fortsat.</div>}
-      <PageHeader title="Overblik" actions={<><ButtonLink variant="secondary" to={`/companies/${slug}/opgaver`}>Opgaver</ButtonLink><div className="row-actions">
-          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
+    <section {...stylex.props(styles.overview)} data-cockpit-page="dashboard" data-evidence-issue="651">
+      {state.error && <div {...stylex.props(styles.banner)} role="alert">Status kunne ikke opdateres. De tidligere hentede oplysninger vises fortsat.</div>}
+      <PageHeader title="Overblik" actions={<><ButtonLink variant="secondary" to={`/companies/${slug}/opgaver`}>Opgaver</ButtonLink><div {...stylex.props(styles.actions)}>
+          <ButtonLink variant="secondary" to={`/companies/${slug}/manage`}>
             Administrér
           </ButtonLink>
         </div></>}>
         <div>
 
-          <p className="muted">
+          <p {...stylex.props(styles.muted)}>
             {o.company.cvr ? `CVR ${o.company.cvr} · ` : ""}
             {o.company.country} · {currency} · Overblik
           </p>
@@ -99,30 +95,30 @@ export function DashboardView() {
         <ArchivedBanner year={o.selectedYear} source={o.archivedSource} />
       )}
       {isFreshEmptyCompany(o) && <GetStartedCard slug={slug} />}
-      <p className="period-head muted">
+      <p {...stylex.props(styles.period, styles.muted)}>
         Regnskabsår {o.selectedYear} ·{" "}
         {o.lastPostedDate
           ? `Senest bogført pr. ${formatDateDa(o.lastPostedDate)}`
           : "Ingen posteringer bogført endnu"}
       </p>
 
-      <section className="card" aria-label="Status og næste handling">
-        <h3>{o.attention.status === "requires-attention" ? `${o.attention.count} forhold kræver opmærksomhed` : "Status: ingen åbne forhold"}</h3>
-        <p className="muted">{o.attention.status === "requires-attention" ? "Gennemgå de åbne forhold, før du vurderer nøgletallene." : "Regnskabsdataene er klar til gennemgang."}</p>
-        {o.attention.status === "requires-attention" ? <Link className="btn primary" to={`/companies/${slug}/opmaerksomhed`}>Se krævende handlinger</Link> : isFreshEmptyCompany(o) ? <Link className="btn primary" to={`/companies/${slug}/bilag`}>Start med bilag</Link> : <Link className="btn secondary" to={statementTo(slug, "posteringer", o.selectedYear)}>Se posteringer</Link>}
+      <section {...stylex.props(styles.card)} aria-label="Status og næste handling">
+        <h3 {...stylex.props(styles.heading)}>{o.attention.status === "requires-attention" ? `${o.attention.count} forhold kræver opmærksomhed` : "Status: ingen åbne forhold"}</h3>
+        <p {...stylex.props(styles.muted)}>{o.attention.status === "requires-attention" ? "Gennemgå de åbne forhold, før du vurderer nøgletallene." : "Regnskabsdataene er klar til gennemgang."}</p>
+        {o.attention.status === "requires-attention" ? <ButtonLink variant="primary" to={`/companies/${slug}/opmaerksomhed`}>Se krævende handlinger</ButtonLink> : isFreshEmptyCompany(o) ? <ButtonLink variant="primary" to={`/companies/${slug}/bilag`}>Start med bilag</ButtonLink> : <ButtonLink variant="secondary" to={statementTo(slug, "posteringer", o.selectedYear)}>Se posteringer</ButtonLink>}
       </section>
 
-      <section className="section" aria-labelledby="changes-heading">
-        <h3 id="changes-heading" data-evidence-heading>Siden sidst</h3>
-        {changes.loading && <p className="muted" data-evidence-status="loading">Henter ændringer…</p>}
-        {changes.error && <p role="alert" data-evidence-status={/403|forbudt|adgang/i.test(changes.error) ? "warning-or-blocked" : "error"}>{/403|forbudt|adgang/i.test(changes.error) ? "Overblik kræver opmærksomhed" : "Virksomhedsoverblik kunne ikke hentes"}</p>}
-        {changes.data && changes.data.events.length === 0 && <p className="muted" data-evidence-status="empty">Ingen nye data- eller statusændringer siden dit seneste besøg.</p>}
+      <section {...stylex.props(styles.section)} aria-labelledby="changes-heading">
+        <h3 {...stylex.props(styles.heading)} id="changes-heading" data-evidence-heading>Siden sidst</h3>
+        {changes.loading && <p {...stylex.props(styles.muted)} data-evidence-status="loading">Henter ændringer…</p>}
+        {changes.error && <p {...stylex.props(styles.paragraph)} role="alert" data-evidence-status={/403|forbudt|adgang/i.test(changes.error) ? "warning-or-blocked" : "error"}>{/403|forbudt|adgang/i.test(changes.error) ? "Overblik kræver opmærksomhed" : "Virksomhedsoverblik kunne ikke hentes"}</p>}
+        {changes.data && changes.data.events.length === 0 && <p {...stylex.props(styles.muted)} data-evidence-status="empty">Ingen nye data- eller statusændringer siden dit seneste besøg.</p>}
         {changes.data && changes.data.events.length > 0 && <ChangesSummary changes={changes.data} onSeen={markSeen} />}
-        {seenNotice && <p role="status" data-evidence-task-outcome>Ændringer markeret som set</p>}
-        {changes.data && seen === 0 && <p className="muted">Første besøg: ændringer vises fra begyndelsen af det tilgængelige revisionsspor.</p>}
+        {seenNotice && <p {...stylex.props(styles.paragraph)} role="status" data-evidence-task-outcome>Ændringer markeret som set</p>}
+        {changes.data && seen === 0 && <p {...stylex.props(styles.muted)}>Første besøg: ændringer vises fra begyndelsen af det tilgængelige revisionsspor.</p>}
       </section>
 
-      <div className="kpi-row">
+      <div {...stylex.props(styles.kpis)}>
         <KpiCard
           label="Omsætning"
           value={formatKroner(o.profitAndLoss.omsaetning, currency)}
@@ -147,18 +143,18 @@ export function DashboardView() {
 
       <KeyFigures keyFigures={o.keyFigures} />
 
-      <div className="section">
-        <h3>{o.profitAndLoss.months.length > 0 ? `Omsætningen toppede i ${o.profitAndLoss.months.reduce((best, month) => month.income > best.income ? month : best, o.profitAndLoss.months[0]!).label}` : "Omsætningens udvikling kan endnu ikke vises"} — {o.selectedYear}</h3>
-        <p className="muted">Én pointe: sammenlign månedernes omsætning. Regnskabsår {o.selectedYear}.</p>
-        <div className="card chart-card">
-          {o.profitAndLoss.months.length > 0 ? <Chart definition={chartDefinition} ariaLabel="Omsætning pr. måned" ariaDescription={`Omsætning i regnskabsår ${o.selectedYear}`} height={260} /> : <p className="muted">Ingen måneder at vise endnu.</p>}
-          <table data-evidence-data><caption className="sr-only">Omsætning pr. måned, regnskabsår {o.selectedYear}</caption><thead><tr><th>Måned</th><th>Beløb (kr.)</th></tr></thead><tbody>{o.profitAndLoss.months.map((month) => <tr key={month.month}><td>{month.label}</td><td>{formatKroner(month.income, currency)}</td></tr>)}</tbody></table>
-          <Link to={statementTo(slug, "resultatopgorelse", o.selectedYear)} data-evidence-progressive>Se underliggende resultatopgørelse</Link>
+      <div {...stylex.props(styles.section)}>
+        <h3 {...stylex.props(styles.heading)}>{o.profitAndLoss.months.length > 0 ? `Omsætningen toppede i ${o.profitAndLoss.months.reduce((best, month) => month.income > best.income ? month : best, o.profitAndLoss.months[0]!).label}` : "Omsætningens udvikling kan endnu ikke vises"} — {o.selectedYear}</h3>
+        <p {...stylex.props(styles.muted)}>Én pointe: sammenlign månedernes omsætning. Regnskabsår {o.selectedYear}.</p>
+        <div {...stylex.props(styles.card, chartStyles.chartCard)}>
+          {o.profitAndLoss.months.length > 0 ? <CategoricalChart labels={o.profitAndLoss.months.map((month) => month.label)} series={[{ id: "income", label: "Omsætning", values: o.profitAndLoss.months.map((month) => month.income), kind: "line", tone: "success" }]} currency={currency} label={`Omsætning pr. måned i ${currency}, regnskabsår ${o.selectedYear}`} dataTableId={revenueDataId} height="line" /> : <p {...stylex.props(styles.muted)}>Ingen måneder at vise endnu.</p>}
+          <table id={revenueDataId} {...stylex.props(styles.table)} data-evidence-data><caption {...stylex.props(chartStyles.srOnly)}>Omsætning pr. måned ({currency}), regnskabsår {o.selectedYear}</caption><thead><tr><th {...stylex.props(styles.cell)}>Måned</th><th {...stylex.props(styles.cell)}>Beløb ({currency})</th></tr></thead><tbody>{o.profitAndLoss.months.map((month) => <tr key={month.month}><td {...stylex.props(styles.cell)}>{month.label}</td><td {...stylex.props(styles.cell, styles.amount)}>{formatKroner(month.income, currency)}</td></tr>)}</tbody></table>
+          <Link {...stylex.props(styles.link)} to={statementTo(slug, "resultatopgorelse", o.selectedYear)} data-evidence-progressive>Se underliggende resultatopgørelse</Link>
           <PnlChart months={o.profitAndLoss.months} currency={currency} />
         </div>
       </div>
 
-      <div className="status-grid">
+      <div {...stylex.props(styles.statusGrid)}>
         {o.archived ? (
           // An archived year has no live bank / VAT / exception data — show an
           // honest "not available" card rather than faking a zero.
@@ -198,8 +194,8 @@ export function DashboardView() {
           page too — this is purely about discoverability. Hidden for an
           archived (read-only) year, since the export reads the live ledger. */}
       {!o.archived && (
-        <div className="section">
-          <h3>Eksport til revisor</h3>
+        <div {...stylex.props(styles.section)}>
+          <h3 {...stylex.props(styles.heading)}>Eksport til revisor</h3>
           <AccountantExportCard slug={slug} />
         </div>
       )}
@@ -238,15 +234,15 @@ function ChangesSummary({
     counts.set(key, current);
   }
   return <>
-    <p data-evidence-status="normal">{changes.events.length} {changes.events.length === 1 ? "ny ændring" : "nye ændringer"} siden dit seneste besøg.</p>
-    <ul aria-label="Kort ændringsoversigt" data-evidence-data>
+    <p {...stylex.props(styles.paragraph)} data-evidence-status="normal">{changes.events.length} {changes.events.length === 1 ? "ny ændring" : "nye ændringer"} siden dit seneste besøg.</p>
+    <ul {...stylex.props(styles.list)} aria-label="Kort ændringsoversigt" data-evidence-data>
       {[...counts.values()].map((item) => <li key={item.singular}>{item.count} {item.count === 1 ? item.singular : item.plural}</li>)}
     </ul>
-    <details data-evidence-progressive>
-      <summary>Evidens</summary>
-      <ul>{changes.events.map((event) => <li key={event.id}><strong>{event.eventType}</strong>: {event.message} <span className="muted">· {event.actor} · {event.createdAt}</span></li>)}</ul>
+    <details {...stylex.props(styles.evidence)} data-evidence-progressive>
+      <summary {...stylex.props(styles.summary)}>Evidens</summary>
+      <ul {...stylex.props(styles.list)}>{changes.events.map((event) => <li key={event.id}><strong>{event.eventType}</strong>: {event.message} <span {...stylex.props(styles.muted)}>· {event.actor} · {event.createdAt}</span></li>)}</ul>
     </details>
-    <Button className="btn secondary" type="button" onClick={onSeen} data-evidence-core-action>Markér som set</Button>
+    <Button variant="secondary" type="button" onClick={onSeen} data-evidence-core-action>Markér som set</Button>
   </>;
 }
 
@@ -270,20 +266,20 @@ function isFreshEmptyCompany(o: CompanyOverview): boolean {
 
 function GetStartedCard({ slug }: { slug: string }) {
   return (
-    <div className="card get-started-card">
-      <h3>Sådan kommer du i gang</h3>
-      <p className="muted">
+    <div {...stylex.props(styles.card, styles.getStarted)}>
+      <h3 {...stylex.props(styles.heading, styles.getStartedTitle)}>Sådan kommer du i gang</h3>
+      <p {...stylex.props(styles.muted)}>
         Du er klar til at bogføre din første postering. Vælg én af de tre veje
         — du kan altid bruge agenten eller kommandolinjen i stedet.
       </p>
-      <div className="get-started-actions">
-        <ButtonLink className="btn primary" to={`/companies/${slug}/bilag`}>
+      <div {...stylex.props(styles.actions)}>
+        <ButtonLink variant="primary" to={`/companies/${slug}/bilag`}>
           Indlæs dit første bilag
         </ButtonLink>
-        <ButtonLink className="btn secondary" to={`/companies/${slug}/bank`}>
+        <ButtonLink variant="secondary" to={`/companies/${slug}/bank`}>
           Importér bankudtog
         </ButtonLink>
-        <ButtonLink className="btn secondary" to={`/companies/${slug}/fakturaer`}>
+        <ButtonLink variant="secondary" to={`/companies/${slug}/fakturaer`}>
           Udsted din første faktura
         </ButtonLink>
       </div>
@@ -299,9 +295,9 @@ function GetStartedCard({ slug }: { slug: string }) {
  */
 function ArchivedUnavailableCard() {
   return (
-    <div className="card status-card">
-      <h3>Bank, moms og opgaver</h3>
-      <p className="muted status-note">
+    <div {...stylex.props(styles.card, styles.statusCard)} data-card="status">
+      <h3 {...stylex.props(styles.heading)}>Bank, moms og opgaver</h3>
+      <p {...stylex.props(styles.muted, styles.statusNote)}>
         Bankafstemning, momsopgørelse og opgavekøen bygger på den aktive
         ledger og er ikke tilgængelige for et arkiveret regnskabsår.
         Resultatopgørelse, balance, saldobalance og posteringer vises ud fra
@@ -341,22 +337,22 @@ function KpiCard({
   /** When given, the whole card is a drill-down link. */
   to?: string;
 }) {
-  const className = `kpi ${tone}${emphasised ? " emphasised" : ""}`;
+  const cardStyles = stylex.props(styles.kpi, emphasised && styles.emphasised, tone === "result-positive" && styles.positiveBorder, tone === "result-negative" && styles.negativeBorder);
   const body = (
     <>
-      <div className="kpi-label">{label}</div>
-      <div className="kpi-value">{value}</div>
-      {sub && <div className="kpi-sub">{sub}</div>}
+      <div {...stylex.props(styles.kpiLabel)} data-kpi-label>{label}</div>
+      <div {...stylex.props(styles.kpiValue, emphasised && styles.prominentValue, emphasised && tone === "result-positive" && styles.positive, emphasised && tone === "result-negative" && styles.negative)} data-kpi-value>{value}</div>
+      {sub && <div {...stylex.props(styles.kpiSub)}>{sub}</div>}
     </>
   );
   if (to) {
     return (
-      <Link className={`${className} kpi-link`} to={to}>
+      <Link {...stylex.props(styles.kpi, emphasised && styles.emphasised, tone === "result-positive" && styles.positiveBorder, tone === "result-negative" && styles.negativeBorder, styles.cardLink)} data-kpi to={to}>
         {body}
       </Link>
     );
   }
-  return <div className={className}>{body}</div>;
+  return <div {...cardStyles} data-kpi>{body}</div>;
 }
 
 // --------------------------------------------------------------------------
@@ -369,24 +365,24 @@ function KeyFigures({
   keyFigures: CompanyOverview["keyFigures"];
 }) {
   return (
-    <div className="key-figures">
-      <div className="key-figure">
+    <div {...stylex.props(styles.keyFigures)}>
+      <div {...stylex.props(styles.card, styles.keyFigure)} data-key-figure>
         {/* `keyFigures.bruttomargin` is computed as resultat ÷ omsætning —
             that is the profit margin (overskudsgrad/resultatgrad), not the
             gross margin. The label tracks what the figure actually measures
             so an owner never quotes the wrong term to a bank or accountant. */}
-        <span className="key-figure-label">Overskudsgrad</span>
-        <span className="key-figure-value">
+        <span {...stylex.props(styles.keyLabel)}>Overskudsgrad</span>
+        <span {...stylex.props(styles.keyValue)}>
           {formatPercent(keyFigures.bruttomargin)}
         </span>
-        <span className="key-figure-note">resultat ÷ omsætning</span>
+        <span {...stylex.props(styles.keyNote)}>resultat ÷ omsætning</span>
       </div>
-      <div className="key-figure">
-        <span className="key-figure-label">Egenkapitalandel</span>
-        <span className="key-figure-value">
+      <div {...stylex.props(styles.card, styles.keyFigure)} data-key-figure>
+        <span {...stylex.props(styles.keyLabel)}>Egenkapitalandel</span>
+        <span {...stylex.props(styles.keyValue)}>
           {formatPercent(keyFigures.egenkapitalandel)}
         </span>
-        <span className="key-figure-note">egenkapital ÷ balancesum</span>
+        <span {...stylex.props(styles.keyNote)}>egenkapital ÷ balancesum</span>
       </div>
     </div>
   );
@@ -408,15 +404,15 @@ function StatusCard({
 }) {
   if (to) {
     return (
-      <Link className="card status-card status-card-link" to={to}>
-        <h3>{title}</h3>
+      <Link {...stylex.props(styles.card, styles.statusCard, styles.cardLink)} data-card="status" to={to}>
+        <h3 {...stylex.props(styles.statusTitle)}>{title}</h3>
         {children}
       </Link>
     );
   }
   return (
-    <div className="card status-card">
-      <h3>{title}</h3>
+    <div {...stylex.props(styles.card, styles.statusCard)} data-card="status">
+      <h3 {...stylex.props(styles.statusTitle)}>{title}</h3>
       {children}
     </div>
   );
@@ -439,26 +435,26 @@ function BankCard({
   const reconciled = difference !== null && Math.abs(difference) < 0.005;
   return (
     <StatusCard title="Bank" to={to}>
-      <div className="status-figure">
+      <div {...stylex.props(styles.statusFigure)} data-figure>
         {actualBalance === null && ambiguous ? "—" : formatKroner(actualBalance ?? balance, currency)}
       </div>
       {actualBalance === null ? (
-        <p className="muted status-note">
+        <p {...stylex.props(styles.muted, styles.statusNote)}>
           {ambiguous
             ? "Kontoudtogets rækkefølge eller løbende saldo kan ikke bevises. Se Bank og kontrollér eksporten — Rentemester viser ingen gættet saldo."
             : "Bogført saldo på bank- og kassekonti — intet kontoudtog importeret"}
         </p>
       ) : (
-        <p className="muted status-note">
+        <p {...stylex.props(styles.muted, styles.statusNote)}>
           Kontoudtog {formatKroner(actualBalance, currency)} · Bogført{" "}
           {formatKroner(balance, currency)}
           {difference !== null && (
             <>
               {" · "}
               {reconciled ? (
-                <span className="bank-diff ok">Afstemt</span>
+                <span {...stylex.props(styles.success)}>Afstemt</span>
               ) : (
-                <span className="bank-diff alert">
+                <span {...stylex.props(styles.warning)}>
                   Difference {formatKroner(difference, currency)} — ikke afstemt
                 </span>
               )}
@@ -503,16 +499,16 @@ function VatCard({
         : "Åben";
   return (
     <StatusCard title="Moms" to={to}>
-      <div className="status-figure">
+      <div {...stylex.props(styles.statusFigure)} data-figure>
         {formatKroner(vat.payable, currency)}
       </div>
-      <p className="muted status-note">
+      <p {...stylex.props(styles.muted, styles.statusNote)}>
         Momsperiode {vat.periodLabel} ({vat.periodStart} – {vat.periodEnd}) · {periodStatus} ·{" "}
         {vat.payable >= 0 ? "at betale" : "tilgode"}
       </p>
-      <p className="muted status-note">
+      <p {...stylex.props(styles.muted, styles.statusNote)}>
         Indberettes og betales til SKAT senest {vat.deadline} ·{" "}
-        <span className={`bank-diff ${tone === "ok" ? "ok" : "alert"}`}>
+        <span {...stylex.props(tone === "ok" ? styles.success : styles.warning)}>
           {countdown}
         </span>
       </p>
@@ -535,11 +531,11 @@ function ReceivablesCard({
   return (
     <StatusCard title="Tilgodehavender" to={to}>
       <div
-        className={`status-figure${openTotal > 0 ? " status-alert" : ""}`}
+        {...stylex.props(styles.statusFigure, openTotal > 0 && styles.negative)} data-figure
       >
         {formatKroner(openTotal, currency)}
       </div>
-      <p className="muted status-note">
+      <p {...stylex.props(styles.muted, styles.statusNote)}>
         {openCount === 0
           ? "Ingen udestående fakturaer — ingen skylder dig penge."
           : `${openCount} ${
@@ -577,27 +573,23 @@ function ExceptionsCard({
   return (
     <StatusCard title="Opgaver">
       <div
-        className={`status-figure${
-          attentionCount > 0 ? " status-alert" : ""
-        }`}
+        {...stylex.props(styles.statusFigure, attentionCount > 0 && styles.negative)} data-figure
       >
         {attentionCount}
       </div>
       {attentionCount === 0 ? (
-        <p className="muted status-note">Ingen åbne opgaver.</p>
+        <p {...stylex.props(styles.muted, styles.statusNote)}>Ingen åbne opgaver.</p>
       ) : (
         <>
-          <p><Link to={`/companies/${slug}/opmaerksomhed`}>Se alle opgaver</Link></p>
+          <p {...stylex.props(styles.paragraph)}><Link {...stylex.props(styles.link)} to={`/companies/${slug}/opmaerksomhed`}>Se alle opgaver</Link></p>
           {/* The grouped summary lines — one Danish line per exception type. */}
-          <ul className="status-list">
+          <ul {...stylex.props(styles.statusList)}>
             {exceptions.groups.map((g) => {
               const to = exceptionLinkTo(slug, g.link);
               const body = (
                 <>
                   <span
-                    className={`flag ${
-                      g.severity === "high" ? "critical" : "warning"
-                    }`}
+                    {...stylex.props(styles.flag, g.severity === "high" ? styles.criticalFlag : styles.warningFlag)}
                   >
                     {g.count}
                   </span>{" "}
@@ -607,7 +599,7 @@ function ExceptionsCard({
               return (
                 <li key={g.type}>
                   {to ? (
-                    <Link className="status-link" to={to}>
+                    <Link {...stylex.props(styles.link, styles.statusLink)} to={to}>
                       {body}
                     </Link>
                   ) : (
@@ -621,22 +613,20 @@ function ExceptionsCard({
               requiredAction guidance and a "Markér som gennemgået" action.
               The action is hidden for an archived (read-only) year. */}
           {!archived && exceptions.rows.length > 0 && (
-            <ul className="status-list task-list">
+            <ul {...stylex.props(styles.statusList)}>
               {exceptions.rows.map((row) => (
-                <li key={row.id} className="task-row">
-                  <div className="task-row-text">
-                    <span className="task-row-message">
+                <li key={row.id} {...stylex.props(styles.taskRow)}>
+                  <div {...stylex.props(styles.taskText)}>
+                    <span {...stylex.props(styles.taskMessage)}>
                       <span
-                        className={`flag ${
-                          row.severity === "high" ? "critical" : "warning"
-                        }`}
+                        {...stylex.props(styles.flag, row.severity === "high" ? styles.criticalFlag : styles.warningFlag)}
                       >
                         !
                       </span>{" "}
                       {row.message}
                     </span>
                     {row.requiredAction && (
-                      <p className="task-row-action">
+                      <p {...stylex.props(styles.taskAction)}>
                         <strong>Sådan løser du den:</strong>{" "}
                         {row.requiredAction}
                       </p>
@@ -644,7 +634,6 @@ function ExceptionsCard({
                   </div>
                   <Button requiredPermission="company.review" variant="secondary"
                     type="button"
-                    className="btn secondary"
                     onClick={() => setResolving(row)}
                   >
                     Markér som gennemgået
@@ -661,11 +650,11 @@ function ExceptionsCard({
           title="Markér opgave som gennemgået"
           body={
             <>
-              <p>
+              <p {...stylex.props(styles.paragraph)}>
                 Dette markerer opgaven <em>{resolving.message}</em> som
                 gennemgået, så den ikke længere står på listen.
               </p>
-              <p className="dialog-warning">
+              <p {...stylex.props(styles.dialogWarning)}>
                 <strong>Bemærk:</strong> dette bogfører ikke noget. Selve
                 posteringen — fx en bankindbetaling, en udgift eller moms —
                 skal stadig bogføres
@@ -708,15 +697,15 @@ function RecentEntriesCard({
   return (
     <StatusCard title="Seneste posteringer">
       {entries.length === 0 ? (
-        <p className="muted status-note">Ingen posteringer i året endnu.</p>
+        <p {...stylex.props(styles.muted, styles.statusNote)}>Ingen posteringer i året endnu.</p>
       ) : (
-        <ul className="recent-entries">
+        <ul {...stylex.props(styles.recentEntries)}>
           {entries.map((e) => (
-            <li key={e.id} className="recent-entry">
-              <span className="recent-entry-text">{e.text}</span>
-              <span className="recent-entry-meta">
-                <span className="entry-date">{e.date}</span>
-                <span className="recent-entry-amount num">
+            <li key={e.id} {...stylex.props(styles.recentEntry)}>
+              <span {...stylex.props(styles.recentText)}>{e.text}</span>
+              <span {...stylex.props(styles.recentMeta)}>
+                <span {...stylex.props(styles.entryDate)}>{e.date}</span>
+                <span {...stylex.props(styles.recentAmount)}>
                   {formatKroner(e.amount, currency)}
                 </span>
               </span>
