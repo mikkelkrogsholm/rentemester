@@ -38,14 +38,14 @@ export function taskSourceHref(href: string): string | null {
 }
 export function referenceHref(reference: TaskReference, scope: TaskScope): string | null {
   const slug = reference.companySlug ?? (scope.kind === 'company' ? scope.companySlug : null);
+  if (reference.kind === 'knowledge') return slug ? `/companies/${encodeURIComponent(slug)}/viden/${encodeURIComponent(reference.ref)}` : `/viden/${encodeURIComponent(reference.ref)}`;
   if (!slug) return null;
   const base = `/companies/${encodeURIComponent(slug)}`;
   switch (reference.kind) {
     case 'document': return /^\d+$/.test(reference.ref) ? `${base}/bilag/${reference.ref}` : `${base}/bilag?q=${encodeURIComponent(reference.ref)}`;
     case 'bank_transaction': return `${base}/bank?transactionId=${encodeURIComponent(reference.ref)}`;
     case 'period': return `${base}/periodelas`;
-    case 'approval': return `${base}/kladder`;
-    case 'knowledge': return `${base}/workspace-register?ref=${encodeURIComponent(reference.ref)}`;
+    case 'approval': { const batch = /^bookkeeping-batch:(\d+)(?::\d+)?$/.exec(reference.ref); return batch ? `${base}/batchbogfoering?runId=${batch[1]}` : `${base}/kladder`; }
     case 'party': return `${base}/parter/${encodeURIComponent(reference.ref)}`;
     default: return null;
   }

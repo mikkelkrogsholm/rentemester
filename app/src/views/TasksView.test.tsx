@@ -2,10 +2,12 @@ import { afterEach, describe, expect, test, vi } from 'bun:test';
 import { cleanup, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TasksView, TaskDetailView } from './TasksView';
+import { SeriesEditor, TaskEditor } from './TaskForms';
+import type { TaskSeries } from '../lib/tasks';
 import { renderAt } from '../test/render';
 import { mockFetch } from '../test/fixtures';
 import { syntheticTask, syntheticTasksView } from '../test/fixtures/tasks';
-import { defaultColumns, parseReferences, taskReturnTo, taskSourceHref } from '../lib/tasks';
+import { defaultColumns, parseReferences, referenceHref, taskReturnTo, taskSourceHref } from '../lib/tasks';
 
 const renderTasks = (route = '/opgaver') => renderAt(<TasksView />, { route, path: route.startsWith('/companies') ? '/companies/:slug/opgaver' : '/opgaver' });
 function writes() { return (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.filter(([, init]) => init?.method === 'POST'); }
@@ -124,4 +126,86 @@ test('column removal requires relocation and meaning changes require a visible p
   await userEvent.click(within(form).getByRole('button', { name: 'Anvend viste ændringer' }));
   const body = JSON.parse(String((writes().find(([url]) => String(url) === '/api/task-boards')![1] as RequestInit).body));
   expect(body).toMatchObject({ expectedVersion: 0, board: { previewHash: 'board-preview', relocations: { open: 'waiting' } } });
+});
+
+test('a company reviewer can create a linked shared task but cannot create an empty workspace task', async () => {
+  const data = syntheticTasksView({ canManageWorkspace: false });
+  data.companies.forEach(company => { company.canManage = false; });
+  mockFetch({ 'GET /api/tasks': data, 'POST /api/tasks': { task: syntheticTask() } });
+  renderAt(<TaskEditor view={data} onSaved={() => {}} onClose={() => {}} />);
+  const form = screen.getByRole('dialog', { name: 'Opret opgave' });
+  await userEvent.type(within(form).getByLabelText('Titel'), 'Fælles kontrol');
+  await userEvent.selectOptions(within(form).getByLabelText('Opgavens selskab eller fælles scope'), '@workspace');
+  expect(within(form).getByRole('button', { name: 'Gem opgave' })).toBeDisabled();
+  expect(within(form).getByText(/Vælg mindst ét selskab/)).toBeInTheDocument();
+  await userEvent.click(within(form).getByLabelText('Acme ApS'));
+  await userEvent.click(within(form).getByLabelText('Beta ApS'));
+  await userEvent.click(within(form).getByRole('button', { name: 'Gem opgave' }));
+  expect(JSON.parse(String((writes()[0]![1] as RequestInit).body))).toMatchObject({ scope: { kind: 'workspace', companySlugs: ['acme-aps', 'beta-aps'] } });
+});
+
+test('series editing sends a public draft and preserves existing evidence requirements', async () => {
+  const template = syntheticTask({ evidenceRequired: true, references: [{ kind: 'document', ref: '12', companySlug: 'acme-aps' }] });
+  const series: TaskSeries = { seriesId: 'series-safe', version: 2, title: 'Afstem hver måned', scope: template.scope, template, cadence: 'month', every: 1, anchor: 'calendar', startDate: '2026-01-01', endDate: null, fiscalYearStartMonth: 1, workDayOffset: 4, deadlineDayOffset: null, relevance: 'relevant', active: true, updatedAt: '2026-10-08T08:00:00Z' };
+  mockFetch({ 'POST /api/task-series': { series } });
+  renderAt(<SeriesEditor view={syntheticTasksView()} series={series} onSaved={() => {}} onClose={() => {}} />);
+  const form = screen.getByRole('dialog', { name: 'Redigér fremtidige gentagelser' });
+  expect(within(form).getByLabelText('Kræv afslutningsbevis')).toBeDisabled();
+  await userEvent.clear(within(form).getByLabelText('Næste handling'));
+  await userEvent.type(within(form).getByLabelText('Næste handling'), 'Ny handling for fremtiden');
+  await userEvent.click(within(form).getByRole('button', { name: 'Gem rutine' }));
+  const body = JSON.parse(String((writes()[0]![1] as RequestInit).body));
+  expect(body).toMatchObject({ expectedVersion: 2, series: { template: { nextAction: 'Ny handling for fremtiden', evidenceRequired: true, references: template.references } } });
+  expect(Object.keys(body.series.template).sort()).toEqual(['title', 'scope', 'type', 'description', 'assignee', 'waitingOn', 'workDate', 'period', 'references', 'relevance', 'verificationRequired', 'nextAction', 'evidenceRequired', 'deadline'].sort());
+});
+
+test('materializing a filtered year wheel sends only the selected companies', async () => {
+  mockFetch({ 'GET /api/tasks': syntheticTasksView(), 'POST /api/task-series/materialize': { tasks: [] } });
+  renderTasks('/opgaver?view=wheel&companySlug=beta-aps');
+  await userEvent.click(await screen.findByRole('button', { name: 'Opret aktuelle forekomster' }));
+  expect(JSON.parse(String((writes()[0]![1] as RequestInit).body))).toMatchObject({ companySlugs: ['beta-aps'] });
+});
+
+test('an unfiltered year wheel leaves company scope unspecified', async () => {
+  mockFetch({ 'GET /api/tasks': syntheticTasksView(), 'POST /api/task-series/materialize': { tasks: [] } });
+  renderTasks('/opgaver?view=wheel');
+  await userEvent.click(await screen.findByRole('button', { name: 'Opret aktuelle forekomster' }));
+  expect(JSON.parse(String((writes()[0]![1] as RequestInit).body))).not.toHaveProperty('companySlugs');
+});
+
+test('an unclear external result requires evidence, relevance and a documented verification before clearing the flag', async () => {
+  const task = syntheticTask({ verificationRequired: true, evidenceRequired: true, relevance: 'unknown' });
+  mockFetch({ 'GET /api/tasks': syntheticTasksView(), 'POST /api/tasks/task-month/update': { task } });
+  renderAt(<TaskEditor view={syntheticTasksView()} task={task} onSaved={() => {}} onClose={() => {}} />);
+  const form = screen.getByRole('dialog', { name: 'Redigér opgave' });
+  expect(within(form).getByLabelText('Kræv afslutningsbevis')).toBeChecked();
+  expect(within(form).getByLabelText('Kræv afslutningsbevis')).toBeDisabled();
+  await userEvent.click(within(form).getByLabelText('Resultat skal verificeres før nyt forsøg'));
+  await userEvent.type(within(form).getByLabelText('Hvad har du verificeret?'), 'Kvitteringen bekræfter indberetningen.');
+  await userEvent.click(within(form).getByRole('button', { name: 'Gem opgave' }));
+  expect(await within(form).findByRole('alert')).toHaveTextContent(/vælg Relevant, tilføj et bevis/);
+  expect(writes()).toHaveLength(0);
+  await userEvent.selectOptions(within(form).getByLabelText('Relevans', { exact: true }), 'relevant');
+  await userEvent.type(within(form).getByLabelText('Sikre referencer'), 'external_receipt:SYNTHETIC-12');
+  await userEvent.click(within(form).getByRole('button', { name: 'Gem opgave' }));
+  expect(JSON.parse(String((writes()[0]![1] as RequestInit).body))).toMatchObject({ patch: { verificationRequired: false, evidenceRequired: true, relevance: 'relevant', references: [{ kind: 'external_receipt', ref: 'SYNTHETIC-12', companySlug: 'acme-aps' }], description: expect.stringContaining('Verifikation: Kvitteringen bekræfter indberetningen.') } });
+});
+
+test('reference navigation distinguishes protected document, party, knowledge and batch approval pages', () => {
+  const scope = { kind: 'company' as const, companySlug: 'acme-aps' };
+  expect(referenceHref({ kind: 'document', ref: '12' }, scope)).toBe('/companies/acme-aps/bilag/12');
+  expect(referenceHref({ kind: 'party', ref: 'party-synthetic' }, scope)).toBe('/companies/acme-aps/parter/party-synthetic');
+  expect(referenceHref({ kind: 'knowledge', ref: 'synthetic-playbook' }, scope)).toBe('/companies/acme-aps/viden/synthetic-playbook');
+  expect(referenceHref({ kind: 'knowledge', ref: 'synthetic-playbook' }, { kind: 'workspace', companySlugs: [] })).toBe('/viden/synthetic-playbook');
+  expect(referenceHref({ kind: 'approval', ref: 'bookkeeping-batch:7:9' }, scope)).toBe('/companies/acme-aps/batchbogfoering?runId=7');
+  expect(referenceHref({ kind: 'approval', ref: 'synthetic-draft' }, scope)).toBe('/companies/acme-aps/kladder');
+});
+
+test('a failed first source sync preserves uncertainty even when the task list is empty', async () => {
+  mockFetch({ 'GET /api/tasks': syntheticTasksView({ tasks: [], count: 0 }), 'POST /api/tasks/sync': { scope: { companySlugs: ['acme-aps'], includesWorkspace: false }, sync: { created: 0, updated: 0, resolved: 0, reopened: 0, unknown: 0, errors: [{ companySlug: 'acme-aps', reason: 'Syntetisk kilde kunne ikke åbnes' }] } } });
+  renderTasks();
+  await userEvent.click(await screen.findByRole('button', { name: 'Opdatér fra kilder' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent('Kildegrundlaget er ufuldstændigt');
+  expect(screen.getByRole('alert')).toHaveTextContent('Acme ApS: Syntetisk kilde kunne ikke åbnes');
+  expect(screen.getByRole('alert')).toHaveTextContent('En tom liste betyder ikke, at arbejdet er afsluttet.');
 });

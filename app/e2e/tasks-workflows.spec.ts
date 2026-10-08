@@ -4,7 +4,7 @@ import { mockApi, type MockResponse } from './fixtures';
 import { syntheticTask, syntheticTasksView } from '../src/test/fixtures/tasks';
 import type { Task, TaskBoardDraft, TaskSeriesDraft, TasksView } from '../src/lib/tasks';
 
-async function taskFixture(page: Page, options: { interruptedCreate?: boolean; readOnly?: boolean } = {}) {
+async function taskFixture(page: Page, options: { interruptedCreate?: boolean; readOnly?: boolean; failedSync?: boolean } = {}) {
   const state = syntheticTasksView();
   if (options.readOnly) { state.canManageWorkspace = false; state.companies = state.companies.map(company => ({ ...company, canWrite: false, canManage: false })); }
   const history = new Map<string, Array<{ taskId: string; task: Task; version: number; operation: string; actor: string; principal: string; at: string }>>();
@@ -47,6 +47,7 @@ async function taskFixture(page: Page, options: { interruptedCreate?: boolean; r
   await page.route('**/api/tasks/**', async route => {
     const path = new URL(route.request().url()).pathname;
     if (path.startsWith('/api/tasks/operations/')) { const key = decodeURIComponent(path.split('/').at(-1)!); await route.fulfill({ json: { ok: true, receipt: receipts.get(key) ?? null } }); return; }
+    if (path === '/api/tasks/sync' && options.failedSync) { await route.fulfill({ json: { ok: true, scope: { companySlugs: ['acme-aps'], includesWorkspace: false }, sync: { created: 0, updated: 0, resolved: 0, reopened: 0, unknown: 0, errors: [{ companySlug: 'acme-aps', reason: 'Syntetisk kilde kunne ikke åbnes' }] } } }); return; }
     const parts = path.split('/'); const task = state.tasks.find(task => task.taskId === parts[3]);
     if (!task) { await route.fulfill({ status: 404, json: { ok: false, code: 'not_found', errors: ['Syntetisk opgave findes ikke'] } }); return; }
     let response: MockResponse;
@@ -186,5 +187,37 @@ test('unknown creation verifies the same opaque key with a read after reload', a
   await expect(page.getByRole('link', { name: 'Syntetisk ukendt resultat' })).toHaveCount(1);
   expect(state.tasks.filter(task => task.title === 'Syntetisk ukendt resultat')).toHaveLength(1);
   expect(fixture.calls.filter(call => call.method === 'POST' && call.path === '/api/tasks')).toHaveLength(1);
+  fixture.assertComplete();
+});
+
+test('protected playbook references preserve the task and its filtered return path', async ({ page }) => {
+  const { state, fixture } = await taskFixture(page);
+  state.tasks[0]!.references = [{ kind: 'knowledge', ref: 'page-synthetic', companySlug: 'acme-aps' }, { kind: 'document', ref: '12', companySlug: 'acme-aps' }, { kind: 'party', ref: 'party-synthetic', companySlug: 'acme-aps' }, { kind: 'approval', ref: 'bookkeeping-batch:7:9', companySlug: 'acme-aps' }];
+  await page.route('**/api/companies/acme-aps/knowledge-pages/page-synthetic', route => route.fulfill({ json: { ok: true, page: { pageId: 'page-synthetic', version: 1, scope: { kind: 'company', companySlug: 'acme-aps' }, title: 'Syntetisk månedsplaybook', bodyMarkdown: 'Kontrollér periodens dokumentation.\n<script>unsafe()</script>', provenance: { kind: 'user', ref: 'synthetic-author' }, effectiveFrom: '2026-01-01T00:00:00Z', effectiveToExclusive: null } } }));
+  await page.goto('/opgaver?view=kanban&companySlug=acme-aps');
+  await page.getByRole('link', { name: 'Afstem oktober', exact: true }).click();
+  await expect(page.getByRole('link', { name: 'document: 12' })).toHaveAttribute('href', /\/companies\/acme-aps\/bilag\/12\?returnTo=/);
+  await expect(page.getByRole('link', { name: 'party: party-synthetic' })).toHaveAttribute('href', /\/companies\/acme-aps\/parter\/party-synthetic\?returnTo=/);
+  await expect(page.getByRole('link', { name: 'approval: bookkeeping-batch:7:9' })).toHaveAttribute('href', /\/companies\/acme-aps\/batchbogfoering\?runId=7&returnTo=/);
+  await page.getByRole('link', { name: 'knowledge: page-synthetic' }).click();
+  await expect(page.getByRole('heading', { name: 'Syntetisk månedsplaybook' })).toBeVisible();
+  await expect(page.getByRole('article', { name: 'Viden og playbook' })).toContainText('<script>unsafe()</script>');
+  expect(await page.locator('article script').count()).toBe(0);
+  await page.getByRole('link', { name: 'Tilbage til opgaven', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Afstem oktober', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Tilbage til opgaver', exact: true }).click();
+  await expect(page).toHaveURL(/\/opgaver\?view=kanban&companySlug=acme-aps/);
+  fixture.assertComplete();
+});
+
+
+test('failed source sync preserves uncertainty on an empty first load', async ({ page }) => {
+  const { state, fixture } = await taskFixture(page, { failedSync: true });
+  state.tasks = [];
+  await page.goto('/opgaver');
+  await page.getByRole('button', { name: 'Opdatér fra kilder' }).click();
+  await expect(page.getByRole('alert')).toContainText('Kildegrundlaget er ufuldstændigt');
+  await expect(page.getByRole('alert')).toContainText('Acme ApS: Syntetisk kilde kunne ikke åbnes');
+  await expect(page.getByRole('alert')).toContainText('En tom liste betyder ikke, at arbejdet er afsluttet.');
   fixture.assertComplete();
 });

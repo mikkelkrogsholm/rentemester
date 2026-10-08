@@ -13,13 +13,14 @@ export function taskAssignees(view: TasksView) { return (view as TasksView & { a
 
 function ScopeFields({ view, value, onChange, manage = false }: { view: TasksView; value: TaskScope | null; onChange: (scope: TaskScope) => void; manage?: boolean }) {
   const selection = value?.kind === 'company' ? value.companySlug : value ? '@workspace' : '';
+  const eligibleCompanies = view.companies.filter(company => manage ? company.canManage : company.canWrite);
   return <>
     <Field label="Opgavens selskab eller fælles scope"><Select required value={selection} onChange={event => onChange(event.target.value === '@workspace' ? { kind: 'workspace', companySlugs: [] } : { kind: 'company', companySlug: event.target.value })}>
       <option value="" disabled>Vælg selskab eller fælles opgave</option>
-      {view.companies.filter(company => manage ? company.canManage : company.canWrite).map(company => <option value={company.slug} key={company.slug}>{company.name}{company.archived ? ' · arkiveret' : ''}</option>)}
-      {view.canManageWorkspace && <option value="@workspace">Fælles workspaceopgave</option>}
+      {eligibleCompanies.map(company => <option value={company.slug} key={company.slug}>{company.name}{company.archived ? ' · arkiveret' : ''}</option>)}
+      {(view.canManageWorkspace || eligibleCompanies.length > 0) && <option value="@workspace">Fælles workspaceopgave</option>}
     </Select></Field>
-    {value?.kind === 'workspace' && <fieldset><legend>Berørte selskaber (valgfrit)</legend>{view.companies.filter(company => manage ? company.canManage : company.canWrite).map(company => <label key={company.slug}><Input type="checkbox" checked={value.companySlugs.includes(company.slug)} onChange={event => onChange({ kind: 'workspace', companySlugs: event.target.checked ? [...value.companySlugs, company.slug] : value.companySlugs.filter(slug => slug !== company.slug) })} /> {company.name} </label>)}</fieldset>}
+    {value?.kind === 'workspace' && <fieldset><legend>{view.canManageWorkspace ? 'Berørte selskaber (valgfrit)' : 'Berørte selskaber (vælg mindst ét)'}</legend>{eligibleCompanies.map(company => <label key={company.slug}><Input type="checkbox" checked={value.companySlugs.includes(company.slug)} onChange={event => onChange({ kind: 'workspace', companySlugs: event.target.checked ? [...value.companySlugs, company.slug] : value.companySlugs.filter(slug => slug !== company.slug) })} /> {company.name} </label>)}{!view.canManageWorkspace && <p>Fælles opgaver kræver adgang til alle valgte selskaber. Vælg mindst ét selskab.</p>}</fieldset>}
   </>;
 }
 
@@ -47,10 +48,12 @@ export function TaskEditor({ view, task, initialScope, onSaved, onClose }: { vie
   const [evidenceRequired, setEvidenceRequired] = useState(task?.evidenceRequired ?? false);
   const [relevance, setRelevance] = useState<Task['relevance']>(task?.relevance ?? 'relevant');
   const [verificationRequired, setVerificationRequired] = useState(task?.verificationRequired ?? false);
+  const [verificationReason, setVerificationReason] = useState('');
+  const clarifyingExternalResult = !!task?.verificationRequired && !task.source && !verificationRequired;
   const [version, setVersion] = useState(task?.version);
   const [validation, setValidation] = useState<string | null>(null);
   const write = useTaskMutation(onSaved, task ? `edit:${task.taskId}` : 'create', onClose);
-  const formSnapshot = JSON.stringify({ scope, title, description, nextAction, type, assigneeKind, assigneeId, externalName, waitingOn, workDate, deadlineDate, deadlineKind, basis, certainty, periodFrom, periodTo, periodLabel, references, evidenceRequired, relevance, verificationRequired });
+  const formSnapshot = JSON.stringify({ scope, title, description, nextAction, type, assigneeKind, assigneeId, externalName, waitingOn, workDate, deadlineDate, deadlineKind, basis, certainty, periodFrom, periodTo, periodLabel, references, evidenceRequired, relevance, verificationRequired, verificationReason });
   const [initialSnapshot] = useState(formSnapshot);
   const markSaved = useUnsavedChanges(formSnapshot !== initialSnapshot);
   async function save() {
@@ -59,10 +62,13 @@ export function TaskEditor({ view, task, initialScope, onSaved, onClose }: { vie
     try {
       if (!canWriteScope(scope, view)) throw new Error('Du kan ikke ændre opgaver i det valgte scope.');
       const assignee = assigneeKind === 'member' ? { kind: 'member' as const, userId: assigneeId, name: members.find(member => member.userId === assigneeId)?.name ?? task?.assignee?.name ?? assigneeId } : assigneeKind === 'external' ? { kind: 'external' as const, name: externalName.trim() } : null;
-      const patch: TaskPatch = { title: title.trim(), scope, description, nextAction, assignee, waitingOn, workDate: workDate || null,
+      const parsedReferences = parseReferences(references, scope.kind === 'company' ? scope.companySlug : undefined);
+      if (clarifyingExternalResult && (relevance !== 'relevant' || parsedReferences.length === 0 || !verificationReason.trim())) throw new Error('Verificér det eksterne resultat: vælg Relevant, tilføj et bevis og forklar, hvad du har kontrolleret.');
+      const documentedDescription = clarifyingExternalResult ? `${description.trim()}\n\nVerifikation: ${verificationReason.trim()}`.trim() : description;
+      const patch: TaskPatch = { title: title.trim(), scope, description: documentedDescription, nextAction, assignee, waitingOn, workDate: workDate || null,
         deadline: deadlineDate ? { date: deadlineDate, kind: deadlineKind, basis, certainty } : null,
         period: periodFrom && periodTo ? { from: periodFrom, to: periodTo, label: periodLabel || `${periodFrom}–${periodTo}` } : null,
-        references: parseReferences(references, scope.kind === 'company' ? scope.companySlug : undefined), evidenceRequired, relevance, verificationRequired };
+        references: parsedReferences, evidenceRequired: !!task?.evidenceRequired || evidenceRequired, relevance, verificationRequired };
       const result = await write.run<{ task: Task }>(task ? `/api/tasks/${encodeURIComponent(task.taskId)}/update` : '/api/tasks', task ? { patch, expectedVersion: version } : { ...patch, type });
       if (result) { markSaved(); onClose(); }
     } catch (cause) { setValidation(cause instanceof Error ? cause.message : 'Kontrollér formularen.'); }
@@ -71,7 +77,7 @@ export function TaskEditor({ view, task, initialScope, onSaved, onClose }: { vie
     {write.feedback}{validation && <p role="alert">{validation}</p>}
     {task && task.version !== version && <div className="banner warning"><p>Opgaven har nu version {task.version}. Dine ændringer er bevaret. Kontrollér den aktuelle opgave før ny gemning.</p><Button variant="secondary" onClick={() => setVersion(task.version)}>Brug den aktuelle version som grundlag</Button></div>}
     {task?.seriesId && <p>Du ændrer kun denne forekomst. Rutinen og andre perioders opgaver bevares.</p>}
-    <Field label="Titel"><Input required value={title} maxLength={300} onChange={event => setTitle(event.target.value)} /></Field>
+    <Field label="Titel"><Input required value={title} maxLength={240} onChange={event => setTitle(event.target.value)} /></Field>
     <ScopeFields view={view} value={scope} onChange={setScope} />
     <details open={!!task}><summary>Planlægning og dokumentation</summary><div {...stylex.props(styles.form)}>
       {!task && <Field label="Opgavetype"><Select value={type} onChange={event => setType(event.target.value as Task['type'])}><option value="ad_hoc">Ad hoc</option><option value="routine">Rutine</option><option value="obligation">Forpligtelse</option></Select></Field>}
@@ -86,11 +92,13 @@ export function TaskEditor({ view, task, initialScope, onSaved, onClose }: { vie
       {deadlineDate && <><Field label="Fristens art"><Select value={deadlineKind} onChange={event => setDeadlineKind(event.target.value as TaskDeadline['kind'])}><option value="internal">Intern</option><option value="agreement">Aftalt</option><option value="statutory">Myndighedsfrist</option></Select></Field><Field label="Grundlag for fristen"><Textarea required value={basis} onChange={event => setBasis(event.target.value)} /></Field><Field label="Fristens sikkerhed"><Select value={certainty} onChange={event => setCertainty(event.target.value as TaskDeadline['certainty'])}><option value="unconfirmed">Skal bekræftes</option><option value="confirmed">Bekræftet grundlag</option></Select></Field></>}
       <div {...stylex.props(styles.columns)}><Field label="Periode fra"><Input type="date" value={periodFrom} required={!!periodTo} onChange={event => setPeriodFrom(event.target.value)} /></Field><Field label="Periode til"><Input type="date" min={periodFrom} value={periodTo} required={!!periodFrom} onChange={event => setPeriodTo(event.target.value)} /></Field><Field label="Periodenavn"><Input value={periodLabel} onChange={event => setPeriodLabel(event.target.value)} /></Field></div>
       <ReferenceField value={references} onChange={setReferences} />
-      <label><Input type="checkbox" checked={evidenceRequired} onChange={event => setEvidenceRequired(event.target.checked)} /> Kræv afslutningsbevis</label>
+      <label><Input type="checkbox" checked={!!task?.evidenceRequired || evidenceRequired} disabled={!!task?.evidenceRequired} onChange={event => setEvidenceRequired(event.target.checked)} /> Kræv afslutningsbevis</label>{task?.evidenceRequired && <p>Kravet om afslutningsbevis er allerede fastlagt og bevares.</p>}
       <Field label="Relevans"><Select value={relevance} onChange={event => setRelevance(event.target.value as Task['relevance'])}><option value="relevant">Relevant</option><option value="unknown">Relevans skal afklares</option><option value="not_relevant">Ikke relevant</option></Select></Field>
-      <label><Input type="checkbox" checked={verificationRequired} onChange={event => setVerificationRequired(event.target.checked)} /> Resultat skal verificeres før nyt forsøg</label>
+      <label><Input type="checkbox" checked={verificationRequired} disabled={task?.source?.state === 'unknown'} onChange={event => setVerificationRequired(event.target.checked)} /> Resultat skal verificeres før nyt forsøg</label>
+      {task?.source?.state === 'unknown' ? <p>Den aktuelle kilde skal kontrolleres. Opdatér fra kilder efter afklaringen.</p> : task?.verificationRequired && <p>Et uklart eksternt resultat kan kun afklares med relevansen Relevant, en sikker bevisreference og en forklaring i beskrivelsen.</p>}
+      {clarifyingExternalResult && <Field label="Hvad har du verificeret?" help="Forklar det kontrollerede resultat. Forklaringen gemmes i opgavens beskrivelse sammen med bevisreferencerne."><Textarea required value={verificationReason} onChange={event => setVerificationReason(event.target.value)} /></Field>}
     </div></details>
-    <div {...stylex.props(styles.actions)}><Button type="submit" busy={write.busy} disabled={write.blocked || !scope || !title.trim() || (task && task.version !== version)}>Gem opgave</Button><Button variant="secondary" disabled={write.busy} onClick={onClose}>Annullér</Button></div>
+    <div {...stylex.props(styles.actions)}><Button type="submit" busy={write.busy} disabled={write.blocked || !scope || !canWriteScope(scope, view) || !title.trim() || (task && task.version !== version)}>Gem opgave</Button><Button variant="secondary" disabled={write.busy} onClick={onClose}>Annullér</Button></div>
   </form></Dialog>;
 }
 
@@ -149,15 +157,16 @@ export function SeriesEditor({ view, series, initialScope, onSaved, onClose }: {
   const [initialSnapshot] = useState(formSnapshot);
   const markSaved = useUnsavedChanges(formSnapshot !== initialSnapshot);
   async function save() {
-    if (!scope) return;
-    const template: TaskDraft = { ...series?.template, title, scope, type: 'routine', nextAction: action, evidenceRequired, deadline: deadlineOffset ? { date: start, kind: deadlineKind, basis: deadlineBasis, certainty } : null };
-    const draft: TaskSeriesDraft = { seriesId: series?.seriesId ?? crypto.randomUUID(), title, scope, template, cadence, every: Number(every), anchor, startDate: start, endDate: end || null, fiscalYearStartMonth: Number(fiscalMonth), workDayOffset: Number(workOffset), deadlineDayOffset: deadlineOffset ? Number(deadlineOffset) : null, relevance, active };
+    if (!scope || !canWriteScope(scope, view, true)) return;
+    const prior = series?.template;
+    const template: TaskDraft = { title: title.trim(), scope, type: 'routine', description: prior?.description, assignee: prior?.assignee, waitingOn: prior?.waitingOn, workDate: prior?.workDate, period: prior?.period, references: prior?.references, relevance: prior?.relevance, verificationRequired: prior?.verificationRequired, nextAction: action, evidenceRequired: !!series?.template.evidenceRequired || evidenceRequired, deadline: deadlineOffset ? { date: start, kind: deadlineKind, basis: deadlineBasis, certainty } : null };
+    const draft: TaskSeriesDraft = { seriesId: series?.seriesId ?? crypto.randomUUID(), title: title.trim(), scope, template, cadence, every: Number(every), anchor, startDate: start, endDate: end || null, fiscalYearStartMonth: Number(fiscalMonth), workDayOffset: Number(workOffset), deadlineDayOffset: deadlineOffset ? Number(deadlineOffset) : null, relevance, active };
     const result = await write.run('/api/task-series', { series: draft, expectedVersion: version });
     if (result) { markSaved(); onClose(); }
   }
   return <Dialog title={series ? 'Redigér fremtidige gentagelser' : 'Opret rutine'} onClose={onClose} busy={write.busy}><form {...stylex.props(styles.form)} onSubmit={event => { event.preventDefault(); void save(); }}>
     {write.feedback}<VersionNotice current={series?.version ?? 0} expected={version} onAccept={() => setVersion(series?.version ?? 0)} /><p>Allerede oprettede og afsluttede forekomster bevares. Ændringer gælder fremtidige forekomster.</p>
-    <Field label="Rutinens titel"><Input required value={title} onChange={event => setTitle(event.target.value)} /></Field>
+    <Field label="Rutinens titel"><Input required maxLength={240} value={title} onChange={event => setTitle(event.target.value)} /></Field>
     <ScopeFields view={view} value={scope} onChange={setScope} manage />
     <Field label="Næste handling"><Textarea value={action} onChange={event => setAction(event.target.value)} /></Field>
     <div {...stylex.props(styles.columns)}><Field label="Gentagelse"><Select value={cadence} onChange={event => setCadence(event.target.value as TaskSeries['cadence'])}><option value="month">Måned</option><option value="quarter">Kvartal</option><option value="year">År</option><option value="custom">Tilpasset (måneder)</option></Select></Field><Field label="Hvert antal perioder"><Input required type="number" min={1} max={120} value={every} onChange={event => setEvery(event.target.value)} /></Field></div>
@@ -168,9 +177,9 @@ export function SeriesEditor({ view, series, initialScope, onSaved, onClose }: {
     <Field label="Frist: dage efter periodens start (valgfrit)"><Input type="number" value={deadlineOffset} onChange={event => setDeadlineOffset(event.target.value)} /></Field>
     {deadlineOffset && <><Field label="Fristens art"><Select value={deadlineKind} onChange={event => setDeadlineKind(event.target.value as TaskDeadline['kind'])}><option value="internal">Intern</option><option value="agreement">Aftalt</option><option value="statutory">Myndighedsfrist</option></Select></Field><Field label="Fristgrundlag" help="En fast forskydning er en planlægningsregel. Myndighedsfrister kræver dokumenteret grundlag for den konkrete periode."><Textarea required value={deadlineBasis} onChange={event => setDeadlineBasis(event.target.value)} /></Field><Field label="Fristbekræftelse"><Select value={certainty} onChange={event => setCertainty(event.target.value as TaskDeadline['certainty'])}><option value="unconfirmed">Skal bekræftes</option><option value="confirmed">Bekræftet grundlag</option></Select></Field></>}
     <Field label="Relevans for perioden"><Select value={relevance} onChange={event => setRelevance(event.target.value as TaskSeries['relevance'])}><option value="relevant">Altid relevant</option><option value="unknown">Skal afklares</option><option value="activity">Kun ved relevant aktivitet</option></Select></Field>
-    <label><Input type="checkbox" checked={evidenceRequired} onChange={event => setEvidenceRequired(event.target.checked)} /> Kræv afslutningsbevis</label>
+    <label><Input type="checkbox" checked={!!series?.template.evidenceRequired || evidenceRequired} disabled={!!series?.template.evidenceRequired} onChange={event => setEvidenceRequired(event.target.checked)} /> Kræv afslutningsbevis</label>{series?.template.evidenceRequired && <p>Kravet om afslutningsbevis bevares for rutinen.</p>}
     <label><Input type="checkbox" checked={active} onChange={event => setActive(event.target.checked)} /> Aktiv gentagelse</label>
-    <Button type="submit" busy={write.busy} disabled={write.blocked || (series?.version ?? 0) !== version || !scope || !title.trim()}>Gem rutine</Button>
+    <Button type="submit" busy={write.busy} disabled={write.blocked || (series?.version ?? 0) !== version || !scope || !canWriteScope(scope, view, true) || !title.trim()}>Gem rutine</Button>
   </form></Dialog>;
 }
 

@@ -4,6 +4,7 @@
  * task areas shown in CompanyTaskNavigation.
  */
 import type { ReactElement } from "react";
+import { KnowledgePageView } from "./views/KnowledgePageView";
 import { TasksView } from "./views/TasksView";
 import { AccountingDraftsView } from "./views/AccountingDraftsView";
 import { AttentionView } from "./views/AttentionView";
@@ -140,6 +141,7 @@ export const COMPANY_FLOW_ROUTE_REGISTRY = [
   { id: "invoice-detail", segment: "fakturaer/:documentId", label: "Fakturadetaljer", area: "invoices", kind: "flow", parentId: "invoices", element: <InvoiceDetailView /> },
   { id: "document-detail", segment: "bilag/:documentId", label: "Bilagsdetaljer", area: "money-documents", kind: "flow", parentId: "documents", element: <DocumentDetailView /> },
   { id: "document-booking", segment: "bilag/:documentId/bogfoer", label: "Bogfør bilag", area: "money-documents", kind: "flow", parentId: "documents", element: <DocumentBookingView /> },
+  { id: "knowledge-page", segment: "viden/:pageId", label: "Viden og playbook", area: "knowledge", kind: "flow", parentId: "workspace-register", element: <KnowledgePageView /> },
   { id: "party-profile", segment: "parter/:partyId", label: "Partsprofil", area: "knowledge", kind: "flow", parentId: "party-hub", element: <PartyProfileView /> },
 ] as const satisfies readonly (CompanyRouteDescriptor & { kind: "flow"; parentId: (typeof COMPANY_ROUTE_REGISTRY)[number]["id"] })[];
 
@@ -152,7 +154,7 @@ export type CompanyRouteId = (typeof COMPANY_ROUTE_DEFINITIONS)[number]["id"];
 export type CompanyRouteDefinition = Omit<(typeof COMPANY_ROUTE_DEFINITIONS)[number], "element">;
 export type CompanyYearScope = "year" | "company" | "multi-year" | "vat-period";
 export function companyYearScope(id: CompanyRouteId): CompanyYearScope {
-  if (["tasks", "attention", "purchase-overview", "approval-policy", "party-hub", "party-profile", "documents", "document-detail", "workspace-register", "workspace-inbox", "contacts", "invoice-templates", "manage", "accounts", "dimensions", "bank-accounts", "gdpr", "retention", "integrity", "receipt-email", "posting-rules", "drafts", "suggestions", "exceptions"].includes(id)) return "company";
+  if (["knowledge-page", "tasks", "attention", "purchase-overview", "approval-policy", "party-hub", "party-profile", "documents", "document-detail", "workspace-register", "workspace-inbox", "contacts", "invoice-templates", "manage", "accounts", "dimensions", "bank-accounts", "gdpr", "retention", "integrity", "receipt-email", "posting-rules", "drafts", "suggestions", "exceptions"].includes(id)) return "company";
   if (id === "multi-year") return "multi-year";
   if (id === "vat") return "vat-period";
   // The batch workbench on main uses the selected canonical fiscal period.

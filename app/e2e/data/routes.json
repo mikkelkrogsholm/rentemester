@@ -365,6 +365,14 @@
     "parentId": "documents"
   },
   {
+    "id": "knowledge-page",
+    "segment": "viden/:pageId",
+    "label": "Viden og playbook",
+    "area": "knowledge",
+    "kind": "flow",
+    "parentId": "workspace-register"
+  },
+  {
     "id": "party-profile",
     "segment": "parter/:partyId",
     "label": "Partsprofil",

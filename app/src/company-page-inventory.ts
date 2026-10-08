@@ -27,6 +27,7 @@ export type CockpitRouteAcceptance = {
  * deliberately must not be used for registry-exhaustiveness checks.
  */
 export const COCKPIT_DETAIL_ROUTE_EVIDENCE = [
+  { id: "knowledge-page", path: "/companies/:slug/viden/:pageId", family: "Administration: profil, daglig opsætning og sikkerhed", state: "investigated" as const, reason: "Beskyttet syntetisk playbook-reference med læseadgang, escaped indhold og tilbage-navigation." },
   {
     id: "party-profile",
     path: "/companies/:slug/parter/:partyId",

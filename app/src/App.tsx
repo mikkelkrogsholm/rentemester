@@ -39,6 +39,7 @@ import { CockpitLayout, SkipLink } from "./components/AppChrome";
 import { useCapabilities } from "./lib/useCapabilities";
 import { ErrorState } from "./components/Feedback";
 import packageJson from "../package.json";
+import { KnowledgePageView } from "./views/KnowledgePageView";
 import { TasksView, TaskDetailView } from "./views/TasksView";
 import { PortfolioView } from "./views/PortfolioView";
 import { AddCompanyView } from "./views/AddCompanyView";
@@ -127,6 +128,7 @@ function CockpitApp() {
             <Route path="/" element={<PortfolioView />} />
             <Route path="/opgaver" element={<TasksView />} />
             <Route path="/opgaver/:taskId" element={<TaskDetailView />} />
+            <Route path="/viden/:pageId" element={<KnowledgePageView />} />
             {hosted && <Route path="/cfo" element={<CfoCockpitView />} />}
             <Route path="/companies/new" element={canManageWorkspace ? <AddCompanyView /> : <ErrorState message="Du har ikke adgang til at oprette virksomheder." />} />
             {hosted && canManageWorkspace && <Route path="/koncernstruktur" element={<GroupOverviewView />} />}
