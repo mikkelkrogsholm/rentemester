@@ -1,4 +1,6 @@
-import { ButtonLink, PageHeader} from "../components/ui";
+import * as stylex from "@stylexjs/stylex";
+import { ButtonLink, PageHeader } from "../components/ui";
+import { cockpitStyles } from "../design/cockpit.stylex";
 // Balance — the per-company balance sheet (cockpit-redesign iteration 2).
 //
 // Renders `/api/companies/:slug/balance?year=`: assets, liabilities and equity
@@ -13,215 +15,490 @@ import { ButtonLink, PageHeader} from "../components/ui";
 // regnskabsår, the prior column shows «—» rather than 0.
 
 import { Link, useParams } from "react-router-dom";
-import { api } from "../lib/api";
-import { formatKroner } from "../lib/format";
-import { useAsync } from "../lib/useAsync";
-import type { BalanceLine, CompanyBalance } from "../lib/types";
-import { ErrorState, Loading } from "../components/Feedback";
 import { ArchivedBanner } from "../components/ArchivedBanner";
 import { PageState, StatusChip } from "../components/CockpitPrimitives";
 import {
-  CompanyNav,
-  accountPostingsTo,
-  useCompanyYear,
+	accountPostingsTo,
+	CompanyNav,
+	useCompanyYear,
 } from "../components/CompanyNav";
+import { ErrorState, Loading } from "../components/Feedback";
+import { api } from "../lib/api";
+import { formatKroner } from "../lib/format";
+import type { BalanceLine, CompanyBalance } from "../lib/types";
+import { useAsync } from "../lib/useAsync";
 
 /** Render a prior-year amount cell — «—» when no prior year exists. */
 function priorCell(amount: number | null, currency: string) {
-  if (amount === null) return "—";
-  return formatKroner(amount, currency);
+	if (amount === null) return "—";
+	return formatKroner(amount, currency);
 }
 
 export function BalanceView() {
-  const { slug = "" } = useParams();
-  const { year, setYear } = useCompanyYear();
-  const state = useAsync<CompanyBalance>(
-    (signal) => api.balance(slug, year, { signal }),
-    [slug, year],
-  );
+	const { slug = "" } = useParams();
+	const { year, setYear } = useCompanyYear();
+	const state = useAsync<CompanyBalance>(
+		(signal) => api.balance(slug, year, { signal }),
+		[slug, year],
+	);
 
-  if (state.loading && !state.data) return <section data-evidence-issue="654"><h2 data-evidence-heading>Balance</h2><p data-evidence-status="loading">Henter balance</p><Loading label="Henter balance…" /></section>;
-  if (state.error)
-    return <section data-evidence-issue="654"><h2 data-evidence-heading>Balance</h2><p data-evidence-status={/403|forbudt|adgang/i.test(state.error) ? "warning-or-blocked" : "error"}>{/403|forbudt|adgang/i.test(state.error) ? "Ufuldstændigt grundlag" : "Balance kunne ikke hentes"}</p><ErrorState message={state.error} onRetry={state.reload} /></section>;
+	if (state.loading && !state.data)
+		return (
+			<section
+				data-evidence-issue="654"
+				{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+			>
+				<h2
+					data-evidence-heading
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h2,
+					)}
+				>
+					Balance
+				</h2>
+				<p
+					data-evidence-status="loading"
+					{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+				>
+					Henter balance
+				</p>
+				<Loading label="Henter balance…" />
+			</section>
+		);
+	if (state.error)
+		return (
+			<section
+				data-evidence-issue="654"
+				{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+			>
+				<h2
+					data-evidence-heading
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h2,
+					)}
+				>
+					Balance
+				</h2>
+				<p
+					data-evidence-status={
+						/403|forbudt|adgang/i.test(state.error)
+							? "warning-or-blocked"
+							: "error"
+					}
+					{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+				>
+					{/403|forbudt|adgang/i.test(state.error)
+						? "Ufuldstændigt grundlag"
+						: "Balance kunne ikke hentes"}
+				</p>
+				<ErrorState message={state.error} onRetry={state.reload} />
+			</section>
+		);
 
-  const b = state.data!;
-  const currency = b.company.currency || "DKK";
-  const priorYear = String(parseInt(b.selectedYear, 10) - 1);
+	const b = state.data!;
+	const currency = b.company.currency || "DKK";
+	const priorYear = String(parseInt(b.selectedYear, 10) - 1);
 
-  return (
-    <section className="statement" data-cockpit-page="balance" data-evidence-issue="654">
-      <PageHeader evidenceHeading title="Balance" actions={<><div className="row-actions">
-          {/* #372 — "Hent CSV". #463 — "Hent PDF" som ren printbar version. */}
-          <a
-            className="btn secondary"
-            href={api.statementCsvUrl(slug, "balance", b.selectedYear)}
-            download
-          >
-            Hent CSV
-          </a>
-          <a
-            className="btn secondary"
-            href={api.statementPdfUrl(slug, "balance", b.selectedYear)}
-            download
-          >
-            Hent PDF
-          </a>
-          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </ButtonLink>
-        </div></>}>
-        <div>
+	return (
+		<section
+			data-cockpit-page="balance"
+			data-evidence-issue="654"
+			{...stylex.props(
+				cockpitStyles.element,
+				cockpitStyles.focusVisible,
+				cockpitStyles.statement,
+			)}
+		>
+			<PageHeader
+				evidenceHeading
+				title="Balance"
+				actions={
+					<>
+						<div
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.rowActions,
+							)}
+						>
+							{/* #372 — "Hent CSV". #463 — "Hent PDF" som ren printbar version. */}
+							<a
+								href={api.statementCsvUrl(slug, "balance", b.selectedYear)}
+								download
+								{...stylex.props(cockpitStyles.statementBtnComposition2)}
+							>
+								Hent CSV
+							</a>
+							<a
+								href={api.statementPdfUrl(slug, "balance", b.selectedYear)}
+								download
+								{...stylex.props(cockpitStyles.statementBtnComposition2)}
+							>
+								Hent PDF
+							</a>
+							<ButtonLink
+								to={`/companies/${slug}/manage`}
+								variant={"secondary"}
+								xstyle={[cockpitStyles.statementBtnComposition2]}
+							>
+								Administrér
+							</ButtonLink>
+						</div>
+					</>
+				}
+			>
+				<div
+					{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+				>
+					<p
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.muted,
+						)}
+					>
+						{b.company.cvr ? `CVR ${b.company.cvr} · ` : ""}
+						{b.company.country} · {currency} · Balance
+					</p>
+				</div>
 
-          <p className="muted">
-            {b.company.cvr ? `CVR ${b.company.cvr} · ` : ""}
-            {b.company.country} · {currency} · Balance
-          </p>
-        </div>
+				<p
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.muted,
+					)}
+				>
+					{b.company.name} · {currency}
+				</p>
+				<p
+					data-evidence-status={
+						b.assets.lines.length ||
+						b.liabilities.lines.length ||
+						b.equity.lines.length
+							? "normal"
+							: "empty"
+					}
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.muted,
+					)}
+				>
+					{b.assets.lines.length ||
+					b.liabilities.lines.length ||
+					b.equity.lines.length
+						? "Aktuel bogføring"
+						: "Ingen balanceposter i perioden"}
+				</p>
+			</PageHeader>
 
-      <p className="muted">{b.company.name} · {currency}</p><p className="muted" data-evidence-status={b.assets.lines.length || b.liabilities.lines.length || b.equity.lines.length ? "normal" : "empty"}>{b.assets.lines.length || b.liabilities.lines.length || b.equity.lines.length ? "Aktuel bogføring" : "Ingen balanceposter i perioden"}</p></PageHeader>
+			<CompanyNav
+				slug={slug}
+				years={b.fiscalYears}
+				selectedYear={b.selectedYear}
+				onYearChange={setYear}
+			/>
 
-      <CompanyNav
-        slug={slug}
-        years={b.fiscalYears}
-        selectedYear={b.selectedYear}
-        onYearChange={setYear}
-      />
-
-      {b.archived && (
-        <ArchivedBanner year={b.selectedYear} source={b.archivedSource} />
-      )}
-      <p className="statement-asof muted"><StatusChip coverage={b.coverage} /> · Pr. {b.asOfDate}</p>
-      {b.coverage.comparison === "not_comparable" && <p className="muted">Ingen kilde for foregående år — ikke sammenlignelig.</p>}
-      {!(b.assets.lines.length || b.liabilities.lines.length || b.equity.lines.length) ? <PageState kind="empty" title="Ingen balanceposter i perioden">Der er endnu ingen poster at vise i balancen.</PageState> : <div className="card statement-card">
-        <table className="data statement-table" data-evidence-data>
-          <thead>
-            <tr>
-              <th>Konto</th>
-              <th>Navn</th>
-              <th className="num">Pr. {b.asOfDate}</th>
-              <th className="num">Pr. {priorYear}-12-31</th>
-            </tr>
-          </thead>
-          <BalanceSection
-            heading="Aktiver"
-            lines={b.assets.lines}
-            total={b.assets.total}
-            priorTotal={b.assets.priorTotal}
-            totalLabel="Aktiver i alt"
-            currency={currency}
-            slug={slug}
-            year={b.selectedYear}
-          />
-          <BalanceSection
-            heading="Passiver"
-            lines={b.liabilities.lines}
-            total={b.liabilities.total}
-            priorTotal={b.liabilities.priorTotal}
-            totalLabel="Gæld i alt"
-            currency={currency}
-            slug={slug}
-            year={b.selectedYear}
-          />
-          <BalanceSection
-            heading="Egenkapital"
-            lines={b.equity.lines}
-            total={b.equity.total}
-            priorTotal={b.equity.priorTotal}
-            totalLabel="Egenkapital i alt"
-            currency={currency}
-            slug={slug}
-            year={b.selectedYear}
-          />
-          <tbody>
-            <tr className="statement-result">
-              <td colSpan={2}>Passiver og egenkapital i alt</td>
-              <td className="num">
-                {formatKroner(b.totalLiabilitiesAndEquity, currency)}
-              </td>
-              <td className="num muted">
-                {priorCell(b.priorTotalLiabilitiesAndEquity, currency)}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>}
-      <details data-evidence-progressive><summary>Se rapportgrundlag</summary><p>Balancen bygger på den valgte periodes bogføring.</p></details>
-      <BalanceCheck balanced={b.balanced} />
-    </section>
-  );
+			{b.archived && (
+				<ArchivedBanner year={b.selectedYear} source={b.archivedSource} />
+			)}
+			<p
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.muted,
+					cockpitStyles.statementAsof,
+				)}
+			>
+				<StatusChip coverage={b.coverage} /> · Pr. {b.asOfDate}
+			</p>
+			{b.coverage.comparison === "not_comparable" && (
+				<p
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.muted,
+					)}
+				>
+					Ingen kilde for foregående år — ikke sammenlignelig.
+				</p>
+			)}
+			{!(
+				b.assets.lines.length ||
+				b.liabilities.lines.length ||
+				b.equity.lines.length
+			) ? (
+				<PageState kind="empty" title="Ingen balanceposter i perioden">
+					Der er endnu ingen poster at vise i balancen.
+				</PageState>
+			) : (
+				<div
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.card,
+						cockpitStyles.statementCard,
+					)}
+					data-ui="statement-card"
+				>
+					<table
+						data-evidence-data
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.tableData,
+							cockpitStyles.tableStatementTable,
+						)}
+					>
+						<thead
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}
+						>
+							<tr
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}
+							>
+								<th
+									{...stylex.props(
+										cockpitStyles.tableStatementTableThComposition3,
+									)}
+								>
+									Konto
+								</th>
+								<th
+									{...stylex.props(
+										cockpitStyles.tableStatementTableThComposition3,
+									)}
+								>
+									Navn
+								</th>
+								<th
+									{...stylex.props(
+										cockpitStyles.tableStatementTableThComposition4,
+									)}
+								>
+									Pr. {b.asOfDate}
+								</th>
+								<th
+									{...stylex.props(
+										cockpitStyles.tableStatementTableThComposition4,
+									)}
+								>
+									Pr. {priorYear}-12-31
+								</th>
+							</tr>
+						</thead>
+						<BalanceSection
+							heading="Aktiver"
+							lines={b.assets.lines}
+							total={b.assets.total}
+							priorTotal={b.assets.priorTotal}
+							totalLabel="Aktiver i alt"
+							currency={currency}
+							slug={slug}
+							year={b.selectedYear}
+						/>
+						<BalanceSection
+							heading="Passiver"
+							lines={b.liabilities.lines}
+							total={b.liabilities.total}
+							priorTotal={b.liabilities.priorTotal}
+							totalLabel="Gæld i alt"
+							currency={currency}
+							slug={slug}
+							year={b.selectedYear}
+						/>
+						<BalanceSection
+							heading="Egenkapital"
+							lines={b.equity.lines}
+							total={b.equity.total}
+							priorTotal={b.equity.priorTotal}
+							totalLabel="Egenkapital i alt"
+							currency={currency}
+							slug={slug}
+							year={b.selectedYear}
+						/>
+						<tbody
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}
+						>
+							<tr
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}
+							>
+								<td
+									colSpan={2}
+									{...stylex.props(
+										cockpitStyles.tableStatementTableTdComposition3,
+									)}
+								>
+									Passiver og egenkapital i alt
+								</td>
+								<td {...stylex.props(cockpitStyles.tableDataTdNumComposition4)}>
+									{formatKroner(b.totalLiabilitiesAndEquity, currency)}
+								</td>
+								<td
+									{...stylex.props(
+										cockpitStyles.tableStatementTableTdNumMutedComposition2,
+									)}
+								>
+									{priorCell(b.priorTotalLiabilitiesAndEquity, currency)}
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			)}
+			<details
+				data-evidence-progressive
+				{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+			>
+				<summary {...stylex.props(cockpitStyles.summaryComposition)}>
+					Se rapportgrundlag
+				</summary>
+				<p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+					Balancen bygger på den valgte periodes bogføring.
+				</p>
+			</details>
+			<BalanceCheck balanced={b.balanced} />
+		</section>
+	);
 }
 
 function BalanceSection({
-  heading,
-  lines,
-  total,
-  priorTotal,
-  totalLabel,
-  currency,
-  slug,
-  year,
+	heading,
+	lines,
+	total,
+	priorTotal,
+	totalLabel,
+	currency,
+	slug,
+	year,
 }: {
-  heading: string;
-  lines: BalanceLine[];
-  total: number;
-  priorTotal: number | null;
-  totalLabel: string;
-  currency: string;
-  slug: string;
-  year: string;
+	heading: string;
+	lines: BalanceLine[];
+	total: number;
+	priorTotal: number | null;
+	totalLabel: string;
+	currency: string;
+	slug: string;
+	year: string;
 }) {
-  return (
-    <tbody>
-      <tr className="statement-section-head">
-        <th colSpan={4}>{heading}</th>
-      </tr>
-      {lines.length === 0 ? (
-        <tr>
-          <td colSpan={4} className="empty-inline">
-            Ingen konti.
-          </td>
-        </tr>
-      ) : (
-        lines.map((line) => (
-          <tr key={line.accountNo} className="account-row">
-            <td className="account-no">
-              {/* A synthetic line (e.g. "Årets resultat") has no real
+	return (
+		<tbody {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+			<tr {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+				<th
+					colSpan={4}
+					{...stylex.props(cockpitStyles.statementSectionHeadThComposition)}
+				>
+					{heading}
+				</th>
+			</tr>
+			{lines.length === 0 ? (
+				<tr
+					{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+				>
+					<td
+						colSpan={4}
+						{...stylex.props(cockpitStyles.emptyInlineComposition)}
+					>
+						Ingen konti.
+					</td>
+				</tr>
+			) : (
+				lines.map((line) => (
+					<tr
+						key={line.accountNo}
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.trAccountRowHover,
+						)}
+					>
+						<td
+							{...stylex.props(cockpitStyles.tableStatementTableTdComposition4)}
+						>
+							{/* A synthetic line (e.g. "Årets resultat") has no real
                   account number — render it plain rather than as a link. */}
-              {line.accountNo === "—" ? (
-                "—"
-              ) : (
-                <Link
-                  className="account-link"
-                  data-evidence-core-action
-                  to={accountPostingsTo(slug, year, line.accountNo)}
-                >
-                  {line.accountNo}
-                </Link>
-              )}
-            </td>
-            <td>{line.name}</td>
-            <td className="num">{formatKroner(line.amount, currency)} {line.accountNo !== "—" && <Link className="muted" to={`${accountPostingsTo(slug, year, line.accountNo)}&reportLine=${encodeURIComponent(line.name)}&asOf=${encodeURIComponent("" + year + "-12-31")}`}>Forklar tallet</Link>}</td>
-            <td className="num muted">
-              {priorCell(line.priorAmount, currency)}
-            </td>
-          </tr>
-        ))
-      )}
-      <tr className="statement-subtotal">
-        <td colSpan={2}>{totalLabel}</td>
-        <td className="num">{formatKroner(total, currency)}</td>
-        <td className="num muted">{priorCell(priorTotal, currency)}</td>
-      </tr>
-    </tbody>
-  );
+							{line.accountNo === "—" ? (
+								"—"
+							) : (
+								<Link
+									data-evidence-core-action
+									to={accountPostingsTo(slug, year, line.accountNo)}
+									{...stylex.props(cockpitStyles.accountLinkComposition)}
+								>
+									{line.accountNo}
+								</Link>
+							)}
+						</td>
+						<td
+							{...stylex.props(cockpitStyles.tableStatementTableTdComposition4)}
+						>
+							{line.name}
+						</td>
+						<td {...stylex.props(cockpitStyles.tdNumComposition)}>
+							{formatKroner(line.amount, currency)}{" "}
+							{line.accountNo !== "—" && (
+								<Link
+									to={`${accountPostingsTo(slug, year, line.accountNo)}&reportLine=${encodeURIComponent(line.name)}&asOf=${encodeURIComponent("" + year + "-12-31")}`}
+									{...stylex.props(cockpitStyles.mutedComposition)}
+								>
+									Forklar tallet
+								</Link>
+							)}
+						</td>
+						<td {...stylex.props(cockpitStyles.tdNumComposition2)}>
+							{priorCell(line.priorAmount, currency)}
+						</td>
+					</tr>
+				))
+			)}
+			<tr {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+				<td
+					colSpan={2}
+					{...stylex.props(cockpitStyles.statementSubtotalTdComposition)}
+				>
+					{totalLabel}
+				</td>
+				<td {...stylex.props(cockpitStyles.statementSubtotalTdComposition2)}>
+					{formatKroner(total, currency)}
+				</td>
+				<td {...stylex.props(cockpitStyles.statementSubtotalTdComposition3)}>
+					{priorCell(priorTotal, currency)}
+				</td>
+			</tr>
+		</tbody>
+	);
 }
 
 function BalanceCheck({ balanced }: { balanced: boolean }) {
-  return (
-    <p className={`statement-check ${balanced ? "ok" : "alert"}`}>
-      {balanced
-        ? "Balancen stemmer — aktiver = passiver + egenkapital."
-        : "Balancen stemmer ikke. Kontrollér ledgeren."}
-    </p>
-  );
+	return (
+		<p
+			{...stylex.props(
+				cockpitStyles.element,
+				cockpitStyles.focusVisible,
+				cockpitStyles.statementCheck,
+				balanced && cockpitStyles.statementCheckOk,
+				!balanced && cockpitStyles.statementCheckAlert,
+			)}
+		>
+			{balanced
+				? "Balancen stemmer — aktiver = passiver + egenkapital."
+				: "Balancen stemmer ikke. Kontrollér ledgeren."}
+		</p>
+	);
 }

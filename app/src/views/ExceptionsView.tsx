@@ -1,4 +1,6 @@
-import { ButtonLink, Button, PageHeader } from "../components/ui";
+import * as stylex from "@stylexjs/stylex";
+import { Button, ButtonLink, PageHeader } from "../components/ui";
+import { cockpitStyles } from "../design/cockpit.stylex";
 // Exceptions queue view (#332) — per-virksomhed kø af undtagelser (unmatched
 // bank-rows, blokerede write-flows, dokumenter uden bilag-pligt-link osv.).
 // Listen kommer fra det nye GET /api/companies/:slug/exceptions endpoint;
@@ -7,22 +9,25 @@ import { ButtonLink, Button, PageHeader } from "../components/ui";
 
 import { useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { api, ApiError } from "../lib/api";
+import { ErrorState, Loading } from "../components/Feedback";
+import { ApiError, api } from "../lib/api";
+import type { CompanyExceptions, ExceptionRow } from "../lib/types";
 import { useAsync } from "../lib/useAsync";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
-import type { CompanyExceptions, ExceptionRow } from "../lib/types";
-import { ErrorState, Loading } from "../components/Feedback";
 
-const STATUS_TABS: Array<{ value: "open" | "resolved" | "all"; label: string }> = [
-  { value: "open", label: "Åbne" },
-  { value: "resolved", label: "Løste" },
-  { value: "all", label: "Alle" },
+const STATUS_TABS: Array<{
+	value: "open" | "resolved" | "all";
+	label: string;
+}> = [
+	{ value: "open", label: "Åbne" },
+	{ value: "resolved", label: "Løste" },
+	{ value: "all", label: "Alle" },
 ];
 
 const SEVERITY_LABEL: Record<ExceptionRow["severity"], string> = {
-  high: "Høj",
-  medium: "Medium",
-  low: "Lav",
+	high: "Høj",
+	medium: "Medium",
+	low: "Lav",
 };
 
 /**
@@ -33,175 +38,456 @@ const SEVERITY_LABEL: Record<ExceptionRow["severity"], string> = {
  * mapped to a Danish label.")
  */
 const TYPE_LABEL: Record<string, string> = {
-  UNMATCHED_BANK_TRANSACTION: "Ubehandlet banktransaktion",
-  AGENT_NEEDS_REVIEW: "Agenten har brug for godkendelse",
-  AGENT_PAYABLE_OVERDUE: "Forfalden leverandørpost (agent)",
-  AGENT_ACCRUAL_READY: "Periodisering klar til bogføring (agent)",
-  AGENT_ASSET_CANDIDATE: "Muligt anlæg over kapitaliseringsgrænsen (agent)",
-  AGENT_TAX_NEEDS_REVIEW: "Oplysningsskema-felt skal kontrolleres (agent)",
-  DOCUMENT_NO_BILAG: "Bilag mangler",
-  PERIOD_LOCKED_WRITE: "Bogføring blokeret af periodelås",
-  BACKUP_LOCKED_WRITE: "Bogføring blokeret af backup-lås",
+	UNMATCHED_BANK_TRANSACTION: "Ubehandlet banktransaktion",
+	AGENT_NEEDS_REVIEW: "Agenten har brug for godkendelse",
+	AGENT_PAYABLE_OVERDUE: "Forfalden leverandørpost (agent)",
+	AGENT_ACCRUAL_READY: "Periodisering klar til bogføring (agent)",
+	AGENT_ASSET_CANDIDATE: "Muligt anlæg over kapitaliseringsgrænsen (agent)",
+	AGENT_TAX_NEEDS_REVIEW: "Oplysningsskema-felt skal kontrolleres (agent)",
+	DOCUMENT_NO_BILAG: "Bilag mangler",
+	PERIOD_LOCKED_WRITE: "Bogføring blokeret af periodelås",
+	BACKUP_LOCKED_WRITE: "Bogføring blokeret af backup-lås",
 };
 
 export function ExceptionsView() {
-  const { slug = "" } = useParams();
-  const [params, setParams] = useSearchParams();
-  const statusRaw = params.get("status") ?? "open";
-  const status: "open" | "resolved" | "all" =
-    statusRaw === "resolved" || statusRaw === "all" ? statusRaw : "open";
-  // Resolve-tilstand: undgå at klikke flere gange på samme række.
-  const [resolving, setResolving] = useState<Set<number>>(new Set());
-  const [resolveError, setResolveError] = useState<string | null>(null);
+	const { slug = "" } = useParams();
+	const [params, setParams] = useSearchParams();
+	const statusRaw = params.get("status") ?? "open";
+	const status: "open" | "resolved" | "all" =
+		statusRaw === "resolved" || statusRaw === "all" ? statusRaw : "open";
+	// Resolve-tilstand: undgå at klikke flere gange på samme række.
+	const [resolving, setResolving] = useState<Set<number>>(new Set());
+	const [resolveError, setResolveError] = useState<string | null>(null);
 
-  const state = useAsync<CompanyExceptions>(
-    (signal) => api.exceptions(slug, status, { signal }),
-    [slug, status],
-  );
+	const state = useAsync<CompanyExceptions>(
+		(signal) => api.exceptions(slug, status, { signal }),
+		[slug, status],
+	);
 
-  const setStatus = (next: "open" | "resolved" | "all") => {
-    const updated = new URLSearchParams(params);
-    if (next === "open") updated.delete("status");
-    else updated.set("status", next);
-    setParams(updated, { replace: true });
-  };
+	const setStatus = (next: "open" | "resolved" | "all") => {
+		const updated = new URLSearchParams(params);
+		if (next === "open") updated.delete("status");
+		else updated.set("status", next);
+		setParams(updated, { replace: true });
+	};
 
-  const outcome = useMutationOutcome(state.reload);
-  const resolve = async (row: ExceptionRow) => {
-    if (resolving.has(row.id) || outcome.isBlocked()) return;
-    setResolveError(null);
-    setResolving((s) => new Set([...s, row.id]));
-    try {
-      await outcome.run(() => api.resolveException(slug, row.id, "Markeret som løst fra cockpittet"));
-      state.reload();
-    } catch (err) {
-      setResolveError(
-        err instanceof ApiError ? err.message : "Kunne ikke markere som løst.",
-      );
-    } finally {
-      setResolving((s) => {
-        const next = new Set(s);
-        next.delete(row.id);
-        return next;
-      });
-    }
-  };
+	const outcome = useMutationOutcome(state.reload);
+	const resolve = async (row: ExceptionRow) => {
+		if (resolving.has(row.id) || outcome.isBlocked()) return;
+		setResolveError(null);
+		setResolving((s) => new Set([...s, row.id]));
+		try {
+			await outcome.run(() =>
+				api.resolveException(slug, row.id, "Markeret som løst fra cockpittet"),
+			);
+			state.reload();
+		} catch (err) {
+			setResolveError(
+				err instanceof ApiError ? err.message : "Kunne ikke markere som løst.",
+			);
+		} finally {
+			setResolving((s) => {
+				const next = new Set(s);
+				next.delete(row.id);
+				return next;
+			});
+		}
+	};
 
-  // Keep stale data visible during a reload (matches DashboardView/InvoicesView/
-  // BankView) — only show the spinner on the FIRST load, never on a refresh.
-  if (state.loading && !state.data) return <Loading />;
-  // `onRetry` so a failed load is not a dead end — the owner can re-run it.
-  if (state.error && !state.data)
-    return <ErrorState message={state.error} onRetry={state.reload} />;
-  const data = state.data!;
-  const rows = data.rows;
+	// Keep stale data visible during a reload (matches DashboardView/InvoicesView/
+	// BankView) — only show the spinner on the FIRST load, never on a refresh.
+	if (state.loading && !state.data) return <Loading />;
+	// `onRetry` so a failed load is not a dead end — the owner can re-run it.
+	if (state.error && !state.data)
+		return <ErrorState message={state.error} onRetry={state.reload} />;
+	const data = state.data!;
+	const rows = data.rows;
 
-  return (
-    <section className="exceptions-view" data-cockpit-page="exceptions" data-evidence-issue="655">
-      {outcome.feedback}
-      {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. De tidligere hentede undtagelser vises fortsat.</div>}
-      <PageHeader title="Undtagelser" actions={<><div className="row-actions">
-          <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
-            Administrér
-          </ButtonLink>
-        </div></>}>
-        <div>
+	return (
+		<section
+			data-cockpit-page="exceptions"
+			data-evidence-issue="655"
+			{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+		>
+			{outcome.feedback}
+			{state.error && (
+				<div
+					role="alert"
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.banner,
+						cockpitStyles.bannerWarning,
+					)}
+				>
+					Status kunne ikke opdateres. De tidligere hentede undtagelser vises
+					fortsat.
+				</div>
+			)}
+			<PageHeader
+				title="Undtagelser"
+				actions={
+					<>
+						<div
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.rowActions,
+							)}
+						>
+							<ButtonLink
+								to={`/companies/${slug}/manage`}
+								variant={"secondary"}
+								xstyle={[cockpitStyles.exceptionsViewBtnComposition]}
+							>
+								Administrér
+							</ButtonLink>
+						</div>
+					</>
+				}
+			>
+				<div
+					{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+				>
+					<p
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.muted,
+						)}
+					>
+						{data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
+						{data.company.country} · Undtagelser
+					</p>
+				</div>
+			</PageHeader>
 
-          <p className="muted">
-            {data.company.cvr ? `CVR ${data.company.cvr} · ` : ""}
-            {data.company.country} · Undtagelser
-          </p>
-        </div>
+			<section
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.card,
+				)}
+			>
+				<h3
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+					)}
+				>
+					Status
+				</h3>
+				<div
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.filterBar,
+					)}
+				>
+					{STATUS_TABS.map((t) => (
+						<Button
+							key={t.value}
+							aria-pressed={status === t.value}
+							type="button"
+							onClick={() => setStatus(t.value)}
+							variant={!(status === t.value) ? "secondary" : "primary"}
+							xstyle={[cockpitStyles.exceptionsViewBtnComposition2]}
+						>
+							{t.label}
+						</Button>
+					))}
+				</div>
+				<p
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.muted,
+					)}
+				>
+					{data.count} undtagelse{data.count === 1 ? "" : "r"}
+					{status === "open" && (
+						<>
+							{" "}
+							· Høj: {data.bySeverity.high} · Medium: {data.bySeverity.medium} ·
+							Lav: {data.bySeverity.low}
+						</>
+					)}
+				</p>
+			</section>
 
-      </PageHeader>
+			{resolveError && (
+				<div
+					role="alert"
+					{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+				>
+					{resolveError}
+				</div>
+			)}
 
-      <section className="card">
-        <h3>Status</h3>
-        <div className="filter-bar">
-          {STATUS_TABS.map((t) => (
-            <Button
-              key={t.value}
-              aria-pressed={status === t.value}
-              type="button"
-              className={`btn small ${status === t.value ? "primary" : "secondary"}`}
-              onClick={() => setStatus(t.value)}
-            >
-              {t.label}
-            </Button>
-          ))}
-        </div>
-        <p className="muted">
-          {data.count} undtagelse{data.count === 1 ? "" : "r"}
-          {status === "open" && (
-            <>
-              {" "}
-              · Høj: {data.bySeverity.high} · Medium: {data.bySeverity.medium} ·
-              Lav: {data.bySeverity.low}
-            </>
-          )}
-        </p>
-      </section>
-
-      {resolveError && (
-        <div className="callout danger" role="alert">
-          {resolveError}
-        </div>
-      )}
-
-      {rows.length === 0 ? (
-        <div className="card">
-          <p className="muted">Ingen undtagelser i denne status.</p>
-        </div>
-      ) : (
-        <div className="table-scroll"><table className="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Type</th>
-              <th>Alvor</th>
-              <th>Status</th>
-              <th>Besked</th>
-              <th>Næste skridt</th>
-              <th>Oprettet</th>
-              <th>Handlinger</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id}>
-                <td>#{row.id}</td>
-                <td>
-                  {TYPE_LABEL[row.type] ?? <code>{row.type}</code>}
-                </td>
-                <td className={`severity-${row.severity}`}>
-                  {SEVERITY_LABEL[row.severity]}
-                </td>
-                <td>{row.status === "open" ? "Åben" : "Løst"}</td>
-                <td>{row.message}</td>
-                <td>{row.requiredAction ?? "—"}</td>
-                <td className="muted">{row.createdAt}</td>
-                <td>
-                  {row.status === "open" ? (
-                    <Button requiredPermission="company.review" variant="secondary"
-                      type="button"
-                      className="btn small secondary"
-                      onClick={() => resolve(row)}
-                      disabled={resolving.has(row.id) || outcome.blocked}
-                    >
-                      {resolving.has(row.id) ? "Markerer …" : "Markér som løst"}
-                    </Button>
-                  ) : (
-                    <span className="muted">
-                      Løst{row.resolvedAt ? ` ${row.resolvedAt}` : ""}
-                      {row.resolvedBy ? ` af ${row.resolvedBy}` : ""}
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table></div>
-      )}
-    </section>
-  );
+			{rows.length === 0 ? (
+				<div
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.card,
+					)}
+				>
+					<p
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.muted,
+						)}
+					>
+						Ingen undtagelser i denne status.
+					</p>
+				</div>
+			) : (
+				<div
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.tableScroll,
+					)}
+					data-ui="table-scroll"
+				>
+					<table
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.exceptionsViewTableTable,
+						)}
+					>
+						<thead
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}
+						>
+							<tr
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}
+							>
+								<th
+									{...stylex.props(
+										cockpitStyles.tableDataTh,
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.exceptionsViewTableTableThLastChild,
+									)}
+								>
+									ID
+								</th>
+								<th
+									{...stylex.props(
+										cockpitStyles.tableDataTh,
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.exceptionsViewTableTableThLastChild,
+									)}
+								>
+									Type
+								</th>
+								<th
+									{...stylex.props(
+										cockpitStyles.tableDataTh,
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.exceptionsViewTableTableThLastChild,
+									)}
+								>
+									Alvor
+								</th>
+								<th
+									{...stylex.props(
+										cockpitStyles.tableDataTh,
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.exceptionsViewTableTableThLastChild,
+									)}
+								>
+									Status
+								</th>
+								<th
+									{...stylex.props(
+										cockpitStyles.tableDataTh,
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.exceptionsViewTableTableThLastChild,
+									)}
+								>
+									Besked
+								</th>
+								<th
+									{...stylex.props(
+										cockpitStyles.tableDataTh,
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.exceptionsViewTableTableThLastChild,
+									)}
+								>
+									Næste skridt
+								</th>
+								<th
+									{...stylex.props(
+										cockpitStyles.tableDataTh,
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.exceptionsViewTableTableThLastChild,
+									)}
+								>
+									Oprettet
+								</th>
+								<th
+									{...stylex.props(
+										cockpitStyles.tableDataTh,
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+										cockpitStyles.exceptionsViewTableTableThLastChild,
+									)}
+								>
+									Handlinger
+								</th>
+							</tr>
+						</thead>
+						<tbody
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+							)}
+						>
+							{rows.map((row) => (
+								<tr
+									key={row.id}
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}
+								>
+									<td
+										{...stylex.props(
+											cockpitStyles.tableDataTd,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.exceptionsViewTableTableTdLastChild,
+										)}
+									>
+										#{row.id}
+									</td>
+									<td
+										{...stylex.props(
+											cockpitStyles.tableDataTd,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.exceptionsViewTableTableTdLastChild,
+										)}
+									>
+										{TYPE_LABEL[row.type] ?? (
+											<code
+												{...stylex.props(
+													cockpitStyles.element,
+													cockpitStyles.focusVisible,
+													cockpitStyles.code,
+												)}
+											>
+												{row.type}
+											</code>
+										)}
+									</td>
+									<td
+										{...stylex.props(
+											cockpitStyles.tableDataTd,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.exceptionsViewTableTableTdLastChild,
+										)}
+									>
+										{SEVERITY_LABEL[row.severity]}
+									</td>
+									<td
+										{...stylex.props(
+											cockpitStyles.tableDataTd,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.exceptionsViewTableTableTdLastChild,
+										)}
+									>
+										{row.status === "open" ? "Åben" : "Løst"}
+									</td>
+									<td
+										{...stylex.props(
+											cockpitStyles.tableDataTd,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.exceptionsViewTableTableTdLastChild,
+										)}
+									>
+										{row.message}
+									</td>
+									<td
+										{...stylex.props(
+											cockpitStyles.tableDataTd,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.exceptionsViewTableTableTdLastChild,
+										)}
+									>
+										{row.requiredAction ?? "—"}
+									</td>
+									<td
+										{...stylex.props(
+											cockpitStyles.tableDataTd,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.muted,
+											cockpitStyles.exceptionsViewTableTableTdLastChild,
+										)}
+									>
+										{row.createdAt}
+									</td>
+									<td
+										{...stylex.props(
+											cockpitStyles.tableDataTd,
+											cockpitStyles.element,
+											cockpitStyles.focusVisible,
+											cockpitStyles.exceptionsViewTableTableTdLastChild,
+										)}
+									>
+										{row.status === "open" ? (
+											<Button
+												requiredPermission="company.review"
+												variant="secondary"
+												type="button"
+												onClick={() => resolve(row)}
+												disabled={resolving.has(row.id) || outcome.blocked}
+												xstyle={[cockpitStyles.exceptionsViewBtnComposition2]}
+											>
+												{resolving.has(row.id)
+													? "Markerer …"
+													: "Markér som løst"}
+											</Button>
+										) : (
+											<span
+												{...stylex.props(
+													cockpitStyles.element,
+													cockpitStyles.focusVisible,
+													cockpitStyles.muted,
+												)}
+											>
+												Løst{row.resolvedAt ? ` ${row.resolvedAt}` : ""}
+												{row.resolvedBy ? ` af ${row.resolvedBy}` : ""}
+											</span>
+										)}
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			)}
+		</section>
+	);
 }

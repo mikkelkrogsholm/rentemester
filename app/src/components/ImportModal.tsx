@@ -1,6 +1,7 @@
-import { useMutationOutcome } from "../lib/useMutationOutcome";
-import { useDiscardGuard } from "../lib/useDiscardGuard";
 import * as stylex from "@stylexjs/stylex";
+import { cockpitStyles } from "../design/cockpit.stylex";
+import { useDiscardGuard } from "../lib/useDiscardGuard";
+import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { Button, Dialog, Input } from "./ui";
 // ImportModal — the cockpit's generic, source-recognising file-import.
 //
@@ -19,229 +20,302 @@ import { LockBanner } from "./LockBanner";
 type MaybeApiError = { code?: string; message?: string };
 
 export type ImportModalProps = {
-  /** Company slug the import targets. */
-  slug: string;
-  /** Re-runs the calling view's load after a successful import. */
-  onImported: () => void;
-  /** Closes the modal without acting. */
-  onClose: () => void;
+	/** Company slug the import targets. */
+	slug: string;
+	/** Re-runs the calling view's load after a successful import. */
+	onImported: () => void;
+	/** Closes the modal without acting. */
+	onClose: () => void;
 };
 
-export function ImportModal({ slug, onImported, onClose: onDismiss }: ImportModalProps) {
-  const [fileName, setFileName] = useState<string | null>(null);
-  const [content, setContent] = useState<string | null>(null);
-  const [enrichCvr, setEnrichCvr] = useState(true);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [locked, setLocked] = useState<string | null>(null);
-  const [done, setDone] = useState<DataImportSummary | null>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
+export function ImportModal({
+	slug,
+	onImported,
+	onClose: onDismiss,
+}: ImportModalProps) {
+	const [fileName, setFileName] = useState<string | null>(null);
+	const [content, setContent] = useState<string | null>(null);
+	const [enrichCvr, setEnrichCvr] = useState(true);
+	const [busy, setBusy] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [locked, setLocked] = useState<string | null>(null);
+	const [done, setDone] = useState<DataImportSummary | null>(null);
+	const closeRef = useRef<HTMLButtonElement>(null);
 
-  // Move focus into the dialog and let Escape dismiss it — basic modal hygiene.
+	// Move focus into the dialog and let Escape dismiss it — basic modal hygiene.
 
+	const outcome = useMutationOutcome(onImported);
+	const guard = useDiscardGuard(!done && Boolean(content), onDismiss);
+	const { onClose } = guard;
 
-  const outcome = useMutationOutcome(onImported);
-  const guard = useDiscardGuard(!done && Boolean(content), onDismiss);
-  const { onClose } = guard;
+	async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+		const file = e.target.files?.[0];
+		setError(null);
+		if (!file) {
+			setFileName(null);
+			setContent(null);
+			return;
+		}
+		try {
+			const text = await file.text();
+			setFileName(file.name);
+			setContent(text);
+		} catch {
+			setError("Filen kunne ikke læses.");
+			setFileName(null);
+			setContent(null);
+		}
+	}
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    setError(null);
-    if (!file) {
-      setFileName(null);
-      setContent(null);
-      return;
-    }
-    try {
-      const text = await file.text();
-      setFileName(file.name);
-      setContent(text);
-    } catch {
-      setError("Filen kunne ikke læses.");
-      setFileName(null);
-      setContent(null);
-    }
-  }
+	async function handleImport() {
+		if (outcome.isBlocked()) return;
+		if (!content || !fileName) {
+			setError("Vælg en fil først.");
+			return;
+		}
+		setBusy(true);
+		setError(null);
+		setLocked(null);
+		try {
+			const summary = await outcome.run(() =>
+				api.importData(slug, {
+					fileName,
+					content,
+					enrichCvr,
+				}),
+			);
+			setDone(summary);
+			onImported();
+		} catch (err) {
+			const e = err as MaybeApiError;
+			const message = e?.message ?? "Importen kunne ikke gennemføres.";
+			// A 409 conflict from the backup lock is shown kindly, not as an error.
+			if (e?.code === "conflict") setLocked(message);
+			else setError(message);
+		} finally {
+			setBusy(false);
+		}
+	}
 
-  async function handleImport() {
-    if (outcome.isBlocked()) return;
-    if (!content || !fileName) {
-      setError("Vælg en fil først.");
-      return;
-    }
-    setBusy(true);
-    setError(null);
-    setLocked(null);
-    try {
-      const summary = await outcome.run(() => api.importData(slug, {
-        fileName,
-        content,
-        enrichCvr,
-      }));
-      setDone(summary);
-      onImported();
-    } catch (err) {
-      const e = err as MaybeApiError;
-      const message = e?.message ?? "Importen kunne ikke gennemføres.";
-      // A 409 conflict from the backup lock is shown kindly, not as an error.
-      if (e?.code === "conflict") setLocked(message);
-      else setError(message);
-    } finally {
-      setBusy(false);
-    }
-  }
+	return (
+		<Dialog
+			title="Importér fil"
+			onClose={onClose}
+			busy={busy}
+			initialFocusRef={closeRef}
+			xstyle={[cockpitStyles.element, cockpitStyles.focusVisible]}
+		>
+			{outcome.feedback}
+			{guard.confirmation}
 
-  return (
-    <Dialog title="Importér fil" onClose={onClose} busy={busy} initialFocusRef={closeRef}>
-    {outcome.feedback}
-      {guard.confirmation}
+			{done ? (
+				<ImportReceipt done={done} closeRef={closeRef} onClose={onClose} />
+			) : (
+				<>
+					<div
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalBody,
+						)}
+					>
+						<p
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.modalBodyP,
+							)}
+						>
+							Vælg en eksportfil fra dit tidligere bogføringssystem —
+							Rentemester genkender selv formatet. Understøttet nu: Dinero
+							«Kontakter» (Kontakter.csv) med kunder og leverandører.
+						</p>
+					</div>
 
+					{locked && <LockBanner message={locked} />}
+					{error && <Banner kind="error">{error}</Banner>}
 
+					<label
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalField,
+						)}
+					>
+						Fil
+						<Input
+							type="file"
+							accept=".csv,text/csv"
+							onChange={handleFile}
+							disabled={outcome.blocked || busy}
+							xstyle={[cockpitStyles.modalFieldInputFocusComposition]}
+						/>
+					</label>
+					{fileName && (
+						<p
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.muted,
+								viewStyles.site0,
+							)}
+						>
+							Valgt: {fileName}
+						</p>
+					)}
 
-        {done ? (
-          <ImportReceipt done={done} closeRef={closeRef} onClose={onClose} />
-        ) : (
-          <>
-            <div className="modal-body">
-              <p>
-                Vælg en eksportfil fra dit tidligere bogføringssystem —
-                Rentemester genkender selv formatet. Understøttet nu: Dinero
-                «Kontakter» (Kontakter.csv) med kunder og leverandører.
-              </p>
-            </div>
+					<label
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalField,
+							cockpitStyles.modalCheckbox,
+						)}
+					>
+						<Input
+							type="checkbox"
+							checked={enrichCvr}
+							onChange={(e) => setEnrichCvr(e.target.checked)}
+							disabled={outcome.blocked || busy}
+							xstyle={[cockpitStyles.modalCheckboxInputComposition]}
+						/>
+						Berig danske virksomheder med adresse m.m. fra CVR-registeret
+					</label>
 
-            {locked && <LockBanner message={locked} />}
-            {error && <Banner kind="error">{error}</Banner>}
-
-            <label className="modal-field">
-              Fil
-              <Input
-                type="file"
-                accept=".csv,text/csv"
-                onChange={handleFile}
-                disabled={outcome.blocked || (busy)}
-              />
-            </label>
-            {fileName && (
-              <p className={["muted", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
-                Valgt: {fileName}
-              </p>
-            )}
-
-            <label className="modal-field modal-checkbox">
-              <Input
-                type="checkbox"
-                checked={enrichCvr}
-                onChange={(e) => setEnrichCvr(e.target.checked)}
-                disabled={outcome.blocked || (busy)}
-              />
-              Berig danske virksomheder med adresse m.m. fra CVR-registeret
-            </label>
-
-            <div className="modal-actions">
-              <Button variant="secondary"
-                type="button"
-                className="btn secondary"
-                onClick={onClose}
-                disabled={busy}
-              >
-                Annullér
-              </Button>
-              <Button requiredPermission="company.ledger.post"
-                type="button"
-                className="btn"
-                onClick={handleImport}
-                disabled={outcome.blocked || (busy || !content)}
-              >
-                {busy ? "Importerer…" : "Importér"}
-              </Button>
-            </div>
-          </>
-        )}
-
-    </Dialog>
-  );
+					<div
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.modalActions,
+						)}
+					>
+						<Button
+							variant="secondary"
+							type="button"
+							onClick={onClose}
+							disabled={busy}
+							xstyle={[cockpitStyles.buttonComposition]}
+						>
+							Annullér
+						</Button>
+						<Button
+							requiredPermission="company.ledger.post"
+							type="button"
+							onClick={handleImport}
+							disabled={outcome.blocked || busy || !content}
+							xstyle={[cockpitStyles.buttonComposition]}
+						>
+							{busy ? "Importerer…" : "Importér"}
+						</Button>
+					</div>
+				</>
+			)}
+		</Dialog>
+	);
 }
 
 // After a successful import the modal becomes a short receipt: what the file
 // was recognised as, and how many contacts were created / skipped / enriched.
 function ImportReceipt({
-  done,
-  closeRef,
-  onClose,
+	done,
+	closeRef,
+	onClose,
 }: {
-  done: DataImportSummary;
-  closeRef: React.RefObject<HTMLButtonElement>;
-  onClose: () => void;
+	done: DataImportSummary;
+	closeRef: React.RefObject<HTMLButtonElement>;
+	onClose: () => void;
 }) {
-  const s = done.summary;
-  const created = s.customersCreated + s.vendorsCreated;
-  // CVR enrichment degrades gracefully — a failure because the CVR register
-  // credentials are unset is a setup gap, not an import error, so it gets a
-  // calm, specific note rather than the raw per-contact failure list.
-  const cvrCredsMissing = done.errors.some((e) => e.includes("CVR_USERNAME"));
-  // Errors that are NOT CVR enrichment — skipped rows, rows that could not be
-  // created. The summary counts hide these, so they must be surfaced or the
-  // owner sees "X oprettet" with no hint that rows were dropped.
-  const otherErrors = done.errors.filter((e) => !e.includes("CVR-berigelse"));
+	const s = done.summary;
+	const created = s.customersCreated + s.vendorsCreated;
+	// CVR enrichment degrades gracefully — a failure because the CVR register
+	// credentials are unset is a setup gap, not an import error, so it gets a
+	// calm, specific note rather than the raw per-contact failure list.
+	const cvrCredsMissing = done.errors.some((e) => e.includes("CVR_USERNAME"));
+	// Errors that are NOT CVR enrichment — skipped rows, rows that could not be
+	// created. The summary counts hide these, so they must be surfaced or the
+	// owner sees "X oprettet" with no hint that rows were dropped.
+	const otherErrors = done.errors.filter((e) => !e.includes("CVR-berigelse"));
 
-  return (
-    <>
-      <div className="modal-body">
-        <p>
-          {done.detected
-            ? `Genkendt som ${done.detected.label}.`
-            : "Filen blev importeret."}
-        </p>
-        <p>
-          {created} {created === 1 ? "kontakt" : "kontakter"} oprettet (
-          {s.customersCreated}{" "}
-          {s.customersCreated === 1 ? "kunde" : "kunder"},{" "}
-          {s.vendorsCreated}{" "}
-          {s.vendorsCreated === 1 ? "leverandør" : "leverandører"})
-          {s.skipped > 0 ? ` · ${s.skipped} fandtes allerede` : ""}
-          {s.enriched > 0 ? ` · ${s.enriched} beriget fra CVR` : ""}.
-        </p>
-      </div>
+	return (
+		<>
+			<div
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.modalBody,
+				)}
+			>
+				<p
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.modalBodyP,
+					)}
+				>
+					{done.detected
+						? `Genkendt som ${done.detected.label}.`
+						: "Filen blev importeret."}
+				</p>
+				<p
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.modalBodyP,
+					)}
+				>
+					{created} {created === 1 ? "kontakt" : "kontakter"} oprettet (
+					{s.customersCreated} {s.customersCreated === 1 ? "kunde" : "kunder"},{" "}
+					{s.vendorsCreated}{" "}
+					{s.vendorsCreated === 1 ? "leverandør" : "leverandører"})
+					{s.skipped > 0 ? ` · ${s.skipped} fandtes allerede` : ""}
+					{s.enriched > 0 ? ` · ${s.enriched} beriget fra CVR` : ""}.
+				</p>
+			</div>
 
-      {cvrCredsMissing && (
-        <Banner kind="warning">
-          CVR-berigelse blev ikke kørt — adgang til CVR-registeret er ikke
-          konfigureret. Sæt CVR_USERNAME og CVR_PASSWORD for at hente adresser
-          m.m. automatisk.
-        </Banner>
-      )}
-      {!cvrCredsMissing && s.enrichmentFailures > 0 && (
-        <Banner kind="warning">
-          CVR-berigelse fejlede for {s.enrichmentFailures}{" "}
-          {s.enrichmentFailures === 1 ? "kontakt" : "kontakter"} — de er
-          oprettet med dataene fra filen.
-        </Banner>
-      )}
-      {otherErrors.length > 0 && (
-        <Banner kind="warning">
-          {otherErrors.length === 1
-            ? otherErrors[0]
-            : `${otherErrors.length} rækker kunne ikke importeres: ` +
-              otherErrors.slice(0, 3).join("; ") +
-              (otherErrors.length > 3 ? " …" : "")}
-        </Banner>
-      )}
+			{cvrCredsMissing && (
+				<Banner kind="warning">
+					CVR-berigelse blev ikke kørt — adgang til CVR-registeret er ikke
+					konfigureret. Sæt CVR_USERNAME og CVR_PASSWORD for at hente adresser
+					m.m. automatisk.
+				</Banner>
+			)}
+			{!cvrCredsMissing && s.enrichmentFailures > 0 && (
+				<Banner kind="warning">
+					CVR-berigelse fejlede for {s.enrichmentFailures}{" "}
+					{s.enrichmentFailures === 1 ? "kontakt" : "kontakter"} — de er
+					oprettet med dataene fra filen.
+				</Banner>
+			)}
+			{otherErrors.length > 0 && (
+				<Banner kind="warning">
+					{otherErrors.length === 1
+						? otherErrors[0]
+						: `${otherErrors.length} rækker kunne ikke importeres: ` +
+							otherErrors.slice(0, 3).join("; ") +
+							(otherErrors.length > 3 ? " …" : "")}
+				</Banner>
+			)}
 
-      <div className="modal-actions">
-        <Button
-          type="button"
-          className="btn"
-          ref={closeRef}
-          onClick={onClose}
-        >
-          Luk
-        </Button>
-      </div>
-    </>
-  );
+			<div
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.modalActions,
+				)}
+			>
+				<Button
+					type="button"
+					ref={closeRef}
+					onClick={onClose}
+					xstyle={[cockpitStyles.buttonComposition]}
+				>
+					Luk
+				</Button>
+			</div>
+		</>
+	);
 }
 
 const viewStyles = stylex.create({
-site0: { margin: 0 }
+	site0: { margin: 0 },
 });

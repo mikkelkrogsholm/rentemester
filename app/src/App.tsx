@@ -1,3 +1,6 @@
+import { cockpitStyles } from './design/cockpit.stylex';
+import { colors } from './design/tokens.stylex';
+import * as stylex from '@stylexjs/stylex';
 import { ButtonLink } from "./components/ui";
 // App shell + routing for the cockpit SPA (#171).
 //
@@ -67,14 +70,14 @@ const COMPANY_NAVIGATION = { routes: COMPANY_ROUTE_REGISTRY, areas: COMPANY_TASK
 export function App() {
   const health = useAsync((signal) => api.health({ signal }), []);
   const profile = health.data?.deploymentProfile;
-  if (health.loading) return <div className="state-msg">Starter Rentemester…</div>;
+  if (health.loading) return <div  {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Starter Rentemester…</div>;
   // This gate deliberately has no fallback. A reverse proxy error or an old
   // server must not accidentally expose a local/trusted cockpit in production.
   if (
     health.error ||
     (profile !== "local" && profile !== "local-container" && profile !== "hosted")
   ) {
-    return <div className="state-msg" role="alert">Kunne ikke bekræfte Rentemesters sikkerhedsprofil. Prøv igen senere.</div>;
+    return <div  role="alert" {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Kunne ikke bekræfte Rentemesters sikkerhedsprofil. Prøv igen senere.</div>;
   }
   return <AuthProvider hosted={profile === "hosted"}><AuthGate /></AuthProvider>;
 }
@@ -83,12 +86,12 @@ function AuthGate() {
   const { hosted, loading, session, context } = useAuth();
   const location = useLocation();
   if (!hosted) return <MutationMemoryProvider><CockpitApp /></MutationMemoryProvider>;
-  if (loading) return <div className="state-msg">Kontrollerer din session…</div>;
+  if (loading) return <div  {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Kontrollerer din session…</div>;
   if (location.pathname === "/invite") return <InvitationView />;
   if (!session) return <AuthRecoveryRoutes />;
   if (!session.emailVerified) return <VerificationRequiredView />;
   if (!session.twoFactorEnabled) return <MfaEnrollmentView />;
-  if (!context) return <div className="state-msg">Indlæser din adgang…</div>;
+  if (!context) return <div  {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Indlæser din adgang…</div>;
   return <MutationMemoryProvider key={session.id} scope={`user:${session.id}`}><CockpitApp /></MutationMemoryProvider>;
 }
 
@@ -96,26 +99,42 @@ function AuthRecoveryRoutes() {
   return <Routes><Route path="/invite" element={<InvitationView />} /><Route path="/forgot-password" element={<ForgotPasswordView />} /><Route path="/reset-password" element={<ResetPasswordView />} /><Route path="/verify-email" element={<VerificationRecoveryView />} /><Route path="*" element={<LoginView />} /></Routes>;
 }
 
+
+const navigationStyles = stylex.create({
+  navigation: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', marginLeft: 'auto' },
+  link: {
+    "display": 'inline-flex',
+    "alignItems": 'center',
+    "minHeight": 44,
+    "paddingInline": '12px',
+    "color": { "default": colors.inkMuted, ":hover": colors.ink },
+    "textDecoration": { "default": 'none', ":hover": 'none' },
+    "borderBottomWidth": 2,
+    "borderBottomStyle": 'solid',
+    "borderBottomColor": 'transparent',
+  },
+  active: { color: colors.ink, fontWeight: 600, borderBottomColor: colors.accent },
+  menu: { position: 'relative' },
+});
 function CockpitApp() {
   const { hosted, context } = useAuth();
   const location = useLocation();
   const canManageWorkspace = !hosted || context?.workspaceRole === "workspace_owner";
   return (
-    <div className="app-shell">
-      <header className="topbar">
+    <div  {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.appShell)}>
+      <header  {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.topbar)}>
         <SkipLink />
-        <Link className="brand" to="/">Rentemester <span className="build-version" title="Installeret Rentemester-version">v{packageJson.version}</span></Link>
-        <nav className="global-navigation" aria-label="Workspace"><details><summary>Workspace</summary><div className="global-links">
-          <NavLink to="/opgaver">Opgaver</NavLink>
-          <NavLink to="/" end>
-            Portefølje
-          </NavLink>
-          {hosted && <NavLink to="/cfo">CFO-overblik</NavLink>}
-          {canManageWorkspace && <NavLink to="/companies/new">Tilføj virksomhed</NavLink>}
-          {hosted && canManageWorkspace && <NavLink to="/koncernstruktur">Koncernstruktur</NavLink>}
-          {hosted && canManageWorkspace && <NavLink to="/adgang">Brugere</NavLink>}
-          <NavLink to="/lovgrundlag">Lovgrundlag</NavLink>
-          <NavLink to="/help">Hjælp</NavLink>
+        <Link  to="/" {...stylex.props(cockpitStyles.topbarBrandComposition)}>Rentemester <span  title="Installeret Rentemester-version" {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible, cockpitStyles.topbarBuildVersion, cockpitStyles.brandBuildVersion)}>v{packageJson.version}</span></Link>
+        <nav aria-label="Workspace" {...stylex.props(cockpitStyles.element, cockpitStyles.topbarNav, navigationStyles.navigation)}>
+          <NavLink to="/" end {...stylex.props(cockpitStyles.focusVisible, navigationStyles.link, location.pathname === '/' && navigationStyles.active)}>Portefølje</NavLink>
+          <NavLink to="/opgaver" {...stylex.props(cockpitStyles.focusVisible, navigationStyles.link, location.pathname.startsWith('/opgaver') && navigationStyles.active)}>Opgaver</NavLink>
+          {hosted && <NavLink to="/cfo" {...stylex.props(cockpitStyles.focusVisible, navigationStyles.link, location.pathname.startsWith('/cfo') && navigationStyles.active)}>CFO-overblik</NavLink>}
+          <details {...stylex.props(cockpitStyles.element, navigationStyles.menu)}><summary {...stylex.props(cockpitStyles.focusVisible, cockpitStyles.globalNavigationSummary)}>Workspace</summary><div {...stylex.props(cockpitStyles.element, cockpitStyles.globalLinks)}>
+          {canManageWorkspace && <NavLink to="/companies/new" {...stylex.props(cockpitStyles.topbarNavAComposition)}>Tilføj virksomhed</NavLink>}
+          {hosted && canManageWorkspace && <NavLink to="/koncernstruktur" {...stylex.props(cockpitStyles.topbarNavAComposition)}>Koncernstruktur</NavLink>}
+          {hosted && canManageWorkspace && <NavLink to="/adgang" {...stylex.props(cockpitStyles.topbarNavAComposition)}>Brugere</NavLink>}
+          <NavLink to="/lovgrundlag" {...stylex.props(cockpitStyles.topbarNavAComposition)}>Lovgrundlag</NavLink>
+          <NavLink to="/help" {...stylex.props(cockpitStyles.topbarNavAComposition)}>Hjælp</NavLink>
         </div></details></nav>
         {hosted && !companyRouteForPath(location.pathname) && <CompanySwitcher />}
         {hosted && <AccountMenu />}
@@ -166,9 +185,9 @@ function CompanyRouteGate({ id, children }: { id: CompanyRouteId; children: Reac
 
 function NotFound() {
   return (
-    <section className="state-msg">
-      <p>Siden findes ikke.</p>
-      <ButtonLink className="btn secondary" to="/">
+    <section  {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+      <p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>Siden findes ikke.</p>
+      <ButtonLink  to="/" variant={"secondary"} xstyle={[cockpitStyles.aComposition]}>
         Til porteføljen
       </ButtonLink>
     </section>
@@ -182,6 +201,6 @@ function TaskSourceReturnLink() {
   try {
     const url = new URL(raw, "https://rentemester.invalid");
     if (url.origin !== "https://rentemester.invalid" || !/^\/opgaver\/[^/]+$/.test(url.pathname)) return null;
-    return <ButtonLink variant="secondary" to={`${url.pathname}${url.search}`}>Tilbage til opgaven</ButtonLink>;
+    return <ButtonLink variant="secondary" to={`${url.pathname}${url.search}`} xstyle={[cockpitStyles.aComposition]}>Tilbage til opgaven</ButtonLink>;
   } catch { return null; }
 }

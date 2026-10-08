@@ -4,7 +4,6 @@ import { COMPANY_SLUG, mockApi, type MockResponse } from "./fixtures";
 import core from "./data/core.json" with { type: "json" };
 import type { DocumentRow } from "../src/lib/types";
 
-declare global { interface Window { chartFontDraws?: boolean[]; } }
 
 test("native confirmation owns focus, makes background inert, and returns focus after Escape", async ({ page }) => {
   const fixture = await mockApi(page);
@@ -95,7 +94,7 @@ test("invoice creation is a page and protects changed inputs during navigation",
   await page.goto(`/companies/${COMPANY_SLUG}/fakturaer/ny?year=2026`);
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Ny faktura");
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  expect(await page.locator(".workflow-form").evaluate(element => getComputedStyle(element.parentElement!).maxHeight)).toBe("none");
+  expect(await page.locator('[data-ui="workflow-form"]').evaluate(element => getComputedStyle(element.parentElement!).maxHeight)).toBe("none");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   await page.getByLabel("Linje 1 beskrivelse", { exact: true }).fill("Syntetisk rådgivning");
   await page.getByRole("link", { name: "Tilbage til fakturaer", exact: true }).click();
@@ -260,7 +259,7 @@ test("mobile navigation opens a modal menu, navigates, and closes", async ({ pag
   await page.setViewportSize({ width: 390, height: 844 });
   const fixture = await mockApi(page);
   await page.goto(`/companies/${COMPANY_SLUG}/bilag?year=2026`);
-  const menu = page.getByRole("button", { name: /Menu|Åbn navigation/ });
+  const menu = page.getByRole("button", { name: "Selskabsmenu" });
   await expect(menu).toBeVisible();
   await menu.click();
   const dialog = page.getByRole("dialog");
@@ -471,19 +470,19 @@ test("mobile modal navigation includes closed disclosures in the keyboard cycle"
   await page.setViewportSize({ width: 320, height: 844 });
   const fixture = await mockApi(page);
   await page.goto(`/companies/${COMPANY_SLUG}/kontakter?year=2026`);
-  const trigger = page.getByRole("button", { name: "Menu", exact: true });
+  const trigger = page.getByRole("button", { name: "Selskabsmenu", exact: true });
   await trigger.click();
-  const dialog = page.getByRole("dialog", { name: "Virksomhedsnavigation" });
+  const dialog = page.getByRole("dialog", { name: "Selskabsmenu" });
   await expect(trigger).toHaveAttribute("aria-controls", (await dialog.getAttribute("id"))!);
   await expect(trigger).toHaveAttribute("aria-expanded", "true");
-  await expect(dialog.getByRole("button", { name: "Luk menu" })).toBeFocused();
+  await expect(dialog.getByRole("button", { name: "Luk selskabsmenu" })).toBeFocused();
   expect(await dialog.evaluate((element) => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
   const bookkeeping = dialog.locator("summary").filter({ hasText: "Sider i Penge og bilag" });
   for (let tabs = 0; tabs < 20 && !(await bookkeeping.evaluate(element => element === document.activeElement)); tabs++) await page.keyboard.press("Tab");
   await expect(bookkeeping).toBeFocused();
   await page.keyboard.press("Enter");
   await page.keyboard.press("Tab");
-  const close = dialog.getByRole("button", { name: "Luk menu" });
+  const close = dialog.getByRole("button", { name: "Luk selskabsmenu" });
   await dialog.evaluate((element) => { element.scrollTop = element.scrollHeight; });
   const closeBox = await close.boundingBox();
   expect(closeBox?.y).toBeGreaterThanOrEqual(0);
@@ -569,7 +568,7 @@ test("cashflow graph's data table distinguishes absent, zero and negative bank b
 });
 
 
-test("multi-year canvases identify their structured tables and partial-year comparisons", async ({ page }) => {
+test("multi-year SVG charts identify their structured tables and partial-year comparisons", async ({ page }) => {
   const fixture = await mockApi(page);
   await page.goto(`/companies/${COMPANY_SLUG}/fleraar?year=2026`);
   await expect(page.getByRole("img", { name: /Omsætning, udgifter og resultat pr. regnskabsår/ })).toHaveAttribute("aria-details", "multiyear-result");
@@ -585,49 +584,35 @@ test("multi-year canvases identify their structured tables and partial-year comp
 });
 
 
-test("charts redraw with their local fonts after a delayed first visit", async ({ page }) => {
-  await page.addInitScript(() => {
-    const probe = window;
-    probe.chartFontDraws = [];
-    const original: (text: string, x: number, y: number, maxWidth?: number) => void = CanvasRenderingContext2D.prototype.fillText;
-    CanvasRenderingContext2D.prototype.fillText = function (text, x, y, maxWidth) {
-      if (this.font.includes("IBM Plex Mono")) probe.chartFontDraws?.push(Array.from(document.fonts).some((face) => face.family.includes("IBM Plex Mono") && face.weight === "400" && face.status === "loaded"));
-      if (maxWidth === undefined) original.call(this, text, x, y);
-      else original.call(this, text, x, y, maxWidth);
-    };
-  });
+test("SVG charts retain their local typography after delayed FontFace assets load", async ({ page }) => {
   let releaseFonts: () => void = () => {};
   const fonts = new Promise<void>((resolve) => { releaseFonts = resolve; });
-  // Bun embeds these fonts in CSS. Give their original bytes local URLs so
-  // both engines experience a real delayed font load, including WebKit's
-  // otherwise synchronous decoding of embedded fonts.
-  const fontFiles = new Map<string, Buffer>();
-  await page.route("**/*.css", async (route) => {
+  let requestedFonts = 0;
+  await page.route("**/*.woff2", async (route) => {
+    requestedFonts++;
     const response = await route.fetch();
-    const css = await response.text();
-    const body = css.replace(/url\(data:font\/(woff2?);base64,([^)]+)\)/g, (_, format: string, base64: string) => {
-      const path = `/__test_fonts/${fontFiles.size}.${format}`;
-      fontFiles.set(path, Buffer.from(base64, "base64"));
-      return `url("${path}")`;
-    });
-    await route.fulfill({ response, body });
-  });
-  await page.route("**/__test_fonts/*", async (route) => {
-    const bytes = fontFiles.get(new URL(route.request().url()).pathname);
-    if (!bytes) throw new Error("Missing original font bytes");
     await fonts;
-    await route.fulfill({ contentType: route.request().url().endsWith(".woff2") ? "font/woff2" : "font/woff", body: bytes });
+    await route.fulfill({ response });
   });
   const fixture = await mockApi(page);
   try {
     await page.goto(`/companies/${COMPANY_SLUG}?year=2026`, { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("img", { name: /Månedlige indtægter og udgifter/ })).toBeVisible();
-    await expect.poll(() => page.evaluate(() => window.chartFontDraws?.includes(false))).toBe(true);
+    const chart = page.getByRole("img", { name: /Månedlige indtægter og udgifter/ });
+    await expect(chart).toBeVisible();
+    await expect.poll(() => requestedFonts).toBeGreaterThan(0);
+    expect(await chart.evaluate(element => element.tagName.toLowerCase())).toBe("svg");
+    const valuesBefore = await chart.locator("text").allTextContents();
+
     releaseFonts();
-    await expect.poll(() => page.evaluate(() => window.chartFontDraws?.at(-1))).toBe(true);
+    await page.evaluate(async () => { await document.fonts.load('400 12px "IBM Plex Mono"', "0123456789"); await document.fonts.ready; });
+    expect(await page.evaluate(() => document.fonts.check('400 12px "IBM Plex Mono"', "0123456789"))).toBe(true);
+    expect(await page.evaluate(() => Array.from(document.fonts).every(face => face.status === "loaded"))).toBe(true);
+    await expect(chart.locator("text").first()).toHaveCSS("font-family", /IBM Plex Mono/);
+    expect(await chart.locator("text").allTextContents()).toEqual(valuesBefore);
     fixture.assertComplete();
   } finally { releaseFonts(); }
 });
+
 
 
 test("marking changes as seen keeps its receipt after the read refresh empties the list", async ({ page }) => {
@@ -642,5 +627,55 @@ test("marking changes as seen keeps its receipt after the read refresh empties t
   await expect(page.getByText("Ingen nye data- eller statusændringer siden dit seneste besøg.")).toBeVisible();
   await expect(page.getByText("Ændringer markeret som set")).toBeVisible();
   expect(fixture.calls.every(call => call.method === "GET")).toBe(true);
+  fixture.assertComplete();
+});
+
+for (const width of [320, 390, 639]) {
+  test(`compiled mobile table cards clear the old scroll minimum at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 });
+    const fixture = await mockApi(page);
+    await page.goto(`/companies/${COMPANY_SLUG}/kontakter?year=2026`);
+    const table = page.getByRole('table', { name: 'Kunder', exact: true });
+    await expect(table).toBeVisible();
+    expect(await table.evaluate(element => getComputedStyle(element).minWidth)).toBe('0px');
+    const cell = table.getByRole('cell').first();
+    expect(await cell.evaluate(element => getComputedStyle(element).display)).toBe('grid');
+    expect(await cell.evaluate(element => getComputedStyle(element).overflowWrap)).toBe('anywhere');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+    fixture.assertComplete();
+  });
+}
+
+test('native dialog scroll remains locked until the last nested dialog closes', async ({ page }) => {
+  const fixture = await mockApi(page);
+  await page.goto(`/companies/${COMPANY_SLUG}/koersel?year=2026`);
+  await page.getByRole('button', { name: 'Registrér kørsel', exact: true }).click();
+  const editor = page.getByRole('dialog', { name: 'Registrér kørsel', exact: true });
+  await editor.getByLabel('Formål', { exact: true }).fill('synthetic-unsaved-value');
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).toBe('hidden');
+  await page.keyboard.press('Escape');
+  const confirmation = page.getByRole('dialog', { name: 'Kassér ændringer?' });
+  await expect(confirmation).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(2);
+  await confirmation.getByRole('button', { name: 'Annullér', exact: true }).click();
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).toBe('hidden');
+  await editor.getByLabel('Formål', { exact: true }).fill('');
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).not.toBe('hidden');
+  fixture.assertComplete();
+});
+
+
+test('print retains company work while hiding global navigation, company context and actions', async ({ page }) => {
+  const fixture = await mockApi(page);
+  await page.goto(`/companies/${COMPANY_SLUG}/kontakter?year=2026`);
+  await expect(page.getByRole('heading', { name: 'Kontakter', exact: true })).toBeVisible();
+  await page.emulateMedia({ media: 'print' });
+  await expect(page.getByRole('navigation', { name: 'Workspace', exact: true })).toBeHidden();
+  await expect(page.getByRole('navigation', { name: 'Virksomhedsnavigation', exact: true })).toBeHidden();
+  await expect(page.getByLabel('Skift virksomhed', { exact: true })).toBeHidden();
+  expect(await page.getByRole('main').evaluate(element => getComputedStyle(element.parentElement!).display)).toBe('block');
+  await expect(page.getByRole('table', { name: 'Kunder', exact: true })).toBeVisible();
   fixture.assertComplete();
 });

@@ -1,7 +1,14 @@
+import * as stylex from "@stylexjs/stylex";
+import {
+	Button,
+	ButtonLink,
+	Input,
+	PageHeader,
+	Select,
+} from "../components/ui";
+import { cockpitStyles } from "../design/cockpit.stylex";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { useUnsavedChanges } from "../lib/useUnsavedChanges";
-import * as stylex from "@stylexjs/stylex";
-import { ButtonLink, Button, Input, PageHeader, Select } from "../components/ui";
 // Company management — rename the display name, sync CVR stamdata, and
 // archive/restore.
 //
@@ -10,17 +17,17 @@ import { ButtonLink, Button, Input, PageHeader, Select } from "../components/ui"
 
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { api, ApiError } from "../lib/api";
-import { useAsync } from "../lib/useAsync";
-import { formatDateDa } from "../lib/format";
-import { Banner, ErrorState, Loading } from "../components/Feedback";
 import { AccountantExportCard } from "../components/AccountantExportCard";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { Banner, ErrorState, Loading } from "../components/Feedback";
+import { ApiError, api } from "../lib/api";
+import { formatDateDa } from "../lib/format";
 import type {
-  CompanyEntry,
-  CompanySettings,
-  VatPeriodType,
+	CompanyEntry,
+	CompanySettings,
+	VatPeriodType,
 } from "../lib/types";
+import { useAsync } from "../lib/useAsync";
 
 // #UI-3 — the cockpit serves no /docs/* routes, so the old `/docs/cvr-opsaetning`
 // link was a dead end. CVR-login setup is covered by the public installation
@@ -34,230 +41,534 @@ const CVR_SETUP_GUIDE_URL = "https://rentemester.dk/docs/installation";
  * option an owner of a non-registered holding ApS could never keep — and would
  * silently re-register on — the not-registered state when saving the profile.
  */
-const VAT_PERIOD_OPTIONS: Array<{ value: VatPeriodType | "none"; label: string }> = [
-  { value: "month", label: "Måned (måneds-moms)" },
-  { value: "quarter", label: "Kvartal (kvartals-moms)" },
-  { value: "half-year", label: "Halvår (halvårs-moms)" },
-  { value: "none", label: "Ikke momsregistreret" },
+const VAT_PERIOD_OPTIONS: Array<{
+	value: VatPeriodType | "none";
+	label: string;
+}> = [
+	{ value: "month", label: "Måned (måneds-moms)" },
+	{ value: "quarter", label: "Kvartal (kvartals-moms)" },
+	{ value: "half-year", label: "Halvår (halvårs-moms)" },
+	{ value: "none", label: "Ikke momsregistreret" },
 ];
 
 export function ManageCompanyView() {
-  const { slug = "" } = useParams();
-  const navigate = useNavigate();
-  const state = useAsync(async (signal) => {
-    const companies = await api.companies({ signal });
-    const found = companies.find((c) => c.slug === slug);
-    if (!found) throw new ApiError("not_found", "Virksomheden findes ikke.", 404);
-    const settings = await api.companySettings(slug, { signal });
-    return { found, settings };
-  }, [slug]);
+	const { slug = "" } = useParams();
+	const navigate = useNavigate();
+	const state = useAsync(
+		async (signal) => {
+			const companies = await api.companies({ signal });
+			const found = companies.find((c) => c.slug === slug);
+			if (!found)
+				throw new ApiError("not_found", "Virksomheden findes ikke.", 404);
+			const settings = await api.companySettings(slug, { signal });
+			return { found, settings };
+		},
+		[slug],
+	);
 
-  if (state.loading && !state.data) return <section data-evidence-issue="657"><h2 data-evidence-heading>Administration</h2><p data-evidence-status="loading">Henter virksomhedsprofil</p><Loading /></section>;
-  if (state.error && !state.data)
-    return <section data-evidence-issue="657"><h2 data-evidence-heading>Administration</h2><p data-evidence-status={/403|forbudt|adgang/i.test(state.error) ? "warning-or-blocked" : "error"}>{/403|forbudt|adgang/i.test(state.error) ? "Virksomhedsprofil kræver afklaring" : "Virksomhedsprofil kunne ikke hentes"}</p><ErrorState message={state.error} onRetry={state.reload} /></section>;
+	if (state.loading && !state.data)
+		return (
+			<section
+				data-evidence-issue="657"
+				{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+			>
+				<h2
+					data-evidence-heading
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h2,
+					)}
+				>
+					Administration
+				</h2>
+				<p
+					data-evidence-status="loading"
+					{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+				>
+					Henter virksomhedsprofil
+				</p>
+				<Loading />
+			</section>
+		);
+	if (state.error && !state.data)
+		return (
+			<section
+				data-evidence-issue="657"
+				{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+			>
+				<h2
+					data-evidence-heading
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h2,
+					)}
+				>
+					Administration
+				</h2>
+				<p
+					data-evidence-status={
+						/403|forbudt|adgang/i.test(state.error)
+							? "warning-or-blocked"
+							: "error"
+					}
+					{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+				>
+					{/403|forbudt|adgang/i.test(state.error)
+						? "Virksomhedsprofil kræver afklaring"
+						: "Virksomhedsprofil kunne ikke hentes"}
+				</p>
+				<ErrorState message={state.error} onRetry={state.reload} />
+			</section>
+		);
 
-  return (
-    <ManageForm
-      onRefresh={state.reload}
-      company={state.data!.found}
-      settings={state.data!.settings}
-      onArchivedAway={() => navigate("/")}
-    />
-  );
+	return (
+		<ManageForm
+			onRefresh={state.reload}
+			company={state.data!.found}
+			settings={state.data!.settings}
+			onArchivedAway={() => navigate("/")}
+		/>
+	);
 }
 
 function hasIncompleteAdministrativeProfile(settings: CompanySettings) {
-  return !settings.cvr;
+	return !settings.cvr;
 }
 
 function ManageForm({
-  onRefresh,
-  company,
-  settings,
-  onArchivedAway,
+	onRefresh,
+	company,
+	settings,
+	onArchivedAway,
 }: {
-  onRefresh: () => void;
-  company: CompanyEntry;
-  settings: CompanySettings;
-  onArchivedAway: () => void;
+	onRefresh: () => void;
+	company: CompanyEntry;
+	settings: CompanySettings;
+	onArchivedAway: () => void;
 }) {
-  const [name, setName] = useState(company.name);
-  // Local mirrors of the persisted state, so the form stays consistent after a
-  // save without re-fetching (a re-fetch would unmount this form mid-notice).
-  const [savedName, setSavedName] = useState(company.name);
-  const [archived, setArchived] = useState(company.archived);
-  // #UI-17 — archiving navigates the owner away from this view, so it must not
-  // fire on a single stray click. Gate it behind a confirm dialog. (Restoring
-  // is non-destructive and stays on the page, so it stays one-click.)
-  const [confirmingArchive, setConfirmingArchive] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+	const [name, setName] = useState(company.name);
+	// Local mirrors of the persisted state, so the form stays consistent after a
+	// save without re-fetching (a re-fetch would unmount this form mid-notice).
+	const [savedName, setSavedName] = useState(company.name);
+	const [archived, setArchived] = useState(company.archived);
+	// #UI-17 — archiving navigates the owner away from this view, so it must not
+	// fire on a single stray click. Gate it behind a confirm dialog. (Restoring
+	// is non-destructive and stays on the page, so it stays one-click.)
+	const [confirmingArchive, setConfirmingArchive] = useState(false);
+	const [busy, setBusy] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [notice, setNotice] = useState<string | null>(null);
 
-  const renameDisabled =
-    busy || name.trim().length === 0 || name.trim() === savedName;
+	const renameDisabled =
+		busy || name.trim().length === 0 || name.trim() === savedName;
 
-  const outcome = useMutationOutcome(onRefresh);
-  useUnsavedChanges(name.trim() !== savedName.trim());
+	const outcome = useMutationOutcome(onRefresh);
+	useUnsavedChanges(name.trim() !== savedName.trim());
 
-  async function rename(e: React.FormEvent) {
-    e.preventDefault();
-    if (outcome.isBlocked()) return;
-    setBusy(true);
-    setError(null);
-    setNotice(null);
-    try {
-      const updated = await outcome.run(() => api.updateCompany(company.slug, {
-        name: name.trim(),
-      }));
-      setSavedName(updated.name);
-      setName(updated.name);
-      setNotice("Visningsnavn opdateret.");
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Kunne ikke gemme navnet.");
-    } finally {
-      setBusy(false);
-    }
-  }
+	async function rename(e: React.FormEvent) {
+		e.preventDefault();
+		if (outcome.isBlocked()) return;
+		setBusy(true);
+		setError(null);
+		setNotice(null);
+		try {
+			const updated = await outcome.run(() =>
+				api.updateCompany(company.slug, {
+					name: name.trim(),
+				}),
+			);
+			setSavedName(updated.name);
+			setName(updated.name);
+			setNotice("Visningsnavn opdateret.");
+		} catch (err) {
+			setError(
+				err instanceof ApiError ? err.message : "Kunne ikke gemme navnet.",
+			);
+		} finally {
+			setBusy(false);
+		}
+	}
 
-  // Restoring is non-destructive and keeps the owner on the page — one click.
-  async function restoreCompany() {
-    if (outcome.isBlocked()) return;
-    setBusy(true);
-    setError(null);
-    setNotice(null);
-    try {
-      await outcome.run(() => api.updateCompany(company.slug, { archived: false }));
-      setArchived(false);
-      setNotice("Virksomheden er gendannet.");
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Kunne ikke ændre arkivstatus.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
+	// Restoring is non-destructive and keeps the owner on the page — one click.
+	async function restoreCompany() {
+		if (outcome.isBlocked()) return;
+		setBusy(true);
+		setError(null);
+		setNotice(null);
+		try {
+			await outcome.run(() =>
+				api.updateCompany(company.slug, { archived: false }),
+			);
+			setArchived(false);
+			setNotice("Virksomheden er gendannet.");
+		} catch (err) {
+			setError(
+				err instanceof ApiError ? err.message : "Kunne ikke ændre arkivstatus.",
+			);
+		} finally {
+			setBusy(false);
+		}
+	}
 
-  // #UI-17 — archiving runs from the confirm dialog. It rejects on failure so
-  // the dialog surfaces the error (and the backup-lock conflict) inline rather
-  // than navigating away on a half-finished write.
-  async function confirmArchive() {
-    await outcome.run(() => api.updateCompany(company.slug, { archived: true }));
-    onArchivedAway();
-  }
+	// #UI-17 — archiving runs from the confirm dialog. It rejects on failure so
+	// the dialog surfaces the error (and the backup-lock conflict) inline rather
+	// than navigating away on a half-finished write.
+	async function confirmArchive() {
+		await outcome.run(() =>
+			api.updateCompany(company.slug, { archived: true }),
+		);
+		onArchivedAway();
+	}
 
-  return (
-    <section data-cockpit-page="manage" data-evidence-issue="657">
-    {outcome.feedback}
-      <PageHeader evidenceHeading title="Administration" actions={<><ButtonLink className="btn secondary" to={`/companies/${company.slug}`}>
-          Tilbage til regnskab
-        </ButtonLink></>}>
-        <div>
+	return (
+		<section
+			data-cockpit-page="manage"
+			data-evidence-issue="657"
+			{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+		>
+			{outcome.feedback}
+			<PageHeader
+				evidenceHeading
+				title="Administration"
+				actions={
+					<>
+						<ButtonLink
+							to={`/companies/${company.slug}`}
+							variant={"secondary"}
+							xstyle={[cockpitStyles.aComposition]}
+						>
+							Tilbage til regnskab
+						</ButtonLink>
+					</>
+				}
+			>
+				<div
+					{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+				>
+					<p
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.muted,
+						)}
+					>
+						Hold virksomhedens profil og den daglige opsætning på plads.
+					</p>
+				</div>
 
-          <p className="muted">
-            Hold virksomhedens profil og den daglige opsætning på plads.
-          </p>
-        </div>
+				<p
+					data-evidence-status={
+						hasIncompleteAdministrativeProfile(settings) ? "empty" : "normal"
+					}
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.muted,
+					)}
+				>
+					{hasIncompleteAdministrativeProfile(settings)
+						? "Ingen administrationsoplysninger endnu"
+						: "Administration klar"}
+				</p>
+			</PageHeader>
 
-      <p className="muted" data-evidence-status={hasIncompleteAdministrativeProfile(settings) ? "empty" : "normal"}>{hasIncompleteAdministrativeProfile(settings) ? "Ingen administrationsoplysninger endnu" : "Administration klar"}</p></PageHeader>
+			{error && <Banner kind="error">{error}</Banner>}
+			{notice && <Banner kind="success">{notice}</Banner>}
 
-      {error && <Banner kind="error">{error}</Banner>}
-      {notice && <Banner kind="success">{notice}</Banner>}
+			<section
+				aria-labelledby="virksomhedsprofil-heading"
+				data-evidence-data={
+					!hasIncompleteAdministrativeProfile(settings) ? true : undefined
+				}
+				{...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}
+			>
+				<h3
+					id="virksomhedsprofil-heading"
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+					)}
+				>
+					Virksomhedsprofil
+				</h3>
+				<p
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.muted,
+					)}
+				>
+					Redigér navn, stamdata og betalingsoplysninger. Regnskabsdata påvirkes
+					ikke.
+				</p>
+				<form
+					onSubmit={rename}
+					aria-label="Omdøb virksomhed"
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.form,
+					)}
+				>
+					<label
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.formLabel,
+						)}
+					>
+						Visningsnavn
+						<Input
+							disabled={outcome.blocked}
+							name="name"
+							value={name}
+							onChange={(e) => setName(e.target.value)}
+							xstyle={[cockpitStyles.formInputFocusComposition]}
+						/>
+						<span
+							{...stylex.props(
+								cockpitStyles.element,
+								cockpitStyles.focusVisible,
+								cockpitStyles.fieldHint,
+							)}
+						>
+							Ændrer kun det viste navn — slug og regnskabsdata berøres ikke.
+						</span>
+					</label>
+					<div
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.rowActions,
+						)}
+					>
+						<Button
+							requiredPermission="company.admin"
+							type="submit"
+							disabled={outcome.blocked || renameDisabled}
+							xstyle={[cockpitStyles.buttonComposition]}
+						>
+							Gem navn
+						</Button>
+					</div>
+				</form>
 
-      <section aria-labelledby="virksomhedsprofil-heading" data-evidence-data={!hasIncompleteAdministrativeProfile(settings) ? true : undefined}>
-      <h3 id="virksomhedsprofil-heading">Virksomhedsprofil</h3>
-      <p className="muted">Redigér navn, stamdata og betalingsoplysninger. Regnskabsdata påvirkes ikke.</p>
-      <form className="form" onSubmit={rename} aria-label="Omdøb virksomhed">
-        <label>
-          Visningsnavn
-          <Input disabled={outcome.blocked}
-            name="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <span className="field-hint">
-            Ændrer kun det viste navn — slug og regnskabsdata berøres ikke.
-          </span>
-        </label>
-        <div className="row-actions">
-          <Button requiredPermission="company.admin" className="btn" type="submit" disabled={outcome.blocked || (renameDisabled)}>
-            Gem navn
-          </Button>
-        </div>
-      </form>
+				<ProfileCard slug={company.slug} initial={settings} />
 
-      <ProfileCard slug={company.slug} initial={settings} />
+				<CvrCard slug={company.slug} initial={settings} />
+			</section>
 
-      <CvrCard slug={company.slug} initial={settings} />
-      </section>
+			<section
+				aria-labelledby="daglig-opsætning-heading"
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.card,
+				)}
+			>
+				<h3
+					id="daglig-opsætning-heading"
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+					)}
+				>
+					Daglig opsætning
+				</h3>
+				<p {...stylex.props(cockpitStyles.element, cockpitStyles.focusVisible)}>
+					Vælg det område, du vil gøre klar til den daglige bogføring.
+				</p>
+				<div
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.rowActions,
+					)}
+				>
+					<Link
+						data-evidence-core-action
+						to={`/companies/${company.slug}/kontoplan`}
+						{...stylex.props(cockpitStyles.aComposition)}
+					>
+						Åbn daglig opsætning
+					</Link>
+					<Link
+						to={`/companies/${company.slug}/dimensioner`}
+						{...stylex.props(cockpitStyles.aComposition)}
+					>
+						Dimensioner
+					</Link>
+					<Link
+						to={`/companies/${company.slug}/bankkonti`}
+						{...stylex.props(cockpitStyles.aComposition)}
+					>
+						Bankkonti
+					</Link>
+					<Link
+						to={`/companies/${company.slug}/bilagsmail`}
+						{...stylex.props(cockpitStyles.aComposition)}
+					>
+						Bilagsmail
+					</Link>
+				</div>
+			</section>
 
-      <section className="card" aria-labelledby="daglig-opsætning-heading">
-        <h3 id="daglig-opsætning-heading">Daglig opsætning</h3>
-        <p>Vælg det område, du vil gøre klar til den daglige bogføring.</p>
-        <div className="row-actions">
-          <Link className="btn secondary" data-evidence-core-action to={`/companies/${company.slug}/kontoplan`}>Åbn daglig opsætning</Link>
-          <Link className="btn secondary" to={`/companies/${company.slug}/dimensioner`}>Dimensioner</Link>
-          <Link className="btn secondary" to={`/companies/${company.slug}/bankkonti`}>Bankkonti</Link>
-          <Link className="btn secondary" to={`/companies/${company.slug}/bilagsmail`}>Bilagsmail</Link>
-        </div>
-      </section>
+			<section
+				aria-labelledby="advanced-security-heading"
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.card,
+				)}
+			>
+				<h3
+					id="advanced-security-heading"
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.h3,
+					)}
+				>
+					Avanceret og sikkerhed
+				</h3>
+				<p
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.muted,
+					)}
+				>
+					Kontrol, opbevaring og særlige arbejdsgange er adskilt fra den
+					almindelige profilredigering.
+				</p>
+				<div
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.rowActions,
+					)}
+				>
+					<Link
+						to={`/companies/${company.slug}/integritet`}
+						{...stylex.props(cockpitStyles.aComposition)}
+					>
+						Integritet og backup
+					</Link>
+					<Link
+						to={`/companies/${company.slug}/retention`}
+						{...stylex.props(cockpitStyles.aComposition)}
+					>
+						Opbevaring
+					</Link>
+					<Link
+						to={`/companies/${company.slug}/gdpr`}
+						{...stylex.props(cockpitStyles.aComposition)}
+					>
+						GDPR
+					</Link>
+					<Link
+						to={`/companies/${company.slug}/arkiv`}
+						{...stylex.props(cockpitStyles.aComposition)}
+					>
+						Arkiv
+					</Link>
+				</div>
+			</section>
 
-      <section className="card" aria-labelledby="advanced-security-heading">
-        <h3 id="advanced-security-heading">Avanceret og sikkerhed</h3>
-        <p className="muted">Kontrol, opbevaring og særlige arbejdsgange er adskilt fra den almindelige profilredigering.</p>
-        <div className="row-actions">
-          <Link className="btn secondary" to={`/companies/${company.slug}/integritet`}>Integritet og backup</Link>
-          <Link className="btn secondary" to={`/companies/${company.slug}/retention`}>Opbevaring</Link>
-          <Link className="btn secondary" to={`/companies/${company.slug}/gdpr`}>GDPR</Link>
-          <Link className="btn secondary" to={`/companies/${company.slug}/arkiv`}>Arkiv</Link>
-        </div>
-      </section>
+			<details
+				data-evidence-progressive
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.card,
+				)}
+			>
+				<summary {...stylex.props(cockpitStyles.summaryComposition)}>
+					System- og livscyklusindstillinger
+				</summary>
+				<AccountantExportCard slug={company.slug} />
 
-      <details className="card" data-evidence-progressive>
-        <summary>System- og livscyklusindstillinger</summary>
-      <AccountantExportCard slug={company.slug} />
+				<div
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.card,
+						viewStyles.site0,
+					)}
+				>
+					<h3
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.h3,
+							viewStyles.site1,
+						)}
+					>
+						{archived ? "Gendan virksomhed" : "Arkivér virksomhed"}
+					</h3>
+					<p
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.muted,
+						)}
+					>
+						{archived
+							? "Virksomheden er arkiveret. Gendan den for at vise den i porteføljen igen."
+							: "Arkivering skjuler virksomheden fra den aktive portefølje. Regnskabsdata slettes aldrig og kan gendannes."}
+					</p>
+					<Button
+						requiredPermission="company.admin"
+						variant="secondary"
+						type="button"
+						onClick={
+							archived ? restoreCompany : () => setConfirmingArchive(true)
+						}
+						disabled={outcome.blocked || busy}
+						xstyle={[cockpitStyles.buttonComposition]}
+					>
+						{archived ? "Gendan virksomhed" : "Arkivér virksomhed"}
+					</Button>
+				</div>
 
-      <div className={["card", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
-        <h3 {...stylex.props(viewStyles.site1)}>
-          {archived ? "Gendan virksomhed" : "Arkivér virksomhed"}
-        </h3>
-        <p className="muted">
-          {archived
-            ? "Virksomheden er arkiveret. Gendan den for at vise den i porteføljen igen."
-            : "Arkivering skjuler virksomheden fra den aktive portefølje. Regnskabsdata slettes aldrig og kan gendannes."}
-        </p>
-        <Button requiredPermission="company.admin" variant="secondary"
-          className="btn secondary"
-          type="button"
-          onClick={
-            archived ? restoreCompany : () => setConfirmingArchive(true)
-          }
-          disabled={outcome.blocked || (busy)}
-        >
-          {archived ? "Gendan virksomhed" : "Arkivér virksomhed"}
-        </Button>
-      </div>
-
-      {confirmingArchive && (
-        <ConfirmDialog
-          title="Arkivér virksomhed"
-          body={
-            <p>
-              Arkivér <strong>{savedName}</strong>? Virksomheden skjules fra den
-              aktive portefølje, og du sendes tilbage til oversigten.
-              Regnskabsdata slettes aldrig og kan gendannes herfra igen.
-            </p>
-          }
-          confirmLabel="Arkivér virksomhed"
-          confirmKind="danger"
-          onConfirm={confirmArchive}
-          onClose={() => setConfirmingArchive(false)} onRefresh={onRefresh}
-        />
-      )}
-      </details>
-    </section>
-  );
+				{confirmingArchive && (
+					<ConfirmDialog
+						title="Arkivér virksomhed"
+						body={
+							<p
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}
+							>
+								Arkivér{" "}
+								<strong
+									{...stylex.props(
+										cockpitStyles.element,
+										cockpitStyles.focusVisible,
+									)}
+								>
+									{savedName}
+								</strong>
+								? Virksomheden skjules fra den aktive portefølje, og du sendes
+								tilbage til oversigten. Regnskabsdata slettes aldrig og kan
+								gendannes herfra igen.
+							</p>
+						}
+						confirmLabel="Arkivér virksomhed"
+						confirmKind="danger"
+						onConfirm={confirmArchive}
+						onClose={() => setConfirmingArchive(false)}
+						onRefresh={onRefresh}
+					/>
+				)}
+			</details>
+		</section>
+	);
 }
 
 /**
@@ -270,197 +581,333 @@ function ManageForm({
  * `setCompanyProfile` core function the CLI's `company profile` command uses.
  */
 function ProfileCard({
-  slug,
-  initial,
+	slug,
+	initial,
 }: {
-  slug: string;
-  initial: CompanySettings;
+	slug: string;
+	initial: CompanySettings;
 }) {
-  const [settings, setSettings] = useState(initial);
-  const [address, setAddress] = useState(initial.address ?? "");
-  const [postalCode, setPostalCode] = useState(initial.postalCode ?? "");
-  const [city, setCity] = useState(initial.city ?? "");
-  // #300: the VAT settlement cadence is editable from the cockpit, including
-  // turning registration OFF (`"none"` → submitted as `null`). Initialise the
-  // form state from `initial.vatPeriodType` so a not-VAT-registered company
-  // (null) shows "Ikke momsregistreret" selected — defaulting to `quarter`
-  // here would silently re-register the company on the next profile save.
-  const [vatPeriodType, setVatPeriodType] = useState<VatPeriodType | "none">(
-    initial.vatPeriodType ?? "none",
-  );
-  const [bankName, setBankName] = useState(initial.payment?.bankName ?? "");
-  const [registrationNo, setRegistrationNo] = useState(
-    initial.payment?.registrationNo ?? "",
-  );
-  const [accountNo, setAccountNo] = useState(
-    initial.payment?.accountNo ?? "",
-  );
-  const [iban, setIban] = useState(initial.payment?.iban ?? "");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+	const [settings, setSettings] = useState(initial);
+	const [address, setAddress] = useState(initial.address ?? "");
+	const [postalCode, setPostalCode] = useState(initial.postalCode ?? "");
+	const [city, setCity] = useState(initial.city ?? "");
+	// #300: the VAT settlement cadence is editable from the cockpit, including
+	// turning registration OFF (`"none"` → submitted as `null`). Initialise the
+	// form state from `initial.vatPeriodType` so a not-VAT-registered company
+	// (null) shows "Ikke momsregistreret" selected — defaulting to `quarter`
+	// here would silently re-register the company on the next profile save.
+	const [vatPeriodType, setVatPeriodType] = useState<VatPeriodType | "none">(
+		initial.vatPeriodType ?? "none",
+	);
+	const [bankName, setBankName] = useState(initial.payment?.bankName ?? "");
+	const [registrationNo, setRegistrationNo] = useState(
+		initial.payment?.registrationNo ?? "",
+	);
+	const [accountNo, setAccountNo] = useState(initial.payment?.accountNo ?? "");
+	const [iban, setIban] = useState(initial.payment?.iban ?? "");
+	const [busy, setBusy] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [notice, setNotice] = useState<string | null>(null);
 
-  const hasPayment = Boolean(
-    settings.payment &&
-      (settings.payment.bankName ||
-        settings.payment.registrationNo ||
-        settings.payment.accountNo ||
-        settings.payment.iban),
-  );
+	const hasPayment = Boolean(
+		settings.payment &&
+			(settings.payment.bankName ||
+				settings.payment.registrationNo ||
+				settings.payment.accountNo ||
+				settings.payment.iban),
+	);
 
-  const outcome = useMutationOutcome(async () => { await api.companySettings(slug); setNotice("Gemte stamdata er hentet. Indtastningerne i formularen er bevaret."); });
-  useUnsavedChanges(address.trim() !== (settings.address ?? "") || postalCode.trim() !== (settings.postalCode ?? "") || city.trim() !== (settings.city ?? "") || vatPeriodType !== (settings.vatPeriodType ?? "none") || bankName.trim() !== (settings.payment?.bankName ?? "") || registrationNo.trim() !== (settings.payment?.registrationNo ?? "") || accountNo.trim() !== (settings.payment?.accountNo ?? "") || iban.trim() !== (settings.payment?.iban ?? ""));
+	const outcome = useMutationOutcome(async () => {
+		await api.companySettings(slug);
+		setNotice(
+			"Gemte stamdata er hentet. Indtastningerne i formularen er bevaret.",
+		);
+	});
+	useUnsavedChanges(
+		address.trim() !== (settings.address ?? "") ||
+			postalCode.trim() !== (settings.postalCode ?? "") ||
+			city.trim() !== (settings.city ?? "") ||
+			vatPeriodType !== (settings.vatPeriodType ?? "none") ||
+			bankName.trim() !== (settings.payment?.bankName ?? "") ||
+			registrationNo.trim() !== (settings.payment?.registrationNo ?? "") ||
+			accountNo.trim() !== (settings.payment?.accountNo ?? "") ||
+			iban.trim() !== (settings.payment?.iban ?? ""),
+	);
 
-  async function save(e: React.FormEvent) {
-    e.preventDefault();
-    if (outcome.isBlocked()) return;
-    setBusy(true);
-    setError(null);
-    setNotice(null);
-    try {
-      const updated = await outcome.run(() => api.updateCompanyProfile(slug, {
-        address: address.trim(),
-        postalCode: postalCode.trim(),
-        city: city.trim(),
-        // `"none"` → null so the server deregisters the company; a real
-        // cadence is sent verbatim.
-        vatPeriodType: vatPeriodType === "none" ? null : vatPeriodType,
-        payment: {
-          bankName: bankName.trim(),
-          registrationNo: registrationNo.trim(),
-          accountNo: accountNo.trim(),
-          iban: iban.trim(),
-        },
-      }));
-      setSettings(updated);
-      setVatPeriodType(updated.vatPeriodType ?? "none");
-      setNotice("Stamdata opdateret.");
-    } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : "Kunne ikke gemme stamdata.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
+	async function save(e: React.FormEvent) {
+		e.preventDefault();
+		if (outcome.isBlocked()) return;
+		setBusy(true);
+		setError(null);
+		setNotice(null);
+		try {
+			const updated = await outcome.run(() =>
+				api.updateCompanyProfile(slug, {
+					address: address.trim(),
+					postalCode: postalCode.trim(),
+					city: city.trim(),
+					// `"none"` → null so the server deregisters the company; a real
+					// cadence is sent verbatim.
+					vatPeriodType: vatPeriodType === "none" ? null : vatPeriodType,
+					payment: {
+						bankName: bankName.trim(),
+						registrationNo: registrationNo.trim(),
+						accountNo: accountNo.trim(),
+						iban: iban.trim(),
+					},
+				}),
+			);
+			setSettings(updated);
+			setVatPeriodType(updated.vatPeriodType ?? "none");
+			setNotice("Stamdata opdateret.");
+		} catch (err) {
+			setError(
+				err instanceof ApiError ? err.message : "Kunne ikke gemme stamdata.",
+			);
+		} finally {
+			setBusy(false);
+		}
+	}
 
-  return (
-    <div className={["card", stylex.props(viewStyles.site2).className].filter(Boolean).join(" ")} >
-    {outcome.feedback}
-      <h3 {...stylex.props(viewStyles.site3)}>Stamdata og bankoplysninger</h3>
-      <p className="muted">
-        Virksomhedens egen adresse og bankkonto. Bankkontoen vises som
-        betalingsoplysninger på alle fakturaer du udsteder.
-      </p>
+	return (
+		<div
+			{...stylex.props(
+				cockpitStyles.element,
+				cockpitStyles.focusVisible,
+				cockpitStyles.card,
+				viewStyles.site2,
+			)}
+		>
+			{outcome.feedback}
+			<h3
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.h3,
+					viewStyles.site3,
+				)}
+			>
+				Stamdata og bankoplysninger
+			</h3>
+			<p
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.muted,
+				)}
+			>
+				Virksomhedens egen adresse og bankkonto. Bankkontoen vises som
+				betalingsoplysninger på alle fakturaer du udsteder.
+			</p>
 
-      {error && <Banner kind="error">{error}</Banner>}
-      {notice && <Banner kind="success">{notice}</Banner>}
-      {!hasPayment && (
-        <Banner kind="warning">
-          Der er ingen bankkonto registreret. Fakturaer udstedes uden
-          betalingsoplysninger, indtil du tilføjer en konto her.
-        </Banner>
-      )}
+			{error && <Banner kind="error">{error}</Banner>}
+			{notice && <Banner kind="success">{notice}</Banner>}
+			{!hasPayment && (
+				<Banner kind="warning">
+					Der er ingen bankkonto registreret. Fakturaer udstedes uden
+					betalingsoplysninger, indtil du tilføjer en konto her.
+				</Banner>
+			)}
 
-      <form className="form" onSubmit={save} aria-label="Rediger stamdata">
-        <label>
-          Adresse
-          <Input disabled={outcome.blocked}
-            name="address"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            placeholder="Vej 1"
-          />
-        </label>
-        <label>
-          Postnummer
-          <Input disabled={outcome.blocked}
-            name="postalCode"
-            value={postalCode}
-            onChange={(e) => setPostalCode(e.target.value)}
-            placeholder="1000"
-          />
-        </label>
-        <label>
-          By
-          <Input disabled={outcome.blocked}
-            name="city"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder="København"
-          />
-        </label>
-        <label>
-          Momsperiode
-          <Select disabled={outcome.blocked}
-            name="vatPeriodType"
-            value={vatPeriodType}
-            onChange={(e) =>
-              setVatPeriodType(e.target.value as VatPeriodType | "none")
-            }
-          >
-            {VAT_PERIOD_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </Select>
-          <span className="field-hint">
-            Den momsperiode virksomheden er registreret for hos SKAT.
-            Momsperioder og -frister følger dette valg. Vælg «Ikke
-            momsregistreret» for en virksomhed uden momsregistrering (fx
-            holdingselskab) — momsfrister og momsangivelse slås så fra.
-          </span>
-        </label>
-        <label>
-          Pengeinstitut
-          <Input disabled={outcome.blocked}
-            name="bankName"
-            value={bankName}
-            onChange={(e) => setBankName(e.target.value)}
-            placeholder="Danske Bank"
-          />
-        </label>
-        <label>
-          Registreringsnummer
-          <Input disabled={outcome.blocked}
-            name="registrationNo"
-            value={registrationNo}
-            onChange={(e) => setRegistrationNo(e.target.value)}
-            placeholder="1234"
-          />
-        </label>
-        <label>
-          Kontonummer
-          <Input disabled={outcome.blocked}
-            name="accountNo"
-            value={accountNo}
-            onChange={(e) => setAccountNo(e.target.value)}
-            placeholder="0001234567"
-          />
-        </label>
-        <label>
-          IBAN (valgfrit)
-          <Input disabled={outcome.blocked}
-            name="iban"
-            value={iban}
-            onChange={(e) => setIban(e.target.value)}
-            placeholder="DK0000000000000000"
-          />
-          <span className="field-hint">
-            Bruges til betalinger fra udlandet.
-          </span>
-        </label>
-        <div className="row-actions">
-          <Button requiredPermission="company.admin" className="btn" type="submit" disabled={outcome.blocked || (busy)}>
-            {busy ? "Gemmer…" : "Gem stamdata"}
-          </Button>
-        </div>
-      </form>
-    </div>
-  );
+			<form
+				onSubmit={save}
+				aria-label="Rediger stamdata"
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.form,
+				)}
+			>
+				<label
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.formLabel,
+					)}
+				>
+					Adresse
+					<Input
+						disabled={outcome.blocked}
+						name="address"
+						value={address}
+						onChange={(e) => setAddress(e.target.value)}
+						placeholder="Vej 1"
+						xstyle={[cockpitStyles.formInputFocusComposition]}
+					/>
+				</label>
+				<label
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.formLabel,
+					)}
+				>
+					Postnummer
+					<Input
+						disabled={outcome.blocked}
+						name="postalCode"
+						value={postalCode}
+						onChange={(e) => setPostalCode(e.target.value)}
+						placeholder="1000"
+						xstyle={[cockpitStyles.formInputFocusComposition]}
+					/>
+				</label>
+				<label
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.formLabel,
+					)}
+				>
+					By
+					<Input
+						disabled={outcome.blocked}
+						name="city"
+						value={city}
+						onChange={(e) => setCity(e.target.value)}
+						placeholder="København"
+						xstyle={[cockpitStyles.formInputFocusComposition]}
+					/>
+				</label>
+				<label
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.formLabel,
+					)}
+				>
+					Momsperiode
+					<Select
+						disabled={outcome.blocked}
+						name="vatPeriodType"
+						value={vatPeriodType}
+						onChange={(e) =>
+							setVatPeriodType(e.target.value as VatPeriodType | "none")
+						}
+						xstyle={[cockpitStyles.formSelectFocusComposition]}
+					>
+						{VAT_PERIOD_OPTIONS.map((o) => (
+							<option
+								key={o.value}
+								value={o.value}
+								{...stylex.props(
+									cockpitStyles.element,
+									cockpitStyles.focusVisible,
+								)}
+							>
+								{o.label}
+							</option>
+						))}
+					</Select>
+					<span
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.fieldHint,
+						)}
+					>
+						Den momsperiode virksomheden er registreret for hos SKAT.
+						Momsperioder og -frister følger dette valg. Vælg «Ikke
+						momsregistreret» for en virksomhed uden momsregistrering (fx
+						holdingselskab) — momsfrister og momsangivelse slås så fra.
+					</span>
+				</label>
+				<label
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.formLabel,
+					)}
+				>
+					Pengeinstitut
+					<Input
+						disabled={outcome.blocked}
+						name="bankName"
+						value={bankName}
+						onChange={(e) => setBankName(e.target.value)}
+						placeholder="Danske Bank"
+						xstyle={[cockpitStyles.formInputFocusComposition]}
+					/>
+				</label>
+				<label
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.formLabel,
+					)}
+				>
+					Registreringsnummer
+					<Input
+						disabled={outcome.blocked}
+						name="registrationNo"
+						value={registrationNo}
+						onChange={(e) => setRegistrationNo(e.target.value)}
+						placeholder="1234"
+						xstyle={[cockpitStyles.formInputFocusComposition]}
+					/>
+				</label>
+				<label
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.formLabel,
+					)}
+				>
+					Kontonummer
+					<Input
+						disabled={outcome.blocked}
+						name="accountNo"
+						value={accountNo}
+						onChange={(e) => setAccountNo(e.target.value)}
+						placeholder="0001234567"
+						xstyle={[cockpitStyles.formInputFocusComposition]}
+					/>
+				</label>
+				<label
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.formLabel,
+					)}
+				>
+					IBAN (valgfrit)
+					<Input
+						disabled={outcome.blocked}
+						name="iban"
+						value={iban}
+						onChange={(e) => setIban(e.target.value)}
+						placeholder="DK0000000000000000"
+						xstyle={[cockpitStyles.formInputFocusComposition]}
+					/>
+					<span
+						{...stylex.props(
+							cockpitStyles.element,
+							cockpitStyles.focusVisible,
+							cockpitStyles.fieldHint,
+						)}
+					>
+						Bruges til betalinger fra udlandet.
+					</span>
+				</label>
+				<div
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.rowActions,
+					)}
+				>
+					<Button
+						requiredPermission="company.admin"
+						type="submit"
+						disabled={outcome.blocked || busy}
+						xstyle={[cockpitStyles.buttonComposition]}
+					>
+						{busy ? "Gemmer…" : "Gem stamdata"}
+					</Button>
+				</div>
+			</form>
+		</div>
+	);
 }
 
 /**
@@ -468,176 +915,224 @@ function ProfileCard({
  * status and a "Hent fra CVR" button that refreshes it from the CVR register.
  * The lookup runs server-side, so the CVR credentials never reach the browser.
  */
-function CvrCard({ slug, initial }: { slug: string; initial: CompanySettings }) {
-  const [settings, setSettings] = useState(initial);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [fiscalWarning, setFiscalWarning] = useState<string | null>(null);
-  // #402 — `null` = "we haven't checked yet", so we don't flicker the
-  // "CVR-login mangler"-banner during the initial fetch.
-  const [cvrLoginConfigured, setCvrLoginConfigured] = useState<boolean | null>(
-    null,
-  );
+function CvrCard({
+	slug,
+	initial,
+}: {
+	slug: string;
+	initial: CompanySettings;
+}) {
+	const [settings, setSettings] = useState(initial);
+	const [busy, setBusy] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [notice, setNotice] = useState<string | null>(null);
+	const [fiscalWarning, setFiscalWarning] = useState<string | null>(null);
+	// #402 — `null` = "we haven't checked yet", so we don't flicker the
+	// "CVR-login mangler"-banner during the initial fetch.
+	const [cvrLoginConfigured, setCvrLoginConfigured] = useState<boolean | null>(
+		null,
+	);
 
-  const hasCvr = Boolean(settings.cvr);
-  const loginMissing = cvrLoginConfigured === false;
+	const hasCvr = Boolean(settings.cvr);
+	const loginMissing = cvrLoginConfigured === false;
 
-  // #402 — find out if the server has CVR_USERNAME / CVR_PASSWORD before the
-  // owner clicks anything. An owner who lacks the login should *see* that fact
-  // — and the path to fix it — instead of clicking a button that throws a raw
-  // 401 their way and leaves them guessing.
-  useEffect(() => {
-    let cancelled = false;
-    api
-      .cvrStatus()
-      .then((status) => {
-        if (!cancelled) setCvrLoginConfigured(status.configured);
-      })
-      .catch(() => {
-        // A failure to *check* status shouldn't block the owner from trying —
-        // treat it as "unknown" and let the sync call surface any real issue.
-        if (!cancelled) setCvrLoginConfigured(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+	// #402 — find out if the server has CVR_USERNAME / CVR_PASSWORD before the
+	// owner clicks anything. An owner who lacks the login should *see* that fact
+	// — and the path to fix it — instead of clicking a button that throws a raw
+	// 401 their way and leaves them guessing.
+	useEffect(() => {
+		let cancelled = false;
+		api
+			.cvrStatus()
+			.then((status) => {
+				if (!cancelled) setCvrLoginConfigured(status.configured);
+			})
+			.catch(() => {
+				// A failure to *check* status shouldn't block the owner from trying —
+				// treat it as "unknown" and let the sync call surface any real issue.
+				if (!cancelled) setCvrLoginConfigured(null);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
 
-  const outcome = useMutationOutcome(async () => { await api.companySettings(slug); setNotice("Gemte CVR-oplysninger er hentet. Kontrollér oplysningerne ved næste åbning af formularen."); });
-  async function sync() {
-    if (outcome.isBlocked()) return;
-    setBusy(true);
-    setError(null);
-    setNotice(null);
-    setFiscalWarning(null);
-    try {
-      const result = await outcome.run(() => api.syncCvr(slug));
-      if (!result.ok) {
-        setError(translateCvrError(result.errors[0]));
-        return;
-      }
-      const fresh = await api.companySettings(slug);
-      setSettings(fresh);
-      const changed = result.updatedFields ?? [];
-      setNotice(
-        changed.length > 0
-          ? `Hentet fra CVR. Opdaterede felter: ${changed.join(", ")}.`
-          : "Hentet fra CVR. Stamdata var allerede opdateret.",
-      );
-      const fy = result.fiscalYearStartMonth;
-      if (fy && !fy.matches && fy.cvr !== null) {
-        setFiscalWarning(
-          `CVR har regnskabsår der starter i måned ${fy.cvr}, men virksomheden ` +
-            `er sat op med måned ${fy.current}. Regnskabsåret ændres aldrig ` +
-            `automatisk — ret det manuelt hvis det er forkert.`,
-        );
-      }
-    } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? translateCvrError(err.message)
-          : "Kunne ikke hente fra CVR.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
+	const outcome = useMutationOutcome(async () => {
+		await api.companySettings(slug);
+		setNotice(
+			"Gemte CVR-oplysninger er hentet. Kontrollér oplysningerne ved næste åbning af formularen.",
+		);
+	});
+	async function sync() {
+		if (outcome.isBlocked()) return;
+		setBusy(true);
+		setError(null);
+		setNotice(null);
+		setFiscalWarning(null);
+		try {
+			const result = await outcome.run(() => api.syncCvr(slug));
+			if (!result.ok) {
+				setError(translateCvrError(result.errors[0]));
+				return;
+			}
+			const fresh = await api.companySettings(slug);
+			setSettings(fresh);
+			const changed = result.updatedFields ?? [];
+			setNotice(
+				changed.length > 0
+					? `Hentet fra CVR. Opdaterede felter: ${changed.join(", ")}.`
+					: "Hentet fra CVR. Stamdata var allerede opdateret.",
+			);
+			const fy = result.fiscalYearStartMonth;
+			if (fy && !fy.matches && fy.cvr !== null) {
+				setFiscalWarning(
+					`CVR har regnskabsår der starter i måned ${fy.cvr}, men virksomheden ` +
+						`er sat op med måned ${fy.current}. Regnskabsåret ændres aldrig ` +
+						`automatisk — ret det manuelt hvis det er forkert.`,
+				);
+			}
+		} catch (err) {
+			setError(
+				err instanceof ApiError
+					? translateCvrError(err.message)
+					: "Kunne ikke hente fra CVR.",
+			);
+		} finally {
+			setBusy(false);
+		}
+	}
 
-  const buttonDisabled = busy || !hasCvr || loginMissing;
-  const buttonTitle = loginMissing
-    ? "CVR-login mangler på serveren — se forklaringen ovenfor."
-    : !hasCvr
-      ? "Tilføj først et CVR-nummer på virksomheden."
-      : undefined;
+	const buttonDisabled = busy || !hasCvr || loginMissing;
+	const buttonTitle = loginMissing
+		? "CVR-login mangler på serveren — se forklaringen ovenfor."
+		: !hasCvr
+			? "Tilføj først et CVR-nummer på virksomheden."
+			: undefined;
 
-  return (
-    <div className={["card", stylex.props(viewStyles.site4).className].filter(Boolean).join(" ")} >
-    {outcome.feedback}
-      <h3 {...stylex.props(viewStyles.site5)}>CVR-stamdata</h3>
+	return (
+		<div
+			{...stylex.props(
+				cockpitStyles.element,
+				cockpitStyles.focusVisible,
+				cockpitStyles.card,
+				viewStyles.site4,
+			)}
+		>
+			{outcome.feedback}
+			<h3
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.h3,
+					viewStyles.site5,
+				)}
+			>
+				CVR-stamdata
+			</h3>
 
-      {error && <Banner kind="error">{error}</Banner>}
-      {notice && <Banner kind="success">{notice}</Banner>}
-      {fiscalWarning && <Banner kind="warning">{fiscalWarning}</Banner>}
+			{error && <Banner kind="error">{error}</Banner>}
+			{notice && <Banner kind="success">{notice}</Banner>}
+			{fiscalWarning && <Banner kind="warning">{fiscalWarning}</Banner>}
 
-      {/*
+			{/*
         #402 — Owner-facing explanation when the server has no virk.dk-login.
         We say *what* is missing and *how* to fix it, in plain Danish, without
         sending the owner to the terminal for an environment variable they
         won't recognise.
       */}
-      {loginMissing && (
-        <Banner kind="warning">
-          Cockpittet mangler dit virk.dk-login. Indtil det er sat op, kan
-          stamdata ikke hentes automatisk fra CVR. Se{" "}
-          <a
-            href={CVR_SETUP_GUIDE_URL}
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            installationsguiden
-          </a>{" "}
-          for hvordan du konfigurerer det.
-        </Banner>
-      )}
+			{loginMissing && (
+				<Banner kind="warning">
+					Cockpittet mangler dit virk.dk-login. Indtil det er sat op, kan
+					stamdata ikke hentes automatisk fra CVR. Se{" "}
+					<a
+						href={CVR_SETUP_GUIDE_URL}
+						target="_blank"
+						rel="noreferrer noopener"
+						{...stylex.props(cockpitStyles.aComposition)}
+					>
+						installationsguiden
+					</a>{" "}
+					for hvordan du konfigurerer det.
+				</Banner>
+			)}
 
-      {!hasCvr && (
-        <p className="muted">
-          Der er ikke registreret et CVR-nummer på virksomheden. Tilføj et
-          CVR-nummer for at kunne hente stamdata fra CVR-registret.
-        </p>
-      )}
+			{!hasCvr && (
+				<p
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.muted,
+					)}
+				>
+					Der er ikke registreret et CVR-nummer på virksomheden. Tilføj et
+					CVR-nummer for at kunne hente stamdata fra CVR-registret.
+				</p>
+			)}
 
-      {hasCvr && (
-        <dl className="cvr-facts">
-          <Fact label="CVR-nummer" value={settings.cvr} />
-          <Fact label="Adresse" value={cvrAddressLine(settings)} />
-          <Fact label="Virksomhedsform" value={settings.companyForm} />
-          <Fact
-            label="Branche"
-            value={
-              settings.industryText && settings.industryCode
-                ? `${settings.industryCode} — ${settings.industryText}`
-                : settings.industryText
-            }
-          />
-          <Fact label="Status" value={settings.cvrStatus} />
-          <Fact
-            label="Revision fravalgt"
-            value={
-              settings.auditWaived === null
-                ? null
-                : settings.auditWaived
-                  ? "Ja"
-                  : "Nej"
-            }
-          />
-          <Fact
-            label="Sidst hentet"
-            value={
-              settings.cvrSyncedAt
-                ? formatDateDa(settings.cvrSyncedAt.slice(0, 10))
-                : "Aldrig"
-            }
-          />
-        </dl>
-      )}
+			{hasCvr && (
+				<dl
+					{...stylex.props(
+						cockpitStyles.element,
+						cockpitStyles.focusVisible,
+						cockpitStyles.cvrFacts,
+					)}
+				>
+					<Fact label="CVR-nummer" value={settings.cvr} />
+					<Fact label="Adresse" value={cvrAddressLine(settings)} />
+					<Fact label="Virksomhedsform" value={settings.companyForm} />
+					<Fact
+						label="Branche"
+						value={
+							settings.industryText && settings.industryCode
+								? `${settings.industryCode} — ${settings.industryText}`
+								: settings.industryText
+						}
+					/>
+					<Fact label="Status" value={settings.cvrStatus} />
+					<Fact
+						label="Revision fravalgt"
+						value={
+							settings.auditWaived === null
+								? null
+								: settings.auditWaived
+									? "Ja"
+									: "Nej"
+						}
+					/>
+					<Fact
+						label="Sidst hentet"
+						value={
+							settings.cvrSyncedAt
+								? formatDateDa(settings.cvrSyncedAt.slice(0, 10))
+								: "Aldrig"
+						}
+					/>
+				</dl>
+			)}
 
-      <Button requiredPermission="company.external-lookup" variant="secondary"
-        className="btn secondary"
-        type="button"
-        onClick={sync}
-        disabled={buttonDisabled}
-        title={buttonTitle}
-      >
-        {busy ? "Henter…" : "Hent fra CVR"}
-      </Button>
-      <p className="field-hint">
-        Kræver dit virk.dk-login. Konfigurér det én gang under CVR-login —{" "}
-        regnskabsåret ændres aldrig automatisk.
-      </p>
-    </div>
-  );
+			<Button
+				requiredPermission="company.external-lookup"
+				variant="secondary"
+				type="button"
+				onClick={sync}
+				disabled={buttonDisabled}
+				title={buttonTitle}
+				xstyle={[cockpitStyles.buttonComposition]}
+			>
+				{busy ? "Henter…" : "Hent fra CVR"}
+			</Button>
+			<p
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.fieldHint,
+				)}
+			>
+				Kræver dit virk.dk-login. Konfigurér det én gang under CVR-login —{" "}
+				regnskabsåret ændres aldrig automatisk.
+			</p>
+		</div>
+	);
 }
 
 /**
@@ -648,42 +1143,69 @@ function CvrCard({ slug, initial }: { slug: string; initial: CompanySettings }) 
  * through verbatim.
  */
 function translateCvrError(raw: string | undefined): string {
-  const fallback = "CVR-opslaget mislykkedes.";
-  if (!raw) return fallback;
-  const lower = raw.toLowerCase();
-  if (
-    lower.includes("cvr_username") ||
-    lower.includes("cvr_password") ||
-    lower.includes("http 401")
-  ) {
-    return (
-      "Cockpittet mangler CVR-login. Konfigurér dit virk.dk-login (se " +
-      "installationsguiden på rentemester.dk/docs/installation) og prøv igen."
-    );
-  }
-  return raw;
+	const fallback = "CVR-opslaget mislykkedes.";
+	if (!raw) return fallback;
+	const lower = raw.toLowerCase();
+	if (
+		lower.includes("cvr_username") ||
+		lower.includes("cvr_password") ||
+		lower.includes("http 401")
+	) {
+		return (
+			"Cockpittet mangler CVR-login. Konfigurér dit virk.dk-login (se " +
+			"installationsguiden på rentemester.dk/docs/installation) og prøv igen."
+		);
+	}
+	return raw;
 }
 
-function Fact({ label, value }: { label: string; value: string | null | undefined }) {
-  return (
-    <div className="cvr-fact">
-      <dt className="muted">{label}</dt>
-      <dd>{value && value.length > 0 ? value : "—"}</dd>
-    </div>
-  );
+function Fact({
+	label,
+	value,
+}: {
+	label: string;
+	value: string | null | undefined;
+}) {
+	return (
+		<div {...stylex.props(cockpitStyles.cvrFactComposition)}>
+			<dt
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.muted,
+					cockpitStyles.cvrFactDt,
+				)}
+			>
+				{label}
+			</dt>
+			<dd
+				{...stylex.props(
+					cockpitStyles.element,
+					cockpitStyles.focusVisible,
+					cockpitStyles.cvrFactDd,
+				)}
+			>
+				{value && value.length > 0 ? value : "—"}
+			</dd>
+		</div>
+	);
 }
 
 function cvrAddressLine(settings: CompanySettings): string | null {
-  const cityLine = [settings.postalCode, settings.city].filter(Boolean).join(" ");
-  const full = [settings.address, cityLine].filter((p) => p && p.length > 0).join(", ");
-  return full.length > 0 ? full : null;
+	const cityLine = [settings.postalCode, settings.city]
+		.filter(Boolean)
+		.join(" ");
+	const full = [settings.address, cityLine]
+		.filter((p) => p && p.length > 0)
+		.join(", ");
+	return full.length > 0 ? full : null;
 }
 
 const viewStyles = stylex.create({
-site0: { marginTop: 24, maxWidth: 460 },
-site1: { marginTop: 0 },
-site2: { marginTop: 24, maxWidth: 460 },
-site3: { marginTop: 0 },
-site4: { marginTop: 24, maxWidth: 460 },
-site5: { marginTop: 0 }
+	site0: { marginTop: 24, maxWidth: 460 },
+	site1: { marginTop: 0 },
+	site2: { marginTop: 24, maxWidth: 460 },
+	site3: { marginTop: 0 },
+	site4: { marginTop: 24, maxWidth: 460 },
+	site5: { marginTop: 0 },
 });
