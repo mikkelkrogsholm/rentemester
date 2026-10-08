@@ -17,6 +17,7 @@ import {
 import { internalAppIpv4, startLoopbackProxy, type NetworkSettings } from "./cockpit-evidence-proxy";
 import { browserUrlMatchesExpected } from "./cockpit-evidence-url";
 import { selectPageDevToolsTarget } from "./cockpit-evidence-cdp-target";
+import { startEvidenceBrowser } from "./cockpit-evidence-browser";
 import { cdpKeyEvents, type EvidenceKey } from "./cockpit-evidence-key-events";
 import {
   compositeTabbableControlCountExpression,
@@ -91,16 +92,6 @@ async function waitFor(url: string) {
     await Bun.sleep(100);
   }
   throw new Error(`candidate did not become ready at ${url}`);
-}
-async function freePort() {
-  const listener = Bun.listen({
-    hostname: "127.0.0.1",
-    port: 0,
-    socket: { data() {}, open() {} },
-  });
-  const port = listener.port;
-  listener.stop();
-  return port;
 }
 type EvidenceCdp = Cdp & {
   on(handler: (message: Record<string, unknown>) => void): () => void;
@@ -275,28 +266,13 @@ async function renderScenario(
   base: string,
   scenario: Scenario,
 ) {
-  const profile = mkdtempSync(join(tmpdir(), "rentemester-cockpit-profile-")),
-    port = await freePort();
-  let browser: ReturnType<typeof Bun.spawn> | undefined;
+  const profile = mkdtempSync(join(tmpdir(), "rentemester-cockpit-profile-"));
+  let browser: Awaited<ReturnType<typeof startEvidenceBrowser>> | undefined;
   let cdp!: EvidenceCdp;
   let stopEvents: (() => void) | undefined;
   try {
-    browser = Bun.spawn(
-      [
-        chrome,
-        "--headless=new",
-        "--disable-gpu",
-        "--disable-extensions",
-        `--remote-debugging-port=${port}`,
-        `--user-data-dir=${profile}`,
-        "--no-first-run",
-        "--no-default-browser-check",
-        "about:blank",
-      ],
-      { stdout: "ignore", stderr: "ignore" },
-    );
-    await waitFor(`http://127.0.0.1:${port}/json/version`);
-    cdp = await openCdp(port);
+    browser = await startEvidenceBrowser([chrome], profile);
+    cdp = await openCdp(browser.port);
     const liveActualRequests: string[] = [],
       consoleErrors: string[] = [],
       expectedNetworkErrors: ExpectedNetworkError[] = [],
@@ -525,7 +501,7 @@ async function renderScenario(
       await cdp?.call("Fetch.disable");
     } catch {}
     cdp?.close();
-    browser?.kill();
+    await browser?.stop();
     rmSync(profile, { recursive: true, force: true });
   }
 }
