@@ -22,6 +22,9 @@ import {
   inferredMutationActor,
   trimToNull,
 } from "./cli-actor";
+import { register as registerTasks } from "./cli/tasks";
+import { register as registerTaskSeries } from "./cli/task-series";
+import { register as registerTaskBoards } from "./cli/task-boards";
 import { register as registerInit } from "./cli/init";
 import { register as registerAudit } from "./cli/audit";
 import { register as registerAccounts } from "./cli/accounts";
@@ -279,6 +282,9 @@ const ctx: CommandContext = {
 const dispatch = new CommandDispatch();
 for (const registerFn of [
   registerInit,
+  registerTasks,
+  registerTaskSeries,
+  registerTaskBoards,
   registerAudit,
   registerAccounts,
   registerExceptions,

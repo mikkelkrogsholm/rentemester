@@ -245,3 +245,85 @@ konkret (kør kommandoen mod en test-virksomhed, eller læs `src/cli/<domæne>.t
 Bemærk desuden de få CLI-only-kommandoer uden MCP-pendant (fx `invoice create`,
 `invoice export-public`); de er listet under "CLI/MCP-mapping" i
 [`docs/mcp-tool-surface.md`](mcp-tool-surface.md).
+
+## 5. Opgaver, rutineserier og boards
+
+`tasks`, `task-series` og `task-boards` bruger det eksplicit valgte
+`--workspace <dir>` (eller `RENTEMESTER_WORKSPACE`). De kræver aldrig
+`--company` eller en standardvirksomhed og åbner ikke en ledger til skrivning.
+Den fælles opgaveservice filtrerer adgang før søgning og optælling og kontrollerer
+actor-allowlisten for alle berørte selskaber. For arbejde uden selskaber bruges
+`<workspace>/config/policy.yaml` med samme `actor_allowlist`-format. Hvis den
+workspace-policy mangler, kræves en actor tilladt i mindst ét registreret
+selskab; uden nogen sådan policy afvises mutation. Tildeling ændrer ingen
+rettigheder. `ACTOR_REQUIRED` og `ACTOR_DENIED` er CLI-brugsfejl (exit `2`).
+
+CLI med `RENTEMESTER_SERVICE_PRINCIPAL_TOKEN` bruger tokenens verificerede
+servicekonto og aktuelle membership. Den valgte workspace skal være den
+samme som den autentificerede workspace. En ugyldig token kan aldrig falde
+tilbage til lokal adgang. Uden servicecredentials er CLI et betroet lokalt
+filsystemværktøj. `--actor` er separat revisionsidentitet og giver ingen adgang.
+
+Mutationer kræver `--input <file.json>` med et typet JSON-objekt og
+`idempotencyKey`. Eksisterende opgaver kræver også `taskId` og
+`expectedVersion`; ændringer af en serie eller et board kræver den aktuelle
+version, eller `0` ved oprettelse. Et identisk genforsøg returnerer den gemte
+effekt; ændret payload med samme nøgle afvises. Brug en ny nøgle til en ny
+synkronisering eller reminderkørsel. Et uklart resultat verificeres med `tasks
+get` og `tasks history`, før samme request genforsøges.
+
+Læsning accepterer enten `--input` eller de dokumenterede selector-/filterflags,
+aldrig begge. `--companies` er en kommasepareret slugliste. `--include-archived` er et bart booleanflag. Værdiflags
+`--show-done`, `--undated` og `--unassigned` accepterer kun `true` eller `false`. Alle datoer er `YYYY-MM-DD`.
+
+| CLI | MCP | JSON-input ud over workspace |
+| --- | --- | --- |
+| `tasks list` | `tasks_list` | `companySlugs?`, `includeArchived?`, `status?`, `type?`, `search?`, `assigneeId?`, `from?`, `to?`, `undated?`, `unassigned?`, `showDone?` |
+| `tasks get`, `tasks history` | `tasks_get`, `tasks_history` | `taskId` |
+| `tasks create` | `tasks_create` | `title`, eksplicit `scope`, `idempotencyKey` og valgfrie opgavefelter |
+| `tasks update` | `tasks_update` | `taskId`, `patch`, `expectedVersion`, `idempotencyKey` |
+| `tasks move` | `tasks_move` | `taskId`, fælles `status`, `columnId?`, `workspaceColumnId?`, `expectedVersion`, `idempotencyKey` |
+| `tasks complete` | `tasks_complete` | `taskId`, `outcome`, `note`, `references?`, `expectedVersion`, `idempotencyKey` |
+| `tasks reopen` | `tasks_reopen` | `taskId`, `reason`, `expectedVersion`, `idempotencyKey` |
+| `tasks sync` | `tasks_sync` | `companySlugs?`, `asOfDate?`, `idempotencyKey` |
+| `tasks reminder` | `tasks_reminder_set` | `taskId`, `reminder`, `expectedVersion`, `idempotencyKey` |
+| `tasks notifications`, `tasks runtime` | `tasks_notifications`, `tasks_runtime` | Ingen forretningsfelter |
+| `tasks run` | `tasks_run` | `asOfDate?`, `idempotencyKey` |
+| `task-series list` | `task_series_list` | `companySlugs?`, `includeArchived?` |
+| `task-series save` | `task_series_save` | `series`, `expectedVersion`, `idempotencyKey` |
+| `task-series project` | `task_series_project` | `from`, `to`, `companySlugs?`, `includeArchived?` |
+| `task-series materialize` | `task_series_materialize` | `companySlugs?`, `asOfDate?`, `idempotencyKey` |
+| `task-boards list` | `task_boards_list` | `companySlugs?`, `includeArchived?` |
+| `task-boards preview` | `task_boards_preview` | `board`, `expectedVersion?` |
+| `task-boards save` | `task_boards_save` | `board`, `expectedVersion`, `idempotencyKey` |
+
+`scope` er `{kind:"company",companySlug:"syntetisk-drift"}` eller
+`{kind:"workspace",companySlugs:[...]}`. Fælles status er `open`, `in_progress`,
+`waiting` eller `done`. `outcome` er `completed`, `not_relevant`, `cancelled`
+eller `exception`; et særskilt outcome forhindrer, at en begrundet undtagelse
+fremstår som en faktisk indberetning. Flytning til `done` omgår aldrig
+beviskrav eller kildekontrol.
+
+Den præcise typede feltliste for `patch`, `series`, `board` og `reminder`
+fremgår af CLI'ens per-kommando `--help` og MCP's operation description/schema.
+Et minimalt manuelt opgaveinput er:
+
+```json
+{"title":"Kontrollér månedens bilag","scope":{"kind":"company","companySlug":"syntetisk-drift"},"idempotencyKey":"manual-task-1"}
+```
+
+Alle opgavekommandoer, også reads, returnerer flad
+`{ok:true,errors:[],...serviceFields}` på CLI. MCP wrapper de samme servicefelter
+under `data`. Dette er en dokumenteret undtagelse til de ældre read-former i
+§4. `TaskError` bevarer sin stabile `code`; businessfejl er exit `1`, ugyldige
+flags/JSON/schemafelter er exit `2`.
+
+CLI's almindelige opgavewrites kræver actor. `task-boards save` kræver desuden
+altid `--confirm yes`; ændring af betydning eller sletning af en fyldt kolonne
+kræver den aktuelle `previewHash` og eksplicit omplacering. MCP kræver
+`confirm:true` ved **alle** opgavewrites. Hver opgaveændring og dens historik
+committes atomisk i workspacebasen, uden bogføring, betaling eller indberetning.
+
+`tasks run` kører ét deterministisk tick og afslutter; det starter ikke en
+baggrundsproces. Påmindelser er kun interne og brugerens aktivering er
+udtrykkelig. `tasks runtime` viser den observerede runnerstatus.

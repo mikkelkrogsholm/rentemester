@@ -104,6 +104,22 @@ function workflow(input: Pick<AgentWorkflow, "id" | "capabilityId" | "title" | "
 }
 
 export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
+  workflow({ id: "task-lifecycle", capabilityId: "workspace-tasks", title: "Tasks, annual wheel and documented completion", intendedOutcome: "Manage explicitly scoped work across accessible companies through one durable task identity without changing accounting facts.", steps: [
+    read("list", mcp("tasks_list"), "Inspect only accessible companies, task scope, current versions, board mappings and reminder runtime.", { canonicalRecords: ["workspace tasks", "task board", "task series"] }),
+    write("create", mcp("tasks_create"), "Create a titled task with explicit company/workspace scope and a durable retry key.", { inputIdentities: ["scope", "idempotencyKey"], outputIdentities: ["taskId", "version"], retryClass: "key-idempotent", canonicalRecords: ["workspace task", "task history", "task mutation receipt"] }),
+    write("update", mcp("tasks_update"), "Update only at the read expectedVersion; retain input and re-read on conflict.", { dependsOn: ["list|create"], inputIdentities: ["taskId", "expectedVersion", "idempotencyKey"], retryClass: "key-idempotent", canonicalRecords: ["workspace task", "task history"] }),
+    read("board-preview", mcp("task_boards_preview"), "Preview the exact consequences before changing column meaning or relocating cards.", { inputIdentities: ["board"], outputIdentities: ["previewHash"] }),
+    write("board-save", mcp("task_boards_save"), "Save an explicitly mapped board with required relocation and the matching previewHash.", { dependsOn: ["board-preview"], retryClass: "key-idempotent", canonicalRecords: ["task board", "task history"] }),
+    write("series-save", mcp("task_series_save"), "Create or amend a calendar/fiscal routine while preserving outstanding and completed occurrences.", { retryClass: "key-idempotent", canonicalRecords: ["task series", "task mutation receipt"] }),
+    read("year-wheel", mcp("task_series_project"), "Inspect projected future periods and uncertain relevance without creating task cards."),
+    write("materialize", mcp("task_series_materialize"), "Create due occurrences once from stable series/period identity.", { retryClass: "key-idempotent", canonicalRecords: ["task occurrence", "task mutation receipt"] }),
+    write("source-sync", mcp("tasks_sync"), "Synchronize source problems using stable company/kind/subject identity, never a content hash alone.", { retryClass: "key-idempotent", canonicalRecords: ["source task", "task history"] }),
+    write("complete", mcp("tasks_complete"), "Complete with a note and required evidence; authoritative problems require actual resolution.", { inputIdentities: ["taskId", "expectedVersion", "idempotencyKey"], retryClass: "key-idempotent", canonicalRecords: ["task completion", "task history"] }),
+    write("reminder", mcp("tasks_reminder_set"), "Explicitly activate an in-product reminder for a permitted recipient; no external messages or agent scheduling.", { retryClass: "key-idempotent", canonicalRecords: ["task reminder"] }),
+    read("read-back", mcp("tasks_get"), "Verify the stable task/version after an uncertain write; retry only the identical request with the same key."),
+    read("history", mcp("tasks_history"), "Inspect scope, responsibility, deadlines, status changes and completion evidence."),
+  ], unsupportedBoundaries: ["Task status never pays, posts, files or grants approval.", "Assignment never grants access or sends an external message.", "Unknown external outcomes require verification, not a blind repeated action."] }),
+
   workflow({ id: "company-workspace-setup", capabilityId: "company-workspace", title: "Company and workspace setup", intendedOutcome: "Create or select a company and verify its canonical profile before accounting work.", steps: [
     write("initialize-company", cli("init"), "Create a local company root when no workspace company exists.", { requiresActor: false, requiresConfirmation: false, prerequisites: ["CLI-only: choose an explicit new company path."], outputIdentities: ["company root"], canonicalRecords: ["company database", "company profile"] }),
     write("add-workspace-company", mcp("company_add"), "Add a company to an existing workspace.", { condition: "Use instead of initialize-company for an existing workspace.", outputIdentities: ["company slug"], canonicalRecords: ["workspace manifest"] }),
@@ -399,6 +415,7 @@ export const AGENT_WORKFLOWS: readonly AgentWorkflow[] = [
 
 type CapabilityTuple = [string, string, string, string, string[], string[], AgentScope, string[]];
 const capabilityTuples: CapabilityTuple[] = [
+  ["workspace-tasks", "Tasks, annual wheel and kanban", "Coordinate documented work across accessible companies with one authoritative task history.", "tasks", ["create task", "annual wheel", "calendar task", "kanban board", "document completion", "task reminder"], ["opgaver", "årshjul", "kanban", "calendar", "rutine", "påmindelse"], "workspace", ["task-lifecycle"]],
   ["company-workspace", "Company and workspace setup", "Set up and discover companies without leaking inaccessible state.", "company", ["create company", "switch company", "discover workspace", "bootstrap local service credential", "rotate service credential"], ["setup", "workspace", "company profile", "local service principal", "credential rotation"], "workspace", ["company-workspace-setup", "local-service-principal-lifecycle"]],
   ["company-knowledge", "Company operating knowledge", "Retrieve and review source-backed, dated company operating facts.", "company", ["company context", "operating profile", "company knowledge"], ["knowledge", "products", "revenue model", "market"], "company", ["company-knowledge-lifecycle"]],
   ["document-intake", "Document and mail intake", "Store source documents and mail attachments for review.", "documents", ["ingest document", "mail intake", "review invoice extraction", "review incomplete purchase evidence", "review non-EU reverse charge evidence", "record external payroll evidence"], ["bilag", "imap", "attachment", "incomplete invoice", "non-EU reverse charge", "payroll evidence"], "company", ["document-mail-intake", "incomplete-purchase-evidence-review", "non-eu-reverse-charge-evidence-review", "external-payroll-evidence-journal"]],
@@ -563,6 +580,7 @@ const NATURAL_IDEMPOTENT_CLI_OPERATIONS = RETRY_OPERATION_NAMES.naturalIdempoten
 
 export function retryClassForOperation(id: string, source: { safety: OperationSafety; idempotent: boolean | null; external?: boolean }): RetryClass {
   if (source.safety === "read") return "safe-read";
+  if (/^(?:mcp:(?:tasks_|task_series_|task_boards_)|cli:(?:tasks |task-series |task-boards ))/.test(id)) return "key-idempotent";
   if (source.external || (id.startsWith("mcp:") && EXTERNAL_PROVIDER_MCP_OPERATIONS.has(id.slice(4)))) return "external-provider-reconciled";
   if (id.startsWith("mcp:") && KEY_IDEMPOTENT_MCP_OPERATIONS.has(id.slice(4))) return "key-idempotent";
   if ((id.startsWith("mcp:") && NATURAL_IDEMPOTENT_MCP_OPERATIONS.has(id.slice(4))) || (id.startsWith("cli:") && NATURAL_IDEMPOTENT_CLI_OPERATIONS.has(id.slice(4)))) return "natural-idempotent";
@@ -580,12 +598,13 @@ type SurfaceBaseline = { count: number; hash: string };
  */
 export const AGENT_SURFACE_BASELINES: Record<SurfaceName, SurfaceBaseline> = {
   // Public surface changes require an explicit discovery review.
-  mcp: { count: 249, hash: "fcf17dc7e840113e1b36cd6a97c365993cfc3bf144570789306a2582791021c8" },
-  cli: { count: 299, hash: "db13a00992b82154565c5c0dcbe3e8540a8fd495d2c2f59631bc13c777a03c8e" },
+  mcp: { count: 269, hash: "7033b9228199350dbda6227ffcde262070f94e3e883eefc6937c1b221af50829" },
+  cli: { count: 319, hash: "3526cef0f3c1f5c352777da1d0609a82d8932aa80f55b635f4321d5dc843d266" },
   http: { count: 241, hash: "729b950ce6abe4b153b16d34c827362c78ae33919721305f2a14e6254b341546" },
 };
 
 const CAPABILITY_RULES: ReadonlyArray<{ capabilityId: string; pattern: RegExp }> = [
+  { capabilityId: "workspace-tasks", pattern: /(?:^mcp:(?:tasks_|task_series_|task_boards_)|^cli:(?:tasks |task-series |task-boards )|^http:\w+ \/api\/(?:tasks|task-series|task-boards)(?:\/|$))/ },
   { capabilityId: "non-cash-balance-corrections", pattern: /(?:documents_(?:ingest|list)|journal_(?:dry_run|post|list))/ },
   { capabilityId: "accounting-dimensions", pattern: /dimensions?|dimension[_-]/ },
   { capabilityId: "cfo-analytics", pattern: /(?:cfo[_-]analytics|report analytics|cfo-analytics)/ },

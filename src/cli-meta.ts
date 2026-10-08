@@ -1,3 +1,4 @@
+import { taskSpecs } from "./cli-meta/task-specs";
 import { registerCommandSpecs } from "./cli-meta/helpers";
 import type { CommandSpec } from "./cli-meta/_shared";
 import { initSpec, localSpecs, serveSpec, systemSpecs } from "./cli-meta/system-specs";
@@ -101,6 +102,7 @@ export const COMMAND_SPECS: CommandSpec[] = [
   ...postingRulesSpecs,
   ...bookkeepingBatchSpecs,
   ...workspaceRegistrySpecs,
+  ...taskSpecs,
 ];
 
 registerCommandSpecs(COMMAND_SPECS);
