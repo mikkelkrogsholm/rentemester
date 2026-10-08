@@ -1,4 +1,4 @@
-import { Button, Input, PageHeader, Select } from "../components/ui";
+import { ButtonLink, Button, Input, PageHeader, Select } from "../components/ui";
 import { useState } from "react";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
@@ -41,7 +41,7 @@ export function GroupOverviewView() {
   }
 
   return <section className="group-overview">
-    <PageHeader title="Koncernstruktur">
+    <PageHeader title="Koncernstruktur" actions={<ButtonLink to="/opgaver">Samlede opgaver</ButtonLink>}>
       <div>
 
         <p className="muted">Datoafgrænset struktur, afstemning og godkendte read-only koncernrapporter.</p>

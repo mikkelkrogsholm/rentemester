@@ -18,6 +18,7 @@ import {
   workspaceExists,
 } from "../core/workspace";
 import { openWorkspaceControlDb } from "../core/workspace-control";
+import { startTaskRuntime } from "../core/task-runtime";
 import { resolveServerConfig } from "../server/config";
 import { startCockpitServer } from "../server/app";
 import { describeStaticUiBuild } from "../server/static";
@@ -90,6 +91,7 @@ export function register(dispatch: CommandDispatch): void {
     }
 
     const cockpit = startCockpitServer(config);
+    const stopTaskRuntime = startTaskRuntime(config.workspaceRoot, { allowLocalRecipient: config.deploymentProfile !== "hosted" });
 
     // #349 — periodisk IMAP-polling pr. virksomhed med en gemt config.
     // Intervallet styres af --imap-poll-interval-sec (eller miljø-variablen
@@ -149,6 +151,7 @@ export function register(dispatch: CommandDispatch): void {
 
     // A clean shutdown on Ctrl-C / SIGTERM so the socket is released.
     const shutdown = () => {
+      stopTaskRuntime();
       if (imapTimer) clearInterval(imapTimer);
       cockpit.stop();
       process.exit(0);

@@ -7,6 +7,13 @@
     "kind": "page"
   },
   {
+    "id": "tasks",
+    "segment": "opgaver",
+    "label": "Opgaver",
+    "area": "attention",
+    "kind": "page"
+  },
+  {
     "id": "attention",
     "segment": "opmaerksomhed",
     "label": "Kræver opmærksomhed",
@@ -356,6 +363,14 @@
     "area": "money-documents",
     "kind": "flow",
     "parentId": "documents"
+  },
+  {
+    "id": "knowledge-page",
+    "segment": "viden/:pageId",
+    "label": "Viden og playbook",
+    "area": "knowledge",
+    "kind": "flow",
+    "parentId": "workspace-register"
   },
   {
     "id": "party-profile",

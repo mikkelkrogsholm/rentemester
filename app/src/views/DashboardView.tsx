@@ -73,7 +73,7 @@ export function DashboardView() {
   return (
     <section className="overview" data-cockpit-page="dashboard" data-evidence-issue="651">
       {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. De tidligere hentede oplysninger vises fortsat.</div>}
-      <PageHeader title="Overblik" actions={<><div className="row-actions">
+      <PageHeader title="Overblik" actions={<><ButtonLink variant="secondary" to={`/companies/${slug}/opgaver`}>Opgaver</ButtonLink><div className="row-actions">
           <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
           </ButtonLink>

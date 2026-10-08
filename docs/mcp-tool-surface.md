@@ -130,7 +130,7 @@ selv ændres ikke.
 
 ## Resultat-shapes (`outputSchema`)
 
-**Alle 249 tools deklarerer et `outputSchema`** (#202). Det er det samme
+**Alle 269 tools deklarerer et `outputSchema`** (#202). Det er det samme
 delte schema for hver tool — konvolutten — så en agent kan læse
 resultat-kontrakten fra `tools/list` *uden* at kalde tool'et først.
 Schemaet er defineret én gang i `src/mcp/envelope.ts` (`envelopeShape`).
@@ -247,16 +247,68 @@ sende uændret for at hente næste side. Et svar med `hasMore: true` er
 > `JournalEntryResult`). En agent behøver derfor ikke kalde et tool blot for
 > at lære dets resultat-shape at kende.
 
+## Workspace tasks, annual wheel and boards
+
+Task adapters in `src/mcp/tools/tasks.ts` correspond to the CLI adapters
+`src/cli/tasks.ts`, `src/cli/task-series.ts` and `src/cli/task-boards.ts`.
+Every operation has explicit `workspace`; authenticated sessions are bound to
+that canonical workspace. The catalog entry permission `workspace.tasks.read`
+only enters the service: it does not grant mutation authority. The shared
+service rechecks live resource permissions (`company.tasks.read/write/manage`
+or `workspace.tasks.manage`) and affected actor policies before accessing or
+mutating the requested task, series or board. Actor attribution never supplies
+a principal; optional `actor` on writes is policy checked separately.
+
+Reads have no side effects. All writes require `confirm:true` and a durable
+`idempotencyKey`. Existing records require `expectedVersion`; `0` creates a
+new series/board. After an uncertain result, read the canonical record and
+retry only the identical payload/key. `IDEMPOTENCY_CONFLICT`, version conflicts,
+missing evidence, unresolved sources and access rejection are fail-closed.
+The exact typed nested inputs are returned by `agent_operation_describe`.
+
+| Tool | CLI | Business input | `data` fields | Class |
+| --- | --- | --- | --- | --- |
+| `tasks_list` | `tasks list` | Company/status/type/search/assignee/date filters; `includeArchived?`, `showDone?`, `undated?`, `unassigned?` | `tasks`, `count`, `boards`, `series`, `projections`, permitted `companies`, `currentUserId`, `canManageWorkspace`, `runtime`, `notifications`, `sourceCoverage` | read |
+| `tasks_get` | `tasks get` | `taskId` | `task` | read |
+| `tasks_history` | `tasks history` | `taskId` | `history` | read |
+| `tasks_create` | `tasks create` | `title`, explicit `scope`, optional task fields, `idempotencyKey` | `task` | write-reversible |
+| `tasks_update` | `tasks update` | `taskId`, typed `patch`, `expectedVersion`, `idempotencyKey` | `task` | write-reversible |
+| `tasks_move` | `tasks move` | `taskId`, `status`, `columnId?`, `workspaceColumnId?`, `expectedVersion`, `idempotencyKey` | `task` | write-reversible |
+| `tasks_complete` | `tasks complete` | `taskId`, `outcome`, `note`, `references?`, `expectedVersion`, `idempotencyKey` | `task` | write-reversible |
+| `tasks_reopen` | `tasks reopen` | `taskId`, `reason`, `expectedVersion`, `idempotencyKey` | `task` | write-reversible |
+| `tasks_sync` | `tasks sync` | `companySlugs?`, `asOfDate?`, `idempotencyKey` | `tasks` and synchronization coverage | write-reversible |
+| `tasks_reminder_set` | `tasks reminder` | `taskId`, typed `reminder`, `expectedVersion`, `idempotencyKey` | `task` | write-reversible |
+| `tasks_notifications` | `tasks notifications` | No business input | `notifications` | read |
+| `tasks_runtime` | `tasks runtime` | No business input | `runtime` | read |
+| `tasks_run` | `tasks run` | `asOfDate?`, `idempotencyKey` | `notifications`, `runtime` | write-reversible |
+| `task_series_list` | `task-series list` | `companySlugs?`, `includeArchived?` | `series` | read |
+| `task_series_save` | `task-series save` | Typed `series`, `expectedVersion`, `idempotencyKey` | `series` | write-reversible |
+| `task_series_project` | `task-series project` | `from`, `to`, `companySlugs?`, `includeArchived?` | `projections` | read |
+| `task_series_materialize` | `task-series materialize` | `companySlugs?`, `asOfDate?`, `idempotencyKey` | `tasks` | write-reversible |
+| `task_boards_list` | `task-boards list` | `companySlugs?`, `includeArchived?` | `boards` | read |
+| `task_boards_preview` | `task-boards preview` | Typed `board`, `expectedVersion?` | `preview` (`previewHash`, affected tasks, status changes) | read |
+| `task_boards_save` | `task-boards save` | Typed `board`, `expectedVersion`, `idempotencyKey` | `board` | write-reversible |
+
+Scope is `{kind:"company",companySlug}` or
+`{kind:"workspace",companySlugs:[...]}`. Status is `open`, `in_progress`,
+`waiting` or `done`. Completion separately records `completed`, `not_relevant`,
+`cancelled` or `exception`, with a note and evidence. Moving a card never
+replaces evidence, ledger approval, payment or filing. `task_boards_preview`
+returns a bound `previewHash` before changing meaning or deleting a populated
+column; `task_boards_save` requires explicit relocations and the current preview.
+Assignment never grants access or sends an external message. The reminder
+runner sends only in-product reminders and starts no LLM work.
+
 ## Tool-count summary
 
 Tallene gælder en kørende `src/mcp/server.ts` (verificeret via `tools/list`).
 Tabellerne nedenfor er den autoritative liste pr. tool — bliver prosa-tal og
 tabel uenige, er det tabellerne (og i sidste ende `tools/list`) der gælder.
 
-- **Read-tools**: 110
-- **Ordinary write-tools**: 138
+- **Read-tools**: 119
+- **Ordinary write-tools**: 149
 - **Destructive**: 1 (`system_restore_backup`)
-- **Total**: **249** (read and write tool counts are verified from the live registry in CI)
+- **Total**: **269** (read and write tool counts are verified from the live registry in CI)
 
 ## Read-tools
 

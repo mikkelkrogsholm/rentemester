@@ -35,7 +35,7 @@ export function ObligationsView() {
 
   return (
     <section className="statement" data-cockpit-page="obligations" data-evidence-issue="655">
-      <PageHeader title="Forpligtelser" actions={<><div className="row-actions">
+      <PageHeader title="Forpligtelser" actions={<><ButtonLink variant="secondary" to={`/companies/${slug}/opgaver`}>Planlæg i Opgaver</ButtonLink><div className="row-actions">
           <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
           </ButtonLink>

@@ -6,6 +6,29 @@ følger [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-08
+
+### Added
+
+- Vedvarende workspace-opgaver med selskabs- og fælles scope, historik,
+  afslutningsbeviser, optimistisk versionskontrol og idempotente mutationer.
+- Samme opgaver i liste, kalender, kanban og årshjul; egne kolonner,
+  periodebaserede rutiner og beskyttede links til kilder og playbooks.
+- Komplette kildeadaptere til bankarbejde, undtagelser, periodelukning,
+  registreret moms og godkendelsesbehov med synlig uafklaret dækning.
+- Brugeraktiverede påmindelser i produktet, minutrunner, leveringshistorik og
+  genstart uden dubletter. Ingen mail eller automatisk agentarbejde.
+- Fælles HTTP-, CLI- og MCP-kontrakter, adgang før counts/søgning/kvitteringer
+  samt backup/restore af opgaver, boards, rutiner og dokumentation.
+
+### Security
+
+- Adgang genkontrolleres i mutationstransaktionen og ved genbrug af tidligere
+  resultater. Historiske scopes og samlet board-preview afslører ikke arbejde
+  fra selskaber, som brugeren ikke kan tilgå.
+- Opgavestatus kan ikke bogføre, betale, indberette eller omgå afslutningsbevis.
+  Genkendelige CPR-/bankoplysninger afvises i kortets fritekst.
+
 ## [0.2.0] - 2026-10-03
 
 ### Added

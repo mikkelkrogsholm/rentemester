@@ -57,7 +57,7 @@ export function PortfolioView() {
 
   return (
     <section>
-      <PageHeader title="Portefølje" actions={<><ButtonLink className="btn" to="/companies/new">
+      <PageHeader title="Portefølje" actions={<><ButtonLink variant="secondary" to="/opgaver">Opgaver på tværs</ButtonLink><ButtonLink className="btn" to="/companies/new">
           Tilføj virksomhed
         </ButtonLink></>}>
         <div>

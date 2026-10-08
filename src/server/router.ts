@@ -35,6 +35,8 @@ import { jsonResponse } from "./router/_shared";
 import { dispatchAgentDiscoveryRoute } from "./router/agent-discovery-dispatch";
 import { dispatchGroupWorkspaceRoute } from "./router/group-workspace-dispatch";
 import { dispatchSystemRoute } from "./router/system-dispatch";
+import { dispatchTaskRoute } from "./router/tasks";
+import { readTaskKnowledgePage } from "./router/task-knowledge";
 import { handleCompanyAccountingDraft, handleCompanyAccountingDrafts } from "./router/accounting-drafts";
 import {
   handleAssetNextDepreciation,
@@ -284,6 +286,29 @@ export function validateRouteCatalog(entries: readonly RouteCatalogEntry[]): voi
 }
 
 const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/tasks", summary: "Filtrerede opgaver, boards, rutiner, projektioner og aktiv påmindelsesstatus." },
+  { scope: "company", effect: "read", permission: "company.knowledge.read", method: "GET", pattern: "/api/companies/:slug/knowledge-pages/:pageId", summary: "Beskyttet selskabsviden og playbooks fra en sikker produktreference." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/knowledge-pages/:pageId", summary: "Workspaceejerens beskyttede fælles vidensside; handleren kræver ejerskab." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/tasks", summary: "Opretter opgave med eksplicit scope, actor og idempotens; ressourcer autoriseres i opgavedomænet." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/tasks/sync", summary: "Synkroniserer tilladte autoritative opgavekilder uden ledgerændringer." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/tasks/run", summary: "Kører deterministisk opgavevedligeholdelse; kræver workspaceejer." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/tasks/runtime", summary: "Viser aktuel påmindelsesruntime uden at starte den." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/tasks/notifications", summary: "Modtagerens adgangsfiltrerede påmindelser." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/tasks/operations/:idempotencyKey", summary: "Bekræfter egen opgaveoperation gennem adgangsbeskyttet kvitteringsmetadata." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/tasks/:taskId", summary: "Opgave og bevaret ændringshistorik." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/tasks/:taskId/history", summary: "Opgavens bevarede ændringshistorik." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/tasks/:taskId/update", summary: "Opdaterer almindelige opgavefelter med forventet version." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/tasks/:taskId/move", summary: "Flytter opgaven i lokale eller samlede boards; udfører ingen regnskabshandling." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/tasks/:taskId/complete", summary: "Registrerer dokumenteret afslutning efter aktuel kildekontrol." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/tasks/:taskId/reopen", summary: "Genåbner opgave med begrundelse og bevaret afslutningshistorik." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/tasks/:taskId/reminder", summary: "Aktiverer eller ændrer en påmindelse for en tilladt modtager." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/task-series", summary: "Tilgængelige opgaverutiner." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/task-series", summary: "Gemmer versioneret rutine uden at omskrive gamle forekomster." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/task-series/project", summary: "Read-only forventninger til årshjulet." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/task-series/materialize", summary: "Opretter konkrete forekomster idempotent." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "GET", pattern: "/api/task-boards", summary: "Tilgængelige lokale og samlede boards med fælles statusbetydninger." },
+  { scope: "workspace", effect: "read", permission: "workspace.tasks.read", method: "POST", pattern: "/api/task-boards/preview", summary: "Read-only konsekvensvisning for ændrede kolonnebetydninger." },
+  { scope: "workspace", effect: "write", permission: "workspace.tasks.read", method: "POST", pattern: "/api/task-boards", summary: "Gemmer board med eksplicit omplacering og godkendt konsekvensvisning." },
   { scope: "public", effect: "read", permission: "public.read", method: "GET", pattern: "/api", summary: "Sundhedstjek + rute-katalog." },
   { scope: "public", effect: "read", permission: "public.read", method: "GET", pattern: "/api/health", summary: "Alias for GET /api." },
   { scope: "public", effect: "read", permission: "public.read", method: "GET", pattern: "/api/ready", summary: "Read-only readiness for workspace, control DB and registered ledgers." },
@@ -772,6 +797,12 @@ export async function handleRequest(
       cvrStatus: () => handleSystemCvrStatus(),
     });
     if (systemResponse) return systemResponse;
+    const companyPage = /^\/api\/companies\/([^/]+)\/knowledge-pages\/([^/]+)$/.exec(path);
+    if (companyPage) return readTaskKnowledgePage(config, { kind: "company", companySlug: decodeURIComponent(companyPage[1]!) }, decodeURIComponent(companyPage[2]!));
+    const workspacePage = /^\/api\/knowledge-pages\/([^/]+)$/.exec(path);
+    if (workspacePage) return readTaskKnowledgePage(config, { kind: "workspace" }, decodeURIComponent(workspacePage[1]!));
+    const taskResponse = await dispatchTaskRoute(request, config, path, method, url);
+    if (taskResponse) return taskResponse;
 
     const groupWorkspaceResponse = await dispatchGroupWorkspaceRoute(path, method, url, request, {
       portfolio: () => handlePortfolio(config, url), cfoAnalytics: () => handleCfoAnalytics(config, url), me: () => handleMe(config),

@@ -3,6 +3,18 @@ import { join } from "node:path";
 import { companyPaths } from "./core/paths";
 
 export const MUTATING_COMMANDS = new Set([
+  "tasks create",
+  "tasks update",
+  "tasks move",
+  "tasks complete",
+  "tasks reopen",
+  "tasks sync",
+  "tasks reminder",
+  "tasks run",
+  "task-series save",
+  "task-series materialize",
+  "task-boards save",
+
   "workspace snapshot",
   "workspace restore",
   "workspace-access bootstrap-first",
@@ -244,6 +256,18 @@ export const MUTATING_COMMANDS = new Set([
 
 /** Workspace handlers own target-company policy or trusted local control-plane preflight. */
 const HANDLER_OWNED_MUTATION_POLICY = new Set([
+  "tasks create",
+  "tasks update",
+  "tasks move",
+  "tasks complete",
+  "tasks reopen",
+  "tasks sync",
+  "tasks reminder",
+  "tasks run",
+  "task-series save",
+  "task-series materialize",
+  "task-boards save",
+
   "workspace snapshot", "workspace restore",
   "efaktura modtag-workspace", "recurring-invoice run-workspace",
   "group propose-mapping", "group approve-mapping", "group revoke-mapping",

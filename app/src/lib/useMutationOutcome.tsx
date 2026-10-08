@@ -32,5 +32,5 @@ export function useMutationOutcome(onRefresh?: () => unknown | Promise<unknown>,
     } finally { setRunning(false); }
   }
   const feedback = block.blocked && !running ? <UnknownMutationNotice onRefresh={onRefresh} onRelease={block.release} persistent={block.persistent} verifyPersistence={block.verifyPersistence} /> : null;
-  return { blocked: block.blocked, isBlocked: block.isBlocked, reject, run, feedback };
+  return { blocked: block.blocked, isBlocked: block.isBlocked, reject, run, feedback, acceptVerifiedResult: block.release };
 }

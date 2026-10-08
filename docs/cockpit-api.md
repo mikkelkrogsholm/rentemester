@@ -84,14 +84,15 @@ fails closed with `401`. Read routes are not subject to this gate.
 Every response is JSON with `content-type: application/json; charset=utf-8`.
 
 **Success** — HTTP `200` (or `201` for company creation) — always has
-`ok: true` plus exactly one named payload key:
+`ok: true` plus named payload fields. Most older endpoints have one payload key:
 
 ```json
 { "ok": true, "<key>": { ... } }
 ```
 
 The `<key>` is route-specific (`dashboard`, `invoices`, `import`, `invoice`,
-…) — see each endpoint below.
+…) — see each endpoint below. Task reads return related fields together, for
+example `{ok:true,tasks:[...],count:1,boards:[...],runtime:{...}}`.
 
 **Error** — any non-2xx — always has this shape (`src/server/errors.ts`,
 unified with MCP + CLI in #368):
@@ -368,9 +369,45 @@ a friendly health probe and any other non-`/api` path is a JSON `404`.
 | | Cockpit HTTP API (this doc) | MCP loose tools | `agent run` loop |
 |---|---|---|---|
 | Driver | The cockpit SPA / any HTTP client | An external MCP client/agent | The in-process `runAgentLoop()` |
-| Scope | A whole workspace; company by slug | One company per call; slug or path | One company, one run |
-| Surface | A small REST-ish route set | 249 loose tools | A single fixed loop |
-| Writes | 6 `POST` routes via `withCompanyMutation` | Write tools with `confirm` | The loop books deterministically |
+| Scope | Workspace; company by slug | Explicit company or task workspace/scope | One company, one run |
+| Surface | Catalogued HTTP routes | 269 loose tools | A single fixed loop |
+| Writes | Ledger pipeline or separate workspace domain | Write tools with `confirm` | The loop books deterministically |
 
 All four rest on the same `src/core/`, the same rules and the same
 append-only ledger.
+
+## Workspace tasks and protected playbooks
+
+Tasks use the workspace database directly and never run a full company audit or
+modify accounting ledgers. They retain the transport's authentication, origin,
+content-type and confirmation gates. The strict DTOs are shared with CLI/MCP;
+see `src/task-interface-input.ts` and [task operations](tasks-operations.md).
+
+| Method | Path | Action |
+| --- | --- | --- |
+| GET / POST | `/api/tasks` | Filtered tasks view / create with explicit scope |
+| GET | `/api/tasks/:taskId`, `/api/tasks/:taskId/history` | Current task and access-filtered history |
+| POST | `/api/tasks/:taskId/update`, `/move`, `/complete`, `/reopen`, `/reminder` | Versioned task mutation |
+| GET | `/api/tasks/operations/:idempotencyKey` | Current principal's accessible receipt metadata or null |
+| POST | `/api/tasks/sync`, `/api/tasks/run` | Idempotent source sync / one maintenance tick |
+| GET | `/api/tasks/runtime`, `/api/tasks/notifications` | Runtime / caller's accessible notifications |
+| GET / POST | `/api/task-series` | Accessible series / versioned save |
+| GET | `/api/task-series/project` | Read-only future projection, requires from/to |
+| POST | `/api/task-series/materialize` | Idempotent materialization through asOfDate |
+| GET / POST | `/api/task-boards` | Accessible board vocabulary / versioned save |
+| POST | `/api/task-boards/preview` | Read-only consequence preview |
+| GET | `/api/companies/:slug/knowledge-pages/:pageId` | Current playbook by ID or slug with company knowledge permission |
+| GET | `/api/knowledge-pages/:pageId` | Current workspace playbook, workspace owners only |
+
+Writes require `confirm:true`, `idempotencyKey` and, for edits, `expectedVersion`.
+Actor and principal are server-derived; supplying them in JSON is rejected.
+List queries use repeated `companySlug`, `includeArchived`, `showDone`, `status`,
+`type`, `search`, `assigneeId`, `undated`, `unassigned`, `from`, and `to`.
+Boolean values must be the literal strings true/false. Access is checked before
+filtering/counts and again inside writes, including recorded retry results.
+Conflicts return HTTP409 with the domain subcode; no stale update succeeds.
+
+Playbook responses are `{ok:true,page:{...metadata,bodyMarkdown}}`. The browser
+renders text safely and retains the task's return path. A task's reference does
+not grant permission to read the referenced page. A receipt with no accessible
+result returns null; that is not proof an in-flight action has no effect.

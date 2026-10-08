@@ -38,7 +38,7 @@ gateway availability, safety, actor/confirmation and retry metadata.
 ### Profiles and canonical operation gateways
 
 The stdio server selects `compact` by default. Set
-`RENTEMESTER_MCP_PROFILE=full` before startup to expose all 249 legacy names
+`RENTEMESTER_MCP_PROFILE=full` before startup to expose all 269 legacy names
 directly with their existing schemas and behavior. An unknown profile fails
 startup. Full-profile names remain compatibility aliases; persisted keys,
 permission names and audit identities are not renamed.
@@ -81,7 +81,7 @@ fails before release instead of silently disappearing from agent discovery.
 
 ## What the surface is
 
-Rentemester exposes its bookkeeping core as 249 precise internal operations
+Rentemester exposes its bookkeeping core as 269 precise internal operations
 over stdio (`src/mcp/server.ts`, registered by `src/mcp/registry.ts`). Compact
 mode lists eight gateway tools; full mode lists all precise legacy names. Each
 operation maps to a single core operation — issue an invoice, post a journal
@@ -398,3 +398,25 @@ append-only posting. See "Actor-attribution" in `docs/mcp-tool-surface.md`.
 Both rest on the same core, the same rules, the same append-only ledger and
 the same exception queue. The guardrails are identical; only the driver
 differs.
+
+## Workspace task operations
+
+The `workspace_task_*`, `workspace_task_routine_*` and `workspace_task_board_*`
+canonical operations are a separate workspace domain. Their full-profile aliases
+start with `tasks_`, `task_series_` and `task_boards_`. They take an explicit
+`workspace` and task scope, rather than the accounting tools' `company` path.
+Use discovery for the strict schema; see [task surface](mcp-tool-surface.md#workspace-tasks-annual-wheel-and-boards)
+and [operations](tasks-operations.md).
+
+Every task write requires confirm:true and idempotencyKey. Edits also require
+expectedVersion; a new series/board uses 0. An exact retry returns the original
+effect only while the caller still has access to its recorded and current scope.
+Reads return access-filtered counts/history and do not create tasks or deliver
+notifications. Errors retain stable domain codes. The successful MCP envelope
+is `{ok:true,data:{...serviceFields}}`; CLI/HTTP flatten those fields.
+
+Task work never books, pays, files, approves a ledger plan, or changes accounting
+period status. External evidence remains user_reported unless a fresh source
+check verifies it. Assignment gives no access; a linked workspace task requires
+all company memberships. These operations have persistent workspace events and
+receipts, unlike the runtime agent loop's per-run state.

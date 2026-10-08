@@ -1,0 +1,33 @@
+// Isolated synthetic workspace for browser integration and observed usability.
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { initWorkspace } from '../src/core/workspace';
+import { createCompany } from '../src/core/company';
+import { openWorkspaceControlDb } from '../src/core/workspace-control';
+import { createKnowledgePage } from '../src/core/knowledge-pages';
+import { executeTaskOperation } from '../src/core/task-service';
+import { startTaskRuntime } from '../src/core/task-runtime';
+import { startCockpitServer } from '../src/server';
+
+const root = mkdtempSync(join(tmpdir(), 'rentemester-tasks-live-'));
+initWorkspace(root);
+createCompany(root, { name: 'Synthetic Blue ApS', slug: 'blue-aps', cvr: 'DK90000001', vatPeriodType: 'quarter' });
+createCompany(root, { name: 'Synthetic Green ApS', slug: 'green-aps', cvr: 'DK90000002', vatPeriodType: 'month' });
+const identity = { principal: 'local', actor: 'user:synthetic-demo', local: true, enforceActorPolicy: false };
+const now = new Date();
+const date = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Copenhagen' }).format(now);
+const month = date.slice(0, 7);
+const db = openWorkspaceControlDb(root);
+createKnowledgePage(db, { pageId: 'page-month-review', scope: { kind: 'company', companySlug: 'blue-aps' }, slug: 'month-review', title: 'Syntetisk månedsplaybook', bodyMarkdown: 'Kontrollér dokumentation, afstemning og afslutning.\n<script>window.unsafe=true</script>', provenance: { kind: 'user', ref: 'synthetic-demo' }, effectiveFrom: '2020-01-01T00:00:00Z', actor: identity.actor, principal: identity.principal });
+db.close();
+await executeTaskOperation(root, 'create', { title: 'Kontrollér månedens dokumentation', scope: { kind: 'company', companySlug: 'blue-aps' }, workDate: date, references: [{ kind: 'knowledge', ref: 'page-month-review', companySlug: 'blue-aps' }], idempotencyKey: 'live-month-review' }, identity);
+await executeTaskOperation(root, 'create', { title: 'Bekræft syntetisk myndighedsfrist', scope: { kind: 'company', companySlug: 'green-aps' }, deadline: { date, kind: 'statutory', basis: 'Syntetisk regelgrundlag til integrationstest', certainty: 'confirmed' }, idempotencyKey: 'live-statutory' }, identity);
+await executeTaskOperation(root, 'create', { title: 'Fælles økonomimøde', scope: { kind: 'workspace', companySlugs: ['blue-aps', 'green-aps'] }, idempotencyKey: 'live-shared' }, identity);
+await executeTaskOperation(root, 'series-save', { series: { seriesId: 'monthly-review', title: 'Månedlig afstemning', scope: { kind: 'company', companySlug: 'blue-aps' }, template: { title: 'Månedlig afstemning', scope: { kind: 'company', companySlug: 'blue-aps' }, type: 'routine' }, cadence: 'month', every: 1, anchor: 'calendar', startDate: `${month}-01`, endDate: null, fiscalYearStartMonth: 1, workDayOffset: 0, deadlineDayOffset: null, relevance: 'relevant', active: true }, expectedVersion: 0, idempotencyKey: 'live-series' }, identity);
+const stopRuntime = startTaskRuntime(root, { allowLocalRecipient: true });
+const server = startCockpitServer({ workspaceRoot: root, host: '127.0.0.1', port: Number(process.env.RENTEMESTER_TASK_DEMO_PORT ?? 0), authRequired: false, authToken: null, staticRoot: resolve(import.meta.dir, '../app/dist') });
+process.stdout.write(`${JSON.stringify({ url: server.url, date, root })}\n`);
+const stop = () => { stopRuntime(); server.stop(); rmSync(root, { recursive: true, force: true }); process.exit(0); };
+process.on('SIGTERM', stop);
+process.on('SIGINT', stop);

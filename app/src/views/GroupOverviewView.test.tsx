@@ -1,3 +1,4 @@
+import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, test, vi } from "bun:test";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
@@ -35,7 +36,7 @@ describe("GroupOverviewView", () => {
   beforeEach(() => { vi.clearAllMocks(); groupOverview.mockResolvedValue(overview); groupReconciliation.mockResolvedValue({ ok: true, scope: "intercompany-reconciliation", asOf: "2026-08-23", rows: [{ mappingId: "visible-map", left: { companySlug: "visible-aps", balance: 100, currency: "DKK" }, right: { companySlug: "child-aps", balance: 95, currency: "DKK" }, difference: 5, status: "mismatch", reason: "exact-native-currency-difference", blockers: [] }] }); groupEliminations.mockResolvedValue({ ok: true, scope: "consolidation-eliminations", asOf: "2026-08-23", rows: [] }); groupReportProfiles.mockImplementation(async (asOf: string) => ({ ok: true, scope: "consolidation-report-profiles", asOf, profiles: [] })); });
 
   test("sends an explicit YYYY-MM-DD asOf and renders structure without hidden identities or figures", async () => {
-    render(<GroupOverviewView />);
+    render(<MemoryRouter><GroupOverviewView /></MemoryRouter>);
     expect(await screen.findByRole("heading", { name: "Koncernstruktur" })).toBeInTheDocument();
     expect(groupOverview).toHaveBeenCalledWith(expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), expect.objectContaining({ signal: expect.anything() }));
     expect(screen.getByText("Strukturvisning")).toBeInTheDocument();
@@ -50,7 +51,7 @@ describe("GroupOverviewView", () => {
   });
 
   test("changes the date through the explicit asOf request", async () => {
-    render(<GroupOverviewView />);
+    render(<MemoryRouter><GroupOverviewView /></MemoryRouter>);
     await screen.findByRole("heading", { name: "Koncernstruktur" });
     fireEvent.change(screen.getByLabelText("Pr. dato"), { target: { value: "2026-01-31" } });
     await waitFor(() => expect(groupOverview).toHaveBeenLastCalledWith("2026-01-31", expect.objectContaining({ signal: expect.anything() })));
@@ -60,7 +61,7 @@ describe("GroupOverviewView", () => {
 
   test("shows a disposition lifecycle response and fails closed on a server denial", async () => {
     intercompanyDispositionStatus.mockResolvedValue({ status: "partly_posted", exceptions: [{ kind: "one_sided_posting" }] });
-    render(<GroupOverviewView />);
+    render(<MemoryRouter><GroupOverviewView /></MemoryRouter>);
     await screen.findByRole("heading", { name: "Intercompany dispositioner" });
     fireEvent.change(screen.getByLabelText("Disposition-ID"), { target: { value: "synthetic-disposition" } });
     fireEvent.click(screen.getByRole("button", { name: "Vis status" }));
@@ -73,28 +74,28 @@ describe("GroupOverviewView", () => {
 
   test("fails closed on a partial/unsafe group contract", async () => {
     groupOverview.mockResolvedValue({ ...overview, consolidatedFigures: { forbidden: 1 } });
-    render(<GroupOverviewView />);
+    render(<MemoryRouter><GroupOverviewView /></MemoryRouter>);
     expect(await screen.findByRole("alert")).toHaveTextContent("Koncernstrukturen kan ikke vises sikkert");
     expect(screen.queryByText("Syntetisk koncern")).not.toBeInTheDocument();
   });
 
   test("fails closed on API errors without leaving structure visible", async () => {
     groupOverview.mockRejectedValue(new Error("unauthorized"));
-    render(<GroupOverviewView />);
+    render(<MemoryRouter><GroupOverviewView /></MemoryRouter>);
     expect(await screen.findByRole("alert")).toHaveTextContent("Koncernstrukturen kan ikke vises sikkert");
     expect(screen.queryByText("Syntetisk koncern")).not.toBeInTheDocument();
   });
 
   test("fails closed when reconciliation cannot be authorized", async () => {
     groupReconciliation.mockRejectedValue(new Error("unauthorized"));
-    render(<GroupOverviewView />);
+    render(<MemoryRouter><GroupOverviewView /></MemoryRouter>);
     expect(await screen.findByRole("alert")).toHaveTextContent("Koncernstrukturen kan ikke vises sikkert");
     expect(screen.queryByLabelText("Mellemregningsafstemning")).not.toBeInTheDocument();
   });
 
   test("does not render structure if elimination evidence fails", async () => {
     groupEliminations.mockRejectedValue(new Error("tampered"));
-    render(<GroupOverviewView />);
+    render(<MemoryRouter><GroupOverviewView /></MemoryRouter>);
     expect(await screen.findByRole("alert")).toHaveTextContent("Koncernstrukturen kan ikke vises sikkert");
     expect(screen.queryByLabelText("Elimineringer")).not.toBeInTheDocument();
   });
@@ -115,7 +116,7 @@ describe("GroupOverviewView", () => {
       }],
       sourceSnapshots: [{ companySlug: "visible-aps", ledgerHeadHash: "a".repeat(64), entryCount: 12 }],
     });
-    render(<GroupOverviewView />);
+    render(<MemoryRouter><GroupOverviewView /></MemoryRouter>);
     expect(await screen.findByRole("heading", { name: "Konsolideret rapport" })).toBeInTheDocument();
     expect(await screen.findByText("Kontrolleret koncernrapport")).toBeInTheDocument();
     expect(screen.getByLabelText("Konsolideret rapport")).toHaveTextContent("Aktiver");
@@ -132,7 +133,7 @@ describe("GroupOverviewView", () => {
       profiles: [{ id: "approved-profile", groupId: "group-1", currency: "DKK", validFrom: "2026-01-01" }],
     }));
     groupConsolidatedReport.mockRejectedValue(new Error("tampered"));
-    render(<GroupOverviewView />);
+    render(<MemoryRouter><GroupOverviewView /></MemoryRouter>);
     expect(await screen.findByRole("alert")).toHaveTextContent("Koncernstrukturen kan ikke vises sikkert");
     expect(screen.queryByLabelText("Konsolideret rapport")).not.toBeInTheDocument();
   });
