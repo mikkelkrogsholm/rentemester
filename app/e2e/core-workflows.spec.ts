@@ -550,6 +550,97 @@ test("P&L chart exposes the same zero and negative values in an accessible curre
   fixture.assertComplete();
 });
 
+test("SVG chart series, keyboard periods and native touch preserve the source table", async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ baseURL, hasTouch: true, viewport: { width: 390, height: 844 } });
+  const page = await context.newPage();
+  try {
+    const fixture = await mockApi(page, { overrides: {
+      "GET /api/companies/acme-aps/overview": { body: { ok: true, overview: {
+        ...core.overview,
+        company: { ...core.overview.company, currency: "EUR" },
+        profitAndLoss: { ...core.overview.profitAndLoss, months: [
+          { month: 1, label: "Januar", income: 100, expense: 25 },
+          { month: 2, label: "Februar", income: 0, expense: -15 },
+          { month: 3, label: "Marts", income: 500, expense: 10 },
+        ] },
+      } } },
+    } });
+    await page.goto(`/companies/${COMPANY_SLUG}?year=2026`);
+    const graph = page.getByRole("img", { name: /Månedlige indtægter og udgifter i EUR/ });
+    const series = page.getByRole("group", { name: /Vælg serier: Månedlige indtægter og udgifter/ });
+    const income = series.getByRole("button", { name: "Indtægter", exact: true });
+    await page.locator("summary").filter({ hasText: "Se indtægter og udgifter som tabel" }).click();
+    const table = page.getByRole("table", { name: "Månedlige indtægter og udgifter (EUR)" });
+    const originalTable = (await table.textContent())!;
+    await income.focus();
+    await page.keyboard.press("Space");
+    await expect(income).toHaveAttribute("aria-pressed", "false");
+    await expect(graph.locator('[data-series="income"]')).toHaveCount(0);
+    await expect(graph.locator('[data-series="expense"]')).toHaveCount(1);
+    await expect(table).toHaveText(originalTable);
+    await page.keyboard.press("Enter");
+    await expect(income).toHaveAttribute("aria-pressed", "true");
+    await expect(graph.locator('[data-series="income"]')).toHaveCount(1);
+
+    const valuesId = (await graph.getAttribute("aria-describedby"))!.split(" ")[1]!;
+    const values = page.locator(`[id=${JSON.stringify(valuesId)}]`);
+    await graph.focus();
+    await expect(graph).toBeFocused();
+    await expect(graph).toHaveCSS("outline-style", "solid");
+    await page.keyboard.press("Home");
+    await expect(values).toContainText("Januar");
+    await page.keyboard.press("ArrowRight");
+    await expect(values).toHaveText(/Februar.*Indtægter: 0\s*€.*Udgifter: -15\s*€/);
+    await page.keyboard.press("End");
+    await expect(values).toHaveText(/Marts.*Indtægter: 500\s*€/);
+    await page.keyboard.press("ArrowLeft");
+    await expect(values).toContainText("Februar");
+    await page.keyboard.press("Home");
+    await expect(values).toContainText("Januar");
+
+    await graph.scrollIntoViewIfNeeded();
+    const firstBar = (await graph.locator('[data-series="expense"] [data-category="0"]').boundingBox())!;
+    await page.mouse.move(firstBar.x + firstBar.width / 2, firstBar.y + firstBar.height / 2);
+    await expect(values).toContainText("Januar");
+    await page.mouse.move(0, 0);
+    await expect(values).toHaveText("Peg eller tryk på en periode for at se værdierne.");
+    const lastBar = (await graph.locator('[data-series="expense"] [data-category="2"]').boundingBox())!;
+    await page.touchscreen.tap(lastBar.x + lastBar.width / 2, lastBar.y + lastBar.height / 2);
+    await expect(values).toHaveText(/Marts.*Indtægter: 500\s*€.*Udgifter: 10\s*€/);
+    await page.mouse.move(0, 0);
+    await expect(values).toContainText("Marts");
+    await expect(table).toHaveText(originalTable);
+    expect(fixture.calls.filter(call => call.method !== "GET")).toEqual([]);
+    fixture.assertComplete();
+  } finally {
+    await context.close();
+  }
+});
+
+test("reduced motion removes navigation transitions and preserves keyboard focus", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const fixture = await mockApi(page);
+  await page.goto(`/companies/${COMPANY_SLUG}?year=2026`);
+  expect(await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches)).toBe(true);
+  const destinations = page.getByRole("navigation", { name: "Virksomhedsnavigation", exact: true }).getByRole("link");
+  expect(await destinations.count()).toBeGreaterThan(0);
+  expect(await destinations.evaluateAll(elements => elements.every(element => {
+    const style = getComputedStyle(element);
+    return [style.transitionDuration, style.animationDuration].every(durations =>
+      durations.split(",").every(duration => Number.parseFloat(duration) === 0),
+    );
+  }))).toBe(true);
+  const graph = page.getByRole("img", { name: /Månedlige indtægter og udgifter/ });
+  await graph.focus();
+  await expect(graph).toBeFocused();
+  await expect(graph).toHaveCSS("outline-style", "solid");
+  await expect(graph).toHaveCSS("outline-width", "2px");
+  await page.keyboard.press("End");
+  const valuesId = (await graph.getAttribute("aria-describedby"))!.split(" ")[1]!;
+  await expect(page.locator(`[id=${JSON.stringify(valuesId)}]`)).not.toContainText("Peg eller tryk");
+  fixture.assertComplete();
+});
+
 test("cashflow graph's data table distinguishes absent, zero and negative bank balances", async ({ page }) => {
   const fixture = await mockApi(page, { overrides: {
     "GET /api/companies/acme-aps/cashflow": { body: { ok: true, cashflow: { ...core.cashflow, balanceSeries: [{ date: "2026-02-01", balance: 0 }, { date: "2026-03-01", balance: -50 }], closingBalance: -50 } } },
