@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { canonicalJson } from "../../src/core/canonical-json";
 import { exportTaskSnapshot, parseTaskSnapshot, restoreTaskSnapshot } from "../../src/core/task-snapshot";
-import { createTask, completeTask, reopenTask, getTask, taskHistory } from "../../src/core/tasks";
+import { createTask, completeTask, reopenTask, getTask, taskHistory, executeTaskMutation } from "../../src/core/tasks";
 import { defaultTaskBoard, getTaskBoard, saveTaskBoard } from "../../src/core/task-boards";
 import { createWorkspaceSnapshot, restoreWorkspaceSnapshot } from "../../src/core/workspace-snapshot";
 import { openWorkspaceControlDb, workspaceControlPaths } from "../../src/core/workspace-control";
@@ -99,6 +99,53 @@ describe("credential-free task snapshots", () => {
     if (result.taskId) result.title = "Forged retry effect"; else result.columns[0].name = "Forged retry effect";
     row.result_json = JSON.stringify(result);
     expect(() => parseTaskSnapshot(JSON.stringify(corrupt))).toThrow("no matching historical effect");
+  });
+  test("round-trips known service bulk receipts with bounded scope and occurrence references", () => {
+    const source = fixture(), target = fixture(); populated(source.db);
+    const occurrence = createTask(source.db, { title: "Månedsrutine oktober", scope, type: "routine", seriesId: "series-monthly", occurrenceKey: "2026-10-01:2026-10-31" }, ctx("occurrence"));
+    const selected = { kind: "workspace" as const, companySlugs: ["alpha-company"] };
+    const sync = { created: 0, updated: 0, resolved: 0, reopened: 0, unknown: 0, errors: [{ companySlug: "alpha-company", reason: "Kilden er midlertidigt utilgængelig." }] };
+    executeTaskMutation(source.db, "sources-sync", {}, ctx("bulk-sync"), () => ({ scope: selected, includesWorkspace: false, sync }));
+    executeTaskMutation(source.db, "series-materialize", {}, ctx("bulk-materialize"), () => ({ scope: selected, includesWorkspace: true, materialized: { created: 1, existing: 0, taskIds: [occurrence.taskId] } }));
+    executeTaskMutation(source.db, "runtime-run", {}, ctx("bulk-run"), () => ({ scope: selected, includesWorkspace: true, run: { sync, materialized: { created: 0, existing: 1, taskIds: [occurrence.taskId] }, delivered: 0 } }));
+    restoreTaskSnapshot(target.db, exportTaskSnapshot(source.db)!, undefined, now);
+    const rows = (db: typeof source.db) => db.query("SELECT * FROM rm_task_receipts WHERE operation IN ('sources-sync','series-materialize','runtime-run') ORDER BY operation").all();
+    expect(rows(target.db)).toEqual(rows(source.db)); expect(rows(target.db)).toHaveLength(3);
+    expect(getTask(target.db, occurrence.taskId)?.seriesId).toBe("series-monthly");
+  });
+  test("bulk receipt summaries reject unknown fields, scope leakage and invalid effect references", () => {
+    const source = fixture(); populated(source.db);
+    const occurrence = createTask(source.db, { title: "Månedsrutine oktober", scope, type: "routine", seriesId: "series-monthly", occurrenceKey: "2026-10-01:2026-10-31" }, ctx("occurrence"));
+    const selected = { kind: "workspace" as const, companySlugs: ["alpha-company"] };
+    const sync = { created: 0, updated: 0, resolved: 0, reopened: 0, unknown: 0, errors: [] };
+    executeTaskMutation(source.db, "sources-sync", {}, ctx("bulk-sync"), () => ({ scope: selected, includesWorkspace: false, sync }));
+    executeTaskMutation(source.db, "series-materialize", {}, ctx("bulk-materialize"), () => ({ scope: selected, includesWorkspace: true, materialized: { created: 1, existing: 0, taskIds: [occurrence.taskId] } }));
+    const valid = exportTaskSnapshot(source.db)!;
+    const corrupt = (operation: string, change: (result: any, row: Record<string, string | number | null>) => void) => {
+      const copy = structuredClone(valid), row = copy.tables.rm_task_receipts.find((item) => item.operation === operation)!;
+      const result = JSON.parse(String(row.result_json)); change(result, row); row.result_json = JSON.stringify(result);
+      expect(() => parseTaskSnapshot(JSON.stringify(copy), new Set(["alpha-company", "beta-company"]))).toThrow();
+    };
+    corrupt("sources-sync", result => { result.sync.password = "forged"; });
+    corrupt("sources-sync", result => { result.sync.created = -1; });
+    corrupt("sources-sync", result => { result.includesWorkspace = "yes"; });
+    corrupt("sources-sync", result => { delete result.includesWorkspace; });
+    corrupt("sources-sync", result => { result.sync.errors = [{ companySlug: "beta-company", reason: "Forbidden company" }]; });
+    corrupt("sources-sync", (_result, row) => { row.operation = "sources-sync-all"; });
+    corrupt("series-materialize", result => { result.materialized.taskIds = ["missing-task"]; });
+    corrupt("series-materialize", result => { result.scope.companySlugs = ["beta-company"]; });
+    corrupt("series-materialize", result => { result.materialized.taskIds = [occurrence.taskId, occurrence.taskId]; result.materialized.created = 2; });
+  });
+  test("workspace occurrence summaries require explicit workspace inclusion", () => {
+    const source = fixture(); const seed = populated(source.db);
+    const sharedScope = { kind: "workspace" as const, companySlugs: [] };
+    const sharedSeries: TaskSeries = { ...seed.series, seriesId: "series-workspace", scope: sharedScope, template: { title: "Workspace routine", scope: sharedScope } };
+    source.db.query("INSERT INTO rm_task_series_events(series_id,version,payload_json,actor,principal,created_at) VALUES(?,?,?,?,?,?)").run(sharedSeries.seriesId, 1, canonicalJson(sharedSeries), "agent:synthetic", "snapshot-agent", now);
+    const occurrence = createTask(source.db, { title: "Workspace occurrence", scope: sharedScope, type: "routine", seriesId: sharedSeries.seriesId, occurrenceKey: "2026-10" }, ctx("workspace-occurrence"));
+    executeTaskMutation(source.db, "series-materialize", {}, ctx("workspace-bulk"), () => ({ scope: { kind: "workspace", companySlugs: ["alpha-company"] }, includesWorkspace: true, materialized: { created: 1, existing: 0, taskIds: [occurrence.taskId] } }));
+    const valid = exportTaskSnapshot(source.db)!; expect(parseTaskSnapshot(JSON.stringify(valid))).toBeDefined();
+    const row = valid.tables.rm_task_receipts.find((item) => item.operation === "series-materialize")!, result = JSON.parse(String(row.result_json)); result.includesWorkspace = false; row.result_json = JSON.stringify(result);
+    expect(() => parseTaskSnapshot(JSON.stringify(valid))).toThrow("within scope");
   });
   test("refuses a nonempty task store instead of merging conflicting history", () => {
     const source = fixture(), target = fixture(); populated(source.db); createTask(target.db, { title: "Existing", scope }, ctx("existing"));

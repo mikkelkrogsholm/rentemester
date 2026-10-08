@@ -2,7 +2,7 @@ import type { Database } from "bun:sqlite";
 import { canonicalJson } from "./canonical-json";
 import { appendTaskEvent, listTasks, TASK_STATUSES, taskDate, taskId, taskInstant, taskText, validateTaskDraft, validateTaskReferences, validateTaskScope } from "./tasks";
 import { insertWorkspaceAudit } from "./workspace-control";
-import type { Task, TaskBoard, TaskCompletion, TaskMutationContext, TaskNotification, TaskSeries } from "./tasks-types";
+import type { Task, TaskBoard, TaskCompletion, TaskMutationContext, TaskNotification, TaskSeries, TaskScope } from "./tasks-types";
 
 /** Only operational task evidence is portable. Runtime leases and identities are excluded. */
 const COLUMNS = {
@@ -120,6 +120,45 @@ function notification(value: unknown): TaskNotification {
   return checked;
 }
 const TASK_OPERATIONS = new Set(["task-create", "task-update", "task-move", "task-complete", "task-reopen", "task-source-sync", "reminder-set"]);
+const BULK_OPERATIONS = new Set(["sources-sync", "series-materialize", "runtime-run"]);
+function receiptCompanies(value: TaskScope): Set<string> { return new Set(value.kind === "company" ? [value.companySlug] : value.companySlugs); }
+function sourceSummary(value: unknown, selected: TaskScope): void {
+  const summary = object(value);
+  exactKeys(summary, ["created", "updated", "resolved", "reopened", "unknown", "errors", ...(summary.verified !== undefined ? ["verified"] : [])]);
+  for (const key of ["created", "updated", "resolved", "reopened", "unknown", ...(summary.verified !== undefined ? ["verified"] : [])]) integer(summary[key], `source ${key}`, 0, 500_000);
+  if (!Array.isArray(summary.errors) || summary.errors.length > 500_000) invalid("Invalid source summary errors");
+  const companies = receiptCompanies(selected);
+  for (const error of summary.errors) {
+    exactKeys(error, ["companySlug", "reason"]); const entry = object(error);
+    if (typeof entry.companySlug !== "string" || !companies.has(entry.companySlug)) invalid("Source summary error is outside receipt scope");
+    taskText(entry.reason, "source summary reason", 2000, true);
+  }
+}
+function materializedSummary(value: unknown): string[] {
+  exactKeys(value, ["created", "existing", "taskIds"]); const summary = object(value);
+  const created = integer(summary.created, "materialized created", 0, 500_000), existing = integer(summary.existing, "materialized existing", 0, 500_000);
+  if (!Array.isArray(summary.taskIds) || summary.taskIds.length !== created + existing || summary.taskIds.length > 500_000) invalid("Invalid materialized task count");
+  const ids = summary.taskIds.map((id) => taskId(id, "materialized task id"));
+  if (new Set(ids).size !== ids.length) invalid("Duplicate materialized task id");
+  return ids;
+}
+function bulkReceipt(value: unknown, operation: string, companySlugs?: ReadonlySet<string>): void {
+  const result = object(value), key = operation === "sources-sync" ? "sync" : operation === "series-materialize" ? "materialized" : "run";
+  exactKeys(result, ["scope", "includesWorkspace", key]); scope(result.scope, companySlugs); boolean(result.includesWorkspace);
+  const selected = result.scope as TaskScope;
+  if (operation === "sources-sync") sourceSummary(result.sync, selected);
+  else if (operation === "series-materialize") materializedSummary(result.materialized);
+  else {
+    exactKeys(result.run, ["sync", "materialized", "delivered"]); const run = object(result.run);
+    sourceSummary(run.sync, selected); materializedSummary(run.materialized); integer(run.delivered, "delivered notification count", 0, 500_000);
+  }
+}
+function materializedReceiptIds(value: unknown, operation: string): string[] {
+  const result = object(value);
+  if (operation === "series-materialize") return materializedSummary(result.materialized);
+  if (operation === "runtime-run") return materializedSummary(object(result.run).materialized);
+  return [];
+}
 function receipt(row: Row, companySlugs?: ReadonlySet<string>): void {
   taskText(row.principal, "receipt principal", 160, true); taskId(row.idempotency_key); taskInstant(row.created_at);
   if (typeof row.payload_hash !== "string" || !/^[a-f0-9]{64}$/.test(row.payload_hash)) invalid("Invalid task receipt hash");
@@ -127,6 +166,7 @@ function receipt(row: Row, companySlugs?: ReadonlySet<string>): void {
   if (TASK_OPERATIONS.has(String(row.operation))) task(result, companySlugs);
   else if (row.operation === "task-board-save") board(result, companySlugs);
   else if (row.operation === "series-save") series(result, companySlugs);
+  else if (BULK_OPERATIONS.has(String(row.operation))) bulkReceipt(result, String(row.operation), companySlugs);
   else invalid("Task snapshot contains an unsupported receipt operation");
 }
 export function parseTaskSnapshot(raw: string, companySlugs?: ReadonlySet<string>): TaskSnapshotV1 {
@@ -168,7 +208,22 @@ export function parseTaskSnapshot(raw: string, companySlugs?: ReadonlySet<string
       if (table === "rm_task_events") { taskIds.add(entityId); taskText(row.operation, "task operation", 80, true); if (row.reason !== null) taskText(row.reason, "task event reason", 2000, true); }
     }
   }
-  for (const row of snapshot.tables.rm_task_receipts) if (!entitySnapshots.has(canonicalJson(json(row.result_json!)))) invalid("Task receipt has no matching historical effect");
+  for (const row of snapshot.tables.rm_task_receipts) {
+    const result = json(row.result_json!);
+    if (!BULK_OPERATIONS.has(String(row.operation))) {
+      if (!entitySnapshots.has(canonicalJson(result))) invalid("Task receipt has no matching historical effect");
+      continue;
+    }
+    const bulk = object(result), selected = receiptCompanies(bulk.scope as TaskScope);
+    for (const id of materializedReceiptIds(result, String(row.operation))) {
+      const history = taskVersions.get(id);
+      if (!history?.some((task) => {
+        if (!task.seriesId || task.type !== "routine") return false;
+        const companies = receiptCompanies(task.scope);
+        return companies.size ? [...companies].every((company) => selected.has(company)) : bulk.includesWorkspace === true;
+      })) invalid("Materialized receipt task has no matching occurrence history within scope");
+    }
+  }
   for (const history of taskVersions.values()) if (history.some((task) => task.seriesId && !seriesIds.has(task.seriesId))) invalid("Task occurrence references a missing series");
   for (const row of snapshot.tables.rm_task_notifications) {
     if (!taskIds.has(String(row.task_id))) invalid("Notification references a missing task");
