@@ -50,7 +50,7 @@ Forkortelser: **D** = `tests/unit/tasks.test.ts`; **B** =
 `tests/unit/task-reminders.test.ts`; **A** = `tests/unit/task-service.test.ts`;
 **H** = `tests/unit/server-api/tasks.test.ts`; **I** =
 `tests/unit/task-agent-interface-contract.test.ts`; **UI** =
-`app/src/views/TasksView.test.tsx` og `TaskForms.test.tsx`; **Browser** =
+`app/src/views/TasksView.test.tsx` (inklusive formulartests); **Browser** =
 `app/e2e/tasks-workflows.spec.ts`; **Live** = `app/e2e/tasks-live.spec.ts`.
 
 | ID | Acceptgrundlag | Automatisk evidens |
@@ -67,25 +67,25 @@ Forkortelser: **D** = `tests/unit/tasks.test.ts`; **B** =
 | A10 | Ny statusbetydning vises før anvendelse | B: aktuelt previewhash og afvisning af stale preview; UI: preview før gem |
 | A11 | Arbejdsdato ændrer ikke myndighedsfrist | D: dokumenteret ændringsgrundlag kræves; R: flyttet arbejdsdato stopper ikke fristvarsel |
 | A12 | To forskellige datoer, ét kort | D: count én gang; Browser og Live: arbejdsdato/fristen vises i agenda |
-| A13 | Udateret/utildelt arbejde kan oprettes og findes | D: minimal oprettelse og filtre; UI: mangelfiltre; Live: titel og scope er nok |
+| A13 | Udateret/utildelt arbejde kan oprettes og findes | D: minimal oprettelse og filtre; UI: eksplicit scope ved oprettelse |
 | A14 | Gammel og aktuel rutine er særskilte | S: uafsluttet gammel og aktuel periode med selvstændige identiteter og statusser |
 | A15 | Serieændring/pause bevarer udestående og historik | S: future-only edits, ændret kadence og pause; UI: eksplicit fremtidsformular |
 | A16 | Ikke relevant er et begrundet separat udfald | D: exception/non-applicability adskilt fra completed; UI: udfald og note |
 | A17 | Ukendt aktivitet vises som afklaringsbehov | S: activity relevance forbliver unknown; D: flag kan ikke slettes uden grundlag |
 | A18 | Egne momsperioder og regnskabsår respekteres | K: måned/kvartal, nul-/refusionsmoms og forskudt år; S: fiskale kvartaler og egne ankre |
-| A19 | Forventet næste år adskilles fra konkrete kort | S: fremtidsprojektion uden writes/implicit sikker frist; UI/Browser: forventede forekomster og årvalg |
+| A19 | Forventet næste år adskilles fra konkrete kort | S: fremtidsprojektion uden writes/implicit sikker frist; UI/Browser: forventede forekomster og synligt startårsfelt |
 | A20 | Kildesynkronisering skaber ikke dubletter | K: mere end 100 workbench-rækker, overlap, ændret hash og gentagen synk; D: stabil kildeidentitet |
 | A21 | Kortflyt løser ikke manglende bilag | K: reel bankkilde kontrolleres; H/D: done-status kan ikke omgå dokumenteret afslutning |
 | A22 | Genopstået kildeproblem genåbner med historik | K: løst bankarbejde og ny undtagelse; D: reappearing source med bevaret bevis |
 | A23 | Manglende afslutningsbevis afvises | D/K: krævet, frisk kildebevis; Browser: note alene afvises; Live: kvittering gemmes |
-| A24 | Ekstern revisor kan dokumenteres med kvittering | D: opaque external_receipt og user_reported assurance; Browser/Live: kvittering + note; K: indberettet momsperiode kræver reference |
+| A24 | Ekstern revisor kan dokumenteres med kvittering | D: opaque external_receipt og user_reported assurance; Browser/Live: manuel kvittering + note; K: separat test af indberettet momsperiodes referencekrav |
 | A25 | Genåbning bevarer afslutning uden tilbageførsel | D/H/Browser: genåbning med årsag og historik; A/K: ledger uændret |
 | A26 | Klar til godkendelse udfører ingen regnskabshandling | B: statusflytning/board kan ikke afslutte eller genåbne uden domænehandling; K: seneste batchrevision læses, aldrig godkendes/anvendes |
 | A27 | Uklar ekstern handling kræver verifikation | D: unknown kan ikke blot nulstilles; UI: referencer, relevant vurdering og forklaring kræves; Browser: uklart mutationssvar verificeres med samme nøgle |
 | A28 | Ekstern ansvarlig får ingen adgang/mail | A: tildeling giver ingen selskabsret; R: ekstern uden konto får ingen levering |
 | A29 | Aktiv påmindelse ophører efter afslutning | R: opt-in, restart, DST, fristændring og completion; A: faktisk runtime og mistet medlemskab; Live: aktiv/inaktiv levering |
 | A30 | Ingen læk af titler/counts/referencer/beskeder | A: adgang før søgning, historik, kvitteringer, bulk og preview; I: afvist credential kan ikke forfalske actor; protected knowledge HTTP-test: scoped bodies |
-| A31 | Arkiveret selskabs arbejde bevares | A: særskilt includeArchived, retained membership og åben status; UI: eksplicit arkivindgang |
+| A31 | Arkiveret selskabs arbejde bevares | A: særskilt includeArchived, retained membership og åben status |
 | A32 | Samtidige writes overskriver ikke skjult | D: to SQLite-forbindelser; H: 409; UI: brugerfelter og versionskonflikt bevares; B: previewkonflikter |
 | A33 | CPR og fulde bankoplysninger kopieres ikke til kort | K: generiske kildetitler uden kildetekst; D: genkendelige private data afvises i titel, ansvarlig og note; R: beskeder bruger korttitlen |
 | A34 | Gentagelse genfinder eksisterende effekt | D/H: principal-specifik kvittering, payloadkonflikt og historik; I: rigtig CLI + MCP over samme database; Browser: ukendt resultat verificeres uden nyt POST |
