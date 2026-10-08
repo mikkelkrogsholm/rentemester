@@ -402,8 +402,8 @@
   "graphify": {
     "version": "0.9.75",
     "ast_update": "graphify update .",
-    "nodes": 11219,
-    "edges": 40389,
+    "nodes": 11224,
+    "edges": 40404,
     "ast_sources_without_modeled_symbols": 226,
     "semantic_refresh": {
       "sources": 22,
@@ -506,5 +506,42 @@
   },
   "review": "Independent read-only review and adversarial review; diagnosed issues fixed, final integration review found no remaining actionable defect.",
   "release": "PR/main/candidate identities are established by the existing release workflow after this commit. Local OCI hashes are local preflight evidence, not published candidate identity.",
-  "synthetic_data_only": true
+  "synthetic_data_only": true,
+  "candidate_browser_recovery": {
+    "verified_at_utc": "2026-10-08T16:13:37.057233+00:00",
+    "failed_candidate_run": "37805095849",
+    "failed_candidate_commit": "08f5adb8d2077c9d0f68ae6250851d6a9188e00b",
+    "observed_failure": "Chrome CDP did not become ready within 10 seconds before first page navigation; exact OS/process cause was unavailable because stderr was discarded.",
+    "repair": "Child-selected debugging port; bounded stderr tail, HTTP probes and startup deadline; early-exit diagnostics; awaited process termination and bounded inherited-pipe EOF draining before profile removal.",
+    "tests": {
+      "passed": 65,
+      "assertions": 290,
+      "real_subprocess_cases": 6,
+      "real_local_chrome_startup_and_cleanup": "passed",
+      "runtime_typecheck": "passed",
+      "lint": "passed",
+      "stylex_ownership": "passed"
+    },
+    "source_sha256": {
+      ".github/workflows/smoke.yml": "ea8dccc6aeb56b8443e0ac4c16878939aa05b1805034975f8fb087b2a3b34d31",
+      "scripts/release/cockpit-evidence-browser.ts": "c4cfbd5eaeefaac2c13b1ba2b96bf3b68d1164efe51d3660d0cfd8df3229bbb5",
+      "scripts/release/run-cockpit-evidence.ts": "ed9cbe02c0d7a4ab819988148bd4cf88de85f7abc0b7be0a7afadc712e92cb35",
+      "tests/unit/cockpit-evidence-browser.test.ts": "d6c4139152fbdd02e9a48f581d66a34be674e11c6463f1dee9c36f0a7920e56a"
+    },
+    "log_sha256": {
+      "rentemester-stylex-browser-tests.log": "beb4360c4ea7547275539af1073df8f14dd451d3301043b55b09b2d8bd70a631",
+      "rentemester-stylex-browser-actual.log": "04a8f1e7ed8e459f4ee50f4c70ec81643cbddfe65752c676361bd636978a0087",
+      "rentemester-stylex-browser-graph-update.log": "a2a9d33b67792db701cedc71f93e31d44e167482da543b249feb977833413610"
+    },
+    "semantic": {
+      "nodes": 5,
+      "edges": 8,
+      "source_sha256": {
+        ".github/workflows/smoke.yml": "ea8dccc6aeb56b8443e0ac4c16878939aa05b1805034975f8fb087b2a3b34d31"
+      },
+      "input_tokens": null,
+      "output_tokens": null
+    },
+    "publication": "A fresh successful candidate run is still required; the failed run is not a verified candidate."
+  }
 }
