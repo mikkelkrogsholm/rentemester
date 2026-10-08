@@ -4,6 +4,7 @@
  * task areas shown in CompanyTaskNavigation.
  */
 import type { ReactElement } from "react";
+import { TasksView } from "./views/TasksView";
 import { AccountingDraftsView } from "./views/AccountingDraftsView";
 import { AttentionView } from "./views/AttentionView";
 import { InvoiceCreateView } from "./views/InvoiceCreateView";
@@ -80,6 +81,7 @@ export type CompanyRouteDescriptor = CompanyRoutePathDescriptor & {
 export const COMPANY_ROUTE_REGISTRY = [
   // Overblik
   { id: "dashboard", segment: "", label: "Status", area: "status", element: <DashboardView /> },
+  { id: "tasks", segment: "opgaver", label: "Opgaver", area: "attention", element: <TasksView /> },
   { id: "attention", segment: "opmaerksomhed", label: "Kræver opmærksomhed", area: "attention", element: <AttentionView /> },
 
   // Bogføring
@@ -150,7 +152,7 @@ export type CompanyRouteId = (typeof COMPANY_ROUTE_DEFINITIONS)[number]["id"];
 export type CompanyRouteDefinition = Omit<(typeof COMPANY_ROUTE_DEFINITIONS)[number], "element">;
 export type CompanyYearScope = "year" | "company" | "multi-year" | "vat-period";
 export function companyYearScope(id: CompanyRouteId): CompanyYearScope {
-  if (["attention", "purchase-overview", "approval-policy", "party-hub", "party-profile", "documents", "document-detail", "workspace-register", "workspace-inbox", "contacts", "invoice-templates", "manage", "accounts", "dimensions", "bank-accounts", "gdpr", "retention", "integrity", "receipt-email", "posting-rules", "drafts", "suggestions", "exceptions"].includes(id)) return "company";
+  if (["tasks", "attention", "purchase-overview", "approval-policy", "party-hub", "party-profile", "documents", "document-detail", "workspace-register", "workspace-inbox", "contacts", "invoice-templates", "manage", "accounts", "dimensions", "bank-accounts", "gdpr", "retention", "integrity", "receipt-email", "posting-rules", "drafts", "suggestions", "exceptions"].includes(id)) return "company";
   if (id === "multi-year") return "multi-year";
   if (id === "vat") return "vat-period";
   // The batch workbench on main uses the selected canonical fiscal period.

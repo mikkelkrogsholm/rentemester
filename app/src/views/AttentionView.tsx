@@ -1,4 +1,4 @@
-import { Button, PageHeader } from "../components/ui";
+import { ButtonLink, Button, PageHeader } from "../components/ui";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
@@ -19,7 +19,7 @@ export function AttentionView() {
   }
   const attention = state.data!;
   return <section className="attention-view" data-cockpit-page="attention" data-evidence-issue="649">
-    <PageHeader evidenceHeading title="Opgaver der kræver opmærksomhed" description={`${attention.company.name} · én samlet liste over det, der skal afklares.`} />
+    <PageHeader evidenceHeading title="Opgaver der kræver opmærksomhed" actions={<ButtonLink variant="secondary" to={`/companies/${slug}/opgaver`}>Planlæg i Opgaver</ButtonLink>} description={`${attention.company.name} · én samlet liste over det, der skal afklares.`} />
     {attention.status === "clear" ? <div className="card"><p data-evidence-status="empty">Ingen opgaver kræver opmærksomhed</p></div> : <>
       <p className="muted" data-evidence-status="normal">{attention.count} forhold kræver opmærksomhed</p>
       <h3>Prioriteret opgaveliste</h3>

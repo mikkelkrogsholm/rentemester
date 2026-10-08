@@ -50,6 +50,7 @@ export type {
   InvoiceSettleSummary,
 } from "./api/invoices";
 
+import { tasksApi } from "./api/tasks";
 import { accountantApi } from "./api/accountant";
 import { accountingDraftsApi } from "./api/accounting-drafts";
 import { accountingApprovalPolicyApi } from "./api/accounting-approval-policy";
@@ -89,6 +90,7 @@ import { purchaseCasesApi } from "./api/purchase-cases";
 // `resolveException` duplicates (#UI-9) have been deleted, so no spread-order
 // shadowing is load-bearing any more.
 export const api = {
+  ...tasksApi,
   ...accountingDraftsApi,
   ...accountingApprovalPolicyApi,
   ...systemApi,

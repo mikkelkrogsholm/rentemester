@@ -42,7 +42,7 @@ export const COCKPIT_DETAIL_ROUTE_EVIDENCE = [
  * registry, so a new route must receive an explicit synthetic-test classification.
  */
 export const COCKPIT_PAGE_FAMILIES: readonly CockpitPageFamily[] = [
-  { template: "Overblik og arbejdsstatus", state: "investigated", reason: "Syntetiske komponentfixtures dækker læsning, tomme-/fejltilstande og sikre næste handlinger; kandidatbrowseren er fortsat visuel autoritet.", routeIds: ["dashboard", "attention", "suggestions", "exceptions", "workspace-inbox"] },
+  { template: "Overblik og arbejdsstatus", state: "investigated", reason: "Syntetiske komponentfixtures dækker læsning, tomme-/fejltilstande og sikre næste handlinger; kandidatbrowseren er fortsat visuel autoritet.", routeIds: ["dashboard", "tasks", "attention", "suggestions", "exceptions", "workspace-inbox"] },
   { template: "Bankregister og afstemning", state: "investigated", reason: "BankView er baseline med syntetiske læse- og afstemningsfixtures.", routeIds: ["bank"] },
   { template: "Filtreret register", state: "mutation-required", reason: "Kræver syntetiske records og en sikker skriveopgave for fuld gennemgang.", routeIds: ["journal", "drafts", "documents", "payables", "purchase-overview", "mileage", "assets", "invoices", "invoice-templates", "contacts", "party-hub"] },
   { template: "Bogføringsarbejdsgang", state: "investigated", reason: "Syntetiske komponentfixtures dækker visning, læsning og de eksisterende bekræftelsesgates; ingen ny mutation er indført.", routeIds: ["approval-policy", "posting-rules", "batch-bookkeeping", "period-lock", "accruals"] },
@@ -53,6 +53,7 @@ export const COCKPIT_PAGE_FAMILIES: readonly CockpitPageFamily[] = [
 export const INVENTORIED_COMPANY_ROUTE_IDS = COCKPIT_PAGE_FAMILIES.flatMap((family) => family.routeIds);
 
 const WORKFLOW_MUTATIONS = new Set<CompanyRouteId>([
+  "tasks",
   "approval-policy", "posting-rules", "batch-bookkeeping", "period-lock", "accruals",
   "workspace-register", "manage", "gdpr", "dimensions", "bank-accounts", "receipt-email",
 ]);

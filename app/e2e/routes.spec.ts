@@ -7,6 +7,7 @@ const pageRoutes = companyRoutes.filter((route) => !("kind" in route) || route.k
 // Assert view-specific data/content, not just that a shell survived an error.
 const routeEvidence: Record<string, RegExp> = {
   dashboard: /Omsætning/,
+  tasks: /Afstem oktober/,
   attention: /Ingen opgaver kræver opmærksomhed/,
   "approval-policy": /Uafhængig reviewer/,
   "purchase-overview": /Ingen åbne grupper i perioden/,
@@ -81,6 +82,7 @@ for (const route of pageRoutes) {
 
 for (const route of [
   { path: "/", evidence: /Acme ApS/ },
+  { path: "/opgaver", evidence: /Afstem oktober/ },
   { path: "/companies/new", evidence: /Opret virksomhed/ },
   { path: "/help", evidence: /Hjælp/ },
   { path: "/lovgrundlag", evidence: /Syntetiske regler/ },

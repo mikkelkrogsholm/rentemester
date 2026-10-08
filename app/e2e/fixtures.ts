@@ -1,3 +1,4 @@
+import { syntheticTasksView } from "../src/test/fixtures/tasks";
 import { expect, type Page, type Route } from "@playwright/test";
 import core from "./data/core.json" with { type: "json" };
 import type { CompanyRole } from "../../src/core/workspace-access";
@@ -64,6 +65,13 @@ function fixtureFor(url: URL, options: FixtureOptions): MockResponse | undefined
   const wrap = (key: string, value: unknown): MockResponse => ({ body: envelope(key, value, url) });
   const company = { slug: COMPANY_SLUG, company: STATEMENT_COMPANY };
   switch (path) {
+    case "/api/tasks": {
+      const view = syntheticTasksView({ companies: options.companyAccess === false ? [] : companyEntries.map(company => ({ ...company, canWrite: options.role !== "reader", canManage: !options.role || options.role === "owner" || options.role === "bookkeeper" })), canManageWorkspace: options.workspaceRole !== "member" });
+      const selected = url.searchParams.getAll("companySlug");
+      view.tasks = options.companyAccess === false ? [] : view.tasks.filter(task => !selected.length || (task.scope.kind === "company" ? selected.includes(task.scope.companySlug) : task.scope.companySlugs.some(slug => selected.includes(slug))));
+      view.count = view.tasks.length;
+      return { body: { ok: true, ...view } };
+    }
     case "/api/health": return { body: { ok: true, deploymentProfile: options.profile ?? "local", workspace: "synthetic-browser-workspace", version: "browser-fixture", companyCount: 2 } };
     case "/api/companies": return { body: { ok: true, workspace: "synthetic-browser-workspace", count: options.companyAccess === false ? 0 : companyEntries.length, companies: options.companyAccess === false ? [] : companyEntries } };
     case "/api/portfolio": return wrap("portfolio", {

@@ -39,6 +39,7 @@ import { CockpitLayout, SkipLink } from "./components/AppChrome";
 import { useCapabilities } from "./lib/useCapabilities";
 import { ErrorState } from "./components/Feedback";
 import packageJson from "../package.json";
+import { TasksView, TaskDetailView } from "./views/TasksView";
 import { PortfolioView } from "./views/PortfolioView";
 import { AddCompanyView } from "./views/AddCompanyView";
 import { HelpView } from "./views/HelpView";
@@ -104,6 +105,7 @@ function CockpitApp() {
         <SkipLink />
         <Link className="brand" to="/">Rentemester <span className="build-version" title="Installeret Rentemester-version">v{packageJson.version}</span></Link>
         <nav className="global-navigation" aria-label="Workspace"><details><summary>Workspace</summary><div className="global-links">
+          <NavLink to="/opgaver">Opgaver</NavLink>
           <NavLink to="/" end>
             Portefølje
           </NavLink>
@@ -120,8 +122,11 @@ function CockpitApp() {
 
       <CompanyNavigationShell navigation={COMPANY_NAVIGATION} rendersNavigation>
         <CockpitLayout>
+          <TaskSourceReturnLink />
           <Routes>
             <Route path="/" element={<PortfolioView />} />
+            <Route path="/opgaver" element={<TasksView />} />
+            <Route path="/opgaver/:taskId" element={<TaskDetailView />} />
             {hosted && <Route path="/cfo" element={<CfoCockpitView />} />}
             <Route path="/companies/new" element={canManageWorkspace ? <AddCompanyView /> : <ErrorState message="Du har ikke adgang til at oprette virksomheder." />} />
             {hosted && canManageWorkspace && <Route path="/koncernstruktur" element={<GroupOverviewView />} />}
@@ -166,4 +171,15 @@ function NotFound() {
       </ButtonLink>
     </section>
   );
+}
+
+function TaskSourceReturnLink() {
+  const [params] = useSearchParams();
+  const raw = params.get("returnTo");
+  if (!raw || /[\\\r\n]/.test(raw)) return null;
+  try {
+    const url = new URL(raw, "https://rentemester.invalid");
+    if (url.origin !== "https://rentemester.invalid" || !/^\/opgaver\/[^/]+$/.test(url.pathname)) return null;
+    return <ButtonLink variant="secondary" to={`${url.pathname}${url.search}`}>Tilbage til opgaven</ButtonLink>;
+  } catch { return null; }
 }
