@@ -74,7 +74,7 @@ export const systemSpecs: CommandSpec[] = [
   { key: "system backup-destinations", usage: "system backup-destinations --company <path>", description: "Lister konfigurerede backup-destinationer med deres EU/EØS- og it-sikkerheds-attestering.", allowedFlags: ["--company"] },
   {
     key: "system backup-add-destination",
-    usage: "system backup-add-destination --company <path> --label <text> --kind local-folder|dropbox|google-drive|ssh|other --location <path|uri> --region-eu true|false --attested-by <actor> [--region-country <kode>] [--region-note <text>] [--non-related true|false] [--it-security true|false] [--it-security-note <text>] [--at <ISO-8601>]",
+    usage: "system backup-add-destination --company <path> --label <text> --kind local-folder|dropbox|google-drive|ssh|proton-drive|other --location <path|uri> --region-eu true|false --attested-by <actor> [--region-country <kode>] [--region-note <text>] [--non-related true|false] [--it-security true|false] [--it-security-note <text>] [--at <ISO-8601>]",
     description: "Tilføjer en backup-destination. Du attesterer som menneske om destinationen ligger på en server i EU/EØS, jf. BEK 205/2024 § 4, stk. 2 — Rentemester kan ikke selv vide det.",
     allowedFlags: ["--company", "--label", "--kind", "--location", "--region-eu", "--attested-by", "--region-country", "--region-note", "--non-related", "--it-security", "--it-security-note", "--at"],
   },

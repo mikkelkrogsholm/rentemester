@@ -94,11 +94,14 @@ export function registerSystemBackupDestinationTools(
         company: z.string().min(1).describe("Absolute path to the company directory, or a workspace slug."),
         label: z.string().min(1).describe("Human-readable name for this destination, e.g. 'Revisor Dropbox'."),
         kind: z
-          .enum(["local-folder", "dropbox", "google-drive", "ssh", "other"])
+          .enum(["local-folder", "dropbox", "google-drive", "ssh", "proton-drive", "other"])
           .describe(
             "Destination kind: 'local-folder' = a folder on this machine; " +
               "'dropbox' / 'google-drive' = a synced desktop folder of that cloud service; " +
-              "'ssh' = a remote host reached over SSH; 'other' = anything else.",
+              "'ssh' = a remote host reached over SSH; " +
+              "'proton-drive' = a Proton Drive folder — end-to-end encrypted, but Proton's " +
+              "primary infrastructure is in Switzerland (GDPR adequacy, not EU/EEA), so the " +
+              "actual server country must still be human-attested; 'other' = anything else.",
           ),
         location: z
           .string()
@@ -157,7 +160,7 @@ export function registerSystemBackupDestinationTools(
     withCompanyDbConfirmed<{
       company: string;
       label: string;
-      kind: "local-folder" | "dropbox" | "google-drive" | "ssh" | "other";
+      kind: "local-folder" | "dropbox" | "google-drive" | "ssh" | "proton-drive" | "other";
       location: string;
       inEeaOrEu: boolean;
       attestedBy: string;

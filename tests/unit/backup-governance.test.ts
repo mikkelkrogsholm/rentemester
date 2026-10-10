@@ -123,6 +123,22 @@ describe("backup destinations", () => {
     });
   });
 
+  test("accepts proton-drive as a first-class destination kind (#525)", () => {
+    withCompany((db, companyRoot) => {
+      const result = addBackupDestination(db, companyRoot, {
+        ...COMPLIANT_DEST,
+        label: "Proton Drive Backup",
+        kind: "proton-drive",
+        regionCountry: "CH",
+        regionNote:
+          "Proton-hostet, men serverlokationen attesteres af mennesket — Protons primære infrastruktur ligger i Schweiz, ikke EU/EØS",
+      });
+      expect(result.ok).toBe(true);
+      expect(result.destination!.kind).toBe("proton-drive");
+      expect(isCompliantDestination(result.destination!)).toBe(true);
+    });
+  });
+
   test("rejects an unknown destination kind", () => {
     withCompany((db, companyRoot) => {
       const result = addBackupDestination(db, companyRoot, { ...COMPLIANT_DEST, kind: "ftp" });

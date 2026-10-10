@@ -49,6 +49,10 @@ export const BACKUP_DESTINATION_KINDS = [
   "dropbox",
   "google-drive",
   "ssh",
+  // #525: Proton Drive er E2E-krypteret, men Protons primære infrastruktur
+  // ligger i Schweiz — GDPR-adekvat, men ikke EU/EØS. Be 205/2024 §4 stk. 2
+  // kræver stadig en eksplicit menneskelig attestation af serverlandet.
+  "proton-drive",
   "other",
 ] as const;
 export type BackupDestinationKind = (typeof BACKUP_DESTINATION_KINDS)[number];
