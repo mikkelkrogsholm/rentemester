@@ -18,7 +18,7 @@
  */
 
 import { existsSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { extname, join } from "node:path";
+import { basename, extname, join } from "node:path";
 import { tmpdir } from "node:os";
 import { createHash } from "node:crypto";
 import type { Database } from "bun:sqlite";
@@ -149,6 +149,10 @@ export type IngestMailDropResult = {
   messagesProcessed: number;
   attachmentsIngested: number;
   attachmentsSkipped: number;
+  /** #566 — attachmentless EMLs ingested as message/rfc822 evidence documents. */
+  evidenceIngested: number;
+  /** #566 — attachmentless EMLs skipped because their evidence sha256 was already ingested. */
+  evidenceSkipped: number;
   exceptionsCreated: number;
   documents: Array<{ messageId: string; documentNo: string; sha256: string }>;
   errors: string[];
@@ -416,6 +420,8 @@ export function ingestMailDrop(
     messagesProcessed: 0,
     attachmentsIngested: 0,
     attachmentsSkipped: 0,
+    evidenceIngested: 0,
+    evidenceSkipped: 0,
     exceptionsCreated: 0,
     documents: [],
     errors: [],
@@ -531,23 +537,60 @@ export function ingestMailDrop(
     );
 
     if (usable.length === 0) {
-      const ex = recordException(db, {
-        type: "MAIL_INTAKE_NO_ATTACHMENT",
-        severity: "medium",
-        message: `Mail message ${markUntrusted(messageId)} has no usable PDF/JPG/PNG attachment`,
-        requiredAction: "Forward the message with the receipt attached, or ingest the document manually.",
-        sourceEvidence: {
-          rule: MAIL_INTAKE_RULES.EXCEPTION,
-          file: emlFile,
+      // #566: an attachmentless EML is itself the evidence — the supplier sent
+      // the receipt only in the body. Ingest the ORIGINAL EML bytes as a
+      // message/rfc822 evidence document (deduped on message-id + raw sha256)
+      // and keep the exception path only for missing metadata or a blocked
+      // ingest, so the pipeline still never guesses.
+      const evidenceSha256 = createHash("sha256").update(raw).digest("hex");
+      const seenEvidence = db
+        .query("SELECT id FROM mail_intake_messages WHERE message_id = ? AND attachment_sha256 = ? LIMIT 1")
+        .get(messageId, evidenceSha256) as { id: number } | null;
+      if (seenEvidence) {
+        result.evidenceSkipped += 1;
+        continue;
+      }
+
+      const metadata = options.metadataPerMessage?.[messageId] ?? options.metadata;
+      if (!metadata) {
+        const ex = recordException(db, {
+          type: "MAIL_INTAKE_NO_ATTACHMENT",
+          severity: "medium",
+          message: `Mail message ${markUntrusted(messageId)} has no usable PDF/JPG/PNG attachment and no metadata to ingest the EML itself as evidence`,
+          requiredAction:
+            "Provide --metadata (or per-message metadata) so the EML can be stored as evidence, or forward the message with the receipt attached.",
+          sourceEvidence: {
+            rule: MAIL_INTAKE_RULES.EXCEPTION,
+            file: emlFile,
+            messageId,
+            // SEC-8: sender/subject are attacker-controlled — flag as untrusted.
+            from: markUntrusted(parsed.from),
+            subject: markUntrusted(parsed.subject),
+            date: parsed.date,
+          },
+          postingPreview: { nextStep: "documents ingest" },
+        });
+        if (ex.ok && !ex.duplicate) result.exceptionsCreated += 1;
+        continue;
+      }
+
+      const evidence: MailAttachment = {
+        filename: basename(emlFile),
+        mimeType: "message/rfc822",
+        content: raw,
+        sha256: evidenceSha256,
+      };
+      const ingestResult = ingestAttachment(db, companyRoot, messageId, parsed, evidence, metadata, options.ingestOptions);
+      if (ingestResult.ingested) {
+        result.evidenceIngested += 1;
+        result.documents.push({
           messageId,
-          // SEC-8: sender/subject are attacker-controlled — flag as untrusted.
-          from: markUntrusted(parsed.from),
-          subject: markUntrusted(parsed.subject),
-          date: parsed.date,
-        },
-        postingPreview: { nextStep: "documents ingest" },
-      });
-      if (ex.ok && !ex.duplicate) result.exceptionsCreated += 1;
+          documentNo: ingestResult.documentNo!,
+          sha256: ingestResult.sha256!,
+        });
+      } else if (ingestResult.exceptionCreated) {
+        result.exceptionsCreated += 1;
+      }
       continue;
     }
 
