@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "session-cookie-1",
-  "code_revision": "sha256:19ed3b95f861312245be35ee53106980fb64df0522cafb1c33fc53d2474f6895",
-  "spec_revision": "sha256:c8d037e07078644ada68155b91b218563af87255bb2f732458859e64f4439d0f",
-  "state": "verified-internal-existing-cookie-authentication",
+  "current_increment": "workspace-layout-1",
+  "code_revision": "sha256:37a49f16adb592874690013aa9d05d6551adad23aa7a8a004cf7147bef93043d",
+  "spec_revision": "sha256:60658ca014bc972a4b4e2f5ffc8fb1224c526528cd037a84fb6b4683765aca0e",
+  "state": "verified-physical-layout-observation-only",
   "issues_closed": [],
   "next": [
-    "Implement native identity lifecycle and trusted runtime generation/manifest/physical admission, service dispatch and complete baseline; integrate with current locked cookie/session fence before actual domain posting",
+    "Resolve owned SQLite-handle/VFS admission and full cooperative legacy namespace/lifetime mutation protocol; current layout is observation only, never substitute filenames/stat for opened-handle identity. Complete logical identity/adoption and native identity lifecycle before product writers.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -27,14 +27,13 @@
     "state": "verified-experimental-readonly"
   },
   "evidence": {
-    "report": "session-cookie/evidence.json",
-    "parity": "session-cookie/process.json",
-    "rust_tests_passed": 67,
-    "ignored_subprocess_helpers": 13,
-    "integration_checks": 10344,
-    "cookie_process_checks": 66,
-    "wire_vectors": 41,
-    "legacy_auth_tests": 27,
+    "report": "workspace-layout/evidence.json",
+    "parity": "workspace-layout/review-process.json",
+    "rust_tests_passed": 75,
+    "ignored_subprocess_helpers": 15,
+    "integration_checks": 10366,
+    "runtime_tests": 13,
+    "layout_source_process_checks": 22,
     "writer_authority": false,
     "whole_issues_closed": false
   },
@@ -134,6 +133,12 @@
       "code_revision": "sha256:c32bb583b620dd3e0498fb8b34685bd7c8a13bda98b99367a94337d5bfb494c1",
       "spec_revision": "sha256:7e09b1e69c4695470cb06d265ea4670cd7a512a90392af324438c1c7f5ac3fef",
       "state": "verified-experimental-human-control-company-fence"
+    },
+    {
+      "current_increment": "session-cookie-1",
+      "code_revision": "sha256:19ed3b95f861312245be35ee53106980fb64df0522cafb1c33fc53d2474f6895",
+      "spec_revision": "sha256:c8d037e07078644ada68155b91b218563af87255bb2f732458859e64f4439d0f",
+      "state": "verified-internal-existing-cookie-authentication"
     }
   ]
 }

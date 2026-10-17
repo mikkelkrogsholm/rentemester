@@ -1,0 +1,43 @@
+{
+  "format": "rentemester-readonly-review/1",
+  "reviewers": [
+    {
+      "agent": "migration_port_research",
+      "findings": [
+        "No supported-path defect found; no ordinary descriptor leak",
+        "Confirmed fork/CLOEXEC transient Busy and approved test-only fixture serialization",
+        "Document same-device restriction and add reordered/archived-unselected/missing-field cases",
+        "Current safe rusqlite API cannot prove actual handle identity; HAS_MOVED alone is only an inode observation"
+      ],
+      "resolution": "Same-device/distinct identities explicit in contract;22-case source/process corpus includes suggested cases; test-only serialization and bounded/reaped child retain runtime Busy behavior; no SQLite handle/write claim"
+    },
+    {
+      "agent": "review_migration_contracts",
+      "result": "No concrete material defect found; descriptor RAII/sticky identity/parser boundaries and contract source hash verified",
+      "commands": [
+        {
+          "command": "cargo test --locked -p rentemester-runtime --lib",
+          "result": "13 passed,2 helpers ignored",
+          "evidence": "review-runtime.txt"
+        },
+        {
+          "command": "bun scripts/rust/verify-workspace-layout.ts",
+          "result": "22 checks passed",
+          "evidence": "review-process.json"
+        }
+      ],
+      "followup": {
+        "finding": "Main found root lease declared before bindings; move lease last to preserve ownership until descendant closure",
+        "resolution": "Final independent source review confirms declaration-order Drop and partial-construction RAII; no remaining concrete defect",
+        "reruns": "13 runtime/22 process pass;review-runtime.txt and review-process.json are final reruns"
+      }
+    }
+  ],
+  "remaining_gates": [
+    "Actual SQLite handle/VFS admission",
+    "Complete legacy lifetime mutation enrollment",
+    "Stable logical identity/adoption/lineage",
+    "Authenticated product domain writes and full platform qualification"
+  ],
+  "all_goal_requirements_complete": false
+}

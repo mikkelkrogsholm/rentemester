@@ -1,0 +1,183 @@
+{
+  "format": "rentemester-workspace-layout-increment/1",
+  "increment": "workspace-layout-1",
+  "status": "verified-physical-layout-observation-only",
+  "branch": "codex/rust-platform",
+  "code_revision": "sha256:37a49f16adb592874690013aa9d05d6551adad23aa7a8a004cf7147bef93043d",
+  "spec_revision": "sha256:60658ca014bc972a4b4e2f5ffc8fb1224c526528cd037a84fb6b4683765aca0e",
+  "platform": {
+    "os": "macOS",
+    "architecture": "arm64",
+    "filesystem": "APFS",
+    "rust": "1.94.1"
+  },
+  "verification": {
+    "rust_verify_exit": 0,
+    "qualification_scope": "Full initial75-native/10366-check regression plus final layout-only root-drop-order correction verified by current13-runtime/22-process/Clippy/format reruns, repeated independently. Unchanged targets retain their broad regression evidence; not represented as one all-final-source invocation.",
+    "native_tests_passed": 75,
+    "ignored_helpers": 15,
+    "runtime_tests_passed": 13,
+    "new_runtime_tests": 8,
+    "integration_checks": 10366,
+    "layout_source_process_checks": 22,
+    "independent_runtime_rerun": "13 passed,2 ignored;review-runtime.txt",
+    "independent_source_process_rerun": "22 passed;review-process.json",
+    "typecheck_exit": 0,
+    "lint_exit": 0,
+    "readiness": "readiness-v3.json;structural contract only"
+  },
+  "review": {
+    "reviewers": 2,
+    "material_defects_remaining": 0,
+    "details": "review.json",
+    "resolved": [
+      "Document same-device restriction and SQLite-handle limits",
+      "Move root lease to last declared field so descendants close before ownership releases; final13/22/Clippy repeats and independent drop-order/partial-construction RAII review pass",
+      "Expand canonical reordered/unselected archive/missing required field cases",
+      "Test-only serialization isolates confirmed fork/CLOEXEC inheritance; no runtime retry/takeover; process helper bounded and explicitly reaped"
+    ],
+    "historical_red": "parallel-fixture-red.txt retains pre-serialization concurrency failure; fork-lock-proof.py and fork-proof.txt reproduce inherited lock behavior independently"
+  },
+  "claims": [
+    "Consumes and retains existing root lease and all six descendant descriptors without opening SQLite or writing source",
+    "Strict bounded typed canonical manifest derives selected registered nonarchived company; actual legacy writer/loader runs independently",
+    "Every component must share root device and have distinct held/current device+inode; files are single-link regular and every path open is no-follow",
+    "Exact manifest generation and observed component/root changes invalidate permanently; database content/size may change",
+    "Real killed/reaped native layout owner excludes contender and releases kernel ownership; root lifetime persists after scope invalidation"
+  ],
+  "limits": [
+    "No SQLite Connection is opened or qualified; filenames/stat observations cannot prove arbitrary opened handle identity",
+    "Safe current rusqlite exposes no native-file identity/file_control wrapper; an owned VFS/dependency/protocol qualification remains required before product writers",
+    "Workspace key is explicit runtime association, not new persistent logical workspace/company identity",
+    "No unpatched legacy mutation enrollment, logical lineage/adoption, IPC, accounting writer or complete R03/R12/R13/platform acceptance",
+    "Namespace observations cannot exclude uncooperative replacement/restoration between checks",
+    "Cross-device descendants intentionally refuse; actual mount counterexamples/cross-platform/hardware storage not qualified",
+    "Strict manifest parsing intentionally rejects source loader coercions, duplicates and unknown fields; loader acceptance is not authorization",
+    "Graphify semantic refresh covers README.md and CONTRACT.md only; generated JSON/evidence/logs, historical snapshots and unrelated user documents unrefreshed"
+  ],
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "6a3b156a447a5651396d49b4db2cdbfb24ffafe28cb4cde5c18269b5c89990b7"
+    },
+    {
+      "path": "crates/rentemester-runtime/Cargo.toml",
+      "sha256": "da7b1f89670aa8ee616100fbc6aefc5f110afb8738ec4432ffe28fbc5eea3fa9"
+    },
+    {
+      "path": "crates/rentemester-runtime/src/auth.rs",
+      "sha256": "b1150e42b0e44191acd4c783315d7330347fd289f62d086ff61470b6417c27b4"
+    },
+    {
+      "path": "crates/rentemester-runtime/src/lib.rs",
+      "sha256": "ce7833eaebc730ea86821e5ef316cbf77b5e2a5bcaf24d2251ac6b941e590f28"
+    },
+    {
+      "path": "crates/rentemester-runtime/src/local.rs",
+      "sha256": "90a33c6a5717259a7d2087782200410e81a769fdf1c76f637ae1c2b01dee311c"
+    },
+    {
+      "path": "crates/rentemester-runtime/src/local/layout.rs",
+      "sha256": "e1228780d21427db8e688558b1abc4c340173ab4b0be5a8a26f5d17f556b879d"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/README.md",
+      "sha256": "51084afd11787d5f74e407ec96c290a11d2c1e58436fd2026efb4ad6b05d8bb9"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/CONTRACT.md",
+      "sha256": "2b9518896bacd773fbc4df8b03544f045121934fd5cf9d83d0f46d8c7fcda46c"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/clippy-final.txt",
+      "sha256": "51abb551397cfc531ca89a5eda332fa76631aa50c66455bbc50a01afd7a3e75f"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/fork-lock-proof.py",
+      "sha256": "9e963aa7b5abadfb76ab16e0a506e1467ea3fd28c69129e2e50350429fe35cc4"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/fork-proof.txt",
+      "sha256": "e6f5ce66ee0989bbfe4606e146954bbd2e6017297559a60c91cb1445d9d51410"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/gdd.json",
+      "sha256": "9384034a78a290aa8645ee8c45b908c247f67bf6713aa3cac2b5733742332f8e"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/lint.txt",
+      "sha256": "a7b2af78fc2291fd2c1c2759e1ec9cddb7061b3f5535ab1ca96c5c85f7e95f8b"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/parallel-fixture-red.txt",
+      "sha256": "f2ccac8746a8b04c2a1daaf680ca95d0f1ebba0d443fda02e48e1b1f1754fa21"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/process-final.json",
+      "sha256": "efb2551929683d60701146a06dda67a474e72e2aa8a1f8eb320ff5623a127c19"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/readiness-v2.json",
+      "sha256": "67ffa9f086272195dc98120c37085913cba90565e5569f23d00f037ea9baf350"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/readiness-v3.json",
+      "sha256": "acbd5294a2f25be57796465e0e65b5256d74e0637b2d0873392884f3a14f4be1"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/readiness.json",
+      "sha256": "73e44db6bd77b99ffbab98421c39f6a77dcb4ae8adc5a8cb9748ad573699d0ff"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/review-process.json",
+      "sha256": "efb2551929683d60701146a06dda67a474e72e2aa8a1f8eb320ff5623a127c19"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/review-runtime.txt",
+      "sha256": "1b8ef93d60d2b42367b4c64ac7d866659ca838d3b2dddad380a9bff3d4d7560f"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/review.json",
+      "sha256": "eaa896f3dcaeb6107663496849515d9e50147df7c770069fa218cebace01db14"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/runtime-final.txt",
+      "sha256": "6d1daa510d2256023545d1ed0e7e14ea98f55045d0aabe13afb756e36c61ae3f"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/rust-verify.txt",
+      "sha256": "6d0a4fa4bd14547e3c3b49315b0ac39a1daa9abb17a451b500895bd3487e63b3"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/typecheck.txt",
+      "sha256": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-lease/CONTRACT.md",
+      "sha256": "665e0ca670b158a1f49455a512686eff68ee3c382a85777711132c2861ad9f54"
+    },
+    {
+      "path": "scripts/rust/check-boundaries.ts",
+      "sha256": "3090d315a4fcc67ac4ccfcacdb6ae4077d5f2c224cfa133dfe5dab0ac7350266"
+    },
+    {
+      "path": "scripts/rust/verify-workspace-layout.ts",
+      "sha256": "5342ece1beb12d359e31756d584bf9df73b357903d0ab5ffc17586485859d9ee"
+    },
+    {
+      "path": "scripts/rust/verify-workspace-lease.ts",
+      "sha256": "b62f3dc2cd849e91281ddb0e037569f80aea487576b584f5fa3a7ac821a09baf"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "c9a561e9975df6f5836c48251f3c7355cb3e94dda25be10ea4bb6ef0cd4e7b70"
+    },
+    {
+      "path": "src/core/workspace.ts",
+      "sha256": "27a25248191fb63a918dc13250a2cab000c805f67b8c3f394e391c46c44f183f"
+    }
+  ]
+}

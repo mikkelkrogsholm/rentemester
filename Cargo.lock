@@ -349,6 +349,7 @@ dependencies = [
  "hmac",
  "percent-encoding",
  "rustix",
+ "serde",
  "serde_json",
  "sha2",
  "tempfile",

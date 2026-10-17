@@ -111,6 +111,7 @@ mod tests {
     use super::*;
     #[test]
     fn same_process_exclusion_drop_and_ordinary_close() {
+        let _serial = crate::LEASE_TEST_LOCK.lock().unwrap();
         let root = tempfile::tempdir().unwrap();
         let mut held = WorkspaceLease::acquire(root.path()).unwrap();
         let ordinary = open_root(root.path()).unwrap();
@@ -125,12 +126,14 @@ mod tests {
     }
     #[test]
     fn known_network_and_unknown_families_refuse() {
+        let _serial = crate::LEASE_TEST_LOCK.lock().unwrap();
         for name in ["nfs", "smbfs", "cifs", "fuse", "overlay", "unknown"] {
             assert!(!allowed_filesystem(name));
         }
     }
     #[test]
     fn moved_root_is_permanently_invalid_even_if_returned() {
+        let _serial = crate::LEASE_TEST_LOCK.lock().unwrap();
         let parent = tempfile::tempdir().unwrap();
         let original = parent.path().join("workspace");
         let moved = parent.path().join("moved");
@@ -148,3 +151,6 @@ mod tests {
         assert!(WorkspaceLease::acquire(&original).is_ok());
     }
 }
+
+mod layout;
+pub use layout::WorkspaceLayout;

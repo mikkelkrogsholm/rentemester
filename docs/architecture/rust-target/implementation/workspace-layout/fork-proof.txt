@@ -1,0 +1,2 @@
+Inherited CLOEXEC descriptor retains flock before child exec/exit
+Acquired after child exit and explicit reap

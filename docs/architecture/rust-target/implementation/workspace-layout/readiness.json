@@ -1,0 +1,44 @@
+{
+  "format": "gdd-report/0.2",
+  "tool": {
+    "name": "gdd-validator",
+    "version": "0.8.0"
+  },
+  "spec_revision": "sha256:c0c6857f91d80b1400de9690a5cc66882e1d466360d4888dd0499d2426899b6c",
+  "profiles": [
+    "readiness"
+  ],
+  "scope": [
+    "action.workspace_layout",
+    "component.application"
+  ],
+  "checks": [
+    {
+      "check_id": "representation.schema",
+      "dimension": "model",
+      "result": "PASS",
+      "scope": [],
+      "reason": "Local JSON Schema validation.",
+      "diagnostics": []
+    },
+    {
+      "check_id": "model.semantics",
+      "dimension": "model",
+      "result": "PASS",
+      "scope": [],
+      "reason": "Core references, endpoints, identity, refinement, machines, types and declared extension data checked.",
+      "diagnostics": []
+    },
+    {
+      "check_id": "readiness.structural",
+      "dimension": "readiness",
+      "result": "PASS",
+      "scope": [
+        "action.workspace_layout",
+        "component.application"
+      ],
+      "reason": "Selected targets and required boundary contracts are structurally specified; no behavioral proof claimed.",
+      "diagnostics": []
+    }
+  ]
+}

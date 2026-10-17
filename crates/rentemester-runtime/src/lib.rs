@@ -41,7 +41,7 @@ pub struct RootIdentity {
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 mod local;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
-pub use local::WorkspaceLease;
+pub use local::{WorkspaceLayout, WorkspaceLease};
 
 #[cfg(not(any(target_os = "linux", target_os = "macos")))]
 #[derive(Debug)]
@@ -94,3 +94,52 @@ mod tests {
         );
     }
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LayoutError {
+    InvalidManifest,
+    InvalidSelection,
+    Unavailable,
+    Changed,
+    Lease(LeaseError),
+}
+impl LayoutError {
+    pub fn code(self) -> &'static str {
+        match self {
+            Self::InvalidManifest => "invalid_manifest",
+            Self::InvalidSelection => "invalid_company_selection",
+            Self::Unavailable => "layout_unavailable",
+            Self::Changed => "layout_changed",
+            Self::Lease(e) => e.code(),
+        }
+    }
+}
+impl std::fmt::Display for LayoutError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.code())
+    }
+}
+impl std::error::Error for LayoutError {}
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+pub struct WorkspaceLayout {
+    _private: (),
+}
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+impl WorkspaceLayout {
+    pub fn bind(_: WorkspaceLease, _: &str, _: &str) -> Result<Self, LayoutError> {
+        Err(LayoutError::Lease(LeaseError::UnsupportedPlatform))
+    }
+    pub fn ensure_current(&mut self) -> Result<(), LayoutError> {
+        Err(LayoutError::Lease(LeaseError::UnsupportedPlatform))
+    }
+    pub fn workspace(&self) -> &str {
+        ""
+    }
+    pub fn slug(&self) -> &str {
+        ""
+    }
+}
+
+// Tests spawning fork/exec must not inherit another test's transient lease.
+#[cfg(test)]
+static LEASE_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());

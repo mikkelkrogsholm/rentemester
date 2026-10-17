@@ -1,0 +1,40 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.02s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_runtime-9d766fe7bb3ae783)
+
+running 14 tests
+test local::layout::tests::child ... ignored, synthetic layout owner process selected by parent
+test local::tests::known_network_and_unknown_families_refuse ... ok
+test local::layout::tests::canonical_manifest_profile_refuses_coercions_and_ambiguity ... ok
+test tests::lexical_roots_are_explicit_and_bound_once ... ok
+test local::tests::same_process_exclusion_drop_and_ordinary_close ... ok
+test auth::tests::independent_python_wire_vectors_and_fixed_errors ... ok
+test local::tests::moved_root_is_permanently_invalid_even_if_returned ... ok
+test local::layout::tests::bounded_manifest_and_selection_have_no_defaults ... FAILED
+test local::layout::tests::binding_preserves_sources_and_holds_ownership_until_drop ... ok
+test local::layout::tests::real_process_layout_owns_lease_and_kernel_death_releases ... ok
+test local::layout::tests::manifest_bytes_hardlink_and_root_changes_invalidate ... ok
+test local::layout::tests::every_component_change_is_sticky_even_after_restoration ... ok
+test local::layout::tests::every_path_level_refuses_symlinks_and_missing_objects ... FAILED
+test local::layout::tests::files_refuse_hardlinks_directories_and_fifos_without_blocking ... ok
+
+failures:
+
+---- local::layout::tests::bounded_manifest_and_selection_have_no_defaults stdout ----
+
+thread 'local::layout::tests::bounded_manifest_and_selection_have_no_defaults' (4371368) panicked at crates/rentemester-runtime/src/local/layout.rs:443:58:
+called `Result::unwrap()` on an `Err` value: Busy
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- local::layout::tests::every_path_level_refuses_symlinks_and_missing_objects stdout ----
+
+thread 'local::layout::tests::every_path_level_refuses_symlinks_and_missing_objects' (4371371) panicked at crates/rentemester-runtime/src/local/layout.rs:338:17:
+failed bind must release lease
+
+
+failures:
+    local::layout::tests::bounded_manifest_and_selection_have_no_defaults
+    local::layout::tests::every_path_level_refuses_symlinks_and_missing_objects
+
+test result: FAILED. 11 passed; 2 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+error: test failed, to rerun pass `-p rentemester-runtime --lib`

@@ -1,0 +1,2 @@
+$ biome lint . --error-on-warnings
+Checked 1200 files in 451ms. No fixes applied.

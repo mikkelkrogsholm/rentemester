@@ -1,0 +1,22 @@
+   Compiling rentemester-runtime v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.64s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_runtime-9d766fe7bb3ae783)
+
+running 15 tests
+test local::layout::probe ... ignored, synthetic native probe selected by independent manifest harness
+test local::layout::tests::child ... ignored, synthetic layout owner process selected by parent
+test tests::lexical_roots_are_explicit_and_bound_once ... ok
+test auth::tests::independent_python_wire_vectors_and_fixed_errors ... ok
+test local::layout::tests::every_path_level_refuses_symlinks_and_missing_objects ... ok
+test local::layout::tests::canonical_manifest_profile_refuses_coercions_and_ambiguity ... ok
+test local::layout::tests::every_component_change_is_sticky_even_after_restoration ... ok
+test local::layout::tests::binding_preserves_sources_and_holds_ownership_until_drop ... ok
+test local::tests::moved_root_is_permanently_invalid_even_if_returned ... ok
+test local::layout::tests::manifest_bytes_hardlink_and_root_changes_invalidate ... ok
+test local::tests::known_network_and_unknown_families_refuse ... ok
+test local::layout::tests::bounded_manifest_and_selection_have_no_defaults ... ok
+test local::layout::tests::real_process_layout_owns_lease_and_kernel_death_releases ... ok
+test local::layout::tests::files_refuse_hardlinks_directories_and_fifos_without_blocking ... ok
+test local::tests::same_process_exclusion_drop_and_ordinary_close ... ok
+
+test result: ok. 13 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.06s

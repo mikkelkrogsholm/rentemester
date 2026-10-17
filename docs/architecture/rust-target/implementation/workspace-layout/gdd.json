@@ -1,0 +1,212 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Descriptor-bound workspace layout",
+    "goal": "Bind current manifest and selected physical files under owned workspace lease",
+    "scope": "R03/R12 physical layout observation; no SQLite handles or writer authority"
+  },
+  "nodes": {
+    "component.runtime": {
+      "kind": "component",
+      "description": "Descriptor-relative runtime layout observation",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Own lease, manifest generation and descendant physical identities",
+        "rationale": "Company selection must come from actual bound manifest and paths",
+        "excludes": [
+          "SQLite connection/VFS admission, logical identity adoption and product writes"
+        ]
+      },
+      "interfaces": [
+        "action.workspace_layout"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Canonical existing selected layout binds without source modification",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Synthetic existing workspace tree and current manifest",
+        "when": "Bind or revalidate held layout under a cooperative lease",
+        "then": "Canonical existing selected layout binds without source modification"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Malformed/ambiguous manifests, archive, links/nonregular files and missing unsafe paths refuse",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Synthetic existing workspace tree and current manifest",
+        "when": "Bind or revalidate held layout under a cooperative lease",
+        "then": "Malformed/ambiguous manifests, archive, links/nonregular files and missing unsafe paths refuse"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Root lease and all private descriptors remain held until Drop; ordinary database byte changes permitted",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Synthetic existing workspace tree and current manifest",
+        "when": "Bind or revalidate held layout under a cooperative lease",
+        "then": "Root lease and all private descriptors remain held until Drop; ordinary database byte changes permitted"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Typed unique manifest entries replace legacy String/Boolean coercions with explicit fail-closed refusals",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Synthetic existing workspace tree and current manifest",
+        "when": "Bind or revalidate held layout under a cooperative lease",
+        "then": "Typed unique manifest entries replace legacy String/Boolean coercions with explicit fail-closed refusals"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Physical or manifest change permanently invalidates binding; process ownership excludes contender and releases on death",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Synthetic existing workspace tree and current manifest",
+        "when": "Bind or revalidate held layout under a cooperative lease",
+        "then": "Physical or manifest change permanently invalidates binding; process ownership excludes contender and releases on death"
+      }
+    },
+    "action.workspace_layout": {
+      "kind": "action",
+      "description": "Bind and revalidate descriptor-relative selected physical layout",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "workspace_key_and_slug": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "owned_workspace_lease": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Fixed invalid_manifest, invalid_company_selection, layout_unavailable, layout_changed or existing lease error codes; no partial binding/write effects"
+        },
+        "preconditions": [
+          "Existing explicitly acquired WorkspaceLease and synthetic or previously authorized source; no writer authority implied"
+        ],
+        "postconditions": [
+          "Retained private descriptors and exact manifest generation identify a selected nonarchived registered physical layout; source unchanged"
+        ],
+        "external_effects": [],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Descriptor binding is namespace observation, not SQLite handle proof or atomic hostile-namespace fencing",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Descriptor binding is namespace observation, not SQLite handle proof or atomic hostile-namespace fencing",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Descriptor binding is namespace observation, not SQLite handle proof or atomic hostile-namespace fencing",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Descriptor binding is namespace observation, not SQLite handle proof or atomic hostile-namespace fencing",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Descriptor binding is namespace observation, not SQLite handle proof or atomic hostile-namespace fencing",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Typed bounded manifest and retained no-follow physical descriptors; sticky invalidation"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.workspace_layout",
+      "to": "component.runtime",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.workspace_layout",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.workspace_layout",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.workspace_layout",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.workspace_layout",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.workspace_layout",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Descriptor-bound workspace layout",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "2b9518896bacd773fbc4df8b03544f045121934fd5cf9d83d0f46d8c7fcda46c"
+      }
+    }
+  }
+}
