@@ -1,0 +1,42 @@
+bun test v1.4.0 (34cbb9a40)
+
+tests/unit/better-auth-cookie-e2e.test.ts:
+(pass) Better Auth cookie E2E security > verification, cookies, CSRF, MFA challenge/recovery, reset and session revocation [604.03ms]
+
+tests/unit/better-auth.test.ts:
+(pass) Better Auth workspace foundation > uses Bun Request handler compatibility and rejects public email/password sign-up [19.14ms]
+(pass) Better Auth workspace foundation > keeps the reviewed security configuration explicit [13.45ms]
+(pass) Better Auth workspace foundation > uses Better Auth 1.7 versioned secrets with the first key active and a fixed proxy header [13.65ms]
+{"component":"better-auth","event":"better_auth_warning","level":"warn"}
+(pass) Better Auth workspace foundation > records the active versioned identity-HMAC key id in telemetry [69.97ms]
+(pass) Better Auth workspace foundation > requires an injected high-entropy secret, explicit origins, and secure hosted cookies [13.78ms]
+(pass) Better Auth workspace foundation > disabled email fails closed and the in-memory sender is test-only without I/O [0.17ms]
+(pass) Better Auth workspace foundation > Better Auth callbacks await delivery and propagate only the sanitized gateway failure [14.63ms]
+(pass) Better Auth workspace foundation > private bootstrap creates a credential identity without a session [63.80ms]
+{"component":"better-auth","event":"better_auth_warning","level":"warn"}
+(pass) Better Auth workspace foundation > records actual Better Auth handler sign-in attempts append-only without persisting credentials [114.75ms]
+{"component":"better-auth","event":"better_auth_error","level":"error"}
+(pass) Better Auth workspace foundation > a sign-up delivery callback may leave an identity row, so recovery must use lookup plus explicit resend [568.45ms]
+(pass) Better Auth workspace foundation > background email failures emit only an allowlisted operational event [64.16ms]
+(pass) Better Auth workspace foundation > request provider uses Better Auth's server session API once per call [69.05ms]
+
+tests/unit/server-api/better-auth-rbac.test.ts:
+(pass) cockpit Better Auth + RBAC boundary > never mounts public Better Auth sign-up, even when a provider is configured [1.27ms]
+(pass) cockpit Better Auth + RBAC boundary > keeps public routes anonymous and denies an unready user before a company handler [339.53ms]
+(pass) cockpit Better Auth + RBAC boundary > authorizes verified MFA membership once, applies roles, denies slug swaps and honors invalidation [786.07ms]
+(pass) cockpit Better Auth + RBAC boundary > separates accounting-draft authors from reviewers across company boundaries [538.87ms]
+(pass) cockpit Better Auth + RBAC boundary > central hosted custom-route origin and session freshness gates run before mutation handlers [551.94ms]
+(pass) cockpit Better Auth + RBAC boundary > disabled users are rejected immediately despite a still-valid provider session [219.95ms]
+(pass) cockpit Better Auth + RBAC boundary > hosted GET authentication sees committed WAL state without changing control DB sidecars [213.49ms]
+(pass) cockpit Better Auth + RBAC boundary > hosted mutation records the authenticated user in the core payload evidence [251.41ms]
+(pass) cockpit Better Auth + RBAC boundary > hosted company list and portfolio expose only current company memberships [645.13ms]
+(pass) cockpit Better Auth + RBAC boundary > GET /api/me returns exactly safe hosted context in manifest order and never touches ledgers [321.93ms]
+(pass) cockpit Better Auth + RBAC boundary > GET /api/group-overview is membership-filtered structure only and does not require ledgers [338.47ms]
+(pass) cockpit Better Auth + RBAC boundary > GET /api/me is hosted-only and denies absent Better Auth sessions [135.78ms]
+(pass) cockpit Better Auth + RBAC boundary > verified first MFA enrollment atomically revokes every password-only session [213.95ms]
+(pass) cockpit Better Auth + RBAC boundary > emergency user and workspace invalidation reject same-millisecond stale sessions [276.33ms]
+
+ 27 pass
+ 0 fail
+ 190 expect() calls
+Ran 27 tests across 3 files. [6.65s]

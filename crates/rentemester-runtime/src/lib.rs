@@ -1,4 +1,5 @@
-//! Cooperative process lifetime, never accounting/company write authority.
+//! Runtime identity verification and cooperative process lifetime.
+pub mod auth;
 use std::path::Path;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

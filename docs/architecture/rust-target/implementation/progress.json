@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "control-fence-1",
-  "code_revision": "sha256:c32bb583b620dd3e0498fb8b34685bd7c8a13bda98b99367a94337d5bfb494c1",
-  "spec_revision": "sha256:7e09b1e69c4695470cb06d265ea4670cd7a512a90392af324438c1c7f5ac3fef",
-  "state": "verified-experimental-human-control-company-fence",
+  "current_increment": "session-cookie-1",
+  "code_revision": "sha256:19ed3b95f861312245be35ee53106980fb64df0522cafb1c33fc53d2474f6895",
+  "spec_revision": "sha256:c8d037e07078644ada68155b91b218563af87255bb2f732458859e64f4439d0f",
+  "state": "verified-internal-existing-cookie-authentication",
   "issues_closed": [],
   "next": [
-    "Integrate authenticated runtime identity and stable physical/logical workspace/company lifetime/manifest admission with current-row control fencing, then actual rule/evidence/confirmation/backup/idempotent posting use cases; finish R04/R03/R09 baseline gaps",
+    "Implement native identity lifecycle and trusted runtime generation/manifest/physical admission, service dispatch and complete baseline; integrate with current locked cookie/session fence before actual domain posting",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -27,12 +27,14 @@
     "state": "verified-experimental-readonly"
   },
   "evidence": {
-    "report": "control-fence/evidence.json",
-    "parity": "control-fence/process.json",
-    "rust_tests_passed": 64,
-    "ignored_subprocess_helpers": 12,
-    "control_fence_checks": 106,
-    "integration_checks": 10278,
+    "report": "session-cookie/evidence.json",
+    "parity": "session-cookie/process.json",
+    "rust_tests_passed": 67,
+    "ignored_subprocess_helpers": 13,
+    "integration_checks": 10344,
+    "cookie_process_checks": 66,
+    "wire_vectors": 41,
+    "legacy_auth_tests": 27,
     "writer_authority": false,
     "whole_issues_closed": false
   },
@@ -126,6 +128,12 @@
       "code_revision": "sha256:98c5fcd57f46fd91196ff758396325e15b35fd4e24e544e60b9097b8347283ff",
       "spec_revision": "sha256:2b70533748e2b154758d5827ec26d940d695af0b180dcf5f74cbb3651f801241",
       "state": "verified-experimental-shared-access-policy"
+    },
+    {
+      "current_increment": "control-fence-1",
+      "code_revision": "sha256:c32bb583b620dd3e0498fb8b34685bd7c8a13bda98b99367a94337d5bfb494c1",
+      "spec_revision": "sha256:7e09b1e69c4695470cb06d265ea4670cd7a512a90392af324438c1c7f5ac3fef",
+      "state": "verified-experimental-human-control-company-fence"
     }
   ]
 }

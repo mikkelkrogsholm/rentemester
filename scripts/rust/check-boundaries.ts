@@ -14,7 +14,7 @@ function checkDependencies(crate: string, names: string[]) {
   const allowed = new Set(
     crate === "rentemester-engine"
       ? ["num-bigint", "serde"]
-      : ["serde", "rentemester-engine", "rentemester-storage", "rusqlite"],
+      : ["serde", "rentemester-engine", "rentemester-storage", "rentemester-runtime", "rusqlite"],
   );
   assert(
     names.every((n) => allowed.has(n)),

@@ -13,6 +13,7 @@ serde.workspace = true
 serde_json.workspace = true
 sha2 = "0.10"
 tempfile = "3"
+time = "0.3"
 
 [target.'cfg(unix)'.dependencies]
 rustix = { version = "1.1.5", features = ["fs"] }

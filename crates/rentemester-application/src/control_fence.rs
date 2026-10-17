@@ -113,16 +113,88 @@ pub fn execute<T>(
     {
         return Err(initial(error("access_denied")));
     }
+    execute_resolved(
+        control,
+        company,
+        selection,
+        permission,
+        |_| {
+            Ok(ResolvedHuman {
+                workspace: principal.workspace.to_owned(),
+                subject: principal.subject.to_owned(),
+                session_id: principal.session_id.to_owned(),
+            })
+        },
+        apply,
+    )
+}
+struct ResolvedHuman {
+    workspace: String,
+    subject: String,
+    session_id: String,
+}
+pub use rentemester_storage::cookie_session::SessionRequirement;
+pub struct CookieAuthorization<'a> {
+    pub cookie: &'a rentemester_runtime::auth::VerifiedCookie,
+    pub clock: &'a dyn rentemester_runtime::auth::Clock,
+    pub requirement: SessionRequirement,
+}
+/// Runtime-verified bearer, resolved again under the control lock; no caller identity claims.
+pub fn execute_cookie<T>(
+    control: &mut Connection,
+    company: &mut Connection,
+    authorization: CookieAuthorization<'_>,
+    selection: CompanySelection<'_>,
+    permission: Permission,
+    apply: impl FnOnce(&Transaction<'_>) -> Result<T, Error>,
+) -> Result<Committed<T>, Failure> {
+    let CookieAuthorization {
+        cookie,
+        clock,
+        requirement,
+    } = authorization;
+    if !permission.is_company() || cookie.workspace() != selection.workspace {
+        return Err(initial(error("access_denied")));
+    }
+    execute_resolved(
+        control,
+        company,
+        selection,
+        permission,
+        |tx| {
+            let now = clock
+                .now_unix_ms()
+                .map_err(|e| Error::new(e.code(), "trusted clock unavailable"))?;
+            let identity =
+                rentemester_storage::cookie_session::resolve(tx, cookie.token(), now, requirement)?;
+            Ok(ResolvedHuman {
+                workspace: cookie.workspace().to_owned(),
+                subject: identity.subject,
+                session_id: identity.session_id,
+            })
+        },
+        apply,
+    )
+}
+fn execute_resolved<T>(
+    control: &mut Connection,
+    company: &mut Connection,
+    selection: CompanySelection<'_>,
+    permission: Permission,
+    resolve: impl FnOnce(&Transaction<'_>) -> Result<ResolvedHuman, Error>,
+    apply: impl FnOnce(&Transaction<'_>) -> Result<T, Error>,
+) -> Result<Committed<T>, Failure> {
     connection_ready(control).map_err(initial)?;
     connection_ready(company).map_err(initial)?;
     let control_tx = control
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .map_err(|_| initial(error("control_busy_or_unavailable")))?;
     let authorize = (|| {
+        let principal = resolve(&control_tx)?;
         let observed = rentemester_storage::control_access::observe_human(
             &control_tx,
-            principal.subject,
-            principal.session_id,
+            &principal.subject,
+            &principal.session_id,
             selection.slug,
         )?;
         let workspace_role = observed
@@ -145,8 +217,8 @@ pub fn execute<T>(
             .map_err(|_| error("invalid_control"))?;
         let facts = AccessFacts {
             identity: observed.user_exists.then_some(IdentityFacts {
-                workspace: principal.workspace,
-                subject: principal.subject,
+                workspace: &principal.workspace,
+                subject: &principal.subject,
                 authenticated: observed.session_current,
                 kind: IdentityKind::Human {
                     email_verified: observed.email_verified,
@@ -154,8 +226,8 @@ pub fn execute<T>(
                 },
             }),
             workspace_access: workspace_role.map(|role| WorkspaceAccessFacts {
-                workspace: principal.workspace,
-                subject: principal.subject,
+                workspace: &principal.workspace,
+                subject: &principal.subject,
                 active: true,
                 role,
             }),
@@ -165,8 +237,8 @@ pub fn execute<T>(
                 registered: selection.registered,
                 archived: selection.archived,
                 membership: company_role.map(|role| MembershipFacts {
-                    workspace: principal.workspace,
-                    subject: principal.subject,
+                    workspace: &principal.workspace,
+                    subject: &principal.subject,
                     company: selection.slug,
                     active: true,
                     role,

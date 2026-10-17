@@ -1,0 +1,216 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native existing-cookie authentication under control fence",
+    "goal": "Authenticate signed session token against current locked DB rows and trusted clock",
+    "scope": "R04/R13/R41 human-cookie integration only; full identity/runtime/platform remains pending"
+  },
+  "nodes": {
+    "action.session_cookie": {
+      "kind": "action",
+      "description": "Verify active-key opaque cookie and resolve exact current session under control lock",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "cookie_headers": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "configured_verifier_clock_and_admitted_connections": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "not_committed": "Failure.stage=NotCommitted; structured error codes include access_denied, active_transaction, connection_refused, control_busy_or_unavailable, invalid_control, control_fence_required, company_busy_or_unavailable, company_write_lock_required or unchanged trusted callback Error; reuse flags govern retirement. Cookie/time refusal adds invalid_credentials and invalid_auth_clock; runtime configuration errors are invalid_auth_config before any transaction.",
+          "outcome_unknown": "Failure.stage=OutcomeUnknown with transaction_escaped or commit_outcome_unknown; retire/recover, no rollback claim."
+        },
+        "preconditions": [
+          "Explicit active injected key/profile/workspace, trusted runtime clock, stable admitted databases and manifest/lifetime, trusted callback."
+        ],
+        "postconditions": [
+          "Only MAC-verified current unexpired ready human identity can authorize callback under same control lock; fixed errors and no secret diagnostics."
+        ],
+        "external_effects": [],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Cryptographic cookie is not DB authority; exact current token, expiry, freshness and membership must be checked under the held control lock, with no client actor/time fallback.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Cryptographic cookie is not DB authority; exact current token, expiry, freshness and membership must be checked under the held control lock, with no client actor/time fallback.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Cryptographic cookie is not DB authority; exact current token, expiry, freshness and membership must be checked under the held control lock, with no client actor/time fallback.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Cryptographic cookie is not DB authority; exact current token, expiry, freshness and membership must be checked under the held control lock, with no client actor/time fallback.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Cryptographic cookie is not DB authority; exact current token, expiry, freshness and membership must be checked under the held control lock, with no client actor/time fallback.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "not_committed": [
+            "scenario.refusal"
+          ],
+          "outcome_unknown": [
+            "scenario.correction"
+          ]
+        }
+      },
+      "behavior": "Bounded cookie/MAC verification then locked token/expiry/freshness lookup and shared company authorization/transaction"
+    },
+    "component.application": {
+      "kind": "component",
+      "description": "Native credential verification and locked session orchestration",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Native cookie proof plus locked session and transaction orchestration",
+        "rationale": "Identity must be derived from credential bytes rather than a caller boolean.",
+        "excludes": [
+          "Login/MFA/reset/recovery issuance, service credentials, CSRF, production runtime admission or endpoints"
+        ]
+      },
+      "interfaces": [
+        "action.session_cookie"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Independent HMAC and actual Better Auth issued session authenticate same subject under current locked control policy.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Independent synthetic credentials and canonical control/effect stores.",
+        "when": "Compare actual legacy authentication, native verifier and fenced credential entrypoint.",
+        "then": "Independent HMAC and actual Better Auth issued session authenticate same subject under current locked control policy."
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Bad signatures/headers/profiles/active keys, ambiguous cookies, service header, malformed time, expired/future/deleted/retokenized sessions or missing readiness refuse without callback.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Independent synthetic credentials and canonical control/effect stores.",
+        "when": "Compare actual legacy authentication, native verifier and fenced credential entrypoint.",
+        "then": "Bad signatures/headers/profiles/active keys, ambiguous cookies, service header, malformed time, expired/future/deleted/retokenized sessions or missing readiness refuse without callback."
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "No credential/cookie/control writes or secret diagnostics; shared transaction outcomes preserve existing guarantees.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Independent synthetic credentials and canonical control/effect stores.",
+        "when": "Compare actual legacy authentication, native verifier and fenced credential entrypoint.",
+        "then": "No credential/cookie/control writes or secret diagnostics; shared transaction outcomes preserve existing guarantees."
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Exact expiry and strict timestamp/freshness/duplicate/service-header corrections are retained alongside actual legacy behavior.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Independent synthetic credentials and canonical control/effect stores.",
+        "when": "Compare actual legacy authentication, native verifier and fenced credential entrypoint.",
+        "then": "Exact expiry and strict timestamp/freshness/duplicate/service-header corrections are retained alongside actual legacy behavior."
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Token change/deletion before lock denies; after admission cannot commit until company commit, preventing pre-lock resolution substitution.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Independent synthetic credentials and canonical control/effect stores.",
+        "when": "Compare actual legacy authentication, native verifier and fenced credential entrypoint.",
+        "then": "Token change/deletion before lock denies; after admission cannot commit until company commit, preventing pre-lock resolution substitution."
+      }
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.session_cookie",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.session_cookie",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.session_cookie",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.session_cookie",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.session_cookie",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.session_cookie",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native current-cookie authentication contract",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "0a3fcdc379f4e86ff4591aecb22e0aa3a4fd7956ffc86b8202dc09394be6e6c2"
+      }
+    }
+  }
+}

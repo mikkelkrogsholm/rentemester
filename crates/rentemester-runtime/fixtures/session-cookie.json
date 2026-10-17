@@ -1,0 +1,226 @@
+{
+  "generator": "Python stdlib hmac/hashlib/base64; synthetic fixtures only",
+  "key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+  "vectors": [
+    {
+      "id": "valid-0",
+      "header": "__Secure-better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D",
+      "ok": true,
+      "token": "synthetic-token"
+    },
+    {
+      "id": "valid-1",
+      "header": "__Secure-better-auth.session_token=with.dots.ugbv8Trnv%2Bx5RXRr5QutSJ4z%2Bvsc4aoVeW8HADDv3gA%3D",
+      "ok": true,
+      "token": "with.dots"
+    },
+    {
+      "id": "valid-2",
+      "header": "__Secure-better-auth.session_token=with%2Bplus.Xsj4u0Cmc%2BhbBIuWrI7wCyev3uo9%2Bb7s1jnnYuN%2FYqQ%3D",
+      "ok": true,
+      "token": "with+plus"
+    },
+    {
+      "id": "valid-3",
+      "header": "__Secure-better-auth.session_token=with%20space.MhE2Wzg80Xnhaq%2FLbClKvaPGhhVnFXyxDbkLwWo2Pd0%3D",
+      "ok": true,
+      "token": "with space"
+    },
+    {
+      "id": "valid-4",
+      "header": "__Secure-better-auth.session_token=%C3%A6%C3%B8%C3%A5.46uP8B1mbYJP6AuIAdaWgCIbQqPsg9%2B8yBXl7fWlN3o%3D",
+      "ok": true,
+      "token": "æøå"
+    },
+    {
+      "id": "valid-5",
+      "header": "__Secure-better-auth.session_token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.CQNbmn9y3LdVpaJAQbTqQzpr4gee%2Bho5gz5t%2Fmr409c%3D",
+      "ok": true,
+      "token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    {
+      "id": "raw-base64-plus",
+      "header": "__Secure-better-auth.session_token=synthetic-token.OdYmdk+UKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs=",
+      "ok": true,
+      "token": "synthetic-token"
+    },
+    {
+      "id": "quoted",
+      "header": "__Secure-better-auth.session_token=\"synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D\"",
+      "ok": true,
+      "token": "synthetic-token"
+    },
+    {
+      "id": "optional-spacing",
+      "header": "other=x; \t__Secure-better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D ; cache=ignored",
+      "ok": true,
+      "token": "synthetic-token"
+    },
+    {
+      "id": "dev",
+      "header": "better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D",
+      "ok": true,
+      "profile": "development",
+      "token": "synthetic-token"
+    },
+    {
+      "id": "missing",
+      "header": null,
+      "ok": false
+    },
+    {
+      "id": "empty",
+      "header": "",
+      "ok": false
+    },
+    {
+      "id": "cache-only",
+      "header": "better-auth.session_data=anything",
+      "ok": false
+    },
+    {
+      "id": "wrong-profile",
+      "header": "better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D",
+      "ok": false
+    },
+    {
+      "id": "duplicate",
+      "header": "__Secure-better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D; __Secure-better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D",
+      "ok": false
+    },
+    {
+      "id": "secure-plain",
+      "header": "__Secure-better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D; better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D",
+      "ok": false
+    },
+    {
+      "id": "bad-first",
+      "header": "__Secure-better-auth.session_token=bad; __Secure-better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D",
+      "ok": false
+    },
+    {
+      "id": "bad-last",
+      "header": "__Secure-better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D; __Secure-better-auth.session_token=bad",
+      "ok": false
+    },
+    {
+      "id": "case-sensitive",
+      "header": "__Secure-better-auth.SESSION_TOKEN=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D",
+      "ok": false
+    },
+    {
+      "id": "wrong-key",
+      "header": "__Secure-better-auth.session_token=synthetic-token.%2Ft1Fvikdjavkpg2W%2BPHN1jVMuEsXYSulRA45RxVwgkY%3D",
+      "ok": false
+    },
+    {
+      "id": "tampered",
+      "header": "__Secure-better-auth.session_token=synthetix-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D",
+      "ok": false
+    },
+    {
+      "id": "too-long-header",
+      "header": "a=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;__Secure-better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D",
+      "ok": false
+    },
+    {
+      "id": "too-long-token",
+      "header": "__Secure-better-auth.session_token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.oZmKl2IxX9aVzh4XRXE0evTP8KN8Dizx%2Fs%2B%2B8MLXU%2FE%3D",
+      "ok": false
+    },
+    {
+      "id": "empty-token",
+      "header": "__Secure-better-auth.session_token=.ovnVKO8X0%2F3zw8ISU3FqiAbFJR7PAwsD89hqPOuxWrw%3D",
+      "ok": false
+    },
+    {
+      "id": "control-token",
+      "header": "__Secure-better-auth.session_token=x%0Ay.ZzPtLsw2rqLAroHBZFhqds6504bh04f4o7sEwwRgY60%3D",
+      "ok": false
+    },
+    {
+      "id": "control-header",
+      "header": "__Secure-better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D\r\nx=y",
+      "ok": false
+    },
+    {
+      "id": "nonascii-header",
+      "header": "__Secure-better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D;x=ø",
+      "ok": false
+    },
+    {
+      "id": "bad-percent",
+      "header": "__Secure-better-auth.session_token=synthetic-token.OdYmdk+UKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs=%",
+      "ok": false
+    },
+    {
+      "id": "bad-utf8",
+      "header": "__Secure-better-auth.session_token=%FFsynthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D",
+      "ok": false
+    },
+    {
+      "id": "quote-open",
+      "header": "__Secure-better-auth.session_token=\"synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D",
+      "ok": false
+    },
+    {
+      "id": "quote-end",
+      "header": "__Secure-better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D\"",
+      "ok": false
+    },
+    {
+      "id": "truncated",
+      "header": "__Secure-better-auth.session_token=synthetic-token.OdYmdk+UKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs",
+      "ok": false
+    },
+    {
+      "id": "double-encoding",
+      "header": "__Secure-better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%253D",
+      "ok": false
+    },
+    {
+      "id": "service-33",
+      "header": "__Secure-better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D",
+      "ok": false,
+      "service": ""
+    },
+    {
+      "id": "service-34",
+      "header": "__Secure-better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D",
+      "ok": false,
+      "service": "invalid"
+    },
+    {
+      "id": "service-35",
+      "header": "__Secure-better-auth.session_token=synthetic-token.OdYmdk%2BUKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs%3D",
+      "ok": false,
+      "service": "   "
+    },
+    {
+      "id": "noncanonical-padbits",
+      "header": "__Secure-better-auth.session_token=synthetic-token.OdYmdk+UKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxt=",
+      "ok": false
+    },
+    {
+      "id": "no-padding",
+      "header": "__Secure-better-auth.session_token=synthetic-token.OdYmdk+UKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs",
+      "ok": false
+    },
+    {
+      "id": "base64url",
+      "header": "__Secure-better-auth.session_token=synthetic-token.OdYmdk-UKpBD7lVLWknkmUqVuYlb925y1MLbuPY4vxs=",
+      "ok": false
+    },
+    {
+      "id": "literal-plus-slash",
+      "header": "__Secure-better-auth.session_token=tag-0.ZRfi5EWyNyi2K4pvZ6R+MFT1LLttTkpfAE/7Nv7mM5I=",
+      "ok": true,
+      "token": "tag-0"
+    },
+    {
+      "id": "base64url-tag",
+      "header": "__Secure-better-auth.session_token=tag-0.ZRfi5EWyNyi2K4pvZ6R-MFT1LLttTkpfAE_7Nv7mM5I=",
+      "ok": false
+    }
+  ]
+}

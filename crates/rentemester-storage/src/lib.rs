@@ -17,6 +17,7 @@ mod test_support;
 pub use company_physical::{PhysicalRehearsalReport, rehearse_company_baseline};
 pub mod control_access;
 mod control_migration;
+pub mod cookie_session;
 mod journal_hash;
 pub mod journal_preview;
 pub use journal_preview::{

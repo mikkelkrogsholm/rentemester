@@ -245,3 +245,185 @@ fn child() {
     )
     .unwrap();
 }
+
+struct FixedClock(i64);
+impl rentemester_runtime::auth::Clock for FixedClock {
+    fn now_unix_ms(&self) -> Result<i64, rentemester_runtime::auth::AuthError> {
+        Ok(self.0)
+    }
+}
+#[test]
+#[ignore = "synthetic cookie/fence process helper selected by session-cookie harness"]
+fn cookie_child() {
+    use rentemester_runtime::auth::{CookieProfile, CookieVerifier};
+    let config: Value = serde_json::from_str(&std::env::var("RM_FENCE_REQUEST").unwrap()).unwrap();
+    let mut c = Connection::open(std::env::var("RM_FENCE_CONTROL").unwrap()).unwrap();
+    let mut l = Connection::open(std::env::var("RM_FENCE_COMPANY").unwrap()).unwrap();
+    for db in [&c, &l] {
+        db.execute_batch("PRAGMA foreign_keys=ON;PRAGMA synchronous=FULL;")
+            .unwrap();
+        db.busy_timeout(std::time::Duration::ZERO).unwrap();
+    }
+    let verifier =
+        CookieVerifier::new("w", CookieProfile::Secure, config["key"].as_str().unwrap()).unwrap();
+    let proof = verifier.verify(config["cookie"].as_str(), config["service"].as_str());
+    let result = match proof {
+        Err(e) => Err(initial(Error::new(e.code(), "credential refused"))),
+        Ok(proof) => {
+            checkpoint("cookie_verified");
+            let clock = FixedClock(config["now"].as_i64().unwrap());
+            let requirement = if config["fresh"] == true {
+                SessionRequirement::Fresh
+            } else {
+                SessionRequirement::Current
+            };
+            if let Some(expected) = config["expectedSubject"].as_str() {
+                let tx = c
+                    .transaction_with_behavior(TransactionBehavior::Immediate)
+                    .unwrap();
+                let identity = rentemester_storage::cookie_session::resolve(
+                    &tx,
+                    proof.token(),
+                    clock.0,
+                    requirement,
+                )
+                .unwrap();
+                assert_eq!(identity.subject, expected);
+                assert_eq!(
+                    identity.session_id,
+                    config["expectedSession"].as_str().unwrap()
+                );
+                tx.rollback().unwrap();
+            }
+            execute_cookie(
+                &mut c,
+                &mut l,
+                CookieAuthorization {
+                    cookie: &proof,
+                    clock: &clock,
+                    requirement,
+                },
+                selection(),
+                Permission::CompanyLedgerPost,
+                effect,
+            )
+        }
+    };
+    let output = match result {
+        Ok(done) => {
+            json!({"outcome":"committed","value":done.value,"controlReusable":done.control_reusable})
+        }
+        Err(f) => {
+            json!({"outcome":if f.stage==FailureStage::NotCommitted {"not_committed"}else{"unknown"},"code":f.error.code,"controlReusable":f.control_reusable,"companyReusable":f.company_reusable})
+        }
+    };
+    std::fs::write(
+        std::env::var("RM_FENCE_OUTPUT").unwrap(),
+        serde_json::to_string(&output).unwrap(),
+    )
+    .unwrap();
+}
+
+#[test]
+fn cookie_clock_failure_workspace_binding_and_admission_time() {
+    use rentemester_runtime::auth::{AuthError, Clock, CookieProfile, CookieVerifier};
+    use std::cell::Cell;
+    struct MovingClock(Cell<i64>);
+    impl Clock for MovingClock {
+        fn now_unix_ms(&self) -> Result<i64, AuthError> {
+            Ok(self.0.get())
+        }
+    }
+    struct BrokenClock;
+    impl Clock for BrokenClock {
+        fn now_unix_ms(&self) -> Result<i64, AuthError> {
+            Err(AuthError::InvalidClock)
+        }
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let mut c = Connection::open(dir.path().join("c")).unwrap();
+    control(&c);
+    let mut l = Connection::open(dir.path().join("l")).unwrap();
+    company(&l);
+    c.execute_batch("UPDATE session SET createdAt='2026-01-01T00:00:00.000Z',expiresAt='2026-01-01T12:00:00.000Z'").unwrap();
+    let corpus: Value = serde_json::from_str(include_str!(
+        "../../../rentemester-runtime/fixtures/session-cookie.json"
+    ))
+    .unwrap();
+    let key = corpus["key"].as_str().unwrap();
+    let header = corpus["vectors"][0]["header"].as_str().unwrap();
+    let proof = CookieVerifier::new("w", CookieProfile::Secure, key)
+        .unwrap()
+        .verify(Some(header), None)
+        .unwrap();
+    let failure = execute_cookie(
+        &mut c,
+        &mut l,
+        CookieAuthorization {
+            cookie: &proof,
+            clock: &BrokenClock,
+            requirement: SessionRequirement::Current,
+        },
+        selection(),
+        Permission::CompanyLedgerPost,
+        |_| -> Result<(), Error> { panic!("clock refusal must precede work") },
+    )
+    .unwrap_err();
+    assert_eq!(failure.error.code, "invalid_auth_clock");
+    assert!(failure.control_reusable);
+    let wrong = CookieVerifier::new("other", CookieProfile::Secure, key)
+        .unwrap()
+        .verify(Some(header), None)
+        .unwrap();
+    let clock = MovingClock(Cell::new(1_767_226_199_999));
+    let failure = execute_cookie(
+        &mut c,
+        &mut l,
+        CookieAuthorization {
+            cookie: &wrong,
+            clock: &clock,
+            requirement: SessionRequirement::Fresh,
+        },
+        selection(),
+        Permission::CompanyLedgerPost,
+        effect,
+    )
+    .unwrap_err();
+    assert_eq!(failure.error.code, "access_denied");
+    // Crossing freshness after authorization does not undo admitted synchronous work.
+    let result = execute_cookie(
+        &mut c,
+        &mut l,
+        CookieAuthorization {
+            cookie: &proof,
+            clock: &clock,
+            requirement: SessionRequirement::Fresh,
+        },
+        selection(),
+        Permission::CompanyLedgerPost,
+        |tx| {
+            clock.0.set(1_767_226_200_000);
+            effect(tx)
+        },
+    )
+    .unwrap();
+    assert_eq!(result.value, 1);
+    assert_eq!(
+        execute_cookie(
+            &mut c,
+            &mut l,
+            CookieAuthorization {
+                cookie: &proof,
+                clock: &clock,
+                requirement: SessionRequirement::Fresh
+            },
+            selection(),
+            Permission::CompanyLedgerPost,
+            effect
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "invalid_credentials"
+    );
+}

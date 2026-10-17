@@ -1,0 +1,269 @@
+{
+  "ok": true,
+  "checks": 66,
+  "wireVectors": 41,
+  "scope": "active-key MAC, locked exact session/time/access policy, actual framework internal session issuance and getSession, before/held token-update/deletion races",
+  "observations": [
+    {
+      "id": "current",
+      "mode": "DELETE",
+      "outcome": "committed"
+    },
+    {
+      "id": "fresh",
+      "mode": "DELETE",
+      "outcome": "committed"
+    },
+    {
+      "id": "fresh-boundary",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "fresh-after",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "current-still-valid",
+      "mode": "DELETE",
+      "outcome": "committed"
+    },
+    {
+      "id": "expiry-before",
+      "mode": "DELETE",
+      "outcome": "committed"
+    },
+    {
+      "id": "expiry-equal",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "expiry-after",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "future-created",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "negative-clock",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "out-of-range-clock",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "retokenized",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "deleted",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "blank-session-id",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "legacy-coerced-date",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "invalid-gregorian",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "invalid-time",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "24h-refused",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "zero-lifetime",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "integer-time",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "mfa-disabled",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "email-unverified",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "revoked",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "service-invalid",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "service-empty",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "signature-tamper",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "current",
+      "mode": "WAL",
+      "outcome": "committed"
+    },
+    {
+      "id": "fresh",
+      "mode": "WAL",
+      "outcome": "committed"
+    },
+    {
+      "id": "fresh-boundary",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "fresh-after",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "current-still-valid",
+      "mode": "WAL",
+      "outcome": "committed"
+    },
+    {
+      "id": "expiry-before",
+      "mode": "WAL",
+      "outcome": "committed"
+    },
+    {
+      "id": "expiry-equal",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "expiry-after",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "future-created",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "negative-clock",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "out-of-range-clock",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "retokenized",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "deleted",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "blank-session-id",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "legacy-coerced-date",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "invalid-gregorian",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "invalid-time",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "24h-refused",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "zero-lifetime",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "integer-time",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "mfa-disabled",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "email-unverified",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "revoked",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "service-invalid",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "service-empty",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "signature-tamper",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    }
+  ],
+  "limits": "No native login/MFA/reset/service issuance or product endpoint. Authentication/freshness are admission-time checks. Native parser,12h lifetime and exact time boundaries deliberately fail closed more strictly than legacy."
+}

@@ -1,0 +1,44 @@
+{
+  "format": "rentemester-readonly-review/1",
+  "scope": "Native existing-cookie verification and locked session orchestration",
+  "reviewers": [
+    {
+      "agent": "migration_port_research",
+      "mode": "read-only source/protocol/correctness review",
+      "findings": [
+        "No supported-path security defect found",
+        "Installed dontRememberMe issuance uses24h despite configured12h: document and independently prove stricter refusal",
+        "Clock samples at control admission, not commit: document and test deadline crossing during callback"
+      ],
+      "resolution": "Contract, actual installed-framework24h oracle and application admission-time boundary test retain both observations explicitly"
+    },
+    {
+      "agent": "review_migration_contracts",
+      "mode": "independent read-only final review and targeted execution",
+      "findings": [],
+      "result": "No concrete material defect found in bounded cookie increment; scope correctly excludes generation/admission, CSRF, login/MFA/reset and endpoints",
+      "commands": [
+        {
+          "command": "~/.cargo/bin/cargo test --locked -p rentemester-runtime auth::tests",
+          "result": "1 passed;41 independent wire vectors"
+        },
+        {
+          "command": "~/.cargo/bin/cargo test --locked -p rentemester-storage cookie_session::tests",
+          "result": "1 passed"
+        },
+        {
+          "command": "~/.cargo/bin/cargo test --locked -p rentemester-application cookie_clock_failure_workspace_binding_and_admission_time",
+          "result": "1 passed"
+        },
+        {
+          "command": "bun scripts/rust/verify-session-cookie.ts",
+          "result": "66 checks passed; raw summary review-process.json"
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Bounded review and synthetic qualification only; not complete identity/runtime/platform acceptance"
+  ],
+  "all_goal_requirements_complete": false
+}

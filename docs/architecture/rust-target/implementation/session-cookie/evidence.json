@@ -1,0 +1,259 @@
+{
+  "format": "rentemester-session-cookie-increment/1",
+  "increment": "session-cookie-1",
+  "status": "verified-internal-existing-cookie-authentication",
+  "branch": "codex/rust-platform",
+  "code_revision": "sha256:19ed3b95f861312245be35ee53106980fb64df0522cafb1c33fc53d2474f6895",
+  "spec_revision": "sha256:c8d037e07078644ada68155b91b218563af87255bb2f732458859e64f4439d0f",
+  "platform": {
+    "os": "macOS",
+    "arch": "arm64",
+    "rust": "1.94.1",
+    "better_auth": "1.7.1",
+    "better_call": "1.4.0"
+  },
+  "verification": {
+    "rust_verify_exit": 0,
+    "native_tests_passed": 67,
+    "ignored_helpers": 13,
+    "integration_checks": 10344,
+    "cookie_process_checks": 66,
+    "independent_python_wire_vectors": 41,
+    "legacy_http_auth_tests_passed": 27,
+    "legacy_expect_calls": 190,
+    "typecheck_exit": 0,
+    "lint_exit": 0,
+    "current_harness_note": "Full rust:verify passed against current product code and full66-check harness logic; final harness formatting was followed by a complete targeted66-check rerun and runtime typecheck. Independent reviewer reran41-vector runtime, storage time, application clock/workspace/admission and66-check process harness.",
+    "readiness": "readiness-v2.json; specification structure only"
+  },
+  "review": {
+    "reviewers": 2,
+    "material_defects_remaining": 0,
+    "resolved_observations": [
+      "Document and prove24h dontRememberMe issuance versus native12h cap",
+      "Document admission-time clock/freshness semantics and test boundary crossing during callback",
+      "Freeze strict expiry/Fresh/duplicate/blank-service/noncanonical-signature corrections"
+    ]
+  },
+  "claims": [
+    "MAC proof derives from exact bounded cookie bytes and active UTF8 secret string, never client identity/actor",
+    "Exact token-to-subject/session lookup and current time/access checks happen inside control main Write transaction held across company commit",
+    "Both WAL/DELETE token changes/deletions before admission deny and after admission block until commit",
+    "Actual installed framework internal session issuance/serializer/getSession match exact subject/session; rotation and stricter differences retained",
+    "Shared prior rollback/commit-unknown/known-commit semantics remain regression tested"
+  ],
+  "limits": [
+    "No login/password/MFA/enrollment/reset/recovery or service issuance implemented",
+    "No CSRF/HTTP dispatcher or product mutation endpoint enabled",
+    "Current generation, stable distinct admitted DBs and manifest/lifetime remain trusted runtime duties",
+    "Time/freshness is sampled at admission, not checked anew at commit",
+    "Synthetic effect ledger only; full accounting domain/rules/evidence/backup/idempotency and all platform/client/distribution/cutover gates remain open",
+    "Native canonical parsing,12h cap and exclusive deadlines are intentional stricter policy; not full legacy session/parser parity",
+    "macOS process behavior only, not hardware power loss or cross-platform qualification",
+    "Graphify semantic refresh covers two actual Markdown sources; generated evidence/JSON/logs, historical snapshots and unrelated user docs remain unrefreshed"
+  ],
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "de33e6d46f1c13735151111fbd0a41dc9313541eb106742aea17f57c9084953c"
+    },
+    {
+      "path": "bun.lock",
+      "sha256": "0c8da97314d73150a89583942997ef0e6a300de891407bb09961f59506cbb2b9"
+    },
+    {
+      "path": "crates/rentemester-application/Cargo.toml",
+      "sha256": "3f27e70abd87eac60631c294d0494a6c0bc16937efcf824566fd48e65fee4b8d"
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence.rs",
+      "sha256": "aaf68f71c2cd694e66a10f1f4bc26b4b5781d8debe710a10943e31b47bf5c182"
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence/tests.rs",
+      "sha256": "a4d77282b44f7402133e884369de0abdf5346e91ee3a5ef8b7c130f885617b69"
+    },
+    {
+      "path": "crates/rentemester-runtime/Cargo.toml",
+      "sha256": "e0c99defe93e08a7dabd4950a8e95955924e492a5ed266abd3e8862f311e5031"
+    },
+    {
+      "path": "crates/rentemester-runtime/fixtures/session-cookie.json",
+      "sha256": "1745812ffa60d901d414ec68b476716a45ee77f0fc7f980082e86396d019b6fd"
+    },
+    {
+      "path": "crates/rentemester-runtime/src/auth.rs",
+      "sha256": "b1150e42b0e44191acd4c783315d7330347fd289f62d086ff61470b6417c27b4"
+    },
+    {
+      "path": "crates/rentemester-runtime/src/lib.rs",
+      "sha256": "be67262812e2139823c06ebec61d979fb283f3a0684cf075e5c381b1d85397b8"
+    },
+    {
+      "path": "crates/rentemester-storage/Cargo.toml",
+      "sha256": "bb53d00c82fe352a4d420b83f99d7e577696537aa0abcf8257429e64d1a840ec"
+    },
+    {
+      "path": "crates/rentemester-storage/src/control_access.rs",
+      "sha256": "e085e4e1e0669d44cbd2cdca4a74b3350b66495b160f3710f018432d60032202"
+    },
+    {
+      "path": "crates/rentemester-storage/src/control_migration.rs",
+      "sha256": "e5402744c8fd156e86b112bf24377bb2d9a86ff34f35e5620ab597ddc212cdb4"
+    },
+    {
+      "path": "crates/rentemester-storage/src/cookie_session.rs",
+      "sha256": "8d5440a978347242461feecf9470184352bdabf9b0c658bbee0d6c931f4ed2ab"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-workspace-schema.json",
+      "sha256": "f56992f726def0300aca5350f48f3cb3dabe0c3672f410bc6bd56bd300f8dc08"
+    },
+    {
+      "path": "crates/rentemester-storage/src/lib.rs",
+      "sha256": "41fdfd8961d969152555ede0dba21916f98c214e6a0ad58c8454a9b6951354f2"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/README.md",
+      "sha256": "78689b71e25243b690a1c9d435e00fda7c946f199603b5ef747d1fe94b745a40"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/session-cookie/CONTRACT.md",
+      "sha256": "0a3fcdc379f4e86ff4591aecb22e0aa3a4fd7956ffc86b8202dc09394be6e6c2"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/session-cookie/gdd.json",
+      "sha256": "f5264452aad21c402783f64cc69aea37b12daeed1279b8b0e514c880f4b4f642"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/session-cookie/legacy-auth.txt",
+      "sha256": "4cb64fdf5120fccdcb0cd914c31d664d409fe5193f0a5dbe13b31926ceae7cc8"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/session-cookie/lint.txt",
+      "sha256": "53ccb0dda48d6d143b9ea34fd403e633276d96b6b7b2cb6609c215c5ec5b7983"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/session-cookie/process.json",
+      "sha256": "e9716717d3adec4c50b763ef4ed3c1487b30fd74d5615cba257005b144ac7fde"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/session-cookie/process.txt",
+      "sha256": "0b81e130e3e557ab73761e2deb40e403ee1222238db4cac0b8b9c07db39c839d"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/session-cookie/readiness-v2.json",
+      "sha256": "a3a9977fd3fcb3cfa7badd0870653c8d6116f361be603902f1bae7884a33983a"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/session-cookie/readiness.json",
+      "sha256": "e39304ca8cbff20d839daa2209c54867cc632a803ec28698cc2140176a79a201"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/session-cookie/review-process.json",
+      "sha256": "e9716717d3adec4c50b763ef4ed3c1487b30fd74d5615cba257005b144ac7fde"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/session-cookie/review.json",
+      "sha256": "6e7e5fa26a949c30bfc967881250ef2627fc85487acd69822774e97fa4f7516f"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/session-cookie/rust-verify.txt",
+      "sha256": "4b7f3f0a414a81ee5e12a153ff384745e22699d4ebf969f58b9b2feaf4ddff97"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/session-cookie/typecheck.txt",
+      "sha256": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d"
+    },
+    {
+      "path": "node_modules/better-auth/dist/api/routes/session.mjs",
+      "sha256": "831a00b6e144c1560c21406de1db586a67089630ad58fb2f3c7dcd3c5c963d57"
+    },
+    {
+      "path": "node_modules/better-auth/dist/context/create-context.mjs",
+      "sha256": "579065017c5601dedac6ad95666835307b279e8f8ae45311d74d4e336f032d7c"
+    },
+    {
+      "path": "node_modules/better-auth/dist/cookies/index.mjs",
+      "sha256": "945bbb0bd0d77240bc74315c58f5ca74a62165ef605e30dfb336b34c0120665a"
+    },
+    {
+      "path": "node_modules/better-auth/dist/db/internal-adapter.mjs",
+      "sha256": "69e3e9b76d7b310fd53c7ef0a276ab2727a97ae8df57aea8a493d673cbaf75bd"
+    },
+    {
+      "path": "node_modules/better-auth/package.json",
+      "sha256": "d4da1b89925564605ca6540a4f5030aab18de043322ca0b51f08b9ec52b1e092"
+    },
+    {
+      "path": "node_modules/better-call/dist/context.mjs",
+      "sha256": "5ec24a63ff4d32e017b6cb5139995ea19cea796acb78772e41867cffc2404adf"
+    },
+    {
+      "path": "node_modules/better-call/dist/cookies.mjs",
+      "sha256": "f7d6cf754197ae194950d53111319634405b5e98b5ace8dd1dfc14843ef631f5"
+    },
+    {
+      "path": "node_modules/better-call/dist/crypto.mjs",
+      "sha256": "b792ccaea2fedc7aa153e254783a22d4d633300232f597c50d930d3b516f1447"
+    },
+    {
+      "path": "node_modules/better-call/package.json",
+      "sha256": "1020e41c953f843d07337f8fb365413f3ae1d03152e92217a0d901ddc66882dd"
+    },
+    {
+      "path": "package.json",
+      "sha256": "4749a637a3b7c85f644251654c979eeb2348a502cb592e5217156fb165af0e5c"
+    },
+    {
+      "path": "scripts/rust/check-boundaries.ts",
+      "sha256": "3090d315a4fcc67ac4ccfcacdb6ae4077d5f2c224cfa133dfe5dab0ac7350266"
+    },
+    {
+      "path": "scripts/rust/session-cookie-vectors.py",
+      "sha256": "77098ca539e14c1e61e5d0e668397964b15370e89d308a59ae79fb92de22bd28"
+    },
+    {
+      "path": "scripts/rust/verify-session-cookie.ts",
+      "sha256": "38266810ca7f7bc2e01f59fac218cf44c1df7a47a4a11720ffb3d142d0eaf14c"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "bce36dd003c34c40b41363807c45e2e840c3fd0d0efc6292e937656137297b01"
+    },
+    {
+      "path": "src/core/workspace-access.ts",
+      "sha256": "0e034fcee922d6cd4733da1fbdc85f05dce0a443461083903a5808554fb84b2e"
+    },
+    {
+      "path": "src/core/workspace-control.ts",
+      "sha256": "63b155521b26872be2fa95175434cd4234c284f07bf5a2baca0e63e1cb04509d"
+    },
+    {
+      "path": "src/server/auth.ts",
+      "sha256": "be531af3c308a417d767dc30960777c45408ff8883d767702199dbcbdae942cc"
+    },
+    {
+      "path": "src/server/better-auth.ts",
+      "sha256": "9513797eb1b1a82b0c9d592fb00e3317d6d33b6eb29c7bf0c548a0a4c58c9b73"
+    },
+    {
+      "path": "src/server/router.ts",
+      "sha256": "e1f20be917fccd193f8423eecd5abbf9f3c37e4f81b9639d96abc9ee780ded54"
+    },
+    {
+      "path": "src/server/security-policy.ts",
+      "sha256": "3f826503ab6433045c7f4893b5493db1034d4bcd352a662ab653ed42e2a6f176"
+    }
+  ],
+  "reference_urls": [
+    "https://better-auth.com/docs/concepts/session-management",
+    "https://better-auth.com/docs/concepts/cookies",
+    "https://docs.rs/hmac/0.12.1/hmac/",
+    "https://docs.rs/base64/0.22.1/base64/",
+    "https://docs.rs/time/0.3.55/time/"
+  ]
+}
