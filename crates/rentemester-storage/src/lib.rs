@@ -8,6 +8,7 @@ use rusqlite::{Connection, OpenFlags, types::ValueRef};
 use serde::Deserialize;
 use std::{fs::OpenOptions, io::Write, path::Path, time::Duration};
 use tempfile::TempDir;
+mod company_baseline;
 mod control_migration;
 mod journal_hash;
 mod migration;

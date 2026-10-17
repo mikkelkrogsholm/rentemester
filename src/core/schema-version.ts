@@ -595,12 +595,6 @@ export function applySchemaMigrations(db: Database): void {
         db.exec(`DROP TRIGGER IF EXISTS ${name};`);
         db.exec(statement);
       }
-      // v11 originally permitted an in-place started→posted update. Reassert
-      // a strict append-only application ledger on every open instead; callers
-      // reserve and link inside one transaction and insert the final row.
-      db.exec("DROP TRIGGER IF EXISTS purchase_posting_applications_no_update;");
-      db.exec("CREATE TRIGGER purchase_posting_applications_no_update BEFORE UPDATE ON purchase_posting_applications BEGIN SELECT RAISE(ABORT, 'purchase posting applications are append-only'); END;");
-      db.exec("CREATE TRIGGER IF NOT EXISTS purchase_posting_applications_no_delete BEFORE DELETE ON purchase_posting_applications BEGIN SELECT RAISE(ABORT, 'purchase posting applications are append-only'); END;");
     }).immediate();
   }
 
@@ -678,6 +672,12 @@ export function applySchemaMigrations(db: Database): void {
         db.exec(`DROP TRIGGER IF EXISTS ${name};`);
         db.exec(statement);
       }
+      // v11 originally permitted an in-place started→posted update. Reassert
+      // a strict append-only application ledger on every open instead; callers
+      // reserve and link inside one transaction and insert the final row.
+      db.exec("DROP TRIGGER IF EXISTS purchase_posting_applications_no_update;");
+      db.exec("CREATE TRIGGER purchase_posting_applications_no_update BEFORE UPDATE ON purchase_posting_applications BEGIN SELECT RAISE(ABORT, 'purchase posting applications are append-only'); END;");
+      db.exec("CREATE TRIGGER IF NOT EXISTS purchase_posting_applications_no_delete BEFORE DELETE ON purchase_posting_applications BEGIN SELECT RAISE(ABORT, 'purchase posting applications are append-only'); END;");
     }).immediate();
   }
   if (db.query("SELECT id FROM schema_migrations WHERE id = 12").get()) {

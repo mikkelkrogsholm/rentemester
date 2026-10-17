@@ -1,0 +1,36 @@
+bun test v1.4.0 (34cbb9a40)
+
+tests/unit/current-transaction-primitives.test.ts:
+(pass) current-transaction bookkeeping primitives > rolls back rule, identity and VAT evidence when the caller aborts [114.32ms]
+(pass) current-transaction bookkeeping primitives > commits all current-transaction effects together without nested transactions [114.22ms]
+(pass) current-transaction bookkeeping primitives > late journal audit failure removes journal, document and bank links from the outer transaction [105.40ms]
+(pass) current-transaction bookkeeping primitives > standalone expense booking keeps its existing atomic behavior [105.22ms]
+
+tests/unit/company-migration-immutability.test.ts:
+(pass) routine migration keeps legacy started purchase applications immutable [152.02ms]
+
+tests/unit/purchase-vat-preflight.test.ts:
+(pass) purchase VAT preflight > dry-run is pure, then reuses explicit fresh provider evidence [105.30ms]
+(pass) purchase VAT preflight > provider unavailability is a resumable, deduplicated exception [107.14ms]
+
+tests/unit/schema-version.test.ts:
+(pass) schema version compatibility > migrates a v2 recurring template and generation losslessly with foreign keys [255.29ms]
+(pass) schema version compatibility > binds the immutable baseline artifact to schema and normalization bytes [0.37ms]
+(pass) schema version compatibility > records the contiguous checksummed migration catalog idempotently [131.43ms]
+(pass) schema version compatibility > makes issued invoice PDF evidence append-only and reasserts its guards [129.76ms]
+(pass) schema version compatibility > makes document metadata enrichments append-only and restores guards [359.68ms]
+(pass) schema version compatibility > reasserts accounting-draft append-only guards on every open [130.52ms]
+(pass) schema version compatibility > reasserts internal-voucher evidence guards on every open [131.30ms]
+(pass) schema version compatibility > opens a pre-change v1 ledger and applies the append-only v2 events migration [175.01ms]
+(pass) schema version compatibility > upgrades an isolated v3 schema through the current version without touching a live ledger [175.79ms]
+(pass) schema version compatibility > accepts a complete append-only history when a future runtime supports it [0.14ms]
+(pass) schema version compatibility > rejects a database made by newer software before creating business tables [0.27ms]
+(pass) schema version compatibility > rejects a modified baseline checksum [105.42ms]
+(pass) schema version compatibility > adopts a checksum only from a legacy table that never had the column [115.47ms]
+(pass) schema version compatibility > rejects a null checksum once the checksum column exists [0.26ms]
+(pass) schema version compatibility > openDb rejects a newer on-disk database without changing its bytes or sidecars [1.90ms]
+
+ 22 pass
+ 0 fail
+ 83 expect() calls
+Ran 22 tests across 4 files. [2.54s]

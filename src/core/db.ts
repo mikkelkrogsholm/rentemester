@@ -299,7 +299,8 @@ function restoreSchemaViews(db: Database, schema: string) {
   void schema;
 }
 
-export function migrate(db: Database) {
+/** Baseline stage shared by full migration and exact schema-parity tooling. */
+export function normalizeCompanyBaseline(db: Database) {
   assertSchemaCompatibility(db);
   // A current, checksummed ledger is an inspection target: routine opens must
   // never recreate a missing canonical view and thereby hide drift. Pending
@@ -485,7 +486,16 @@ export function migrate(db: Database) {
   // repair; fresh and pending ledgers retain the schema-created views.
   for (const view of missingCurrentViews) db.exec(`DROP VIEW IF EXISTS ${view}`);
   recordSchemaBaseline(db);
+}
+
+export function migrate(db: Database) {
+  normalizeCompanyBaseline(db);
   applySchemaMigrations(db);
+  finalizeCompanySchema(db);
+}
+
+/** Final lossless bank-profile stage shared by migration and parity tooling. */
+export function finalizeCompanySchema(db: Database) {
   // #539 follows the immutable v1 normalisation. These guards apply equally
   // to freshly-created and legacy ledgers and are lossless on repeated opens.
   if (!hasColumn(db, "bank_accounts", "bic")) db.exec("ALTER TABLE bank_accounts ADD COLUMN bic TEXT;");

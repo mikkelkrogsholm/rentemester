@@ -1,0 +1,349 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native normalized company bootstrap and early upgrades",
+    "goal": "Create the full company schema in native Rust and migrate known normalized early prefixes on private copies.",
+    "scope": "R12 existing empty/normalized prefixes0\u201331; prior suffix32\u201336 contract preserved, full legacy normalization and writer gates unchanged."
+  },
+  "nodes": {
+    "component.storage": {
+      "kind": "component",
+      "description": "Own bounded private SQLite migration rehearsal.",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Capture, recover, validate, migrate and discard private copies.",
+        "rationale": "Original writer admission is not yet complete.",
+        "excludes": [
+          "Live migrations, domain writes and promotion"
+        ]
+      },
+      "interfaces": [
+        "action.rehearse_company_baseline"
+      ]
+    },
+    "action.rehearse_company_baseline": {
+      "kind": "action",
+      "description": "Bootstrap or upgrade a canonical normalized company privately using compiled public schema images and exact artifacts.",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "company_path": {
+            "type": "string",
+            "min_length": 1
+          }
+        },
+        "context": {
+          "mode": {
+            "type": "enum",
+            "values": [
+              "local_operator"
+            ]
+          }
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "from_version": {
+              "type": "integer"
+            },
+            "to_version": {
+              "type": "integer"
+            },
+            "writer_authority": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "from_version",
+            "to_version",
+            "writer_authority"
+          ]
+        },
+        "errors": {
+          "invalid_input": "Refuse as specified in CONTRACT.md.",
+          "source_unavailable": "Refuse as specified in CONTRACT.md.",
+          "source_changed": "Refuse as specified in CONTRACT.md.",
+          "unsupported_schema": "Refuse as specified in CONTRACT.md.",
+          "invalid_ledger": "Refuse as specified in CONTRACT.md.",
+          "migration_failed": "Refuse as specified in CONTRACT.md.",
+          "storage_failure": "Refuse as specified in CONTRACT.md."
+        },
+        "preconditions": [
+          "Explicit local read authority; strict supported prefix; no migration authority inferred."
+        ],
+        "postconditions": [
+          "Original source unchanged; owned private files explicitly closed/deleted.",
+          "Original typed-column projections and provenance preserved; legitimate new defaults/identities verified separately.",
+          "Each committed prefix is complete, final guards precede history36 commit; no writer authority."
+        ],
+        "external_effects": [
+          "Read/stat source files; recover/migrate/delete private disposable files only."
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "No source writes or promotion.",
+            "scenarios": [
+              "scenario.isolation"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Current history is no-op.",
+            "scenarios": [
+              "scenario.repeat",
+              "scenario.history"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Strict history/artifact/schema limits.",
+            "scenarios": [
+              "scenario.history",
+              "scenario.checkpoint",
+              "scenario.usage"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Capture stable source while legacy reader/writer may be active.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Real transactional rollback and process death.",
+            "scenarios": [
+              "scenario.failure",
+              "scenario.crash"
+            ]
+          }
+        },
+        "error_cases": {
+          "invalid_input": [
+            "scenario.usage"
+          ],
+          "source_unavailable": [
+            "scenario.isolation"
+          ],
+          "source_changed": [
+            "scenario.isolation"
+          ],
+          "unsupported_schema": [
+            "scenario.history"
+          ],
+          "invalid_ledger": [
+            "scenario.checkpoint"
+          ],
+          "migration_failed": [
+            "scenario.failure"
+          ],
+          "storage_failure": [
+            "scenario.failure"
+          ]
+        }
+      },
+      "behavior": "Validate exact image/artifacts, capture private copy, require empty or strict known normalized prefix, snapshot original-column projections/provenance, transact each SQL/history step with final guards in36, verify introduced invariants/full final schema, close/delete copy and report scoped evidence."
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Exact suffix manifest/history; original files and business cells unchanged.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Existing empty source or canonical normalized prefix1\u201331.",
+        "when": "Rehearse and compare independent TypeScript post-baseline migration oracle.",
+        "then": "Exact current DDL and applied history; original-column data preserved; introduced defaults verified."
+      }
+    },
+    "scenario.history": {
+      "kind": "scenario",
+      "description": "Refuse before migration; never adopt checksums.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Older/newer/gapped/tampered history or embedded artifact drift.",
+        "when": "Attempt rehearsal.",
+        "then": "Refuse before migration; never adopt checksums."
+      }
+    },
+    "scenario.checkpoint": {
+      "kind": "scenario",
+      "description": "Explicit refusal; no repair or source effects.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Unknown physical variant, malformed history/image or business/data invariant failure.",
+        "when": "Attempt rehearsal.",
+        "then": "Explicit refusal; no repair or source effects."
+      }
+    },
+    "scenario.isolation": {
+      "kind": "scenario",
+      "description": "Bounded capture refusal and no original SQLite connection.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Missing/linked/changing source or unsupported platform.",
+        "when": "Capture source.",
+        "then": "Bounded capture refusal and no original SQLite connection."
+      }
+    },
+    "scenario.failure": {
+      "kind": "scenario",
+      "description": "Its DDL/history both roll back; earlier complete steps remain.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "A private pending step with real SQL or history insert failure.",
+        "when": "Execute its immediate transaction.",
+        "then": "Its DDL/history both roll back; earlier complete steps remain."
+      }
+    },
+    "scenario.crash": {
+      "kind": "scenario",
+      "description": "Old or new complete step after recovery; child is reaped.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Disposable actual child at bootstrap or early migration boundary.",
+        "when": "Kill after SQL or history insertion before commit.",
+        "then": "Empty or complete old prefix; no partial bootstrap/step and all children reaped."
+      }
+    },
+    "scenario.usage": {
+      "kind": "scenario",
+      "description": "Exit2 invalid_input without effects.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Invalid command flags.",
+        "when": "Invoke CLI.",
+        "then": "Exit2 invalid_input without effects."
+      }
+    },
+    "scenario.guards": {
+      "kind": "scenario",
+      "description": "Valid inserts succeed; invalid changes fail.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Legacy started purchase application after full migration and repeated opens.",
+        "when": "Change key/status or delete the row in TS and native completed image.",
+        "then": "All in-place operations refuse; original row stays identical."
+      }
+    },
+    "scenario.repeat": {
+      "kind": "scenario",
+      "description": "No new history/data changes and canonical checkpoint verified.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "A current36 source.",
+        "when": "Rehearse twice.",
+        "then": "No new history/data changes and canonical checkpoint verified."
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Capture concurrently active WAL source without source effects.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Synthetic active WAL source.",
+        "when": "Rehearse while independent TS connection retains pending WAL.",
+        "then": "Valid private recovery or bounded refusal, unchanged source inventories."
+      }
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.rehearse_company_baseline",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.history",
+      "from": "scenario.history",
+      "to": "action.rehearse_company_baseline",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.checkpoint",
+      "from": "scenario.checkpoint",
+      "to": "action.rehearse_company_baseline",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.isolation",
+      "from": "scenario.isolation",
+      "to": "action.rehearse_company_baseline",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.failure",
+      "from": "scenario.failure",
+      "to": "action.rehearse_company_baseline",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.crash",
+      "from": "scenario.crash",
+      "to": "action.rehearse_company_baseline",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.usage",
+      "from": "scenario.usage",
+      "to": "action.rehearse_company_baseline",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.guards",
+      "from": "scenario.guards",
+      "to": "action.rehearse_company_baseline",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.repeat",
+      "from": "scenario.repeat",
+      "to": "action.rehearse_company_baseline",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.storage.owns",
+      "from": "action.rehearse_company_baseline",
+      "to": "component.storage",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.rehearse_company_baseline",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native company normalized bootstrap/early migration contract",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "b87dc796c6f176b8c911c485565870c354f8ae548f3e2dad4ae047a793de602e"
+      }
+    }
+  }
+}

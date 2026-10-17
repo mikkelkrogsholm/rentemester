@@ -1,0 +1,307 @@
+{
+  "format": "rentemester-company-baseline-increment/1",
+  "base_code": "243f4ce03566765646800b74e3213a9a77565301",
+  "spec_revision": "sha256:1f3d9bad572ffee1b871490f4bc71ac7d18248723c27d54469b4710566e4bb70",
+  "code_revision": "sha256:c6336e2ed113b719af6d62d558e9ec5ead3633da31992ce5978a82aa80e3f208",
+  "assets": [
+    {
+      "path": "crates/rentemester-storage/src/company_baseline.rs",
+      "sha256": "4ab843f2365e87662c22572265a762e28727ea16d6da155a2379353af49b188b"
+    },
+    {
+      "path": "crates/rentemester-storage/src/migration.rs",
+      "sha256": "06698f6a3c7ce19260bd6adfc85f7ef683897f579f3dfde36465efd603ce0418"
+    },
+    {
+      "path": "crates/rentemester-storage/src/lib.rs",
+      "sha256": "57fe22fe4219371a0e41d047f0e806f8896e85a34efd7f69a591312b0f4ea6dc"
+    },
+    {
+      "path": "crates/rentemester-storage/src/snapshot.rs",
+      "sha256": "3c4cb8708c439c059b87c2692b26c62d927af4447080d808dea89c989e403c28"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-company-schemas.json",
+      "sha256": "00d56f9824da0ff7118a8e210dd834240d143072799df5c34dbbf7e25252849c"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-company-schemas.sha256",
+      "sha256": "7933e64d2eb9b612be397ba378a128c37943042b57380e5693431073a0f752f8"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "36d43b4674df07c858c22862be34a07f356b1ce03c7b762e869d8a6763083a65"
+    },
+    {
+      "path": "scripts/rust/company-schema-contract.ts",
+      "sha256": "9cd7f7c9da363a21c82513d2a7fdb1eb9a1e5ee34da8d3522d98495071676f7f"
+    },
+    {
+      "path": "scripts/rust/verify-company-baseline.ts",
+      "sha256": "1f7ac2d937a4ca3117379c2553175fb29e0d0d8e69ba762a034c7d028ff769de"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "f91c4eb56e690e09c5009ef03728ebbe942ef35f3415c999fdaea11b795adf61"
+    },
+    {
+      "path": "src/core/db.ts",
+      "sha256": "4654fcd01ea7906a01e4b6d7debf2b5cf75562b836ebaeb0e4e0da63ce0be8b8"
+    },
+    {
+      "path": "src/core/schema.sql",
+      "sha256": "00a425e5e0d08c93a989331f84749b2d8c20ec0fca9823cebf0b5182f31a1f3b"
+    },
+    {
+      "path": "src/core/companies-schema.ts",
+      "sha256": "583508d39ed8528b889924270173e961912a411a1b308ae3b01fe5639a39ce45"
+    },
+    {
+      "path": "src/core/schema-version.ts",
+      "sha256": "5b869123bccc0a38a8514d5e59b4807dea1d66c684431b03105cac5eb6fabdb2"
+    },
+    {
+      "path": "src/core/retention.ts",
+      "sha256": "4a05f2c64f1c0b0d2cc31539c2294ca557682329662974069917a9af4efa889d"
+    },
+    {
+      "path": "src/core/account-roles.ts",
+      "sha256": "1fc2ef2aee92918e479da0b27e64b5f80126ba65fb0815f71fc10289b0fe6d7c"
+    },
+    {
+      "path": "tests/unit/company-migration-immutability.test.ts",
+      "sha256": "e81d60521e90725553d292584175564936bd4c85376276c362c6f5c974b9c051"
+    },
+    {
+      "path": "src/core/migrations/0001-baseline.json",
+      "sha256": "6956ccf6f1bdb360abb5f166582075e6726ca01b75cdbb38dfcbbc500af16728"
+    },
+    {
+      "path": "src/core/migrations/0002-peppol-submission-events.json",
+      "sha256": "2f057c6c9d6285ee708056ff6a1048c30ce1da578de62d470965d0d64ad69744"
+    },
+    {
+      "path": "src/core/migrations/0003-recurring-automation.json",
+      "sha256": "cc6fc5abfbe81ebc20c72a4e6e4167033102585e441fbe65f64ef57d8dd48db0"
+    },
+    {
+      "path": "src/core/migrations/0004-dinero-import-provenance.json",
+      "sha256": "7fd903452593c334314462bd52f6609e22c6a771c0c7e80682dba2c97d06e5b8"
+    },
+    {
+      "path": "src/core/migrations/0005-migration-open-items.json",
+      "sha256": "082b8aea529dc4f7d825112ce743192a5b9d4a1daea68a73c7b410d08ed94549"
+    },
+    {
+      "path": "src/core/migrations/0006-bank-journal-reconciliation-links.json",
+      "sha256": "0f265c2da784e26d380351b32bc1af93ec17fbaf3b506120e4363dcb8bb384ff"
+    },
+    {
+      "path": "src/core/migrations/0007-document-scan-evidence.json",
+      "sha256": "0229f030127d6cf27091cd60363b9f731ce552c042b3037ca84401af0d2e2c23"
+    },
+    {
+      "path": "src/core/migrations/0008-issued-invoice-pdf-immutability.json",
+      "sha256": "d845f51395d2e57718b4314ad974429070a1304190c5cfb9f0b5cfd2cbc48f7b"
+    },
+    {
+      "path": "src/core/migrations/0009-accounting-draft-workflow.json",
+      "sha256": "a42abed893e67d753bd04ec02a65f002c8aa683023d1689ea17bc7c259082868"
+    },
+    {
+      "path": "src/core/migrations/0010-internal-voucher-evidence.json",
+      "sha256": "f59bbb6a5508542fd20251c0730e520beed0a55d6b4d5bf9b19bce8ee79bc47c"
+    },
+    {
+      "path": "src/core/migrations/0011-purchase-vat-preflight.json",
+      "sha256": "81c453572db4317dc07274ecf2e5511a32b06a2a4a967e3d89253ef9595acd28"
+    },
+    {
+      "path": "src/core/migrations/0012-posting-rules.json",
+      "sha256": "a2f166cd61e0575e130cc68673401631dc12059460dbf9966bdba0100ddb1009"
+    },
+    {
+      "path": "src/core/migrations/0013-bookkeeping-batches.json",
+      "sha256": "ca9ba9c93fdbe06cb386d2360bf9b4c1858eff6bd00442d4435d1901bff28960"
+    },
+    {
+      "path": "src/core/migrations/0014-invoice-extraction-evidence.json",
+      "sha256": "8888935cae0d7f824fe1df1702e17ff7b7e4670eb58787a3e983032e67762f26"
+    },
+    {
+      "path": "src/core/migrations/0015-bookkeeping-batch-retries.json",
+      "sha256": "cafeb1820ccf838b6f880d4a91a67ae776c4cfb32caa41a6496adbba6f8443dc"
+    },
+    {
+      "path": "src/core/migrations/0016-invoice-extraction-actors.json",
+      "sha256": "797a993d7a64e079c3cfeb8ec2f2fb6afb82f34fe3cd9f8c28a1ee4923ea73ed"
+    },
+    {
+      "path": "src/core/migrations/0017-document-pdf-parses.json",
+      "sha256": "7652ef9725a8dfb26aabb09e234e9916f47d14b52384cb467494be791fcee3d1"
+    },
+    {
+      "path": "src/core/migrations/0018-document-metadata-enrichments.json",
+      "sha256": "fb1b3657dfbf88d3b57234dbba7107cc9e889c6aaebab9baa263a9ee152b2cb6"
+    },
+    {
+      "path": "src/core/migrations/0019-document-company-contexts.json",
+      "sha256": "abf7eb8be59d256b253d9340929791ecafa6e34f310cd64c4f02502ad06a57bc"
+    },
+    {
+      "path": "src/core/migrations/0020-mutation-idempotency-receipts.json",
+      "sha256": "69ce065a316b622abdd19ff73a4ca70855d540b901e925d5176c056f8b6564f3"
+    },
+    {
+      "path": "src/core/migrations/0021-bookkeeping-batch-revisions.json",
+      "sha256": "90f29766dcf05100678d6a79e185e5315220aa7fa2884942d1ac3f3fac1a270c"
+    },
+    {
+      "path": "src/core/migrations/0022-period-close-readiness.json",
+      "sha256": "803a7be16e6d9f9a2fbc7cfa259e986aee140bfac9bc3ebe8c4ba228bf174b52"
+    },
+    {
+      "path": "src/core/migrations/0023-local-idempotency-tombstones.json",
+      "sha256": "3712c6083defe694350eb52dafc779a8193fca60558051d93a35210d004ab6d9"
+    },
+    {
+      "path": "src/core/migrations/0024-bookkeeping-batch-principals.json",
+      "sha256": "c4d3061f8bec76cd042b7aa542a271aed8b950132090e19e9c85b9df977516a3"
+    },
+    {
+      "path": "src/core/migrations/0025-period-close-reviews.json",
+      "sha256": "cb3bc9556c05e456943a520346d95c0c52aa95df9254af11aac2021226c6c848"
+    },
+    {
+      "path": "src/core/migrations/0026-document-party-links.json",
+      "sha256": "14183f81ac55c336441ef217492c1bb873356e5e3d979c94ae8b5f808e00e157"
+    },
+    {
+      "path": "src/core/migrations/0027-supplier-commitments.json",
+      "sha256": "520ee643532f0f2c74474f53639a7e1fb0959a7ef5a835c4d7f951707a7d4aed"
+    },
+    {
+      "path": "src/core/migrations/0028-accounting-dimensions.json",
+      "sha256": "47792cf3e31b1d2f8dd3a9a38cf3db8d7e7882ca3d8d799ba8b9d79d64b8f532"
+    },
+    {
+      "path": "src/core/migrations/0029-document-party-resolution.json",
+      "sha256": "148440875bf5b4c9a28274bac3b1ae5e3b511680bed27e8337e27ef3d7ba3abe"
+    },
+    {
+      "path": "src/core/migrations/0030-accounting-dimension-lifecycle.json",
+      "sha256": "b4b20e5939fee88fcf4d8fb46577600d03745e7e25aa5c0d7fd21f6f4608a921"
+    },
+    {
+      "path": "src/core/migrations/0031-supplier-commitment-occurrence-matches.json",
+      "sha256": "562db260cd2477560a990f92ea9d5e391ebe565ad12d2268b7f993ac3d5d9195"
+    },
+    {
+      "path": "src/core/migrations/0032-dimension-budget-and-provenance.json",
+      "sha256": "638fa1273bc722fc473579f0028a4913c598a2fea21985f649b3be779bb3a23b"
+    },
+    {
+      "path": "src/core/migrations/0033-bank-reconciliation-corrections.json",
+      "sha256": "bdf4715fd5a31c8ffb644ece98b92b163fa8f8e2e549795a8d65a25d1462e33b"
+    },
+    {
+      "path": "src/core/migrations/0034-direct-bank-purchase-payable-corrections.json",
+      "sha256": "76c03106346fda40df08e8f370a39577b228fb11dea552d8265d1bdec9fc7aed"
+    },
+    {
+      "path": "src/core/migrations/0035-bank-reconciliation-account-role-fallback.json",
+      "sha256": "0e77c291943dd51b91deca2583c9655c051b6170c95dd1238316620f17be6fbf"
+    },
+    {
+      "path": "src/core/migrations/0036-imported-receivables.json",
+      "sha256": "785396ccd7d7f1f340e89564b0ecffe4580fced541b7b85b878320216c7a549a"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/company-baseline/CONTRACT.md",
+      "sha256": "b87dc796c6f176b8c911c485565870c354f8ae548f3e2dad4ae047a793de602e"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/company-baseline/gdd.json",
+      "sha256": "db7516e7d4123a28bf986f55a0e727a3265eba1e4f5894378b0904011faecc6d"
+    }
+  ],
+  "state": "verified experimental normalized company bootstrap/early private rehearsal",
+  "platform": {
+    "os": "darwin",
+    "architecture": "arm64"
+  },
+  "commands": [
+    {
+      "command": "bun run rust:verify",
+      "result": "PASS",
+      "evidence": "rust-verify.txt",
+      "coverage": "26 Rust tests;3 ignored subprocess helpers selected by parents. New40 baseline checks plus prior34 report,31 wire,29 hash,10 lease,25 suffix and54 control checks. Format, strict Clippy, catalogue, image regeneration and boundaries."
+    },
+    {
+      "command": "bun run typecheck:runtime",
+      "result": "PASS",
+      "evidence": "typecheck.txt"
+    },
+    {
+      "command": "bun test tests/unit/company-migration-immutability.test.ts tests/unit/schema-version.test.ts tests/unit/purchase-vat-preflight.test.ts tests/unit/current-transaction-primitives.test.ts",
+      "result": "PASS",
+      "evidence": "legacy-tests.txt",
+      "coverage": "22 tests,83 expectations"
+    },
+    {
+      "command": "bunx biome lint scripts/rust tests/unit/company-migration-immutability.test.ts --error-on-warnings",
+      "result": "PASS",
+      "coverage": "13 files"
+    }
+  ],
+  "independent_review": {
+    "agent": "migration_port_research",
+    "mode": "Read-only source review, counterexample investigation and actual independent execution",
+    "finding": "Legacy artifact11 every-open restoration weakened strict purchase application update guard. Populated generation/rebuild coverage required strengthening.",
+    "repair": "Move strict guard restoration after artifact11 without changing any immutable JSON; seed real generation/claims, bookkeeping check rows for15, party links for29 and dimensions.",
+    "result": "No remaining material bounded finding. Independent final augmented40-check harness, four native tests with subprocess helper and16 targeted legacy tests PASS; schema image regenerated.",
+    "red_green": "legacy-guard-red.txt retains pre-fix0pass1fail; legacy-tests.txt retains final22pass regression run."
+  },
+  "design_review": {
+    "scope": [
+      "action.rehearse_company_baseline",
+      "component.storage"
+    ],
+    "model_revision": "sha256:1f3d9bad572ffee1b871490f4bc71ac7d18248723c27d54469b4710566e4bb70",
+    "code_revision": "sha256:c6336e2ed113b719af6d62d558e9ec5ead3633da31992ce5978a82aa80e3f208",
+    "KISS": "Fixed compiled DDL images and raw immutable artifacts; one transaction per step, no generic arbitrary-SQL migration API.",
+    "DRY": "Reuse owned private capture, strict history/schema, typed projection and cleanup. Generate from actual extracted TS stages instead of maintaining copied finalization SQL.",
+    "separation_of_concerns": "Public rehearsal returns scoped evidence; private native schema construction and data validation provide no writable runtime or promotion authority.",
+    "modularity": "Separate canonical early path and bounded existing suffix path; schema_scope states which guarantee applies.",
+    "locations": [
+      "crates/rentemester-storage/src/company_baseline.rs",
+      "crates/rentemester-storage/src/migration.rs",
+      "crates/rentemester-storage/src/lib.rs",
+      "crates/rentemester-storage/src/snapshot.rs",
+      "crates/rentemester-storage/src/legacy-company-schemas.json",
+      "crates/rentemester-storage/src/legacy-company-schemas.sha256",
+      "crates/rentemester-cli/src/main.rs",
+      "scripts/rust/company-schema-contract.ts",
+      "scripts/rust/verify-company-baseline.ts",
+      "scripts/rust/verify.ts",
+      "src/core/db.ts",
+      "src/core/schema.sql",
+      "src/core/companies-schema.ts",
+      "src/core/schema-version.ts",
+      "src/core/retention.ts",
+      "src/core/account-roles.ts",
+      "tests/unit/company-migration-immutability.test.ts"
+    ]
+  },
+  "limitations": [
+    "Existing empty source or complete canonical normalized early prefix1–31 only; not arbitrary historic baseline DATA normalization, retention/native-role seeding, old physical VAT/GDPR/customer/company variants or replay/adoption.",
+    "455-object final DDL equality qualifies normalized early path; existing32–36 suffix remains bounded subset, exposed by schema_scope.",
+    "No live/original writes, writer/adoption authority, full immutable domain acceptance, hardware power-loss or cross-platform qualification.",
+    "Historical suffix test labelled older history refuses still uses inconsistent physical32/history31; valid canonical31 now succeeds.",
+    "Named source hashes bind declared anchors, not full transitive application or R12 acceptance.",
+    "Full55-issue platform goal remains active; no issues closed."
+  ],
+  "verification_repairs": [
+    "Initial parity oracle copied final guard SQL with different whitespace; replace copy with real finalizeCompanySchema extraction. Exact DDL acceptance preserved."
+  ]
+}

@@ -1,0 +1,27 @@
+bun test v1.4.0 (34cbb9a40)
+
+tests/unit/company-migration-immutability.test.ts:
+ 7 |   try {
+ 8 |     migrate(db);
+ 9 |     db.exec("INSERT INTO documents(id,source,sha256_hash) VALUES(1,'synthetic','synthetic-application');INSERT INTO purchase_posting_applications(id,document_id,application_key,status) VALUES(1,1,'synthetic-original','started')");
+10 |     for (let open=0;open<2;open++) {
+11 |       migrate(db);
+12 |       expect(() => db.exec("UPDATE purchase_posting_applications SET application_key='synthetic-tampered' WHERE id=1")).toThrow("append-only");
+                                                                                                                             ^
+error: expect(received).toThrow(expected)
+
+Expected substring: "append-only"
+
+Received function did not throw
+Received value: {
+  changes: 1,
+  lastInsertRowid: 1,
+}
+
+      at <anonymous> (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/tests/unit/company-migration-immutability.test.ts:12:121)
+(fail) routine migration keeps legacy started purchase applications immutable [130.58ms]
+
+ 0 pass
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [152.00ms]

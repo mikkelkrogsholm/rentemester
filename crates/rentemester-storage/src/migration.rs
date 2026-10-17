@@ -24,7 +24,7 @@ struct Step {
     identity: Migration,
     sql: String,
 }
-#[derive(Debug, Serialize, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct SchemaObject {
     pub(super) kind: String,
     pub(super) name: String,
@@ -33,20 +33,21 @@ pub struct SchemaObject {
 }
 #[derive(Debug, Serialize)]
 pub struct AppliedMigration {
-    id: i64,
-    name: String,
-    checksum: String,
+    pub(super) id: i64,
+    pub(super) name: String,
+    pub(super) checksum: String,
 }
 #[derive(Debug, Serialize)]
 pub struct RehearsalReport {
-    from_version: usize,
-    to_version: usize,
-    applied: Vec<AppliedMigration>,
-    affected_schema: Vec<SchemaObject>,
-    business_data_digest_before: String,
-    business_data_digest_after: String,
-    private_copy_discarded: bool,
-    writer_authority: bool,
+    pub(super) schema_scope: &'static str,
+    pub(super) from_version: usize,
+    pub(super) to_version: usize,
+    pub(super) applied: Vec<AppliedMigration>,
+    pub(super) affected_schema: Vec<SchemaObject>,
+    pub(super) business_data_digest_before: String,
+    pub(super) business_data_digest_after: String,
+    pub(super) private_copy_discarded: bool,
+    pub(super) writer_authority: bool,
 }
 fn unsupported(message: impl Into<String>) -> Error {
     Error::new("unsupported_schema", message)
@@ -216,13 +217,44 @@ fn business_tables(db: &Connection) -> Result<Vec<String>, Error> {
         .map(|o| o.name)
         .collect())
 }
+pub(super) fn projection(
+    db: &Connection,
+    tables: &[String],
+) -> Result<Vec<(String, Vec<String>)>, Error> {
+    tables
+        .iter()
+        .map(|table| {
+            let q = db
+                .prepare(&format!("SELECT * FROM {}", quote(table)))
+                .map_err(invalid)?;
+            Ok((
+                table.clone(),
+                q.column_names().into_iter().map(str::to_owned).collect(),
+            ))
+        })
+        .collect()
+}
 pub(super) fn digest(db: &Connection, tables: &[String]) -> Result<String, Error> {
+    project_digest(db, &projection(db, tables)?)
+}
+pub(super) fn project_digest(
+    db: &Connection,
+    tables: &[(String, Vec<String>)],
+) -> Result<String, Error> {
     let mut total = Sha256::new();
-    for table in tables {
+    for (table, selected) in tables {
         total.update((table.len() as u64).to_le_bytes());
         total.update(table.as_bytes());
         let mut query = db
-            .prepare(&format!("SELECT * FROM {}", quote(table)))
+            .prepare(&format!(
+                "SELECT {} FROM {}",
+                selected
+                    .iter()
+                    .map(|c| quote(c))
+                    .collect::<Vec<_>>()
+                    .join(","),
+                quote(table)
+            ))
             .map_err(invalid)?;
         let columns = query.column_count();
         let mut rows = query.query([]).map_err(invalid)?;
@@ -310,6 +342,7 @@ fn rehearse(
         ));
     }
     Ok(RehearsalReport {
+        schema_scope: "suffix33-36",
         from_version: old.len(),
         to_version: 36,
         applied,
@@ -324,7 +357,18 @@ fn rehearse(
 pub fn rehearse_company_migration(company: &Path) -> Result<RehearsalReport, Error> {
     let expected = catalogue()?;
     let steps = steps(&ARTIFACTS, &expected)?;
-    Snapshot::capture_unvalidated(company)?.with_writable_copy(|db| rehearse(db, &steps, &expected))
+    Snapshot::capture_unvalidated(company)?.with_writable_copy(|db| {
+        let prefix = if schema(db)?.is_empty() {
+            0
+        } else {
+            strict_history(db, "schema_migrations", &expected)?.len()
+        };
+        if prefix < 32 {
+            crate::company_baseline::rehearse(db)
+        } else {
+            rehearse(db, &steps, &expected)
+        }
+    })
 }
 
 #[cfg(test)]
