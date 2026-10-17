@@ -1,0 +1,158 @@
+[
+  {
+    "name": "annual-report",
+    "version": "dk-annual-report-v0.0.1",
+    "ruleIds": [
+      "DK-ANNUAL-REPORT-CLASS-B-001",
+      "DK-ANNUAL-REPORT-IXBRL-002"
+    ]
+  },
+  {
+    "name": "bank",
+    "version": "dk-bank-v0.0.2",
+    "ruleIds": [
+      "DK-BANK-BALANCE-CONTINUITY-001"
+    ]
+  },
+  {
+    "name": "bookkeeping",
+    "version": "dk-bookkeeping-v0.0.8",
+    "ruleIds": [
+      "DK-BOOKKEEPING-BALANCED-001",
+      "DK-BOOKKEEPING-APPEND-ONLY-001",
+      "DK-BOOKKEEPING-REVERSAL-001",
+      "DK-BOOKKEEPING-DOCUMENT-001",
+      "DK-BOOKKEEPING-BANK-IMPORT-001",
+      "DK-BOOKKEEPING-RECONCILIATION-001",
+      "DK-BOOKKEEPING-FX-001",
+      "DK-BOOKKEEPING-BACKUP-001",
+      "DK-BOOKKEEPING-BACKUP-DEST-001",
+      "DK-BOOKKEEPING-BACKUP-KEY-ROTATE-001",
+      "DK-BOOKKEEPING-AUTHORITY-EXPORT-001",
+      "DK-BOOKKEEPING-SAFT-EXPORT-001",
+      "DK-BOOKKEEPING-RESTORE-001",
+      "DK-BOOKKEEPING-PERIOD-LOCK-001",
+      "DK-BOOKKEEPING-RETENTION-001",
+      "DK-ASSET-DEPR-001",
+      "DK-ASSET-WRITEOFF-001",
+      "DK-BOOKKEEPING-ACCRUAL-001",
+      "DK-PAYABLE-001",
+      "DK-CHART-OF-ACCOUNTS-ADD-001",
+      "DK-PAYABLE-PAYMENT-001"
+    ]
+  },
+  {
+    "name": "documents",
+    "version": "dk-documents-v0.0.3",
+    "ruleIds": [
+      "DK-DOCUMENT-STORAGE-001",
+      "DK-DOCUMENT-CASH-RECEIPT-001",
+      "DK-DOCUMENT-FOREIGN-PHYSICAL-001",
+      "DK-DOCUMENT-INTEGRITY-001",
+      "DK-MASTER-DATA-VENDOR-001"
+    ]
+  },
+  {
+    "name": "email",
+    "version": "dk-email-v0.0.2",
+    "ruleIds": [
+      "DK-EMAIL-DELIVERY-001"
+    ]
+  },
+  {
+    "name": "gdpr",
+    "version": "dk-gdpr-v0.0.1",
+    "ruleIds": [
+      "GDPR-SUBJECT-EXPORT",
+      "GDPR-RETENTION-BOUNDED-ERASURE"
+    ]
+  },
+  {
+    "name": "invoices",
+    "version": "dk-invoices-v0.0.11",
+    "ruleIds": [
+      "DK-INVOICE-FULL-001",
+      "DK-INVOICE-SIMPLIFIED-001",
+      "DK-INVOICE-REVERSE-CHARGE-001",
+      "DK-INVOICE-REVERSE-CHARGE-BASIS-001",
+      "DK-INVOICE-DELIVERY-DATE-001",
+      "DK-INVOICE-ARITHMETIC-001",
+      "DK-INVOICE-ISSUE-001",
+      "DK-MASTER-DATA-CUSTOMER-001",
+      "DK-INVOICE-PUBLIC-RECIPIENT-001",
+      "DK-INVOICE-PUBLIC-EXPORT-001",
+      "DK-INVOICE-PUBLIC-OIOUBL-001",
+      "DK-INVOICE-DUE-DATE-001",
+      "DK-INVOICE-LATE-INTEREST-001",
+      "DK-INVOICE-LATE-INTEREST-REGISTER-001",
+      "DK-INVOICE-LATE-INTEREST-BOOKKEEPING-001",
+      "DK-INVOICE-REMINDER-FEE-001",
+      "DK-INVOICE-REMINDER-FEE-BOOKKEEPING-001",
+      "DK-INVOICE-LATE-COMPENSATION-001",
+      "DK-INVOICE-LATE-COMPENSATION-REGISTER-001",
+      "DK-INVOICE-LATE-COMPENSATION-BOOKKEEPING-001",
+      "DK-INVOICE-BOOKKEEPING-001",
+      "DK-INVOICE-BOOKKEEPING-REVERSE-002",
+      "DK-INVOICE-SETTLEMENT-001",
+      "DK-INVOICE-CLAIM-SETTLEMENT-001",
+      "DK-INVOICE-COMBINED-SETTLEMENT-001",
+      "DK-INVOICE-PAYMENT-001",
+      "DK-INVOICE-FX-REALISED-001",
+      "DK-INVOICE-CORRECTION-BALANCE-001",
+      "DK-CREDIT-NOTE-001",
+      "DK-INVOICE-REFUND-001",
+      "DK-INVOICE-BAD-DEBT-WRITEOFF-001",
+      "DK-INVOICE-LOCK-001",
+      "DK-INVOICE-PREVIEW-001",
+      "DK-RECURRING-INVOICE-TEMPLATE-001",
+      "DK-RECURRING-INVOICE-GENERATE-001"
+    ]
+  },
+  {
+    "name": "mail-intake",
+    "version": "dk-mail-intake-v0.0.3",
+    "ruleIds": [
+      "DK-MAIL-INTAKE-TRANSPORT-001",
+      "DK-MAIL-INTAKE-DEDUP-001",
+      "DK-MAIL-INTAKE-EXCEPTION-001"
+    ]
+  },
+  {
+    "name": "mileage",
+    "version": "dk-mileage-v0.0.2",
+    "ruleIds": [
+      "DK-MILEAGE-LOG-001"
+    ]
+  },
+  {
+    "name": "peppol",
+    "version": "dk-peppol-v0.0.4",
+    "ruleIds": [
+      "DK-PEPPOL-SUBMIT-001"
+    ]
+  },
+  {
+    "name": "tax-return",
+    "version": "dk-tax-return-v0.0.1",
+    "ruleIds": [
+      "DK-TAX-RETURN-CORP-001"
+    ]
+  },
+  {
+    "name": "vat",
+    "version": "dk-vat-v0.0.5",
+    "ruleIds": [
+      "DK-VAT-SEPARATE-AMOUNT-001",
+      "DK-VAT-REPORT-001",
+      "DK-VAT-REVERSE-CHARGE-001",
+      "DK-VAT-NON-EU-SERVICE-REVERSE-CHARGE-001",
+      "DK-VAT-REPRESENTATION-001",
+      "DK-VAT-BAD-DEBT-001",
+      "DK-VAT-FILING-001",
+      "DK-VAT-EU-SALES-LIST-001",
+      "DK-VAT-OSS-001",
+      "DK-VAT-REGISTRATION-001",
+      "DK-VAT-NON-DEDUCTIBLE-001"
+    ]
+  }
+]

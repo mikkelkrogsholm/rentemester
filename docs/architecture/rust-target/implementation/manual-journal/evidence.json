@@ -1,0 +1,654 @@
+{
+  "format": "rentemester-manual-journal-increment/1",
+  "base_code": "138cee53a6fbe7e538ed1dbbda37d31cfc819161",
+  "previous_goal_turn": "Progress:138cee53 exact arithmetic delivered/pushed with all checks;reconciled owned-clean branch before extending shared engine into manual journal invariants.",
+  "spec_revision": "sha256:fa593f114e03367fe55ce4e7583cd7f3c27cdebe6c1f728a90bd4dd6cb224834",
+  "code_revision": "sha256:a637a8618026b31dddfb40bccd6963faccad43766d93b9fbf487fc1c99d9f9f6",
+  "assets": [
+    {
+      "path": "crates/rentemester-cli/tests/manual_journal_vectors.rs",
+      "sha256": "100281025170333805c49c98c234a28c4e48d44ce9f711bcb9abb9faf32c29f7"
+    },
+    {
+      "path": "crates/rentemester-engine/Cargo.toml",
+      "sha256": "888de533b1fa8cc359b7677d155956c39b1383099d91636396cd1ee1a60bf5cb"
+    },
+    {
+      "path": "crates/rentemester-engine/src/fiscal_year.rs",
+      "sha256": "695bcddf67ff6365c6600c19bb5729ce95efdd48a67ab33b6f76c91c48d47988"
+    },
+    {
+      "path": "crates/rentemester-engine/src/fx.rs",
+      "sha256": "3a324c09052c99ccb9adaf4ce5515a2070349e498f0ba32a72b965e96caa3db9"
+    },
+    {
+      "path": "crates/rentemester-engine/src/identifiers.rs",
+      "sha256": "530e4467ea2f2e7bb2e0fcdd9969fa82b60b407a6d4a889e7b285caf49ec1854"
+    },
+    {
+      "path": "crates/rentemester-engine/src/journal_rules.rs",
+      "sha256": "91656adb48a84c0dbeccf0299b25138aab5ecf20f7bfd837b71100ba4edb95e3"
+    },
+    {
+      "path": "crates/rentemester-engine/src/lib.rs",
+      "sha256": "711140e55d9c1590244b776f6097e51f8a6b9bd6ac9a0524cef013468580a662"
+    },
+    {
+      "path": "crates/rentemester-engine/src/manual_journal.rs",
+      "sha256": "6ad6c3d386e30d73f4063f51926c6f4993eb53d7a376bd1185d27d0eda39891b"
+    },
+    {
+      "path": "crates/rentemester-engine/src/money.rs",
+      "sha256": "5d69282ed77ea59f98a9af6bf492427f8f3d478f654712cbfb3b36222fdd661f"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/manual-journal/CONTRACT.md",
+      "sha256": "2eb71e8c992e9a9b8c6c9bcfc0b486fc3233b6f2ca33a8100f36d1824bffd6db"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/manual-journal/gdd.json",
+      "sha256": "e3335c8eb37d7b8813ab6ab3c6a44256f2c35721b5d43461ebba3f08e21d159d"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/manual-journal/legacy-observations.jsonl",
+      "sha256": "9aca581280e42a353485530c9b8f5af6e451334d62c59c880eb7e6ef67544999"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/manual-journal/rule-bundles.json",
+      "sha256": "619257c2a2e0f3c40a96707e7ced8b718ffac50db12f6d80872ed109c882bbbc"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/manual-journal/vectors-manifest.json",
+      "sha256": "1dcdd04d2331ef7011c80dbe454127462386087a05a8262b2055197439b7866d"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/manual-journal/vectors.jsonl",
+      "sha256": "3d46afbb97a730102f2628096b5d10003f8b4bbe262ad2efcea41c8855d03b41"
+    },
+    {
+      "path": "rules/dk/annual-report.yaml",
+      "sha256": "627cbd14566c25c6af721cbf1d9155d323b57190ed32100c3c07bc1011897bdd"
+    },
+    {
+      "path": "rules/dk/bank.yaml",
+      "sha256": "e6d0a7698f37eeddcbdb8f97a9e298724761397b89e262752627a57943660d32"
+    },
+    {
+      "path": "rules/dk/bookkeeping.yaml",
+      "sha256": "c5da16145517d85b4cb312dba2839e4db4cfbcdc0ef4e0afe16cfa60065849fa"
+    },
+    {
+      "path": "rules/dk/documents.yaml",
+      "sha256": "45c778cd433a492064992bda78b1d16dc9dec7fce18e1c0d7416f5ac6806ada7"
+    },
+    {
+      "path": "rules/dk/email.yaml",
+      "sha256": "ce7536da76f29f8f97d59771ffc631b34ce84d8fe2ee1ec91820da5fe6c316db"
+    },
+    {
+      "path": "rules/dk/gdpr.yaml",
+      "sha256": "ed039f201788ce117b907bbbcc87368888a7706bedc2e2a2346affecfd92fad0"
+    },
+    {
+      "path": "rules/dk/invoices.yaml",
+      "sha256": "593d1eac852ebf54b87693ebd06bd64d962a54944725de34859f2863664fa45c"
+    },
+    {
+      "path": "rules/dk/mail-intake.yaml",
+      "sha256": "baafca8767aab79c5a9a630cfef5df35c925338f13713970df56ef6141488e88"
+    },
+    {
+      "path": "rules/dk/mileage.yaml",
+      "sha256": "c60681e62f342e87cd3b2dba9495080ed61276ed927f491eb593d577acb744db"
+    },
+    {
+      "path": "rules/dk/peppol.yaml",
+      "sha256": "c7d3673ca6a71bd93364b54615155186229839236ea2ed4237a42f238957b0fe"
+    },
+    {
+      "path": "rules/dk/tax-return.yaml",
+      "sha256": "dce49372bfbb8fc651fa961dd9611074f42dbc7d36fdbfeb92395d6af26f109a"
+    },
+    {
+      "path": "rules/dk/vat.yaml",
+      "sha256": "cdf5d578f044e38f898393506c54001155c8543485efe85ed8cf39ed51db0ebb"
+    },
+    {
+      "path": "scripts/rust/check-boundaries.ts",
+      "sha256": "06b1a41c73167c56eb88ff23aa15f9f75c32203084f3ed9b5a0998b5a232db0c"
+    },
+    {
+      "path": "scripts/rust/manual-journal-vectors.py",
+      "sha256": "54b19868666ecefa2dbd4ade545a030c71e11b7f11b229a7ab236b65fd6ef01b"
+    },
+    {
+      "path": "scripts/rust/verify-manual-journal.ts",
+      "sha256": "291d9a867fb89503a16900f7da1203c88c2dbfcca154bc6bdfe52243a2f74212"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "97bd8450ecdb3236fb9b920fd4b2394eab216e8689eaea6df37621732f99814a"
+    },
+    {
+      "path": "src/core/ids.ts",
+      "sha256": "355c8ff7a7ece424fab05c55dac89da9f6d99a1a44d612cb9d7145337d9968ce"
+    },
+    {
+      "path": "src/core/import-provenance.ts",
+      "sha256": "d7162a3af7abb4ecd608d660ab8bc6875aa1c697fce97f0562f1652c1690b2f4"
+    },
+    {
+      "path": "src/core/ledger.ts",
+      "sha256": "605cfbe6b7800cf789d0a9b773f70fe43ebd54fdd965b4841f2e50ab4dd0cfbe"
+    },
+    {
+      "path": "src/core/periods.ts",
+      "sha256": "1f9cbcaf2d99a9235ef5123d874f98f0bcad91dbcc8bbafe428e67ce239e8cc2"
+    },
+    {
+      "path": "src/core/rules-metadata.ts",
+      "sha256": "a1f50c600609a5dc9f281a6fecef838f01ed11a686b4233b8dfa823b32ccdd65"
+    },
+    {
+      "path": "src/core/vat-account-semantics.ts",
+      "sha256": "e334765f1b45dc267779e01fd4cd5bb82b22acd8e32dbbea854e9048ee93ed32"
+    }
+  ],
+  "commands": [
+    {
+      "command": "bun run rust:verify",
+      "result": "PASS",
+      "evidence": "rust-verify.txt",
+      "coverage": "55 Rust tests;10 ignored helpers explicitly selected;7250 previous integration checks retained plus211 manual checks=7461"
+    },
+    {
+      "command": "cargo test --locked -p rentemester-engine",
+      "result": "PASS",
+      "evidence": "native-engine.txt",
+      "coverage": "14 tests including exact nominal identifier grammar/range/account reference test"
+    },
+    {
+      "command": "cargo test --locked -p rentemester-cli --test manual_journal_vectors",
+      "result": "PASS",
+      "evidence": "serde.txt",
+      "coverage": "1 strict identifier serde test;corpus helper selected explicitly by harness"
+    },
+    {
+      "command": "python3 scripts/rust/manual-journal-vectors.py --check",
+      "result": "PASS",
+      "evidence": "generator-check.txt",
+      "coverage": "210 independently authored expected projections,Decimal exact sum vectors and fixed bundle/corpus hashes"
+    },
+    {
+      "command": "bun run scripts/rust/verify-manual-journal.ts",
+      "result": "PASS",
+      "evidence": "parity.json",
+      "coverage": "210 native fixed cases in2 environments,171 actual legacy cases with canonical source preservation and exact frozen diagnostics"
+    },
+    {
+      "command": "bun test tests/unit/journal-post.test.ts tests/unit/journal-post-fx.test.ts tests/unit/ledger-hardening.test.ts tests/unit/rules-metadata.test.ts",
+      "result": "PASS",
+      "evidence": "legacy-tests.txt",
+      "coverage": "25 tests/202 expectations across4 files"
+    },
+    {
+      "command": "bunx biome lint scripts/rust/verify-manual-journal.ts scripts/rust/verify.ts --error-on-warnings",
+      "result": "PASS",
+      "evidence": "lint.txt"
+    }
+  ],
+  "independent_review": {
+    "agent": "migration_port_research",
+    "mode": "Read-only source/contract/policy/typed identity/context/boundary review;independent generator,engine,serde and complete parity execution",
+    "result": "All checks PASS;no material remaining bounded defect",
+    "evidence": [
+      "engine-independent.txt",
+      "serde-independent.txt",
+      "parity-independent.txt",
+      "generator-independent.txt"
+    ],
+    "review_repairs": [
+      "Added independently fixed exact blocker messages/reference for period-order andUnicode/NULreference,asserted on native and actualTS. Code/field alone did not prove which blocking row won.",
+      "Diagnostic presentation is explicit:typed projection parity plus full frozen actual source/native messages,not byte-compatible message claims."
+    ]
+  },
+  "design_review": {
+    "scope": [
+      "action.manual_journal",
+      "action.rule_version",
+      "component.domain"
+    ],
+    "model_revision": "sha256:fa593f114e03367fe55ce4e7583cd7f3c27cdebe6c1f728a90bd4dd6cb224834",
+    "code_revision": "sha256:a637a8618026b31dddfb40bccd6963faccad43766d93b9fbf487fc1c99d9f9f6",
+    "KISS": "One direct manual validator over explicit typed inputs/facts;no policy framework,clock,SQL,source loader,endpoint or dependency added.",
+    "DRY": "Reuse existing exact Money/FxRate/Date/Currency;small nominal signedID macro shares identical canonical signed64 contract. One compiled version gate andVAT vocabulary.",
+    "separation_of_concerns": "Domain evaluates facts;application owns provenance,authority,snapshot collection and transactional revalidation. Storage must enforce append-only and commit invariants.",
+    "modularity": "Identifiers,compiled manual metadata and manual validation are cohesive engine modules;fixture I/O remains only in CLI integration-test adapter."
+  },
+  "correction_examples": [
+    {
+      "vector_id": "balanced",
+      "fixed_expectation": "vectors.jsonl#balanced",
+      "observation": {
+        "id": "balanced",
+        "classification": "match",
+        "bridge": {
+          "lines[0].debitAmount": "10",
+          "lines[1].creditAmount": "10"
+        },
+        "legacy": {
+          "ok": true,
+          "appliedRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001"
+          ],
+          "errors": []
+        },
+        "native": {
+          "errors": [],
+          "ok": true,
+          "requiredRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001"
+          ],
+          "requiredStorageRules": [
+            "DK-BOOKKEEPING-APPEND-ONLY-001"
+          ],
+          "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+          "totalCredit": "10.00",
+          "totalDebit": "10.00"
+        }
+      }
+    },
+    {
+      "vector_id": "period-order",
+      "fixed_expectation": "vectors.jsonl#period-order",
+      "observation": {
+        "id": "period-order",
+        "classification": "match",
+        "bridge": {
+          "lines[0].debitAmount": "10",
+          "lines[1].creditAmount": "10"
+        },
+        "legacy": {
+          "ok": false,
+          "appliedRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001"
+          ],
+          "errors": [
+            "transactionDate 2026-02-01 falls in reported period fiscal_year 2026-01-01..2026-06-30"
+          ]
+        },
+        "native": {
+          "errors": [
+            {
+              "code": "period_locked",
+              "field": "transactionDate",
+              "message": "transactionDate 2026-02-01 falls in reported period fiscal_year 2026-01-01..2026-06-30"
+            }
+          ],
+          "ok": false,
+          "requiredRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001"
+          ],
+          "requiredStorageRules": [
+            "DK-BOOKKEEPING-APPEND-ONLY-001"
+          ],
+          "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+          "totalCredit": "10.00",
+          "totalDebit": "10.00"
+        }
+      }
+    },
+    {
+      "vector_id": "period-lock",
+      "fixed_expectation": "vectors.jsonl#period-lock",
+      "observation": {
+        "id": "period-lock",
+        "classification": "match",
+        "bridge": {
+          "lines[0].debitAmount": "10",
+          "lines[1].creditAmount": "10"
+        },
+        "legacy": {
+          "ok": false,
+          "appliedRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001"
+          ],
+          "errors": [
+            "transactionDate 2026-02-01 falls in closed period custom 2026-01-01..2026-12-31 ref x\u0000æ"
+          ]
+        },
+        "native": {
+          "errors": [
+            {
+              "code": "period_locked",
+              "field": "transactionDate",
+              "message": "transactionDate 2026-02-01 falls in closed period custom 2026-01-01..2026-12-31 ref x\u0000æ"
+            }
+          ],
+          "ok": false,
+          "requiredRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001"
+          ],
+          "requiredStorageRules": [
+            "DK-BOOKKEEPING-APPEND-ONLY-001"
+          ],
+          "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+          "totalCredit": "10.00",
+          "totalDebit": "10.00"
+        }
+      }
+    },
+    {
+      "vector_id": "document-0",
+      "fixed_expectation": "vectors.jsonl#document-0",
+      "observation": {
+        "id": "document-0",
+        "classification": "difference",
+        "bridge": {
+          "documentId": "0",
+          "lines[0].debitAmount": "10",
+          "lines[1].creditAmount": "10"
+        },
+        "legacy": {
+          "ok": false,
+          "appliedRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001",
+            "DK-BOOKKEEPING-DOCUMENT-001"
+          ],
+          "errors": [
+            "documentId is required when posting expense or income lines"
+          ]
+        },
+        "native": {
+          "errors": [],
+          "ok": true,
+          "requiredRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001",
+            "DK-BOOKKEEPING-DOCUMENT-001"
+          ],
+          "requiredStorageRules": [
+            "DK-BOOKKEEPING-APPEND-ONLY-001"
+          ],
+          "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+          "totalCredit": "10.00",
+          "totalDebit": "10.00"
+        }
+      }
+    },
+    {
+      "vector_id": "document-9007199254740993",
+      "fixed_expectation": "vectors.jsonl#document-9007199254740993",
+      "observation": {
+        "id": "document-9007199254740993",
+        "classification": "difference",
+        "bridge": {
+          "documentId": "9007199254740992",
+          "lines[0].debitAmount": "10",
+          "lines[1].creditAmount": "10"
+        },
+        "legacy": {
+          "ok": false,
+          "appliedRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001",
+            "DK-BOOKKEEPING-DOCUMENT-001"
+          ],
+          "errors": [
+            "documentId 9007199254740992 does not exist"
+          ]
+        },
+        "native": {
+          "errors": [],
+          "ok": true,
+          "requiredRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001",
+            "DK-BOOKKEEPING-DOCUMENT-001"
+          ],
+          "requiredStorageRules": [
+            "DK-BOOKKEEPING-APPEND-ONLY-001"
+          ],
+          "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+          "totalCredit": "10.00",
+          "totalDebit": "10.00"
+        }
+      }
+    },
+    {
+      "vector_id": "bank-missing-0",
+      "fixed_expectation": "vectors.jsonl#bank-missing-0",
+      "observation": {
+        "id": "bank-missing-0",
+        "classification": "difference",
+        "bridge": {
+          "sourceBankTransactionId": "0",
+          "lines[0].debitAmount": "10",
+          "lines[1].creditAmount": "10"
+        },
+        "legacy": {
+          "ok": true,
+          "appliedRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001"
+          ],
+          "errors": []
+        },
+        "native": {
+          "errors": [
+            {
+              "code": "bank_missing",
+              "field": "sourceBankTransactionId",
+              "message": "sourceBankTransactionId 0 does not exist"
+            }
+          ],
+          "ok": false,
+          "requiredRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001"
+          ],
+          "requiredStorageRules": [
+            "DK-BOOKKEEPING-APPEND-ONLY-001"
+          ],
+          "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+          "totalCredit": "10.00",
+          "totalDebit": "10.00"
+        }
+      }
+    },
+    {
+      "vector_id": "fx-exact-half-correction",
+      "fixed_expectation": "vectors.jsonl#fx-exact-half-correction",
+      "observation": {
+        "id": "fx-exact-half-correction",
+        "classification": "difference",
+        "bridge": {
+          "amountForeign": "1.15",
+          "amountDkk": "0.12",
+          "fxRateToDkk": "0.1",
+          "lines[0].debitAmount": "10",
+          "lines[1].creditAmount": "10"
+        },
+        "legacy": {
+          "ok": false,
+          "appliedRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001",
+            "DK-BOOKKEEPING-FX-001"
+          ],
+          "errors": [
+            "amountDkk must equal amountForeign * fxRateToDkk (0.11)"
+          ]
+        },
+        "native": {
+          "errors": [],
+          "ok": true,
+          "requiredRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001",
+            "DK-BOOKKEEPING-FX-001"
+          ],
+          "requiredStorageRules": [
+            "DK-BOOKKEEPING-APPEND-ONLY-001"
+          ],
+          "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+          "totalCredit": "10.00",
+          "totalDebit": "10.00"
+        }
+      }
+    },
+    {
+      "vector_id": "fx-binary-old-half-refused",
+      "fixed_expectation": "vectors.jsonl#fx-binary-old-half-refused",
+      "observation": {
+        "id": "fx-binary-old-half-refused",
+        "classification": "difference",
+        "bridge": {
+          "amountForeign": "1.15",
+          "amountDkk": "0.11",
+          "fxRateToDkk": "0.1",
+          "lines[0].debitAmount": "10",
+          "lines[1].creditAmount": "10"
+        },
+        "legacy": {
+          "ok": true,
+          "appliedRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001",
+            "DK-BOOKKEEPING-FX-001"
+          ],
+          "errors": []
+        },
+        "native": {
+          "errors": [
+            {
+              "code": "fx_amount_mismatch",
+              "field": "amountDkk",
+              "message": "amountDkk must equal amountForeign * fxRateToDkk (0.12)"
+            }
+          ],
+          "ok": false,
+          "requiredRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001",
+            "DK-BOOKKEEPING-FX-001"
+          ],
+          "requiredStorageRules": [
+            "DK-BOOKKEEPING-APPEND-ONLY-001"
+          ],
+          "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+          "totalCredit": "10.00",
+          "totalDebit": "10.00"
+        }
+      }
+    },
+    {
+      "vector_id": "exact-sum-100",
+      "fixed_expectation": "vectors.jsonl#exact-sum-100",
+      "observation": {
+        "id": "exact-sum-100",
+        "classification": "difference",
+        "bridge": {
+          "lines[0].debitAmount": "9007199254740994",
+          "lines[1].debitAmount": "0.01",
+          "lines[2].debitAmount": "0.01",
+          "lines[3].creditAmount": "9007199254740994"
+        },
+        "legacy": {
+          "ok": false,
+          "appliedRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001"
+          ],
+          "errors": [
+            "journal entry must balance: debit 9007199254740994 != credit 9007199254740994"
+          ]
+        },
+        "native": {
+          "errors": [],
+          "ok": true,
+          "requiredRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001"
+          ],
+          "requiredStorageRules": [
+            "DK-BOOKKEEPING-APPEND-ONLY-001"
+          ],
+          "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+          "totalCredit": "9007199254740993.03",
+          "totalDebit": "9007199254740993.03"
+        }
+      }
+    },
+    {
+      "vector_id": "rules-stale",
+      "fixed_expectation": "vectors.jsonl#rules-stale",
+      "observation": {
+        "id": "rules-stale",
+        "classification": "native_only",
+        "native": {
+          "error": "rule_version_mismatch"
+        }
+      }
+    },
+    {
+      "vector_id": "manual-stale",
+      "fixed_expectation": "vectors.jsonl#manual-stale",
+      "observation": {
+        "id": "manual-stale",
+        "classification": "native_only",
+        "native": {
+          "error": "rule_version_mismatch"
+        }
+      }
+    }
+  ],
+  "verification_notes": [
+    "readiness.json is retained UNKNOWN from an incorrect directory invocation,not an implementation-ready proof. Correct gdd.json invocation readiness-v2 passed before implementation.",
+    "gdd-v1 preserves original model. Current readiness-v3 names actual typed business codes and distinguishes Validation.ok=false from construction/context/version Result errors;normative CONTRACT unchanged.",
+    "Native business expectations fixed independently before invoking implementations. Later source runs corrected only explicit legacy classifications for full-width/zero IDs; native expected results were never weakened.",
+    "First actual source mismatches document9007199254740993 and signed64min exposed expected Number/query bridge differences;current12 deliberate differences are explicit and frozen. TypeScript production behavior is unchanged.",
+    "Normal harness requires exact observation bytes;capture creates an absent file only after all native and actual source comparisons pass.",
+    "Canonical source bytes,total_changes and schema/guard equality are checked per actual source case. Period reported rows retain terminal status despite a synthetic later reopen event;effectiveopen facts replay a storedclosed row reopen.",
+    "Saved terminal logs remove trailing blank lines only;fixed JSONL/corpus bytes remain exact."
+  ],
+  "limitations": [
+    "Trusted synthetic fact snapshots only; no production fact collector, audit replay port or admitted writer transaction",
+    "Legacy parity compares outcomes, rule IDs and ordered violation code/field; all actual message text and numeric bridges are retained exactly, not claimed byte-compatible",
+    "Native-only strict serde/context/version/identifier cases have no equivalent legacy policy operation",
+    "Known manual bookkeeping/VAT versions only; version metadata is not a source content checksum or legal-source verification",
+    "No mutation endpoint, historical/reversal privilege, invoice evidence, full R09/R12 acceptance, clients/distribution or cutover",
+    "Facts are trusted in-process snapshots;their completeness/provenance,stable physical/logical ledger identity,period lifecycle replay and transaction-bound revalidation remain application/storage work. Pure ok is not a posting permit.",
+    "Exact row IDs cover signed64 including0/negative existing keys;creation/sequence policy is separate. Account identifiers are opaque nonempty local values;no company chart/range is hardcoded.",
+    "Required rule IDs preserve legacy reference ordering;APPEND_ONLY is separately a required storage rule,not proven by pure validation. No generic YAML execution or legal/regulatory completeness claim.",
+    "Known bookkeeping/VAT versions gate compiled manual policy;other bundle versions are provenance only. Version strings are not source checksums;fixed development assets additionally bind exact source hashes.",
+    "Strict construction/context/version/identifier cases have no equivalent legacy operation. Future adapters must explicitly resolve legacy default/coercion behavior and enforce transport budgets before decoding.",
+    "Synthetic seeding briefly drops triggers within a disposable savepoint,then restores exact canonical DDL/guards before actual validation;source preservation checks begin after seeding and before validation. No fixture is a qualified historical archive or valid production posting trace.",
+    "All checks run on macOS/arm64;no cross-platform release qualification,hardware crash/write adoption or UI/client cutover is claimed."
+  ]
+}

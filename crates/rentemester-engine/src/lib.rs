@@ -4,6 +4,9 @@ pub mod currency;
 mod decimal;
 pub mod fiscal_year;
 pub mod fx;
+pub mod identifiers;
+pub mod journal_rules;
+pub mod manual_journal;
 pub mod money;
 pub mod trial_balance;
 

@@ -1,0 +1,38 @@
+{
+  "base_code": "138cee53a6fbe7e538ed1dbbda37d31cfc819161",
+  "previous_increment": "exact-arithmetic-1",
+  "scope": "R09 shared pure manual journal validation and exact nominal references",
+  "new_ids": [
+    "action.manual_journal",
+    "action.rule_version"
+  ],
+  "write_scope": [
+    "crates/rentemester-engine/src/identifiers.rs",
+    "crates/rentemester-engine/src/journal_rules.rs",
+    "crates/rentemester-engine/src/manual_journal.rs",
+    "crates/rentemester-engine/src/lib.rs",
+    "crates/rentemester-cli/tests/manual_journal_vectors.rs",
+    "scripts/rust/verify-manual-journal.ts",
+    "scripts/rust/manual-journal-vectors.py",
+    "scripts/rust/verify.ts",
+    "docs/architecture/rust-target/implementation/README.md",
+    "docs/architecture/rust-target/implementation/progress.json",
+    "docs/architecture/rust-target/implementation/manual-journal"
+  ],
+  "refinement": "Current readiness-v3 aligns typed business error representation;gdd-v1 and prior reports retained. Contract scope unchanged;review strengthens blocker selection assertions.",
+  "issues_closed": [],
+  "remaining_gates": [
+    "Trusted synthetic fact snapshots only; no production fact collector, audit replay port or admitted writer transaction",
+    "Legacy parity compares outcomes, rule IDs and ordered violation code/field; all actual message text and numeric bridges are retained exactly, not claimed byte-compatible",
+    "Native-only strict serde/context/version/identifier cases have no equivalent legacy policy operation",
+    "Known manual bookkeeping/VAT versions only; version metadata is not a source content checksum or legal-source verification",
+    "No mutation endpoint, historical/reversal privilege, invoice evidence, full R09/R12 acceptance, clients/distribution or cutover",
+    "Facts are trusted in-process snapshots;their completeness/provenance,stable physical/logical ledger identity,period lifecycle replay and transaction-bound revalidation remain application/storage work. Pure ok is not a posting permit.",
+    "Exact row IDs cover signed64 including0/negative existing keys;creation/sequence policy is separate. Account identifiers are opaque nonempty local values;no company chart/range is hardcoded.",
+    "Required rule IDs preserve legacy reference ordering;APPEND_ONLY is separately a required storage rule,not proven by pure validation. No generic YAML execution or legal/regulatory completeness claim.",
+    "Known bookkeeping/VAT versions gate compiled manual policy;other bundle versions are provenance only. Version strings are not source checksums;fixed development assets additionally bind exact source hashes.",
+    "Strict construction/context/version/identifier cases have no equivalent legacy operation. Future adapters must explicitly resolve legacy default/coercion behavior and enforce transport budgets before decoding.",
+    "Synthetic seeding briefly drops triggers within a disposable savepoint,then restores exact canonical DDL/guards before actual validation;source preservation checks begin after seeding and before validation. No fixture is a qualified historical archive or valid production posting trace.",
+    "All checks run on macOS/arm64;no cross-platform release qualification,hardware crash/write adoption or UI/client cutover is claimed."
+  ]
+}

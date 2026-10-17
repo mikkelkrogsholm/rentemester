@@ -1,0 +1,349 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Pure manual journal and rule-version validation",
+    "goal": "Shared manual posting invariants without writer authority",
+    "scope": "R09 pure manual foundation;full platform remains active."
+  },
+  "nodes": {
+    "component.domain": {
+      "kind": "component",
+      "description": "Pure exact accounting validation",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Typed manual journal and rule-version evaluation",
+        "rationale": "One shared exact manual posting policy across interfaces.",
+        "excludes": [
+          "Database/fact collection,authority,posting/import/reversal and product endpoints"
+        ]
+      },
+      "interfaces": [
+        "action.manual_journal",
+        "action.rule_version"
+      ]
+    },
+    "action.manual_journal": {
+      "kind": "action",
+      "description": "Evaluate typed manual journal against explicit trusted facts",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "request": {
+            "type": "object"
+          },
+          "trusted_facts": {
+            "type": "object"
+          },
+          "rule_bundles": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "expected_version": {
+            "type": "string"
+          }
+        },
+        "context": {
+          "mode": {
+            "type": "enum",
+            "values": [
+              "pure_manual_preflight"
+            ]
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "invalid_context": "Refuse as specified in CONTRACT.md.",
+          "invalid_identifier": "Refuse as specified in CONTRACT.md.",
+          "invalid_account_no": "Refuse as specified in CONTRACT.md.",
+          "invalid_input": "Refuse as specified in CONTRACT.md.",
+          "journal_refused": "Refuse as specified in CONTRACT.md."
+        },
+        "preconditions": [
+          "Strict typed values;complete trusted caller snapshot;no client-supplied authority;known policy versions."
+        ],
+        "postconditions": [
+          "Deterministic complete result or typed refusal;no effects or posting authority."
+        ],
+        "external_effects": [],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Facts are trusted caller inputs,not product endpoint claims;pure ok grants no authority.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Exact values,full-width identity,context completeness and rule version gates.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "idempotency": {
+            "relevant": false,
+            "rationale": "Pure calculation has no receipt/state.",
+            "scenarios": []
+          },
+          "concurrency": {
+            "relevant": false,
+            "rationale": "No shared state;actual transactional snapshot/revalidation remains caller obligation.",
+            "scenarios": []
+          },
+          "atomicity": {
+            "relevant": false,
+            "rationale": "No writes or external effects.",
+            "scenarios": []
+          }
+        },
+        "error_cases": {
+          "invalid_context": [
+            "scenario.refusal"
+          ],
+          "invalid_identifier": [
+            "scenario.refusal"
+          ],
+          "invalid_account_no": [
+            "scenario.refusal"
+          ],
+          "invalid_input": [
+            "scenario.refusal"
+          ],
+          "journal_refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Evaluate typed manual journal against explicit trusted facts"
+    },
+    "action.rule_version": {
+      "kind": "action",
+      "description": "Bind known manual policy to deterministic complete bundle version",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "request": {
+            "type": "object"
+          },
+          "trusted_facts": {
+            "type": "object"
+          },
+          "rule_bundles": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "expected_version": {
+            "type": "string"
+          }
+        },
+        "context": {
+          "mode": {
+            "type": "enum",
+            "values": [
+              "pure_manual_preflight"
+            ]
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "invalid_rules": "Refuse as specified in CONTRACT.md.",
+          "unsupported_rule_version": "Refuse as specified in CONTRACT.md.",
+          "rule_version_mismatch": "Refuse as specified in CONTRACT.md."
+        },
+        "preconditions": [
+          "Strict typed values;complete trusted caller snapshot;no client-supplied authority;known policy versions."
+        ],
+        "postconditions": [
+          "Deterministic complete result or typed refusal;no effects or posting authority."
+        ],
+        "external_effects": [],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Facts are trusted caller inputs,not product endpoint claims;pure ok grants no authority.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Exact values,full-width identity,context completeness and rule version gates.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "idempotency": {
+            "relevant": false,
+            "rationale": "Pure calculation has no receipt/state.",
+            "scenarios": []
+          },
+          "concurrency": {
+            "relevant": false,
+            "rationale": "No shared state;actual transactional snapshot/revalidation remains caller obligation.",
+            "scenarios": []
+          },
+          "atomicity": {
+            "relevant": false,
+            "rationale": "No writes or external effects.",
+            "scenarios": []
+          }
+        },
+        "error_cases": {
+          "invalid_rules": [
+            "scenario.refusal"
+          ],
+          "unsupported_rule_version": [
+            "scenario.refusal"
+          ],
+          "rule_version_mismatch": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Bind known manual policy to deterministic complete bundle version"
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Exact supported manual cases agree with fixed expectations and actual legacy source.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Fixed synthetic request,facts and parsed rule bundles.",
+        "when": "Construct typed values and evaluate manual preflight/version.",
+        "then": "Exact supported manual cases agree with fixed expectations and actual legacy source."
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Bad line/reference/context/FX/rule/version inputs refuse without authority or partial effects.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Fixed synthetic request,facts and parsed rule bundles.",
+        "when": "Construct typed values and evaluate manual preflight/version.",
+        "then": "Bad line/reference/context/FX/rule/version inputs refuse without authority or partial effects."
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Canonical exact numeric and ID presence corrections remain explicit actual legacy differences.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Fixed synthetic request,facts and parsed rule bundles.",
+        "when": "Construct typed values and evaluate manual preflight/version.",
+        "then": "Canonical exact numeric and ID presence corrections remain explicit actual legacy differences."
+      }
+    },
+    "scenario.purity": {
+      "kind": "scenario",
+      "description": "Deterministic repeated results preserve synthetic source bytes/rows and domain I/O boundaries.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Fixed synthetic request,facts and parsed rule bundles.",
+        "when": "Construct typed values and evaluate manual preflight/version.",
+        "then": "Deterministic repeated results preserve synthetic source bytes/rows and domain I/O boundaries."
+      }
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner.manual_journal",
+      "from": "action.manual_journal",
+      "to": "component.domain",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal.manual_journal",
+      "from": "scenario.normal",
+      "to": "action.manual_journal",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal.manual_journal",
+      "from": "scenario.refusal",
+      "to": "action.manual_journal",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction.manual_journal",
+      "from": "scenario.correction",
+      "to": "action.manual_journal",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.purity.manual_journal",
+      "from": "scenario.purity",
+      "to": "action.manual_journal",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.owner.rule_version",
+      "from": "action.rule_version",
+      "to": "component.domain",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal.rule_version",
+      "from": "scenario.normal",
+      "to": "action.rule_version",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal.rule_version",
+      "from": "scenario.refusal",
+      "to": "action.rule_version",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction.rule_version",
+      "from": "scenario.correction",
+      "to": "action.rule_version",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.purity.rule_version",
+      "from": "scenario.purity",
+      "to": "action.rule_version",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Manual journal contract",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "2eb71e8c992e9a9b8c6c9bcfc0b486fc3233b6f2ca33a8100f36d1824bffd6db"
+      }
+    }
+  }
+}

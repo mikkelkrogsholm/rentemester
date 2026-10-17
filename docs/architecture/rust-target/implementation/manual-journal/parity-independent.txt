@@ -1,0 +1,28 @@
+{
+  "scope": "pure manual journal exact invariants and compiled rule-version binding",
+  "checks": 211,
+  "vectors": 210,
+  "actual_legacy_cases": 171,
+  "legacy_policies": {
+    "match": 159,
+    "difference": 12,
+    "native_only": 39
+  },
+  "corpus_sha256": "3d46afbb97a730102f2628096b5d10003f8b4bbe262ad2efcea41c8855d03b41",
+  "legacy_observations_sha256": "9aca581280e42a353485530c9b8f5af6e451334d62c59c880eb7e6ef67544999",
+  "passed": [
+    "all native code/field/totals/rule projections match independently fixed expectations",
+    "actual unchanged manual validator on canonical migrated synthetic SQLite; exact source/native diagnostics frozen",
+    "canonical guards restored before validation; exact image and total_changes preserved",
+    "alternate environment native outputs identical; all exact ID/bundle boundaries checked"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "limits": [
+    "Trusted synthetic fact snapshots only; no production fact collector, audit replay port or admitted writer transaction",
+    "Legacy parity compares outcomes, rule IDs and ordered violation code/field; all actual message text and numeric bridges are retained exactly, not claimed byte-compatible",
+    "Native-only strict serde/context/version/identifier cases have no equivalent legacy policy operation",
+    "Known manual bookkeeping/VAT versions only; version metadata is not a source content checksum or legal-source verification",
+    "No mutation endpoint, historical/reversal privilege, invoice evidence, full R09/R12 acceptance, clients/distribution or cutover"
+  ]
+}

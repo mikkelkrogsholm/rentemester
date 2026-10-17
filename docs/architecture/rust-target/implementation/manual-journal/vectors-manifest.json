@@ -1,0 +1,12 @@
+{
+  "format": "rentemester-manual-journal-vectors/1",
+  "checks": 210,
+  "generator_sha256": "54b19868666ecefa2dbd4ade545a030c71e11b7f11b229a7ab236b65fd6ef01b",
+  "vectors_sha256": "3d46afbb97a730102f2628096b5d10003f8b4bbe262ad2efcea41c8855d03b41",
+  "rule_bundles_sha256": "619257c2a2e0f3c40a96707e7ced8b718ffac50db12f6d80872ed109c882bbbc",
+  "legacy_policies": {
+    "match": 159,
+    "difference": 12,
+    "native_only": 39
+  }
+}
