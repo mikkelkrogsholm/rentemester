@@ -52,7 +52,7 @@ fn initial(error: Error) -> Failure {
         company_reusable: false,
     }
 }
-fn connection_ready(db: &Connection) -> Result<(), Error> {
+pub(crate) fn connection_ready(db: &Connection) -> Result<(), Error> {
     if db
         .is_readonly(MAIN_DB)
         .map_err(|_| error("connection_refused"))?

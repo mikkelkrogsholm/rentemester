@@ -1,0 +1,26 @@
+[
+  {
+    "preflight": "BEGIN",
+    "code": "connection_refused",
+    "message": "credential connection refused",
+    "ok": false,
+    "reusable": false,
+    "stage": "NotCommitted"
+  },
+  {
+    "preflight": "PRAGMA synchronous=OFF",
+    "code": "connection_refused",
+    "message": "credential connection refused",
+    "ok": false,
+    "reusable": false,
+    "stage": "NotCommitted"
+  },
+  {
+    "preflight": "ATTACH DATABASE ':memory:' AS auxiliary",
+    "code": "connection_refused",
+    "message": "credential connection refused",
+    "ok": false,
+    "reusable": false,
+    "stage": "NotCommitted"
+  }
+]

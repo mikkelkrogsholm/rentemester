@@ -1,0 +1,64 @@
+{
+  "increment": "password-login-1",
+  "code_revision": "sha256:bc45caf09367eb4656f5c892f673ba63f3d27b298146e2050dda9d62e99bba66",
+  "spec_revision": "sha256:f592082a6a9ff5429ff98df73ad51017e55b3a3496dd2ccf0d9d654d4db44d47",
+  "state": "verified-native-password-to-pending-factor-transaction",
+  "checks": {
+    "native_tests_passed": 80,
+    "ignored_subprocess_helpers": 17,
+    "integration_checks": 10723,
+    "new_login_process_checks": 309,
+    "independent_review_process_checks": 309,
+    "extra_independent_preflight_probes": 3,
+    "strict_fmt_clippy_boundaries_typecheck_lint": "PASS"
+  },
+  "claims": [
+    "Actual source migrations and installed Better Auth issuer/account selection/password oracle qualify synthetic fixtures",
+    "Same caller-owned connection captures exact credential/user/access snapshot, releases transaction for native KDF, then revalidates inside BEGIN IMMEDIATE",
+    "Exact provider/issuer/account ownership, email, strict user flags and latest active workspace access precede trusted pending-factor continuation",
+    "Visible password/credential/email/MFA/access changes across the unlocked phase refuse; independent writers are fenced during continuation",
+    "Known failure rolls back synthetic effects; callback SQL diagnostics normalize; actual busy commit returns OutcomeUnknown and retires connection",
+    "No session or MFA completion is asserted: next factor selects challenge or enrollment only"
+  ],
+  "limits": [
+    "Actual SQLite handle/lifetime admission remains unqualified; this operation accepts already-admitted caller-owned handles and opens no product DB",
+    "Trusted callback is synchronous pending-factor Rust code; no transaction escapes, session issuance or external effects; this is not a SQL sandbox",
+    "Only synthetic workspace_audit continuation markers committed; no actual challenge/session/reset/recovery/service lifecycle or exposed endpoint",
+    "Bounded synchronous 32MiB KDF still requires bounded blocking/rate/concurrency/origin protections before endpoint exposure",
+    "Strict ASCII email/control/budget/hash/flag/ambiguity corrections and historical unversioned normalization-profile mapping remain explicit",
+    "Equality of current captured rows/update strings is not a historical epoch and cannot detect restoration of every field",
+    "Actual commit busy tested; filesystem IO/crash commit faults and cross-platform deployment are not qualified here",
+    "Semantic Graphify refresh covers two implementation Markdown sources only; generated JSON/test logs and historical/unrelated docs not semantically refreshed"
+  ],
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": {
+    "Cargo.lock": "d805b7ae0f534417c6704fb4d1bf0af34a3a61a12151f0a0125d8ec803a93ac0",
+    "crates/rentemester-storage/Cargo.toml": "b5ad90458ebc76342c55cb37fde8b619ce34e51497b89a049cf0bc4ce580c11d",
+    "crates/rentemester-storage/src/lib.rs": "684f60ba6d3937a36d61f46bc7f50f75f22737f0492dfff5444c082be954566d",
+    "crates/rentemester-storage/src/password_credential.rs": "077a43a10cfb43cfb9e51ffb589eac4eafb13fe98ba80c23703823435cb821e3",
+    "crates/rentemester-storage/src/control_migration.rs": "e5402744c8fd156e86b112bf24377bb2d9a86ff34f35e5620ab597ddc212cdb4",
+    "crates/rentemester-application/src/lib.rs": "6320d2455fe752182584657829a1e1515723f73879903979fa0dc24d95f2a5e4",
+    "crates/rentemester-application/src/control_fence.rs": "6f9c071713051e898425a52a5f12fe2560cfee11e7f47322456543036283cf66",
+    "crates/rentemester-application/src/password_login.rs": "ff638e0b260409b123610329187e314f6dbd938696825f1dd81536900243d14d",
+    "crates/rentemester-application/src/password_login/tests.rs": "7eb6bd4daeb244a859cf75748f8e05965a4a2c5a351d77d7e21bf73533821877",
+    "crates/rentemester-runtime/src/password.rs": "0c4a2176c57bc3d0fcc5370a17a0dc1286a815a2d1b2c00936a85ea262b982c4",
+    "scripts/rust/verify-password-login.ts": "883f09c80a1c15e80256dd88d6f1d08886fb1099071acff613bdcb20970caf23",
+    "scripts/rust/verify.ts": "8845bff51890ea679b787743bbe6af3a31cb2841aa19d5d52195f8749aac6f04",
+    "src/server/better-auth.ts": "9513797eb1b1a82b0c9d592fb00e3317d6d33b6eb29c7bf0c548a0a4c58c9b73",
+    "src/core/workspace-control.ts": "63b155521b26872be2fa95175434cd4234c284f07bf5a2baca0e63e1cb04509d",
+    "node_modules/better-auth/dist/api/routes/sign-in.mjs": "948cc7b1abc1f239378d934f9386a4b539c5cfdde60a326148e93dd40e39feef",
+    "node_modules/better-auth/dist/db/internal-adapter.mjs": "69e3e9b76d7b310fd53c7ef0a276ab2727a97ae8df57aea8a493d673cbaf75bd",
+    "node_modules/@better-auth/core/dist/db/schema/account.mjs": "938f143b0bb7ccf923d398899a96b7ba30964eea41d72b6890ba90c4e32b0139",
+    "node_modules/zod/src/v4/core/regexes.ts": "47ddb6cf93b4c672e8693a1496d075e75355849609e99cab34bea8f0fb45ec49"
+  },
+  "evidence_files": {
+    "rust-verify.txt": "83786d5e9c0d38da2fbf1c0cad0d6ee6fd0bfe402c4bdcd099e762ee2f246e45",
+    "review-native.txt": "6b66a6e3009d098f3d59e08c2cad13095ebf2e8d3a09b929b66ba68e39069ce7",
+    "review-process.json": "c3e3beb6e79b9f83be89a9ad167ff45368d17941fc9a92e15165d17d9f50d490",
+    "review-preflight.json": "f3b61e67b9c3df370623067ace548c2dd4afefb9ca27f7fc5b2b67f2b0192f54",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "b4d1fe24fcbb4c19125a2ff5d29a8e26a1308a03a85e06c3502de4bd5fd5817f"
+  }
+}

@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "password-crypto-1",
-  "code_revision": "sha256:f31c49299390da2c348d85c07f7227ecdc4e08d0d5485fc02cc53e47d289e92a",
-  "spec_revision": "sha256:0315ea6268ba278de460b3cc05f34bb06d469769d076e3c8bd94fe01305b8013",
-  "state": "verified-native-current-password-crypto-only",
+  "current_increment": "password-login-1",
+  "code_revision": "sha256:bc45caf09367eb4656f5c892f673ba63f3d27b298146e2050dda9d62e99bba66",
+  "spec_revision": "sha256:f592082a6a9ff5429ff98df73ad51017e55b3a3496dd2ccf0d9d654d4db44d47",
+  "state": "verified-native-password-to-pending-factor-transaction",
   "issues_closed": [],
   "next": [
-    "Integrate native password crypto into locked credential/session identity use cases with bounded blocking/rate/origin/MFA lifecycle and historical normalization-profile mapping; preserve accounting/replay identities. Resolve qualified actual SQLite-handle admission independently; do not substitute names/stat/prototype VFS or weaken unsafe policy.",
+    "Implement native pending-MFA challenge/enrollment/session/recovery lifecycle and bounded blocking/rate/origin dispatch around the verified password transaction; historical normalization mapping and actual SQLite-handle/lifetime admission still required before product exposure. No retry after unknown commits without reconciliation.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,20 +21,18 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "workspace-layout-1",
-    "code_revision": "sha256:37a49f16adb592874690013aa9d05d6551adad23aa7a8a004cf7147bef93043d",
-    "spec_revision": "sha256:60658ca014bc972a4b4e2f5ffc8fb1224c526528cd037a84fb6b4683765aca0e",
-    "state": "verified-physical-layout-observation-only"
+    "current_increment": "password-crypto-1",
+    "code_revision": "sha256:f31c49299390da2c348d85c07f7227ecdc4e08d0d5485fc02cc53e47d289e92a",
+    "spec_revision": "sha256:0315ea6268ba278de460b3cc05f34bb06d469769d076e3c8bd94fe01305b8013",
+    "state": "verified-native-current-password-crypto-only"
   },
   "evidence": {
-    "report": "password-crypto/evidence.json",
-    "parity": "password-crypto/review-process.json",
-    "rust_tests_passed": 78,
-    "ignored_subprocess_helpers": 16,
-    "integration_checks": 10414,
-    "password_process_checks": 48,
-    "official_nfkc_columns": 100170,
-    "scalar_transcript_entries": 1112064,
+    "report": "password-login/evidence.json",
+    "parity": "password-login/review-process.json",
+    "rust_tests_passed": 80,
+    "ignored_subprocess_helpers": 17,
+    "integration_checks": 10723,
+    "password_login_process_checks": 309,
     "writer_authority": false,
     "whole_issues_closed": false
   },
@@ -146,6 +144,12 @@
       "code_revision": "sha256:37a49f16adb592874690013aa9d05d6551adad23aa7a8a004cf7147bef93043d",
       "spec_revision": "sha256:60658ca014bc972a4b4e2f5ffc8fb1224c526528cd037a84fb6b4683765aca0e",
       "state": "verified-physical-layout-observation-only"
+    },
+    {
+      "current_increment": "password-crypto-1",
+      "code_revision": "sha256:f31c49299390da2c348d85c07f7227ecdc4e08d0d5485fc02cc53e47d289e92a",
+      "spec_revision": "sha256:0315ea6268ba278de460b3cc05f34bb06d469769d076e3c8bd94fe01305b8013",
+      "state": "verified-native-current-password-crypto-only"
     }
   ]
 }

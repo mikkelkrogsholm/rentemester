@@ -1,0 +1,215 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native password-to-MFA transaction",
+    "goal": "Connect native password verification to exact current credential rows with unlocked KDF and locked revalidation",
+    "scope": "R04/R41 internal credential transaction; no session issuer, endpoint or physical handle admission"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native credential use-case orchestration",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Read candidate, unlock KDF, revalidate and commit pending-factor continuation",
+        "rationale": "Remove Bun credential lookup while fencing concurrent control changes",
+        "excludes": [
+          "Complete authentication/session/MFA/HTTP lifecycle and physical handle admission"
+        ]
+      },
+      "interfaces": [
+        "action.password_login"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Correct current credential routes to MFA challenge or enrollment without authenticating a session",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control schema with actual framework account credentials",
+        "when": "Execute native two-phase password continuation with independent control writers",
+        "then": "Correct current credential routes to MFA challenge or enrollment without authenticating a session"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Wrong/missing/malformed/inactive/unverified credentials never invoke continuation",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control schema with actual framework account credentials",
+        "when": "Execute native two-phase password continuation with independent control writers",
+        "then": "Wrong/missing/malformed/inactive/unverified credentials never invoke continuation"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Known refusal/continuation failure rolls back all synthetic effects and retains opaque diagnostics",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control schema with actual framework account credentials",
+        "when": "Execute native two-phase password continuation with independent control writers",
+        "then": "Known refusal/continuation failure rolls back all synthetic effects and retains opaque diagnostics"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Ambiguous credentials, noncanonical hashes and control characters fail closed",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control schema with actual framework account credentials",
+        "when": "Execute native two-phase password continuation with independent control writers",
+        "then": "Ambiguous credentials, noncanonical hashes and control characters fail closed"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "KDF holds no SQLite lock; changes across it refuse; continuation fences competing revoke",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic control schema with actual framework account credentials",
+        "when": "Execute native two-phase password continuation with independent control writers",
+        "then": "KDF holds no SQLite lock; changes across it refuse; continuation fences competing revoke"
+      }
+    },
+    "action.password_login": {
+      "kind": "action",
+      "description": "Verify existing password and commit a current pending-factor continuation",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "email_password": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "admitted_control_connection_and_trusted_continuation": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Opaque invalid_credentials, invalid_control, connection_refused, control_busy_or_unavailable, transaction_refused; stage and reusable flag distinguish unknown commits"
+        },
+        "preconditions": [
+          "Trusted caller owns actual handle/lifetime admission and bounded blocking/rate limits; callback is synchronous transaction-local pending-factor Rust code"
+        ],
+        "postconditions": [
+          "Known commit returns continuation value only; no session/MFA completion or company authority",
+          "Failure rolls back or records outcome unknown and retires connection"
+        ],
+        "external_effects": [
+          "Declared control transaction writes performed by trusted continuation"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Password is first factor only; unlocked KDF must revalidate exact current rows and held writer must cover pending-factor commit",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Password is first factor only; unlocked KDF must revalidate exact current rows and held writer must cover pending-factor commit",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Password is first factor only; unlocked KDF must revalidate exact current rows and held writer must cover pending-factor commit",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Password is first factor only; unlocked KDF must revalidate exact current rows and held writer must cover pending-factor commit",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Password is first factor only; unlocked KDF must revalidate exact current rows and held writer must cover pending-factor commit",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Source-bound credential selection, unlocked fixed KDF, immediate revalidation and trusted transaction-local continuation"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.password_login",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.password_login",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.password_login",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.password_login",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.password_login",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.password_login",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native password-to-MFA transaction",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "f34ea823498ac99410c1619411e6aaaece9f614f089dffbfced90fc3923f9e6c"
+      }
+    }
+  }
+}

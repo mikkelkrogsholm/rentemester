@@ -20,6 +20,7 @@ mod control_migration;
 pub mod cookie_session;
 mod journal_hash;
 pub mod journal_preview;
+pub mod password_credential;
 pub use journal_preview::{
     PreviewInput, PreviewReport, manual_journal_rule_version, preview_manual_journal,
 };
