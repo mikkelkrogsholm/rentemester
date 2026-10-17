@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "session-control-1",
-  "code_revision": "sha256:7e04f19e4b9535561a371aa5f333cf6fa59a9db2dcdab1cbeaa830349cf558b3",
-  "spec_revision": "sha256:028f2f56eb3ccee83f4f9a113513ffa8c36453876f5f9dcc65638d86fedfa5e7",
-  "state": "verified-native-own-session-listing-and-revocation",
+  "current_increment": "password-reset-1",
+  "code_revision": "sha256:65c58010c67219c2e376b7b04966b443e53343f8716b87eaa242574d5a5ae94d",
+  "spec_revision": "sha256:00f3b7db6b4ae3e4592cb8562001aaec386dcc03a2b40d5a44a4ef300c76b04c",
+  "state": "verified-native-source-issued-password-reset-completion",
   "issues_closed": [],
   "next": [
-    "Implement remaining native reset/email-verification/service/trusted-device/provider identity and public transport dispatch with current/fresh authority and one-time lifecycle. Initial enrollment/code issuance, enrolled TOTP/backup login, own-code management and own-session list/logout/revocation are verified. Keep rate/origin/bounded blocking, actual physical handle/lifetime, legacy writer/history and full provider parity gates explicit.",
+    "Implement remaining native reset request/mail/redirect, email-verification/service/trusted-device/provider identity and public transport dispatch. Enrolled MFA/enrollment, own-code/session management and existing source-issued reset completion are verified. Keep rate/origin/bounded blocking, physical handle/workspace lifetime, legacy writer/history and full source in-flight provider revocation gates explicit.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,18 +21,18 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "backup-management-1",
-    "code_revision": "sha256:686367e8df1079346e12826cd66e815ee969e7d98221aa233519f92efa426158",
-    "spec_revision": "sha256:92cf1f69d84f0390a798c2af173b77ce762991b56e38eb59805e9c0faf992368",
-    "state": "verified-native-authenticated-own-backup-code-management"
+    "current_increment": "session-control-1",
+    "code_revision": "sha256:7e04f19e4b9535561a371aa5f333cf6fa59a9db2dcdab1cbeaa830349cf558b3",
+    "spec_revision": "sha256:028f2f56eb3ccee83f4f9a113513ffa8c36453876f5f9dcc65638d86fedfa5e7",
+    "state": "verified-native-own-session-listing-and-revocation"
   },
   "evidence": {
-    "report": "session-control/evidence.json",
-    "parity": "session-control/review-process.json",
-    "rust_tests_passed": 89,
+    "report": "password-reset/evidence.json",
+    "parity": "password-reset/review-process.json",
+    "rust_tests_passed": 90,
     "ignored_subprocess_helpers": 19,
-    "integration_checks": 11405,
-    "mfa_and_session_process_checks": 342,
+    "integration_checks": 11484,
+    "mfa_and_identity_process_checks": 421,
     "writer_authority": false,
     "whole_issues_closed": false
   },
@@ -192,6 +192,12 @@
       "code_revision": "sha256:686367e8df1079346e12826cd66e815ee969e7d98221aa233519f92efa426158",
       "spec_revision": "sha256:92cf1f69d84f0390a798c2af173b77ce762991b56e38eb59805e9c0faf992368",
       "state": "verified-native-authenticated-own-backup-code-management"
+    },
+    {
+      "current_increment": "session-control-1",
+      "code_revision": "sha256:7e04f19e4b9535561a371aa5f333cf6fa59a9db2dcdab1cbeaa830349cf558b3",
+      "spec_revision": "sha256:028f2f56eb3ccee83f4f9a113513ffa8c36453876f5f9dcc65638d86fedfa5e7",
+      "state": "verified-native-own-session-listing-and-revocation"
     }
   ]
 }

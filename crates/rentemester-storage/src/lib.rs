@@ -22,6 +22,7 @@ mod journal_hash;
 pub mod journal_preview;
 pub mod mfa_login;
 pub mod password_credential;
+pub mod password_reset;
 pub mod session_control;
 pub use journal_preview::{
     PreviewInput, PreviewReport, manual_journal_rule_version, preview_manual_journal,

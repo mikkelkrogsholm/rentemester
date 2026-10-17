@@ -1,0 +1,31 @@
+{
+  "scope": "Independent read-only native source-issued password-reset completion",
+  "verdict": "No remaining material scoped findings",
+  "evidence": {
+    "native_focused_tests": 1,
+    "process_checks": 421,
+    "reset_process_cases": 79,
+    "independent_final_harness_repetitions": 1,
+    "reviewed_source_sha256": {
+      "crates/rentemester-application/src/lib.rs": "90c0467cc24afd3ecd5ae502e22077ff72e31b440b3aef634212c0fb4f3915c9",
+      "crates/rentemester-application/src/password_reset.rs": "2cc1f62ddfc0220ad9d9db6c5f70dcea6f8a2c70ca23cd4de8bc53c2f189e659",
+      "crates/rentemester-application/src/mfa_login/tests.rs": "b961075d5ca545c536c624886ce9c7677015eab5e668d93624430e5eb4e0a561",
+      "crates/rentemester-storage/src/lib.rs": "cc5e7aad23d43d5fde23ff4b3a45cde6322ad775420d8699eb67b5297a17c067",
+      "crates/rentemester-storage/src/password_reset.rs": "a82cad2ac8a4e6ee70420c2b5c9392235afbd4635613c368bb6692737ce87fba",
+      "scripts/rust/password-reset-cases.ts": "3c6f45bf29b14f607731c18fa4f9e8e5e6dbf71dd43cf9083524a1018e3178a7",
+      "scripts/rust/verify-mfa-login.ts": "badc67aa0d42e4536c438a68e9bfb786e3bda88c01e3238bdc3d7567d826f672",
+      "docs/architecture/rust-target/implementation/password-reset/CONTRACT.md": "1409881f36d68d67a5ad3ea94af022876a2d383d0634966617eaef587ebc8a00",
+      "docs/architecture/rust-target/implementation/password-reset/gdd.json": "d9057947a8b8f735d11d8656958cedbbc84a3125d5eacfb5dcfc37db2c2217fe",
+      "docs/architecture/rust-target/implementation/password-reset/readiness.json": "5aeff6dff8081d2b84309dd0c8addf7e3269e92c7cf1876e30e89113a6924b03"
+    }
+  },
+  "review_loop": [
+    "Source research verified reset token generation/consume/duplicate/expiry, original UTF16 policy, four-field canonical local credential and all-session deletion",
+    "Implementation and contract review checked current-token-only authority after unlocked KDF, unique row refusal, strict expiry/lifetime and sibling correction, canonical account ownership, preserved access/MFA/provider state and audit confidentiality",
+    "Focused UTF16 unit, actual scoped GDD structural validation and independent current421-case process repetition passed; no material finding remained"
+  ],
+  "limits": [
+    "Internal completion only; source issues request token through in-memory synthetic email sink in tests, no native request/mail/redirect/public dispatch",
+    "No full provider/trusted-device/source in-flight MFA revocation, actual physical handle/workspace lifetime admission, production migration, distribution or cutover"
+  ]
+}

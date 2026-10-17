@@ -85,7 +85,19 @@ fn probe() {
         clock: &clock,
         audit_key_version: 1,
     };
-    let result = if request["mode"]
+    let result = if request["mode"] == "password-reset" {
+        let runtime = crate::password_reset::Runtime {
+            clock: &clock,
+            audit_key_version: request["auditVersion"].as_u64().unwrap_or(1),
+        };
+        crate::password_reset::execute(
+            &mut db,
+            &runtime,
+            request["token"].as_str().unwrap_or(""),
+            request["newPassword"].as_str().unwrap_or(""),
+        )
+        .map(|()| json!({"ok":true}))
+    } else if request["mode"]
         .as_str()
         .is_some_and(|s| s.starts_with("session-"))
     {

@@ -1,0 +1,216 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native source-issued password-reset completion",
+    "goal": "Atomically consume recovery links, replace or create the local credential, revoke sessions and preserve access/MFA authority",
+    "scope": "R04/R41 internal admitted-control recovery completion; no request/mail/public transport/physical lifetime/cutover"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native credential use-case orchestration",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Unlocked password hashing followed by current-token-authorized atomic recovery completion",
+        "rationale": "Recovery must never consume a link without its complete credential/session/audit effects",
+        "excludes": [
+          "Reset request/mail and endpoints, actual handle/lifetime admission, full provider/trusted-device identity parity"
+        ]
+      },
+      "interfaces": [
+        "action.password_reset"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Current unique unexpired source-issued token replaces or creates own local credential, consumes own sibling links, deletes all own sessions and commits audit without granting access",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Synthetic canonical source-issued recovery records and injected trusted clock",
+        "when": "Complete reset through independent native WAL/DELETE processes and actual source oracle",
+        "then": "Current unique unexpired source-issued token replaces or creates own local credential, consumes own sibling links, deletes all own sessions and commits audit without granting access"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Invalid token/password/time/schema/credential ownership refuses opaquely and preserves all durable rows",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Synthetic canonical source-issued recovery records and injected trusted clock",
+        "when": "Complete reset through independent native WAL/DELETE processes and actual source oracle",
+        "then": "Invalid token/password/time/schema/credential ownership refuses opaquely and preserves all durable rows"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Late SQL rolls back token/credential/session/trigger/audit effects; commit uncertainty retires handle and withholds success",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Synthetic canonical source-issued recovery records and injected trusted clock",
+        "when": "Complete reset through independent native WAL/DELETE processes and actual source oracle",
+        "then": "Late SQL rolls back token/credential/session/trigger/audit effects; commit uncertainty retires handle and withholds success"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Native strict expiry, duplicate refusal, sibling-link invalidation and atomic rollback are explicit source corrections; disabled/unverified recovery never grants access",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Synthetic canonical source-issued recovery records and injected trusted clock",
+        "when": "Complete reset through independent native WAL/DELETE processes and actual source oracle",
+        "then": "Native strict expiry, duplicate refusal, sibling-link invalidation and atomic rollback are explicit source corrections; disabled/unverified recovery never grants access"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Unlocked KDF holds no database transaction; current token resolution under one writer prevents races/replay and serializes login",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Synthetic canonical source-issued recovery records and injected trusted clock",
+        "when": "Complete reset through independent native WAL/DELETE processes and actual source oracle",
+        "then": "Unlocked KDF holds no database transaction; current token resolution under one writer prevents races/replay and serializes login"
+      }
+    },
+    "action.password_reset": {
+      "kind": "action",
+      "description": "Complete a source-issued one-time recovery link without granting session/access authority",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "source_reset_token_and_new_password": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "admitted_control_trusted_clock_audit_version": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Opaque invalid_credentials, invalid_password, invalid_control, connection/crypto/clock/config errors; NotCommitted or OutcomeUnknown with explicit reuse"
+        },
+        "preconditions": [
+          "Caller owns actual admitted control/workspace lifetime and bounded blocking; token is source format, not requested identity",
+          "Original password policy precedes NFKC KDF without holding a SQLite transaction; only current unique unexpired row authorizes mutation"
+        ],
+        "postconditions": [
+          "Credential mutation/creation, all own reset links, own session deletion/lifecycle and audit atomically commit before unit success",
+          "Access/email/MFA/provider state is preserved; rollback and uncertain commit never claim false recovery"
+        ],
+        "external_effects": [
+          "Current control credential/reset/session rows, canonical lifecycle triggers, native_password_reset_v1 workspace_audit and reset-password accepted telemetry; no mail/network/cookie/session issuance"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "The bearer authorizes recovery only under the current writer. Atomic rollback, exact canonical credential ownership and sibling/session invalidation prevent partial recovery, cross-subject changes and replay. No membership or session grant.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "The bearer authorizes recovery only under the current writer. Atomic rollback, exact canonical credential ownership and sibling/session invalidation prevent partial recovery, cross-subject changes and replay. No membership or session grant.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "The bearer authorizes recovery only under the current writer. Atomic rollback, exact canonical credential ownership and sibling/session invalidation prevent partial recovery, cross-subject changes and replay. No membership or session grant.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "The bearer authorizes recovery only under the current writer. Atomic rollback, exact canonical credential ownership and sibling/session invalidation prevent partial recovery, cross-subject changes and replay. No membership or session grant.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "The bearer authorizes recovery only under the current writer. Atomic rollback, exact canonical credential ownership and sibling/session invalidation prevent partial recovery, cross-subject changes and replay. No membership or session grant.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Preflight, original UTF16 policy, unlocked native KDF, writer/current-token resolution, atomic credential/link/session/audit effects and known-commit success"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.password_reset",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.password_reset",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.password_reset",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.password_reset",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.password_reset",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.password_reset",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native source-issued password-reset completion",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "1409881f36d68d67a5ad3ea94af022876a2d383d0634966617eaef587ebc8a00"
+      }
+    }
+  }
+}

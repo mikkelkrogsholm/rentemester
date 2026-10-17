@@ -1,5 +1,6 @@
 /** Native enrolled MFA flow, actual source crypto/session oracle, independent process races. */
 import assert from "node:assert/strict";
+import { verifyPasswordReset } from "./password-reset-cases";
 import { verifySessionControl } from "./session-control-cases";
 import { verifyManagement } from "./backup-management-cases";
 import { verifyEnrollment } from "./mfa-enrollment-cases";
@@ -977,15 +978,30 @@ try {
 			opts,
 		})),
 	);
+	sensitiveRecoveryCodes.push(
+		...(await verifyPasswordReset({
+			fixture,
+			run,
+			start,
+			done,
+			marker,
+			sql,
+			image,
+			record,
+			now,
+			key,
+			opts,
+		})),
+	);
 	const report = JSON.stringify(
 		{
 			ok: true,
 			scope:
-				"Native MFA enrollment, enrolled TOTP/backup-code login and fresh/password own-code management and own-session lifecycle on admitted synthetic control handles; actual source cookie/session oracle and independent WAL/DELETE process races",
+				"Native MFA enrollment, enrolled TOTP/backup-code login, own-code/session management and password-reset completion on admitted synthetic control handles; actual source cookie/session oracle and independent WAL/DELETE process races",
 			checks,
 			observations,
 			limits: [
-				"Internal MFA and own-session lifecycle paths only: no exposed endpoint, actual handle/lifetime admission or live dual writers",
+				"Internal identity paths only: no reset request/mail sender or exposed endpoint, actual handle/lifetime admission or live dual writers",
 				"Trusted-device/rememberMe/OS-native credential and full identity/provider parity remain pending",
 				"Private native context and replay state are stricter than legacy in-flight challenges",
 				"Commit busy exercised; OS/storage crash and restore-lineage qualification remain separate",

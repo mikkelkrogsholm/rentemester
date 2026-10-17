@@ -1,0 +1,51 @@
+{
+  "review": "password-reset-final",
+  "result": "PASS",
+  "checks": 421,
+  "resetChecks": 79,
+  "read_only": true,
+  "remaining_material_findings": [],
+  "command": "bun run scripts/rust/verify-mfa-login.ts",
+  "process_report": "/tmp/rm-reset-review-process.json",
+  "stderr_report": "/tmp/rm-reset-review-process.err",
+  "focused_native": {
+    "command": "cargo test --release -p rentemester-application password_reset::tests::original_utf16_password_policy_precedes_normalization",
+    "result": "PASS 1 test",
+    "report": "/tmp/rm-reset-review-native.txt"
+  },
+  "gdd": {
+    "result": "3 PASS",
+    "report": "/tmp/rm-reset-review-readiness.json",
+    "spec_revision": "sha256:00f3b7db6b4ae3e4592cb8562001aaec386dcc03a2b40d5a44a4ef300c76b04c",
+    "matches_current_report": true,
+    "source_contract_hash_matches": true,
+    "structural_only": true
+  },
+  "reviewed_scope": [
+    "Only current exact bearer row under held writer authorizes after unlocked native KDF",
+    "Original 12..128 UTF16 policy before NFKC and bounded exact source token grammar",
+    "Strict expiry/duplicate/lifetime/timestamp rules and documented rollback/sibling corrections",
+    "Canonical local account key owner/provider refusal, exact update/create, foreign-provider preservation",
+    "Disabled/unverified/nonmember recovery does not grant membership/email verification/MFA/session",
+    "Sibling reset consumption plus all own session deletions, canonical triggers and prior native MFA invalidation",
+    "Confidential fixed telemetry and canonical workspace audit before known-commit unit success",
+    "WAL/DELETE writer contention, unlocked token deletion, complete late rollback for update/create, DELETE busy commit OutcomeUnknown",
+    "Actual source HTTP request in-memory email sink, source token/hash/session oracle and source-reset/native-login interop"
+  ],
+  "assumptions": [
+    "Current synthetic canonical admitted control handles only; source request/mail and public native origin/rate/blocking/physical admission remain explicitly pending."
+  ],
+  "source_hashes_unchanged_during_final_repeat": true,
+  "sha256": {
+    "crates/rentemester-application/src/lib.rs": "90c0467cc24afd3ecd5ae502e22077ff72e31b440b3aef634212c0fb4f3915c9",
+    "crates/rentemester-application/src/password_reset.rs": "2cc1f62ddfc0220ad9d9db6c5f70dcea6f8a2c70ca23cd4de8bc53c2f189e659",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "b961075d5ca545c536c624886ce9c7677015eab5e668d93624430e5eb4e0a561",
+    "crates/rentemester-storage/src/lib.rs": "cc5e7aad23d43d5fde23ff4b3a45cde6322ad775420d8699eb67b5297a17c067",
+    "crates/rentemester-storage/src/password_reset.rs": "a82cad2ac8a4e6ee70420c2b5c9392235afbd4635613c368bb6692737ce87fba",
+    "scripts/rust/password-reset-cases.ts": "3c6f45bf29b14f607731c18fa4f9e8e5e6dbf71dd43cf9083524a1018e3178a7",
+    "scripts/rust/verify-mfa-login.ts": "badc67aa0d42e4536c438a68e9bfb786e3bda88c01e3238bdc3d7567d826f672",
+    "docs/architecture/rust-target/implementation/password-reset/CONTRACT.md": "1409881f36d68d67a5ad3ea94af022876a2d383d0634966617eaef587ebc8a00",
+    "docs/architecture/rust-target/implementation/password-reset/gdd.json": "d9057947a8b8f735d11d8656958cedbbc84a3125d5eacfb5dcfc37db2c2217fe",
+    "docs/architecture/rust-target/implementation/password-reset/readiness.json": "5aeff6dff8081d2b84309dd0c8addf7e3269e92c7cf1876e30e89113a6924b03"
+  }
+}

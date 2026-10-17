@@ -1,0 +1,68 @@
+{
+  "increment": "password-reset-1",
+  "code_revision": "sha256:65c58010c67219c2e376b7b04966b443e53343f8716b87eaa242574d5a5ae94d",
+  "spec_revision": "sha256:00f3b7db6b4ae3e4592cb8562001aaec386dcc03a2b40d5a44a4ef300c76b04c",
+  "state": "verified-native-source-issued-password-reset-completion",
+  "checks": {
+    "native_tests_passed": 90,
+    "ignored_subprocess_helpers": 19,
+    "integration_checks": 11484,
+    "mfa_and_identity_process_checks": 421,
+    "new_distinct_reset_process_cases": 79,
+    "independent_final_harness_repetitions": 1,
+    "strict_fmt_clippy_boundaries_typecheck_lint": "PASS"
+  },
+  "claims": [
+    "Original12\u2013128 UTF16 code-unit password policy precedes shared NFKC/scrypt and OS entropy without a database transaction",
+    "One current control writer and trusted clock resolve a unique unexpired source-issued token only after KDF; no stale subject or snapshot authorizes writes",
+    "Exact canonical local credential is updated or created; foreign owner/provider collision refuses, other provider fields/accounts and access/email/MFA state are preserved",
+    "All own outstanding source reset links and all own session rows atomically disappear with credential, canonical lifecycle and minimal accepted recovery audit effects",
+    "Confirmed late rollback restores complete durable state and token usability; real commit-busy retires handle and withholds success; no session/cookie is issued",
+    "Actual installed source request token/expiry/storage, source/native password/login and source current-session readers interoperate on synthetic copies",
+    "Independent WAL/DELETE processes cover current-token deletion during unlocked KDF, serialization against login/recovery, and create/update failure branches"
+  ],
+  "limits": [
+    "Native reset request/link issuance/mail provider/redirect/origin/rate/bounded blocking and public endpoints remain pending",
+    "Strict expiry equality refusal, duplicate/lifetime validation, sibling-link invalidation and complete transaction rollback are explicit native source corrections",
+    "No full source in-flight MFA/trusted-device/provider revocation claim; canonical credential insertion does not fabricate credential_updated lifecycle",
+    "Raw source reset token derives authority from its exact current database row; no extra signer/workspace proof is invented and actual physical control/workspace lifetime admission remains pending",
+    "No real user/company migration, live dual writers, production mail/deployment, distribution or cutover",
+    "Semantic Graphify refresh covers current implementation README/CONTRACT; generated JSON/logs/historical/unrelated documents not semantically refreshed"
+  ],
+  "verification_mode": "One full final-code rust:verify run, independent final421-case process repetition and focused UTF16 native unit",
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": {
+    "crates/rentemester-application/src/lib.rs": "90c0467cc24afd3ecd5ae502e22077ff72e31b440b3aef634212c0fb4f3915c9",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "b961075d5ca545c536c624886ce9c7677015eab5e668d93624430e5eb4e0a561",
+    "crates/rentemester-application/src/password_reset.rs": "2cc1f62ddfc0220ad9d9db6c5f70dcea6f8a2c70ca23cd4de8bc53c2f189e659",
+    "crates/rentemester-runtime/src/password.rs": "0c4a2176c57bc3d0fcc5370a17a0dc1286a815a2d1b2c00936a85ea262b982c4",
+    "crates/rentemester-storage/src/lib.rs": "cc5e7aad23d43d5fde23ff4b3a45cde6322ad775420d8699eb67b5297a17c067",
+    "crates/rentemester-storage/src/mfa_login.rs": "f48fa2510fa68f48e9a36df36e7e37c5553e8ba19ed4ad0b8f7715575d9e1b7a",
+    "crates/rentemester-storage/src/password_reset.rs": "a82cad2ac8a4e6ee70420c2b5c9392235afbd4635613c368bb6692737ce87fba",
+    "docs/architecture/rust-target/implementation/README.md": "06d027fbdf088be1efd7c99a57fa734ea0fae939f6bb3ed7c83d972a75691f82",
+    "docs/architecture/rust-target/implementation/password-reset/CONTRACT.md": "1409881f36d68d67a5ad3ea94af022876a2d383d0634966617eaef587ebc8a00",
+    "docs/architecture/rust-target/implementation/password-reset/gdd.json": "d9057947a8b8f735d11d8656958cedbbc84a3125d5eacfb5dcfc37db2c2217fe",
+    "docs/architecture/rust-target/implementation/password-reset/readiness.json": "5aeff6dff8081d2b84309dd0c8addf7e3269e92c7cf1876e30e89113a6924b03",
+    "node_modules/better-auth/dist/api/routes/password.mjs": "a2c44c376d1aba333161d3b9cc688e1cab6522b14d895f61382f1a8e31620286",
+    "node_modules/better-auth/dist/context/create-context.mjs": "579065017c5601dedac6ad95666835307b279e8f8ae45311d74d4e336f032d7c",
+    "node_modules/better-auth/dist/crypto/password.mjs": "757f075228ec993630dfe91a7d1bdb55a6589173a508ba5e522586cdddd06d7b",
+    "node_modules/better-auth/dist/db/internal-adapter.mjs": "69e3e9b76d7b310fd53c7ef0a276ab2727a97ae8df57aea8a493d673cbaf75bd",
+    "scripts/rust/password-reset-cases.ts": "3c6f45bf29b14f607731c18fa4f9e8e5e6dbf71dd43cf9083524a1018e3178a7",
+    "scripts/rust/verify-mfa-login.ts": "badc67aa0d42e4536c438a68e9bfb786e3bda88c01e3238bdc3d7567d826f672",
+    "scripts/rust/verify.ts": "6234bca4d9e5f80df53276f5cedc7021c13c5d1e677f807a0d881dc72a7aacc1",
+    "src/core/workspace-migrations/0002-better-auth-foundation.json": "67a59795585ea55c9eefbec1be63c9a716a55ede779c89bec63c2b9f77ce80bf",
+    "src/core/workspace-migrations/0006-auth-audit-v6.json": "e19f1ee45191ef58864b204a889126fab04ce7a13ca7df2c70cb7924a9bd5274",
+    "src/core/workspace-migrations/0012-auth-recovery-telemetry-v12.json": "bb9f9dea7aed5ed09a50285019bf3f94749ed874ccdb6647d217604ce779e87a",
+    "src/server/better-auth.ts": "9513797eb1b1a82b0c9d592fb00e3317d6d33b6eb29c7bf0c548a0a4c58c9b73"
+  },
+  "evidence_files": {
+    "rust-verify.txt": "12c5446cb1aafd953bd91abf7dfea17df7c0550d63f852f9f18a82d8d2def840",
+    "review-native.txt": "4c7a815751f84c484718d89139acb541c593848619042e90ffa6c70a61237acd",
+    "review-process.json": "51820432ffed0339c4db1a5e0c674f832aeefe10cbe024d2158840fabe066d98",
+    "review-checks.json": "406b6f78ac7ca742bba8f6f738de197b98372e855bec69a1d02616dd4c7c6081",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "9a78565b83ae9958ff60fa86cc44c3b01bc3b264c8d515e652eb3c27cc9204f7"
+  }
+}
