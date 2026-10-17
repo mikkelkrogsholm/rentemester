@@ -1017,7 +1017,7 @@ try {
 			checks,
 			observations,
 			limits: [
-				"Internal identity paths only: no concrete Rust network mail adapter, public acknowledgement mapper or exposed endpoint, actual handle/lifetime admission or live dual writers",
+				"This identity suite uses injected mail; concrete HTTPS transport is verified separately. No public acknowledgement mapper/endpoints, actual handle/lifetime admission or live dual writers",
 				"Trusted-device/rememberMe/OS-native credential and full identity/provider parity remain pending",
 				"Private native context and replay state are stricter than legacy in-flight challenges",
 				"Commit busy exercised; OS/storage crash and restore-lineage qualification remain separate",

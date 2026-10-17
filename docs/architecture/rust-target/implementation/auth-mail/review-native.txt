@@ -1,0 +1,7 @@
+    Finished `release` profile [optimized] target(s) in 0.08s
+     Running unittests src/lib.rs (target/release/deps/rentemester_runtime-b57e689831c555d0)
+
+running 1 test
+test auth_mail::tests::gateway_input_refuses_credential_and_url_ambiguity ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 31 filtered out; finished in 0.00s

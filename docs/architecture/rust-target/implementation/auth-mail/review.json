@@ -1,0 +1,33 @@
+{
+  "scope": "Concrete native HTTP JSON v1 auth-mail gateway; synthetic real local TLS/DNS only",
+  "verdict": "No remaining material scoped findings",
+  "evidence": {
+    "native_focused_tests": 1,
+    "process_checks": 40,
+    "independent_final_harness_repetitions": 1,
+    "reviewed_source_sha256": {
+      "Cargo.lock": "5fe9f3f4a29fa25b8ac32b17d59f6b7e1d27656c85b0fbe9618341bc093a1381",
+      "crates/rentemester-runtime/Cargo.toml": "019276374c0f3b10f6d40d560c315c9c25269718c404a46b526facb70bea3c45",
+      "crates/rentemester-runtime/src/auth_mail.rs": "c6b3b12ec1c1f6226405617285c276829eb3eb6a031578ca5677d5608ca61b94",
+      "crates/rentemester-runtime/src/lib.rs": "5780db2c960f9fd6721046fdfb5a7e847f27e74928f9aa250ee192ab304ca187",
+      "scripts/rust/verify-auth-mail.ts": "dd21c49bfcf5b316c54dad5f508bf589ac3afb82992ad661af7df242beed6c40",
+      "scripts/rust/verify.ts": "240225f2829208a1de10d1395fc592515ffd9843667d25bb44482316ebcc1f7d",
+      "scripts/rust/verify-mfa-login.ts": "1ddcc38ccc95cc99ec3f5f26b6f429db1426384944e33b9adacb058985165c59",
+      "docs/architecture/rust-target/implementation/auth-mail/CONTRACT.md": "51ce5e5aae2c2855bf0815ea3b7775a6e4830c09b788fe5329268cac0989a853",
+      "docs/architecture/rust-target/implementation/auth-mail/gdd.json": "009a93ca8a5b4858c38ce84aa346eda3c9241d9c2597e06e48bb83575a30b1ba",
+      "docs/architecture/rust-target/implementation/auth-mail/readiness.json": "581b3f3c531d48b33d9a2c80b2db5f62058cb46890173db2ff91914a852b658d",
+      "docs/architecture/rust-target/implementation/README.md": "59f146b6a4e678eedd6718be203eb12cf44feb11ef26b020eb4001fe4aa2cf53"
+    }
+  },
+  "review_loop": [
+    "Review diagnosed reqwest default lazy Hickory initialization: synchronous config/hosts acquisition and implicit Google resolver fallback. Replaced with custom prepared async resolver; pinned Mozilla roots avoid platform-verifier network effects",
+    "Source oracle found unnecessarily narrow ASCII address validation. Preserved valid Unicode address and original UTF8 HMAC secret parity; final full regression follows the Rust correction",
+    "Independent review corrected deterministic hostname mismatch fixture, empty NO_PROXY environment qualification, best-effort hosts-file wording and actual blackhole DNS query/deadline assertions",
+    "Final source-bound independent40 real TLS/DNS cases, focused native release unit and actual scoped GDD3 structural validation passed"
+  ],
+  "limits": [
+    "Pinned Mozilla DER roots require release/root-update/platform qualification; private/system roots and proxies are not supported by implicit fallback",
+    "Eight-second send budget under ordinary scheduling excludes sender construction, OS configuration/hosts acquisition, blocking client Drop/runtime-thread join and whole-server worker admission",
+    "Public acknowledgement/CSRF/rate/bounded worker dispatch, durable delivery/outbox, other identity flows, actual writer/workspace lifetime and platform cutover remain pending"
+  ]
+}

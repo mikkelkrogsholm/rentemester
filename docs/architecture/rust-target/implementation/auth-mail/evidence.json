@@ -1,0 +1,58 @@
+{
+  "increment": "auth-mail-1",
+  "code_revision": "sha256:5ccda66158a95bf3f06dbd26339f96bfa65105c8fac4e8c51d5e696bea22f8d9",
+  "spec_revision": "sha256:1388e19af076e11af61fc8799b92b6ef2243e38975c8af3c63ecb574cffd9079",
+  "state": "verified-native-http-json-auth-mail",
+  "checks": {
+    "native_tests_passed": 94,
+    "ignored_subprocess_helpers": 20,
+    "integration_checks": 11587,
+    "mfa_and_identity_process_checks": 484,
+    "auth_mail_process_checks": 40,
+    "independent_final_harness_repetitions": 1,
+    "strict_fmt_clippy_boundaries_typecheck_lint": "PASS"
+  },
+  "claims": [
+    "Concrete native ResetSender and three finite source mail kinds use compact identical JSON/header/HMAC including valid Unicode inputs",
+    "At most3 same-body/key attempts, explicit retry statuses/opaque transport failure and one monotonic8-second delivery budget under ordinary scheduling",
+    "Real local TLS validates configured CA/SAN, rejects untrusted roots/wrong host and never forwards mail through redirects or environment proxies/keylogging",
+    "Prepared async DNS uses configured system resolver without implicit public fallback; real DNS success and observed unanswered UDP queries qualify bounded delivery",
+    "Only response status is inspected; payload size/input validation and secret-free output preserve the external handoff boundary",
+    "Existing reset request transaction/postcommit semantics remain verified; gateway success acknowledges handoff rather than guaranteed delivery"
+  ],
+  "limits": [
+    "Pinned Mozilla DER roots require release/root-update/platform qualification; private/system roots and proxies are not supported by implicit fallback",
+    "Eight-second send budget under ordinary scheduling excludes sender construction, OS configuration/hosts acquisition, blocking client Drop/runtime-thread join and whole-server worker admission",
+    "Public acknowledgement/CSRF/rate/bounded worker dispatch, durable delivery/outbox, other identity flows, actual writer/workspace lifetime and platform cutover remain pending",
+    "Generic deliver does not authorize recipient/action URL; trusted use cases own authorization and configured origin policy",
+    "No production mail/gateway, real user/company data, live dual writers, production migration/deployment or full epic completion",
+    "Graphify explicit AST refresh and semantic refresh cover current implementation README/CONTRACT only; generated evidence/logs and unrelated/historical sources are not claimed semantically refreshed"
+  ],
+  "verification_mode": "Full rust:verify on final functional Rust and final transport assertions, plus independent final40-case repetition, one focused release unit and actual GDD3",
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": {
+    "Cargo.lock": "5fe9f3f4a29fa25b8ac32b17d59f6b7e1d27656c85b0fbe9618341bc093a1381",
+    "crates/rentemester-runtime/Cargo.toml": "019276374c0f3b10f6d40d560c315c9c25269718c404a46b526facb70bea3c45",
+    "crates/rentemester-runtime/src/auth_mail.rs": "c6b3b12ec1c1f6226405617285c276829eb3eb6a031578ca5677d5608ca61b94",
+    "crates/rentemester-runtime/src/lib.rs": "5780db2c960f9fd6721046fdfb5a7e847f27e74928f9aa250ee192ab304ca187",
+    "docs/architecture/rust-target/implementation/README.md": "59f146b6a4e678eedd6718be203eb12cf44feb11ef26b020eb4001fe4aa2cf53",
+    "docs/architecture/rust-target/implementation/auth-mail/CONTRACT.md": "51ce5e5aae2c2855bf0815ea3b7775a6e4830c09b788fe5329268cac0989a853",
+    "docs/architecture/rust-target/implementation/auth-mail/gdd.json": "009a93ca8a5b4858c38ce84aa346eda3c9241d9c2597e06e48bb83575a30b1ba",
+    "docs/architecture/rust-target/implementation/auth-mail/readiness.json": "581b3f3c531d48b33d9a2c80b2db5f62058cb46890173db2ff91914a852b658d",
+    "scripts/rust/verify-auth-mail.ts": "dd21c49bfcf5b316c54dad5f508bf589ac3afb82992ad661af7df242beed6c40",
+    "scripts/rust/verify-mfa-login.ts": "1ddcc38ccc95cc99ec3f5f26b6f429db1426384944e33b9adacb058985165c59",
+    "scripts/rust/verify.ts": "240225f2829208a1de10d1395fc592515ffd9843667d25bb44482316ebcc1f7d",
+    "src/server/auth-email.ts": "1d922d82d3dc4e2a9be1337c8e0f22c506510f97ce6afa4f899a771f784f25d3",
+    "tests/unit/auth-email-http-json-v1.test.ts": "a130c645efebe79651f1e6cd169cfa38d4d05341ed152a7cf8223e407b9edcff"
+  },
+  "evidence_files": {
+    "rust-verify.txt": "c582574b24d1230f1f851ed9126e265dde1ec02d34bff72323abfd9c4833c939",
+    "review-native.txt": "e0f32d7572306defd7e5342caac4fbd0516b430e1bf9b9a00ac2d1944f1201e9",
+    "review-process.json": "4d19a90bd33f544c5584f12156b229832a0bc398e1d8af8d9c80027dd95a40ab",
+    "review-checks.json": "0c0cfc3d06fb17766442fba27650fd4be19a8fd9921758461cec8409e4329444",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "239e7592764a1f8b8f94dbecd10a324244c3f27c5b987eaa4d0e6cc110f6646a"
+  }
+}

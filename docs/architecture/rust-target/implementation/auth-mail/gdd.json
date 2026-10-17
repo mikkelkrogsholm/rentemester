@@ -1,0 +1,217 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Concrete native HTTP JSON v1 auth-mail gateway",
+    "goal": "Deliver existing auth messages with source-compatible wire/HMAC, bounded retries/time and confidential validated TLS",
+    "scope": "R41 internal concrete provider adapter; no public dispatch/deployment/distribution/cutover"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Trusted native runtime auth-mail boundary",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Validated configured HTTPS handoff with source wire, explicit TLS/DNS policy, monotonic retry budget and opaque uncertainty",
+        "rationale": "Internal auth flows need a real Rust transport with truthful external effects and no secret forwarding",
+        "excludes": [
+          "Action authorization/database state, public endpoints/worker admission, durable delivery/outbox, private/system trust expansion and full platform release"
+        ]
+      },
+      "interfaces": [
+        "action.auth_mail"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Three source message kinds/Unicode encode identical body/header/HMAC and return only after valid TLS gateway2xx",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Synthetic loopback TLS/DNS gateways and injected operator configuration/message",
+        "when": "Call concrete native sender and compare actual source wire",
+        "then": "Three source message kinds/Unicode encode identical body/header/HMAC and return only after valid TLS gateway2xx"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Bad configuration/input, untrusted roots/hostname, client/redirect status or exhausted attempts/budget refuse opaquely and do not forward mail",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Synthetic loopback TLS/DNS gateways and injected operator configuration/message",
+        "when": "Call concrete native sender and compare actual source wire",
+        "then": "Bad configuration/input, untrusted roots/hostname, client/redirect status or exhausted attempts/budget refuse opaquely and do not forward mail"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Same serialized body and HMAC survive retries; secrets/provider body/errors stay out of results/logs; no database or new-token retry occurs",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Synthetic loopback TLS/DNS gateways and injected operator configuration/message",
+        "when": "Call concrete native sender and compare actual source wire",
+        "then": "Same serialized body and HMAC survive retries; secrets/provider body/errors stay out of results/logs; no database or new-token retry occurs"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Prepared fail-closed async DNS, explicit trust/no proxy/redirect/keylog/internal retry and monotonic budget are source corrections; construction/Drop remain outside timing claim",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Synthetic loopback TLS/DNS gateways and injected operator configuration/message",
+        "when": "Call concrete native sender and compare actual source wire",
+        "then": "Prepared fail-closed async DNS, explicit trust/no proxy/redirect/keylog/internal retry and monotonic budget are source corrections; construction/Drop remain outside timing claim"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Real local stalled TLS-response/DNS calls exhaust one shared budget without extra sends; postcommit ResetSender composition preserves use-case ownership",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Synthetic loopback TLS/DNS gateways and injected operator configuration/message",
+        "when": "Call concrete native sender and compare actual source wire",
+        "then": "Real local stalled TLS-response/DNS calls exhaust one shared budget without extra sends; postcommit ResetSender composition preserves use-case ownership"
+      }
+    },
+    "action.auth_mail": {
+      "kind": "action",
+      "description": "Send source-compatible confidential auth mail through configured validated HTTPS gateway",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "kind_recipient_token_action_url": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "configured_gateway_bearer_from_HMAC_client_and_prepared_DNS": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "InvalidConfig during setup; DeliveryUnconfirmed for input/transport/status/budget failure without delivery-or-rollback guarantee"
+        },
+        "preconditions": [
+          "Trusted use case authorizes the message and holds no database writer during send",
+          "Configured sender constructed outside async executor/request critical path; public bounded worker admission and release/platform gates remain binding"
+        ],
+        "postconditions": [
+          "At most3 explicit same-body/key attempts within monotonic8-second send budget under ordinary scheduling",
+          "Only configured HTTPS endpoint receives content; validated TLS/no redirects/proxies and opaque failure preserve confidential boundary"
+        ],
+        "external_effects": [
+          "Up to3 TLS HTTP POSTs to configured gateway using source contract/HMAC",
+          "Prepared configured async DNS as needed; no database, responsebody parsing or background/new-token delivery"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "External failure can follow acceptance. Bound same-message attempts, suppress raw secrets, validate explicit TLS/DNS policy and preserve postcommit ownership; construction/destruction are not delivery-budget proof.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "External failure can follow acceptance. Bound same-message attempts, suppress raw secrets, validate explicit TLS/DNS policy and preserve postcommit ownership; construction/destruction are not delivery-budget proof.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "External failure can follow acceptance. Bound same-message attempts, suppress raw secrets, validate explicit TLS/DNS policy and preserve postcommit ownership; construction/destruction are not delivery-budget proof.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "External failure can follow acceptance. Bound same-message attempts, suppress raw secrets, validate explicit TLS/DNS policy and preserve postcommit ownership; construction/destruction are not delivery-budget proof.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "External failure can follow acceptance. Bound same-message attempts, suppress raw secrets, validate explicit TLS/DNS policy and preserve postcommit ownership; construction/destruction are not delivery-budget proof.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Validate/serialize once, fixed HMAC, prepared DNS and pinned roots, at most3 remaining-budget attempts, status-only handoff or opaque uncertainty"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.auth_mail",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.auth_mail",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.auth_mail",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.auth_mail",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.auth_mail",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.auth_mail",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Concrete native HTTP JSON v1 auth-mail gateway",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "51ce5e5aae2c2855bf0815ea3b7775a6e4830c09b788fe5329268cac0989a853"
+      }
+    }
+  }
+}

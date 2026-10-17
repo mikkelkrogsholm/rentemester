@@ -1,5 +1,6 @@
 //! Runtime identity verification and cooperative process lifetime.
 pub mod auth;
+pub mod auth_mail;
 pub mod mfa;
 pub mod password;
 pub mod recovery;

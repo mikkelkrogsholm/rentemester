@@ -1,0 +1,132 @@
+{
+  "ok": true,
+  "scope": "Concrete native HTTPS auth-mail gateway on synthetic local TLS/DNS with actual source wire oracle",
+  "checks": 40,
+  "observations": [
+    {
+      "id": "wire-verification"
+    },
+    {
+      "id": "actual-source-wire-HMAC-verification"
+    },
+    {
+      "id": "wire-password-reset"
+    },
+    {
+      "id": "actual-source-wire-HMAC-password-reset"
+    },
+    {
+      "id": "wire-workspace-invitation"
+    },
+    {
+      "id": "actual-source-wire-HMAC-workspace-invitation"
+    },
+    {
+      "id": "actual-source-Unicode-address-and-HMAC"
+    },
+    {
+      "id": "native-reset-sender-trait-real-TLS"
+    },
+    {
+      "id": "status-200"
+    },
+    {
+      "id": "status-204"
+    },
+    {
+      "id": "nonretry-400"
+    },
+    {
+      "id": "nonretry-401"
+    },
+    {
+      "id": "nonretry-403"
+    },
+    {
+      "id": "nonretry-404"
+    },
+    {
+      "id": "nonretry-408"
+    },
+    {
+      "id": "nonretry-422"
+    },
+    {
+      "id": "redirect-301-no-forward"
+    },
+    {
+      "id": "redirect-302-no-forward"
+    },
+    {
+      "id": "redirect-303-no-forward"
+    },
+    {
+      "id": "redirect-307-no-forward"
+    },
+    {
+      "id": "redirect-308-no-forward"
+    },
+    {
+      "id": "rate-limit"
+    },
+    {
+      "id": "server-retries"
+    },
+    {
+      "id": "attempt-limit"
+    },
+    {
+      "id": "retry-then-client-error"
+    },
+    {
+      "id": "idempotency-stable-separate-call"
+    },
+    {
+      "id": "idempotency-new-token"
+    },
+    {
+      "id": "untrusted-root-refused"
+    },
+    {
+      "id": "TLS-name-mismatch-refused"
+    },
+    {
+      "id": "network-failure-max-three-connections"
+    },
+    {
+      "id": "real-stalled-TLS-response-shares-eight-second-budget"
+    },
+    {
+      "id": "actual-async-DNS-and-SAN-hostname-TLS"
+    },
+    {
+      "id": "real-unanswered-async-DNS-bounded-by-shared-budget"
+    },
+    {
+      "id": "input-query-endpoint-no-network-request"
+    },
+    {
+      "id": "input-header-injection-no-network-request"
+    },
+    {
+      "id": "input-empty-secret-no-network-request"
+    },
+    {
+      "id": "input-invalid-from-no-network-request"
+    },
+    {
+      "id": "input-invalid-recipient-no-network-request"
+    },
+    {
+      "id": "input-body-budget-no-network-request"
+    },
+    {
+      "id": "proxy-environment-and-TLS-keylog-not-used"
+    }
+  ],
+  "limits": [
+    "Only local generated CA/leaf trust override in ignored helper; production uses pinned Mozilla roots and no private trust bypass",
+    "Eight seconds bounds send budget under ordinary scheduling, not construction, runtime thread Drop, hard realtime or whole server worker admission",
+    "No external email, public HTTP acknowledgement/CSRF/rate dispatch, durable outbox/guaranteed delivery, full identity/platform/distribution or cutover"
+  ]
+}

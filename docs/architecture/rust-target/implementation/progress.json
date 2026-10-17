@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "reset-request-1",
-  "code_revision": "sha256:b4fd6b366b09f9acb67da7c850d1ff016c96b3fe152975c60699b629a1f0ab49",
-  "spec_revision": "sha256:29f7c3865217b1b3d89361c5239dbc79480f1df28d4536c172027ce080917d71",
-  "state": "verified-native-reset-issuance-postcommit-mail-and-callback",
+  "current_increment": "auth-mail-1",
+  "code_revision": "sha256:5ccda66158a95bf3f06dbd26339f96bfa65105c8fac4e8c51d5e696bea22f8d9",
+  "spec_revision": "sha256:1388e19af076e11af61fc8799b92b6ef2243e38975c8af3c63ecb574cffd9079",
+  "state": "verified-native-http-json-auth-mail",
   "issues_closed": [],
   "next": [
-    "Implement concrete bounded Rust network auth-mail adapter and public acknowledgement concealment/CSRF/rate/blocking dispatch, plus remaining email-verification/service/trusted-device/provider identity. Internal MFA/enrollment, own-code/session management and full reset issuance/callback/completion with injected postcommit sender are verified. Preserve actual physical handle/workspace lifetime, legacy writer/history and full source in-flight provider revocation gates.",
+    "Implement public identity acknowledgement concealment/CSRF/rate/bounded blocking dispatch, plus remaining email-verification/service/trusted-device/provider identity. Internal reset issuance/callback/completion and concrete native HTTPS auth-mail handoff are verified. Preserve actual physical handle/workspace lifetime, legacy writer/history, full source in-flight provider revocation, TLS roots/platform and construction/shutdown qualification gates.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,18 +21,19 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "password-reset-1",
-    "code_revision": "sha256:65c58010c67219c2e376b7b04966b443e53343f8716b87eaa242574d5a5ae94d",
-    "spec_revision": "sha256:00f3b7db6b4ae3e4592cb8562001aaec386dcc03a2b40d5a44a4ef300c76b04c",
-    "state": "verified-native-source-issued-password-reset-completion"
+    "current_increment": "reset-request-1",
+    "code_revision": "sha256:b4fd6b366b09f9acb67da7c850d1ff016c96b3fe152975c60699b629a1f0ab49",
+    "spec_revision": "sha256:29f7c3865217b1b3d89361c5239dbc79480f1df28d4536c172027ce080917d71",
+    "state": "verified-native-reset-issuance-postcommit-mail-and-callback"
   },
   "evidence": {
-    "report": "reset-request/evidence.json",
-    "parity": "reset-request/review-process.json",
-    "rust_tests_passed": 93,
-    "ignored_subprocess_helpers": 19,
-    "integration_checks": 11547,
+    "report": "auth-mail/evidence.json",
+    "parity": "auth-mail/review-process.json",
+    "rust_tests_passed": 94,
+    "ignored_subprocess_helpers": 20,
+    "integration_checks": 11587,
     "mfa_and_identity_process_checks": 484,
+    "auth_mail_process_checks": 40,
     "writer_authority": false,
     "whole_issues_closed": false
   },
@@ -204,6 +205,12 @@
       "code_revision": "sha256:65c58010c67219c2e376b7b04966b443e53343f8716b87eaa242574d5a5ae94d",
       "spec_revision": "sha256:00f3b7db6b4ae3e4592cb8562001aaec386dcc03a2b40d5a44a4ef300c76b04c",
       "state": "verified-native-source-issued-password-reset-completion"
+    },
+    {
+      "current_increment": "reset-request-1",
+      "code_revision": "sha256:b4fd6b366b09f9acb67da7c850d1ff016c96b3fe152975c60699b629a1f0ab49",
+      "spec_revision": "sha256:29f7c3865217b1b3d89361c5239dbc79480f1df28d4536c172027ce080917d71",
+      "state": "verified-native-reset-issuance-postcommit-mail-and-callback"
     }
   ]
 }

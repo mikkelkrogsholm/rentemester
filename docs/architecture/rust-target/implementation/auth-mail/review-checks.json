@@ -1,0 +1,58 @@
+{
+  "review": "auth-mail-independent-final",
+  "result": "PASS",
+  "checks": 40,
+  "remaining_material_findings": [],
+  "process_report": "/tmp/rm-mail-review-process.json",
+  "stderr_report": "/tmp/rm-mail-review-process.err",
+  "native": {
+    "result": "PASS 1 release test",
+    "report": "/tmp/rm-mail-review-native.txt"
+  },
+  "gdd": {
+    "result": "3 PASS structural checks",
+    "report": "/tmp/rm-mail-review-readiness.json",
+    "matches_current_report": true,
+    "source_contract_hash_matches": true
+  },
+  "resolved_findings": [
+    {
+      "severity": "low",
+      "finding": "Hosts read failures documented accurately as Hickory best-effort empty-hosts substitution; configuration acquisition failures remain InvalidConfig."
+    },
+    {
+      "severity": "low",
+      "finding": "Unanswered DNS test now requires observed UDP queries and elapsed 7500..10000ms; final independent 40-check repeat passed."
+    }
+  ],
+  "reviewed_scope": [
+    "Prepared async DNS and pinned dependency initialization/timeout/cancellation/Drop paths",
+    "Pinned Mozilla TLS roots bypass platform verifier; actual trusted-root and bad-SAN probes",
+    "Source body/templates/HMAC parity for three message kinds and Unicode",
+    "Same body/key across bounded retries; no redirects/proxies/referrer/cookies/decompression/internal retries/TLS keylogging",
+    "No provider-body parsing/draining or raw transport/provider diagnostics",
+    "Actual loopback UDP DNS/SAN success, unanswered DNS and stalled TLS response budgets, network failure and ResetSender integration"
+  ],
+  "assumptions": [
+    "Only synthetic loopback TLS/UDP and in-memory source oracle, no actual gateway/email.",
+    "Eight seconds is ordinary-scheduling delivery budget, excluding construction/system-config/hosts access/client Drop join, hard realtime and server worker admission.",
+    "Dependency/parser/header/body copies are not universally zeroized; application tracing/platform/public exposure qualification remain pending."
+  ],
+  "notes": [
+    "reqwest hickory-dns feature remains compiled; custom resolver overrides the default initializer.",
+    "Current readiness report was refreshed by main during the repeat; it exactly matches the independently generated final report. All functional source and harness hashes match captured run hashes."
+  ],
+  "sha256": {
+    "Cargo.lock": "5fe9f3f4a29fa25b8ac32b17d59f6b7e1d27656c85b0fbe9618341bc093a1381",
+    "crates/rentemester-runtime/Cargo.toml": "019276374c0f3b10f6d40d560c315c9c25269718c404a46b526facb70bea3c45",
+    "crates/rentemester-runtime/src/auth_mail.rs": "c6b3b12ec1c1f6226405617285c276829eb3eb6a031578ca5677d5608ca61b94",
+    "crates/rentemester-runtime/src/lib.rs": "5780db2c960f9fd6721046fdfb5a7e847f27e74928f9aa250ee192ab304ca187",
+    "scripts/rust/verify-auth-mail.ts": "dd21c49bfcf5b316c54dad5f508bf589ac3afb82992ad661af7df242beed6c40",
+    "scripts/rust/verify.ts": "240225f2829208a1de10d1395fc592515ffd9843667d25bb44482316ebcc1f7d",
+    "scripts/rust/verify-mfa-login.ts": "1ddcc38ccc95cc99ec3f5f26b6f429db1426384944e33b9adacb058985165c59",
+    "docs/architecture/rust-target/implementation/auth-mail/CONTRACT.md": "51ce5e5aae2c2855bf0815ea3b7775a6e4830c09b788fe5329268cac0989a853",
+    "docs/architecture/rust-target/implementation/auth-mail/gdd.json": "009a93ca8a5b4858c38ce84aa346eda3c9241d9c2597e06e48bb83575a30b1ba",
+    "docs/architecture/rust-target/implementation/auth-mail/readiness.json": "581b3f3c531d48b33d9a2c80b2db5f62058cb46890173db2ff91914a852b658d",
+    "docs/architecture/rust-target/implementation/README.md": "59f146b6a4e678eedd6718be203eb12cf44feb11ef26b020eb4001fe4aa2cf53"
+  }
+}
