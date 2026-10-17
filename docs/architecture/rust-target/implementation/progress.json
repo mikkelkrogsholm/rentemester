@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "access-policy-1",
-  "code_revision": "sha256:98c5fcd57f46fd91196ff758396325e15b35fd4e24e544e60b9097b8347283ff",
-  "spec_revision": "sha256:2b70533748e2b154758d5827ec26d940d695af0b180dcf5f74cbb3651f801241",
-  "state": "verified-experimental-shared-access-policy",
+  "current_increment": "control-fence-1",
+  "code_revision": "sha256:c32bb583b620dd3e0498fb8b34685bd7c8a13bda98b99367a94337d5bfb494c1",
+  "spec_revision": "sha256:7e09b1e69c4695470cb06d265ea4670cd7a512a90392af324438c1c7f5ac3fef",
+  "state": "verified-experimental-human-control-company-fence",
   "issues_closed": [],
   "next": [
-    "Bind trusted current identity/control source observations to shared application authorization and implement control/ledger revocation fencing before actual dry-run/post/reverse; finish R04/R03/R09 baseline gaps",
+    "Integrate authenticated runtime identity and stable physical/logical workspace/company lifetime/manifest admission with current-row control fencing, then actual rule/evidence/confirmation/backup/idempotent posting use cases; finish R04/R03/R09 baseline gaps",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -27,12 +27,12 @@
     "state": "verified-experimental-readonly"
   },
   "evidence": {
-    "report": "access-policy/evidence.json",
-    "parity": "access-policy/parity.json",
-    "rust_tests_passed": 60,
-    "ignored_subprocess_helpers": 11,
-    "access_policy_checks": 2485,
-    "integration_checks": 10172,
+    "report": "control-fence/evidence.json",
+    "parity": "control-fence/process.json",
+    "rust_tests_passed": 64,
+    "ignored_subprocess_helpers": 12,
+    "control_fence_checks": 106,
+    "integration_checks": 10278,
     "writer_authority": false,
     "whole_issues_closed": false
   },
@@ -120,6 +120,12 @@
       "code_revision": "sha256:6840a4138730aef78a2efeebfa4c5c808d54e2b3581745ebc4a6ab88d6c9db78",
       "spec_revision": "sha256:a4c3b5c00fea08515ecf62862f5ecd8ca41fec70758fd7378b5375e8ea389f7c",
       "state": "verified-experimental-source-backed-journal-preview"
+    },
+    {
+      "current_increment": "access-policy-1",
+      "code_revision": "sha256:98c5fcd57f46fd91196ff758396325e15b35fd4e24e544e60b9097b8347283ff",
+      "spec_revision": "sha256:2b70533748e2b154758d5827ec26d940d695af0b180dcf5f74cbb3651f801241",
+      "state": "verified-experimental-shared-access-policy"
     }
   ]
 }

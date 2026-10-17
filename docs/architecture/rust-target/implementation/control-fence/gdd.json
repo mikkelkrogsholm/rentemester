@@ -1,0 +1,219 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Human control-to-company transaction fence",
+    "goal": "Order SQLite revocation against authorized company commit",
+    "scope": "Internal admitted-connection R04/R13 increment; no live/product writer authority"
+  },
+  "nodes": {
+    "action.control_fence": {
+      "kind": "action",
+      "description": "Authorize current human control facts while holding control writer lock across company commit",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "operation_permission": {
+            "type": "string"
+          }
+        },
+        "context": {
+          "admitted_connections": {
+            "type": "object"
+          },
+          "provider_and_company_observations": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "not_committed": "Failure.stage=NotCommitted; structured error codes include access_denied, active_transaction, connection_refused, control_busy_or_unavailable, invalid_control, control_fence_required, company_busy_or_unavailable, company_write_lock_required or unchanged trusted callback Error; reuse flags govern retirement.",
+          "outcome_unknown": "Failure.stage=OutcomeUnknown with transaction_escaped or commit_outcome_unknown; retire/recover, no rollback claim."
+        },
+        "preconditions": [
+          "Trusted authenticated human/provider observation, stable distinct admitted databases, manifest/lifetime fencing and trusted synchronous callback."
+        ],
+        "postconditions": [
+          "Known company commit plus control reuse status, or typed precommit/unknown failure. No deliberate control changes."
+        ],
+        "external_effects": [],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Protect control observation through company commit; preserve known commit and unknown outcomes; external authentication/manifest admission remain explicit preconditions.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Protect control observation through company commit; preserve known commit and unknown outcomes; external authentication/manifest admission remain explicit preconditions.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Protect control observation through company commit; preserve known commit and unknown outcomes; external authentication/manifest admission remain explicit preconditions.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Protect control observation through company commit; preserve known commit and unknown outcomes; external authentication/manifest admission remain explicit preconditions.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Protect control observation through company commit; preserve known commit and unknown outcomes; external authentication/manifest admission remain explicit preconditions.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "not_committed": [
+            "scenario.refusal"
+          ],
+          "outcome_unknown": [
+            "scenario.correction"
+          ]
+        }
+      },
+      "behavior": "Control immediate lock, strict current admission, actual rows, shared policy, company immediate transaction, explicit outcome and release"
+    },
+    "component.application": {
+      "kind": "component",
+      "description": "Source-read-only snapshot adapter",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Current control authorization and SQLite transaction orchestration",
+        "rationale": "Actual commits require ordered current control facts.",
+        "excludes": [
+          "Provider verification, stable path/lifetime admission, manifest locking, domain posting and product endpoints"
+        ]
+      },
+      "interfaces": [
+        "action.control_fence"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Actual current control rows allow exactly one authorized company commit and no control data changes.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control DB and isolated transaction-effect ledger.",
+        "when": "Execute native fenced transaction or synchronized independent revoker/crash child.",
+        "then": "Actual current control rows allow exactly one authorized company commit and no control data changes."
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Missing session/current access, wrong scope/permission or invalid connection/source admission refuse before callback.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control DB and isolated transaction-effect ledger.",
+        "when": "Execute native fenced transaction or synchronized independent revoker/crash child.",
+        "then": "Missing session/current access, wrong scope/permission or invalid connection/source admission refuse before callback."
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Business/SQL errors roll back sequence and companion effects; prior control state survives.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control DB and isolated transaction-effect ledger.",
+        "when": "Execute native fenced transaction or synchronized independent revoker/crash child.",
+        "then": "Business/SQL errors roll back sequence and companion effects; prior control state survives."
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Postcommit cleanup failure preserves success; commit/manual transaction escape reports unknown rather than false rollback.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control DB and isolated transaction-effect ledger.",
+        "when": "Execute native fenced transaction or synchronized independent revoker/crash child.",
+        "then": "Postcommit cleanup failure preserves success; commit/manual transaction escape reports unknown rather than false rollback."
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Separate processes serialize revoke/post; kill before commit rolls back and kill after commit preserves effects and releases locks.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic control DB and isolated transaction-effect ledger.",
+        "when": "Execute native fenced transaction or synchronized independent revoker/crash child.",
+        "then": "Separate processes serialize revoke/post; kill before commit rolls back and kill after commit preserves effects and releases locks."
+      }
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.control_fence",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.control_fence",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.control_fence",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.control_fence",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.control_fence",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.control_fence",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Human control transaction fence contract",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "a15ea28e8427e254a62ba9b50c6b7df04ca5e6457ceb80ee6c2f59a39b598088"
+      }
+    }
+  }
+}

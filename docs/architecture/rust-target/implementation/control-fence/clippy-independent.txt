@@ -1,0 +1,3 @@
+    Blocking waiting for file lock on build directory
+    Checking rentemester-application v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-application)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.55s

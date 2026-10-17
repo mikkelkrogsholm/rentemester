@@ -22,6 +22,7 @@ for (const command of [
   [process.execPath, "run", "scripts/rust/check-boundaries.ts"],
   [process.execPath, "run", "scripts/rust/manual-rule-contract.ts"],
   [process.execPath, "run", "scripts/rust/verify-access-policy.ts"],
+  [process.execPath, "run", "scripts/rust/verify-control-fence.ts"],
   [process.execPath, "run", "scripts/rust/verify-readonly.ts"],
   [process.execPath, "run", "scripts/rust/verify-report-contracts.ts"],
   [process.execPath, "run", "scripts/rust/verify-journal-hashes.ts"],

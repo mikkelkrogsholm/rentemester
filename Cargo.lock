@@ -275,8 +275,12 @@ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 name = "rentemester-application"
 version = "0.1.0"
 dependencies = [
+ "rentemester-engine",
+ "rentemester-storage",
+ "rusqlite",
  "serde",
  "serde_json",
+ "tempfile",
 ]
 
 [[package]]

@@ -12,7 +12,9 @@ assert.equal(result.exitCode, 0, result.stderr.toString());
 const metadata = JSON.parse(result.stdout.toString());
 function checkDependencies(crate: string, names: string[]) {
   const allowed = new Set(
-    crate === "rentemester-engine" ? ["num-bigint", "serde"] : ["serde"],
+    crate === "rentemester-engine"
+      ? ["num-bigint", "serde"]
+      : ["serde", "rentemester-engine", "rentemester-storage", "rusqlite"],
   );
   assert(
     names.every((n) => allowed.has(n)),
@@ -21,6 +23,7 @@ function checkDependencies(crate: string, names: string[]) {
 }
 function checkSource(source: string) {
   // Supplemental direct-use check; dependency graph + code review remain necessary.
+  assert(!/\b(rusqlite|rentemester_storage)\s*::/.test(source), "Pure policy imports SQL/storage");
   assert(
     !/\bstd\s*::\s*(fs|net|process|env|thread)\b/.test(source),
     "Domain imports an I/O/runtime API",
@@ -40,21 +43,25 @@ for (const crate of ["rentemester-engine", "rentemester-application"]) {
   );
   const dir = join(root, `crates/${crate}/src`);
   for (const f of readdirSync(dir).filter((f) => f.endsWith(".rs")))
-    checkSource(readFileSync(join(dir, f), "utf8"));
+    if (crate === "rentemester-engine" || f === "access.rs")
+      checkSource(readFileSync(join(dir, f), "utf8"));
 }
 for (const crate of ["rentemester-engine", "rentemester-application"]) {
-  assert.throws(() => checkDependencies(crate, ["serde", "rusqlite"]));
+  if (crate === "rentemester-engine")
+    assert.throws(() => checkDependencies(crate, ["serde", "rusqlite"]));
   assert.throws(() => checkDependencies(crate, ["serde", "rustix"]));
 }
 assert.throws(() => checkSource("use std::fs::File;"));
+assert.throws(() => checkSource("use rusqlite::Connection;"));
+assert.throws(() => checkSource("rentemester_storage::control_access::observe_human();"));
 console.log(
   JSON.stringify({
     ok: true,
     scope:
-      "current Rust domain/application policy dependencies and direct std I/O imports",
+      "current domain/application dependency boundaries and pure domain/access module imports",
     negativeControls: [
-      "forbidden SQL/OS dependencies in both pure crates",
-      "direct filesystem import",
+      "forbidden domain SQL and unclassified OS dependencies",
+      "direct filesystem/SQL/storage imports in pure modules",
     ],
     limits:
       "Direct import scan supplements dependency inspection and code review; it is not an exhaustive Rust semantic analyzer.",

@@ -1,0 +1,360 @@
+{
+  "format": "rentemester-control-fence-increment/1",
+  "base_code": "02b2b6bc364f3742799880d1137451174dcc4729",
+  "previous_goal_turn": "Progress:02b2b6bc shared policy delivered/pushed. Reconciled actual branch/goal/user changes; next available necessary action was current control facts and SQLite commit/revocation ordering.",
+  "code_revision": "sha256:c32bb583b620dd3e0498fb8b34685bd7c8a13bda98b99367a94337d5bfb494c1",
+  "spec_revision": "sha256:7e09b1e69c4695470cb06d265ea4670cd7a512a90392af324438c1c7f5ac3fef",
+  "assets": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "5826adfa288477268f0c4a84653360d395fff48816245682f03ba1f4119fa143"
+    },
+    {
+      "path": "crates/rentemester-application/Cargo.toml",
+      "sha256": "f4f41917872b71d8fd2bb0fec3f74edc3c4a052885602252e7c95829790905e7"
+    },
+    {
+      "path": "crates/rentemester-application/src/access.rs",
+      "sha256": "07d55edfa4bf1636927aae51caddb01531851f0b61a161de1aeac46970e902b9"
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence.rs",
+      "sha256": "9511fd48722b4f07c447b4d26a336389bdadcb7b4fe65bf57e6a41ac0969fb79"
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence/tests.rs",
+      "sha256": "8668e3be460365173c073fa6060ac66dd7f81dc94edf47c125905d8600c9de34"
+    },
+    {
+      "path": "crates/rentemester-application/src/lib.rs",
+      "sha256": "b74a0b477c7af05db1c5716fe1681afcb8e112ffd8b83fdf2144f7c235ea2492"
+    },
+    {
+      "path": "crates/rentemester-storage/src/control_access.rs",
+      "sha256": "e085e4e1e0669d44cbd2cdca4a74b3350b66495b160f3710f018432d60032202"
+    },
+    {
+      "path": "crates/rentemester-storage/src/control_migration.rs",
+      "sha256": "e5402744c8fd156e86b112bf24377bb2d9a86ff34f35e5620ab597ddc212cdb4"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-workspace-schema.json",
+      "sha256": "f56992f726def0300aca5350f48f3cb3dabe0c3672f410bc6bd56bd300f8dc08"
+    },
+    {
+      "path": "crates/rentemester-storage/src/lib.rs",
+      "sha256": "df048129e474ef5c6e1a746cad695d7df8b52398db3babefdbccf1859fc9a470"
+    },
+    {
+      "path": "crates/rentemester-storage/src/migration.rs",
+      "sha256": "708fb44faf17aa7e6a2b55fd0c446e990894cbde6c2d42ee18c66e79370aa315"
+    },
+    {
+      "path": "crates/rentemester-storage/src/sequences.rs",
+      "sha256": "3dc55c23949c0ffa835c8632eb339ab66c80256a57eec02122fef1dfef3b4fb9"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/control-fence/CONTRACT.md",
+      "sha256": "a15ea28e8427e254a62ba9b50c6b7df04ca5e6457ceb80ee6c2f59a39b598088"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/control-fence/gdd.json",
+      "sha256": "d9cc071aaa369930c8de3224bad78520bd0d2230affda6bb2ef3dda73832f1e8"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/control-fence/initial-spec/CONTRACT.md",
+      "sha256": "0c799a6f659ba480046f5c047a6824f89ffb58fe84b8b03623736174e200323a"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/control-fence/initial-spec/gdd.json",
+      "sha256": "097e2c465c296f5fcf3fa0ae68df0c73ef1125edbe4707bf1c1a22c008744424"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/control-fence/journal-off-repro.py",
+      "sha256": "e84225c6c80ec1eabf12ef212bd7e8dd249a49d00429d7be7f2a3dae05eb09b1"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/control-fence/qualified-spec/CONTRACT.md",
+      "sha256": "a15ea28e8427e254a62ba9b50c6b7df04ca5e6457ceb80ee6c2f59a39b598088"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/control-fence/qualified-spec/gdd.json",
+      "sha256": "1c95d6e399d02d72d7acca022980315ad066683528a2ac38bbc86818a012d2f0"
+    },
+    {
+      "path": "scripts/rust/check-boundaries.ts",
+      "sha256": "8a045642d77831b0e7162398ddda51be56b600c066aa26b8d54f16dd6bc3e65a"
+    },
+    {
+      "path": "scripts/rust/verify-control-fence.ts",
+      "sha256": "b69961ef270e4e8d1fd9e54ad6235ba3c0ed94d6df969450b6f8966499f556b3"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "303013db408d07855efcc8bd1c4484e9175202e696711115309e2d22cda227a6"
+    },
+    {
+      "path": "src/core/access-permissions.ts",
+      "sha256": "8e8161c3389b0704a11f047a5834c663d48bb2412ecdfebf80efe6219c108fa5"
+    },
+    {
+      "path": "src/core/workspace-access.ts",
+      "sha256": "0e034fcee922d6cd4733da1fbdc85f05dce0a443461083903a5808554fb84b2e"
+    },
+    {
+      "path": "src/core/workspace-control.ts",
+      "sha256": "63b155521b26872be2fa95175434cd4234c284f07bf5a2baca0e63e1cb04509d"
+    },
+    {
+      "path": "src/core/workspace-migrations/0001-workspace-control-baseline.json",
+      "sha256": "8358aef2635b37b47baf56a39f424f9aff3dcb7c17dbc2c3450803a3e09eaac1"
+    },
+    {
+      "path": "src/core/workspace-migrations/0002-better-auth-foundation.json",
+      "sha256": "67a59795585ea55c9eefbec1be63c9a716a55ede779c89bec63c2b9f77ce80bf"
+    },
+    {
+      "path": "src/core/workspace-migrations/0003-workspace-access-events.json",
+      "sha256": "c2b1437243f8e7389214f6461e6ffdca15a366427693e8227ba743a6916f33bf"
+    },
+    {
+      "path": "src/core/workspace-migrations/0004-workspace-bootstrap-saga-v4.json",
+      "sha256": "13bde090a7226a946fcf508219937954fa399a1f9fe2821401886a84ce150c2a"
+    },
+    {
+      "path": "src/core/workspace-migrations/0005-session-assurance-v5.json",
+      "sha256": "5faac57c09dcf8d7e3ee1336e89b8a0e7a901747833e1173007fe080379b0f44"
+    },
+    {
+      "path": "src/core/workspace-migrations/0006-auth-audit-v6.json",
+      "sha256": "e19f1ee45191ef58864b204a889126fab04ce7a13ca7df2c70cb7924a9bd5274"
+    },
+    {
+      "path": "src/core/workspace-migrations/0007-group-structure-v7.json",
+      "sha256": "95e7d01cf05cdccee597fc59559726cc1631eca9fd1e81bdf5ab2956e3f006b6"
+    },
+    {
+      "path": "src/core/workspace-migrations/0008-document-access-audit-v8.json",
+      "sha256": "e6fce5a7611527480449d26fc9cd296b42d5b8b742766703abc263915f82a748"
+    },
+    {
+      "path": "src/core/workspace-migrations/0009-intercompany-mapping-v9.json",
+      "sha256": "f3a482eec01518afc2c867b395667a43dd22a214a973827e5271530772d6f881"
+    },
+    {
+      "path": "src/core/workspace-migrations/0010-consolidation-elimination-v10.json",
+      "sha256": "5b08711067ed6e7be968b110fa4d5e630f27b855edbf98aa4cdc1bb55d87629e"
+    },
+    {
+      "path": "src/core/workspace-migrations/0011-consolidation-profile-v11.json",
+      "sha256": "8202a1782de7a84d7f35df228270a1926c538f5799ef80a31d76e3c5927eae6a"
+    },
+    {
+      "path": "src/core/workspace-migrations/0012-auth-recovery-telemetry-v12.json",
+      "sha256": "bb9f9dea7aed5ed09a50285019bf3f94749ed874ccdb6647d217604ce779e87a"
+    },
+    {
+      "path": "src/core/workspace-migrations/0013-authorization-denial-audit-v13.json",
+      "sha256": "eb46c90fdbbb12ab02d14f947350cc94c174521c85d382c037d6332337f60d08"
+    },
+    {
+      "path": "src/core/workspace-migrations/0014-workspace-invitations-v14.json",
+      "sha256": "2ab1673daa43416e51031243b7a414ca2a1434b42e48374bb9562643241cfc85"
+    },
+    {
+      "path": "src/core/workspace-migrations/0015-party-registry-v15.json",
+      "sha256": "15b0e17b38552b3f24bf23f6fba4b16d277c537e7714b9004706c9957e05ea97"
+    },
+    {
+      "path": "src/core/workspace-migrations/0016-corporate-records-v16.json",
+      "sha256": "971578f419b70ca034ef4ef5f0a7596af14d2a5b138a9f1986f9fb7c67886800"
+    },
+    {
+      "path": "src/core/workspace-migrations/0017-service-principals-v17.json",
+      "sha256": "15b5d5fe4da768c10a015c4f362ca0f61046719a50e542682c681be6be27dee5"
+    },
+    {
+      "path": "src/core/workspace-migrations/0018-service-principal-saga-v18.json",
+      "sha256": "76bc8d098370055957b5e376cf245e203d96bc4a1ccd46e0bfbe1ffb1fa5bb9b"
+    },
+    {
+      "path": "src/core/workspace-migrations/0019-party-assertions-v19.json",
+      "sha256": "c9538ec5c0b7848c936d817b352eb52625a9ad7b02e68e85046e9aaac020ab60"
+    },
+    {
+      "path": "src/core/workspace-migrations/0020-corporate-record-governance-v20.json",
+      "sha256": "e6a09f5134d49e82e67c9e3670b53e35fdda2aa6e7ffe9b57b876d8c6f4f414f"
+    },
+    {
+      "path": "src/core/workspace-migrations/0021-company-knowledge-v21.json",
+      "sha256": "201ccb4479dc1815e2ca4b471145703691e0d0a1802fe00177ccbe4b58dfab3e"
+    },
+    {
+      "path": "src/core/workspace-migrations/0022-ownership-graph-v22.json",
+      "sha256": "623d781cff8a5965f46a51bafec8711577752c8418b6c227c6d00a15f98da2ee"
+    },
+    {
+      "path": "src/core/workspace-migrations/0023-corporate-record-scope-integrity-v23.json",
+      "sha256": "e93a3b5d0a84f3717911bfb4ec427d54382510e7cb06a6d893c53a75570060fe"
+    },
+    {
+      "path": "src/core/workspace-migrations/0024-ownership-fact-lifecycle-v24.json",
+      "sha256": "00bc0385cc15bf49fe1dc2518f9dc16ea18fd3abb3ca864a066a59cc553e5bf3"
+    },
+    {
+      "path": "src/core/workspace-migrations/0025-workspace-document-inbox-v25.json",
+      "sha256": "863ffdda2052039fc27a92c8fa9b481bec81a8d71740ec38d1e2a1d5d7835293"
+    },
+    {
+      "path": "src/core/workspace-migrations/0026-workspace-inbox-handoff-claims-v26.json",
+      "sha256": "9beea7662c6e36c49f39f55c213acf42729ef6438a3f7910ecf720a17704a370"
+    },
+    {
+      "path": "src/core/workspace-migrations/0027-intercompany-dispositions-v27.json",
+      "sha256": "c8061487475d8e1247f09d534e64f24164270f1a3d50e4c316e02593a2dddaca"
+    },
+    {
+      "path": "src/core/workspace-migrations/0028-intercompany-disposition-lifecycle-v28.json",
+      "sha256": "05c1140fcfb2161037ca812a2bfb67ebd488a7f51f785ffac5862329bd23d8bb"
+    },
+    {
+      "path": "src/core/workspace-migrations/0029-workspace-inbox-single-assignment-v29.json",
+      "sha256": "4c6b8b72bde8f76c07f6fb0f40c5a7e57876f92de7626cf120eaa4c6de7e742d"
+    },
+    {
+      "path": "src/core/workspace-migrations/0030-document-party-role-taxonomy-v30.json",
+      "sha256": "753b3f3653e286053f0e7592b90824ac647c4a7531c816af128c03d8001ac8e6"
+    },
+    {
+      "path": "src/core/workspace.ts",
+      "sha256": "27a25248191fb63a918dc13250a2cab000c805f67b8c3f394e391c46c44f183f"
+    },
+    {
+      "path": "src/server/auth.ts",
+      "sha256": "be531af3c308a417d767dc30960777c45408ff8883d767702199dbcbdae942cc"
+    }
+  ],
+  "verification": {
+    "rust_tests_passed": 64,
+    "ignored_helpers_explicitly_selected": 12,
+    "full_run_initial_check_groups": [
+      2485,
+      96,
+      34,
+      31,
+      29,
+      10,
+      25,
+      54,
+      40,
+      47,
+      37,
+      49,
+      128,
+      5691,
+      1075,
+      211,
+      226
+    ],
+    "current_verified_check_groups": [
+      2485,
+      106,
+      34,
+      31,
+      29,
+      10,
+      25,
+      54,
+      40,
+      47,
+      37,
+      49,
+      128,
+      5691,
+      1075,
+      211,
+      226
+    ],
+    "current_integration_checks": 10278,
+    "new_process_checks": 106,
+    "actual_unchanged_legacy_core_and_session_observations": 90,
+    "native_current_application_tests": 7,
+    "native_current_storage_tests": 35,
+    "journal_modes": [
+      "WAL",
+      "DELETE"
+    ],
+    "unsupported_mode_cases": 8,
+    "acceptance_composition": "Initial full workspace run retained every unchanged-domain regression and96 fence checks before OFF-mode correction. Current106-check harness, seven application/35 storage native tests, full-workspace strict Clippy, format and boundary guard were rerun after correction (independent logs). Replace the old96 group with current106; do not portray initial full-run log as a single all-current-source invocation. No other production crate depends on the changed application orchestration.",
+    "observable_effects": "Control serialized image unchanged in ordinary/refusal/busy/crash cases, company sequence+companion transaction outcomes checked.90 actual unchanged legacy core/session observations retained alongside stricter native operation/scope/admission cases. Fixture unsafe-mode setup deliberately starts main control file in DELETE before asserted native OFF/MEMORY installation; no header/byte masking. No source WAL/SHM or hardware power-loss claim.",
+    "process_cases": "A real DELETE-mode held reader forces COMMIT busy and OutcomeUnknown while WAL commits without invalidating the old reader snapshot. Both journal batches prove control/company busy refusal; three held-precommit revokers (membership disable/session delete) cannot commit before ledger; retry after revoke denies; killed/reaped precommit child rolls back and fresh authorized retry uses prior sequence1; killed/reaped postcommit child preserves commit and releases control lock.",
+    "environment": "macOS arm64; pinned Rust1.94.1; synthetic canonical control stores and isolated effect ledgers only; native helpers outside repository cwd."
+  },
+  "commands": [
+    {
+      "command": "bun run rust:verify",
+      "result": "PASS before final journal-mode correction; retained unchanged-target regression",
+      "log": "rust-verify-initial.txt"
+    },
+    {
+      "command": "bun run scripts/rust/verify-control-fence.ts",
+      "result": "PASS after correction",
+      "log": "process.json"
+    },
+    {
+      "command": "cargo test --locked -p rentemester-application -p rentemester-storage",
+      "result": "PASS after correction",
+      "log": "native-independent.txt"
+    },
+    {
+      "command": "cargo clippy --locked --workspace --all-targets -- -D warnings",
+      "result": "PASS after correction",
+      "log": "clippy-independent.txt"
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "result": "PASS after correction"
+    },
+    {
+      "command": "bun run scripts/rust/check-boundaries.ts",
+      "result": "PASS after correction and final pure-module import controls",
+      "log": "boundaries-final.txt"
+    },
+    {
+      "command": "bunx biome lint scripts/rust/verify-control-fence.ts scripts/rust/check-boundaries.ts scripts/rust/verify.ts --error-on-warnings",
+      "result": "PASS",
+      "log": "lint.txt"
+    }
+  ],
+  "independent_review": {
+    "agent": "migration_port_research",
+    "mode": "Read-only source/contract review and actual corrected native/Clippy/boundary/process reruns",
+    "diagnosed_defect": "OFF/FULL admission unsafe: reproducible successful rollback left999 changed rows with quick_check ok. WAL/DELETE allowlist and eight actual-mode refusal cases close it.",
+    "result": "No remaining supported-path material defect after correction",
+    "logs": [
+      "process-independent.txt",
+      "native-independent.txt",
+      "clippy-independent.txt",
+      "boundaries-independent.txt",
+      "journal-off-repro.py",
+      "journal-off-red.txt"
+    ]
+  },
+  "implementation_notes": [
+    "Initial readiness preceded implementation; qualified readiness-v2 preceded journal-mode correction; current readiness-v3 aligns typed Failure.stage/code taxonomy without weakening contract. Initial/qualified models and contracts were reconstructed from exact original writes and verified against original validator spec_revision hashes; they preserve the prior source-bound models, not new approval records.",
+    "Connection is_readonly MAIN is checked explicitly: readonly WAL BEGIN IMMEDIATE was observed to enter a non-Write state. Actual main Write state is checked before company callback; collector also requires control main Write.",
+    "Tempfile test dependency is used by real file-backed native execute fixtures after journal-mode admission was tightened; no new external package family added.",
+    "Application now orchestrates existing storage/engine/SQLite; pure domain/access source imports and allowed dependency graph remain guarded, including direct filesystem/SQL/storage negative controls.",
+    "Callbacks are trusted synchronous internal Rust, not SQL sandboxes. Detection catches COMMIT left autocommit, but COMMIT;BEGIN can evade it; all callback transaction-control SQL/sidechannels remain forbidden.",
+    "Known company commit returns its value even if control cleanup fails; commit error/detected escape is OutcomeUnknown, never a false rollback/retry claim. Unit cleanup helper test plus real before/after-commit crash children cover the exposed distinctions."
+  ],
+  "limitations": [
+    "Only SQLite control-row revocation ordering. Provider cryptographic verification/session expiry, workspace.json archive/registration/path locking, stable distinct physical/logical identities and lifetime legacy admission remain runtime prerequisites.",
+    "Human adapter only; service/local identity adapters, last-owner/invitation/security lifecycle and R04 provider selection remain open.",
+    "Effect ledgers prove transaction mechanics, not full company accounting schema, rule/period/evidence/backup policy, domain posting or atomic durable idempotency receipts.",
+    "No product endpoint or original-data writer enabled, no live migration/deployment/restore/cutover authority.",
+    "Source anchors are named evidence, not an exhaustive transitive dependency closure. Hardware/storage/cross-platform qualification and all remaining epic requirements stay open."
+  ],
+  "all_goal_requirements_complete": false,
+  "issues_closed": []
+}

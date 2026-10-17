@@ -1,0 +1,9 @@
+{
+  "format": "rentemester-rust-change/1",
+  "increment": "control-fence-1",
+  "code_revision": "sha256:c32bb583b620dd3e0498fb8b34685bd7c8a13bda98b99367a94337d5bfb494c1",
+  "spec_revision": "sha256:7e09b1e69c4695470cb06d265ea4670cd7a512a90392af324438c1c7f5ac3fef",
+  "result": "Verified internal current-human SQLite revocation/commit ordering under admitted-connection prerequisites",
+  "evidence": "evidence.json",
+  "full_goal_complete": false
+}

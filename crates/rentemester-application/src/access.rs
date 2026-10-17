@@ -102,6 +102,9 @@ impl Permission {
             | Self::CompanyOwnershipManage => Scope::Company,
         }
     }
+    pub(crate) fn is_company(self) -> bool {
+        self.scope() == Scope::Company
+    }
     fn is_public(self) -> bool {
         self.scope() == Scope::Public
     }

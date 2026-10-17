@@ -1,0 +1,1131 @@
+{
+  "ok": true,
+  "checks": 106,
+  "casesPerJournalMode": 45,
+  "journalModes": [
+    "WAL",
+    "DELETE"
+  ],
+  "observations": [
+    {
+      "mode": "WAL",
+      "id": "commit",
+      "result": {
+        "controlReusable": true,
+        "outcome": "committed",
+        "value": 1
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "business-error",
+      "result": {
+        "code": "synthetic_business",
+        "companyReusable": true,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "sql-error",
+      "result": {
+        "code": "synthetic_sql",
+        "companyReusable": true,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "manual-commit",
+      "result": {
+        "code": "transaction_escaped",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "unknown"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "provider-denial",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "cross-workspace",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "empty-workspace",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "empty-subject",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "empty-session",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "wrong-session-subject",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "unknown-subject",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "session-deleted",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "email-unverified",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "mfa-disabled",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "no-access-events",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "workspace-disabled",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "membership-revoked",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "full-width-revoke",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "earlier-negative-owner",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "workspace-owner-no-company-bypass",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "archived",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "unregistered",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "invalid-slug",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "public-not-company-authority",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "workspace-not-company-authority",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "role-denied",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "untrimmed-subject",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "untrimmed-session",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "control-temp",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "company-temp",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "attached",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "fk-disabled",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "weak-durability",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "query-only",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "pinned-control",
+      "result": {
+        "code": "active_transaction",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "company-first",
+      "result": {
+        "code": "active_transaction",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "malformed-security-flag",
+      "result": {
+        "code": "invalid_control",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "noncanonical-control",
+      "result": {
+        "code": "invalid_control",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "control-readonly",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "company-readonly",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "foreign-key-corruption",
+      "result": {
+        "code": "invalid_control",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "control-journal-off",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "company-journal-off",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "control-journal-memory",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "company-journal-memory",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "busy-control",
+      "result": {
+        "code": "control_busy_or_unavailable",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      }
+    },
+    {
+      "mode": "WAL",
+      "id": "busy-company",
+      "result": {
+        "code": "company_busy_or_unavailable",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      }
+    },
+    {
+      "mode": "WAL",
+      "id": "race-revoke",
+      "blockedBeforeCommit": true,
+      "revokedRetryDenied": true
+    },
+    {
+      "mode": "WAL",
+      "id": "race-disable",
+      "blockedBeforeCommit": true,
+      "revokedRetryDenied": true
+    },
+    {
+      "mode": "WAL",
+      "id": "race-session-delete",
+      "blockedBeforeCommit": true,
+      "revokedRetryDenied": true
+    },
+    {
+      "mode": "WAL",
+      "id": "commit-reader",
+      "result": {
+        "controlReusable": true,
+        "outcome": "committed",
+        "value": 1
+      },
+      "oldReaderSnapshotPreserved": true,
+      "controlReleased": true
+    },
+    {
+      "mode": "WAL",
+      "id": "crash-precommit",
+      "preservedCommit": false,
+      "lockReleased": true,
+      "retryFromPriorSequence": true
+    },
+    {
+      "mode": "WAL",
+      "id": "crash-postcommit",
+      "preservedCommit": true,
+      "lockReleased": true,
+      "retryFromPriorSequence": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "commit",
+      "result": {
+        "controlReusable": true,
+        "outcome": "committed",
+        "value": 1
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "business-error",
+      "result": {
+        "code": "synthetic_business",
+        "companyReusable": true,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "sql-error",
+      "result": {
+        "code": "synthetic_sql",
+        "companyReusable": true,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "manual-commit",
+      "result": {
+        "code": "transaction_escaped",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "unknown"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "provider-denial",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "cross-workspace",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "empty-workspace",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "empty-subject",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "empty-session",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "wrong-session-subject",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "unknown-subject",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "session-deleted",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "email-unverified",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "mfa-disabled",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "no-access-events",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "workspace-disabled",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "membership-revoked",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "full-width-revoke",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "earlier-negative-owner",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "workspace-owner-no-company-bypass",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "archived",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "unregistered",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "invalid-slug",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "public-not-company-authority",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "workspace-not-company-authority",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "role-denied",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "untrimmed-subject",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "untrimmed-session",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "control-temp",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "company-temp",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "attached",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "fk-disabled",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "weak-durability",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "query-only",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "pinned-control",
+      "result": {
+        "code": "active_transaction",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "company-first",
+      "result": {
+        "code": "active_transaction",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "malformed-security-flag",
+      "result": {
+        "code": "invalid_control",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "noncanonical-control",
+      "result": {
+        "code": "invalid_control",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "control-readonly",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "company-readonly",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "foreign-key-corruption",
+      "result": {
+        "code": "invalid_control",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "control-journal-off",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "company-journal-off",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "control-journal-memory",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "company-journal-memory",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "busy-control",
+      "result": {
+        "code": "control_busy_or_unavailable",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      }
+    },
+    {
+      "mode": "DELETE",
+      "id": "busy-company",
+      "result": {
+        "code": "company_busy_or_unavailable",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      }
+    },
+    {
+      "mode": "DELETE",
+      "id": "race-revoke",
+      "blockedBeforeCommit": true,
+      "revokedRetryDenied": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "race-disable",
+      "blockedBeforeCommit": true,
+      "revokedRetryDenied": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "race-session-delete",
+      "blockedBeforeCommit": true,
+      "revokedRetryDenied": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "commit-reader",
+      "result": {
+        "code": "commit_outcome_unknown",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "unknown"
+      },
+      "oldReaderSnapshotPreserved": true,
+      "controlReleased": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "crash-precommit",
+      "preservedCommit": false,
+      "lockReleased": true,
+      "retryFromPriorSequence": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "crash-postcommit",
+      "preservedCommit": true,
+      "lockReleased": true,
+      "retryFromPriorSequence": false
+    }
+  ],
+  "limits": [
+    "Admitted borrowed connections and provider/manifest identity remain prerequisites",
+    "Effect ledgers prove transaction mechanics, not full posting or durable idempotency",
+    "Control row snapshots preserved; no physical source/WAL immutability claim for a real writer-lock primitive"
+  ]
+}

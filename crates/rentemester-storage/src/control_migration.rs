@@ -288,6 +288,20 @@ fn test_checkpoint(step: i64, phase: &str) {
     }
 }
 
+/// Complete current control admission for an already held transaction, without migration.
+pub(crate) fn validate_current_control(db: &Connection) -> Result<(), Error> {
+    let expected = catalogue()?;
+    let steps = steps(&ARTIFACTS, &expected)?;
+    if history(db, &expected)?.len() != expected.len()
+        || schema(db)? != reference(&steps, expected.len())?
+    {
+        return Err(unsupported(
+            "complete current control schema/history required",
+        ));
+    }
+    integrity(db)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

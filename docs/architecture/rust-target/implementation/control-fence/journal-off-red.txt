@@ -1,0 +1,5 @@
+sqlite 3.53.4
+journal_mode ('off',)
+synchronous (2,)
+new rows after successful rollback 999
+integrity ('ok',)

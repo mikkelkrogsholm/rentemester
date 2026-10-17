@@ -15,6 +15,7 @@ mod company_vat;
 #[cfg(test)]
 mod test_support;
 pub use company_physical::{PhysicalRehearsalReport, rehearse_company_baseline};
+pub mod control_access;
 mod control_migration;
 mod journal_hash;
 pub mod journal_preview;
