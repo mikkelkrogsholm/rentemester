@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "mfa-crypto-1",
-  "code_revision": "sha256:3837bc708a0cbf6e7dbc595f6f566d824a6a3cd925112652faa6f75624b43c62",
-  "spec_revision": "sha256:3fede38ab5a3b51c520deceaf95faf9911832f829c8590a141b298d52a9792de",
-  "state": "verified-native-existing-mfa-encryption-and-totp-only",
+  "current_increment": "mfa-login-1",
+  "code_revision": "sha256:0ed78fd151117e64ed1fbbca0c6dc19b05a2ca28018b77b853047ecd369b5e2d",
+  "spec_revision": "sha256:c7ec29e2f1e613c8c8224ec1e9e75412539861abf1c049dbb5c7f9ca20e24277",
+  "state": "verified-native-enrolled-password-challenge-totp-session-transaction",
   "issues_closed": [],
   "next": [
-    "Compose native password transaction and MFA crypto into pending challenge/enrollment/TOTP/backup-code attempt+lockout+one-time consumption and session lifecycle; enforce current control identity/revocation and endpoint rate/origin/bounded blocking. Historical normalization mapping and actual handle/lifetime admission remain mandatory before exposure.",
+    "Qualify or fail closed on maximum-ROWID ordering in existing access/membership/security event streams before exposure. Implement native MFA enrollment and encrypted backup-code recovery with current identity, one-time attempts/account lockout/session lifecycle; keep endpoint rate/origin/bounded blocking, normalization-history mapping, physical handle/lifetime admission and full identity parity gates explicit.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,18 +21,18 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "password-login-1",
-    "code_revision": "sha256:bc45caf09367eb4656f5c892f673ba63f3d27b298146e2050dda9d62e99bba66",
-    "spec_revision": "sha256:f592082a6a9ff5429ff98df73ad51017e55b3a3496dd2ccf0d9d654d4db44d47",
-    "state": "verified-native-password-to-pending-factor-transaction"
+    "current_increment": "mfa-crypto-1",
+    "code_revision": "sha256:3837bc708a0cbf6e7dbc595f6f566d824a6a3cd925112652faa6f75624b43c62",
+    "spec_revision": "sha256:3fede38ab5a3b51c520deceaf95faf9911832f829c8590a141b298d52a9792de",
+    "state": "verified-native-existing-mfa-encryption-and-totp-only"
   },
   "evidence": {
-    "report": "mfa-crypto/evidence.json",
-    "parity": "mfa-crypto/review-process.json",
-    "rust_tests_passed": 83,
-    "ignored_subprocess_helpers": 18,
-    "integration_checks": 11033,
-    "mfa_crypto_process_checks": 310,
+    "report": "mfa-login/evidence.json",
+    "parity": "mfa-login/review-process.json",
+    "rust_tests_passed": 84,
+    "ignored_subprocess_helpers": 19,
+    "integration_checks": 11096,
+    "mfa_login_process_checks": 63,
     "writer_authority": false,
     "whole_issues_closed": false
   },
@@ -156,6 +156,12 @@
       "code_revision": "sha256:bc45caf09367eb4656f5c892f673ba63f3d27b298146e2050dda9d62e99bba66",
       "spec_revision": "sha256:f592082a6a9ff5429ff98df73ad51017e55b3a3496dd2ccf0d9d654d4db44d47",
       "state": "verified-native-password-to-pending-factor-transaction"
+    },
+    {
+      "current_increment": "mfa-crypto-1",
+      "code_revision": "sha256:3837bc708a0cbf6e7dbc595f6f566d824a6a3cd925112652faa6f75624b43c62",
+      "spec_revision": "sha256:3fede38ab5a3b51c520deceaf95faf9911832f829c8590a141b298d52a9792de",
+      "state": "verified-native-existing-mfa-encryption-and-totp-only"
     }
   ]
 }

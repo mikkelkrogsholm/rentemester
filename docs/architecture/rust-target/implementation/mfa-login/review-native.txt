@@ -1,0 +1,15 @@
+   Compiling rentemester-application v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-application)
+    Finished `release` profile [optimized] target(s) in 0.64s
+     Running unittests src/lib.rs (target/release/deps/rentemester_application-b332b2b72715b3d6)
+
+running 2 tests
+test mfa_login::tests::probe ... ignored, synthetic enrolled MFA login process helper selected by independent harness
+test mfa_login::tests::pending_bearer_is_not_a_session_and_binds_signer_profile_key_workspace ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 12 filtered out; finished in 0.00s
+
+     Running tests/access_vectors.rs (target/release/deps/access_vectors-a612a9ff24af611f)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s

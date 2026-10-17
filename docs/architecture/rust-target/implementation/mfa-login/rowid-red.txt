@@ -1,0 +1,21 @@
+204 | 	request: any,
+205 | 	expected = "invalid_credentials",
+206 | ) {
+207 | 	const before = image(f),
+208 | 		r = run(f, request);
+209 | 	assert.equal(r.ok, false, id);
+              ^
+AssertionError: lifecycle-rowid-overflow
+
+true !== false
+
+ generatedMessage: false,
+     actual: true,
+   expected: false,
+   operator: "strictEqual",
+       diff: "simple",
+       code: "ERR_ASSERTION"
+
+      at unchangedRefusal (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/scripts/rust/verify-mfa-login.ts:209:9)
+
+Bun v1.4.0 (macOS arm64)

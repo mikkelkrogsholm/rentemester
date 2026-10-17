@@ -1,0 +1,20 @@
+{
+  "scriptSha256": "42682b688afe6eda6870f203a21c442f2c7ee5eb291587c3bc1b9ed3e3564acc",
+  "results": [
+    {
+      "repeat": 1,
+      "ok": true,
+      "checks": 63
+    },
+    {
+      "repeat": 2,
+      "ok": true,
+      "checks": 63
+    },
+    {
+      "repeat": 3,
+      "ok": true,
+      "checks": 63
+    }
+  ]
+}

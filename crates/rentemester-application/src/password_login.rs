@@ -87,6 +87,9 @@ pub fn execute<T>(
                 "invalid_credentials",
                 "invalid_control",
                 "control_fence_required",
+                "invalid_auth_clock",
+                "invalid_auth_config",
+                "auth_crypto_unavailable",
             ]
             .contains(&error.code)
             {

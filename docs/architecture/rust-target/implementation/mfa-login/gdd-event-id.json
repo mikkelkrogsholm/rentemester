@@ -1,0 +1,216 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native enrolled TOTP login transaction",
+    "goal": "Complete enrolled native password/challenge/TOTP/session path with serialized attempt/lock/replay state",
+    "scope": "R04/R41 internal admitted-control path only; no endpoint, enrollment/recovery or actual handle admission"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native credential use-case orchestration",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Compose current password/MFA control observations and atomic challenge/attempt/session transactions",
+        "rationale": "Native enrolled login needs a real source-compatible session path",
+        "excludes": [
+          "HTTP/OS handle/lifetime/cutover qualification and remaining enrollment/recovery/service lifecycle"
+        ]
+      },
+      "interfaces": [
+        "action.mfa_login"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Native password\u2192pending challenge\u2192TOTP commits one source-readable signed session after MFA",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control with source-encrypted MFA and admitted trusted runtime context",
+        "when": "Execute native enrolled login across independent SQLite processes/connections",
+        "then": "Native password\u2192pending challenge\u2192TOTP commits one source-readable signed session after MFA"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Expiry, malformed/foreign/changed/revoked/ineligible state cannot create sessions",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control with source-encrypted MFA and admitted trusted runtime context",
+        "when": "Execute native enrolled login across independent SQLite processes/connections",
+        "then": "Expiry, malformed/foreign/changed/revoked/ineligible state cannot create sessions"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Operational failures roll back; known authentication failures commit declared counters/audit only; unknown commits withhold cookies",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control with source-encrypted MFA and admitted trusted runtime context",
+        "when": "Execute native enrolled login across independent SQLite processes/connections",
+        "then": "Operational failures roll back; known authentication failures commit declared counters/audit only; unknown commits withhold cookies"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Strict flags/context/time, immediate fifth-failure burn and durable native TOTP replay protection remain explicit",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control with source-encrypted MFA and admitted trusted runtime context",
+        "when": "Execute native enrolled login across independent SQLite processes/connections",
+        "then": "Strict flags/context/time, immediate fifth-failure burn and durable native TOTP replay protection remain explicit"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Control writer serializes attempts and successful challenge consumption so no lost failure count or duplicate session",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic control with source-encrypted MFA and admitted trusted runtime context",
+        "when": "Execute native enrolled login across independent SQLite processes/connections",
+        "then": "Control writer serializes attempts and successful challenge consumption so no lost failure count or duplicate session"
+      }
+    },
+    "action.mfa_login": {
+      "kind": "action",
+      "description": "Issue pending enrolled challenge and atomically verify TOTP/create session",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "bounded_credentials_or_verified_challenge_and_code": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "admitted_control_connection_trusted_keyring_cookie_clock": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Opaque invalid_credentials, invalid_control, connection_refused, auth crypto/clock errors; known committed Rejected vs NotCommitted/OutcomeUnknown failures"
+        },
+        "preconditions": [
+          "Runtime owns actual control handle/workspace lifetime and endpoint gates; no caller identity/time/key claims",
+          "Native replay protection requires authoritative native writer; no live dual writers"
+        ],
+        "postconditions": [
+          "Pending cookie after known challenge commit or signed session cookie only after known MFA/session commit",
+          "Wrong/replayed code commits declared attempt/audit state; operational failures roll back or mark unknown and retire connection"
+        ],
+        "external_effects": [
+          "Declared canonical control verification/session/twoFactor/telemetry mutations and existing immutable lifecycle triggers"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Current password and factor bindings, signed cookie proof, locked expiry/attempt/lockout/replay checks and single-DB session commit"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.mfa_login",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.mfa_login",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.mfa_login",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.mfa_login",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.mfa_login",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.mfa_login",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native enrolled TOTP login transaction",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "cb31377c7ef18961ab6a889e6c1806a18e3760f96c8403a5cc566f128dd5170d"
+      }
+    }
+  }
+}

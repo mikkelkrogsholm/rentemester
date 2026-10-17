@@ -1,0 +1,66 @@
+{
+  "increment": "mfa-login-1",
+  "code_revision": "sha256:0ed78fd151117e64ed1fbbca0c6dc19b05a2ca28018b77b853047ecd369b5e2d",
+  "spec_revision": "sha256:c7ec29e2f1e613c8c8224ec1e9e75412539861abf1c049dbb5c7f9ca20e24277",
+  "state": "verified-native-enrolled-password-challenge-totp-session-transaction",
+  "checks": {
+    "native_tests_passed": 84,
+    "ignored_subprocess_helpers": 19,
+    "integration_checks": 11096,
+    "new_mfa_login_process_checks": 63,
+    "independent_review_process_checks": 63,
+    "independent_harness_repetitions": 3,
+    "strict_fmt_clippy_boundaries_typecheck_lint": "PASS"
+  },
+  "claims": [
+    "Native enrolled password verification issues only a pending signed MFA challenge; current user/email/access/credential/factor/lifecycle context is bound privately and rechecked under one writer lock",
+    "Atomic failures persist exact challenge/account counters and rejected telemetry, burn after five failures and enforce fifteen-minute account lock after ten across fresh challenges",
+    "Native persistent monotonic TOTP replay protection and one-time pending consumption precede fresh twelve-hour session creation and immutable lifecycle audit",
+    "Session cookies return only after known commit; late SQL rollback preserves exact control image and real commit busy reports unknown/retired handle without cookies",
+    "Independent WAL/DELETE process races serialize single acceptance and preserve exact failure accounting; source cookie/session reader accepts native output and actual source HTTP TOTP verifier consumes standard pending challenge on a separate synthetic copy",
+    "Owned new bearer/cookie buffers zeroize and omit Debug/Clone/Serde; persisted diagnostics omit synthetic secrets/hashes/codes/cookies/fingerprints"
+  ],
+  "limits": [
+    "No public endpoint, real path opening, actual SQLite-handle/workspace lifetime admission or live dual-writer qualification",
+    "Enrollment/backup recovery/trusted devices/rememberMe, reset/service lifecycle, rate/origin/bounded blocking and full identity parity remain pending",
+    "Foreign in-flight challenges require fresh password authentication; strict flags/canonical counters/timestamps/private context/replay are documented native corrections",
+    "Current-row fingerprints plus selected lifecycle events do not establish universal historical ABA/restore lineage; legacy writers do not enforce native replay state",
+    "Other legacy workspace-access/membership/security streams still select by numeric ID; maximum-ROWID exhaustion/order must be qualified or refused before product exposure, independently of the repaired auth-lifecycle COUNT",
+    "Admission samples trusted time once; work completing after expiry is not retroactively revoked",
+    "Only owned buffers zeroize; caller/dependency/compiler/allocator/OS erasure and constant-time whole application execution are not claimed",
+    "Current macOS ARM64 synthetic stores only; OS/storage crash, cross-platform release, real adoption and cutover qualification remain separate",
+    "Semantic Graphify refresh covers implementation README/CONTRACT only; generated JSON/logs/historical snapshots/unrelated documents not semantically refreshed"
+  ],
+  "verification_mode": "Composite: broad rust:verify completed all11095 checks with62-case MFA scope; after final ROWID repair, fmt/strict Clippy/all84 native tests and the final63-case MFA harness were rerun. Canonical distinct integration cases =11095-62+63; not a second full pipeline run.",
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": {
+    "crates/rentemester-application/src/lib.rs": "f850dc02652403f78a6f36de8fa0af4fb140b21507561ecff3e35fd70ba60c4b",
+    "crates/rentemester-application/src/password_login.rs": "a3c6fdf4a000a12a05a0cc32e9bda172e63efecfadafc712338eb22f5eff04e6",
+    "crates/rentemester-application/src/mfa_login.rs": "b8c6677b97d0a483a33890b7b862c11fe478a7ab84e36f4f9c8a25ca428f32d3",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "af8a93daf9016aed946ba53cb88477fb34146ea2392737328ddbe77c17c78a07",
+    "crates/rentemester-runtime/src/auth.rs": "c6d9e40777382278d31b4bf5cfb6d302173f1ff5f429bf2b8238170800777417",
+    "crates/rentemester-storage/src/cookie_session.rs": "cc174b10535dd19129becf965a4c63f909231d02f8891e838c9fbf2ada971bce",
+    "crates/rentemester-storage/src/lib.rs": "dd325755cb8c1d0b54a6d03bdd9f13b5a739ca339e7f58f095a19cc067dc517d",
+    "crates/rentemester-storage/src/password_credential.rs": "800dcf1dc398e54aecc85cf598bd9c91e7b31feac3a68eef50e6a1364fbb1fd9",
+    "crates/rentemester-storage/src/mfa_login.rs": "0aea6aef2bf8b2923619bf368bb155b9e83403e6ec1db22f9455dd54a182e296",
+    "scripts/rust/verify-mfa-login.ts": "42682b688afe6eda6870f203a21c442f2c7ee5eb291587c3bc1b9ed3e3564acc",
+    "scripts/rust/verify.ts": "6234bca4d9e5f80df53276f5cedc7021c13c5d1e677f807a0d881dc72a7aacc1",
+    "src/server/better-auth.ts": "9513797eb1b1a82b0c9d592fb00e3317d6d33b6eb29c7bf0c548a0a4c58c9b73",
+    "node_modules/better-auth/dist/plugins/two-factor/index.mjs": "8d27aaa8379eb812ee70e6fe02a453390482903afbe5246cc344645fdb6a7c59",
+    "node_modules/better-auth/dist/plugins/two-factor/totp/index.mjs": "24d976f6f8e18d749ab07adc4a5836492ab8623844c354fb83d0c09596c26e3c",
+    "node_modules/better-auth/dist/api/routes/session.mjs": "831a00b6e144c1560c21406de1db586a67089630ad58fb2f3c7dcd3c5c963d57",
+    "node_modules/better-call/dist/cookies.mjs": "f7d6cf754197ae194950d53111319634405b5e98b5ace8dd1dfc14843ef631f5"
+  },
+  "evidence_files": {
+    "rust-verify.txt": "3a1ae95349e3311a60b4e5fe4d1f193a068a11832e53eae0de8e3f50f79ae170",
+    "review-native.txt": "a0ca8f0860ece0967f7a40c763a922aadd12ccb774c8f2e70e1365966bd7d253",
+    "review-process.json": "127be26786f25d03120b27758f52a250825a8b84fd30a1b101088e981c994d9d",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "bda64a16a0fecd45f5aeff28e9e8e04e049902a7a185d5d5ec8b6ff65b29376d",
+    "review-repeats.json": "c7ef427fb452d90cfae126aaa0a427e82033cd2fb12c50cd6c927d16408cebb7",
+    "rowid-fix-native.txt": "2a9457df951a32b4990ec480631e11c559cdcdc0a0351cb8273687ea24974f3b",
+    "rowid-red.txt": "2a3b0cf2002219143514fabba7813e113e76c737df03c22912b19d663d4f5133"
+  }
+}

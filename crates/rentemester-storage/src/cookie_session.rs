@@ -14,7 +14,7 @@ pub struct SessionIdentity {
 fn denied() -> Error {
     Error::new("invalid_credentials", "current session refused")
 }
-fn timestamp(value: &str) -> Result<i64, Error> {
+pub(crate) fn timestamp(value: &str) -> Result<i64, Error> {
     let bytes = value.as_bytes();
     if bytes.len() != 24
         || !bytes.iter().enumerate().all(|(i, b)| match i {

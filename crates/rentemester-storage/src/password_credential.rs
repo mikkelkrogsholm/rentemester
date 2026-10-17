@@ -136,7 +136,48 @@ pub fn capture(
     }
     Ok(Some(candidate))
 }
+pub fn capture_subject(
+    control: &Transaction<'_>,
+    subject: &str,
+) -> Result<Option<CredentialSnapshot>, Error> {
+    let email: Option<String> = control
+        .query_row("SELECT email FROM main.user WHERE id=?1", [subject], |r| {
+            r.get(0)
+        })
+        .optional()
+        .map_err(malformed)?;
+    let Some(email) = email else {
+        return Ok(None);
+    };
+    Ok(capture(control, &email)?.filter(|s| s.subject == subject))
+}
 impl CredentialSnapshot {
+    pub fn eligible_mfa(&self) -> bool {
+        self.email_verified && self.mfa_enabled
+    }
+    /// Private pending-auth binding only. Never export or log credential-derived fingerprints.
+    pub fn binding_fingerprint(&self) -> [u8; 32] {
+        use sha2::{Digest, Sha256};
+        let mut hash = Sha256::new();
+        let event = self.access_event.to_string();
+        for value in [
+            "rm-native-credential-binding-v1",
+            &self.subject,
+            &self.email,
+            if self.email_verified { "1" } else { "0" },
+            if self.mfa_enabled { "1" } else { "0" },
+            &self.user_updated,
+            &self.account_id,
+            &self.account_updated,
+            self.password.as_str(),
+            &event,
+            &self.workspace_role,
+        ] {
+            hash.update((value.len() as u64).to_be_bytes());
+            hash.update(value.as_bytes());
+        }
+        hash.finalize().into()
+    }
     /// Sensitive value for the trusted native KDF only; never persist or log this snapshot.
     pub fn password_hash(&self) -> &str {
         self.password.as_str()
