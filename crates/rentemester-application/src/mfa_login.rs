@@ -1,11 +1,11 @@
-//! Native enrolled password/challenge/TOTP/session orchestration; admitted control handle only.
+//! Native enrolled password/challenge/TOTP-or-backup/session orchestration; admitted control handle only.
 pub use crate::password_login::{Failure, FailureStage};
 use rentemester_engine::Error;
 use rentemester_runtime::{
     auth::{
         Clock, CookieVerifier, IssuedCookie, VerifiedChallenge, new_challenge_token, new_token,
     },
-    mfa::{MfaError, MfaKeyring, verify_totp},
+    mfa::{MfaError, MfaKeyring, consume_backup_code, verify_totp},
 };
 use rentemester_storage::{mfa_login as store, password_credential::NextFactor};
 use rusqlite::{Connection, TransactionBehavior};
@@ -91,6 +91,23 @@ pub fn verify(
     challenge: &VerifiedChallenge,
     code: &str,
 ) -> Result<VerifyOutcome, Failure> {
+    verify_code(control, runtime, challenge, code, store::Method::Totp)
+}
+pub fn verify_backup(
+    control: &mut Connection,
+    runtime: &Runtime<'_>,
+    challenge: &VerifiedChallenge,
+    code: &str,
+) -> Result<VerifyOutcome, Failure> {
+    verify_code(control, runtime, challenge, code, store::Method::Backup)
+}
+fn verify_code(
+    control: &mut Connection,
+    runtime: &Runtime<'_>,
+    challenge: &VerifiedChallenge,
+    code: &str,
+    method: store::Method,
+) -> Result<VerifyOutcome, Failure> {
     crate::control_fence::connection_ready(control)
         .map_err(|_| failure(error("connection_refused"), false))?;
     if !runtime.cookies.accepts_challenge(challenge) {
@@ -105,35 +122,55 @@ pub fn verify(
         #[cfg(test)]
         checkpoint("locked");
         if attempt.locked(now) {
-            attempt.audit_locked(&tx, runtime.audit_key_version)?;
+            attempt.audit_locked(&tx, runtime.audit_key_version, method)?;
             return Ok(VerifyOutcome::Rejected(Rejection::AccountLocked));
         }
-        let secret = runtime
-            .keys
-            .decrypt(attempt.encrypted_secret())
-            .map_err(|_| error("invalid_control"))?;
-        if secret.as_str().is_empty() || secret.as_str().len() > 1024 {
-            return Err(error("invalid_control"));
-        }
-        // Freeze the one sampled admission clock for all OTP window calculations.
-        struct Sample(i64);
-        impl Clock for Sample {
-            fn now_unix_ms(&self) -> Result<i64, rentemester_runtime::auth::AuthError> {
-                Ok(self.0)
+        let replacement;
+        let completion = match method {
+            store::Method::Backup => {
+                match consume_backup_code(runtime.keys, attempt.encrypted_backup_codes(), code) {
+                    Ok(Some(value)) => replacement = value,
+                    Ok(None) => {
+                        attempt.reject(&tx, now, runtime.audit_key_version, method)?;
+                        return Ok(VerifyOutcome::Rejected(Rejection::InvalidCode));
+                    }
+                    Err(MfaError::CryptoUnavailable) => {
+                        return Err(error("auth_crypto_unavailable"));
+                    }
+                    Err(_) => return Err(error("invalid_control")),
+                }
+                store::Completion::Backup(replacement.as_str())
             }
-        }
-        let counter = match verify_totp(secret.as_str(), code, &Sample(now)) {
-            Ok(counter) => counter,
-            Err(MfaError::InvalidCredentials) => {
-                attempt.reject(&tx, now, runtime.audit_key_version)?;
-                return Ok(VerifyOutcome::Rejected(Rejection::InvalidCode));
+            store::Method::Totp => {
+                let secret = runtime
+                    .keys
+                    .decrypt(attempt.encrypted_secret())
+                    .map_err(|_| error("invalid_control"))?;
+                if secret.as_str().is_empty() || secret.as_str().len() > 1024 {
+                    return Err(error("invalid_control"));
+                }
+                // Freeze the one sampled admission clock for all OTP window calculations.
+                struct Sample(i64);
+                impl Clock for Sample {
+                    fn now_unix_ms(&self) -> Result<i64, rentemester_runtime::auth::AuthError> {
+                        Ok(self.0)
+                    }
+                }
+                let counter = match verify_totp(secret.as_str(), code, &Sample(now)) {
+                    Ok(counter) => counter,
+                    Err(MfaError::InvalidCredentials) => {
+                        attempt.reject(&tx, now, runtime.audit_key_version, method)?;
+                        return Ok(VerifyOutcome::Rejected(Rejection::InvalidCode));
+                    }
+                    Err(e) => return Err(error(e.code())),
+                };
+                if attempt.replayed(&tx, counter, now)? {
+                    attempt.reject(&tx, now, runtime.audit_key_version, method)?;
+                    return Ok(VerifyOutcome::Rejected(Rejection::ReplayedCode));
+                }
+                store::Completion::Totp(counter)
             }
-            Err(e) => return Err(error(e.code())),
         };
-        if attempt.replayed(&tx, counter, now)? {
-            attempt.reject(&tx, now, runtime.audit_key_version)?;
-            return Ok(VerifyOutcome::Rejected(Rejection::ReplayedCode));
-        }
         let id = new_token().map_err(|e| error(e.code()))?;
         let token = new_token().map_err(|e| error(e.code()))?;
         let replay = new_token().map_err(|e| error(e.code()))?;
@@ -143,7 +180,7 @@ pub fn verify(
             .map_err(|e| error(e.code()))?;
         attempt.accept(
             &tx,
-            counter,
+            completion,
             now,
             store::SessionIds {
                 id: id.as_str(),

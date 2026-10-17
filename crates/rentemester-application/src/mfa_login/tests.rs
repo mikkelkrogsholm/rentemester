@@ -87,7 +87,7 @@ fn probe() {
     } else {
         match cookies.verify_challenge(request["cookie"].as_str(),request["service"].as_str()){
    Err(e)=>Err(failure(error(e.code()),true)),
-   Ok(proof)=>verify(&mut db,&runtime,&proof,request["code"].as_str().unwrap_or("")).map(|o|match o{VerifyOutcome::Session(c)=>{
+   Ok(proof)=>(if request["backup"]==true { verify_backup(&mut db,&runtime,&proof,request["code"].as_str().unwrap_or("")) } else { verify(&mut db,&runtime,&proof,request["code"].as_str().unwrap_or("")) }).map(|o|match o{VerifyOutcome::Session(c)=>{
     let proof=cookies.verify(Some(c.request_header()),None).unwrap();let tx=db.transaction_with_behavior(TransactionBehavior::Immediate).unwrap();let resolved=rentemester_storage::cookie_session::resolve(&tx,proof.token(),clock.0,rentemester_storage::cookie_session::SessionRequirement::Fresh).unwrap();assert!(resolved.subject=="u");tx.rollback().unwrap();
     json!({"ok":true,"cookie":c.request_header(),"setCookie":c.set_cookie(),"session":true,"nativeCurrentFresh":true})},VerifyOutcome::Rejected(r)=>json!({"ok":true,"rejected":format!("{r:?}")})})
   }

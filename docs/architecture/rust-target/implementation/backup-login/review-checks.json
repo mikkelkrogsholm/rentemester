@@ -1,0 +1,20 @@
+{
+  "results": [
+    {
+      "repeat": 1,
+      "ok": true,
+      "checks": 99
+    },
+    {
+      "repeat": 2,
+      "ok": true,
+      "checks": 99
+    }
+  ],
+  "sha256": {
+    "scripts/rust/verify-mfa-login.ts": "3c68324793ec944cfd4a4899f474ad4f3ec2c981b56a72cd2180ad79e66999d5",
+    "crates/rentemester-runtime/src/mfa/backup.rs": "71ad2f361452f26be4684081393aa5b532f4f4c6850852233a5c36f5c2008f9d",
+    "crates/rentemester-storage/src/mfa_login.rs": "1a14894246524adde3593187bc4fc41a8a44096d348eaf8f5ec58a443ddb0b10",
+    "crates/rentemester-application/src/mfa_login.rs": "7f1dcfe7deb08ba7d7aaa7098f52b3b203de557572dd37bf0bebf0d130d52a14"
+  }
+}

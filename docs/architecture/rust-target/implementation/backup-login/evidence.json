@@ -1,0 +1,60 @@
+{
+  "increment": "backup-login-1",
+  "code_revision": "sha256:a06e1f30708fc24dc6d68bf6046264be6a80288f8767111aaaa752a9684bb52a",
+  "spec_revision": "sha256:618023ca184fa8596f896bc7b46cfbd19ab7c090df00f2fcae7b5b821132de65",
+  "state": "verified-native-existing-encrypted-backup-code-login",
+  "checks": {
+    "native_tests_passed": 86,
+    "ignored_subprocess_helpers": 19,
+    "integration_checks": 11162,
+    "mfa_login_process_checks": 99,
+    "new_distinct_backup_process_cases": 33,
+    "independent_harness_repetitions": 2,
+    "extra_independent_position_and_drain_checks": 3,
+    "strict_fmt_clippy_boundaries_typecheck_lint": "PASS"
+  },
+  "claims": [
+    "Native enrolled login accepts existing configured encrypted backup codes as an alternative second factor through the same signed pending challenge and current admitted control context",
+    "Exact case-sensitive default code membership is compared across all validated entries; matched unique code removal and current-key fresh encryption preserve remaining order",
+    "One control writer transaction CAS-updates the current pool, resets account failure state, consumes pending records and creates twelve-hour session/recovery telemetry/immutable lifecycle audit; cookies return after known commit only",
+    "Wrong/empty-pool codes commit shared TOTP/backup budgets and distinct recovery telemetry; malformed stored state and late SQL faults do not spend attempts or consume codes",
+    "WAL/DELETE different-challenge same-code races cannot create two sessions; TOTP replay state stays unchanged",
+    "Configured source-generated encrypted pools are consumed natively; actual source decryption/session reader and HTTP backup verifier accept native ciphertext/cookie on a separate synthetic copy",
+    "Owned parsed-code and serialized plaintext buffers zeroize; backup wrappers omit Debug/Clone/Serde and persisted evidence omits codes/pools/envelopes/cookies"
+  ],
+  "limits": [
+    "No enrollment/native backup-code generation/view/regeneration, active-session recovery management or lost-password recovery authority",
+    "Strict default pool profile refuses duplicates/nondefault shapes/codes instead of adopting arbitrary custom source configuration",
+    "Same-current-pool consumption is serialized, but legacy writers do not acquire native context/replay/lifetime authority; live dual writers and restore lineage remain unqualified",
+    "Current captured identity/selected lifecycle counts are not a universal historical ABA or arbitrary explicit-ID chronology proof",
+    "Owned buffers only: library parse internals/caller/compiler/allocator/OS erasure and whole-operation constant-time execution are not claimed",
+    "No public endpoint, actual physical SQLite-handle/workspace lifetime admission, real company data adoption, platform distribution or cutover",
+    "Semantic Graphify refresh covers implementation README/CONTRACT only; generated JSON/logs/historical snapshots/unrelated documents not semantically refreshed"
+  ],
+  "verification_mode": "One full final-code rust:verify run plus independent99-case repeats and3 extra removal-position/drain process probes",
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": {
+    "crates/rentemester-runtime/src/mfa.rs": "7ef1ec239622d674cf7fc518a16469e012bb4ccbe2682bca71868ecdcebee75a",
+    "crates/rentemester-runtime/src/mfa/backup.rs": "71ad2f361452f26be4684081393aa5b532f4f4c6850852233a5c36f5c2008f9d",
+    "crates/rentemester-storage/src/mfa_login.rs": "1a14894246524adde3593187bc4fc41a8a44096d348eaf8f5ec58a443ddb0b10",
+    "crates/rentemester-application/src/mfa_login.rs": "7f1dcfe7deb08ba7d7aaa7098f52b3b203de557572dd37bf0bebf0d130d52a14",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "76d3c789dd1b1de5bb599ac3bbd5c7b972e9063d4d41f0b23fb708246cffdf9b",
+    "scripts/rust/verify-mfa-login.ts": "3c68324793ec944cfd4a4899f474ad4f3ec2c981b56a72cd2180ad79e66999d5",
+    "scripts/rust/verify.ts": "6234bca4d9e5f80df53276f5cedc7021c13c5d1e677f807a0d881dc72a7aacc1",
+    "src/server/better-auth.ts": "9513797eb1b1a82b0c9d592fb00e3317d6d33b6eb29c7bf0c548a0a4c58c9b73",
+    "node_modules/better-auth/dist/plugins/two-factor/backup-codes/index.mjs": "014a85ea00ca8f6f03654a33fd23f2a8cb3fc365b660d970c3a37fcc920476f2",
+    "node_modules/better-auth/dist/plugins/two-factor/verify-two-factor.mjs": "2145c9898216a35efecffe3f59e5ace6f9d4561a4e3c709f6cf7137b801de211",
+    "node_modules/better-auth/dist/crypto/index.mjs": "eda1857eadcf2dea50618c61da26e5fb5e79efd7755e665cc3d9f244a322c2a0"
+  },
+  "evidence_files": {
+    "rust-verify.txt": "22153266e06f79e4e2f8175dad51bb1272f3d7b7bf7daa90f91bdd129dc70cf6",
+    "review-native.txt": "419e281894da3104ae941a53e671a60e0649dec3087874d7a563317c93d8d044",
+    "review-process.json": "2a7be51e29a702923e3fe354467ec8fde7c91347d7511c46f371eb6229504298",
+    "review-checks.json": "5718cbc8173c04cade660565dd64e4ad1b5ff031c947f2b75f15a9289ce615f6",
+    "review-extra.json": "1b468f626d18d6f75d8a65120fb339aac915e4f158382a5b782d1bc14834e926",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "9ecb936edb115bd68d9a50790dc6a21fc659d93183bcec31a33c7dae834ffad4"
+  }
+}

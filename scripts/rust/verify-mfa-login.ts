@@ -18,7 +18,11 @@ import {
 } from "../../src/core/workspace-control";
 import { createBetterAuthRuntime } from "../../src/server/better-auth";
 import { hashPassword } from "../../node_modules/better-auth/dist/crypto/password.mjs";
-import { symmetricEncrypt } from "../../node_modules/better-auth/dist/crypto/index.mjs";
+import { generateBackupCodes } from "../../node_modules/better-auth/dist/plugins/two-factor/backup-codes/index.mjs";
+import {
+	symmetricDecrypt,
+	symmetricEncrypt,
+} from "../../node_modules/better-auth/dist/crypto/index.mjs";
 import { serializeSignedCookie } from "../../node_modules/better-call/dist/cookies.mjs";
 const root = resolve(import.meta.dir, "../.."),
 	cargo = Bun.which("cargo") ?? join(homedir(), ".cargo/bin/cargo");
@@ -571,16 +575,362 @@ try {
 	assert.equal((sdb.query("SELECT count(*) n FROM session").get() as any).n, 1);
 	record("actual-framework-consumes-standard-pending-copy");
 	sdb.close();
+	const sensitiveRecoveryCodes: string[] = [];
+	{
+		// Actual configured source generator supplies the starting encrypted recovery pool.
+		const generated = await generateBackupCodes(
+			{ currentVersion: 1, keys: new Map([[1, key]]) },
+			{ storeBackupCodes: "encrypted" },
+		);
+		const recoveryCodes: string[] = generated.backupCodes;
+		sensitiveRecoveryCodes.push(...recoveryCodes);
+		assert.equal(new Set(recoveryCodes).size, 10);
+		assert(
+			recoveryCodes.every((c) => /^[A-Za-z0-9]{5}-[A-Za-z0-9]{5}$/.test(c)),
+		);
+		async function backupFixture(
+			id: string,
+			mode = "delete",
+			pool: unknown = recoveryCodes,
+		) {
+			const f = fixture(id, mode);
+			if (pool === recoveryCodes) {
+				const db = new Database(f.control);
+				db.query("UPDATE twoFactor SET backupCodes=? WHERE id='f'").run(
+					generated.encryptedBackupCodes,
+				);
+				db.close();
+			} else {
+				await setPool(f, JSON.stringify(pool));
+			}
+			return f;
+		}
+		async function setPool(f: any, plaintext: string) {
+			const ciphertext = await symmetricEncrypt({
+				key: { currentVersion: 1, keys: new Map([[1, key]]) },
+				data: plaintext,
+			});
+			const db = new Database(f.control);
+			db.query("UPDATE twoFactor SET backupCodes=? WHERE id='f'").run(
+				ciphertext,
+			);
+			db.close();
+		}
+		async function remaining(f: any): Promise<string[]> {
+			const db = new Database(f.control);
+			const r = db
+				.query("SELECT backupCodes FROM twoFactor WHERE id='f'")
+				.get() as { backupCodes: string };
+			db.close();
+			return JSON.parse(
+				await symmetricDecrypt({
+					key: { currentVersion: 1, keys: new Map([[1, key]]) },
+					data: r.backupCodes,
+				}),
+			);
+		}
+		function recoveryAudit(f: any) {
+			const d = new Database(f.control);
+			const rows = d
+				.query(
+					"SELECT outcome,count(*) n FROM rm_workspace_auth_telemetry_events WHERE endpoint='two-factor-verify-backup-code' GROUP BY outcome ORDER BY outcome",
+				)
+				.all();
+			d.close();
+			return rows;
+		}
+		function replayRows(f: any) {
+			const d = new Database(f.control);
+			const rows = d
+				.query(
+					"SELECT * FROM verification WHERE identifier LIKE 'rm-native-totp-step-v1:%' ORDER BY id",
+				)
+				.all();
+			d.close();
+			return rows;
+		}
+		const recover = (
+			f: any,
+			cookie: string,
+			code = recoveryCodes[0],
+			request: any = {},
+		) => run(f, { backup: true, cookie, code, ...request });
+		for (const mode of ["wal", "delete"]) {
+			const f = await backupFixture(`backup-${mode}`, mode),
+				a = begin(f),
+				b = begin(f);
+			assert.equal(recover(f, a.cookie, "bad").rejected, "InvalidCode");
+			assert.equal(state(f).factor.count, 1);
+			assert.equal(recover(f, a.cookie).session, true);
+			assert.deepEqual(await remaining(f), recoveryCodes.slice(1));
+			assert.equal(state(f).sessions, 1);
+			assert.equal(state(f).replays, 0);
+			assert.equal(state(f).factor.count, 0);
+			assert.deepEqual(recoveryAudit(f), [
+				{ outcome: "accepted", n: 1 },
+				{ outcome: "rejected", n: 1 },
+			]);
+			record(`backup-${mode}-atomic-consumption-and-distinct-audit`);
+			unchangedRefusal(`backup-${mode}-consumed-challenge`, f, {
+				backup: true,
+				cookie: a.cookie,
+				code: recoveryCodes[0],
+			});
+			assert.equal(recover(f, b.cookie).rejected, "InvalidCode");
+			assert.equal(recover(f, b.cookie, recoveryCodes[1]).session, true);
+			assert.deepEqual(await remaining(f), recoveryCodes.slice(2));
+			assert.equal(state(f).sessions, 2);
+			record(`backup-${mode}-one-time-code-across-different-challenges`);
+			const replay = await backupFixture(`backup-replay-${mode}`, mode),
+				rt = begin(replay);
+			assert.equal(
+				run(replay, { cookie: rt.cookie, code: code() }).session,
+				true,
+			);
+			const beforeReplay = replayRows(replay),
+				rp = begin(replay);
+			assert.equal(recover(replay, rp.cookie).session, true);
+			assert.deepEqual(replayRows(replay), beforeReplay);
+			record(`backup-${mode}-preserves-TOTP-replay`);
+			const late = await backupFixture(`backup-late-${mode}`, mode),
+				lp = begin(late),
+				before = image(late);
+			const failed = recover(late, lp.cookie, recoveryCodes[0], {
+				failSql: true,
+			});
+			assert.equal(failed.ok, false);
+			assert.equal(failed.code, "invalid_control");
+			assert.equal(failed.reusable, true);
+			assert.equal(image(late), before);
+			assert.deepEqual(await remaining(late), recoveryCodes);
+			assert.equal(state(late).sessions, 0);
+			assert.deepEqual(recoveryAudit(late), []);
+			assert.equal(recover(late, lp.cookie).session, true);
+			record(`backup-${mode}-late-SQL-full-rollback`);
+			const race = await backupFixture(`backup-race-${mode}`, mode),
+				p1 = begin(race),
+				p2 = begin(race),
+				held = start(
+					race,
+					{ backup: true, cookie: p1.cookie, code: recoveryCodes[0] },
+					"locked",
+				);
+			try {
+				await marker(held, race);
+				const second = recover(race, p2.cookie);
+				assert.equal(second.code, "control_busy_or_unavailable");
+				held.child.stdin.write("continue\n");
+				held.child.stdin.end();
+				assert.equal((await done(held)).session, true);
+				assert.equal(recover(race, p2.cookie).rejected, "InvalidCode");
+				assert.deepEqual(await remaining(race), recoveryCodes.slice(1));
+				assert.equal(state(race).sessions, 1);
+				assert.equal(recover(race, p2.cookie, recoveryCodes[1]).session, true);
+				assert.equal(state(race).sessions, 2);
+				record(`backup-${mode}-different-challenge-same-code-race`);
+			} finally {
+				clearTimeout(held.timer);
+				held.child.kill();
+				await held.child.exited;
+			}
+			const locks = await backupFixture(`backup-locks-${mode}`, mode),
+				l1 = begin(locks);
+			for (let i = 0; i < 5; i++)
+				assert.equal(
+					run(locks, { cookie: l1.cookie, code: "wrong", backup: i % 2 === 0 })
+						.rejected,
+					"InvalidCode",
+				);
+			assert.equal(state(locks).pending, 0);
+			assert.equal(state(locks).factor.count, 5);
+			const l2 = begin(locks),
+				standby = begin(locks);
+			for (let i = 0; i < 5; i++)
+				assert.equal(
+					run(locks, { cookie: l2.cookie, code: "wrong", backup: i % 2 !== 0 })
+						.rejected,
+					"InvalidCode",
+				);
+			assert.equal(state(locks).factor.count, 10);
+			assert.equal(recover(locks, standby.cookie).rejected, "AccountLocked");
+			assert.deepEqual(await remaining(locks), recoveryCodes);
+			const unlocked = run(locks, { mode: "begin", now: now + 900000 });
+			assert.equal(
+				recover(locks, unlocked.cookie, recoveryCodes[0], { now: now + 900000 })
+					.session,
+				true,
+			);
+			assert.equal(state(locks).factor.count, 0);
+			record(`backup-${mode}-shared-TOTP-failure-budgets-and-lock`);
+		}
+		for (const [id, pool] of [
+			["empty", []],
+			["object", {}],
+			["null", null],
+			["numbers", [1]],
+			["duplicate", [recoveryCodes[0], recoveryCodes[0]]],
+			["oversized", [...recoveryCodes, "ABCDE-12345"]],
+			["wrong-profile", ["short"]],
+			["non-ASCII", ["ＡBCDE-12345"]],
+		] as const) {
+			const f = await backupFixture(`backup-pool-${id}`, "delete", pool),
+				p = begin(f),
+				before = image(f),
+				r = recover(f, p.cookie);
+			if (id === "empty") {
+				assert.equal(r.rejected, "InvalidCode");
+				assert.equal(state(f).factor.count, 1);
+			} else {
+				assert.equal(r.ok, false);
+				assert.equal(r.code, "invalid_control");
+				assert.equal(image(f), before);
+			}
+			assert.equal(state(f).sessions, 0);
+			record(`backup-pool-${id}`);
+		}
+		const malformed = await backupFixture("backup-malformed"),
+			mp = begin(malformed);
+		await setPool(malformed, "[] trailing");
+		unchangedRefusal(
+			"backup-malformed-JSON",
+			malformed,
+			{ backup: true, cookie: mp.cookie, code: recoveryCodes[0] },
+			"invalid_control",
+		);
+		const damaged = await backupFixture("backup-damaged"),
+			dp = begin(damaged);
+		sql(damaged, "UPDATE twoFactor SET backupCodes='not-an-envelope'");
+		unchangedRefusal(
+			"backup-damaged-envelope",
+			damaged,
+			{ backup: true, cookie: dp.cookie, code: recoveryCodes[0] },
+			"invalid_control",
+		);
+		const escaped = await backupFixture("backup-escaped");
+		await setPool(escaped, ' [ "\\u0041BCDE-12345", "abcde-67890" ] ');
+		const xp = begin(escaped);
+		assert.equal(
+			recover(escaped, xp.cookie, "abcde-12345").rejected,
+			"InvalidCode",
+		);
+		assert.equal(recover(escaped, xp.cookie, "ABCDE-12345").session, true);
+		assert.deepEqual(await remaining(escaped), ["abcde-67890"]);
+		record("backup-JSON-escapes-whitespace-case");
+		const current = await backupFixture("backup-current-pool"),
+			cp = begin(current);
+		await setPool(current, JSON.stringify(["XYZab-67890"]));
+		assert.equal(recover(current, cp.cookie).rejected, "InvalidCode");
+		assert.equal(recover(current, cp.cookie, "XYZab-67890").session, true);
+		record("backup-current-pool-read-under-lock");
+		for (const [id, change, request] of [
+			["expired", "", { now: now + 600000 }],
+			[
+				"revoked",
+				"INSERT INTO rm_workspace_user_access_events(user_id,event_type,actor) VALUES('u','disable','agent:synthetic')",
+				{},
+			],
+			["factor-unverified", "UPDATE twoFactor SET verified=0", {}],
+			["service-header", "", { service: "" }],
+			["workspace", "", { workspace: "other" }],
+		] as const) {
+			const f = await backupFixture(`backup-refuse-${id}`),
+				p = begin(f);
+			if (change) sql(f, change);
+			unchangedRefusal(`backup-refuse-${id}`, f, {
+				backup: true,
+				cookie: p.cookie,
+				code: recoveryCodes[0],
+				...request,
+			});
+		}
+		const busy = await backupFixture("backup-commit-busy"),
+			bb = begin(busy),
+			busyBefore = image(busy),
+			br = new Database(busy.control),
+			bp = start(
+				busy,
+				{ backup: true, cookie: bb.cookie, code: recoveryCodes[0] },
+				"before-commit",
+			);
+		try {
+			await marker(bp, busy);
+			br.exec("BEGIN;SELECT count(*) FROM user");
+			bp.child.stdin.write("continue\n");
+			bp.child.stdin.end();
+			const r = await done(bp);
+			assert.equal(r.stage, "OutcomeUnknown");
+			assert.equal(r.reusable, false);
+			assert.equal(r.cookie, undefined);
+			br.exec("ROLLBACK");
+			assert.equal(image(busy), busyBefore);
+			assert.deepEqual(await remaining(busy), recoveryCodes);
+			record("backup-commit-busy-withholds-cookie-and-preserves-pool");
+		} finally {
+			br.close();
+			clearTimeout(bp.timer);
+			bp.child.kill();
+			await bp.child.exited;
+		}
+		const interop = await backupFixture("backup-source-interop"),
+			ip1 = begin(interop, Date.now()),
+			ip2 = begin(interop, Date.now());
+		const nativeBackup = recover(interop, ip1.cookie, recoveryCodes[0], {
+			now: Date.now(),
+		});
+		assert.equal(nativeBackup.session, true);
+		const sourceCopy = join(interop.dir, "source-copy.sqlite");
+		copyFileSync(interop.control, sourceCopy);
+		const interopDb = new Database(sourceCopy),
+			sourceBackupAuth = createBetterAuthRuntime(interopDb, opts);
+		assert.equal(
+			(
+				await sourceBackupAuth.api.getSession({
+					headers: new Headers({ cookie: nativeBackup.cookie }),
+				})
+			)?.user.id,
+			"u",
+		);
+		const sourceResponse = await sourceBackupAuth.handler(
+			new Request(
+				"https://example.invalid/api/auth/two-factor/verify-backup-code",
+				{
+					method: "POST",
+					headers: {
+						cookie: ip2.cookie,
+						origin: "https://example.invalid",
+						"content-type": "application/json",
+					},
+					body: JSON.stringify({ code: recoveryCodes[1] }),
+				},
+			),
+		);
+		assert.equal(sourceResponse.status, 200);
+		assert.equal((await sourceResponse.json()).user.id, "u");
+		const updated = interopDb
+			.query("SELECT backupCodes FROM twoFactor WHERE id='f'")
+			.get() as { backupCodes: string };
+		assert.deepEqual(
+			JSON.parse(
+				await symmetricDecrypt({
+					key: { currentVersion: 1, keys: new Map([[1, key]]) },
+					data: updated.backupCodes,
+				}),
+			),
+			recoveryCodes.slice(2),
+		);
+		interopDb.close();
+		record("backup-actual-source-session-reader-and-HTTP-consumption");
+	}
 	const report = JSON.stringify(
 		{
 			ok: true,
 			scope:
-				"Native enrolled MFA login on admitted synthetic control handles; actual source cookie/session oracle and independent WAL/DELETE process races",
+				"Native enrolled TOTP/backup-code MFA login on admitted synthetic control handles; actual source cookie/session oracle and independent WAL/DELETE process races",
 			checks,
 			observations,
 			limits: [
-				"Internal enrolled TOTP path only: no exposed endpoint, actual handle/lifetime admission or live dual writers",
-				"Enrollment/recovery/trusted-device/rememberMe/OS-native credential and full identity/provider parity remain pending",
+				"Internal enrolled TOTP/backup path only: no exposed endpoint, actual handle/lifetime admission or live dual writers",
+				"Enrollment/backup-code management/trusted-device/rememberMe/OS-native credential and full identity/provider parity remain pending",
 				"Private native context and replay state are stricter than legacy in-flight challenges",
 				"Commit busy exercised; OS/storage crash and restore-lineage qualification remain separate",
 			],
@@ -588,7 +938,14 @@ try {
 		null,
 		2,
 	);
-	for (const value of [key, secret, passwordHash, encrypted, password])
+	for (const value of [
+		key,
+		secret,
+		passwordHash,
+		encrypted,
+		password,
+		...sensitiveRecoveryCodes,
+	])
 		assert(!report.includes(value), "sensitive persisted MFA evidence");
 	console.log(report);
 } finally {

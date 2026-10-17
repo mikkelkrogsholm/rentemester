@@ -94,6 +94,7 @@ fn insert(
 struct Factor {
     id: String,
     secret: Zeroizing<String>,
+    backup: Zeroizing<String>,
     failures: i64,
     locked: Option<i64>,
 }
@@ -110,7 +111,7 @@ impl Factor {
     }
 }
 fn factor(tx: &Transaction<'_>, subject: &str) -> Result<Factor, Error> {
-    let mut q=tx.prepare("SELECT id,secret,verified,failedVerificationCount,lockedUntil FROM main.twoFactor WHERE userId=?1 COLLATE BINARY LIMIT 2").map_err(invalid)?;
+    let mut q=tx.prepare("SELECT id,secret,verified,failedVerificationCount,lockedUntil,backupCodes FROM main.twoFactor WHERE userId=?1 COLLATE BINARY LIMIT 2").map_err(invalid)?;
     let mut rows = q.query([subject]).map_err(invalid)?;
     let Some(r) = rows.next().map_err(invalid)? else {
         return Err(denied());
@@ -124,10 +125,12 @@ fn factor(tx: &Transaction<'_>, subject: &str) -> Result<Factor, Error> {
     let result = Factor {
         id: bounded(r.get(0).map_err(invalid)?)?,
         secret: Zeroizing::new(r.get(1).map_err(invalid)?),
+        backup: Zeroizing::new(r.get(5).map_err(invalid)?),
         failures: failures.unwrap_or(0),
         locked: locked.as_deref().map(stamp).transpose()?,
     };
     if result.secret.len() > 8294
+        || result.backup.len() > 8294
         || !(0..=10).contains(&result.failures)
         || result.failures == 10 && result.locked.is_none()
         || rows.next().map_err(invalid)?.is_some()
@@ -292,6 +295,23 @@ fn telemetry(
 pub fn audit_begin(tx: &Transaction<'_>, subject: &str, version: u64) -> Result<(), Error> {
     telemetry(tx, "sign-in-email", "accepted", subject, None, version)
 }
+#[derive(Clone, Copy)]
+pub enum Method {
+    Totp,
+    Backup,
+}
+impl Method {
+    fn endpoint(self) -> &'static str {
+        match self {
+            Self::Totp => "two-factor-verify",
+            Self::Backup => "two-factor-verify-backup-code",
+        }
+    }
+}
+pub enum Completion<'a> {
+    Totp(u64),
+    Backup(&'a str),
+}
 pub struct SessionIds<'a> {
     pub id: &'a str,
     pub token: &'a str,
@@ -304,6 +324,9 @@ impl Attempt {
     pub fn encrypted_secret(&self) -> &str {
         &self.factor.secret
     }
+    pub fn encrypted_backup_codes(&self) -> &str {
+        &self.factor.backup
+    }
     fn burn(&self, tx: &Transaction<'_>) -> Result<(), Error> {
         for row in [&self.challenge, &self.attempts, &self.context] {
             one_change(
@@ -313,17 +336,28 @@ impl Attempt {
         }
         Ok(())
     }
-    pub fn audit_locked(&self, tx: &Transaction<'_>, version: u64) -> Result<(), Error> {
+    pub fn audit_locked(
+        &self,
+        tx: &Transaction<'_>,
+        version: u64,
+        method: Method,
+    ) -> Result<(), Error> {
         telemetry(
             tx,
-            "two-factor-verify",
+            method.endpoint(),
             "rejected",
             &self.subject,
             None,
             version,
         )
     }
-    pub fn reject(&self, tx: &Transaction<'_>, now: i64, version: u64) -> Result<(), Error> {
+    pub fn reject(
+        &self,
+        tx: &Transaction<'_>,
+        now: i64,
+        version: u64,
+        method: Method,
+    ) -> Result<(), Error> {
         let failures = self.factor.count(now) + 1;
         let locked = if failures >= 10 {
             Some(date(now + 900_000)?)
@@ -350,7 +384,7 @@ impl Attempt {
         }
         telemetry(
             tx,
-            "two-factor-verify",
+            method.endpoint(),
             "rejected",
             &self.subject,
             None,
@@ -375,31 +409,40 @@ impl Attempt {
     pub fn accept(
         &self,
         tx: &Transaction<'_>,
-        counter: u64,
+        completion: Completion<'_>,
         now: i64,
         ids: SessionIds<'_>,
         version: u64,
     ) -> Result<(), Error> {
         let created = date(now)?;
-        let identifier = format!("{REPLAY}{}", self.factor.id);
-        if let Some(row) = record(tx, &identifier)? {
-            one_change(
-                tx.execute(
-                    "UPDATE main.verification SET value=?1,updatedAt=?2 WHERE id=?3",
-                    params![counter.to_string(), created, row.id],
-                )
-                .map_err(invalid)?,
-            )?;
-        } else {
-            insert(
-                tx,
-                ids.replay,
-                &identifier,
-                &counter.to_string(),
-                &created,
-                "9999-12-31T23:59:59.999Z",
-            )?;
-        }
+        let method = match completion {
+            Completion::Backup(replacement) => {
+                one_change(tx.execute("UPDATE main.twoFactor SET backupCodes=?1 WHERE id=?2 AND backupCodes=?3 COLLATE BINARY", params![replacement,self.factor.id,self.factor.backup.as_str()]).map_err(invalid)?)?;
+                Method::Backup
+            }
+            Completion::Totp(counter) => {
+                let identifier = format!("{REPLAY}{}", self.factor.id);
+                if let Some(row) = record(tx, &identifier)? {
+                    one_change(
+                        tx.execute(
+                            "UPDATE main.verification SET value=?1,updatedAt=?2 WHERE id=?3",
+                            params![counter.to_string(), created, row.id],
+                        )
+                        .map_err(invalid)?,
+                    )?;
+                } else {
+                    insert(
+                        tx,
+                        ids.replay,
+                        &identifier,
+                        &counter.to_string(),
+                        &created,
+                        "9999-12-31T23:59:59.999Z",
+                    )?;
+                }
+                Method::Totp
+            }
+        };
         one_change(
             tx.execute(
                 "UPDATE main.twoFactor SET failedVerificationCount=0,lockedUntil=NULL WHERE id=?1",
@@ -411,7 +454,7 @@ impl Attempt {
         tx.execute("INSERT INTO main.session(id,token,userId,createdAt,updatedAt,expiresAt) VALUES(?1,?2,?3,?4,?4,?5)",params![ids.id,ids.token,self.subject,created,date(now+43_200_000)?]).map_err(invalid)?;
         telemetry(
             tx,
-            "two-factor-verify",
+            method.endpoint(),
             "accepted",
             &self.subject,
             Some(ids.id),

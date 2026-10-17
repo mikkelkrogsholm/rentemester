@@ -1,0 +1,216 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native encrypted backup-code login",
+    "goal": "Use existing encrypted recovery codes exactly once as a native second factor with atomic session creation",
+    "scope": "R04/R41 internal admitted-control recovery login only; no enrollment or endpoint authority"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native credential use-case orchestration",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Compose existing pending MFA and current encrypted pool with atomic one-time code/session writes",
+        "rationale": "Existing enrolled users require backup-code recovery alongside TOTP",
+        "excludes": [
+          "Enrollment, regeneration, password recovery, endpoints, actual handle/lifetime and cutover qualification"
+        ]
+      },
+      "interfaces": [
+        "action.backup_login"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Current encrypted backup code commits one source-readable session and exactly one removal",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Synthetic canonical admitted control, configured encrypted backup pool and signed native pending context",
+        "when": "Verify backup code under the current native control writer",
+        "then": "Current encrypted backup code commits one source-readable session and exactly one removal"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Invalid code, expired/foreign/changed context or lock cannot create a session",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Synthetic canonical admitted control, configured encrypted backup pool and signed native pending context",
+        "when": "Verify backup code under the current native control writer",
+        "then": "Invalid code, expired/foreign/changed context or lock cannot create a session"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Malformed pool and SQL failure roll back; known authentication failures commit declared counters/audit only; commit uncertainty withholds cookie",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Synthetic canonical admitted control, configured encrypted backup pool and signed native pending context",
+        "when": "Verify backup code under the current native control writer",
+        "then": "Malformed pool and SQL failure roll back; known authentication failures commit declared counters/audit only; commit uncertainty withholds cookie"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Strict default pool shape/duplicates/bounds and atomic native consumption are explicit source corrections",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Synthetic canonical admitted control, configured encrypted backup pool and signed native pending context",
+        "when": "Verify backup code under the current native control writer",
+        "then": "Strict default pool shape/duplicates/bounds and atomic native consumption are explicit source corrections"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Same code across different pending challenges creates at most one session; shared failure budgets and TOTP replay remain coherent",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Synthetic canonical admitted control, configured encrypted backup pool and signed native pending context",
+        "when": "Verify backup code under the current native control writer",
+        "then": "Same code across different pending challenges creates at most one session; shared failure budgets and TOTP replay remain coherent"
+      }
+    },
+    "action.backup_login": {
+      "kind": "action",
+      "description": "Verify and consume current encrypted backup code with atomic native MFA/session completion",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "verified_pending_challenge_and_backup_code": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "admitted_control_connection_trusted_keyring_cookie_clock": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Opaque invalid_credentials, invalid_control, connection_refused, auth crypto/clock errors; known committed Rejected vs NotCommitted/OutcomeUnknown failures"
+        },
+        "preconditions": [
+          "Runtime owns actual control handle/workspace lifetime and endpoint gates; no caller identity/time/key claims",
+          "Native replay protection requires authoritative native writer; no live dual writers"
+        ],
+        "postconditions": [
+          "One removed code and one fresh session with accepted recovery audit only after known commit",
+          "Known wrong-code failures commit existing shared budgets/audit; operational failure rolls back or reports unknown without cookies"
+        ],
+        "external_effects": [
+          "Declared canonical control verification/session/twoFactor/telemetry mutations and existing immutable lifecycle triggers"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Read current pool under control lock, validate/match/remove/re-encrypt, CAS update and commit challenge/session/audit together"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.backup_login",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.backup_login",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.backup_login",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.backup_login",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.backup_login",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.backup_login",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native encrypted backup-code login",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "7863a3af4335f0daa3c18da916e5e32b12947b32caadb928b633b0ad563a4bda"
+      }
+    }
+  }
+}

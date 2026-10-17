@@ -1,0 +1,33 @@
+{
+  "ok": true,
+  "checks": 3,
+  "scope": "Source-generated pools: remove exact index4, index9 and sole remaining entry; actual source decryption confirms exact remaining order",
+  "originalHarnessSha256": "3c68324793ec944cfd4a4899f474ad4f3ec2c981b56a72cd2180ad79e66999d5",
+  "instrumentedScriptSha256": "19b819801641a67b5379a7a5860c9adae5ec0c65ea7715c94512464f21bd8ae2",
+  "observations": [
+    {
+      "id": "source-index4",
+      "selectedIndex": 4,
+      "initialCount": 10,
+      "remainingCount": 9,
+      "exactRemainingOrder": true,
+      "session": true
+    },
+    {
+      "id": "source-index9",
+      "selectedIndex": 9,
+      "initialCount": 10,
+      "remainingCount": 9,
+      "exactRemainingOrder": true,
+      "session": true
+    },
+    {
+      "id": "source-singleton",
+      "selectedIndex": 0,
+      "initialCount": 1,
+      "remainingCount": 0,
+      "exactRemainingOrder": true,
+      "session": true
+    }
+  ]
+}

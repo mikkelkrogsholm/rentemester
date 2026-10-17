@@ -1,5 +1,7 @@
 //! Existing MFA crypto only. No challenge, one-time consumption, identity or session authority.
+mod backup;
 use crate::auth::Clock;
+pub use backup::consume_backup_code;
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use chacha20poly1305::{KeyInit, XChaCha20Poly1305, XNonce, aead::AeadInPlace};
 use hmac::{Hmac, Mac};

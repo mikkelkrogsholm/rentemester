@@ -1,0 +1,27 @@
+{
+  "scope": "Independent read-only native encrypted backup-code pending-login and installed framework/process review",
+  "verdict": "No remaining material scoped findings",
+  "evidence": {
+    "native_unit_tests": 1,
+    "process_checks": 99,
+    "independent_harness_repetitions": 2,
+    "additional_position_and_drain_probes": 3,
+    "reviewed_source_sha256": {
+      "scripts/rust/verify-mfa-login.ts": "3c68324793ec944cfd4a4899f474ad4f3ec2c981b56a72cd2180ad79e66999d5",
+      "crates/rentemester-runtime/src/mfa/backup.rs": "71ad2f361452f26be4684081393aa5b532f4f4c6850852233a5c36f5c2008f9d",
+      "crates/rentemester-storage/src/mfa_login.rs": "1a14894246524adde3593187bc4fc41a8a44096d348eaf8f5ec58a443ddb0b10",
+      "crates/rentemester-application/src/mfa_login.rs": "7f1dcfe7deb08ba7d7aaa7098f52b3b203de557572dd37bf0bebf0d130d52a14"
+    }
+  },
+  "observations": [
+    "Current factor pool and exact ciphertext CAS share the existing current-identity/challenge/failure/session/audit writer transaction",
+    "Backup-code success preserves TOTP replay rows; wrong backup and TOTP codes share challenge/account budgets",
+    "Strict default encrypted pool grammar, duplicates/size/type refusals and library/owned-buffer erasure boundaries are explicit",
+    "Validated ASCII remaining pools serialize within preallocated141-byte zeroizing capacity; current-key encryption follows historical decryption",
+    "Actual source pool generator, decryption/session reader and HTTP backup verifier interoperate on separate synthetic copies; arbitrary index and final-entry consumption independently repeated"
+  ],
+  "limits": [
+    "Enrolled pending-login recovery only; no enrollment/generation/view/regeneration/password-recovery endpoint authority",
+    "No actual physical opened-handle/lifetime, live dual writers, restore lineage or full identity/cutover qualification"
+  ]
+}
