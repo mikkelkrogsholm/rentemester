@@ -1,4 +1,5 @@
 //! Explicit known unversioned physical baseline rehearsal on owned disposable copies.
+use crate::company_vat::{periods, validate_vat};
 use crate::{
     Migration, Snapshot, company_baseline,
     company_normalization::{self, Effects},
@@ -7,8 +8,8 @@ use crate::{
         RehearsalReport, SchemaObject, integrity, project_digest, projection, quote, schema,
     },
 };
-use rentemester_engine::{Error, calendar::valid_iso_date};
-use rusqlite::{Connection, OptionalExtension, TransactionBehavior};
+use rentemester_engine::Error;
+use rusqlite::{Connection, TransactionBehavior};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::path::Path;
@@ -71,100 +72,6 @@ fn overlay(objects: &mut [SchemaObject], delta: &[SchemaObject]) -> Result<(), E
             .find(|o| o.name == changed.name)
             .ok_or_else(|| unsupported("physical overlay object is unknown"))?;
         *target = changed.clone();
-    }
-    Ok(())
-}
-#[derive(Clone)]
-struct Period {
-    id: i64,
-    start: String,
-    end: String,
-    kind: String,
-}
-fn periods(db: &Connection) -> Result<Vec<Period>, Error> {
-    db.prepare("SELECT id,period_start,period_end,kind FROM accounting_periods ORDER BY id")
-        .map_err(invalid)?
-        .query_map([], |r| {
-            Ok(Period {
-                id: r.get(0)?,
-                start: r.get(1)?,
-                end: r.get(2)?,
-                kind: r.get(3)?,
-            })
-        })
-        .map_err(invalid)?
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(invalid)
-}
-fn canonical(p: &Period, span: u32) -> bool {
-    if !valid_iso_date(&p.start) || !valid_iso_date(&p.end) || &p.start[8..] != "01" {
-        return false;
-    }
-    let year = p.start[..4].parse::<u32>().unwrap();
-    let month = p.start[5..7].parse::<u32>().unwrap();
-    if !(month - 1).is_multiple_of(span) {
-        return false;
-    }
-    let last = month + span - 1;
-    let mut day = 31;
-    while !valid_iso_date(&format!("{year:04}-{last:02}-{day:02}")) {
-        day -= 1;
-    }
-    p.end == format!("{year:04}-{last:02}-{day:02}")
-}
-fn validate_vat(db: &Connection, rows: &[Period]) -> Result<(), Error> {
-    let vat: Vec<_> = rows
-        .iter()
-        .filter(|p| matches!(p.kind.as_str(), "vat_period" | "vat_quarter"))
-        .collect();
-    if vat.iter().any(|p| {
-        p.start
-            .get(..4)
-            .and_then(|s| s.parse::<u32>().ok())
-            .is_some_and(|y| y < 100)
-    }) {
-        return Err(unsupported(
-            "historical VAT years below100 require explicit resolution",
-        ));
-    }
-    let cadence: Option<Option<String>> = db
-        .query_row(
-            "SELECT vat_period_type FROM companies WHERE id=1",
-            [],
-            |r| r.get(0),
-        )
-        .optional()
-        .map_err(invalid)?;
-    let cadence = cadence.unwrap_or(Some("quarter".into()));
-    let span = match cadence.as_deref() {
-        Some("month") => Some(1),
-        Some("quarter") => Some(3),
-        Some("half-year") => Some(6),
-        _ => None,
-    };
-    if !span
-        .map(|s| vat.iter().all(|p| canonical(p, s)))
-        .unwrap_or_else(|| {
-            [1, 3, 6]
-                .iter()
-                .any(|s| vat.iter().all(|p| canonical(p, *s)))
-        })
-    {
-        return Err(invalid(
-            "VAT periods do not share the required historical cadence",
-        ));
-    }
-    let duplicate: bool = db.query_row("SELECT EXISTS(SELECT 1 FROM accounting_periods legacy JOIN accounting_periods canonical ON canonical.kind='vat_period' AND canonical.period_start=legacy.period_start AND canonical.period_end=legacy.period_end WHERE legacy.kind='vat_quarter')", [], |r|r.get(0)).map_err(invalid)?;
-    if duplicate {
-        return Err(invalid(
-            "duplicate legacy/canonical VAT periods require resolution",
-        ));
-    }
-    let overlap: bool = db.query_row("SELECT EXISTS(SELECT 1 FROM accounting_periods a JOIN accounting_periods b ON a.id<b.id WHERE a.kind IN ('vat_period','vat_quarter') AND b.kind IN ('vat_period','vat_quarter') AND a.status='reported' AND b.status='reported' AND NOT(a.period_end<b.period_start OR a.period_start>b.period_end))", [], |r|r.get(0)).map_err(invalid)?;
-    if overlap {
-        return Err(invalid(
-            "overlapping reported VAT periods require resolution",
-        ));
     }
     Ok(())
 }
@@ -270,14 +177,6 @@ fn rehearse(db: &mut Connection) -> Result<PhysicalRehearsalReport, Error> {
         .iter()
         .filter(|p| p.kind == "vat_quarter")
         .count();
-    if legacy > 0 && !selected.iter().any(|r| r.table == "accounting_periods") {
-        selected.push(
-            c.rules
-                .iter()
-                .find(|r| r.table == "accounting_periods")
-                .unwrap(),
-        );
-    }
     if selected.iter().any(|r| r.table == "accounting_periods") {
         validate_vat(db, &old_periods)?;
     }
@@ -311,6 +210,9 @@ fn rehearse(db: &mut Connection) -> Result<PhysicalRehearsalReport, Error> {
     let before = project_digest(&tx, &stable)?;
     for r in &selected {
         rebuild(&tx, r, &images.baseline)?;
+    }
+    if legacy > 0 && !selected.iter().any(|r| r.table == "accounting_periods") {
+        crate::company_vat::normalize_in_transaction(&tx)?;
     }
     let mut expected = images.baseline.clone();
     expected.sort_by(|a, b| a.name.cmp(&b.name));

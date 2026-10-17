@@ -146,7 +146,19 @@ fn reference(images: &Images, steps: &[Step], version: usize) -> Result<Vec<Sche
             db.execute_batch(&step.sql).map_err(failed)?;
         }
     }
+    if version == 36 {
+        final_guards(&db, images)?;
+    }
     schema(&db)
+}
+pub(super) fn recognizes(db: &Connection, version: usize) -> Result<bool, Error> {
+    if version > 36 {
+        return Ok(false);
+    }
+    let expected = catalogue()?;
+    let images = load_images()?;
+    let steps = steps(&RAW, &expected)?;
+    Ok(schema(db)? == reference(&images, &steps, version)?)
 }
 pub(super) fn stamp(db: &Connection, m: &Migration) -> Result<(), Error> {
     db.execute("INSERT INTO schema_migrations(id,name,checksum,applied_by_version,applied_by_commit) VALUES (?1,?2,?3,?4,NULL)",params![m.id,m.name,m.checksum,concat!("rentemester-rust/",env!("CARGO_PKG_VERSION"))]).map_err(failed)?;
@@ -239,7 +251,7 @@ pub(super) fn rehearse_with_images(
         strict_history(db, "schema_migrations", &expected)?
     };
     let from = old.len();
-    if from >= 32 || schema(db)? != reference(&images, &steps, from)? {
+    if from > 36 || schema(db)? != reference(&images, &steps, from)? {
         return Err(unsupported(
             "source is not a known normalized early company prefix",
         ));
@@ -300,7 +312,11 @@ pub(super) fn rehearse_with_images(
     }
     Ok(RehearsalReport {
         normalization,
-        schema_scope: "full-normalized-early-prefix",
+        schema_scope: if from < 32 {
+            "full-normalized-early-prefix"
+        } else {
+            "full-normalized-company-prefix"
+        },
         from_version: from,
         to_version: 36,
         applied,

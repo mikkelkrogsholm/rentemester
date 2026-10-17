@@ -1,0 +1,364 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native normalized company bootstrap and early upgrades",
+    "goal": "Create the full company schema in native Rust and migrate known normalized early prefixes on private copies.",
+    "scope": "R12 existing empty/normalized prefixes0\u201331; prior suffix32\u201336 contract preserved, full legacy normalization and writer gates unchanged."
+  },
+  "nodes": {
+    "component.storage": {
+      "kind": "component",
+      "description": "Own bounded private SQLite migration rehearsal.",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Capture, recover, validate, migrate and discard private copies.",
+        "rationale": "Original writer admission is not yet complete.",
+        "excludes": [
+          "Live migrations, domain writes and promotion"
+        ]
+      },
+      "interfaces": [
+        "action.normalize_company_vat"
+      ]
+    },
+    "action.normalize_company_vat": {
+      "kind": "action",
+      "description": "FK-safe canonical VAT legacy-kind normalization on complete company prefixes",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "company_path": {
+            "type": "string",
+            "min_length": 1
+          }
+        },
+        "context": {
+          "mode": {
+            "type": "enum",
+            "values": [
+              "local_operator"
+            ]
+          }
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "from_version": {
+              "type": "integer"
+            },
+            "to_version": {
+              "type": "integer"
+            },
+            "schema_scope": {
+              "type": "string"
+            },
+            "normalization": {
+              "type": "object",
+              "properties": {
+                "vat_rows_relabeled": {
+                  "type": "integer"
+                },
+                "original_business_data_digest": {
+                  "type": "string"
+                }
+              }
+            },
+            "writer_authority": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "from_version",
+            "to_version",
+            "schema_scope",
+            "writer_authority"
+          ]
+        },
+        "errors": {
+          "invalid_input": "Refuse as specified in CONTRACT.md.",
+          "source_unavailable": "Refuse as specified in CONTRACT.md.",
+          "source_changed": "Refuse as specified in CONTRACT.md.",
+          "unsupported_schema": "Refuse as specified in CONTRACT.md.",
+          "invalid_ledger": "Refuse as specified in CONTRACT.md.",
+          "migration_failed": "Refuse as specified in CONTRACT.md.",
+          "storage_failure": "Refuse as specified in CONTRACT.md."
+        },
+        "preconditions": [
+          "Authorized local read; complete exact known schema and strict provenance; no original write/adoption authority."
+        ],
+        "postconditions": [
+          "Original source unchanged and private copy discarded.",
+          "Only specified legacy-kind/data effects; complete schema, FKs, non-kind cells, history and guards preserved.",
+          "Full-prefix and bounded-suffix evidence explicitly scoped; no writer authority."
+        ],
+        "external_effects": [
+          "Read/stat source files; recover/migrate/delete private disposable files only."
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "No source writes or promotion.",
+            "scenarios": [
+              "scenario.isolation"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Same normalized copy has zero further kind changes and preserves exact existing data.",
+            "scenarios": [
+              "scenario.repeat",
+              "scenario.history"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Exact complete physical schema and empty history; VAT semantic conflicts refuse.",
+            "scenarios": [
+              "scenario.history",
+              "scenario.checkpoint",
+              "scenario.usage"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Capture stable source while legacy reader/writer may be active.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "One immediate data transaction encloses VAT validation, guard changes and later data effects; actual SQL refusal and process death prove rollback.",
+            "scenarios": [
+              "scenario.failure",
+              "scenario.crash"
+            ]
+          }
+        },
+        "error_cases": {
+          "invalid_input": [
+            "scenario.usage"
+          ],
+          "source_unavailable": [
+            "scenario.isolation"
+          ],
+          "source_changed": [
+            "scenario.isolation"
+          ],
+          "unsupported_schema": [
+            "scenario.history"
+          ],
+          "invalid_ledger": [
+            "scenario.checkpoint"
+          ],
+          "migration_failed": [
+            "scenario.failure"
+          ],
+          "storage_failure": [
+            "scenario.failure"
+          ]
+        }
+      },
+      "behavior": "Strict full schema/history admission; immediate data transaction validates VAT, preserves children/typed cells, drops only named update guard, bulk relabels/restores, checks integrity; existing data normalization/versioned steps and checked copy cleanup."
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Exact complete DDL/typed cell parity and allowed kind count; old provenance exact.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Complete direct company prefix1\u201336 with strict history and canonical legacy VAT cells.",
+        "when": "Run corrected full migration on private native copy and real TS oracle.",
+        "then": "Exact complete DDL/typed cell parity and allowed kind count; old provenance exact."
+      }
+    },
+    "scenario.history": {
+      "kind": "scenario",
+      "description": "Refuse before gaining VAT normalization access; retain bounded suffix scope for supported minimal fixtures without legacy VAT.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Gapped/tampered/newer history, unknown source object or non-full layout with legacy VAT.",
+        "when": "Attempt existing company migration rehearsal.",
+        "then": "Refuse before gaining VAT normalization access; retain bounded suffix scope for supported minimal fixtures without legacy VAT."
+      }
+    },
+    "scenario.checkpoint": {
+      "kind": "scenario",
+      "description": "Typed refusal with whole data/guard rollback and no source effects.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Registered mismatch, deregistered mixed cadence, duplicate/reported overlap or year below100.",
+        "when": "Validate inside owned immediate data transaction using company ID1/default semantics.",
+        "then": "Typed refusal with whole data/guard rollback and no source effects."
+      }
+    },
+    "scenario.isolation": {
+      "kind": "scenario",
+      "description": "Original inventory unchanged and cleanup checked.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Current full source with active WAL or unsafe/missing path.",
+        "when": "Capture/recover/migrate/discard only fixed-path private files.",
+        "then": "Original inventory unchanged and cleanup checked."
+      }
+    },
+    "scenario.failure": {
+      "kind": "scenario",
+      "description": "Every VAT/role/retention cell and exact named guard restored to old state.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Other period trigger aborts UPDATE, or referenced bank guard rejects a later data effect after VAT changes.",
+        "when": "Execute complete baseline-data transaction.",
+        "then": "Every VAT/role/retention cell and exact named guard restored to old state."
+      }
+    },
+    "scenario.crash": {
+      "kind": "scenario",
+      "description": "Complete old current schema/FK data/history and exact guard; retry succeeds.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Actual current36 child paused after named guard drop, kind update or exact restore.",
+        "when": "Kill/reap and reopen private DB.",
+        "then": "Complete old current schema/FK data/history and exact guard; retry succeeds."
+      }
+    },
+    "scenario.usage": {
+      "kind": "scenario",
+      "description": "Structured help and exit2 for invalid input; no original effects.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Existing invalid CLI flags or help discovery.",
+        "when": "Use unchanged command name/parser and updated scope text.",
+        "then": "Structured help and exit2 for invalid input; no original effects."
+      }
+    },
+    "scenario.guards": {
+      "kind": "scenario",
+      "description": "Foreign keys and all original child/non-kind cells intact; restored guards refuse mutation.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical VAT parent has full-width ID and migration22 decisions/open-item children.",
+        "when": "Relabel only kind then attempt later protected changes.",
+        "then": "Foreign keys and all original child/non-kind cells intact; restored guards refuse mutation."
+      }
+    },
+    "scenario.repeat": {
+      "kind": "scenario",
+      "description": "Zero VAT relabels; exact schema/cells/history/timestamps unchanged.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Same already-normalized current private copy.",
+        "when": "Run normalization again.",
+        "then": "Zero VAT relabels; exact schema/cells/history/timestamps unchanged."
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "No validation/update race or externally visible unguarded interval; no parentDROP or FK deferral.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical source eligible for legacy VAT relabel.",
+        "when": "Validate, capture/drop named update guard, bulk UPDATE, restore and verify inside one immediate transaction.",
+        "then": "No validation/update race or externally visible unguarded interval; no parentDROP or FK deferral."
+      }
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.normalize_company_vat",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.history",
+      "from": "scenario.history",
+      "to": "action.normalize_company_vat",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.checkpoint",
+      "from": "scenario.checkpoint",
+      "to": "action.normalize_company_vat",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.isolation",
+      "from": "scenario.isolation",
+      "to": "action.normalize_company_vat",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.failure",
+      "from": "scenario.failure",
+      "to": "action.normalize_company_vat",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.crash",
+      "from": "scenario.crash",
+      "to": "action.normalize_company_vat",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.usage",
+      "from": "scenario.usage",
+      "to": "action.normalize_company_vat",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.guards",
+      "from": "scenario.guards",
+      "to": "action.normalize_company_vat",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.repeat",
+      "from": "scenario.repeat",
+      "to": "action.normalize_company_vat",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.storage.owns",
+      "from": "action.normalize_company_vat",
+      "to": "component.storage",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.normalize_company_vat",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "FK-safe current company VAT normalization",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "97c5c57ee6062685885ef12c867bd30582017f495a8d0012bf26da01e8ea2e2d"
+      }
+    }
+  }
+}

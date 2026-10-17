@@ -1,0 +1,41 @@
+{
+  "base_code": "eaf17073245daba9aacdb935d0418236859d1826",
+  "previous_increment": "company-physical-1",
+  "scope": "FK-safe VAT normalization and complete company prefixes1–36",
+  "new_ids": [
+    "action.normalize_company_vat"
+  ],
+  "write_scope": [
+    "crates/rentemester-cli/src/main.rs",
+    "crates/rentemester-storage/src/company_baseline.rs",
+    "crates/rentemester-storage/src/company_normalization.rs",
+    "crates/rentemester-storage/src/company_physical.rs",
+    "crates/rentemester-storage/src/legacy-company-physical.json",
+    "crates/rentemester-storage/src/legacy-company-physical.sha256",
+    "crates/rentemester-storage/src/legacy-company-schemas.json",
+    "crates/rentemester-storage/src/legacy-company-schemas.sha256",
+    "crates/rentemester-storage/src/lib.rs",
+    "crates/rentemester-storage/src/migration.rs",
+    "scripts/rust/verify-migration-rehearsal.ts",
+    "scripts/rust/verify.ts",
+    "src/core/db.ts",
+    "src/core/schema-version.ts",
+    "crates/rentemester-storage/src/company_vat.rs",
+    "scripts/rust/verify-company-vat.ts",
+    "tests/unit/vat-migration-fk.test.ts",
+    "docs/architecture/rust-target/implementation/company-vat/CONTRACT.md",
+    "docs/architecture/rust-target/implementation/company-vat/gdd.json"
+  ],
+  "mandate": "Active full Rust platform goal; no original-write/adoption authority inferred",
+  "refinement": "Preserve v1 normative/readiness under history/v1; current CONTRACT adds diagnosed v3 byte-stability correction and refined GDD typed/scenario coverage. readiness-v2.json is current.",
+  "issues_closed": [],
+  "remaining_gates": [
+    "Canonical complete schemas with strict history; old physical/missing-column/checksumless/archive adoption remain separate",
+    "Years below100 explicitly refused while normalization is required",
+    "Only generated NEW timestamps/UUID/build provenance masked; old provenance and parent/child typed cells exact",
+    "Private captures only; no writer authority, other late parent rebuilds, hardware/cross-platform or full R12 acceptance",
+    "Constructed known direct-prefix schemas are covered; historical every-open byte variants and archived backups are not generally admitted.",
+    "Missing-column/checksumless predecessors, other late parent rebuilds, generic replay/adoption, legacy lifetime mutation admission and stable physical/logical identity remain pending.",
+    "No original data writes, full server/CLI/MCP/React/GPUI behavior, distribution/cutover qualification, R12 completion or issue closure."
+  ]
+}

@@ -7,7 +7,7 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
             {"name":"trial-balance","usage":"trial-balance --company PATH --from YYYY-MM-DD --to YYYY-MM-DD","scope":"experimental local read-only report"},
             {"name":"rehearse-company-baseline","usage":"rehearse-company-baseline --company PATH","scope":"experimental explicit known unversioned physical baseline copy; no adoption authority"},
             {"name":"rehearse-control-migration","usage":"rehearse-control-migration --workspace PATH","scope":"experimental private control copy; no source migration"},
-            {"name":"rehearse-company-migration","usage":"rehearse-company-migration --company PATH","scope":"experimental normalized company bootstrap/early prefixes and suffix32–36; no source migration"},
+            {"name":"rehearse-company-migration","usage":"rehearse-company-migration --company PATH","scope":"experimental full canonical company prefixes0–36 and bounded minimal suffix32–36; no source migration"},
             {"name":"verify-journal-hashes","usage":"verify-journal-hashes --company PATH","scope":"experimental journal canonical hashes; not full audit integrity"}
         ]}));
     }
@@ -63,7 +63,7 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
     }
     if args == ["rehearse-company-migration", "--help"] {
         return Ok(
-            json!({"ok":true,"usage":"rentemester-rust rehearse-company-migration --company PATH","format":"rentemester-company-migration-rehearsal/1","scope":"private-copy normalized bootstrap/prefix0–31 and suffix32–36; no source migration or writer authority"}),
+            json!({"ok":true,"usage":"rentemester-rust rehearse-company-migration --company PATH","format":"rentemester-company-migration-rehearsal/1","scope":"private-copy full canonical prefixes0–36 and bounded minimal suffix32–36; no source migration or writer authority"}),
         );
     }
     if args.first().map(String::as_str) == Some("rehearse-company-migration") {

@@ -48,6 +48,10 @@ function isCanonicalLegacyVatPeriod(
  * something a migration may guess how to split.
  */
 function migrateLegacyVatPeriodKind(db: Database) {
+  db.transaction(() => migrateLegacyVatPeriodKindInTransaction(db)).immediate();
+}
+
+function migrateLegacyVatPeriodKindInTransaction(db: Database) {
   const sql = (db.query("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'accounting_periods'").get() as { sql?: string } | null)?.sql ?? "";
   const schemaSupportsCanonicalKind = /['"]vat_period['"]/.test(sql);
   const legacyCount = (db.query("SELECT COUNT(*) AS n FROM accounting_periods WHERE kind = 'vat_quarter'").get() as { n: number }).n;
@@ -67,17 +71,20 @@ function migrateLegacyVatPeriodKind(db: Database) {
       : null;
 
   const vatPeriodRows = db.query(
-    `SELECT id, period_start, period_end, kind, status
+    `SELECT CAST(id AS TEXT) AS id, period_start, period_end, kind, status
        FROM accounting_periods
       WHERE kind IN ('vat_period', 'vat_quarter')
       ORDER BY id ASC`,
   ).all() as Array<{
-    id: number;
+    id: string;
     period_start: string;
     period_end: string;
     kind: "vat_period" | "vat_quarter";
     status: string;
   }>;
+  if (vatPeriodRows.some((row) => Number(row.period_start.slice(0, 4)) < 100)) {
+    throw new Error("VAT period migration blocked: years below100 require explicit historical resolution");
+  }
   const noncanonicalPeriod = registeredCadence
     ? vatPeriodRows.find(
         (row) =>
@@ -130,7 +137,7 @@ function migrateLegacyVatPeriodKind(db: Database) {
   }
 
   const exactDuplicate = db.query(
-    `SELECT legacy.id AS legacy_id, canonical.id AS canonical_id
+    `SELECT CAST(legacy.id AS TEXT) AS legacy_id, CAST(canonical.id AS TEXT) AS canonical_id
        FROM accounting_periods legacy
        JOIN accounting_periods canonical
          ON canonical.kind = 'vat_period'
@@ -138,7 +145,7 @@ function migrateLegacyVatPeriodKind(db: Database) {
         AND canonical.period_end = legacy.period_end
       WHERE legacy.kind = 'vat_quarter'
       LIMIT 1`,
-  ).get() as { legacy_id: number; canonical_id: number } | null;
+  ).get() as { legacy_id: string; canonical_id: string } | null;
   if (exactDuplicate) {
     throw new Error(
       `VAT period migration blocked: legacy period #${exactDuplicate.legacy_id} duplicates canonical period #${exactDuplicate.canonical_id}; resolve with a human before migration`,
@@ -146,7 +153,7 @@ function migrateLegacyVatPeriodKind(db: Database) {
   }
 
   const conflicts = db.query(
-    `SELECT a.id AS left_id, b.id AS right_id
+    `SELECT CAST(a.id AS TEXT) AS left_id, CAST(b.id AS TEXT) AS right_id
        FROM accounting_periods a
        JOIN accounting_periods b ON a.id < b.id
       WHERE a.kind IN ('vat_period', 'vat_quarter')
@@ -154,9 +161,20 @@ function migrateLegacyVatPeriodKind(db: Database) {
         AND a.status = 'reported' AND b.status = 'reported'
         AND NOT (a.period_end < b.period_start OR a.period_start > b.period_end)
       LIMIT 1`,
-  ).get() as { left_id: number; right_id: number } | null;
+  ).get() as { left_id: string; right_id: string } | null;
   if (conflicts) {
     throw new Error(`VAT period migration blocked: reported legacy periods #${conflicts.left_id} and #${conflicts.right_id} overlap; resolve with a human before migration`);
+  }
+  if (schemaSupportsCanonicalKind) {
+    // A current period can already have immutable close-decision children.
+    // Replacing the parent table would fail FK checks; relabel only the kind.
+    db.transaction(() => {
+      const guard = db.query("SELECT sql FROM sqlite_schema WHERE type='trigger' AND name='accounting_periods_guard_update' AND tbl_name='accounting_periods'").get() as { sql: string } | null;
+      db.exec("DROP TRIGGER IF EXISTS accounting_periods_guard_update");
+      db.exec("UPDATE accounting_periods SET kind='vat_period' WHERE kind='vat_quarter'");
+      if (guard) db.exec(guard.sql);
+    }).immediate();
+    return;
   }
   db.transaction(() => {
     db.exec("DROP TRIGGER IF EXISTS accounting_periods_guard_update; DROP TRIGGER IF EXISTS accounting_periods_no_delete;");

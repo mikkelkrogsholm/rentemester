@@ -1,0 +1,12 @@
+   Compiling rentemester-storage v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.65s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_storage-03d5f3fab3792ce0)
+
+running 4 tests
+test company_vat::tests::crash_child ... ignored, actual VAT crash/parity child invoked by parent/independent harness
+test company_vat::tests::other_trigger_and_later_data_failure_roll_back_kind_and_named_guard ... ok
+test company_vat::tests::current_fk_children_exact_schema_history_and_nonlegacy_cells_survive ... ok
+test company_vat::tests::actual_process_death_restores_exact_guard_and_current_fk_data ... ok
+
+test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 30 filtered out; finished in 11.59s
+

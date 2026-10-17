@@ -381,9 +381,13 @@ pub fn rehearse_company_migration(company: &Path) -> Result<RehearsalReport, Err
         } else {
             strict_history(db, "schema_migrations", &expected)?.len()
         };
-        if prefix < 32 {
+        if prefix < 32 || crate::company_baseline::recognizes(db,prefix)? {
             crate::company_baseline::rehearse(db)
         } else {
+            let has_periods: bool = db.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name='accounting_periods')",[],|r|r.get(0)).map_err(invalid)?;
+            if has_periods && db.query_row("SELECT EXISTS(SELECT 1 FROM accounting_periods WHERE kind='vat_quarter')",[],|r|r.get::<_,bool>(0)).map_err(invalid)? {
+                return Err(unsupported("legacy VAT data requires a complete recognized company schema"));
+            }
             rehearse(db, &steps, &expected)
         }
     })

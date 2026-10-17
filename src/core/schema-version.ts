@@ -579,6 +579,15 @@ export function applySchemaMigrations(db: Database): void {
           ON recurring_invoice_delivery_events(generation_id)
           WHERE event_type = 'attempted';
       `);
+      // Keep the post-v3 catalogue byte-stable across baseline restoration on
+      // later opens; the template update guard above is the explicit override.
+      const v3 = JSON.parse(RECURRING_AUTOMATION_MIGRATION_ARTIFACT.toString("utf8")) as { sql: string };
+      for (const statement of v3.sql.match(/CREATE TRIGGER[\s\S]*?END;/gi) ?? []) {
+        const name = /CREATE TRIGGER(?:\s+IF\s+NOT\s+EXISTS)?\s+([A-Za-z_][A-Za-z0-9_]*)/i.exec(statement)?.[1];
+        if (!name || name === "recurring_invoice_templates_guard_update") continue;
+        db.exec(`DROP TRIGGER IF EXISTS ${name}`);
+        db.exec(statement);
+      }
     }).immediate();
   }
 

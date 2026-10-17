@@ -8,7 +8,7 @@
     },
     {
       "path": "src/core/db.ts",
-      "sha256": "4654fcd01ea7906a01e4b6d7debf2b5cf75562b836ebaeb0e4e0da63ce0be8b8"
+      "sha256": "6410241aaf4427fe30ddc1c4ff4888c544a0859f4a249b17e10f8f8b7be1083f"
     },
     {
       "path": "src/core/companies-schema.ts",
@@ -16,7 +16,7 @@
     },
     {
       "path": "src/core/schema-version.ts",
-      "sha256": "5b869123bccc0a38a8514d5e59b4807dea1d66c684431b03105cac5eb6fabdb2"
+      "sha256": "44e1d2d04473f882943e02ede364cf26fb19a5220644f97dd18b1523b6051ae8"
     },
     {
       "path": "src/core/retention.ts",

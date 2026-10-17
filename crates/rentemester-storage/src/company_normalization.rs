@@ -13,6 +13,7 @@ use std::collections::BTreeMap;
 #[derive(Debug, Serialize)]
 pub(crate) struct Effects {
     original_business_data_digest: String,
+    vat_rows_relabeled: usize,
     role_mappings_inserted: usize,
     audit_rows_inserted: usize,
     document_deadlines_filled: usize,
@@ -133,6 +134,7 @@ pub(super) fn normalize_in_transaction(tx: &Connection) -> Result<Effects, Error
         .collect();
     let all = projection(tx, &tables)?;
     let original_business_data_digest = project_digest(tx, &all)?;
+    let vat_rows_relabeled = crate::company_vat::normalize_in_transaction(tx)?;
     let stable: Vec<_> = all
         .iter()
         .map(|(t, c)| {
@@ -244,6 +246,7 @@ pub(super) fn normalize_in_transaction(tx: &Connection) -> Result<Effects, Error
     }
     Ok(Effects {
         original_business_data_digest,
+        vat_rows_relabeled,
         role_mappings_inserted: inserted.len(),
         audit_rows_inserted: inserted.len(),
         document_deadlines_filled: counts[0],

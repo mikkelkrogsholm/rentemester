@@ -199,7 +199,8 @@ try {
 				.all(),
 			lines = db.query("SELECT * FROM journal_lines ORDER BY id").all();
 		migrate(db);
-		assert.deepEqual(data.affected_schema, affected(db));
+		assert.equal(data.schema_scope, version === 36 ? "full-normalized-company-prefix" : "suffix33-36");
+		assert.deepEqual(data.affected_schema, version === 36 ? schema(db) : affected(db));
 		const expected = db
 			.query(
 				"SELECT id,name,checksum FROM schema_migrations WHERE id>? ORDER BY id",

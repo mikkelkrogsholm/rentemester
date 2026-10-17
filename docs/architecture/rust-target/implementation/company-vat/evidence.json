@@ -1,0 +1,285 @@
+{
+  "format": "rentemester-company-vat-increment/1",
+  "base_code": "eaf17073245daba9aacdb935d0418236859d1826",
+  "spec_revision": "sha256:2a4f85dabffd49f9a4a1fdfbad1e9e5e1e1c5abbd4c118a1a3af18ab8ccf81d4",
+  "code_revision": "sha256:1e8829c586a696fd436e666556b1c75e02b30b16165e0afe4c312d6473810c6f",
+  "assets": [
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "67100929b854a88719b7ca3d8f7e3c27178887ed810a3ba95b4b4a0a73b36ccf"
+    },
+    {
+      "path": "crates/rentemester-storage/src/company_baseline.rs",
+      "sha256": "bb9725fe573283b4cfd82736057125477625594f7210eaea2184faf80d1f825a"
+    },
+    {
+      "path": "crates/rentemester-storage/src/company_normalization.rs",
+      "sha256": "9f017e6da6641dbacb5223d1ab16731b4a2d614a4108eaf5244a8d5946c2c62b"
+    },
+    {
+      "path": "crates/rentemester-storage/src/company_physical.rs",
+      "sha256": "bae2e3585e8f9a1193a9eaab7eabdf045226d77a2b5636b8d6265713fe99d734"
+    },
+    {
+      "path": "crates/rentemester-storage/src/company_vat.rs",
+      "sha256": "bb84dc18dbefb932e51f3e5a27e35807f980e8bbc196e2f5de164048ae851e97"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-company-physical.json",
+      "sha256": "7ef7c9d00cc78396853a77e4dbd9ee34384b1148261a944cc8613ac79a19a444"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-company-physical.sha256",
+      "sha256": "86eac526c5e4068618d9a1e53aa923f5114ee73a7f47a6cc0a8ee802ae8be3fa"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-company-schemas.json",
+      "sha256": "e2390746dbb0245f4d128158e146405994ce9b75f93e702b2e04d9e9d04aeb7b"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-company-schemas.sha256",
+      "sha256": "2dadb0947b848cb05e65d5a09d81576ecfcfc81e3db89e9722946c53a9add795"
+    },
+    {
+      "path": "crates/rentemester-storage/src/lib.rs",
+      "sha256": "9a0d59d3d0755dfdeba6bc4f9d0a07d494ea33eed4d1b7512a38f3e5010cec92"
+    },
+    {
+      "path": "crates/rentemester-storage/src/migration.rs",
+      "sha256": "708fb44faf17aa7e6a2b55fd0c446e990894cbde6c2d42ee18c66e79370aa315"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/company-vat/CONTRACT.md",
+      "sha256": "97c5c57ee6062685885ef12c867bd30582017f495a8d0012bf26da01e8ea2e2d"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/company-vat/gdd.json",
+      "sha256": "0e85add4a519f0488d53caee19851db746d8873cceebdbbfac309b19bca91571"
+    },
+    {
+      "path": "scripts/rust/verify-company-vat.ts",
+      "sha256": "c002a5dbf543db7922f6ed6d16d1222df6358cef532ed9d14cc569dcc52c0c4e"
+    },
+    {
+      "path": "scripts/rust/verify-migration-rehearsal.ts",
+      "sha256": "c2ded56910410563de8a7136aaf5394646c23a62bfe3753307c52a1cecfd4d9f"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "f7131af8d55b707dd604c38ba523f5facd66ee7dde593b5b639b2d08f78b4f69"
+    },
+    {
+      "path": "src/core/db.ts",
+      "sha256": "6410241aaf4427fe30ddc1c4ff4888c544a0859f4a249b17e10f8f8b7be1083f"
+    },
+    {
+      "path": "src/core/migrations/0001-baseline.json",
+      "sha256": "6956ccf6f1bdb360abb5f166582075e6726ca01b75cdbb38dfcbbc500af16728"
+    },
+    {
+      "path": "src/core/migrations/0002-peppol-submission-events.json",
+      "sha256": "2f057c6c9d6285ee708056ff6a1048c30ce1da578de62d470965d0d64ad69744"
+    },
+    {
+      "path": "src/core/migrations/0003-recurring-automation.json",
+      "sha256": "cc6fc5abfbe81ebc20c72a4e6e4167033102585e441fbe65f64ef57d8dd48db0"
+    },
+    {
+      "path": "src/core/migrations/0004-dinero-import-provenance.json",
+      "sha256": "7fd903452593c334314462bd52f6609e22c6a771c0c7e80682dba2c97d06e5b8"
+    },
+    {
+      "path": "src/core/migrations/0005-migration-open-items.json",
+      "sha256": "082b8aea529dc4f7d825112ce743192a5b9d4a1daea68a73c7b410d08ed94549"
+    },
+    {
+      "path": "src/core/migrations/0006-bank-journal-reconciliation-links.json",
+      "sha256": "0f265c2da784e26d380351b32bc1af93ec17fbaf3b506120e4363dcb8bb384ff"
+    },
+    {
+      "path": "src/core/migrations/0007-document-scan-evidence.json",
+      "sha256": "0229f030127d6cf27091cd60363b9f731ce552c042b3037ca84401af0d2e2c23"
+    },
+    {
+      "path": "src/core/migrations/0008-issued-invoice-pdf-immutability.json",
+      "sha256": "d845f51395d2e57718b4314ad974429070a1304190c5cfb9f0b5cfd2cbc48f7b"
+    },
+    {
+      "path": "src/core/migrations/0009-accounting-draft-workflow.json",
+      "sha256": "a42abed893e67d753bd04ec02a65f002c8aa683023d1689ea17bc7c259082868"
+    },
+    {
+      "path": "src/core/migrations/0010-internal-voucher-evidence.json",
+      "sha256": "f59bbb6a5508542fd20251c0730e520beed0a55d6b4d5bf9b19bce8ee79bc47c"
+    },
+    {
+      "path": "src/core/migrations/0011-purchase-vat-preflight.json",
+      "sha256": "81c453572db4317dc07274ecf2e5511a32b06a2a4a967e3d89253ef9595acd28"
+    },
+    {
+      "path": "src/core/migrations/0012-posting-rules.json",
+      "sha256": "a2f166cd61e0575e130cc68673401631dc12059460dbf9966bdba0100ddb1009"
+    },
+    {
+      "path": "src/core/migrations/0013-bookkeeping-batches.json",
+      "sha256": "ca9ba9c93fdbe06cb386d2360bf9b4c1858eff6bd00442d4435d1901bff28960"
+    },
+    {
+      "path": "src/core/migrations/0014-invoice-extraction-evidence.json",
+      "sha256": "8888935cae0d7f824fe1df1702e17ff7b7e4670eb58787a3e983032e67762f26"
+    },
+    {
+      "path": "src/core/migrations/0015-bookkeeping-batch-retries.json",
+      "sha256": "cafeb1820ccf838b6f880d4a91a67ae776c4cfb32caa41a6496adbba6f8443dc"
+    },
+    {
+      "path": "src/core/migrations/0016-invoice-extraction-actors.json",
+      "sha256": "797a993d7a64e079c3cfeb8ec2f2fb6afb82f34fe3cd9f8c28a1ee4923ea73ed"
+    },
+    {
+      "path": "src/core/migrations/0017-document-pdf-parses.json",
+      "sha256": "7652ef9725a8dfb26aabb09e234e9916f47d14b52384cb467494be791fcee3d1"
+    },
+    {
+      "path": "src/core/migrations/0018-document-metadata-enrichments.json",
+      "sha256": "fb1b3657dfbf88d3b57234dbba7107cc9e889c6aaebab9baa263a9ee152b2cb6"
+    },
+    {
+      "path": "src/core/migrations/0019-document-company-contexts.json",
+      "sha256": "abf7eb8be59d256b253d9340929791ecafa6e34f310cd64c4f02502ad06a57bc"
+    },
+    {
+      "path": "src/core/migrations/0020-mutation-idempotency-receipts.json",
+      "sha256": "69ce065a316b622abdd19ff73a4ca70855d540b901e925d5176c056f8b6564f3"
+    },
+    {
+      "path": "src/core/migrations/0021-bookkeeping-batch-revisions.json",
+      "sha256": "90f29766dcf05100678d6a79e185e5315220aa7fa2884942d1ac3f3fac1a270c"
+    },
+    {
+      "path": "src/core/migrations/0022-period-close-readiness.json",
+      "sha256": "803a7be16e6d9f9a2fbc7cfa259e986aee140bfac9bc3ebe8c4ba228bf174b52"
+    },
+    {
+      "path": "src/core/migrations/0023-local-idempotency-tombstones.json",
+      "sha256": "3712c6083defe694350eb52dafc779a8193fca60558051d93a35210d004ab6d9"
+    },
+    {
+      "path": "src/core/migrations/0024-bookkeeping-batch-principals.json",
+      "sha256": "c4d3061f8bec76cd042b7aa542a271aed8b950132090e19e9c85b9df977516a3"
+    },
+    {
+      "path": "src/core/migrations/0025-period-close-reviews.json",
+      "sha256": "cb3bc9556c05e456943a520346d95c0c52aa95df9254af11aac2021226c6c848"
+    },
+    {
+      "path": "src/core/migrations/0026-document-party-links.json",
+      "sha256": "14183f81ac55c336441ef217492c1bb873356e5e3d979c94ae8b5f808e00e157"
+    },
+    {
+      "path": "src/core/migrations/0027-supplier-commitments.json",
+      "sha256": "520ee643532f0f2c74474f53639a7e1fb0959a7ef5a835c4d7f951707a7d4aed"
+    },
+    {
+      "path": "src/core/migrations/0028-accounting-dimensions.json",
+      "sha256": "47792cf3e31b1d2f8dd3a9a38cf3db8d7e7882ca3d8d799ba8b9d79d64b8f532"
+    },
+    {
+      "path": "src/core/migrations/0029-document-party-resolution.json",
+      "sha256": "148440875bf5b4c9a28274bac3b1ae5e3b511680bed27e8337e27ef3d7ba3abe"
+    },
+    {
+      "path": "src/core/migrations/0030-accounting-dimension-lifecycle.json",
+      "sha256": "b4b20e5939fee88fcf4d8fb46577600d03745e7e25aa5c0d7fd21f6f4608a921"
+    },
+    {
+      "path": "src/core/migrations/0031-supplier-commitment-occurrence-matches.json",
+      "sha256": "562db260cd2477560a990f92ea9d5e391ebe565ad12d2268b7f993ac3d5d9195"
+    },
+    {
+      "path": "src/core/migrations/0032-dimension-budget-and-provenance.json",
+      "sha256": "638fa1273bc722fc473579f0028a4913c598a2fea21985f649b3be779bb3a23b"
+    },
+    {
+      "path": "src/core/migrations/0033-bank-reconciliation-corrections.json",
+      "sha256": "bdf4715fd5a31c8ffb644ece98b92b163fa8f8e2e549795a8d65a25d1462e33b"
+    },
+    {
+      "path": "src/core/migrations/0034-direct-bank-purchase-payable-corrections.json",
+      "sha256": "76c03106346fda40df08e8f370a39577b228fb11dea552d8265d1bdec9fc7aed"
+    },
+    {
+      "path": "src/core/migrations/0035-bank-reconciliation-account-role-fallback.json",
+      "sha256": "0e77c291943dd51b91deca2583c9655c051b6170c95dd1238316620f17be6fbf"
+    },
+    {
+      "path": "src/core/migrations/0036-imported-receivables.json",
+      "sha256": "785396ccd7d7f1f340e89564b0ecffe4580fced541b7b85b878320216c7a549a"
+    },
+    {
+      "path": "src/core/schema-version.ts",
+      "sha256": "44e1d2d04473f882943e02ede364cf26fb19a5220644f97dd18b1523b6051ae8"
+    },
+    {
+      "path": "tests/unit/vat-migration-fk.test.ts",
+      "sha256": "5916e39a1c36a644e609d2fe6e371e745bc6419580301ce11597d775d5a54334"
+    }
+  ],
+  "commands": [
+    {
+      "command": "bun run rust:verify",
+      "result": "PASS",
+      "evidence": "rust-verify.txt",
+      "coverage": "37 Rust tests,6 subprocess helpers; retained34/31/29/10/25/54/40/47/37 checks plus49 VAT checks"
+    },
+    {
+      "command": "bun run typecheck:runtime",
+      "result": "PASS",
+      "evidence": "typecheck.txt"
+    },
+    {
+      "command": "bunx biome lint scripts/rust --error-on-warnings; previously linted changed TS core/unit sources too",
+      "result": "PASS",
+      "evidence": "lint.txt"
+    },
+    {
+      "command": "bun test tests/unit/schema-version.test.ts tests/unit/recurring-invoices.test.ts tests/unit/recurring-runner.test.ts tests/unit/vat-critical-high-regression.test.ts tests/unit/vat-migration-fk.test.ts",
+      "result": "PASS",
+      "evidence": "legacy-tests.txt",
+      "coverage": "70 tests,357 expectations"
+    }
+  ],
+  "independent_review": {
+    "agent": "migration_port_research",
+    "mode": "Read-only actual FK failure reproduction, code review, independent focused native/TS tests and full49-check harness",
+    "result": "No remaining material bounded finding; independent49 checks PASS",
+    "evidence": "independent-parity.txt"
+  },
+  "design_review": {
+    "scope": [
+      "action.normalize_company_vat",
+      "component.storage"
+    ],
+    "model_revision": "sha256:2a4f85dabffd49f9a4a1fdfbad1e9e5e1e1c5abbd4c118a1a3af18ab8ccf81d4",
+    "code_revision": "sha256:1e8829c586a696fd436e666556b1c75e02b30b16165e0afe4c312d6473810c6f",
+    "KISS": "Use in-place kind UPDATE for canonical parent instead of parent replacement; strict known full schema admission.",
+    "DRY": "One shared native VAT validator/normalizer serves data and physical rehearsal.",
+    "separation_of_concerns": "VAT preservation proof owns kind changes; caller transaction owns atomicity and subsequent role/retention effects. Capture/cleanup remain separate.",
+    "modularity": "Existing full-prefix path and private commands reused; no new runtime dependency or repair flags."
+  },
+  "verification_repairs": [
+    "Real TS current36 FK regression initially failed; canonical in-place update preserves referenced period children.",
+    "Full schema assertion then detected equivalent v3 recurring SQL formatting drift; restore exact artifact guards except existing explicit override, keeping immutable artifact bytes.",
+    "Integrated suffix harness now asserts full455-object schema for recognized current36, retaining bounded suffix assertions32–35.",
+    "Final negative fixture corrected to tamper strict history directly; no nonexistent trigger is dropped. Acceptance unchanged."
+  ],
+  "limitations": [
+    "Canonical complete schemas with strict history; old physical/missing-column/checksumless/archive adoption remain separate",
+    "Years below100 explicitly refused while normalization is required",
+    "Only generated NEW timestamps/UUID/build provenance masked; old provenance and parent/child typed cells exact",
+    "Private captures only; no writer authority, other late parent rebuilds, hardware/cross-platform or full R12 acceptance",
+    "Constructed known direct-prefix schemas are covered; historical every-open byte variants and archived backups are not generally admitted.",
+    "Missing-column/checksumless predecessors, other late parent rebuilds, generic replay/adoption, legacy lifetime mutation admission and stable physical/logical identity remain pending.",
+    "No original data writes, full server/CLI/MCP/React/GPUI behavior, distribution/cutover qualification, R12 completion or issue closure."
+  ]
+}

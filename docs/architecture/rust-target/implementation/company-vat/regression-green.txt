@@ -1,0 +1,9 @@
+bun test v1.4.0 (34cbb9a40)
+
+tests/unit/vat-migration-fk.test.ts:
+(pass) canonical VAT normalization preserves current close-decision foreign keys and guards [138.31ms]
+
+ 1 pass
+ 0 fail
+ 8 expect() calls
+Ran 1 test across 1 file. [160.00ms]

@@ -1,14 +1,14 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "company-physical-1",
-  "code_revision": "sha256:5c72c03f04dff239c27c2aa52e0abc0c2bb5c964f377d26a1b70d169fa3e0342",
-  "spec_revision": "sha256:142cc6cae541240b4c5e8a0c5c3a2e89eff4e23fd8d81021d259b805b7d4bda9",
-  "state": "verified-experimental-known-physical-company-baseline",
+  "current_increment": "company-vat-1",
+  "code_revision": "sha256:1e8829c586a696fd436e666556b1c75e02b30b16165e0afe4c312d6473810c6f",
+  "spec_revision": "sha256:2a4f85dabffd49f9a4a1fdfbad1e9e5e1e1c5abbd4c118a1a3af18ab8ccf81d4",
+  "state": "verified-experimental-fk-safe-full-prefix-company-vat",
   "issues_closed": [],
   "next": [
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
-    "Port missing-column/checksumless predecessors, late-prefix FK-safe/current VAT normalization and generic replay/adoption; qualify archived inputs and preserve authority/revocation gates",
+    "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
   ],
   "preserve_unrelated_paths": [
@@ -26,11 +26,11 @@
     "state": "verified-experimental-readonly"
   },
   "evidence": {
-    "report": "company-physical/evidence.json",
-    "parity": "company-physical/parity.json",
-    "rust_tests_passed": 34,
-    "ignored_subprocess_helpers": 5,
-    "company_physical_checks": 37,
+    "report": "company-vat/evidence.json",
+    "parity": "company-vat/parity.json",
+    "rust_tests_passed": 37,
+    "ignored_subprocess_helpers": 6,
+    "company_vat_checks": 49,
     "previous_checks_retained": [
       34,
       31,
@@ -39,7 +39,8 @@
       25,
       54,
       40,
-      47
+      47,
+      37
     ],
     "writer_authority": false,
     "whole_issues_closed": false
@@ -86,6 +87,12 @@
       "code_revision": "sha256:06bbb5cf269530786da92462189661e6fcdb67804b42287055ce1c13a7fb1cc6",
       "spec_revision": "sha256:9b2e203e609312e2fb8af0d6906d491f2590910221b1f394814521fb86c4c69f",
       "state": "verified-experimental-native-baseline-data-effects"
+    },
+    {
+      "current_increment": "company-physical-1",
+      "code_revision": "sha256:5c72c03f04dff239c27c2aa52e0abc0c2bb5c964f377d26a1b70d169fa3e0342",
+      "spec_revision": "sha256:142cc6cae541240b4c5e8a0c5c3a2e89eff4e23fd8d81021d259b805b7d4bda9",
+      "state": "verified-experimental-known-physical-company-baseline"
     }
   ]
 }
