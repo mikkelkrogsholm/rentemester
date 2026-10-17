@@ -10,14 +10,13 @@ const result = Bun.spawnSync(
 );
 assert.equal(result.exitCode, 0, result.stderr.toString());
 const metadata = JSON.parse(result.stdout.toString());
-const engine = metadata.packages.find(
-  (p: any) => p.name === "rentemester-engine",
-);
-function checkDependencies(names: string[]) {
-  const allowed = new Set(["num-bigint", "serde"]);
+function checkDependencies(crate: string, names: string[]) {
+  const allowed = new Set(
+    crate === "rentemester-engine" ? ["num-bigint", "serde"] : ["serde"],
+  );
   assert(
     names.every((n) => allowed.has(n)),
-    "Domain dependency crosses the current numeric/serialization boundary",
+    `${crate} crosses pure policy boundary`,
   );
 }
 function checkSource(source: string) {
@@ -31,22 +30,32 @@ function checkSource(source: string) {
     "Domain imports a grouped I/O/runtime API",
   );
 }
-checkDependencies(engine.dependencies.map((d: any) => d.name));
-const dir = join(root, "crates/rentemester-engine/src");
-for (const f of readdirSync(dir).filter((f) => f.endsWith(".rs")))
-  checkSource(readFileSync(join(dir, f), "utf8"));
-assert.throws(() =>
-  checkDependencies([
-    ...engine.dependencies.map((d: any) => d.name),
-    "rusqlite",
-  ]),
-);
+for (const crate of ["rentemester-engine", "rentemester-application"]) {
+  const pkg = metadata.packages.find((p: any) => p.name === crate);
+  checkDependencies(
+    crate,
+    pkg.dependencies
+      .filter((d: any) => d.kind !== "dev")
+      .map((d: any) => d.name),
+  );
+  const dir = join(root, `crates/${crate}/src`);
+  for (const f of readdirSync(dir).filter((f) => f.endsWith(".rs")))
+    checkSource(readFileSync(join(dir, f), "utf8"));
+}
+for (const crate of ["rentemester-engine", "rentemester-application"]) {
+  assert.throws(() => checkDependencies(crate, ["serde", "rusqlite"]));
+  assert.throws(() => checkDependencies(crate, ["serde", "rustix"]));
+}
 assert.throws(() => checkSource("use std::fs::File;"));
 console.log(
   JSON.stringify({
     ok: true,
-    scope: "current Rust domain dependency graph and direct std I/O imports",
-    negativeControls: ["forbidden SQL dependency", "direct filesystem import"],
+    scope:
+      "current Rust domain/application policy dependencies and direct std I/O imports",
+    negativeControls: [
+      "forbidden SQL/OS dependencies in both pure crates",
+      "direct filesystem import",
+    ],
     limits:
       "Direct import scan supplements dependency inspection and code review; it is not an exhaustive Rust semantic analyzer.",
   }),

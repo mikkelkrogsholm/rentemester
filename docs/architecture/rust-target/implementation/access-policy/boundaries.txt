@@ -1,0 +1,1 @@
+{"ok":true,"scope":"current Rust domain/application policy dependencies and direct std I/O imports","negativeControls":["forbidden SQL/OS dependencies in both pure crates","direct filesystem import"],"limits":"Direct import scan supplements dependency inspection and code review; it is not an exhaustive Rust semantic analyzer."}

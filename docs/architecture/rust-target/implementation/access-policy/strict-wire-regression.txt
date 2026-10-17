@@ -1,0 +1,22 @@
+   Compiling rentemester-application v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-application)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.29s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_application-c510d96505f9a047)
+
+running 1 test
+test access::tests::unknown_roles_and_nonstring_permissions_refuse ... FAILED
+
+failures:
+
+---- access::tests::unknown_roles_and_nonstring_permissions_refuse stdout ----
+
+thread 'access::tests::unknown_roles_and_nonstring_permissions_refuse' (4245149) panicked at crates/rentemester-application/src/access.rs:359:13:
+assertion failed: serde_json::from_value::<CompanyRole>(value).is_err()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    access::tests::unknown_roles_and_nonstring_permissions_refuse
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rentemester-application --lib`

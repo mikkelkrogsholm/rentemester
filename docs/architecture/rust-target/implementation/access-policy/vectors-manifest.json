@@ -1,0 +1,12 @@
+{
+  "format": "rentemester-access-vectors/1",
+  "checks": 2484,
+  "vectors_sha256": "f200aef19f73d33eb708e935d30b35b9612b9f4fce86eb58382066cec8055395",
+  "generator_sha256": "2de7c56f0b911ea600f2d11a384d2c8a57061ed7f8fb285df560abf708868118",
+  "legacy_core_differences": 505,
+  "source_sha256": {
+    "src/core/access-permissions.ts": "8e8161c3389b0704a11f047a5834c663d48bb2412ecdfebf80efe6219c108fa5",
+    "src/core/workspace-access.ts": "0e034fcee922d6cd4733da1fbdc85f05dce0a443461083903a5808554fb84b2e",
+    "src/core/workspace-control.ts": "63b155521b26872be2fa95175434cd4234c284f07bf5a2baca0e63e1cb04509d"
+  }
+}

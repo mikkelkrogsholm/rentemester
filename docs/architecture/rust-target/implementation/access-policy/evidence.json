@@ -1,0 +1,208 @@
+{
+  "format": "rentemester-access-policy-increment/1",
+  "base_code": "8cec5a7ffc6070b4742f2bfbf6b08550142e3a3a",
+  "previous_goal_turn": "Progress: source-backed advisory journal preview committed/pushed as 8cec5a7f; active full goal and unrelated user edits reconciled before current work.",
+  "code_revision": "sha256:98c5fcd57f46fd91196ff758396325e15b35fd4e24e544e60b9097b8347283ff",
+  "spec_revision": "sha256:2b70533748e2b154758d5827ec26d940d695af0b180dcf5f74cbb3651f801241",
+  "assets": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "19e768857c0b6a46fbfbc2202c0f6dde1a3e340e03807e9890251e47ca21afb4"
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256": "ec6ee9a25e58c935bb6e1c3e66e79564639143147254d6ae6078db7fbf281992"
+    },
+    {
+      "path": "crates/rentemester-application/Cargo.toml",
+      "sha256": "6f1c0c9c5d29174042a7efeea8707d2ccfedb405e115023edfc6d7e2e69fac20"
+    },
+    {
+      "path": "crates/rentemester-application/src/access.rs",
+      "sha256": "1ac11126836d63b690b94ac7727fae843e40c6ae862f291d41971be52a11ce88"
+    },
+    {
+      "path": "crates/rentemester-application/src/lib.rs",
+      "sha256": "8aad55a91182cbf6f2c40b7587dcc553ff402a5e882a2eb33379fa584c0d19d3"
+    },
+    {
+      "path": "crates/rentemester-application/tests/access_vectors.rs",
+      "sha256": "2dee5feffcc5b41d18c4f58b30d2129ea4ef3a6e36fa30ad7f7750c0a7083034"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/access-policy/CONTRACT.md",
+      "sha256": "08618fe7cbbefee5f3bdc30865c3351b2b37b674307425eb3e75971bc908fdca"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/access-policy/gdd.json",
+      "sha256": "28a323965e278ef62bdbd5c3b4114b76e2afdd929003d226cf57f997a11a9354"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/access-policy/legacy-observations.jsonl",
+      "sha256": "111850fbc334b4bb14f6b02f9faed253b5ec1bf841eceb3cc34b6ceb68ff29d8"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/access-policy/vectors-manifest.json",
+      "sha256": "2bf1a519c7c40bcad834f0e2706c314b833fd06f8451955269aec12b91a4c5a9"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/access-policy/vectors.jsonl",
+      "sha256": "f200aef19f73d33eb708e935d30b35b9612b9f4fce86eb58382066cec8055395"
+    },
+    {
+      "path": "scripts/rust/access-policy-vectors.py",
+      "sha256": "2de7c56f0b911ea600f2d11a384d2c8a57061ed7f8fb285df560abf708868118"
+    },
+    {
+      "path": "scripts/rust/check-boundaries.ts",
+      "sha256": "8a8b7c80db1d5e351696d670866fb97b6bd604a815f4a8a8a07cac0c1a67fc6c"
+    },
+    {
+      "path": "scripts/rust/verify-access-policy.ts",
+      "sha256": "e84ca73d6b7dabd97aebc4a1af7d2cfcb4d97aaa30cff9277eee4a6462aa3bc6"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "74e7ac3a3771eb84cd7f0991dd5a08467e7f9e4eb19c9d3552c556e87d09c5d8"
+    },
+    {
+      "path": "src/core/access-permissions.ts",
+      "sha256": "8e8161c3389b0704a11f047a5834c663d48bb2412ecdfebf80efe6219c108fa5"
+    },
+    {
+      "path": "src/core/workspace-access.ts",
+      "sha256": "0e034fcee922d6cd4733da1fbdc85f05dce0a443461083903a5808554fb84b2e"
+    },
+    {
+      "path": "src/core/workspace-control.ts",
+      "sha256": "63b155521b26872be2fa95175434cd4234c284f07bf5a2baca0e63e1cb04509d"
+    },
+    {
+      "path": "src/server/auth.ts",
+      "sha256": "be531af3c308a417d767dc30960777c45408ff8883d767702199dbcbdae942cc"
+    },
+    {
+      "path": "src/server/router/service-principals.ts",
+      "sha256": "e37a1116417ec8f9e305a41e31d37f51bcb5e4ec172d80d2b58274fbbaaa644e"
+    }
+  ],
+  "verification": {
+    "other_production_crates_depending_on_changed_application": [],
+    "rust_tests_passed": 60,
+    "ignored_helpers_explicitly_selected": 11,
+    "integration_check_groups": [
+      2485,
+      34,
+      31,
+      29,
+      10,
+      25,
+      54,
+      40,
+      47,
+      37,
+      49,
+      128,
+      5691,
+      1075,
+      211,
+      226
+    ],
+    "integration_checks": 10172,
+    "new_access_checks": 2485,
+    "fixed_source_cases": 2484,
+    "legacy_core_differences": 505,
+    "acceptance_composition": "Full workspace run passed with initial application implementation. A later tagged-object wire regression was diagnosed and fixed only in the new application crate/test. Final four native tests, 2485-case source/corpus check, Clippy, format, boundary and independent correction reruns pass. Existing product crates do not depend on the new application crate; their full regression evidence is retained without repeating unchanged migrations.",
+    "full_run_initial_application_source_sha256": "00d184b16ee0b7d5618294241cd82de9cab24f5a962a891de369b19e1fd058f2",
+    "differences_by_reason": {
+      "stale-session": 112,
+      "revoked-credential": 112,
+      "human-service-bypass": 112,
+      "identity-workspace": 21,
+      "access-workspace": 21,
+      "access-subject": 21,
+      "empty-workspace": 21,
+      "empty-subject": 21,
+      "company-workspace": 16,
+      "membership-workspace": 16,
+      "membership-subject": 16,
+      "membership-company": 16
+    },
+    "source_store": "Actual unchanged authorizeWorkspaceRoute and roleAllowsPermission on fresh synthetic fully migrated control store; append-only events seeded without removing guards. Later disable/revoke timestamps deliberately precede earlier activation/grant timestamps.",
+    "preservation": "Around every TS read: exact serialized control image and total_changes unchanged, manifest and unopened invalid-SQLite company sentinel bytes unchanged. Native pure facts cloned/compared and every decision repeated in each of two environments. This does not claim original source WAL/SHM byte qualification for this separate core-only oracle.",
+    "environment": "macOS arm64, pinned Rust 1.94.1; native corpus executes outside repo cwd with UTC vs Pacific/Honolulu and untrusted actor/user env."
+  },
+  "commands": [
+    {
+      "command": "cargo fmt --all -- --check",
+      "result": "PASS",
+      "coverage": "Current corrected sources checked after strict wire fix"
+    },
+    {
+      "command": "cargo clippy --locked --workspace --all-targets -- -D warnings",
+      "result": "PASS",
+      "log": "clippy-final.txt"
+    },
+    {
+      "command": "bun run rust:verify",
+      "result": "PASS",
+      "log": "rust-verify.txt"
+    },
+    {
+      "command": "bun run scripts/rust/verify-access-policy.ts",
+      "result": "PASS",
+      "log": "parity.json"
+    },
+    {
+      "command": "python3 scripts/rust/access-policy-vectors.py --check",
+      "result": "PASS",
+      "log": "generator-independent.txt"
+    },
+    {
+      "command": "cargo test --locked -p rentemester-application",
+      "result": "PASS",
+      "log": "native-final.txt"
+    },
+    {
+      "command": "bun run scripts/rust/check-boundaries.ts",
+      "result": "PASS",
+      "log": "boundaries.txt"
+    },
+    {
+      "command": "bunx biome lint scripts/rust/verify-access-policy.ts scripts/rust/check-boundaries.ts scripts/rust/verify.ts --error-on-warnings",
+      "result": "PASS",
+      "log": "lint.txt"
+    }
+  ],
+  "independent_review": {
+    "agent": "migration_port_research",
+    "scope": "Read-only graph-first source/contract review, independent generator, 2485-check ordinary corpus/source run and four native tests.",
+    "result": "PASS; no remaining material defect",
+    "logs": [
+      "parity-independent.txt",
+      "generator-independent.txt",
+      "native-independent.txt",
+      "wire-native-independent.txt",
+      "wire-parity-independent.txt"
+    ]
+  },
+  "implementation_notes": [
+    "Extra fixed tagged-object role/permission counterexamples exposed Serde unit-enum map acceptance; strict-wire-regression.txt preserves the failure. Shared string_enum defines the three real vocabularies once and accepts only String deserialization. Corrected current native and full-corpus checks plus independent reruns pass.",
+    "Pure application crate adds no new external dependency; serde runtime and existing serde_json test-only. No Deserialize on trusted observations; permission/role vocabulary alone has serde.",
+    "Scope classification exhaustively names every enum variant; unknown permissions cannot inherit company-owner rights. Both direct role tables and contextual decisions match independent expectations.",
+    "505 explicit differences cover core upstream-authentication assumptions, human service-bypass refusal and exact scope binding, not changed legacy source behavior.",
+    "Initial GDD readiness passed before implementation. Later source-bound readiness-v2 adds clarification that generic route allow cannot replace hosted-human-only credential administration; core contract and behavior unchanged.",
+    "Initial biome format did not process globally disabled formatter; enabling JavaScript formatter through its documented flag succeeded. No test failure was concealed.",
+    "Boundary guard was simplified after its first full-suite invocation; separate final boundary guard/lint rerun passes, with both SQL/OS dependency negative controls."
+  ],
+  "limitations": [
+    "Named source anchors are not an exhaustive transitive source-dependency closure.",
+    "No authentication provider/session/token/clock verification; booleans and keys are trusted observations, not client claims.",
+    "No current-source adapter, stable persisted identity, event ID collector or control/ledger revocation fence.",
+    "No product API/CLI/MCP authorization endpoint, posting or real company mutation.",
+    "No last-owner/invitation/credential lifecycle/CSRF or other operation-specific implementation; generic route allow is insufficient.",
+    "Full R04/R13/R14/epic and remaining clients/domains/distribution/cutover stay open."
+  ],
+  "all_goal_requirements_complete": false,
+  "issues_closed": []
+}

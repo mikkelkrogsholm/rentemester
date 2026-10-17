@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "journal-preview-1",
-  "code_revision": "sha256:6840a4138730aef78a2efeebfa4c5c808d54e2b3581745ebc4a6ab88d6c9db78",
-  "spec_revision": "sha256:a4c3b5c00fea08515ecf62862f5ecd8ca41fec70758fd7378b5375e8ea389f7c",
-  "state": "verified-experimental-source-backed-journal-preview",
+  "current_increment": "access-policy-1",
+  "code_revision": "sha256:98c5fcd57f46fd91196ff758396325e15b35fd4e24e544e60b9097b8347283ff",
+  "spec_revision": "sha256:2b70533748e2b154758d5827ec26d940d695af0b180dcf5f74cbb3651f801241",
+  "state": "verified-experimental-shared-access-policy",
   "issues_closed": [],
   "next": [
-    "Build admitted application/transaction orchestration for actual dry-run/post/reverse after stable workspace/company identity,legacy write-entry admission,authorization and trusted clock;retain preview advisory and finish R03/R09 baseline gaps",
+    "Bind trusted current identity/control source observations to shared application authorization and implement control/ledger revocation fencing before actual dry-run/post/reverse; finish R04/R03/R09 baseline gaps",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -27,28 +27,12 @@
     "state": "verified-experimental-readonly"
   },
   "evidence": {
-    "report": "journal-preview/evidence.json",
-    "parity": "journal-preview/parity.json",
-    "rust_tests_passed": 56,
-    "ignored_subprocess_helpers": 10,
-    "journal_preview_checks": 226,
-    "previous_checks_retained": [
-      34,
-      31,
-      29,
-      10,
-      25,
-      54,
-      40,
-      47,
-      37,
-      49,
-      128,
-      5691,
-      1075,
-      211
-    ],
-    "legacy_targeted_tests": 11,
+    "report": "access-policy/evidence.json",
+    "parity": "access-policy/parity.json",
+    "rust_tests_passed": 60,
+    "ignored_subprocess_helpers": 11,
+    "access_policy_checks": 2485,
+    "integration_checks": 10172,
     "writer_authority": false,
     "whole_issues_closed": false
   },
@@ -130,6 +114,12 @@
       "code_revision": "sha256:a637a8618026b31dddfb40bccd6963faccad43766d93b9fbf487fc1c99d9f9f6",
       "spec_revision": "sha256:fa593f114e03367fe55ce4e7583cd7f3c27cdebe6c1f728a90bd4dd6cb224834",
       "state": "verified-experimental-pure-manual-journal"
+    },
+    {
+      "current_increment": "journal-preview-1",
+      "code_revision": "sha256:6840a4138730aef78a2efeebfa4c5c808d54e2b3581745ebc4a6ab88d6c9db78",
+      "spec_revision": "sha256:a4c3b5c00fea08515ecf62862f5ecd8ca41fec70758fd7378b5375e8ea389f7c",
+      "state": "verified-experimental-source-backed-journal-preview"
     }
   ]
 }

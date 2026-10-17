@@ -1,0 +1,9 @@
+{
+  "format": "rentemester-rust-change/1",
+  "increment": "access-policy-1",
+  "code_revision": "sha256:98c5fcd57f46fd91196ff758396325e15b35fd4e24e544e60b9097b8347283ff",
+  "spec_revision": "sha256:2b70533748e2b154758d5827ec26d940d695af0b180dcf5f74cbb3651f801241",
+  "result": "Verified shared pure access policy; product identity/authenticated writes remain pending",
+  "evidence": "evidence.json",
+  "full_goal_complete": false
+}

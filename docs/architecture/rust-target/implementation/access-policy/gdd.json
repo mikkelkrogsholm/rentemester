@@ -1,0 +1,206 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Shared Rust workspace/company access policy",
+    "goal": "Port exact access decisions and require explicitly bound current identity/control observations",
+    "scope": "Pure application-layer R13 increment; full goal unchanged"
+  },
+  "nodes": {
+    "action.access_policy": {
+      "kind": "action",
+      "description": "Evaluate exact private/public workspace/company permission from trusted bound facts",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "request": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "observations": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {},
+        "preconditions": [
+          "Typed permission vocabulary; facts supplied by trusted current source adapter, never caller claims."
+        ],
+        "postconditions": [
+          "Only non-disclosing allowed boolean; no data effects or authority token."
+        ],
+        "external_effects": [],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Pure immutable decision; wrong identity/scope/readiness/role deny, prior allow cannot fence future writes.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Pure immutable decision; wrong identity/scope/readiness/role deny, prior allow cannot fence future writes.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Pure immutable decision; wrong identity/scope/readiness/role deny, prior allow cannot fence future writes.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Pure immutable decision; wrong identity/scope/readiness/role deny, prior allow cannot fence future writes.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Pure immutable decision; wrong identity/scope/readiness/role deny, prior allow cannot fence future writes.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {}
+      },
+      "behavior": "Evaluate immutable bound facts with no I/O or reusable grant"
+    },
+    "component.application": {
+      "kind": "component",
+      "description": "Source-read-only snapshot adapter",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Shared access policy over trusted observations",
+        "rationale": "All product interfaces need the same company isolation policy.",
+        "excludes": [
+          "Authentication, storage, revocation fencing, actor inference and source adapters"
+        ]
+      },
+      "interfaces": [
+        "action.access_policy"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "All roles and permissions match independent matrix and actual legacy policy.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Synthetic request and explicit identity/control observations.",
+        "when": "Evaluate native policy and corresponding unchanged legacy policy.",
+        "then": "All roles and permissions match independent matrix and actual legacy policy."
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Unknown vocabulary, missing identity, wrong security state or any wrong binding refuse.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Synthetic request and explicit identity/control observations.",
+        "when": "Evaluate native policy and corresponding unchanged legacy policy.",
+        "then": "Unknown vocabulary, missing identity, wrong security state or any wrong binding refuse."
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Immutable inputs and repeated decisions remain unchanged.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Synthetic request and explicit identity/control observations.",
+        "when": "Evaluate native policy and corresponding unchanged legacy policy.",
+        "then": "Immutable inputs and repeated decisions remain unchanged."
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Unverified session/credential and service bypass for humans refuse even when legacy core alone allows.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Synthetic request and explicit identity/control observations.",
+        "when": "Evaluate native policy and corresponding unchanged legacy policy.",
+        "then": "Unverified session/credential and service bypass for humans refuse even when legacy core alone allows."
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "A second evaluation with newly revoked access denies; old result is not a fence or capability.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Synthetic request and explicit identity/control observations.",
+        "when": "Evaluate native policy and corresponding unchanged legacy policy.",
+        "then": "A second evaluation with newly revoked access denies; old result is not a fence or capability."
+      }
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.access_policy",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.access_policy",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.access_policy",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.access_policy",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.access_policy",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.access_policy",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Shared Rust access policy contract",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "08618fe7cbbefee5f3bdc30865c3351b2b37b674307425eb3e75971bc908fdca"
+      }
+    }
+  }
+}

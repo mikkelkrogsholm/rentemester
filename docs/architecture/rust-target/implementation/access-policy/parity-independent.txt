@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "checks": 2485,
+  "sourceCases": 2484,
+  "legacyCoreDifferences": 505,
+  "nativeEnvironments": 2,
+  "legacyObservationsSha256": "111850fbc334b4bb14f6b02f9faed253b5ec1bf841eceb3cc34b6ceb68ff29d8",
+  "limits": [
+    "Pure trusted-observation policy, not identity verification or revocation fencing",
+    "Legacy core assumes upstream authentication; explicit binding/live-proof differences retained",
+    "Synthetic current control data only; no company ledger opened"
+  ]
+}

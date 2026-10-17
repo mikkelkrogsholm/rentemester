@@ -1,0 +1,23 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_application-c510d96505f9a047)
+
+running 4 tests
+test access::tests::company_roles_never_grant_workspace_or_public_permissions ... ok
+test access::tests::reevaluation_observes_revocation_and_never_changes_prior_facts ... ok
+test access::tests::exact_vocabulary_and_slug_grammar ... ok
+test access::tests::unknown_roles_and_nonstring_permissions_refuse ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/access_vectors.rs (target/debug/deps/access_vectors-594890d4477035aa)
+
+running 1 test
+test vectors ... ignored, independent access corpus explicitly selected by Bun harness
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rentemester_application
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
