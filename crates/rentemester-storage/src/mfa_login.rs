@@ -4,6 +4,20 @@ use rusqlite::{MAIN_DB, Transaction, TransactionState, params};
 use sha2::{Digest, Sha256};
 use zeroize::Zeroizing;
 const CONTEXT: &str = "rm-native-mfa-v1:";
+const ENROLLMENT: &str = "rm-native-enroll-v1:";
+#[derive(Clone, Copy)]
+enum Stage {
+    Login,
+    Enrollment,
+}
+impl Stage {
+    fn namespace(self) -> &'static str {
+        match self {
+            Self::Login => CONTEXT,
+            Self::Enrollment => ENROLLMENT,
+        }
+    }
+}
 const REPLAY: &str = "rm-native-totp-step-v1:";
 pub const MAX_NOW: i64 = 253_402_300_799_999 - 43_200_000;
 fn invalid(_: impl std::fmt::Display) -> Error {
@@ -110,14 +124,19 @@ impl Factor {
         }
     }
 }
-fn factor(tx: &Transaction<'_>, subject: &str) -> Result<Factor, Error> {
+fn factor(tx: &Transaction<'_>, subject: &str, stage: Stage) -> Result<Factor, Error> {
     let mut q=tx.prepare("SELECT id,secret,verified,failedVerificationCount,lockedUntil,backupCodes FROM main.twoFactor WHERE userId=?1 COLLATE BINARY LIMIT 2").map_err(invalid)?;
     let mut rows = q.query([subject]).map_err(invalid)?;
     let Some(r) = rows.next().map_err(invalid)? else {
         return Err(denied());
     };
     let verified: Option<i64> = r.get(2).map_err(invalid)?;
-    if verified != Some(1) {
+    if verified
+        != Some(match stage {
+            Stage::Login => 1,
+            Stage::Enrollment => 0,
+        })
+    {
         return Err(denied());
     }
     let failures: Option<i64> = r.get(3).map_err(invalid)?;
@@ -144,10 +163,14 @@ fn context(
     subject: &str,
     workspace: &str,
     factor: &Factor,
+    stage: Stage,
 ) -> Result<String, Error> {
     let credential =
         crate::password_credential::capture_subject(tx, subject)?.ok_or_else(denied)?;
-    if !credential.eligible_mfa() {
+    if !match stage {
+        Stage::Login => credential.eligible_mfa(),
+        Stage::Enrollment => credential.eligible_enrollment(),
+    } {
         return Err(denied());
     }
     // Rows are immutable; COUNT advances even after SQLite random ROWID allocation.
@@ -158,7 +181,10 @@ fn context(
     let fingerprint = credential.binding_fingerprint();
     let mut hash = Sha256::new();
     for value in [
-        b"rm-native-mfa-binding-v1".as_slice(),
+        match stage {
+            Stage::Login => b"rm-native-mfa-binding-v1".as_slice(),
+            Stage::Enrollment => b"rm-native-enroll-binding-v1".as_slice(),
+        },
         workspace.as_bytes(),
         subject.as_bytes(),
         &fingerprint,
@@ -168,6 +194,13 @@ fn context(
     ] {
         hash.update((value.len() as u64).to_be_bytes());
         hash.update(value);
+    }
+    if matches!(stage, Stage::Enrollment) {
+        if record(tx, &format!("{REPLAY}{}", factor.id))?.is_some() {
+            return Err(invalid("unverified replay state"));
+        }
+        hash.update((factor.backup.len() as u64).to_be_bytes());
+        hash.update(factor.backup.as_bytes());
     }
     Ok(format!("v1:{:x}", hash.finalize()))
 }
@@ -184,13 +217,82 @@ pub fn create(
     ids: PendingIds<'_>,
     now: i64,
 ) -> Result<(), Error> {
+    create_inner(tx, subject, workspace, token, ids, now, Stage::Login)
+}
+pub fn create_enrollment(
+    tx: &Transaction<'_>,
+    subject: &str,
+    workspace: &str,
+    token: &str,
+    ids: PendingIds<'_>,
+    now: i64,
+) -> Result<(), Error> {
+    create_inner(tx, subject, workspace, token, ids, now, Stage::Enrollment)
+}
+/// Replace only an unverified setup, retaining the account-wide failure/lock budget.
+pub fn prepare_enrollment(
+    tx: &Transaction<'_>,
+    subject: &str,
+    id: &str,
+    secret: &str,
+    backup: &str,
+    now: i64,
+) -> Result<(), Error> {
     writer(tx)?;
     check_now(now)?;
-    let factor = factor(tx, subject)?;
+    if !crate::password_credential::capture_subject(tx, subject)?
+        .is_some_and(|c| c.eligible_enrollment())
+    {
+        return Err(denied());
+    }
+    let count: i64 = tx
+        .query_row(
+            "SELECT COUNT(*) FROM main.twoFactor WHERE userId=?1 COLLATE BINARY",
+            [subject],
+            |r| r.get(0),
+        )
+        .map_err(invalid)?;
+    if count == 0 {
+        if record(tx, &format!("{REPLAY}{id}"))?.is_some() {
+            return Err(invalid("unverified replay state"));
+        }
+        tx.execute("INSERT INTO main.twoFactor(id,userId,secret,backupCodes,verified,failedVerificationCount,lockedUntil) VALUES(?1,?2,?3,?4,0,0,NULL)",params![id,subject,secret,backup]).map_err(invalid)?;
+    } else if count == 1 {
+        let current = factor(tx, subject, Stage::Enrollment)?;
+        if current.locked(now) {
+            return Err(denied());
+        }
+        if record(tx, &format!("{REPLAY}{}", current.id))?.is_some() {
+            return Err(invalid("unverified replay state"));
+        }
+        one_change(
+            tx.execute(
+                "UPDATE main.twoFactor SET secret=?1,backupCodes=?2 WHERE id=?3 AND verified=0",
+                params![secret, backup, current.id],
+            )
+            .map_err(invalid)?,
+        )?;
+    } else {
+        return Err(invalid("ambiguous factor"));
+    }
+    Ok(())
+}
+fn create_inner(
+    tx: &Transaction<'_>,
+    subject: &str,
+    workspace: &str,
+    token: &str,
+    ids: PendingIds<'_>,
+    now: i64,
+    stage: Stage,
+) -> Result<(), Error> {
+    writer(tx)?;
+    check_now(now)?;
+    let factor = factor(tx, subject, stage)?;
     if factor.locked(now) {
         return Err(denied());
     }
-    let binding = context(tx, subject, workspace, &factor)?;
+    let binding = context(tx, subject, workspace, &factor, stage)?;
     let created = date(now)?;
     let expires = date(now + 600_000)?;
     insert(tx, ids.challenge, token, subject, &created, &expires)?;
@@ -205,7 +307,7 @@ pub fn create(
     insert(
         tx,
         ids.context,
-        &format!("{CONTEXT}{token}"),
+        &format!("{}{token}", stage.namespace()),
         &binding,
         &created,
         &expires,
@@ -219,6 +321,7 @@ pub struct Attempt {
     context: Record,
     count: i64,
     factor: Factor,
+    stage: Stage,
 }
 pub fn resolve(
     tx: &Transaction<'_>,
@@ -226,11 +329,28 @@ pub fn resolve(
     token: &str,
     now: i64,
 ) -> Result<Attempt, Error> {
+    resolve_inner(tx, workspace, token, now, Stage::Login)
+}
+pub fn resolve_enrollment(
+    tx: &Transaction<'_>,
+    workspace: &str,
+    token: &str,
+    now: i64,
+) -> Result<Attempt, Error> {
+    resolve_inner(tx, workspace, token, now, Stage::Enrollment)
+}
+fn resolve_inner(
+    tx: &Transaction<'_>,
+    workspace: &str,
+    token: &str,
+    now: i64,
+    stage: Stage,
+) -> Result<Attempt, Error> {
     writer(tx)?;
     check_now(now)?;
     let challenge = record(tx, token)?.ok_or_else(denied)?;
     let attempts = record(tx, &format!("2fa-attempts-{token}"))?.ok_or_else(denied)?;
-    let binding = record(tx, &format!("{CONTEXT}{token}"))?.ok_or_else(denied)?;
+    let binding = record(tx, &format!("{}{token}", stage.namespace()))?.ok_or_else(denied)?;
     let created = stamp(&challenge.created)?;
     let expires = stamp(&challenge.expires)?;
     if created > now
@@ -258,8 +378,8 @@ pub fn resolve(
         return Err(denied());
     }
     let subject = bounded(challenge.value.as_str().to_owned())?;
-    let factor = factor(tx, &subject)?;
-    if context(tx, &subject, workspace, &factor)? != binding.value.as_str() {
+    let factor = factor(tx, &subject, stage)?;
+    if context(tx, &subject, workspace, &factor, stage)? != binding.value.as_str() {
         return Err(denied());
     }
     Ok(Attempt {
@@ -269,6 +389,7 @@ pub fn resolve(
         context: binding,
         count,
         factor,
+        stage,
     })
 }
 fn one_change(count: usize) -> Result<(), Error> {
@@ -294,6 +415,14 @@ fn telemetry(
 }
 pub fn audit_begin(tx: &Transaction<'_>, subject: &str, version: u64) -> Result<(), Error> {
     telemetry(tx, "sign-in-email", "accepted", subject, None, version)
+}
+pub fn audit_enrollment_begin(
+    tx: &Transaction<'_>,
+    subject: &str,
+    version: u64,
+) -> Result<(), Error> {
+    audit_begin(tx, subject, version)?;
+    telemetry(tx, "two-factor-enable", "accepted", subject, None, version)
 }
 #[derive(Clone, Copy)]
 pub enum Method {
@@ -406,7 +535,43 @@ impl Attempt {
         }
         Ok(counter <= step)
     }
+    pub fn accept_enrollment(
+        &self,
+        tx: &Transaction<'_>,
+        counter: u64,
+        now: i64,
+        ids: SessionIds<'_>,
+        version: u64,
+    ) -> Result<(), Error> {
+        if !matches!(self.stage, Stage::Enrollment) {
+            return Err(denied());
+        }
+        one_change(
+            tx.execute(
+                "UPDATE main.twoFactor SET verified=1 WHERE id=?1 AND verified=0",
+                [&self.factor.id],
+            )
+            .map_err(invalid)?,
+        )?;
+        // The canonical trigger revokes ALL previous sessions. Its legacy actor label
+        // is a compatibility value, not an assertion of the executing runtime.
+        one_change(tx.execute("UPDATE main.user SET twoFactorEnabled=1,updatedAt=?1 WHERE id=?2 AND COALESCE(twoFactorEnabled,0)=0",params![date(now)?,self.subject]).map_err(invalid)?)?;
+        self.accept_inner(tx, Completion::Totp(counter), now, ids, version)
+    }
     pub fn accept(
+        &self,
+        tx: &Transaction<'_>,
+        completion: Completion<'_>,
+        now: i64,
+        ids: SessionIds<'_>,
+        version: u64,
+    ) -> Result<(), Error> {
+        if !matches!(self.stage, Stage::Login) {
+            return Err(denied());
+        }
+        self.accept_inner(tx, completion, now, ids, version)
+    }
+    fn accept_inner(
         &self,
         tx: &Transaction<'_>,
         completion: Completion<'_>,

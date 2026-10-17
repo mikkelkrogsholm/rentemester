@@ -1,5 +1,6 @@
 /** Native enrolled MFA flow, actual source crypto/session oracle, independent process races. */
 import assert from "node:assert/strict";
+import { verifyEnrollment } from "./mfa-enrollment-cases";
 import {
 	copyFileSync,
 	mkdirSync,
@@ -921,16 +922,31 @@ try {
 		interopDb.close();
 		record("backup-actual-source-session-reader-and-HTTP-consumption");
 	}
+	sensitiveRecoveryCodes.push(
+		...(await verifyEnrollment({
+			fixture,
+			run,
+			start,
+			done,
+			marker,
+			sql,
+			image,
+			record,
+			now,
+			key,
+			opts,
+		})),
+	);
 	const report = JSON.stringify(
 		{
 			ok: true,
 			scope:
-				"Native enrolled TOTP/backup-code MFA login on admitted synthetic control handles; actual source cookie/session oracle and independent WAL/DELETE process races",
+				"Native password-bound MFA enrollment and enrolled TOTP/backup-code login on admitted synthetic control handles; actual source cookie/session oracle and independent WAL/DELETE process races",
 			checks,
 			observations,
 			limits: [
-				"Internal enrolled TOTP/backup path only: no exposed endpoint, actual handle/lifetime admission or live dual writers",
-				"Enrollment/backup-code management/trusted-device/rememberMe/OS-native credential and full identity/provider parity remain pending",
+				"Internal enrollment and enrolled TOTP/backup paths only: no exposed endpoint, actual handle/lifetime admission or live dual writers",
+				"Backup-code management/trusted-device/rememberMe/OS-native credential and full identity/provider parity remain pending",
 				"Private native context and replay state are stricter than legacy in-flight challenges",
 				"Commit busy exercised; OS/storage crash and restore-lineage qualification remain separate",
 			],

@@ -29,6 +29,58 @@ impl<'de> Visitor<'de> for Codes {
         Ok(codes)
     }
 }
+/// Sensitive codes for one post-commit disclosure. No Debug, Clone or Serde.
+pub struct BackupCodeList(Vec<Zeroizing<String>>);
+impl BackupCodeList {
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+    pub fn iter(&self) -> impl Iterator<Item = &str> {
+        self.0.iter().map(|s| s.as_str())
+    }
+}
+pub fn reveal_backup_codes(keys: &MfaKeyring, encrypted: &str) -> Result<BackupCodeList, MfaError> {
+    let plaintext = keys.decrypt(encrypted)?;
+    let mut decoder = serde_json::Deserializer::from_str(plaintext.as_str());
+    let codes = decoder
+        .deserialize_seq(Codes)
+        .map_err(|_| MfaError::InvalidCredentials)?;
+    decoder.end().map_err(|_| MfaError::InvalidCredentials)?;
+    Ok(BackupCodeList(codes))
+}
+/// Unbiased OS entropy, ten unique default-profile codes, encrypted before return.
+pub fn generate_backup_codes(keys: &MfaKeyring) -> Result<MfaCiphertext, MfaError> {
+    const ALPHABET: &[u8; 62] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let mut codes: Vec<Zeroizing<String>> = Vec::with_capacity(10);
+    // Bounded failure instead of an unbounded retry under a broken entropy source.
+    let mut entropy = Zeroizing::new([0_u8; 4096]);
+    getrandom::fill(&mut *entropy).map_err(|_| MfaError::CryptoUnavailable)?;
+    let mut cursor = 0;
+    while codes.len() < 10 {
+        let mut code = Zeroizing::new(String::with_capacity(11));
+        while code.len() < 11 {
+            if code.len() == 5 {
+                code.push('-');
+                continue;
+            }
+            let b = *entropy.get(cursor).ok_or(MfaError::CryptoUnavailable)?;
+            cursor += 1;
+            if b < 248 {
+                code.push(ALPHABET[usize::from(b % 62)] as char);
+            }
+        }
+        if !codes.iter().any(|c| **c == *code) {
+            codes.push(code);
+        }
+    }
+    let refs: Vec<&str> = codes.iter().map(|s| s.as_str()).collect();
+    let mut serialized = Zeroizing::new(Vec::with_capacity(141));
+    serde_json::to_writer(&mut *serialized, &refs).map_err(|_| MfaError::CryptoUnavailable)?;
+    keys.encrypt(std::str::from_utf8(&serialized).map_err(|_| MfaError::CryptoUnavailable)?)
+}
 /// None means a valid pool but wrong/absent code; errors mean unsupported state/crypto.
 /// The returned encrypted replacement must be atomically persisted with authentication effects.
 pub fn consume_backup_code(

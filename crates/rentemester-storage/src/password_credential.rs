@@ -25,6 +25,7 @@ pub enum NextFactor {
 }
 pub struct FirstFactor {
     pub subject: String,
+    pub email: String,
     pub next: NextFactor,
 }
 pub fn denied() -> Error {
@@ -152,6 +153,9 @@ pub fn capture_subject(
     Ok(capture(control, &email)?.filter(|s| s.subject == subject))
 }
 impl CredentialSnapshot {
+    pub fn eligible_enrollment(&self) -> bool {
+        self.email_verified && !self.mfa_enabled
+    }
     pub fn eligible_mfa(&self) -> bool {
         self.email_verified && self.mfa_enabled
     }
@@ -201,6 +205,7 @@ impl CredentialSnapshot {
         }
         Ok(FirstFactor {
             subject: current.subject,
+            email: current.email,
             next: if current.mfa_enabled {
                 NextFactor::Challenge
             } else {

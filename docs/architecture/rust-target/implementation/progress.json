@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "backup-login-1",
-  "code_revision": "sha256:a06e1f30708fc24dc6d68bf6046264be6a80288f8767111aaaa752a9684bb52a",
-  "spec_revision": "sha256:618023ca184fa8596f896bc7b46cfbd19ab7c090df00f2fcae7b5b821132de65",
-  "state": "verified-native-existing-encrypted-backup-code-login",
+  "current_increment": "mfa-enrollment-1",
+  "code_revision": "sha256:064c668f6aca77b44644385a773d8fde448d3bc61f6ffb807d0288a10ed678a2",
+  "spec_revision": "sha256:c43e3756264dd602b150ab82679fd8e58705c9bf4f94bcc5fce184cb1cc3ecfb",
+  "state": "verified-native-password-bound-MFA-enrollment",
   "issues_closed": [],
   "next": [
-    "Implement native MFA enrollment and backup-code issuance/view/regeneration with current/fresh identity and one-time ceremony; existing encrypted backup pending-login is now verified. Keep legacy writer/order/normalization-history qualification, endpoint rate/origin/bounded blocking, actual physical handle/lifetime admission and full identity parity gates explicit.",
+    "Implement current/fresh authenticated backup-code viewing/regeneration and remaining reset/service/trusted-device identity flows; initial password-bound enrollment and code issuance plus TOTP/backup pending-login are now verified. Keep endpoint rate/origin/bounded blocking, legacy writer/order/normalization history, actual physical handle/lifetime admission and full identity parity gates explicit.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,18 +21,18 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "event-order-1",
-    "code_revision": "sha256:2b6d529d5302a769b075c704dadd8124e316a9d9672be712d99cb4a52fa3ca33",
-    "spec_revision": "sha256:c4cf0929d11e3d22bc597e7bd149630f6c90b7e990505de9716156f4ba082942",
-    "state": "verified-native-ordered-authorization-history-exhaustion-admission"
+    "current_increment": "backup-login-1",
+    "code_revision": "sha256:a06e1f30708fc24dc6d68bf6046264be6a80288f8767111aaaa752a9684bb52a",
+    "spec_revision": "sha256:618023ca184fa8596f896bc7b46cfbd19ab7c090df00f2fcae7b5b821132de65",
+    "state": "verified-native-existing-encrypted-backup-code-login"
   },
   "evidence": {
-    "report": "backup-login/evidence.json",
-    "parity": "backup-login/review-process.json",
-    "rust_tests_passed": 86,
+    "report": "mfa-enrollment/evidence.json",
+    "parity": "mfa-enrollment/review-process.json",
+    "rust_tests_passed": 87,
     "ignored_subprocess_helpers": 19,
-    "integration_checks": 11162,
-    "mfa_login_process_checks": 99,
+    "integration_checks": 11233,
+    "mfa_process_checks": 170,
     "writer_authority": false,
     "whole_issues_closed": false
   },
@@ -174,6 +174,12 @@
       "code_revision": "sha256:2b6d529d5302a769b075c704dadd8124e316a9d9672be712d99cb4a52fa3ca33",
       "spec_revision": "sha256:c4cf0929d11e3d22bc597e7bd149630f6c90b7e990505de9716156f4ba082942",
       "state": "verified-native-ordered-authorization-history-exhaustion-admission"
+    },
+    {
+      "current_increment": "backup-login-1",
+      "code_revision": "sha256:a06e1f30708fc24dc6d68bf6046264be6a80288f8767111aaaa752a9684bb52a",
+      "spec_revision": "sha256:618023ca184fa8596f896bc7b46cfbd19ab7c090df00f2fcae7b5b821132de65",
+      "state": "verified-native-existing-encrypted-backup-code-login"
     }
   ]
 }

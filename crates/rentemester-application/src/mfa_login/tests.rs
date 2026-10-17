@@ -82,7 +82,25 @@ fn probe() {
         clock: &clock,
         audit_key_version: 1,
     };
-    let result = if request["mode"] == "begin" {
+    let result = if request["mode"] == "enroll-begin" {
+        crate::mfa_enrollment::begin(&mut db,&runtime,request["email"].as_str().unwrap_or("u@example.invalid"),request["password"].as_str().unwrap_or("Synthetic password 123!"),request["issuer"].as_str().unwrap_or("Rentemester"))
+            .map(|s|json!({"ok":true,"pending":true,"cookie":s.cookie.request_header(),"uri":s.uri.as_str()}))
+    } else if request["mode"] == "enroll-confirm" {
+        match cookies.verify_challenge(request["cookie"].as_str(),request["service"].as_str()) {
+            Err(e)=>Err(failure(error(e.code()),true)),
+            Ok(proof)=>crate::mfa_enrollment::confirm(&mut db,&runtime,&proof,request["code"].as_str().unwrap_or(""))
+                .map(|o|match o {
+                    crate::mfa_enrollment::ConfirmOutcome::Completed{cookie,codes}=>{
+                        let proof=cookies.verify(Some(cookie.request_header()),None).unwrap();
+                        let tx=db.transaction_with_behavior(TransactionBehavior::Immediate).unwrap();
+                        let s=rentemester_storage::cookie_session::resolve(&tx,proof.token(),clock.0,rentemester_storage::cookie_session::SessionRequirement::Fresh).unwrap();
+                        assert_eq!(s.subject,"u");tx.rollback().unwrap();
+                        json!({"ok":true,"session":true,"nativeCurrentFresh":true,"cookie":cookie.request_header(),"codes":codes.iter().collect::<Vec<_>>()})
+                    },
+                    crate::mfa_enrollment::ConfirmOutcome::Rejected(r)=>json!({"ok":true,"rejected":format!("{r:?}")}),
+                })
+        }
+    } else if request["mode"] == "begin" {
         begin(&mut db,&runtime,request["email"].as_str().unwrap_or("u@example.invalid"),request["password"].as_str().unwrap_or("Synthetic password 123!")).map(|o|match o{BeginOutcome::Challenge(c)=>json!({"ok":true,"cookie":c.request_header(),"setCookie":c.set_cookie(),"pending":true}),BeginOutcome::EnrollmentRequired=>json!({"ok":true,"enrollmentRequired":true})})
     } else {
         match cookies.verify_challenge(request["cookie"].as_str(),request["service"].as_str()){

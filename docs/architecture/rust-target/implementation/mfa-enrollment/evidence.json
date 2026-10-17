@@ -1,0 +1,63 @@
+{
+  "increment": "mfa-enrollment-1",
+  "code_revision": "sha256:064c668f6aca77b44644385a773d8fde448d3bc61f6ffb807d0288a10ed678a2",
+  "spec_revision": "sha256:c43e3756264dd602b150ab82679fd8e58705c9bf4f94bcc5fce184cb1cc3ecfb",
+  "state": "verified-native-password-bound-MFA-enrollment",
+  "checks": {
+    "native_tests_passed": 87,
+    "ignored_subprocess_helpers": 19,
+    "integration_checks": 11233,
+    "mfa_process_checks": 170,
+    "new_distinct_enrollment_process_cases": 71,
+    "independent_harness_repetitions": 1,
+    "strict_fmt_clippy_boundaries_typecheck_lint": "PASS"
+  },
+  "claims": [
+    "Password-bound setup uses current verified active identity and unlocked KDF/locked recheck; returns only private pending cookie and actual-source URI after known commit, without provisional session or backup disclosure",
+    "Fresh source-profile secret and unbiased ten unique default backup codes encrypt under current configured key; strict unverified single-factor restarts preserve account budgets and invalidate prior enrollment contexts",
+    "Separate enrollment namespace/domain binds current workspace/credential/access/factor/secret/pool/lifecycle; enrolled TOTP and backup login cannot finish enrollment",
+    "One control transaction confirms TOTP, enables factor/user, revokes all old sessions through canonical trigger, persists replay step, burns pending state, resets budgets and creates fresh twelve-hour session with immutable lifecycle/telemetry",
+    "Exact ten-code list and cookie return once after known commit; late SQL failure restores full old state and both begin/confirm commit-busy withhold all output",
+    "Actual installed source crypto/URI/session/TOTP/backup readers interoperate on separate synthetic copies; WAL/DELETE native process races and exact budget/lock/expiry boundaries are explicit"
+  ],
+  "limits": [
+    "No active-session code view/regeneration, reset/trusted-device/service flow or public endpoint/rate/origin/bounded-blocking qualification",
+    "Password-bound pending setup and post-confirmation backup disclosure deliberately correct source existing-session setup and early disclosure; legacy trigger actor is compatibility label only",
+    "Current captured facts and immutable selected event count are not universal historical ABA, legacy writer order/normalization or restore-lineage proof",
+    "Sensitive owned buffers only; dependency/caller/compiler/allocator/OS erasure and whole-operation constant-time behavior are not claimed",
+    "No actual physical SQLite-handle/workspace lifetime admission, live dual writers, real user/company adoption, platform distribution or cutover",
+    "Semantic Graphify refresh covers implementation README/CONTRACT only; generated JSON/logs/historical snapshots/unrelated documents not semantically refreshed"
+  ],
+  "verification_mode": "One full functional-code rust:verify run plus final170-case MFA rerun after a report-label-only correction; independent170-case process repetition and focused URI unit test",
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": {
+    "crates/rentemester-application/src/lib.rs": "a1c21c72c9c22c7461c0eb578372ad4e27d644db0c8d8e564ad1e2d9b65db64b",
+    "crates/rentemester-application/src/mfa_enrollment.rs": "77e20c85bff346ddd893e14de9ccc9b2e929929f6f2a527be59720d631d801e0",
+    "crates/rentemester-application/src/mfa_login.rs": "283a54824efde1ee76da398e11be69a77808606f077bf0fac480e5f63d4a1e00",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "59c3e82d233a1d4be544ee9629b7a9d802f69fee892daad4bfb3af476285c8fe",
+    "crates/rentemester-runtime/src/mfa.rs": "68e645b22e4733fe92b1e682e6cfe5831ee1be337f2b16651f55d27e29c10a9b",
+    "crates/rentemester-runtime/src/mfa/backup.rs": "8f2f6d33a07ca983f73baad43dfb322ceda87f0acdaea11b233ceed066d4aee2",
+    "crates/rentemester-runtime/src/mfa/enrollment.rs": "1bea43484097459c6fc105e3de4179636b4fb73bf7997851df2dbdf0ab8d1b1d",
+    "crates/rentemester-storage/src/mfa_login.rs": "475f710bbfe015213c4ef8ad7131808c5a2d777bf18f777f6e9d52c2e2263dc3",
+    "crates/rentemester-storage/src/password_credential.rs": "dd4dde9278aa2b9ef8db3054976df5ec50835e674fc0f0c9097e92895f4e6c52",
+    "node_modules/@better-auth/utils/dist/otp.mjs": "185fd7e184d588f3e6b31d095c63fe0795b7604875f65042f3105608b1fc2838",
+    "node_modules/better-auth/dist/crypto/index.mjs": "eda1857eadcf2dea50618c61da26e5fb5e79efd7755e665cc3d9f244a322c2a0",
+    "node_modules/better-auth/dist/plugins/two-factor/index.mjs": "8d27aaa8379eb812ee70e6fe02a453390482903afbe5246cc344645fdb6a7c59",
+    "node_modules/better-auth/dist/plugins/two-factor/totp/index.mjs": "24d976f6f8e18d749ab07adc4a5836492ab8623844c354fb83d0c09596c26e3c",
+    "scripts/rust/mfa-enrollment-cases.ts": "5de68773fd2f8d5746cea4f19abd9f43c9f3f25f4dd3fe1dc99cbf81b8278554",
+    "scripts/rust/verify-mfa-login.ts": "7bc8a736d8e643bc094febde387c663e3899f20a1d56e75292ff7ef70889a883",
+    "scripts/rust/verify.ts": "6234bca4d9e5f80df53276f5cedc7021c13c5d1e677f807a0d881dc72a7aacc1",
+    "src/server/better-auth.ts": "9513797eb1b1a82b0c9d592fb00e3317d6d33b6eb29c7bf0c548a0a4c58c9b73"
+  },
+  "evidence_files": {
+    "rust-verify.txt": "81813b79f31d52aad1d4417a2508b416aa044c453981edffc1bb43edad73c29d",
+    "review-native.txt": "1b15cf45c21ce7e2abe4888025592f894d7b08c1cba4901515078ebe40cac728",
+    "review-process.json": "fd4942328446a95ddd0c9f737f088d85eb8b5eb5bac14f536f9bce919c3dd93a",
+    "review-checks.json": "c54f319c5a3d60a7307401ccf04fe77bfb3890faed490031138181b59736c56a",
+    "final-process.json": "2c9fed5295430f2febdd5a6a4d32b890c7e186d1eab038e8aeeb9ea2f7a41a59",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "b81a21f759e9d22317eb860996e98e9e339e539a9e525ed04507341da9f248a6"
+  }
+}

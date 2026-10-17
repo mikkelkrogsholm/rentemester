@@ -1,0 +1,216 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native password-bound MFA enrollment ceremony",
+    "goal": "Complete native password-bound MFA enrollment without provisional session and disclose backup codes only after confirmed commit",
+    "scope": "R04/R41 internal admitted-control initial/unverified enrollment; no public endpoints/management/actual handle admission"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native credential use-case orchestration",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Separate password-bound setup authority from enrolled session authority and atomically confirm MFA",
+        "rationale": "Unenrolled users need a complete native ceremony before the backend can replace hosted authentication",
+        "excludes": [
+          "Re-enrolling enabled/legacy-NULL factors, management/reset/endpoints/physical admission/cutover"
+        ]
+      },
+      "interfaces": [
+        "action.mfa_enrollment"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Password begin returns only pending cookie/URI; valid TOTP atomically enables MFA, revokes old sessions and returns new session/codes after commit",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control, verified active unenrolled identity and injected trusted runtime",
+        "when": "Execute native password-bound setup and OTP confirmation across independent control processes",
+        "then": "Password begin returns only pending cookie/URI; valid TOTP atomically enables MFA, revokes old sessions and returns new session/codes after commit"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Wrong phase/method/state, stale or malformed context/identity, expiry, lock or invalid code cannot grant session or codes",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control, verified active unenrolled identity and injected trusted runtime",
+        "when": "Execute native password-bound setup and OTP confirmation across independent control processes",
+        "then": "Wrong phase/method/state, stale or malformed context/identity, expiry, lock or invalid code cannot grant session or codes"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Late failure restores all user/factor/challenge/replay/session/trigger/audit data; uncertain commit withholds secrets without rollback assertion",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control, verified active unenrolled identity and injected trusted runtime",
+        "when": "Execute native password-bound setup and OTP confirmation across independent control processes",
+        "then": "Late failure restores all user/factor/challenge/replay/session/trigger/audit data; uncertain commit withholds secrets without rollback assertion"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "No provisional session and delayed backup disclosure are explicit source changes; legacy trigger actor is a compatibility label",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control, verified active unenrolled identity and injected trusted runtime",
+        "when": "Execute native password-bound setup and OTP confirmation across independent control processes",
+        "then": "No provisional session and delayed backup disclosure are explicit source changes; legacy trigger actor is a compatibility label"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Serialized starts retain one unverified factor and account budget; only latest valid context can confirm once",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic control, verified active unenrolled identity and injected trusted runtime",
+        "when": "Execute native password-bound setup and OTP confirmation across independent control processes",
+        "then": "Serialized starts retain one unverified factor and account budget; only latest valid context can confirm once"
+      }
+    },
+    "action.mfa_enrollment": {
+      "kind": "action",
+      "description": "Begin and confirm a distinct native MFA enrollment ceremony",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "bounded_password_or_verified_setup_cookie_and_TOTP": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "admitted_control_connection_trusted_keyring_cookie_clock": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Opaque invalid_credentials, invalid_control, connection_refused, auth crypto/clock errors; known committed Rejected vs NotCommitted/OutcomeUnknown failures"
+        },
+        "preconditions": [
+          "Caller owns actually admitted control/workspace lifetime; runtime supplies trusted cookie/keyring/clock/issuer, not request identity claims",
+          "No live dual writers or silent adoption of enabled/NULL/duplicate factors"
+        ],
+        "postconditions": [
+          "Begin has no session/MFA authority or code disclosure; successful confirmation returns secrets only after known atomic commit",
+          "Refusals preserve the declared failure budget and original data; commit uncertainty retires the handle and withholds secrets"
+        ],
+        "external_effects": [
+          "Declared canonical control verification/session/twoFactor/telemetry mutations and existing immutable lifecycle triggers"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Password recheck, fresh encrypted factor/pool, private stage binding, TOTP confirmation and single control commit before secret disclosure"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.mfa_enrollment",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.mfa_enrollment",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.mfa_enrollment",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.mfa_enrollment",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.mfa_enrollment",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.mfa_enrollment",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native password-bound MFA enrollment ceremony",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "d21e8cb4ea7074838ea3cbc36abc30c1acd09bffb97cb1202bdb46465be06750"
+      }
+    }
+  }
+}

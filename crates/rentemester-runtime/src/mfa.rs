@@ -1,9 +1,11 @@
 //! Existing MFA crypto only. No challenge, one-time consumption, identity or session authority.
 mod backup;
 use crate::auth::Clock;
-pub use backup::consume_backup_code;
+pub use backup::{BackupCodeList, consume_backup_code, generate_backup_codes, reveal_backup_codes};
+mod enrollment;
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use chacha20poly1305::{KeyInit, XChaCha20Poly1305, XNonce, aead::AeadInPlace};
+pub use enrollment::{EnrollmentUri, enrollment_uri};
 use hmac::{Hmac, Mac};
 use sha1::Sha1;
 use sha2::{Digest, Sha256};

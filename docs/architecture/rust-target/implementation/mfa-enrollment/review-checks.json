@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "checks": 170,
+  "enrollmentChecks": 71,
+  "sha256": {
+    "crates/rentemester-application/src/lib.rs": "a1c21c72c9c22c7461c0eb578372ad4e27d644db0c8d8e564ad1e2d9b65db64b",
+    "crates/rentemester-application/src/mfa_enrollment.rs": "77e20c85bff346ddd893e14de9ccc9b2e929929f6f2a527be59720d631d801e0",
+    "crates/rentemester-application/src/mfa_login.rs": "283a54824efde1ee76da398e11be69a77808606f077bf0fac480e5f63d4a1e00",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "59c3e82d233a1d4be544ee9629b7a9d802f69fee892daad4bfb3af476285c8fe",
+    "crates/rentemester-runtime/src/mfa.rs": "68e645b22e4733fe92b1e682e6cfe5831ee1be337f2b16651f55d27e29c10a9b",
+    "crates/rentemester-runtime/src/mfa/enrollment.rs": "1bea43484097459c6fc105e3de4179636b4fb73bf7997851df2dbdf0ab8d1b1d",
+    "crates/rentemester-runtime/src/mfa/backup.rs": "8f2f6d33a07ca983f73baad43dfb322ceda87f0acdaea11b233ceed066d4aee2",
+    "crates/rentemester-storage/src/mfa_login.rs": "475f710bbfe015213c4ef8ad7131808c5a2d777bf18f777f6e9d52c2e2263dc3",
+    "crates/rentemester-storage/src/password_credential.rs": "dd4dde9278aa2b9ef8db3054976df5ec50835e674fc0f0c9097e92895f4e6c52",
+    "scripts/rust/mfa-enrollment-cases.ts": "5de68773fd2f8d5746cea4f19abd9f43c9f3f25f4dd3fe1dc99cbf81b8278554",
+    "scripts/rust/verify-mfa-login.ts": "cffabb2d1f2ae92f4d45be23d2370d4b3455e94cd8bc2a0905983b32945e5346"
+  }
+}

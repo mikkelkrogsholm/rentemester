@@ -1,0 +1,615 @@
+{
+  "ok": true,
+  "scope": "Native password-bound MFA enrollment and enrolled TOTP/backup-code login on admitted synthetic control handles; actual source cookie/session oracle and independent WAL/DELETE process races",
+  "checks": 170,
+  "observations": [
+    {
+      "id": "wal-pending-no-session"
+    },
+    {
+      "id": "wal-committed-rejection"
+    },
+    {
+      "id": "wal-session-after-MFA"
+    },
+    {
+      "id": "wal-challenge-one-time",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "wal-TOTP-replay-persisted"
+    },
+    {
+      "id": "wal-next-step-can-authenticate"
+    },
+    {
+      "id": "wal-fifth-failure-burn"
+    },
+    {
+      "id": "wal-account-budget-across-challenges"
+    },
+    {
+      "id": "wal-locked-valid-code-refuses"
+    },
+    {
+      "id": "wal-locked-cannot-reissue",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "wal-unlock-exclusive-before",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "wal-exact-unlock-success"
+    },
+    {
+      "id": "wal-late-SQL-rolls-back-all"
+    },
+    {
+      "id": "wal-concurrent-second-consumer",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "wal-serialized-one-consumer"
+    },
+    {
+      "id": "wal-parallel-failures-no-lost-update",
+      "committedFailures": 1
+    },
+    {
+      "id": "delete-pending-no-session"
+    },
+    {
+      "id": "delete-committed-rejection"
+    },
+    {
+      "id": "delete-session-after-MFA"
+    },
+    {
+      "id": "delete-challenge-one-time",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "delete-TOTP-replay-persisted"
+    },
+    {
+      "id": "delete-next-step-can-authenticate"
+    },
+    {
+      "id": "delete-fifth-failure-burn"
+    },
+    {
+      "id": "delete-account-budget-across-challenges"
+    },
+    {
+      "id": "delete-locked-valid-code-refuses"
+    },
+    {
+      "id": "delete-locked-cannot-reissue",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "delete-unlock-exclusive-before",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "delete-exact-unlock-success"
+    },
+    {
+      "id": "delete-late-SQL-rolls-back-all"
+    },
+    {
+      "id": "delete-concurrent-second-consumer",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "delete-serialized-one-consumer"
+    },
+    {
+      "id": "delete-parallel-failures-no-lost-update",
+      "committedFailures": 1
+    },
+    {
+      "id": "email-unverified",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "ordered-workspace",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "ordered-membership",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "ordered-security",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "MFA-disabled",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "email-changed",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "password-reset",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "account-replaced",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "access-revoked",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "access-reactivated",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "factor-unverified",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "legacy-null-factor",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "factor-replaced",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "factor-secret-changed",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "account-negative-counter",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "account-malformed-counter",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "account-over-counter",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "account-malformed-lock",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "session-deletion-revokes-pending",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "challenge-duplicate",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "factor-duplicate",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "context-missing",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "attempt-noncanonical",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "noncanonical-expiry",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "lifecycle-rowid-overflow",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "exact-expiry",
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "before-creation",
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "different-workspace",
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-cookie",
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "service-cookie-confusion",
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "unenrolled-no-setup-authority"
+    },
+    {
+      "id": "commit-busy-withholds-cookie",
+      "stage": "OutcomeUnknown"
+    },
+    {
+      "id": "actual-framework-reads-native-session"
+    },
+    {
+      "id": "actual-framework-consumes-standard-pending-copy"
+    },
+    {
+      "id": "backup-wal-atomic-consumption-and-distinct-audit"
+    },
+    {
+      "id": "backup-wal-consumed-challenge",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "backup-wal-one-time-code-across-different-challenges"
+    },
+    {
+      "id": "backup-wal-preserves-TOTP-replay"
+    },
+    {
+      "id": "backup-wal-late-SQL-full-rollback"
+    },
+    {
+      "id": "backup-wal-different-challenge-same-code-race"
+    },
+    {
+      "id": "backup-wal-shared-TOTP-failure-budgets-and-lock"
+    },
+    {
+      "id": "backup-delete-atomic-consumption-and-distinct-audit"
+    },
+    {
+      "id": "backup-delete-consumed-challenge",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "backup-delete-one-time-code-across-different-challenges"
+    },
+    {
+      "id": "backup-delete-preserves-TOTP-replay"
+    },
+    {
+      "id": "backup-delete-late-SQL-full-rollback"
+    },
+    {
+      "id": "backup-delete-different-challenge-same-code-race"
+    },
+    {
+      "id": "backup-delete-shared-TOTP-failure-budgets-and-lock"
+    },
+    {
+      "id": "backup-pool-empty"
+    },
+    {
+      "id": "backup-pool-object"
+    },
+    {
+      "id": "backup-pool-null"
+    },
+    {
+      "id": "backup-pool-numbers"
+    },
+    {
+      "id": "backup-pool-duplicate"
+    },
+    {
+      "id": "backup-pool-oversized"
+    },
+    {
+      "id": "backup-pool-wrong-profile"
+    },
+    {
+      "id": "backup-pool-non-ASCII"
+    },
+    {
+      "id": "backup-malformed-JSON",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "backup-damaged-envelope",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "backup-JSON-escapes-whitespace-case"
+    },
+    {
+      "id": "backup-current-pool-read-under-lock"
+    },
+    {
+      "id": "backup-refuse-expired",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "backup-refuse-revoked",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "backup-refuse-factor-unverified",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "backup-refuse-service-header",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "backup-refuse-workspace",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "backup-commit-busy-withholds-cookie-and-preserves-pool"
+    },
+    {
+      "id": "backup-actual-source-session-reader-and-HTTP-consumption"
+    },
+    {
+      "id": "enrollment-wal-pending-secret-URI-no-session-no-codes"
+    },
+    {
+      "id": "enrollment-wal-enrollment-cookie-refuses-TOTP-login"
+    },
+    {
+      "id": "enrollment-wal-enrollment-cookie-refuses-backup-login"
+    },
+    {
+      "id": "enrollment-wal-wrong-TOTP-counted"
+    },
+    {
+      "id": "enrollment-wal-atomic-confirm-revokes-old-sessions-codes-once"
+    },
+    {
+      "id": "enrollment-wal-consumed-no-code-redisclosure"
+    },
+    {
+      "id": "enrollment-wal-enabled-cannot-reenroll"
+    },
+    {
+      "id": "enrollment-wal-login-cookie-refuses-enrollment"
+    },
+    {
+      "id": "enrollment-wal-enrollment-counter-prevents-login-replay"
+    },
+    {
+      "id": "enrollment-wal-next-TOTP-native-login"
+    },
+    {
+      "id": "enrollment-wal-native-backup-login-after-enrollment"
+    },
+    {
+      "id": "enrollment-wal-restart-invalidates-old-context-preserves-budget"
+    },
+    {
+      "id": "enrollment-wal-backup-cannot-complete-setup"
+    },
+    {
+      "id": "enrollment-wal-late-SQL-restores-all-flags-sessions-pool-challenge-replay-audit"
+    },
+    {
+      "id": "enrollment-wal-rollback-preserves-confirmability"
+    },
+    {
+      "id": "enrollment-wal-begin-late-SQL-withholds-URI-and-preserves-state"
+    },
+    {
+      "id": "enrollment-wal-second-confirm-no-redisclosure"
+    },
+    {
+      "id": "enrollment-wal-one-concurrent-confirm-commit"
+    },
+    {
+      "id": "enrollment-wal-concurrent-begins-single-factor"
+    },
+    {
+      "id": "enrollment-delete-pending-secret-URI-no-session-no-codes"
+    },
+    {
+      "id": "enrollment-delete-enrollment-cookie-refuses-TOTP-login"
+    },
+    {
+      "id": "enrollment-delete-enrollment-cookie-refuses-backup-login"
+    },
+    {
+      "id": "enrollment-delete-wrong-TOTP-counted"
+    },
+    {
+      "id": "enrollment-delete-atomic-confirm-revokes-old-sessions-codes-once"
+    },
+    {
+      "id": "enrollment-delete-consumed-no-code-redisclosure"
+    },
+    {
+      "id": "enrollment-delete-enabled-cannot-reenroll"
+    },
+    {
+      "id": "enrollment-delete-login-cookie-refuses-enrollment"
+    },
+    {
+      "id": "enrollment-delete-enrollment-counter-prevents-login-replay"
+    },
+    {
+      "id": "enrollment-delete-next-TOTP-native-login"
+    },
+    {
+      "id": "enrollment-delete-native-backup-login-after-enrollment"
+    },
+    {
+      "id": "enrollment-delete-restart-invalidates-old-context-preserves-budget"
+    },
+    {
+      "id": "enrollment-delete-backup-cannot-complete-setup"
+    },
+    {
+      "id": "enrollment-delete-late-SQL-restores-all-flags-sessions-pool-challenge-replay-audit"
+    },
+    {
+      "id": "enrollment-delete-rollback-preserves-confirmability"
+    },
+    {
+      "id": "enrollment-delete-begin-late-SQL-withholds-URI-and-preserves-state"
+    },
+    {
+      "id": "enrollment-delete-second-confirm-no-redisclosure"
+    },
+    {
+      "id": "enrollment-delete-one-concurrent-confirm-commit"
+    },
+    {
+      "id": "enrollment-delete-concurrent-begins-single-factor"
+    },
+    {
+      "id": "enrollment-fifth-failure-burns-enrollment"
+    },
+    {
+      "id": "enrollment-ten-account-failures-across-restart-lock"
+    },
+    {
+      "id": "enrollment-locked-cannot-restart"
+    },
+    {
+      "id": "enrollment-before-exact-unlock-refused"
+    },
+    {
+      "id": "enrollment-exact-unlock-confirms-and-resets-budget"
+    },
+    {
+      "id": "enrollment-pending-disabled-access"
+    },
+    {
+      "id": "enrollment-pending-unverified-email"
+    },
+    {
+      "id": "enrollment-pending-password-change"
+    },
+    {
+      "id": "enrollment-pending-factor-verified"
+    },
+    {
+      "id": "enrollment-pending-factor-null"
+    },
+    {
+      "id": "enrollment-pending-factor-removed"
+    },
+    {
+      "id": "enrollment-pending-user-enabled"
+    },
+    {
+      "id": "enrollment-pending-secret-changed"
+    },
+    {
+      "id": "enrollment-pending-backup-pool-changed"
+    },
+    {
+      "id": "enrollment-pending-ordered-exhaustion"
+    },
+    {
+      "id": "enrollment-begin-unverified-email"
+    },
+    {
+      "id": "enrollment-begin-disabled"
+    },
+    {
+      "id": "enrollment-password-required"
+    },
+    {
+      "id": "enrollment-issuer-required"
+    },
+    {
+      "id": "enrollment-restart-refuses-null"
+    },
+    {
+      "id": "enrollment-restart-refuses-duplicate"
+    },
+    {
+      "id": "enrollment-restart-refuses-bad-lock"
+    },
+    {
+      "id": "enrollment-restart-refuses-verified"
+    },
+    {
+      "id": "enrollment-restart-refuses-bad-failure"
+    },
+    {
+      "id": "enrollment-restart-refuses-replay"
+    },
+    {
+      "id": "enrollment-exact-ten-minute-expiry"
+    },
+    {
+      "id": "enrollment-clock-rollback"
+    },
+    {
+      "id": "enrollment-begin-real-commit-busy-withholds-secrets"
+    },
+    {
+      "id": "enrollment-confirm-real-commit-busy-withholds-secrets"
+    },
+    {
+      "id": "enrollment-actual-source-reads-completed-native-session"
+    },
+    {
+      "id": "enrollment-actual-source-verify-totp-uses-native-enrolled-rows"
+    },
+    {
+      "id": "enrollment-actual-source-verify-backup-code-uses-native-enrolled-rows"
+    },
+    {
+      "id": "enrollment-actual-source-consumes-native-issued-backup-code"
+    }
+  ],
+  "limits": [
+    "Internal enrolled TOTP/backup path only: no exposed endpoint, actual handle/lifetime admission or live dual writers",
+    "Backup-code management/trusted-device/rememberMe/OS-native credential and full identity/provider parity remain pending",
+    "Private native context and replay state are stricter than legacy in-flight challenges",
+    "Commit busy exercised; OS/storage crash and restore-lineage qualification remain separate"
+  ]
+}
