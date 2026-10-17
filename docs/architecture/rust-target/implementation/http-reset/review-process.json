@@ -1,0 +1,73 @@
+{
+  "ok": true,
+  "scope": "Native loopback HTTP reset request through current synthetic control and postcommit injected mail, actual source acknowledgement oracle",
+  "checks": 20,
+  "observations": [
+    {
+      "id": "actual-source-committed-mail-failure-acknowledgement"
+    },
+    {
+      "id": "wal-known-identical-source-public-ack"
+    },
+    {
+      "id": "wal-known-native-commit-unlocked-mail-and-state"
+    },
+    {
+      "id": "wal-known-hostile-origin-no-native-effect"
+    },
+    {
+      "id": "wal-unknown-identical-source-public-ack"
+    },
+    {
+      "id": "wal-unknown-native-commit-unlocked-mail-and-state"
+    },
+    {
+      "id": "wal-unknown-hostile-origin-no-native-effect"
+    },
+    {
+      "id": "wal-mail-failure-identical-source-public-ack"
+    },
+    {
+      "id": "wal-mail-failure-native-commit-unlocked-mail-and-state"
+    },
+    {
+      "id": "wal-mail-failure-hostile-origin-no-native-effect"
+    },
+    {
+      "id": "delete-known-identical-source-public-ack"
+    },
+    {
+      "id": "delete-known-native-commit-unlocked-mail-and-state"
+    },
+    {
+      "id": "delete-known-hostile-origin-no-native-effect"
+    },
+    {
+      "id": "delete-unknown-identical-source-public-ack"
+    },
+    {
+      "id": "delete-unknown-native-commit-unlocked-mail-and-state"
+    },
+    {
+      "id": "delete-unknown-hostile-origin-no-native-effect"
+    },
+    {
+      "id": "delete-mail-failure-identical-source-public-ack"
+    },
+    {
+      "id": "delete-mail-failure-native-commit-unlocked-mail-and-state"
+    },
+    {
+      "id": "delete-mail-failure-hostile-origin-no-native-effect"
+    },
+    {
+      "id": "native-rollback-failure-concealed-without-mail"
+    }
+  ],
+  "limits": [
+    "No product workspace/physical handle/lifetime or legacy writer admission; synthetic helper alone opens fixture paths",
+    "Only reset request route; no callback/completion/login/session/SPA/TLS listener, production transport or full R41/R42 completion",
+    "Process-local bounded limiter, socket peer only; no persisted/restart/multi-process or proxy identity qualification",
+    "Same public acknowledgement does not establish constant-time or constant-I/O privacy"
+  ]
+}

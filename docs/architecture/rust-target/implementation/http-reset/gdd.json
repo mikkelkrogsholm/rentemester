@@ -1,0 +1,217 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native HTTP reset request boundary",
+    "goal": "Serve bounded confidential source-compatible recovery requests through admitted executor",
+    "scope": "Finite R41/R42 HTTP adapter; no product writer/deployable server/full identity cutover"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native HTTP reset boundary",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Strict HTTP admission, bounded rate/body/jobs and nondisclosing native-executor acknowledgement",
+        "rationale": "A shared native server must safely expose existing recovery without account/commit disclosure",
+        "excludes": [
+          "Default workspace opener, actual writer/lifetime authority, persistent/global rate, full R41/R42"
+        ]
+      },
+      "interfaces": [
+        "action.http_reset"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Valid same-origin JSON invokes native executor and returns actual source-compatible generic ACK",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Synthetic real loopback socket peer and current native WAL/DELETE control fixtures",
+        "when": "Call strict HTTP reset boundary with trusted synthetic executor",
+        "then": "Valid same-origin JSON invokes native executor and returns actual source-compatible generic ACK"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Malformed/untrusted/rate/body/deadline/overload inputs refuse before executor",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Synthetic real loopback socket peer and current native WAL/DELETE control fixtures",
+        "when": "Call strict HTTP reset boundary with trusted synthetic executor",
+        "then": "Malformed/untrusted/rate/body/deadline/overload inputs refuse before executor"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Known/unknown/mail-failure/rollback receive same ACK; native protected state preserved and no secrets returned",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Synthetic real loopback socket peer and current native WAL/DELETE control fixtures",
+        "when": "Call strict HTTP reset boundary with trusted synthetic executor",
+        "then": "Known/unknown/mail-failure/rollback receive same ACK; native protected state preserved and no secrets returned"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Explicit Origin/strict JSON/media and bounded peer rate/worker admission tighten source behavior; process-local and physical gates remain explicit",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Synthetic real loopback socket peer and current native WAL/DELETE control fixtures",
+        "when": "Call strict HTTP reset boundary with trusted synthetic executor",
+        "then": "Explicit Origin/strict JSON/media and bounded peer rate/worker admission tighten source behavior; process-local and physical gates remain explicit"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Atomic rate never exceeds3; canceled HTTP retains worker permit through blocking work; stalled body/chunked limits hold",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Synthetic real loopback socket peer and current native WAL/DELETE control fixtures",
+        "when": "Call strict HTTP reset boundary with trusted synthetic executor",
+        "then": "Atomic rate never exceeds3; canceled HTTP retains worker permit through blocking work; stalled body/chunked limits hold"
+      }
+    },
+    "action.http_reset": {
+      "kind": "action",
+      "description": "Handle one strict POST reset request through bounded trusted executor",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "HTTP_request": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "configured_origin_profile_socket_peer_admitted_executor": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Fixed request_refused403/415/429/503/413/408/400 before executor; executor outcomes always same200 ACK"
+        },
+        "preconditions": [
+          "Owner supplies actual socket ConnectInfo and lifetime-admitted executor with safe logging/connection retirement",
+          "No default product data opener or writer authority; existing migration/release gates remain binding"
+        ],
+        "postconditions": [
+          "At most4 application bodies/jobs, 8192byte/2second body read, atomic3/60 sliding socketIP rate with max4096 buckets",
+          "Every executor outcome maps to same status/body/headers without internal recipient/token/commit details"
+        ],
+        "external_effects": [
+          "Only trusted admitted executor may perform native recovery transaction and postcommit mail",
+          "No router-owned filesystem lookup, automatic retries, token reissue or session/cookie"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Reject ambiguous hostile requests before work, preserve blocking permit after cancellation and conceal internal outcomes; no default data/writer authority.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Reject ambiguous hostile requests before work, preserve blocking permit after cancellation and conceal internal outcomes; no default data/writer authority.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Reject ambiguous hostile requests before work, preserve blocking permit after cancellation and conceal internal outcomes; no default data/writer authority.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Reject ambiguous hostile requests before work, preserve blocking permit after cancellation and conceal internal outcomes; no default data/writer authority.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Reject ambiguous hostile requests before work, preserve blocking permit after cancellation and conceal internal outcomes; no default data/writer authority.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Validate origin/host/media/peer; throttle, bound body/jobs; validate JSON/email/redirect; call blocking admitted executor and conceal every outcome"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.http_reset",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.http_reset",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.http_reset",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.http_reset",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.http_reset",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.http_reset",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native HTTP reset request boundary",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "116811b7093942a218121746485c1809cbab90e6222ea241296e124bd5e45c35"
+      }
+    }
+  }
+}

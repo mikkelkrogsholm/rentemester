@@ -1,0 +1,36 @@
+{
+  "scope": "First concrete Rust HTTP reset-request identity boundary with admitted trusted executor; real synthetic sockets and native control fixtures",
+  "verdict": "No remaining material scoped findings",
+  "evidence": {
+    "native_focused_tests": 9,
+    "process_checks": 20,
+    "independent_final_harness_repetitions": 1,
+    "reviewed_source_sha256": {
+      "Cargo.toml": "654e3b8827f3cca89672a887b55d05137253a5f53b3d3edc3de68f31e6d6c08f",
+      "Cargo.lock": "eca5c650fcda4ea1f9624ced65fe03e7ece7e7cf824a85911ac3a16fefed3083",
+      "crates/rentemester-server/Cargo.toml": "8eb3ffbb4f385f69cfe0b566455df73cd7dd5fdff8022cc325130d88ef6dcbf0",
+      "crates/rentemester-server/src/lib.rs": "7a0050bd61794a86847e1f127fce5a4ddb4b18976f8909cc13b3987f56be043a",
+      "crates/rentemester-server/src/tests.rs": "941e63ea5a49fc7e857621c91d700884f7deeb09a5ab5e06d9f83cd347dc22e3",
+      "scripts/rust/verify-http-reset.ts": "e0af24156086718243641c30f02461be3f7ea3bd6f229b5a063786b8a72d21b1",
+      "scripts/rust/verify.ts": "c7591acff797feba497e62260d9d90b3efca7c14faa4a89d2b3338507b3c28ae",
+      "docs/architecture/rust-target/implementation/http-reset/CONTRACT.md": "116811b7093942a218121746485c1809cbab90e6222ea241296e124bd5e45c35",
+      "docs/architecture/rust-target/implementation/http-reset/gdd.json": "de2bdeeed2a35280fb2a6ebdc7587842162be4c571c0d7352c0c9abecde69440",
+      "docs/architecture/rust-target/implementation/http-reset/readiness.json": "6295062dd599eaeef3af7443e519ad7646e84e9ed491c9fc2936a46e3775e5af",
+      "docs/architecture/rust-target/implementation/README.md": "16beee05ec88c4b3dbd6d2b905193bb0c3d53523aa4d278094fa6dceca18a82e"
+    }
+  },
+  "review_loop": [
+    "Source research identified reset-specific3/60 last-admitted sliding rate and IPv6 /64 identity. Native bounded process-local limiter preserves finite route semantics but does not claim database persistence/restart/global qualification",
+    "Explicit same-origin/no-header-trust and strict JSON/media/body limits tighten cookie-free source Origin permissiveness and field stripping",
+    "Independent review clarified that concealed JoinError does not suppress the process-global panic hook. Contract states trusted executor logging responsibility; direct realHTTP test covers all3 failure stages and executor panic without installing a hook",
+    "Parallel32 rate admission and cancellation-held blocking semaphore tested; native process calls actual reset use case and asserts committed visibility/no writer before injected mail",
+    "Initial full verification terminated on a Clippy let-and-return finding in the ignored fixture helper; corrected before final full regression",
+    "Final independent9 release tests,20 source-oracle/native HTTP cases and actual scoped GDD3 structural validation passed"
+  ],
+  "limits": [
+    "Trusted runtime still must qualify physical/workspace lifetime, enabled provider setup and connection retirement; no default data opener or product writer",
+    "Process-local rate is not shared/persisted/restart/proxy qualification; four application permits do not bound all sockets/headers or whole runtime shutdown",
+    "Only reset-request route; no deployed server command, TLS, callback/completion/login/session/MFA/SPA/capability/operational server completion",
+    "No external email, real data, production deployment or R41/R42/epic completion"
+  ]
+}

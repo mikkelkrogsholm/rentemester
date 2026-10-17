@@ -1,0 +1,63 @@
+{
+  "increment": "http-reset-1",
+  "code_revision": "sha256:d2a9c542ffd3d186cc784c632986aa7c31bad1be86b0d769f01ae7f68c5ef625",
+  "spec_revision": "sha256:1f5b4b7c50357d7bfb7f8e39a23ef8c9c0b2b41c49427707c2739fcabadfc111",
+  "state": "verified-native-http-reset-request-boundary",
+  "checks": {
+    "native_tests_passed": 103,
+    "ignored_subprocess_helpers": 21,
+    "integration_checks": 11607,
+    "http_reset_process_checks": 20,
+    "independent_http_release_tests": 9,
+    "independent_final_harness_repetitions": 1,
+    "strict_fmt_clippy_boundaries_typecheck_lint": "PASS"
+  },
+  "claims": [
+    "Real axum HTTP reset route validates configured exact Origin/Host/media/peer and strict bounded JSON/email/redirect before trusted executor",
+    "Atomic bounded socket-IP sliding3/60 limiter groups mappedIPv4 and IPv6/64; raw forwarded headers cannot bypass it",
+    "8192byte body cap and2second read deadline include raw chunked and stalled real socket tests",
+    "Four application permits are non-waiting and remain owned by blocking work after HTTP cancellation; no auto-retry/token or rollback claim",
+    "Every executor outcome and JoinError maps to identical source-compatible200 ACK and confidentiality headers, never session/recipient/token/stage output",
+    "Actual native WAL/DELETE issuance, unknown/mail-failure/rollback and hostile-origin no-effect were qualified through real HTTP with current synthetic control fixtures"
+  ],
+  "limits": [
+    "Trusted runtime still must qualify physical/workspace lifetime, enabled provider setup and connection retirement; no default data opener or product writer",
+    "Process-local rate is not shared/persisted/restart/proxy qualification; four application permits do not bound all sockets/headers or whole runtime shutdown",
+    "Only reset-request route; no deployed server command, TLS, callback/completion/login/session/MFA/SPA/capability/operational server completion",
+    "No external email, real data, production deployment or R41/R42/epic completion",
+    "Equal public output is not constant-time/constant-I/O privacy or guaranteed delivery; trusted panic hooks/logging and dependency buffer zeroization are not universally sanitized",
+    "Scope Graphify refresh is explicit AST plus current README/CONTRACT semantic extraction; generated reports/logs and historical/unrelated sources are outside that semantic claim"
+  ],
+  "verification_mode": "One final full corrected-source rust:verify and independent final9 release units/20process cases/GDD3; early failed Clippy route was corrected, not treated as a live observation timeout",
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": {
+    "Cargo.lock": "eca5c650fcda4ea1f9624ced65fe03e7ece7e7cf824a85911ac3a16fefed3083",
+    "Cargo.toml": "654e3b8827f3cca89672a887b55d05137253a5f53b3d3edc3de68f31e6d6c08f",
+    "crates/rentemester-application/src/reset_request.rs": "aa5f4a66c1476a9319a0aa2e71a0dfda5ea06f6c4a90c0a4c0910336233ed776",
+    "crates/rentemester-runtime/src/recovery.rs": "ca106b46471509a4cd8d3461e21b9c0fb06c5362c3684844098c502ffb0513ad",
+    "crates/rentemester-server/Cargo.toml": "8eb3ffbb4f385f69cfe0b566455df73cd7dd5fdff8022cc325130d88ef6dcbf0",
+    "crates/rentemester-server/src/lib.rs": "7a0050bd61794a86847e1f127fce5a4ddb4b18976f8909cc13b3987f56be043a",
+    "crates/rentemester-server/src/tests.rs": "941e63ea5a49fc7e857621c91d700884f7deeb09a5ab5e06d9f83cd347dc22e3",
+    "crates/rentemester-storage/src/password_credential.rs": "d0ee4d9331a35f5589f58745d50313a8cb3be9795be35867afdbdf039cb10248",
+    "docs/architecture/rust-target/implementation/README.md": "16beee05ec88c4b3dbd6d2b905193bb0c3d53523aa4d278094fa6dceca18a82e",
+    "docs/architecture/rust-target/implementation/http-reset/CONTRACT.md": "116811b7093942a218121746485c1809cbab90e6222ea241296e124bd5e45c35",
+    "docs/architecture/rust-target/implementation/http-reset/gdd.json": "de2bdeeed2a35280fb2a6ebdc7587842162be4c571c0d7352c0c9abecde69440",
+    "docs/architecture/rust-target/implementation/http-reset/readiness.json": "6295062dd599eaeef3af7443e519ad7646e84e9ed491c9fc2936a46e3775e5af",
+    "node_modules/better-auth/dist/api/middlewares/origin-check.mjs": "103714fc95928483d5f00e44a1b9782de98bbc8e3a1510257d410f681f3c2006",
+    "node_modules/better-auth/dist/api/rate-limiter/index.mjs": "5b71f25e1aaf8b76694b4a233cab17d843c446b0c2ed1017366474e4016e47e4",
+    "node_modules/better-auth/dist/api/routes/password.mjs": "a2c44c376d1aba333161d3b9cc688e1cab6522b14d895f61382f1a8e31620286",
+    "scripts/rust/verify-http-reset.ts": "e0af24156086718243641c30f02461be3f7ea3bd6f229b5a063786b8a72d21b1",
+    "scripts/rust/verify.ts": "c7591acff797feba497e62260d9d90b3efca7c14faa4a89d2b3338507b3c28ae",
+    "src/server/better-auth.ts": "9513797eb1b1a82b0c9d592fb00e3317d6d33b6eb29c7bf0c548a0a4c58c9b73"
+  },
+  "evidence_files": {
+    "rust-verify.txt": "981f47526e0a9b137ee76fd98eb9b1686fe266f17fdb0d9ad85514cf0b8bb661",
+    "review-native.txt": "f01c28151604215945e1cc0f894a5de2cbdba8a12b6c46e8ad9cbfb95923da10",
+    "review-process.json": "b4069621022518e2b4b2a8008c220cd5b114ad68a121d7a2ae52417ac4cf338d",
+    "review-checks.json": "cf68301c6dbda4056c1cf10e461550fb7d044972e3a7292e2afd8e20f6f4e6ac",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "4cd4252cc203a374c2b4b01fd30fbc219583ee29752c617780702260ab226a74"
+  }
+}

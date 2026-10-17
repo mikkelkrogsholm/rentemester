@@ -29,6 +29,7 @@ for (const command of [
   [process.execPath, "run", "scripts/rust/verify-mfa-crypto.ts"],
   [process.execPath, "run", "scripts/rust/verify-mfa-login.ts"],
   [process.execPath, "run", "scripts/rust/verify-auth-mail.ts"],
+  [process.execPath, "run", "scripts/rust/verify-http-reset.ts"],
   [process.execPath, "run", "scripts/rust/verify-readonly.ts"],
   [process.execPath, "run", "scripts/rust/verify-report-contracts.ts"],
   [process.execPath, "run", "scripts/rust/verify-journal-hashes.ts"],

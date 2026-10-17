@@ -1,0 +1,47 @@
+{
+  "result": "PASS",
+  "checks": 20,
+  "native_tests": 9,
+  "ignored_native_helpers": 1,
+  "remaining_material_findings": [],
+  "reports": {
+    "native": "/tmp/rm-http-review-native.txt",
+    "process": "/tmp/rm-http-review-process.json",
+    "stderr": "/tmp/rm-http-review-process.err",
+    "gdd": "/tmp/rm-http-review-readiness.json"
+  },
+  "gdd": {
+    "result": "3 PASS structural checks",
+    "matches_current_readiness": true,
+    "source_contract_sha_matches": true
+  },
+  "resolved_review_point": "Final contract explicitly limits executor panic-hook/log sanitization, and real HTTP unit verifies identical ACK for NotCommitted/OutcomeUnknown/Committed and executor panic. No global hook mutation introduced.",
+  "reviewed_scope": [
+    "Exact POST route and same-origin/Host/Sec-Fetch admission",
+    "Strict bounded JSON/redirect/email validation, raw chunked body cap and real stalled body deadline",
+    "Socket-only normalized IP/IPv6-64 rate identity, 4096-map cap, exact sliding boundary and parallel32 three-admission test",
+    "Owned non-waiting capacity retained by blocking work after HTTP cancellation, no blind retry or rollback claim",
+    "Identical source public ACK and headers for all executor outcomes without exposing failure stage/account existence",
+    "Actual native current-control transaction + known commit/unlocked synthetic mail through WAL/DELETE HTTP integration",
+    "Library/executor physical admission boundary and unsupported broader server surfaces"
+  ],
+  "assumptions": [
+    "Owner supplies already physically/lifetime-admitted executor and connection retirement; no real-data opener or default writer authority.",
+    "Process-local limiter only; no persistent/restart/shared rate admission, proxy client identity, total connection/header/TLS/shutdown qualification.",
+    "Global trusted executor panic hook/logging must be secret-safe; HTTP concealment is not universal diagnostic sanitization.",
+    "No actual mail, production deployment, other auth endpoints, full R41/R42 or epic closure."
+  ],
+  "sha256": {
+    "Cargo.toml": "654e3b8827f3cca89672a887b55d05137253a5f53b3d3edc3de68f31e6d6c08f",
+    "Cargo.lock": "eca5c650fcda4ea1f9624ced65fe03e7ece7e7cf824a85911ac3a16fefed3083",
+    "crates/rentemester-server/Cargo.toml": "8eb3ffbb4f385f69cfe0b566455df73cd7dd5fdff8022cc325130d88ef6dcbf0",
+    "crates/rentemester-server/src/lib.rs": "7a0050bd61794a86847e1f127fce5a4ddb4b18976f8909cc13b3987f56be043a",
+    "crates/rentemester-server/src/tests.rs": "941e63ea5a49fc7e857621c91d700884f7deeb09a5ab5e06d9f83cd347dc22e3",
+    "scripts/rust/verify-http-reset.ts": "e0af24156086718243641c30f02461be3f7ea3bd6f229b5a063786b8a72d21b1",
+    "scripts/rust/verify.ts": "c7591acff797feba497e62260d9d90b3efca7c14faa4a89d2b3338507b3c28ae",
+    "docs/architecture/rust-target/implementation/http-reset/CONTRACT.md": "116811b7093942a218121746485c1809cbab90e6222ea241296e124bd5e45c35",
+    "docs/architecture/rust-target/implementation/http-reset/gdd.json": "de2bdeeed2a35280fb2a6ebdc7587842162be4c571c0d7352c0c9abecde69440",
+    "docs/architecture/rust-target/implementation/http-reset/readiness.json": "6295062dd599eaeef3af7443e519ad7646e84e9ed491c9fc2936a46e3775e5af",
+    "docs/architecture/rust-target/implementation/README.md": "16beee05ec88c4b3dbd6d2b905193bb0c3d53523aa4d278094fa6dceca18a82e"
+  }
+}

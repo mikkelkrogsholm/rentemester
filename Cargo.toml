@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/rentemester-application", "crates/rentemester-engine", "crates/rentemester-storage", "crates/rentemester-cli", "crates/rentemester-runtime"]
+members = ["crates/rentemester-application", "crates/rentemester-engine", "crates/rentemester-storage", "crates/rentemester-cli", "crates/rentemester-runtime", "crates/rentemester-server"]
 resolver = "3"
 
 [workspace.package]
