@@ -1,0 +1,38 @@
+{
+  "scope": "Independent read-only shared native ordered authorization-event exhaustion admission",
+  "verdict": "No remaining material scoped findings",
+  "evidence": {
+    "native_unit_tests": 1,
+    "control_fence_process_checks": 124,
+    "password_login_process_checks": 315,
+    "mfa_login_process_checks": 66,
+    "session_cookie_process_checks": 72,
+    "full_company_image_refusals": 12,
+    "reviewed_sources": {
+      "fence": {
+        "ok": true,
+        "checks": 124,
+        "sha256": "2da51068ae720f75cd0c88df1bf6d53b59e4874d2e08888f9c6f8d4217d4c958"
+      },
+      "password": {
+        "ok": true,
+        "checks": 315,
+        "sha256": "5adcecfee166c566b350dcab9e98470aa243e74cfa4eae0de57be8152cc63b7a"
+      },
+      "mfa": {
+        "ok": true,
+        "checks": 66,
+        "sha256": "74c29099f27fd4fcd0f0e7caaf2286b10dc0171f2194c72d943a6e9bd8b9c442"
+      }
+    }
+  },
+  "fixes": [
+    "Main reproduced a protected commit on exhausted workspace history before the guard; final native runtime admission denies before effects",
+    "Shared indexed global check follows exact schema/history/integrity and existing snapshot/writer transaction; no subject filter hides exhaustion elsewhere",
+    "Maximum-minus-one remains accepted; maximum and subsequent random lower IDs refuse; counted auth-lifecycle evidence remains exempt"
+  ],
+  "limits": [
+    "No legacy TypeScript repair, arbitrary historical-order proof or new ordered-event writer authority",
+    "No physical opened-handle/lifetime admission or endpoint/cutover qualification"
+  ]
+}

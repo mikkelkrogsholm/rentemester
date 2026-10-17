@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "mfa-login-1",
-  "code_revision": "sha256:0ed78fd151117e64ed1fbbca0c6dc19b05a2ca28018b77b853047ecd369b5e2d",
-  "spec_revision": "sha256:c7ec29e2f1e613c8c8224ec1e9e75412539861abf1c049dbb5c7f9ca20e24277",
-  "state": "verified-native-enrolled-password-challenge-totp-session-transaction",
+  "current_increment": "event-order-1",
+  "code_revision": "sha256:2b6d529d5302a769b075c704dadd8124e316a9d9672be712d99cb4a52fa3ca33",
+  "spec_revision": "sha256:c4cf0929d11e3d22bc597e7bd149630f6c90b7e990505de9716156f4ba082942",
+  "state": "verified-native-ordered-authorization-history-exhaustion-admission",
   "issues_closed": [],
   "next": [
-    "Qualify or fail closed on maximum-ROWID ordering in existing access/membership/security event streams before exposure. Implement native MFA enrollment and encrypted backup-code recovery with current identity, one-time attempts/account lockout/session lifecycle; keep endpoint rate/origin/bounded blocking, normalization-history mapping, physical handle/lifetime admission and full identity parity gates explicit.",
+    "Implement native MFA enrollment and encrypted backup-code recovery with current identity, one-time attempts/account lockout/session lifecycle. Native ordered-event exhaustion now fails closed; legacy source writer/order admission and historical chronology still require qualification before cutover. Retain endpoint rate/origin/bounded blocking, normalization-history mapping, physical handle/lifetime admission and full identity parity gates.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,18 +21,17 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "mfa-crypto-1",
-    "code_revision": "sha256:3837bc708a0cbf6e7dbc595f6f566d824a6a3cd925112652faa6f75624b43c62",
-    "spec_revision": "sha256:3fede38ab5a3b51c520deceaf95faf9911832f829c8590a141b298d52a9792de",
-    "state": "verified-native-existing-mfa-encryption-and-totp-only"
+    "current_increment": "mfa-login-1",
+    "code_revision": "sha256:0ed78fd151117e64ed1fbbca0c6dc19b05a2ca28018b77b853047ecd369b5e2d",
+    "spec_revision": "sha256:c7ec29e2f1e613c8c8224ec1e9e75412539861abf1c049dbb5c7f9ca20e24277",
+    "state": "verified-native-enrolled-password-challenge-totp-session-transaction"
   },
   "evidence": {
-    "report": "mfa-login/evidence.json",
-    "parity": "mfa-login/review-process.json",
-    "rust_tests_passed": 84,
+    "report": "event-order/evidence.json",
+    "parity": "event-order/review-fence.json",
+    "rust_tests_passed": 85,
     "ignored_subprocess_helpers": 19,
-    "integration_checks": 11096,
-    "mfa_login_process_checks": 63,
+    "integration_checks": 11129,
     "writer_authority": false,
     "whole_issues_closed": false
   },
@@ -162,6 +161,12 @@
       "code_revision": "sha256:3837bc708a0cbf6e7dbc595f6f566d824a6a3cd925112652faa6f75624b43c62",
       "spec_revision": "sha256:3fede38ab5a3b51c520deceaf95faf9911832f829c8590a141b298d52a9792de",
       "state": "verified-native-existing-mfa-encryption-and-totp-only"
+    },
+    {
+      "current_increment": "mfa-login-1",
+      "code_revision": "sha256:0ed78fd151117e64ed1fbbca0c6dc19b05a2ca28018b77b853047ecd369b5e2d",
+      "spec_revision": "sha256:c7ec29e2f1e613c8c8224ec1e9e75412539861abf1c049dbb5c7f9ca20e24277",
+      "state": "verified-native-enrolled-password-challenge-totp-session-transaction"
     }
   ]
 }

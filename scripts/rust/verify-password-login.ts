@@ -354,6 +354,18 @@ try {
 			],
 			["user-update", "UPDATE user SET updatedAt='2026-01-02'"],
 			["account-update", "UPDATE account SET updatedAt='2026-01-02'"],
+			[
+				"ordered-workspace",
+				"INSERT INTO rm_workspace_user_access_events(id,user_id,event_type,workspace_role,actor) VALUES(9223372036854775807,'u','activate','member','agent:synthetic')",
+			],
+			[
+				"ordered-membership",
+				"INSERT INTO rm_company_membership_events(id,user_id,company_slug,event_type,company_role,actor) VALUES(9223372036854775807,'u','a','grant','reader','agent:synthetic')",
+			],
+			[
+				"ordered-security",
+				"INSERT INTO rm_workspace_security_events(id,scope,event_type,actor) VALUES(9223372036854775807,'workspace','session_invalidate','agent:synthetic')",
+			],
 		] as const) {
 			const f = fixture(`${mode}-${id}`, mode),
 				p = start(f, {}, "unlocked");
@@ -368,7 +380,11 @@ try {
 				p.child.stdin.end();
 				const result = await done(p);
 				assert.equal(result.ok, false, id);
-				assert.equal(result.code, "invalid_credentials", id);
+				assert.equal(
+					result.code,
+					id.startsWith("ordered-") ? "invalid_control" : "invalid_credentials",
+					id,
+				);
 				assert.equal(count(f), 0);
 				assert.equal(image(f), before);
 				record(`${mode}-${id}`, {

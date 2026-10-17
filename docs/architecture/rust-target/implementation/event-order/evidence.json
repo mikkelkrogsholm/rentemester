@@ -1,0 +1,69 @@
+{
+  "increment": "event-order-1",
+  "code_revision": "sha256:2b6d529d5302a769b075c704dadd8124e316a9d9672be712d99cb4a52fa3ca33",
+  "spec_revision": "sha256:c4cf0929d11e3d22bc597e7bd149630f6c90b7e990505de9716156f4ba082942",
+  "state": "verified-native-ordered-authorization-history-exhaustion-admission",
+  "checks": {
+    "native_tests_passed": 85,
+    "ignored_subprocess_helpers": 19,
+    "integration_checks": 11129,
+    "control_fence_process_checks": 124,
+    "password_login_process_checks": 315,
+    "mfa_login_process_checks": 66,
+    "session_cookie_process_checks": 72,
+    "new_distinct_integration_cases": 33,
+    "independent_full_company_image_checks": 12,
+    "strict_fmt_clippy_boundaries_typecheck_lint": "PASS"
+  },
+  "claims": [
+    "Native current control admission rejects maximum signed ROWID in exactly the three numeric-order authorization streams globally, including after subsequent automatic lower-ID allocation",
+    "The guard runs under existing caller control snapshot/writer fences after canonical schema/history/integrity, before credential/session/access effects",
+    "Actual legacy source stale-grant observations remain explicit native corrections; no history is renumbered or inferred from timestamps",
+    "Largest-minus-one and unrelated full-width counted auth-lifecycle evidence remain accepted",
+    "Independent WAL/DELETE processes preserve exact control/company images and zero refused effects; maximum inserted while password KDF is unlocked refuses at locked recheck"
+  ],
+  "limits": [
+    "Other access/membership/security TypeScript consumers still use numeric ID ordering without this new native gate; full legacy enrollment and safe cutover remain pending",
+    "Immutable guards and supported current schema/history are prerequisites; arbitrary explicit historical IDs or recovered/rewritten lineage do not establish chronology",
+    "Schema rehearsal alone does not qualify logical access-event order or runtime admission; no automatic renumbering/recovery/new ordered writer is enabled",
+    "No real workspace opening, actual SQLite-handle/lifetime admission, public endpoint, real data adoption or distribution/cutover qualification",
+    "Semantic Graphify refresh covers implementation README/CONTRACT only; generated JSON/logs/historical snapshots/unrelated documents not semantically refreshed"
+  ],
+  "verification_mode": "One full final-code rust:verify run; independent affected-scope process repeats and reproduced red control retained",
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": {
+    "crates/rentemester-storage/src/control_migration.rs": "25f1ed072816627d4f3647cb4cf18907a5dbffeeab5ec4359c839998c99c9315",
+    "crates/rentemester-storage/src/control_access.rs": "e085e4e1e0669d44cbd2cdca4a74b3350b66495b160f3710f018432d60032202",
+    "crates/rentemester-storage/src/password_credential.rs": "800dcf1dc398e54aecc85cf598bd9c91e7b31feac3a68eef50e6a1364fbb1fd9",
+    "crates/rentemester-storage/src/cookie_session.rs": "cc174b10535dd19129becf965a4c63f909231d02f8891e838c9fbf2ada971bce",
+    "crates/rentemester-storage/src/mfa_login.rs": "0aea6aef2bf8b2923619bf368bb155b9e83403e6ec1db22f9455dd54a182e296",
+    "crates/rentemester-application/src/control_fence.rs": "6f9c071713051e898425a52a5f12fe2560cfee11e7f47322456543036283cf66",
+    "crates/rentemester-application/src/password_login.rs": "a3c6fdf4a000a12a05a0cc32e9bda172e63efecfadafc712338eb22f5eff04e6",
+    "crates/rentemester-application/src/mfa_login.rs": "b8c6677b97d0a483a33890b7b862c11fe478a7ab84e36f4f9c8a25ca428f32d3",
+    "scripts/rust/verify-control-fence.ts": "2da51068ae720f75cd0c88df1bf6d53b59e4874d2e08888f9c6f8d4217d4c958",
+    "scripts/rust/verify-password-login.ts": "5adcecfee166c566b350dcab9e98470aa243e74cfa4eae0de57be8152cc63b7a",
+    "scripts/rust/verify-mfa-login.ts": "74c29099f27fd4fcd0f0e7caaf2286b10dc0171f2194c72d943a6e9bd8b9c442",
+    "scripts/rust/verify-session-cookie.ts": "0fdda104f4874108a2f402b4389decd70509b0e8e27cb4087d89cb9eef809704",
+    "scripts/rust/verify.ts": "6234bca4d9e5f80df53276f5cedc7021c13c5d1e677f807a0d881dc72a7aacc1",
+    "src/core/workspace-access.ts": "0e034fcee922d6cd4733da1fbdc85f05dce0a443461083903a5808554fb84b2e",
+    "src/core/workspace-migrations/0003-workspace-access-events.json": "c2b1437243f8e7389214f6461e6ffdca15a366427693e8227ba743a6916f33bf"
+  },
+  "primary_references": [
+    "https://www.sqlite.org/autoinc.html"
+  ],
+  "evidence_files": {
+    "rust-verify.txt": "399321c1d957900d8e678c79ba500fc67388b1630ee698d6374857ef2174d4d5",
+    "review-native.txt": "6ec600f9ba131d788f8cefd80f1f191971595f4efb37556f4069bab2f3337ada",
+    "review-fence.json": "f1a6f00a90b4c1ca9430c2cb001c79cea7aef8add1d9e1f91543cd8660dafe21",
+    "review-password.json": "cd6b2538b2b42db46e38b259bc704263969394b06241bc9f2319bf67bceabc04",
+    "review-mfa.json": "ffcf2e90e22be0717dcd89ce1eb831e62c54edbddc4eec702ec1f32795f4eb63",
+    "review-checks.json": "f80e2718d4866ac9be9933c2670ca20ada491b241132f19ed656b1e235e61f9c",
+    "red.txt": "583bfa4e07584a4e5f722283c93b356219bf4d9ed3cf8caecdefb1ac9d01324f",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "cff11f1cddea00d90fd8203a9997572aae971e1d570d24b7c657129cccecc2a8",
+    "review-company-images.json": "c6666e261bc882f30fdb33be3b7c914148f8b01ab1f16f9559b46a998678b1c8",
+    "review-cookie.json": "5f75eb01308b27c6bdb9bfb21a7beb5455d3e42ba1b0708b24ac652e93910e46"
+  }
+}

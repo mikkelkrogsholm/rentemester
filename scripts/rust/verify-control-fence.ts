@@ -226,7 +226,7 @@ const cases: any[] = [
 	{
 		id: "full-width-revoke",
 		sql: "INSERT INTO rm_company_membership_events(id,user_id,company_slug,event_type,company_role,actor) VALUES(9223372036854775807,'u','a','revoke',NULL,'agent:synthetic')",
-		expected: deny,
+		expected: { outcome: "not_committed", code: "invalid_control" },
 	},
 	{
 		id: "earlier-negative-owner",
@@ -360,6 +360,47 @@ const cases: any[] = [
 		expected: { outcome: "not_committed", code: "connection_refused" },
 	},
 ];
+// Independent synthetic predecessors expose numeric-order exhaustion without number coercion.
+const orderedStreams = [
+	{
+		name: "workspace",
+		insert:
+			"INSERT INTO rm_workspace_user_access_events(id,user_id,event_type,workspace_role,actor) VALUES(ID,'u','activate','member','agent:synthetic')",
+		later:
+			"INSERT INTO rm_workspace_user_access_events(user_id,event_type,actor) VALUES('u','disable','agent:synthetic')",
+	},
+	{
+		name: "membership",
+		insert:
+			"INSERT INTO rm_company_membership_events(id,user_id,company_slug,event_type,company_role,actor) VALUES(ID,'u','a','grant','bookkeeper','agent:synthetic')",
+		later:
+			"INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,actor) VALUES('u','a','revoke','agent:synthetic')",
+	},
+	{
+		name: "security",
+		insert:
+			"INSERT INTO rm_workspace_security_events(id,scope,event_type,actor) VALUES(ID,'workspace','session_invalidate','agent:synthetic')",
+		later:
+			"INSERT INTO rm_workspace_security_events(scope,user_id,event_type,actor) VALUES('user','u','session_invalidate','agent:synthetic')",
+	},
+];
+for (const stream of orderedStreams) {
+	for (const later of [false, true])
+		cases.push({
+			id: `exhausted-${stream.name}${later ? "-lower" : ""}`,
+			sql:
+				stream.insert.replace("ID", "9223372036854775807") +
+				(later ? `;${stream.later}` : ""),
+			expected: { outcome: "not_committed", code: "invalid_control" },
+		});
+	cases.push({
+		id: `near-limit-${stream.name}`,
+		sql: stream.insert.replace("ID", "9223372036854775806"),
+		expected: { outcome: "committed" },
+		effects: 1,
+	});
+}
+
 try {
 	for (const mode of ["WAL", "DELETE"]) {
 		for (const v of cases) {
@@ -425,7 +466,9 @@ try {
 			]);
 			assert.equal(
 				legacyAllowed,
-				legacyAllows.has(v.id),
+				legacyAllows.has(v.id) ||
+					v.id.startsWith("exhausted-") ||
+					v.id.startsWith("near-limit-"),
 				`${v.id} unchanged legacy core/session observation`,
 			);
 			source.close();

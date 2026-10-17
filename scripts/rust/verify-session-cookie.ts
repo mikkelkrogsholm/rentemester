@@ -166,6 +166,21 @@ async function marker(
 try {
 	const cases = [
 		{ id: "current", allowed: true },
+		{
+			id: "ordered-workspace",
+			sql: "INSERT INTO rm_workspace_user_access_events(id,user_id,event_type,workspace_role,actor) VALUES(9223372036854775807,'u','activate','member','agent:synthetic')",
+			code: "invalid_control",
+		},
+		{
+			id: "ordered-membership",
+			sql: "INSERT INTO rm_company_membership_events(id,user_id,company_slug,event_type,company_role,actor) VALUES(9223372036854775807,'u','a','grant','reader','agent:synthetic')",
+			code: "invalid_control",
+		},
+		{
+			id: "ordered-security",
+			sql: "INSERT INTO rm_workspace_security_events(id,scope,event_type,actor) VALUES(9223372036854775807,'workspace','session_invalidate','agent:synthetic')",
+			code: "invalid_control",
+		},
 		{ id: "fresh", allowed: true, request: { fresh: true, now: now + 599999 } },
 		{ id: "fresh-boundary", request: { fresh: true, now: now + 600000 } },
 		{ id: "fresh-after", request: { fresh: true, now: now + 600001 } },

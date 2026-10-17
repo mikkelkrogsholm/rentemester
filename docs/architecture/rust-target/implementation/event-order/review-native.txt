@@ -1,0 +1,9 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling rentemester-storage v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-storage)
+    Finished `release` profile [optimized] target(s) in 2.33s
+     Running unittests src/lib.rs (target/release/deps/rentemester_storage-ca0b5acd720a8516)
+
+running 1 test
+test control_migration::tests::ordered_event_exhaustion_is_sticky_and_does_not_reject_counted_evidence ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 44 filtered out; finished in 0.13s

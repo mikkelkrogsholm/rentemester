@@ -360,6 +360,21 @@ try {
 	}
 	for (const [id, change, err] of [
 		["email-unverified", "UPDATE user SET emailVerified=0"],
+		[
+			"ordered-workspace",
+			"INSERT INTO rm_workspace_user_access_events(id,user_id,event_type,workspace_role,actor) VALUES(9223372036854775807,'u','activate','member','agent:synthetic')",
+			"invalid_control",
+		],
+		[
+			"ordered-membership",
+			"INSERT INTO rm_company_membership_events(id,user_id,company_slug,event_type,company_role,actor) VALUES(9223372036854775807,'u','a','grant','reader','agent:synthetic')",
+			"invalid_control",
+		],
+		[
+			"ordered-security",
+			"INSERT INTO rm_workspace_security_events(id,scope,event_type,actor) VALUES(9223372036854775807,'workspace','session_invalidate','agent:synthetic')",
+			"invalid_control",
+		],
 		["MFA-disabled", "UPDATE user SET twoFactorEnabled=0"],
 		["email-changed", "UPDATE user SET email='different@example.invalid'"],
 		["password-reset", "UPDATE account SET password='different'"],

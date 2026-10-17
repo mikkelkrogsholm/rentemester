@@ -1,0 +1,285 @@
+{
+  "ok": true,
+  "scope": "Native enrolled MFA login on admitted synthetic control handles; actual source cookie/session oracle and independent WAL/DELETE process races",
+  "checks": 66,
+  "observations": [
+    {
+      "id": "wal-pending-no-session"
+    },
+    {
+      "id": "wal-committed-rejection"
+    },
+    {
+      "id": "wal-session-after-MFA"
+    },
+    {
+      "id": "wal-challenge-one-time",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "wal-TOTP-replay-persisted"
+    },
+    {
+      "id": "wal-next-step-can-authenticate"
+    },
+    {
+      "id": "wal-fifth-failure-burn"
+    },
+    {
+      "id": "wal-account-budget-across-challenges"
+    },
+    {
+      "id": "wal-locked-valid-code-refuses"
+    },
+    {
+      "id": "wal-locked-cannot-reissue",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "wal-unlock-exclusive-before",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "wal-exact-unlock-success"
+    },
+    {
+      "id": "wal-late-SQL-rolls-back-all"
+    },
+    {
+      "id": "wal-concurrent-second-consumer",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "wal-serialized-one-consumer"
+    },
+    {
+      "id": "wal-parallel-failures-no-lost-update",
+      "committedFailures": 1
+    },
+    {
+      "id": "delete-pending-no-session"
+    },
+    {
+      "id": "delete-committed-rejection"
+    },
+    {
+      "id": "delete-session-after-MFA"
+    },
+    {
+      "id": "delete-challenge-one-time",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "delete-TOTP-replay-persisted"
+    },
+    {
+      "id": "delete-next-step-can-authenticate"
+    },
+    {
+      "id": "delete-fifth-failure-burn"
+    },
+    {
+      "id": "delete-account-budget-across-challenges"
+    },
+    {
+      "id": "delete-locked-valid-code-refuses"
+    },
+    {
+      "id": "delete-locked-cannot-reissue",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "delete-unlock-exclusive-before",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "delete-exact-unlock-success"
+    },
+    {
+      "id": "delete-late-SQL-rolls-back-all"
+    },
+    {
+      "id": "delete-concurrent-second-consumer",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "delete-serialized-one-consumer"
+    },
+    {
+      "id": "delete-parallel-failures-no-lost-update",
+      "committedFailures": 1
+    },
+    {
+      "id": "email-unverified",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "ordered-workspace",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "ordered-membership",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "ordered-security",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "MFA-disabled",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "email-changed",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "password-reset",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "account-replaced",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "access-revoked",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "access-reactivated",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "factor-unverified",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "legacy-null-factor",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "factor-replaced",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "factor-secret-changed",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "account-negative-counter",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "account-malformed-counter",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "account-over-counter",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "account-malformed-lock",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "session-deletion-revokes-pending",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "challenge-duplicate",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "factor-duplicate",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "context-missing",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "attempt-noncanonical",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "noncanonical-expiry",
+      "code": "invalid_control",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "lifecycle-rowid-overflow",
+      "code": "invalid_credentials",
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "exact-expiry",
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "before-creation",
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "different-workspace",
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-cookie",
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "service-cookie-confusion",
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "unenrolled-no-setup-authority"
+    },
+    {
+      "id": "commit-busy-withholds-cookie",
+      "stage": "OutcomeUnknown"
+    },
+    {
+      "id": "actual-framework-reads-native-session"
+    },
+    {
+      "id": "actual-framework-consumes-standard-pending-copy"
+    }
+  ],
+  "limits": [
+    "Internal enrolled TOTP path only: no exposed endpoint, actual handle/lifetime admission or live dual writers",
+    "Enrollment/recovery/trusted-device/rememberMe/OS-native credential and full identity/provider parity remain pending",
+    "Private native context and replay state are stricter than legacy in-flight challenges",
+    "Commit busy exercised; OS/storage crash and restore-lineage qualification remain separate"
+  ]
+}

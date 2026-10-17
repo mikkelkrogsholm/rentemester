@@ -1,0 +1,23 @@
+443 | 			const child = start(f, v.request);
+444 | 			child.stdin.end();
+445 | 			await completed(child);
+446 | 			const result = JSON.parse(readFileSync(f.output, "utf8"));
+447 | 			for (const [key, value] of Object.entries(v.expected))
+448 | 				assert.equal(result[key], value, `${mode}/${v.id}/${key}`);
+                 ^
+AssertionError: WAL/exhausted-workspace/outcome
++ actual - expected
+
++ 'committed'
+- 'not_committed'
+
+ generatedMessage: false,
+     actual: "committed",
+   expected: "not_committed",
+   operator: "strictEqual",
+       diff: "simple",
+       code: "ERR_ASSERTION"
+
+      at /Users/mikkelfreltoftkrogsholm/Projekter/rentemester/scripts/rust/verify-control-fence.ts:448:12
+
+Bun v1.4.0 (macOS arm64)

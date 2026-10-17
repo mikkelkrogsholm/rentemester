@@ -299,7 +299,18 @@ pub(crate) fn validate_current_control(db: &Connection) -> Result<(), Error> {
             "complete current control schema/history required",
         ));
     }
-    integrity(db)
+    integrity(db)?;
+    // These immutable streams derive authority from numeric ID order. Once the
+    // largest ROWID exists SQLite can allocate later IDs below it. No chronology
+    // can then be inferred safely, including for other subjects/companies.
+    let exhausted: bool = db.query_row(
+        "SELECT EXISTS(SELECT 1 FROM main.rm_workspace_user_access_events WHERE id=9223372036854775807) OR EXISTS(SELECT 1 FROM main.rm_company_membership_events WHERE id=9223372036854775807) OR EXISTS(SELECT 1 FROM main.rm_workspace_security_events WHERE id=9223372036854775807)",
+        [], |row| row.get(0),
+    ).map_err(failed)?;
+    if exhausted {
+        return Err(unsupported("ordered control history is exhausted"));
+    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -325,6 +336,49 @@ mod tests {
         db.execute_batch("INSERT INTO user(id,name,email,emailVerified,createdAt,updatedAt,twoFactorEnabled) VALUES ('synthetic-enabled','Enabled','enabled@example.invalid',1,'2026-01-01','2026-01-01',1),('synthetic-disabled','Disabled','disabled@example.invalid',1,'2026-01-01','2026-01-01',0);
             INSERT INTO session(id,expiresAt,token,createdAt,updatedAt,userId) VALUES ('s1','2026-12-31','synthetic-token-one','2026-01-01','2026-01-01','synthetic-enabled'),('s2','2026-12-31','synthetic-token-two','2026-01-01','2026-01-01','synthetic-disabled');
             INSERT INTO workspace_audit(event_type,entity_type,actor) VALUES ('synthetic','test','agent:synthetic');").unwrap();
+    }
+    #[test]
+    fn ordered_event_exhaustion_is_sticky_and_does_not_reject_counted_evidence() {
+        for (table, insert) in [
+            (
+                "rm_workspace_user_access_events",
+                "INSERT INTO rm_workspace_user_access_events(id,user_id,event_type,workspace_role,actor) VALUES(?1,'synthetic-enabled','activate','member','agent:synthetic')",
+            ),
+            (
+                "rm_company_membership_events",
+                "INSERT INTO rm_company_membership_events(id,user_id,company_slug,event_type,company_role,actor) VALUES(?1,'synthetic-enabled','synthetic-company','grant','reader','agent:synthetic')",
+            ),
+            (
+                "rm_workspace_security_events",
+                "INSERT INTO rm_workspace_security_events(id,scope,event_type,actor) VALUES(?1,'workspace','session_invalidate','agent:synthetic')",
+            ),
+        ] {
+            let db = Connection::open_in_memory().unwrap();
+            fixture(&db, ARTIFACTS.len());
+            users(&db);
+            db.execute(insert, [i64::MAX - 1]).unwrap();
+            validate_current_control(&db).unwrap();
+            db.execute(insert, [rusqlite::types::Value::Null]).unwrap();
+            let before = db.total_changes();
+            assert_eq!(
+                validate_current_control(&db).unwrap_err().code,
+                "unsupported_schema"
+            );
+            assert_eq!(db.total_changes(), before);
+            db.execute(insert, [rusqlite::types::Value::Null]).unwrap();
+            let latest: i64 = db
+                .query_row(&format!("SELECT max(id) FROM {table}"), [], |r| r.get(0))
+                .unwrap();
+            assert_eq!(latest, i64::MAX);
+            let before = db.total_changes();
+            assert!(validate_current_control(&db).is_err());
+            assert_eq!(db.total_changes(), before);
+        }
+        let db = Connection::open_in_memory().unwrap();
+        fixture(&db, ARTIFACTS.len());
+        users(&db);
+        db.execute("INSERT INTO rm_workspace_auth_state_events(id,state_transition,user_id) VALUES(?1,'credential_updated','synthetic-enabled')", [i64::MAX]).unwrap();
+        validate_current_control(&db).unwrap();
     }
     #[test]
     fn all_control_artifacts_are_bound_and_public_errors_are_opaque() {

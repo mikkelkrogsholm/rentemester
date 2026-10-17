@@ -1,0 +1,116 @@
+{
+  "ok": true,
+  "checks": 12,
+  "scope": "Full serialized company-image preservation for 3 exhausted ordered streams at MAX and subsequent automatic lower ROWID, WAL/DELETE",
+  "originalHarnessSha256": "2da51068ae720f75cd0c88df1bf6d53b59e4874d2e08888f9c6f8d4217d4c958",
+  "observations": [
+    {
+      "mode": "WAL",
+      "id": "exhausted-workspace",
+      "companyImageBeforeSha256": "fe1ef8308db0f8389e947f0a2711eff8f42f78001bc70239a9d394ef207ce149",
+      "companyImageAfterSha256": "fe1ef8308db0f8389e947f0a2711eff8f42f78001bc70239a9d394ef207ce149",
+      "companyImageUnchanged": true,
+      "outcome": "not_committed",
+      "code": "invalid_control"
+    },
+    {
+      "mode": "WAL",
+      "id": "exhausted-workspace-lower",
+      "companyImageBeforeSha256": "fe1ef8308db0f8389e947f0a2711eff8f42f78001bc70239a9d394ef207ce149",
+      "companyImageAfterSha256": "fe1ef8308db0f8389e947f0a2711eff8f42f78001bc70239a9d394ef207ce149",
+      "companyImageUnchanged": true,
+      "outcome": "not_committed",
+      "code": "invalid_control"
+    },
+    {
+      "mode": "WAL",
+      "id": "exhausted-membership",
+      "companyImageBeforeSha256": "fe1ef8308db0f8389e947f0a2711eff8f42f78001bc70239a9d394ef207ce149",
+      "companyImageAfterSha256": "fe1ef8308db0f8389e947f0a2711eff8f42f78001bc70239a9d394ef207ce149",
+      "companyImageUnchanged": true,
+      "outcome": "not_committed",
+      "code": "invalid_control"
+    },
+    {
+      "mode": "WAL",
+      "id": "exhausted-membership-lower",
+      "companyImageBeforeSha256": "fe1ef8308db0f8389e947f0a2711eff8f42f78001bc70239a9d394ef207ce149",
+      "companyImageAfterSha256": "fe1ef8308db0f8389e947f0a2711eff8f42f78001bc70239a9d394ef207ce149",
+      "companyImageUnchanged": true,
+      "outcome": "not_committed",
+      "code": "invalid_control"
+    },
+    {
+      "mode": "WAL",
+      "id": "exhausted-security",
+      "companyImageBeforeSha256": "fe1ef8308db0f8389e947f0a2711eff8f42f78001bc70239a9d394ef207ce149",
+      "companyImageAfterSha256": "fe1ef8308db0f8389e947f0a2711eff8f42f78001bc70239a9d394ef207ce149",
+      "companyImageUnchanged": true,
+      "outcome": "not_committed",
+      "code": "invalid_control"
+    },
+    {
+      "mode": "WAL",
+      "id": "exhausted-security-lower",
+      "companyImageBeforeSha256": "fe1ef8308db0f8389e947f0a2711eff8f42f78001bc70239a9d394ef207ce149",
+      "companyImageAfterSha256": "fe1ef8308db0f8389e947f0a2711eff8f42f78001bc70239a9d394ef207ce149",
+      "companyImageUnchanged": true,
+      "outcome": "not_committed",
+      "code": "invalid_control"
+    },
+    {
+      "mode": "DELETE",
+      "id": "exhausted-workspace",
+      "companyImageBeforeSha256": "9fccea5ba8f4fad47c9de1f7fa0f5f32a28ac7a97eb830017aea5ca0688ff2a4",
+      "companyImageAfterSha256": "9fccea5ba8f4fad47c9de1f7fa0f5f32a28ac7a97eb830017aea5ca0688ff2a4",
+      "companyImageUnchanged": true,
+      "outcome": "not_committed",
+      "code": "invalid_control"
+    },
+    {
+      "mode": "DELETE",
+      "id": "exhausted-workspace-lower",
+      "companyImageBeforeSha256": "9fccea5ba8f4fad47c9de1f7fa0f5f32a28ac7a97eb830017aea5ca0688ff2a4",
+      "companyImageAfterSha256": "9fccea5ba8f4fad47c9de1f7fa0f5f32a28ac7a97eb830017aea5ca0688ff2a4",
+      "companyImageUnchanged": true,
+      "outcome": "not_committed",
+      "code": "invalid_control"
+    },
+    {
+      "mode": "DELETE",
+      "id": "exhausted-membership",
+      "companyImageBeforeSha256": "9fccea5ba8f4fad47c9de1f7fa0f5f32a28ac7a97eb830017aea5ca0688ff2a4",
+      "companyImageAfterSha256": "9fccea5ba8f4fad47c9de1f7fa0f5f32a28ac7a97eb830017aea5ca0688ff2a4",
+      "companyImageUnchanged": true,
+      "outcome": "not_committed",
+      "code": "invalid_control"
+    },
+    {
+      "mode": "DELETE",
+      "id": "exhausted-membership-lower",
+      "companyImageBeforeSha256": "9fccea5ba8f4fad47c9de1f7fa0f5f32a28ac7a97eb830017aea5ca0688ff2a4",
+      "companyImageAfterSha256": "9fccea5ba8f4fad47c9de1f7fa0f5f32a28ac7a97eb830017aea5ca0688ff2a4",
+      "companyImageUnchanged": true,
+      "outcome": "not_committed",
+      "code": "invalid_control"
+    },
+    {
+      "mode": "DELETE",
+      "id": "exhausted-security",
+      "companyImageBeforeSha256": "9fccea5ba8f4fad47c9de1f7fa0f5f32a28ac7a97eb830017aea5ca0688ff2a4",
+      "companyImageAfterSha256": "9fccea5ba8f4fad47c9de1f7fa0f5f32a28ac7a97eb830017aea5ca0688ff2a4",
+      "companyImageUnchanged": true,
+      "outcome": "not_committed",
+      "code": "invalid_control"
+    },
+    {
+      "mode": "DELETE",
+      "id": "exhausted-security-lower",
+      "companyImageBeforeSha256": "9fccea5ba8f4fad47c9de1f7fa0f5f32a28ac7a97eb830017aea5ca0688ff2a4",
+      "companyImageAfterSha256": "9fccea5ba8f4fad47c9de1f7fa0f5f32a28ac7a97eb830017aea5ca0688ff2a4",
+      "companyImageUnchanged": true,
+      "outcome": "not_committed",
+      "code": "invalid_control"
+    }
+  ]
+}

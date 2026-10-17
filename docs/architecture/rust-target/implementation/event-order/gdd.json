@@ -1,0 +1,212 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Ordered authorization-event exhaustion admission",
+    "goal": "Refuse ambiguous numeric-order authorization history before native effects",
+    "scope": "R04/R13 native admitted-control correction; no legacy mutation or product exposure"
+  },
+  "nodes": {
+    "component.storage": {
+      "kind": "component",
+      "description": "Canonical control admission",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Validate canonical control ordered-event exhaustion without effects",
+        "rationale": "SQLite may allocate random lower ROWIDs after the largest signed integer",
+        "excludes": [
+          "Legacy TypeScript repair, arbitrary explicit historical order, real adoption, public endpoints and new writers"
+        ]
+      },
+      "interfaces": [
+        "action.event_order"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Largest-minus-one ordered streams and maximum auth-evidence IDs remain admitted",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control and caller-owned admitted runtime context",
+        "when": "Resolve native current control state under the existing transaction fence",
+        "then": "Largest-minus-one ordered streams and maximum auth-evidence IDs remain admitted"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Any maximum ordered-stream ID globally refuses current identity even after later random lower IDs",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control and caller-owned admitted runtime context",
+        "when": "Resolve native current control state under the existing transaction fence",
+        "then": "Any maximum ordered-stream ID globally refuses current identity even after later random lower IDs"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Refusals leave exact control/company images and effects unchanged",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control and caller-owned admitted runtime context",
+        "when": "Resolve native current control state under the existing transaction fence",
+        "then": "Refusals leave exact control/company images and effects unchanged"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Actual legacy stale-grant oracle is explicit; native refusal does not silently guess chronology",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control and caller-owned admitted runtime context",
+        "when": "Resolve native current control state under the existing transaction fence",
+        "then": "Actual legacy stale-grant oracle is explicit; native refusal does not silently guess chronology"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Existing control writer fence and locked credential recheck prevent an exhaustion change from passing current admission",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic control and caller-owned admitted runtime context",
+        "when": "Resolve native current control state under the existing transaction fence",
+        "then": "Existing control writer fence and locked credential recheck prevent an exhaustion change from passing current admission"
+      }
+    },
+    "action.event_order": {
+      "kind": "action",
+      "description": "Refuse exhausted ordered-event history during canonical native control admission",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "canonical_control_handle": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "caller_held_control_transaction": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Existing invalid_control wrapper; no identity or data diagnostics"
+        },
+        "preconditions": [
+          "Exact canonical schema/history/immutable guards, already owned transaction and existing fence/lifetime prerequisites"
+        ],
+        "postconditions": [
+          "No maximum ID in the three ordered streams or opaque refusal before authenticated effects"
+        ],
+        "external_effects": [],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Check exact maximum IDs in the three ordered control streams before granting current native facts"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.event_order",
+      "to": "component.storage",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.event_order",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.event_order",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.event_order",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.event_order",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.event_order",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Ordered authorization-event exhaustion admission",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "63ff8c71309e432c108b2dbc9400545981369a87ece70e2d83b3965169cfc866"
+      }
+    }
+  }
+}
