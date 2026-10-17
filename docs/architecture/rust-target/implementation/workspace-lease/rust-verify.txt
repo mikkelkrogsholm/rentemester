@@ -1,0 +1,1374 @@
+$ bun run scripts/rust/verify.ts
+    Checking rentemester-runtime v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-runtime)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s
+   Compiling rentemester-runtime v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.22s
+     Running unittests src/main.rs (target/debug/deps/rentemester_rust-2094dcc09677cb9e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rentemester_engine-390a548a9db9e304)
+
+running 4 tests
+test trial_balance::tests::calendar_boundaries_and_strict_input ... ok
+test money::tests::arbitrary_integer_precision_and_bounded_input ... ok
+test money::tests::exact_rounding_and_no_negative_zero ... ok
+test trial_balance::tests::independently_rounded_lines_and_touched_accounts ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rentemester_runtime-313e3ef94bbbb466)
+
+running 4 tests
+test local::tests::known_network_and_unknown_families_refuse ... ok
+test tests::lexical_roots_are_explicit_and_bound_once ... ok
+test local::tests::same_process_exclusion_drop_and_ordinary_close ... ok
+test local::tests::moved_root_is_permanently_invalid_even_if_returned ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rentemester_storage-03d5f3fab3792ce0)
+
+running 4 tests
+test snapshot::tests::unstable_capture_is_bounded_and_can_recover ... ok
+test tests::sql_number_conversion_does_not_round_twice ... ok
+test journal_hash::tests::legacy_json_numbers_and_rounding_bytes ... ok
+test tests::physical_schema_and_safe_identity_are_required ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rentemester_engine
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rentemester_runtime
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rentemester_storage
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+{"ok":true,"scope":"current Rust domain dependency graph and direct std I/O imports","negativeControls":["forbidden SQL dependency","direct filesystem import"],"limits":"Direct import scan supplements dependency inspection and code review; it is not an exhaustive Rust semantic analyzer."}
+{
+  "ok": true,
+  "scope": "synthetic current-schema read-only Rust trial-balance parity",
+  "checks": 34,
+  "passed": [
+    "full-schema WAL differential, source unchanged: 2026-01-01/2026-01-31",
+    "full-schema WAL differential, source unchanged: 2026-01-01/2026-02-28",
+    "full-schema WAL differential, source unchanged: 2026-02-01/2026-02-01",
+    "full-schema WAL differential, source unchanged: 2026-03-01/2026-03-01",
+    "full-schema WAL differential, source unchanged: 0000-01-01/9999-12-31",
+    "independent line rounding, inclusive period, UTF-16 order and counts",
+    "independent reversal and cross-period totals",
+    "explicit company isolation on two synthetic ledgers",
+    "comparison negative controls reject wrong amount and missing rows",
+    "repeat deterministic read",
+    "usage refuses without writes: 2026-02-30 ",
+    "usage refuses without writes: 2026-12-31 ",
+    "usage refuses without writes:  2026-01-01 ",
+    "usage refuses without writes: 2026-01-01 --company /var/folders/hh/znsnvw8s1p31zr7fywf_cgfc0000gn/T/rentemester-rust-parity-QNwAoh/1-beta",
+    "usage refuses without writes: 2026-01-01 --unknown x",
+    "missing company refused without implicit creation",
+    "symlink company denied",
+    "trailing slash/dot cannot bypass symlink refusal",
+    "data-directory escape denied",
+    "fail closed, unchanged source: newer",
+    "fail closed, unchanged source: pending",
+    "fail closed, unchanged source: checksum",
+    "fail closed, unchanged source: gap",
+    "fail closed, unchanged source: foreign-key",
+    "fail closed, unchanged source: invalid-type",
+    "fail closed, unchanged source: unsafe-integer",
+    "fail closed, unchanged source: unsafe-entry-id",
+    "fail closed, unchanged source: infinity",
+    "fail closed, unchanged source: malformed-amount",
+    "fail closed, unchanged source: symlink-db",
+    "fail closed, unchanged source: symlink-wal",
+    "fail closed, unchanged source: corrupt-db",
+    "independent copied-snapshot recovery leaves original unchanged",
+    "actual concurrent filesystem/WAL capture yields coherent committed report or bounded refusal"
+  ],
+  "limitations": [
+    "No hosted authorization, full audit health, mutation, production migration or qualified Windows storage claimed."
+  ]
+}
+{
+  "format": "rentemester-trial-balance-wire-baseline/1",
+  "ok": true,
+  "head": "0e6c9aa1183246ef712ad12471c0786ced468c69",
+  "sources": [
+    {
+      "path": "scripts/rust/verify-report-contracts.ts",
+      "sha256": "2d1a7f6615e738845a11c3d9d88d50533cb942886da1e3a0448c0666bd9e042f"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "80f66c777a44d29d81d5e899c8885519fd3e0fbd8fcae9a2ce5424b73ffd4898"
+    },
+    {
+      "path": "src/cli.ts",
+      "sha256": "1854563e219ba7d75be3af9c97e4872ea081de67447ebb8154f6bfb2ccb2aba0"
+    },
+    {
+      "path": "src/cli/report.ts",
+      "sha256": "2e864ca3ea6d726c9f7bab4fac5cd65fcffddc5b5410fba023d4f859b946d924"
+    },
+    {
+      "path": "src/cli-format/report.ts",
+      "sha256": "50630c4b128c42d1ef10b3ecdec5c763ef306acdc9b43148c3de2085927784f9"
+    },
+    {
+      "path": "src/cli-format/common.ts",
+      "sha256": "6a86e8ba3ed0236b8f70dded6ebb9c1eb32e64ffc9f7e315bf6d5336c87fad05"
+    },
+    {
+      "path": "src/core/company.ts",
+      "sha256": "3179bc6511c6790ed4b86db926b40da78f85d977ff329f802693c3832416a63e"
+    },
+    {
+      "path": "src/core/workspace.ts",
+      "sha256": "27a25248191fb63a918dc13250a2cab000c805f67b8c3f394e391c46c44f183f"
+    },
+    {
+      "path": "src/core/db.ts",
+      "sha256": "e7b72a6539e981c05e26085475aff4c26bea062f93d9b3b012049eda3987869f"
+    },
+    {
+      "path": "src/core/financial-statements.ts",
+      "sha256": "510ff01e7f0de2fdbe85533a22dcdc7b0ef9e6efc5a29512fbd0785a68f79d69"
+    },
+    {
+      "path": "src/core/dates.ts",
+      "sha256": "77fea21b9b2b3b1f2ebf55b9a092fc6e1cb133780635c710dff1a01f01fe0e2e"
+    },
+    {
+      "path": "src/core/money.ts",
+      "sha256": "e013c3ca23bb2391105aa2f1e2f307dcdaaf85bec60159e5d63b39aa7e7c3bf8"
+    },
+    {
+      "path": "src/server/router.ts",
+      "sha256": "e1f20be917fccd193f8423eecd5abbf9f3c37e4f81b9639d96abc9ee780ded54"
+    },
+    {
+      "path": "src/server/router/statements.ts",
+      "sha256": "c03cfae84184ffac2b19afd53595fcbb066c936ca2506eaf8463ed06e611231b"
+    },
+    {
+      "path": "src/server/router/_shared.ts",
+      "sha256": "55854ead4f8424ca091a4e24b614c66e56baf2f5115c899cdc24b4c9b2d6e458"
+    },
+    {
+      "path": "src/server/errors.ts",
+      "sha256": "786ed38c51044a35a7fe6a869de45990f40caeee2f4d08c25928bb4e005ca6e3"
+    },
+    {
+      "path": "src/server/data/shared.ts",
+      "sha256": "46bdf0db1fe95682163889195ea6607a72be1923e8366e5241c668d8853e3896"
+    },
+    {
+      "path": "src/server/data/statements/trial-balance.ts",
+      "sha256": "c7f6fee131e1fd12a693c73981e487c3aae87a298639ac8554acac1bbcca99cb"
+    },
+    {
+      "path": "src/server/data/statement-exports.ts",
+      "sha256": "a6dfd20423384f51ac5ce525723654bc4b6abbc658ae4dde530bb86b60abe4e6"
+    },
+    {
+      "path": "src/server/data/statement-pdf.ts",
+      "sha256": "c7692dbe886aceaf4d8471e5d74f9daad0826683a4a3c8ffe04878aa40a5b6b3"
+    },
+    {
+      "path": "src/mcp/registry.ts",
+      "sha256": "98e898529c433a6f688719e13c981675d5267ebc88c6389b911e0012b8e51e11"
+    },
+    {
+      "path": "docs/mcp-tool-surface.md",
+      "sha256": "214baad68051e5d4db7d6e6167162355255e12be8f712abb8cb97eeee45f2c78"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "fe91573489ddfb21f5dd71fdadffb61690a9253e722d5d4ad1d8eac48d0542d0"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "edad5421fed33b743277f7fed76e5c6eca2b54509530a24ba1497a544373b2b2"
+    },
+    {
+      "path": "crates/rentemester-engine/src/trial_balance.rs",
+      "sha256": "7aa6066ff6a9368ec6b05aaf3968bab9534c3422d6304518717015eca14936f9"
+    },
+    {
+      "path": "crates/rentemester-engine/src/money.rs",
+      "sha256": "d3fa39b13aef5c63fe5537ffaf4adc4a73117c9695c3653770655d80bf21f1f1"
+    },
+    {
+      "path": "crates/rentemester-storage/src/lib.rs",
+      "sha256": "a0da406c2ea18ecb4a8c89252b347eef5cc21f4befb57aa7c0f274265109dc0e"
+    },
+    {
+      "path": "crates/rentemester-storage/src/snapshot.rs",
+      "sha256": "207ab711dd4fe2108a4721d1c8a9af2a80840e537a0726a6c4be450c3a568579"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-schema.json",
+      "sha256": "b424cec385abad3f313ca633a291f8cf3f07d5cbece16523cd8fa0674cf729c7"
+    }
+  ],
+  "schemas": {
+    "legacyCli": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "accounts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "accountNo": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "asset",
+                  "liability",
+                  "equity",
+                  "income",
+                  "expense",
+                  "vat"
+                ]
+              },
+              "debit": {
+                "type": "number"
+              },
+              "credit": {
+                "type": "number"
+              },
+              "balance": {
+                "type": "number"
+              },
+              "normalBalance": {
+                "type": "string",
+                "enum": [
+                  "debit",
+                  "credit"
+                ]
+              }
+            },
+            "required": [
+              "accountNo",
+              "name",
+              "type",
+              "debit",
+              "credit",
+              "balance",
+              "normalBalance"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "totalDebit": {
+          "type": "number"
+        },
+        "totalCredit": {
+          "type": "number"
+        },
+        "balanced": {
+          "type": "boolean"
+        },
+        "linesConsidered": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "journalEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "periodStart",
+        "periodEnd",
+        "accounts",
+        "totalDebit",
+        "totalCredit",
+        "balanced",
+        "linesConsidered",
+        "journalEntryCount",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "legacyHttp": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "const": true
+        },
+        "trialBalance": {
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string"
+            },
+            "selectedYear": {
+              "type": "string"
+            },
+            "archived": {
+              "type": "boolean"
+            },
+            "archivedSource": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "company": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "cvr": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "country": {
+                  "type": "string"
+                },
+                "currency": {
+                  "type": "string"
+                },
+                "fiscalYearStartMonth": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "fiscalYearLabelStrategy": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "cvr",
+                "country",
+                "currency",
+                "fiscalYearStartMonth",
+                "fiscalYearLabelStrategy"
+              ],
+              "additionalProperties": false
+            },
+            "fiscalYears": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "start": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "end": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "live",
+                      "archive"
+                    ]
+                  }
+                },
+                "required": [
+                  "label",
+                  "start",
+                  "end",
+                  "source"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "periodStart": {
+              "type": "string"
+            },
+            "periodEnd": {
+              "type": "string"
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "accountNo": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "asset",
+                          "liability",
+                          "equity",
+                          "income",
+                          "expense",
+                          "vat"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "const": ""
+                      }
+                    ]
+                  },
+                  "debit": {
+                    "type": "number"
+                  },
+                  "credit": {
+                    "type": "number"
+                  },
+                  "balance": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "accountNo",
+                  "name",
+                  "type",
+                  "debit",
+                  "credit",
+                  "balance"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "totalDebit": {
+              "type": "number"
+            },
+            "totalCredit": {
+              "type": "number"
+            },
+            "balanced": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "slug",
+            "selectedYear",
+            "archived",
+            "archivedSource",
+            "company",
+            "fiscalYears",
+            "periodStart",
+            "periodEnd",
+            "rows",
+            "totalDebit",
+            "totalCredit",
+            "balanced"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "trialBalance"
+      ],
+      "additionalProperties": false
+    },
+    "legacyHttpError": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "const": false
+        },
+        "errors": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string",
+          "enum": [
+            "bad_request",
+            "not_found",
+            "conflict",
+            "unauthorized",
+            "method_not_allowed",
+            "internal"
+          ]
+        },
+        "subcode": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "rustCli": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "const": true
+        },
+        "format": {
+          "type": "string",
+          "const": "rentemester-trial-balance/1"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "periodStart": {
+              "type": "string"
+            },
+            "periodEnd": {
+              "type": "string"
+            },
+            "accounts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "accountNo": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "asset",
+                      "liability",
+                      "equity",
+                      "income",
+                      "expense",
+                      "vat"
+                    ]
+                  },
+                  "debit": {
+                    "type": "string",
+                    "pattern": "^(?!-0\\.00$)-?(0|[1-9]\\d*)\\.\\d{2}$"
+                  },
+                  "credit": {
+                    "type": "string",
+                    "pattern": "^(?!-0\\.00$)-?(0|[1-9]\\d*)\\.\\d{2}$"
+                  },
+                  "balance": {
+                    "type": "string",
+                    "pattern": "^(?!-0\\.00$)-?(0|[1-9]\\d*)\\.\\d{2}$"
+                  },
+                  "normalBalance": {
+                    "type": "string",
+                    "enum": [
+                      "debit",
+                      "credit"
+                    ]
+                  }
+                },
+                "required": [
+                  "accountNo",
+                  "name",
+                  "type",
+                  "debit",
+                  "credit",
+                  "balance",
+                  "normalBalance"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "totalDebit": {
+              "type": "string",
+              "pattern": "^(?!-0\\.00$)-?(0|[1-9]\\d*)\\.\\d{2}$"
+            },
+            "totalCredit": {
+              "type": "string",
+              "pattern": "^(?!-0\\.00$)-?(0|[1-9]\\d*)\\.\\d{2}$"
+            },
+            "balanced": {
+              "type": "boolean"
+            },
+            "linesConsidered": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "journalEntryCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "ok",
+            "appliedRules",
+            "periodStart",
+            "periodEnd",
+            "accounts",
+            "totalDebit",
+            "totalCredit",
+            "balanced",
+            "linesConsidered",
+            "journalEntryCount",
+            "errors"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "format",
+        "data"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "checks": 31,
+  "receipts": [
+    {
+      "id": "cli.json.success",
+      "exit": 0,
+      "stdout": "{\n  \"ok\": true,\n  \"appliedRules\": [\n    \"financial-statements:trial-balance\"\n  ],\n  \"periodStart\": \"2026-01-01\",\n  \"periodEnd\": \"2026-12-31\",\n  \"accounts\": [\n    {\n      \"accountNo\": \"1100\",\n      \"name\": \"Synthetic; \\\"debit\\\"\",\n      \"type\": \"asset\",\n      \"normalBalance\": \"debit\",\n      \"debit\": 12.34,\n      \"credit\": 0,\n      \"balance\": 12.34\n    },\n    {\n      \"accountNo\": \"2000\",\n      \"name\": \"Bank\",\n      \"type\": \"asset\",\n      \"normalBalance\": \"debit\",\n      \"debit\": 0,\n      \"credit\": 12.34,\n      \"balance\": -12.34\n    }\n  ],\n  \"totalDebit\": 12.34,\n  \"totalCredit\": 12.34,\n  \"balanced\": true,\n  \"linesConsidered\": 2,\n  \"journalEntryCount\": 1,\n  \"errors\": []\n}\n",
+      "stderr": ""
+    },
+    {
+      "id": "cli.json.alias",
+      "equalTo": "cli.json.success"
+    },
+    {
+      "id": "cli.pipe-default-json",
+      "equalTo": "cli.json.success"
+    },
+    {
+      "id": "cli.duplicate-attached-flag",
+      "exit": 0,
+      "stdout": "{\n  \"ok\": true,\n  \"appliedRules\": [\n    \"financial-statements:trial-balance\"\n  ],\n  \"periodStart\": \"2026-07-01\",\n  \"periodEnd\": \"2026-12-31\",\n  \"accounts\": [],\n  \"totalDebit\": 0,\n  \"totalCredit\": 0,\n  \"balanced\": true,\n  \"linesConsidered\": 0,\n  \"journalEntryCount\": 0,\n  \"errors\": []\n}\n",
+      "stderr": "",
+      "classification": "legacy last value wins; new Rust version refuses duplicates/attached syntax"
+    },
+    {
+      "id": "cli.human.success",
+      "exit": 0,
+      "stdout": "Saldobalance for perioden 2026-01-01 til 2026-12-31\n\n  1100 Synthetic; \"debit\"\n      Debet 12,34 kr. | Kredit 0,00 kr. | Saldo 12,34 kr.\n  2000 Bank\n      Debet 0,00 kr. | Kredit 12,34 kr. | Saldo -12,34 kr.\n\n  Debet i alt:                   12,34 kr.\n  Kredit i alt:                  12,34 kr.\n  Saldobalancen går op (debet = kredit).\n",
+      "stderr": ""
+    },
+    {
+      "id": "cli.inverted",
+      "exit": 1,
+      "stdout": "{\n  \"ok\": false,\n  \"appliedRules\": [\n    \"financial-statements:trial-balance\"\n  ],\n  \"periodStart\": \"2026-12-31\",\n  \"periodEnd\": \"2026-01-01\",\n  \"accounts\": [],\n  \"totalDebit\": 0,\n  \"totalCredit\": 0,\n  \"balanced\": false,\n  \"linesConsidered\": 0,\n  \"journalEntryCount\": 0,\n  \"errors\": [\n    \"periodStart must be before or equal to periodEnd\"\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "id": "cli.invalid-date",
+      "exit": 1,
+      "stdout": "{\n  \"ok\": false,\n  \"appliedRules\": [\n    \"financial-statements:trial-balance\"\n  ],\n  \"periodStart\": \"2026-02-30\",\n  \"periodEnd\": \"2026-12-31\",\n  \"accounts\": [],\n  \"totalDebit\": 0,\n  \"totalCredit\": 0,\n  \"balanced\": false,\n  \"linesConsidered\": 0,\n  \"journalEntryCount\": 0,\n  \"errors\": [\n    \"periodStart must be YYYY-MM-DD\"\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "id": "cli.usage.--unknown",
+      "exit": 2,
+      "stdout": "",
+      "stderr": "Unknown flag --unknown for report trial-balance.\n"
+    },
+    {
+      "id": "cli.usage.--format",
+      "exit": 2,
+      "stdout": "",
+      "stderr": "--format must be either json or human\n"
+    },
+    {
+      "id": "cli.missing-to",
+      "exit": 2,
+      "stdout": "",
+      "stderr": "Missing required --from <YYYY-MM-DD> or --to <YYYY-MM-DD>\n"
+    },
+    {
+      "id": "rust.versioned-cli",
+      "exit": 0,
+      "stdout": "{\"data\":{\"accounts\":[{\"accountNo\":\"1100\",\"balance\":\"12.34\",\"credit\":\"0.00\",\"debit\":\"12.34\",\"name\":\"Synthetic; \\\"debit\\\"\",\"normalBalance\":\"debit\",\"type\":\"asset\"},{\"accountNo\":\"2000\",\"balance\":\"-12.34\",\"credit\":\"12.34\",\"debit\":\"0.00\",\"name\":\"Bank\",\"normalBalance\":\"debit\",\"type\":\"asset\"}],\"appliedRules\":[\"financial-statements:trial-balance\"],\"balanced\":true,\"errors\":[],\"journalEntryCount\":1,\"linesConsidered\":2,\"ok\":true,\"periodEnd\":\"2026-12-31\",\"periodStart\":\"2026-01-01\",\"totalCredit\":\"12.34\",\"totalDebit\":\"12.34\"},\"format\":\"rentemester-trial-balance/1\",\"ok\":true}\n",
+      "stderr": ""
+    },
+    {
+      "id": "http.live",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": true,
+        "trialBalance": {
+          "slug": "alpha",
+          "selectedYear": "2026",
+          "archived": false,
+          "archivedSource": null,
+          "company": {
+            "name": "Synthetic alpha",
+            "cvr": null,
+            "country": "DK",
+            "currency": "DKK",
+            "fiscalYearStartMonth": 1,
+            "fiscalYearLabelStrategy": "end-year"
+          },
+          "fiscalYears": [
+            {
+              "label": "2026",
+              "start": "2026-01-01",
+              "end": "2026-12-31",
+              "source": "live"
+            },
+            {
+              "label": "2024",
+              "start": null,
+              "end": null,
+              "source": "archive"
+            }
+          ],
+          "periodStart": "2026-01-01",
+          "periodEnd": "2026-12-31",
+          "rows": [
+            {
+              "accountNo": "1100",
+              "name": "Synthetic; \"debit\"",
+              "type": "asset",
+              "debit": 12.34,
+              "credit": 0,
+              "balance": 12.34
+            },
+            {
+              "accountNo": "2000",
+              "name": "Bank",
+              "type": "asset",
+              "debit": 0,
+              "credit": 12.34,
+              "balance": -12.34
+            }
+          ],
+          "totalDebit": 12.34,
+          "totalCredit": 12.34,
+          "balanced": true
+        }
+      }
+    },
+    {
+      "id": "http.default-year",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": true,
+        "trialBalance": {
+          "slug": "alpha",
+          "selectedYear": "2026",
+          "archived": false,
+          "archivedSource": null,
+          "company": {
+            "name": "Synthetic alpha",
+            "cvr": null,
+            "country": "DK",
+            "currency": "DKK",
+            "fiscalYearStartMonth": 1,
+            "fiscalYearLabelStrategy": "end-year"
+          },
+          "fiscalYears": [
+            {
+              "label": "2026",
+              "start": "2026-01-01",
+              "end": "2026-12-31",
+              "source": "live"
+            },
+            {
+              "label": "2024",
+              "start": null,
+              "end": null,
+              "source": "archive"
+            }
+          ],
+          "periodStart": "2026-01-01",
+          "periodEnd": "2026-12-31",
+          "rows": [
+            {
+              "accountNo": "1100",
+              "name": "Synthetic; \"debit\"",
+              "type": "asset",
+              "debit": 12.34,
+              "credit": 0,
+              "balance": 12.34
+            },
+            {
+              "accountNo": "2000",
+              "name": "Bank",
+              "type": "asset",
+              "debit": 0,
+              "credit": 12.34,
+              "balance": -12.34
+            }
+          ],
+          "totalDebit": 12.34,
+          "totalCredit": 12.34,
+          "balanced": true
+        }
+      }
+    },
+    {
+      "id": "http.beta",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": true,
+        "trialBalance": {
+          "slug": "beta",
+          "selectedYear": "2026",
+          "archived": false,
+          "archivedSource": null,
+          "company": {
+            "name": "Synthetic beta",
+            "cvr": null,
+            "country": "DK",
+            "currency": "DKK",
+            "fiscalYearStartMonth": 1,
+            "fiscalYearLabelStrategy": "end-year"
+          },
+          "fiscalYears": [
+            {
+              "label": "2026",
+              "start": "2026-01-01",
+              "end": "2026-12-31",
+              "source": "live"
+            },
+            {
+              "label": "2024",
+              "start": null,
+              "end": null,
+              "source": "archive"
+            }
+          ],
+          "periodStart": "2026-01-01",
+          "periodEnd": "2026-12-31",
+          "rows": [
+            {
+              "accountNo": "1100",
+              "name": "Synthetic; \"debit\"",
+              "type": "asset",
+              "debit": 98.76,
+              "credit": 0,
+              "balance": 98.76
+            },
+            {
+              "accountNo": "2000",
+              "name": "Bank",
+              "type": "asset",
+              "debit": 0,
+              "credit": 98.76,
+              "balance": -98.76
+            }
+          ],
+          "totalDebit": 98.76,
+          "totalCredit": 98.76,
+          "balanced": true
+        }
+      }
+    },
+    {
+      "id": "http.archive",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": true,
+        "trialBalance": {
+          "slug": "alpha",
+          "selectedYear": "2024",
+          "archived": true,
+          "archivedSource": "dinero",
+          "company": {
+            "name": "Synthetic alpha",
+            "cvr": null,
+            "country": "DK",
+            "currency": "DKK",
+            "fiscalYearStartMonth": 1,
+            "fiscalYearLabelStrategy": "end-year"
+          },
+          "fiscalYears": [
+            {
+              "label": "2026",
+              "start": "2026-01-01",
+              "end": "2026-12-31",
+              "source": "live"
+            },
+            {
+              "label": "2024",
+              "start": null,
+              "end": null,
+              "source": "archive"
+            }
+          ],
+          "periodStart": "2024-01-01",
+          "periodEnd": "2024-12-31",
+          "rows": [
+            {
+              "accountNo": "1100",
+              "name": "Synthetic 1100",
+              "type": "asset",
+              "debit": 7.89,
+              "credit": 0,
+              "balance": 7.89
+            },
+            {
+              "accountNo": "2000",
+              "name": "Synthetic 2000",
+              "type": "asset",
+              "debit": 0,
+              "credit": 7.89,
+              "balance": -7.89
+            }
+          ],
+          "totalDebit": 7.89,
+          "totalCredit": 7.89,
+          "balanced": true
+        }
+      }
+    },
+    {
+      "id": "http.empty",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": true,
+        "trialBalance": {
+          "slug": "alpha",
+          "selectedYear": "2023",
+          "archived": false,
+          "archivedSource": null,
+          "company": {
+            "name": "Synthetic alpha",
+            "cvr": null,
+            "country": "DK",
+            "currency": "DKK",
+            "fiscalYearStartMonth": 1,
+            "fiscalYearLabelStrategy": "end-year"
+          },
+          "fiscalYears": [
+            {
+              "label": "2026",
+              "start": "2026-01-01",
+              "end": "2026-12-31",
+              "source": "live"
+            },
+            {
+              "label": "2024",
+              "start": null,
+              "end": null,
+              "source": "archive"
+            }
+          ],
+          "periodStart": "2023-01-01",
+          "periodEnd": "2023-12-31",
+          "rows": [],
+          "totalDebit": 0,
+          "totalCredit": 0,
+          "balanced": true
+        }
+      }
+    },
+    {
+      "id": "http.bad-year",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": false,
+        "errors": [
+          "year must be a four-digit calendar year"
+        ],
+        "code": "bad_request"
+      }
+    },
+    {
+      "id": "http.unknown-company",
+      "status": 404,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": false,
+        "errors": [
+          "ingen virksomhed med slug 'ghost' findes i workspacet"
+        ],
+        "code": "not_found"
+      }
+    },
+    {
+      "id": "http.unauthenticated",
+      "status": 401,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": false,
+        "errors": [
+          "missing or invalid credentials"
+        ],
+        "code": "unauthorized"
+      }
+    },
+    {
+      "id": "http.invalid-export",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": false,
+        "errors": [
+          "format=xlsx understøttes ikke — kun csv og pdf er gyldige."
+        ],
+        "code": "bad_request"
+      }
+    },
+    {
+      "id": "legacy-defect.padded-year",
+      "body": {
+        "ok": true,
+        "trialBalance": {
+          "slug": "alpha",
+          "selectedYear": "1",
+          "archived": false,
+          "archivedSource": null,
+          "company": {
+            "name": "Synthetic alpha",
+            "cvr": null,
+            "country": "DK",
+            "currency": "DKK",
+            "fiscalYearStartMonth": 1,
+            "fiscalYearLabelStrategy": "end-year"
+          },
+          "fiscalYears": [
+            {
+              "label": "2026",
+              "start": "2026-01-01",
+              "end": "2026-12-31",
+              "source": "live"
+            },
+            {
+              "label": "2024",
+              "start": null,
+              "end": null,
+              "source": "archive"
+            }
+          ],
+          "periodStart": "1-01-01",
+          "periodEnd": "1-12-31",
+          "rows": [],
+          "totalDebit": 0,
+          "totalCredit": 0,
+          "balanced": false
+        }
+      },
+      "correctedExpectation": "Keep canonical year padding or explicitly refuse; never report invalid core period as successful empty data"
+    },
+    {
+      "id": "legacy-defect.span-fiscal-year",
+      "body": {
+        "ok": true,
+        "trialBalance": {
+          "slug": "span",
+          "selectedYear": "2025-26",
+          "archived": false,
+          "archivedSource": null,
+          "company": {
+            "name": "Synthetic span",
+            "cvr": null,
+            "country": "DK",
+            "currency": "DKK",
+            "fiscalYearStartMonth": 7,
+            "fiscalYearLabelStrategy": "span"
+          },
+          "fiscalYears": [
+            {
+              "label": "2025-26",
+              "start": "2025-07-01",
+              "end": "2026-06-30",
+              "source": "live"
+            },
+            {
+              "label": "2024",
+              "start": null,
+              "end": null,
+              "source": "archive"
+            }
+          ],
+          "periodStart": "2025-01-01",
+          "periodEnd": "2025-12-31",
+          "rows": [],
+          "totalDebit": 0,
+          "totalCredit": 0,
+          "balanced": true
+        }
+      },
+      "correctedExpectation": "Selected fiscal interval 2025-07-01..2026-06-30 includes synthetic posting 5.67; owner R42/R46 must refine correction before cutover"
+    },
+    {
+      "id": "http.wrong-method",
+      "status": 405,
+      "body": {
+        "ok": false,
+        "errors": [
+          "metoden er ikke understøttet på denne rute"
+        ],
+        "code": "method_not_allowed"
+      }
+    },
+    {
+      "id": "http.csv",
+      "status": 200,
+      "headers": {
+        "cache-control": "private, no-store",
+        "content-disposition": "attachment; filename*=UTF-8''saldobalance-alpha-2026.csv",
+        "content-type": "text/csv; charset=utf-8",
+        "x-content-type-options": "nosniff"
+      },
+      "body": "﻿sep=;\r\nRapport;Saldobalance\r\nVirksomhed;Synthetic alpha\r\nRegnskabsår;2026\r\nValuta;DKK\r\nUdtrukket;2026-10-17\r\nKilde;Rentemester\r\n\r\nKonto;Navn;Type;Debet;Kredit;Saldo\r\n1100;\"Synthetic; \"\"debit\"\"\";asset;12,34;0,00;12,34\r\n2000;Bank;asset;0,00;12,34;-12,34\r\n;I alt;;12,34;12,34;\r\n",
+      "nondeterministicField": "Udtrukket (UTC wall-clock date)"
+    },
+    {
+      "id": "http.csv-format-default-and-case",
+      "status": 200,
+      "contentType": "text/csv; charset=utf-8"
+    },
+    {
+      "id": "http.pdf-format",
+      "status": 200,
+      "headers": {
+        "cache-control": "private, no-store",
+        "content-disposition": "attachment; filename*=UTF-8''saldobalance-alpha-2026.pdf",
+        "content-type": "application/pdf",
+        "x-content-type-options": "nosniff"
+      },
+      "bytes": 1629,
+      "sha256": "3e0098c29743c2535dd44396704d424a9bda25bf882d0b6b13270e511ebdec29",
+      "limit": "Format/header contract only; PDF amount rendering remains existing statement PDF suite coverage"
+    },
+    {
+      "id": "csv.full-byte-oracle",
+      "body": "﻿sep=;\r\nRapport;Saldobalance\r\nVirksomhed;Synthetic alpha\r\nRegnskabsår;2026\r\nValuta;DKK\r\nUdtrukket;2026-01-01\r\nKilde;Rentemester\r\n\r\nKonto;Navn;Type;Debet;Kredit;Saldo\r\n1100;\"Synthetic; \"\"debit\"\"\";asset;12,34;0,00;12,34\r\n2000;Bank;asset;0,00;12,34;-12,34\r\n;I alt;;12,34;12,34;\r\n",
+      "httpNormalization": "Only the named Udtrukket date line",
+      "negativeControls": [
+        "omitted-total-row",
+        "omitted-column-header"
+      ]
+    },
+    {
+      "id": "csv.clock-dependence",
+      "changedFieldOnly": "Udtrukket",
+      "status": "documented nondeterminism; no blind whole-byte normalization"
+    },
+    {
+      "id": "mcp.absence",
+      "status": "CLI-only financial report, no corresponding registered MCP tool",
+      "registeredToolCount": 214
+    },
+    {
+      "id": "negative-controls",
+      "rejected": [
+        "wrong-total",
+        "omitted-account",
+        "changed-casing",
+        "null-money",
+        "string-in-legacy-numeric-wire"
+      ]
+    },
+    {
+      "id": "oracle-immutable",
+      "filesChecked": 13,
+      "policy": "Every legacy/Rust execution uses a disposable synthetic copy; no claim legacy adapters are themselves read-only"
+    }
+  ],
+  "limits": [
+    "One report capability only; R01/R08 remain open",
+    "Source hashes bind named anchors, not an exhaustive transitive dependency closure",
+    "HTTP calls real router in-process; no socket/proxy/session/hosted-membership qualification",
+    "PDF amounts, complete custom fiscal-label matrix, malformed storage and transport loss remain separate coverage",
+    "Registry absence plus explicit CLI-only documentation; no semantically equivalent differently named MCP operation claimed"
+  ]
+}
+{
+  "ok": true,
+  "scope": "legacy canonical journal hash compatibility on private snapshots",
+  "checks": 29,
+  "passed": [
+    "real legacy posting and reversal pass full legacy audit and fixed five-hash oracle",
+    "persisted canonical JSON property/line order, null/empty, Unicode/controls/NUL, FX and huge-number bytes match saved vectors",
+    "Rust verifies real live-WAL legacy chain twice without source byte changes",
+    "negative controls reject omitted entry, changed bytes, omitted field and extra hash separator",
+    "corruption/refusal, unchanged source: text",
+    "corruption/refusal, unchanged source: actor",
+    "corruption/refusal, unchanged source: fx",
+    "corruption/refusal, unchanged source: line-amount",
+    "corruption/refusal, unchanged source: line-vat",
+    "corruption/refusal, unchanged source: null-empty",
+    "corruption/refusal, unchanged source: line-order",
+    "corruption/refusal, unchanged source: previous-null",
+    "corruption/refusal, unchanged source: previous-wrong",
+    "corruption/refusal, unchanged source: hash",
+    "corruption/refusal, unchanged source: no-lines",
+    "corruption/refusal, unchanged source: nonfinite",
+    "corruption/refusal, unchanged source: unsafe-entry-id",
+    "corruption/refusal, unchanged source: unsafe-reference",
+    "corruption/refusal, unchanged source: text-number",
+    "corruption/refusal, unchanged source: blob-text",
+    "corruption/refusal, unchanged source: invalid-utf8",
+    "corruption/refusal, unchanged source: hash-column-drift",
+    "corruption/refusal, unchanged source: history-tamper",
+    "empty current-schema hash chain is explicitly scoped success",
+    "missing company refused without creation",
+    "root symlink and trailing slash/dot variants refused",
+    "concurrent real legacy writer: coherent whole chain or bounded source_changed; all 12 commits retained and verified",
+    "strict usage JSON/exit2 and explicit hash-only help/exit0",
+    "frozen synthetic oracle remains byte-identical after all damaged-copy executions"
+  ],
+  "legacyAudit": {
+    "ok": true,
+    "entries": 5,
+    "errors": []
+  },
+  "fixedVectorHashes": [
+    "cdf6c2455037956c9fc87e22cf66112251120e36c00299c37e3ac90ab50e9e4e",
+    "150d3847452c076fe532a2ef1e1b6b03b6ca82e710390f57b494e4af1323094c",
+    "6b767799f70513fe89b482c37b9f8e3ff72dba935701141a62b8268c85221810",
+    "aed5580b8d578e4a21ef0c4895bec6f0c0caf887dc145ca5f82a414cd630202a",
+    "edf1ed2b8752b8e1f3d2d6c3aad2e2a932bd4a540579d39feaefb2673cac0c67"
+  ],
+  "limits": [
+    "Hash agreement is not full audit/accounting integrity or audit_log completeness",
+    "No mutation, hosted authority, external checkpoint, live migration or whole-issue completion claimed"
+  ]
+}
+{
+  "ok": true,
+  "scope": "cooperative physical-directory process lease only",
+  "checks": 10,
+  "passed": [
+    "distinct processes exclude same root; independent roots, explicit release, identity and source inventory",
+    "four simultaneous real contenders produce exactly one holder",
+    "hung/live owner remains busy despite stale/reused PID, nonce and missing/replaced metadata",
+    "kernel reclaims on forced process death and EOF, without stale-lock deletion",
+    "final symlinks refuse including slash/dot; ancestor aliases lock same physical scope",
+    "missing/file/empty/parent roots refuse without creation; relative root binds acquisition directory",
+    "moved/replaced path invalidates old root; replacement is explicitly different physical scope, not logical adoption",
+    "exec child remains live while next owner acquires: CLOEXEC prevents inherited hidden lease; parent reaps child",
+    "independent Python flock participant and Rust exclude each other in both directions; no legacy ingress claim",
+    "source file inventories unchanged and all foreground process probes reaped"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "filesystem": "apfs",
+  "limits": [
+    "Not current TS product admission, writable Rust authority, logical workspace identity or offline adoption",
+    "Only development host filesystem exercised; no Windows/network/sync-filesystem/distributed qualification",
+    "Root check is an observation; protected descriptor-relative writes/commit fencing remain required"
+  ]
+}

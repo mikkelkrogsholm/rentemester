@@ -1,15 +1,15 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "journal-hashes-1",
-  "code_revision": "sha256:6baa54d55bbad5fc120c8209643aae55b6e9b636fa602db1111deb11aa3c941d",
-  "spec_revision": "sha256:e972f22fd46df3fc63e4e199d26357c1959b1b79d8cf0baaadd9f50b8136e162",
-  "state": "verified-experimental-journal-hash-compatibility",
+  "current_increment": "workspace-lease-1",
+  "code_revision": "sha256:fbf8e1a7853d9889c6577221c3f6fb76b169000d59d575297f2023441948764b",
+  "spec_revision": "sha256:3be265eb205db15c4396c56ae3c30c3b5f19f9e7a56df44362a00bdf6b32f316",
+  "state": "verified-experimental-cooperative-process-lease",
   "issues_closed": [],
   "next": [
-    "Continue R01 operation/schema/error/retry/domain/fixture baseline and R03 persistent/identity compatibility beyond journal hashes",
-    "Refine next durable workspace ownership/storage and authority scope using complete applicable contracts before writable Rust work",
-    "Continue full55-issue dependency graph through hosted runtime, React/GPUI parity, distribution and fenced cutover"
+    "Complete R01/R03 contracts and R12 full lifetime mutation admission before first effects, including retained DB handles, auth, jobs, config and restore destinations",
+    "Bind stable workspace/company/clone identity and offline adoption; a cooperative process lease alone must never enable Rust writes",
+    "Implement transactional migration/authority foundation, then continue all55 issues through server/React/GPUI/distribution and cutover"
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -26,13 +26,16 @@
     "state": "verified-experimental-readonly"
   },
   "evidence": {
-    "report": "journal-hashes/evidence.json",
-    "parity": "journal-hashes/parity.json",
-    "checks": 29,
-    "rust_unit_tests": 8,
-    "prior_readonly_checks": 34,
-    "prior_wire_checks": 31,
-    "targeted_legacy_tests": 20,
+    "report": "workspace-lease/evidence.json",
+    "parity": "workspace-lease/parity.json",
+    "rust_unit_tests": 12,
+    "process_checks": 10,
+    "previous_checks_retained": [
+      34,
+      31,
+      29
+    ],
+    "writer_authority": false,
     "whole_issues_closed": false
   },
   "verified_history": [
@@ -41,6 +44,12 @@
       "code_revision": "sha256:11481109456fbcf1ac9d679b5d7941c8b31ab0feb8ecd152d2c856715d3d7781",
       "spec_revision": "sha256:2da7e799a99c7bfe1c66cc50a8acefb375e9d4dacf5945f9fafcc9ff1c7cb166",
       "state": "verified-contract-baseline-increment"
+    },
+    {
+      "current_increment": "journal-hashes-1",
+      "code_revision": "sha256:6baa54d55bbad5fc120c8209643aae55b6e9b636fa602db1111deb11aa3c941d",
+      "spec_revision": "sha256:e972f22fd46df3fc63e4e199d26357c1959b1b79d8cf0baaadd9f50b8136e162",
+      "state": "verified-experimental-journal-hash-compatibility"
     }
   ]
 }

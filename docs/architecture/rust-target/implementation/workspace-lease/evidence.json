@@ -1,0 +1,111 @@
+{
+  "format": "rentemester-workspace-lease-increment/1",
+  "base_code": "0e6c9aa1183246ef712ad12471c0786ced468c69",
+  "spec_revision": "sha256:3be265eb205db15c4396c56ae3c30c3b5f19f9e7a56df44362a00bdf6b32f316",
+  "code_revision": "sha256:fbf8e1a7853d9889c6577221c3f6fb76b169000d59d575297f2023441948764b",
+  "assets": [
+    {
+      "path": "Cargo.toml",
+      "sha256": "8fd7fcd58d2f88dd0835f5d7f169a7e30d309ecd2c9987d5fb464c5f794f4214"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "fe91573489ddfb21f5dd71fdadffb61690a9253e722d5d4ad1d8eac48d0542d0"
+    },
+    {
+      "path": "crates/rentemester-runtime/Cargo.toml",
+      "sha256": "edfaaad2e07cc449d7f0dbdb71e7d4678452d99bd16d0970e8a9e3a5fa9a5843"
+    },
+    {
+      "path": "crates/rentemester-runtime/src/lib.rs",
+      "sha256": "717a6bd52c9fec261368b8ba00938df14c56013342eb31bbbb2daf349b71dd72"
+    },
+    {
+      "path": "crates/rentemester-runtime/src/local.rs",
+      "sha256": "7a7d867ae34c445aad922d380a7bb4bfe9f3a5ef53dfd48db57454b94bb71935"
+    },
+    {
+      "path": "crates/rentemester-runtime/examples/workspace-lease.rs",
+      "sha256": "efc0e0f3291b3260bdc08f54046c4178415031ffab55efc9ab4ddd8ab6e6c5fc"
+    },
+    {
+      "path": "scripts/rust/verify-workspace-lease.ts",
+      "sha256": "b62f3dc2cd849e91281ddb0e037569f80aea487576b584f5fa3a7ac821a09baf"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "80f66c777a44d29d81d5e899c8885519fd3e0fbd8fcae9a2ce5424b73ffd4898"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-lease/gdd.json",
+      "sha256": "21e7c86c0474f1758973ee731ab629e5a89724016f30e932ad6a847829d7ca8e"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-lease/CONTRACT.md",
+      "sha256": "665e0ca670b158a1f49455a512686eff68ee3c382a85777711132c2861ad9f54"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-lease/DECISION.md",
+      "sha256": "6de0613ea06c4fa3ea5f8330328fe261d937af0f88e038575bf127a8c40364f9"
+    }
+  ],
+  "state": "verified experimental cooperative physical-directory lease only",
+  "platform": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "filesystem": "apfs"
+  },
+  "commands": [
+    {
+      "command": "bun run rust:verify",
+      "result": "PASS",
+      "coverage": "12 Rust unit tests;34 read-only;31 wire;29 journal hash;10 process lease checks;format/clippy/schema/boundary controls",
+      "evidence": "rust-verify.txt"
+    },
+    {
+      "command": "bun run typecheck:runtime",
+      "result": "PASS"
+    },
+    {
+      "command": "bunx biome lint scripts/rust --error-on-warnings",
+      "result": "PASS"
+    }
+  ],
+  "independent_review": {
+    "agent": "writer_ownership_contract",
+    "mode": "read-only source investigation, implementation review and independent execution",
+    "finding": "Harness recursive inventory followed a cyclic symlink and failed ELOOP; fixed with explicit no-follow walk and removal of symlink fixtures before comparison",
+    "result": "Targeted rereview and independent10-check rerun PASS on macOS arm64/APFS; no unresolved material finding in bounded scope",
+    "wording_fix": "Acquisition ownership_io distinguished from sticky post-acquisition workspace_changed",
+    "qualification_limit": "Filesystem allowlist unit checks are not actual network mount or cross-platform qualification"
+  },
+  "design_review": {
+    "scope": [
+      "action.acquire_workspace_lease",
+      "component.application",
+      "component.storage"
+    ],
+    "model_revision": "sha256:3be265eb205db15c4396c56ae3c30c3b5f19f9e7a56df44362a00bdf6b32f316",
+    "code_revision": "sha256:fbf8e1a7853d9889c6577221c3f6fb76b169000d59d575297f2023441948764b",
+    "reviewer": "Main integrated assessment with independent read-only review; not host-attested GDD acceptance",
+    "KISS": "One direct kernel directory lock, no SQLite sentinel/metadata registry/takeover service. Existing product CLI/API/MCP unchanged; development example exists to execute real process acceptance.",
+    "DRY": "Runtime library owns locking/path/fs/identity rules; example and test probe do not duplicate those decisions. Independent Python participant intentionally verifies the same OS protocol without using Rust.",
+    "separation_of_concerns": "Process lease never grants domain/company write authority; runtime crate has no SQLite/credentials/network dependencies. Offline legacy enrollment and protected commit/file scope remain separate.",
+    "modularity": "Private non-Clone descriptor and stable typed error/identity API; consumers cannot forge a lease or recover a revoked lease using PID/nonce text. Actual future writer API must enforce admission before effects.",
+    "locations": [
+      "crates/rentemester-runtime/src/lib.rs",
+      "crates/rentemester-runtime/src/local.rs",
+      "crates/rentemester-runtime/examples/workspace-lease.rs",
+      "scripts/rust/verify-workspace-lease.ts"
+    ]
+  },
+  "limitations": [
+    "Not current TS product admission, writable Rust authority, logical workspace identity or offline adoption",
+    "Only development host filesystem exercised; no Windows/network/sync-filesystem/distributed qualification",
+    "Root check is an observation; protected descriptor-relative writes/commit fencing remain required",
+    "No full R12 completion, no IPC/client reconnect or company authorization",
+    "Already-open/unpatched TypeScript writers ignore this cooperative protocol; full ingress and offline adoption remain mandatory",
+    "Source hashes bind named changed anchors, not full transitive application acceptance"
+  ],
+  "mapping_correction": "R12 only: R43 is API-client/cache work. Previous wording and readiness preserved in history/v2."
+}

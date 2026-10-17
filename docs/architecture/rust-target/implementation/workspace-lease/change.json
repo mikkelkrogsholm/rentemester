@@ -1,0 +1,27 @@
+{
+  "base_code": "0e6c9aa1183246ef712ad12471c0786ced468c69",
+  "previous_increment": "journal-hashes-1",
+  "scope": "R12 cooperative physical process lease foundation",
+  "new_ids": [
+    "action.acquire_workspace_lease"
+  ],
+  "mandate": "User active goal for full Rust platform on codex/rust-platform; no live adoption/deployment permission inferred",
+  "write_scope": [
+    "crates/rentemester-runtime",
+    "Cargo.toml",
+    "Cargo.lock",
+    "scripts/rust/verify.ts",
+    "scripts/rust/verify-workspace-lease.ts",
+    "docs/architecture/rust-target/implementation"
+  ],
+  "readiness": "sha256:3be265eb205db15c4396c56ae3c30c3b5f19f9e7a56df44362a00bdf6b32f316",
+  "refinement": "Initial model authoring errors retained in readiness.json/readiness-v2.json; first specified contract/readiness preserved in history/v1. Current wording distinguishes acquisition IO failure from sticky guard invalidation. Full goal/prerequisites preserved. Issue mapping corrected to R12 only; previous normative bytes/readiness preserved in history/v2.",
+  "remaining_gates": [
+    "all legacy mutation admission including file-only/retained handles/restore/jobs/auth",
+    "stable physical and logical workspace/company binding",
+    "offline adoption and no direct-writer fallback",
+    "authenticated IPC lifecycle",
+    "transactional migrations and revocation fencing",
+    "full OS/storage qualification"
+  ]
+}

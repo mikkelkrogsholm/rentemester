@@ -1,0 +1,53 @@
+{
+  "format": "gdd-report/0.2",
+  "tool": {
+    "name": "gdd-validator",
+    "version": "0.8.0"
+  },
+  "spec_revision": "sha256:9e65f3a0c1cc6b1b6682f648995b0c9fa9c7df46ae5b6eaad924da1e39004fed",
+  "profiles": [
+    "readiness"
+  ],
+  "scope": [
+    "action.acquire_workspace_lease"
+  ],
+  "checks": [
+    {
+      "check_id": "representation.schema",
+      "dimension": "model",
+      "result": "PASS",
+      "scope": [],
+      "reason": "Local JSON Schema validation.",
+      "diagnostics": []
+    },
+    {
+      "check_id": "model.semantics",
+      "dimension": "model",
+      "result": "PASS",
+      "scope": [],
+      "reason": "Core references, endpoints, identity, refinement, machines, types and declared extension data checked.",
+      "diagnostics": []
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Error workspace_busy needs negative/boundary scenario.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Error workspace_busy needs negative/boundary scenario.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.acquire_workspace_lease"
+          },
+          "related_ids": [
+            "action.acquire_workspace_lease"
+          ]
+        }
+      ]
+    }
+  ]
+}

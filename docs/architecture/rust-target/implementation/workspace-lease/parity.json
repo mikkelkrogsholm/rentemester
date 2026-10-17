@@ -1,0 +1,25 @@
+{
+  "ok": true,
+  "scope": "cooperative physical-directory process lease only",
+  "checks": 10,
+  "passed": [
+    "distinct processes exclude same root; independent roots, explicit release, identity and source inventory",
+    "four simultaneous real contenders produce exactly one holder",
+    "hung/live owner remains busy despite stale/reused PID, nonce and missing/replaced metadata",
+    "kernel reclaims on forced process death and EOF, without stale-lock deletion",
+    "final symlinks refuse including slash/dot; ancestor aliases lock same physical scope",
+    "missing/file/empty/parent roots refuse without creation; relative root binds acquisition directory",
+    "moved/replaced path invalidates old root; replacement is explicitly different physical scope, not logical adoption",
+    "exec child remains live while next owner acquires: CLOEXEC prevents inherited hidden lease; parent reaps child",
+    "independent Python flock participant and Rust exclude each other in both directions; no legacy ingress claim",
+    "source file inventories unchanged and all foreground process probes reaped"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "filesystem": "apfs",
+  "limits": [
+    "Not current TS product admission, writable Rust authority, logical workspace identity or offline adoption",
+    "Only development host filesystem exercised; no Windows/network/sync-filesystem/distributed qualification",
+    "Root check is an observation; protected descriptor-relative writes/commit fencing remain required"
+  ]
+}

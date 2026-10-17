@@ -1,0 +1,366 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Cooperative workspace process lease",
+    "goal": "Establish crash-safe cooperative runtime exclusion before writers.",
+    "scope": "Bounded R12/R43 foundation; no ledger writes, legacy takeover, IPC, logical identity, company authority or full epic completion."
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Own development process example input/status lifecycle.",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Own development process example input/status lifecycle.",
+        "rationale": "Use cases have one explicit public boundary.",
+        "excludes": [
+          "Hosted identity and mutations"
+        ]
+      },
+      "interfaces": [
+        "action.acquire_workspace_lease"
+      ]
+    },
+    "component.domain": {
+      "kind": "component",
+      "description": "Own exact amounts, dates and pure report aggregation.",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Own exact amounts, dates and pure report aggregation.",
+        "rationale": "Keep accounting arithmetic separate from transport/storage.",
+        "excludes": [
+          "SQL, filesystem, network and UI"
+        ]
+      },
+      "interfaces": []
+    },
+    "component.storage": {
+      "kind": "component",
+      "description": "Own cooperative kernel directory lock and physical identity lifetime.",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Own cooperative kernel directory lock and physical identity lifetime.",
+        "rationale": "SQLite sidecars require isolated recovery without touching source.",
+        "excludes": [
+          "Accounting write authority, migrations and hosted access control"
+        ]
+      },
+      "interfaces": []
+    },
+    "action.acquire_workspace_lease": {
+      "kind": "action",
+      "description": "Acquire and maintain an explicit physical directory process lease without granting write authority.",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        },
+        {
+          "source": "source.decision",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "workspace_path": {
+            "type": "string",
+            "min_length": 1
+          }
+        },
+        "context": {
+          "mode": {
+            "type": "enum",
+            "values": [
+              "local_operator"
+            ]
+          }
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "root_identity": {
+              "type": "object"
+            },
+            "scope": {
+              "type": "enum",
+              "values": [
+                "cooperative_process_lease_only"
+              ]
+            }
+          },
+          "required": [
+            "root_identity",
+            "scope"
+          ]
+        },
+        "errors": {
+          "invalid_root": "Reject empty/parent-component lexical root before open.",
+          "workspace_unavailable": "Reject missing/file/symlink/inaccessible root without creation.",
+          "workspace_busy": "Return kernel lock contention without waiting or takeover.",
+          "unsupported_filesystem": "Refuse unsupported filesystem family.",
+          "unsupported_platform": "Refuse nonqualified platform.",
+          "ownership_io": "Refuse kernel/stat failure without returning partial capability.",
+          "workspace_changed": "Permanently invalidate root-identity loss."
+        },
+        "preconditions": [
+          "Explicit local directory authority; same-host cooperative protocol; no write authorization inferred."
+        ],
+        "postconditions": [
+          "At most one cooperative process holds a lease on one physical root.",
+          "No source content or lock/metadata files are created or modified.",
+          "Drop/process death releases kernel lease; identity loss stays invalid until Drop."
+        ],
+        "external_effects": [
+          "Open/read/stat/lock a directory descriptor; retain it until Drop. No ledger/config/network/credential effects."
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Only physical cooperative lease, never company or writer authority.",
+            "scenarios": [
+              "scenario.isolation"
+            ]
+          },
+          "idempotency": {
+            "relevant": false,
+            "rationale": "Lifetime kernel acquisition has no durable mutation receipt.",
+            "scenarios": []
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Paths, physical identities and platform/filesystem restrictions.",
+            "scenarios": [
+              "scenario.boundary",
+              "scenario.usage"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Kernel exclusion across actual processes/aliases.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Failed acquisition returns no capability and closes handles.",
+            "scenarios": [
+              "scenario.atomic"
+            ]
+          }
+        },
+        "error_cases": {
+          "invalid_root": [
+            "scenario.usage"
+          ],
+          "workspace_unavailable": [
+            "scenario.isolation"
+          ],
+          "workspace_busy": [
+            "scenario.busy"
+          ],
+          "unsupported_filesystem": [
+            "scenario.boundary"
+          ],
+          "unsupported_platform": [
+            "scenario.boundary"
+          ],
+          "ownership_io": [
+            "scenario.atomic"
+          ],
+          "workspace_changed": [
+            "scenario.root_changed"
+          ]
+        }
+      },
+      "behavior": "Normalize explicit root, open no-follow directory, inspect filesystem/identity, nonblocking exclusive flock, revalidate root identity, retain private handle; explicit revalidation permanently fails after move/replacement; Drop/crash releases. No PID/metadata takeover and no write authority."
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "One held lease, no source content changes, subsequent acquisition succeeds.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "An existing qualified synthetic directory.",
+        "when": "Acquire then release/EOF.",
+        "then": "One held lease, no source content changes, subsequent acquisition succeeds."
+      }
+    },
+    "scenario.isolation": {
+      "kind": "scenario",
+      "description": "Different roots are independent; unsafe roots refuse without creation; no company/write authority granted.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Two roots or missing/file/final-symlink roots.",
+        "when": "Attempt acquisition.",
+        "then": "Different roots are independent; unsafe roots refuse without creation; no company/write authority granted."
+      }
+    },
+    "scenario.boundary": {
+      "kind": "scenario",
+      "description": "Known qualified host works; unknown/network families and nonqualified platforms refuse.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Qualified development host plus unsupported filesystem/platform classifier fixtures.",
+        "when": "Evaluate admission.",
+        "then": "Known qualified host works; unknown/network families and nonqualified platforms refuse."
+      }
+    },
+    "scenario.usage": {
+      "kind": "scenario",
+      "description": "Typed invalid_root or workspace_unavailable, no created files.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Empty input, parent components, trailing symlink/dot variants.",
+        "when": "Attempt root acquisition.",
+        "then": "Typed invalid_root or workspace_unavailable, no created files."
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Exactly one holder; contenders get workspace_busy; stale/PID/metadata edits and ordinary descriptor closes do not grant takeover.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Real Rust and cooperative cross-language processes, same-process duplicate opens and aliases.",
+        "when": "Acquire same physical root while held.",
+        "then": "Exactly one holder; contenders get workspace_busy; stale/PID/metadata edits and ordinary descriptor closes do not grant takeover."
+      }
+    },
+    "scenario.atomic": {
+      "kind": "scenario",
+      "description": "No partial capability/file effects; all test children reaped; crash releases only on kernel handle closure.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Kernel/stat admission failure or process killed while holding.",
+        "when": "Acquire/fail or terminate holder.",
+        "then": "No partial capability/file effects; all test children reaped; crash releases only on kernel handle closure."
+      }
+    },
+    "scenario.root_changed": {
+      "kind": "scenario",
+      "description": "workspace_changed is sticky, old descriptor stays locked until Drop and no replacement path is treated as the old scope.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Held root moved/replaced then restored.",
+        "when": "Ensure current root repeatedly.",
+        "then": "workspace_changed is sticky, old descriptor stays locked until Drop and no replacement path is treated as the old scope."
+      }
+    },
+    "scenario.repeat": {
+      "kind": "scenario",
+      "description": "CLOEXEC permits next holder; no invisible inherited owner after exec.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "A held lease with an exec child.",
+        "when": "Release holder while exec child remains alive.",
+        "then": "CLOEXEC permits next holder; no invisible inherited owner after exec."
+      }
+    },
+    "scenario.busy": {
+      "kind": "scenario",
+      "description": "Contender gets typed busy without forced takeover.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "A live process holds the same physical root.",
+        "when": "Attempt nonblocking acquisition.",
+        "then": "Return workspace_busy with no capability, no wait and no filesystem content effects."
+      }
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.lease.owner",
+      "from": "action.acquire_workspace_lease",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal.lease",
+      "from": "scenario.normal",
+      "to": "action.acquire_workspace_lease",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.isolation.lease",
+      "from": "scenario.isolation",
+      "to": "action.acquire_workspace_lease",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.boundary.lease",
+      "from": "scenario.boundary",
+      "to": "action.acquire_workspace_lease",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.usage.lease",
+      "from": "scenario.usage",
+      "to": "action.acquire_workspace_lease",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent.lease",
+      "from": "scenario.concurrent",
+      "to": "action.acquire_workspace_lease",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.atomic.lease",
+      "from": "scenario.atomic",
+      "to": "action.acquire_workspace_lease",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.root_changed.lease",
+      "from": "scenario.root_changed",
+      "to": "action.acquire_workspace_lease",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.repeat.lease",
+      "from": "scenario.repeat",
+      "to": "action.acquire_workspace_lease",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.busy.lease",
+      "from": "scenario.busy",
+      "to": "action.acquire_workspace_lease",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "CONTRACT.md",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "3d8dac0c7d9f709d59cc38b391d1e9739f88f918108c19fcfb399ebedfe3b4b6"
+      }
+    },
+    "source.decision": {
+      "role": "input",
+      "title": "DECISION.md",
+      "uri": "DECISION.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "48cff6bfab55c0c1e4e5a5bb739b6549ec83c2058b33d901988a566c7a960b7b"
+      }
+    }
+  }
+}
