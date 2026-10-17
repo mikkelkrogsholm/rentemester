@@ -1,15 +1,15 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "migration-rehearsal-1",
-  "code_revision": "sha256:fb8884dbef581f5d1c09e0c6854ef31adc3d43da9b7696876c7c11ad1b7153d6",
-  "spec_revision": "sha256:df7bd81330624834731d94ff463a10dc67583807b1467847832951b2b50b39b4",
-  "state": "verified-experimental-private-copy-company-suffix",
+  "current_increment": "control-migrations-1",
+  "code_revision": "sha256:1d2e107534a71505087a0c8800e3b91110781df9323bab1aef2a69794b14b3f9",
+  "spec_revision": "sha256:40d73f9a3accd70ad2194abcaa1b27df88495fff38917e411b4b9e888212f377",
+  "state": "verified-experimental-private-copy-control-migrations",
   "issues_closed": [],
   "next": [
-    "Complete R12 full lifetime legacy mutation admission and stable physical/logical workspace/company binding before Rust writes",
-    "Port control migrations and company baseline/older normalization with actual parity; preserve offline adoption and authority gates",
-    "Continue all55 issues through shared Rust server/CLI/MCP, React, GPUI local/remote, qualification and cutover"
+    "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
+    "Port company baseline/application normalization and older replay; preserve offline adoption and authority/revocation gates",
+    "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -26,16 +26,17 @@
     "state": "verified-experimental-readonly"
   },
   "evidence": {
-    "report": "migration-rehearsal/evidence.json",
-    "parity": "migration-rehearsal/parity.json",
-    "rust_tests_passed": 17,
-    "ignored_subprocess_helpers": 1,
-    "migration_checks": 25,
+    "report": "control-migrations/evidence.json",
+    "parity": "control-migrations/parity.json",
+    "rust_tests_passed": 22,
+    "ignored_subprocess_helpers": 2,
+    "control_checks": 54,
     "previous_checks_retained": [
       34,
       31,
       29,
-      10
+      10,
+      25
     ],
     "writer_authority": false,
     "whole_issues_closed": false
@@ -58,6 +59,12 @@
       "code_revision": "sha256:fbf8e1a7853d9889c6577221c3f6fb76b169000d59d575297f2023441948764b",
       "spec_revision": "sha256:3be265eb205db15c4396c56ae3c30c3b5f19f9e7a56df44362a00bdf6b32f316",
       "state": "verified-experimental-cooperative-process-lease"
+    },
+    {
+      "current_increment": "migration-rehearsal-1",
+      "code_revision": "sha256:fb8884dbef581f5d1c09e0c6854ef31adc3d43da9b7696876c7c11ad1b7153d6",
+      "spec_revision": "sha256:df7bd81330624834731d94ff463a10dc67583807b1467847832951b2b50b39b4",
+      "state": "verified-experimental-private-copy-company-suffix"
     }
   ]
 }

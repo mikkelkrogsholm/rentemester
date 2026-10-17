@@ -1,0 +1,152 @@
+[
+  {
+    "id": 1,
+    "name": "rentemester-workspace-control-baseline-v1",
+    "checksum": "8358aef2635b37b47baf56a39f424f9aff3dcb7c17dbc2c3450803a3e09eaac1"
+  },
+  {
+    "id": 2,
+    "name": "rentemester-better-auth-foundation-v2",
+    "checksum": "67a59795585ea55c9eefbec1be63c9a716a55ede779c89bec63c2b9f77ce80bf"
+  },
+  {
+    "id": 3,
+    "name": "rentemester-workspace-access-events-v3",
+    "checksum": "c2b1437243f8e7389214f6461e6ffdca15a366427693e8227ba743a6916f33bf"
+  },
+  {
+    "id": 4,
+    "name": "rentemester-workspace-bootstrap-saga-v4",
+    "checksum": "13bde090a7226a946fcf508219937954fa399a1f9fe2821401886a84ce150c2a"
+  },
+  {
+    "id": 5,
+    "name": "rentemester-session-assurance-v5",
+    "checksum": "5faac57c09dcf8d7e3ee1336e89b8a0e7a901747833e1173007fe080379b0f44"
+  },
+  {
+    "id": 6,
+    "name": "rentemester-auth-evidence-v6",
+    "checksum": "e19f1ee45191ef58864b204a889126fab04ce7a13ca7df2c70cb7924a9bd5274"
+  },
+  {
+    "id": 7,
+    "name": "rentemester-group-structure-v7",
+    "checksum": "95e7d01cf05cdccee597fc59559726cc1631eca9fd1e81bdf5ab2956e3f006b6"
+  },
+  {
+    "id": 8,
+    "name": "rentemester-document-access-audit-v8",
+    "checksum": "e6fce5a7611527480449d26fc9cd296b42d5b8b742766703abc263915f82a748"
+  },
+  {
+    "id": 9,
+    "name": "rentemester-intercompany-mapping-v9",
+    "checksum": "f3a482eec01518afc2c867b395667a43dd22a214a973827e5271530772d6f881"
+  },
+  {
+    "id": 10,
+    "name": "rentemester-consolidation-elimination-v10",
+    "checksum": "5b08711067ed6e7be968b110fa4d5e630f27b855edbf98aa4cdc1bb55d87629e"
+  },
+  {
+    "id": 11,
+    "name": "rentemester-consolidation-profile-v11",
+    "checksum": "8202a1782de7a84d7f35df228270a1926c538f5799ef80a31d76e3c5927eae6a"
+  },
+  {
+    "id": 12,
+    "name": "rentemester-auth-recovery-telemetry-v12",
+    "checksum": "bb9f9dea7aed5ed09a50285019bf3f94749ed874ccdb6647d217604ce779e87a"
+  },
+  {
+    "id": 13,
+    "name": "rentemester-authorization-denial-audit-v13",
+    "checksum": "eb46c90fdbbb12ab02d14f947350cc94c174521c85d382c037d6332337f60d08"
+  },
+  {
+    "id": 14,
+    "name": "rentemester-workspace-invitations-v14",
+    "checksum": "2ab1673daa43416e51031243b7a414ca2a1434b42e48374bb9562643241cfc85"
+  },
+  {
+    "id": 15,
+    "name": "rentemester-party-registry-v15",
+    "checksum": "15b0e17b38552b3f24bf23f6fba4b16d277c537e7714b9004706c9957e05ea97"
+  },
+  {
+    "id": 16,
+    "name": "rentemester-corporate-records-v16",
+    "checksum": "971578f419b70ca034ef4ef5f0a7596af14d2a5b138a9f1986f9fb7c67886800"
+  },
+  {
+    "id": 17,
+    "name": "rentemester-workspace-service-principals-v17",
+    "checksum": "15b5d5fe4da768c10a015c4f362ca0f61046719a50e542682c681be6be27dee5"
+  },
+  {
+    "id": 18,
+    "name": "rentemester-workspace-service-principal-saga-v18",
+    "checksum": "76bc8d098370055957b5e376cf245e203d96bc4a1ccd46e0bfbe1ffb1fa5bb9b"
+  },
+  {
+    "id": 19,
+    "name": "rentemester-party-assertions-v19",
+    "checksum": "c9538ec5c0b7848c936d817b352eb52625a9ad7b02e68e85046e9aaac020ab60"
+  },
+  {
+    "id": 20,
+    "name": "rentemester-corporate-record-governance-v20",
+    "checksum": "e6a09f5134d49e82e67c9e3670b53e35fdda2aa6e7ffe9b57b876d8c6f4f414f"
+  },
+  {
+    "id": 21,
+    "name": "rentemester-company-knowledge-v21",
+    "checksum": "201ccb4479dc1815e2ca4b471145703691e0d0a1802fe00177ccbe4b58dfab3e"
+  },
+  {
+    "id": 22,
+    "name": "rentemester-ownership-graph-v22",
+    "checksum": "623d781cff8a5965f46a51bafec8711577752c8418b6c227c6d00a15f98da2ee"
+  },
+  {
+    "id": 23,
+    "name": "rentemester-corporate-record-scope-integrity-v23",
+    "checksum": "e93a3b5d0a84f3717911bfb4ec427d54382510e7cb06a6d893c53a75570060fe"
+  },
+  {
+    "id": 24,
+    "name": "rentemester-ownership-fact-lifecycle-v24",
+    "checksum": "00bc0385cc15bf49fe1dc2518f9dc16ea18fd3abb3ca864a066a59cc553e5bf3"
+  },
+  {
+    "id": 25,
+    "name": "rentemester-workspace-document-inbox-v25",
+    "checksum": "863ffdda2052039fc27a92c8fa9b481bec81a8d71740ec38d1e2a1d5d7835293"
+  },
+  {
+    "id": 26,
+    "name": "rentemester-workspace-inbox-handoff-claims-v26",
+    "checksum": "9beea7662c6e36c49f39f55c213acf42729ef6438a3f7910ecf720a17704a370"
+  },
+  {
+    "id": 27,
+    "name": "rentemester-intercompany-dispositions-v27",
+    "checksum": "c8061487475d8e1247f09d534e64f24164270f1a3d50e4c316e02593a2dddaca"
+  },
+  {
+    "id": 28,
+    "name": "rentemester-intercompany-disposition-lifecycle-v28",
+    "checksum": "05c1140fcfb2161037ca812a2bfb67ebd488a7f51f785ffac5862329bd23d8bb"
+  },
+  {
+    "id": 29,
+    "name": "rentemester-workspace-inbox-single-assignment-v29",
+    "checksum": "4c6b8b72bde8f76c07f6fb0f40c5a7e57876f92de7626cf120eaa4c6de7e742d"
+  },
+  {
+    "id": 30,
+    "name": "rentemester-document-party-role-taxonomy-v30",
+    "checksum": "753b3f3653e286053f0e7592b90824ac647c4a7531c816af128c03d8001ac8e6"
+  }
+]

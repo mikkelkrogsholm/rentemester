@@ -44,7 +44,7 @@ type ObjectRow = { kind: string; name: string; table: string; sql: string };
 function schema(db: Database): ObjectRow[] {
 	return db
 		.query(
-			"SELECT type AS kind,name,tbl_name AS 'table',sql FROM sqlite_schema WHERE name NOT LIKE 'sqlite_%' ORDER BY name",
+			"SELECT type AS kind,name,tbl_name AS 'table',sql FROM sqlite_schema WHERE substr(name,1,7) <> 'sqlite_' ORDER BY name",
 		)
 		.all() as ObjectRow[];
 }

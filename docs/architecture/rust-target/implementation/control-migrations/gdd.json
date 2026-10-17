@@ -1,0 +1,349 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Private workspace-control migration rehearsal",
+    "goal": "Port all30 control migrations with whole-suffix atomicity and opaque credential preservation.",
+    "scope": "R12 private-copy control prefixes0\u201330 only; full writer admission/authority/platform mandate preserved."
+  },
+  "nodes": {
+    "component.storage": {
+      "kind": "component",
+      "description": "Own bounded private SQLite migration rehearsal.",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Capture, recover, validate, migrate and discard private copies.",
+        "rationale": "Original writer admission is not yet complete.",
+        "excludes": [
+          "Live migrations, domain writes and promotion"
+        ]
+      },
+      "interfaces": [
+        "action.rehearse_control_migration"
+      ]
+    },
+    "action.rehearse_control_migration": {
+      "kind": "action",
+      "description": "Rehearse exact workspace-control migrations privately with full-prefix schema validation.",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "workspace_path": {
+            "type": "string",
+            "min_length": 1
+          }
+        },
+        "context": {
+          "mode": {
+            "type": "enum",
+            "values": [
+              "local_operator"
+            ]
+          }
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "from_version": {
+              "type": "integer"
+            },
+            "to_version": {
+              "type": "integer"
+            },
+            "writer_authority": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "from_version",
+            "to_version",
+            "writer_authority"
+          ]
+        },
+        "errors": {
+          "invalid_input": "Refuse as specified in CONTRACT.md.",
+          "source_unavailable": "Refuse as specified in CONTRACT.md.",
+          "source_changed": "Refuse as specified in CONTRACT.md.",
+          "unsupported_schema": "Refuse as specified in CONTRACT.md.",
+          "invalid_ledger": "Refuse as specified in CONTRACT.md.",
+          "migration_failed": "Refuse as specified in CONTRACT.md.",
+          "storage_failure": "Refuse as specified in CONTRACT.md."
+        },
+        "preconditions": [
+          "Explicit local read authority; strict supported prefix; no migration authority inferred."
+        ],
+        "postconditions": [
+          "Original source and company files unchanged; private copy closed/deleted.",
+          "Whole pending suffix commits atomically, prior provenance preserved, v5 explicitly invalidates all sessions and backfills enabled-user evidence.",
+          "Credential rows/digests/identifiers and database-supplied exception text never appear in public output."
+        ],
+        "external_effects": [
+          "Read/stat source files; recover/migrate/delete private disposable files only."
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Read authority only; credentials remain opaque and no live writer authority.",
+            "scenarios": [
+              "scenario.isolation"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Current history is no-op.",
+            "scenarios": [
+              "scenario.repeat",
+              "scenario.history"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Strict history/artifact/schema limits.",
+            "scenarios": [
+              "scenario.history",
+              "scenario.checkpoint",
+              "scenario.usage"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Capture stable source while legacy reader/writer may be active.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Real transactional rollback and process death.",
+            "scenarios": [
+              "scenario.failure",
+              "scenario.crash"
+            ]
+          }
+        },
+        "error_cases": {
+          "invalid_input": [
+            "scenario.usage"
+          ],
+          "source_unavailable": [
+            "scenario.isolation"
+          ],
+          "source_changed": [
+            "scenario.isolation"
+          ],
+          "unsupported_schema": [
+            "scenario.history"
+          ],
+          "invalid_ledger": [
+            "scenario.checkpoint"
+          ],
+          "migration_failed": [
+            "scenario.failure"
+          ],
+          "storage_failure": [
+            "scenario.failure"
+          ]
+        }
+      },
+      "behavior": "Verify all raw artifacts, capture existing private control source, validate strict prefix/full schema, compare opaque data with explicit v5 session/MFA transformation, run entire pending suffix in one immediate transaction, validate before commit, close/delete copy and return sanitized public evidence."
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Whole canonical schema/history parity and unchanged source inventories.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Direct exact-artifact synthetic prefix0\u201330.",
+        "when": "Rehearse all pending control migrations and compare independent TypeScript result.",
+        "then": "Whole canonical schema/history parity and unchanged source inventories."
+      }
+    },
+    "scenario.history": {
+      "kind": "scenario",
+      "description": "Reject without repair or checksum adoption.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Gapped/newer/altered/missing strict history or artifact drift.",
+        "when": "Attempt rehearsal.",
+        "then": "Reject without repair or checksum adoption."
+      }
+    },
+    "scenario.checkpoint": {
+      "kind": "scenario",
+      "description": "Typed sanitized refusal with no secret data or source effects.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Extra/altered/missing canonical objects, invalid FK/provenance.",
+        "when": "Attempt rehearsal.",
+        "then": "Typed sanitized refusal with no secret data or source effects."
+      }
+    },
+    "scenario.isolation": {
+      "kind": "scenario",
+      "description": "No company/source effects and no canary/identifier/data digest leakage.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Missing/linked/changing control source or credential canaries in valid opaque rows.",
+        "when": "Capture/rehearse or trigger refusal.",
+        "then": "No company/source effects and no canary/identifier/data digest leakage."
+      }
+    },
+    "scenario.failure": {
+      "kind": "scenario",
+      "description": "All pending DDL/history/data changes roll back, including earlier session invalidation.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Valid prefix28 with conflicting active assignments or test-private history insertion failure.",
+        "when": "Run pending suffix transaction.",
+        "then": "All pending DDL/history/data changes roll back, including earlier session invalidation."
+      }
+    },
+    "scenario.crash": {
+      "kind": "scenario",
+      "description": "Entire old/new prefix including sessions; no half history, all children reaped.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Disposable child with pre-v5 users and sessions.",
+        "when": "Kill during v5, later after v5, before final commit or after commit.",
+        "then": "Entire old/new prefix including sessions; no half history, all children reaped."
+      }
+    },
+    "scenario.usage": {
+      "kind": "scenario",
+      "description": "Exit2 invalid_input without effects.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Invalid command flags.",
+        "when": "Invoke CLI.",
+        "then": "Exit2 invalid_input without effects."
+      }
+    },
+    "scenario.guards": {
+      "kind": "scenario",
+      "description": "Audit/history updates/deletes refuse; enrollment revokes only enrolled-user sessions.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Migrated synthetic audit/history and MFA/non-MFA sessions.",
+        "when": "Attempt immutable changes and MFA enrollment.",
+        "then": "Audit/history updates/deletes refuse; enrollment revokes only enrolled-user sessions."
+      }
+    },
+    "scenario.repeat": {
+      "kind": "scenario",
+      "description": "No migration/data repair; aggregate session effects zero.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Current30 canonical source.",
+        "when": "Rehearse repeatedly.",
+        "then": "No migration/data repair; aggregate session effects zero."
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Private recovery or bounded refusal; original files unchanged.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Synthetic independent connection retaining live control WAL.",
+        "when": "Capture and rehearse.",
+        "then": "Private recovery or bounded refusal; original files unchanged."
+      }
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.rehearse_control_migration",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.history",
+      "from": "scenario.history",
+      "to": "action.rehearse_control_migration",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.checkpoint",
+      "from": "scenario.checkpoint",
+      "to": "action.rehearse_control_migration",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.isolation",
+      "from": "scenario.isolation",
+      "to": "action.rehearse_control_migration",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.failure",
+      "from": "scenario.failure",
+      "to": "action.rehearse_control_migration",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.crash",
+      "from": "scenario.crash",
+      "to": "action.rehearse_control_migration",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.usage",
+      "from": "scenario.usage",
+      "to": "action.rehearse_control_migration",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.guards",
+      "from": "scenario.guards",
+      "to": "action.rehearse_control_migration",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.repeat",
+      "from": "scenario.repeat",
+      "to": "action.rehearse_control_migration",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.storage.owns",
+      "from": "action.rehearse_control_migration",
+      "to": "component.storage",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.rehearse_control_migration",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Workspace control migration rehearsal contract",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "cfa48f4942fa38b1ca3cdf06269730ca6f263e10bfc7a25e394e83676f0d333c"
+      }
+    }
+  }
+}

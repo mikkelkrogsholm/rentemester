@@ -26,10 +26,10 @@ struct Step {
 }
 #[derive(Debug, Serialize, PartialEq, Eq)]
 pub struct SchemaObject {
-    kind: String,
-    name: String,
-    table: String,
-    sql: String,
+    pub(super) kind: String,
+    pub(super) name: String,
+    pub(super) table: String,
+    pub(super) sql: String,
 }
 #[derive(Debug, Serialize)]
 pub struct AppliedMigration {
@@ -84,13 +84,32 @@ fn steps(raw: &[&str], expected: &[Migration]) -> Result<Vec<Step>, Error> {
         .collect()
 }
 fn history(db: &Connection, expected: &[Migration]) -> Result<Vec<Vec<String>>, Error> {
-    let present: bool = db.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE name='schema_migrations' AND type='table')", [], |r| r.get(0)).map_err(invalid)?;
+    let rows = strict_history(db, "schema_migrations", expected)?;
+    if !(32..=36).contains(&rows.len()) {
+        return Err(unsupported(
+            "only strict company prefixes32–36 qualify for this rehearsal",
+        ));
+    }
+    Ok(rows)
+}
+pub(super) fn strict_history(
+    db: &Connection,
+    table: &str,
+    expected: &[Migration],
+) -> Result<Vec<Vec<String>>, Error> {
+    let present: bool = db
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE name=?1 AND type='table')",
+            [table],
+            |r| r.get(0),
+        )
+        .map_err(invalid)?;
     if !present {
         return Err(unsupported("strict migration history table required"));
     }
     require_columns(
         db,
-        "schema_migrations",
+        table,
         &[
             ("id", "INTEGER", 0, 1),
             ("name", "TEXT", 1, 0),
@@ -100,7 +119,7 @@ fn history(db: &Connection, expected: &[Migration]) -> Result<Vec<Vec<String>>, 
             ("applied_by_commit", "TEXT", 0, 0),
         ],
     )?;
-    let mut query = db.prepare("SELECT id,name,checksum,applied_at,applied_by_version,applied_by_commit FROM schema_migrations ORDER BY id").map_err(|_| unsupported("strict history required"))?;
+    let mut query = db.prepare(&format!("SELECT id,name,checksum,applied_at,applied_by_version,applied_by_commit FROM {} ORDER BY id", quote(table))).map_err(|_| unsupported("strict history required"))?;
     let mut rows = query.query([]).map_err(invalid)?;
     let mut result = Vec::new();
     while let Some(row) = rows.next().map_err(invalid)? {
@@ -129,14 +148,9 @@ fn history(db: &Connection, expected: &[Migration]) -> Result<Vec<Vec<String>>, 
             serde_json::to_string(&commit).map_err(invalid)?,
         ]);
     }
-    if !(32..=36).contains(&result.len()) {
-        return Err(unsupported(
-            "only strict company prefixes32–36 qualify for this rehearsal",
-        ));
-    }
     Ok(result)
 }
-fn integrity(db: &Connection) -> Result<(), Error> {
+pub(super) fn integrity(db: &Connection) -> Result<(), Error> {
     let mut query = db.prepare("PRAGMA quick_check").map_err(invalid)?;
     let checks = query
         .query_map([], |r| r.get::<_, String>(0))
@@ -158,8 +172,8 @@ fn integrity(db: &Connection) -> Result<(), Error> {
     }
     Ok(())
 }
-fn schema(db: &Connection) -> Result<Vec<SchemaObject>, Error> {
-    db.prepare("SELECT type,name,tbl_name,sql FROM sqlite_schema WHERE name NOT LIKE 'sqlite_%' ORDER BY name").map_err(invalid)?
+pub(super) fn schema(db: &Connection) -> Result<Vec<SchemaObject>, Error> {
+    db.prepare("SELECT type,name,tbl_name,sql FROM sqlite_schema WHERE substr(name,1,7) <> 'sqlite_' ORDER BY name").map_err(invalid)?
         .query_map([], |r| Ok(SchemaObject { kind:r.get(0)?, name:r.get(1)?, table:r.get(2)?, sql:r.get(3)? })).map_err(invalid)?
         .collect::<Result<Vec<_>, _>>().map_err(invalid)
 }
@@ -192,7 +206,7 @@ fn checkpoint(db: &Connection, steps: &[Step], version: usize) -> Result<Vec<Sch
     }
     Ok(actual)
 }
-fn quote(name: &str) -> String {
+pub(super) fn quote(name: &str) -> String {
     format!("\"{}\"", name.replace('"', "\"\""))
 }
 fn business_tables(db: &Connection) -> Result<Vec<String>, Error> {
@@ -202,7 +216,7 @@ fn business_tables(db: &Connection) -> Result<Vec<String>, Error> {
         .map(|o| o.name)
         .collect())
 }
-fn digest(db: &Connection, tables: &[String]) -> Result<String, Error> {
+pub(super) fn digest(db: &Connection, tables: &[String]) -> Result<String, Error> {
     let mut total = Sha256::new();
     for table in tables {
         total.update((table.len() as u64).to_le_bytes());
@@ -310,23 +324,7 @@ fn rehearse(
 pub fn rehearse_company_migration(company: &Path) -> Result<RehearsalReport, Error> {
     let expected = catalogue()?;
     let steps = steps(&ARTIFACTS, &expected)?;
-    let Snapshot { conn, _dir } = Snapshot::capture_unvalidated(company)?;
-    let result = (|| {
-        conn.close()
-            .map_err(|(_, error)| Error::new("storage_failure", error.to_string()))?;
-        let mut db = Connection::open_with_flags(
-            _dir.path().join("snapshot.sqlite"),
-            rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE,
-        )
-        .map_err(invalid)?;
-        let result = rehearse(&mut db, &steps, &expected);
-        db.close()
-            .map_err(|(_, error)| Error::new("storage_failure", error.to_string()))?;
-        result
-    })();
-    _dir.close()
-        .map_err(|error| Error::new("storage_failure", error.to_string()))?;
-    result
+    Snapshot::capture_unvalidated(company)?.with_writable_copy(|db| rehearse(db, &steps, &expected))
 }
 
 #[cfg(test)]

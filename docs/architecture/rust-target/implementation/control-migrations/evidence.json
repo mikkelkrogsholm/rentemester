@@ -1,0 +1,253 @@
+{
+  "format": "rentemester-control-migration-increment/1",
+  "base_code": "fb49b856d49a8a468b57183771e5ef69125e4fc6",
+  "previous_goal_turn": "progress: committed and pushed company migration suffix at fb49b856, verified in current Git history",
+  "spec_revision": "sha256:40d73f9a3accd70ad2194abcaa1b27df88495fff38917e411b4b9e888212f377",
+  "code_revision": "sha256:1d2e107534a71505087a0c8800e3b91110781df9323bab1aef2a69794b14b3f9",
+  "assets": [
+    {
+      "path": "crates/rentemester-storage/src/control_migration.rs",
+      "sha256": "416a4265636ab8ca237258d915e6473fea9de44a31dbda567917590836d4a449"
+    },
+    {
+      "path": "crates/rentemester-storage/src/lib.rs",
+      "sha256": "a617e79276cc2f802cf5ccc8de518dded541425a9564ab89b8187744420b1fbb"
+    },
+    {
+      "path": "crates/rentemester-storage/src/snapshot.rs",
+      "sha256": "3c4cb8708c439c059b87c2692b26c62d927af4447080d808dea89c989e403c28"
+    },
+    {
+      "path": "crates/rentemester-storage/src/migration.rs",
+      "sha256": "0b7731dcd0b9d213e3c9c640ffd630e6704aa9ed4f128357ea2f9693beaa8d9e"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-workspace-schema.json",
+      "sha256": "f56992f726def0300aca5350f48f3cb3dabe0c3672f410bc6bd56bd300f8dc08"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "dfa1a9d0406596fa6482a9491459530f92e6c1d7eee4a99c525881994d84e07d"
+    },
+    {
+      "path": "scripts/rust/schema-contract.ts",
+      "sha256": "53d1bb3bb530c9d83b410f96369b40da3666159a3018a746c135518f78da2cba"
+    },
+    {
+      "path": "scripts/rust/verify-control-migrations.ts",
+      "sha256": "84bac32072905804e916cb9e40e2ab9f40b383313f1fb77afcec0051b569d9bc"
+    },
+    {
+      "path": "scripts/rust/verify-migration-rehearsal.ts",
+      "sha256": "b243782d6aa31087b84cad16ced87cdc1847d38365a8f95df44fa39e5c6729ac"
+    },
+    {
+      "path": "scripts/rust/verify-journal-hashes.ts",
+      "sha256": "3ad10976c031fde87859c72f283cea28c9e31c479338b8979553f712898e4fc1"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "af661208bbfbe8206b9fbcc9b91b3f4de8614b1d7ebea3bc0ee737c8f1c9ac7b"
+    },
+    {
+      "path": "src/core/workspace-migrations/0001-workspace-control-baseline.json",
+      "sha256": "8358aef2635b37b47baf56a39f424f9aff3dcb7c17dbc2c3450803a3e09eaac1"
+    },
+    {
+      "path": "src/core/workspace-migrations/0002-better-auth-foundation.json",
+      "sha256": "67a59795585ea55c9eefbec1be63c9a716a55ede779c89bec63c2b9f77ce80bf"
+    },
+    {
+      "path": "src/core/workspace-migrations/0003-workspace-access-events.json",
+      "sha256": "c2b1437243f8e7389214f6461e6ffdca15a366427693e8227ba743a6916f33bf"
+    },
+    {
+      "path": "src/core/workspace-migrations/0004-workspace-bootstrap-saga-v4.json",
+      "sha256": "13bde090a7226a946fcf508219937954fa399a1f9fe2821401886a84ce150c2a"
+    },
+    {
+      "path": "src/core/workspace-migrations/0005-session-assurance-v5.json",
+      "sha256": "5faac57c09dcf8d7e3ee1336e89b8a0e7a901747833e1173007fe080379b0f44"
+    },
+    {
+      "path": "src/core/workspace-migrations/0006-auth-audit-v6.json",
+      "sha256": "e19f1ee45191ef58864b204a889126fab04ce7a13ca7df2c70cb7924a9bd5274"
+    },
+    {
+      "path": "src/core/workspace-migrations/0007-group-structure-v7.json",
+      "sha256": "95e7d01cf05cdccee597fc59559726cc1631eca9fd1e81bdf5ab2956e3f006b6"
+    },
+    {
+      "path": "src/core/workspace-migrations/0008-document-access-audit-v8.json",
+      "sha256": "e6fce5a7611527480449d26fc9cd296b42d5b8b742766703abc263915f82a748"
+    },
+    {
+      "path": "src/core/workspace-migrations/0009-intercompany-mapping-v9.json",
+      "sha256": "f3a482eec01518afc2c867b395667a43dd22a214a973827e5271530772d6f881"
+    },
+    {
+      "path": "src/core/workspace-migrations/0010-consolidation-elimination-v10.json",
+      "sha256": "5b08711067ed6e7be968b110fa4d5e630f27b855edbf98aa4cdc1bb55d87629e"
+    },
+    {
+      "path": "src/core/workspace-migrations/0011-consolidation-profile-v11.json",
+      "sha256": "8202a1782de7a84d7f35df228270a1926c538f5799ef80a31d76e3c5927eae6a"
+    },
+    {
+      "path": "src/core/workspace-migrations/0012-auth-recovery-telemetry-v12.json",
+      "sha256": "bb9f9dea7aed5ed09a50285019bf3f94749ed874ccdb6647d217604ce779e87a"
+    },
+    {
+      "path": "src/core/workspace-migrations/0013-authorization-denial-audit-v13.json",
+      "sha256": "eb46c90fdbbb12ab02d14f947350cc94c174521c85d382c037d6332337f60d08"
+    },
+    {
+      "path": "src/core/workspace-migrations/0014-workspace-invitations-v14.json",
+      "sha256": "2ab1673daa43416e51031243b7a414ca2a1434b42e48374bb9562643241cfc85"
+    },
+    {
+      "path": "src/core/workspace-migrations/0015-party-registry-v15.json",
+      "sha256": "15b0e17b38552b3f24bf23f6fba4b16d277c537e7714b9004706c9957e05ea97"
+    },
+    {
+      "path": "src/core/workspace-migrations/0016-corporate-records-v16.json",
+      "sha256": "971578f419b70ca034ef4ef5f0a7596af14d2a5b138a9f1986f9fb7c67886800"
+    },
+    {
+      "path": "src/core/workspace-migrations/0017-service-principals-v17.json",
+      "sha256": "15b5d5fe4da768c10a015c4f362ca0f61046719a50e542682c681be6be27dee5"
+    },
+    {
+      "path": "src/core/workspace-migrations/0018-service-principal-saga-v18.json",
+      "sha256": "76bc8d098370055957b5e376cf245e203d96bc4a1ccd46e0bfbe1ffb1fa5bb9b"
+    },
+    {
+      "path": "src/core/workspace-migrations/0019-party-assertions-v19.json",
+      "sha256": "c9538ec5c0b7848c936d817b352eb52625a9ad7b02e68e85046e9aaac020ab60"
+    },
+    {
+      "path": "src/core/workspace-migrations/0020-corporate-record-governance-v20.json",
+      "sha256": "e6a09f5134d49e82e67c9e3670b53e35fdda2aa6e7ffe9b57b876d8c6f4f414f"
+    },
+    {
+      "path": "src/core/workspace-migrations/0021-company-knowledge-v21.json",
+      "sha256": "201ccb4479dc1815e2ca4b471145703691e0d0a1802fe00177ccbe4b58dfab3e"
+    },
+    {
+      "path": "src/core/workspace-migrations/0022-ownership-graph-v22.json",
+      "sha256": "623d781cff8a5965f46a51bafec8711577752c8418b6c227c6d00a15f98da2ee"
+    },
+    {
+      "path": "src/core/workspace-migrations/0023-corporate-record-scope-integrity-v23.json",
+      "sha256": "e93a3b5d0a84f3717911bfb4ec427d54382510e7cb06a6d893c53a75570060fe"
+    },
+    {
+      "path": "src/core/workspace-migrations/0024-ownership-fact-lifecycle-v24.json",
+      "sha256": "00bc0385cc15bf49fe1dc2518f9dc16ea18fd3abb3ca864a066a59cc553e5bf3"
+    },
+    {
+      "path": "src/core/workspace-migrations/0025-workspace-document-inbox-v25.json",
+      "sha256": "863ffdda2052039fc27a92c8fa9b481bec81a8d71740ec38d1e2a1d5d7835293"
+    },
+    {
+      "path": "src/core/workspace-migrations/0026-workspace-inbox-handoff-claims-v26.json",
+      "sha256": "9beea7662c6e36c49f39f55c213acf42729ef6438a3f7910ecf720a17704a370"
+    },
+    {
+      "path": "src/core/workspace-migrations/0027-intercompany-dispositions-v27.json",
+      "sha256": "c8061487475d8e1247f09d534e64f24164270f1a3d50e4c316e02593a2dddaca"
+    },
+    {
+      "path": "src/core/workspace-migrations/0028-intercompany-disposition-lifecycle-v28.json",
+      "sha256": "05c1140fcfb2161037ca812a2bfb67ebd488a7f51f785ffac5862329bd23d8bb"
+    },
+    {
+      "path": "src/core/workspace-migrations/0029-workspace-inbox-single-assignment-v29.json",
+      "sha256": "4c6b8b72bde8f76c07f6fb0f40c5a7e57876f92de7626cf120eaa4c6de7e742d"
+    },
+    {
+      "path": "src/core/workspace-migrations/0030-document-party-role-taxonomy-v30.json",
+      "sha256": "753b3f3653e286053f0e7592b90824ac647c4a7531c816af128c03d8001ac8e6"
+    },
+    {
+      "path": "src/core/workspace-control.ts",
+      "sha256": "63b155521b26872be2fa95175434cd4234c284f07bf5a2baca0e63e1cb04509d"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/control-migrations/gdd.json",
+      "sha256": "eeb555179a328b1718558c189700c02e3a43e5b00f4845d55e512131a958b8ec"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/control-migrations/CONTRACT.md",
+      "sha256": "cfa48f4942fa38b1ca3cdf06269730ca6f263e10bfc7a25e394e83676f0d333c"
+    }
+  ],
+  "state": "verified experimental all-control-prefix private rehearsal",
+  "platform": {
+    "os": "darwin",
+    "architecture": "arm64"
+  },
+  "commands": [
+    {
+      "command": "bun run rust:verify",
+      "result": "PASS",
+      "evidence": "rust-verify.txt",
+      "coverage": "22 Rust tests passed;2 intentionally ignored subprocess helpers selected by their crash parents. Prior34 report,31 wire,29 hash,10 lease,25 company rehearsal plus54 control checks;format/strict Clippy/catalogue/boundaries."
+    },
+    {
+      "command": "bun run typecheck:runtime",
+      "result": "PASS",
+      "evidence": "typecheck.txt"
+    },
+    {
+      "command": "bunx biome lint scripts/rust --error-on-warnings",
+      "result": "PASS"
+    }
+  ],
+  "independent_review": {
+    "agent": "migration_port_research",
+    "mode": "Read-only investigation, source review, actual counterexample and independent execution",
+    "material_finding": "SQL LIKE sqlite_% treats underscore as wildcard: legal sqliteShadow objects were hidden, allowing a populated source to pass as empty prefix0. Reviewer reproduced public CLI false success before repair; no retained raw red transcript claimed.",
+    "repair": "Literal reserved sqlite_ prefix exclusion in shared inspection and both oracles; native regression and three public counterexamples.",
+    "result": "Focused rereview found no remaining material bounded defect; independent53-check harness and5 native control tests passed.",
+    "qualification_note": "Main final54-check suite additionally seeds apikey credential canaries, enforces exact public result keys, exercises corrupt recovery and existing-root/missing-control refusal; production code unchanged since independent focused review."
+  },
+  "design_review": {
+    "scope": [
+      "action.rehearse_control_migration",
+      "component.storage"
+    ],
+    "model_revision": "sha256:40d73f9a3accd70ad2194abcaa1b27df88495fff38917e411b4b9e888212f377",
+    "code_revision": "sha256:1d2e107534a71505087a0c8800e3b91110781df9323bab1aef2a69794b14b3f9",
+    "reviewer": "Main integrated assessment and independent review; not host-attested acceptance",
+    "KISS": "One fixed catalogue and whole-suffix immediate transaction; explicit v5 session/MFA exception rather than generic migration policy callbacks.",
+    "DRY": "Actual30 immutable JSON artifacts and TS catalogue binding; shared private-copy cleanup, strict provenance, schema/integrity and internal typed-cell comparison serve both current rehearsals.",
+    "separation_of_concerns": "Company per-step and control whole-suffix transactions remain separate. Control public adapter sanitizes errors and exposes only public schema fingerprint/identities, booleans and aggregate counts. Writer admission remains outside rehearsal authority.",
+    "modularity": "Private fixed-path capture and owned-copy operation centralize cleanup; no writable connection/copy export or arbitrary SQL/target input.",
+    "locations": [
+      "crates/rentemester-storage/src/control_migration.rs",
+      "crates/rentemester-storage/src/lib.rs",
+      "crates/rentemester-storage/src/snapshot.rs",
+      "crates/rentemester-storage/src/migration.rs",
+      "crates/rentemester-storage/src/legacy-workspace-schema.json",
+      "crates/rentemester-cli/src/main.rs",
+      "scripts/rust/schema-contract.ts",
+      "scripts/rust/verify-control-migrations.ts",
+      "scripts/rust/verify-migration-rehearsal.ts",
+      "scripts/rust/verify-journal-hashes.ts",
+      "scripts/rust/verify.ts"
+    ]
+  },
+  "limitations": [
+    "Read-only sources/private copies only; no original migration, writable runtime, authority/adoption or full R12 completion",
+    "All31 synthetic direct-prefix schemas and data cases; not archived historical production backup qualification",
+    "Canonical30 control schema is verified; broad hosted/native identity and revocation behavior remains separate",
+    "Process death at four transaction boundaries on development host; not disk power loss, hardware fsync or cross-platform qualification",
+    "No company baseline/older normalization port, complete domain parity, GPUI/server distribution or cutover completion",
+    "Named source hashes bind this scope, not full transitive application acceptance"
+  ],
+  "initial_verification_repairs": [
+    "WAL fixture omitted required verification timestamps; corrected fixture, retained runtime requirements",
+    "Exact CLI help command list updated for the new command; no previous behavioral checks removed"
+  ]
+}

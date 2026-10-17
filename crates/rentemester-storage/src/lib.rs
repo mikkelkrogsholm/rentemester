@@ -8,8 +8,10 @@ use rusqlite::{Connection, OpenFlags, types::ValueRef};
 use serde::Deserialize;
 use std::{fs::OpenOptions, io::Write, path::Path, time::Duration};
 use tempfile::TempDir;
+mod control_migration;
 mod journal_hash;
 mod migration;
+pub use control_migration::{ControlRehearsalReport, rehearse_control_migration};
 pub use migration::{RehearsalReport, rehearse_company_migration};
 #[cfg(unix)]
 mod snapshot;
@@ -71,9 +73,15 @@ impl Snapshot {
         Ok(copy)
     }
     fn capture_unvalidated(company: &Path) -> Result<Self, Error> {
+        Self::capture_at(company, "data", "ledger.sqlite")
+    }
+    fn capture_control(workspace: &Path) -> Result<Self, Error> {
+        Self::capture_at(workspace, ".rentemester", "workspace-control.sqlite")
+    }
+    fn capture_at(root: &Path, directory: &str, filename: &str) -> Result<Self, Error> {
         #[cfg(not(unix))]
         {
-            let _ = company;
+            let _ = (root, directory, filename);
             Err(Error::new(
                 "source_unavailable",
                 "this reader has not yet qualified source capture on this platform",
@@ -81,7 +89,7 @@ impl Snapshot {
         }
         #[cfg(unix)]
         {
-            let captured = snapshot::capture(company)?;
+            let captured = snapshot::capture_at(root, directory, filename)?;
             let dir =
                 tempfile::tempdir().map_err(|e| Error::new("storage_failure", e.to_string()))?;
             let path = dir.path().join("snapshot.sqlite");
@@ -111,6 +119,29 @@ impl Snapshot {
                 }
             }
         }
+    }
+    /// Private copy ownership and checked cleanup shared by both rehearsals.
+    fn with_writable_copy<T>(
+        self,
+        operation: impl FnOnce(&mut Connection) -> Result<T, Error>,
+    ) -> Result<T, Error> {
+        let Self { conn, _dir } = self;
+        let result = (|| {
+            conn.close()
+                .map_err(|(_, error)| Error::new("storage_failure", error.to_string()))?;
+            let mut db = Connection::open_with_flags(
+                _dir.path().join("snapshot.sqlite"),
+                OpenFlags::SQLITE_OPEN_READ_WRITE,
+            )
+            .map_err(invalid)?;
+            let result = operation(&mut db);
+            db.close()
+                .map_err(|(_, error)| Error::new("storage_failure", error.to_string()))?;
+            result
+        })();
+        _dir.close()
+            .map_err(|error| Error::new("storage_failure", error.to_string()))?;
+        result
     }
     fn open(path: &Path) -> Result<Connection, Error> {
         // Recovery/checkpoint happens only on private, disposable files.

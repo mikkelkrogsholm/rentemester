@@ -1,0 +1,33 @@
+{
+  "base_code": "fb49b856d49a8a468b57183771e5ef69125e4fc6",
+  "previous_increment": "migration-rehearsal-1",
+  "scope": "R12 exact control prefixes0\u201330 private rehearsal",
+  "new_ids": [
+    "action.rehearse_control_migration"
+  ],
+  "mandate": "Active full Rust platform goal; no live migration/adoption authority inferred",
+  "write_scope": [
+    "crates/rentemester-storage/src/control_migration.rs",
+    "crates/rentemester-storage/src/lib.rs",
+    "crates/rentemester-storage/src/snapshot.rs",
+    "crates/rentemester-storage/src/migration.rs",
+    "crates/rentemester-storage/src/legacy-workspace-schema.json",
+    "crates/rentemester-cli/src/main.rs",
+    "scripts/rust/schema-contract.ts",
+    "scripts/rust/verify-control-migrations.ts",
+    "scripts/rust/verify-migration-rehearsal.ts",
+    "scripts/rust/verify-journal-hashes.ts",
+    "scripts/rust/verify.ts",
+    "docs/architecture/rust-target/implementation/control-migrations",
+    "docs/architecture/rust-target/implementation/README.md",
+    "docs/architecture/rust-target/implementation/progress.json"
+  ],
+  "readiness": "sha256:40d73f9a3accd70ad2194abcaa1b27df88495fff38917e411b4b9e888212f377",
+  "refinement": "Control contract distinguishes atomic whole suffix from company steps, permits explicit v5 session/MFA effects, and keeps all credential comparisons opaque. Structural readiness passed before implementation.",
+  "remaining_gates": [
+    "All legacy mutation admission and stable physical/logical workspace/company scope",
+    "Offline adoption, authenticated IPC and cross-store authorization/revocation",
+    "Company baseline/application normalization and older replay",
+    "Full domain/client/agent/server/GPUI parity and OS/storage/release/cutover qualification"
+  ]
+}

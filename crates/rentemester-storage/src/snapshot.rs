@@ -13,13 +13,17 @@ pub(super) struct SourceFile {
 fn unavailable(e: impl std::fmt::Display) -> Error {
     Error::new("source_unavailable", e.to_string())
 }
-pub(super) fn capture(company: &Path) -> Result<Vec<SourceFile>, Error> {
+pub(super) fn capture_at(
+    root_path: &Path,
+    directory: &str,
+    filename: &str,
+) -> Result<Vec<SourceFile>, Error> {
     let flags = OFlags::RDONLY | OFlags::DIRECTORY | OFlags::CLOEXEC | OFlags::NOFOLLOW;
     // Drop terminal separators/dot aliases: NOFOLLOW alone accepts linked/ on macOS.
-    let normalized: std::path::PathBuf = company.components().collect();
+    let normalized: std::path::PathBuf = root_path.components().collect();
     let root = open(&normalized, flags, Mode::empty()).map_err(unavailable)?;
-    let data = openat(&root, "data", flags, Mode::empty()).map_err(unavailable)?;
-    stable_capture(|| read_state(&data))
+    let data = openat(&root, directory, flags, Mode::empty()).map_err(unavailable)?;
+    stable_capture(|| read_state(&data, filename))
 }
 fn stable_capture(
     mut read: impl FnMut() -> Result<Vec<SourceFile>, Error>,
@@ -40,11 +44,11 @@ fn stable_capture(
         "SQLite source changed during all four capture attempts",
     ))
 }
-fn read_state(data: &OwnedFd) -> Result<Vec<SourceFile>, Error> {
+fn read_state(data: &OwnedFd, filename: &str) -> Result<Vec<SourceFile>, Error> {
     let mut result = Vec::new();
     let mut remaining = MAX_CAPTURE_BYTES;
     for suffix in ["", "-wal", "-shm", "-journal"] {
-        let name = format!("ledger.sqlite{suffix}");
+        let name = format!("{filename}{suffix}");
         let fd = match openat(
             data,
             name.as_str(),
