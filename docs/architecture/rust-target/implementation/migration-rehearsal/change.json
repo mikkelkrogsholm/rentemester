@@ -1,0 +1,29 @@
+{
+  "base_code": "a493e30f1da060abf2246141917b91b7d0c42218",
+  "previous_increment": "workspace-lease-1",
+  "scope": "R12 company suffix32\u201336 private-copy rehearsal",
+  "new_ids": [
+    "action.rehearse_company_migration"
+  ],
+  "mandate": "Active full Rust platform goal; no live migration authority inferred",
+  "write_scope": [
+    "crates/rentemester-storage/src/lib.rs",
+    "crates/rentemester-storage/src/migration.rs",
+    "crates/rentemester-cli/src/main.rs",
+    "scripts/rust/verify.ts",
+    "scripts/rust/verify-migration-rehearsal.ts",
+    "scripts/rust/verify-journal-hashes.ts",
+    "docs/architecture/rust-target/implementation/migration-rehearsal",
+    "docs/architecture/rust-target/implementation/README.md",
+    "docs/architecture/rust-target/implementation/progress.json"
+  ],
+  "readiness": "sha256:df7bd81330624834731d94ff463a10dc67583807b1467847832951b2b50b39b4",
+  "model_refinement": "Initial readiness reports retain schema-valid authoring omissions (ownership edge/scenario categorization); current readiness-v3 passes before implementation. Acceptance requirements preserved.",
+  "remaining_gates": [
+    "Complete all legacy mutation admission and stable physical/logical workspace/company scope binding",
+    "Offline adoption and authenticated runtime IPC",
+    "Baseline/application normalization and older company replay; workspace-control transaction semantics",
+    "Full physical schema/immutable guards/domain evidence and cross-store authority",
+    "OS/storage/release/cutover qualification"
+  ]
+}

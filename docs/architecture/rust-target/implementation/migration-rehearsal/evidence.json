@@ -1,0 +1,125 @@
+{
+  "format": "rentemester-company-migration-rehearsal-increment/1",
+  "base_code": "a493e30f1da060abf2246141917b91b7d0c42218",
+  "spec_revision": "sha256:df7bd81330624834731d94ff463a10dc67583807b1467847832951b2b50b39b4",
+  "code_revision": "sha256:fb8884dbef581f5d1c09e0c6854ef31adc3d43da9b7696876c7c11ad1b7153d6",
+  "assets": [
+    {
+      "path": "crates/rentemester-storage/src/lib.rs",
+      "sha256": "2020ffa2e9383a7693fb31eb51817ffddb00e659ac0c1183a32dcde2c9d74564"
+    },
+    {
+      "path": "crates/rentemester-storage/src/migration.rs",
+      "sha256": "b314fe2cf85c378b51f2d6ae8d167faf1458f5083aa79f03369690b0c98b180d"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "eb3e619020d384b6d5b05b6d14372d9b365aa40238b4bbe31975c6d3e0d3efc2"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "b0c2b2df87863c54ef82252723dcd14cba6bb086676ca0b9c746fc437548c254"
+    },
+    {
+      "path": "scripts/rust/verify-migration-rehearsal.ts",
+      "sha256": "a8a1044f45058a7917dddab0f346a1a3f5f0d6e020597fa9955de323ba9c9a00"
+    },
+    {
+      "path": "scripts/rust/verify-journal-hashes.ts",
+      "sha256": "df2a656d516b42bdc1878a72105af3961799d80be8e597ced4cba5ab09911687"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-schema.json",
+      "sha256": "b424cec385abad3f313ca633a291f8cf3f07d5cbece16523cd8fa0674cf729c7"
+    },
+    {
+      "path": "src/core/migrations/0033-bank-reconciliation-corrections.json",
+      "sha256": "bdf4715fd5a31c8ffb644ece98b92b163fa8f8e2e549795a8d65a25d1462e33b"
+    },
+    {
+      "path": "src/core/migrations/0034-direct-bank-purchase-payable-corrections.json",
+      "sha256": "76c03106346fda40df08e8f370a39577b228fb11dea552d8265d1bdec9fc7aed"
+    },
+    {
+      "path": "src/core/migrations/0035-bank-reconciliation-account-role-fallback.json",
+      "sha256": "0e77c291943dd51b91deca2583c9655c051b6170c95dd1238316620f17be6fbf"
+    },
+    {
+      "path": "src/core/migrations/0036-imported-receivables.json",
+      "sha256": "785396ccd7d7f1f340e89564b0ecffe4580fced541b7b85b878320216c7a549a"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/migration-rehearsal/gdd.json",
+      "sha256": "611cea2d0d3cbb80c60e780a66891381c7c8b00d55909cc7f0d2689c384ee163"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/migration-rehearsal/CONTRACT.md",
+      "sha256": "05b4f69e560d1ec4b44dd1dcf7c6af7bb1552f56e1a2c3ec4ab6559f2c92cfc7"
+    }
+  ],
+  "state": "verified experimental private-copy suffix32\u201336 only",
+  "platform": {
+    "os": "darwin",
+    "architecture": "arm64"
+  },
+  "commands": [
+    {
+      "command": "bun run rust:verify",
+      "result": "PASS",
+      "evidence": "rust-verify.txt",
+      "coverage": "17 passed Rust tests,1 ignored subprocess helper executed explicitly by parent crash test;34 read-only,31 wire,29 journal hash,10 lease,25 migration checks;format/Clippy/schema/boundaries"
+    },
+    {
+      "command": "bun run typecheck:runtime",
+      "result": "PASS",
+      "evidence": "typecheck.txt"
+    },
+    {
+      "command": "bunx biome lint scripts/rust --error-on-warnings",
+      "result": "PASS"
+    }
+  ],
+  "independent_review": {
+    "agent": "migration_port_research",
+    "mode": "Read-only source review and independent actual execution",
+    "repaired_findings": [
+      "Explicit connection/TempDir close before reporting private_copy_discarded; cleanup attempted on refusal and capture failure",
+      "Missing strict history explicitly classified unsupported_schema"
+    ],
+    "result": "Focused rereview found no remaining material bounded defect. Independent24-check harness and runtime4/storage9 tests passed;1 intentionally ignored helper selected by process parent.",
+    "qualification_note": "Independent24-check execution precedes the final added temporary-storage refusal check and private-write error classification; main final integrated25-check run covers final named source hashes."
+  },
+  "design_review": {
+    "scope": [
+      "action.rehearse_company_migration",
+      "component.storage"
+    ],
+    "model_revision": "sha256:df7bd81330624834731d94ff463a10dc67583807b1467847832951b2b50b39b4",
+    "code_revision": "sha256:fb8884dbef581f5d1c09e0c6854ef31adc3d43da9b7696876c7c11ad1b7153d6",
+    "reviewer": "Main integrated assessment plus independent review; no host-attested acceptance claim",
+    "KISS": "One fixed company suffix, direct immediate SQLite transactions; no generic migration framework, caller SQL or target-version options.",
+    "DRY": "Exact existing JSON artifacts and legacy catalogue reused; snapshot capture/recovery shared without loosening existing report current-schema validation. Independent TS harness intentionally computes its oracle separately.",
+    "separation_of_concerns": "Private rehearsal never grants writer/company authority; exact data/history/schema checks stay in storage; CLI owns usage/envelope. Legacy admission and real migrations remain gated.",
+    "modularity": "Private typed step/reference helpers with no exported database connection or copy promotion. Only explicit source path and serializable scoped report cross the storage boundary.",
+    "locations": [
+      "crates/rentemester-storage/src/lib.rs",
+      "crates/rentemester-storage/src/migration.rs",
+      "crates/rentemester-cli/src/main.rs",
+      "scripts/rust/verify.ts",
+      "scripts/rust/verify-migration-rehearsal.ts",
+      "scripts/rust/verify-journal-hashes.ts"
+    ]
+  },
+  "limitations": [
+    "Only strict checksummed company suffix32\u201336; no baseline normalization, older migration replay, control migration or full physical/audit/domain acceptance",
+    "Synthetic predecessor fixtures reconstructed from known suffix objects, not archived historical ledgers",
+    "Crash tests qualify process death at three SQLite transaction points on disposable minimal test files, not power loss or storage hardware guarantees",
+    "macOS/arm64 development host only; no Windows/network/sync/distributed qualification",
+    "No source migrations, production writer authority, full R12 completion or cutover",
+    "Hashes bind named anchors, not full transitive application acceptance"
+  ],
+  "initial_verification_repairs": [
+    "Initial full run correctly rejected old help command-list assertion; updated exact expected list to include new command, then full suite passed",
+    "Initial harness FK corruption setup named a nonexistent trigger; changed to discover/drop journal_lines guards before deliberate synthetic corruption"
+  ]
+}

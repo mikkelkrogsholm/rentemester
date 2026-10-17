@@ -9,6 +9,8 @@ use serde::Deserialize;
 use std::{fs::OpenOptions, io::Write, path::Path, time::Duration};
 use tempfile::TempDir;
 mod journal_hash;
+mod migration;
+pub use migration::{RehearsalReport, rehearse_company_migration};
 #[cfg(unix)]
 mod snapshot;
 pub use journal_hash::Report as JournalHashReport;
@@ -64,6 +66,11 @@ struct Snapshot {
 }
 impl Snapshot {
     fn capture(company: &Path) -> Result<Self, Error> {
+        let copy = Self::capture_unvalidated(company)?;
+        validate(&copy.conn)?;
+        Ok(copy)
+    }
+    fn capture_unvalidated(company: &Path) -> Result<Self, Error> {
         #[cfg(not(unix))]
         {
             let _ = company;
@@ -78,25 +85,34 @@ impl Snapshot {
             let dir =
                 tempfile::tempdir().map_err(|e| Error::new("storage_failure", e.to_string()))?;
             let path = dir.path().join("snapshot.sqlite");
-            for source in captured {
-                if source.suffix == "-shm" {
-                    continue;
+            let result = (|| {
+                for source in captured {
+                    if source.suffix == "-shm" {
+                        continue;
+                    }
+                    let mut options = OpenOptions::new();
+                    options.write(true).create_new(true);
+                    use std::os::unix::fs::OpenOptionsExt;
+                    options.mode(0o600);
+                    let mut file = options
+                        .open(format!("{}{}", path.display(), source.suffix))
+                        .map_err(|e| Error::new("storage_failure", e.to_string()))?;
+                    file.write_all(&source.bytes)
+                        .map_err(|e| Error::new("storage_failure", e.to_string()))?;
                 }
-                let mut options = OpenOptions::new();
-                options.write(true).create_new(true);
-                use std::os::unix::fs::OpenOptionsExt;
-                options.mode(0o600);
-                let mut file = options
-                    .open(format!("{}{}", path.display(), source.suffix))
-                    .map_err(invalid)?;
-                file.write_all(&source.bytes).map_err(invalid)?;
+                Self::open(&path)
+            })();
+            match result {
+                Ok(conn) => Ok(Self { conn, _dir: dir }),
+                Err(error) => {
+                    dir.close()
+                        .map_err(|e| Error::new("storage_failure", e.to_string()))?;
+                    Err(error)
+                }
             }
-            let copy = Snapshot::open(dir, &path)?;
-            validate(&copy.conn)?;
-            Ok(copy)
         }
     }
-    fn open(dir: TempDir, path: &Path) -> Result<Self, Error> {
+    fn open(path: &Path) -> Result<Connection, Error> {
         // Recovery/checkpoint happens only on private, disposable files.
         let recovery = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_WRITE)
             .map_err(invalid)?;
@@ -124,7 +140,7 @@ impl Snapshot {
             "PRAGMA query_only=ON; PRAGMA foreign_keys=ON; PRAGMA trusted_schema=OFF;",
         )
         .map_err(invalid)?;
-        Ok(Self { conn, _dir: dir })
+        Ok(conn)
     }
 }
 fn validate(db: &Connection) -> Result<(), Error> {

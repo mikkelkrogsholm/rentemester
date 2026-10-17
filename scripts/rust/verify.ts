@@ -22,6 +22,7 @@ for (const command of [
   [process.execPath, "run", "scripts/rust/verify-report-contracts.ts"],
   [process.execPath, "run", "scripts/rust/verify-journal-hashes.ts"],
   [process.execPath, "run", "scripts/rust/verify-workspace-lease.ts"],
+  [process.execPath, "run", "scripts/rust/verify-migration-rehearsal.ts"],
 ]) {
   const result = Bun.spawnSync(command, {
     cwd: root,

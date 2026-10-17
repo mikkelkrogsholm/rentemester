@@ -5,8 +5,34 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
     if args == ["--help"] {
         return Ok(json!({"ok":true,"commands":[
             {"name":"trial-balance","usage":"trial-balance --company PATH --from YYYY-MM-DD --to YYYY-MM-DD","scope":"experimental local read-only report"},
+            {"name":"rehearse-company-migration","usage":"rehearse-company-migration --company PATH","scope":"experimental private-copy company suffix32–36; no source migration"},
             {"name":"verify-journal-hashes","usage":"verify-journal-hashes --company PATH","scope":"experimental journal canonical hashes; not full audit integrity"}
         ]}));
+    }
+    if args == ["rehearse-company-migration", "--help"] {
+        return Ok(
+            json!({"ok":true,"usage":"rentemester-rust rehearse-company-migration --company PATH","format":"rentemester-company-migration-rehearsal/1","scope":"private-copy suffix32–36 only; no source migration or writer authority"}),
+        );
+    }
+    if args.first().map(String::as_str) == Some("rehearse-company-migration") {
+        if args.len() != 3
+            || args[1] != "--company"
+            || args[2].is_empty()
+            || args[2].starts_with("--")
+        {
+            return Err((
+                2,
+                Error::new(
+                    "invalid_input",
+                    "expected rehearse-company-migration --company PATH",
+                ),
+            ));
+        }
+        let report = rentemester_storage::rehearse_company_migration(Path::new(&args[2]))
+            .map_err(|e| (1, e))?;
+        return Ok(
+            json!({"ok":true,"format":"rentemester-company-migration-rehearsal/1","data":report}),
+        );
     }
     if args == ["verify-journal-hashes", "--help"] {
         return Ok(

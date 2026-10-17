@@ -1,15 +1,15 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "workspace-lease-1",
-  "code_revision": "sha256:fbf8e1a7853d9889c6577221c3f6fb76b169000d59d575297f2023441948764b",
-  "spec_revision": "sha256:3be265eb205db15c4396c56ae3c30c3b5f19f9e7a56df44362a00bdf6b32f316",
-  "state": "verified-experimental-cooperative-process-lease",
+  "current_increment": "migration-rehearsal-1",
+  "code_revision": "sha256:fb8884dbef581f5d1c09e0c6854ef31adc3d43da9b7696876c7c11ad1b7153d6",
+  "spec_revision": "sha256:df7bd81330624834731d94ff463a10dc67583807b1467847832951b2b50b39b4",
+  "state": "verified-experimental-private-copy-company-suffix",
   "issues_closed": [],
   "next": [
-    "Complete R01/R03 contracts and R12 full lifetime mutation admission before first effects, including retained DB handles, auth, jobs, config and restore destinations",
-    "Bind stable workspace/company/clone identity and offline adoption; a cooperative process lease alone must never enable Rust writes",
-    "Implement transactional migration/authority foundation, then continue all55 issues through server/React/GPUI/distribution and cutover"
+    "Complete R12 full lifetime legacy mutation admission and stable physical/logical workspace/company binding before Rust writes",
+    "Port control migrations and company baseline/older normalization with actual parity; preserve offline adoption and authority gates",
+    "Continue all55 issues through shared Rust server/CLI/MCP, React, GPUI local/remote, qualification and cutover"
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -26,14 +26,16 @@
     "state": "verified-experimental-readonly"
   },
   "evidence": {
-    "report": "workspace-lease/evidence.json",
-    "parity": "workspace-lease/parity.json",
-    "rust_unit_tests": 12,
-    "process_checks": 10,
+    "report": "migration-rehearsal/evidence.json",
+    "parity": "migration-rehearsal/parity.json",
+    "rust_tests_passed": 17,
+    "ignored_subprocess_helpers": 1,
+    "migration_checks": 25,
     "previous_checks_retained": [
       34,
       31,
-      29
+      29,
+      10
     ],
     "writer_authority": false,
     "whole_issues_closed": false
@@ -50,6 +52,12 @@
       "code_revision": "sha256:6baa54d55bbad5fc120c8209643aae55b6e9b636fa602db1111deb11aa3c941d",
       "spec_revision": "sha256:e972f22fd46df3fc63e4e199d26357c1959b1b79d8cf0baaadd9f50b8136e162",
       "state": "verified-experimental-journal-hash-compatibility"
+    },
+    {
+      "current_increment": "workspace-lease-1",
+      "code_revision": "sha256:fbf8e1a7853d9889c6577221c3f6fb76b169000d59d575297f2023441948764b",
+      "spec_revision": "sha256:3be265eb205db15c4396c56ae3c30c3b5f19f9e7a56df44362a00bdf6b32f316",
+      "state": "verified-experimental-cooperative-process-lease"
     }
   ]
 }

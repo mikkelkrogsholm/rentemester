@@ -1,0 +1,38 @@
+{
+  "ok": true,
+  "scope": "private-copy company suffix32\u201336 rehearsal only",
+  "checks": 25,
+  "passed": [
+    "synthetic v32 -> v36 exact TS affected-schema/history parity, source/journal preservation and repeat",
+    "synthetic v33 -> v36 exact TS affected-schema/history parity, source/journal preservation and repeat",
+    "synthetic v34 -> v36 exact TS affected-schema/history parity, source/journal preservation and repeat",
+    "synthetic v35 -> v36 exact TS affected-schema/history parity, source/journal preservation and repeat",
+    "synthetic v36 -> v36 exact TS affected-schema/history parity, source/journal preservation and repeat",
+    "older history refuses",
+    "gapped history refuses",
+    "newer history refuses",
+    "altered checksum refuses",
+    "altered name refuses",
+    "empty provenance refuses",
+    "missing history refuses",
+    "missing affected trigger refuses",
+    "altered affected trigger refuses",
+    "unexpected extra affected trigger refuses",
+    "partial preexisting next-step object refuses",
+    "foreign-key corruption refuses",
+    "empty checksum refuses",
+    "altered affected table refuses",
+    "private SQL/history failure refuses and removes copy",
+    "active legacy WAL snapshot recovered privately; source DB/WAL/SHM unchanged",
+    "missing and final-symlink aliases refuse",
+    "strict CLI usage refuses actor/mutation/target ambiguities",
+    "unusable temporary storage refuses before any source effect",
+    "existing report retains exact-current policy"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "limits": [
+    "Constructed synthetic predecessor fixtures, not historical archive qualification",
+    "No source migration, writer authority, workspace-control migration, baseline adoption or full R12 acceptance"
+  ]
+}

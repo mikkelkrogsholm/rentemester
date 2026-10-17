@@ -1,0 +1,138 @@
+{
+  "format": "gdd-report/0.2",
+  "tool": {
+    "name": "gdd-validator",
+    "version": "0.8.0"
+  },
+  "spec_revision": "sha256:5c59293314fbf99d1531a61369f84a7769c19c0213875c68dd55b500c71c7cdc",
+  "profiles": [
+    "readiness"
+  ],
+  "scope": [
+    "action.rehearse_company_migration",
+    "component.storage"
+  ],
+  "checks": [
+    {
+      "check_id": "representation.schema",
+      "dimension": "model",
+      "result": "PASS",
+      "scope": [],
+      "reason": "Local JSON Schema validation.",
+      "diagnostics": []
+    },
+    {
+      "check_id": "model.semantics",
+      "dimension": "model",
+      "result": "PASS",
+      "scope": [],
+      "reason": "Core references, endpoints, identity, refinement, machines, types and declared extension data checked.",
+      "diagnostics": []
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action requires exactly one owner.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Action requires exactly one owner.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.rehearse_company_migration"
+          },
+          "related_ids": [
+            "action.rehearse_company_migration"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Risk idempotency needs exercising scenarios of category {'negative', 'boundary'}.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Risk idempotency needs exercising scenarios of category {'negative', 'boundary'}.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.rehearse_company_migration"
+          },
+          "related_ids": [
+            "action.rehearse_company_migration"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Risk concurrency needs exercising scenarios of category {'concurrency'}.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Risk concurrency needs exercising scenarios of category {'concurrency'}.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.rehearse_company_migration"
+          },
+          "related_ids": [
+            "action.rehearse_company_migration"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Risk atomicity needs exercising scenarios of category {'negative', 'boundary'}.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Risk atomicity needs exercising scenarios of category {'negative', 'boundary'}.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.rehearse_company_migration"
+          },
+          "related_ids": [
+            "action.rehearse_company_migration"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Public actions require a unique matching provider owner.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Public actions require a unique matching provider owner.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/component.storage"
+          },
+          "related_ids": [
+            "component.storage"
+          ]
+        }
+      ]
+    }
+  ]
+}
