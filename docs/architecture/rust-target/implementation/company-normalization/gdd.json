@@ -1,0 +1,388 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native normalized company bootstrap and early upgrades",
+    "goal": "Create the full company schema in native Rust and migrate known normalized early prefixes on private copies.",
+    "scope": "R12 existing empty/normalized prefixes0\u201331; prior suffix32\u201336 contract preserved, full legacy normalization and writer gates unchanged."
+  },
+  "nodes": {
+    "component.storage": {
+      "kind": "component",
+      "description": "Own bounded private SQLite migration rehearsal.",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Capture, recover, validate, migrate and discard private copies.",
+        "rationale": "Original writer admission is not yet complete.",
+        "excludes": [
+          "Live migrations, domain writes and promotion"
+        ]
+      },
+      "interfaces": [
+        "action.normalize_company_data"
+      ]
+    },
+    "action.normalize_company_data": {
+      "kind": "action",
+      "description": "Native baseline role/audit seeding and corrected missing-retention backfill on strict canonical private copy",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "company_path": {
+            "type": "string",
+            "min_length": 1
+          }
+        },
+        "context": {
+          "mode": {
+            "type": "enum",
+            "values": [
+              "local_operator"
+            ]
+          }
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "from_version": {
+              "type": "integer"
+            },
+            "to_version": {
+              "type": "integer"
+            },
+            "writer_authority": {
+              "type": "boolean"
+            },
+            "normalization": {
+              "type": "object",
+              "properties": {
+                "original_business_data_digest": {
+                  "type": "string"
+                },
+                "role_mappings_inserted": {
+                  "type": "integer"
+                },
+                "audit_rows_inserted": {
+                  "type": "integer"
+                },
+                "document_deadlines_filled": {
+                  "type": "integer"
+                },
+                "bank_deadlines_filled": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "original_business_data_digest",
+                "role_mappings_inserted",
+                "audit_rows_inserted",
+                "document_deadlines_filled",
+                "bank_deadlines_filled"
+              ]
+            },
+            "business_data_digest_before": {
+              "type": "string"
+            },
+            "business_data_digest_after": {
+              "type": "string"
+            },
+            "private_copy_discarded": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "from_version",
+            "to_version",
+            "writer_authority",
+            "business_data_digest_before",
+            "business_data_digest_after",
+            "private_copy_discarded"
+          ]
+        },
+        "errors": {
+          "invalid_input": "Refuse as specified in CONTRACT.md.",
+          "source_unavailable": "Refuse as specified in CONTRACT.md.",
+          "source_changed": "Refuse as specified in CONTRACT.md.",
+          "unsupported_schema": "Refuse as specified in CONTRACT.md.",
+          "invalid_ledger": "Refuse as specified in CONTRACT.md.",
+          "migration_failed": "Refuse as specified in CONTRACT.md.",
+          "storage_failure": "Refuse as specified in CONTRACT.md."
+        },
+        "preconditions": [
+          "Explicit local read authority; strict supported prefix; no migration authority inferred."
+        ],
+        "postconditions": [
+          "Source unchanged; private copy closed and deleted.",
+          "Only specified missing retention and new native role/audit rows; originals otherwise unchanged.",
+          "Normalization atomic; subsequent versioned migration digests equal; no writer authority."
+        ],
+        "external_effects": [
+          "Read/stat source files; recover/migrate/delete private disposable files only."
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "No source writes or promotion.",
+            "scenarios": [
+              "scenario.isolation"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Rehearsal leaves source unchanged; repeated normalization on the same normalized copy has zero effects.",
+            "scenarios": [
+              "scenario.repeat",
+              "scenario.history"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Strict history/artifact/schema limits.",
+            "scenarios": [
+              "scenario.history",
+              "scenario.checkpoint",
+              "scenario.usage"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Capture stable source while legacy reader/writer may be active.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Real transactional rollback and process death.",
+            "scenarios": [
+              "scenario.failure",
+              "scenario.crash"
+            ]
+          }
+        },
+        "error_cases": {
+          "invalid_input": [
+            "scenario.usage"
+          ],
+          "source_unavailable": [
+            "scenario.isolation"
+          ],
+          "source_changed": [
+            "scenario.isolation"
+          ],
+          "unsupported_schema": [
+            "scenario.history"
+          ],
+          "invalid_ledger": [
+            "scenario.checkpoint"
+          ],
+          "migration_failed": [
+            "scenario.failure"
+          ],
+          "storage_failure": [
+            "scenario.failure"
+          ]
+        }
+      },
+      "behavior": "Admit canonical schema/history; immediate transaction calculates targeted expected retention and role/audit effects, validates original typed cells and inserted effects, commits or fully rolls back; then pending versioned steps and checked private cleanup."
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Exact role/audit inserts and corrected padded/clamped deadlines; unrelated cells/provenance unchanged.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Compatible native accounts and missing valid document/bank retention, across all fiscal starts and label strategies.",
+        "when": "Normalize then compare actual corrected TypeScript typed cells.",
+        "then": "Exact role/audit inserts and corrected padded/clamped deadlines; unrelated cells/provenance unchanged."
+      }
+    },
+    "scenario.history": {
+      "kind": "scenario",
+      "description": "Skip reseeding and preserve all existing rows/deadlines.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Any existing role mapping history/proposal status, incompatible/inactive/missing accounts, nonnull old deadlines.",
+        "when": "Normalize.",
+        "then": "Skip reseeding and preserve all existing rows/deadlines."
+      }
+    },
+    "scenario.checkpoint": {
+      "kind": "scenario",
+      "description": "Invalid basis skips without fallback/settings; valid eligible basis checks settings; bad CVR refuses.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Invalid preferred basis, empty basis, missing company, lowest-id company or malformed CVR.",
+        "when": "Plan retention lazily with exact COALESCE and company-setting semantics.",
+        "then": "Invalid basis skips without fallback/settings; valid eligible basis checks settings; bad CVR refuses."
+      }
+    },
+    "scenario.isolation": {
+      "kind": "scenario",
+      "description": "Original inventory unchanged, no actor/environment date influence, cleanup checked.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Original company source or active WAL, hostile environment or unsafe path.",
+        "when": "Capture and normalize only owned disposable copy.",
+        "then": "Original inventory unchanged, no actor/environment date influence, cleanup checked."
+      }
+    },
+    "scenario.failure": {
+      "kind": "scenario",
+      "description": "Typed refusal; every earlier data effect rolled back; no dropped guards.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Referenced immutable document/bank row or overflowing retention year.",
+        "when": "Attempt normalization.",
+        "then": "Typed refusal; every earlier data effect rolled back; no dropped guards."
+      }
+    },
+    "scenario.crash": {
+      "kind": "scenario",
+      "description": "Complete old data, no partial seeds/audit/deadlines; rerun succeeds.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Child paused after role or retention mutations before commit.",
+        "when": "Kill/reap actual child and reopen private database.",
+        "then": "Complete old data, no partial seeds/audit/deadlines; rerun succeeds."
+      }
+    },
+    "scenario.usage": {
+      "kind": "scenario",
+      "description": "Exit2 invalid_input with no effects.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Existing invalid CLI flags.",
+        "when": "Invoke unchanged command parser.",
+        "then": "Exit2 invalid_input with no effects."
+      }
+    },
+    "scenario.guards": {
+      "kind": "scenario",
+      "description": "Each exact target gets own deadline; preexisting IDs and rows preserved.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Adjacent exact SQLite IDs beyond JS precision and full-width old audit IDs.",
+        "when": "Backfill/seed and compare typed original IDs.",
+        "then": "Each exact target gets own deadline; preexisting IDs and rows preserved."
+      }
+    },
+    "scenario.repeat": {
+      "kind": "scenario",
+      "description": "Zero new effects and exact unchanged file/cells/timestamps.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Previously normalized copy with generated seed/audit timestamps.",
+        "when": "Normalize same copy again.",
+        "then": "Zero new effects and exact unchanged file/cells/timestamps."
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Whole data stage atomic; following migration phase digests equal.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Strict known normalized early schema with stable captured snapshot.",
+        "when": "Normalize inside one private immediate transaction before versioned per-step migrations.",
+        "then": "Whole data stage atomic; following migration phase digests equal."
+      }
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.history",
+      "from": "scenario.history",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.checkpoint",
+      "from": "scenario.checkpoint",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.isolation",
+      "from": "scenario.isolation",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.failure",
+      "from": "scenario.failure",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.crash",
+      "from": "scenario.crash",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.usage",
+      "from": "scenario.usage",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.guards",
+      "from": "scenario.guards",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.repeat",
+      "from": "scenario.repeat",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.storage.owns",
+      "from": "action.normalize_company_data",
+      "to": "component.storage",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Company baseline data normalization contract",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "fcff21f3941bd06392415bfb56eb90312057bc9af8c96f02faf8d92e823e7c0d"
+      }
+    }
+  }
+}

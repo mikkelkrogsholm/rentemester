@@ -1,14 +1,14 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "company-baseline-1",
-  "code_revision": "sha256:c6336e2ed113b719af6d62d558e9ec5ead3633da31992ce5978a82aa80e3f208",
-  "spec_revision": "sha256:1f3d9bad572ffee1b871490f4bc71ac7d18248723c27d54469b4710566e4bb70",
-  "state": "verified-experimental-normalized-company-bootstrap",
+  "current_increment": "company-normalization-1",
+  "code_revision": "sha256:06bbb5cf269530786da92462189661e6fcdb67804b42287055ce1c13a7fb1cc6",
+  "spec_revision": "sha256:9b2e203e609312e2fb8af0d6906d491f2590910221b1f394814521fb86c4c69f",
+  "state": "verified-experimental-native-baseline-data-effects",
   "issues_closed": [],
   "next": [
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
-    "Port historical baseline DATA normalization/native-role seeding and physical variants/replay; preserve offline adoption and authority/revocation gates",
+    "Port historical physical baseline VAT/GDPR/customer/company normalization and replay; preserve offline adoption and authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
   ],
   "preserve_unrelated_paths": [
@@ -26,18 +26,19 @@
     "state": "verified-experimental-readonly"
   },
   "evidence": {
-    "report": "company-baseline/evidence.json",
-    "parity": "company-baseline/parity.json",
-    "rust_tests_passed": 26,
-    "ignored_subprocess_helpers": 3,
-    "company_baseline_checks": 40,
+    "report": "company-normalization/evidence.json",
+    "parity": "company-normalization/parity.json",
+    "rust_tests_passed": 31,
+    "ignored_subprocess_helpers": 4,
+    "company_normalization_checks": 47,
     "previous_checks_retained": [
       34,
       31,
       29,
       10,
       25,
-      54
+      54,
+      40
     ],
     "writer_authority": false,
     "whole_issues_closed": false
@@ -72,6 +73,12 @@
       "code_revision": "sha256:1d2e107534a71505087a0c8800e3b91110781df9323bab1aef2a69794b14b3f9",
       "spec_revision": "sha256:40d73f9a3accd70ad2194abcaa1b27df88495fff38917e411b4b9e888212f377",
       "state": "verified-experimental-private-copy-control-migrations"
+    },
+    {
+      "current_increment": "company-baseline-1",
+      "code_revision": "sha256:c6336e2ed113b719af6d62d558e9ec5ead3633da31992ce5978a82aa80e3f208",
+      "spec_revision": "sha256:1f3d9bad572ffee1b871490f4bc71ac7d18248723c27d54469b4710566e4bb70",
+      "state": "verified-experimental-normalized-company-bootstrap"
     }
   ]
 }

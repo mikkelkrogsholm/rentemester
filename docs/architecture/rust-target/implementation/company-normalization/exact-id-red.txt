@@ -1,0 +1,36 @@
+bun test v1.4.0 (34cbb9a40)
+
+tests/unit/retention-calendar.test.ts:
+(pass) retention computes valid target calendar deadline [106.95ms]
+19 | test("retention updates exact SQLite IDs beyond JavaScript safe integers", () => {
+20 |  const db = new Database(":memory:"); migrate(db);
+21 |  db.exec("INSERT INTO documents(id,source,sha256_hash,invoice_date) VALUES(9007199254740992,'synthetic','large-a','2026-01-01'),(9007199254740993,'synthetic','large-b','2027-01-01')");
+22 |  const { backfillRetentionDeadlines } = require("../../src/core/retention");
+23 |  backfillRetentionDeadlines(db);
+24 |  expect(db.query("SELECT CAST(id AS TEXT) AS id,retain_until FROM documents ORDER BY id").all()).toEqual([{id:"9007199254740992",retain_until:"2031-12-31"},{id:"9007199254740993",retain_until:"2032-12-31"}]);
+                                                                                                      ^
+error: expect(received).toEqual(expected)
+
+  [
+    {
+      "id": "9007199254740992",
+-     "retain_until": "2031-12-31",
++     "retain_until": "2032-12-31",
+    },
+    {
+      "id": "9007199254740993",
+-     "retain_until": "2032-12-31",
++     "retain_until": null,
+    },
+  ]
+
+- Expected  - 2
++ Received  + 2
+
+      at <anonymous> (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/tests/unit/retention-calendar.test.ts:24:98)
+(fail) retention updates exact SQLite IDs beyond JavaScript safe integers [103.26ms]
+
+ 1 pass
+ 1 fail
+ 5 expect() calls
+Ran 2 tests across 1 file. [232.00ms]

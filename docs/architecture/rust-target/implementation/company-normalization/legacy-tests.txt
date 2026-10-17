@@ -1,0 +1,42 @@
+bun test v1.4.0 (34cbb9a40)
+
+tests/unit/retention-calendar.test.ts:
+(pass) retention computes valid target calendar deadline [113.64ms]
+(pass) retention updates exact SQLite IDs beyond JavaScript safe integers [104.10ms]
+
+tests/unit/company-migration-immutability.test.ts:
+(pass) routine migration keeps legacy started purchase applications immutable [149.90ms]
+
+tests/unit/retention.test.ts:
+(pass) retention tracking > computes retain_until from fiscal year end plus five years [166.16ms]
+(pass) retention tracking > runtime migrate tolerates legacy journal rows with NULL retain_until under append-only triggers [179.20ms]
+(pass) retention tracking > stores and reports retention deadlines for documents journals and bank transactions [147.97ms]
+
+tests/unit/account-roles.test.ts:
+(pass) native chart seeds complete, audited, semantically compatible role mappings [107.64ms]
+(pass) valid explicit confirmations win over later proposals, while an invalid mapping blocks completeness [107.94ms]
+(pass) import proposals deactivate only native seeds, remain ambiguous, and cannot be silently reseeded [130.96ms]
+(pass) runtime posting helpers contain no native 1200/2000/4000 semantic fallback literals [6.55ms]
+(pass) the privileged historical posting adapter is only called by the Dinero importer [12.48ms]
+
+tests/unit/schema-version.test.ts:
+(pass) schema version compatibility > migrates a v2 recurring template and generation losslessly with foreign keys [221.29ms]
+(pass) schema version compatibility > binds the immutable baseline artifact to schema and normalization bytes [0.35ms]
+(pass) schema version compatibility > records the contiguous checksummed migration catalog idempotently [126.14ms]
+(pass) schema version compatibility > makes issued invoice PDF evidence append-only and reasserts its guards [126.34ms]
+(pass) schema version compatibility > makes document metadata enrichments append-only and restores guards [131.72ms]
+(pass) schema version compatibility > reasserts accounting-draft append-only guards on every open [133.43ms]
+(pass) schema version compatibility > reasserts internal-voucher evidence guards on every open [130.91ms]
+(pass) schema version compatibility > opens a pre-change v1 ledger and applies the append-only v2 events migration [170.35ms]
+(pass) schema version compatibility > upgrades an isolated v3 schema through the current version without touching a live ledger [166.40ms]
+(pass) schema version compatibility > accepts a complete append-only history when a future runtime supports it [0.12ms]
+(pass) schema version compatibility > rejects a database made by newer software before creating business tables [0.21ms]
+(pass) schema version compatibility > rejects a modified baseline checksum [102.93ms]
+(pass) schema version compatibility > adopts a checksum only from a legacy table that never had the column [110.83ms]
+(pass) schema version compatibility > rejects a null checksum once the checksum column exists [0.25ms]
+(pass) schema version compatibility > openDb rejects a newer on-disk database without changing its bytes or sidecars [1.59ms]
+
+ 26 pass
+ 0 fail
+ 90 expect() calls
+Ran 26 tests across 5 files. [2.68s]

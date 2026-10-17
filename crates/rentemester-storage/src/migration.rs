@@ -39,6 +39,8 @@ pub struct AppliedMigration {
 }
 #[derive(Debug, Serialize)]
 pub struct RehearsalReport {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(super) normalization: Option<crate::company_normalization::Effects>,
     pub(super) schema_scope: &'static str,
     pub(super) from_version: usize,
     pub(super) to_version: usize,
@@ -241,19 +243,34 @@ pub(super) fn project_digest(
     db: &Connection,
     tables: &[(String, Vec<String>)],
 ) -> Result<String, Error> {
+    project_digest_excluding_ids(db, tables, &std::collections::BTreeMap::new())
+}
+pub(super) fn project_digest_excluding_ids(
+    db: &Connection,
+    tables: &[(String, Vec<String>)],
+    excluded_ids: &std::collections::BTreeMap<String, Vec<i64>>,
+) -> Result<String, Error> {
     let mut total = Sha256::new();
     for (table, selected) in tables {
         total.update((table.len() as u64).to_le_bytes());
         total.update(table.as_bytes());
         let mut query = db
             .prepare(&format!(
-                "SELECT {} FROM {}",
+                "SELECT {} FROM {}{}",
                 selected
                     .iter()
                     .map(|c| quote(c))
                     .collect::<Vec<_>>()
                     .join(","),
-                quote(table)
+                quote(table),
+                excluded_ids
+                    .get(table)
+                    .filter(|ids| !ids.is_empty())
+                    .map(|ids| format!(
+                        " WHERE id NOT IN ({})",
+                        ids.iter().map(i64::to_string).collect::<Vec<_>>().join(",")
+                    ))
+                    .unwrap_or_default()
             ))
             .map_err(invalid)?;
         let columns = query.column_count();
@@ -342,6 +359,7 @@ fn rehearse(
         ));
     }
     Ok(RehearsalReport {
+        normalization: None,
         schema_scope: "suffix33-36",
         from_version: old.len(),
         to_version: 36,

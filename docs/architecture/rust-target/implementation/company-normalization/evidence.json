@@ -1,0 +1,187 @@
+{
+  "format": "rentemester-company-normalization-increment/1",
+  "base_code": "ac47c61470527083c2d129cc36cd3753511187da",
+  "spec_revision": "sha256:9b2e203e609312e2fb8af0d6906d491f2590910221b1f394814521fb86c4c69f",
+  "code_revision": "sha256:06bbb5cf269530786da92462189661e6fcdb67804b42287055ce1c13a7fb1cc6",
+  "assets": [
+    {
+      "path": "crates/rentemester-engine/src/calendar.rs",
+      "sha256": "8c97d562c589611bb4858918eb9f6f236a14ec9e1b7a658d635fa05703801cd8"
+    },
+    {
+      "path": "crates/rentemester-engine/src/lib.rs",
+      "sha256": "ed7657ab4c4bd3d78944f8faf1e1457f0f8fdae39550cda5838628d6c4d0dde6"
+    },
+    {
+      "path": "crates/rentemester-engine/src/trial_balance.rs",
+      "sha256": "df86b92996f22cc6d635b668d123445c7000c376e50569f818416c56498d13fb"
+    },
+    {
+      "path": "crates/rentemester-storage/src/company_normalization.rs",
+      "sha256": "6a75bffb2f8f5bc6465b42badb84888d824d282b7cb94a5606970af1b377181f"
+    },
+    {
+      "path": "crates/rentemester-storage/src/company_baseline.rs",
+      "sha256": "9f010d8f1a8cf961040dcb240db6beb97a37879020d339d1dc9f1e57b7a9f835"
+    },
+    {
+      "path": "crates/rentemester-storage/src/migration.rs",
+      "sha256": "7550ec7e7d512a918f0de3608633d150c207e221e620e540566cbc7b03e8cbf0"
+    },
+    {
+      "path": "crates/rentemester-storage/src/lib.rs",
+      "sha256": "59f5e6ae6a09e8c87d68816401cbff71ff11ff413db7499c6e69b3f43a5475ca"
+    },
+    {
+      "path": "crates/rentemester-storage/src/snapshot.rs",
+      "sha256": "3c4cb8708c439c059b87c2692b26c62d927af4447080d808dea89c989e403c28"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-company-schemas.json",
+      "sha256": "68de9375f2ce3ad0e3dff2482c7deb8c36a0bd34670c9e21186b5eb12191cac7"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-company-schemas.sha256",
+      "sha256": "a0fc4379669934aeca23fa7741960184b0ffe182429914fa55d91325a619cb09"
+    },
+    {
+      "path": "src/core/retention.ts",
+      "sha256": "f7c7fc4fcdf952065ca0c8ad39e0dc91014569d032e6e5d4e9fd95705aecaec6"
+    },
+    {
+      "path": "src/core/account-roles.ts",
+      "sha256": "1fc2ef2aee92918e479da0b27e64b5f80126ba65fb0815f71fc10289b0fe6d7c"
+    },
+    {
+      "path": "src/core/company.ts",
+      "sha256": "3179bc6511c6790ed4b86db926b40da78f85d977ff329f802693c3832416a63e"
+    },
+    {
+      "path": "src/core/actor.ts",
+      "sha256": "a1651e0ea1869ae05a9faeda42835f2c340d332f767790f56e891f87727c9e2c"
+    },
+    {
+      "path": "src/core/dates.ts",
+      "sha256": "77fea21b9b2b3b1f2ebf55b9a092fc6e1cb133780635c710dff1a01f01fe0e2e"
+    },
+    {
+      "path": "src/core/db.ts",
+      "sha256": "4654fcd01ea7906a01e4b6d7debf2b5cf75562b836ebaeb0e4e0da63ce0be8b8"
+    },
+    {
+      "path": "src/core/schema.sql",
+      "sha256": "00a425e5e0d08c93a989331f84749b2d8c20ec0fca9823cebf0b5182f31a1f3b"
+    },
+    {
+      "path": "src/core/schema-version.ts",
+      "sha256": "5b869123bccc0a38a8514d5e59b4807dea1d66c684431b03105cac5eb6fabdb2"
+    },
+    {
+      "path": "tests/unit/retention-calendar.test.ts",
+      "sha256": "c9285f56ff69b7e4e7508d40e65d8b34114dc62586fe2f8cc78a7daa0d008a92"
+    },
+    {
+      "path": "scripts/rust/verify-company-normalization.ts",
+      "sha256": "804b1f4b26233a6f44f16861bd2fc723e5cffe21092460410544f7adaec138fe"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "717edffa49fca054b114f5d4eaade68a3a32754b873b1d2fe1ae655441b325d7"
+    },
+    {
+      "path": "scripts/rust/company-schema-contract.ts",
+      "sha256": "9cd7f7c9da363a21c82513d2a7fdb1eb9a1e5ee34da8d3522d98495071676f7f"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/company-normalization/CONTRACT.md",
+      "sha256": "fcff21f3941bd06392415bfb56eb90312057bc9af8c96f02faf8d92e823e7c0d"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/company-normalization/gdd.json",
+      "sha256": "b419a5d372c8cda0d36afc64c4246fb2860fecdabe5c28dad4686fa467d2cd07"
+    }
+  ],
+  "state": "verified experimental native baseline data normalization",
+  "platform": {
+    "os": "darwin",
+    "architecture": "arm64"
+  },
+  "commands": [
+    {
+      "command": "bun run rust:verify",
+      "result": "PASS",
+      "evidence": "rust-verify.txt",
+      "coverage": "31 Rust tests;4 ignored helpers invoked by actual crash parents/parity harness. Prior34 report,31 wire,29 hash,10 lease,25 suffix,54 control,40 baseline plus47 data-normalization checks. Format, strict Clippy, catalogue/images/boundaries."
+    },
+    {
+      "command": "bun run typecheck:runtime",
+      "result": "PASS",
+      "evidence": "typecheck.txt"
+    },
+    {
+      "command": "bunx biome lint scripts/rust src/core/retention.ts tests/unit/retention-calendar.test.ts --error-on-warnings",
+      "result": "PASS",
+      "evidence": "lint.txt",
+      "coverage": "15 files"
+    },
+    {
+      "command": "bun test tests/unit/retention-calendar.test.ts tests/unit/retention.test.ts tests/unit/account-roles.test.ts tests/unit/schema-version.test.ts tests/unit/company-migration-immutability.test.ts",
+      "result": "PASS",
+      "evidence": "legacy-tests.txt",
+      "coverage": "26 tests,90 expectations"
+    }
+  ],
+  "independent_review": {
+    "agent": "migration_port_research",
+    "mode": "Read-only source review, actual counterexamples, independent final execution",
+    "findings": [
+      "Legacy date arithmetic made invalid leap-day deadlines and corrupted low/whitespace years.",
+      "Legacy JS Number update IDs rounded adjacent SQLite IDs, overwriting a neighbor or missing the intended row.",
+      "Bounded preservation must exclude exact inserted IDs, not all IDs above old maximum: SQLite may randomly allocate rowids after INT64_MAX."
+    ],
+    "repairs": [
+      "Focused corrected retention calculator in TS/native; preserve existing nonnull deadlines and refuse overflow. Actual calendar-red.txt fails with2029-02-29 before correction.",
+      "Exact SELECT CAST(id AS TEXT) and BigInt update bindings for document/bank IDs. exact-id-red.txt shows old wrong-neighbor2032 deadline and actual target stillNULL.",
+      "Typed digest excludes only known newly inserted row IDs; native full-width old audit row exercises random ROWID allocation."
+    ],
+    "result": "No remaining material bounded finding. Independent47-check harness,4 native normalization tests,2 calendar-filter tests and16 targeted TS tests PASS."
+  },
+  "design_review": {
+    "scope": [
+      "action.normalize_company_data",
+      "component.storage"
+    ],
+    "model_revision": "sha256:9b2e203e609312e2fb8af0d6906d491f2590910221b1f394814521fb86c4c69f",
+    "code_revision": "sha256:06bbb5cf269530786da92462189661e6fcdb67804b42287055ce1c13a7fb1cc6",
+    "KISS": "Eight fixed native-role pairs and two explicit retention targets; direct Gregorian deadline calculator and one private transaction, no policy callback engine.",
+    "DRY": "Move existing strict date validator into pure engine/calendar for actual report/retention consumers. Reuse typed projection hashing/capture and immutable compiled schema catalogue.",
+    "separation_of_concerns": "Core calculates dates without clock, DB or transport. Storage selects eligible rows, preserves original typed evidence, seeds/audits and verifies effects. CLI still owns no writer authority.",
+    "modularity": "Data normalization is separate from per-step versioned SQL; optional normalization field explains phase digests while existing suffix behavior remains unchanged.",
+    "locations": [
+      "crates/rentemester-engine/src/calendar.rs",
+      "crates/rentemester-engine/src/lib.rs",
+      "crates/rentemester-engine/src/trial_balance.rs",
+      "crates/rentemester-storage/src/company_normalization.rs",
+      "crates/rentemester-storage/src/company_baseline.rs",
+      "crates/rentemester-storage/src/migration.rs",
+      "crates/rentemester-storage/src/lib.rs",
+      "crates/rentemester-storage/src/snapshot.rs",
+      "crates/rentemester-storage/src/legacy-company-schemas.json",
+      "crates/rentemester-storage/src/legacy-company-schemas.sha256"
+    ]
+  },
+  "limitations": [
+    "Only strict canonical normalized early schemas0–31 admitted by existing full-schema path; physical historical baseline VAT/GDPR/customer/company rebuilds, unknown variants and replay/adoption still pending.",
+    "Normalization transaction is deliberately stronger than legacy per-role commits and unwrapped retention loop; no claim that legacy full migrate became one transaction.",
+    "Successful semantic parity uses corrected TS functions, not known corrupt historical date/ID behavior. Existing nonnull deadlines remain unchanged.",
+    "New seed/audit timestamps are generated by SQLite defaults. Only these new timestamps are validated/masked for independent comparison; existing timestamps/IDs/types/multiplicities are exact. Public digests of the normalized phase can vary when new timestamps are generated on separate rehearsals.",
+    "No original writes, live legacy/Rust admission, full immutable domain behavior, hardware power-loss, cross-platform, server/GPUI distribution or full R12/platform completion.",
+    "Named anchors bind this declared scope, not full transitive application acceptance. Historical increment evidence refers to its own pinned commit."
+  ],
+  "verification_repairs": [
+    "Synthetic prefix stamp initially omitted required applied_by_version; fixture corrected without weakening runtime.",
+    "Synthetic guard-refusal fixture used obsolete bank/journal field names; changed to actual schema then real refusal/rollback passed.",
+    "Bun runtime safeIntegers exists but installed type contract lacks it; exact SQL textual IDs plus BigInt bindings avoid an unchecked API shim.",
+    "Full final integrated run repeated after last source edits; final saved report binds final code."
+  ]
+}

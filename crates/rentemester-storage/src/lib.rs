@@ -9,6 +9,7 @@ use serde::Deserialize;
 use std::{fs::OpenOptions, io::Write, path::Path, time::Duration};
 use tempfile::TempDir;
 mod company_baseline;
+mod company_normalization;
 mod control_migration;
 mod journal_hash;
 mod migration;

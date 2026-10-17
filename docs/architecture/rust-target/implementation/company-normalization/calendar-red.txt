@@ -1,0 +1,21 @@
+bun test v1.4.0 (34cbb9a40)
+
+../../../../private/tmp/rm-retention-correction.test.ts:
+1 | import { expect, test } from 'bun:test';
+2 | import { Database } from 'bun:sqlite';
+3 | import { migrate } from '/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/src/core/db';
+4 | import { retainUntilForDate } from '/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/src/core/retention';
+5 | test('retention computes valid target calendar deadline',()=>{const db=new Database(':memory:');migrate(db);db.exec("INSERT INTO companies(id,name,fiscal_year_start_month) VALUES(1,'Synthetic',3)");expect(retainUntilForDate(db,'2024-02-29')).toBe('2029-02-28');db.exec('UPDATE companies SET fiscal_year_start_month=1');expect(retainUntilForDate(db,' 2026-01-01 ')).toBe('2031-12-31');expect(retainUntilForDate(db,'0001-07-01')).toBe('0006-12-31');expect(()=>retainUntilForDate(db,'9999-01-01')).toThrow();db.close()});
+
+error: expect(received).toBe(expected)
+
+Expected: "2029-02-28"
+Received: "2029-02-29"
+
+      at <anonymous> (/private/tmp/rm-retention-correction.test.ts:5:243)
+(fail) retention computes valid target calendar deadline [106.38ms]
+
+ 0 pass
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [127.00ms]

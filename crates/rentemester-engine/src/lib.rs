@@ -1,4 +1,5 @@
 //! Pure accounting values and read projections. No filesystem, SQL or transport.
+pub mod calendar;
 pub mod money;
 pub mod trial_balance;
 

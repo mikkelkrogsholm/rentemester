@@ -1,0 +1,42 @@
+{
+  "base_code": "ac47c61470527083c2d129cc36cd3753511187da",
+  "previous_increment": "company-baseline-1",
+  "scope": "Native baseline role/audit seed and corrected retention backfill; canonical early private copies",
+  "new_ids": [
+    "action.normalize_company_data"
+  ],
+  "mandate": "Active full Rust platform goal and diagnosed correctness fixes; no live migration/adoption authority",
+  "write_scope": [
+    "crates/rentemester-engine/src/calendar.rs",
+    "crates/rentemester-engine/src/lib.rs",
+    "crates/rentemester-engine/src/trial_balance.rs",
+    "crates/rentemester-storage/src/company_normalization.rs",
+    "crates/rentemester-storage/src/company_baseline.rs",
+    "crates/rentemester-storage/src/migration.rs",
+    "crates/rentemester-storage/src/lib.rs",
+    "crates/rentemester-storage/src/snapshot.rs",
+    "crates/rentemester-storage/src/legacy-company-schemas.json",
+    "crates/rentemester-storage/src/legacy-company-schemas.sha256",
+    "src/core/retention.ts",
+    "src/core/account-roles.ts",
+    "src/core/company.ts",
+    "src/core/actor.ts",
+    "src/core/dates.ts",
+    "src/core/db.ts",
+    "src/core/schema.sql",
+    "src/core/schema-version.ts",
+    "tests/unit/retention-calendar.test.ts",
+    "scripts/rust/verify-company-normalization.ts",
+    "scripts/rust/verify.ts",
+    "scripts/rust/company-schema-contract.ts",
+    "docs/architecture/rust-target/implementation/company-normalization/CONTRACT.md",
+    "docs/architecture/rust-target/implementation/company-normalization/gdd.json"
+  ],
+  "refinement": "Original normative contract/model/readiness retained under history/v1. Strengthen exact-ID obligation and explicit phase-digest wording; current scoped readiness.json PASS.",
+  "gates": [
+    "Historical physical normalization/replay/adoption",
+    "Lifetime legacy mutation admission and physical/logical identity",
+    "Domain/server/CLI/MCP/React/GPUI parity and distribution/cutover"
+  ],
+  "issues_closed": []
+}

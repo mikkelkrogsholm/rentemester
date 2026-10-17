@@ -1,6 +1,5 @@
 import type { Database } from "bun:sqlite";
 import { getCompanySettings } from "./company";
-import { fiscalYearForDate } from "./fiscal-year";
 import { currentUtcIsoDate } from "./sequences";
 import { isValidIsoDate } from "./dates";
 
@@ -24,9 +23,20 @@ const RULE_ID = "DK-BOOKKEEPING-RETENTION-001";
 
 export function retainUntilForDate(db: Database, dateText: string) {
   if (!isValidIsoDate(dateText)) throw new Error(`invalid ISO date: ${dateText}`);
+  const basis = dateText.trim();
   const company = getCompanySettings(db);
-  const fiscalYear = fiscalYearForDate(dateText, company.fiscalYearStartMonth, company.fiscalYearLabelStrategy);
-  return `${Number(fiscalYear.end.slice(0, 4)) + 5}${fiscalYear.end.slice(4)}`;
+  const startMonth = company.fiscalYearStartMonth;
+  const year = Number(basis.slice(0, 4));
+  const month = Number(basis.slice(5, 7));
+  const targetYear = year + (startMonth !== 1 && month >= startMonth ? 1 : 0) + 5;
+  if (targetYear > 9999) throw new Error("retention deadline exceeds YYYY-MM-DD range");
+  const endMonth = startMonth === 1 ? 12 : startMonth - 1;
+  // Compute the last day in the TARGET year: adding five to a leap-day string
+  // can otherwise create an impossible deadline. setUTCFullYear avoids the
+  // Date.UTC remapping of years 0–99 to 1900–1999.
+  const end = new Date(0);
+  end.setUTCFullYear(targetYear, endMonth, 0);
+  return end.toISOString().slice(0, 10);
 }
 
 export function effectiveRetainUntil(db: Database, retainUntil: string | null | undefined, basisDate: string | null | undefined) {
@@ -37,22 +47,22 @@ export function effectiveRetainUntil(db: Database, retainUntil: string | null | 
 
 function backfillTableRetention(db: Database, table: "documents" | "journal_entries" | "bank_transactions") {
   if (table === "documents") {
-    const rows = db.query(`SELECT id, COALESCE(invoice_date, substr(upload_datetime, 1, 10)) AS basis_date FROM documents WHERE retain_until IS NULL`).all() as Array<{ id: number; basis_date: string | null }>;
+    const rows = db.query(`SELECT CAST(id AS TEXT) AS id, COALESCE(invoice_date, substr(upload_datetime, 1, 10)) AS basis_date FROM documents WHERE retain_until IS NULL`).all() as Array<{ id: string; basis_date: string | null }>;
     const update = db.prepare("UPDATE documents SET retain_until = ? WHERE id = ?");
     for (const row of rows) {
       if (!row.basis_date || !isValidIsoDate(row.basis_date)) continue;
-      update.run(retainUntilForDate(db, row.basis_date), row.id);
+      update.run(retainUntilForDate(db, row.basis_date), BigInt(row.id));
     }
   }
   if (table === "journal_entries") {
     return;
   }
   if (table === "bank_transactions") {
-    const rows = db.query(`SELECT id, COALESCE(booking_date, transaction_date) AS basis_date FROM bank_transactions WHERE retain_until IS NULL`).all() as Array<{ id: number; basis_date: string | null }>;
+    const rows = db.query(`SELECT CAST(id AS TEXT) AS id, COALESCE(booking_date, transaction_date) AS basis_date FROM bank_transactions WHERE retain_until IS NULL`).all() as Array<{ id: string; basis_date: string | null }>;
     const update = db.prepare("UPDATE bank_transactions SET retain_until = ? WHERE id = ?");
     for (const row of rows) {
       if (!row.basis_date || !isValidIsoDate(row.basis_date)) continue;
-      update.run(retainUntilForDate(db, row.basis_date), row.id);
+      update.run(retainUntilForDate(db, row.basis_date), BigInt(row.id));
     }
   }
 }

@@ -9,7 +9,10 @@ pub struct Period {
 }
 impl Period {
     pub fn new(start: &str, end: &str) -> Result<Self, Error> {
-        if !valid_date(start) || !valid_date(end) || start > end {
+        if !crate::calendar::valid_iso_date(start)
+            || !crate::calendar::valid_iso_date(end)
+            || start > end
+        {
             return Err(Error::new(
                 "invalid_input",
                 "period must use real canonical YYYY-MM-DD dates in ascending order",
@@ -20,35 +23,6 @@ impl Period {
             end: end.into(),
         })
     }
-}
-fn valid_date(s: &str) -> bool {
-    let b = s.as_bytes();
-    if b.len() != 10
-        || b[4] != b'-'
-        || b[7] != b'-'
-        || !b
-            .iter()
-            .enumerate()
-            .all(|(i, c)| i == 4 || i == 7 || c.is_ascii_digit())
-    {
-        return false;
-    }
-    let y = s[..4].parse::<u32>().unwrap();
-    let m = s[5..7].parse::<u32>().unwrap();
-    let d = s[8..].parse::<u32>().unwrap();
-    let days = match m {
-        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
-        4 | 6 | 9 | 11 => 30,
-        2 => {
-            if y.is_multiple_of(400) || (y.is_multiple_of(4) && !y.is_multiple_of(100)) {
-                29
-            } else {
-                28
-            }
-        }
-        _ => 0,
-    };
-    d > 0 && d <= days
 }
 #[derive(Clone, Debug)]
 pub struct Line {

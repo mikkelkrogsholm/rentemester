@@ -1,0 +1,349 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native normalized company bootstrap and early upgrades",
+    "goal": "Create the full company schema in native Rust and migrate known normalized early prefixes on private copies.",
+    "scope": "R12 existing empty/normalized prefixes0\u201331; prior suffix32\u201336 contract preserved, full legacy normalization and writer gates unchanged."
+  },
+  "nodes": {
+    "component.storage": {
+      "kind": "component",
+      "description": "Own bounded private SQLite migration rehearsal.",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Capture, recover, validate, migrate and discard private copies.",
+        "rationale": "Original writer admission is not yet complete.",
+        "excludes": [
+          "Live migrations, domain writes and promotion"
+        ]
+      },
+      "interfaces": [
+        "action.normalize_company_data"
+      ]
+    },
+    "action.normalize_company_data": {
+      "kind": "action",
+      "description": "Native baseline role/audit seeding and corrected missing-retention backfill on strict canonical private copy",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "company_path": {
+            "type": "string",
+            "min_length": 1
+          }
+        },
+        "context": {
+          "mode": {
+            "type": "enum",
+            "values": [
+              "local_operator"
+            ]
+          }
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "from_version": {
+              "type": "integer"
+            },
+            "to_version": {
+              "type": "integer"
+            },
+            "writer_authority": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "from_version",
+            "to_version",
+            "writer_authority"
+          ]
+        },
+        "errors": {
+          "invalid_input": "Refuse as specified in CONTRACT.md.",
+          "source_unavailable": "Refuse as specified in CONTRACT.md.",
+          "source_changed": "Refuse as specified in CONTRACT.md.",
+          "unsupported_schema": "Refuse as specified in CONTRACT.md.",
+          "invalid_ledger": "Refuse as specified in CONTRACT.md.",
+          "migration_failed": "Refuse as specified in CONTRACT.md.",
+          "storage_failure": "Refuse as specified in CONTRACT.md."
+        },
+        "preconditions": [
+          "Explicit local read authority; strict supported prefix; no migration authority inferred."
+        ],
+        "postconditions": [
+          "Source unchanged; private copy closed and deleted.",
+          "Only specified missing retention and new native role/audit rows; originals otherwise unchanged.",
+          "Normalization atomic; subsequent versioned migration digests equal; no writer authority."
+        ],
+        "external_effects": [
+          "Read/stat source files; recover/migrate/delete private disposable files only."
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "No source writes or promotion.",
+            "scenarios": [
+              "scenario.isolation"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Current history is no-op.",
+            "scenarios": [
+              "scenario.repeat",
+              "scenario.history"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Strict history/artifact/schema limits.",
+            "scenarios": [
+              "scenario.history",
+              "scenario.checkpoint",
+              "scenario.usage"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Capture stable source while legacy reader/writer may be active.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Real transactional rollback and process death.",
+            "scenarios": [
+              "scenario.failure",
+              "scenario.crash"
+            ]
+          }
+        },
+        "error_cases": {
+          "invalid_input": [
+            "scenario.usage"
+          ],
+          "source_unavailable": [
+            "scenario.isolation"
+          ],
+          "source_changed": [
+            "scenario.isolation"
+          ],
+          "unsupported_schema": [
+            "scenario.history"
+          ],
+          "invalid_ledger": [
+            "scenario.checkpoint"
+          ],
+          "migration_failed": [
+            "scenario.failure"
+          ],
+          "storage_failure": [
+            "scenario.failure"
+          ]
+        }
+      },
+      "behavior": "Admit canonical schema/history; immediate transaction calculates targeted expected retention and role/audit effects, validates original typed cells and inserted effects, commits or fully rolls back; then pending versioned steps and checked private cleanup."
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "See current normative company data normalization contract.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "A synthetic canonical company database with baseline data, existing immutable evidence and expected role/retention cases.",
+        "when": "Run native normalization with actual correction/guard/crash/refusal case from CONTRACT.md.",
+        "then": "Exact specified effects or atomic refusal; original sources unchanged."
+      }
+    },
+    "scenario.history": {
+      "kind": "scenario",
+      "description": "See current normative company data normalization contract.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "A synthetic canonical company database with baseline data, existing immutable evidence and expected role/retention cases.",
+        "when": "Run native normalization with actual correction/guard/crash/refusal case from CONTRACT.md.",
+        "then": "Exact specified effects or atomic refusal; original sources unchanged."
+      }
+    },
+    "scenario.checkpoint": {
+      "kind": "scenario",
+      "description": "See current normative company data normalization contract.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "A synthetic canonical company database with baseline data, existing immutable evidence and expected role/retention cases.",
+        "when": "Run native normalization with actual correction/guard/crash/refusal case from CONTRACT.md.",
+        "then": "Exact specified effects or atomic refusal; original sources unchanged."
+      }
+    },
+    "scenario.isolation": {
+      "kind": "scenario",
+      "description": "See current normative company data normalization contract.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "A synthetic canonical company database with baseline data, existing immutable evidence and expected role/retention cases.",
+        "when": "Run native normalization with actual correction/guard/crash/refusal case from CONTRACT.md.",
+        "then": "Exact specified effects or atomic refusal; original sources unchanged."
+      }
+    },
+    "scenario.failure": {
+      "kind": "scenario",
+      "description": "See current normative company data normalization contract.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "A synthetic canonical company database with baseline data, existing immutable evidence and expected role/retention cases.",
+        "when": "Run native normalization with actual correction/guard/crash/refusal case from CONTRACT.md.",
+        "then": "Exact specified effects or atomic refusal; original sources unchanged."
+      }
+    },
+    "scenario.crash": {
+      "kind": "scenario",
+      "description": "See current normative company data normalization contract.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "A synthetic canonical company database with baseline data, existing immutable evidence and expected role/retention cases.",
+        "when": "Run native normalization with actual correction/guard/crash/refusal case from CONTRACT.md.",
+        "then": "Exact specified effects or atomic refusal; original sources unchanged."
+      }
+    },
+    "scenario.usage": {
+      "kind": "scenario",
+      "description": "See current normative company data normalization contract.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "A synthetic canonical company database with baseline data, existing immutable evidence and expected role/retention cases.",
+        "when": "Run native normalization with actual correction/guard/crash/refusal case from CONTRACT.md.",
+        "then": "Exact specified effects or atomic refusal; original sources unchanged."
+      }
+    },
+    "scenario.guards": {
+      "kind": "scenario",
+      "description": "See current normative company data normalization contract.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "A synthetic canonical company database with baseline data, existing immutable evidence and expected role/retention cases.",
+        "when": "Run native normalization with actual correction/guard/crash/refusal case from CONTRACT.md.",
+        "then": "Exact specified effects or atomic refusal; original sources unchanged."
+      }
+    },
+    "scenario.repeat": {
+      "kind": "scenario",
+      "description": "See current normative company data normalization contract.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "A synthetic canonical company database with baseline data, existing immutable evidence and expected role/retention cases.",
+        "when": "Run native normalization with actual correction/guard/crash/refusal case from CONTRACT.md.",
+        "then": "Exact specified effects or atomic refusal; original sources unchanged."
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "See current normative company data normalization contract.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "A synthetic canonical company database with baseline data, existing immutable evidence and expected role/retention cases.",
+        "when": "Run native normalization with actual correction/guard/crash/refusal case from CONTRACT.md.",
+        "then": "Exact specified effects or atomic refusal; original sources unchanged."
+      }
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.history",
+      "from": "scenario.history",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.checkpoint",
+      "from": "scenario.checkpoint",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.isolation",
+      "from": "scenario.isolation",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.failure",
+      "from": "scenario.failure",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.crash",
+      "from": "scenario.crash",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.usage",
+      "from": "scenario.usage",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.guards",
+      "from": "scenario.guards",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.repeat",
+      "from": "scenario.repeat",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.storage.owns",
+      "from": "action.normalize_company_data",
+      "to": "component.storage",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.normalize_company_data",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Company baseline data normalization contract",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "69d4044ab2ab5f1056c54c9253177af5e9e0f9190450cacde8c42f8fdd7850a2"
+      }
+    }
+  }
+}

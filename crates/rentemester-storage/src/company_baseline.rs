@@ -241,6 +241,11 @@ pub(super) fn rehearse(db: &mut Connection) -> Result<RehearsalReport, Error> {
         .map(|o| o.name)
         .collect();
     let columns = projection(db, &tables)?;
+    let normalization = if from > 0 {
+        Some(crate::company_normalization::normalize(db)?)
+    } else {
+        None
+    };
     let before = project_digest(db, &columns)?;
     let mut applied = Vec::new();
     if from == 0 {
@@ -284,6 +289,7 @@ pub(super) fn rehearse(db: &mut Connection) -> Result<RehearsalReport, Error> {
         ));
     }
     Ok(RehearsalReport {
+        normalization,
         schema_scope: "full-normalized-early-prefix",
         from_version: from,
         to_version: 36,
@@ -461,6 +467,181 @@ mod tests {
                 );
             }
             rehearse(&mut db).unwrap();
+        }
+    }
+    #[test]
+    fn normalization_seeds_audited_roles_backfills_only_missing_and_is_idempotent() {
+        let mut db = Connection::open_in_memory().unwrap();
+        prefix(&db, 2);
+        db.execute_batch("INSERT INTO companies(id,name,fiscal_year_start_month) VALUES(1,'Synthetic',3);INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('2000','Synthetic bank','asset','debit'),('1200','Synthetic VAT','vat','credit');INSERT INTO documents(id,source,sha256_hash,invoice_date) VALUES(1,'synthetic','retention','2024-02-29');INSERT INTO documents(id,source,sha256_hash,invoice_date,retain_until) VALUES(2,'synthetic','preserved','2024-02-29','existing-invalid')").unwrap();
+        let first = crate::company_normalization::normalize(&mut db).unwrap();
+        let value = serde_json::to_value(first).unwrap();
+        assert_eq!(value["role_mappings_inserted"], 3);
+        assert_eq!(value["document_deadlines_filled"], 1);
+        assert_eq!(
+            db.query_row("SELECT retain_until FROM documents WHERE id=1", [], |r| {
+                r.get::<_, String>(0)
+            })
+            .unwrap(),
+            "2029-02-28"
+        );
+        assert_eq!(
+            db.query_row("SELECT retain_until FROM documents WHERE id=2", [], |r| {
+                r.get::<_, String>(0)
+            })
+            .unwrap(),
+            "existing-invalid"
+        );
+        let second =
+            serde_json::to_value(crate::company_normalization::normalize(&mut db).unwrap())
+                .unwrap();
+        assert_eq!(second["role_mappings_inserted"], 0);
+        assert_eq!(second["document_deadlines_filled"], 0);
+    }
+    #[test]
+    fn normalization_preserves_original_full_width_ids_with_sqlite_random_rowid_allocation() {
+        let mut db = Connection::open_in_memory().unwrap();
+        prefix(&db, 2);
+        db.execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('2000','Synthetic','asset','debit');INSERT INTO audit_log(id,event_type,entity_type,message,actor,created_at) VALUES(9223372036854775807,'synthetic','synthetic','Must remain','agent:synthetic','2020-01-01 00:00:00')").unwrap();
+        crate::company_normalization::normalize(&mut db).unwrap();
+        assert_eq!(
+            db.query_row(
+                "SELECT message FROM audit_log WHERE id=9223372036854775807",
+                [],
+                |r| r.get::<_, String>(0)
+            )
+            .unwrap(),
+            "Must remain"
+        );
+        assert_eq!(
+            db.query_row("SELECT COUNT(*) FROM audit_log", [], |r| r.get::<_, i64>(0))
+                .unwrap(),
+            2
+        );
+    }
+    #[test]
+    fn normalization_guard_failure_rolls_back_seeds_and_prior_deadline_updates() {
+        let mut db = Connection::open_in_memory().unwrap();
+        prefix(&db, 2);
+        db.execute_batch("INSERT INTO companies(id,name) VALUES(1,'Synthetic');INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('2000','Synthetic','asset','debit');INSERT INTO bank_transactions(id,transaction_date,text,amount,currency) VALUES(1,'2026-01-01','Synthetic',1,'DKK');INSERT INTO journal_entries(id,entry_no,transaction_date,text,source_bank_transaction_id,entry_hash,previous_hash,created_by,created_by_program,rule_version) VALUES(1,'SYN-1','2026-01-01','Synthetic',1,'synthetic','', 'system','synthetic','synthetic');INSERT INTO documents(id,source,sha256_hash,invoice_date) VALUES(1,'synthetic','rollback','2026-01-01')").unwrap();
+        let tables: Vec<_> = schema(&db)
+            .unwrap()
+            .into_iter()
+            .filter(|o| o.kind == "table")
+            .map(|o| o.name)
+            .collect();
+        let cols = projection(&db, &tables).unwrap();
+        let before = project_digest(&db, &cols).unwrap();
+        assert_eq!(
+            crate::company_normalization::normalize(&mut db)
+                .unwrap_err()
+                .code,
+            "migration_failed"
+        );
+        assert_eq!(project_digest(&db, &cols).unwrap(), before);
+    }
+    #[test]
+    #[ignore = "parity/process-death helper invoked by parent or independent TS harness"]
+    fn normalization_child() {
+        let mut db = Connection::open(std::env::var("RM_NORMALIZATION_DB").unwrap()).unwrap();
+        db.execute_batch(
+            "PRAGMA foreign_keys=ON;PRAGMA trusted_schema=OFF;PRAGMA synchronous=FULL",
+        )
+        .unwrap();
+        let effects = crate::company_normalization::normalize(&mut db).unwrap();
+        if let Ok(output) = std::env::var("RM_NORMALIZATION_OUTPUT") {
+            let mut tables = serde_json::Map::new();
+            for o in schema(&db)
+                .unwrap()
+                .into_iter()
+                .filter(|o| o.kind == "table")
+            {
+                let mut q = db
+                    .prepare(&format!("SELECT * FROM {}", quote(&o.name)))
+                    .unwrap();
+                let width = q.column_count();
+                let names: Vec<_> = q.column_names().into_iter().map(str::to_owned).collect();
+                let mut rows = q.query([]).unwrap();
+                let mut values = Vec::new();
+                while let Some(r) = rows.next().unwrap() {
+                    let cells: Vec<_> = (0..width)
+                        .map(|i| match r.get_ref(i).unwrap() {
+                            rusqlite::types::ValueRef::Null => serde_json::json!(["null"]),
+                            rusqlite::types::ValueRef::Integer(n) => {
+                                serde_json::json!(["integer", n.to_string()])
+                            }
+                            rusqlite::types::ValueRef::Real(n) => {
+                                serde_json::json!(["real", format!("{:016x}", n.to_bits())])
+                            }
+                            rusqlite::types::ValueRef::Text(s) => serde_json::json!([
+                                "text",
+                                s.iter().map(|b| format!("{b:02x}")).collect::<String>()
+                            ]),
+                            rusqlite::types::ValueRef::Blob(s) => serde_json::json!([
+                                "blob",
+                                s.iter().map(|b| format!("{b:02x}")).collect::<String>()
+                            ]),
+                        })
+                        .collect();
+                    values.push(cells);
+                }
+                tables.insert(o.name, serde_json::json!({"columns":names,"rows":values}));
+            }
+            std::fs::write(
+                output,
+                serde_json::to_vec(&serde_json::json!({"effects":effects,"tables":tables}))
+                    .unwrap(),
+            )
+            .unwrap();
+        }
+    }
+    #[test]
+    fn normalization_process_death_rolls_back_all_data_effects() {
+        for phase in ["roles", "retention"] {
+            let dir = tempfile::tempdir().unwrap();
+            let path = dir.path().join("db");
+            let marker = dir.path().join("phase");
+            let db = Connection::open(&path).unwrap();
+            db.execute_batch("PRAGMA journal_mode=WAL;PRAGMA synchronous=FULL")
+                .unwrap();
+            prefix(&db, 2);
+            db.execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('2000','Synthetic','asset','debit');INSERT INTO documents(id,source,sha256_hash,invoice_date) VALUES(1,'synthetic','death','2026-01-01')").unwrap();
+            let tables: Vec<_> = schema(&db)
+                .unwrap()
+                .into_iter()
+                .filter(|o| o.kind == "table")
+                .map(|o| o.name)
+                .collect();
+            let cols = projection(&db, &tables).unwrap();
+            let before = project_digest(&db, &cols).unwrap();
+            drop(db);
+            let mut child = Reaped(
+                Command::new(std::env::current_exe().unwrap())
+                    .args([
+                        "--exact",
+                        "company_baseline::tests::normalization_child",
+                        "--ignored",
+                        "--nocapture",
+                    ])
+                    .env("RM_NORMALIZATION_DB", &path)
+                    .env("RM_NORMALIZATION_PHASE", phase)
+                    .env("RM_NORMALIZATION_MARKER", &marker)
+                    .stdout(Stdio::null())
+                    .stderr(Stdio::null())
+                    .spawn()
+                    .unwrap(),
+            );
+            let now = Instant::now();
+            while !marker.exists() {
+                assert!(child.0.try_wait().unwrap().is_none());
+                assert!(now.elapsed() < Duration::from_secs(10));
+                std::thread::sleep(Duration::from_millis(10));
+            }
+            child.0.kill().unwrap();
+            assert!(!child.0.wait().unwrap().success());
+            let mut db = Connection::open(&path).unwrap();
+            assert_eq!(project_digest(&db, &cols).unwrap(), before);
+            crate::company_normalization::normalize(&mut db).unwrap();
         }
     }
 }
