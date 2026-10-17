@@ -85,7 +85,41 @@ fn probe() {
         clock: &clock,
         audit_key_version: 1,
     };
-    let result = if request["mode"] == "codes-view" || request["mode"] == "codes-regenerate" {
+    let result = if request["mode"]
+        .as_str()
+        .is_some_and(|s| s.starts_with("session-"))
+    {
+        let signer = CookieVerifier::new(
+            request["proofWorkspace"].as_str().unwrap_or("w"),
+            if request["proofDevelopment"] == true {
+                CookieProfile::Development
+            } else {
+                CookieProfile::Secure
+            },
+            request["proofKey"].as_str().unwrap_or(key),
+        )
+        .unwrap();
+        match signer.verify(request["cookie"].as_str(), request["service"].as_str()) {
+            Err(e) => Err(failure(error(e.code()), true)),
+            Ok(proof) => {
+                use crate::session_control::{self as sessions, Operation};
+                let op = match request["mode"].as_str().unwrap() {
+                    "session-list" => Operation::List,
+                    "session-out" => Operation::SignOut,
+                    "session-one" => Operation::RevokeOne(request["target"].as_str().unwrap_or("")),
+                    "session-others" => Operation::RevokeOthers,
+                    "session-all" => Operation::RevokeAll,
+                    _ => panic!("unknown test operation"),
+                };
+                let runtime = sessions::Runtime {
+                    cookies: &cookies,
+                    clock: &clock,
+                    audit_key_version: 1,
+                };
+                sessions::execute(&mut db,&runtime,&proof,op).map(|o|json!({"ok":true,"sessions":o.sessions,"deleted":o.deleted,"clearCookies":o.clear_cookies}))
+            }
+        }
+    } else if request["mode"] == "codes-view" || request["mode"] == "codes-regenerate" {
         let signer = CookieVerifier::new(
             request["proofWorkspace"].as_str().unwrap_or("w"),
             if request["proofDevelopment"] == true {

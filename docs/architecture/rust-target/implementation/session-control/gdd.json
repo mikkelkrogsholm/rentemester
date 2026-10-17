@@ -1,0 +1,216 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native own-session listing and revocation",
+    "goal": "List own nonbearer sessions and atomically sign out or revoke selected/other/all own sessions with current authorization and audit",
+    "scope": "R04/R41 internal admitted-control session lifecycle; no endpoint/provider/physical admission/cutover"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native credential use-case orchestration",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Resolve runtime-bound current session and atomic own-session listing/revocation/clear results",
+        "rationale": "Rust identity needs usable session lifecycle and reliable deletion-based revocation",
+        "excludes": [
+          "Endpoints, physical handle/lifetime admission, OAuth/cache/provider logout and full identity parity"
+        ]
+      },
+      "interfaces": [
+        "action.session_control"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Return bounded own token-free list or atomically delete intended own sessions, append audit and release data/clear headers after known commit",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control, injected trusted runtime and signed session proof",
+        "when": "Execute native own-session operation through independent WAL/DELETE processes",
+        "then": "Return bounded own token-free list or atomically delete intended own sessions, append audit and release data/clear headers after known commit"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Wrong proof/current identity/freshness/access/factor/target or malformed/oversized listing never discloses or revokes another user",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control, injected trusted runtime and signed session proof",
+        "when": "Execute native own-session operation through independent WAL/DELETE processes",
+        "then": "Wrong proof/current identity/freshness/access/factor/target or malformed/oversized listing never discloses or revokes another user"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Late SQL restores rows/lifecycle/audit; commit uncertainty retires handle and withholds data, receipt and clear headers",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control, injected trusted runtime and signed session proof",
+        "when": "Execute native own-session operation through independent WAL/DELETE processes",
+        "then": "Late SQL restores rows/lifecycle/audit; commit uncertainty retires handle and withholds data, receipt and clear headers"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Exact deletion is authority; logout works on missing/expired/disabled state, pure local clear is independent; native list/ID-target/freshness corrections are explicit",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control, injected trusted runtime and signed session proof",
+        "when": "Execute native own-session operation through independent WAL/DELETE processes",
+        "then": "Exact deletion is authority; logout works on missing/expired/disabled state, pure local clear is independent; native list/ID-target/freshness corrections are explicit"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "One writer holds authorization through delete/audit commit; earlier MFA contexts fail after actual session deletion and no stale token revives",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic control, injected trusted runtime and signed session proof",
+        "when": "Execute native own-session operation through independent WAL/DELETE processes",
+        "then": "One writer holds authorization through delete/audit commit; earlier MFA contexts fail after actual session deletion and no stale token revives"
+      }
+    },
+    "action.session_control": {
+      "kind": "action",
+      "description": "List/sign out/revoke own current sessions with runtime-bound proof and deletion-based authority",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "verified_session_and_operation_or_target_ID": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "admitted_control_runtime_cookie_clock_audit": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Opaque invalid_credentials, invalid_control, invalid_request, session_listing_limit, connection/crypto/clock/config errors; NotCommitted or OutcomeUnknown with explicit reuse, no committed Rejected"
+        },
+        "preconditions": [
+          "Caller owns actually admitted control/workspace lifetime; injected runtime signer/clock/audit config, no request subject claims",
+          "List/revokes require current fresh verified active human/factor; logout only bound proof/exact row with separate pure local clear"
+        ],
+        "postconditions": [
+          "Own intended deletions/lifecycle/audit atomically commit before result; source-compatible current row readers refuse revoked tokens",
+          "Listing excludes tokens and is bounded/stably sorted; operational rollback/commit uncertainty never assert false successful revocation"
+        ],
+        "external_effects": [
+          "Canonical own session deletion/lifecycle triggers plus native_session_control_v1 append-only workspace_audit event; header output only after known commit"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Current operation-specific authority and serialized own-session rows/audit before disclosure; real deletions invalidate pending MFA. Unknown commits require reconciliation, never resurrection or blind replay.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Current operation-specific authority and serialized own-session rows/audit before disclosure; real deletions invalidate pending MFA. Unknown commits require reconciliation, never resurrection or blind replay.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Current operation-specific authority and serialized own-session rows/audit before disclosure; real deletions invalidate pending MFA. Unknown commits require reconciliation, never resurrection or blind replay.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Current operation-specific authority and serialized own-session rows/audit before disclosure; real deletions invalidate pending MFA. Unknown commits require reconciliation, never resurrection or blind replay.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Current operation-specific authority and serialized own-session rows/audit before disclosure; real deletions invalidate pending MFA. Unknown commits require reconciliation, never resurrection or blind replay.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Preflight/proof binding, one sampled clock/current lock, operation-specific identity policy, atomic rows/lifecycle/audit and known-commit result"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.session_control",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.session_control",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.session_control",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.session_control",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.session_control",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.session_control",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native own-session listing and revocation",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "ad662b28701d71c8506b7b9565c4aeecb108704bb42cb6f7b0509e88979dab88"
+      }
+    }
+  }
+}

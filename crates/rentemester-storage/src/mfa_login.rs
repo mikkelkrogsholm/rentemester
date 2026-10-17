@@ -39,7 +39,7 @@ pub fn check_now(now: i64) -> Result<(), Error> {
         Ok(())
     }
 }
-fn date(now: i64) -> Result<String, Error> {
+pub(crate) fn date(now: i64) -> Result<String, Error> {
     let t = time::OffsetDateTime::from_unix_timestamp_nanos(i128::from(now) * 1_000_000)
         .map_err(invalid)?;
     if !(1..=9999).contains(&t.year()) {

@@ -134,6 +134,26 @@ impl CookieVerifier {
             && proof.session == session
             && bool::from(tag[..].ct_eq(&proof.key_tag[..]))
     }
+    /// Pure local cookie expiry; never evidence of server revocation or commit.
+    pub fn clear_native_session_cookies(&self) -> Vec<String> {
+        let (prefix, secure) = match self.profile {
+            CookieProfile::Secure => ("__Secure-", "; Secure"),
+            CookieProfile::Development => ("", ""),
+        };
+        [
+            "session_token",
+            "session_data",
+            "dont_remember",
+            "two_factor",
+        ]
+        .iter()
+        .map(|name| {
+            format!(
+                "{prefix}better-auth.{name}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0{secure}"
+            )
+        })
+        .collect()
+    }
     pub fn accepts_session(&self, proof: &VerifiedCookie) -> bool {
         self.accepts(proof, true)
     }
@@ -318,6 +338,34 @@ impl Clock for SystemClock {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn pure_local_clear_has_no_bearer_and_preserves_selected_profile() {
+        for profile in [CookieProfile::Secure, CookieProfile::Development] {
+            let v =
+                CookieVerifier::new("w", profile, "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8")
+                    .unwrap();
+            let clear = v.clear_native_session_cookies();
+            assert_eq!(clear.len(), 4);
+            for (header, name) in clear.iter().zip([
+                "session_token",
+                "session_data",
+                "dont_remember",
+                "two_factor",
+            ]) {
+                assert!(header.contains(&format!(
+                    "better-auth.{name}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0"
+                )));
+                assert_eq!(
+                    header.starts_with("__Secure-"),
+                    profile == CookieProfile::Secure
+                );
+                assert_eq!(
+                    header.ends_with("; Secure"),
+                    profile == CookieProfile::Secure
+                );
+            }
+        }
+    }
     #[test]
     fn current_session_proof_binds_workspace_key_profile_and_kind() {
         let key = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8";

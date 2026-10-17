@@ -1,0 +1,40 @@
+{
+  "scope": "Independent read-only native own-session list/logout/selected/other/all revocation",
+  "verdict": "No remaining material scoped findings",
+  "evidence": {
+    "native_focused_tests": 1,
+    "process_checks": 342,
+    "session_process_cases": 103,
+    "independent_final_harness_repetitions": 1,
+    "reviewed_source_sha256": {
+      "crates/rentemester-application/src/lib.rs": "9acef3a51a1f1fd595663f2de668097eec06c9ea113235515de32db0569e172b",
+      "crates/rentemester-application/src/session_control.rs": "f39d911427bd596ee6757e6468e5c48615b77294beabf85ec0f510edd27fb226",
+      "crates/rentemester-application/src/mfa_login/tests.rs": "9d38fb9b99910a8ad08adcecf8b151d12fe0444d9b0a1c0f40a351050dc41071",
+      "crates/rentemester-runtime/src/auth.rs": "ad87f08a994a77cb073999be9d3189bbe79259028467dc3c5aac5f43c72d911a",
+      "crates/rentemester-storage/src/lib.rs": "0a65a9c18e829d4689dbfd29c3b66a8ccdb071b06c03b365abd6475587c27dd3",
+      "crates/rentemester-storage/src/session_control.rs": "8330f26bc7e2f2f7e5b9a79dc09f2348ac8369446dabe53a048d9f283696ac19",
+      "crates/rentemester-storage/src/mfa_login.rs": "f48fa2510fa68f48e9a36df36e7e37c5553e8ba19ed4ad0b8f7715575d9e1b7a",
+      "scripts/rust/session-control-cases.ts": "33d126388cb41cd7d07792f88887d764c43cf7ec63e754d9e79e100e4bb9e4ba",
+      "scripts/rust/verify-mfa-login.ts": "d968ad6fedf2eb03d2183ea65cc63f5fd28a8664526228abbb5e0a6a77e01491",
+      "docs/architecture/rust-target/implementation/session-control/CONTRACT.md": "ad662b28701d71c8506b7b9565c4aeecb108704bb42cb6f7b0509e88979dab88",
+      "docs/architecture/rust-target/implementation/session-control/gdd.json": "0a226630782e57c9cebd32833531db4f765cbe3c0006668a39efff79d137c8f8",
+      "docs/architecture/rust-target/implementation/session-control/readiness.json": "2b9b8052e6caa9eea150eebbc43bd823f4d731b0df788e2dd3f76f2a9e4bfaff"
+    }
+  },
+  "review_loop": [
+    "Source review confirmed physical deletion, rather than timestamp comparison, is session authority; source list is Fresh while revocation is authoritative-only; native stronger gates and nonbearer response/targets explicitly specified",
+    "Contract/implementation review found no material defect; required explicit1001 total rows including expired and serialized escaping budget cases, both covered",
+    "Initial final review found missing direct clear-header assertion for current-session RevokeOne response; main captured/checks that response, then independent final342-case run passed with exact source hashes"
+  ],
+  "observations": [
+    "Own exact-ID/token deletes never touch foreign subjects; current/fresh active verified-factor gate needs no local credential or MFA keyring",
+    "Logout works on missing/expired/disabled/malformed-time state, without fabricated audit for missing rows; local clear is separate from committed server deletion",
+    "Stable metadata allowlist excludes tokens;1000/1001 total-row and raw-versus-escaped1MiB bounds refuse partial lists and remain recoverable through revocation",
+    "Canonical workspace_audit and session_deleted lifecycle commit with intended rows; deleted sessions cannot authorize native/source reads and prior native MFA contexts refuse",
+    "All five operations restore complete rows/triggers/audit on late SQL and withhold result/headers on real DELETE commit-busy; writer races serialize revokes and MFA"
+  ],
+  "limits": [
+    "Internal admitted-control session lifecycle only; endpoints/physical handle/lifetime/source/live dual writers and restore lineage remain unqualified",
+    "Native list/freshness/own-ID/inclusive-others differences are explicit versioned source corrections; OAuth/cache-chunk/provider logout and whole identity/platform parity remain pending"
+  ]
+}

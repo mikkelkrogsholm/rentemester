@@ -1,0 +1,52 @@
+{
+  "review": "session-control-final",
+  "result": "PASS",
+  "checks": 342,
+  "sessionChecks": 103,
+  "read_only": true,
+  "remaining_material_findings": [],
+  "resolved_review_findings": [
+    {
+      "severity": "low",
+      "description": "Direct RevokeOne-current cookie-clear response lacked a test assertion; main added checkClear(selfRevoked), final independent 342-check repeat includes that correction."
+    }
+  ],
+  "command": "bun run scripts/rust/verify-mfa-login.ts",
+  "process_report": "/tmp/rm-sessions-review-process.json",
+  "stderr_report": "/tmp/rm-sessions-review-process.err",
+  "focused_native": {
+    "command": "cargo test --release -p rentemester-runtime auth::tests::pure_local_clear_has_no_bearer_and_preserves_selected_profile",
+    "result": "PASS 1 test",
+    "report": "/tmp/rm-sessions-review-native.txt"
+  },
+  "reviewed_scope": [
+    "Runtime proof provenance and profile-preserving pure cookie clear",
+    "Timestamp-independent exact-token logout including missing/disabled/expired/malformed-time cases",
+    "Fresh current verified/active human and strict factor with no local credential requirement",
+    "Own-ID target deletion, missing/foreign no-op, all rows including expired others, foreign protection",
+    "Stable token-free listing; 1000 total row and exact serialized 1MiB bounds",
+    "Canonical accepted audit, session-deleted lifecycle count and pending-MFA invalidation",
+    "WAL/DELETE writer contention, whole-image late rollback, all five real DELETE commit-busy outcomes, withheld result and headers",
+    "Actual Better Auth session/list/revoke/logout/cookie oracle on synthetic source copies"
+  ],
+  "assumptions": [
+    "Internal operations on admitted synthetic canonical control handles; exposed endpoints, physical admission, restore lineage and live dual writers remain explicitly unqualified."
+  ],
+  "source_contract_hash_matches": true,
+  "readiness_report": "Read 3 PASS structural checks; does not itself claim behavioral proof.",
+  "source_hashes_unchanged_during_final_repeat": true,
+  "sha256": {
+    "crates/rentemester-application/src/lib.rs": "9acef3a51a1f1fd595663f2de668097eec06c9ea113235515de32db0569e172b",
+    "crates/rentemester-application/src/session_control.rs": "f39d911427bd596ee6757e6468e5c48615b77294beabf85ec0f510edd27fb226",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "9d38fb9b99910a8ad08adcecf8b151d12fe0444d9b0a1c0f40a351050dc41071",
+    "crates/rentemester-runtime/src/auth.rs": "ad87f08a994a77cb073999be9d3189bbe79259028467dc3c5aac5f43c72d911a",
+    "crates/rentemester-storage/src/lib.rs": "0a65a9c18e829d4689dbfd29c3b66a8ccdb071b06c03b365abd6475587c27dd3",
+    "crates/rentemester-storage/src/session_control.rs": "8330f26bc7e2f2f7e5b9a79dc09f2348ac8369446dabe53a048d9f283696ac19",
+    "crates/rentemester-storage/src/mfa_login.rs": "f48fa2510fa68f48e9a36df36e7e37c5553e8ba19ed4ad0b8f7715575d9e1b7a",
+    "scripts/rust/session-control-cases.ts": "33d126388cb41cd7d07792f88887d764c43cf7ec63e754d9e79e100e4bb9e4ba",
+    "scripts/rust/verify-mfa-login.ts": "d968ad6fedf2eb03d2183ea65cc63f5fd28a8664526228abbb5e0a6a77e01491",
+    "docs/architecture/rust-target/implementation/session-control/CONTRACT.md": "ad662b28701d71c8506b7b9565c4aeecb108704bb42cb6f7b0509e88979dab88",
+    "docs/architecture/rust-target/implementation/session-control/gdd.json": "0a226630782e57c9cebd32833531db4f765cbe3c0006668a39efff79d137c8f8",
+    "docs/architecture/rust-target/implementation/session-control/readiness.json": "2b9b8052e6caa9eea150eebbc43bd823f4d731b0df788e2dd3f76f2a9e4bfaff"
+  }
+}

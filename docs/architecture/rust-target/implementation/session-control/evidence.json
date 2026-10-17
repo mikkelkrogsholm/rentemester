@@ -1,0 +1,67 @@
+{
+  "increment": "session-control-1",
+  "code_revision": "sha256:7e04f19e4b9535561a371aa5f333cf6fa59a9db2dcdab1cbeaa830349cf558b3",
+  "spec_revision": "sha256:028f2f56eb3ccee83f4f9a113513ffa8c36453876f5f9dcc65638d86fedfa5e7",
+  "state": "verified-native-own-session-listing-and-revocation",
+  "checks": {
+    "native_tests_passed": 89,
+    "ignored_subprocess_helpers": 19,
+    "integration_checks": 11405,
+    "mfa_and_session_process_checks": 342,
+    "new_distinct_session_process_cases": 103,
+    "independent_final_harness_repetitions": 1,
+    "strict_fmt_clippy_boundaries_typecheck_lint": "PASS"
+  },
+  "claims": [
+    "Runtime-bound session proof and one control writer/Clock serialize own List/SignOut/RevokeOne/RevokeOthers/RevokeAll with canonical current control admission",
+    "List/revokes require current fresh active verified-email/MFA-enabled human and strict verified factor, without local password account or MFA-keyring dependency; logout uses exact token deletion independent of times/access/MFA",
+    "Token-free allowlisted stable metadata list has explicit1000-total-row and1MiB encoded JSON bounds; selected target is own nonbearer ID and foreign/missing targets are identical audited noops",
+    "All/others atomically delete intended own rows including expired others; canonical deletion triggers invalidate earlier native pending MFA and prevent deleted-token rescue by cached/source observations",
+    "Distinct canonical workspace_audit accepted events contain subject/current-session/version/target/count only; result and relevant clear headers leave only after known commit",
+    "Full late rollback and real commit-busy at all five operations preserve authority boundaries; pure local expiry is independent of server success and both Secure/Development profiles are tested",
+    "Actual installed source list IDs/session readers/revocation/logout/cookie profile interoperate on separate synthetic copies; independent WAL/DELETE races do not resurrect deleted sessions"
+  ],
+  "limits": [
+    "No exposed HTTP/CLI/MCP/UI endpoint/rate/origin/bounded blocking or full reset/email/service/trusted-device/provider identity parity",
+    "Source token-bearing/unbounded listing, bearer-target revocation, authoritative-only revoke and active-only multi-delete others differ deliberately from the documented native contract",
+    "No-op revokes with no deletion do not claim pending MFA invalidation; pure local-clear headers never prove database revocation",
+    "Current-row membership/lifecycle counts do not qualify universal historical chronology/normalization/restore lineage or live dual writers",
+    "No actual physical SQLite-handle/workspace lifetime admission, real user/company data adoption, platform distribution or cutover",
+    "Semantic Graphify refresh covers current implementation README/CONTRACT; generated JSON/logs/historical snapshots/unrelated documents not semantically refreshed"
+  ],
+  "verification_mode": "One full final-code rust:verify run, independent final342-case process repetition and1 focused pure-clear native unit",
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": {
+    "crates/rentemester-application/src/lib.rs": "9acef3a51a1f1fd595663f2de668097eec06c9ea113235515de32db0569e172b",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "9d38fb9b99910a8ad08adcecf8b151d12fe0444d9b0a1c0f40a351050dc41071",
+    "crates/rentemester-application/src/session_control.rs": "f39d911427bd596ee6757e6468e5c48615b77294beabf85ec0f510edd27fb226",
+    "crates/rentemester-runtime/src/auth.rs": "ad87f08a994a77cb073999be9d3189bbe79259028467dc3c5aac5f43c72d911a",
+    "crates/rentemester-storage/src/lib.rs": "0a65a9c18e829d4689dbfd29c3b66a8ccdb071b06c03b365abd6475587c27dd3",
+    "crates/rentemester-storage/src/mfa_login.rs": "f48fa2510fa68f48e9a36df36e7e37c5553e8ba19ed4ad0b8f7715575d9e1b7a",
+    "crates/rentemester-storage/src/session_control.rs": "8330f26bc7e2f2f7e5b9a79dc09f2348ac8369446dabe53a048d9f283696ac19",
+    "docs/architecture/rust-target/implementation/session-control/CONTRACT.md": "ad662b28701d71c8506b7b9565c4aeecb108704bb42cb6f7b0509e88979dab88",
+    "docs/architecture/rust-target/implementation/session-control/gdd.json": "0a226630782e57c9cebd32833531db4f765cbe3c0006668a39efff79d137c8f8",
+    "docs/architecture/rust-target/implementation/session-control/readiness.json": "2b9b8052e6caa9eea150eebbc43bd823f4d731b0df788e2dd3f76f2a9e4bfaff",
+    "node_modules/better-auth/dist/api/routes/session.mjs": "831a00b6e144c1560c21406de1db586a67089630ad58fb2f3c7dcd3c5c963d57",
+    "node_modules/better-auth/dist/api/routes/sign-out.mjs": "b90732b4bd502965384f43bb8f833d78e7b0b1a33d816a94850659f76b6577ea",
+    "node_modules/better-auth/dist/cookies/index.mjs": "945bbb0bd0d77240bc74315c58f5ca74a62165ef605e30dfb336b34c0120665a",
+    "scripts/rust/session-control-cases.ts": "33d126388cb41cd7d07792f88887d764c43cf7ec63e754d9e79e100e4bb9e4ba",
+    "scripts/rust/verify-mfa-login.ts": "d968ad6fedf2eb03d2183ea65cc63f5fd28a8664526228abbb5e0a6a77e01491",
+    "scripts/rust/verify.ts": "6234bca4d9e5f80df53276f5cedc7021c13c5d1e677f807a0d881dc72a7aacc1",
+    "src/core/workspace-access.ts": "0e034fcee922d6cd4733da1fbdc85f05dce0a443461083903a5808554fb84b2e",
+    "src/core/workspace-migrations/0001-workspace-control-baseline.json": "8358aef2635b37b47baf56a39f424f9aff3dcb7c17dbc2c3450803a3e09eaac1",
+    "src/core/workspace-migrations/0006-auth-audit-v6.json": "e19f1ee45191ef58864b204a889126fab04ce7a13ca7df2c70cb7924a9bd5274",
+    "src/server/auth.ts": "be531af3c308a417d767dc30960777c45408ff8883d767702199dbcbdae942cc",
+    "src/server/better-auth.ts": "9513797eb1b1a82b0c9d592fb00e3317d6d33b6eb29c7bf0c548a0a4c58c9b73"
+  },
+  "evidence_files": {
+    "rust-verify.txt": "3cc1be387e4afe76d45b450c83b340e2994b02d56fd8c864c3c40d275b3d3d66",
+    "review-native.txt": "01ec729b118645ed8fab41609a187de446de4e2f50a86b8f5a95f43cda0c56a8",
+    "review-process.json": "3ca5de56c46cee77549406e61f8782a1d4039ad6d998b40cef19cea03107a6c6",
+    "review-checks.json": "5e110c933296b18f681a796063c12740fe6b5765c66bfda24c3e66d893eb545d",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "b7a3ef6464fe3c1dc5cf4ae078a08eca7a8e2547d97a689ed32e9fc3001c79f7"
+  }
+}
