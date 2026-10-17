@@ -1,0 +1,20 @@
+{
+  "format": "rentemester-exact-arithmetic-vectors/1",
+  "generator": "Python Decimal/ROUND_HALF_UP; no product imports",
+  "generator_sha256": "bddfcf444638e5f2f53d360c39c742919ece0a1d77b77590906854efe4303490",
+  "vectors_sha256": "9d0f661ced97bf2c7d601a54527965fbaddb51405661b896b6226e1c2b933336",
+  "checks": 1074,
+  "operations": {
+    "add": 160,
+    "currency": 13,
+    "currency-wire": 13,
+    "fx": 168,
+    "money": 138,
+    "money-wire": 15,
+    "multiply": 175,
+    "percent": 175,
+    "rate": 44,
+    "rate-wire": 13,
+    "subtract": 160
+  }
+}

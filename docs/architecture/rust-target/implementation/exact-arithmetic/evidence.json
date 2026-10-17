@@ -1,0 +1,230 @@
+{
+  "format": "rentemester-exact-arithmetic-increment/1",
+  "base_code": "45f9aede9f098c135045928e9cadf2e0f5c9b727",
+  "previous_goal_turn": "Progress:45f9aede typed fiscal calendar delivered/pushed; reconciled existing branch and active full-platform goal before this R09 numeric scope.",
+  "spec_revision": "sha256:f91649e00b915d23a491b4fe85759017585eb7093e697f4c837e363f9bd28115",
+  "code_revision": "sha256:99893a7c5c895bb1ef894b36fa691394ca17a7a12295ef7730cc0e5a6601da25",
+  "assets": [
+    {
+      "path": "crates/rentemester-cli/tests/arithmetic_vectors.rs",
+      "sha256": "a3481947c496639959a42da7da501e160aaded27e2d54b69c28f466b4182f7d9"
+    },
+    {
+      "path": "crates/rentemester-engine/Cargo.toml",
+      "sha256": "888de533b1fa8cc359b7677d155956c39b1383099d91636396cd1ee1a60bf5cb"
+    },
+    {
+      "path": "crates/rentemester-engine/src/currency.rs",
+      "sha256": "0b56f0cabd92891704f4528b2511de91490ec74025865cbd92736776a59e3043"
+    },
+    {
+      "path": "crates/rentemester-engine/src/decimal.rs",
+      "sha256": "cf57d279acbd60a05bc0fedb48e071c30e1d1477464a2ea0b465624e1cf490af"
+    },
+    {
+      "path": "crates/rentemester-engine/src/fx.rs",
+      "sha256": "3a324c09052c99ccb9adaf4ce5515a2070349e498f0ba32a72b965e96caa3db9"
+    },
+    {
+      "path": "crates/rentemester-engine/src/lib.rs",
+      "sha256": "b8616b8fa777ae6cfb35546176d44ac2978d1bd012f21f7a4109239537890151"
+    },
+    {
+      "path": "crates/rentemester-engine/src/money.rs",
+      "sha256": "5d69282ed77ea59f98a9af6bf492427f8f3d478f654712cbfb3b36222fdd661f"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/exact-arithmetic/CONTRACT.md",
+      "sha256": "babb7a6ab032c0676a064569187c4487e060850e23e4bfaf0b3e2a82a7b1a9af"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/exact-arithmetic/gdd.json",
+      "sha256": "5a4fa3958b86df028a3a35a8f2c1e344f1b3e52e3debc131cfb43780833aaea8"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/exact-arithmetic/legacy-observations.jsonl",
+      "sha256": "72edcac19e71dd0cadc6d93801e026938fca9deccf8d4745de65a1f517f9d4de"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/exact-arithmetic/vectors-manifest.json",
+      "sha256": "5feb70f45cf32f67ced890b7fc8f35a2f760421a58db35f9c566b0672848fa62"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/exact-arithmetic/vectors.jsonl",
+      "sha256": "9d0f661ced97bf2c7d601a54527965fbaddb51405661b896b6226e1c2b933336"
+    },
+    {
+      "path": "scripts/rust/arithmetic-vectors.py",
+      "sha256": "bddfcf444638e5f2f53d360c39c742919ece0a1d77b77590906854efe4303490"
+    },
+    {
+      "path": "scripts/rust/check-boundaries.ts",
+      "sha256": "06b1a41c73167c56eb88ff23aa15f9f75c32203084f3ed9b5a0998b5a232db0c"
+    },
+    {
+      "path": "scripts/rust/verify-arithmetic.ts",
+      "sha256": "35055235da50b2846273fba627c986844bf9dd93c6d544039a3bc3f3c814f8fc"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "c0c896a439c076c8ed71033d6b464d43e0ad47ca0ac5e791aa94b766f72606ed"
+    },
+    {
+      "path": "src/core/ledger.ts",
+      "sha256": "605cfbe6b7800cf789d0a9b773f70fe43ebd54fdd965b4841f2e50ab4dd0cfbe"
+    },
+    {
+      "path": "src/core/money.ts",
+      "sha256": "e013c3ca23bb2391105aa2f1e2f307dcdaaf85bec60159e5d63b39aa7e7c3bf8"
+    }
+  ],
+  "commands": [
+    {
+      "command": "bun run rust:verify",
+      "result": "PASS",
+      "evidence": "rust-verify.txt",
+      "coverage": "53 Rust tests;9 ignored fixture/process helpers selected explicitly by harnesses;6175 prior integration checks plus1075 new arithmetic checks"
+    },
+    {
+      "command": "cargo test --locked -p rentemester-engine",
+      "result": "PASS",
+      "evidence": "native-engine.txt",
+      "coverage": "13 tests including4 new decimal/currency/FX tests"
+    },
+    {
+      "command": "cargo test --locked -p rentemester-cli --test arithmetic_vectors",
+      "result": "PASS",
+      "evidence": "serde.txt",
+      "coverage": "2 strict serde/computed roundtrip tests;ignored corpus helper selected separately"
+    },
+    {
+      "command": "python3 scripts/rust/arithmetic-vectors.py --check",
+      "result": "PASS",
+      "evidence": "generator-check.txt",
+      "coverage": "1074 independent Decimal expectations;fixed bytes and generator/corpus hashes reproduced"
+    },
+    {
+      "command": "bun run scripts/rust/verify-arithmetic.ts",
+      "result": "PASS",
+      "evidence": "parity.json",
+      "coverage": "1074 native vectors in2 environments;actual legacy observations frozen separately"
+    },
+    {
+      "command": "bunx biome lint scripts/rust/verify-arithmetic.ts scripts/rust/verify.ts --error-on-warnings",
+      "result": "PASS",
+      "evidence": "lint.txt"
+    }
+  ],
+  "independent_review": {
+    "agent": "migration_port_research",
+    "mode": "Read-only arithmetic/type/serde/boundary/stage/classification review and independent generator/engine/serde/corpus execution",
+    "result": "All checks PASS;no remaining material bounded defect",
+    "evidence": [
+      "engine-independent.txt",
+      "serde-independent.txt",
+      "parity-independent.txt",
+      "generator-independent.txt"
+    ],
+    "review_repairs": [
+      "Canonical decoder originally reused bounded raw parser, making valid expanded values fail their own roundtrip. Fixed direct strict fixed-scale parser;raw limits preserved;explicit caller transport budget boundary.",
+      "Added expanded raw/product/FX/total serde tests and5000digit fixed canonical corpus cases;kept original contract/model/readiness in history/v1 and current readiness-v2."
+    ]
+  },
+  "design_review": {
+    "scope": [
+      "action.exact_arithmetic",
+      "action.canonical_values",
+      "component.domain"
+    ],
+    "model_revision": "sha256:f91649e00b915d23a491b4fe85759017585eb7093e697f4c837e363f9bd28115",
+    "code_revision": "sha256:99893a7c5c895bb1ef894b36fa691394ca17a7a12295ef7730cc0e5a6601da25",
+    "KISS": "Pure small value types and exact integer arithmetic;no float,clock,SQL,network,runtime endpoint or new dependency.",
+    "DRY": "One private decimal grammar/quantization/format/division primitive shared by Money and FxRate.",
+    "separation_of_concerns": "Raw quantization and canonical serde are separate;Currency syntax does not normalize/default or grant eligibility;adapters own request budgets,quote evidence and policy.",
+    "modularity": "Engine values remain I/O-free;fixture I/O stays in CLI integration-test adapter;actual TS comparison is development-only."
+  },
+  "correction_examples": [
+    {
+      "vector": {
+        "id": "arithmetic-00415",
+        "op": "multiply",
+        "left": "1.005",
+        "right": "1.5",
+        "expected": "1.51"
+      },
+      "actual_legacy": {
+        "ok": true,
+        "value": "1.51"
+      }
+    },
+    {
+      "vector": {
+        "id": "arithmetic-00419",
+        "op": "fx",
+        "left": "1.005",
+        "right": "1.5",
+        "currency": "USD",
+        "expected": "1.52"
+      },
+      "actual_legacy": {
+        "ok": true,
+        "value": "1.52"
+      }
+    },
+    {
+      "vector": {
+        "id": "arithmetic-00510",
+        "op": "multiply",
+        "left": "1.15",
+        "right": "0.1",
+        "expected": "0.12"
+      },
+      "actual_legacy": {
+        "ok": true,
+        "value": "0.12"
+      }
+    },
+    {
+      "vector": {
+        "id": "arithmetic-00514",
+        "op": "fx",
+        "left": "1.15",
+        "right": "0.1",
+        "currency": "USD",
+        "expected": "0.12"
+      },
+      "actual_legacy": {
+        "ok": true,
+        "value": "0.11",
+        "resultNumber": "0.11",
+        "bridge": {
+          "left": "1.15",
+          "right": "0.1",
+          "amountNormalized": "1.15",
+          "rateNormalized": "0.1",
+          "binaryProduct": "0.11499999999999999",
+          "currencyNormalized": "USD"
+        }
+      }
+    }
+  ],
+  "verification_notes": [
+    "Independent Python expectations fixed before TS observations and native validation;--check reproduces bytes.",
+    "Explicit --capture-legacy creates only an absent observation file after native verification;normal runs require exact frozen source outputs and classifications.",
+    "Wire cases have no equivalent old canonical serde operation and never pretend legacy API parity.",
+    "Final roundtrip test also proves bounded raw parse still refuses expanded canonical output while strict typed deserialization succeeds.",
+    "Initial CLI test compile missed a helper lifetime;fixed before final verification,not a product behavioral failure.",
+    "Saved terminal logs strip trailing blank lines only;substantive output and JSONL bytes retained."
+  ],
+  "limitations": [
+    "Legacy API takes Numbers; exact decimal strings are explicitly bridged through Number before actual source calls",
+    "FX comparison is arithmetic only; typed positive rate/currency admission is not a claim about old whole-journal validation",
+    "Canonical wire has no equivalent old serde operation; transport budgets remain caller responsibility",
+    "No source mutation, journal policy, original writes, runtime authority, UI, distribution, cutover or broad R09 completion",
+    "Currency syntax accepts configured/synthetic codes; no ISO registry or configured eligibility is asserted. Money is two-decimal centiunits and quote identity is caller context.",
+    "Canonical digit strings have no separate domain limit so every computed BigInt roundtrips; caller transport budgets must precede deserialization. Raw input2048byte/exponent400 bounds remain unchanged. No endpoint is qualified here.",
+    "Negative money and percentages are allowed; FX rates require strictly positive rounded six-decimal values. No posting-side amount positivity, evidence, balance, FX source or interest/legal eligibility is implied.",
+    "Python is a development-only independent fixture generator; normal verification reads fixed assets using existing Bun/Cargo.",
+    "Legacy difference counts include Number bridge/output precision, nonfinite range and binary FX intermediates; they are not96 interchangeable product rounding defects. TypeScript production arithmetic is unchanged."
+  ]
+}

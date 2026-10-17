@@ -1,0 +1,336 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Exact arithmetic and canonical currency/FX values",
+    "goal": "Shared exact numeric values for the Rust posting pipeline.",
+    "scope": "Bounded R09 numeric foundation; full goal and all writer/client gates unchanged."
+  },
+  "nodes": {
+    "component.domain": {
+      "kind": "component",
+      "description": "Pure exact accounting values",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Exact staged monetary arithmetic and canonical value construction",
+        "rationale": "Posting/FX must share one exact numeric implementation.",
+        "excludes": [
+          "Writer authority, configured currency/FX evidence, interest policy and product endpoints"
+        ]
+      },
+      "interfaces": [
+        "action.exact_arithmetic",
+        "action.canonical_values"
+      ]
+    },
+    "action.exact_arithmetic": {
+      "kind": "action",
+      "description": "Compute explicitly staged exact amount/rate arithmetic",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "operation": {
+            "type": "string"
+          },
+          "decimal_inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "context": {
+          "mode": {
+            "type": "enum",
+            "values": [
+              "pure_explicit_inputs"
+            ]
+          }
+        },
+        "output": {
+          "type": "string"
+        },
+        "errors": {
+          "invalid_input": "Refuse as specified in CONTRACT.md.",
+          "invalid_rate": "Refuse as specified in CONTRACT.md.",
+          "invalid_currency": "Refuse as specified in CONTRACT.md.",
+          "division_by_zero": "Refuse as specified in CONTRACT.md."
+        },
+        "preconditions": [
+          "Explicit quantization operation and bounded decimal inputs; currency/quote identity/configuration resolved by caller."
+        ],
+        "postconditions": [
+          "Complete exact canonical string or typed refusal; no external effects."
+        ],
+        "external_effects": [],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": false,
+            "rationale": "Numeric values grant no authority.",
+            "scenarios": []
+          },
+          "idempotency": {
+            "relevant": false,
+            "rationale": "Pure deterministic arithmetic has no receipt/state.",
+            "scenarios": []
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Syntax/resource limits, signs, positivity and canonical string scales.",
+            "scenarios": [
+              "scenario.boundary",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": false,
+            "rationale": "No mutable shared state.",
+            "scenarios": []
+          },
+          "atomicity": {
+            "relevant": false,
+            "rationale": "No external effects.",
+            "scenarios": []
+          }
+        },
+        "error_cases": {
+          "invalid_input": [
+            "scenario.boundary"
+          ],
+          "invalid_rate": [
+            "scenario.boundary"
+          ],
+          "invalid_currency": [
+            "scenario.boundary"
+          ],
+          "division_by_zero": [
+            "scenario.boundary"
+          ]
+        }
+      },
+      "behavior": "Explicit staged integer arithmetic with half-away rounding; never floating point or implicit currency/default coercion."
+    },
+    "action.canonical_values": {
+      "kind": "action",
+      "description": "Construct canonical currency/money/rate values and exact serde",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "operation": {
+            "type": "string"
+          },
+          "decimal_inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "context": {
+          "mode": {
+            "type": "enum",
+            "values": [
+              "pure_explicit_inputs"
+            ]
+          }
+        },
+        "output": {
+          "type": "string"
+        },
+        "errors": {
+          "invalid_input": "Refuse as specified in CONTRACT.md.",
+          "invalid_rate": "Refuse as specified in CONTRACT.md.",
+          "invalid_currency": "Refuse as specified in CONTRACT.md.",
+          "division_by_zero": "Refuse as specified in CONTRACT.md."
+        },
+        "preconditions": [
+          "Exact fixed-scale strings; arbitrary canonical digit count under caller transport budgets; no raw decimal/exponent parsing or implicit defaults."
+        ],
+        "postconditions": [
+          "Complete exact canonical string or typed refusal; no external effects.",
+          "Every serialized typed value, including raw expansion/products/totals beyond2048bytes, roundtrips exactly."
+        ],
+        "external_effects": [],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": false,
+            "rationale": "Numeric values grant no authority.",
+            "scenarios": []
+          },
+          "idempotency": {
+            "relevant": false,
+            "rationale": "Pure deterministic arithmetic has no receipt/state.",
+            "scenarios": []
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Syntax/resource limits, signs, positivity and canonical string scales.",
+            "scenarios": [
+              "scenario.boundary",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": false,
+            "rationale": "No mutable shared state.",
+            "scenarios": []
+          },
+          "atomicity": {
+            "relevant": false,
+            "rationale": "No external effects.",
+            "scenarios": []
+          }
+        },
+        "error_cases": {
+          "invalid_input": [
+            "scenario.boundary"
+          ],
+          "invalid_rate": [
+            "scenario.boundary"
+          ],
+          "invalid_currency": [
+            "scenario.boundary"
+          ],
+          "division_by_zero": [
+            "scenario.boundary"
+          ]
+        }
+      },
+      "behavior": "Explicit staged integer arithmetic with half-away rounding; never floating point or implicit currency/default coercion."
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Exact results match independent Decimal expectations; ordinary legacy observations match.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Valid bounded decimal inputs and canonical currency.",
+        "when": "Quantize, multiply, percent or apply positive FX rate.",
+        "then": "Exact results match independent Decimal expectations; ordinary legacy observations match."
+      }
+    },
+    "scenario.boundary": {
+      "kind": "scenario",
+      "description": "Typed refusal without coercion, nonfinite/partial output or wrapping.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Invalid syntax/limit/currency/rate, zero division or noncanonical wire representation.",
+        "when": "Construct values or evaluate arithmetic.",
+        "then": "Typed refusal without coercion, nonfinite/partial output or wrapping."
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Freeze and classify each source observation rather than hide it.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Number bridge precision or binary FX intermediate differs from exact decimal computation.",
+        "when": "Run actual unchanged TS helpers against fixed native expectations.",
+        "then": "Freeze and classify each source observation rather than hide it."
+      }
+    },
+    "scenario.purity": {
+      "kind": "scenario",
+      "description": "Deterministic exact string results without filesystem/SQL/network/clock dependency.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Same explicit inputs across isolated fixture runs.",
+        "when": "Run engine and dependency/direct-I/O checks.",
+        "then": "Deterministic exact string results without filesystem/SQL/network/clock dependency."
+      }
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner.exact_arithmetic",
+      "from": "action.exact_arithmetic",
+      "to": "component.domain",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.owner.canonical_values",
+      "from": "action.canonical_values",
+      "to": "component.domain",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal.exact_arithmetic",
+      "from": "scenario.normal",
+      "to": "action.exact_arithmetic",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.normal.canonical_values",
+      "from": "scenario.normal",
+      "to": "action.canonical_values",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.boundary.exact_arithmetic",
+      "from": "scenario.boundary",
+      "to": "action.exact_arithmetic",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.boundary.canonical_values",
+      "from": "scenario.boundary",
+      "to": "action.canonical_values",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction.exact_arithmetic",
+      "from": "scenario.correction",
+      "to": "action.exact_arithmetic",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction.canonical_values",
+      "from": "scenario.correction",
+      "to": "action.canonical_values",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.purity.exact_arithmetic",
+      "from": "scenario.purity",
+      "to": "action.exact_arithmetic",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.purity.canonical_values",
+      "from": "scenario.purity",
+      "to": "action.canonical_values",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Exact arithmetic contract",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "babb7a6ab032c0676a064569187c4487e060850e23e4bfaf0b3e2a82a7b1a9af"
+      }
+    }
+  }
+}

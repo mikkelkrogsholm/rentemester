@@ -1,0 +1,41 @@
+{
+  "scope": "exact amount/currency/FX arithmetic with independent Decimal expectations",
+  "checks": 1075,
+  "vectors": 1074,
+  "operations": {
+    "add": 160,
+    "currency": 13,
+    "currency-wire": 13,
+    "fx": 168,
+    "money": 138,
+    "money-wire": 15,
+    "multiply": 175,
+    "percent": 175,
+    "rate": 44,
+    "rate-wire": 13,
+    "subtract": 160
+  },
+  "legacy_classifications": {
+    "match": 793,
+    "native_typed_refusal": 88,
+    "difference": 96,
+    "legacy_number_refusal": 12,
+    "both_refuse": 44,
+    "native_canonical_only": 41
+  },
+  "corpus_sha256": "9d0f661ced97bf2c7d601a54527965fbaddb51405661b896b6226e1c2b933336",
+  "legacy_observations_sha256": "72edcac19e71dd0cadc6d93801e026938fca9deccf8d4745de65a1f517f9d4de",
+  "passed": [
+    "native results exactly match independent fixed corpus",
+    "actual legacy numeric bridges, refusals and differences explicitly frozen",
+    "canonical wire independently verified; alternate environment stable"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "limits": [
+    "Legacy API takes Numbers; exact decimal strings are explicitly bridged through Number before actual source calls",
+    "FX comparison is arithmetic only; typed positive rate/currency admission is not a claim about old whole-journal validation",
+    "Canonical wire has no equivalent old serde operation; transport budgets remain caller responsibility",
+    "No source mutation, journal policy, original writes, runtime authority, UI, distribution, cutover or broad R09 completion"
+  ]
+}

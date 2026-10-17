@@ -1,0 +1,26 @@
+   Compiling rentemester-engine v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-engine)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.30s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_engine-390a548a9db9e304)
+
+running 13 tests
+test calendar::tests::deadlines_use_real_target_calendar_and_trimmed_low_years ... ok
+test fiscal_year::tests::fiscal_boundaries_labels_and_checked_years ... ok
+test currency::tests::currency_is_canonical_syntax_not_a_registry_or_normalizer ... ok
+test decimal::tests::signed_division_is_half_away_and_rejects_zero ... ok
+test fiscal_year::tests::canonical_dates_reject_rollover_and_lexical_coercion ... ok
+test money::tests::arbitrary_integer_precision_and_bounded_input ... ok
+test trial_balance::tests::calendar_boundaries_and_strict_input ... ok
+test fiscal_year::tests::six_month_deadline_preserves_month_end_and_clamps_day ... ok
+test trial_balance::tests::independently_rounded_lines_and_touched_accounts ... ok
+test money::tests::exact_rounding_and_no_negative_zero ... ok
+test fx::tests::explicit_quantization_stages_and_exact_fx_halves ... ok
+test fx::tests::exact_huge_values_and_rate_canonical_boundaries ... ok
+test fiscal_year::tests::every_fiscal_start_contains_its_date_and_labels_are_stable ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rentemester_engine
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

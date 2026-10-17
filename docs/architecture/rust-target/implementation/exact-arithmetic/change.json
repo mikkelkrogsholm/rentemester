@@ -1,0 +1,36 @@
+{
+  "base_code": "45f9aede9f098c135045928e9cadf2e0f5c9b727",
+  "previous_increment": "fiscal-calendar-1",
+  "scope": "R09 exact amount/currency/FX and canonical serde",
+  "new_ids": [
+    "action.exact_arithmetic",
+    "action.canonical_values"
+  ],
+  "write_scope": [
+    "crates/rentemester-engine/src/decimal.rs",
+    "crates/rentemester-engine/src/money.rs",
+    "crates/rentemester-engine/src/fx.rs",
+    "crates/rentemester-engine/src/currency.rs",
+    "crates/rentemester-engine/src/lib.rs",
+    "crates/rentemester-cli/tests/arithmetic_vectors.rs",
+    "scripts/rust/verify-arithmetic.ts",
+    "scripts/rust/arithmetic-vectors.py",
+    "scripts/rust/verify.ts",
+    "docs/architecture/rust-target/implementation/README.md",
+    "docs/architecture/rust-target/implementation/progress.json",
+    "docs/architecture/rust-target/implementation/exact-arithmetic"
+  ],
+  "refinement": "Current readiness-v2 follows canonical roundtrip boundary correction;history/v1 preserves original normative contract/model/readiness.",
+  "issues_closed": [],
+  "remaining_gates": [
+    "Legacy API takes Numbers; exact decimal strings are explicitly bridged through Number before actual source calls",
+    "FX comparison is arithmetic only; typed positive rate/currency admission is not a claim about old whole-journal validation",
+    "Canonical wire has no equivalent old serde operation; transport budgets remain caller responsibility",
+    "No source mutation, journal policy, original writes, runtime authority, UI, distribution, cutover or broad R09 completion",
+    "Currency syntax accepts configured/synthetic codes; no ISO registry or configured eligibility is asserted. Money is two-decimal centiunits and quote identity is caller context.",
+    "Canonical digit strings have no separate domain limit so every computed BigInt roundtrips; caller transport budgets must precede deserialization. Raw input2048byte/exponent400 bounds remain unchanged. No endpoint is qualified here.",
+    "Negative money and percentages are allowed; FX rates require strictly positive rounded six-decimal values. No posting-side amount positivity, evidence, balance, FX source or interest/legal eligibility is implied.",
+    "Python is a development-only independent fixture generator; normal verification reads fixed assets using existing Bun/Cargo.",
+    "Legacy difference counts include Number bridge/output precision, nonfinite range and binary FX intermediates; they are not96 interchangeable product rounding defects. TypeScript production arithmetic is unchanged."
+  ]
+}

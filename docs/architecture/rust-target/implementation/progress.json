@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "fiscal-calendar-1",
-  "code_revision": "sha256:70e6b284bf84c7830d2baa80825f84eb49ed1be2d763630cb73b1797832ddab8",
-  "spec_revision": "sha256:6de563f27f61bce82b6b637fc417c1bfab444ece465bc95ce8a61299419c42e8",
-  "state": "verified-experimental-pure-fiscal-calendar",
+  "current_increment": "exact-arithmetic-1",
+  "code_revision": "sha256:99893a7c5c895bb1ef894b36fa691394ca17a7a12295ef7730cc0e5a6601da25",
+  "spec_revision": "sha256:f91649e00b915d23a491b4fe85759017585eb7093e697f4c837e363f9bd28115",
+  "state": "verified-experimental-pure-exact-arithmetic",
   "issues_closed": [],
   "next": [
-    "Complete R09 exact currency/rate/account-ID/rule invariant evaluation; integrate canonical dates with numbering/report use cases without rewriting stored identifiers",
+    "Complete R09 account identifiers, balanced posting and configured rule invariants; integrate typed arithmetic/calendar with actual use cases without rewriting stored identifiers",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -27,11 +27,11 @@
     "state": "verified-experimental-readonly"
   },
   "evidence": {
-    "report": "fiscal-calendar/evidence.json",
-    "parity": "fiscal-calendar/parity.json",
-    "rust_tests_passed": 47,
-    "ignored_subprocess_helpers": 8,
-    "fiscal_calendar_checks": 5691,
+    "report": "exact-arithmetic/evidence.json",
+    "parity": "exact-arithmetic/parity.json",
+    "rust_tests_passed": 53,
+    "ignored_subprocess_helpers": 9,
+    "exact_arithmetic_checks": 1075,
     "previous_checks_retained": [
       34,
       31,
@@ -43,7 +43,8 @@
       47,
       37,
       49,
-      128
+      128,
+      5691
     ],
     "writer_authority": false,
     "whole_issues_closed": false
@@ -108,6 +109,12 @@
       "code_revision": "sha256:f81060dfb1427a0945daabc6302bfb99a5419d9011fbd9d339b2aa0aee1dc9a9",
       "spec_revision": "sha256:3c08d1584e0cf074e69800e9d2a13a2b94d3641cefe7ddc6f71c78fafc1b3286",
       "state": "verified-experimental-transaction-owned-sequences"
+    },
+    {
+      "current_increment": "fiscal-calendar-1",
+      "code_revision": "sha256:70e6b284bf84c7830d2baa80825f84eb49ed1be2d763630cb73b1797832ddab8",
+      "spec_revision": "sha256:6de563f27f61bce82b6b637fc417c1bfab444ece465bc95ce8a61299419c42e8",
+      "state": "verified-experimental-pure-fiscal-calendar"
     }
   ]
 }

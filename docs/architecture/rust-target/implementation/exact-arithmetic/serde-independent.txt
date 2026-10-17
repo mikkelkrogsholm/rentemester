@@ -1,0 +1,13 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on artifact directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
+     Running tests/arithmetic_vectors.rs (target/debug/deps/arithmetic_vectors-b3ac0e91ee26b13d)
+
+running 3 tests
+test vectors ... ignored, synthetic exact arithmetic corpus helper selected by Bun harness
+test canonical_serde_refuses_coercion_and_keeps_scale ... ok
+test computed_values_roundtrip_beyond_raw_decimal_input_budget ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s

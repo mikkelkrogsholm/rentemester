@@ -1,68 +1,31 @@
 use crate::Error;
 use num_bigint::{BigInt, Sign};
-use serde::{Serialize, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-/// Exact integer øre. Floating point is confined to the legacy storage adapter.
+/// Exact two-decimal amount (DKK øre or legacy foreign centiunits). Currency is explicit caller context.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Money(pub(crate) BigInt);
 impl Money {
     /// Decimal/exponent notation, rounded once, halfway away from zero.
     /// Resource limits bound parsing work; integer arithmetic never wraps.
     pub fn parse(value: &str) -> Result<Self, Error> {
-        let invalid = || Error::new("invalid_input", "invalid or out-of-range decimal amount");
-        if value.is_empty() || value.len() > 2048 || !value.is_ascii() {
-            return Err(invalid());
-        }
-        let (negative, unsigned) = if let Some(x) = value.strip_prefix('-') {
-            (true, x)
-        } else {
-            (false, value.strip_prefix('+').unwrap_or(value))
-        };
-        let mut parts = unsigned.split(['e', 'E']);
-        let coefficient = parts.next().ok_or_else(invalid)?;
-        let exponent = parts
-            .next()
-            .map(|x| x.parse::<i32>())
-            .transpose()
-            .map_err(|_| invalid())?
-            .unwrap_or(0);
-        if parts.next().is_some() || !(-400..=400).contains(&exponent) {
-            return Err(invalid());
-        }
-        let mut dot = false;
-        let mut scale = 0i32;
-        let mut digits = String::new();
-        for c in coefficient.chars() {
-            if c == '.' && !dot {
-                dot = true;
-            } else if c.is_ascii_digit() {
-                digits.push(c);
-                if dot {
-                    scale += 1;
-                }
-            } else {
-                return Err(invalid());
-            }
-        }
-        if digits.is_empty() {
-            return Err(invalid());
-        }
-        let mut integer = BigInt::parse_bytes(digits.as_bytes(), 10).ok_or_else(invalid)?;
-        let shift = scale - exponent - 2;
-        if shift > 0 {
-            let divisor = BigInt::from(10u8).pow(shift as u32);
-            let remainder = &integer % &divisor;
-            integer /= &divisor;
-            if remainder * 2u8 >= divisor {
-                integer += 1u8;
-            }
-        } else {
-            integer *= BigInt::from(10u8).pow((-shift) as u32);
-        }
-        if negative {
-            integer = -integer;
-        }
-        Ok(Self(integer))
+        Ok(Self(crate::decimal::parse_scaled(value, 2)?))
+    }
+    /// Strict wire input; explicit raw parse is the separate quantizing operation.
+    pub fn parse_canonical(value: &str) -> Result<Self, Error> {
+        Ok(Self(crate::decimal::parse_canonical(value, 2)?))
+    }
+    /// Multiply raw operands before cent quantization (e.g. price times quantity).
+    pub fn multiply_decimal(left: &str, right: &str) -> Result<Self, Error> {
+        Ok(Self(crate::decimal::multiply(left, right, 2)?))
+    }
+    /// Apply a percent quantized to two-decimal basis points to this cent amount.
+    pub fn percent(&self, percent: &str) -> Result<Self, Error> {
+        let basis_points = crate::decimal::parse_scaled(percent, 2)?;
+        Ok(Self(crate::decimal::round_div(
+            &(&self.0 * basis_points),
+            &BigInt::from(10000u32),
+        )?))
     }
     pub fn add(&mut self, value: &Self) {
         self.0 += &value.0;
@@ -74,25 +37,19 @@ impl Money {
         self.0.sign() == Sign::Minus
     }
     pub fn decimal(&self) -> String {
-        let negative = self.is_negative();
-        let digits = self.0.magnitude().to_str_radix(10);
-        let padded = if digits.len() < 3 {
-            format!("{digits:0>3}")
-        } else {
-            digits
-        };
-        let split = padded.len() - 2;
-        format!(
-            "{}{}.{}",
-            if negative { "-" } else { "" },
-            &padded[..split],
-            &padded[split..]
-        )
+        crate::decimal::format_scaled(&self.0, 2)
     }
 }
 impl Serialize for Money {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         serializer.serialize_str(&self.decimal())
+    }
+}
+
+impl<'de> Deserialize<'de> for Money {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let text = String::deserialize(deserializer)?;
+        Self::parse_canonical(&text).map_err(serde::de::Error::custom)
     }
 }
 
