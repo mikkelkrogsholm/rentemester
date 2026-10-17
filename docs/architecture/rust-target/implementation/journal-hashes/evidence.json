@@ -1,0 +1,158 @@
+{
+  "format": "rentemester-journal-hash-increment/1",
+  "base_code": "1aa02d6e17a2950fdf41357f45309e1b5ed11185",
+  "spec_revision": "sha256:e972f22fd46df3fc63e4e199d26357c1959b1b79d8cf0baaadd9f50b8136e162",
+  "code_revision": "sha256:6baa54d55bbad5fc120c8209643aae55b6e9b636fa602db1111deb11aa3c941d",
+  "assets": [
+    {
+      "path": "Cargo.toml",
+      "sha256": "a0e0444e0588acbc191fc1739ca71450f72f5a37a982879986827347c3855b6b"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "1c7717aeef925f025537f88ff8c2118ee9edcf3628c707807a5950b999fa11ed"
+    },
+    {
+      "path": "crates/rentemester-storage/Cargo.toml",
+      "sha256": "ad1ccef07f9968ba073e176e4feae9c9cf37d5795121a08e433d335ae8e93d7e"
+    },
+    {
+      "path": "crates/rentemester-storage/src/lib.rs",
+      "sha256": "a0da406c2ea18ecb4a8c89252b347eef5cc21f4befb57aa7c0f274265109dc0e"
+    },
+    {
+      "path": "crates/rentemester-storage/src/journal_hash.rs",
+      "sha256": "d53ca6b30c57d0d2de34787f1f1b9e9f6db70c974271abf3a92291d34c29b052"
+    },
+    {
+      "path": "crates/rentemester-storage/src/snapshot.rs",
+      "sha256": "207ab711dd4fe2108a4721d1c8a9af2a80840e537a0726a6c4be450c3a568579"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-schema.json",
+      "sha256": "b424cec385abad3f313ca633a291f8cf3f07d5cbece16523cd8fa0674cf729c7"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "edad5421fed33b743277f7fed76e5c6eca2b54509530a24ba1497a544373b2b2"
+    },
+    {
+      "path": "crates/rentemester-engine/src/money.rs",
+      "sha256": "d3fa39b13aef5c63fe5537ffaf4adc4a73117c9695c3653770655d80bf21f1f1"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "c74b2ca13f9c4a7438af7a51943da84f6dcef9beefb421007ddbecb464581c86"
+    },
+    {
+      "path": "scripts/rust/verify-journal-hashes.ts",
+      "sha256": "770067c4e75568a7ec03859ca74c1cdfff8d9406fedbdbb99e671659abdcfaeb"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/journal-hashes/CONTRACT.md",
+      "sha256": "f19a32d08475cf072c95a3581adec946202dcd3edd55baba3c8097c68ccee6aa"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/journal-hashes/gdd.json",
+      "sha256": "38f7ed9aecda04fe7ff9306a913e272edf8cbbfc0c27a8a906aa21aa1ffe7a5d"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/journal-hashes/vectors.json",
+      "sha256": "f4956424fd046ec146c35c6da14c89cd67f3567e94be5c428a72c67af3b503aa"
+    },
+    {
+      "path": "src/core/ledger.ts",
+      "sha256": "605cfbe6b7800cf789d0a9b773f70fe43ebd54fdd965b4841f2e50ab4dd0cfbe"
+    },
+    {
+      "path": "src/core/money.ts",
+      "sha256": "e013c3ca23bb2391105aa2f1e2f307dcdaaf85bec60159e5d63b39aa7e7c3bf8"
+    },
+    {
+      "path": "src/core/schema.sql",
+      "sha256": "00a425e5e0d08c93a989331f84749b2d8c20ec0fca9823cebf0b5182f31a1f3b"
+    }
+  ],
+  "state": "verified experimental local journal-hash compatibility",
+  "commands": [
+    {
+      "command": "bun run rust:verify",
+      "result": "PASS",
+      "evidence": "rust-verify.txt",
+      "coverage": "8 Rust unit tests;34 existing read-only integration checks;31 existing wire checks;29 new hash checks;format/clippy/schema/boundaries"
+    },
+    {
+      "command": "bun test tests/unit/journal-post.test.ts tests/unit/journal-post-fx.test.ts tests/unit/ledger-hardening.test.ts",
+      "result": "PASS",
+      "evidence": "legacy-tests.txt",
+      "coverage": "20 tests;88 assertions"
+    },
+    {
+      "command": "bun run typecheck:runtime",
+      "result": "PASS"
+    },
+    {
+      "command": "bunx biome lint scripts/rust --error-on-warnings",
+      "result": "PASS"
+    }
+  ],
+  "independent_review": {
+    "agent": "journal_hash_contract",
+    "mode": "read-only source review and independent execution",
+    "result": "No remaining material finding within stated scope",
+    "checks": "Storage unit tests, five real TypeScript post/reverse entries, source byte inventories and independent rerun of29 integration checks",
+    "repaired_wording": "Canonical entry/reference IDs explicitly distinguished from SQL-only ordering IDs",
+    "coverage_limit": "Not full audit, domain/write, authorization or release acceptance"
+  },
+  "advisory_design_review": {
+    "scope": [
+      "action.verify_journal_hashes",
+      "component.application",
+      "component.storage",
+      "component.domain"
+    ],
+    "model_revision": "sha256:e972f22fd46df3fc63e4e199d26357c1959b1b79d8cf0baaadd9f50b8136e162",
+    "code_revision": "sha256:6baa54d55bbad5fc120c8209643aae55b6e9b636fa602db1111deb11aa3c941d",
+    "reviewer": "Main agent integrated assessment, informed by independent read-only review",
+    "KISS": {
+      "status": "reviewed",
+      "rationale": "One private legacy-format adapter and one explicit CLI command; no service/registry/alternate hash version. RawValue uses existing serde_json dependency to preserve required JS numeric bytes.",
+      "locations": [
+        "crates/rentemester-storage/src/journal_hash.rs:19",
+        "crates/rentemester-cli/src/main.rs:5"
+      ]
+    },
+    "DRY": {
+      "status": "reviewed",
+      "rationale": "Two real readers share Snapshot::capture and physical column validation. Legacy persisted number compatibility stays separate from exact domain arithmetic. Fixed independent fixtures deliberately do not use Rust to construct the oracle.",
+      "locations": [
+        "crates/rentemester-storage/src/lib.rs:66",
+        "crates/rentemester-storage/src/lib.rs:280",
+        "scripts/rust/verify-journal-hashes.ts"
+      ]
+    },
+    "separation_of_concerns": {
+      "status": "reviewed",
+      "rationale": "Legacy SQLite/JS byte semantics live in storage; pure engine remains SQL/IO/credential-free; CLI owns parsing and exits.",
+      "locations": [
+        "crates/rentemester-storage/src/journal_hash.rs:69",
+        "scripts/rust/check-boundaries.ts"
+      ]
+    },
+    "modularity": {
+      "status": "reviewed",
+      "rationale": "Public storage function returns typed scoped report; canonical structs remain private; both commands use shared safe snapshot owner.",
+      "locations": [
+        "crates/rentemester-storage/src/lib.rs:17",
+        "crates/rentemester-storage/src/journal_hash.rs:121"
+      ]
+    }
+  },
+  "limitations": [
+    "No issue closure or full GDD host-attested acceptance claimed",
+    "No full verifyAuditChain/audit_log/document/invoice/bank integrity replacement",
+    "No trusted external checkpoint or detection guarantee for privileged rehash/tail truncation",
+    "No Rust writes, hosted authority, production migration, Windows qualification or full epic completion",
+    "Fixed vectors cover null bank/document references and non-null reversal reference; broader reference/provider/domain matrices remain R03/R17 work"
+  ]
+}

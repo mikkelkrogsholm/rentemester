@@ -15,6 +15,8 @@ Run `bun run rust:verify`. The development harness finds Cargo on PATH or in the
 
 The complete scoped contract and current readiness report are in read-only/. Historical normative v1 assets remain in read-only/history/v1/. Evidence/report.json binds exact current code hashes and states its limits.
 
+The next runtime increment adds `rentemester-rust verify-journal-hashes --company PATH`. It reuses the same source capture, reconstructs legacy canonical journal JSON and verifies predecessor/hash continuity without source writes. Eight Rust unit tests and 29 dedicated hash integration checks pass, including real TypeScript post/reverse vectors, Unicode/NUL/FX/large-number bytes, damaged-copy refusals and 12 concurrent real postings. The previous 34 read-only and 31 wire checks still pass; 20 targeted legacy journal/integrity tests pass. Contract, GDD readiness, fixed vectors and current evidence are in journal-hashes/. This command does not replace the full legacy audit verifier or prove audit_log/document/accounting integrity.
+
 ## Baseline status
 
 The initial registry capture in baseline/inventory.json contains 265 CLI keys, 214 MCP tools, 208 HTTP routes, 54 browser routes, 734 exported core function declarations and 66 migrations. It is reproducible with scripts/rust/capture-baseline.ts and has explicit UNKNOWN fields. R01 remains open: complete per-operation input/result/error/fixture and domain ownership mapping is still required. The original snapshot is preserved; subsequent product/source changes must be reconciled, not silently overwritten.

@@ -1,0 +1,52 @@
+{
+  "ok": true,
+  "scope": "legacy canonical journal hash compatibility on private snapshots",
+  "checks": 29,
+  "passed": [
+    "real legacy posting and reversal pass full legacy audit and fixed five-hash oracle",
+    "persisted canonical JSON property/line order, null/empty, Unicode/controls/NUL, FX and huge-number bytes match saved vectors",
+    "Rust verifies real live-WAL legacy chain twice without source byte changes",
+    "negative controls reject omitted entry, changed bytes, omitted field and extra hash separator",
+    "corruption/refusal, unchanged source: text",
+    "corruption/refusal, unchanged source: actor",
+    "corruption/refusal, unchanged source: fx",
+    "corruption/refusal, unchanged source: line-amount",
+    "corruption/refusal, unchanged source: line-vat",
+    "corruption/refusal, unchanged source: null-empty",
+    "corruption/refusal, unchanged source: line-order",
+    "corruption/refusal, unchanged source: previous-null",
+    "corruption/refusal, unchanged source: previous-wrong",
+    "corruption/refusal, unchanged source: hash",
+    "corruption/refusal, unchanged source: no-lines",
+    "corruption/refusal, unchanged source: nonfinite",
+    "corruption/refusal, unchanged source: unsafe-entry-id",
+    "corruption/refusal, unchanged source: unsafe-reference",
+    "corruption/refusal, unchanged source: text-number",
+    "corruption/refusal, unchanged source: blob-text",
+    "corruption/refusal, unchanged source: invalid-utf8",
+    "corruption/refusal, unchanged source: hash-column-drift",
+    "corruption/refusal, unchanged source: history-tamper",
+    "empty current-schema hash chain is explicitly scoped success",
+    "missing company refused without creation",
+    "root symlink and trailing slash/dot variants refused",
+    "concurrent real legacy writer: coherent whole chain or bounded source_changed; all 12 commits retained and verified",
+    "strict usage JSON/exit2 and explicit hash-only help/exit0",
+    "frozen synthetic oracle remains byte-identical after all damaged-copy executions"
+  ],
+  "legacyAudit": {
+    "ok": true,
+    "entries": 5,
+    "errors": []
+  },
+  "fixedVectorHashes": [
+    "cdf6c2455037956c9fc87e22cf66112251120e36c00299c37e3ac90ab50e9e4e",
+    "150d3847452c076fe532a2ef1e1b6b03b6ca82e710390f57b494e4af1323094c",
+    "6b767799f70513fe89b482c37b9f8e3ff72dba935701141a62b8268c85221810",
+    "aed5580b8d578e4a21ef0c4895bec6f0c0caf887dc145ca5f82a414cd630202a",
+    "edf1ed2b8752b8e1f3d2d6c3aad2e2a932bd4a540579d39feaefb2673cac0c67"
+  ],
+  "limits": [
+    "Hash agreement is not full audit/accounting integrity or audit_log completeness",
+    "No mutation, hosted authority, external checkpoint, live migration or whole-issue completion claimed"
+  ]
+}

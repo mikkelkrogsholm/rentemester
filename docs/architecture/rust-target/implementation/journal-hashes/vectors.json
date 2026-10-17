@@ -1,0 +1,464 @@
+{
+  "results": [
+    {
+      "ok": true,
+      "appliedRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "errors": [],
+      "entryId": 1,
+      "entryNo": "2026-00001",
+      "entryHash": "cdf6c2455037956c9fc87e22cf66112251120e36c00299c37e3ac90ab50e9e4e"
+    },
+    {
+      "ok": true,
+      "appliedRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "errors": [],
+      "entryId": 2,
+      "entryNo": "2026-00002",
+      "entryHash": "150d3847452c076fe532a2ef1e1b6b03b6ca82e710390f57b494e4af1323094c"
+    },
+    {
+      "ok": true,
+      "appliedRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001",
+        "DK-BOOKKEEPING-FX-001"
+      ],
+      "errors": [],
+      "entryId": 3,
+      "entryNo": "2026-00003",
+      "entryHash": "6b767799f70513fe89b482c37b9f8e3ff72dba935701141a62b8268c85221810"
+    },
+    {
+      "ok": true,
+      "appliedRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "errors": [],
+      "entryId": 4,
+      "entryNo": "2026-00004",
+      "entryHash": "aed5580b8d578e4a21ef0c4895bec6f0c0caf887dc145ca5f82a414cd630202a"
+    },
+    {
+      "ok": true,
+      "originalEntryId": 2,
+      "appliedRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-REVERSAL-001",
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "errors": [],
+      "entryId": 5,
+      "entryNo": "2026-00005",
+      "entryHash": "edf1ed2b8752b8e1f3d2d6c3aad2e2a932bd4a540579d39feaefb2673cac0c67"
+    }
+  ],
+  "audit": {
+    "ok": true,
+    "entries": 5,
+    "errors": []
+  },
+  "entries": [
+    {
+      "entry": {
+        "id": 1,
+        "entry_no": "2026-00001",
+        "transaction_date": "2026-01-10",
+        "registration_datetime": "2026-10-17 13:31:18",
+        "text": "Minimal",
+        "source_bank_transaction_id": null,
+        "document_id": null,
+        "currency": "DKK",
+        "amount_foreign": null,
+        "amount_dkk": null,
+        "fx_rate_to_dkk": null,
+        "rule_version": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+        "created_by": "agent:synthetic",
+        "created_by_program": "fixture-hash",
+        "status": "posted",
+        "reversal_of_entry_id": null,
+        "previous_hash": "GENESIS",
+        "entry_hash": "cdf6c2455037956c9fc87e22cf66112251120e36c00299c37e3ac90ab50e9e4e",
+        "locked": 1,
+        "retain_until": "2031-12-31"
+      },
+      "lines": [
+        {
+          "account_no": "A",
+          "debit_amount": 1.01,
+          "credit_amount": 0,
+          "vat_code": null,
+          "text": null
+        },
+        {
+          "account_no": "L",
+          "debit_amount": 0,
+          "credit_amount": 1.01,
+          "vat_code": null,
+          "text": ""
+        }
+      ],
+      "canonical": {
+        "id": 1,
+        "entry_no": "2026-00001",
+        "transaction_date": "2026-01-10",
+        "text": "Minimal",
+        "source_bank_transaction_id": null,
+        "document_id": null,
+        "currency": "DKK",
+        "amount_foreign": null,
+        "amount_dkk": null,
+        "fx_rate_to_dkk": null,
+        "rule_version": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+        "created_by": "agent:synthetic",
+        "created_by_program": "fixture-hash",
+        "status": "posted",
+        "reversal_of_entry_id": null,
+        "lines": [
+          {
+            "ordinal": 0,
+            "account_no": "A",
+            "debit_amount": 1.01,
+            "credit_amount": 0,
+            "vat_code": null,
+            "text": null
+          },
+          {
+            "ordinal": 1,
+            "account_no": "L",
+            "debit_amount": 0,
+            "credit_amount": 1.01,
+            "vat_code": null,
+            "text": ""
+          }
+        ]
+      },
+      "canonicalJson": "{\"id\":1,\"entry_no\":\"2026-00001\",\"transaction_date\":\"2026-01-10\",\"text\":\"Minimal\",\"source_bank_transaction_id\":null,\"document_id\":null,\"currency\":\"DKK\",\"amount_foreign\":null,\"amount_dkk\":null,\"fx_rate_to_dkk\":null,\"rule_version\":\"annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5\",\"created_by\":\"agent:synthetic\",\"created_by_program\":\"fixture-hash\",\"status\":\"posted\",\"reversal_of_entry_id\":null,\"lines\":[{\"ordinal\":0,\"account_no\":\"A\",\"debit_amount\":1.01,\"credit_amount\":0,\"vat_code\":null,\"text\":null},{\"ordinal\":1,\"account_no\":\"L\",\"debit_amount\":0,\"credit_amount\":1.01,\"vat_code\":null,\"text\":\"\"}]}",
+      "previousHash": "GENESIS",
+      "entryHash": "cdf6c2455037956c9fc87e22cf66112251120e36c00299c37e3ac90ab50e9e4e"
+    },
+    {
+      "entry": {
+        "id": 2,
+        "entry_no": "2026-00002",
+        "transaction_date": "2026-01-10",
+        "registration_datetime": "2026-10-17 13:31:18",
+        "text": "Unicode æ🦀𐀀   é é / \" \\ \b \f \n \r \t \u0000",
+        "source_bank_transaction_id": null,
+        "document_id": null,
+        "currency": "DKK",
+        "amount_foreign": null,
+        "amount_dkk": null,
+        "fx_rate_to_dkk": null,
+        "rule_version": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+        "created_by": "agent:synthetic",
+        "created_by_program": "fixture-hash",
+        "status": "posted",
+        "reversal_of_entry_id": null,
+        "previous_hash": "cdf6c2455037956c9fc87e22cf66112251120e36c00299c37e3ac90ab50e9e4e",
+        "entry_hash": "150d3847452c076fe532a2ef1e1b6b03b6ca82e710390f57b494e4af1323094c",
+        "locked": 1,
+        "retain_until": "2031-12-31"
+      },
+      "lines": [
+        {
+          "account_no": "A",
+          "debit_amount": 1,
+          "credit_amount": 0,
+          "vat_code": null,
+          "text": "line\u0000text"
+        },
+        {
+          "account_no": "L",
+          "debit_amount": 0,
+          "credit_amount": 1,
+          "vat_code": null,
+          "text": " 🦀 "
+        }
+      ],
+      "canonical": {
+        "id": 2,
+        "entry_no": "2026-00002",
+        "transaction_date": "2026-01-10",
+        "text": "Unicode æ🦀𐀀   é é / \" \\ \b \f \n \r \t \u0000",
+        "source_bank_transaction_id": null,
+        "document_id": null,
+        "currency": "DKK",
+        "amount_foreign": null,
+        "amount_dkk": null,
+        "fx_rate_to_dkk": null,
+        "rule_version": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+        "created_by": "agent:synthetic",
+        "created_by_program": "fixture-hash",
+        "status": "posted",
+        "reversal_of_entry_id": null,
+        "lines": [
+          {
+            "ordinal": 0,
+            "account_no": "A",
+            "debit_amount": 1,
+            "credit_amount": 0,
+            "vat_code": null,
+            "text": "line\u0000text"
+          },
+          {
+            "ordinal": 1,
+            "account_no": "L",
+            "debit_amount": 0,
+            "credit_amount": 1,
+            "vat_code": null,
+            "text": " 🦀 "
+          }
+        ]
+      },
+      "canonicalJson": "{\"id\":2,\"entry_no\":\"2026-00002\",\"transaction_date\":\"2026-01-10\",\"text\":\"Unicode æ🦀𐀀   é é / \\\" \\\\ \\b \\f \\n \\r \\t \\u0000\",\"source_bank_transaction_id\":null,\"document_id\":null,\"currency\":\"DKK\",\"amount_foreign\":null,\"amount_dkk\":null,\"fx_rate_to_dkk\":null,\"rule_version\":\"annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5\",\"created_by\":\"agent:synthetic\",\"created_by_program\":\"fixture-hash\",\"status\":\"posted\",\"reversal_of_entry_id\":null,\"lines\":[{\"ordinal\":0,\"account_no\":\"A\",\"debit_amount\":1,\"credit_amount\":0,\"vat_code\":null,\"text\":\"line\\u0000text\"},{\"ordinal\":1,\"account_no\":\"L\",\"debit_amount\":0,\"credit_amount\":1,\"vat_code\":null,\"text\":\" 🦀 \"}]}",
+      "previousHash": "cdf6c2455037956c9fc87e22cf66112251120e36c00299c37e3ac90ab50e9e4e",
+      "entryHash": "150d3847452c076fe532a2ef1e1b6b03b6ca82e710390f57b494e4af1323094c"
+    },
+    {
+      "entry": {
+        "id": 3,
+        "entry_no": "2026-00003",
+        "transaction_date": "2026-01-10",
+        "registration_datetime": "2026-10-17 13:31:18",
+        "text": "Tiny FX",
+        "source_bank_transaction_id": null,
+        "document_id": null,
+        "currency": "EUR",
+        "amount_foreign": 10000,
+        "amount_dkk": 0.01,
+        "fx_rate_to_dkk": 0.000001,
+        "rule_version": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+        "created_by": "agent:synthetic",
+        "created_by_program": "fixture-hash",
+        "status": "posted",
+        "reversal_of_entry_id": null,
+        "previous_hash": "150d3847452c076fe532a2ef1e1b6b03b6ca82e710390f57b494e4af1323094c",
+        "entry_hash": "6b767799f70513fe89b482c37b9f8e3ff72dba935701141a62b8268c85221810",
+        "locked": 1,
+        "retain_until": "2031-12-31"
+      },
+      "lines": [
+        {
+          "account_no": "A",
+          "debit_amount": 0.01,
+          "credit_amount": 0,
+          "vat_code": null,
+          "text": null
+        },
+        {
+          "account_no": "L",
+          "debit_amount": 0,
+          "credit_amount": 0.01,
+          "vat_code": null,
+          "text": ""
+        }
+      ],
+      "canonical": {
+        "id": 3,
+        "entry_no": "2026-00003",
+        "transaction_date": "2026-01-10",
+        "text": "Tiny FX",
+        "source_bank_transaction_id": null,
+        "document_id": null,
+        "currency": "EUR",
+        "amount_foreign": 10000,
+        "amount_dkk": 0.01,
+        "fx_rate_to_dkk": 0.000001,
+        "rule_version": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+        "created_by": "agent:synthetic",
+        "created_by_program": "fixture-hash",
+        "status": "posted",
+        "reversal_of_entry_id": null,
+        "lines": [
+          {
+            "ordinal": 0,
+            "account_no": "A",
+            "debit_amount": 0.01,
+            "credit_amount": 0,
+            "vat_code": null,
+            "text": null
+          },
+          {
+            "ordinal": 1,
+            "account_no": "L",
+            "debit_amount": 0,
+            "credit_amount": 0.01,
+            "vat_code": null,
+            "text": ""
+          }
+        ]
+      },
+      "canonicalJson": "{\"id\":3,\"entry_no\":\"2026-00003\",\"transaction_date\":\"2026-01-10\",\"text\":\"Tiny FX\",\"source_bank_transaction_id\":null,\"document_id\":null,\"currency\":\"EUR\",\"amount_foreign\":10000,\"amount_dkk\":0.01,\"fx_rate_to_dkk\":0.000001,\"rule_version\":\"annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5\",\"created_by\":\"agent:synthetic\",\"created_by_program\":\"fixture-hash\",\"status\":\"posted\",\"reversal_of_entry_id\":null,\"lines\":[{\"ordinal\":0,\"account_no\":\"A\",\"debit_amount\":0.01,\"credit_amount\":0,\"vat_code\":null,\"text\":null},{\"ordinal\":1,\"account_no\":\"L\",\"debit_amount\":0,\"credit_amount\":0.01,\"vat_code\":null,\"text\":\"\"}]}",
+      "previousHash": "150d3847452c076fe532a2ef1e1b6b03b6ca82e710390f57b494e4af1323094c",
+      "entryHash": "6b767799f70513fe89b482c37b9f8e3ff72dba935701141a62b8268c85221810"
+    },
+    {
+      "entry": {
+        "id": 4,
+        "entry_no": "2026-00004",
+        "transaction_date": "2026-01-10",
+        "registration_datetime": "2026-10-17 13:31:18",
+        "text": "Huge amount",
+        "source_bank_transaction_id": null,
+        "document_id": null,
+        "currency": "DKK",
+        "amount_foreign": null,
+        "amount_dkk": null,
+        "fx_rate_to_dkk": null,
+        "rule_version": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+        "created_by": "agent:synthetic",
+        "created_by_program": "fixture-hash",
+        "status": "posted",
+        "reversal_of_entry_id": null,
+        "previous_hash": "6b767799f70513fe89b482c37b9f8e3ff72dba935701141a62b8268c85221810",
+        "entry_hash": "aed5580b8d578e4a21ef0c4895bec6f0c0caf887dc145ca5f82a414cd630202a",
+        "locked": 1,
+        "retain_until": "2031-12-31"
+      },
+      "lines": [
+        {
+          "account_no": "A",
+          "debit_amount": 999999999999999900000,
+          "credit_amount": 0,
+          "vat_code": null,
+          "text": null
+        },
+        {
+          "account_no": "L",
+          "debit_amount": 0,
+          "credit_amount": 999999999999999900000,
+          "vat_code": null,
+          "text": ""
+        }
+      ],
+      "canonical": {
+        "id": 4,
+        "entry_no": "2026-00004",
+        "transaction_date": "2026-01-10",
+        "text": "Huge amount",
+        "source_bank_transaction_id": null,
+        "document_id": null,
+        "currency": "DKK",
+        "amount_foreign": null,
+        "amount_dkk": null,
+        "fx_rate_to_dkk": null,
+        "rule_version": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+        "created_by": "agent:synthetic",
+        "created_by_program": "fixture-hash",
+        "status": "posted",
+        "reversal_of_entry_id": null,
+        "lines": [
+          {
+            "ordinal": 0,
+            "account_no": "A",
+            "debit_amount": 999999999999999900000,
+            "credit_amount": 0,
+            "vat_code": null,
+            "text": null
+          },
+          {
+            "ordinal": 1,
+            "account_no": "L",
+            "debit_amount": 0,
+            "credit_amount": 999999999999999900000,
+            "vat_code": null,
+            "text": ""
+          }
+        ]
+      },
+      "canonicalJson": "{\"id\":4,\"entry_no\":\"2026-00004\",\"transaction_date\":\"2026-01-10\",\"text\":\"Huge amount\",\"source_bank_transaction_id\":null,\"document_id\":null,\"currency\":\"DKK\",\"amount_foreign\":null,\"amount_dkk\":null,\"fx_rate_to_dkk\":null,\"rule_version\":\"annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5\",\"created_by\":\"agent:synthetic\",\"created_by_program\":\"fixture-hash\",\"status\":\"posted\",\"reversal_of_entry_id\":null,\"lines\":[{\"ordinal\":0,\"account_no\":\"A\",\"debit_amount\":999999999999999900000,\"credit_amount\":0,\"vat_code\":null,\"text\":null},{\"ordinal\":1,\"account_no\":\"L\",\"debit_amount\":0,\"credit_amount\":999999999999999900000,\"vat_code\":null,\"text\":\"\"}]}",
+      "previousHash": "6b767799f70513fe89b482c37b9f8e3ff72dba935701141a62b8268c85221810",
+      "entryHash": "aed5580b8d578e4a21ef0c4895bec6f0c0caf887dc145ca5f82a414cd630202a"
+    },
+    {
+      "entry": {
+        "id": 5,
+        "entry_no": "2026-00005",
+        "transaction_date": "2026-02-01",
+        "registration_datetime": "2026-10-17 13:31:18",
+        "text": "Reversal of 2026-00002: reason",
+        "source_bank_transaction_id": null,
+        "document_id": null,
+        "currency": "DKK",
+        "amount_foreign": null,
+        "amount_dkk": null,
+        "fx_rate_to_dkk": null,
+        "rule_version": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+        "created_by": "agent:synthetic",
+        "created_by_program": "fixture-hash",
+        "status": "reversed",
+        "reversal_of_entry_id": 2,
+        "previous_hash": "aed5580b8d578e4a21ef0c4895bec6f0c0caf887dc145ca5f82a414cd630202a",
+        "entry_hash": "edf1ed2b8752b8e1f3d2d6c3aad2e2a932bd4a540579d39feaefb2673cac0c67",
+        "locked": 1,
+        "retain_until": "2031-12-31"
+      },
+      "lines": [
+        {
+          "account_no": "A",
+          "debit_amount": 0,
+          "credit_amount": 1,
+          "vat_code": null,
+          "text": "REVERSAL: line\u0000text"
+        },
+        {
+          "account_no": "L",
+          "debit_amount": 1,
+          "credit_amount": 0,
+          "vat_code": null,
+          "text": "REVERSAL:  🦀 "
+        }
+      ],
+      "canonical": {
+        "id": 5,
+        "entry_no": "2026-00005",
+        "transaction_date": "2026-02-01",
+        "text": "Reversal of 2026-00002: reason",
+        "source_bank_transaction_id": null,
+        "document_id": null,
+        "currency": "DKK",
+        "amount_foreign": null,
+        "amount_dkk": null,
+        "fx_rate_to_dkk": null,
+        "rule_version": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+        "created_by": "agent:synthetic",
+        "created_by_program": "fixture-hash",
+        "status": "reversed",
+        "reversal_of_entry_id": 2,
+        "lines": [
+          {
+            "ordinal": 0,
+            "account_no": "A",
+            "debit_amount": 0,
+            "credit_amount": 1,
+            "vat_code": null,
+            "text": "REVERSAL: line\u0000text"
+          },
+          {
+            "ordinal": 1,
+            "account_no": "L",
+            "debit_amount": 1,
+            "credit_amount": 0,
+            "vat_code": null,
+            "text": "REVERSAL:  🦀 "
+          }
+        ]
+      },
+      "canonicalJson": "{\"id\":5,\"entry_no\":\"2026-00005\",\"transaction_date\":\"2026-02-01\",\"text\":\"Reversal of 2026-00002: reason\",\"source_bank_transaction_id\":null,\"document_id\":null,\"currency\":\"DKK\",\"amount_foreign\":null,\"amount_dkk\":null,\"fx_rate_to_dkk\":null,\"rule_version\":\"annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5\",\"created_by\":\"agent:synthetic\",\"created_by_program\":\"fixture-hash\",\"status\":\"reversed\",\"reversal_of_entry_id\":2,\"lines\":[{\"ordinal\":0,\"account_no\":\"A\",\"debit_amount\":0,\"credit_amount\":1,\"vat_code\":null,\"text\":\"REVERSAL: line\\u0000text\"},{\"ordinal\":1,\"account_no\":\"L\",\"debit_amount\":1,\"credit_amount\":0,\"vat_code\":null,\"text\":\"REVERSAL:  🦀 \"}]}",
+      "previousHash": "aed5580b8d578e4a21ef0c4895bec6f0c0caf887dc145ca5f82a414cd630202a",
+      "entryHash": "edf1ed2b8752b8e1f3d2d6c3aad2e2a932bd4a540579d39feaefb2673cac0c67"
+    }
+  ]
+}

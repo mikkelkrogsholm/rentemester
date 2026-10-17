@@ -8,8 +8,16 @@ use rusqlite::{Connection, OpenFlags, types::ValueRef};
 use serde::Deserialize;
 use std::{fs::OpenOptions, io::Write, path::Path, time::Duration};
 use tempfile::TempDir;
+mod journal_hash;
 #[cfg(unix)]
 mod snapshot;
+pub use journal_hash::Report as JournalHashReport;
+
+/// Journal canonical hashes only; not a complete audit/accounting integrity check.
+pub fn verify_journal_hashes(company: &Path) -> Result<JournalHashReport, Error> {
+    let copy = Snapshot::capture(company)?;
+    journal_hash::verify(&copy.conn)
+}
 
 #[derive(Deserialize)]
 struct Migration {
@@ -24,66 +32,70 @@ fn invalid(error: impl std::fmt::Display) -> Error {
 /// Copy, validate and report one explicitly selected local company. No migration.
 pub fn trial_balance(company: &Path, period: Period) -> Result<Report, Error> {
     let period = Period::new(&period.start, &period.end)?;
-    #[cfg(not(unix))]
-    {
-        let _ = (company, period);
-        Err(Error::new(
-            "source_unavailable",
-            "this reader has not yet qualified source capture on this platform",
-        ))
-    }
-    #[cfg(unix)]
-    {
-        let captured = snapshot::capture(company)?;
-        let dir = tempfile::tempdir().map_err(|e| Error::new("storage_failure", e.to_string()))?;
-        let path = dir.path().join("snapshot.sqlite");
-        for source in captured {
-            if source.suffix == "-shm" {
-                continue;
-            }
-            let mut options = OpenOptions::new();
-            options.write(true).create_new(true);
-            use std::os::unix::fs::OpenOptionsExt;
-            options.mode(0o600);
-            let mut file = options
-                .open(format!("{}{}", path.display(), source.suffix))
-                .map_err(invalid)?;
-            file.write_all(&source.bytes).map_err(invalid)?;
+    let copy = Snapshot::capture(company)?;
+    let mut statement=copy.conn.prepare("SELECT a.account_no,a.name,a.type,a.normal_balance,je.id,jl.debit_amount,jl.credit_amount FROM journal_entries je JOIN journal_lines jl ON jl.journal_entry_id=je.id JOIN accounts a ON a.id=jl.account_id WHERE je.transaction_date>=?1 AND je.transaction_date<=?2 ORDER BY a.account_no,je.id,jl.id").map_err(invalid)?;
+    let mut rows = statement
+        .query([&period.start, &period.end])
+        .map_err(invalid)?;
+    let mut lines = Vec::new();
+    while let Some(row) = rows.next().map_err(invalid)? {
+        let kind: String = row.get(2).map_err(invalid)?;
+        let normal: String = row.get(3).map_err(invalid)?;
+        if !["asset", "liability", "equity", "income", "expense", "vat"].contains(&kind.as_str())
+            || !["debit", "credit"].contains(&normal.as_str())
+        {
+            return Err(invalid("invalid account classification"));
         }
-        let copy = Snapshot::open(dir, &path)?;
-        validate(&copy.conn)?;
-        let mut statement=copy.conn.prepare("SELECT a.account_no,a.name,a.type,a.normal_balance,je.id,jl.debit_amount,jl.credit_amount FROM journal_entries je JOIN journal_lines jl ON jl.journal_entry_id=je.id JOIN accounts a ON a.id=jl.account_id WHERE je.transaction_date>=?1 AND je.transaction_date<=?2 ORDER BY a.account_no,je.id,jl.id").map_err(invalid)?;
-        let mut rows = statement
-            .query([&period.start, &period.end])
-            .map_err(invalid)?;
-        let mut lines = Vec::new();
-        while let Some(row) = rows.next().map_err(invalid)? {
-            let kind: String = row.get(2).map_err(invalid)?;
-            let normal: String = row.get(3).map_err(invalid)?;
-            if !["asset", "liability", "equity", "income", "expense", "vat"]
-                .contains(&kind.as_str())
-                || !["debit", "credit"].contains(&normal.as_str())
-            {
-                return Err(invalid("invalid account classification"));
-            }
-            lines.push(Line {
-                account_no: row.get(0).map_err(invalid)?,
-                name: row.get(1).map_err(invalid)?,
-                kind,
-                normal_balance: normal,
-                entry_id: safe_entry_id(row.get(4).map_err(invalid)?)?,
-                debit: legacy_money(row.get_ref(5).map_err(invalid)?)?,
-                credit: legacy_money(row.get_ref(6).map_err(invalid)?)?,
-            });
-        }
-        Ok(trial_balance::build(period, lines))
+        lines.push(Line {
+            account_no: row.get(0).map_err(invalid)?,
+            name: row.get(1).map_err(invalid)?,
+            kind,
+            normal_balance: normal,
+            entry_id: safe_entry_id(row.get(4).map_err(invalid)?)?,
+            debit: legacy_money(row.get_ref(5).map_err(invalid)?)?,
+            credit: legacy_money(row.get_ref(6).map_err(invalid)?)?,
+        });
     }
+    Ok(trial_balance::build(period, lines))
 }
 struct Snapshot {
     conn: Connection,
     _dir: TempDir,
 }
 impl Snapshot {
+    fn capture(company: &Path) -> Result<Self, Error> {
+        #[cfg(not(unix))]
+        {
+            let _ = company;
+            Err(Error::new(
+                "source_unavailable",
+                "this reader has not yet qualified source capture on this platform",
+            ))
+        }
+        #[cfg(unix)]
+        {
+            let captured = snapshot::capture(company)?;
+            let dir =
+                tempfile::tempdir().map_err(|e| Error::new("storage_failure", e.to_string()))?;
+            let path = dir.path().join("snapshot.sqlite");
+            for source in captured {
+                if source.suffix == "-shm" {
+                    continue;
+                }
+                let mut options = OpenOptions::new();
+                options.write(true).create_new(true);
+                use std::os::unix::fs::OpenOptionsExt;
+                options.mode(0o600);
+                let mut file = options
+                    .open(format!("{}{}", path.display(), source.suffix))
+                    .map_err(invalid)?;
+                file.write_all(&source.bytes).map_err(invalid)?;
+            }
+            let copy = Snapshot::open(dir, &path)?;
+            validate(&copy.conn)?;
+            Ok(copy)
+        }
+    }
     fn open(dir: TempDir, path: &Path) -> Result<Self, Error> {
         // Recovery/checkpoint happens only on private, disposable files.
         let recovery = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_WRITE)
@@ -191,44 +203,7 @@ fn validate(db: &Connection) -> Result<(), Error> {
             ][..],
         ),
     ] {
-        let kind: String = db
-            .query_row(
-                "SELECT type FROM sqlite_schema WHERE name=?1",
-                [table],
-                |r| r.get(0),
-            )
-            .map_err(invalid)?;
-        if kind != "table" {
-            return Err(Error::new(
-                "unsupported_schema",
-                "required report source must be a table",
-            ));
-        }
-        let mut q = db
-            .prepare(&format!("PRAGMA table_info({table})"))
-            .map_err(invalid)?;
-        let cols = q
-            .query_map([], |r| {
-                Ok((
-                    r.get::<_, String>(1)?,
-                    r.get::<_, String>(2)?.to_ascii_uppercase(),
-                    r.get::<_, i64>(3)?,
-                    r.get::<_, i64>(5)?,
-                ))
-            })
-            .map_err(invalid)?
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(invalid)?;
-        if required.iter().any(|(name, kind, notnull, pk)| {
-            !cols
-                .iter()
-                .any(|c| c.0 == *name && c.1 == *kind && c.2 == *notnull && c.3 == *pk)
-        }) {
-            return Err(Error::new(
-                "unsupported_schema",
-                "required report column metadata differs",
-            ));
-        }
+        require_columns(db, table, required)?;
     }
     for (table, required) in [
         (
@@ -302,6 +277,52 @@ fn validate(db: &Connection) -> Result<(), Error> {
 
     Ok(())
 }
+fn require_columns(
+    db: &Connection,
+    table: &str,
+    required: &[(&str, &str, i64, i64)],
+) -> Result<(), Error> {
+    let kind: String = db
+        .query_row(
+            "SELECT type FROM sqlite_schema WHERE name=?1",
+            [table],
+            |r| r.get(0),
+        )
+        .map_err(invalid)?;
+    if kind != "table" {
+        return Err(Error::new(
+            "unsupported_schema",
+            "required report source must be a table",
+        ));
+    }
+    let mut q = db
+        .prepare(&format!("PRAGMA table_info({table})"))
+        .map_err(invalid)?;
+    let cols = q
+        .query_map([], |r| {
+            Ok((
+                r.get::<_, String>(1)?,
+                r.get::<_, String>(2)?.to_ascii_uppercase(),
+                r.get::<_, i64>(3)?,
+                r.get::<_, i64>(5)?,
+            ))
+        })
+        .map_err(invalid)?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(invalid)?;
+    if required.iter().any(|(name, kind, notnull, pk)| {
+        !cols
+            .iter()
+            .any(|c| c.0 == *name && c.1 == *kind && c.2 == *notnull && c.3 == *pk)
+    }) {
+        return Err(Error::new(
+            "unsupported_schema",
+            "required report column metadata differs",
+        ));
+    }
+    Ok(())
+}
+
 fn safe_entry_id(id: i64) -> Result<i64, Error> {
     if id.unsigned_abs() > 9_007_199_254_740_991 {
         return Err(invalid(

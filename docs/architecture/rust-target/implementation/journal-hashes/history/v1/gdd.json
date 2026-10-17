@@ -1,0 +1,440 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Legacy journal hash compatibility",
+    "goal": "Verify exact existing canonical journal hashes on private snapshots before writable Rust work.",
+    "scope": "Bounded R03/R09/R10/R11 refinement; not full audit integrity, writes, hosted authority or epic completion."
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Own explicit local hash-check input/result contract.",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Own explicit local hash-check input/result contract.",
+        "rationale": "Use cases have one explicit public boundary.",
+        "excludes": [
+          "Hosted identity and mutations"
+        ]
+      },
+      "interfaces": [
+        "action.verify_journal_hashes"
+      ]
+    },
+    "component.domain": {
+      "kind": "component",
+      "description": "Own exact amounts, dates and pure report aggregation.",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Own exact amounts, dates and pure report aggregation.",
+        "rationale": "Keep accounting arithmetic separate from transport/storage.",
+        "excludes": [
+          "SQL, filesystem, network and UI"
+        ]
+      },
+      "interfaces": []
+    },
+    "component.storage": {
+      "kind": "component",
+      "description": "Own no-follow source capture and bounded current-schema read validation.",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Own source capture, current-schema decoding and legacy persistent hash byte compatibility.",
+        "rationale": "SQLite sidecars require isolated recovery without touching source.",
+        "excludes": [
+          "Accounting write authority, migrations and hosted access control"
+        ]
+      },
+      "interfaces": []
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "All hashes and predecessor links match, count is exact and source bytes unchanged.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "A real synthetic legacy-posted and reversed chain with fixed known canonical byte/hash vectors.",
+        "when": "Verify journal hashes.",
+        "then": "All hashes and predecessor links match, count is exact and source bytes unchanged."
+      }
+    },
+    "scenario.boundary": {
+      "kind": "scenario",
+      "description": "Supported bytes match fixed vectors; unsupported storage/precision refuses, never silently normalizes invalid values to zero.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Unicode/controls/NUL, null/empty, FX exponents, huge/tie/rounding-tail values and unsafe or nonfinite input.",
+        "when": "Decode and serialize canonical data.",
+        "then": "Supported bytes match fixed vectors; unsupported storage/precision refuses, never silently normalizes invalid values to zero."
+      }
+    },
+    "scenario.isolation": {
+      "kind": "scenario",
+      "description": "No cross-root escape, implicit company creation or source mutation; refuse unsupported path.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "A second company and symlink/nonregular/missing data or source file.",
+        "when": "Attempt read through each selected local root.",
+        "then": "No cross-root escape, implicit company creation or source mutation; refuse unsupported path."
+      }
+    },
+    "scenario.schema": {
+      "kind": "scenario",
+      "description": "Typed fail-closed refusal; no migration, table repair or original-file modification.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "A pending/newer/gapped/changed history, corrupt SQLite or FK/column/type drift.",
+        "when": "Attempt report.",
+        "then": "Typed fail-closed refusal; no migration, table repair or original-file modification."
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "A consistent validated private copy or source_changed refusal; committed WAL data is not silently omitted; source handles never write.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Committed WAL frames and a writer changing the source capture.",
+        "when": "Take bounded stable snapshots while the source changes.",
+        "then": "A consistent validated private copy or source_changed refusal; committed WAL data is not silently omitted; source handles never write."
+      }
+    },
+    "scenario.atomic": {
+      "kind": "scenario",
+      "description": "All temp files cleaned; no partial success report and no source side effects.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Private snapshot recovery/query fails or source changes before stable capture.",
+        "when": "Abort report.",
+        "then": "All temp files cleaned; no partial success report and no source side effects."
+      }
+    },
+    "scenario.usage": {
+      "kind": "scenario",
+      "description": "One JSON invalid_input, exit 2, no source open.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Missing, duplicate, unknown or empty company flags.",
+        "when": "Invoke hash command.",
+        "then": "One JSON invalid_input, exit 2, no source open."
+      }
+    },
+    "scenario.repeat": {
+      "kind": "scenario",
+      "description": "Same scoped result and no durable effects.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "An unchanged valid source.",
+        "when": "Repeat hash check.",
+        "then": "Same scoped result and no durable effects."
+      }
+    },
+    "rule.source_immutable": {
+      "kind": "rule",
+      "description": "Never open original DB/sidecars writable, migrate or repair them.",
+      "rule": {
+        "category": "invariant",
+        "scope": "global",
+        "statement": "Every source byte is unchanged by successful or refused reads; only a private temporary copy may recover.",
+        "blocking": true,
+        "verification": [
+          "source_inventory_and_fault_tests"
+        ]
+      }
+    },
+    "scenario.unstable": {
+      "kind": "scenario",
+      "description": "Return source_changed, remove any private files and leave source bytes untouched by the reader.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Every one of four source captures changes its DB or sidecar state.",
+        "when": "Attempt the bounded snapshot.",
+        "then": "Return source_changed, remove any private files and leave source bytes untouched by the reader."
+      }
+    },
+    "action.verify_journal_hashes": {
+      "kind": "action",
+      "description": "Verify existing canonical journal hashes without touching source ledgers.",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "company_path": {
+            "type": "string",
+            "min_length": 1
+          }
+        },
+        "context": {
+          "mode": {
+            "type": "enum",
+            "values": [
+              "local_operator"
+            ]
+          }
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "format": {
+              "type": "enum",
+              "values": [
+                "rentemester-journal-hashes/1"
+              ]
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "entriesChecked": {
+                  "type": "number"
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "ok",
+                "entriesChecked",
+                "errors"
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "format",
+            "data"
+          ]
+        },
+        "errors": {
+          "invalid_input": "Reject missing, duplicate or unknown flags before source access.",
+          "source_unavailable": "Reject missing, symlink, nonregular or inaccessible source; no writes.",
+          "source_changed": "Reject after four unstable captures; no source mutation.",
+          "unsupported_schema": "Reject noncurrent/history/physical report-contract mismatch without migration.",
+          "invalid_ledger": "Reject invalid types/UTF-8/numeric precision/nonfinite conversion without partial success.",
+          "storage_failure": "Reject failed private recovery/I/O; cleanup temp files; no source writes."
+        },
+        "preconditions": [
+          "Input is canonical and local OS file authority permits read; no hosted membership claim."
+        ],
+        "postconditions": [
+          "Source DB and sidecar bytes are unchanged; private temporary state is cleaned.",
+          "Exact canonical JSON bytes and SHA-256 preserve legacy stored hash continuity; mismatch is never success.",
+          "Result is explicitly journal-hash-only, not full accounting/audit integrity."
+        ],
+        "external_effects": [
+          "Read source file descriptors and create/recover/query/delete a private temporary SQLite copy; never write source or perform network I/O."
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Local file boundary, no implicit company/root escape.",
+            "scenarios": [
+              "scenario.isolation"
+            ]
+          },
+          "idempotency": {
+            "relevant": false,
+            "rationale": "Repeatable read only; no durable write receipt or external delivery.",
+            "scenarios": []
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Dates, monetary rounding/types, schema and input limits.",
+            "scenarios": [
+              "scenario.boundary",
+              "scenario.schema",
+              "scenario.usage"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Capture may race a writer or WAL changes.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Private-copy failure must never mutate source or report partial success.",
+            "scenarios": [
+              "scenario.atomic"
+            ]
+          }
+        },
+        "error_cases": {
+          "invalid_input": [
+            "scenario.usage",
+            "scenario.boundary"
+          ],
+          "source_unavailable": [
+            "scenario.isolation"
+          ],
+          "source_changed": [
+            "scenario.unstable"
+          ],
+          "unsupported_schema": [
+            "scenario.schema"
+          ],
+          "invalid_ledger": [
+            "scenario.schema",
+            "scenario.boundary"
+          ],
+          "storage_failure": [
+            "scenario.atomic"
+          ]
+        }
+      },
+      "behavior": "Capture and validate private current-schema snapshot; read ordered persisted entry/line data; construct fixed-order legacy JSON with JS number normalization; compare predecessor/hash and no-lines; return explicitly scoped diagnostics, never mutate source."
+    },
+    "scenario.hash_mismatch": {
+      "kind": "scenario",
+      "description": "Return scoped ok:false diagnostics, exit 1, and unchanged source; never claim full audit integrity.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "A chain with modified text/actor/FX/line order/hash/predecessor or missing journal lines.",
+        "when": "Verify supported canonical chain.",
+        "then": "Return scoped ok:false diagnostics, exit 1, and unchanged source; never claim full audit integrity."
+      }
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.report.owner",
+      "from": "action.verify_journal_hashes",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal.report",
+      "from": "scenario.normal",
+      "to": "action.verify_journal_hashes",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.boundary.report",
+      "from": "scenario.boundary",
+      "to": "action.verify_journal_hashes",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.isolation.report",
+      "from": "scenario.isolation",
+      "to": "action.verify_journal_hashes",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.schema.report",
+      "from": "scenario.schema",
+      "to": "action.verify_journal_hashes",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent.report",
+      "from": "scenario.concurrent",
+      "to": "action.verify_journal_hashes",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.atomic.report",
+      "from": "scenario.atomic",
+      "to": "action.verify_journal_hashes",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.usage.report",
+      "from": "scenario.usage",
+      "to": "action.verify_journal_hashes",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.repeat.report",
+      "from": "scenario.repeat",
+      "to": "action.verify_journal_hashes",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.normal.immutable",
+      "from": "scenario.normal",
+      "to": "rule.source_immutable",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.schema.immutable",
+      "from": "scenario.schema",
+      "to": "rule.source_immutable",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.concurrent.immutable",
+      "from": "scenario.concurrent",
+      "to": "rule.source_immutable",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.atomic.immutable",
+      "from": "scenario.atomic",
+      "to": "rule.source_immutable",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.isolation.immutable",
+      "from": "scenario.isolation",
+      "to": "rule.source_immutable",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.unstable.report",
+      "from": "scenario.unstable",
+      "to": "action.verify_journal_hashes",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.unstable.immutable",
+      "from": "scenario.unstable",
+      "to": "rule.source_immutable",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.hash_mismatch.verify",
+      "from": "scenario.hash_mismatch",
+      "to": "action.verify_journal_hashes",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Legacy journal hash compatibility contract",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "322dd47f487b1cffa763666784b531c4e577dfd37446d67cd6b773bb7207176c"
+      }
+    }
+  }
+}

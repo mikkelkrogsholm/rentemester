@@ -1,0 +1,33 @@
+{
+  "base_code": "1aa02d6e",
+  "base_readonly_model": "sha256:2da7e799a99c7bfe1c66cc50a8acefb375e9d4dacf5945f9fafcc9ff1c7cb166",
+  "change": "Add action.verify_journal_hashes with inherited snapshot immutability obligations; existing report specification preserved",
+  "issues": [
+    "R03",
+    "R09",
+    "R10",
+    "R11"
+  ],
+  "write_scope": [
+    "crates/rentemester-storage",
+    "crates/rentemester-cli",
+    "Cargo.toml",
+    "Cargo.lock",
+    "scripts/rust",
+    "docs/architecture/rust-target/implementation"
+  ],
+  "mandate": "Active user goal to build full epic on codex/rust-platform; no live migration/deploy authorization inferred",
+  "acceptance": "Actual synthetic canonical vectors, TypeScript post/reverse differential, corruption/refusal/source-inventory tests and full existing Rust verification",
+  "stop_condition": "Bounded journal-hash verifier accepted with real evidence; continue full epic in subsequent scope",
+  "gates": "Structural readiness separate from runtime evidence; no issue closure based only on subset",
+  "refinement": {
+    "initial_model": "sha256:42118e77b7181503d17edfae2a20651d6fdd98e773e97450da8ca33054c250c0",
+    "changed_ids": [
+      "source.contract",
+      "source.vectors",
+      "action.verify_journal_hashes"
+    ],
+    "rationale": "Pin real fixed synthetic vectors and clarify that only canonical entry/reference IDs, not SQL-only line ordering IDs, cross the JS-number boundary. Preserve initial model/source/readiness in history/v1.",
+    "current_readiness": "readiness-v2.json"
+  }
+}
