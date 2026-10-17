@@ -24,6 +24,7 @@ for (const command of [
   [process.execPath, "run", "scripts/rust/verify-access-policy.ts"],
   [process.execPath, "run", "scripts/rust/verify-control-fence.ts"],
   [process.execPath, "run", "scripts/rust/verify-session-cookie.ts"],
+  [process.execPath, "run", "scripts/rust/verify-password-crypto.ts"],
   [process.execPath, "run", "scripts/rust/verify-readonly.ts"],
   [process.execPath, "run", "scripts/rust/verify-report-contracts.ts"],
   [process.execPath, "run", "scripts/rust/verify-journal-hashes.ts"],

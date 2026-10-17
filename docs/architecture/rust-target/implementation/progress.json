@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "workspace-layout-1",
-  "code_revision": "sha256:37a49f16adb592874690013aa9d05d6551adad23aa7a8a004cf7147bef93043d",
-  "spec_revision": "sha256:60658ca014bc972a4b4e2f5ffc8fb1224c526528cd037a84fb6b4683765aca0e",
-  "state": "verified-physical-layout-observation-only",
+  "current_increment": "password-crypto-1",
+  "code_revision": "sha256:f31c49299390da2c348d85c07f7227ecdc4e08d0d5485fc02cc53e47d289e92a",
+  "spec_revision": "sha256:0315ea6268ba278de460b3cc05f34bb06d469769d076e3c8bd94fe01305b8013",
+  "state": "verified-native-current-password-crypto-only",
   "issues_closed": [],
   "next": [
-    "Resolve owned SQLite-handle/VFS admission and full cooperative legacy namespace/lifetime mutation protocol; current layout is observation only, never substitute filenames/stat for opened-handle identity. Complete logical identity/adoption and native identity lifecycle before product writers.",
+    "Integrate native password crypto into locked credential/session identity use cases with bounded blocking/rate/origin/MFA lifecycle and historical normalization-profile mapping; preserve accounting/replay identities. Resolve qualified actual SQLite-handle admission independently; do not substitute names/stat/prototype VFS or weaken unsafe policy.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,19 +21,20 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "rust-readonly-1",
-    "code_revision": "sha256:9bfda4453edcc03d768f660da823107622b29a4637fa9b22fa94546e26800aae",
-    "spec_revision": "sha256:2da7e799a99c7bfe1c66cc50a8acefb375e9d4dacf5945f9fafcc9ff1c7cb166",
-    "state": "verified-experimental-readonly"
+    "current_increment": "workspace-layout-1",
+    "code_revision": "sha256:37a49f16adb592874690013aa9d05d6551adad23aa7a8a004cf7147bef93043d",
+    "spec_revision": "sha256:60658ca014bc972a4b4e2f5ffc8fb1224c526528cd037a84fb6b4683765aca0e",
+    "state": "verified-physical-layout-observation-only"
   },
   "evidence": {
-    "report": "workspace-layout/evidence.json",
-    "parity": "workspace-layout/review-process.json",
-    "rust_tests_passed": 75,
-    "ignored_subprocess_helpers": 15,
-    "integration_checks": 10366,
-    "runtime_tests": 13,
-    "layout_source_process_checks": 22,
+    "report": "password-crypto/evidence.json",
+    "parity": "password-crypto/review-process.json",
+    "rust_tests_passed": 78,
+    "ignored_subprocess_helpers": 16,
+    "integration_checks": 10414,
+    "password_process_checks": 48,
+    "official_nfkc_columns": 100170,
+    "scalar_transcript_entries": 1112064,
     "writer_authority": false,
     "whole_issues_closed": false
   },
@@ -139,6 +140,12 @@
       "code_revision": "sha256:19ed3b95f861312245be35ee53106980fb64df0522cafb1c33fc53d2474f6895",
       "spec_revision": "sha256:c8d037e07078644ada68155b91b218563af87255bb2f732458859e64f4439d0f",
       "state": "verified-internal-existing-cookie-authentication"
+    },
+    {
+      "current_increment": "workspace-layout-1",
+      "code_revision": "sha256:37a49f16adb592874690013aa9d05d6551adad23aa7a8a004cf7147bef93043d",
+      "spec_revision": "sha256:60658ca014bc972a4b4e2f5ffc8fb1224c526528cd037a84fb6b4683765aca0e",
+      "state": "verified-physical-layout-observation-only"
     }
   ]
 }

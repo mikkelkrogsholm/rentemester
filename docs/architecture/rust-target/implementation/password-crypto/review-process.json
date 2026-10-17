@@ -1,0 +1,93 @@
+{
+  "ok": true,
+  "checks": 48,
+  "normalizationChecks": 100170,
+  "scalarNormalizationChecks": 1112064,
+  "pythonVectors": 12,
+  "framework": "Better Auth1.7.1/@better-auth/utils0.4.2 actual password helpers",
+  "unicode": {
+    "bun": "17.0",
+    "icu": "78.1",
+    "version": "17.0.0"
+  },
+  "observations": [
+    {
+      "id": "python-0",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-1",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-2",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-3",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-4",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-5",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-6",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-7",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-8",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-9",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-10",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-11",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    }
+  ],
+  "limits": [
+    "Native password crypto only, not DB login/MFA/session or service lifecycle",
+    "Synchronous fixed32MiB KDF requires future bounded blocking/rate-limit dispatch",
+    "Canonical hash and input budgets stricter than permissive source helper; no production credential data",
+    "Normalization reference columns tested, not a claim of complete whole-runtime authentication parity"
+  ]
+}

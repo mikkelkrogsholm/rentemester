@@ -1,0 +1,10 @@
+    Finished `release` profile [optimized] target(s) in 0.06s
+     Running unittests src/lib.rs (target/release/deps/rentemester_runtime-b209b2e2181cab91)
+
+running 4 tests
+test password::tests::probe ... ignored, synthetic native crypto process probe selected by independent harness
+test password::tests::canonical_grammar_and_input_bounds_are_explicit ... ok
+test password::tests::fixed_python_credential_and_missing_hash_refuse_uniformly ... ok
+test password::tests::unicode17_official_nfkc_vectors ... ok
+
+test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 15 filtered out; finished in 1.18s

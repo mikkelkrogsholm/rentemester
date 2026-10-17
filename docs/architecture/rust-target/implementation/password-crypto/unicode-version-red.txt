@@ -1,0 +1,24 @@
+   Compiling rentemester-runtime v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.85s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_runtime-4eceaf7669356134)
+
+running 4 tests
+test password::tests::probe ... ignored, synthetic native crypto process probe selected by independent harness
+
+thread 'password::tests::unicode17_official_nfkc_vectors' (4420342) panicked at crates/rentemester-runtime/src/password.rs:135:9:
+assertion `left == right` failed
+  left: (18, 0, 0)
+ right: (17, 0, 0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test password::tests::unicode17_official_nfkc_vectors ... FAILED
+test password::tests::canonical_grammar_and_input_bounds_are_explicit ... ok
+test password::tests::fixed_python_credential_and_missing_hash_refuse_uniformly ... ok
+
+failures:
+
+failures:
+    password::tests::unicode17_official_nfkc_vectors
+
+test result: FAILED. 2 passed; 1 failed; 1 ignored; 0 measured; 15 filtered out; finished in 9.80s
+
+error: test failed, to rerun pass `-p rentemester-runtime --lib`

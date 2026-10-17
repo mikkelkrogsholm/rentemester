@@ -1,0 +1,212 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native existing-password cryptography",
+    "goal": "Issue and verify source-compatible native password hashes without Node/Bun",
+    "scope": "R04/R41 cryptography only; no login/account/session/DB mutation or writer admission"
+  },
+  "nodes": {
+    "component.runtime": {
+      "kind": "component",
+      "description": "Native password cryptography",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Bounded password normalization, scrypt and OS entropy",
+        "rationale": "Native identity must no longer depend on Node password crypto",
+        "excludes": [
+          "DB/account/login/MFA/session/recovery/HTTP or writer admission"
+        ]
+      },
+      "interfaces": [
+        "action.password_crypto"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Independent and actual framework hashes verify bidirectionally with native issuance",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Independent synthetic credential and normalization vectors",
+        "when": "Compare native and installed framework cryptography",
+        "then": "Independent and actual framework hashes verify bidirectionally with native issuance"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Wrong/missing/malformed credentials and input budgets refuse with opaque errors",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Independent synthetic credential and normalization vectors",
+        "when": "Compare native and installed framework cryptography",
+        "then": "Wrong/missing/malformed credentials and input budgets refuse with opaque errors"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "No secret diagnostics or DB/filesystem effects; caller input erasure not claimed",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Independent synthetic credential and normalization vectors",
+        "when": "Compare native and installed framework cryptography",
+        "then": "No secret diagnostics or DB/filesystem effects; caller input erasure not claimed"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Canonical hash grammar rejects source trailing-field permissiveness explicitly",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Independent synthetic credential and normalization vectors",
+        "when": "Compare native and installed framework cryptography",
+        "then": "Canonical hash grammar rejects source trailing-field permissiveness explicitly"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Fixed per-call KDF cost; no async/rate/concurrency endpoint qualification; future bounded worker dispatch mandatory",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Independent synthetic credential and normalization vectors",
+        "when": "Compare native and installed framework cryptography",
+        "then": "Fixed per-call KDF cost; no async/rate/concurrency endpoint qualification; future bounded worker dispatch mandatory"
+      }
+    },
+    "action.password_crypto": {
+      "kind": "action",
+      "description": "Native canonical scrypt password issuance and verification",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "bounded_password_and_optional_stored_hash": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "native_crypto_and_os_entropy": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "invalid_credentials for wrong/missing/malformed/oversize credentials; auth_crypto_unavailable for native entropy/KDF configuration failure"
+        },
+        "preconditions": [
+          "Trusted synchronous caller schedules bounded work; no DB/session/HTTP authority implied"
+        ],
+        "postconditions": [
+          "Canonical source-compatible hash or opaque refusal; no secret diagnostics or external mutations"
+        ],
+        "external_effects": [],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Password proof is not account/MFA/session authority; fixed bounded crypto must retain secret diagnostics and runtime concurrency boundaries",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Password proof is not account/MFA/session authority; fixed bounded crypto must retain secret diagnostics and runtime concurrency boundaries",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Password proof is not account/MFA/session authority; fixed bounded crypto must retain secret diagnostics and runtime concurrency boundaries",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Password proof is not account/MFA/session authority; fixed bounded crypto must retain secret diagnostics and runtime concurrency boundaries",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Password proof is not account/MFA/session authority; fixed bounded crypto must retain secret diagnostics and runtime concurrency boundaries",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Bounded Unicode17 NFKC then fixed scrypt salt-string scheme; OS-random issuance, fixed errors and dummy verification"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.password_crypto",
+      "to": "component.runtime",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.password_crypto",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.password_crypto",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.password_crypto",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.password_crypto",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.password_crypto",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native existing-password cryptography",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "2e00e961bf751bdea5e250f790b7acf61e9ecdaf77914e1020b4a91ae90d7151"
+      }
+    }
+  }
+}

@@ -1,0 +1,228 @@
+{
+  "format": "rentemester-password-crypto-increment/1",
+  "increment": "password-crypto-1",
+  "status": "verified-native-current-password-crypto-only",
+  "branch": "codex/rust-platform",
+  "code_revision": "sha256:f31c49299390da2c348d85c07f7227ecdc4e08d0d5485fc02cc53e47d289e92a",
+  "spec_revision": "sha256:0315ea6268ba278de460b3cc05f34bb06d469769d076e3c8bd94fe01305b8013",
+  "platform": {
+    "os": "macOS",
+    "architecture": "arm64",
+    "rust": "1.94.1",
+    "bun": "1.4.0",
+    "better_auth": "1.7.1",
+    "better_auth_utils": "0.4.2",
+    "unicode": "17.0.0",
+    "icu": "78.1",
+    "unicode_normalization_crate": "0.1.25"
+  },
+  "verification": {
+    "rust_verify_exit": 0,
+    "native_tests_passed": 78,
+    "ignored_helpers": 16,
+    "integration_checks": 10414,
+    "password_process_checks": 48,
+    "independent_python_vectors": 12,
+    "official_nfkc_column_checks": 100170,
+    "scalar_normalization_transcript_entries": 1112064,
+    "independent_review": "3 release native tests; final provenance guard1 official test; complete48-check harness repeated with same100170/1112064 normalization scopes",
+    "typecheck_exit": 0,
+    "lint_exit": 0,
+    "readiness": "readiness-v3.json;structural contract only"
+  },
+  "review": {
+    "material_defects_remaining": 0,
+    "details": "review.json",
+    "resolved": [
+      "Unicode0.1.26 uses18; pin matching17 at0.1.25, retain red and full-scalar/official-column checks",
+      "Record upstream Unicode URL/SHA256 plus guards and original license; checkout attributes preserve exact bytes",
+      "Scope historical unversioned normalization profiles as inventory/mapping/re-enrollment gate; no fallback guessing"
+    ]
+  },
+  "claims": [
+    "Native OS-random canonical password issuance and verification preserve installed source salt-string scrypt parameters and Unicode17 normalization",
+    "Actual installed framework verifies native-issued hashes; native verifies framework-issued hashes and12 independent Python/OpenSSL vectors",
+    "Missing/malformed credential hashes still run fixed dummy derivation and always refuse; final equal-length key comparison uses subtle",
+    "Owned normalized and output/key buffers zeroize on Drop and credential diagnostics are fixed; input/dependency/allocator/register/OS erasure is not promised",
+    "No DB/filesystem mutation or new identity/session authority is introduced"
+  ],
+  "limits": [
+    "Crypto primitives only; no native DB account lookup/login/enrollment/MFA/reset/recovery/session/service lifecycle or HTTP/CSRF endpoint",
+    "Fixed32MiB synchronous per-call KDF still needs bounded blocking dispatch/rate/concurrency limits; memory exhaustion is not a recoverable typed error claim",
+    "Canonical hashes,4096-byte input/16384-byte normalized budgets and valid Unicode are stricter than some source helper cases; explicit trailing-field difference retained",
+    "Empty/short low-level passwords are not enrollment permission; existing12-character and endpoint limits still required on integration",
+    "Current Unicode17 matching cannot prove historical unversioned normalization profiles; explicit mapping/re-enrollment must preserve principal/accounting/replay identities",
+    "No strength/format upgrade or credential rewrite; no production credential data used",
+    "Opened SQLite-handle admission remains unqualified after bounded VFS research; no prototype/unsafe workaround added",
+    "Current host only; OS entropy-failure injection, cross-platform storage/OS facilities and full runtime/cutover remain unqualified",
+    "Semantic Graphify refresh covers README/CONTRACT and Unicode header-schema/license; no per-row semantic extraction or generated JSON/log/historical snapshot refresh claimed"
+  ],
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "9dbe6221b87f0f7d23b84673f7933f32d5f996c2518dc97958ee2c4d4a814c63"
+    },
+    {
+      "path": "bun.lock",
+      "sha256": "0c8da97314d73150a89583942997ef0e6a300de891407bb09961f59506cbb2b9"
+    },
+    {
+      "path": "crates/rentemester-runtime/Cargo.toml",
+      "sha256": "7f041bf5f00bce89330969dd6eb519bbb59aa93041f72a14021c84f61df6c3cc"
+    },
+    {
+      "path": "crates/rentemester-runtime/fixtures/.gitattributes",
+      "sha256": "830ab06c1bc43e7dd91aa4379bff120f1d9e6d308a015265fb12e571a744101a"
+    },
+    {
+      "path": "crates/rentemester-runtime/fixtures/NormalizationTest-17.0.0.txt",
+      "sha256": "5019ffd530751a741900c849c0e010332f142a3612234639bd200b82138a87db"
+    },
+    {
+      "path": "crates/rentemester-runtime/fixtures/UNICODE-LICENSE.txt",
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+    },
+    {
+      "path": "crates/rentemester-runtime/fixtures/password-sources.json",
+      "sha256": "57bec92a9978368d16b5099bc60d3de603b80e28abf82d93342daf422e25055d"
+    },
+    {
+      "path": "crates/rentemester-runtime/fixtures/password.json",
+      "sha256": "a6a0dbfde3a6e81d447a59b5db3f48637725e37e7ab4eb66351e6b0a5fc81832"
+    },
+    {
+      "path": "crates/rentemester-runtime/src/auth.rs",
+      "sha256": "b1150e42b0e44191acd4c783315d7330347fd289f62d086ff61470b6417c27b4"
+    },
+    {
+      "path": "crates/rentemester-runtime/src/lib.rs",
+      "sha256": "f04929db6d26b6e8cadece9f820db6a34305fcb8703f7504d7e0a58fa8485974"
+    },
+    {
+      "path": "crates/rentemester-runtime/src/password.rs",
+      "sha256": "0c4a2176c57bc3d0fcc5370a17a0dc1286a815a2d1b2c00936a85ea262b982c4"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/README.md",
+      "sha256": "53106868f4abb827c04cdb8918fccea9611813ab999d49efe6db937f225409de"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-crypto/CONTRACT.md",
+      "sha256": "2e00e961bf751bdea5e250f790b7acf61e9ecdaf77914e1020b4a91ae90d7151"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-crypto/gdd.json",
+      "sha256": "9b712a8b1a1f6cdd02c475e5b684ec7bf8063bfa623fc9a867b877cbc93f98c5"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-crypto/lint.txt",
+      "sha256": "5c196b37a01db01a47959392bbb998c3831c61b9fb180cfcf4615336ac11dbc6"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-crypto/readiness-v2.json",
+      "sha256": "b23aa9601824230a8265c9622b1dbeae450ce9aa13f5d35c44379f49dfc6378c"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-crypto/readiness-v3.json",
+      "sha256": "45bd744ccf7102df726bf22e7e994997e351f6dfc96eeb3368a285e92442be80"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-crypto/readiness.json",
+      "sha256": "9d6a92369885bbec39a5c1212aa53a167de94b084ff3095f90f18d1d3bda624c"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-crypto/review-final-unicode.txt",
+      "sha256": "568950d080e5d85f8e4382436d5267f5ee7dfd924df939700e4c94c3da2de17a"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-crypto/review-native.txt",
+      "sha256": "41ce6f1c0b1930af3f04982630ff1ceabbdb7d15fb907961941c64bde7e92a90"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-crypto/review-process.json",
+      "sha256": "f7b4b829d154bd7f279c4a6725352ca3412ff197fec59b9ee0cf4b9c99917f1f"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-crypto/review.json",
+      "sha256": "8c7db43b54f4798b57008859b68b1f6f24624ebf3ebb67c5446ce62aaad95d2e"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-crypto/rust-verify.txt",
+      "sha256": "f2310928f5477d06fc2f5d06a41404630e049c977c6d1cd47d4b57850515f585"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-crypto/typecheck.txt",
+      "sha256": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-crypto/unicode-version-red.txt",
+      "sha256": "0d4a69c356f5ab2ceb36b83fed43b6c62ed5a6b8bd313a8f238ea8af33299203"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-crypto/vfs-research.json",
+      "sha256": "918b9a46db76d92ec1095fc4ef136e08661d039e4bb3b015317fa927b00b7023"
+    },
+    {
+      "path": "node_modules/@better-auth/utils/dist/password.mjs",
+      "sha256": "1f13df2b1af466a67749757e86b7fea273fc31869e114568bfdda29009795f39"
+    },
+    {
+      "path": "node_modules/@better-auth/utils/dist/password.node.mjs",
+      "sha256": "fc2c4e29a927dce6c01dddd8d1f22350d7927a6847301584a1a5f378fcb6c3e3"
+    },
+    {
+      "path": "node_modules/@better-auth/utils/package.json",
+      "sha256": "b481d52c32f0d74fa1b0599b653326df21e649a2217506770f676e8d8385acf3"
+    },
+    {
+      "path": "node_modules/better-auth/dist/crypto/password.mjs",
+      "sha256": "757f075228ec993630dfe91a7d1bdb55a6589173a508ba5e522586cdddd06d7b"
+    },
+    {
+      "path": "node_modules/better-auth/package.json",
+      "sha256": "d4da1b89925564605ca6540a4f5030aab18de043322ca0b51f08b9ec52b1e092"
+    },
+    {
+      "path": "package.json",
+      "sha256": "4749a637a3b7c85f644251654c979eeb2348a502cb592e5217156fb165af0e5c"
+    },
+    {
+      "path": "scripts/rust/password-vectors.py",
+      "sha256": "e0d36b81a4b7dd1ddf65b73dda07f76f4d09ed70ca9ebdd033089dc28d4cfe54"
+    },
+    {
+      "path": "scripts/rust/verify-password-crypto.ts",
+      "sha256": "3cbc00bd09902ff7229cb7553ab239ebea93b1ff0faabc7d44b549e2a7f06563"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "54681a10445a00ff8b74f693c833d9e785696049f7c3bc78fb86f4529e004906"
+    },
+    {
+      "path": "src/core/workspace-control.ts",
+      "sha256": "63b155521b26872be2fa95175434cd4234c284f07bf5a2baca0e63e1cb04509d"
+    },
+    {
+      "path": "src/server/auth.ts",
+      "sha256": "be531af3c308a417d767dc30960777c45408ff8883d767702199dbcbdae942cc"
+    },
+    {
+      "path": "src/server/better-auth.ts",
+      "sha256": "9513797eb1b1a82b0c9d592fb00e3317d6d33b6eb29c7bf0c548a0a4c58c9b73"
+    },
+    {
+      "path": "src/server/security-policy.ts",
+      "sha256": "3f826503ab6433045c7f4893b5493db1034d4bcd352a662ab653ed42e2a6f176"
+    }
+  ],
+  "reference_urls": [
+    "https://better-auth.com/docs/authentication/email-password",
+    "https://docs.rs/scrypt/0.11.0/scrypt/fn.scrypt.html",
+    "https://docs.rs/unicode-normalization/0.1.25/unicode_normalization/",
+    "https://www.unicode.org/Public/17.0.0/ucd/NormalizationTest.txt",
+    "https://www.unicode.org/license.txt"
+  ]
+}

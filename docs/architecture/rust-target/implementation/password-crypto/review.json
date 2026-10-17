@@ -1,0 +1,35 @@
+{
+  "format": "rentemester-password-crypto-review/1",
+  "reviewer": "review_migration_contracts",
+  "mode": "read-only independent security/source and targeted execution",
+  "initial_result": "No material crypto defect/auth bypass found within bounded primitive scope",
+  "finding": {
+    "severity": "low",
+    "description": "Original Unicode URL/digest provenance not yet recorded/checked at initial review",
+    "resolution": "password-sources.json URL/SHA256 metadata, native raw include_bytes digest assertion, Bun guards for both reference files, nested checkout attributes",
+    "final_result": "Finding resolved; no new material defect"
+  },
+  "commands": [
+    {
+      "command": "cargo test --release --locked -p rentemester-runtime password::tests",
+      "result": "3 passed,1 ignored",
+      "evidence": "review-native.txt"
+    },
+    {
+      "command": "cargo test --release --locked -p rentemester-runtime unicode17_official_nfkc_vectors",
+      "result": "1 passed after provenance guard",
+      "evidence": "review-final-unicode.txt"
+    },
+    {
+      "command": "bun scripts/rust/verify-password-crypto.ts",
+      "result": "48 checks;100170 normalization columns;1112064 scalar transcript entries; repeated after fix",
+      "evidence": "review-process.json"
+    }
+  ],
+  "source_review": [
+    "Installed BetterAuth/utils password helpers and salt-string input",
+    "Fixed params, pinned NFKC, OS entropy, canonical parser/dummy KDF and constant-time comparison",
+    "Owned-buffer erasure and fixed error boundaries; no endpoint/rate-limit claim"
+  ],
+  "remaining_scope": "DB account/login/MFA/reset/session/service flows, historical profile migration, actual writer admission and full platform remain pending"
+}

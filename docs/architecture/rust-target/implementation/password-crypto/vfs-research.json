@@ -1,0 +1,25 @@
+{
+  "format": "rentemester-native-admission-research/1",
+  "status": "no-qualified-safe-drop-in-found-in-bounded-pass",
+  "writer_admission": "still-unresolved; full goal remains active and independent identity work proceeds",
+  "routes": [
+    {
+      "name": "rusqlite0.40.2",
+      "url": "https://docs.rs/rusqlite/0.40.2/rusqlite/struct.Connection.html",
+      "finding": "path() gives filename, unsafe handle() gives raw pointer; no safe current physical descriptor identity/file_control wrapper found"
+    },
+    {
+      "name": "sqlite-vfs0.2.0",
+      "url": "https://github.com/rkusa/sqlite-vfs",
+      "finding": "README calls it inactive prototype, not production-ready; unreviewed unsafe; missing WAL/directory-sync qualification"
+    },
+    {
+      "name": "rsqlite-vfs0.2.0",
+      "url": "https://docs.rs/rsqlite-vfs/latest/rsqlite_vfs/fn.register_vfs.html",
+      "finding": "Registration requires unsafe and callback/lifetime/threading duties; not a safe drop-in identity wrapper"
+    }
+  ],
+  "decision": "Do not add prototype VFS or weaken workspace unsafe forbid. Keep opened-handle gate and continue independent native password crypto. Future qualified safe dependency/upstream API or explicitly reviewed integration still required.",
+  "threat_model": "Fully enrolled cooperative namespace/lifetime ownership can establish a conditional no-participant-swap guarantee; it is not proof against an uncooperative directory-writable actor. Path stat/HAS_MOVED alone cannot close ABA or full device/inode gaps.",
+  "production_effects": []
+}
