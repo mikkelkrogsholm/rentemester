@@ -1,0 +1,4100 @@
+[
+  {
+    "id": "chart-64000-1-credit-liability",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "64000",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": false,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": [
+        {
+          "code": "vat_base_required",
+          "field": "lines"
+        }
+      ]
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO accounts(account_no,name,type,normal_balance,active) VALUES(?,?,?,?,?)",
+        "params": [
+          "64000",
+          "Synthetic source chart",
+          "liability",
+          "credit",
+          1
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": [
+      "vat_base_required"
+    ]
+  },
+  {
+    "id": "chart-64020-1-credit-liability",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "64020",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": false,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": [
+        {
+          "code": "vat_base_required",
+          "field": "lines"
+        }
+      ]
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO accounts(account_no,name,type,normal_balance,active) VALUES(?,?,?,?,?)",
+        "params": [
+          "64020",
+          "Synthetic source chart",
+          "liability",
+          "credit",
+          1
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": [
+      "vat_base_required"
+    ]
+  },
+  {
+    "id": "chart-64040-1-credit-liability",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "64040",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": false,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": [
+        {
+          "code": "vat_base_required",
+          "field": "lines"
+        }
+      ]
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO accounts(account_no,name,type,normal_balance,active) VALUES(?,?,?,?,?)",
+        "params": [
+          "64040",
+          "Synthetic source chart",
+          "liability",
+          "credit",
+          1
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": [
+      "vat_base_required"
+    ]
+  },
+  {
+    "id": "chart-64060-1-credit-liability",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "64060",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": true,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": []
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO accounts(account_no,name,type,normal_balance,active) VALUES(?,?,?,?,?)",
+        "params": [
+          "64060",
+          "Synthetic source chart",
+          "liability",
+          "credit",
+          1
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": []
+  },
+  {
+    "id": "chart-64099-1-credit-liability",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "64099",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": true,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": []
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO accounts(account_no,name,type,normal_balance,active) VALUES(?,?,?,?,?)",
+        "params": [
+          "64099",
+          "Synthetic source chart",
+          "liability",
+          "credit",
+          1
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": []
+  },
+  {
+    "id": "chart-64000-0-credit-liability",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "64000",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": false,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": [
+        {
+          "code": "account_inactive",
+          "field": "lines[0].accountNo"
+        }
+      ]
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO accounts(account_no,name,type,normal_balance,active) VALUES(?,?,?,?,?)",
+        "params": [
+          "64000",
+          "Synthetic source chart",
+          "liability",
+          "credit",
+          0
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": [
+      "account_inactive"
+    ]
+  },
+  {
+    "id": "chart-64000-2-credit-liability",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "64000",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": true,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": []
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO accounts(account_no,name,type,normal_balance,active) VALUES(?,?,?,?,?)",
+        "params": [
+          "64000",
+          "Synthetic source chart",
+          "liability",
+          "credit",
+          2
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": []
+  },
+  {
+    "id": "chart-64000--1-credit-liability",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "64000",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": true,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": []
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO accounts(account_no,name,type,normal_balance,active) VALUES(?,?,?,?,?)",
+        "params": [
+          "64000",
+          "Synthetic source chart",
+          "liability",
+          "credit",
+          -1
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": []
+  },
+  {
+    "id": "chart-64000-1-debit-liability",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "64000",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": true,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": []
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO accounts(account_no,name,type,normal_balance,active) VALUES(?,?,?,?,?)",
+        "params": [
+          "64000",
+          "Synthetic source chart",
+          "liability",
+          "debit",
+          1
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": []
+  },
+  {
+    "id": "chart-64000-0-credit-vat",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "64000",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": false,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": [
+        {
+          "code": "account_inactive",
+          "field": "lines[0].accountNo"
+        },
+        {
+          "code": "vat_base_required",
+          "field": "lines"
+        }
+      ]
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO accounts(account_no,name,type,normal_balance,active) VALUES(?,?,?,?,?)",
+        "params": [
+          "64000",
+          "Synthetic source chart",
+          "vat",
+          "credit",
+          0
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": [
+      "account_inactive",
+      "vat_base_required"
+    ]
+  },
+  {
+    "id": "general-active-0",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": false,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": [
+        {
+          "code": "account_inactive",
+          "field": "lines[0].accountNo"
+        }
+      ]
+    },
+    "sql": [
+      {
+        "sql": "UPDATE accounts SET active=? WHERE account_no=?",
+        "params": [
+          0,
+          "cash"
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": [
+      "account_inactive"
+    ]
+  },
+  {
+    "id": "general-active-2",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": true,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": []
+    },
+    "sql": [
+      {
+        "sql": "UPDATE accounts SET active=? WHERE account_no=?",
+        "params": [
+          2,
+          "cash"
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": []
+  },
+  {
+    "id": "general-active--1",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": true,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": []
+    },
+    "sql": [
+      {
+        "sql": "UPDATE accounts SET active=? WHERE account_no=?",
+        "params": [
+          -1,
+          "cash"
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": []
+  },
+  {
+    "id": "settlement-confirmed-1-liability-credit",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "tax",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "settle",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": true,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": []
+    },
+    "sql": [
+      {
+        "sql": "UPDATE account_role_mappings SET status=? WHERE role=?",
+        "params": [
+          "confirmed",
+          "vat_settlement"
+        ]
+      },
+      {
+        "sql": "UPDATE accounts SET active=?,type=?,normal_balance=? WHERE account_no=?",
+        "params": [
+          1,
+          "liability",
+          "credit",
+          "settle"
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": []
+  },
+  {
+    "id": "settlement-superseded-1-liability-credit",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "tax",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "settle",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": false,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": [
+        {
+          "code": "vat_base_required",
+          "field": "lines"
+        }
+      ]
+    },
+    "sql": [
+      {
+        "sql": "UPDATE account_role_mappings SET status=? WHERE role=?",
+        "params": [
+          "superseded",
+          "vat_settlement"
+        ]
+      },
+      {
+        "sql": "UPDATE accounts SET active=?,type=?,normal_balance=? WHERE account_no=?",
+        "params": [
+          1,
+          "liability",
+          "credit",
+          "settle"
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": [
+      "vat_base_required"
+    ]
+  },
+  {
+    "id": "settlement-inactive-1-liability-credit",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "tax",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "settle",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": false,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": [
+        {
+          "code": "vat_base_required",
+          "field": "lines"
+        }
+      ]
+    },
+    "sql": [
+      {
+        "sql": "UPDATE account_role_mappings SET status=? WHERE role=?",
+        "params": [
+          "inactive",
+          "vat_settlement"
+        ]
+      },
+      {
+        "sql": "UPDATE accounts SET active=?,type=?,normal_balance=? WHERE account_no=?",
+        "params": [
+          1,
+          "liability",
+          "credit",
+          "settle"
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": [
+      "vat_base_required"
+    ]
+  },
+  {
+    "id": "settlement-confirmed-0-liability-credit",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "tax",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "settle",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": false,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": [
+        {
+          "code": "account_inactive",
+          "field": "lines[1].accountNo"
+        },
+        {
+          "code": "vat_base_required",
+          "field": "lines"
+        }
+      ]
+    },
+    "sql": [
+      {
+        "sql": "UPDATE account_role_mappings SET status=? WHERE role=?",
+        "params": [
+          "confirmed",
+          "vat_settlement"
+        ]
+      },
+      {
+        "sql": "UPDATE accounts SET active=?,type=?,normal_balance=? WHERE account_no=?",
+        "params": [
+          0,
+          "liability",
+          "credit",
+          "settle"
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": [
+      "account_inactive",
+      "vat_base_required"
+    ]
+  },
+  {
+    "id": "settlement-confirmed-2-liability-credit",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "tax",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "settle",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": false,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": [
+        {
+          "code": "vat_base_required",
+          "field": "lines"
+        }
+      ]
+    },
+    "sql": [
+      {
+        "sql": "UPDATE account_role_mappings SET status=? WHERE role=?",
+        "params": [
+          "confirmed",
+          "vat_settlement"
+        ]
+      },
+      {
+        "sql": "UPDATE accounts SET active=?,type=?,normal_balance=? WHERE account_no=?",
+        "params": [
+          2,
+          "liability",
+          "credit",
+          "settle"
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": [
+      "vat_base_required"
+    ]
+  },
+  {
+    "id": "settlement-confirmed-1-asset-credit",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "tax",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "settle",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": false,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": [
+        {
+          "code": "vat_base_required",
+          "field": "lines"
+        }
+      ]
+    },
+    "sql": [
+      {
+        "sql": "UPDATE account_role_mappings SET status=? WHERE role=?",
+        "params": [
+          "confirmed",
+          "vat_settlement"
+        ]
+      },
+      {
+        "sql": "UPDATE accounts SET active=?,type=?,normal_balance=? WHERE account_no=?",
+        "params": [
+          1,
+          "asset",
+          "credit",
+          "settle"
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": [
+      "vat_base_required"
+    ]
+  },
+  {
+    "id": "settlement-confirmed-1-liability-debit",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "tax",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "settle",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": false,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": [
+        {
+          "code": "vat_base_required",
+          "field": "lines"
+        }
+      ]
+    },
+    "sql": [
+      {
+        "sql": "UPDATE account_role_mappings SET status=? WHERE role=?",
+        "params": [
+          "confirmed",
+          "vat_settlement"
+        ]
+      },
+      {
+        "sql": "UPDATE accounts SET active=?,type=?,normal_balance=? WHERE account_no=?",
+        "params": [
+          1,
+          "liability",
+          "debit",
+          "settle"
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": [
+      "vat_base_required"
+    ]
+  },
+  {
+    "id": "confirmed-not-max-version",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "tax",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "settle",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": true,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": []
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO account_role_mappings(role,account_no,status,version,confirmed_by) VALUES('vat_settlement','cash','superseded',99,'user:synthetic')",
+        "params": []
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": []
+  },
+  {
+    "id": "proposal-not-confirmation",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "tax",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "settle",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": false,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": [
+        {
+          "code": "vat_base_required",
+          "field": "lines"
+        }
+      ]
+    },
+    "sql": [
+      {
+        "sql": "DELETE FROM account_role_mappings WHERE role='vat_settlement'",
+        "params": []
+      },
+      {
+        "sql": "INSERT INTO account_role_proposals(role,account_no,source) VALUES('vat_settlement','settle','synthetic')",
+        "params": []
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": [
+      "vat_base_required"
+    ]
+  },
+  {
+    "id": "audit-order-not-insertion",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": [
+        {
+          "id": "0",
+          "start": "2026-01-01",
+          "end": "2026-12-31",
+          "kind": "custom",
+          "effectiveState": "closed",
+          "reference": "source-æ\u0000"
+        }
+      ]
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": true,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": []
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO audit_log(id,event_type,entity_type,entity_id,message) VALUES(? ,?,'accounting_period',?,'Synthetic lifecycle')",
+        "params": [
+          {
+            "i64": "200"
+          },
+          "period_reopen",
+          "0"
+        ]
+      },
+      {
+        "sql": "INSERT INTO audit_log(id,event_type,entity_type,entity_id,message) VALUES(? ,?,'accounting_period',?,'Synthetic lifecycle')",
+        "params": [
+          {
+            "i64": "100"
+          },
+          "period_close",
+          "0"
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": []
+  },
+  {
+    "id": "unknown-audit-event",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": [
+        {
+          "id": "0",
+          "start": "2026-01-01",
+          "end": "2026-12-31",
+          "kind": "custom",
+          "effectiveState": "closed",
+          "reference": "source-æ\u0000"
+        }
+      ]
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": false,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": [
+        {
+          "code": "period_locked",
+          "field": "transactionDate"
+        }
+      ]
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO audit_log(id,event_type,entity_type,entity_id,message) VALUES(? ,?,'accounting_period',?,'Synthetic lifecycle')",
+        "params": [
+          {
+            "i64": "1"
+          },
+          "other_event",
+          "0"
+        ]
+      }
+    ],
+    "expectedMessages": [
+      "transactionDate 2026-02-01 falls in closed period custom 2026-01-01..2026-12-31 ref source-æ\u0000"
+    ],
+    "legacyCodes": [
+      "period_locked"
+    ]
+  },
+  {
+    "id": "reported-is-terminal",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": [
+        {
+          "id": "0",
+          "start": "2026-01-01",
+          "end": "2026-12-31",
+          "kind": "custom",
+          "effectiveState": "closed",
+          "reference": "source-æ\u0000"
+        }
+      ]
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": false,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": [
+        {
+          "code": "period_locked",
+          "field": "transactionDate"
+        }
+      ]
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO audit_log(id,event_type,entity_type,entity_id,message) VALUES(? ,?,'accounting_period',?,'Synthetic lifecycle')",
+        "params": [
+          {
+            "i64": "1"
+          },
+          "period_report",
+          "0"
+        ]
+      },
+      {
+        "sql": "INSERT INTO audit_log(id,event_type,entity_type,entity_id,message) VALUES(? ,?,'accounting_period',?,'Synthetic lifecycle')",
+        "params": [
+          {
+            "i64": "2"
+          },
+          "period_reopen",
+          "0"
+        ]
+      }
+    ],
+    "expectedMessages": [
+      "transactionDate 2026-02-01 falls in reported period custom 2026-01-01..2026-12-31 ref source-æ\u0000"
+    ],
+    "legacyCodes": [
+      "period_locked"
+    ]
+  },
+  {
+    "id": "stored-open-not-candidate",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": [
+        {
+          "id": "0",
+          "start": "2026-01-01",
+          "end": "2026-12-31",
+          "kind": "custom",
+          "effectiveState": "closed",
+          "reference": "source-æ\u0000"
+        }
+      ]
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": true,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": []
+    },
+    "sql": [
+      {
+        "sql": "UPDATE accounting_periods SET status='open' WHERE id=0",
+        "params": []
+      },
+      {
+        "sql": "INSERT INTO audit_log(id,event_type,entity_type,entity_id,message) VALUES(? ,?,'accounting_period',?,'Synthetic lifecycle')",
+        "params": [
+          {
+            "i64": "1"
+          },
+          "period_close",
+          "0"
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": []
+  },
+  {
+    "id": "full-width-period-reopen",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": [
+        {
+          "id": "9007199254740993",
+          "start": "2026-01-01",
+          "end": "2026-12-31",
+          "kind": "custom",
+          "effectiveState": "closed",
+          "reference": "source-æ\u0000"
+        }
+      ]
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": true,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": []
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO audit_log(id,event_type,entity_type,entity_id,message) VALUES(? ,?,'accounting_period',?,'Synthetic lifecycle')",
+        "params": [
+          {
+            "i64": "1"
+          },
+          "period_reopen",
+          "9007199254740993"
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": [
+      "period_locked"
+    ]
+  },
+  {
+    "id": "exact-audit-id-order",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": [
+        {
+          "id": "0",
+          "start": "2026-01-01",
+          "end": "2026-12-31",
+          "kind": "custom",
+          "effectiveState": "closed",
+          "reference": "source-æ\u0000"
+        }
+      ]
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": false,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": [
+        {
+          "code": "period_locked",
+          "field": "transactionDate"
+        }
+      ]
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO audit_log(id,event_type,entity_type,entity_id,message) VALUES(? ,?,'accounting_period',?,'Synthetic lifecycle')",
+        "params": [
+          {
+            "i64": "9007199254740993"
+          },
+          "period_close",
+          "0"
+        ]
+      },
+      {
+        "sql": "INSERT INTO audit_log(id,event_type,entity_type,entity_id,message) VALUES(? ,?,'accounting_period',?,'Synthetic lifecycle')",
+        "params": [
+          {
+            "i64": "9007199254740992"
+          },
+          "period_reopen",
+          "0"
+        ]
+      }
+    ],
+    "expectedMessages": [
+      "transactionDate 2026-02-01 falls in closed period custom 2026-01-01..2026-12-31 ref source-æ\u0000"
+    ],
+    "legacyCodes": [
+      "period_locked"
+    ]
+  },
+  {
+    "id": "credit-note-earliest-signed-id",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ],
+      "documentId": "1"
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [
+        {
+          "id": "1",
+          "existingCreditNoteEntry": "later"
+        }
+      ],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": false,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": [
+        {
+          "code": "credit_note_already_posted",
+          "field": "documentId"
+        }
+      ]
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO journal_entries(id,entry_no,transaction_date,text,document_id,rule_version,entry_hash,status) VALUES(-5,'earliest-æ','2026-01-01','Synthetic',1,'synthetic',?,'reversed')",
+        "params": [
+          "0000000000000000000000000000000000000000000000000000000000000000"
+        ]
+      }
+    ],
+    "expectedMessages": [
+      "credit note document 1 already has accounting journal earliest-æ; issue a new credit note document for another correction"
+    ],
+    "legacyCodes": [
+      "credit_note_already_posted"
+    ]
+  },
+  {
+    "id": "direct-bank-occupancy-is-not-link",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ],
+      "sourceBankTransactionId": "1"
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [
+        {
+          "id": "1",
+          "linkedJournal": null
+        }
+      ],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "ok": true,
+      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+      "requiredRules": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001"
+      ],
+      "requiredStorageRules": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001"
+      ],
+      "totalDebit": "10.00",
+      "totalCredit": "10.00",
+      "errors": []
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO journal_entries(id,entry_no,transaction_date,text,source_bank_transaction_id,rule_version,entry_hash) VALUES(2,'direct','2026-01-01','Synthetic',1,'synthetic',?)",
+        "params": [
+          "0000000000000000000000000000000000000000000000000000000000000000"
+        ]
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": []
+  },
+  {
+    "id": "foreign-key-corruption",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "error": "invalid_ledger"
+    },
+    "sql": [
+      {
+        "sql": "INSERT INTO journal_lines(journal_entry_id,account_id,debit_amount,credit_amount) VALUES(999,999,10,0)",
+        "params": []
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": null
+  },
+  {
+    "id": "malformed-active-blob",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "error": "invalid_ledger"
+    },
+    "sql": [
+      {
+        "sql": "UPDATE accounts SET active=x'01' WHERE account_no='cash'",
+        "params": []
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": null
+  },
+  {
+    "id": "malformed-active-real",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "error": "invalid_ledger"
+    },
+    "sql": [
+      {
+        "sql": "UPDATE accounts SET active=1.5 WHERE account_no='cash'",
+        "params": []
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": null
+  },
+  {
+    "id": "malformed-period-date",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": [
+        {
+          "id": "0",
+          "start": "2026-01-01",
+          "end": "2026-12-31",
+          "kind": "custom",
+          "effectiveState": "closed",
+          "reference": "source-æ\u0000"
+        }
+      ]
+    },
+    "legacy": "match",
+    "expected": {
+      "error": "invalid_ledger"
+    },
+    "sql": [
+      {
+        "sql": "UPDATE accounting_periods SET period_start=' 2026-01-01' WHERE id=0",
+        "params": []
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": null
+  },
+  {
+    "id": "unknown-table",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "error": "unsupported_schema"
+    },
+    "sql": [
+      {
+        "sql": "CREATE TABLE unexpected_extension(id INTEGER)",
+        "params": []
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": null
+  },
+  {
+    "id": "pending-history",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "error": "unsupported_schema"
+    },
+    "sql": [
+      {
+        "sql": "DELETE FROM schema_migrations WHERE id=36",
+        "params": []
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": null
+  },
+  {
+    "id": "bad-history-checksum",
+    "op": "manual",
+    "request": {
+      "transactionDate": "2026-02-01",
+      "text": "Synthetic journal",
+      "currency": "DKK",
+      "lines": [
+        {
+          "accountNo": "cash",
+          "debitAmount": "10.00"
+        },
+        {
+          "accountNo": "capital",
+          "creditAmount": "10.00"
+        }
+      ]
+    },
+    "facts": {
+      "transactionDate": "2026-02-01",
+      "latestAllowedDate": "2026-03-18",
+      "accounts": [
+        {
+          "accountNo": "cash",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "capital",
+          "kind": "equity",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "sale",
+          "kind": "income",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "cost",
+          "kind": "expense",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "tax",
+          "kind": "vat",
+          "active": true,
+          "vatControl": true,
+          "vatSettlement": false
+        },
+        {
+          "accountNo": "settle",
+          "kind": "liability",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": true
+        },
+        {
+          "accountNo": "æ🦀\u0000",
+          "kind": "asset",
+          "active": true,
+          "vatControl": false,
+          "vatSettlement": false
+        }
+      ],
+      "documents": [],
+      "banks": [],
+      "periods": []
+    },
+    "legacy": "match",
+    "expected": {
+      "error": "unsupported_schema"
+    },
+    "sql": [
+      {
+        "sql": "UPDATE schema_migrations SET checksum='bad' WHERE id=36",
+        "params": []
+      }
+    ],
+    "expectedMessages": [],
+    "legacyCodes": null
+  }
+]

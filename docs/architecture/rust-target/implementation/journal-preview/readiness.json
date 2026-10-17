@@ -1,0 +1,138 @@
+{
+  "format": "gdd-report/0.2",
+  "tool": {
+    "name": "gdd-validator",
+    "version": "0.8.0"
+  },
+  "spec_revision": "sha256:694851ea79ba58e98c24736e67d74c3e3370e243f459e0ab827a6715cd9e3d62",
+  "profiles": [
+    "readiness"
+  ],
+  "scope": [
+    "action.journal_preview",
+    "component.storage"
+  ],
+  "checks": [
+    {
+      "check_id": "representation.schema",
+      "dimension": "model",
+      "result": "PASS",
+      "scope": [],
+      "reason": "Local JSON Schema validation.",
+      "diagnostics": []
+    },
+    {
+      "check_id": "model.semantics",
+      "dimension": "model",
+      "result": "PASS",
+      "scope": [],
+      "reason": "Core references, endpoints, identity, refinement, machines, types and declared extension data checked.",
+      "diagnostics": []
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Risk authorization needs exercising scenarios of category {'negative', 'boundary'}.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Risk authorization needs exercising scenarios of category {'negative', 'boundary'}.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.journal_preview"
+          },
+          "related_ids": [
+            "action.journal_preview"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Risk idempotency needs exercising scenarios of category {'negative', 'boundary'}.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Risk idempotency needs exercising scenarios of category {'negative', 'boundary'}.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.journal_preview"
+          },
+          "related_ids": [
+            "action.journal_preview"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Risk boundaries needs exercising scenarios of category {'negative', 'boundary'}.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Risk boundaries needs exercising scenarios of category {'negative', 'boundary'}.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.journal_preview"
+          },
+          "related_ids": [
+            "action.journal_preview"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Risk concurrency needs exercising scenarios of category {'concurrency'}.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Risk concurrency needs exercising scenarios of category {'concurrency'}.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.journal_preview"
+          },
+          "related_ids": [
+            "action.journal_preview"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Risk atomicity needs exercising scenarios of category {'negative', 'boundary'}.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Risk atomicity needs exercising scenarios of category {'negative', 'boundary'}.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.journal_preview"
+          },
+          "related_ids": [
+            "action.journal_preview"
+          ]
+        }
+      ]
+    }
+  ]
+}

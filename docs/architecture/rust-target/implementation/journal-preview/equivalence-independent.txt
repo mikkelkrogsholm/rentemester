@@ -1,0 +1,7 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_storage-03d5f3fab3792ce0)
+
+running 1 test
+test journal_preview::tests::complete_current_image_matches_reconstructed_native_schema ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 40 filtered out; finished in 0.72s

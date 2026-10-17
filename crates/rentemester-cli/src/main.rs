@@ -1,15 +1,80 @@
 use rentemester_engine::{Error, trial_balance::Period};
 use serde_json::json;
-use std::{collections::BTreeMap, path::Path, process::ExitCode};
+use std::{collections::BTreeMap, io::Read, path::Path, process::ExitCode};
 fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
     if args == ["--help"] {
         return Ok(json!({"ok":true,"commands":[
+            {"name":"validate-journal","usage":"validate-journal --company PATH < request.json","scope":"experimental source-backed advisory manual validation; no writer authority"},
             {"name":"trial-balance","usage":"trial-balance --company PATH --from YYYY-MM-DD --to YYYY-MM-DD","scope":"experimental local read-only report"},
             {"name":"rehearse-company-baseline","usage":"rehearse-company-baseline --company PATH","scope":"experimental explicit known unversioned physical baseline copy; no adoption authority"},
             {"name":"rehearse-control-migration","usage":"rehearse-control-migration --workspace PATH","scope":"experimental private control copy; no source migration"},
             {"name":"rehearse-company-migration","usage":"rehearse-company-migration --company PATH","scope":"experimental full canonical company prefixes0–36 and bounded minimal suffix32–36; no source migration"},
             {"name":"verify-journal-hashes","usage":"verify-journal-hashes --company PATH","scope":"experimental journal canonical hashes; not full audit integrity"}
         ]}));
+    }
+    if args == ["validate-journal", "--help"] {
+        return Ok(
+            json!({"ok":true,"usage":"rentemester-rust validate-journal --company PATH < request.json","format":"rentemester-manual-journal-preview/1","requestFormat":rentemester_storage::journal_preview::REQUEST_FORMAT,"maxRequestBytes":rentemester_storage::journal_preview::MAX_REQUEST_BYTES,"requestFields":["format","expectedRuleVersion","latestAllowedDate","request"],"businessErrors":"data.validation.errors","transportErrors":"errors","exitCodes":{"0":"accepted advisory preview","1":"business/source/rule refusal","2":"usage/transport/type refusal"},"activeRuleVersion":rentemester_storage::manual_journal_rule_version().map_err(|e|(1,e))?,"scope":"advisory read-only source snapshot; explicit preview horizon; no posting authority"}),
+        );
+    }
+    if args.first().map(String::as_str) == Some("validate-journal") {
+        if args.len() != 3
+            || args[1] != "--company"
+            || args[2].is_empty()
+            || args[2].starts_with("--")
+        {
+            return Err((
+                2,
+                Error::new(
+                    "invalid_input",
+                    "expected validate-journal --company PATH and bounded JSON on stdin",
+                ),
+            ));
+        }
+        let mut input = Vec::new();
+        std::io::stdin()
+            .lock()
+            .take(rentemester_storage::journal_preview::MAX_REQUEST_BYTES + 1)
+            .read_to_end(&mut input)
+            .map_err(|_| {
+                (
+                    2,
+                    Error::new("invalid_input", "could not read journal preview request"),
+                )
+            })?;
+        if input.len() as u64 > rentemester_storage::journal_preview::MAX_REQUEST_BYTES {
+            return Err((
+                2,
+                Error::new(
+                    "invalid_input",
+                    "journal preview request exceeds byte limit",
+                ),
+            ));
+        }
+        let input: rentemester_storage::PreviewInput =
+            serde_json::from_slice(&input).map_err(|_| {
+                (
+                    2,
+                    Error::new(
+                        "invalid_input",
+                        "expected one strict canonical journal preview envelope",
+                    ),
+                )
+            })?;
+        if input.format != rentemester_storage::journal_preview::REQUEST_FORMAT {
+            return Err((
+                2,
+                Error::new(
+                    "invalid_input",
+                    "unsupported journal preview request format",
+                ),
+            ));
+        }
+        let report = rentemester_storage::preview_manual_journal(Path::new(&args[2]), input)
+            .map_err(|e| (1, e))?;
+        return Ok(
+            json!({"ok":report.validation.ok,"format":"rentemester-manual-journal-preview/1","data":report}),
+        );
     }
     if args == ["rehearse-company-baseline", "--help"] {
         return Ok(

@@ -1,0 +1,776 @@
+{
+  "format": "rentemester-source-journal-preview-increment/1",
+  "base_code": "7b25346281877d4eb6361b6e60f2ed5688e3e847",
+  "previous_goal_turn": "Progress:7b253462 pure manual validation delivered/pushed with all tests. Reconciled existing branch/active full goal before source-backed CLI integration.",
+  "spec_revision": "sha256:a4c3b5c00fea08515ecf62862f5ecd8ca41fec70758fd7378b5375e8ea389f7c",
+  "code_revision": "sha256:6840a4138730aef78a2efeebfa4c5c808d54e2b3581745ebc4a6ab88d6c9db78",
+  "assets": [
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "a64e7d6dd68285c4d115bedc3c57712136ca5df80f8ff3563e7818e646cdd92d"
+    },
+    {
+      "path": "crates/rentemester-engine/src/fx.rs",
+      "sha256": "3a324c09052c99ccb9adaf4ce5515a2070349e498f0ba32a72b965e96caa3db9"
+    },
+    {
+      "path": "crates/rentemester-engine/src/identifiers.rs",
+      "sha256": "530e4467ea2f2e7bb2e0fcdd9969fa82b60b407a6d4a889e7b285caf49ec1854"
+    },
+    {
+      "path": "crates/rentemester-engine/src/journal_rules.rs",
+      "sha256": "91656adb48a84c0dbeccf0299b25138aab5ecf20f7bfd837b71100ba4edb95e3"
+    },
+    {
+      "path": "crates/rentemester-engine/src/manual_journal.rs",
+      "sha256": "6ad6c3d386e30d73f4063f51926c6f4993eb53d7a376bd1185d27d0eda39891b"
+    },
+    {
+      "path": "crates/rentemester-engine/src/money.rs",
+      "sha256": "5d69282ed77ea59f98a9af6bf492427f8f3d478f654712cbfb3b36222fdd661f"
+    },
+    {
+      "path": "crates/rentemester-storage/src/company_baseline.rs",
+      "sha256": "bb9725fe573283b4cfd82736057125477625594f7210eaea2184faf80d1f825a"
+    },
+    {
+      "path": "crates/rentemester-storage/src/journal_preview.rs",
+      "sha256": "4195ab23192108fdc8d46bb3d721aa211fc172e7972a3b22950ec01590bbe57f"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-company-schemas.json",
+      "sha256": "e2390746dbb0245f4d128158e146405994ce9b75f93e702b2e04d9e9d04aeb7b"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-company-schemas.sha256",
+      "sha256": "2dadb0947b848cb05e65d5a09d81576ecfcfc81e3db89e9722946c53a9add795"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-schema.json",
+      "sha256": "b424cec385abad3f313ca633a291f8cf3f07d5cbece16523cd8fa0674cf729c7"
+    },
+    {
+      "path": "crates/rentemester-storage/src/lib.rs",
+      "sha256": "62e1060ab20878530f84fc1eadff976b396be035901b1a59dc60cbf7a6dd5e97"
+    },
+    {
+      "path": "crates/rentemester-storage/src/manual-rule-bundles.json",
+      "sha256": "966dcac7eef35c0823d31b7e3a9583e1a028d5c4e228136d7f8d0196705e7779"
+    },
+    {
+      "path": "crates/rentemester-storage/src/migration.rs",
+      "sha256": "708fb44faf17aa7e6a2b55fd0c446e990894cbde6c2d42ee18c66e79370aa315"
+    },
+    {
+      "path": "crates/rentemester-storage/src/snapshot.rs",
+      "sha256": "3c4cb8708c439c059b87c2692b26c62d927af4447080d808dea89c989e403c28"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/journal-preview/CONTRACT.md",
+      "sha256": "fa9e9150cff07dc72d9698ff655803bab4eed814b9a0e156ddff55770343555f"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/journal-preview/example-request.json",
+      "sha256": "2f9875945672c9da02d2c343a5a7c01d6cd0b4d142a5bcffb11efc1710af8c0d"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/journal-preview/gdd.json",
+      "sha256": "b8c538d7fa5a2f8fbf7fe6da8fa8568640ef8ed5d893401311088911a93fdd0b"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/journal-preview/observations.jsonl",
+      "sha256": "160a548aff13e2251f102528c31079390fa612e941667bae96b60d41976e58c1"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/journal-preview/source-cases-manifest.json",
+      "sha256": "353e914d9820118aa263acf563cb6d984d2f15e2fc7051bdb0d91f30a02e5abe"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/journal-preview/source-cases.json",
+      "sha256": "b4a54a6052e436b630741e5a2d9cb72e141d2e689493038c488aa521d975021d"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/manual-journal/legacy-observations.jsonl",
+      "sha256": "9aca581280e42a353485530c9b8f5af6e451334d62c59c880eb7e6ef67544999"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/manual-journal/vectors.jsonl",
+      "sha256": "3d46afbb97a730102f2628096b5d10003f8b4bbe262ad2efcea41c8855d03b41"
+    },
+    {
+      "path": "rules/dk/annual-report.yaml",
+      "sha256": "627cbd14566c25c6af721cbf1d9155d323b57190ed32100c3c07bc1011897bdd"
+    },
+    {
+      "path": "rules/dk/bank.yaml",
+      "sha256": "e6d0a7698f37eeddcbdb8f97a9e298724761397b89e262752627a57943660d32"
+    },
+    {
+      "path": "rules/dk/bookkeeping.yaml",
+      "sha256": "c5da16145517d85b4cb312dba2839e4db4cfbcdc0ef4e0afe16cfa60065849fa"
+    },
+    {
+      "path": "rules/dk/documents.yaml",
+      "sha256": "45c778cd433a492064992bda78b1d16dc9dec7fce18e1c0d7416f5ac6806ada7"
+    },
+    {
+      "path": "rules/dk/email.yaml",
+      "sha256": "ce7536da76f29f8f97d59771ffc631b34ce84d8fe2ee1ec91820da5fe6c316db"
+    },
+    {
+      "path": "rules/dk/gdpr.yaml",
+      "sha256": "ed039f201788ce117b907bbbcc87368888a7706bedc2e2a2346affecfd92fad0"
+    },
+    {
+      "path": "rules/dk/invoices.yaml",
+      "sha256": "593d1eac852ebf54b87693ebd06bd64d962a54944725de34859f2863664fa45c"
+    },
+    {
+      "path": "rules/dk/mail-intake.yaml",
+      "sha256": "baafca8767aab79c5a9a630cfef5df35c925338f13713970df56ef6141488e88"
+    },
+    {
+      "path": "rules/dk/mileage.yaml",
+      "sha256": "c60681e62f342e87cd3b2dba9495080ed61276ed927f491eb593d577acb744db"
+    },
+    {
+      "path": "rules/dk/peppol.yaml",
+      "sha256": "c7d3673ca6a71bd93364b54615155186229839236ea2ed4237a42f238957b0fe"
+    },
+    {
+      "path": "rules/dk/tax-return.yaml",
+      "sha256": "dce49372bfbb8fc651fa961dd9611074f42dbc7d36fdbfeb92395d6af26f109a"
+    },
+    {
+      "path": "rules/dk/vat.yaml",
+      "sha256": "cdf5d578f044e38f898393506c54001155c8543485efe85ed8cf39ed51db0ebb"
+    },
+    {
+      "path": "scripts/rust/check-boundaries.ts",
+      "sha256": "06b1a41c73167c56eb88ff23aa15f9f75c32203084f3ed9b5a0998b5a232db0c"
+    },
+    {
+      "path": "scripts/rust/journal-preview-cases.py",
+      "sha256": "c201db46407d0ffafe65d748f47388d32d09a44557f53520812c986a3c530ff7"
+    },
+    {
+      "path": "scripts/rust/manual-rule-contract.ts",
+      "sha256": "abb0b2cc2ea19a44342467c9a7d50afd11e7754c215115d6121d216ef497194c"
+    },
+    {
+      "path": "scripts/rust/verify-journal-hashes.ts",
+      "sha256": "22be703f9d42cd3e51cccd6af79a77163078c51b51f06a601399d767a7defffd"
+    },
+    {
+      "path": "scripts/rust/verify-journal-preview.ts",
+      "sha256": "ba4ef2a66cc967197102c65684b5036b092afe54aea897e905839017863a69cb"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "93dd97cdf11f80a174df51b206f0522c56f04fe8d2acaa84a8d3bb9caecf3f13"
+    },
+    {
+      "path": "src/core/account-roles.ts",
+      "sha256": "1fc2ef2aee92918e479da0b27e64b5f80126ba65fb0815f71fc10289b0fe6d7c"
+    },
+    {
+      "path": "src/core/db.ts",
+      "sha256": "6410241aaf4427fe30ddc1c4ff4888c544a0859f4a249b17e10f8f8b7be1083f"
+    },
+    {
+      "path": "src/core/ledger.ts",
+      "sha256": "605cfbe6b7800cf789d0a9b773f70fe43ebd54fdd965b4841f2e50ab4dd0cfbe"
+    },
+    {
+      "path": "src/core/periods.ts",
+      "sha256": "1f9cbcaf2d99a9235ef5123d874f98f0bcad91dbcc8bbafe428e67ce239e8cc2"
+    },
+    {
+      "path": "src/core/rules-metadata.ts",
+      "sha256": "a1f50c600609a5dc9f281a6fecef838f01ed11a686b4233b8dfa823b32ccdd65"
+    },
+    {
+      "path": "src/core/schema.sql",
+      "sha256": "00a425e5e0d08c93a989331f84749b2d8c20ec0fca9823cebf0b5182f31a1f3b"
+    },
+    {
+      "path": "src/core/vat-account-semantics.ts",
+      "sha256": "e334765f1b45dc267779e01fd4cd5bb82b22acd8e32dbbea854e9048ee93ed32"
+    }
+  ],
+  "commands": [
+    {
+      "command": "bun run rust:verify",
+      "result": "PASS",
+      "evidence": "rust-verify.txt",
+      "coverage": "56 Rust tests;10 ignored helpers explicitly selected;7461 previous integration checks+226preview checks=7687;compiled metadata guard also passes"
+    },
+    {
+      "command": "cargo test --locked -p rentemester-storage journal_preview::tests::complete_current_image_matches_reconstructed_native_schema",
+      "result": "PASS",
+      "evidence": "schema-equivalence.txt",
+      "coverage": "Exact compiled current image equals native reconstructed migration schema;no source admission weakening"
+    },
+    {
+      "command": "bun run scripts/rust/verify-journal-preview.ts",
+      "result": "PASS",
+      "evidence": "parity.json",
+      "coverage": "208source cases,each realCLI repeated;171prior independent manual+37new source counterexamples;18transport/path controls;201actual unchangedTS validations"
+    },
+    {
+      "command": "python3 scripts/rust/journal-preview-cases.py --check",
+      "result": "PASS",
+      "evidence": "generator-check.txt",
+      "coverage": "Reproduces fixed37new source cases and independent prior corpus/generator hashes"
+    },
+    {
+      "command": "bun run scripts/rust/manual-rule-contract.ts",
+      "result": "PASS",
+      "evidence": "rule-contract.txt",
+      "coverage": "12compiled bundle identities/versions/ruleIDs and every exact rule-source hash"
+    },
+    {
+      "command": "bun test tests/unit/account-roles.test.ts tests/unit/period-reopen.test.ts tests/unit/ledger-period-lock-toctou.test.ts",
+      "result": "PASS",
+      "evidence": "legacy-tests.txt",
+      "coverage": "11tests/47expectations across3files"
+    },
+    {
+      "command": "bunx biome lint scripts/rust/verify-journal-preview.ts scripts/rust/manual-rule-contract.ts scripts/rust/verify.ts scripts/rust/verify-journal-hashes.ts --error-on-warnings",
+      "result": "PASS",
+      "evidence": "lint.txt"
+    }
+  ],
+  "independent_review": {
+    "agent": "migration_port_research",
+    "mode": "Read-only source/contract/admission/VAT/identity/lifecycle/transport/cleanup review;independent complete final harness,generator,metadata and equivalence execution",
+    "result": "All226checks PASS;no remaining material bounded defect",
+    "evidence": [
+      "parity-independent.txt",
+      "generator-independent.txt",
+      "rule-contract-independent.txt",
+      "equivalence-independent.txt"
+    ],
+    "decisions": [
+      "Keep active!=0 manual account semantics distinct from active==1 role/Dinero eligibility.",
+      "Use exact signedID/entityID ordering and terminal reported replay.",
+      "Current-image direct comparison is equivalent source admission;repeated embedded migration verification belongs in dev/full-suite gates,not every read-only preview."
+    ]
+  },
+  "design_review": {
+    "scope": [
+      "action.journal_preview",
+      "component.storage"
+    ],
+    "model_revision": "sha256:a4c3b5c00fea08515ecf62862f5ecd8ca41fec70758fd7378b5375e8ea389f7c",
+    "code_revision": "sha256:6840a4138730aef78a2efeebfa4c5c808d54e2b3581745ebc4a6ab88d6c9db78",
+    "KISS": "One source adapter and strict existing CLI dispatch;no writer/auth framework,YAML interpreter,clock service,endpoint or dependency added.",
+    "DRY": "Reuse protected snapshot capture,integrity/full-history/current-schema artifacts,pure typed manual engine and compiled policy version gate.",
+    "separation_of_concerns": "Storage gathers source facts;engine evaluates;CLI owns bounded stdin/transport. Caller horizon stays advisory;future writer owns actual trusted clock/authority/transactional revalidation.",
+    "modularity": "One storage module and compiled rule asset;development generators/oracles remain separate. Explicit owned close/cleanup covers both result and refusal."
+  },
+  "correction_examples": [
+    {
+      "id": "balanced",
+      "observation": {
+        "id": "balanced",
+        "legacy": {
+          "ok": true,
+          "appliedRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001"
+          ],
+          "errors": []
+        },
+        "native": {
+          "exit": 0,
+          "body": {
+            "data": {
+              "advisory": true,
+              "clockPolicy": "explicit-preview-horizon",
+              "latestAllowedDate": "2026-03-18",
+              "ruleArtifactSha256": "966dcac7eef35c0823d31b7e3a9583e1a028d5c4e228136d7f8d0196705e7779",
+              "validation": {
+                "errors": [],
+                "ok": true,
+                "requiredRules": [
+                  "DK-BOOKKEEPING-BALANCED-001",
+                  "DK-BOOKKEEPING-APPEND-ONLY-001",
+                  "DK-BOOKKEEPING-PERIOD-LOCK-001"
+                ],
+                "requiredStorageRules": [
+                  "DK-BOOKKEEPING-APPEND-ONLY-001"
+                ],
+                "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+                "totalCredit": "10.00",
+                "totalDebit": "10.00"
+              }
+            },
+            "format": "rentemester-manual-journal-preview/1",
+            "ok": true
+          }
+        }
+      }
+    },
+    {
+      "id": "document-9007199254740993",
+      "observation": {
+        "id": "document-9007199254740993",
+        "legacy": {
+          "ok": false,
+          "appliedRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001",
+            "DK-BOOKKEEPING-DOCUMENT-001"
+          ],
+          "errors": [
+            "documentId 9007199254740992 does not exist"
+          ]
+        },
+        "native": {
+          "exit": 0,
+          "body": {
+            "data": {
+              "advisory": true,
+              "clockPolicy": "explicit-preview-horizon",
+              "latestAllowedDate": "2026-03-18",
+              "ruleArtifactSha256": "966dcac7eef35c0823d31b7e3a9583e1a028d5c4e228136d7f8d0196705e7779",
+              "validation": {
+                "errors": [],
+                "ok": true,
+                "requiredRules": [
+                  "DK-BOOKKEEPING-BALANCED-001",
+                  "DK-BOOKKEEPING-APPEND-ONLY-001",
+                  "DK-BOOKKEEPING-PERIOD-LOCK-001",
+                  "DK-BOOKKEEPING-DOCUMENT-001"
+                ],
+                "requiredStorageRules": [
+                  "DK-BOOKKEEPING-APPEND-ONLY-001"
+                ],
+                "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+                "totalCredit": "10.00",
+                "totalDebit": "10.00"
+              }
+            },
+            "format": "rentemester-manual-journal-preview/1",
+            "ok": true
+          }
+        }
+      }
+    },
+    {
+      "id": "fx-exact-half-correction",
+      "observation": {
+        "id": "fx-exact-half-correction",
+        "legacy": {
+          "ok": false,
+          "appliedRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001",
+            "DK-BOOKKEEPING-FX-001"
+          ],
+          "errors": [
+            "amountDkk must equal amountForeign * fxRateToDkk (0.11)"
+          ]
+        },
+        "native": {
+          "exit": 0,
+          "body": {
+            "data": {
+              "advisory": true,
+              "clockPolicy": "explicit-preview-horizon",
+              "latestAllowedDate": "2026-03-18",
+              "ruleArtifactSha256": "966dcac7eef35c0823d31b7e3a9583e1a028d5c4e228136d7f8d0196705e7779",
+              "validation": {
+                "errors": [],
+                "ok": true,
+                "requiredRules": [
+                  "DK-BOOKKEEPING-BALANCED-001",
+                  "DK-BOOKKEEPING-APPEND-ONLY-001",
+                  "DK-BOOKKEEPING-PERIOD-LOCK-001",
+                  "DK-BOOKKEEPING-FX-001"
+                ],
+                "requiredStorageRules": [
+                  "DK-BOOKKEEPING-APPEND-ONLY-001"
+                ],
+                "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+                "totalCredit": "10.00",
+                "totalDebit": "10.00"
+              }
+            },
+            "format": "rentemester-manual-journal-preview/1",
+            "ok": true
+          }
+        }
+      }
+    },
+    {
+      "id": "chart-64000-2-credit-liability",
+      "observation": {
+        "id": "chart-64000-2-credit-liability",
+        "legacy": {
+          "ok": true,
+          "appliedRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001"
+          ],
+          "errors": []
+        },
+        "native": {
+          "exit": 0,
+          "body": {
+            "data": {
+              "advisory": true,
+              "clockPolicy": "explicit-preview-horizon",
+              "latestAllowedDate": "2026-03-18",
+              "ruleArtifactSha256": "966dcac7eef35c0823d31b7e3a9583e1a028d5c4e228136d7f8d0196705e7779",
+              "validation": {
+                "errors": [],
+                "ok": true,
+                "requiredRules": [
+                  "DK-BOOKKEEPING-BALANCED-001",
+                  "DK-BOOKKEEPING-APPEND-ONLY-001",
+                  "DK-BOOKKEEPING-PERIOD-LOCK-001"
+                ],
+                "requiredStorageRules": [
+                  "DK-BOOKKEEPING-APPEND-ONLY-001"
+                ],
+                "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+                "totalCredit": "10.00",
+                "totalDebit": "10.00"
+              }
+            },
+            "format": "rentemester-manual-journal-preview/1",
+            "ok": true
+          }
+        }
+      }
+    },
+    {
+      "id": "settlement-confirmed-2-liability-credit",
+      "observation": {
+        "id": "settlement-confirmed-2-liability-credit",
+        "legacy": {
+          "ok": false,
+          "appliedRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001"
+          ],
+          "errors": [
+            "manual journal entries that affect a VAT amount account require an explicit vatCode on the VAT base line (for example DK_SALE_25, DK_PURCHASE_25, EU_SERVICE_REVERSE_CHARGE, or REPRESENTATION_SPECIAL)"
+          ]
+        },
+        "native": {
+          "exit": 1,
+          "body": {
+            "data": {
+              "advisory": true,
+              "clockPolicy": "explicit-preview-horizon",
+              "latestAllowedDate": "2026-03-18",
+              "ruleArtifactSha256": "966dcac7eef35c0823d31b7e3a9583e1a028d5c4e228136d7f8d0196705e7779",
+              "validation": {
+                "errors": [
+                  {
+                    "code": "vat_base_required",
+                    "field": "lines",
+                    "message": "manual journal entries that affect a VAT amount account require an explicit vatCode on the VAT base line (for example DK_SALE_25, DK_PURCHASE_25, EU_SERVICE_REVERSE_CHARGE, or REPRESENTATION_SPECIAL)"
+                  }
+                ],
+                "ok": false,
+                "requiredRules": [
+                  "DK-BOOKKEEPING-BALANCED-001",
+                  "DK-BOOKKEEPING-APPEND-ONLY-001",
+                  "DK-BOOKKEEPING-PERIOD-LOCK-001"
+                ],
+                "requiredStorageRules": [
+                  "DK-BOOKKEEPING-APPEND-ONLY-001"
+                ],
+                "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+                "totalCredit": "10.00",
+                "totalDebit": "10.00"
+              }
+            },
+            "format": "rentemester-manual-journal-preview/1",
+            "ok": false
+          }
+        }
+      }
+    },
+    {
+      "id": "full-width-period-reopen",
+      "observation": {
+        "id": "full-width-period-reopen",
+        "legacy": {
+          "ok": false,
+          "appliedRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001"
+          ],
+          "errors": [
+            "transactionDate 2026-02-01 falls in closed period custom 2026-01-01..2026-12-31 ref source-æ\u0000"
+          ]
+        },
+        "native": {
+          "exit": 0,
+          "body": {
+            "data": {
+              "advisory": true,
+              "clockPolicy": "explicit-preview-horizon",
+              "latestAllowedDate": "2026-03-18",
+              "ruleArtifactSha256": "966dcac7eef35c0823d31b7e3a9583e1a028d5c4e228136d7f8d0196705e7779",
+              "validation": {
+                "errors": [],
+                "ok": true,
+                "requiredRules": [
+                  "DK-BOOKKEEPING-BALANCED-001",
+                  "DK-BOOKKEEPING-APPEND-ONLY-001",
+                  "DK-BOOKKEEPING-PERIOD-LOCK-001"
+                ],
+                "requiredStorageRules": [
+                  "DK-BOOKKEEPING-APPEND-ONLY-001"
+                ],
+                "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+                "totalCredit": "10.00",
+                "totalDebit": "10.00"
+              }
+            },
+            "format": "rentemester-manual-journal-preview/1",
+            "ok": true
+          }
+        }
+      }
+    },
+    {
+      "id": "exact-audit-id-order",
+      "observation": {
+        "id": "exact-audit-id-order",
+        "legacy": {
+          "ok": false,
+          "appliedRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001"
+          ],
+          "errors": [
+            "transactionDate 2026-02-01 falls in closed period custom 2026-01-01..2026-12-31 ref source-æ\u0000"
+          ]
+        },
+        "native": {
+          "exit": 1,
+          "body": {
+            "data": {
+              "advisory": true,
+              "clockPolicy": "explicit-preview-horizon",
+              "latestAllowedDate": "2026-03-18",
+              "ruleArtifactSha256": "966dcac7eef35c0823d31b7e3a9583e1a028d5c4e228136d7f8d0196705e7779",
+              "validation": {
+                "errors": [
+                  {
+                    "code": "period_locked",
+                    "field": "transactionDate",
+                    "message": "transactionDate 2026-02-01 falls in closed period custom 2026-01-01..2026-12-31 ref source-æ\u0000"
+                  }
+                ],
+                "ok": false,
+                "requiredRules": [
+                  "DK-BOOKKEEPING-BALANCED-001",
+                  "DK-BOOKKEEPING-APPEND-ONLY-001",
+                  "DK-BOOKKEEPING-PERIOD-LOCK-001"
+                ],
+                "requiredStorageRules": [
+                  "DK-BOOKKEEPING-APPEND-ONLY-001"
+                ],
+                "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+                "totalCredit": "10.00",
+                "totalDebit": "10.00"
+              }
+            },
+            "format": "rentemester-manual-journal-preview/1",
+            "ok": false
+          }
+        }
+      }
+    },
+    {
+      "id": "credit-note-earliest-signed-id",
+      "observation": {
+        "id": "credit-note-earliest-signed-id",
+        "legacy": {
+          "ok": false,
+          "appliedRules": [
+            "DK-BOOKKEEPING-BALANCED-001",
+            "DK-BOOKKEEPING-APPEND-ONLY-001",
+            "DK-BOOKKEEPING-PERIOD-LOCK-001"
+          ],
+          "errors": [
+            "credit note document 1 already has accounting journal earliest-æ; issue a new credit note document for another correction"
+          ]
+        },
+        "native": {
+          "exit": 1,
+          "body": {
+            "data": {
+              "advisory": true,
+              "clockPolicy": "explicit-preview-horizon",
+              "latestAllowedDate": "2026-03-18",
+              "ruleArtifactSha256": "966dcac7eef35c0823d31b7e3a9583e1a028d5c4e228136d7f8d0196705e7779",
+              "validation": {
+                "errors": [
+                  {
+                    "code": "credit_note_already_posted",
+                    "field": "documentId",
+                    "message": "credit note document 1 already has accounting journal earliest-æ; issue a new credit note document for another correction"
+                  }
+                ],
+                "ok": false,
+                "requiredRules": [
+                  "DK-BOOKKEEPING-BALANCED-001",
+                  "DK-BOOKKEEPING-APPEND-ONLY-001",
+                  "DK-BOOKKEEPING-PERIOD-LOCK-001"
+                ],
+                "requiredStorageRules": [
+                  "DK-BOOKKEEPING-APPEND-ONLY-001"
+                ],
+                "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+                "totalCredit": "10.00",
+                "totalDebit": "10.00"
+              }
+            },
+            "format": "rentemester-manual-journal-preview/1",
+            "ok": false
+          }
+        }
+      }
+    },
+    {
+      "id": "foreign-key-corruption",
+      "observation": {
+        "id": "foreign-key-corruption",
+        "legacy": null,
+        "native": {
+          "exit": 1,
+          "body": {
+            "code": "invalid_ledger",
+            "errors": [
+              "ledger contains foreign-key violations"
+            ],
+            "ok": false
+          }
+        }
+      }
+    },
+    {
+      "id": "client-facts",
+      "observation": {
+        "id": "client-facts",
+        "native": {
+          "exit": 2,
+          "body": {
+            "code": "invalid_input",
+            "errors": [
+              "expected one strict canonical journal preview envelope"
+            ],
+            "ok": false
+          }
+        }
+      }
+    },
+    {
+      "id": "exact-byte-budget",
+      "observation": {
+        "id": "exact-byte-budget",
+        "native": {
+          "exit": 0,
+          "body": {
+            "data": {
+              "advisory": true,
+              "clockPolicy": "explicit-preview-horizon",
+              "latestAllowedDate": "2026-03-18",
+              "ruleArtifactSha256": "966dcac7eef35c0823d31b7e3a9583e1a028d5c4e228136d7f8d0196705e7779",
+              "validation": {
+                "errors": [],
+                "ok": true,
+                "requiredRules": [
+                  "DK-BOOKKEEPING-BALANCED-001",
+                  "DK-BOOKKEEPING-APPEND-ONLY-001",
+                  "DK-BOOKKEEPING-PERIOD-LOCK-001"
+                ],
+                "requiredStorageRules": [
+                  "DK-BOOKKEEPING-APPEND-ONLY-001"
+                ],
+                "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+                "totalCredit": "10.00",
+                "totalDebit": "10.00"
+              }
+            },
+            "format": "rentemester-manual-journal-preview/1",
+            "ok": true
+          }
+        }
+      }
+    },
+    {
+      "id": "help",
+      "observation": {
+        "id": "help",
+        "native": {
+          "exit": 0,
+          "body": {
+            "activeRuleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+            "businessErrors": "data.validation.errors",
+            "exitCodes": {
+              "0": "accepted advisory preview",
+              "1": "business/source/rule refusal",
+              "2": "usage/transport/type refusal"
+            },
+            "format": "rentemester-manual-journal-preview/1",
+            "maxRequestBytes": 1048576,
+            "ok": true,
+            "requestFields": [
+              "format",
+              "expectedRuleVersion",
+              "latestAllowedDate",
+              "request"
+            ],
+            "requestFormat": "rentemester-manual-journal-request/1",
+            "scope": "advisory read-only source snapshot; explicit preview horizon; no posting authority",
+            "transportErrors": "errors",
+            "usage": "rentemester-rust validate-journal --company PATH < request.json"
+          }
+        }
+      }
+    }
+  ],
+  "verification_notes": [
+    "Initial readiness failed because risk references included normal scenarios. gdd-v1/readiness retained;current readiness-v2 uses correct negative/concurrency scenarios and passed before implementation. Normative contract unchanged.",
+    "Early test clone copied only main file while seed had WAL-only state;fixture base now uses DELETE mode so cloned main is complete. Every actual source case then uses WAL for native source preservation checks.",
+    "Initial SHM mismatch was caused by reference SQLite reads,not native source mutation. Final preservation window occurs after reference SQL/image setup;no source bytes are masked or normalized.",
+    "All208source cases and transport comparisons passed before an initial sidecar test tried to replace an existing fixture WAL. Corrected counterexample uses a separate complete canonical source with protected sidecar symlink.",
+    "An obsolete slow capture harness was intentionally terminated after reviewed gate simplification;its specific PID43343 and owned temporary fixture were cleaned. No timeout was treated as terminal/restarted. Final capture and independent full ordinary run both pass.",
+    "Current gate removes per-preview baseline/migration reconstruction,not schema/history acceptance. Native equivalence test and retained artifact/build/full suites preserve embedded migration validation.",
+    "Initial full regression found exact root-help registry fixture still expected five commands. Updated strict expected list to include validate-journal;final complete suite passes without loosening the registry assertion.",
+    "Native commands execute outside repo cwd with invalid clock/future-day environment and alternate TZ;all results match explicit preview horizon and compiled metadata.",
+    "Normal harness requires exact frozen source/native observations. Capture writes only an absent observation file after all checks pass. Logs strip trailing blank lines only;fixed JSON/JSONL bytes remain exact."
+  ],
+  "limitations": [
+    "Advisory explicit horizon only;no clock/configured posting policy or writer authority",
+    "Current full canonical schemas only;no migration/adoption or historical archive qualification",
+    "Compiled manual policy metadata/source hashes,not generic YAML/legal-rule execution",
+    "Lifecycle replay is not audit-chain/source-evidence integrity certification",
+    "No authenticated API/MCP/UI,actual posting/dry-run insertion,full R09/R12/R14/R17 acceptance,distribution or cutover",
+    "Source-backed collector is advisory only. Explicit latestAllowedDate is not a trusted clock or configured posting policy. No facts/bundles/import/reversal privileges can be supplied through the strict request envelope.",
+    "Current physical schema comparison covers every name-sorted object and verified image hash;strict full history,quick/FK checks remain. No schema subset,SQL normalization,source repair or migration fallback.",
+    "Generic Dinero source-format identifiers are exact documented compatibility rules,not company chart defaults;inactive/active2/-1 general posting versus strict role/control activity differences remain explicit.",
+    "Only requested document/bank evidence is loaded. Reference matching and lifecycle replay do not establish audit hashes,document bytes,principal/workspace identity or authorization.",
+    "Reference SQLite observers can change SHM readmarks;byte preservation is measured immediately around native calls after reference SQL/image setup. Native itself must preserve ALL main/WAL/SHM bytes;logical image/total_changes checked separately.",
+    "Synthetic fixture seeding disables guards only in its own disposable transaction,then restores exact guards before native validation. Fixtures are not qualified historical archives or legitimate production posting traces.",
+    "Product execution is Rust-only and works outside repository cwd with invalid clock environment;Python/Bun are development-only generators/legacy oracles,not product runtime dependencies.",
+    "Unix source capture on macOS/arm64 only;no cross-platform/storage/distribution qualification or new live-writer concurrency certification. Retained snapshot/hash suites cover underlying capture concurrency separately."
+  ]
+}

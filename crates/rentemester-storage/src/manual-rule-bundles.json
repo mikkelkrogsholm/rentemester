@@ -1,0 +1,210 @@
+{
+  "bundles": [
+    {
+      "name": "annual-report",
+      "version": "dk-annual-report-v0.0.1",
+      "ruleIds": [
+        "DK-ANNUAL-REPORT-CLASS-B-001",
+        "DK-ANNUAL-REPORT-IXBRL-002"
+      ]
+    },
+    {
+      "name": "bank",
+      "version": "dk-bank-v0.0.2",
+      "ruleIds": [
+        "DK-BANK-BALANCE-CONTINUITY-001"
+      ]
+    },
+    {
+      "name": "bookkeeping",
+      "version": "dk-bookkeeping-v0.0.8",
+      "ruleIds": [
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-REVERSAL-001",
+        "DK-BOOKKEEPING-DOCUMENT-001",
+        "DK-BOOKKEEPING-BANK-IMPORT-001",
+        "DK-BOOKKEEPING-RECONCILIATION-001",
+        "DK-BOOKKEEPING-FX-001",
+        "DK-BOOKKEEPING-BACKUP-001",
+        "DK-BOOKKEEPING-BACKUP-DEST-001",
+        "DK-BOOKKEEPING-BACKUP-KEY-ROTATE-001",
+        "DK-BOOKKEEPING-AUTHORITY-EXPORT-001",
+        "DK-BOOKKEEPING-SAFT-EXPORT-001",
+        "DK-BOOKKEEPING-RESTORE-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001",
+        "DK-BOOKKEEPING-RETENTION-001",
+        "DK-ASSET-DEPR-001",
+        "DK-ASSET-WRITEOFF-001",
+        "DK-BOOKKEEPING-ACCRUAL-001",
+        "DK-PAYABLE-001",
+        "DK-CHART-OF-ACCOUNTS-ADD-001",
+        "DK-PAYABLE-PAYMENT-001"
+      ]
+    },
+    {
+      "name": "documents",
+      "version": "dk-documents-v0.0.3",
+      "ruleIds": [
+        "DK-DOCUMENT-STORAGE-001",
+        "DK-DOCUMENT-CASH-RECEIPT-001",
+        "DK-DOCUMENT-FOREIGN-PHYSICAL-001",
+        "DK-DOCUMENT-INTEGRITY-001",
+        "DK-MASTER-DATA-VENDOR-001"
+      ]
+    },
+    {
+      "name": "email",
+      "version": "dk-email-v0.0.2",
+      "ruleIds": [
+        "DK-EMAIL-DELIVERY-001"
+      ]
+    },
+    {
+      "name": "gdpr",
+      "version": "dk-gdpr-v0.0.1",
+      "ruleIds": [
+        "GDPR-SUBJECT-EXPORT",
+        "GDPR-RETENTION-BOUNDED-ERASURE"
+      ]
+    },
+    {
+      "name": "invoices",
+      "version": "dk-invoices-v0.0.11",
+      "ruleIds": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-SIMPLIFIED-001",
+        "DK-INVOICE-REVERSE-CHARGE-001",
+        "DK-INVOICE-REVERSE-CHARGE-BASIS-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-ISSUE-001",
+        "DK-MASTER-DATA-CUSTOMER-001",
+        "DK-INVOICE-PUBLIC-RECIPIENT-001",
+        "DK-INVOICE-PUBLIC-EXPORT-001",
+        "DK-INVOICE-PUBLIC-OIOUBL-001",
+        "DK-INVOICE-DUE-DATE-001",
+        "DK-INVOICE-LATE-INTEREST-001",
+        "DK-INVOICE-LATE-INTEREST-REGISTER-001",
+        "DK-INVOICE-LATE-INTEREST-BOOKKEEPING-001",
+        "DK-INVOICE-REMINDER-FEE-001",
+        "DK-INVOICE-REMINDER-FEE-BOOKKEEPING-001",
+        "DK-INVOICE-LATE-COMPENSATION-001",
+        "DK-INVOICE-LATE-COMPENSATION-REGISTER-001",
+        "DK-INVOICE-LATE-COMPENSATION-BOOKKEEPING-001",
+        "DK-INVOICE-BOOKKEEPING-001",
+        "DK-INVOICE-BOOKKEEPING-REVERSE-002",
+        "DK-INVOICE-SETTLEMENT-001",
+        "DK-INVOICE-CLAIM-SETTLEMENT-001",
+        "DK-INVOICE-COMBINED-SETTLEMENT-001",
+        "DK-INVOICE-PAYMENT-001",
+        "DK-INVOICE-FX-REALISED-001",
+        "DK-INVOICE-CORRECTION-BALANCE-001",
+        "DK-CREDIT-NOTE-001",
+        "DK-INVOICE-REFUND-001",
+        "DK-INVOICE-BAD-DEBT-WRITEOFF-001",
+        "DK-INVOICE-LOCK-001",
+        "DK-INVOICE-PREVIEW-001",
+        "DK-RECURRING-INVOICE-TEMPLATE-001",
+        "DK-RECURRING-INVOICE-GENERATE-001"
+      ]
+    },
+    {
+      "name": "mail-intake",
+      "version": "dk-mail-intake-v0.0.3",
+      "ruleIds": [
+        "DK-MAIL-INTAKE-TRANSPORT-001",
+        "DK-MAIL-INTAKE-DEDUP-001",
+        "DK-MAIL-INTAKE-EXCEPTION-001"
+      ]
+    },
+    {
+      "name": "mileage",
+      "version": "dk-mileage-v0.0.2",
+      "ruleIds": [
+        "DK-MILEAGE-LOG-001"
+      ]
+    },
+    {
+      "name": "peppol",
+      "version": "dk-peppol-v0.0.4",
+      "ruleIds": [
+        "DK-PEPPOL-SUBMIT-001"
+      ]
+    },
+    {
+      "name": "tax-return",
+      "version": "dk-tax-return-v0.0.1",
+      "ruleIds": [
+        "DK-TAX-RETURN-CORP-001"
+      ]
+    },
+    {
+      "name": "vat",
+      "version": "dk-vat-v0.0.5",
+      "ruleIds": [
+        "DK-VAT-SEPARATE-AMOUNT-001",
+        "DK-VAT-REPORT-001",
+        "DK-VAT-REVERSE-CHARGE-001",
+        "DK-VAT-NON-EU-SERVICE-REVERSE-CHARGE-001",
+        "DK-VAT-REPRESENTATION-001",
+        "DK-VAT-BAD-DEBT-001",
+        "DK-VAT-FILING-001",
+        "DK-VAT-EU-SALES-LIST-001",
+        "DK-VAT-OSS-001",
+        "DK-VAT-REGISTRATION-001",
+        "DK-VAT-NON-DEDUCTIBLE-001"
+      ]
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "rules/dk/annual-report.yaml",
+      "sha256": "627cbd14566c25c6af721cbf1d9155d323b57190ed32100c3c07bc1011897bdd"
+    },
+    {
+      "path": "rules/dk/bank.yaml",
+      "sha256": "e6d0a7698f37eeddcbdb8f97a9e298724761397b89e262752627a57943660d32"
+    },
+    {
+      "path": "rules/dk/bookkeeping.yaml",
+      "sha256": "c5da16145517d85b4cb312dba2839e4db4cfbcdc0ef4e0afe16cfa60065849fa"
+    },
+    {
+      "path": "rules/dk/documents.yaml",
+      "sha256": "45c778cd433a492064992bda78b1d16dc9dec7fce18e1c0d7416f5ac6806ada7"
+    },
+    {
+      "path": "rules/dk/email.yaml",
+      "sha256": "ce7536da76f29f8f97d59771ffc631b34ce84d8fe2ee1ec91820da5fe6c316db"
+    },
+    {
+      "path": "rules/dk/gdpr.yaml",
+      "sha256": "ed039f201788ce117b907bbbcc87368888a7706bedc2e2a2346affecfd92fad0"
+    },
+    {
+      "path": "rules/dk/invoices.yaml",
+      "sha256": "593d1eac852ebf54b87693ebd06bd64d962a54944725de34859f2863664fa45c"
+    },
+    {
+      "path": "rules/dk/mail-intake.yaml",
+      "sha256": "baafca8767aab79c5a9a630cfef5df35c925338f13713970df56ef6141488e88"
+    },
+    {
+      "path": "rules/dk/mileage.yaml",
+      "sha256": "c60681e62f342e87cd3b2dba9495080ed61276ed927f491eb593d577acb744db"
+    },
+    {
+      "path": "rules/dk/peppol.yaml",
+      "sha256": "c7d3673ca6a71bd93364b54615155186229839236ea2ed4237a42f238957b0fe"
+    },
+    {
+      "path": "rules/dk/tax-return.yaml",
+      "sha256": "dce49372bfbb8fc651fa961dd9611074f42dbc7d36fdbfeb92395d6af26f109a"
+    },
+    {
+      "path": "rules/dk/vat.yaml",
+      "sha256": "cdf5d578f044e38f898393506c54001155c8543485efe85ed8cf39ed51db0ebb"
+    }
+  ]
+}

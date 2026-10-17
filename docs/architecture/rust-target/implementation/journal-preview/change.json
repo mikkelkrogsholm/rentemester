@@ -1,0 +1,39 @@
+{
+  "base_code": "7b25346281877d4eb6361b6e60f2ed5688e3e847",
+  "previous_increment": "manual-journal-1",
+  "scope": "Source-backed advisory manual journal CLI/storage integration",
+  "new_ids": [
+    "action.journal_preview"
+  ],
+  "write_scope": [
+    "crates/rentemester-storage/src/journal_preview.rs",
+    "crates/rentemester-storage/src/manual-rule-bundles.json",
+    "crates/rentemester-storage/src/lib.rs",
+    "crates/rentemester-cli/src/main.rs",
+    "scripts/rust/verify-journal-preview.ts",
+    "scripts/rust/manual-rule-contract.ts",
+    "scripts/rust/journal-preview-cases.py",
+    "scripts/rust/verify-journal-hashes.ts",
+    "scripts/rust/verify.ts",
+    "docs/architecture/rust-target/implementation/README.md",
+    "docs/architecture/rust-target/implementation/progress.json",
+    "docs/architecture/rust-target/implementation/journal-preview"
+  ],
+  "refinement": "Current readiness-v2 fixes preimplementation scenario wiring. Normative contract unchanged;full current-image gate proven equivalent while avoiding per-preview migration reconstruction. Strict help registry expected value updated for new command.",
+  "issues_closed": [],
+  "remaining_gates": [
+    "Advisory explicit horizon only;no clock/configured posting policy or writer authority",
+    "Current full canonical schemas only;no migration/adoption or historical archive qualification",
+    "Compiled manual policy metadata/source hashes,not generic YAML/legal-rule execution",
+    "Lifecycle replay is not audit-chain/source-evidence integrity certification",
+    "No authenticated API/MCP/UI,actual posting/dry-run insertion,full R09/R12/R14/R17 acceptance,distribution or cutover",
+    "Source-backed collector is advisory only. Explicit latestAllowedDate is not a trusted clock or configured posting policy. No facts/bundles/import/reversal privileges can be supplied through the strict request envelope.",
+    "Current physical schema comparison covers every name-sorted object and verified image hash;strict full history,quick/FK checks remain. No schema subset,SQL normalization,source repair or migration fallback.",
+    "Generic Dinero source-format identifiers are exact documented compatibility rules,not company chart defaults;inactive/active2/-1 general posting versus strict role/control activity differences remain explicit.",
+    "Only requested document/bank evidence is loaded. Reference matching and lifecycle replay do not establish audit hashes,document bytes,principal/workspace identity or authorization.",
+    "Reference SQLite observers can change SHM readmarks;byte preservation is measured immediately around native calls after reference SQL/image setup. Native itself must preserve ALL main/WAL/SHM bytes;logical image/total_changes checked separately.",
+    "Synthetic fixture seeding disables guards only in its own disposable transaction,then restores exact guards before native validation. Fixtures are not qualified historical archives or legitimate production posting traces.",
+    "Product execution is Rust-only and works outside repository cwd with invalid clock environment;Python/Bun are development-only generators/legacy oracles,not product runtime dependencies.",
+    "Unix source capture on macOS/arm64 only;no cross-platform/storage/distribution qualification or new live-writer concurrency certification. Retained snapshot/hash suites cover underlying capture concurrency separately."
+  ]
+}

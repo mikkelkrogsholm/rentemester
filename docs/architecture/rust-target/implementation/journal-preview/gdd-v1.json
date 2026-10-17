@@ -1,0 +1,238 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Source-backed advisory journal preview",
+    "goal": "Use actual private ledger snapshots for shared Rust manual validation",
+    "scope": "Read-only R09/R12/R14 integration;full goal unchanged."
+  },
+  "nodes": {
+    "action.journal_preview": {
+      "kind": "action",
+      "description": "Collect trusted current ledger facts and return advisory exact manual preview",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "company": {
+            "type": "string"
+          },
+          "stdin_envelope": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "mode": {
+            "type": "enum",
+            "values": [
+              "local_source_read_only_preview"
+            ]
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "invalid_input": "Refuse with specified exit/code and no original writes as defined in CONTRACT.md.",
+          "source_unavailable": "Refuse with specified exit/code and no original writes as defined in CONTRACT.md.",
+          "source_changed": "Refuse with specified exit/code and no original writes as defined in CONTRACT.md.",
+          "unsupported_schema": "Refuse with specified exit/code and no original writes as defined in CONTRACT.md.",
+          "invalid_ledger": "Refuse with specified exit/code and no original writes as defined in CONTRACT.md.",
+          "invalid_rules": "Refuse with specified exit/code and no original writes as defined in CONTRACT.md.",
+          "unsupported_rule_version": "Refuse with specified exit/code and no original writes as defined in CONTRACT.md.",
+          "rule_version_mismatch": "Refuse with specified exit/code and no original writes as defined in CONTRACT.md.",
+          "storage_failure": "Refuse with specified exit/code and no original writes as defined in CONTRACT.md."
+        },
+        "preconditions": [
+          "Strict bounded canonical input;advisory explicit horizon;exact recognized current snapshot and compiled rule metadata."
+        ],
+        "postconditions": [
+          "Deterministic advisory Validation or refusal;private copies explicitly closed/deleted;no source data effects or writer authority."
+        ],
+        "external_effects": [],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "No facts/privileges accepted from input;preview grants no authority.",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.preservation"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Strict transport/source identity/schema/facts/version gate.",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.preservation"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Source never opened through SQLite;private recovery cleaned before response.",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.preservation"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Existing stable captured image and one private read connection;no live reservation.",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.preservation"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Read-only repeat deterministic on unchanged source/input.",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.preservation"
+            ]
+          }
+        },
+        "error_cases": {
+          "invalid_input": [
+            "scenario.refusal"
+          ],
+          "source_unavailable": [
+            "scenario.refusal"
+          ],
+          "source_changed": [
+            "scenario.refusal"
+          ],
+          "unsupported_schema": [
+            "scenario.refusal"
+          ],
+          "invalid_ledger": [
+            "scenario.refusal"
+          ],
+          "invalid_rules": [
+            "scenario.refusal"
+          ],
+          "unsupported_rule_version": [
+            "scenario.refusal"
+          ],
+          "rule_version_mismatch": [
+            "scenario.refusal"
+          ],
+          "storage_failure": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Collect actual strict source facts,invoke compiled pure manual validation,return advisory result after cleanup."
+    },
+    "component.storage": {
+      "kind": "component",
+      "description": "Source-read-only snapshot adapter",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Bounded canonical input/compiled metadata/current snapshot fact collection and cleanup",
+        "rationale": "A usable shared engine must evaluate actual captured source state.",
+        "excludes": [
+          "Writer authority,mutation,dry-run insert,legal/audit integrity certification and product server/client wiring"
+        ]
+      },
+      "interfaces": [
+        "action.journal_preview"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Actual source facts and exact native outcomes agree with independent expectations/ordinary legacy behavior.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Synthetic full canonical ledger,input and explicit horizon.",
+        "when": "Run real CLI and source-backed native service.",
+        "then": "Actual source facts and exact native outcomes agree with independent expectations/ordinary legacy behavior."
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Malformed input/source/schema/facts/rule metadata refuse with correct transport/exit and cleanup.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Synthetic full canonical ledger,input and explicit horizon.",
+        "when": "Run real CLI and source-backed native service.",
+        "then": "Malformed input/source/schema/facts/rule metadata refuse with correct transport/exit and cleanup."
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Original file bytes/typed cells remain unchanged;repeat outputs stable and private dirs empty.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Synthetic full canonical ledger,input and explicit horizon.",
+        "when": "Run real CLI and source-backed native service.",
+        "then": "Original file bytes/typed cells remain unchanged;repeat outputs stable and private dirs empty."
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Exact IDs/FX and lifecycle ordering corrections retain actual frozen source observations.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Synthetic full canonical ledger,input and explicit horizon.",
+        "when": "Run real CLI and source-backed native service.",
+        "then": "Exact IDs/FX and lifecycle ordering corrections retain actual frozen source observations."
+      }
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.journal_preview",
+      "to": "component.storage",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.journal_preview",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.journal_preview",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.journal_preview",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.journal_preview",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Source-backed journal preview contract",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "fa9e9150cff07dc72d9698ff655803bab4eed814b9a0e156ddff55770343555f"
+      }
+    }
+  }
+}

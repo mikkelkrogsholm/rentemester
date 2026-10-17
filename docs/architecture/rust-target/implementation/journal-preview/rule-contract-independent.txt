@@ -1,0 +1,1 @@
+{"ok":true,"scope":"compiled manual rule bundle metadata and exact source hashes","bundles":12,"artifact_sha256":"966dcac7eef35c0823d31b7e3a9583e1a028d5c4e228136d7f8d0196705e7779"}

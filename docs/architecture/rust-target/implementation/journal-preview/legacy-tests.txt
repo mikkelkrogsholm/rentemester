@@ -1,0 +1,23 @@
+bun test v1.4.0 (34cbb9a40)
+
+tests/unit/account-roles.test.ts:
+(pass) native chart seeds complete, audited, semantically compatible role mappings [107.90ms]
+(pass) valid explicit confirmations win over later proposals, while an invalid mapping blocks completeness [105.00ms]
+(pass) import proposals deactivate only native seeds, remain ambiguous, and cannot be silently reseeded [127.37ms]
+(pass) runtime posting helpers contain no native 1200/2000/4000 semantic fallback literals [6.84ms]
+(pass) the privileged historical posting adapter is only called by the Dinero importer [12.56ms]
+
+tests/unit/period-reopen.test.ts:
+(pass) period reopen (#247) > reopens a closed period via an append-only audit event without mutating the row [174.99ms]
+(pass) period reopen (#247) > a re-close locks the reopened period again [194.57ms]
+(pass) period reopen (#247) > refuses to reopen a reported period (already submitted to the authority) [165.82ms]
+(pass) period reopen (#247) > requires a reason and rejects unknown / already-open periods [171.92ms]
+
+tests/unit/ledger-period-lock-toctou.test.ts:
+(pass) period-lock TOCTOU on postJournalEntry (KODE-4) > a period closed during the write transaction aborts the post [151.81ms]
+(pass) period-lock TOCTOU on postJournalEntry (KODE-4) > a normal post into an open period still succeeds [133.39ms]
+
+ 11 pass
+ 0 fail
+ 47 expect() calls
+Ran 11 tests across 3 files. [1378.00ms]

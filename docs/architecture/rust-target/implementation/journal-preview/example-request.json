@@ -1,0 +1,20 @@
+{
+  "format": "rentemester-manual-journal-request/1",
+  "expectedRuleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+  "latestAllowedDate": "2026-03-18",
+  "request": {
+    "transactionDate": "2026-02-01",
+    "text": "Synthetic journal",
+    "currency": "DKK",
+    "lines": [
+      {
+        "accountNo": "cash",
+        "debitAmount": "10.00"
+      },
+      {
+        "accountNo": "capital",
+        "creditAmount": "10.00"
+      }
+    ]
+  }
+}

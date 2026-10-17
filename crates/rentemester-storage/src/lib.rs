@@ -17,6 +17,10 @@ mod test_support;
 pub use company_physical::{PhysicalRehearsalReport, rehearse_company_baseline};
 mod control_migration;
 mod journal_hash;
+pub mod journal_preview;
+pub use journal_preview::{
+    PreviewInput, PreviewReport, manual_journal_rule_version, preview_manual_journal,
+};
 mod migration;
 pub mod sequences;
 pub use control_migration::{ControlRehearsalReport, rehearse_control_migration};

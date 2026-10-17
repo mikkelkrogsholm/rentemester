@@ -1,0 +1,25 @@
+{
+  "scope": "source-backed advisory journal preview:real native CLI and actual legacy validator",
+  "checks": 226,
+  "source_cases": 208,
+  "fixed_manual_cases": 171,
+  "new_source_cases": 37,
+  "corpus_sha256": "b4a54a6052e436b630741e5a2d9cb72e141d2e689493038c488aa521d975021d",
+  "observations_sha256": "160a548aff13e2251f102528c31079390fa612e941667bae96b60d41976e58c1",
+  "passed": [
+    "fixed independent exact expectations on actual current-schema source captures",
+    "actual unchanged TS validation and exact source/native observations",
+    "exact IDs,VAT roles/source chart,lifecycle/credit ordering and canonical fact refusals",
+    "strict real stdin/size/formats/exits/help;source and sidecar refusal",
+    "source files/database image/total_changes preserved;repeat stable;explicit private cleanup"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "limits": [
+    "Advisory explicit horizon only;no clock/configured posting policy or writer authority",
+    "Current full canonical schemas only;no migration/adoption or historical archive qualification",
+    "Compiled manual policy metadata/source hashes,not generic YAML/legal-rule execution",
+    "Lifecycle replay is not audit-chain/source-evidence integrity certification",
+    "No authenticated API/MCP/UI,actual posting/dry-run insertion,full R09/R12/R14/R17 acceptance,distribution or cutover"
+  ]
+}
