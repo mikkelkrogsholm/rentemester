@@ -1,0 +1,30 @@
+bun test v1.4.0 (34cbb9a40)
+
+tests/unit/server-statement-export.test.ts:
+(pass) #372 — Resultatopgørelse CSV-eksport (GET …/income-statement/export) > returnerer en CSV-attachment med dansk header-række [274.96ms]
+(pass) #372 — Resultatopgørelse CSV-eksport (GET …/income-statement/export) > format=csv er default når parameteret er udeladt [231.82ms]
+(pass) #372 — Resultatopgørelse CSV-eksport (GET …/income-statement/export) > format=pdf returnerer en application/pdf-attachment (#463) [235.86ms]
+(pass) #372 — Resultatopgørelse CSV-eksport (GET …/income-statement/export) > ukendt slug giver en safe 404 [3.00ms]
+(pass) #372 — Balance CSV-eksport (GET …/balance/export) > returnerer en CSV med sektioner og ultimo-datoen i header [242.28ms]
+(pass) #372 — Saldobalance CSV-eksport (GET …/trial-balance/export) > returnerer en CSV med debet/kredit/saldo og total-linje [247.12ms]
+(pass) #465 — Posteringer CSV-eksport (GET …/journal/export) > returnerer en CSV med dansk header-række og en linje pr. konto-bevægelse [249.16ms]
+(pass) #465 — Posteringer CSV-eksport (GET …/journal/export) > account=<kontonr> filtrerer til posteringer der rør den konto [270.00ms]
+(pass) #465 — Posteringer CSV-eksport (GET …/journal/export) > format=pdf afvises på journal — kun csv understøttes [139.71ms]
+(pass) #465 — Posteringer CSV-eksport (GET …/journal/export) > eksporteren er deterministisk [336.18ms]
+(pass) #372 — CSV-builderne er deterministiske > samme ledger + samme udtrækningsdato giver byte-identisk CSV [611.55ms]
+(pass) #372 — CSV-builderne er deterministiske > rute-kataloget annoncerer de tre nye /export-endpoints [7.75ms]
+
+tests/unit/financial-statements-cli.test.ts:
+(pass) report CLI > emits trial balance, profit-loss and balance JSON for a company period [1450.15ms]
+(pass) report CLI > fails with exit code 2 when a required flag is missing [642.33ms]
+(pass) report CLI > returns ok:false JSON and exit code 1 for an inverted period [541.16ms]
+
+tests/unit/server-api/trial-balance.test.ts:
+(pass) cockpit API — trial balance (GET .../trial-balance) > lists every moved account with debit, credit and balance [235.50ms]
+(pass) cockpit API — trial balance (GET .../trial-balance) > an invalid year query value is a safe 400 [140.92ms]
+(pass) cockpit API — trial balance (GET .../trial-balance) > trial-balance for an unknown slug is a safe 404 [136.10ms]
+
+ 18 pass
+ 0 fail
+ 101 expect() calls
+Ran 18 tests across 3 files. [6.15s]

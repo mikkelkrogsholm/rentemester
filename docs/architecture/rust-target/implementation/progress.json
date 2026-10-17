@@ -1,10 +1,10 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "rust-readonly-1",
-  "code_revision": "sha256:9bfda4453edcc03d768f660da823107622b29a4637fa9b22fa94546e26800aae",
+  "current_increment": "report-wire-baseline-1",
+  "code_revision": "sha256:11481109456fbcf1ac9d679b5d7941c8b31ab0feb8ecd152d2c856715d3d7781",
   "spec_revision": "sha256:2da7e799a99c7bfe1c66cc50a8acefb375e9d4dacf5945f9fafcc9ff1c7cb166",
-  "state": "verified-experimental-readonly",
+  "state": "verified-contract-baseline-increment",
   "issues_closed": [],
   "next": [
     "R01: per-operation contract/error/retry/domain/fixture coverage beyond draft registry inventory",
@@ -18,5 +18,22 @@
     "docs/graphify.md",
     ".gitattributes"
   ],
-  "all_goal_requirements_complete": false
+  "all_goal_requirements_complete": false,
+  "previous_verified_increment": {
+    "current_increment": "rust-readonly-1",
+    "code_revision": "sha256:9bfda4453edcc03d768f660da823107622b29a4637fa9b22fa94546e26800aae",
+    "spec_revision": "sha256:2da7e799a99c7bfe1c66cc50a8acefb375e9d4dacf5945f9fafcc9ff1c7cb166",
+    "state": "verified-experimental-readonly"
+  },
+  "evidence": {
+    "wire_contracts": "baseline/trial-balance-wire.json",
+    "contract_notes": "baseline/TRIAL_BALANCE.md",
+    "wire_receipts": 31,
+    "source_anchors": 29,
+    "review": "Independent read-only review; full CSV oracle gap repaired and re-reviewed; no remaining material finding in bounded scope",
+    "runtime_behavior_change": false,
+    "full_verification": "baseline/wire-verify.txt",
+    "legacy_verification": "baseline/wire-legacy-tests.txt",
+    "limits": "One capability only; no R01/R08/full-epic completion claimed"
+  }
 }

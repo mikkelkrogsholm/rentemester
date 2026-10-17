@@ -19,6 +19,8 @@ The complete scoped contract and current readiness report are in read-only/. His
 
 The initial registry capture in baseline/inventory.json contains 265 CLI keys, 214 MCP tools, 208 HTTP routes, 54 browser routes, 734 exported core function declarations and 66 migrations. It is reproducible with scripts/rust/capture-baseline.ts and has explicit UNKNOWN fields. R01 remains open: complete per-operation input/result/error/fixture and domain ownership mapping is still required. The original snapshot is preserved; subsequent product/source changes must be reconciled, not silently overwritten.
 
+The first executable wire-contract overlay is baseline/TRIAL_BALANCE.md and baseline/trial-balance-wire.json. It covers legacy CLI streams/exits, HTTP live/archive/error shapes, CSV byte output, limited PDF format checks and the explicitly versioned Rust CLI. It reproduces padded-year and noncalendar fiscal-year defects as correction obligations. The frozen synthetic oracle is hash-checked after every operation has run on disposable copies. These checks now run in rust:verify; full R01/R08 acceptance remains outstanding.
+
 ## Next work and completion boundary
 
 Finish the baseline operation/schema/error/retry matrix and its independent positive/negative fixtures, refine the next GDD scope, then continue the reviewed DAG toward durable storage/authority/posting and remaining domains. Preserve existing user changes. All broad epic issues remain open until their full acceptance is actually proven. Hosted identity, providers, GPUI/React parity, distribution, actual external gates and fenced cutover remain outstanding. No production data was changed and no future unattended job was scheduled.
