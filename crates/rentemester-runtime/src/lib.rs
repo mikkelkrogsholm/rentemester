@@ -1,5 +1,6 @@
 //! Runtime identity verification and cooperative process lifetime.
 pub mod auth;
+pub mod mfa;
 pub mod password;
 use std::path::Path;
 

@@ -1,0 +1,212 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native existing MFA cryptography",
+    "goal": "Issue/decrypt existing versioned MFA values and verify existing TOTP without Node/Bun",
+    "scope": "R04/R41 runtime crypto only; no challenge/session/recovery/endpoint or actual SQLite handle admission"
+  },
+  "nodes": {
+    "component.runtime": {
+      "kind": "component",
+      "description": "Native MFA encryption and TOTP",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Injected versioned keyring, bounded source-compatible XChaCha encryption and TOTP",
+        "rationale": "Pending MFA lifecycle needs native source-compatible crypto",
+        "excludes": [
+          "MFA challenge, session, enrollment and recovery lifecycle, current-row ownership and replay consumption"
+        ]
+      },
+      "interfaces": [
+        "action.mfa_crypto"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Independent libsodium/RFC vectors and actual installed crypto/OTP interoperate with native implementation",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Synthetic existing MFA values and independent crypto/OTP vectors",
+        "when": "Compare native runtime and independent actual source implementations",
+        "then": "Independent libsodium/RFC vectors and actual installed crypto/OTP interoperate with native implementation"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Tampered/retired/missing/malformed/over-budget inputs refuse with opaque errors",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Synthetic existing MFA values and independent crypto/OTP vectors",
+        "when": "Compare native runtime and independent actual source implementations",
+        "then": "Tampered/retired/missing/malformed/over-budget inputs refuse with opaque errors"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "No DB effects or secret diagnostics; owned sensitive buffers zeroize, broader erasure not claimed",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Synthetic existing MFA values and independent crypto/OTP vectors",
+        "when": "Compare native runtime and independent actual source implementations",
+        "then": "No DB effects or secret diagnostics; owned sensitive buffers zeroize, broader erasure not claimed"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Canonical versions/hex/UTF8 and nonnegative OTP counters refuse source permissiveness explicitly",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Synthetic existing MFA values and independent crypto/OTP vectors",
+        "when": "Compare native runtime and independent actual source implementations",
+        "then": "Canonical versions/hex/UTF8 and nonnegative OTP counters refuse source permissiveness explicitly"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Fresh OS nonce and secret per issuance; primitive match still requires future serialized challenge/replay/lockout lifecycle",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Synthetic existing MFA values and independent crypto/OTP vectors",
+        "when": "Compare native runtime and independent actual source implementations",
+        "then": "Fresh OS nonce and secret per issuance; primitive match still requires future serialized challenge/replay/lockout lifecycle"
+      }
+    },
+    "action.mfa_crypto": {
+      "kind": "action",
+      "description": "Native versioned MFA encryption/decryption and six-digit TOTP",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "bounded_mfa_values_code": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "trusted_injected_keyring_clock": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Opaque invalid_credentials, invalid_auth_config, invalid_auth_clock, auth_crypto_unavailable"
+        },
+        "preconditions": [
+          "Trusted caller binds injected keyring and clock to current workspace; no cryptographic result alone grants identity/session/one-time authority"
+        ],
+        "postconditions": [
+          "Source-compatible encrypted value/plaintext or highest matching counter; opaque failures and no external writes"
+        ],
+        "external_effects": [],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Cryptographic match is not challenge/session/one-time authority; key history, strict bounded parser and secret handling are explicit",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Cryptographic match is not challenge/session/one-time authority; key history, strict bounded parser and secret handling are explicit",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Cryptographic match is not challenge/session/one-time authority; key history, strict bounded parser and secret handling are explicit",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Cryptographic match is not challenge/session/one-time authority; key history, strict bounded parser and secret handling are explicit",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Cryptographic match is not challenge/session/one-time authority; key history, strict bounded parser and secret handling are explicit",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Exact source key-string SHA256/XChaCha envelope and UTF8-key HMAC-SHA1 OTP with trusted Clock"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.mfa_crypto",
+      "to": "component.runtime",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.mfa_crypto",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.mfa_crypto",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.mfa_crypto",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.mfa_crypto",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.mfa_crypto",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native existing MFA cryptography",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "c28e0dd9b8584e45cf1e98abc87ee3d4f42d788233425ec6867da97d3d13c4e0"
+      }
+    }
+  }
+}

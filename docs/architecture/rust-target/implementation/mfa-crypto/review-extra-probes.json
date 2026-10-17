@@ -1,0 +1,59 @@
+{
+  "ok": true,
+  "checks": 10,
+  "observations": [
+    {
+      "case": "nonce-corruption",
+      "code": "invalid_credentials",
+      "ok": false
+    },
+    {
+      "case": "ciphertext-corruption",
+      "code": "invalid_credentials",
+      "ok": false
+    },
+    {
+      "case": "tag-corruption",
+      "code": "invalid_credentials",
+      "ok": false
+    },
+    {
+      "case": "envelope-refusal",
+      "code": "invalid_credentials",
+      "ok": false
+    },
+    {
+      "case": "envelope-refusal",
+      "code": "invalid_credentials",
+      "ok": false
+    },
+    {
+      "case": "envelope-refusal",
+      "code": "invalid_credentials",
+      "ok": false
+    },
+    {
+      "case": "independent-totp-window",
+      "step": 0,
+      "counter": 0,
+      "ok": true
+    },
+    {
+      "case": "independent-totp-window",
+      "step": 1,
+      "counter": 1,
+      "ok": true
+    },
+    {
+      "case": "independent-totp-window",
+      "step": 2,
+      "counter": 2,
+      "ok": true
+    },
+    {
+      "case": "outside-window",
+      "code": "invalid_credentials",
+      "ok": false
+    }
+  ]
+}

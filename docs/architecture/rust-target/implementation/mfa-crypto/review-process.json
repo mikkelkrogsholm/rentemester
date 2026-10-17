@@ -1,0 +1,1537 @@
+{
+  "ok": true,
+  "scope": "Native source-compatible MFA cryptography only; no current identity/challenge/session or replay authority",
+  "checks": 310,
+  "libsodiumFixtureVersion": "1.0.22",
+  "observations": [
+    {
+      "id": "actual-configured-framework-keyring",
+      "ok": true
+    },
+    {
+      "id": "libsodium-0",
+      "ok": true,
+      "independentLibsodium": true
+    },
+    {
+      "id": "libsodium-1",
+      "ok": true,
+      "independentLibsodium": true
+    },
+    {
+      "id": "libsodium-2",
+      "ok": true,
+      "independentLibsodium": true
+    },
+    {
+      "id": "libsodium-3",
+      "ok": true,
+      "independentLibsodium": true
+    },
+    {
+      "id": "libsodium-4",
+      "ok": true,
+      "independentLibsodium": true
+    },
+    {
+      "id": "libsodium-5",
+      "ok": true,
+      "independentLibsodium": true
+    },
+    {
+      "id": "libsodium-6",
+      "ok": true,
+      "independentLibsodium": true
+    },
+    {
+      "id": "libsodium-7",
+      "ok": true,
+      "independentLibsodium": true
+    },
+    {
+      "id": "libsodium-8",
+      "ok": true,
+      "nativeCorrection": "strict-authenticated-UTF8"
+    },
+    {
+      "id": "native-issue-0",
+      "ok": true,
+      "activeVersion": 8
+    },
+    {
+      "id": "source-issue-0",
+      "ok": true
+    },
+    {
+      "id": "native-issue-1",
+      "ok": true,
+      "activeVersion": 8
+    },
+    {
+      "id": "source-issue-1",
+      "ok": true
+    },
+    {
+      "id": "native-issue-2",
+      "ok": true,
+      "activeVersion": 8
+    },
+    {
+      "id": "source-issue-2",
+      "ok": true
+    },
+    {
+      "id": "native-issue-3",
+      "ok": true,
+      "activeVersion": 8
+    },
+    {
+      "id": "source-issue-3",
+      "ok": true
+    },
+    {
+      "id": "native-issue-4",
+      "ok": true,
+      "activeVersion": 8
+    },
+    {
+      "id": "source-issue-4",
+      "ok": true
+    },
+    {
+      "id": "native-issue-5",
+      "ok": true,
+      "activeVersion": 8
+    },
+    {
+      "id": "source-issue-5",
+      "ok": true
+    },
+    {
+      "id": "native-issue-6",
+      "ok": true,
+      "activeVersion": 8
+    },
+    {
+      "id": "source-issue-6",
+      "ok": true
+    },
+    {
+      "id": "native-issue-7",
+      "ok": true,
+      "activeVersion": 8
+    },
+    {
+      "id": "source-issue-7",
+      "ok": true
+    },
+    {
+      "id": "historical-version-decryption",
+      "ok": true
+    },
+    {
+      "id": "explicit-legacy-decryption",
+      "ok": true
+    },
+    {
+      "id": "legacy-not-inferred",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "retired-version",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "unknown-version",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "wrong-key-material",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "source-header-not-authenticated",
+      "ok": true,
+      "noHeaderOwnershipClaim": true
+    },
+    {
+      "id": "version-correction-07",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "version-correction-+7",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "version-correction-7suffix",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "version-correction-7.0",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "version-correction-7e0",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "version-correction-7",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "uppercase-hex-correction",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-0",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-1",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-2",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-3",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-4",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-5",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-6",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-7",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "configuration-0",
+      "ok": true,
+      "code": "invalid_auth_config"
+    },
+    {
+      "id": "configuration-1",
+      "ok": true,
+      "code": "invalid_auth_config"
+    },
+    {
+      "id": "configuration-2",
+      "ok": true,
+      "code": "invalid_auth_config"
+    },
+    {
+      "id": "configuration-3",
+      "ok": true,
+      "code": "invalid_auth_config"
+    },
+    {
+      "id": "configuration-4",
+      "ok": true,
+      "code": "invalid_auth_config"
+    },
+    {
+      "id": "configuration-5",
+      "ok": true,
+      "code": "invalid_auth_config"
+    },
+    {
+      "id": "configuration-6",
+      "ok": true,
+      "code": "invalid_auth_config"
+    },
+    {
+      "id": "invalid-explicit-legacy",
+      "ok": true,
+      "code": "invalid_auth_config"
+    },
+    {
+      "id": "plaintext-budget",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "fresh-OS-nonce",
+      "ok": true,
+      "samples": 20
+    },
+    {
+      "id": "fresh-OS-enrollment-secret",
+      "ok": true,
+      "samples": 20
+    },
+    {
+      "id": "corrupt-byte-0",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-1",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-2",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-3",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-4",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-5",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-6",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-7",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-8",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-9",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-10",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-11",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-12",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-13",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-14",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-15",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-16",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-17",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-18",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-19",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-20",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-21",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-22",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-23",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-24",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-25",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-26",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-27",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-28",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-29",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-30",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-31",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-32",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-33",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-34",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-35",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-36",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-37",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-38",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-39",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-40",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-41",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-42",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-43",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-44",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-45",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-46",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-47",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-48",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-49",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-50",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-51",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-52",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-53",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-54",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-55",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-56",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-57",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-58",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-59",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "rfc4226-0",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-1",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-2",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-3",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-4",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-5",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-6",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-7",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-8",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-9",
+      "ok": true
+    },
+    {
+      "id": "rfc6238-0",
+      "ok": true
+    },
+    {
+      "id": "rfc6238-1",
+      "ok": true
+    },
+    {
+      "id": "rfc6238-2",
+      "ok": true
+    },
+    {
+      "id": "rfc6238-3",
+      "ok": true
+    },
+    {
+      "id": "rfc6238-4",
+      "ok": true
+    },
+    {
+      "id": "rfc6238-5",
+      "ok": true
+    },
+    {
+      "id": "otp-0-0-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-0-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-0-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-0-1-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-1-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-1-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-0-29999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-29999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-29999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-0-30000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-30000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-30000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-30000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-0-30001--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-30001-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-30001-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-30001-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-0-1767225600000--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-0-1767225600000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-1767225600000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-1767225600000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-1767225600000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-0-253402300799999--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-0-253402300799999--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-253402300799999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-253402300799999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-253402300799999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-0-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-0-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-0-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-1-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-1-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-1-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-29999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-29999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-29999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-30000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-30000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-30000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-30000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-30001--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-30001-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-30001-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-30001-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-1767225600000--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-1767225600000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-1767225600000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-1767225600000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-1767225600000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-253402300799999--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-253402300799999--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-253402300799999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-253402300799999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-253402300799999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-0-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-0-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-0-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-1-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-1-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-1-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-29999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-29999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-29999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-30000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-30000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-30000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-30000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-30001--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-30001-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-30001-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-30001-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-1767225600000--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-1767225600000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-1767225600000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-1767225600000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-1767225600000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-253402300799999--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-253402300799999--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-253402300799999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-253402300799999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-253402300799999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-0-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-0-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-0-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-1-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-1-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-1-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-29999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-29999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-29999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-30000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-30000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-30000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-30000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-30001--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-30001-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-30001-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-30001-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-1767225600000--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-1767225600000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-1767225600000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-1767225600000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-1767225600000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-253402300799999--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-253402300799999--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-253402300799999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-253402300799999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-253402300799999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-0-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-0-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-0-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-1-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-1-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-1-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-29999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-29999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-29999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-30000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-30000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-30000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-30000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-30001--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-30001-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-30001-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-30001-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-1767225600000--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-1767225600000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-1767225600000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-1767225600000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-1767225600000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-253402300799999--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-253402300799999--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-253402300799999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-253402300799999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-253402300799999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-0-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-0-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-0-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-1-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-1-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-1-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-29999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-29999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-29999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-30000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-30000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-30000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-30000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-30001--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-30001-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-30001-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-30001-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-1767225600000--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-1767225600000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-1767225600000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-1767225600000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-1767225600000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-253402300799999--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-253402300799999--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-253402300799999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-253402300799999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-253402300799999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "epoch-negative-neighbor-correction",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-code-grammar-0",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-code-grammar-1",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-code-grammar-2",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-code-grammar-3",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-code-grammar-4",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-code-grammar-5",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-code-grammar-6",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-secret-budget-0",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-secret-budget-1025",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "clock--1",
+      "ok": true,
+      "code": "invalid_auth_clock"
+    },
+    {
+      "id": "clock-253402300800000",
+      "ok": true,
+      "code": "invalid_auth_clock"
+    },
+    {
+      "id": "unavailable-trusted-clock",
+      "ok": true,
+      "code": "invalid_auth_clock"
+    }
+  ],
+  "limits": [
+    "No DB/MFA/session/HTTP lifecycle, challenge consumption/attempt/lockout/replay policy or actual handle admission",
+    "Existing empty-AAD envelope does not bind header/workspace/user/purpose; exact current-row identity remains mandatory",
+    "Strict version/hex/UTF8/epoch and fixed budgets correct explicit source permissiveness",
+    "OS failure injection and other hardware/platform qualification remain pending"
+  ]
+}

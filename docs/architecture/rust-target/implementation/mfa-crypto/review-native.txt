@@ -1,0 +1,11 @@
+   Compiling rentemester-runtime v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-runtime)
+    Finished `release` profile [optimized] target(s) in 1.02s
+     Running unittests src/lib.rs (target/release/deps/rentemester_runtime-791fdf4f706d1074)
+
+running 4 tests
+test mfa::tests::probe ... ignored, synthetic native MFA crypto/OTP probe selected by independent harness
+test mfa::tests::rfc_hotp_totp_and_trusted_clock_refusals ... ok
+test mfa::tests::config_and_envelope_grammar_are_fail_closed ... ok
+test mfa::tests::independent_libsodium_vectors_and_strict_utf8 ... ok
+
+test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 19 filtered out; finished in 0.00s

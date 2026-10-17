@@ -1,0 +1,6617 @@
+$ bun run scripts/rust/verify.ts
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.07s
+   Compiling rentemester-runtime v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-runtime)
+   Compiling rentemester-application v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-application)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.15s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_application-4202f27f7483c10a)
+
+running 12 tests
+test control_fence::tests::child ... ignored, native process fence helper selected by control-fence harness
+test control_fence::tests::cookie_child ... ignored, synthetic cookie/fence process helper selected by session-cookie harness
+test password_login::tests::probe ... ignored, synthetic canonical control native helper selected by independent process harness
+test access::tests::reevaluation_observes_revocation_and_never_changes_prior_facts ... ok
+test access::tests::company_roles_never_grant_workspace_or_public_permissions ... ok
+test access::tests::unknown_roles_and_nonstring_permissions_refuse ... ok
+test access::tests::exact_vocabulary_and_slug_grammar ... ok
+test control_fence::tests::committed_cleanup_failure_keeps_committed_value ... ok
+test password_login::tests::invalid_input_never_calls_continuation ... ok
+test control_fence::tests::manual_commit_is_unknown_never_false_rollback ... ok
+test control_fence::tests::current_observation_commit_and_business_rollback ... ok
+test control_fence::tests::cookie_clock_failure_workspace_binding_and_admission_time ... ok
+
+test result: ok. 9 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 0.43s
+
+     Running tests/access_vectors.rs (target/debug/deps/access_vectors-e10b0ae61ca65117)
+
+running 1 test
+test vectors ... ignored, independent access corpus explicitly selected by Bun harness
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/rentemester_rust-d7be3ead5cbd9078)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/arithmetic_vectors.rs (target/debug/deps/arithmetic_vectors-3938539270c8f0e6)
+
+running 3 tests
+test vectors ... ignored, synthetic exact arithmetic corpus helper selected by Bun harness
+test canonical_serde_refuses_coercion_and_keeps_scale ... ok
+test computed_values_roundtrip_beyond_raw_decimal_input_budget ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/fiscal_vectors.rs (target/debug/deps/fiscal_vectors-7ab299eebdf80315)
+
+running 2 tests
+test vectors ... ignored, synthetic cross-language fixture helper selected by Bun harness
+test serde_values_require_canonical_typed_inputs ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/manual_journal_vectors.rs (target/debug/deps/manual_journal_vectors-277757db98f17fc0)
+
+running 2 tests
+test vectors ... ignored, synthetic pure manual journal corpus selected by Bun harness
+test row_identity_wire_is_exact_and_nominal ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rentemester_engine-390a548a9db9e304)
+
+running 14 tests
+test calendar::tests::deadlines_use_real_target_calendar_and_trimmed_low_years ... ok
+test identifiers::tests::exact_ids_and_opaque_accounts ... ok
+test currency::tests::currency_is_canonical_syntax_not_a_registry_or_normalizer ... ok
+test fiscal_year::tests::canonical_dates_reject_rollover_and_lexical_coercion ... ok
+test fiscal_year::tests::fiscal_boundaries_labels_and_checked_years ... ok
+test trial_balance::tests::calendar_boundaries_and_strict_input ... ok
+test decimal::tests::signed_division_is_half_away_and_rejects_zero ... ok
+test fiscal_year::tests::six_month_deadline_preserves_month_end_and_clamps_day ... ok
+test fx::tests::exact_huge_values_and_rate_canonical_boundaries ... ok
+test money::tests::exact_rounding_and_no_negative_zero ... ok
+test money::tests::arbitrary_integer_precision_and_bounded_input ... ok
+test fx::tests::explicit_quantization_stages_and_exact_fx_halves ... ok
+test trial_balance::tests::independently_rounded_lines_and_touched_accounts ... ok
+test fiscal_year::tests::every_fiscal_start_contains_its_date_and_labels_are_stable ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rentemester_runtime-c3cedc7970af4556)
+
+running 23 tests
+test local::layout::probe ... ignored, synthetic native probe selected by independent manifest harness
+test local::layout::tests::child ... ignored, synthetic layout owner process selected by parent
+test mfa::tests::probe ... ignored, synthetic native MFA crypto/OTP probe selected by independent harness
+test mfa::tests::rfc_hotp_totp_and_trusted_clock_refusals ... ok
+test mfa::tests::independent_libsodium_vectors_and_strict_utf8 ... ok
+test password::tests::probe ... ignored, synthetic native crypto process probe selected by independent harness
+test auth::tests::independent_python_wire_vectors_and_fixed_errors ... ok
+test tests::lexical_roots_are_explicit_and_bound_once ... ok
+test mfa::tests::config_and_envelope_grammar_are_fail_closed ... ok
+test local::layout::tests::binding_preserves_sources_and_holds_ownership_until_drop ... ok
+test password::tests::canonical_grammar_and_input_bounds_are_explicit ... ok
+test local::layout::tests::files_refuse_hardlinks_directories_and_fifos_without_blocking ... ok
+test local::layout::tests::every_component_change_is_sticky_even_after_restoration ... ok
+test local::layout::tests::bounded_manifest_and_selection_have_no_defaults ... ok
+test local::layout::tests::canonical_manifest_profile_refuses_coercions_and_ambiguity ... ok
+test local::layout::tests::every_path_level_refuses_symlinks_and_missing_objects ... ok
+test local::layout::tests::manifest_bytes_hardlink_and_root_changes_invalidate ... ok
+test local::tests::known_network_and_unknown_families_refuse ... ok
+test local::tests::moved_root_is_permanently_invalid_even_if_returned ... ok
+test local::layout::tests::real_process_layout_owns_lease_and_kernel_death_releases ... ok
+test local::tests::same_process_exclusion_drop_and_ordinary_close ... ok
+test password::tests::fixed_python_credential_and_missing_hash_refuse_uniformly ... ok
+test password::tests::unicode17_official_nfkc_vectors ... ok
+
+test result: ok. 19 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 16.32s
+
+     Running unittests src/lib.rs (target/debug/deps/rentemester_storage-050e944891825e33)
+
+running 44 tests
+test company_baseline::tests::crash_child ... ignored, subprocess helper selected by process-death parent
+test company_baseline::tests::normalization_child ... ignored, parity/process-death helper invoked by parent or independent TS harness
+test company_physical::tests::crash_child ... ignored, actual process-death helper selected by parent
+test company_vat::tests::crash_child ... ignored, actual VAT crash/parity child invoked by parent/independent harness
+test company_baseline::tests::original_column_digest_ignores_new_columns_but_detects_changed_old_cells ... ok
+test control_migration::tests::crash_child ... ignored, subprocess helper selected explicitly by process-death parent
+test control_migration::tests::legal_sqlite_like_user_objects_are_not_internal_or_empty ... ok
+test control_migration::tests::all_control_artifacts_are_bound_and_public_errors_are_opaque ... ok
+test control_access::tests::deferred_snapshot_is_not_a_control_writer_fence ... ok
+test control_migration::tests::real_history_insert_failure_rolls_back_entire_suffix_including_sessions ... ok
+test cookie_session::tests::timestamps_are_canonical_not_coerced ... ok
+test journal_hash::tests::legacy_json_numbers_and_rounding_bytes ... ok
+test company_baseline::tests::normalization_preserves_original_full_width_ids_with_sqlite_random_rowid_allocation ... ok
+test company_baseline::tests::normalization_seeds_audited_roles_backfills_only_missing_and_is_idempotent ... ok
+test migration::tests::crash_child ... ignored, subprocess helper selected by actual_process_death test
+test migration::tests::digest_preserves_type_multiplicity_and_bytes_without_row_order ... ok
+test migration::tests::exact_artifact_bytes_and_optional_identity_are_bound ... ok
+test company_baseline::tests::normalization_guard_failure_rolls_back_seeds_and_prior_deadline_updates ... ok
+test migration::tests::sql_and_history_failure_roll_back_one_step_and_preserve_prior_commits ... ok
+test password_credential::tests::practical_email_is_ascii_case_folded_without_trimming ... ok
+test migration::tests::suffix_rehearsal_and_receivable_constraints ... ok
+test migration::tests::actual_process_death_never_leaves_half_applied_step ... ok
+test company_baseline::tests::normalization_process_death_rolls_back_all_data_effects ... ok
+test control_migration::tests::mfa_upgrade_and_immutable_guards_match_real_sql ... ok
+test sequences::tests::process_child ... ignored, synthetic process/parity helper selected explicitly
+test company_physical::tests::catalogue_binding_unknown_objects_and_vat_conflicts_refuse ... ok
+test snapshot::tests::unstable_capture_is_bounded_and_can_recover ... ok
+test tests::physical_schema_and_safe_identity_are_required ... ok
+test tests::sql_number_conversion_does_not_round_twice ... ok
+test control_migration::tests::process_death_restores_whole_prefix_and_sessions_or_commits_all ... ok
+test company_baseline::tests::fresh_schema_is_complete_and_images_are_byte_bound ... ok
+test sequences::tests::exact_values_scope_guards_and_owner_rollback ... ok
+test sequences::tests::invalid_storage_deferred_and_failed_sql_require_owner_abort ... ok
+test journal_preview::tests::complete_current_image_matches_reconstructed_native_schema ... ok
+test sequences::tests::wal_reader_snapshot_and_deferred_write_state_are_explicit ... ok
+test sequences::tests::killed_process_rolls_back_sequence_and_companion_row ... ok
+test company_vat::tests::other_trigger_and_later_data_failure_roll_back_kind_and_named_guard ... ok
+test sequences::tests::concurrent_processes_commit_unique_numbers_and_one_reservation ... ok
+test company_baseline::tests::populated_recurring_columns_and_dimension_defaults_preserve_old_values ... ok
+test company_vat::tests::current_fk_children_exact_schema_history_and_nonlegacy_cells_survive ... ok
+test company_baseline::tests::bootstrap_and_early_step_crashes_leave_complete_prefixes ... ok
+test company_vat::tests::actual_process_death_restores_exact_guard_and_current_fk_data ... ok
+test company_physical::tests::actual_process_death_rolls_back_whole_unversioned_baseline ... ok
+test company_physical::tests::all_known_layout_combinations_preserve_data_and_restore_constraints ... ok
+
+test result: ok. 37 passed; 0 failed; 7 ignored; 0 measured; 0 filtered out; finished in 57.98s
+
+   Doc-tests rentemester_application
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rentemester_engine
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rentemester_runtime
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rentemester_storage
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+{"ok":true,"scope":"current domain/application dependency boundaries and pure domain/access module imports","negativeControls":["forbidden domain SQL and unclassified OS dependencies","direct filesystem/SQL/storage imports in pure modules"],"limits":"Direct import scan supplements dependency inspection and code review; it is not an exhaustive Rust semantic analyzer."}
+{"ok":true,"scope":"compiled manual rule bundle metadata and exact source hashes","bundles":12,"artifact_sha256":"966dcac7eef35c0823d31b7e3a9583e1a028d5c4e228136d7f8d0196705e7779"}
+{
+  "ok": true,
+  "checks": 2485,
+  "sourceCases": 2484,
+  "legacyCoreDifferences": 505,
+  "nativeEnvironments": 2,
+  "legacyObservationsSha256": "111850fbc334b4bb14f6b02f9faed253b5ec1bf841eceb3cc34b6ceb68ff29d8",
+  "limits": [
+    "Pure trusted-observation policy, not identity verification or revocation fencing",
+    "Legacy core assumes upstream authentication; explicit binding/live-proof differences retained",
+    "Synthetic current control data only; no company ledger opened"
+  ]
+}
+{
+  "ok": true,
+  "checks": 106,
+  "casesPerJournalMode": 45,
+  "journalModes": [
+    "WAL",
+    "DELETE"
+  ],
+  "observations": [
+    {
+      "mode": "WAL",
+      "id": "commit",
+      "result": {
+        "controlReusable": true,
+        "outcome": "committed",
+        "value": 1
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "business-error",
+      "result": {
+        "code": "synthetic_business",
+        "companyReusable": true,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "sql-error",
+      "result": {
+        "code": "synthetic_sql",
+        "companyReusable": true,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "manual-commit",
+      "result": {
+        "code": "transaction_escaped",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "unknown"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "provider-denial",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "cross-workspace",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "empty-workspace",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "empty-subject",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "empty-session",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "wrong-session-subject",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "unknown-subject",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "session-deleted",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "email-unverified",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "mfa-disabled",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "no-access-events",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "workspace-disabled",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "membership-revoked",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "full-width-revoke",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "earlier-negative-owner",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "workspace-owner-no-company-bypass",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "archived",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "unregistered",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "invalid-slug",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "public-not-company-authority",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "workspace-not-company-authority",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "role-denied",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "untrimmed-subject",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "untrimmed-session",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "control-temp",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "company-temp",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "attached",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "fk-disabled",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "weak-durability",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "query-only",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "pinned-control",
+      "result": {
+        "code": "active_transaction",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "company-first",
+      "result": {
+        "code": "active_transaction",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "malformed-security-flag",
+      "result": {
+        "code": "invalid_control",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "WAL",
+      "id": "noncanonical-control",
+      "result": {
+        "code": "invalid_control",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "control-readonly",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "company-readonly",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "foreign-key-corruption",
+      "result": {
+        "code": "invalid_control",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "control-journal-off",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "company-journal-off",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "control-journal-memory",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "company-journal-memory",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "WAL",
+      "id": "busy-control",
+      "result": {
+        "code": "control_busy_or_unavailable",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      }
+    },
+    {
+      "mode": "WAL",
+      "id": "busy-company",
+      "result": {
+        "code": "company_busy_or_unavailable",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      }
+    },
+    {
+      "mode": "WAL",
+      "id": "race-revoke",
+      "blockedBeforeCommit": true,
+      "revokedRetryDenied": true
+    },
+    {
+      "mode": "WAL",
+      "id": "race-disable",
+      "blockedBeforeCommit": true,
+      "revokedRetryDenied": true
+    },
+    {
+      "mode": "WAL",
+      "id": "race-session-delete",
+      "blockedBeforeCommit": true,
+      "revokedRetryDenied": true
+    },
+    {
+      "mode": "WAL",
+      "id": "commit-reader",
+      "result": {
+        "controlReusable": true,
+        "outcome": "committed",
+        "value": 1
+      },
+      "oldReaderSnapshotPreserved": true,
+      "controlReleased": true
+    },
+    {
+      "mode": "WAL",
+      "id": "crash-precommit",
+      "preservedCommit": false,
+      "lockReleased": true,
+      "retryFromPriorSequence": true
+    },
+    {
+      "mode": "WAL",
+      "id": "crash-postcommit",
+      "preservedCommit": true,
+      "lockReleased": true,
+      "retryFromPriorSequence": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "commit",
+      "result": {
+        "controlReusable": true,
+        "outcome": "committed",
+        "value": 1
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "business-error",
+      "result": {
+        "code": "synthetic_business",
+        "companyReusable": true,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "sql-error",
+      "result": {
+        "code": "synthetic_sql",
+        "companyReusable": true,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "manual-commit",
+      "result": {
+        "code": "transaction_escaped",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "unknown"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "provider-denial",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "cross-workspace",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "empty-workspace",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "empty-subject",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "empty-session",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "wrong-session-subject",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "unknown-subject",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "session-deleted",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "email-unverified",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "mfa-disabled",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "no-access-events",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "workspace-disabled",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "membership-revoked",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "full-width-revoke",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "earlier-negative-owner",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "workspace-owner-no-company-bypass",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "archived",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "unregistered",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "invalid-slug",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "public-not-company-authority",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "workspace-not-company-authority",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "role-denied",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "untrimmed-subject",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "untrimmed-session",
+      "result": {
+        "code": "access_denied",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "control-temp",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "company-temp",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "attached",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "fk-disabled",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "weak-durability",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "query-only",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "pinned-control",
+      "result": {
+        "code": "active_transaction",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "company-first",
+      "result": {
+        "code": "active_transaction",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "malformed-security-flag",
+      "result": {
+        "code": "invalid_control",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": false
+    },
+    {
+      "mode": "DELETE",
+      "id": "noncanonical-control",
+      "result": {
+        "code": "invalid_control",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "control-readonly",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "company-readonly",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "foreign-key-corruption",
+      "result": {
+        "code": "invalid_control",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "control-journal-off",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "company-journal-off",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "control-journal-memory",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "company-journal-memory",
+      "result": {
+        "code": "connection_refused",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      },
+      "legacyAllowed": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "busy-control",
+      "result": {
+        "code": "control_busy_or_unavailable",
+        "companyReusable": false,
+        "controlReusable": false,
+        "outcome": "not_committed"
+      }
+    },
+    {
+      "mode": "DELETE",
+      "id": "busy-company",
+      "result": {
+        "code": "company_busy_or_unavailable",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "not_committed"
+      }
+    },
+    {
+      "mode": "DELETE",
+      "id": "race-revoke",
+      "blockedBeforeCommit": true,
+      "revokedRetryDenied": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "race-disable",
+      "blockedBeforeCommit": true,
+      "revokedRetryDenied": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "race-session-delete",
+      "blockedBeforeCommit": true,
+      "revokedRetryDenied": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "commit-reader",
+      "result": {
+        "code": "commit_outcome_unknown",
+        "companyReusable": false,
+        "controlReusable": true,
+        "outcome": "unknown"
+      },
+      "oldReaderSnapshotPreserved": true,
+      "controlReleased": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "crash-precommit",
+      "preservedCommit": false,
+      "lockReleased": true,
+      "retryFromPriorSequence": true
+    },
+    {
+      "mode": "DELETE",
+      "id": "crash-postcommit",
+      "preservedCommit": true,
+      "lockReleased": true,
+      "retryFromPriorSequence": false
+    }
+  ],
+  "limits": [
+    "Admitted borrowed connections and provider/manifest identity remain prerequisites",
+    "Effect ledgers prove transaction mechanics, not full posting or durable idempotency",
+    "Control row snapshots preserved; no physical source/WAL immutability claim for a real writer-lock primitive"
+  ]
+}
+{"component":"better-auth","event":"better_auth_warning","level":"warn"}
+{
+  "ok": true,
+  "checks": 66,
+  "wireVectors": 41,
+  "scope": "active-key MAC, locked exact session/time/access policy, actual framework internal session issuance and getSession, before/held token-update/deletion races",
+  "observations": [
+    {
+      "id": "current",
+      "mode": "DELETE",
+      "outcome": "committed"
+    },
+    {
+      "id": "fresh",
+      "mode": "DELETE",
+      "outcome": "committed"
+    },
+    {
+      "id": "fresh-boundary",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "fresh-after",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "current-still-valid",
+      "mode": "DELETE",
+      "outcome": "committed"
+    },
+    {
+      "id": "expiry-before",
+      "mode": "DELETE",
+      "outcome": "committed"
+    },
+    {
+      "id": "expiry-equal",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "expiry-after",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "future-created",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "negative-clock",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "out-of-range-clock",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "retokenized",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "deleted",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "blank-session-id",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "legacy-coerced-date",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "invalid-gregorian",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "invalid-time",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "24h-refused",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "zero-lifetime",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "integer-time",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "mfa-disabled",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "email-unverified",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "revoked",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "service-invalid",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "service-empty",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "signature-tamper",
+      "mode": "DELETE",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "current",
+      "mode": "WAL",
+      "outcome": "committed"
+    },
+    {
+      "id": "fresh",
+      "mode": "WAL",
+      "outcome": "committed"
+    },
+    {
+      "id": "fresh-boundary",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "fresh-after",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "current-still-valid",
+      "mode": "WAL",
+      "outcome": "committed"
+    },
+    {
+      "id": "expiry-before",
+      "mode": "WAL",
+      "outcome": "committed"
+    },
+    {
+      "id": "expiry-equal",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "expiry-after",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "future-created",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "negative-clock",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "out-of-range-clock",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "retokenized",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "deleted",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "blank-session-id",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "legacy-coerced-date",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "invalid-gregorian",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "invalid-time",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "24h-refused",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "zero-lifetime",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "integer-time",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "mfa-disabled",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "email-unverified",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "revoked",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "service-invalid",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "service-empty",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    },
+    {
+      "id": "signature-tamper",
+      "mode": "WAL",
+      "outcome": "not_committed"
+    }
+  ],
+  "limits": "No native login/MFA/reset/service issuance or product endpoint. Authentication/freshness are admission-time checks. Native parser,12h lifetime and exact time boundaries deliberately fail closed more strictly than legacy."
+}
+{
+  "ok": true,
+  "checks": 48,
+  "normalizationChecks": 100170,
+  "scalarNormalizationChecks": 1112064,
+  "pythonVectors": 12,
+  "framework": "Better Auth1.7.1/@better-auth/utils0.4.2 actual password helpers",
+  "unicode": {
+    "bun": "17.0",
+    "icu": "78.1",
+    "version": "17.0.0"
+  },
+  "observations": [
+    {
+      "id": "python-0",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-1",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-2",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-3",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-4",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-5",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-6",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-7",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-8",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-9",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-10",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    },
+    {
+      "id": "python-11",
+      "frameworkVerified": true,
+      "nativeVerified": true,
+      "wrongPasswordRefused": true
+    }
+  ],
+  "limits": [
+    "Native password crypto only, not DB login/MFA/session or service lifecycle",
+    "Synchronous fixed32MiB KDF requires future bounded blocking/rate-limit dispatch",
+    "Canonical hash and input budgets stricter than permissive source helper; no production credential data",
+    "Normalization reference columns tested, not a claim of complete whole-runtime authentication parity"
+  ]
+}
+{
+  "ok": true,
+  "scope": "native existing password-to-pending-MFA transaction; canonical synthetic source fixtures and actual framework oracle",
+  "checks": 309,
+  "observations": [
+    {
+      "id": "installed-framework-account-selection",
+      "ok": true
+    },
+    {
+      "id": "email-0",
+      "ok": true
+    },
+    {
+      "id": "email-1",
+      "ok": true
+    },
+    {
+      "id": "email-2",
+      "ok": true
+    },
+    {
+      "id": "email-3",
+      "ok": true
+    },
+    {
+      "id": "email-4",
+      "ok": true
+    },
+    {
+      "id": "email-5",
+      "ok": true
+    },
+    {
+      "id": "email-6",
+      "ok": true
+    },
+    {
+      "id": "email-7",
+      "ok": true
+    },
+    {
+      "id": "email-8",
+      "ok": true
+    },
+    {
+      "id": "email-9",
+      "ok": true
+    },
+    {
+      "id": "email-10",
+      "ok": true
+    },
+    {
+      "id": "email-11",
+      "ok": true
+    },
+    {
+      "id": "email-12",
+      "ok": true
+    },
+    {
+      "id": "email-13",
+      "ok": true
+    },
+    {
+      "id": "email-14",
+      "ok": true
+    },
+    {
+      "id": "email-15",
+      "ok": true
+    },
+    {
+      "id": "email-16",
+      "ok": true
+    },
+    {
+      "id": "email-17",
+      "ok": true
+    },
+    {
+      "id": "email-18",
+      "ok": true
+    },
+    {
+      "id": "email-19",
+      "ok": true
+    },
+    {
+      "id": "email-20",
+      "ok": true
+    },
+    {
+      "id": "email-21",
+      "ok": true
+    },
+    {
+      "id": "email-22",
+      "ok": true
+    },
+    {
+      "id": "email-23",
+      "ok": true
+    },
+    {
+      "id": "email-24",
+      "ok": true
+    },
+    {
+      "id": "email-25",
+      "ok": true
+    },
+    {
+      "id": "email-26",
+      "ok": true
+    },
+    {
+      "id": "email-27",
+      "ok": true
+    },
+    {
+      "id": "email-28",
+      "ok": true
+    },
+    {
+      "id": "email-29",
+      "ok": true
+    },
+    {
+      "id": "email-30",
+      "ok": true
+    },
+    {
+      "id": "email-31",
+      "ok": true
+    },
+    {
+      "id": "email-32",
+      "ok": true
+    },
+    {
+      "id": "email-33",
+      "ok": true
+    },
+    {
+      "id": "email-34",
+      "ok": true
+    },
+    {
+      "id": "email-35",
+      "ok": true
+    },
+    {
+      "id": "email-36",
+      "ok": true
+    },
+    {
+      "id": "email-37",
+      "ok": true
+    },
+    {
+      "id": "email-38",
+      "ok": true
+    },
+    {
+      "id": "email-39",
+      "ok": true
+    },
+    {
+      "id": "email-40",
+      "ok": true
+    },
+    {
+      "id": "email-41",
+      "ok": true
+    },
+    {
+      "id": "email-42",
+      "ok": true
+    },
+    {
+      "id": "email-43",
+      "ok": true
+    },
+    {
+      "id": "email-44",
+      "ok": true
+    },
+    {
+      "id": "email-45",
+      "ok": true
+    },
+    {
+      "id": "email-46",
+      "ok": true
+    },
+    {
+      "id": "email-47",
+      "ok": true
+    },
+    {
+      "id": "email-48",
+      "ok": true
+    },
+    {
+      "id": "email-49",
+      "ok": true
+    },
+    {
+      "id": "email-50",
+      "ok": true
+    },
+    {
+      "id": "email-51",
+      "ok": true
+    },
+    {
+      "id": "email-52",
+      "ok": true
+    },
+    {
+      "id": "email-53",
+      "ok": true
+    },
+    {
+      "id": "email-54",
+      "ok": true
+    },
+    {
+      "id": "email-55",
+      "ok": true
+    },
+    {
+      "id": "email-56",
+      "ok": true
+    },
+    {
+      "id": "email-57",
+      "ok": true
+    },
+    {
+      "id": "email-58",
+      "ok": true
+    },
+    {
+      "id": "email-59",
+      "ok": true
+    },
+    {
+      "id": "email-60",
+      "ok": true
+    },
+    {
+      "id": "email-61",
+      "ok": true
+    },
+    {
+      "id": "email-62",
+      "ok": true
+    },
+    {
+      "id": "email-63",
+      "ok": true
+    },
+    {
+      "id": "email-64",
+      "ok": true
+    },
+    {
+      "id": "email-65",
+      "ok": true
+    },
+    {
+      "id": "email-66",
+      "ok": true
+    },
+    {
+      "id": "email-67",
+      "ok": true
+    },
+    {
+      "id": "email-68",
+      "ok": true
+    },
+    {
+      "id": "email-69",
+      "ok": true
+    },
+    {
+      "id": "email-70",
+      "ok": true
+    },
+    {
+      "id": "email-71",
+      "ok": true
+    },
+    {
+      "id": "email-72",
+      "ok": true
+    },
+    {
+      "id": "email-73",
+      "ok": true
+    },
+    {
+      "id": "email-74",
+      "ok": true
+    },
+    {
+      "id": "email-75",
+      "ok": true
+    },
+    {
+      "id": "email-76",
+      "ok": true
+    },
+    {
+      "id": "email-77",
+      "ok": true
+    },
+    {
+      "id": "email-78",
+      "ok": true
+    },
+    {
+      "id": "email-79",
+      "ok": true
+    },
+    {
+      "id": "email-80",
+      "ok": true
+    },
+    {
+      "id": "email-81",
+      "ok": true
+    },
+    {
+      "id": "email-82",
+      "ok": true
+    },
+    {
+      "id": "email-83",
+      "ok": true
+    },
+    {
+      "id": "email-84",
+      "ok": true
+    },
+    {
+      "id": "email-85",
+      "ok": true
+    },
+    {
+      "id": "email-86",
+      "ok": true
+    },
+    {
+      "id": "email-87",
+      "ok": true
+    },
+    {
+      "id": "email-88",
+      "ok": true
+    },
+    {
+      "id": "email-89",
+      "ok": true
+    },
+    {
+      "id": "email-90",
+      "ok": true
+    },
+    {
+      "id": "email-91",
+      "ok": true
+    },
+    {
+      "id": "email-92",
+      "ok": true
+    },
+    {
+      "id": "email-93",
+      "ok": true
+    },
+    {
+      "id": "email-94",
+      "ok": true
+    },
+    {
+      "id": "email-95",
+      "ok": true
+    },
+    {
+      "id": "email-96",
+      "ok": true
+    },
+    {
+      "id": "email-97",
+      "ok": true
+    },
+    {
+      "id": "email-98",
+      "ok": true
+    },
+    {
+      "id": "email-99",
+      "ok": true
+    },
+    {
+      "id": "email-100",
+      "ok": true
+    },
+    {
+      "id": "email-101",
+      "ok": true
+    },
+    {
+      "id": "email-102",
+      "ok": true
+    },
+    {
+      "id": "email-103",
+      "ok": true
+    },
+    {
+      "id": "email-104",
+      "ok": true
+    },
+    {
+      "id": "email-105",
+      "ok": true
+    },
+    {
+      "id": "email-106",
+      "ok": true
+    },
+    {
+      "id": "email-107",
+      "ok": true
+    },
+    {
+      "id": "email-108",
+      "ok": true
+    },
+    {
+      "id": "email-109",
+      "ok": true
+    },
+    {
+      "id": "email-110",
+      "ok": true
+    },
+    {
+      "id": "email-111",
+      "ok": true
+    },
+    {
+      "id": "email-112",
+      "ok": true
+    },
+    {
+      "id": "email-113",
+      "ok": true
+    },
+    {
+      "id": "email-114",
+      "ok": true
+    },
+    {
+      "id": "email-115",
+      "ok": true
+    },
+    {
+      "id": "email-116",
+      "ok": true
+    },
+    {
+      "id": "email-117",
+      "ok": true
+    },
+    {
+      "id": "email-118",
+      "ok": true
+    },
+    {
+      "id": "email-119",
+      "ok": true
+    },
+    {
+      "id": "email-120",
+      "ok": true
+    },
+    {
+      "id": "email-121",
+      "ok": true
+    },
+    {
+      "id": "email-122",
+      "ok": true
+    },
+    {
+      "id": "email-123",
+      "ok": true
+    },
+    {
+      "id": "email-124",
+      "ok": true
+    },
+    {
+      "id": "email-125",
+      "ok": true
+    },
+    {
+      "id": "email-126",
+      "ok": true
+    },
+    {
+      "id": "email-127",
+      "ok": true
+    },
+    {
+      "id": "email-128",
+      "ok": true
+    },
+    {
+      "id": "email-129",
+      "ok": true
+    },
+    {
+      "id": "email-130",
+      "ok": true
+    },
+    {
+      "id": "email-131",
+      "ok": true
+    },
+    {
+      "id": "email-132",
+      "ok": true
+    },
+    {
+      "id": "email-133",
+      "ok": true
+    },
+    {
+      "id": "email-134",
+      "ok": true
+    },
+    {
+      "id": "email-135",
+      "ok": true
+    },
+    {
+      "id": "email-136",
+      "ok": true
+    },
+    {
+      "id": "email-137",
+      "ok": true
+    },
+    {
+      "id": "email-138",
+      "ok": true
+    },
+    {
+      "id": "email-139",
+      "ok": true
+    },
+    {
+      "id": "email-140",
+      "ok": true
+    },
+    {
+      "id": "email-141",
+      "ok": true
+    },
+    {
+      "id": "email-142",
+      "ok": true
+    },
+    {
+      "id": "email-143",
+      "ok": true
+    },
+    {
+      "id": "email-144",
+      "ok": true
+    },
+    {
+      "id": "email-145",
+      "ok": true
+    },
+    {
+      "id": "email-146",
+      "ok": true
+    },
+    {
+      "id": "email-147",
+      "ok": true
+    },
+    {
+      "id": "email-148",
+      "ok": true
+    },
+    {
+      "id": "email-149",
+      "ok": true
+    },
+    {
+      "id": "email-150",
+      "ok": true
+    },
+    {
+      "id": "email-151",
+      "ok": true
+    },
+    {
+      "id": "email-152",
+      "ok": true
+    },
+    {
+      "id": "email-153",
+      "ok": true
+    },
+    {
+      "id": "email-154",
+      "ok": true
+    },
+    {
+      "id": "email-155",
+      "ok": true
+    },
+    {
+      "id": "email-156",
+      "ok": true
+    },
+    {
+      "id": "email-157",
+      "ok": true
+    },
+    {
+      "id": "email-158",
+      "ok": true
+    },
+    {
+      "id": "email-159",
+      "ok": true
+    },
+    {
+      "id": "email-160",
+      "ok": true
+    },
+    {
+      "id": "email-161",
+      "ok": true
+    },
+    {
+      "id": "email-162",
+      "ok": true
+    },
+    {
+      "id": "email-163",
+      "ok": true
+    },
+    {
+      "id": "email-164",
+      "ok": true
+    },
+    {
+      "id": "email-165",
+      "ok": true
+    },
+    {
+      "id": "email-166",
+      "ok": true
+    },
+    {
+      "id": "email-167",
+      "ok": true
+    },
+    {
+      "id": "email-168",
+      "ok": true
+    },
+    {
+      "id": "email-169",
+      "ok": true
+    },
+    {
+      "id": "email-170",
+      "ok": true
+    },
+    {
+      "id": "email-171",
+      "ok": true
+    },
+    {
+      "id": "email-172",
+      "ok": true
+    },
+    {
+      "id": "email-173",
+      "ok": true
+    },
+    {
+      "id": "email-174",
+      "ok": true
+    },
+    {
+      "id": "email-175",
+      "ok": true
+    },
+    {
+      "id": "email-176",
+      "ok": true
+    },
+    {
+      "id": "email-177",
+      "ok": true
+    },
+    {
+      "id": "email-178",
+      "ok": true
+    },
+    {
+      "id": "email-179",
+      "ok": true
+    },
+    {
+      "id": "email-180",
+      "ok": true
+    },
+    {
+      "id": "email-181",
+      "ok": true
+    },
+    {
+      "id": "email-182",
+      "ok": true
+    },
+    {
+      "id": "email-183",
+      "ok": true
+    },
+    {
+      "id": "email-184",
+      "ok": true
+    },
+    {
+      "id": "email-185",
+      "ok": true
+    },
+    {
+      "id": "email-186",
+      "ok": true
+    },
+    {
+      "id": "email-187",
+      "ok": true
+    },
+    {
+      "id": "email-188",
+      "ok": true
+    },
+    {
+      "id": "email-189",
+      "ok": true
+    },
+    {
+      "id": "email-190",
+      "ok": true
+    },
+    {
+      "id": "email-191",
+      "ok": true
+    },
+    {
+      "id": "email-192",
+      "ok": true
+    },
+    {
+      "id": "email-193",
+      "ok": true
+    },
+    {
+      "id": "email-194",
+      "ok": true
+    },
+    {
+      "id": "email-195",
+      "ok": true
+    },
+    {
+      "id": "email-196",
+      "ok": true
+    },
+    {
+      "id": "email-197",
+      "ok": true
+    },
+    {
+      "id": "email-198",
+      "ok": true
+    },
+    {
+      "id": "email-199",
+      "ok": true
+    },
+    {
+      "id": "email-200",
+      "ok": true
+    },
+    {
+      "id": "email-201",
+      "ok": true
+    },
+    {
+      "id": "email-202",
+      "ok": true
+    },
+    {
+      "id": "email-203",
+      "ok": true
+    },
+    {
+      "id": "email-204",
+      "ok": true
+    },
+    {
+      "id": "email-205",
+      "ok": true
+    },
+    {
+      "id": "email-206",
+      "ok": true
+    },
+    {
+      "id": "email-207",
+      "ok": true
+    },
+    {
+      "id": "email-208",
+      "ok": true
+    },
+    {
+      "id": "email-209",
+      "ok": true
+    },
+    {
+      "id": "email-210",
+      "ok": true
+    },
+    {
+      "id": "email-211",
+      "ok": true
+    },
+    {
+      "id": "email-212",
+      "ok": true
+    },
+    {
+      "id": "email-213",
+      "ok": true
+    },
+    {
+      "id": "email-214",
+      "ok": true
+    },
+    {
+      "id": "email-215",
+      "ok": true
+    },
+    {
+      "id": "email-216",
+      "ok": true
+    },
+    {
+      "id": "email-217",
+      "ok": true
+    },
+    {
+      "id": "email-218",
+      "ok": true
+    },
+    {
+      "id": "email-219",
+      "ok": true
+    },
+    {
+      "id": "email-220",
+      "ok": true
+    },
+    {
+      "id": "email-221",
+      "ok": true
+    },
+    {
+      "id": "email-222",
+      "ok": true
+    },
+    {
+      "id": "email-223",
+      "ok": true
+    },
+    {
+      "id": "email-224",
+      "ok": true
+    },
+    {
+      "id": "email-225",
+      "ok": true
+    },
+    {
+      "id": "email-226",
+      "ok": true
+    },
+    {
+      "id": "email-227",
+      "ok": true
+    },
+    {
+      "id": "email-228",
+      "ok": true
+    },
+    {
+      "id": "email-229",
+      "ok": true
+    },
+    {
+      "id": "email-230",
+      "ok": true
+    },
+    {
+      "id": "email-231",
+      "ok": true
+    },
+    {
+      "id": "email-232",
+      "ok": true
+    },
+    {
+      "id": "email-233",
+      "ok": true
+    },
+    {
+      "id": "email-234",
+      "ok": true
+    },
+    {
+      "id": "email-235",
+      "ok": true
+    },
+    {
+      "id": "email-236",
+      "ok": true
+    },
+    {
+      "id": "email-237",
+      "ok": true
+    },
+    {
+      "id": "email-238",
+      "ok": true
+    },
+    {
+      "id": "email-239",
+      "ok": true
+    },
+    {
+      "id": "email-240",
+      "ok": true
+    },
+    {
+      "id": "email-241",
+      "ok": true
+    },
+    {
+      "id": "email-242",
+      "ok": true
+    },
+    {
+      "id": "email-243",
+      "ok": true
+    },
+    {
+      "id": "email-244",
+      "ok": true
+    },
+    {
+      "id": "email-245",
+      "ok": true
+    },
+    {
+      "id": "email-246",
+      "ok": true
+    },
+    {
+      "id": "email-247",
+      "ok": true
+    },
+    {
+      "id": "email-248",
+      "ok": true
+    },
+    {
+      "id": "email-249",
+      "ok": true
+    },
+    {
+      "id": "email-250",
+      "ok": true
+    },
+    {
+      "id": "email-251",
+      "ok": true
+    },
+    {
+      "id": "email-252",
+      "ok": true
+    },
+    {
+      "id": "email-253",
+      "ok": true
+    },
+    {
+      "id": "email-254",
+      "ok": true
+    },
+    {
+      "id": "email-255",
+      "ok": true
+    },
+    {
+      "id": "email-256",
+      "ok": true
+    },
+    {
+      "id": "challenge",
+      "next": "challenge",
+      "ok": true
+    },
+    {
+      "id": "wal-challenge",
+      "next": "challenge",
+      "ok": true
+    },
+    {
+      "id": "enrollment",
+      "next": "enrollment",
+      "ok": true
+    },
+    {
+      "id": "nullable-enrollment",
+      "next": "enrollment",
+      "ok": true
+    },
+    {
+      "id": "wrong-password",
+      "code": "invalid_credentials",
+      "message": "credential verification refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "missing-user",
+      "code": "invalid_credentials",
+      "message": "credential verification refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "missing-account",
+      "code": "invalid_credentials",
+      "message": "credential verification refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "null-password",
+      "code": "invalid_credentials",
+      "message": "credential verification refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "malformed-hash",
+      "code": "invalid_credentials",
+      "message": "credential verification refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "provider-mismatch",
+      "code": "invalid_credentials",
+      "message": "credential verification refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "issuer-mismatch",
+      "code": "invalid_credentials",
+      "message": "credential verification refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "account-id-mismatch",
+      "code": "invalid_credentials",
+      "message": "credential verification refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "email-not-verified",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "invalid-email-flag",
+      "code": "invalid_control",
+      "message": "current credential facts refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "invalid-mfa-flag",
+      "code": "invalid_control",
+      "message": "current credential facts refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "disabled",
+      "code": "invalid_credentials",
+      "message": "credential verification refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "absent-access",
+      "code": "invalid_credentials",
+      "message": "credential verification refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "callback-failure",
+      "code": "transaction_refused",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "newer-schema",
+      "code": "invalid_control",
+      "message": "current credential facts refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "weak-connection",
+      "code": "connection_refused",
+      "message": "credential connection refused",
+      "ok": false,
+      "reusable": false,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "attached-connection",
+      "code": "connection_refused",
+      "message": "credential connection refused",
+      "ok": false,
+      "reusable": false,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "temp-schema",
+      "code": "connection_refused",
+      "message": "credential connection refused",
+      "ok": false,
+      "reusable": false,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "active-transaction",
+      "code": "connection_refused",
+      "message": "credential connection refused",
+      "ok": false,
+      "reusable": false,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "oversize-password",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "control-email",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "invalid-input-unready",
+      "code": "connection_refused",
+      "message": "credential connection refused",
+      "ok": false,
+      "reusable": false,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "oversize-input-unready",
+      "code": "connection_refused",
+      "message": "credential connection refused",
+      "ok": false,
+      "reusable": false,
+      "stage": "NotCommitted"
+    },
+    {
+      "id": "wal-password-reset",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "wal-credential-replacement",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "wal-credential-retarget",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "wal-email-change",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "wal-email-verification-change",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "wal-mfa-change",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "wal-revoke",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "wal-revoke-reactivate",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "wal-user-update",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "wal-account-update",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "wal-locked-revoke",
+      "ok": true,
+      "blockedUntilCommit": true
+    },
+    {
+      "id": "delete-password-reset",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "delete-credential-replacement",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "delete-credential-retarget",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "delete-email-change",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "delete-email-verification-change",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "delete-mfa-change",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "delete-revoke",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "delete-revoke-reactivate",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "delete-user-update",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "delete-account-update",
+      "code": "invalid_credentials",
+      "message": "credential continuation refused",
+      "ok": false,
+      "reusable": true,
+      "stage": "NotCommitted",
+      "competingChangeCommittedWhileUnlocked": true
+    },
+    {
+      "id": "delete-locked-revoke",
+      "ok": true,
+      "blockedUntilCommit": true
+    },
+    {
+      "id": "commit-busy",
+      "code": "commit_outcome_unknown",
+      "message": "credential continuation commit unconfirmed",
+      "ok": false,
+      "reusable": false,
+      "stage": "OutcomeUnknown",
+      "syntheticEffectAbsentAfterFailure": true
+    },
+    {
+      "id": "writer-busy",
+      "code": "control_busy_or_unavailable",
+      "message": "credential transaction unavailable",
+      "ok": false,
+      "reusable": false,
+      "stage": "NotCommitted"
+    }
+  ],
+  "limits": [
+    "Internal admitted caller-owned handle only; physical admission and endpoint lifecycle remain pending",
+    "No actual challenge/session/MFA completion or company authority",
+    "Commit busy is exercised; commit IO failure injection and uncooperative namespace swaps are not qualified"
+  ]
+}
+{
+  "ok": true,
+  "scope": "Native source-compatible MFA cryptography only; no current identity/challenge/session or replay authority",
+  "checks": 310,
+  "libsodiumFixtureVersion": "1.0.22",
+  "observations": [
+    {
+      "id": "actual-configured-framework-keyring",
+      "ok": true
+    },
+    {
+      "id": "libsodium-0",
+      "ok": true,
+      "independentLibsodium": true
+    },
+    {
+      "id": "libsodium-1",
+      "ok": true,
+      "independentLibsodium": true
+    },
+    {
+      "id": "libsodium-2",
+      "ok": true,
+      "independentLibsodium": true
+    },
+    {
+      "id": "libsodium-3",
+      "ok": true,
+      "independentLibsodium": true
+    },
+    {
+      "id": "libsodium-4",
+      "ok": true,
+      "independentLibsodium": true
+    },
+    {
+      "id": "libsodium-5",
+      "ok": true,
+      "independentLibsodium": true
+    },
+    {
+      "id": "libsodium-6",
+      "ok": true,
+      "independentLibsodium": true
+    },
+    {
+      "id": "libsodium-7",
+      "ok": true,
+      "independentLibsodium": true
+    },
+    {
+      "id": "libsodium-8",
+      "ok": true,
+      "nativeCorrection": "strict-authenticated-UTF8"
+    },
+    {
+      "id": "native-issue-0",
+      "ok": true,
+      "activeVersion": 8
+    },
+    {
+      "id": "source-issue-0",
+      "ok": true
+    },
+    {
+      "id": "native-issue-1",
+      "ok": true,
+      "activeVersion": 8
+    },
+    {
+      "id": "source-issue-1",
+      "ok": true
+    },
+    {
+      "id": "native-issue-2",
+      "ok": true,
+      "activeVersion": 8
+    },
+    {
+      "id": "source-issue-2",
+      "ok": true
+    },
+    {
+      "id": "native-issue-3",
+      "ok": true,
+      "activeVersion": 8
+    },
+    {
+      "id": "source-issue-3",
+      "ok": true
+    },
+    {
+      "id": "native-issue-4",
+      "ok": true,
+      "activeVersion": 8
+    },
+    {
+      "id": "source-issue-4",
+      "ok": true
+    },
+    {
+      "id": "native-issue-5",
+      "ok": true,
+      "activeVersion": 8
+    },
+    {
+      "id": "source-issue-5",
+      "ok": true
+    },
+    {
+      "id": "native-issue-6",
+      "ok": true,
+      "activeVersion": 8
+    },
+    {
+      "id": "source-issue-6",
+      "ok": true
+    },
+    {
+      "id": "native-issue-7",
+      "ok": true,
+      "activeVersion": 8
+    },
+    {
+      "id": "source-issue-7",
+      "ok": true
+    },
+    {
+      "id": "historical-version-decryption",
+      "ok": true
+    },
+    {
+      "id": "explicit-legacy-decryption",
+      "ok": true
+    },
+    {
+      "id": "legacy-not-inferred",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "retired-version",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "unknown-version",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "wrong-key-material",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "source-header-not-authenticated",
+      "ok": true,
+      "noHeaderOwnershipClaim": true
+    },
+    {
+      "id": "version-correction-07",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "version-correction-+7",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "version-correction-7suffix",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "version-correction-7.0",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "version-correction-7e0",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "version-correction-7",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "uppercase-hex-correction",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-0",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-1",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-2",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-3",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-4",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-5",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-6",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "malformed-7",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "configuration-0",
+      "ok": true,
+      "code": "invalid_auth_config"
+    },
+    {
+      "id": "configuration-1",
+      "ok": true,
+      "code": "invalid_auth_config"
+    },
+    {
+      "id": "configuration-2",
+      "ok": true,
+      "code": "invalid_auth_config"
+    },
+    {
+      "id": "configuration-3",
+      "ok": true,
+      "code": "invalid_auth_config"
+    },
+    {
+      "id": "configuration-4",
+      "ok": true,
+      "code": "invalid_auth_config"
+    },
+    {
+      "id": "configuration-5",
+      "ok": true,
+      "code": "invalid_auth_config"
+    },
+    {
+      "id": "configuration-6",
+      "ok": true,
+      "code": "invalid_auth_config"
+    },
+    {
+      "id": "invalid-explicit-legacy",
+      "ok": true,
+      "code": "invalid_auth_config"
+    },
+    {
+      "id": "plaintext-budget",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "fresh-OS-nonce",
+      "ok": true,
+      "samples": 20
+    },
+    {
+      "id": "fresh-OS-enrollment-secret",
+      "ok": true,
+      "samples": 20
+    },
+    {
+      "id": "corrupt-byte-0",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-1",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-2",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-3",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-4",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-5",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-6",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-7",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-8",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-9",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-10",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-11",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-12",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-13",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-14",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-15",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-16",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-17",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-18",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-19",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-20",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-21",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-22",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-23",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-24",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-25",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-26",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-27",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-28",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-29",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-30",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-31",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-32",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-33",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-34",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-35",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-36",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-37",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-38",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-39",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-40",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-41",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-42",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-43",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-44",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-45",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-46",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-47",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-48",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-49",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-50",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-51",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-52",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-53",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-54",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-55",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-56",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-57",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-58",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "corrupt-byte-59",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "rfc4226-0",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-1",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-2",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-3",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-4",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-5",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-6",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-7",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-8",
+      "ok": true
+    },
+    {
+      "id": "rfc4226-9",
+      "ok": true
+    },
+    {
+      "id": "rfc6238-0",
+      "ok": true
+    },
+    {
+      "id": "rfc6238-1",
+      "ok": true
+    },
+    {
+      "id": "rfc6238-2",
+      "ok": true
+    },
+    {
+      "id": "rfc6238-3",
+      "ok": true
+    },
+    {
+      "id": "rfc6238-4",
+      "ok": true
+    },
+    {
+      "id": "rfc6238-5",
+      "ok": true
+    },
+    {
+      "id": "otp-0-0-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-0-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-0-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-0-1-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-1-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-1-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-0-29999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-29999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-29999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-0-30000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-30000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-30000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-30000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-0-30001--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-30001-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-30001-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-30001-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-0-1767225600000--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-0-1767225600000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-1767225600000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-1767225600000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-1767225600000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-0-253402300799999--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-0-253402300799999--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-253402300799999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-253402300799999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-0-253402300799999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-0-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-0-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-0-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-1-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-1-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-1-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-29999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-29999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-29999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-30000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-30000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-30000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-30000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-30001--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-30001-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-30001-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-30001-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-1767225600000--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-1767225600000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-1767225600000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-1767225600000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-1767225600000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-253402300799999--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-1-253402300799999--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-253402300799999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-253402300799999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-1-253402300799999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-0-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-0-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-0-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-1-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-1-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-1-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-29999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-29999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-29999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-30000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-30000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-30000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-30000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-30001--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-30001-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-30001-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-30001-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-1767225600000--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-1767225600000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-1767225600000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-1767225600000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-1767225600000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-253402300799999--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-2-253402300799999--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-253402300799999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-253402300799999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-2-253402300799999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-0-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-0-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-0-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-1-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-1-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-1-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-29999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-29999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-29999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-30000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-30000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-30000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-30000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-30001--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-30001-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-30001-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-30001-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-1767225600000--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-1767225600000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-1767225600000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-1767225600000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-1767225600000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-253402300799999--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-3-253402300799999--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-253402300799999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-253402300799999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-3-253402300799999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-0-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-0-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-0-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-1-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-1-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-1-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-29999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-29999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-29999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-30000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-30000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-30000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-30000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-30001--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-30001-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-30001-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-30001-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-1767225600000--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-1767225600000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-1767225600000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-1767225600000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-1767225600000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-253402300799999--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-4-253402300799999--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-253402300799999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-253402300799999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-4-253402300799999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-0-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-0-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-0-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-1-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-1-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-1-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-29999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-29999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-29999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-30000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-30000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-30000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-30000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-30001--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-30001-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-30001-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-30001-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-1767225600000--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-1767225600000--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-1767225600000-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-1767225600000-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-1767225600000-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-253402300799999--2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "otp-5-253402300799999--1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-253402300799999-0",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-253402300799999-1",
+      "ok": true,
+      "accepted": true
+    },
+    {
+      "id": "otp-5-253402300799999-2",
+      "ok": true,
+      "accepted": false
+    },
+    {
+      "id": "epoch-negative-neighbor-correction",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-code-grammar-0",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-code-grammar-1",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-code-grammar-2",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-code-grammar-3",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-code-grammar-4",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-code-grammar-5",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-code-grammar-6",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-secret-budget-0",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "otp-secret-budget-1025",
+      "ok": true,
+      "code": "invalid_credentials"
+    },
+    {
+      "id": "clock--1",
+      "ok": true,
+      "code": "invalid_auth_clock"
+    },
+    {
+      "id": "clock-253402300800000",
+      "ok": true,
+      "code": "invalid_auth_clock"
+    },
+    {
+      "id": "unavailable-trusted-clock",
+      "ok": true,
+      "code": "invalid_auth_clock"
+    }
+  ],
+  "limits": [
+    "No DB/MFA/session/HTTP lifecycle, challenge consumption/attempt/lockout/replay policy or actual handle admission",
+    "Existing empty-AAD envelope does not bind header/workspace/user/purpose; exact current-row identity remains mandatory",
+    "Strict version/hex/UTF8/epoch and fixed budgets correct explicit source permissiveness",
+    "OS failure injection and other hardware/platform qualification remain pending"
+  ]
+}
+{
+  "ok": true,
+  "scope": "synthetic current-schema read-only Rust trial-balance parity",
+  "checks": 34,
+  "passed": [
+    "full-schema WAL differential, source unchanged: 2026-01-01/2026-01-31",
+    "full-schema WAL differential, source unchanged: 2026-01-01/2026-02-28",
+    "full-schema WAL differential, source unchanged: 2026-02-01/2026-02-01",
+    "full-schema WAL differential, source unchanged: 2026-03-01/2026-03-01",
+    "full-schema WAL differential, source unchanged: 0000-01-01/9999-12-31",
+    "independent line rounding, inclusive period, UTF-16 order and counts",
+    "independent reversal and cross-period totals",
+    "explicit company isolation on two synthetic ledgers",
+    "comparison negative controls reject wrong amount and missing rows",
+    "repeat deterministic read",
+    "usage refuses without writes: 2026-02-30 ",
+    "usage refuses without writes: 2026-12-31 ",
+    "usage refuses without writes:  2026-01-01 ",
+    "usage refuses without writes: 2026-01-01 --company /var/folders/hh/znsnvw8s1p31zr7fywf_cgfc0000gn/T/rentemester-rust-parity-ealKPy/1-beta",
+    "usage refuses without writes: 2026-01-01 --unknown x",
+    "missing company refused without implicit creation",
+    "symlink company denied",
+    "trailing slash/dot cannot bypass symlink refusal",
+    "data-directory escape denied",
+    "fail closed, unchanged source: newer",
+    "fail closed, unchanged source: pending",
+    "fail closed, unchanged source: checksum",
+    "fail closed, unchanged source: gap",
+    "fail closed, unchanged source: foreign-key",
+    "fail closed, unchanged source: invalid-type",
+    "fail closed, unchanged source: unsafe-integer",
+    "fail closed, unchanged source: unsafe-entry-id",
+    "fail closed, unchanged source: infinity",
+    "fail closed, unchanged source: malformed-amount",
+    "fail closed, unchanged source: symlink-db",
+    "fail closed, unchanged source: symlink-wal",
+    "fail closed, unchanged source: corrupt-db",
+    "independent copied-snapshot recovery leaves original unchanged",
+    "actual concurrent filesystem/WAL capture yields coherent committed report or bounded refusal"
+  ],
+  "limitations": [
+    "No hosted authorization, full audit health, mutation, production migration or qualified Windows storage claimed."
+  ]
+}
+{
+  "format": "rentemester-trial-balance-wire-baseline/1",
+  "ok": true,
+  "head": "ed5daaee4ff96a986ad6805ca65f8c6b7c5e760c",
+  "sources": [
+    {
+      "path": "scripts/rust/verify-report-contracts.ts",
+      "sha256": "2d1a7f6615e738845a11c3d9d88d50533cb942886da1e3a0448c0666bd9e042f"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "e0c7cd2895bb4995c97741bcf6dbf4fa726cc4db3c418557dbcbe3bea0b98194"
+    },
+    {
+      "path": "src/cli.ts",
+      "sha256": "1854563e219ba7d75be3af9c97e4872ea081de67447ebb8154f6bfb2ccb2aba0"
+    },
+    {
+      "path": "src/cli/report.ts",
+      "sha256": "2e864ca3ea6d726c9f7bab4fac5cd65fcffddc5b5410fba023d4f859b946d924"
+    },
+    {
+      "path": "src/cli-format/report.ts",
+      "sha256": "50630c4b128c42d1ef10b3ecdec5c763ef306acdc9b43148c3de2085927784f9"
+    },
+    {
+      "path": "src/cli-format/common.ts",
+      "sha256": "6a86e8ba3ed0236b8f70dded6ebb9c1eb32e64ffc9f7e315bf6d5336c87fad05"
+    },
+    {
+      "path": "src/core/company.ts",
+      "sha256": "3179bc6511c6790ed4b86db926b40da78f85d977ff329f802693c3832416a63e"
+    },
+    {
+      "path": "src/core/workspace.ts",
+      "sha256": "27a25248191fb63a918dc13250a2cab000c805f67b8c3f394e391c46c44f183f"
+    },
+    {
+      "path": "src/core/db.ts",
+      "sha256": "6410241aaf4427fe30ddc1c4ff4888c544a0859f4a249b17e10f8f8b7be1083f"
+    },
+    {
+      "path": "src/core/financial-statements.ts",
+      "sha256": "510ff01e7f0de2fdbe85533a22dcdc7b0ef9e6efc5a29512fbd0785a68f79d69"
+    },
+    {
+      "path": "src/core/dates.ts",
+      "sha256": "77fea21b9b2b3b1f2ebf55b9a092fc6e1cb133780635c710dff1a01f01fe0e2e"
+    },
+    {
+      "path": "src/core/money.ts",
+      "sha256": "e013c3ca23bb2391105aa2f1e2f307dcdaaf85bec60159e5d63b39aa7e7c3bf8"
+    },
+    {
+      "path": "src/server/router.ts",
+      "sha256": "e1f20be917fccd193f8423eecd5abbf9f3c37e4f81b9639d96abc9ee780ded54"
+    },
+    {
+      "path": "src/server/router/statements.ts",
+      "sha256": "c03cfae84184ffac2b19afd53595fcbb066c936ca2506eaf8463ed06e611231b"
+    },
+    {
+      "path": "src/server/router/_shared.ts",
+      "sha256": "55854ead4f8424ca091a4e24b614c66e56baf2f5115c899cdc24b4c9b2d6e458"
+    },
+    {
+      "path": "src/server/errors.ts",
+      "sha256": "786ed38c51044a35a7fe6a869de45990f40caeee2f4d08c25928bb4e005ca6e3"
+    },
+    {
+      "path": "src/server/data/shared.ts",
+      "sha256": "46bdf0db1fe95682163889195ea6607a72be1923e8366e5241c668d8853e3896"
+    },
+    {
+      "path": "src/server/data/statements/trial-balance.ts",
+      "sha256": "c7f6fee131e1fd12a693c73981e487c3aae87a298639ac8554acac1bbcca99cb"
+    },
+    {
+      "path": "src/server/data/statement-exports.ts",
+      "sha256": "a6dfd20423384f51ac5ce525723654bc4b6abbc658ae4dde530bb86b60abe4e6"
+    },
+    {
+      "path": "src/server/data/statement-pdf.ts",
+      "sha256": "c7692dbe886aceaf4d8471e5d74f9daad0826683a4a3c8ffe04878aa40a5b6b3"
+    },
+    {
+      "path": "src/mcp/registry.ts",
+      "sha256": "98e898529c433a6f688719e13c981675d5267ebc88c6389b911e0012b8e51e11"
+    },
+    {
+      "path": "docs/mcp-tool-surface.md",
+      "sha256": "214baad68051e5d4db7d6e6167162355255e12be8f712abb8cb97eeee45f2c78"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "ae4b734fb1f8e30ef2c8421b34996ccdd0985bf801e8f52527c1e70f8137d059"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "a64e7d6dd68285c4d115bedc3c57712136ca5df80f8ff3563e7818e646cdd92d"
+    },
+    {
+      "path": "crates/rentemester-engine/src/trial_balance.rs",
+      "sha256": "df86b92996f22cc6d635b668d123445c7000c376e50569f818416c56498d13fb"
+    },
+    {
+      "path": "crates/rentemester-engine/src/money.rs",
+      "sha256": "5d69282ed77ea59f98a9af6bf492427f8f3d478f654712cbfb3b36222fdd661f"
+    },
+    {
+      "path": "crates/rentemester-storage/src/lib.rs",
+      "sha256": "684f60ba6d3937a36d61f46bc7f50f75f22737f0492dfff5444c082be954566d"
+    },
+    {
+      "path": "crates/rentemester-storage/src/snapshot.rs",
+      "sha256": "3c4cb8708c439c059b87c2692b26c62d927af4447080d808dea89c989e403c28"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-schema.json",
+      "sha256": "b424cec385abad3f313ca633a291f8cf3f07d5cbece16523cd8fa0674cf729c7"
+    }
+  ],
+  "schemas": {
+    "legacyCli": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "accounts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "accountNo": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "asset",
+                  "liability",
+                  "equity",
+                  "income",
+                  "expense",
+                  "vat"
+                ]
+              },
+              "debit": {
+                "type": "number"
+              },
+              "credit": {
+                "type": "number"
+              },
+              "balance": {
+                "type": "number"
+              },
+              "normalBalance": {
+                "type": "string",
+                "enum": [
+                  "debit",
+                  "credit"
+                ]
+              }
+            },
+            "required": [
+              "accountNo",
+              "name",
+              "type",
+              "debit",
+              "credit",
+              "balance",
+              "normalBalance"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "totalDebit": {
+          "type": "number"
+        },
+        "totalCredit": {
+          "type": "number"
+        },
+        "balanced": {
+          "type": "boolean"
+        },
+        "linesConsidered": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "journalEntryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "periodStart",
+        "periodEnd",
+        "accounts",
+        "totalDebit",
+        "totalCredit",
+        "balanced",
+        "linesConsidered",
+        "journalEntryCount",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "legacyHttp": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "const": true
+        },
+        "trialBalance": {
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string"
+            },
+            "selectedYear": {
+              "type": "string"
+            },
+            "archived": {
+              "type": "boolean"
+            },
+            "archivedSource": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "company": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "cvr": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "country": {
+                  "type": "string"
+                },
+                "currency": {
+                  "type": "string"
+                },
+                "fiscalYearStartMonth": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "fiscalYearLabelStrategy": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "cvr",
+                "country",
+                "currency",
+                "fiscalYearStartMonth",
+                "fiscalYearLabelStrategy"
+              ],
+              "additionalProperties": false
+            },
+            "fiscalYears": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "start": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "end": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "live",
+                      "archive"
+                    ]
+                  }
+                },
+                "required": [
+                  "label",
+                  "start",
+                  "end",
+                  "source"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "periodStart": {
+              "type": "string"
+            },
+            "periodEnd": {
+              "type": "string"
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "accountNo": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "asset",
+                          "liability",
+                          "equity",
+                          "income",
+                          "expense",
+                          "vat"
+                        ]
+                      },
+                      {
+                        "type": "string",
+                        "const": ""
+                      }
+                    ]
+                  },
+                  "debit": {
+                    "type": "number"
+                  },
+                  "credit": {
+                    "type": "number"
+                  },
+                  "balance": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "accountNo",
+                  "name",
+                  "type",
+                  "debit",
+                  "credit",
+                  "balance"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "totalDebit": {
+              "type": "number"
+            },
+            "totalCredit": {
+              "type": "number"
+            },
+            "balanced": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "slug",
+            "selectedYear",
+            "archived",
+            "archivedSource",
+            "company",
+            "fiscalYears",
+            "periodStart",
+            "periodEnd",
+            "rows",
+            "totalDebit",
+            "totalCredit",
+            "balanced"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "trialBalance"
+      ],
+      "additionalProperties": false
+    },
+    "legacyHttpError": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "const": false
+        },
+        "errors": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string",
+          "enum": [
+            "bad_request",
+            "not_found",
+            "conflict",
+            "unauthorized",
+            "method_not_allowed",
+            "internal"
+          ]
+        },
+        "subcode": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "rustCli": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "const": true
+        },
+        "format": {
+          "type": "string",
+          "const": "rentemester-trial-balance/1"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "periodStart": {
+              "type": "string"
+            },
+            "periodEnd": {
+              "type": "string"
+            },
+            "accounts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "accountNo": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "asset",
+                      "liability",
+                      "equity",
+                      "income",
+                      "expense",
+                      "vat"
+                    ]
+                  },
+                  "debit": {
+                    "type": "string",
+                    "pattern": "^(?!-0\\.00$)-?(0|[1-9]\\d*)\\.\\d{2}$"
+                  },
+                  "credit": {
+                    "type": "string",
+                    "pattern": "^(?!-0\\.00$)-?(0|[1-9]\\d*)\\.\\d{2}$"
+                  },
+                  "balance": {
+                    "type": "string",
+                    "pattern": "^(?!-0\\.00$)-?(0|[1-9]\\d*)\\.\\d{2}$"
+                  },
+                  "normalBalance": {
+                    "type": "string",
+                    "enum": [
+                      "debit",
+                      "credit"
+                    ]
+                  }
+                },
+                "required": [
+                  "accountNo",
+                  "name",
+                  "type",
+                  "debit",
+                  "credit",
+                  "balance",
+                  "normalBalance"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "totalDebit": {
+              "type": "string",
+              "pattern": "^(?!-0\\.00$)-?(0|[1-9]\\d*)\\.\\d{2}$"
+            },
+            "totalCredit": {
+              "type": "string",
+              "pattern": "^(?!-0\\.00$)-?(0|[1-9]\\d*)\\.\\d{2}$"
+            },
+            "balanced": {
+              "type": "boolean"
+            },
+            "linesConsidered": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "journalEntryCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "ok",
+            "appliedRules",
+            "periodStart",
+            "periodEnd",
+            "accounts",
+            "totalDebit",
+            "totalCredit",
+            "balanced",
+            "linesConsidered",
+            "journalEntryCount",
+            "errors"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "format",
+        "data"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "checks": 31,
+  "receipts": [
+    {
+      "id": "cli.json.success",
+      "exit": 0,
+      "stdout": "{\n  \"ok\": true,\n  \"appliedRules\": [\n    \"financial-statements:trial-balance\"\n  ],\n  \"periodStart\": \"2026-01-01\",\n  \"periodEnd\": \"2026-12-31\",\n  \"accounts\": [\n    {\n      \"accountNo\": \"1100\",\n      \"name\": \"Synthetic; \\\"debit\\\"\",\n      \"type\": \"asset\",\n      \"normalBalance\": \"debit\",\n      \"debit\": 12.34,\n      \"credit\": 0,\n      \"balance\": 12.34\n    },\n    {\n      \"accountNo\": \"2000\",\n      \"name\": \"Bank\",\n      \"type\": \"asset\",\n      \"normalBalance\": \"debit\",\n      \"debit\": 0,\n      \"credit\": 12.34,\n      \"balance\": -12.34\n    }\n  ],\n  \"totalDebit\": 12.34,\n  \"totalCredit\": 12.34,\n  \"balanced\": true,\n  \"linesConsidered\": 2,\n  \"journalEntryCount\": 1,\n  \"errors\": []\n}\n",
+      "stderr": ""
+    },
+    {
+      "id": "cli.json.alias",
+      "equalTo": "cli.json.success"
+    },
+    {
+      "id": "cli.pipe-default-json",
+      "equalTo": "cli.json.success"
+    },
+    {
+      "id": "cli.duplicate-attached-flag",
+      "exit": 0,
+      "stdout": "{\n  \"ok\": true,\n  \"appliedRules\": [\n    \"financial-statements:trial-balance\"\n  ],\n  \"periodStart\": \"2026-07-01\",\n  \"periodEnd\": \"2026-12-31\",\n  \"accounts\": [],\n  \"totalDebit\": 0,\n  \"totalCredit\": 0,\n  \"balanced\": true,\n  \"linesConsidered\": 0,\n  \"journalEntryCount\": 0,\n  \"errors\": []\n}\n",
+      "stderr": "",
+      "classification": "legacy last value wins; new Rust version refuses duplicates/attached syntax"
+    },
+    {
+      "id": "cli.human.success",
+      "exit": 0,
+      "stdout": "Saldobalance for perioden 2026-01-01 til 2026-12-31\n\n  1100 Synthetic; \"debit\"\n      Debet 12,34 kr. | Kredit 0,00 kr. | Saldo 12,34 kr.\n  2000 Bank\n      Debet 0,00 kr. | Kredit 12,34 kr. | Saldo -12,34 kr.\n\n  Debet i alt:                   12,34 kr.\n  Kredit i alt:                  12,34 kr.\n  Saldobalancen går op (debet = kredit).\n",
+      "stderr": ""
+    },
+    {
+      "id": "cli.inverted",
+      "exit": 1,
+      "stdout": "{\n  \"ok\": false,\n  \"appliedRules\": [\n    \"financial-statements:trial-balance\"\n  ],\n  \"periodStart\": \"2026-12-31\",\n  \"periodEnd\": \"2026-01-01\",\n  \"accounts\": [],\n  \"totalDebit\": 0,\n  \"totalCredit\": 0,\n  \"balanced\": false,\n  \"linesConsidered\": 0,\n  \"journalEntryCount\": 0,\n  \"errors\": [\n    \"periodStart must be before or equal to periodEnd\"\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "id": "cli.invalid-date",
+      "exit": 1,
+      "stdout": "{\n  \"ok\": false,\n  \"appliedRules\": [\n    \"financial-statements:trial-balance\"\n  ],\n  \"periodStart\": \"2026-02-30\",\n  \"periodEnd\": \"2026-12-31\",\n  \"accounts\": [],\n  \"totalDebit\": 0,\n  \"totalCredit\": 0,\n  \"balanced\": false,\n  \"linesConsidered\": 0,\n  \"journalEntryCount\": 0,\n  \"errors\": [\n    \"periodStart must be YYYY-MM-DD\"\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "id": "cli.usage.--unknown",
+      "exit": 2,
+      "stdout": "",
+      "stderr": "Unknown flag --unknown for report trial-balance.\n"
+    },
+    {
+      "id": "cli.usage.--format",
+      "exit": 2,
+      "stdout": "",
+      "stderr": "--format must be either json or human\n"
+    },
+    {
+      "id": "cli.missing-to",
+      "exit": 2,
+      "stdout": "",
+      "stderr": "Missing required --from <YYYY-MM-DD> or --to <YYYY-MM-DD>\n"
+    },
+    {
+      "id": "rust.versioned-cli",
+      "exit": 0,
+      "stdout": "{\"data\":{\"accounts\":[{\"accountNo\":\"1100\",\"balance\":\"12.34\",\"credit\":\"0.00\",\"debit\":\"12.34\",\"name\":\"Synthetic; \\\"debit\\\"\",\"normalBalance\":\"debit\",\"type\":\"asset\"},{\"accountNo\":\"2000\",\"balance\":\"-12.34\",\"credit\":\"12.34\",\"debit\":\"0.00\",\"name\":\"Bank\",\"normalBalance\":\"debit\",\"type\":\"asset\"}],\"appliedRules\":[\"financial-statements:trial-balance\"],\"balanced\":true,\"errors\":[],\"journalEntryCount\":1,\"linesConsidered\":2,\"ok\":true,\"periodEnd\":\"2026-12-31\",\"periodStart\":\"2026-01-01\",\"totalCredit\":\"12.34\",\"totalDebit\":\"12.34\"},\"format\":\"rentemester-trial-balance/1\",\"ok\":true}\n",
+      "stderr": ""
+    },
+    {
+      "id": "http.live",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": true,
+        "trialBalance": {
+          "slug": "alpha",
+          "selectedYear": "2026",
+          "archived": false,
+          "archivedSource": null,
+          "company": {
+            "name": "Synthetic alpha",
+            "cvr": null,
+            "country": "DK",
+            "currency": "DKK",
+            "fiscalYearStartMonth": 1,
+            "fiscalYearLabelStrategy": "end-year"
+          },
+          "fiscalYears": [
+            {
+              "label": "2026",
+              "start": "2026-01-01",
+              "end": "2026-12-31",
+              "source": "live"
+            },
+            {
+              "label": "2024",
+              "start": null,
+              "end": null,
+              "source": "archive"
+            }
+          ],
+          "periodStart": "2026-01-01",
+          "periodEnd": "2026-12-31",
+          "rows": [
+            {
+              "accountNo": "1100",
+              "name": "Synthetic; \"debit\"",
+              "type": "asset",
+              "debit": 12.34,
+              "credit": 0,
+              "balance": 12.34
+            },
+            {
+              "accountNo": "2000",
+              "name": "Bank",
+              "type": "asset",
+              "debit": 0,
+              "credit": 12.34,
+              "balance": -12.34
+            }
+          ],
+          "totalDebit": 12.34,
+          "totalCredit": 12.34,
+          "balanced": true
+        }
+      }
+    },
+    {
+      "id": "http.default-year",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": true,
+        "trialBalance": {
+          "slug": "alpha",
+          "selectedYear": "2026",
+          "archived": false,
+          "archivedSource": null,
+          "company": {
+            "name": "Synthetic alpha",
+            "cvr": null,
+            "country": "DK",
+            "currency": "DKK",
+            "fiscalYearStartMonth": 1,
+            "fiscalYearLabelStrategy": "end-year"
+          },
+          "fiscalYears": [
+            {
+              "label": "2026",
+              "start": "2026-01-01",
+              "end": "2026-12-31",
+              "source": "live"
+            },
+            {
+              "label": "2024",
+              "start": null,
+              "end": null,
+              "source": "archive"
+            }
+          ],
+          "periodStart": "2026-01-01",
+          "periodEnd": "2026-12-31",
+          "rows": [
+            {
+              "accountNo": "1100",
+              "name": "Synthetic; \"debit\"",
+              "type": "asset",
+              "debit": 12.34,
+              "credit": 0,
+              "balance": 12.34
+            },
+            {
+              "accountNo": "2000",
+              "name": "Bank",
+              "type": "asset",
+              "debit": 0,
+              "credit": 12.34,
+              "balance": -12.34
+            }
+          ],
+          "totalDebit": 12.34,
+          "totalCredit": 12.34,
+          "balanced": true
+        }
+      }
+    },
+    {
+      "id": "http.beta",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": true,
+        "trialBalance": {
+          "slug": "beta",
+          "selectedYear": "2026",
+          "archived": false,
+          "archivedSource": null,
+          "company": {
+            "name": "Synthetic beta",
+            "cvr": null,
+            "country": "DK",
+            "currency": "DKK",
+            "fiscalYearStartMonth": 1,
+            "fiscalYearLabelStrategy": "end-year"
+          },
+          "fiscalYears": [
+            {
+              "label": "2026",
+              "start": "2026-01-01",
+              "end": "2026-12-31",
+              "source": "live"
+            },
+            {
+              "label": "2024",
+              "start": null,
+              "end": null,
+              "source": "archive"
+            }
+          ],
+          "periodStart": "2026-01-01",
+          "periodEnd": "2026-12-31",
+          "rows": [
+            {
+              "accountNo": "1100",
+              "name": "Synthetic; \"debit\"",
+              "type": "asset",
+              "debit": 98.76,
+              "credit": 0,
+              "balance": 98.76
+            },
+            {
+              "accountNo": "2000",
+              "name": "Bank",
+              "type": "asset",
+              "debit": 0,
+              "credit": 98.76,
+              "balance": -98.76
+            }
+          ],
+          "totalDebit": 98.76,
+          "totalCredit": 98.76,
+          "balanced": true
+        }
+      }
+    },
+    {
+      "id": "http.archive",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": true,
+        "trialBalance": {
+          "slug": "alpha",
+          "selectedYear": "2024",
+          "archived": true,
+          "archivedSource": "dinero",
+          "company": {
+            "name": "Synthetic alpha",
+            "cvr": null,
+            "country": "DK",
+            "currency": "DKK",
+            "fiscalYearStartMonth": 1,
+            "fiscalYearLabelStrategy": "end-year"
+          },
+          "fiscalYears": [
+            {
+              "label": "2026",
+              "start": "2026-01-01",
+              "end": "2026-12-31",
+              "source": "live"
+            },
+            {
+              "label": "2024",
+              "start": null,
+              "end": null,
+              "source": "archive"
+            }
+          ],
+          "periodStart": "2024-01-01",
+          "periodEnd": "2024-12-31",
+          "rows": [
+            {
+              "accountNo": "1100",
+              "name": "Synthetic 1100",
+              "type": "asset",
+              "debit": 7.89,
+              "credit": 0,
+              "balance": 7.89
+            },
+            {
+              "accountNo": "2000",
+              "name": "Synthetic 2000",
+              "type": "asset",
+              "debit": 0,
+              "credit": 7.89,
+              "balance": -7.89
+            }
+          ],
+          "totalDebit": 7.89,
+          "totalCredit": 7.89,
+          "balanced": true
+        }
+      }
+    },
+    {
+      "id": "http.empty",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": true,
+        "trialBalance": {
+          "slug": "alpha",
+          "selectedYear": "2023",
+          "archived": false,
+          "archivedSource": null,
+          "company": {
+            "name": "Synthetic alpha",
+            "cvr": null,
+            "country": "DK",
+            "currency": "DKK",
+            "fiscalYearStartMonth": 1,
+            "fiscalYearLabelStrategy": "end-year"
+          },
+          "fiscalYears": [
+            {
+              "label": "2026",
+              "start": "2026-01-01",
+              "end": "2026-12-31",
+              "source": "live"
+            },
+            {
+              "label": "2024",
+              "start": null,
+              "end": null,
+              "source": "archive"
+            }
+          ],
+          "periodStart": "2023-01-01",
+          "periodEnd": "2023-12-31",
+          "rows": [],
+          "totalDebit": 0,
+          "totalCredit": 0,
+          "balanced": true
+        }
+      }
+    },
+    {
+      "id": "http.bad-year",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": false,
+        "errors": [
+          "year must be a four-digit calendar year"
+        ],
+        "code": "bad_request"
+      }
+    },
+    {
+      "id": "http.unknown-company",
+      "status": 404,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": false,
+        "errors": [
+          "ingen virksomhed med slug 'ghost' findes i workspacet"
+        ],
+        "code": "not_found"
+      }
+    },
+    {
+      "id": "http.unauthenticated",
+      "status": 401,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": false,
+        "errors": [
+          "missing or invalid credentials"
+        ],
+        "code": "unauthorized"
+      }
+    },
+    {
+      "id": "http.invalid-export",
+      "status": 400,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": {
+        "ok": false,
+        "errors": [
+          "format=xlsx understøttes ikke — kun csv og pdf er gyldige."
+        ],
+        "code": "bad_request"
+      }
+    },
+    {
+      "id": "legacy-defect.padded-year",
+      "body": {
+        "ok": true,
+        "trialBalance": {
+          "slug": "alpha",
+          "selectedYear": "1",
+          "archived": false,
+          "archivedSource": null,
+          "company": {
+            "name": "Synthetic alpha",
+            "cvr": null,
+            "country": "DK",
+            "currency": "DKK",
+            "fiscalYearStartMonth": 1,
+            "fiscalYearLabelStrategy": "end-year"
+          },
+          "fiscalYears": [
+            {
+              "label": "2026",
+              "start": "2026-01-01",
+              "end": "2026-12-31",
+              "source": "live"
+            },
+            {
+              "label": "2024",
+              "start": null,
+              "end": null,
+              "source": "archive"
+            }
+          ],
+          "periodStart": "1-01-01",
+          "periodEnd": "1-12-31",
+          "rows": [],
+          "totalDebit": 0,
+          "totalCredit": 0,
+          "balanced": false
+        }
+      },
+      "correctedExpectation": "Keep canonical year padding or explicitly refuse; never report invalid core period as successful empty data"
+    },
+    {
+      "id": "legacy-defect.span-fiscal-year",
+      "body": {
+        "ok": true,
+        "trialBalance": {
+          "slug": "span",
+          "selectedYear": "2025-26",
+          "archived": false,
+          "archivedSource": null,
+          "company": {
+            "name": "Synthetic span",
+            "cvr": null,
+            "country": "DK",
+            "currency": "DKK",
+            "fiscalYearStartMonth": 7,
+            "fiscalYearLabelStrategy": "span"
+          },
+          "fiscalYears": [
+            {
+              "label": "2025-26",
+              "start": "2025-07-01",
+              "end": "2026-06-30",
+              "source": "live"
+            },
+            {
+              "label": "2024",
+              "start": null,
+              "end": null,
+              "source": "archive"
+            }
+          ],
+          "periodStart": "2025-01-01",
+          "periodEnd": "2025-12-31",
+          "rows": [],
+          "totalDebit": 0,
+          "totalCredit": 0,
+          "balanced": true
+        }
+      },
+      "correctedExpectation": "Selected fiscal interval 2025-07-01..2026-06-30 includes synthetic posting 5.67; owner R42/R46 must refine correction before cutover"
+    },
+    {
+      "id": "http.wrong-method",
+      "status": 405,
+      "body": {
+        "ok": false,
+        "errors": [
+          "metoden er ikke understøttet på denne rute"
+        ],
+        "code": "method_not_allowed"
+      }
+    },
+    {
+      "id": "http.csv",
+      "status": 200,
+      "headers": {
+        "cache-control": "private, no-store",
+        "content-disposition": "attachment; filename*=UTF-8''saldobalance-alpha-2026.csv",
+        "content-type": "text/csv; charset=utf-8",
+        "x-content-type-options": "nosniff"
+      },
+      "body": "﻿sep=;\r\nRapport;Saldobalance\r\nVirksomhed;Synthetic alpha\r\nRegnskabsår;2026\r\nValuta;DKK\r\nUdtrukket;2026-10-17\r\nKilde;Rentemester\r\n\r\nKonto;Navn;Type;Debet;Kredit;Saldo\r\n1100;\"Synthetic; \"\"debit\"\"\";asset;12,34;0,00;12,34\r\n2000;Bank;asset;0,00;12,34;-12,34\r\n;I alt;;12,34;12,34;\r\n",
+      "nondeterministicField": "Udtrukket (UTC wall-clock date)"
+    },
+    {
+      "id": "http.csv-format-default-and-case",
+      "status": 200,
+      "contentType": "text/csv; charset=utf-8"
+    },
+    {
+      "id": "http.pdf-format",
+      "status": 200,
+      "headers": {
+        "cache-control": "private, no-store",
+        "content-disposition": "attachment; filename*=UTF-8''saldobalance-alpha-2026.pdf",
+        "content-type": "application/pdf",
+        "x-content-type-options": "nosniff"
+      },
+      "bytes": 1629,
+      "sha256": "3e0098c29743c2535dd44396704d424a9bda25bf882d0b6b13270e511ebdec29",
+      "limit": "Format/header contract only; PDF amount rendering remains existing statement PDF suite coverage"
+    },
+    {
+      "id": "csv.full-byte-oracle",
+      "body": "﻿sep=;\r\nRapport;Saldobalance\r\nVirksomhed;Synthetic alpha\r\nRegnskabsår;2026\r\nValuta;DKK\r\nUdtrukket;2026-01-01\r\nKilde;Rentemester\r\n\r\nKonto;Navn;Type;Debet;Kredit;Saldo\r\n1100;\"Synthetic; \"\"debit\"\"\";asset;12,34;0,00;12,34\r\n2000;Bank;asset;0,00;12,34;-12,34\r\n;I alt;;12,34;12,34;\r\n",
+      "httpNormalization": "Only the named Udtrukket date line",
+      "negativeControls": [
+        "omitted-total-row",
+        "omitted-column-header"
+      ]
+    },
+    {
+      "id": "csv.clock-dependence",
+      "changedFieldOnly": "Udtrukket",
+      "status": "documented nondeterminism; no blind whole-byte normalization"
+    },
+    {
+      "id": "mcp.absence",
+      "status": "CLI-only financial report, no corresponding registered MCP tool",
+      "registeredToolCount": 214
+    },
+    {
+      "id": "negative-controls",
+      "rejected": [
+        "wrong-total",
+        "omitted-account",
+        "changed-casing",
+        "null-money",
+        "string-in-legacy-numeric-wire"
+      ]
+    },
+    {
+      "id": "oracle-immutable",
+      "filesChecked": 13,
+      "policy": "Every legacy/Rust execution uses a disposable synthetic copy; no claim legacy adapters are themselves read-only"
+    }
+  ],
+  "limits": [
+    "One report capability only; R01/R08 remain open",
+    "Source hashes bind named anchors, not an exhaustive transitive dependency closure",
+    "HTTP calls real router in-process; no socket/proxy/session/hosted-membership qualification",
+    "PDF amounts, complete custom fiscal-label matrix, malformed storage and transport loss remain separate coverage",
+    "Registry absence plus explicit CLI-only documentation; no semantically equivalent differently named MCP operation claimed"
+  ]
+}
+{
+  "ok": true,
+  "scope": "legacy canonical journal hash compatibility on private snapshots",
+  "checks": 29,
+  "passed": [
+    "real legacy posting and reversal pass full legacy audit and fixed five-hash oracle",
+    "persisted canonical JSON property/line order, null/empty, Unicode/controls/NUL, FX and huge-number bytes match saved vectors",
+    "Rust verifies real live-WAL legacy chain twice without source byte changes",
+    "negative controls reject omitted entry, changed bytes, omitted field and extra hash separator",
+    "corruption/refusal, unchanged source: text",
+    "corruption/refusal, unchanged source: actor",
+    "corruption/refusal, unchanged source: fx",
+    "corruption/refusal, unchanged source: line-amount",
+    "corruption/refusal, unchanged source: line-vat",
+    "corruption/refusal, unchanged source: null-empty",
+    "corruption/refusal, unchanged source: line-order",
+    "corruption/refusal, unchanged source: previous-null",
+    "corruption/refusal, unchanged source: previous-wrong",
+    "corruption/refusal, unchanged source: hash",
+    "corruption/refusal, unchanged source: no-lines",
+    "corruption/refusal, unchanged source: nonfinite",
+    "corruption/refusal, unchanged source: unsafe-entry-id",
+    "corruption/refusal, unchanged source: unsafe-reference",
+    "corruption/refusal, unchanged source: text-number",
+    "corruption/refusal, unchanged source: blob-text",
+    "corruption/refusal, unchanged source: invalid-utf8",
+    "corruption/refusal, unchanged source: hash-column-drift",
+    "corruption/refusal, unchanged source: history-tamper",
+    "empty current-schema hash chain is explicitly scoped success",
+    "missing company refused without creation",
+    "root symlink and trailing slash/dot variants refused",
+    "concurrent real legacy writer: coherent whole chain or bounded source_changed; all 12 commits retained and verified",
+    "strict usage JSON/exit2 and explicit hash-only help/exit0",
+    "frozen synthetic oracle remains byte-identical after all damaged-copy executions"
+  ],
+  "legacyAudit": {
+    "ok": true,
+    "entries": 5,
+    "errors": []
+  },
+  "fixedVectorHashes": [
+    "cdf6c2455037956c9fc87e22cf66112251120e36c00299c37e3ac90ab50e9e4e",
+    "150d3847452c076fe532a2ef1e1b6b03b6ca82e710390f57b494e4af1323094c",
+    "6b767799f70513fe89b482c37b9f8e3ff72dba935701141a62b8268c85221810",
+    "aed5580b8d578e4a21ef0c4895bec6f0c0caf887dc145ca5f82a414cd630202a",
+    "edf1ed2b8752b8e1f3d2d6c3aad2e2a932bd4a540579d39feaefb2673cac0c67"
+  ],
+  "limits": [
+    "Hash agreement is not full audit/accounting integrity or audit_log completeness",
+    "No mutation, hosted authority, external checkpoint, live migration or whole-issue completion claimed"
+  ]
+}
+{
+  "ok": true,
+  "scope": "cooperative physical-directory process lease only",
+  "checks": 10,
+  "passed": [
+    "distinct processes exclude same root; independent roots, explicit release, identity and source inventory",
+    "four simultaneous real contenders produce exactly one holder",
+    "hung/live owner remains busy despite stale/reused PID, nonce and missing/replaced metadata",
+    "kernel reclaims on forced process death and EOF, without stale-lock deletion",
+    "final symlinks refuse including slash/dot; ancestor aliases lock same physical scope",
+    "missing/file/empty/parent roots refuse without creation; relative root binds acquisition directory",
+    "moved/replaced path invalidates old root; replacement is explicitly different physical scope, not logical adoption",
+    "exec child remains live while next owner acquires: CLOEXEC prevents inherited hidden lease; parent reaps child",
+    "independent Python flock participant and Rust exclude each other in both directions; no legacy ingress claim",
+    "source file inventories unchanged and all foreground process probes reaped"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "filesystem": "apfs",
+  "limits": [
+    "Not current TS product admission, writable Rust authority, logical workspace identity or offline adoption",
+    "Only development host filesystem exercised; no Windows/network/sync-filesystem/distributed qualification",
+    "Root check is an observation; protected descriptor-relative writes/commit fencing remain required"
+  ]
+}
+{
+  "ok": true,
+  "checks": 22,
+  "scope": "actual canonical legacy manifest writer/loader vs native descriptor layout; exact source inventory preserved; no SQLite admission",
+  "observations": [
+    {
+      "id": "canonical-writer",
+      "legacyLoads": true,
+      "nativeBinds": true
+    },
+    {
+      "id": "alternate-json-format",
+      "legacyLoads": true,
+      "nativeBinds": true
+    },
+    {
+      "id": "reordered-keys",
+      "legacyLoads": true,
+      "nativeBinds": true
+    },
+    {
+      "id": "missing-name",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "missing-created",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "missing-companies",
+      "legacyLoads": false,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "wrong-companies-shape",
+      "legacyLoads": false,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "other-archived",
+      "legacyLoads": true,
+      "nativeBinds": true
+    },
+    {
+      "id": "archived",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_company_selection"
+    },
+    {
+      "id": "duplicate-slug",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "coerced-boolean",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "omitted-archived",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "unknown-field",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "unknown-version",
+      "legacyLoads": false,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "duplicate-json-key",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "coerced-name",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "blank-name",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "unsafe-other-slug",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "missing-manifest",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "layout_unavailable"
+    },
+    {
+      "id": "malformed-json",
+      "legacyLoads": false,
+      "nativeBinds": false,
+      "nativeCode": "invalid_manifest"
+    },
+    {
+      "id": "unregistered",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_company_selection"
+    },
+    {
+      "id": "unsafe-selection",
+      "legacyLoads": true,
+      "nativeBinds": false,
+      "nativeCode": "invalid_company_selection"
+    }
+  ],
+  "limits": [
+    "Loader acceptance is not legacy authorization; typed native profile intentionally stricter",
+    "Physical-layout observation only; arbitrary SQLite handle identity and writer authority remain unproven",
+    "No cross-device mount or hardware/platform qualification"
+  ]
+}
+{
+  "ok": true,
+  "scope": "private-copy company suffix32–36 rehearsal only",
+  "checks": 25,
+  "passed": [
+    "synthetic v32 -> v36 exact TS affected-schema/history parity, source/journal preservation and repeat",
+    "synthetic v33 -> v36 exact TS affected-schema/history parity, source/journal preservation and repeat",
+    "synthetic v34 -> v36 exact TS affected-schema/history parity, source/journal preservation and repeat",
+    "synthetic v35 -> v36 exact TS affected-schema/history parity, source/journal preservation and repeat",
+    "synthetic v36 -> v36 exact TS affected-schema/history parity, source/journal preservation and repeat",
+    "older history refuses",
+    "gapped history refuses",
+    "newer history refuses",
+    "altered checksum refuses",
+    "altered name refuses",
+    "empty provenance refuses",
+    "missing history refuses",
+    "missing affected trigger refuses",
+    "altered affected trigger refuses",
+    "unexpected extra affected trigger refuses",
+    "partial preexisting next-step object refuses",
+    "foreign-key corruption refuses",
+    "empty checksum refuses",
+    "altered affected table refuses",
+    "private SQL/history failure refuses and removes copy",
+    "active legacy WAL snapshot recovered privately; source DB/WAL/SHM unchanged",
+    "missing and final-symlink aliases refuse",
+    "strict CLI usage refuses actor/mutation/target ambiguities",
+    "unusable temporary storage refuses before any source effect",
+    "existing report retains exact-current policy"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "limits": [
+    "Constructed synthetic predecessor fixtures, not historical archive qualification",
+    "No source migration, writer authority, workspace-control migration, baseline adoption or full R12 acceptance"
+  ]
+}
+{
+  "ok": true,
+  "scope": "all control prefixes0–30 on private copies; no live writer",
+  "checks": 54,
+  "passed": [
+    "exact prefix0 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix1 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix2 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix3 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix4 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix5 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix6 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix7 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix8 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix9 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix10 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix11 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix12 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix13 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix14 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix15 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix16 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix17 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix18 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix19 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix20 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix21 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix22 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix23 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix24 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix25 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix26 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix27 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix28 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix29 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "exact prefix30 ->30 TS schema/history parity, opaque data preservation, explicit session effects and repeat",
+    "history checksum tamper",
+    "history name tamper",
+    "history gap",
+    "newer history",
+    "empty provenance",
+    "missing history",
+    "legal sqliteShadow table is not hidden as internal",
+    "populated sqliteShadow-only source cannot adopt prefix0",
+    "legal sqliteShadow trigger is not hidden as internal",
+    "missing canonical guard",
+    "altered canonical guard",
+    "unexpected object and secret error sanitization",
+    "changed canonical constraints",
+    "empty history with existing objects",
+    "FK corruption",
+    "valid prefix28 conflicting assignments refuses without deduplication",
+    "private recovery with active source WAL/SHM; file names, bytes and modes unchanged",
+    "corrupt private recovery refuses with opaque error and checked cleanup",
+    "missing/final symlink workspace roots refuse without creation",
+    "control directory/file links refuse",
+    "linked sidecar refuses without following or rewriting it",
+    "strict CLI usage refuses extra mutation/target flags",
+    "unusable private storage refuses without source effects"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "limits": [
+    "Synthetic direct-prefix fixtures, not historical production backups",
+    "No source migrations, company baseline port, live writer authority or full R12 acceptance",
+    "Process crash qualification is separate from hardware power-loss and storage qualification"
+  ]
+}
+{
+  "ok": true,
+  "scope": "normalized company bootstrap0 and canonical early prefixes1–31; suffix32–36 verified separately",
+  "checks": 40,
+  "passed": [
+    "normalized prefix0 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix1 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix2 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix3 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix4 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix5 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix6 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix7 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix8 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix9 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix10 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix11 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix12 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix13 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix14 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix15 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix16 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix17 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix18 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix19 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix20 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix21 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix22 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix23 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix24 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix25 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix26 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix27 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix28 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix29 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix30 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "normalized prefix31 ->36 exact TS post-baseline DDL/history, original columns and defaults; repeat/source preserved",
+    "populated unversioned state is not silently adopted",
+    "early unknown object refuses",
+    "early altered canonical guard refuses",
+    "early unsupported physical variant refuses",
+    "early history checksum refuses",
+    "early history gap refuses",
+    "early active WAL privately recovered and source inventories unchanged",
+    "early symlink roots refuse"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "limits": [
+    "Post-baseline canonical fixtures, not arbitrary historical business normalization/adoption",
+    "Observed exact current DDL includes corrected strict purchase guard; full immutable domain qualification remains pending",
+    "No source migrations, writer authority, hardware power-loss or full R12 completion"
+  ]
+}
+{
+  "scope": "native company baseline data effects and explicit corrected retention calendar",
+  "checks": 47,
+  "passed": [
+    "fiscal start1/end-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start1/start-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start1/span: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start2/end-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start2/start-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start2/span: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start3/end-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start3/start-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start3/span: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start4/end-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start4/start-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start4/span: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start5/end-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start5/start-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start5/span: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start6/end-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start6/start-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start6/span: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start7/end-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start7/start-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start7/span: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start8/end-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start8/start-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start8/span: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start9/end-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start9/start-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start9/span: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start10/end-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start10/start-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start10/span: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start11/end-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start11/start-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start11/span: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start12/end-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start12/start-year: typed TS parity, corrected dates, source preservation, idempotence",
+    "fiscal start12/span: typed TS parity, corrected dates, source preservation, idempotence",
+    "all mapping/proposal statuses prevent native reseeding",
+    "missing/inactive/wrong-type/wrong-balance accounts never seed",
+    "no company uses January default",
+    "lowest company ID supplies fiscal month",
+    "fractional fiscal month falls back to January",
+    "exact unsafe-in-JS document and bank IDs retain separate deadlines",
+    "invalid CVR remains opaque when no backfill is needed",
+    "overflow refuses without source/cleanup effects",
+    "eligible backfill with invalid CVR refuses",
+    "referenced bank guard refuses, preserving original source",
+    "fixed corrected calendar/leap/low-year expectations"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "limits": [
+    "Canonical early schema admission only; historical physical normalization/replay pending",
+    "Private-copy atomic normalization; existing stored deadlines preserved",
+    "Generated NEW seed/audit timestamps validated then normalized only for independent comparisons",
+    "No live writer authority or full R12/platform completion"
+  ]
+}
+{
+  "scope": "known unversioned physical company baseline rebuilds and full migration parity",
+  "checks": 37,
+  "passed": [
+    "all four historical constraints combination0: typed TS full migration and complete DDL",
+    "all four historical constraints combination1: typed TS full migration and complete DDL",
+    "all four historical constraints combination2: typed TS full migration and complete DDL",
+    "all four historical constraints combination3: typed TS full migration and complete DDL",
+    "all four historical constraints combination4: typed TS full migration and complete DDL",
+    "all four historical constraints combination5: typed TS full migration and complete DDL",
+    "all four historical constraints combination6: typed TS full migration and complete DDL",
+    "all four historical constraints combination7: typed TS full migration and complete DDL",
+    "all four historical constraints combination8: typed TS full migration and complete DDL",
+    "all four historical constraints combination9: typed TS full migration and complete DDL",
+    "all four historical constraints combination10: typed TS full migration and complete DDL",
+    "all four historical constraints combination11: typed TS full migration and complete DDL",
+    "all four historical constraints combination12: typed TS full migration and complete DDL",
+    "all four historical constraints combination13: typed TS full migration and complete DDL",
+    "all four historical constraints combination14: typed TS full migration and complete DDL",
+    "all four historical constraints combination15: typed TS full migration and complete DDL",
+    "registered month VAT relabel",
+    "registered quarter VAT relabel",
+    "registered half-year VAT relabel",
+    "deregistered globally consistent historical VAT cadence",
+    "missing company row uses default quarterly VAT cadence",
+    "canonical VAT kind with old other constraints remains unchanged",
+    "registered cadence mismatch refuses",
+    "deregistered mixed cadence refuses globally",
+    "duplicate legacy/canonical period refuses",
+    "reported exact-window different kinds refuse",
+    "low-year historical VAT ambiguity refuses explicitly",
+    "unknown extra table refuses",
+    "unknown extra column refuses",
+    "unknown company trigger refuses",
+    "unknown index refuses",
+    "scratch rebuild evidence refuses",
+    "altered guard refuses",
+    "nonempty history refuses explicit baseline adoption",
+    "active WAL privately recovered; source inventory and cleanup preserved",
+    "symlink root refuses",
+    "usage errors exit2 and never mutate source"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "limits": [
+    "Synthetic exact known208-object baseline layouts, not historical production archives or arbitrary missing-column predecessors",
+    "Empty strict history only; no checksum adoption, late-prefix parent/child rebuild or current full-history VAT normalization",
+    "New default timestamps/UUID/build provenance validated then masked only in independent comparison; originals exact",
+    "Private-copy/source-read-only; no writer or original adoption authority, hardware/cross-platform or full R12 completion"
+  ]
+}
+{
+  "scope": "FK-safe VAT normalization and complete company prefixes1–36",
+  "checks": 49,
+  "passed": [
+    "full prefix1: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix2: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix3: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix4: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix5: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix6: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix7: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix8: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix9: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix10: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix11: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix12: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix13: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix14: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix15: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix16: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix17: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix18: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix19: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix20: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix21: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix22: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix23: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix24: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix25: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix26: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix27: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix28: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix29: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix30: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix31: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix32: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix33: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix34: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix35: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "full prefix36: exact corrected TS migration, VAT/typed/history preservation and late-FK children",
+    "current registered month cadence with FK children",
+    "current registered quarter cadence with FK children",
+    "current registered half-year cadence with FK children",
+    "current deregistered common historical cadence with FK children",
+    "VAT uses ID1 default when only another company row exists",
+    "current registered cadence mismatch refuses without source effect",
+    "current deregistered mixed cadence refuses globally",
+    "current duplicate legacy/canonical refuses",
+    "current low-year century ambiguity explicitly refuses",
+    "unknown current object cannot gain VAT normalization access",
+    "unknown current period guard cannot gain VAT normalization access",
+    "tampered current history refuses",
+    "current active WAL privately recovered; source inventory and cleanup intact"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "limits": [
+    "Canonical complete schemas with strict history; old physical/missing-column/checksumless/archive adoption remain separate",
+    "Years below100 explicitly refused while normalization is required",
+    "Only generated NEW timestamps/UUID/build provenance masked; old provenance and parent/child typed cells exact",
+    "Private captures only; no writer authority, other late parent rebuilds, hardware/cross-platform or full R12 acceptance"
+  ]
+}
+{
+  "scope": "transaction-owned native sequence values against actual TypeScript functions",
+  "checks": 128,
+  "operation_vectors": 127,
+  "passed": [
+    "all actual TS current/next/reserve/scope results",
+    "exact final SQLite INTEGER and UTF8 cells",
+    "outer rollback and independent kinds/scopes",
+    "safe-integer maximum without rounding"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "limits": [
+    "Only disposable synthetic databases; no product writer endpoint or original source writes",
+    "Legacy parity only for valid safe-integer inputs; native exact signed64-bit/overflow tested separately",
+    "No invoice/journal floor discovery, date/number formatting, idempotency receipts, authority/adoption or full R12 acceptance"
+  ]
+}
+{
+  "scope": "typed fiscal calendar: independent Gregorian expectations and exact actual legacy behavior",
+  "checks": 5691,
+  "vectors": 5690,
+  "operations": {
+    "date": 24,
+    "fiscal": 5217,
+    "deadline": 449
+  },
+  "legacy_policies": {
+    "match": 2911,
+    "difference": 2721,
+    "refusal": 42,
+    "typed_input": 16
+  },
+  "corpus_sha256": "7627c302e113b7260fbfdb964c6366f6dce20a2df119e4d8e4f6536f962e4a91",
+  "legacy_observations_sha256": "8cc7db16e034514102571cdba2a257b4d8094ac61f4e6b75e3dc418118db3bf1",
+  "passed": [
+    "all native results exactly match independent fixed corpus",
+    "ordinary legacy results match; each correction/refusal explicitly classified and frozen",
+    "canonical serialization and alternate TZ/environment stability"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "limits": [
+    "Pure calendar arithmetic only; no company legal eligibility, filing action, clock or persisted identifier rewrite",
+    "Typed native configuration constructors reject invalid raw settings; adapters still own legacy default normalization",
+    "Low-year and derived-range legacy differences are explicit; existing HTTP fiscal-selection defects remain separate",
+    "No original writes, full R09/R12 acceptance, runtime authority, UI/distribution or cutover"
+  ]
+}
+{
+  "scope": "exact amount/currency/FX arithmetic with independent Decimal expectations",
+  "checks": 1075,
+  "vectors": 1074,
+  "operations": {
+    "add": 160,
+    "currency": 13,
+    "currency-wire": 13,
+    "fx": 168,
+    "money": 138,
+    "money-wire": 15,
+    "multiply": 175,
+    "percent": 175,
+    "rate": 44,
+    "rate-wire": 13,
+    "subtract": 160
+  },
+  "legacy_classifications": {
+    "match": 793,
+    "native_typed_refusal": 88,
+    "difference": 96,
+    "legacy_number_refusal": 12,
+    "both_refuse": 44,
+    "native_canonical_only": 41
+  },
+  "corpus_sha256": "9d0f661ced97bf2c7d601a54527965fbaddb51405661b896b6226e1c2b933336",
+  "legacy_observations_sha256": "72edcac19e71dd0cadc6d93801e026938fca9deccf8d4745de65a1f517f9d4de",
+  "passed": [
+    "native results exactly match independent fixed corpus",
+    "actual legacy numeric bridges, refusals and differences explicitly frozen",
+    "canonical wire independently verified; alternate environment stable"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "limits": [
+    "Legacy API takes Numbers; exact decimal strings are explicitly bridged through Number before actual source calls",
+    "FX comparison is arithmetic only; typed positive rate/currency admission is not a claim about old whole-journal validation",
+    "Canonical wire has no equivalent old serde operation; transport budgets remain caller responsibility",
+    "No source mutation, journal policy, original writes, runtime authority, UI, distribution, cutover or broad R09 completion"
+  ]
+}
+{
+  "scope": "pure manual journal exact invariants and compiled rule-version binding",
+  "checks": 211,
+  "vectors": 210,
+  "actual_legacy_cases": 171,
+  "legacy_policies": {
+    "match": 159,
+    "difference": 12,
+    "native_only": 39
+  },
+  "corpus_sha256": "3d46afbb97a730102f2628096b5d10003f8b4bbe262ad2efcea41c8855d03b41",
+  "legacy_observations_sha256": "9aca581280e42a353485530c9b8f5af6e451334d62c59c880eb7e6ef67544999",
+  "passed": [
+    "all native code/field/totals/rule projections match independently fixed expectations",
+    "actual unchanged manual validator on canonical migrated synthetic SQLite; exact source/native diagnostics frozen",
+    "canonical guards restored before validation; exact image and total_changes preserved",
+    "alternate environment native outputs identical; all exact ID/bundle boundaries checked"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "limits": [
+    "Trusted synthetic fact snapshots only; no production fact collector, audit replay port or admitted writer transaction",
+    "Legacy parity compares outcomes, rule IDs and ordered violation code/field; all actual message text and numeric bridges are retained exactly, not claimed byte-compatible",
+    "Native-only strict serde/context/version/identifier cases have no equivalent legacy policy operation",
+    "Known manual bookkeeping/VAT versions only; version metadata is not a source content checksum or legal-source verification",
+    "No mutation endpoint, historical/reversal privilege, invoice evidence, full R09/R12 acceptance, clients/distribution or cutover"
+  ]
+}
+{
+  "scope": "source-backed advisory journal preview:real native CLI and actual legacy validator",
+  "checks": 226,
+  "source_cases": 208,
+  "fixed_manual_cases": 171,
+  "new_source_cases": 37,
+  "corpus_sha256": "b4a54a6052e436b630741e5a2d9cb72e141d2e689493038c488aa521d975021d",
+  "observations_sha256": "160a548aff13e2251f102528c31079390fa612e941667bae96b60d41976e58c1",
+  "passed": [
+    "fixed independent exact expectations on actual current-schema source captures",
+    "actual unchanged TS validation and exact source/native observations",
+    "exact IDs,VAT roles/source chart,lifecycle/credit ordering and canonical fact refusals",
+    "strict real stdin/size/formats/exits/help;source and sidecar refusal",
+    "source files/database image/total_changes preserved;repeat stable;explicit private cleanup"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "limits": [
+    "Advisory explicit horizon only;no clock/configured posting policy or writer authority",
+    "Current full canonical schemas only;no migration/adoption or historical archive qualification",
+    "Compiled manual policy metadata/source hashes,not generic YAML/legal-rule execution",
+    "Lifecycle replay is not audit-chain/source-evidence integrity certification",
+    "No authenticated API/MCP/UI,actual posting/dry-run insertion,full R09/R12/R14/R17 acceptance,distribution or cutover"
+  ]
+}

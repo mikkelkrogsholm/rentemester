@@ -1,0 +1,194 @@
+{
+  "generator": "Python stdlib HMAC-SHA1 + libsodium crypto_aead_xchacha20poly1305_ietf_encrypt",
+  "libsodiumVersion": "1.0.22",
+  "sources": [
+    "https://www.rfc-editor.org/rfc/rfc4226#appendix-D",
+    "https://www.rfc-editor.org/rfc/rfc6238#appendix-B",
+    "https://doc.libsodium.org/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction"
+  ],
+  "aead": [
+    {
+      "id": "libsodium-0",
+      "key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+      "version": 7,
+      "nonce": "000102030405060708090a0b0c0d0e0f1011121314151617",
+      "plaintext": "",
+      "decoded": "",
+      "plaintextHex": "",
+      "raw": "000102030405060708090a0b0c0d0e0f1011121314151617cb52eff6878928b0611c21df28cf1528",
+      "envelope": "$ba$7$000102030405060708090a0b0c0d0e0f1011121314151617cb52eff6878928b0611c21df28cf1528",
+      "validUtf8": true
+    },
+    {
+      "id": "libsodium-1",
+      "key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+      "version": 7,
+      "nonce": "0102030405060708090a0b0c0d0e0f101112131415161718",
+      "plaintext": "synthetic-mfa-secret",
+      "decoded": "synthetic-mfa-secret",
+      "plaintextHex": "73796e7468657469632d6d66612d736563726574",
+      "raw": "0102030405060708090a0b0c0d0e0f101112131415161718464a6cfd5cfc8c17bb3a37c411f29cbeae9174470de9936b7005b86b89fff6e77e9079b7",
+      "envelope": "$ba$7$0102030405060708090a0b0c0d0e0f101112131415161718464a6cfd5cfc8c17bb3a37c411f29cbeae9174470de9936b7005b86b89fff6e77e9079b7",
+      "validUtf8": true
+    },
+    {
+      "id": "libsodium-2",
+      "key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+      "version": 7,
+      "nonce": "02030405060708090a0b0c0d0e0f10111213141516171819",
+      "plaintext": "æ雪💡\u0000",
+      "decoded": "æ雪💡\u0000",
+      "plaintextHex": "c3a6e99baaf09f92a100",
+      "raw": "02030405060708090a0b0c0d0e0f1011121314151617181941aa116fc0112e69adb27ef21b94b58d98995dedb8cdd0fd62c7",
+      "envelope": "$ba$7$02030405060708090a0b0c0d0e0f1011121314151617181941aa116fc0112e69adb27ef21b94b58d98995dedb8cdd0fd62c7",
+      "validUtf8": true
+    },
+    {
+      "id": "libsodium-3",
+      "key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+      "version": 7,
+      "nonce": "030405060708090a0b0c0d0e0f101112131415161718191a",
+      "plaintext": "[\"abcde-FG123\",\"67890-abcDE\"]",
+      "decoded": "[\"abcde-FG123\",\"67890-abcDE\"]",
+      "plaintextHex": "5b2261626364652d4647313233222c2236373839302d6162634445225d",
+      "raw": "030405060708090a0b0c0d0e0f101112131415161718191a4e3627feede2466b807fa9770f675ee441d0172ca94aa5d53a5fab64c6ed06eba6f59859d48c52be76ecde8674",
+      "envelope": "$ba$7$030405060708090a0b0c0d0e0f101112131415161718191a4e3627feede2466b807fa9770f675ee441d0172ca94aa5d53a5fab64c6ed06eba6f59859d48c52be76ecde8674",
+      "validUtf8": true
+    },
+    {
+      "id": "libsodium-4",
+      "key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+      "version": 7,
+      "nonce": "0405060708090a0b0c0d0e0f101112131415161718191a1b",
+      "plaintext": "abcdefghijklmnopqrstuvwxyz012345",
+      "decoded": "abcdefghijklmnopqrstuvwxyz012345",
+      "plaintextHex": "6162636465666768696a6b6c6d6e6f707172737475767778797a303132333435",
+      "raw": "0405060708090a0b0c0d0e0f101112131415161718191a1bd9a62c328c4ec44eacf0f73a81a8ea208ca8eeb0f5080668ab6c65c3b38cb5092e1dc68f7099e79e5f7bc7b1c382e9ae",
+      "envelope": "$ba$7$0405060708090a0b0c0d0e0f101112131415161718191a1bd9a62c328c4ec44eacf0f73a81a8ea208ca8eeb0f5080668ab6c65c3b38cb5092e1dc68f7099e79e5f7bc7b1c382e9ae",
+      "validUtf8": true
+    },
+    {
+      "id": "libsodium-5",
+      "key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+      "version": 7,
+      "nonce": "05060708090a0b0c0d0e0f101112131415161718191a1b1c",
+      "plaintext": "﻿text",
+      "decoded": "text",
+      "plaintextHex": "efbbbf74657874",
+      "raw": "05060708090a0b0c0d0e0f101112131415161718191a1b1cdc29b72916c5b6b8e128047ecb2c9670899b3690cef1b7",
+      "envelope": "$ba$7$05060708090a0b0c0d0e0f101112131415161718191a1b1cdc29b72916c5b6b8e128047ecb2c9670899b3690cef1b7",
+      "validUtf8": true
+    },
+    {
+      "id": "libsodium-6",
+      "key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+      "version": 7,
+      "nonce": "060708090a0b0c0d0e0f101112131415161718191a1b1c1d",
+      "plaintext": "﻿﻿text",
+      "decoded": "﻿text",
+      "plaintextHex": "efbbbfefbbbf74657874",
+      "raw": "060708090a0b0c0d0e0f101112131415161718191a1b1c1d66124777bae910b6b5dab2d05894245ea7f1bd0c4a22137b9368",
+      "envelope": "$ba$7$060708090a0b0c0d0e0f101112131415161718191a1b1c1d66124777bae910b6b5dab2d05894245ea7f1bd0c4a22137b9368",
+      "validUtf8": true
+    },
+    {
+      "id": "libsodium-7",
+      "key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+      "version": 7,
+      "nonce": "0708090a0b0c0d0e0f101112131415161718191a1b1c1d1e",
+      "plaintext": "prefix﻿text",
+      "decoded": "prefix﻿text",
+      "plaintextHex": "707265666978efbbbf74657874",
+      "raw": "0708090a0b0c0d0e0f101112131415161718191a1b1c1d1e3f1375a970d9f97790f1aa731433c7ddcf4c7a8352fc0fec56aef6bd44",
+      "envelope": "$ba$7$0708090a0b0c0d0e0f101112131415161718191a1b1c1d1e3f1375a970d9f97790f1aa731433c7ddcf4c7a8352fc0fec56aef6bd44",
+      "validUtf8": true
+    },
+    {
+      "id": "libsodium-8",
+      "key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+      "version": 7,
+      "nonce": "08090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "plaintext": null,
+      "decoded": null,
+      "plaintextHex": "fffe00",
+      "raw": "08090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f83cf80c0dea8b99b422b206ad9163b5256da20",
+      "envelope": "$ba$7$08090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f83cf80c0dea8b99b422b206ad9163b5256da20",
+      "validUtf8": false
+    }
+  ],
+  "rfcSecret": "12345678901234567890",
+  "hotp": [
+    {
+      "counter": 0,
+      "code": "755224"
+    },
+    {
+      "counter": 1,
+      "code": "287082"
+    },
+    {
+      "counter": 2,
+      "code": "359152"
+    },
+    {
+      "counter": 3,
+      "code": "969429"
+    },
+    {
+      "counter": 4,
+      "code": "338314"
+    },
+    {
+      "counter": 5,
+      "code": "254676"
+    },
+    {
+      "counter": 6,
+      "code": "287922"
+    },
+    {
+      "counter": 7,
+      "code": "162583"
+    },
+    {
+      "counter": 8,
+      "code": "399871"
+    },
+    {
+      "counter": 9,
+      "code": "520489"
+    }
+  ],
+  "totp": [
+    {
+      "nowMs": 59000,
+      "counter": 1,
+      "code": "287082"
+    },
+    {
+      "nowMs": 1111111109000,
+      "counter": 37037036,
+      "code": "081804"
+    },
+    {
+      "nowMs": 1111111111000,
+      "counter": 37037037,
+      "code": "050471"
+    },
+    {
+      "nowMs": 1234567890000,
+      "counter": 41152263,
+      "code": "005924"
+    },
+    {
+      "nowMs": 2000000000000,
+      "counter": 66666666,
+      "code": "279037"
+    },
+    {
+      "nowMs": 20000000000000,
+      "counter": 666666666,
+      "code": "353130"
+    }
+  ]
+}
