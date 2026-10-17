@@ -424,6 +424,48 @@ pub fn audit_enrollment_begin(
     audit_begin(tx, subject, version)?;
     telemetry(tx, "two-factor-enable", "accepted", subject, None, version)
 }
+/// Current verified factor pool, not a reusable identity grant; caller holds authorization lock.
+pub struct ManagedPool {
+    subject: String,
+    factor: Factor,
+}
+pub fn managed_pool(tx: &Transaction<'_>, subject: &str) -> Result<ManagedPool, Error> {
+    writer(tx)?;
+    if !crate::password_credential::capture_subject(tx, subject)?.is_some_and(|c| c.eligible_mfa())
+    {
+        return Err(denied());
+    }
+    Ok(ManagedPool {
+        subject: subject.to_owned(),
+        factor: factor(tx, subject, Stage::Login)?,
+    })
+}
+impl ManagedPool {
+    pub fn encrypted(&self) -> &str {
+        &self.factor.backup
+    }
+    pub fn finish(
+        &self,
+        tx: &Transaction<'_>,
+        replacement: Option<&str>,
+        session: &str,
+        version: u64,
+        now: i64,
+    ) -> Result<(), Error> {
+        let event = if let Some(value) = replacement {
+            one_change(tx.execute("UPDATE main.twoFactor SET backupCodes=?1 WHERE id=?2 AND backupCodes=?3 COLLATE BINARY",params![value,self.factor.id,self.factor.backup.as_str()]).map_err(invalid)?)?;
+            "mfa_backup_codes_regenerated"
+        } else {
+            "mfa_backup_codes_viewed"
+        };
+        if version > 9_007_199_254_740_991 {
+            return Err(invalid("audit version"));
+        }
+        let entity = serde_json::to_string(&(&self.subject, session, version)).map_err(invalid)?;
+        tx.execute("INSERT INTO main.workspace_audit(event_type,entity_type,entity_id,actor,created_at) VALUES(?1,'native_mfa_backup_management_v1',?2,?3,?4)",params![event,entity,format!("user:{}",self.subject),date(now)?]).map_err(invalid)?;
+        Ok(())
+    }
+}
 #[derive(Clone, Copy)]
 pub enum Method {
     Totp,

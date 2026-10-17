@@ -152,6 +152,27 @@ pub fn capture_subject(
     };
     Ok(capture(control, &email)?.filter(|s| s.subject == subject))
 }
+/// Session-selected KDF candidate only. Expiry, fresh/current session and access must be
+/// re-resolved by the protected continuation under the writer lock after verification.
+pub fn capture_session(
+    control: &Transaction<'_>,
+    token: &str,
+) -> Result<Option<(CredentialSnapshot, String)>, Error> {
+    crate::control_migration::validate_current_control(control).map_err(malformed)?;
+    let row: Option<(String, String)> = control
+        .query_row(
+            "SELECT id,userId FROM main.session WHERE token=?1 COLLATE BINARY",
+            [token],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .optional()
+        .map_err(malformed)?;
+    let Some((id, subject)) = row else {
+        return Ok(None);
+    };
+    let id = text(id).map_err(malformed)?;
+    Ok(capture_subject(control, &subject)?.map(|c| (c, id)))
+}
 impl CredentialSnapshot {
     pub fn eligible_enrollment(&self) -> bool {
         self.email_verified && !self.mfa_enabled

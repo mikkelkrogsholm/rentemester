@@ -1,0 +1,216 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native authenticated backup-code management",
+    "goal": "View and replace own backup codes with current fresh identity and password, without pre-commit disclosure",
+    "scope": "R04/R41 admitted-control own-factor management; endpoints/physical admission/full identity remain pending"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native credential use-case orchestration",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Resolve own current fresh identity and recheck password before atomic backup-code view or regeneration",
+        "rationale": "Native identity needs authenticated recovery-code management",
+        "excludes": [
+          "Public endpoints/physical admission/reset/trusted-device/full provider parity"
+        ]
+      },
+      "interfaces": [
+        "action.backup_management"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Current fresh session plus password returns existing codes or replaces pool and commits accepted audit before disclosure",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control, active enrolled user, signed session proof and trusted runtime",
+        "when": "Run native own-code view or regeneration with password and current locked facts",
+        "then": "Current fresh session plus password returns existing codes or replaces pool and commits accepted audit before disclosure"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Wrong/stale/cross-key/profile/workspace/challenge proof or changed credential/session/access/factor cannot disclose codes",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control, active enrolled user, signed session proof and trusted runtime",
+        "when": "Run native own-code view or regeneration with password and current locked facts",
+        "then": "Wrong/stale/cross-key/profile/workspace/challenge proof or changed credential/session/access/factor cannot disclose codes"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Late failure restores old pool and audit; commit uncertainty withholds codes and retires handle",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control, active enrolled user, signed session proof and trusted runtime",
+        "when": "Run native own-code view or regeneration with password and current locked facts",
+        "then": "Late failure restores old pool and audit; commit uncertainty withholds codes and retires handle"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Password/freshness/own-subject resolution and atomic audit deliberately strengthen the source server-only view helper",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control, active enrolled user, signed session proof and trusted runtime",
+        "when": "Run native own-code view or regeneration with password and current locked facts",
+        "then": "Password/freshness/own-subject resolution and atomic audit deliberately strengthen the source server-only view helper"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Current token and credential recheck, writer-serialized pool management and recovery consumption have no lost update",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic control, active enrolled user, signed session proof and trusted runtime",
+        "when": "Run native own-code view or regeneration with password and current locked facts",
+        "then": "Current token and credential recheck, writer-serialized pool management and recovery consumption have no lost update"
+      }
+    },
+    "action.backup_management": {
+      "kind": "action",
+      "description": "View or regenerate own backup codes with current fresh session and locked password recheck",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "verified_session_and_current_password": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "admitted_control_connection_trusted_keyring_cookie_clock": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Opaque invalid_credentials, invalid_control, connection_refused, auth crypto/clock errors; known committed Rejected vs NotCommitted/OutcomeUnknown failures"
+        },
+        "preconditions": [
+          "Caller owns admitted control/workspace lifetime; runtime supplies trusted keyring/signer/Clock/audit configuration",
+          "User has current fresh session and verified email/enabled verified MFA factor with active access"
+        ],
+        "postconditions": [
+          "Codes leave only after current identity/password recheck and known pool/audit commit",
+          "Management preserves sessions/TOTP/failure budget and refuses unsupported old pools"
+        ],
+        "external_effects": [
+          "Declared current factor backupCodes replacement for regeneration and accepted management telemetry"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Current identity/revocation, one-time challenge/code consumption and committed rejection counters require one serialized control transaction",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Verified-cookie candidate snapshot, unlocked KDF, locked credential/session/factor recheck, strict pool view or CAS replacement and atomic audit before code output"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.backup_management",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.backup_management",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.backup_management",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.backup_management",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.backup_management",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.backup_management",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native authenticated backup-code management",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "549fd5f7a063d8217d9d512a18ab056c45b0ef876bf93e50e30a7ca1b7547298"
+      }
+    }
+  }
+}

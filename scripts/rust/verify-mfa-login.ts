@@ -1,5 +1,6 @@
 /** Native enrolled MFA flow, actual source crypto/session oracle, independent process races. */
 import assert from "node:assert/strict";
+import { verifyManagement } from "./backup-management-cases";
 import { verifyEnrollment } from "./mfa-enrollment-cases";
 import {
 	copyFileSync,
@@ -120,7 +121,15 @@ function start(f: any, request: any = {}, point = "") {
 		[helper, "--ignored", "--exact", "mfa_login::tests::probe", "--nocapture"],
 		{
 			cwd: work,
-			env: { ...process.env, RM_MFA_POINT: point, RM_MFA_MARKER: f.marker },
+			env: {
+				...process.env,
+				RM_MFA_POINT: point.startsWith("password:") ? "" : point,
+				RM_MFA_MARKER: f.marker,
+				RM_PASSWORD_LOGIN_POINT: point.startsWith("password:")
+					? point.slice(9)
+					: "",
+				RM_PASSWORD_LOGIN_MARKER: f.marker,
+			},
 			stdin: "pipe",
 			stdout: "pipe",
 			stderr: "pipe",
@@ -937,16 +946,31 @@ try {
 			opts,
 		})),
 	);
+	sensitiveRecoveryCodes.push(
+		...(await verifyManagement({
+			fixture,
+			run,
+			start,
+			done,
+			marker,
+			sql,
+			image,
+			record,
+			now,
+			key,
+			opts,
+		})),
+	);
 	const report = JSON.stringify(
 		{
 			ok: true,
 			scope:
-				"Native password-bound MFA enrollment and enrolled TOTP/backup-code login on admitted synthetic control handles; actual source cookie/session oracle and independent WAL/DELETE process races",
+				"Native MFA enrollment, enrolled TOTP/backup-code login and fresh/password own-code management on admitted synthetic control handles; actual source cookie/session oracle and independent WAL/DELETE process races",
 			checks,
 			observations,
 			limits: [
-				"Internal enrollment and enrolled TOTP/backup paths only: no exposed endpoint, actual handle/lifetime admission or live dual writers",
-				"Backup-code management/trusted-device/rememberMe/OS-native credential and full identity/provider parity remain pending",
+				"Internal MFA enrollment/login/own-code management paths only: no exposed endpoint, actual handle/lifetime admission or live dual writers",
+				"Trusted-device/rememberMe/OS-native credential and full identity/provider parity remain pending",
 				"Private native context and replay state are stricter than legacy in-flight challenges",
 				"Commit busy exercised; OS/storage crash and restore-lineage qualification remain separate",
 			],

@@ -1,0 +1,65 @@
+{
+  "increment": "backup-management-1",
+  "code_revision": "sha256:686367e8df1079346e12826cd66e815ee969e7d98221aa233519f92efa426158",
+  "spec_revision": "sha256:92cf1f69d84f0390a798c2af173b77ce762991b56e38eb59805e9c0faf992368",
+  "state": "verified-native-authenticated-own-backup-code-management",
+  "checks": {
+    "native_tests_passed": 88,
+    "ignored_subprocess_helpers": 19,
+    "integration_checks": 11302,
+    "mfa_process_checks": 239,
+    "new_distinct_management_process_cases": 69,
+    "independent_harness_repetitions": 1,
+    "strict_fmt_clippy_boundaries_typecheck_lint": "PASS"
+  },
+  "claims": [
+    "Own-code view and regeneration require runtime workspace/key/profile/session-kind proof binding, current password, exact current token/sessionID, fresh session, active verified-email MFA-enabled identity and exactly one verified factor",
+    "Canonical session-selected credential read snapshot and metadata feed shared unlocked KDF/locked credential recheck; separate writers changing password/session/access/email/MFA/factor while unlocked cannot disclose codes",
+    "Strict current0..10 encrypted default pool validation precedes view or replacement; regeneration uses unbiased ten unique codes, fresh current-key cipher and exact old-ciphertext CAS",
+    "View audit and regenerate pool/audit changes use one writer commit before code output; distinct append-only workspace_audit event has JSON subject/session/version tuple, user actor and trusted sampled timestamp without bearer/code/cipher",
+    "Sessions/factor secret/verification/budgets/locks/TOTP replay remain unchanged; old codes refuse and existing pending enrolled login uses current replacement pool",
+    "Actual source crypto/server-only view/HTTP regeneration interoperate on separate synthetic copies; WAL/DELETE lock races, post-KDF rechecks, full late rollback and real commit-busy at both operations are explicit"
+  ],
+  "limits": [
+    "No public management endpoint/rate/origin/bounded blocking, reset/trusted-device/service lifecycle or full identity parity",
+    "Private proof provenance is checked by management runtime; no blanket assertion that all existing adapters compare current signer configuration or establish historical provider assurance",
+    "Candidate/current facts and append-only audit do not establish universal historical chronology/normalization/restore lineage or qualify live dual writers",
+    "Sensitive owned code buffers only; caller/dependency/compiler/allocator/OS copies and whole-operation constant-time execution remain outside claims",
+    "No actual physical SQLite-handle/workspace lifetime admission, real user/company adoption, platform distribution or cutover",
+    "Semantic Graphify refresh covers current implementation README/CONTRACT; generated JSON/logs/historical snapshots/unrelated documents not semantically refreshed"
+  ],
+  "verification_mode": "One full final-code rust:verify run plus independent239-case process repetition and2 focused native tests",
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": {
+    "crates/rentemester-application/src/backup_management.rs": "5800f1d9000c876dc522af67055fb05d901f9999f5e496fa84ed79cf7091a028",
+    "crates/rentemester-application/src/lib.rs": "602f252f957c883c4275249e5f8f2e6c0fa2408dc43d672dac8a2019b6f2fc86",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "f6ac5660900a7080bd13be3dd04fbeeed1a82c51daf3c13c1044385be0a4cb5f",
+    "crates/rentemester-application/src/password_login.rs": "21de7b13e14d005f8266a1659bc155e70ae89b1e96ce109a42d3b4572b118678",
+    "crates/rentemester-runtime/src/auth.rs": "c978c935226c589e301bd8ec4b696f3b2f820ae32431db16784f555c36620278",
+    "crates/rentemester-storage/src/mfa_login.rs": "e61b013b895332535987c99fef079825392f67563bfafd2cfc02968a3d5f76cf",
+    "crates/rentemester-storage/src/password_credential.rs": "d0ee4d9331a35f5589f58745d50313a8cb3be9795be35867afdbdf039cb10248",
+    "docs/architecture/rust-target/implementation/backup-management/CONTRACT.md": "d8d1db15a3a615b4312f3ba06bc97f423ece92c616be481386994d3bd2810c8a",
+    "docs/architecture/rust-target/implementation/backup-management/gdd.json": "efe90cc07c3ccb86aeac6cf0677f0a01dddbce0fa6c8a6accd389f93f89a8148",
+    "docs/architecture/rust-target/implementation/backup-management/readiness.json": "27ca518827400ca08cd1a8773e985e25e41b42a76d61a426462b45359e7874d7",
+    "node_modules/better-auth/dist/crypto/index.mjs": "eda1857eadcf2dea50618c61da26e5fb5e79efd7755e665cc3d9f244a322c2a0",
+    "node_modules/better-auth/dist/plugins/two-factor/backup-codes/index.mjs": "014a85ea00ca8f6f03654a33fd23f2a8cb3fc365b660d970c3a37fcc920476f2",
+    "scripts/rust/backup-management-cases.ts": "395e0f4758d6e67ed5d36dd4dfd11867fa01607bc7f6ec2a3b0e3788eb5c4989",
+    "scripts/rust/verify-mfa-login.ts": "238d70602a2dfae6ad5a0d4e043c34ffa27ee64be054727f71a0a8d4450ca7ab",
+    "scripts/rust/verify.ts": "6234bca4d9e5f80df53276f5cedc7021c13c5d1e677f807a0d881dc72a7aacc1",
+    "src/core/workspace-migrations/0001-workspace-control-baseline.json": "8358aef2635b37b47baf56a39f424f9aff3dcb7c17dbc2c3450803a3e09eaac1",
+    "src/core/workspace-migrations/0012-auth-recovery-telemetry-v12.json": "bb9f9dea7aed5ed09a50285019bf3f94749ed874ccdb6647d217604ce779e87a",
+    "src/server/better-auth.ts": "9513797eb1b1a82b0c9d592fb00e3317d6d33b6eb29c7bf0c548a0a4c58c9b73"
+  },
+  "evidence_files": {
+    "rust-verify.txt": "5cb06317a9109d978be4d8ce7859d5d114b3caca8eb5114c531196d9b0c61aa7",
+    "review-proof.txt": "8a82dbde3229d9ac9d538d7cb552b9d5cfc8415a313e244361c3fc3b40dbe326",
+    "review-password.txt": "49bc3cfc0b8301a435f418f2d2c063f40c04bff220b60034f90cfb94d3521c7e",
+    "review-process.json": "661506285fc5336a5a8e80aa1abb3cf86ed277ce7f006522e0428c1d5eea0c81",
+    "review-checks.json": "e52e5e2b282c6a4ccef4922d85faa84d8aa6d0273f7b5c1c5de585b5f0f64a34",
+    "review-readiness.json": "27ca518827400ca08cd1a8773e985e25e41b42a76d61a426462b45359e7874d7",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "5c951bdfdfc5bf8ebd7eaac2bdf0234bf5d80a6d317adf85782216df72a211ea"
+  }
+}

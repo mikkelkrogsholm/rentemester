@@ -37,6 +37,7 @@ pub fn execute<T>(
     password: &str,
     continue_factor: impl FnOnce(&Transaction<'_>, FirstFactor) -> Result<T, Error>,
 ) -> Result<T, Failure> {
+    // Preserve the public email operation's preflight/error precedence.
     crate::control_fence::connection_ready(control).map_err(|_| {
         failure(
             Error::new("connection_refused", "credential connection refused"),
@@ -44,6 +45,28 @@ pub fn execute<T>(
         )
     })?;
     let email = password_credential::lookup_email(email).map_err(|e| failure(e, true))?;
+    execute_captured(
+        control,
+        password,
+        |tx| password_credential::capture(tx, &email).map(|c| c.map(|c| (c, ()))),
+        |tx, factor, ()| continue_factor(tx, factor),
+    )
+}
+/// Candidate metadata has no authority: the continuation must re-resolve current session facts.
+pub(crate) fn execute_captured<M, T>(
+    control: &mut Connection,
+    password: &str,
+    capture: impl FnOnce(
+        &Transaction<'_>,
+    ) -> Result<Option<(password_credential::CredentialSnapshot, M)>, Error>,
+    continue_factor: impl FnOnce(&Transaction<'_>, FirstFactor, M) -> Result<T, Error>,
+) -> Result<T, Failure> {
+    crate::control_fence::connection_ready(control).map_err(|_| {
+        failure(
+            Error::new("connection_refused", "credential connection refused"),
+            false,
+        )
+    })?;
     if password.len() > rentemester_runtime::password::INPUT_BYTE_LIMIT {
         return Err(failure(password_credential::denied(), true));
     }
@@ -56,7 +79,7 @@ pub fn execute<T>(
             r.get::<_, i64>(0)
         })
         .map_err(|_| unavailable())
-        .and_then(|_| password_credential::capture(&read, &email));
+        .and_then(|_| capture(&read));
     let ended = read.rollback();
     if ended.is_err() {
         return Err(failure(unavailable(), false));
@@ -64,20 +87,21 @@ pub fn execute<T>(
     let candidate = captured.map_err(|e| failure(e, true))?;
     #[cfg(test)]
     checkpoint("unlocked");
-    verify_password(password, candidate.as_ref().map(|c| c.password_hash())).map_err(|e| {
+    verify_password(password, candidate.as_ref().map(|c| c.0.password_hash())).map_err(|e| {
         failure(
             Error::new(e.code(), "credential verification refused"),
             true,
         )
     })?;
-    let candidate = candidate.ok_or_else(|| failure(password_credential::denied(), true))?;
+    let (candidate, metadata) =
+        candidate.ok_or_else(|| failure(password_credential::denied(), true))?;
     let tx = control
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .map_err(|_| failure(unavailable(), false))?;
     let result = candidate.recheck(&tx).and_then(|factor| {
         #[cfg(test)]
         checkpoint("locked");
-        continue_factor(&tx, factor)
+        continue_factor(&tx, factor, metadata)
     });
     let value = match result {
         Ok(value) => value,

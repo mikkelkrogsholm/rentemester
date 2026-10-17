@@ -63,6 +63,9 @@ fn probe() {
     db.execute_batch("PRAGMA foreign_keys=ON;PRAGMA synchronous=FULL;")
         .unwrap();
     db.busy_timeout(std::time::Duration::ZERO).unwrap();
+    if let Some(sql) = request["preflight"].as_str() {
+        db.execute_batch(sql).unwrap();
+    }
     let key = request["key"].as_str().unwrap();
     let cookies = CookieVerifier::new(
         request["workspace"].as_str().unwrap_or("w"),
@@ -82,7 +85,35 @@ fn probe() {
         clock: &clock,
         audit_key_version: 1,
     };
-    let result = if request["mode"] == "enroll-begin" {
+    let result = if request["mode"] == "codes-view" || request["mode"] == "codes-regenerate" {
+        let signer = CookieVerifier::new(
+            request["proofWorkspace"].as_str().unwrap_or("w"),
+            if request["proofDevelopment"] == true {
+                CookieProfile::Development
+            } else {
+                CookieProfile::Secure
+            },
+            request["proofKey"].as_str().unwrap_or(key),
+        )
+        .unwrap();
+        match signer.verify(request["cookie"].as_str(), request["service"].as_str()) {
+            Err(e) => Err(failure(error(e.code()), true)),
+            Ok(proof) => crate::backup_management::execute(
+                &mut db,
+                &runtime,
+                &proof,
+                request["password"]
+                    .as_str()
+                    .unwrap_or("Synthetic password 123!"),
+                if request["mode"] == "codes-view" {
+                    crate::backup_management::Operation::View
+                } else {
+                    crate::backup_management::Operation::Regenerate
+                },
+            )
+            .map(|codes| json!({"ok":true,"codes":codes.iter().collect::<Vec<_>>()})),
+        }
+    } else if request["mode"] == "enroll-begin" {
         crate::mfa_enrollment::begin(&mut db,&runtime,request["email"].as_str().unwrap_or("u@example.invalid"),request["password"].as_str().unwrap_or("Synthetic password 123!"),request["issuer"].as_str().unwrap_or("Rentemester"))
             .map(|s|json!({"ok":true,"pending":true,"cookie":s.cookie.request_header(),"uri":s.uri.as_str()}))
     } else if request["mode"] == "enroll-confirm" {

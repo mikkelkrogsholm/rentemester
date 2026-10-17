@@ -45,6 +45,9 @@ pub struct CookieVerifier {
 pub struct VerifiedCookie {
     workspace: String,
     token: Zeroizing<String>,
+    key_tag: [u8; 32],
+    profile: CookieProfile,
+    session: bool,
 }
 impl VerifiedCookie {
     pub fn workspace(&self) -> &str {
@@ -123,12 +126,19 @@ impl CookieVerifier {
             encoded.as_str()
         ))))
     }
-    pub fn accepts_challenge(&self, proof: &VerifiedChallenge) -> bool {
+    fn accepts(&self, proof: &VerifiedCookie, session: bool) -> bool {
         use subtle::ConstantTimeEq;
         let tag: [u8; 32] = Sha256::digest(self.key.as_bytes()).into();
-        proof.cookie.workspace() == self.workspace
+        proof.workspace() == self.workspace
             && proof.profile == self.profile
+            && proof.session == session
             && bool::from(tag[..].ct_eq(&proof.key_tag[..]))
+    }
+    pub fn accepts_session(&self, proof: &VerifiedCookie) -> bool {
+        self.accepts(proof, true)
+    }
+    pub fn accepts_challenge(&self, proof: &VerifiedChallenge) -> bool {
+        self.accepts(&proof.cookie, false)
     }
     pub fn verify_challenge(
         &self,
@@ -140,15 +150,12 @@ impl CookieVerifier {
             service_header,
             "__Secure-better-auth.two_factor",
             "better-auth.two_factor",
+            false,
         )?;
         if !proof.token.starts_with("2fa-") {
             return Err(AuthError::InvalidCredentials);
         }
-        Ok(VerifiedChallenge {
-            cookie: proof,
-            key_tag: Sha256::digest(self.key.as_bytes()).into(),
-            profile: self.profile,
-        })
+        Ok(VerifiedChallenge { cookie: proof })
     }
     /// Human-only adapter: service credentials require their own dispatcher, without fallback.
     pub fn verify(
@@ -161,6 +168,7 @@ impl CookieVerifier {
             service_header,
             "__Secure-better-auth.session_token",
             "better-auth.session_token",
+            true,
         )
     }
     fn verify_named(
@@ -169,6 +177,7 @@ impl CookieVerifier {
         service_header: Option<&str>,
         secure: &str,
         plain: &str,
+        session: bool,
     ) -> Result<VerifiedCookie, AuthError> {
         let denied = AuthError::InvalidCredentials;
         if service_header.is_some() {
@@ -244,14 +253,15 @@ impl CookieVerifier {
         Ok(VerifiedCookie {
             workspace: self.workspace.clone(),
             token: Zeroizing::new(selected.ok_or(denied)?),
+            key_tag: Sha256::digest(self.key.as_bytes()).into(),
+            profile: self.profile,
+            session,
         })
     }
 }
 /// Bearer proof only; current native context/identity and one-time state must still be checked.
 pub struct VerifiedChallenge {
     cookie: VerifiedCookie,
-    key_tag: [u8; 32],
-    profile: CookieProfile,
 }
 impl VerifiedChallenge {
     pub fn workspace(&self) -> &str {
@@ -308,6 +318,30 @@ impl Clock for SystemClock {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn current_session_proof_binds_workspace_key_profile_and_kind() {
+        let key = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8";
+        let v = CookieVerifier::new("w", CookieProfile::Secure, key).unwrap();
+        let c = v.issue_session("synthetic-token").unwrap();
+        let proof = v.verify(Some(c.request_header()), None).unwrap();
+        assert!(v.accepts_session(&proof));
+        for other in [
+            CookieVerifier::new("other", CookieProfile::Secure, key).unwrap(),
+            CookieVerifier::new("w", CookieProfile::Development, key).unwrap(),
+            CookieVerifier::new(
+                "w",
+                CookieProfile::Secure,
+                "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE",
+            )
+            .unwrap(),
+        ] {
+            assert!(!other.accepts_session(&proof));
+        }
+        let c = v.issue_challenge("2fa-synthetic-token").unwrap();
+        let challenge = v.verify_challenge(Some(c.request_header()), None).unwrap();
+        assert!(v.accepts_challenge(&challenge));
+        assert!(!v.accepts_session(&challenge.cookie));
+    }
     #[test]
     fn independent_python_wire_vectors_and_fixed_errors() {
         let corpus: serde_json::Value =

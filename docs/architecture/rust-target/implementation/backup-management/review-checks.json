@@ -1,0 +1,70 @@
+{
+  "review": "backup-management-final",
+  "read_only": true,
+  "result": "PASS",
+  "remaining_material_findings": [],
+  "command": "bun run scripts/rust/verify-mfa-login.ts",
+  "checks": 239,
+  "management_checks": 69,
+  "process_report": "/tmp/rm-management-review-process.json",
+  "stderr_report": "/tmp/rm-management-review-process.err",
+  "stderr_summary": "One sanitized Better Auth warning; no error or secret content.",
+  "reviewed_scope": [
+    "cookie signer/workspace/profile/kind provenance",
+    "exact current credential, subject and session ID capture and writer recheck",
+    "fresh session and strict verified factor admission",
+    "current pool parsing and encrypted replacement CAS",
+    "canonical audit representation and committed disclosure",
+    "rollback, writer races, commit-unknown and proof-before-unready-handle refusal"
+  ],
+  "assumptions": [
+    "Canonical admitted synthetic control handles; actual physical handle admission and endpoint integration are explicitly outside this increment."
+  ],
+  "sha256": {
+    "crates/rentemester-application/src/lib.rs": "602f252f957c883c4275249e5f8f2e6c0fa2408dc43d672dac8a2019b6f2fc86",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "f6ac5660900a7080bd13be3dd04fbeeed1a82c51daf3c13c1044385be0a4cb5f",
+    "crates/rentemester-application/src/password_login.rs": "21de7b13e14d005f8266a1659bc155e70ae89b1e96ce109a42d3b4572b118678",
+    "crates/rentemester-application/src/backup_management.rs": "5800f1d9000c876dc522af67055fb05d901f9999f5e496fa84ed79cf7091a028",
+    "crates/rentemester-runtime/src/auth.rs": "c978c935226c589e301bd8ec4b696f3b2f820ae32431db16784f555c36620278",
+    "crates/rentemester-storage/src/mfa_login.rs": "e61b013b895332535987c99fef079825392f67563bfafd2cfc02968a3d5f76cf",
+    "crates/rentemester-storage/src/password_credential.rs": "d0ee4d9331a35f5589f58745d50313a8cb3be9795be35867afdbdf039cb10248",
+    "scripts/rust/backup-management-cases.ts": "395e0f4758d6e67ed5d36dd4dfd11867fa01607bc7f6ec2a3b0e3788eb5c4989",
+    "scripts/rust/verify-mfa-login.ts": "238d70602a2dfae6ad5a0d4e043c34ffa27ee64be054727f71a0a8d4450ca7ab",
+    "docs/architecture/rust-target/implementation/backup-management/CONTRACT.md": "d8d1db15a3a615b4312f3ba06bc97f423ece92c616be481386994d3bd2810c8a",
+    "docs/architecture/rust-target/implementation/backup-management/gdd.json": "efe90cc07c3ccb86aeac6cf0677f0a01dddbce0fa6c8a6accd389f93f89a8148",
+    "docs/architecture/rust-target/implementation/backup-management/readiness.json": "27ca518827400ca08cd1a8773e985e25e41b42a76d61a426462b45359e7874d7"
+  },
+  "previous_sha256": {
+    "crates/rentemester-application/src/lib.rs": "602f252f957c883c4275249e5f8f2e6c0fa2408dc43d672dac8a2019b6f2fc86",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "f6ac5660900a7080bd13be3dd04fbeeed1a82c51daf3c13c1044385be0a4cb5f",
+    "crates/rentemester-application/src/password_login.rs": "21de7b13e14d005f8266a1659bc155e70ae89b1e96ce109a42d3b4572b118678",
+    "crates/rentemester-application/src/backup_management.rs": "5800f1d9000c876dc522af67055fb05d901f9999f5e496fa84ed79cf7091a028",
+    "crates/rentemester-runtime/src/auth.rs": "c978c935226c589e301bd8ec4b696f3b2f820ae32431db16784f555c36620278",
+    "crates/rentemester-storage/src/mfa_login.rs": "e61b013b895332535987c99fef079825392f67563bfafd2cfc02968a3d5f76cf",
+    "crates/rentemester-storage/src/password_credential.rs": "d0ee4d9331a35f5589f58745d50313a8cb3be9795be35867afdbdf039cb10248",
+    "scripts/rust/backup-management-cases.ts": "fbf04c1c6d9130949170370d2fa40319ca445c0148a569ba99d88c33f468878a",
+    "scripts/rust/verify-mfa-login.ts": "238d70602a2dfae6ad5a0d4e043c34ffa27ee64be054727f71a0a8d4450ca7ab",
+    "docs/architecture/rust-target/implementation/backup-management/CONTRACT.md": "d8d1db15a3a615b4312f3ba06bc97f423ece92c616be481386994d3bd2810c8a",
+    "docs/architecture/rust-target/implementation/backup-management/gdd.json": "8ce3c39f1be74e9e3e898a34b7565e7d9ff27f8d3e371ef60b0edf0aa67a0189",
+    "docs/architecture/rust-target/implementation/backup-management/readiness.json": "4d53ef3392c769965eeb2b663a79864f3b5d07ce624b31836092bba0ee6dce78"
+  },
+  "final_repeat": "PASS after final formatted Reflect.get source viewBackupCodes typing correction; 239 checks, including 69 management checks.",
+  "harness_typing_correction_review": "Actual source method obtained through Reflect.get(auth.api, \"viewBackupCodes\"), asserted function, then invoked with the same userId body and compared with native regeneration.",
+  "previous_doc_sha256_before_metadata_correction": {
+    "docs/architecture/rust-target/implementation/backup-management/CONTRACT.md": "d8d1db15a3a615b4312f3ba06bc97f423ece92c616be481386994d3bd2810c8a",
+    "docs/architecture/rust-target/implementation/backup-management/gdd.json": "8ce3c39f1be74e9e3e898a34b7565e7d9ff27f8d3e371ef60b0edf0aa67a0189",
+    "docs/architecture/rust-target/implementation/backup-management/readiness.json": "4d53ef3392c769965eeb2b663a79864f3b5d07ce624b31836092bba0ee6dce78"
+  },
+  "metadata_only_verification": {
+    "result": "PASS",
+    "tests_rerun": false,
+    "existing_independent_process_checks": 239,
+    "unchanged_native_and_harness_hashes": true,
+    "contract_hash_unchanged": true,
+    "source_contract_revision_matches": true,
+    "readiness_checks": "Independent gdd 0.8.0 validation to /tmp: 3 PASS, exact checks and spec_revision match committed-location report; structural only.",
+    "review": "Current GDD correctly limits management errors to NotCommitted/OutcomeUnknown without committed Rejected or challenge consumption; risks describe fresh identity, current pool/audit, recovery consumption races, nonidempotent regeneration and unknown-commit reconciliation, consistent with unchanged CONTRACT and execute_captured implementation.",
+    "readiness_spec_revision_independently_validated": true,
+    "independent_readiness_report": "/tmp/rm-management-review-readiness.json"
+  }
+}
