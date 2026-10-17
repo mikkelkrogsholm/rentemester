@@ -1,0 +1,43 @@
+bun test v1.4.0 (34cbb9a40)
+
+tests/unit/retention-calendar.test.ts:
+(pass) retention computes valid target calendar deadline [111.41ms]
+(pass) retention updates exact SQLite IDs beyond JavaScript safe integers [104.36ms]
+
+tests/unit/gdpr-erasure-schema-migration.test.ts:
+(pass) GDPR erasure source migration > preserves legacy tombstones, enables audit overlays and is idempotent [204.11ms]
+
+tests/unit/companies-schema-migration.test.ts:
+(pass) ensureNullableVatPeriodColumn — legacy NOT NULL rebuild > relaxes NOT NULL to nullable while preserving every stored value [0.69ms]
+(pass) ensureNullableVatPeriodColumn — legacy NOT NULL rebuild > an explicit NULL write succeeds after the rebuild (the deregistration path) [0.43ms]
+(pass) ensureNullableVatPeriodColumn — legacy NOT NULL rebuild > CHECK constraints on the OTHER columns survive the rebuild [0.46ms]
+(pass) ensureNullableVatPeriodColumn — legacy NOT NULL rebuild > the companies_fiscal_lock trigger is restored by the rebuild [0.41ms]
+(pass) ensureNullableVatPeriodColumn — legacy NOT NULL rebuild > is idempotent: a second call on the already-nullable table is a no-op [0.40ms]
+
+tests/unit/db-customers-migration.test.ts:
+(pass) EJER-3 customers payment_terms_days rebuild (db.migrate) > (a) legacy NOT NULL becomes nullable and every stored value (incl. a deliberate 30) is preserved [163.10ms]
+(pass) EJER-3 customers payment_terms_days rebuild (db.migrate) > (b) migrate is idempotent — a second run leaves the table and its data untouched [211.95ms]
+(pass) EJER-3 customers payment_terms_days rebuild (db.migrate) > (c) crash-recovery: a leftover customers_payment_terms_rebuild table does not block migrate [159.40ms]
+(pass) EJER-3 customers payment_terms_days rebuild (db.migrate) > (d) data/structure integrity — all customer columns survive the rebuild [160.01ms]
+
+tests/unit/schema-version.test.ts:
+(pass) schema version compatibility > migrates a v2 recurring template and generation losslessly with foreign keys [235.79ms]
+(pass) schema version compatibility > binds the immutable baseline artifact to schema and normalization bytes [0.38ms]
+(pass) schema version compatibility > records the contiguous checksummed migration catalog idempotently [125.18ms]
+(pass) schema version compatibility > makes issued invoice PDF evidence append-only and reasserts its guards [125.99ms]
+(pass) schema version compatibility > makes document metadata enrichments append-only and restores guards [127.41ms]
+(pass) schema version compatibility > reasserts accounting-draft append-only guards on every open [127.10ms]
+(pass) schema version compatibility > reasserts internal-voucher evidence guards on every open [126.99ms]
+(pass) schema version compatibility > opens a pre-change v1 ledger and applies the append-only v2 events migration [164.60ms]
+(pass) schema version compatibility > upgrades an isolated v3 schema through the current version without touching a live ledger [165.23ms]
+(pass) schema version compatibility > accepts a complete append-only history when a future runtime supports it [0.11ms]
+(pass) schema version compatibility > rejects a database made by newer software before creating business tables [0.18ms]
+(pass) schema version compatibility > rejects a modified baseline checksum [100.94ms]
+(pass) schema version compatibility > adopts a checksum only from a legacy table that never had the column [108.20ms]
+(pass) schema version compatibility > rejects a null checksum once the checksum column exists [0.20ms]
+(pass) schema version compatibility > openDb rejects a newer on-disk database without changing its bytes or sidecars [1.72ms]
+
+ 27 pass
+ 0 fail
+ 89 expect() calls
+Ran 27 tests across 5 files. [2.56s]

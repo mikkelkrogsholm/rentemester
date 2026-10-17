@@ -24,7 +24,7 @@ struct Step {
     identity: Migration,
     sql: String,
 }
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct SchemaObject {
     pub(super) kind: String,
     pub(super) name: String,

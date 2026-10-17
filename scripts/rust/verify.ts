@@ -18,6 +18,7 @@ for (const command of [
   [cargo, "test", "--locked", "--workspace"],
   [process.execPath, "run", "scripts/rust/schema-contract.ts"],
   [process.execPath, "run", "scripts/rust/company-schema-contract.ts"],
+  [process.execPath, "run", "scripts/rust/company-physical-contract.ts"],
   [process.execPath, "run", "scripts/rust/check-boundaries.ts"],
   [process.execPath, "run", "scripts/rust/verify-readonly.ts"],
   [process.execPath, "run", "scripts/rust/verify-report-contracts.ts"],
@@ -27,6 +28,7 @@ for (const command of [
   [process.execPath, "run", "scripts/rust/verify-control-migrations.ts"],
   [process.execPath, "run", "scripts/rust/verify-company-baseline.ts"],
   [process.execPath, "run", "scripts/rust/verify-company-normalization.ts"],
+  [process.execPath, "run", "scripts/rust/verify-company-physical.ts"],
 ]) {
   const result = Bun.spawnSync(command, {
     cwd: root,

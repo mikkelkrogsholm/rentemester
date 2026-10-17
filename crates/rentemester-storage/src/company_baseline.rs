@@ -47,11 +47,11 @@ const RAW: [&str; 35] = [
     ),
     include_str!("../../../src/core/migrations/0036-imported-receivables.json"),
 ];
-#[derive(Deserialize)]
-struct Images {
+#[derive(Clone, Deserialize)]
+pub(super) struct Images {
     baseline_artifact_sha256: String,
-    baseline: Vec<SchemaObject>,
-    current: Vec<SchemaObject>,
+    pub(super) baseline: Vec<SchemaObject>,
+    pub(super) current: Vec<SchemaObject>,
 }
 #[derive(Deserialize)]
 struct Artifact {
@@ -148,7 +148,7 @@ fn reference(images: &Images, steps: &[Step], version: usize) -> Result<Vec<Sche
     }
     schema(&db)
 }
-fn stamp(db: &Connection, m: &Migration) -> Result<(), Error> {
+pub(super) fn stamp(db: &Connection, m: &Migration) -> Result<(), Error> {
     db.execute("INSERT INTO schema_migrations(id,name,checksum,applied_by_version,applied_by_commit) VALUES (?1,?2,?3,?4,NULL)",params![m.id,m.name,m.checksum,concat!("rentemester-rust/",env!("CARGO_PKG_VERSION"))]).map_err(failed)?;
     Ok(())
 }
@@ -220,6 +220,16 @@ fn introduced_invariants(db: &Connection, from: usize) -> Result<(), Error> {
 pub(super) fn rehearse(db: &mut Connection) -> Result<RehearsalReport, Error> {
     let expected = catalogue()?;
     let images = images(include_str!("legacy-company-schemas.json"), &expected)?;
+    rehearse_with_images(db, images)
+}
+pub(super) fn load_images() -> Result<Images, Error> {
+    images(include_str!("legacy-company-schemas.json"), &catalogue()?)
+}
+pub(super) fn rehearse_with_images(
+    db: &mut Connection,
+    images: Images,
+) -> Result<RehearsalReport, Error> {
+    let expected = catalogue()?;
     let steps = steps(&RAW, &expected)?;
     db.execute_batch("PRAGMA foreign_keys=ON;PRAGMA trusted_schema=OFF;PRAGMA synchronous=FULL")
         .map_err(invalid)?;
@@ -550,43 +560,7 @@ mod tests {
         .unwrap();
         let effects = crate::company_normalization::normalize(&mut db).unwrap();
         if let Ok(output) = std::env::var("RM_NORMALIZATION_OUTPUT") {
-            let mut tables = serde_json::Map::new();
-            for o in schema(&db)
-                .unwrap()
-                .into_iter()
-                .filter(|o| o.kind == "table")
-            {
-                let mut q = db
-                    .prepare(&format!("SELECT * FROM {}", quote(&o.name)))
-                    .unwrap();
-                let width = q.column_count();
-                let names: Vec<_> = q.column_names().into_iter().map(str::to_owned).collect();
-                let mut rows = q.query([]).unwrap();
-                let mut values = Vec::new();
-                while let Some(r) = rows.next().unwrap() {
-                    let cells: Vec<_> = (0..width)
-                        .map(|i| match r.get_ref(i).unwrap() {
-                            rusqlite::types::ValueRef::Null => serde_json::json!(["null"]),
-                            rusqlite::types::ValueRef::Integer(n) => {
-                                serde_json::json!(["integer", n.to_string()])
-                            }
-                            rusqlite::types::ValueRef::Real(n) => {
-                                serde_json::json!(["real", format!("{:016x}", n.to_bits())])
-                            }
-                            rusqlite::types::ValueRef::Text(s) => serde_json::json!([
-                                "text",
-                                s.iter().map(|b| format!("{b:02x}")).collect::<String>()
-                            ]),
-                            rusqlite::types::ValueRef::Blob(s) => serde_json::json!([
-                                "blob",
-                                s.iter().map(|b| format!("{b:02x}")).collect::<String>()
-                            ]),
-                        })
-                        .collect();
-                    values.push(cells);
-                }
-                tables.insert(o.name, serde_json::json!({"columns":names,"rows":values}));
-            }
+            let tables = crate::test_support::typed_tables(&db);
             std::fs::write(
                 output,
                 serde_json::to_vec(&serde_json::json!({"effects":effects,"tables":tables}))

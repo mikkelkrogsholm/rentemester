@@ -10,6 +10,10 @@ use std::{fs::OpenOptions, io::Write, path::Path, time::Duration};
 use tempfile::TempDir;
 mod company_baseline;
 mod company_normalization;
+mod company_physical;
+#[cfg(test)]
+mod test_support;
+pub use company_physical::{PhysicalRehearsalReport, rehearse_company_baseline};
 mod control_migration;
 mod journal_hash;
 mod migration;

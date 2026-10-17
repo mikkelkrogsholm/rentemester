@@ -1,0 +1,125 @@
+{
+  "format": "rentemester-company-physical-contract/1",
+  "baseline_artifact_sha256": "6956ccf6f1bdb360abb5f166582075e6726ca01b75cdbb38dfcbbc500af16728",
+  "schema_images_sha256": "68de9375f2ce3ad0e3dff2482c7deb8c36a0bd34670c9e21186b5eb12191cac7",
+  "sources": [
+    {
+      "path": "src/core/schema.sql",
+      "sha256": "00a425e5e0d08c93a989331f84749b2d8c20ec0fca9823cebf0b5182f31a1f3b"
+    },
+    {
+      "path": "src/core/db.ts",
+      "sha256": "4654fcd01ea7906a01e4b6d7debf2b5cf75562b836ebaeb0e4e0da63ce0be8b8"
+    },
+    {
+      "path": "src/core/companies-schema.ts",
+      "sha256": "583508d39ed8528b889924270173e961912a411a1b308ae3b01fe5639a39ce45"
+    },
+    {
+      "path": "src/core/schema-version.ts",
+      "sha256": "5b869123bccc0a38a8514d5e59b4807dea1d66c684431b03105cac5eb6fabdb2"
+    },
+    {
+      "path": "src/core/retention.ts",
+      "sha256": "f7c7fc4fcdf952065ca0c8ad39e0dc91014569d032e6e5d4e9fd95705aecaec6"
+    },
+    {
+      "path": "src/core/account-roles.ts",
+      "sha256": "1fc2ef2aee92918e479da0b27e64b5f80126ba65fb0815f71fc10289b0fe6d7c"
+    }
+  ],
+  "rules": [
+    {
+      "table": "accounting_periods",
+      "source_sql": "CREATE TABLE accounting_periods (\n  id INTEGER PRIMARY KEY,\n  period_start TEXT NOT NULL,\n  period_end TEXT NOT NULL,\n  kind TEXT NOT NULL CHECK(kind IN ('vat_quarter','fiscal_year','custom')),\n  status TEXT NOT NULL CHECK(status IN ('open','closed','reported')) DEFAULT 'open',\n  closed_at TEXT,\n  closed_by TEXT,\n  reported_at TEXT,\n  reference TEXT,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  UNIQUE(period_start, period_end, kind)\n)",
+      "baseline_delta": [
+        {
+          "kind": "table",
+          "name": "accounting_periods",
+          "table": "accounting_periods",
+          "sql": "CREATE TABLE \"accounting_periods\" (\n        id INTEGER PRIMARY KEY,\n        period_start TEXT NOT NULL,\n        period_end TEXT NOT NULL,\n        kind TEXT NOT NULL CHECK(kind IN ('vat_period','vat_quarter','fiscal_year','custom')),\n        status TEXT NOT NULL CHECK(status IN ('open','closed','reported')) DEFAULT 'open',\n        closed_at TEXT, closed_by TEXT, reported_at TEXT, reference TEXT,\n        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n        UNIQUE(period_start, period_end, kind)\n      )"
+        }
+      ],
+      "current_delta": [
+        {
+          "kind": "table",
+          "name": "accounting_periods",
+          "table": "accounting_periods",
+          "sql": "CREATE TABLE \"accounting_periods\" (\n        id INTEGER PRIMARY KEY,\n        period_start TEXT NOT NULL,\n        period_end TEXT NOT NULL,\n        kind TEXT NOT NULL CHECK(kind IN ('vat_period','vat_quarter','fiscal_year','custom')),\n        status TEXT NOT NULL CHECK(status IN ('open','closed','reported')) DEFAULT 'open',\n        closed_at TEXT, closed_by TEXT, reported_at TEXT, reference TEXT,\n        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n        UNIQUE(period_start, period_end, kind)\n      )"
+        }
+      ]
+    },
+    {
+      "table": "gdpr_erasures",
+      "source_sql": "CREATE TABLE gdpr_erasures (\n  id INTEGER PRIMARY KEY,\n  subject_key TEXT NOT NULL,\n  source TEXT NOT NULL CHECK(source IN ('customers','vendors','documents','bank_transactions')),\n  source_row_id INTEGER NOT NULL,\n  redacted_fields TEXT NOT NULL,\n  rule_id TEXT NOT NULL,\n  reason TEXT NOT NULL,\n  retained_until_at_erasure TEXT,\n  erased_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  UNIQUE(source, source_row_id)\n)",
+      "baseline_delta": [
+        {
+          "kind": "table",
+          "name": "gdpr_erasures",
+          "table": "gdpr_erasures",
+          "sql": "CREATE TABLE \"gdpr_erasures\" (\n        id INTEGER PRIMARY KEY,\n        subject_key TEXT NOT NULL,\n        source TEXT NOT NULL CHECK(source IN ('customers','vendors','documents','bank_transactions','audit_log')),\n        source_row_id INTEGER NOT NULL,\n        redacted_fields TEXT NOT NULL,\n        rule_id TEXT NOT NULL,\n        reason TEXT NOT NULL,\n        retained_until_at_erasure TEXT,\n        erased_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n        UNIQUE(subject_key, source, source_row_id)\n      )"
+        },
+        {
+          "kind": "index",
+          "name": "idx_gdpr_erasures_subject",
+          "table": "gdpr_erasures",
+          "sql": "CREATE INDEX idx_gdpr_erasures_subject\n        ON gdpr_erasures(subject_key)"
+        }
+      ],
+      "current_delta": [
+        {
+          "kind": "table",
+          "name": "gdpr_erasures",
+          "table": "gdpr_erasures",
+          "sql": "CREATE TABLE \"gdpr_erasures\" (\n        id INTEGER PRIMARY KEY,\n        subject_key TEXT NOT NULL,\n        source TEXT NOT NULL CHECK(source IN ('customers','vendors','documents','bank_transactions','audit_log')),\n        source_row_id INTEGER NOT NULL,\n        redacted_fields TEXT NOT NULL,\n        rule_id TEXT NOT NULL,\n        reason TEXT NOT NULL,\n        retained_until_at_erasure TEXT,\n        erased_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n        UNIQUE(subject_key, source, source_row_id)\n      )"
+        },
+        {
+          "kind": "index",
+          "name": "idx_gdpr_erasures_subject",
+          "table": "gdpr_erasures",
+          "sql": "CREATE INDEX idx_gdpr_erasures_subject\n        ON gdpr_erasures(subject_key)"
+        }
+      ]
+    },
+    {
+      "table": "customers",
+      "source_sql": "CREATE TABLE customers (\n  id INTEGER PRIMARY KEY,\n  name TEXT NOT NULL,\n  address TEXT,\n  vat_or_cvr TEXT,\n  email TEXT,\n  phone TEXT,\n  website TEXT,\n  ean_number TEXT,\n  -- EJER-3: NULL = ingen eksplicit kundefrist — fakturaen arver virksomhedens\n  -- profilfrist (companies.payment_terms_days) på fakturatidspunktet.\n  payment_terms_days INTEGER NOT NULL DEFAULT 30 CHECK(payment_terms_days > 0),\n  default_currency TEXT NOT NULL DEFAULT 'DKK',\n  notes TEXT,\n  archived INTEGER NOT NULL DEFAULT 0,\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  UNIQUE(vat_or_cvr, name)\n)",
+      "baseline_delta": [
+        {
+          "kind": "table",
+          "name": "customers",
+          "table": "customers",
+          "sql": "CREATE TABLE \"customers\" (\n        id INTEGER PRIMARY KEY,\n        name TEXT NOT NULL,\n        address TEXT,\n        vat_or_cvr TEXT,\n        email TEXT,\n        phone TEXT,\n        website TEXT,\n        ean_number TEXT,\n        payment_terms_days INTEGER CHECK(payment_terms_days IS NULL OR payment_terms_days > 0),\n        default_currency TEXT NOT NULL DEFAULT 'DKK',\n        notes TEXT,\n        archived INTEGER NOT NULL DEFAULT 0,\n        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n        UNIQUE(vat_or_cvr, name)\n      )"
+        }
+      ],
+      "current_delta": [
+        {
+          "kind": "table",
+          "name": "customers",
+          "table": "customers",
+          "sql": "CREATE TABLE \"customers\" (\n        id INTEGER PRIMARY KEY,\n        name TEXT NOT NULL,\n        address TEXT,\n        vat_or_cvr TEXT,\n        email TEXT,\n        phone TEXT,\n        website TEXT,\n        ean_number TEXT,\n        payment_terms_days INTEGER CHECK(payment_terms_days IS NULL OR payment_terms_days > 0),\n        default_currency TEXT NOT NULL DEFAULT 'DKK',\n        notes TEXT,\n        archived INTEGER NOT NULL DEFAULT 0,\n        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n        UNIQUE(vat_or_cvr, name)\n      )"
+        }
+      ]
+    },
+    {
+      "table": "companies",
+      "source_sql": "CREATE TABLE companies (\n  id INTEGER PRIMARY KEY,\n  name TEXT NOT NULL DEFAULT 'Unnamed company',\n  country TEXT NOT NULL DEFAULT 'DK',\n  currency TEXT NOT NULL DEFAULT 'DKK',\n  cvr TEXT,\n  fiscal_year_start_month INTEGER NOT NULL DEFAULT 1 CHECK(fiscal_year_start_month BETWEEN 1 AND 12),\n  fiscal_year_label_strategy TEXT NOT NULL DEFAULT 'end-year' CHECK(fiscal_year_label_strategy IN ('end-year', 'start-year', 'span')),\n  -- CVR-register stamdata, snapshotted by `company sync-cvr`. All nullable —\n  -- the company works fully offline; these are only an enrichment.\n  address TEXT,\n  postal_code TEXT,\n  city TEXT,\n  company_form TEXT,\n  industry_code TEXT,\n  industry_text TEXT,\n  cvr_status TEXT,\n  audit_waived INTEGER,\n  cvr_synced_at TEXT,\n  -- #221: the owner's own default payment terms (days from issue to due date).\n  -- Captured once on the company profile so every issued invoice inherits it.\n  payment_terms_days INTEGER NOT NULL DEFAULT 14 CHECK(payment_terms_days BETWEEN 0 AND 365),\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n, vat_period_type TEXT NOT NULL DEFAULT 'quarter' CHECK(vat_period_type IN ('month', 'quarter', 'half-year')), mail_alias TEXT)",
+      "baseline_delta": [
+        {
+          "kind": "table",
+          "name": "companies",
+          "table": "companies",
+          "sql": "CREATE TABLE \"companies\" (\n  id INTEGER PRIMARY KEY,\n  name TEXT NOT NULL DEFAULT 'Unnamed company',\n  country TEXT NOT NULL DEFAULT 'DK',\n  currency TEXT NOT NULL DEFAULT 'DKK',\n  cvr TEXT,\n  fiscal_year_start_month INTEGER NOT NULL DEFAULT 1 CHECK(fiscal_year_start_month BETWEEN 1 AND 12),\n  fiscal_year_label_strategy TEXT NOT NULL DEFAULT 'end-year' CHECK(fiscal_year_label_strategy IN ('end-year', 'start-year', 'span')),\n  -- CVR-register stamdata, snapshotted by `company sync-cvr`. All nullable —\n  -- the company works fully offline; these are only an enrichment.\n  address TEXT,\n  postal_code TEXT,\n  city TEXT,\n  company_form TEXT,\n  industry_code TEXT,\n  industry_text TEXT,\n  cvr_status TEXT,\n  audit_waived INTEGER,\n  cvr_synced_at TEXT,\n  -- #221: the owner's own default payment terms (days from issue to due date).\n  -- Captured once on the company profile so every issued invoice inherits it.\n  payment_terms_days INTEGER NOT NULL DEFAULT 14 CHECK(payment_terms_days BETWEEN 0 AND 365),\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n, vat_period_type TEXT DEFAULT 'quarter' CHECK(vat_period_type IN ('month', 'quarter', 'half-year')), mail_alias TEXT)"
+        }
+      ],
+      "current_delta": [
+        {
+          "kind": "table",
+          "name": "companies",
+          "table": "companies",
+          "sql": "CREATE TABLE \"companies\" (\n  id INTEGER PRIMARY KEY,\n  name TEXT NOT NULL DEFAULT 'Unnamed company',\n  country TEXT NOT NULL DEFAULT 'DK',\n  currency TEXT NOT NULL DEFAULT 'DKK',\n  cvr TEXT,\n  fiscal_year_start_month INTEGER NOT NULL DEFAULT 1 CHECK(fiscal_year_start_month BETWEEN 1 AND 12),\n  fiscal_year_label_strategy TEXT NOT NULL DEFAULT 'end-year' CHECK(fiscal_year_label_strategy IN ('end-year', 'start-year', 'span')),\n  -- CVR-register stamdata, snapshotted by `company sync-cvr`. All nullable —\n  -- the company works fully offline; these are only an enrichment.\n  address TEXT,\n  postal_code TEXT,\n  city TEXT,\n  company_form TEXT,\n  industry_code TEXT,\n  industry_text TEXT,\n  cvr_status TEXT,\n  audit_waived INTEGER,\n  cvr_synced_at TEXT,\n  -- #221: the owner's own default payment terms (days from issue to due date).\n  -- Captured once on the company profile so every issued invoice inherits it.\n  payment_terms_days INTEGER NOT NULL DEFAULT 14 CHECK(payment_terms_days BETWEEN 0 AND 365),\n  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n, vat_period_type TEXT DEFAULT 'quarter' CHECK(vat_period_type IN ('month', 'quarter', 'half-year')), mail_alias TEXT)"
+        }
+      ]
+    }
+  ]
+}

@@ -469,7 +469,7 @@ try {
   assert.equal(rootHelp.stderr.length, 0);
   assert.deepEqual(
     JSON.parse(rootHelp.stdout.toString()).commands.map((c: any) => c.name),
-    ["trial-balance", "rehearse-control-migration", "rehearse-company-migration", "verify-journal-hashes"],
+    ["trial-balance", "rehearse-company-baseline", "rehearse-control-migration", "rehearse-company-migration", "verify-journal-hashes"],
   );
   passed.push("strict usage JSON/exit2 and explicit hash-only help/exit0");
   assert.deepEqual(inventory(baseline), beforeFrozen);

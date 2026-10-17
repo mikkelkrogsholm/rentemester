@@ -120,13 +120,19 @@ pub(super) fn normalize(db: &mut Connection) -> Result<Effects, Error> {
     let tx = db
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .map_err(failed)?;
-    let tables: Vec<_> = schema(&tx)?
+    let effects = normalize_in_transaction(&tx)?;
+    tx.commit().map_err(failed)?;
+    Ok(effects)
+}
+/// Caller owns the existing immediate transaction and its commit/rollback.
+pub(super) fn normalize_in_transaction(tx: &Connection) -> Result<Effects, Error> {
+    let tables: Vec<_> = schema(tx)?
         .into_iter()
         .filter(|o| o.kind == "table" && o.name != "schema_migrations")
         .map(|o| o.name)
         .collect();
-    let all = projection(&tx, &tables)?;
-    let original_business_data_digest = project_digest(&tx, &all)?;
+    let all = projection(tx, &tables)?;
+    let original_business_data_digest = project_digest(tx, &all)?;
     let stable: Vec<_> = all
         .iter()
         .map(|(t, c)| {
@@ -149,14 +155,14 @@ pub(super) fn normalize(db: &mut Connection) -> Result<Effects, Error> {
             .map_err(invalid)?;
         original_counts.insert(table.to_string(), count);
     }
-    let before = project_digest(&tx, &stable)?;
+    let before = project_digest(tx, &stable)?;
     let documents = deadlines(
-        &tx,
+        tx,
         "documents",
         "COALESCE(invoice_date,substr(upload_datetime,1,10))",
     )?;
     let bank = deadlines(
-        &tx,
+        tx,
         "bank_transactions",
         "COALESCE(booking_date,transaction_date)",
     )?;
@@ -201,7 +207,7 @@ pub(super) fn normalize(db: &mut Connection) -> Result<Effects, Error> {
             inserted.iter().map(|r| r.1).collect(),
         ),
     ]);
-    if before != project_digest_excluding_ids(&tx, &stable, &inserted_ids)? {
+    if before != project_digest_excluding_ids(tx, &stable, &inserted_ids)? {
         return Err(invalid("normalization changed unrelated original cells"));
     }
     for (table, rows) in [("documents", &documents), ("bank_transactions", &bank)] {
@@ -236,7 +242,6 @@ pub(super) fn normalize(db: &mut Connection) -> Result<Effects, Error> {
             return Err(invalid("normalization appended row count differs"));
         }
     }
-    tx.commit().map_err(failed)?;
     Ok(Effects {
         original_business_data_digest,
         role_mappings_inserted: inserted.len(),
