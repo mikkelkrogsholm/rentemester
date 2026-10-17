@@ -1,0 +1,29 @@
+{
+  "base_code": "0c81440cd2040e353ed817fd94a81246a7a7dc60",
+  "previous_increment": "company-vat-1",
+  "scope": "R12 exact transaction-owned sequence allocation",
+  "new_ids": [
+    "action.allocate_sequence",
+    "action.reserve_sequence"
+  ],
+  "write_scope": [
+    "crates/rentemester-storage/src/sequences.rs",
+    "crates/rentemester-storage/src/lib.rs",
+    "scripts/rust/verify-sequences.ts",
+    "scripts/rust/verify.ts",
+    "docs/architecture/rust-target/implementation/README.md",
+    "docs/architecture/rust-target/implementation/progress.json",
+    "docs/architecture/rust-target/implementation/sequences"
+  ],
+  "refinement": "Historical v1 contract/model/green readiness-v3 retained; gdd-v4.json/readiness-v4 preserve prior composite output model; current readiness-v5 binds distinct scalar allocation/structured reservation actions with normalized-CVR input and owner-rollback clarification. Draft readiness1/2 remain explicitly failed, not current acceptance.",
+  "issues_closed": [],
+  "remaining_gates": [
+    "Only disposable synthetic databases; no product writer endpoint or original source writes",
+    "Legacy parity only for valid safe-integer inputs; native exact signed64-bit/overflow tested separately",
+    "No invoice/journal floor discovery, date/number formatting, idempotency receipts, authority/adoption or full R12 acceptance",
+    "Every mutation error requires caller abort; this primitive does not poison or commit the borrowed rusqlite Transaction. RAISE(FAIL) is explicitly tested with whole-owner rollback.",
+    "Existing main Write state is mandatory; current observation alone is advisory and can be stale under WAL. No new busy/retry/ownership policy.",
+    "Native exact signed64-bit results are not a newly defined HTTP/MCP/JSON number wire contract. Normalized trusted CVR is an input; company settings validation remains outside.",
+    "macOS/arm64 local synthetic SQLite process crash/read coexistence only; no hardware power-loss, all-filesystem/platform or active legacy writer takeover claim."
+  ]
+}

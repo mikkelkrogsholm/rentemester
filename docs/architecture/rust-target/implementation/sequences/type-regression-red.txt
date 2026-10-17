@@ -1,0 +1,24 @@
+   Compiling rentemester-storage v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.52s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_storage-03d5f3fab3792ce0)
+
+running 1 test
+test sequences::tests::invalid_storage_deferred_and_failed_sql_require_owner_abort ... FAILED
+
+failures:
+
+---- sequences::tests::invalid_storage_deferred_and_failed_sql_require_owner_abort stdout ----
+
+thread 'sequences::tests::invalid_storage_deferred_and_failed_sql_require_owner_abort' (4013884) panicked at crates/rentemester-storage/src/sequences.rs:223:40:
+assertion `left == right` failed
+  left: "storage_failure"
+ right: "invalid_ledger"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    sequences::tests::invalid_storage_deferred_and_failed_sql_require_owner_abort
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 39 filtered out; finished in 0.65s
+
+error: test failed, to rerun pass `-p rentemester-storage --lib`

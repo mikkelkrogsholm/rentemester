@@ -1,4 +1,4 @@
-//! Current-schema legacy reads. Originals are never opened through SQLite.
+//! Source-read-only reports/rehearsals and caller-owned transactional primitives.
 use rentemester_engine::{
     Error,
     money::Money,
@@ -18,6 +18,7 @@ pub use company_physical::{PhysicalRehearsalReport, rehearse_company_baseline};
 mod control_migration;
 mod journal_hash;
 mod migration;
+pub mod sequences;
 pub use control_migration::{ControlRehearsalReport, rehearse_control_migration};
 pub use migration::{RehearsalReport, rehearse_company_migration};
 #[cfg(unix)]

@@ -1,10 +1,10 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "company-vat-1",
-  "code_revision": "sha256:1e8829c586a696fd436e666556b1c75e02b30b16165e0afe4c312d6473810c6f",
-  "spec_revision": "sha256:2a4f85dabffd49f9a4a1fdfbad1e9e5e1e1c5abbd4c118a1a3af18ab8ccf81d4",
-  "state": "verified-experimental-fk-safe-full-prefix-company-vat",
+  "current_increment": "sequences-1",
+  "code_revision": "sha256:f81060dfb1427a0945daabc6302bfb99a5419d9011fbd9d339b2aa0aee1dc9a9",
+  "spec_revision": "sha256:3c08d1584e0cf074e69800e9d2a13a2b94d3641cefe7ddc6f71c78fafc1b3286",
+  "state": "verified-experimental-transaction-owned-sequences",
   "issues_closed": [],
   "next": [
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
@@ -26,11 +26,11 @@
     "state": "verified-experimental-readonly"
   },
   "evidence": {
-    "report": "company-vat/evidence.json",
-    "parity": "company-vat/parity.json",
-    "rust_tests_passed": 37,
-    "ignored_subprocess_helpers": 6,
-    "company_vat_checks": 49,
+    "report": "sequences/evidence.json",
+    "parity": "sequences/parity.json",
+    "rust_tests_passed": 42,
+    "ignored_subprocess_helpers": 7,
+    "sequence_checks": 128,
     "previous_checks_retained": [
       34,
       31,
@@ -40,7 +40,8 @@
       54,
       40,
       47,
-      37
+      37,
+      49
     ],
     "writer_authority": false,
     "whole_issues_closed": false
@@ -93,6 +94,12 @@
       "code_revision": "sha256:5c72c03f04dff239c27c2aa52e0abc0c2bb5c964f377d26a1b70d169fa3e0342",
       "spec_revision": "sha256:142cc6cae541240b4c5e8a0c5c3a2e89eff4e23fd8d81021d259b805b7d4bda9",
       "state": "verified-experimental-known-physical-company-baseline"
+    },
+    {
+      "current_increment": "company-vat-1",
+      "code_revision": "sha256:1e8829c586a696fd436e666556b1c75e02b30b16165e0afe4c312d6473810c6f",
+      "spec_revision": "sha256:2a4f85dabffd49f9a4a1fdfbad1e9e5e1e1c5abbd4c118a1a3af18ab8ccf81d4",
+      "state": "verified-experimental-fk-safe-full-prefix-company-vat"
     }
   ]
 }

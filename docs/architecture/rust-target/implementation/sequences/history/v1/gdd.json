@@ -1,0 +1,272 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Transactional sequence allocation",
+    "goal": "Provide exact shared sequence allocation for the Rust posting pipeline.",
+    "scope": "R12 storage primitive on synthetic owned connections; full goal unchanged."
+  },
+  "nodes": {
+    "component.storage": {
+      "kind": "component",
+      "description": "SQLite storage primitives",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Exact allocation inside caller transaction",
+        "rationale": "Posting requires atomic number allocation.",
+        "excludes": [
+          "Original writer admission and product mutation endpoints"
+        ]
+      },
+      "interfaces": [
+        "action.allocate_sequence"
+      ]
+    },
+    "action.allocate_sequence": {
+      "kind": "action",
+      "description": "Exact transaction-owned sequence allocation and conditional reservation",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "kind": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "floor": {
+            "type": "integer"
+          },
+          "requested": {
+            "type": "integer"
+          }
+        },
+        "context": {
+          "transaction": {
+            "type": "string"
+          }
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "integer"
+            },
+            "ok": {
+              "type": "boolean"
+            },
+            "current_value": {
+              "type": "integer"
+            },
+            "expected_value": {
+              "type": "integer"
+            }
+          }
+        },
+        "errors": {
+          "invalid_input": "Refuse as specified in CONTRACT.md; caller aborts owner transaction.",
+          "invalid_ledger": "Refuse as specified in CONTRACT.md; caller aborts owner transaction.",
+          "sequence_exhausted": "Refuse as specified in CONTRACT.md; caller aborts owner transaction.",
+          "storage_failure": "Refuse as specified in CONTRACT.md; caller aborts owner transaction.",
+          "transaction_required": "Refuse as specified in CONTRACT.md; caller aborts owner transaction."
+        },
+        "preconditions": [
+          "Existing admitted company connection; main write transaction for allocation; caller retains authority/lease and aborts on errors."
+        ],
+        "postconditions": [
+          "Only exact requested sequence advances; no internal owner commit."
+        ],
+        "external_effects": [
+          "SQLite changes inside caller transaction only; no filesystem opens or original data paths."
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Primitive grants no authority; caller admission remains required.",
+            "scenarios": [
+              "scenario.invalid"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Sequence allocation itself is not an idempotency receipt.",
+            "scenarios": [
+              "scenario.mismatch",
+              "scenario.failure"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Typed integer limits and write-state admission.",
+            "scenarios": [
+              "scenario.invalid"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Immediate caller transactions serialize reservations.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "No internal commit; owner rollback/crash restores all effects.",
+            "scenarios": [
+              "scenario.failure",
+              "scenario.crash"
+            ]
+          }
+        },
+        "error_cases": {
+          "invalid_input": [
+            "scenario.invalid"
+          ],
+          "invalid_ledger": [
+            "scenario.invalid"
+          ],
+          "sequence_exhausted": [
+            "scenario.invalid"
+          ],
+          "storage_failure": [
+            "scenario.invalid"
+          ],
+          "transaction_required": [
+            "scenario.invalid"
+          ]
+        }
+      },
+      "behavior": "Read current under existing connection; require main Write state, exact checked arithmetic, conditional reserve; outer transaction owns atomicity."
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Same safe integer results and exact stored rows; independent scopes and company fallback.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Existing admitted synthetic company schema and immediate transaction.",
+        "when": "Run current/next/reserve vectors and compare actual TS oracle.",
+        "then": "Same safe integer results and exact stored rows; independent scopes and company fallback."
+      }
+    },
+    "scenario.mismatch": {
+      "kind": "scenario",
+      "description": "Return ok false with current/expected and unchanged rows.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Requested reservation differs from current+1.",
+        "when": "Reserve it.",
+        "then": "Return ok false with current/expected and unchanged rows."
+      }
+    },
+    "scenario.invalid": {
+      "kind": "scenario",
+      "description": "Typed refusal before writes; abort owner transaction.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Negative input, invalid stored SQLite type, exhaustion or transaction without write lock.",
+        "when": "Attempt allocation.",
+        "then": "Typed refusal before writes; abort owner transaction."
+      }
+    },
+    "scenario.failure": {
+      "kind": "scenario",
+      "description": "Both sequence and companion changes disappear; immutable guards remain active.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "An allocation plus companion row precedes SQL/business failure.",
+        "when": "Roll back owner transaction.",
+        "then": "Both sequence and companion changes disappear; immutable guards remain active."
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Unique committed automatic values; exactly one manual winner; no snapshot upgrade race.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Separate processes/connections share synthetic SQLite file.",
+        "when": "Race auto allocations and identical manual reservation under immediate transactions.",
+        "then": "Unique committed automatic values; exactly one manual winner; no snapshot upgrade race."
+      }
+    },
+    "scenario.crash": {
+      "kind": "scenario",
+      "description": "Only prior committed state remains and next number is reusable.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Child allocated and inserted companion row before commit.",
+        "when": "Kill and reap child; reopen and retry.",
+        "then": "Only prior committed state remains and next number is reusable."
+      }
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.allocate_sequence",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.mismatch",
+      "from": "scenario.mismatch",
+      "to": "action.allocate_sequence",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.invalid",
+      "from": "scenario.invalid",
+      "to": "action.allocate_sequence",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.failure",
+      "from": "scenario.failure",
+      "to": "action.allocate_sequence",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.allocate_sequence",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.crash",
+      "from": "scenario.crash",
+      "to": "action.allocate_sequence",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.owner",
+      "from": "action.allocate_sequence",
+      "to": "component.storage",
+      "relation": "owned_by"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Transactional sequence allocation",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "df16b20d54ad458a4bd8aa3907f35326f6916c01830f9de76192ff6e04fa0b24"
+      }
+    }
+  }
+}

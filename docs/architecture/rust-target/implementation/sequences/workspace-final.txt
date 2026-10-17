@@ -1,0 +1,92 @@
+   Compiling rentemester-cli v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-cli)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.15s
+     Running unittests src/main.rs (target/debug/deps/rentemester_rust-2094dcc09677cb9e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rentemester_engine-390a548a9db9e304)
+
+running 5 tests
+test calendar::tests::deadlines_use_real_target_calendar_and_trimmed_low_years ... ok
+test money::tests::arbitrary_integer_precision_and_bounded_input ... ok
+test trial_balance::tests::calendar_boundaries_and_strict_input ... ok
+test trial_balance::tests::independently_rounded_lines_and_touched_accounts ... ok
+test money::tests::exact_rounding_and_no_negative_zero ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rentemester_runtime-313e3ef94bbbb466)
+
+running 4 tests
+test local::tests::known_network_and_unknown_families_refuse ... ok
+test tests::lexical_roots_are_explicit_and_bound_once ... ok
+test local::tests::same_process_exclusion_drop_and_ordinary_close ... ok
+test local::tests::moved_root_is_permanently_invalid_even_if_returned ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rentemester_storage-03d5f3fab3792ce0)
+
+running 40 tests
+test company_baseline::tests::crash_child ... ignored, subprocess helper selected by process-death parent
+test company_baseline::tests::normalization_child ... ignored, parity/process-death helper invoked by parent or independent TS harness
+test company_physical::tests::crash_child ... ignored, actual process-death helper selected by parent
+test company_vat::tests::crash_child ... ignored, actual VAT crash/parity child invoked by parent/independent harness
+test control_migration::tests::crash_child ... ignored, subprocess helper selected explicitly by process-death parent
+test company_baseline::tests::original_column_digest_ignores_new_columns_but_detects_changed_old_cells ... ok
+test control_migration::tests::legal_sqlite_like_user_objects_are_not_internal_or_empty ... ok
+test control_migration::tests::all_control_artifacts_are_bound_and_public_errors_are_opaque ... ok
+test control_migration::tests::real_history_insert_failure_rolls_back_entire_suffix_including_sessions ... ok
+test journal_hash::tests::legacy_json_numbers_and_rounding_bytes ... ok
+test company_baseline::tests::normalization_seeds_audited_roles_backfills_only_missing_and_is_idempotent ... ok
+test migration::tests::crash_child ... ignored, subprocess helper selected by actual_process_death test
+test migration::tests::digest_preserves_type_multiplicity_and_bytes_without_row_order ... ok
+test migration::tests::exact_artifact_bytes_and_optional_identity_are_bound ... ok
+test company_baseline::tests::normalization_guard_failure_rolls_back_seeds_and_prior_deadline_updates ... ok
+test company_baseline::tests::normalization_preserves_original_full_width_ids_with_sqlite_random_rowid_allocation ... ok
+test migration::tests::sql_and_history_failure_roll_back_one_step_and_preserve_prior_commits ... ok
+test migration::tests::suffix_rehearsal_and_receivable_constraints ... ok
+test migration::tests::actual_process_death_never_leaves_half_applied_step ... ok
+test company_baseline::tests::normalization_process_death_rolls_back_all_data_effects ... ok
+test sequences::tests::process_child ... ignored, synthetic process/parity helper selected explicitly
+test control_migration::tests::mfa_upgrade_and_immutable_guards_match_real_sql ... ok
+test snapshot::tests::unstable_capture_is_bounded_and_can_recover ... ok
+test tests::physical_schema_and_safe_identity_are_required ... ok
+test tests::sql_number_conversion_does_not_round_twice ... ok
+test company_physical::tests::catalogue_binding_unknown_objects_and_vat_conflicts_refuse ... ok
+test control_migration::tests::process_death_restores_whole_prefix_and_sessions_or_commits_all ... ok
+test company_baseline::tests::fresh_schema_is_complete_and_images_are_byte_bound ... ok
+test sequences::tests::exact_values_scope_guards_and_owner_rollback ... ok
+test sequences::tests::invalid_storage_deferred_and_failed_sql_require_owner_abort ... ok
+test sequences::tests::killed_process_rolls_back_sequence_and_companion_row ... ok
+test sequences::tests::wal_reader_snapshot_and_deferred_write_state_are_explicit ... ok
+test company_vat::tests::other_trigger_and_later_data_failure_roll_back_kind_and_named_guard ... ok
+test sequences::tests::concurrent_processes_commit_unique_numbers_and_one_reservation ... ok
+test company_baseline::tests::populated_recurring_columns_and_dimension_defaults_preserve_old_values ... ok
+test company_vat::tests::current_fk_children_exact_schema_history_and_nonlegacy_cells_survive ... ok
+test company_baseline::tests::bootstrap_and_early_step_crashes_leave_complete_prefixes ... ok
+test company_vat::tests::actual_process_death_restores_exact_guard_and_current_fk_data ... ok
+test company_physical::tests::actual_process_death_rolls_back_whole_unversioned_baseline ... ok
+test company_physical::tests::all_known_layout_combinations_preserve_data_and_restore_constraints ... ok
+
+test result: ok. 33 passed; 0 failed; 7 ignored; 0 measured; 0 filtered out; finished in 57.55s
+
+   Doc-tests rentemester_engine
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rentemester_runtime
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rentemester_storage
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

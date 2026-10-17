@@ -1,0 +1,12 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_storage-03d5f3fab3792ce0)
+
+running 6 tests
+test sequences::tests::process_child ... ignored, synthetic process/parity helper selected explicitly
+test sequences::tests::exact_values_scope_guards_and_owner_rollback ... ok
+test sequences::tests::invalid_storage_deferred_and_failed_sql_require_owner_abort ... ok
+test sequences::tests::wal_reader_snapshot_and_deferred_write_state_are_explicit ... ok
+test sequences::tests::killed_process_rolls_back_sequence_and_companion_row ... ok
+test sequences::tests::concurrent_processes_commit_unique_numbers_and_one_reservation ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 34 filtered out; finished in 6.43s

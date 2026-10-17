@@ -1,0 +1,18 @@
+{
+  "scope": "transaction-owned native sequence values against actual TypeScript functions",
+  "checks": 128,
+  "operation_vectors": 127,
+  "passed": [
+    "all actual TS current/next/reserve/scope results",
+    "exact final SQLite INTEGER and UTF8 cells",
+    "outer rollback and independent kinds/scopes",
+    "safe-integer maximum without rounding"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "limits": [
+    "Only disposable synthetic databases; no product writer endpoint or original source writes",
+    "Legacy parity only for valid safe-integer inputs; native exact signed64-bit/overflow tested separately",
+    "No invoice/journal floor discovery, date/number formatting, idempotency receipts, authority/adoption or full R12 acceptance"
+  ]
+}

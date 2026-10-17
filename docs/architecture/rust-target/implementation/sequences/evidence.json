@@ -1,0 +1,136 @@
+{
+  "format": "rentemester-sequence-increment/1",
+  "base_code": "0c81440cd2040e353ed817fd94a81246a7a7dc60",
+  "log_normalization": "Trailing blank lines removed from saved terminal logs only; substantive output retained.",
+  "previous_goal_turn": "Progress:0c81440c delivered and pushed FK-safe VAT full-prefix rehearsal; current branch/owned-clean state reconciled before new edits.",
+  "spec_revision": "sha256:3c08d1584e0cf074e69800e9d2a13a2b94d3641cefe7ddc6f71c78fafc1b3286",
+  "code_revision": "sha256:f81060dfb1427a0945daabc6302bfb99a5419d9011fbd9d339b2aa0aee1dc9a9",
+  "assets": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "fe91573489ddfb21f5dd71fdadffb61690a9253e722d5d4ad1d8eac48d0542d0"
+    },
+    {
+      "path": "crates/rentemester-storage/Cargo.toml",
+      "sha256": "ad1ccef07f9968ba073e176e4feae9c9cf37d5795121a08e433d335ae8e93d7e"
+    },
+    {
+      "path": "crates/rentemester-storage/src/company_baseline.rs",
+      "sha256": "bb9725fe573283b4cfd82736057125477625594f7210eaea2184faf80d1f825a"
+    },
+    {
+      "path": "crates/rentemester-storage/src/lib.rs",
+      "sha256": "7bde9dad931dc9078ce009091ae8bcaf24b96588ea4c8728b831fb59234d9a63"
+    },
+    {
+      "path": "crates/rentemester-storage/src/sequences.rs",
+      "sha256": "3dc55c23949c0ffa835c8632eb339ab66c80256a57eec02122fef1dfef3b4fb9"
+    },
+    {
+      "path": "crates/rentemester-storage/src/test_support.rs",
+      "sha256": "cd3dede13336ce9c923f8942403e424cc377c47231aa1f2fcd33dca98d3993ba"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/sequences/CONTRACT.md",
+      "sha256": "c0d18e32c0a343aa38a8e7f0862ceca4f468573a59ac259962243ddabcb621d8"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/sequences/gdd.json",
+      "sha256": "36dcdd93821e9ba49219cc9d91b2754d4ba74cdfd7a6d9fcd27004a42c68d327"
+    },
+    {
+      "path": "scripts/rust/verify-sequences.ts",
+      "sha256": "5d2b185b5dd15639497c6750bd321bf7a68d81c7cf2e54e0c106d6df5748c960"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "72e6831e0fd49c638cfa5824fba28cf3c5ff3f7f9a07c952365f6f066e566bdb"
+    },
+    {
+      "path": "src/core/company.ts",
+      "sha256": "3179bc6511c6790ed4b86db926b40da78f85d977ff329f802693c3832416a63e"
+    },
+    {
+      "path": "src/core/schema.sql",
+      "sha256": "00a425e5e0d08c93a989331f84749b2d8c20ec0fca9823cebf0b5182f31a1f3b"
+    },
+    {
+      "path": "src/core/sequences.ts",
+      "sha256": "71fce656f2a54d1b01135e97c5cb9e46c96957fe6dbf1274f58b5a94ecdb8089"
+    }
+  ],
+  "commands": [
+    {
+      "command": "cargo test --locked --workspace",
+      "result": "PASS",
+      "evidence": "workspace-final.txt",
+      "coverage": "Final-source whole-workspace42tests and7ignored helpers"
+    },
+    {
+      "command": "cargo clippy --locked --workspace --all-targets -- -D warnings",
+      "result": "PASS",
+      "evidence": "clippy-final.txt"
+    },
+    {
+      "command": "bun run rust:verify",
+      "result": "PASS",
+      "evidence": "rust-verify.txt",
+      "coverage": "42 Rust tests,7 explicitly selected subprocess helpers; all356 prior integration checks plus128 sequence checks"
+    },
+    {
+      "command": "cargo test --locked -p rentemester-storage sequences::tests",
+      "result": "PASS",
+      "evidence": "native-tests.txt",
+      "coverage": "5 tests,1 selected child helper;8 processes times20 automatic allocations;8 same-request contenders; actual kill/reap and WAL reader snapshot"
+    },
+    {
+      "command": "bun run scripts/rust/verify-sequences.ts",
+      "result": "PASS",
+      "evidence": "parity.json",
+      "coverage": "127 actual TS operation vectors plus exact final typed INTEGER/UTF8 rows"
+    },
+    {
+      "command": "bunx biome lint scripts/rust/verify-sequences.ts scripts/rust/verify.ts --error-on-warnings",
+      "result": "PASS",
+      "evidence": "lint.txt"
+    }
+  ],
+  "verification_order": "The integrated whole run began before final malformed-TEXT error classification refinement. Final whole-workspace cargo tests, strictClippy, focused native tests and128-vector oracle reran against final code; unrelated complete migration/report integration corpus retained unchanged.",
+  "independent_review": {
+    "agent": "migration_port_research",
+    "mode": "Read-only source/transaction/integer/concurrency review and independent actual execution",
+    "result": "No material remaining defect;5 native tests and128-check actual-TS oracle independently PASS",
+    "evidence": [
+      "native-independent.txt",
+      "parity-independent.txt"
+    ]
+  },
+  "design_review": {
+    "scope": [
+      "action.allocate_sequence",
+      "action.reserve_sequence",
+      "component.storage"
+    ],
+    "model_revision": "sha256:3c08d1584e0cf074e69800e9d2a13a2b94d3641cefe7ddc6f71c78fafc1b3286",
+    "code_revision": "sha256:f81060dfb1427a0945daabc6302bfb99a5419d9011fbd9d339b2aa0aee1dc9a9",
+    "KISS": "Three direct operations on existing caller connection/transaction; no own transaction controller, repair flags, paths or product endpoint.",
+    "DRY": "Shared nonnegative/current/expected/write primitives; one main Write-state requirement and checked arithmetic.",
+    "separation_of_concerns": "Caller owns schema/authority/commit/error rollback and busy policy; sequence code owns exact value/reservation. Scope composition consumes normalized trusted settings.",
+    "modularity": "One public storage module and synthetic cfgtest process helper; reuse actual company bootstrap, typed-cell evidence and existing dependencies."
+  },
+  "verification_repairs": [
+    "Actual malformed UTF8 TEXT regression initially returned storage_failure; read ValueRef before classification so noninteger bytes return invalid_ledger without decoding. Red evidence retained; final unit/parity/Clippy reruns PASS.",
+    "Initial readiness drafts exposed missing owned_by/category wiring, corrected before implementation; historical green v3 preserved. Current v4 refines input/rollback wording.",
+    "Actual TS scope fixture exposed getCompanySettings CVR normalization. Harness now explicitly pairs raw legacy settings with normalized native inputs; no raw-setting parity or duplicated CVR normalizer claimed.",
+    "Review clarified storage_failure may follow attempted writes; caller abort is the atomicity guarantee, rather than claiming all refusals occur before SQL effects."
+  ],
+  "limitations": [
+    "Only disposable synthetic databases; no product writer endpoint or original source writes",
+    "Legacy parity only for valid safe-integer inputs; native exact signed64-bit/overflow tested separately",
+    "No invoice/journal floor discovery, date/number formatting, idempotency receipts, authority/adoption or full R12 acceptance",
+    "Every mutation error requires caller abort; this primitive does not poison or commit the borrowed rusqlite Transaction. RAISE(FAIL) is explicitly tested with whole-owner rollback.",
+    "Existing main Write state is mandatory; current observation alone is advisory and can be stale under WAL. No new busy/retry/ownership policy.",
+    "Native exact signed64-bit results are not a newly defined HTTP/MCP/JSON number wire contract. Normalized trusted CVR is an input; company settings validation remains outside.",
+    "macOS/arm64 local synthetic SQLite process crash/read coexistence only; no hardware power-loss, all-filesystem/platform or active legacy writer takeover claim."
+  ]
+}
