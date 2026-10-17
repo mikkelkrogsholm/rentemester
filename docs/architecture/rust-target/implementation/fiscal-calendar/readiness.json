@@ -1,0 +1,93 @@
+{
+  "format": "gdd-report/0.2",
+  "tool": {
+    "name": "gdd-validator",
+    "version": "0.8.0"
+  },
+  "spec_revision": null,
+  "profiles": [
+    "readiness"
+  ],
+  "scope": [
+    "action.fiscal_year",
+    "action.annual_deadline",
+    "component.domain"
+  ],
+  "checks": [
+    {
+      "check_id": "representation.schema",
+      "dimension": "model",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Local JSON Schema validation.",
+      "diagnostics": [
+        {
+          "code": "SCHEMA_INVALID",
+          "severity": "error",
+          "message": "{'kind': 'action', 'description': 'Compute six-calendar-month deadline only', 'maturity': 'specified', 'source_refs': [{'source': 'source.contract', 'purpose': 'contract'}], 'contract': {'input': {'date': {'type': 'string'}}, 'context': {'mode': {'type': 'enum', 'values': ['pure_explicit_inputs']}}, 'output': {'type': 'string'}, 'errors': {'invalid_date': 'Refuse as specified in CONTRACT.md.', 'invalid_start_month': 'Refuse as specified in CONTRACT.md.', 'invalid_label_strategy': 'Refuse as specified in CONTRACT.md.', 'date_out_of_range': 'Refuse as specified in CONTRACT.md.'}, 'preconditions': ['Explicit typed canonical date; valid month/strategy where applicable; configuration resolution belongs to adapter.'], 'postconditions': ['Complete canonical result or typed refusal; no persisted data changes.'], 'external_effects': [], 'effects_complete': True, 'dependencies_complete': True, 'risks': {'authorization': {'relevant': False, 'rationale': 'Pure arithmetic grants no authority.'}, 'idempotency': {'relevant': False, 'rationale': 'Pure deterministic function; no mutable state.'}, 'boundaries': {'relevant': True, 'rationale': 'Canonical grammar, Gregorian validation and derived range limits.', 'scenarios': ['scenario.boundary', 'scenario.correction']}, 'concurrency': {'relevant': False, 'rationale': 'No mutable shared state or I/O.'}, 'atomicity': {'relevant': False, 'rationale': 'No external effects or partial writes.'}}, 'error_cases': {'invalid_date': ['scenario.boundary'], 'invalid_start_month': ['scenario.boundary'], 'invalid_label_strategy': ['scenario.boundary'], 'date_out_of_range': ['scenario.boundary']}}, 'behavior': 'Validate typed inputs and compute canonical dates/labels with checked year range; no environment or database.'} is not valid under any of the given schemas",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.annual_deadline"
+          },
+          "related_ids": []
+        },
+        {
+          "code": "SCHEMA_INVALID",
+          "severity": "error",
+          "message": "{'kind': 'action', 'description': 'Compute fiscal bounds and labels', 'maturity': 'specified', 'source_refs': [{'source': 'source.contract', 'purpose': 'contract'}], 'contract': {'input': {'date': {'type': 'string'}, 'start_month': {'type': 'integer'}, 'strategy': {'type': 'string'}}, 'context': {'mode': {'type': 'enum', 'values': ['pure_explicit_inputs']}}, 'output': {'type': 'object', 'properties': {'startYear': {'type': 'integer'}, 'endYear': {'type': 'integer'}, 'start': {'type': 'string'}, 'end': {'type': 'string'}, 'displayLabel': {'type': 'string'}, 'identifierLabel': {'type': 'string'}}, 'required': ['startYear', 'endYear', 'start', 'end', 'displayLabel', 'identifierLabel']}, 'errors': {'invalid_date': 'Refuse as specified in CONTRACT.md.', 'invalid_start_month': 'Refuse as specified in CONTRACT.md.', 'invalid_label_strategy': 'Refuse as specified in CONTRACT.md.', 'date_out_of_range': 'Refuse as specified in CONTRACT.md.'}, 'preconditions': ['Explicit typed canonical date; valid month/strategy where applicable; configuration resolution belongs to adapter.'], 'postconditions': ['Complete canonical result or typed refusal; no persisted data changes.'], 'external_effects': [], 'effects_complete': True, 'dependencies_complete': True, 'risks': {'authorization': {'relevant': False, 'rationale': 'Pure arithmetic grants no authority.'}, 'idempotency': {'relevant': False, 'rationale': 'Pure deterministic function; no mutable state.'}, 'boundaries': {'relevant': True, 'rationale': 'Canonical grammar, Gregorian validation and derived range limits.', 'scenarios': ['scenario.boundary', 'scenario.correction']}, 'concurrency': {'relevant': False, 'rationale': 'No mutable shared state or I/O.'}, 'atomicity': {'relevant': False, 'rationale': 'No external effects or partial writes.'}}, 'error_cases': {'invalid_date': ['scenario.boundary'], 'invalid_start_month': ['scenario.boundary'], 'invalid_label_strategy': ['scenario.boundary'], 'date_out_of_range': ['scenario.boundary']}}, 'behavior': 'Validate typed inputs and compute canonical dates/labels with checked year range; no environment or database.'} is not valid under any of the given schemas",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.fiscal_year"
+          },
+          "related_ids": []
+        }
+      ]
+    },
+    {
+      "check_id": "model.unavailable",
+      "dimension": "model",
+      "result": "UNKNOWN",
+      "scope": [
+        "action.fiscal_year",
+        "action.annual_deadline",
+        "component.domain"
+      ],
+      "reason": "Semantic model validation requires a supported GDD 0.2 or 0.3 model manifest; schema validation alone is representation-only.",
+      "diagnostics": [
+        {
+          "code": "FORMAT_UNSUPPORTED",
+          "severity": "warning",
+          "message": "No model semantics for this artifact without its model manifest.",
+          "location": {
+            "file": null,
+            "pointer": ""
+          },
+          "related_ids": []
+        }
+      ]
+    },
+    {
+      "check_id": "readiness.unavailable",
+      "dimension": "readiness",
+      "result": "UNKNOWN",
+      "scope": [
+        "action.fiscal_year",
+        "action.annual_deadline",
+        "component.domain"
+      ],
+      "reason": "A valid supported GDD model is required; no semantic PASS inferred.",
+      "diagnostics": [
+        {
+          "code": "REVISION_UNRESOLVED",
+          "severity": "warning",
+          "message": "Model unavailable or representation invalid.",
+          "location": {
+            "file": null,
+            "pointer": ""
+          },
+          "related_ids": []
+        }
+      ]
+    }
+  ]
+}

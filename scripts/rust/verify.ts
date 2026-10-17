@@ -31,6 +31,7 @@ for (const command of [
   [process.execPath, "run", "scripts/rust/verify-company-physical.ts"],
   [process.execPath, "run", "scripts/rust/verify-company-vat.ts"],
   [process.execPath, "run", "scripts/rust/verify-sequences.ts"],
+  [process.execPath, "run", "scripts/rust/verify-fiscal-calendar.ts"],
 ]) {
   const result = Bun.spawnSync(command, {
     cwd: root,

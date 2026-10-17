@@ -1,0 +1,349 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Typed fiscal calendar",
+    "goal": "Shared pure fiscal dates for numbering and reporting",
+    "scope": "R09 calendar values/arithmetic; complete platform goal unchanged."
+  },
+  "nodes": {
+    "component.domain": {
+      "kind": "component",
+      "description": "Pure accounting calendar values",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Typed canonical Gregorian fiscal arithmetic",
+        "rationale": "Numbering and period calculations require one shared pure engine.",
+        "excludes": [
+          "Clock, legal eligibility, persisted identifier rewrites and product endpoints"
+        ]
+      },
+      "interfaces": [
+        "action.fiscal_year",
+        "action.annual_deadline"
+      ]
+    },
+    "action.fiscal_year": {
+      "kind": "action",
+      "description": "Compute fiscal bounds and labels",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "date": {
+            "type": "string"
+          },
+          "start_month": {
+            "type": "integer"
+          },
+          "strategy": {
+            "type": "string"
+          }
+        },
+        "context": {
+          "mode": {
+            "type": "enum",
+            "values": [
+              "pure_explicit_inputs"
+            ]
+          }
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "startYear": {
+              "type": "integer"
+            },
+            "endYear": {
+              "type": "integer"
+            },
+            "start": {
+              "type": "string"
+            },
+            "end": {
+              "type": "string"
+            },
+            "displayLabel": {
+              "type": "string"
+            },
+            "identifierLabel": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "startYear",
+            "endYear",
+            "start",
+            "end",
+            "displayLabel",
+            "identifierLabel"
+          ]
+        },
+        "errors": {
+          "invalid_date": "Refuse as specified in CONTRACT.md.",
+          "invalid_start_month": "Refuse as specified in CONTRACT.md.",
+          "invalid_label_strategy": "Refuse as specified in CONTRACT.md.",
+          "date_out_of_range": "Refuse as specified in CONTRACT.md."
+        },
+        "preconditions": [
+          "Explicit typed canonical date; valid month/strategy where applicable; configuration resolution belongs to adapter."
+        ],
+        "postconditions": [
+          "Complete canonical result or typed refusal; no persisted data changes."
+        ],
+        "external_effects": [],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": false,
+            "rationale": "Pure arithmetic grants no authority.",
+            "scenarios": []
+          },
+          "idempotency": {
+            "relevant": false,
+            "rationale": "Pure deterministic function; no mutable state.",
+            "scenarios": []
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Canonical grammar, Gregorian validation and derived range limits.",
+            "scenarios": [
+              "scenario.boundary",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": false,
+            "rationale": "No mutable shared state or I/O.",
+            "scenarios": []
+          },
+          "atomicity": {
+            "relevant": false,
+            "rationale": "No external effects or partial writes.",
+            "scenarios": []
+          }
+        },
+        "error_cases": {
+          "invalid_date": [
+            "scenario.boundary"
+          ],
+          "invalid_start_month": [
+            "scenario.boundary"
+          ],
+          "invalid_label_strategy": [
+            "scenario.boundary"
+          ],
+          "date_out_of_range": [
+            "scenario.boundary"
+          ]
+        }
+      },
+      "behavior": "Validate typed inputs and compute canonical dates/labels with checked year range; no environment or database."
+    },
+    "action.annual_deadline": {
+      "kind": "action",
+      "description": "Compute six-calendar-month deadline only",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "date": {
+            "type": "string"
+          }
+        },
+        "context": {
+          "mode": {
+            "type": "enum",
+            "values": [
+              "pure_explicit_inputs"
+            ]
+          }
+        },
+        "output": {
+          "type": "string"
+        },
+        "errors": {
+          "invalid_date": "Refuse as specified in CONTRACT.md.",
+          "date_out_of_range": "Refuse as specified in CONTRACT.md."
+        },
+        "preconditions": [
+          "Explicit typed canonical date; valid month/strategy where applicable; configuration resolution belongs to adapter."
+        ],
+        "postconditions": [
+          "Complete canonical result or typed refusal; no persisted data changes."
+        ],
+        "external_effects": [],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": false,
+            "rationale": "Pure arithmetic grants no authority.",
+            "scenarios": []
+          },
+          "idempotency": {
+            "relevant": false,
+            "rationale": "Pure deterministic function; no mutable state.",
+            "scenarios": []
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Canonical grammar, Gregorian validation and derived range limits.",
+            "scenarios": [
+              "scenario.boundary",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": false,
+            "rationale": "No mutable shared state or I/O.",
+            "scenarios": []
+          },
+          "atomicity": {
+            "relevant": false,
+            "rationale": "No external effects or partial writes.",
+            "scenarios": []
+          }
+        },
+        "error_cases": {
+          "invalid_date": [
+            "scenario.boundary"
+          ],
+          "date_out_of_range": [
+            "scenario.boundary"
+          ]
+        }
+      },
+      "behavior": "Validate typed inputs and compute canonical dates/labels with checked year range; no environment or database."
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Exact bounds/labels/month-end behavior match independent oracle and ordinary legacy outputs.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical dates, valid typed month/strategy.",
+        "when": "Calculate fiscal year and six-month deadline.",
+        "then": "Exact bounds/labels/month-end behavior match independent oracle and ordinary legacy outputs."
+      }
+    },
+    "scenario.boundary": {
+      "kind": "scenario",
+      "description": "Typed refusal; no trim/rollover/1900 remapping or malformed result.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Invalid date/month/strategy or a derived year outside0000\u20139999.",
+        "when": "Construct typed values and calculate.",
+        "then": "Typed refusal; no trim/rollover/1900 remapping or malformed result."
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Record the actual difference as correction or typed admission; do not rewrite stored identifiers.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Low-year or extended-year legacy behavior differs from fixed canonical expectations.",
+        "when": "Compare actual TS output with independently fixed native result.",
+        "then": "Record the actual difference as correction or typed admission; do not rewrite stored identifiers."
+      }
+    },
+    "scenario.purity": {
+      "kind": "scenario",
+      "description": "Deterministic results; no SQL/network/filesystem/clock dependency.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Same explicit inputs, varying environment/timezone.",
+        "when": "Run pure engine and inspect dependency/direct-I/O boundaries.",
+        "then": "Deterministic results; no SQL/network/filesystem/clock dependency."
+      }
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner.fiscal_year",
+      "from": "action.fiscal_year",
+      "to": "component.domain",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.owner.annual_deadline",
+      "from": "action.annual_deadline",
+      "to": "component.domain",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal.fiscal_year",
+      "from": "scenario.normal",
+      "to": "action.fiscal_year",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.normal.annual_deadline",
+      "from": "scenario.normal",
+      "to": "action.annual_deadline",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.boundary.fiscal_year",
+      "from": "scenario.boundary",
+      "to": "action.fiscal_year",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.boundary.annual_deadline",
+      "from": "scenario.boundary",
+      "to": "action.annual_deadline",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction.fiscal_year",
+      "from": "scenario.correction",
+      "to": "action.fiscal_year",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction.annual_deadline",
+      "from": "scenario.correction",
+      "to": "action.annual_deadline",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.purity.fiscal_year",
+      "from": "scenario.purity",
+      "to": "action.fiscal_year",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.purity.annual_deadline",
+      "from": "scenario.purity",
+      "to": "action.annual_deadline",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Typed fiscal calendar",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "eab907f067aa74b9346e6435e3a0e142bae38e8a7bb40be87cdb9c1971261357"
+      }
+    }
+  }
+}

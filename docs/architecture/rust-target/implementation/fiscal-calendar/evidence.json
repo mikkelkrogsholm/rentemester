@@ -1,0 +1,296 @@
+{
+  "format": "rentemester-fiscal-calendar-increment/1",
+  "base_code": "82f9cd4ed1c5a4e33c60227c6128533ed40a5210",
+  "previous_goal_turn": "Progress:82f9cd4e native transaction-owned sequences delivered/pushed; reconciled owned-clean branch before this R09 domain scope.",
+  "spec_revision": "sha256:6de563f27f61bce82b6b637fc417c1bfab444ece465bc95ce8a61299419c42e8",
+  "code_revision": "sha256:70e6b284bf84c7830d2baa80825f84eb49ed1be2d763630cb73b1797832ddab8",
+  "assets": [
+    {
+      "path": "crates/rentemester-cli/tests/fiscal_vectors.rs",
+      "sha256": "2ea184a64500b6e33a34f10590e029db98fc7d2da27e2b8e222fa59f60814e3f"
+    },
+    {
+      "path": "crates/rentemester-engine/Cargo.toml",
+      "sha256": "888de533b1fa8cc359b7677d155956c39b1383099d91636396cd1ee1a60bf5cb"
+    },
+    {
+      "path": "crates/rentemester-engine/src/calendar.rs",
+      "sha256": "8c97d562c589611bb4858918eb9f6f236a14ec9e1b7a658d635fa05703801cd8"
+    },
+    {
+      "path": "crates/rentemester-engine/src/fiscal_year.rs",
+      "sha256": "695bcddf67ff6365c6600c19bb5729ce95efdd48a67ab33b6f76c91c48d47988"
+    },
+    {
+      "path": "crates/rentemester-engine/src/lib.rs",
+      "sha256": "bb14621aefec7c724667ec882f58445954758cd091c73d87da361f5948f21217"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/fiscal-calendar/CONTRACT.md",
+      "sha256": "eab907f067aa74b9346e6435e3a0e142bae38e8a7bb40be87cdb9c1971261357"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/fiscal-calendar/gdd.json",
+      "sha256": "cd754086c30a894ce2d10b5d919e0504cb1244ee807c14cb3dad688bbb488b2a"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/fiscal-calendar/legacy-observations.jsonl",
+      "sha256": "8cc7db16e034514102571cdba2a257b4d8094ac61f4e6b75e3dc418118db3bf1"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/fiscal-calendar/vectors-manifest.json",
+      "sha256": "c54d9f811f8c3c73bd2754fb19ecb6c6d53f2dd5cd3cef87b6c9c9eb30537efc"
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/fiscal-calendar/vectors.jsonl",
+      "sha256": "7627c302e113b7260fbfdb964c6366f6dce20a2df119e4d8e4f6536f962e4a91"
+    },
+    {
+      "path": "scripts/rust/check-boundaries.ts",
+      "sha256": "06b1a41c73167c56eb88ff23aa15f9f75c32203084f3ed9b5a0998b5a232db0c"
+    },
+    {
+      "path": "scripts/rust/fiscal-calendar-vectors.py",
+      "sha256": "747695ccacebb5b9a454772bc21b99765c28cb555af62c8a5c919f85973392d2"
+    },
+    {
+      "path": "scripts/rust/verify-fiscal-calendar.ts",
+      "sha256": "33de12c84805a9fda0444f6bfc5727b45f075c2eec092857131cfc736d770891"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "f1fb63d2723dc0ed4852ff370a1f6ccc06f810634a83c19e6acf00af7cbe29fc"
+    },
+    {
+      "path": "src/core/company.ts",
+      "sha256": "3179bc6511c6790ed4b86db926b40da78f85d977ff329f802693c3832416a63e"
+    },
+    {
+      "path": "src/core/dates.ts",
+      "sha256": "77fea21b9b2b3b1f2ebf55b9a092fc6e1cb133780635c710dff1a01f01fe0e2e"
+    },
+    {
+      "path": "src/core/fiscal-year.ts",
+      "sha256": "e11f838ecb8b9482b0175a1f49a82217f012f569538909223958df98f3dc6148"
+    }
+  ],
+  "commands": [
+    {
+      "command": "bun run rust:verify",
+      "result": "PASS",
+      "evidence": "rust-verify.txt",
+      "coverage": "47 Rust tests,8 explicitly selected helpers;484 prior integration checks plus5691 fiscal-calendar checks"
+    },
+    {
+      "command": "cargo test --locked -p rentemester-engine",
+      "result": "PASS",
+      "evidence": "native-engine.txt",
+      "coverage": "9 tests including4 new fiscal/date tests"
+    },
+    {
+      "command": "python3 scripts/rust/fiscal-calendar-vectors.py --check",
+      "result": "PASS",
+      "evidence": "generator-check.txt",
+      "coverage": "Independent5690fixed vectors and generator/corpus hash reproducibility"
+    },
+    {
+      "command": "bun run scripts/rust/verify-fiscal-calendar.ts",
+      "result": "PASS",
+      "evidence": "parity.json",
+      "coverage": "5690 vectors in2 native environments;2911 exact legacy matches,2721 frozen actual differences,42 source refusals,16 typed admission cases"
+    },
+    {
+      "command": "bunx biome lint scripts/rust/verify-fiscal-calendar.ts scripts/rust/verify.ts --error-on-warnings",
+      "result": "PASS",
+      "evidence": "lint.txt"
+    }
+  ],
+  "independent_review": {
+    "agent": "migration_port_research",
+    "mode": "Read-only arithmetic/type/boundary/classification review and independent generator/engine/serde/corpus execution",
+    "result": "All checks PASS; no remaining material bounded defect",
+    "evidence": [
+      "engine-independent.txt",
+      "serde-independent.txt",
+      "parity-independent.txt"
+    ],
+    "review_repairs": [
+      "Add typed LabelStrategy TryFrom parser instead of leaving declared invalid_label_strategy solely to generic serde errors.",
+      "Explicitly retain low0100–0999 end-of-month parity and whitespace/date configuration admission differences; no blanket low-year exclusion."
+    ]
+  },
+  "design_review": {
+    "scope": [
+      "action.fiscal_year",
+      "action.annual_deadline",
+      "component.domain"
+    ],
+    "model_revision": "sha256:6de563f27f61bce82b6b637fc417c1bfab444ece465bc95ce8a61299419c42e8",
+    "code_revision": "sha256:70e6b284bf84c7830d2baa80825f84eb49ed1be2d763630cb73b1797832ddab8",
+    "KISS": "Pure explicit value types and two calendar functions; no clock, SQLite, runtime endpoint, provider or new dependency.",
+    "DRY": "Date construction reuses existing Gregorian validator; private month-end helper serves fiscal and deadline arithmetic. Existing retention semantics untouched.",
+    "separation_of_concerns": "Domain computes canonical bounds/labels and calendar deadline; adapters own config defaults, clock, legal applicability and persisted identifier/replay policy.",
+    "modularity": "Single fiscal_year engine module; JSON fixture I/O is in a CLI integration-test adapter, keeping domain dependency/I/O checks unchanged."
+  },
+  "correction_examples": [
+    {
+      "vector": {
+        "id": "vector-01191",
+        "op": "fiscal",
+        "date": "0099-07-31",
+        "startMonth": 7,
+        "strategy": "span",
+        "expected": {
+          "startYear": 99,
+          "endYear": 100,
+          "start": "0099-07-01",
+          "end": "0100-06-30",
+          "displayLabel": "0099/00",
+          "identifierLabel": "0099-00"
+        },
+        "legacy": "difference"
+      },
+      "actual_legacy": {
+        "ok": true,
+        "value": {
+          "startYear": 99,
+          "endYear": 100,
+          "start": "99-07-01",
+          "end": "0100-06-30",
+          "displayLabel": "99/00",
+          "identifierLabel": "99-00"
+        }
+      }
+    },
+    {
+      "vector": {
+        "id": "vector-00020",
+        "op": "fiscal",
+        "date": "0000-01-31",
+        "startMonth": 7,
+        "strategy": "end-year",
+        "expected": {
+          "error": "date_out_of_range"
+        },
+        "legacy": "difference"
+      },
+      "actual_legacy": {
+        "ok": true,
+        "value": {
+          "startYear": -1,
+          "endYear": 0,
+          "start": "-1-07-01",
+          "end": "1900-06-30",
+          "displayLabel": "0",
+          "identifierLabel": "0"
+        }
+      }
+    },
+    {
+      "vector": {
+        "id": "vector-00078",
+        "op": "deadline",
+        "date": "0000-02-29",
+        "expected": "0000-08-31",
+        "legacy": "difference"
+      },
+      "actual_legacy": {
+        "ok": true,
+        "value": "0-08-29"
+      }
+    },
+    {
+      "vector": {
+        "id": "vector-01482",
+        "op": "deadline",
+        "date": "0100-02-28",
+        "expected": "0100-08-31",
+        "legacy": "match"
+      },
+      "actual_legacy": {
+        "ok": true,
+        "value": "0100-08-31"
+      }
+    },
+    {
+      "vector": {
+        "id": "vector-05419",
+        "op": "deadline",
+        "date": "9999-07-01",
+        "expected": {
+          "error": "date_out_of_range"
+        },
+        "legacy": "difference"
+      },
+      "actual_legacy": {
+        "ok": true,
+        "value": "10000-01-01"
+      }
+    },
+    {
+      "vector": {
+        "id": "vector-05667",
+        "op": "fiscal",
+        "date": " 2026-01-01",
+        "startMonth": 7,
+        "strategy": "span",
+        "expected": {
+          "error": "invalid_date"
+        },
+        "legacy": "typed_input"
+      },
+      "actual_legacy": {
+        "ok": true,
+        "value": {
+          "startYear": 201,
+          "endYear": 202,
+          "start": "201-07-01",
+          "end": "0202-06-30",
+          "displayLabel": "201/02",
+          "identifierLabel": "201-02"
+        }
+      }
+    },
+    {
+      "vector": {
+        "id": "vector-05676",
+        "op": "fiscal",
+        "date": "2026-07-01",
+        "startMonth": 0,
+        "strategy": "span",
+        "expected": {
+          "error": "invalid_start_month"
+        },
+        "legacy": "typed_input"
+      },
+      "actual_legacy": {
+        "ok": true,
+        "value": {
+          "startYear": 2026,
+          "endYear": 2026,
+          "start": "2026-01-01",
+          "end": "2026-12-31",
+          "displayLabel": "2026",
+          "identifierLabel": "2026"
+        }
+      }
+    }
+  ],
+  "verification_notes": [
+    "Initial model readiness draft omitted empty scenario lists for non-relevant risks; corrected before implementation; readiness-v2 is current.",
+    "Python independent expectations were fixed before invoking actual TS/native implementations; later --check reproduces bytes and hashes.",
+    "Explicit --capture-legacy only creates an absent observation file after native validation; ordinary harness fails on any changed actual observation.",
+    "Saved terminal logs remove trailing blank lines only; substantive output and fixed JSONL bytes retained."
+  ],
+  "limitations": [
+    "Pure calendar arithmetic only; no company legal eligibility, filing action, clock or persisted identifier rewrite",
+    "Typed native configuration constructors reject invalid raw settings; adapters still own legacy default normalization",
+    "Low-year and derived-range legacy differences are explicit; existing HTTP fiscal-selection defects remain separate",
+    "No original writes, full R09/R12 acceptance, runtime authority, UI/distribution or cutover",
+    "Date grammar is canonical with no trim; existing config default resolution and wall-clock timezone policy remain adapter work.",
+    "Year0000 is the existing pure proleptic Gregorian value domain; derived bounds must remain within0000–9999. No ancient/historical production data has been qualified or reinterpreted.",
+    "Before adoption/writes, canonical low-year labels must be reconciled with historical sequence scopes and stored numbers; no fresh-scope fallback or automatic renaming is authorized.",
+    "Python generator has no product imports and is used only to reproduce fixed development fixtures; normal verification requires existing Bun/Cargo toolchain, not a new Python product runtime.",
+    "Real TS is deliberately unchanged; observed low-year/extended-year/whitespace behavior stays frozen. Native corrected calculation does not migrate any persisted identifier, filed period or deadline."
+  ]
+}

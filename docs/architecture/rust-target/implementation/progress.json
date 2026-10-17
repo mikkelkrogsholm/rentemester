@@ -1,12 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "sequences-1",
-  "code_revision": "sha256:f81060dfb1427a0945daabc6302bfb99a5419d9011fbd9d339b2aa0aee1dc9a9",
-  "spec_revision": "sha256:3c08d1584e0cf074e69800e9d2a13a2b94d3641cefe7ddc6f71c78fafc1b3286",
-  "state": "verified-experimental-transaction-owned-sequences",
+  "current_increment": "fiscal-calendar-1",
+  "code_revision": "sha256:70e6b284bf84c7830d2baa80825f84eb49ed1be2d763630cb73b1797832ddab8",
+  "spec_revision": "sha256:6de563f27f61bce82b6b637fc417c1bfab444ece465bc95ce8a61299419c42e8",
+  "state": "verified-experimental-pure-fiscal-calendar",
   "issues_closed": [],
   "next": [
+    "Complete R09 exact currency/rate/account-ID/rule invariant evaluation; integrate canonical dates with numbering/report use cases without rewriting stored identifiers",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -26,11 +27,11 @@
     "state": "verified-experimental-readonly"
   },
   "evidence": {
-    "report": "sequences/evidence.json",
-    "parity": "sequences/parity.json",
-    "rust_tests_passed": 42,
-    "ignored_subprocess_helpers": 7,
-    "sequence_checks": 128,
+    "report": "fiscal-calendar/evidence.json",
+    "parity": "fiscal-calendar/parity.json",
+    "rust_tests_passed": 47,
+    "ignored_subprocess_helpers": 8,
+    "fiscal_calendar_checks": 5691,
     "previous_checks_retained": [
       34,
       31,
@@ -41,7 +42,8 @@
       40,
       47,
       37,
-      49
+      49,
+      128
     ],
     "writer_authority": false,
     "whole_issues_closed": false
@@ -100,6 +102,12 @@
       "code_revision": "sha256:1e8829c586a696fd436e666556b1c75e02b30b16165e0afe4c312d6473810c6f",
       "spec_revision": "sha256:2a4f85dabffd49f9a4a1fdfbad1e9e5e1e1c5abbd4c118a1a3af18ab8ccf81d4",
       "state": "verified-experimental-fk-safe-full-prefix-company-vat"
+    },
+    {
+      "current_increment": "sequences-1",
+      "code_revision": "sha256:f81060dfb1427a0945daabc6302bfb99a5419d9011fbd9d339b2aa0aee1dc9a9",
+      "spec_revision": "sha256:3c08d1584e0cf074e69800e9d2a13a2b94d3641cefe7ddc6f71c78fafc1b3286",
+      "state": "verified-experimental-transaction-owned-sequences"
     }
   ]
 }

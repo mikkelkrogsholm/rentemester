@@ -1,0 +1,18 @@
+{
+  "format": "rentemester-fiscal-calendar-vectors/1",
+  "generator": "Python standard-library calendar.monthrange; no product imports",
+  "generator_sha256": "747695ccacebb5b9a454772bc21b99765c28cb555af62c8a5c919f85973392d2",
+  "vectors_sha256": "7627c302e113b7260fbfdb964c6366f6dce20a2df119e4d8e4f6536f962e4a91",
+  "checks": 5690,
+  "operations": {
+    "date": 24,
+    "fiscal": 5217,
+    "deadline": 449
+  },
+  "legacy_policies": {
+    "match": 2911,
+    "difference": 2721,
+    "refusal": 42,
+    "typed_input": 16
+  }
+}

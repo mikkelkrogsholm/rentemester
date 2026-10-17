@@ -1,0 +1,31 @@
+{
+  "scope": "typed fiscal calendar: independent Gregorian expectations and exact actual legacy behavior",
+  "checks": 5691,
+  "vectors": 5690,
+  "operations": {
+    "date": 24,
+    "fiscal": 5217,
+    "deadline": 449
+  },
+  "legacy_policies": {
+    "match": 2911,
+    "difference": 2721,
+    "refusal": 42,
+    "typed_input": 16
+  },
+  "corpus_sha256": "7627c302e113b7260fbfdb964c6366f6dce20a2df119e4d8e4f6536f962e4a91",
+  "legacy_observations_sha256": "8cc7db16e034514102571cdba2a257b4d8094ac61f4e6b75e3dc418118db3bf1",
+  "passed": [
+    "all native results exactly match independent fixed corpus",
+    "ordinary legacy results match; each correction/refusal explicitly classified and frozen",
+    "canonical serialization and alternate TZ/environment stability"
+  ],
+  "platform": "darwin",
+  "architecture": "arm64",
+  "limits": [
+    "Pure calendar arithmetic only; no company legal eligibility, filing action, clock or persisted identifier rewrite",
+    "Typed native configuration constructors reject invalid raw settings; adapters still own legacy default normalization",
+    "Low-year and derived-range legacy differences are explicit; existing HTTP fiscal-selection defects remain separate",
+    "No original writes, full R09/R12 acceptance, runtime authority, UI/distribution or cutover"
+  ]
+}

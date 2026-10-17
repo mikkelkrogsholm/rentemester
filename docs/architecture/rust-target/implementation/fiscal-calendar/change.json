@@ -1,0 +1,33 @@
+{
+  "base_code": "82f9cd4ed1c5a4e33c60227c6128533ed40a5210",
+  "previous_increment": "sequences-1",
+  "scope": "R09 typed fiscal calendar and explicit legacy corrections",
+  "new_ids": [
+    "action.fiscal_year",
+    "action.annual_deadline"
+  ],
+  "write_scope": [
+    "crates/rentemester-engine/src/fiscal_year.rs",
+    "crates/rentemester-engine/src/lib.rs",
+    "crates/rentemester-cli/tests/fiscal_vectors.rs",
+    "scripts/rust/verify-fiscal-calendar.ts",
+    "scripts/rust/fiscal-calendar-vectors.py",
+    "scripts/rust/verify.ts",
+    "docs/architecture/rust-target/implementation/README.md",
+    "docs/architecture/rust-target/implementation/progress.json",
+    "docs/architecture/rust-target/implementation/fiscal-calendar"
+  ],
+  "refinement": "Current readiness-v2 corrects preimplementation model wiring; normative contract unchanged after readiness. Typed label parser added to meet its declared error contract.",
+  "issues_closed": [],
+  "remaining_gates": [
+    "Pure calendar arithmetic only; no company legal eligibility, filing action, clock or persisted identifier rewrite",
+    "Typed native configuration constructors reject invalid raw settings; adapters still own legacy default normalization",
+    "Low-year and derived-range legacy differences are explicit; existing HTTP fiscal-selection defects remain separate",
+    "No original writes, full R09/R12 acceptance, runtime authority, UI/distribution or cutover",
+    "Date grammar is canonical with no trim; existing config default resolution and wall-clock timezone policy remain adapter work.",
+    "Year0000 is the existing pure proleptic Gregorian value domain; derived bounds must remain within0000–9999. No ancient/historical production data has been qualified or reinterpreted.",
+    "Before adoption/writes, canonical low-year labels must be reconciled with historical sequence scopes and stored numbers; no fresh-scope fallback or automatic renaming is authorized.",
+    "Python generator has no product imports and is used only to reproduce fixed development fixtures; normal verification requires existing Bun/Cargo toolchain, not a new Python product runtime.",
+    "Real TS is deliberately unchanged; observed low-year/extended-year/whitespace behavior stays frozen. Native corrected calculation does not migrate any persisted identifier, filed period or deadline."
+  ]
+}
