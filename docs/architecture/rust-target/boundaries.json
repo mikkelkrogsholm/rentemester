@@ -1,0 +1,491 @@
+{
+  "format": "gdd-boundaries/0.3",
+  "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e",
+  "scope": [
+    "action.agent_request",
+    "action.authenticate",
+    "action.connect",
+    "action.deliver",
+    "action.migrate",
+    "action.negotiate",
+    "action.post",
+    "action.report",
+    "action.store",
+    "action.validate",
+    "action.web_request",
+    "community.clients",
+    "community.engine",
+    "community.service",
+    "component.agent",
+    "component.application",
+    "component.desktop",
+    "component.domain",
+    "component.integrations",
+    "component.runtime",
+    "component.storage",
+    "component.web",
+    "entity.connection",
+    "entity.effect",
+    "entity.evidence",
+    "entity.ledger",
+    "entity.workspace",
+    "rule.atomic_posting",
+    "rule.company_isolation",
+    "rule.compatibility",
+    "rule.exact_money",
+    "rule.profile_security",
+    "rule.shared_engine",
+    "rule.single_writer",
+    "scenario.crash",
+    "scenario.disconnected",
+    "scenario.effect",
+    "scenario.exact",
+    "scenario.expired",
+    "scenario.isolation",
+    "scenario.local",
+    "scenario.move",
+    "scenario.readonly",
+    "scenario.remote",
+    "scenario.retry",
+    "scenario.revoke",
+    "scenario.schema",
+    "scenario.unbalanced"
+  ],
+  "components": {
+    "component.agent": {
+      "boundary": {
+        "responsibility": "Local/remote CLI and MCP with explicit context and structured errors.",
+        "rationale": "Agent tools need stable discoverable preconditions and effects.",
+        "excludes": [
+          "Independent policy and ledger mutations"
+        ]
+      },
+      "interfaces_known": true,
+      "public_contracts": [
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.agent",
+          "action": "action.agent_request",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        }
+      ]
+    },
+    "component.application": {
+      "boundary": {
+        "responsibility": "Use cases, company permissions, policy and atomic write orchestration.",
+        "rationale": "All interfaces must enforce the same business gates.",
+        "excludes": [
+          "Transport authentication and UI presentation"
+        ]
+      },
+      "interfaces_known": true,
+      "public_contracts": [
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.application",
+          "action": "action.report",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        },
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.application",
+          "action": "action.post",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        }
+      ]
+    },
+    "component.desktop": {
+      "boundary": {
+        "responsibility": "GPUI views, connection profiles and a managed local backend.",
+        "rationale": "A native experience must support local and remote operation.",
+        "excludes": [
+          "SQL access, ledger rules and offline replay"
+        ]
+      },
+      "interfaces_known": true,
+      "public_contracts": [
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.desktop",
+          "action": "action.connect",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        }
+      ]
+    },
+    "component.domain": {
+      "boundary": {
+        "responsibility": "Exact accounting values and invariants.",
+        "rationale": "Keep accounting semantics reusable across every client.",
+        "excludes": [
+          "HTTP, UI, SQL and credentials"
+        ]
+      },
+      "interfaces_known": true,
+      "public_contracts": [
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.domain",
+          "action": "action.validate",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        }
+      ]
+    },
+    "component.integrations": {
+      "boundary": {
+        "responsibility": "External provider protocols and durable effect delivery.",
+        "rationale": "Provider outages and retries need independent reconciliation.",
+        "excludes": [
+          "Independent accounting writes"
+        ]
+      },
+      "interfaces_known": true,
+      "public_contracts": [
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.integrations",
+          "action": "action.deliver",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        }
+      ]
+    },
+    "component.runtime": {
+      "boundary": {
+        "responsibility": "HTTP API, authentication translation, discovery and process lifecycle.",
+        "rationale": "Local and hosted clients share one server contract.",
+        "excludes": [
+          "Duplicated accounting rules"
+        ]
+      },
+      "interfaces_known": true,
+      "public_contracts": [
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.runtime",
+          "action": "action.negotiate",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        },
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.runtime",
+          "action": "action.authenticate",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        }
+      ]
+    },
+    "component.storage": {
+      "boundary": {
+        "responsibility": "SQLite, migrations, audit/evidence persistence and verified workspace transfer.",
+        "rationale": "Preserve durable company data behind one owning runtime.",
+        "excludes": [
+          "Business authorization and direct UI access"
+        ]
+      },
+      "interfaces_known": true,
+      "public_contracts": [
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.storage",
+          "action": "action.store",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        },
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.storage",
+          "action": "action.migrate",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        }
+      ]
+    },
+    "component.web": {
+      "boundary": {
+        "responsibility": "React browser views and same-origin API interaction.",
+        "rationale": "Retain existing browser investment and separate rendering from accounting.",
+        "excludes": [
+          "SQL access and local process management"
+        ]
+      },
+      "interfaces_known": true,
+      "public_contracts": [
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.web",
+          "action": "action.web_request",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        }
+      ]
+    }
+  },
+  "communities": {
+    "community.clients": {
+      "membership_basis": {
+        "component.desktop": [
+          "component.desktop"
+        ],
+        "component.web": [
+          "component.web"
+        ]
+      },
+      "omitted_components": [],
+      "omitted_calls": [],
+      "unresolved_members": [],
+      "public_contracts": [
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.desktop",
+          "action": "action.connect",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        },
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.web",
+          "action": "action.web_request",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        }
+      ],
+      "calls": {
+        "inbound": [],
+        "outbound": [
+          "edge.17",
+          "edge.18",
+          "edge.19",
+          "edge.22",
+          "edge.23",
+          "edge.24",
+          "edge.25"
+        ],
+        "internal": [],
+        "unresolved": []
+      }
+    },
+    "community.engine": {
+      "membership_basis": {
+        "component.application": [
+          "component.application"
+        ],
+        "component.domain": [
+          "component.domain"
+        ],
+        "component.integrations": [
+          "component.integrations"
+        ],
+        "component.storage": [
+          "component.storage"
+        ]
+      },
+      "omitted_components": [],
+      "omitted_calls": [],
+      "unresolved_members": [],
+      "public_contracts": [
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.application",
+          "action": "action.report",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        },
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.application",
+          "action": "action.post",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        },
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.domain",
+          "action": "action.validate",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        },
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.integrations",
+          "action": "action.deliver",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        },
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.storage",
+          "action": "action.store",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        },
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.storage",
+          "action": "action.migrate",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        }
+      ],
+      "calls": {
+        "inbound": [
+          "edge.22",
+          "edge.23",
+          "edge.24",
+          "edge.25",
+          "edge.26",
+          "edge.27"
+        ],
+        "outbound": [],
+        "internal": [
+          "edge.28",
+          "edge.29"
+        ],
+        "unresolved": []
+      }
+    },
+    "community.service": {
+      "membership_basis": {
+        "component.agent": [
+          "component.agent"
+        ],
+        "component.runtime": [
+          "component.runtime"
+        ]
+      },
+      "omitted_components": [],
+      "omitted_calls": [],
+      "unresolved_members": [],
+      "public_contracts": [
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.agent",
+          "action": "action.agent_request",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        },
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.runtime",
+          "action": "action.negotiate",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        },
+        {
+          "project_id": "rentemester.rust-target",
+          "provider": "component.runtime",
+          "action": "action.authenticate",
+          "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e"
+        }
+      ],
+      "calls": {
+        "inbound": [
+          "edge.17",
+          "edge.18",
+          "edge.19"
+        ],
+        "outbound": [
+          "edge.26",
+          "edge.27"
+        ],
+        "internal": [
+          "edge.20",
+          "edge.21"
+        ],
+        "unresolved": []
+      }
+    }
+  },
+  "calls": [
+    {
+      "edge": "edge.17",
+      "source": "action.connect",
+      "consumer": "component.desktop",
+      "provider": "component.runtime",
+      "action": "action.negotiate",
+      "status": "public"
+    },
+    {
+      "edge": "edge.18",
+      "source": "action.connect",
+      "consumer": "component.desktop",
+      "provider": "component.runtime",
+      "action": "action.authenticate",
+      "status": "public"
+    },
+    {
+      "edge": "edge.19",
+      "source": "action.web_request",
+      "consumer": "component.web",
+      "provider": "component.runtime",
+      "action": "action.authenticate",
+      "status": "public"
+    },
+    {
+      "edge": "edge.20",
+      "source": "action.agent_request",
+      "consumer": "component.agent",
+      "provider": "component.runtime",
+      "action": "action.authenticate",
+      "status": "public"
+    },
+    {
+      "edge": "edge.21",
+      "source": "action.agent_request",
+      "consumer": "component.agent",
+      "provider": "component.runtime",
+      "action": "action.negotiate",
+      "status": "public"
+    },
+    {
+      "edge": "edge.22",
+      "source": "action.web_request",
+      "consumer": "component.web",
+      "provider": "component.application",
+      "action": "action.report",
+      "status": "public"
+    },
+    {
+      "edge": "edge.23",
+      "source": "action.web_request",
+      "consumer": "component.web",
+      "provider": "component.application",
+      "action": "action.post",
+      "status": "public"
+    },
+    {
+      "edge": "edge.24",
+      "source": "action.connect",
+      "consumer": "component.desktop",
+      "provider": "component.application",
+      "action": "action.report",
+      "status": "public"
+    },
+    {
+      "edge": "edge.25",
+      "source": "action.connect",
+      "consumer": "component.desktop",
+      "provider": "component.application",
+      "action": "action.post",
+      "status": "public"
+    },
+    {
+      "edge": "edge.26",
+      "source": "action.agent_request",
+      "consumer": "component.agent",
+      "provider": "component.application",
+      "action": "action.report",
+      "status": "public"
+    },
+    {
+      "edge": "edge.27",
+      "source": "action.agent_request",
+      "consumer": "component.agent",
+      "provider": "component.application",
+      "action": "action.post",
+      "status": "public"
+    },
+    {
+      "edge": "edge.28",
+      "source": "action.post",
+      "consumer": "component.application",
+      "provider": "component.domain",
+      "action": "action.validate",
+      "status": "public"
+    },
+    {
+      "edge": "edge.29",
+      "source": "action.post",
+      "consumer": "component.application",
+      "provider": "component.storage",
+      "action": "action.store",
+      "status": "public"
+    }
+  ],
+  "omitted_calls": [],
+  "unresolved": []
+}

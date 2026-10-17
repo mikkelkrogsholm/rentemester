@@ -1,0 +1,464 @@
+{
+  "format": "rentemester-publication/1",
+  "repository": "mikkelkrogsholm/rentemester",
+  "epic": "https://github.com/mikkelkrogsholm/rentemester/issues/672",
+  "result": "PASS",
+  "children_created": 55,
+  "native_subissues_verified": 55,
+  "all_remote_bodies_match_local": true,
+  "reviewed_content_preserved_except_number_substitution": true,
+  "no_duplicate_markers_in_recent_100": true,
+  "no_execution_automation_labels_added": true,
+  "plan_sha256": "52bf54c823e9e6739fbdd4f43b80e9b16e7ed412d4ea4909dc1a79c9bedb6f81",
+  "gdd_revision": "sha256:859fe7a4edf8f10d9da3481fd2de1a54e8421e8da754e9d6154dde0830a947d9",
+  "issues": [
+    {
+      "id": "RM-RUST",
+      "number": 672,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/672",
+      "body_sha256": "7407f6dcc5eb1561f50cc1866714588d9876e7988b68f49fff23ae1ac2dac9ec",
+      "matches_reviewed_canonical_text": true,
+      "native_child": false
+    },
+    {
+      "id": "R01",
+      "number": 673,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/673",
+      "body_sha256": "7eccca74f656958a6da47eed6f0772b79bad12740862a1936b5b501a11542120",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R02",
+      "number": 674,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/674",
+      "body_sha256": "87f555a5f00a35f43238680109bff090f7f8236808b9572e499956b2b7b68f73",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R03",
+      "number": 675,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/675",
+      "body_sha256": "2bda797d626776362bbf81b3f63cf1dd1d71229c333b159a8818d862ef6d6a76",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R04",
+      "number": 676,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/676",
+      "body_sha256": "fe4f02efc7c86ba3d03283e0aae8d38948661f2650d1807df45581b1cf316d68",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R05",
+      "number": 677,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/677",
+      "body_sha256": "33f530cb73a0abfb3c1b47403923c2822464345cbcd8a43919773003a3bcd235",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R06",
+      "number": 678,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/678",
+      "body_sha256": "e55aa2facfc4175ec11896ebdd7b906e1a1ba2e2338282bb9c1b343a7796109a",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R07",
+      "number": 679,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/679",
+      "body_sha256": "94e86395b50b21d4ebfc848b8d6fc21d646c8c8266a2272f3e7e7559727083b8",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R08",
+      "number": 680,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/680",
+      "body_sha256": "aa90fc32cd8a9481599eaa8d8068dc79db88c02fbb5b3eed3764e8f0e441d976",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R09",
+      "number": 681,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/681",
+      "body_sha256": "65af66c8361dfaab45250f7c3c1df35730d610858e70c8a97b80cef81679c86a",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R10",
+      "number": 682,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/682",
+      "body_sha256": "f489f4a58b93d589c158e5b07712ff08af961888effd8b286314005a9c216c6f",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R11",
+      "number": 683,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/683",
+      "body_sha256": "75f1d9f750a65dc9f09a618dc910543e8108b96df0cd1ce76b2a5f9a2b35a8d5",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R12",
+      "number": 684,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/684",
+      "body_sha256": "67bf79cb8911ae299944693d70a47d3331a8a7c8ce429f9fe4c6a54c55db9125",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R13",
+      "number": 685,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/685",
+      "body_sha256": "b9bba220a9a8196f6d987632802333d1bbfd541e2beb197541c5b397108b44ff",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R15",
+      "number": 686,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/686",
+      "body_sha256": "647c5b3d07d7a74648c04149b645f5887efa7c4d3447aa5e91aa6244e759f13d",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R14",
+      "number": 687,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/687",
+      "body_sha256": "d0ddd2a0272cb835c950d97f11cbe1a8b2a22f04c878c46719b996c4bb0f67cf",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R16",
+      "number": 688,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/688",
+      "body_sha256": "77231d90ac00e378804af3796aeddf7d91ab30c7bba0d3248523c838d0e898d3",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R17",
+      "number": 689,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/689",
+      "body_sha256": "1b33fe48c105c59a597b88711ab69bb09cc5ef8a9fd906679225cfe72a082ee2",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R35",
+      "number": 690,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/690",
+      "body_sha256": "1d55693d825ba3ba9a694c55e8bf7911dc15104a1781be84b7de54245fbc47cb",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R38",
+      "number": 691,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/691",
+      "body_sha256": "fd098ab2e9793e47d06b3f69d53e7f49fa50e876d333265fd55699c67784368a",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R18",
+      "number": 692,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/692",
+      "body_sha256": "2a8b4e8a2a52e2171c815a4b657a39219b8a7b0cc09e99d1b8ae4ce18b1a3725",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R21",
+      "number": 693,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/693",
+      "body_sha256": "60ca3ecf12cd88448974c48518d84c32e871b309859e18d3849f26fba6cc5687",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R19",
+      "number": 694,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/694",
+      "body_sha256": "46f956e1dfe8ff2ab236b8e62ffb45159d889fc775a606d6696f3e517fdd3b18",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R20",
+      "number": 695,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/695",
+      "body_sha256": "d59e5c28c49a1bf038d137574939b21d966eedf107fa465d26f9a32d166129bc",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R22",
+      "number": 696,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/696",
+      "body_sha256": "05b0b337b34f9effbab48f0117df9cbfd5f9f62e783b484104e8a95968c2f582",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R23",
+      "number": 697,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/697",
+      "body_sha256": "76565d1a224e288129a2d945085d7ced05c37daad6371cad7b9749d6fbb210b0",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R24",
+      "number": 698,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/698",
+      "body_sha256": "fccc9f49615df94f70732d3c72e402f6a32aeea05c1350125bf9ef2f119d6dae",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R25",
+      "number": 699,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/699",
+      "body_sha256": "8e2a4ea1844edea884ef5d361cb9dcae8470ea580db949a3005a2b4f5b320d14",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R26",
+      "number": 700,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/700",
+      "body_sha256": "41aded295e1b7c01f4e96b22e0a5bf474f468e7b8c2338438a9b3f803da397c9",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R27",
+      "number": 701,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/701",
+      "body_sha256": "98d6f43d9b36d181e4e69f7954eecf1470496ee0bac710bf9829d1dd43dc27fd",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R28",
+      "number": 702,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/702",
+      "body_sha256": "6e2fb048334083858e523ab5caffbbb68086b20ee7a2c442db9b73ede55fa18b",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R32",
+      "number": 703,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/703",
+      "body_sha256": "e615bc61c7573d97a4153d039f85a352b199837b2080b8dc4b7dd3a5f9120692",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R29",
+      "number": 704,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/704",
+      "body_sha256": "2180c8ca58b0dfa84012b0f3b8eefda5b0b99aa1dd713d446ad9ea71f3be6cfb",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R30",
+      "number": 705,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/705",
+      "body_sha256": "1b41e6bdfbd2cdc1690da05157e1de8615a5d09cb0257f7e2aa1272cd8f48aa7",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R31",
+      "number": 706,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/706",
+      "body_sha256": "9f3770232414bda76b6a8b70012eeff9977540c2874d88436b01f9ecf217befd",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R33",
+      "number": 707,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/707",
+      "body_sha256": "a20f5c91f46153b53cb8c9f5983980fae7a165cfa3cc08ede5b863aa05b54cbb",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R34",
+      "number": 708,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/708",
+      "body_sha256": "94b4704d302aaa2f04c7a7e51c3daa8c65978db02b738fbbfc4758657f7b392e",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R36",
+      "number": 709,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/709",
+      "body_sha256": "d1187e3f1fef5c3e514afdf26841266f8251d9357126b29178b7dda264821dd4",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R37",
+      "number": 710,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/710",
+      "body_sha256": "f69dba5337853510511430d975f12c0fc86ec09bd60cb0aa76b3bb482499fc96",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R39",
+      "number": 711,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/711",
+      "body_sha256": "e0311d83e804a9c6c544de051e3447da49d1b431f9a56208fed59e5e59e5dd28",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R41",
+      "number": 712,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/712",
+      "body_sha256": "26ba4eea5894b3bb3525e794fe45574ba8db32978342e80cddb342d3ba30030f",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R40",
+      "number": 713,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/713",
+      "body_sha256": "20ca56e272b6648d3616e5676773972a123cb9cc0a87bb5f4ec2dcfb7bb81548",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R42",
+      "number": 714,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/714",
+      "body_sha256": "954323c399d10628b310fd74486aa72dda0dc7348b230f35e0377fc5c7f1420a",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R43",
+      "number": 715,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/715",
+      "body_sha256": "075f9db363529f5fd7497ccc84524a7b93b040b769cdd6f32b615c3e1922a83d",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R44",
+      "number": 716,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/716",
+      "body_sha256": "c4ffd7628446c6c4e7c859b29773c6b72afa96deb2485ccae717aeb1fd51691d",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R45",
+      "number": 717,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/717",
+      "body_sha256": "18c00358fbc718d97dc0bd5e75d2c4200539f9a274d0dbf538c5a7882f18142e",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R46",
+      "number": 718,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/718",
+      "body_sha256": "ac02b862c976fe95a7fe756994f67e4f6b646be33f1ca014cacb8bb00b250478",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R47",
+      "number": 719,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/719",
+      "body_sha256": "e4bc87e2657e7b1eed65a878f27b42e0e373c6651115f312b32c819d95f76b3a",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R48",
+      "number": 720,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/720",
+      "body_sha256": "744b19d09c7c4f5e2a1a51dd06a9cb99e0f97157c9f0390a0ce4f6b5b7544700",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R49",
+      "number": 721,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/721",
+      "body_sha256": "1364786e198c227941ac41f6a8d647ee1f36707df1ce5a3791769c6725079695",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R50",
+      "number": 722,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/722",
+      "body_sha256": "a5cf4fb801e7244f0154e37642eec26cffc579c441a58e01c258242ab3aa3c62",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R51",
+      "number": 723,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/723",
+      "body_sha256": "7b4fc48c5bdfe73e7b93a59391222c1c4ff1b15823d9f4909233de5073cda619",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R52",
+      "number": 724,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/724",
+      "body_sha256": "1b5745a90df57291bb646c8732072b7bc4075c9ffc911d081b132a1496257806",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R53",
+      "number": 725,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/725",
+      "body_sha256": "b1e991791e453d7e694ebbd2fa8088c4a11a8d6a2e28a7c5fbc4a22ca64d0678",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R54",
+      "number": 726,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/726",
+      "body_sha256": "8e5040b07b91a5ed4992951b96329be2c313eaad7fce3730c55e0df50a21eb96",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    },
+    {
+      "id": "R55",
+      "number": 727,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/727",
+      "body_sha256": "1d07221b53755beb42027db4b9ef8a8b1370145127e15a0fc88af2169a2facd4",
+      "matches_reviewed_canonical_text": true,
+      "native_child": true
+    }
+  ]
+}

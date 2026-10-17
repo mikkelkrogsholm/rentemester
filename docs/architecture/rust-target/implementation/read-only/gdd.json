@@ -1,0 +1,407 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Read-only Rust trial-balance implementation slice",
+    "goal": "Deliver first verified read-only Rust accounting result without touching source ledgers.",
+    "scope": "Refinement of action.report; no mutations, hosted identity, native UI, full audit health or broad epic completion."
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Own local report orchestration and input/result contract.",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Own local report orchestration and input/result contract.",
+        "rationale": "Use cases have one explicit public boundary.",
+        "excludes": [
+          "Hosted identity and mutations"
+        ]
+      },
+      "interfaces": [
+        "action.report"
+      ]
+    },
+    "component.domain": {
+      "kind": "component",
+      "description": "Own exact amounts, dates and pure report aggregation.",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Own exact amounts, dates and pure report aggregation.",
+        "rationale": "Keep accounting arithmetic separate from transport/storage.",
+        "excludes": [
+          "SQL, filesystem, network and UI"
+        ]
+      },
+      "interfaces": []
+    },
+    "component.storage": {
+      "kind": "component",
+      "description": "Own no-follow source capture and bounded current-schema read validation.",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Own no-follow source capture and bounded current-schema read validation.",
+        "rationale": "SQLite sidecars require isolated recovery without touching source.",
+        "excludes": [
+          "Accounting write authority, migrations and hosted access control"
+        ]
+      },
+      "interfaces": []
+    },
+    "action.report": {
+      "kind": "action",
+      "description": "Read an explicitly selected local current-schema company trial balance with no source writes.",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "company_path": {
+            "type": "string",
+            "min_length": 1
+          },
+          "period_start": {
+            "type": "string",
+            "min_length": 10
+          },
+          "period_end": {
+            "type": "string",
+            "min_length": 10
+          }
+        },
+        "context": {
+          "mode": {
+            "type": "enum",
+            "values": [
+              "local_operator"
+            ]
+          }
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "format": {
+              "type": "enum",
+              "values": [
+                "rentemester-trial-balance/1"
+              ]
+            },
+            "data": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "format",
+            "data"
+          ]
+        },
+        "errors": {
+          "invalid_input": "Reject bad flags/periods before filesystem access.",
+          "source_unavailable": "Reject missing, symlink, nonregular or inaccessible source; no writes.",
+          "source_changed": "Reject after four unstable captures; no source mutation.",
+          "unsupported_schema": "Reject noncurrent/history/physical report-contract mismatch without migration.",
+          "invalid_ledger": "Reject corrupt/FK-invalid/invalid enum/amount storage or nonfinite/lossy integer input.",
+          "storage_failure": "Reject failed private recovery/I/O; cleanup temp files; no source writes."
+        },
+        "preconditions": [
+          "Input is canonical and local OS file authority permits read; no hosted membership claim."
+        ],
+        "postconditions": [
+          "Exact output obeys CONTRACT.md and all source DB/sidecar bytes are unchanged.",
+          "Only the private temporary copy may recover/checkpoint; it is removed on exit."
+        ],
+        "external_effects": [
+          "Read source file descriptors and create/recover/query/delete a private temporary SQLite copy; never write source or perform network I/O."
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Local file boundary, no implicit company/root escape.",
+            "scenarios": [
+              "scenario.isolation"
+            ]
+          },
+          "idempotency": {
+            "relevant": false,
+            "rationale": "Repeatable read only; no durable write receipt or external delivery.",
+            "scenarios": []
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Dates, monetary rounding/types, schema and input limits.",
+            "scenarios": [
+              "scenario.boundary",
+              "scenario.schema",
+              "scenario.usage"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Capture may race a writer or WAL changes.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Private-copy failure must never mutate source or report partial success.",
+            "scenarios": [
+              "scenario.atomic"
+            ]
+          }
+        },
+        "error_cases": {
+          "invalid_input": [
+            "scenario.usage",
+            "scenario.boundary"
+          ],
+          "source_unavailable": [
+            "scenario.isolation"
+          ],
+          "source_changed": [
+            "scenario.unstable"
+          ],
+          "unsupported_schema": [
+            "scenario.schema"
+          ],
+          "invalid_ledger": [
+            "scenario.schema",
+            "scenario.boundary"
+          ],
+          "storage_failure": [
+            "scenario.atomic"
+          ]
+        }
+      },
+      "behavior": "Validate input; open capability-scoped source descriptors read-only; capture stable bounded file state; recover only private copy; validate exact current history and direct-table integrity on that copy; decode each amount with documented legacy boundary; compute exact report; emit one result and clean temporary state."
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Exact per-account/total strings, touched accounts and counts match fixed expected and legacy results; all source bytes unchanged.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "A current synthetic company ledger with independently specified postings.",
+        "when": "Read inclusive trial balance.",
+        "then": "Exact per-account/total strings, touched accounts and counts match fixed expected and legacy results; all source bytes unchanged."
+      }
+    },
+    "scenario.boundary": {
+      "kind": "scenario",
+      "description": "Exact line-rounding and UTF-16 ordering; empty report balanced; invalid dates and lossy integer input refused.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Rounding-tail, leap-year, year0000, non-BMP account and empty-period fixtures.",
+        "when": "Read reports and evaluate decimal/date values.",
+        "then": "Exact line-rounding and UTF-16 ordering; empty report balanced; invalid dates and lossy integer input refused."
+      }
+    },
+    "scenario.isolation": {
+      "kind": "scenario",
+      "description": "No cross-root escape, implicit company creation or source mutation; refuse unsupported path.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "A second company and symlink/nonregular/missing data or source file.",
+        "when": "Attempt read through each selected local root.",
+        "then": "No cross-root escape, implicit company creation or source mutation; refuse unsupported path."
+      }
+    },
+    "scenario.schema": {
+      "kind": "scenario",
+      "description": "Typed fail-closed refusal; no migration, table repair or original-file modification.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "A pending/newer/gapped/changed history, corrupt SQLite or FK/column/type drift.",
+        "when": "Attempt report.",
+        "then": "Typed fail-closed refusal; no migration, table repair or original-file modification."
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "A consistent validated private copy or source_changed refusal; committed WAL data is not silently omitted; source handles never write.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Committed WAL frames and a writer changing the source capture.",
+        "when": "Take bounded stable snapshots while the source changes.",
+        "then": "A consistent validated private copy or source_changed refusal; committed WAL data is not silently omitted; source handles never write."
+      }
+    },
+    "scenario.atomic": {
+      "kind": "scenario",
+      "description": "All temp files cleaned; no partial success report and no source side effects.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Private snapshot recovery/query fails or source changes before stable capture.",
+        "when": "Abort report.",
+        "then": "All temp files cleaned; no partial success report and no source side effects."
+      }
+    },
+    "scenario.usage": {
+      "kind": "scenario",
+      "description": "One typed JSON error, correct usage/refusal exit and no opened writable source.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Missing/duplicate/unknown flags or invalid/inverted dates.",
+        "when": "Invoke the experimental command.",
+        "then": "One typed JSON error, correct usage/refusal exit and no opened writable source."
+      }
+    },
+    "scenario.repeat": {
+      "kind": "scenario",
+      "description": "Identical result, no idempotency key or write receipt required.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "An unchanged valid source.",
+        "when": "Repeat same read.",
+        "then": "Identical result, no idempotency key or write receipt required."
+      }
+    },
+    "rule.source_immutable": {
+      "kind": "rule",
+      "description": "Never open original DB/sidecars writable, migrate or repair them.",
+      "rule": {
+        "category": "invariant",
+        "scope": "global",
+        "statement": "Every source byte is unchanged by successful or refused reads; only a private temporary copy may recover.",
+        "blocking": true,
+        "verification": [
+          "source_inventory_and_fault_tests"
+        ]
+      }
+    },
+    "scenario.unstable": {
+      "kind": "scenario",
+      "description": "Exhaust all stable-capture attempts without touching the source.",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Every one of four source captures changes its DB or sidecar state.",
+        "when": "Attempt the bounded snapshot.",
+        "then": "Return source_changed, remove any private files and leave source bytes untouched by the reader."
+      }
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.report.owner",
+      "from": "action.report",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal.report",
+      "from": "scenario.normal",
+      "to": "action.report",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.boundary.report",
+      "from": "scenario.boundary",
+      "to": "action.report",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.isolation.report",
+      "from": "scenario.isolation",
+      "to": "action.report",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.schema.report",
+      "from": "scenario.schema",
+      "to": "action.report",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent.report",
+      "from": "scenario.concurrent",
+      "to": "action.report",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.atomic.report",
+      "from": "scenario.atomic",
+      "to": "action.report",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.usage.report",
+      "from": "scenario.usage",
+      "to": "action.report",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.repeat.report",
+      "from": "scenario.repeat",
+      "to": "action.report",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.normal.immutable",
+      "from": "scenario.normal",
+      "to": "rule.source_immutable",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.schema.immutable",
+      "from": "scenario.schema",
+      "to": "rule.source_immutable",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.concurrent.immutable",
+      "from": "scenario.concurrent",
+      "to": "rule.source_immutable",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.atomic.immutable",
+      "from": "scenario.atomic",
+      "to": "rule.source_immutable",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.isolation.immutable",
+      "from": "scenario.isolation",
+      "to": "rule.source_immutable",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.unstable.report",
+      "from": "scenario.unstable",
+      "to": "action.report",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.unstable.immutable",
+      "from": "scenario.unstable",
+      "to": "rule.source_immutable",
+      "relation": "verifies"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Read-only slice contract",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "3d0ab33236fc613597e684bb3dcbd50a62a89dc3c43b19a86de2c8672be5e54f"
+      }
+    }
+  }
+}

@@ -46,3 +46,6 @@ notes/
 app/test-results/
 app/playwright-report/
 app/.cache/
+
+# Rust build artifacts (source and Cargo.lock remain tracked)
+/target/

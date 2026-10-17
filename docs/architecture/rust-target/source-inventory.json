@@ -1,0 +1,75 @@
+{
+  "base_commit": "0bbe82bcf0cafd73e2326152740cb06b90222405",
+  "note": "Hashes identify actual working-tree bytes. The checkout has pre-existing modifications. This is a selected source inventory, not a full implementation snapshot or a Graphify adapter import.",
+  "files": [
+    {
+      "path": "src/server/app.ts",
+      "sha256": "21b92eb3922eaa7f37b256eb64df5ac030934a4b120a3176b84771f891883a64"
+    },
+    {
+      "path": "src/server/config.ts",
+      "sha256": "20ff7f7843c82ac1da45c657fa40a654e1aef87cfe9f37953aa2c40593cfe7df"
+    },
+    {
+      "path": "app/src/lib/api/_shared.ts",
+      "sha256": "0f339bdea656a7af515ec2c9b6bbd25cdddaf3799c16b471ebc6b68406e51f2a"
+    },
+    {
+      "path": "app/src/lib/auth-client.ts",
+      "sha256": "c3658c2718a5bd0f0fed68ea4630552a74bd08189b9152d7ab4635824cf77881"
+    },
+    {
+      "path": "src/core/paths.ts",
+      "sha256": "fc648f5df5005a14f9dfbbd5066902656303875ff72539fe99f19520109502db"
+    },
+    {
+      "path": "src/core/money.ts",
+      "sha256": "e013c3ca23bb2391105aa2f1e2f307dcdaaf85bec60159e5d63b39aa7e7c3bf8"
+    },
+    {
+      "path": "src/core/db.ts",
+      "sha256": "e7b72a6539e981c05e26085475aff4c26bea062f93d9b3b012049eda3987869f"
+    },
+    {
+      "path": "src/core/schema.sql",
+      "sha256": "00a425e5e0d08c93a989331f84749b2d8c20ec0fca9823cebf0b5182f31a1f3b"
+    },
+    {
+      "path": "src/cli/serve.ts",
+      "sha256": "7850f81d166b5a0cd346454c6cbad38abf7fef71810c08fa839cc65562d6bedd"
+    },
+    {
+      "path": "src/mcp/server.ts",
+      "sha256": "c56eb59749fc7a6f512eeb3e41b44cdb5e86628c54ed084be2e63c71d6c6e107"
+    },
+    {
+      "path": "docs/deployment-modes.md",
+      "sha256": "e10bade693ea8603dbf950805917cb0100fe0d46fa1ad230e6288b2852179250"
+    },
+    {
+      "path": "docs/security-multi-user-scope.md",
+      "sha256": "d54884cbad07548460c398d8b7754ddf7d3dafcd3d931b70e8c6299ed2a56b08"
+    },
+    {
+      "path": "docs/cli-contract.md",
+      "sha256": "b90f94f0816478d79db9305bab0b5bd3904d520dfb3d5e4bf30259ae7d3d54bc"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "bb467b32f4bcbb075bf3033edc7cb3a72be0b749701a3d4732991351eb199843"
+    },
+    {
+      "path": "package.json",
+      "sha256": "47eb8bc4fe9ccc3a9f5f30b17cc88bcc15fafceb522b6f1e112c046ac166ed5c"
+    },
+    {
+      "path": "app/package.json",
+      "sha256": "9e931d55df61c74a82921cc8ac51404860200ab89a187558f3c1cf048b174f98"
+    }
+  ],
+  "graphify_observation": {
+    "path": "graphify-out/graph.json",
+    "sha256": "fc203824504d00723b359ba7ac1632eec0afd4c8d88db8589ebfa5d927d7a772",
+    "status": "Navigation observation only; source verification is separate."
+  }
+}

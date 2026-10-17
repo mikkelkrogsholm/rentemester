@@ -1,0 +1,1535 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Rentemester — proposed Rust target architecture",
+    "goal": "One accounting engine for server/web, remote native desktop and fully local native desktop.",
+    "scope": "Target architecture and staged migration proposal; no rewrite or live data mutation.",
+    "assumptions": [
+      "Rust backend/CLI/MCP and GPUI desktop are proposed; retain React web.",
+      "One deployment per customer organization; separate legal-entity ledgers.",
+      "SQLite retained subject to explicit compatibility verification.",
+      "A managed local HTTP runtime shares the server API.",
+      "All nodes are sketches; scenarios are planned, not executed."
+    ]
+  },
+  "nodes": {
+    "component.domain": {
+      "kind": "component",
+      "label": "Domain",
+      "description": "Exact accounting values and invariants.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "boundary": {
+        "responsibility": "Exact accounting values and invariants.",
+        "rationale": "Keep accounting semantics reusable across every client.",
+        "excludes": [
+          "HTTP, UI, SQL and credentials"
+        ]
+      },
+      "interfaces": [
+        "action.validate"
+      ]
+    },
+    "component.application": {
+      "kind": "component",
+      "label": "Application",
+      "description": "Use cases, company permissions, policy and atomic write orchestration.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "boundary": {
+        "responsibility": "Use cases, company permissions, policy and atomic write orchestration.",
+        "rationale": "All interfaces must enforce the same business gates.",
+        "excludes": [
+          "Transport authentication and UI presentation"
+        ]
+      },
+      "interfaces": [
+        "action.report",
+        "action.post"
+      ]
+    },
+    "component.storage": {
+      "kind": "component",
+      "label": "Storage",
+      "description": "SQLite, migrations, audit/evidence persistence and verified workspace transfer.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "boundary": {
+        "responsibility": "SQLite, migrations, audit/evidence persistence and verified workspace transfer.",
+        "rationale": "Preserve durable company data behind one owning runtime.",
+        "excludes": [
+          "Business authorization and direct UI access"
+        ]
+      },
+      "interfaces": [
+        "action.store",
+        "action.migrate"
+      ]
+    },
+    "component.integrations": {
+      "kind": "component",
+      "label": "Integrations",
+      "description": "External provider protocols and durable effect delivery.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "boundary": {
+        "responsibility": "External provider protocols and durable effect delivery.",
+        "rationale": "Provider outages and retries need independent reconciliation.",
+        "excludes": [
+          "Independent accounting writes"
+        ]
+      },
+      "interfaces": [
+        "action.deliver"
+      ]
+    },
+    "component.runtime": {
+      "kind": "component",
+      "label": "Runtime",
+      "description": "HTTP API, authentication translation, discovery and process lifecycle.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "boundary": {
+        "responsibility": "HTTP API, authentication translation, discovery and process lifecycle.",
+        "rationale": "Local and hosted clients share one server contract.",
+        "excludes": [
+          "Duplicated accounting rules"
+        ]
+      },
+      "interfaces": [
+        "action.negotiate",
+        "action.authenticate"
+      ]
+    },
+    "component.agent": {
+      "kind": "component",
+      "label": "Agent",
+      "description": "Local/remote CLI and MCP with explicit context and structured errors.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "boundary": {
+        "responsibility": "Local/remote CLI and MCP with explicit context and structured errors.",
+        "rationale": "Agent tools need stable discoverable preconditions and effects.",
+        "excludes": [
+          "Independent policy and ledger mutations"
+        ]
+      },
+      "interfaces": [
+        "action.agent_request"
+      ]
+    },
+    "component.desktop": {
+      "kind": "component",
+      "label": "Desktop",
+      "description": "GPUI views, connection profiles and a managed local backend.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "boundary": {
+        "responsibility": "GPUI views, connection profiles and a managed local backend.",
+        "rationale": "A native experience must support local and remote operation.",
+        "excludes": [
+          "SQL access, ledger rules and offline replay"
+        ]
+      },
+      "interfaces": [
+        "action.connect"
+      ]
+    },
+    "component.web": {
+      "kind": "component",
+      "label": "Web",
+      "description": "React browser views and same-origin API interaction.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "boundary": {
+        "responsibility": "React browser views and same-origin API interaction.",
+        "rationale": "Retain existing browser investment and separate rendering from accounting.",
+        "excludes": [
+          "SQL access and local process management"
+        ]
+      },
+      "interfaces": [
+        "action.web_request"
+      ]
+    },
+    "entity.ledger": {
+      "kind": "entity",
+      "label": "Ledger",
+      "description": "A separate ledger for each legal entity; immutable booked entries and corrections.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ]
+    },
+    "entity.evidence": {
+      "kind": "entity",
+      "label": "Evidence",
+      "description": "Immutable content-addressed original documents with verified references.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ]
+    },
+    "entity.workspace": {
+      "kind": "entity",
+      "label": "Workspace",
+      "description": "Organization control state and explicit company membership.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ]
+    },
+    "entity.connection": {
+      "kind": "entity",
+      "label": "Connection",
+      "description": "Local or remote connection identity; never silently switch after failure.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ]
+    },
+    "entity.effect": {
+      "kind": "entity",
+      "label": "Effect",
+      "description": "Durable external-delivery intent with unresolved outcomes retained.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ]
+    },
+    "action.negotiate": {
+      "kind": "action",
+      "label": "Negotiate",
+      "description": "Read protocol version/capabilities before opening a workspace.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "behavior": "Refuse incompatible operations; negotiation changes no accounting state.",
+      "contract": {
+        "input": {},
+        "context": {},
+        "output": {
+          "type": "object"
+        },
+        "errors": {},
+        "preconditions": [],
+        "postconditions": [
+          "Refuse incompatible operations; negotiation changes no accounting state."
+        ],
+        "external_effects": [],
+        "effects_complete": false,
+        "dependencies_complete": false
+      }
+    },
+    "action.authenticate": {
+      "kind": "action",
+      "label": "Authenticate",
+      "description": "Establish trusted local or hosted context.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "behavior": "Validate host-owned local credential or configured hosted identity; never trust body actor; exact native identity flow remains open.",
+      "contract": {
+        "input": {},
+        "context": {},
+        "output": {
+          "type": "object"
+        },
+        "errors": {},
+        "preconditions": [],
+        "postconditions": [
+          "Validate host-owned local credential or configured hosted identity; never trust body actor; exact native identity flow remains open."
+        ],
+        "external_effects": [],
+        "effects_complete": false,
+        "dependencies_complete": false
+      }
+    },
+    "action.validate": {
+      "kind": "action",
+      "label": "Validate",
+      "description": "Evaluate exact money, balance, date/currency and policy invariants.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "behavior": "Return all applicable typed refusals with no storage or network effects.",
+      "contract": {
+        "input": {},
+        "context": {},
+        "output": {
+          "type": "object"
+        },
+        "errors": {},
+        "preconditions": [],
+        "postconditions": [
+          "Return all applicable typed refusals with no storage or network effects."
+        ],
+        "external_effects": [],
+        "effects_complete": false,
+        "dependencies_complete": false
+      }
+    },
+    "action.report": {
+      "kind": "action",
+      "label": "Report",
+      "description": "Read an authorized company and return an exact trial balance.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "behavior": "Authorize company before access; refuse unsupported schemas without migrating; read a consistent snapshot; compute exact totals and deterministic output; do not modify files.",
+      "contract": {
+        "input": {},
+        "context": {},
+        "output": {
+          "type": "object"
+        },
+        "errors": {},
+        "preconditions": [],
+        "postconditions": [
+          "Authorize company before access; refuse unsupported schemas without migrating; read a consistent snapshot; compute exact totals and deterministic output; do not modify files."
+        ],
+        "external_effects": [],
+        "effects_complete": false,
+        "dependencies_complete": false
+      }
+    },
+    "action.post": {
+      "kind": "action",
+      "label": "Post",
+      "description": "Post one authorized confirmed journal request with atomic audit and idempotency.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "behavior": "Authorize current access; check confirmed payload/revision and policy gates; evaluate domain; use a serialized company transaction to persist journal, audit and key result; retry same key returns original receipt after authorization; rollback on failure.",
+      "contract": {
+        "input": {},
+        "context": {},
+        "output": {
+          "type": "object"
+        },
+        "errors": {},
+        "preconditions": [],
+        "postconditions": [
+          "Authorize current access; check confirmed payload/revision and policy gates; evaluate domain; use a serialized company transaction to persist journal, audit and key result; retry same key returns original receipt after authorization; rollback on failure."
+        ],
+        "external_effects": [],
+        "effects_complete": false,
+        "dependencies_complete": false
+      }
+    },
+    "action.store": {
+      "kind": "action",
+      "label": "Store",
+      "description": "Persist one application-approved unit of work.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "behavior": "Commit all ledger/audit/idempotency records together or none. File publication uses staging/recovery, not an assumed cross-filesystem transaction.",
+      "contract": {
+        "input": {},
+        "context": {},
+        "output": {
+          "type": "object"
+        },
+        "errors": {},
+        "preconditions": [],
+        "postconditions": [
+          "Commit all ledger/audit/idempotency records together or none. File publication uses staging/recovery, not an assumed cross-filesystem transaction."
+        ],
+        "external_effects": [],
+        "effects_complete": false,
+        "dependencies_complete": false
+      }
+    },
+    "action.deliver": {
+      "kind": "action",
+      "label": "Deliver",
+      "description": "Deliver an explicitly committed external effect.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "behavior": "Retry only according to provider capability; retain ambiguous outcomes for reconciliation; never independently book.",
+      "contract": {
+        "input": {},
+        "context": {},
+        "output": {
+          "type": "object"
+        },
+        "errors": {},
+        "preconditions": [],
+        "postconditions": [
+          "Retry only according to provider capability; retain ambiguous outcomes for reconciliation; never independently book."
+        ],
+        "external_effects": [],
+        "effects_complete": false,
+        "dependencies_complete": false
+      }
+    },
+    "action.connect": {
+      "kind": "action",
+      "label": "Connect",
+      "description": "Select local managed runtime or remote server explicitly.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "behavior": "Local: start compatible runtime on authenticated loopback and await readiness. Remote: HTTPS, authenticate and negotiate. Scope caches to server/account/workspace/company; no offline fallback.",
+      "contract": {
+        "input": {},
+        "context": {},
+        "output": {
+          "type": "object"
+        },
+        "errors": {},
+        "preconditions": [],
+        "postconditions": [
+          "Local: start compatible runtime on authenticated loopback and await readiness. Remote: HTTPS, authenticate and negotiate. Scope caches to server/account/workspace/company; no offline fallback."
+        ],
+        "external_effects": [],
+        "effects_complete": false,
+        "dependencies_complete": false
+      }
+    },
+    "action.web_request": {
+      "kind": "action",
+      "label": "Web Request",
+      "description": "Execute a browser interaction through the same-origin API.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "behavior": "Keep business decisions on server; display actionable refusals and uncertain writes.",
+      "contract": {
+        "input": {},
+        "context": {},
+        "output": {
+          "type": "object"
+        },
+        "errors": {},
+        "preconditions": [],
+        "postconditions": [
+          "Keep business decisions on server; display actionable refusals and uncertain writes."
+        ],
+        "external_effects": [],
+        "effects_complete": false,
+        "dependencies_complete": false
+      }
+    },
+    "action.agent_request": {
+      "kind": "action",
+      "label": "Agent Request",
+      "description": "Execute an explicitly scoped CLI command or MCP tool.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "behavior": "Resolve local/remote connection, check protocol and carry trusted identity; preserve structured errors and confirmation requirements.",
+      "contract": {
+        "input": {},
+        "context": {},
+        "output": {
+          "type": "object"
+        },
+        "errors": {},
+        "preconditions": [],
+        "postconditions": [
+          "Resolve local/remote connection, check protocol and carry trusted identity; preserve structured errors and confirmation requirements."
+        ],
+        "external_effects": [],
+        "effects_complete": false,
+        "dependencies_complete": false
+      }
+    },
+    "action.migrate": {
+      "kind": "action",
+      "label": "Migrate",
+      "description": "Verify and publish an explicit workspace move or cutover.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "behavior": "Fence old writer; verify staged snapshot, audit and evidence; re-provision destination identity; activate one writer. Reject corruption and unsupported formats; no silent synchronization.",
+      "contract": {
+        "input": {},
+        "context": {},
+        "output": {
+          "type": "object"
+        },
+        "errors": {},
+        "preconditions": [],
+        "postconditions": [
+          "Fence old writer; verify staged snapshot, audit and evidence; re-provision destination identity; activate one writer. Reject corruption and unsupported formats; no silent synchronization."
+        ],
+        "external_effects": [],
+        "effects_complete": false,
+        "dependencies_complete": false
+      }
+    },
+    "rule.shared_engine": {
+      "kind": "rule",
+      "label": "Shared Engine",
+      "description": "Every client executes accounting operations through the same application/domain contracts; clients cannot mutate SQL directly.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "rule": {
+        "category": "architecture",
+        "statement": "Every client executes accounting operations through the same application/domain contracts; clients cannot mutate SQL directly.",
+        "scope": "global",
+        "blocking": true,
+        "verification": [
+          "planned_contract_tests"
+        ]
+      }
+    },
+    "rule.company_isolation": {
+      "kind": "rule",
+      "label": "Company Isolation",
+      "description": "Authorize the explicit company before accessing its ledger or evidence; company-specific names, mappings and values remain workspace data.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "rule": {
+        "category": "invariant",
+        "statement": "Authorize the explicit company before accessing its ledger or evidence; company-specific names, mappings and values remain workspace data.",
+        "scope": "global",
+        "blocking": true,
+        "verification": [
+          "planned_contract_tests"
+        ]
+      }
+    },
+    "rule.exact_money": {
+      "kind": "rule",
+      "label": "Exact Money",
+      "description": "Amounts and rates have explicit scale/rounding and checked arithmetic; wire money is exact strings, never authoritative JSON floats.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "rule": {
+        "category": "invariant",
+        "statement": "Amounts and rates have explicit scale/rounding and checked arithmetic; wire money is exact strings, never authoritative JSON floats.",
+        "scope": "global",
+        "blocking": true,
+        "verification": [
+          "planned_contract_tests"
+        ]
+      }
+    },
+    "rule.atomic_posting": {
+      "kind": "rule",
+      "label": "Atomic Posting",
+      "description": "Journal, audit and idempotency result commit atomically; reversal appends new records; errors leave no partial journal.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "rule": {
+        "category": "invariant",
+        "statement": "Journal, audit and idempotency result commit atomically; reversal appends new records; errors leave no partial journal.",
+        "scope": "global",
+        "blocking": true,
+        "verification": [
+          "planned_contract_tests"
+        ]
+      }
+    },
+    "rule.single_writer": {
+      "kind": "rule",
+      "label": "Single Writer",
+      "description": "One runtime owns each writable workspace; no TypeScript/Rust dual writes, multi-master or remote-offline replay.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "rule": {
+        "category": "invariant",
+        "statement": "One runtime owns each writable workspace; no TypeScript/Rust dual writes, multi-master or remote-offline replay.",
+        "scope": "global",
+        "blocking": true,
+        "verification": [
+          "planned_contract_tests"
+        ]
+      }
+    },
+    "rule.profile_security": {
+      "kind": "rule",
+      "label": "Profile Security",
+      "description": "Remote access requires hosted authentication and HTTPS; local mode uses private authenticated loopback and never falls back from remote failure.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "rule": {
+        "category": "invariant",
+        "statement": "Remote access requires hosted authentication and HTTPS; local mode uses private authenticated loopback and never falls back from remote failure.",
+        "scope": "global",
+        "blocking": true,
+        "verification": [
+          "planned_contract_tests"
+        ]
+      }
+    },
+    "rule.compatibility": {
+      "kind": "rule",
+      "label": "Compatibility",
+      "description": "Preserve verified ledger/evidence/audit and security semantics or make a diagnosed change explicit; no silent downgrade or incompatible rollback.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "rule": {
+        "category": "invariant",
+        "statement": "Preserve verified ledger/evidence/audit and security semantics or make a diagnosed change explicit; no silent downgrade or incompatible rollback.",
+        "scope": "global",
+        "blocking": true,
+        "verification": [
+          "planned_contract_tests"
+        ]
+      }
+    },
+    "scenario.local": {
+      "kind": "scenario",
+      "label": "Local",
+      "description": "A managed compatible backend is ready; local reports work without internet.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "scenario": {
+        "category": "normal",
+        "given": "A user selects a local workspace.",
+        "when": "Open desktop.",
+        "then": "A managed compatible backend is ready; local reports work without internet."
+      }
+    },
+    "scenario.remote": {
+      "kind": "scenario",
+      "label": "Remote",
+      "description": "It reads the same authoritative report as the web client.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "scenario": {
+        "category": "normal",
+        "given": "An authenticated account has company membership.",
+        "when": "Connect native desktop to its HTTPS server.",
+        "then": "It reads the same authoritative report as the web client."
+      }
+    },
+    "scenario.isolation": {
+      "kind": "scenario",
+      "label": "Isolation",
+      "description": "Deny access before company data is opened; leak no evidence.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "scenario": {
+        "category": "negative",
+        "given": "A user lacks membership in another company.",
+        "when": "Request that company report or evidence.",
+        "then": "Deny access before company data is opened; leak no evidence."
+      }
+    },
+    "scenario.exact": {
+      "kind": "scenario",
+      "label": "Exact",
+      "description": "Match fixed independent expectations and legacy results or explain diagnosed defects; reject overflow.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "scenario": {
+        "category": "boundary",
+        "given": "Synthetic journals include negative, fractional and numeric-boundary values.",
+        "when": "Compute a trial balance.",
+        "then": "Match fixed independent expectations and legacy results or explain diagnosed defects; reject overflow."
+      }
+    },
+    "scenario.readonly": {
+      "kind": "scenario",
+      "label": "Readonly",
+      "description": "Ledger and evidence byte hashes remain unchanged; no schema migration occurs.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "scenario": {
+        "category": "negative",
+        "given": "A supported copied ledger is hashed before opening.",
+        "when": "Read a trial balance.",
+        "then": "Ledger and evidence byte hashes remain unchanged; no schema migration occurs."
+      }
+    },
+    "scenario.schema": {
+      "kind": "scenario",
+      "label": "Schema",
+      "description": "Refuse clearly and leave all bytes unchanged.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "scenario": {
+        "category": "negative",
+        "given": "The copied ledger has an unsupported schema.",
+        "when": "Open it read-only.",
+        "then": "Refuse clearly and leave all bytes unchanged."
+      }
+    },
+    "scenario.unbalanced": {
+      "kind": "scenario",
+      "label": "Unbalanced",
+      "description": "Reject with no journal/audit/idempotency success residue.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "scenario": {
+        "category": "negative",
+        "given": "An authorized confirmed request has unequal debits and credits.",
+        "when": "Attempt posting.",
+        "then": "Reject with no journal/audit/idempotency success residue."
+      }
+    },
+    "scenario.retry": {
+      "kind": "scenario",
+      "label": "Retry",
+      "description": "One journal and original receipt; changed payload with same key conflicts.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "scenario": {
+        "category": "concurrency",
+        "given": "Two identical authorized requests share a scoped key.",
+        "when": "Submit concurrently and retry after a lost response.",
+        "then": "One journal and original receipt; changed payload with same key conflicts."
+      }
+    },
+    "scenario.crash": {
+      "kind": "scenario",
+      "label": "Crash",
+      "description": "No partial journal, audit success or idempotency success remains.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "scenario": {
+        "category": "negative",
+        "given": "Persistence fails before commit.",
+        "when": "Interrupt posting.",
+        "then": "No partial journal, audit success or idempotency success remains."
+      }
+    },
+    "scenario.disconnected": {
+      "kind": "scenario",
+      "label": "Disconnected",
+      "description": "Show uncertainty and reconcile original key; never create an automatic local write.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "scenario": {
+        "category": "negative",
+        "given": "A remote write response is lost.",
+        "when": "Reconnect or switch profile.",
+        "then": "Show uncertainty and reconcile original key; never create an automatic local write."
+      }
+    },
+    "scenario.revoke": {
+      "kind": "scenario",
+      "label": "Revoke",
+      "description": "Only authorized sequential outcomes occur; exact ordering is unresolved and blocks hosted implementation.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "scenario": {
+        "category": "concurrency",
+        "given": "A company membership is being revoked while a write is attempted.",
+        "when": "Interleave revocation and posting under the future explicit serialization contract.",
+        "then": "Only authorized sequential outcomes occur; exact ordering is unresolved and blocks hosted implementation."
+      }
+    },
+    "scenario.move": {
+      "kind": "scenario",
+      "label": "Move",
+      "description": "Refuse activation, preserve source, and never enable a second writer.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "scenario": {
+        "category": "negative",
+        "given": "A staged snapshot contains altered evidence or unsupported schema.",
+        "when": "Attempt activation.",
+        "then": "Refuse activation, preserve source, and never enable a second writer."
+      }
+    },
+    "scenario.expired": {
+      "kind": "scenario",
+      "label": "Expired",
+      "description": "Deny access and clear client visibility/caches for that session.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "scenario": {
+        "category": "negative",
+        "given": "A hosted session has been revoked.",
+        "when": "Attempt access from web or desktop.",
+        "then": "Deny access and clear client visibility/caches for that session."
+      }
+    },
+    "scenario.effect": {
+      "kind": "scenario",
+      "label": "Effect",
+      "description": "Keep outcome unresolved until safe reconciliation; do not claim exactly-once delivery.",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ],
+      "scenario": {
+        "category": "negative",
+        "given": "A provider times out after possibly delivering an effect.",
+        "when": "Recover the durable task.",
+        "then": "Keep outcome unresolved until safe reconciliation; do not claim exactly-once delivery."
+      }
+    },
+    "community.engine": {
+      "kind": "community",
+      "label": "Engine",
+      "description": "Shared accounting and persistence",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ]
+    },
+    "community.service": {
+      "kind": "community",
+      "label": "Service",
+      "description": "Runtime and agent access",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ]
+    },
+    "community.clients": {
+      "kind": "community",
+      "label": "Clients",
+      "description": "Native and browser interfaces",
+      "maturity": "sketch",
+      "source_refs": [
+        {
+          "source": "source.brief",
+          "purpose": "provenance"
+        }
+      ]
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.1",
+      "from": "entity.ledger",
+      "to": "component.storage",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.2",
+      "from": "entity.evidence",
+      "to": "component.storage",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.3",
+      "from": "entity.workspace",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.4",
+      "from": "entity.connection",
+      "to": "component.desktop",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.5",
+      "from": "entity.effect",
+      "to": "component.integrations",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.6",
+      "from": "action.negotiate",
+      "to": "component.runtime",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.7",
+      "from": "action.authenticate",
+      "to": "component.runtime",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.8",
+      "from": "action.validate",
+      "to": "component.domain",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.9",
+      "from": "action.report",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.10",
+      "from": "action.post",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.11",
+      "from": "action.store",
+      "to": "component.storage",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.12",
+      "from": "action.deliver",
+      "to": "component.integrations",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.13",
+      "from": "action.connect",
+      "to": "component.desktop",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.14",
+      "from": "action.web_request",
+      "to": "component.web",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.15",
+      "from": "action.agent_request",
+      "to": "component.agent",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.16",
+      "from": "action.migrate",
+      "to": "component.storage",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.17",
+      "from": "action.connect",
+      "to": "action.negotiate",
+      "relation": "calls"
+    },
+    {
+      "id": "edge.18",
+      "from": "action.connect",
+      "to": "action.authenticate",
+      "relation": "calls"
+    },
+    {
+      "id": "edge.19",
+      "from": "action.web_request",
+      "to": "action.authenticate",
+      "relation": "calls"
+    },
+    {
+      "id": "edge.20",
+      "from": "action.agent_request",
+      "to": "action.authenticate",
+      "relation": "calls"
+    },
+    {
+      "id": "edge.21",
+      "from": "action.agent_request",
+      "to": "action.negotiate",
+      "relation": "calls"
+    },
+    {
+      "id": "edge.22",
+      "from": "action.web_request",
+      "to": "action.report",
+      "relation": "calls"
+    },
+    {
+      "id": "edge.23",
+      "from": "action.web_request",
+      "to": "action.post",
+      "relation": "calls"
+    },
+    {
+      "id": "edge.24",
+      "from": "action.connect",
+      "to": "action.report",
+      "relation": "calls"
+    },
+    {
+      "id": "edge.25",
+      "from": "action.connect",
+      "to": "action.post",
+      "relation": "calls"
+    },
+    {
+      "id": "edge.26",
+      "from": "action.agent_request",
+      "to": "action.report",
+      "relation": "calls"
+    },
+    {
+      "id": "edge.27",
+      "from": "action.agent_request",
+      "to": "action.post",
+      "relation": "calls"
+    },
+    {
+      "id": "edge.28",
+      "from": "action.post",
+      "to": "action.validate",
+      "relation": "calls"
+    },
+    {
+      "id": "edge.29",
+      "from": "action.post",
+      "to": "action.store",
+      "relation": "calls"
+    },
+    {
+      "id": "edge.30",
+      "from": "action.report",
+      "to": "entity.ledger",
+      "relation": "reads"
+    },
+    {
+      "id": "edge.31",
+      "from": "action.post",
+      "to": "entity.ledger",
+      "relation": "creates"
+    },
+    {
+      "id": "edge.32",
+      "from": "action.store",
+      "to": "entity.ledger",
+      "relation": "changes"
+    },
+    {
+      "id": "edge.33",
+      "from": "action.store",
+      "to": "entity.evidence",
+      "relation": "creates"
+    },
+    {
+      "id": "edge.34",
+      "from": "action.deliver",
+      "to": "entity.effect",
+      "relation": "changes"
+    },
+    {
+      "id": "edge.35",
+      "from": "action.connect",
+      "to": "entity.connection",
+      "relation": "changes"
+    },
+    {
+      "id": "edge.36",
+      "from": "action.migrate",
+      "to": "entity.ledger",
+      "relation": "reads"
+    },
+    {
+      "id": "edge.37",
+      "from": "action.migrate",
+      "to": "entity.evidence",
+      "relation": "reads"
+    },
+    {
+      "id": "edge.38",
+      "from": "scenario.local",
+      "to": "action.connect",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.39",
+      "from": "scenario.local",
+      "to": "rule.profile_security",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.40",
+      "from": "scenario.remote",
+      "to": "action.connect",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.41",
+      "from": "scenario.remote",
+      "to": "rule.shared_engine",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.42",
+      "from": "scenario.isolation",
+      "to": "action.report",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.43",
+      "from": "scenario.isolation",
+      "to": "rule.company_isolation",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.44",
+      "from": "scenario.exact",
+      "to": "action.report",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.45",
+      "from": "scenario.exact",
+      "to": "rule.exact_money",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.46",
+      "from": "scenario.readonly",
+      "to": "action.report",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.47",
+      "from": "scenario.readonly",
+      "to": "rule.compatibility",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.48",
+      "from": "scenario.schema",
+      "to": "action.report",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.49",
+      "from": "scenario.schema",
+      "to": "rule.compatibility",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.50",
+      "from": "scenario.unbalanced",
+      "to": "action.post",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.51",
+      "from": "scenario.unbalanced",
+      "to": "rule.atomic_posting",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.52",
+      "from": "scenario.retry",
+      "to": "action.post",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.53",
+      "from": "scenario.retry",
+      "to": "rule.atomic_posting",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.54",
+      "from": "scenario.crash",
+      "to": "action.post",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.55",
+      "from": "scenario.crash",
+      "to": "rule.atomic_posting",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.56",
+      "from": "scenario.disconnected",
+      "to": "action.connect",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.57",
+      "from": "scenario.disconnected",
+      "to": "rule.single_writer",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.58",
+      "from": "scenario.revoke",
+      "to": "action.post",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.59",
+      "from": "scenario.revoke",
+      "to": "rule.company_isolation",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.60",
+      "from": "scenario.move",
+      "to": "action.migrate",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.61",
+      "from": "scenario.move",
+      "to": "rule.compatibility",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.62",
+      "from": "scenario.expired",
+      "to": "action.authenticate",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.63",
+      "from": "scenario.expired",
+      "to": "rule.profile_security",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.64",
+      "from": "scenario.effect",
+      "to": "action.deliver",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.65",
+      "from": "scenario.effect",
+      "to": "rule.atomic_posting",
+      "relation": "verifies"
+    },
+    {
+      "id": "edge.66",
+      "from": "component.domain",
+      "to": "community.engine",
+      "relation": "member_of"
+    },
+    {
+      "id": "edge.67",
+      "from": "component.application",
+      "to": "community.engine",
+      "relation": "member_of"
+    },
+    {
+      "id": "edge.68",
+      "from": "component.storage",
+      "to": "community.engine",
+      "relation": "member_of"
+    },
+    {
+      "id": "edge.69",
+      "from": "component.integrations",
+      "to": "community.engine",
+      "relation": "member_of"
+    },
+    {
+      "id": "edge.70",
+      "from": "component.runtime",
+      "to": "community.service",
+      "relation": "member_of"
+    },
+    {
+      "id": "edge.71",
+      "from": "component.agent",
+      "to": "community.service",
+      "relation": "member_of"
+    },
+    {
+      "id": "edge.72",
+      "from": "component.desktop",
+      "to": "community.clients",
+      "relation": "member_of"
+    },
+    {
+      "id": "edge.73",
+      "from": "component.web",
+      "to": "community.clients",
+      "relation": "member_of"
+    }
+  ],
+  "sources": {
+    "source.brief": {
+      "role": "input",
+      "title": "BRIEF.md",
+      "uri": "BRIEF.md",
+      "format": "markdown",
+      "normative": false,
+      "revision": {
+        "sha256": "cc4ddb3c8999794a7ab8729249c761d25996138ce04f7c773c4a6428b6756c90"
+      }
+    },
+    "source.knowledge": {
+      "role": "knowledge",
+      "title": "SOURCES.md",
+      "uri": "SOURCES.md",
+      "format": "markdown",
+      "normative": false,
+      "revision": {
+        "sha256": "7c68202fdf26724dbd4a4730139caa633163709b6e6af64bde34e85ed1de2243"
+      }
+    },
+    "source.inventory": {
+      "role": "observation",
+      "title": "source-inventory.json",
+      "uri": "source-inventory.json",
+      "format": "json",
+      "normative": false,
+      "revision": {
+        "sha256": "f0140daf6d1a18e2e2ef0d1ff3b50418114b2ae276652e430a78d34af9ad05be"
+      }
+    }
+  },
+  "questions": {
+    "question.compatibility": {
+      "statement": "Which schema versions, report period semantics, money bounds/scales, rounding and audit canonicalization form the exact migration contract?",
+      "targets": [
+        "action.report",
+        "action.post",
+        "action.migrate"
+      ],
+      "blocks": [
+        "implementation",
+        "acceptance"
+      ],
+      "status": "open"
+    },
+    "question.identity": {
+      "statement": "Which supported native/browser identity flow preserves existing MFA, revocation, permissions and credential security while completing the Rust runtime?",
+      "targets": [
+        "action.authenticate",
+        "action.connect"
+      ],
+      "blocks": [
+        "implementation",
+        "acceptance"
+      ],
+      "status": "open"
+    },
+    "question.revocation": {
+      "statement": "How are membership revocation and company ledger commit serialized across their separate databases?",
+      "targets": [
+        "action.post"
+      ],
+      "blocks": [
+        "implementation",
+        "acceptance"
+      ],
+      "status": "open"
+    },
+    "question.platforms": {
+      "statement": "Which GPUI Kit release and signed distribution/update approach pass macOS, Windows, Linux and accessibility qualification?",
+      "targets": [
+        "component.desktop"
+      ],
+      "blocks": [
+        "implementation",
+        "acceptance"
+      ],
+      "status": "open"
+    },
+    "question.protocol": {
+      "statement": "What is the version support window and exact capability negotiation schema for installed clients?",
+      "targets": [
+        "action.negotiate"
+      ],
+      "blocks": [
+        "implementation",
+        "acceptance"
+      ],
+      "status": "open"
+    }
+  },
+  "record_files": [
+    "records.json"
+  ]
+}

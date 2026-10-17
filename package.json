@@ -41,7 +41,8 @@
     "supply-chain:licenses": "bun run scripts/release/check-production-licenses.ts",
     "supply-chain:evidence": "bun run scripts/release/create-supply-chain-evidence.ts",
     "design:check": "bun run scripts/design-tokens.ts --check",
-    "cockpit:test:browser": "bun run --filter rentemester-cockpit test:browser"
+    "cockpit:test:browser": "bun run --filter rentemester-cockpit test:browser",
+    "rust:verify": "bun run scripts/rust/verify.ts"
   },
   "dependencies": {
     "@better-auth/api-key": "1.7.1",

@@ -1,0 +1,2192 @@
+{
+  "format": "rentemester-migration-plan/1",
+  "epic_id": "RM-RUST",
+  "title": "EPIC: Rust-platform for Rentemester — server, web og lokal/remote GPUI-desktop",
+  "repository": "mikkelkrogsholm/rentemester",
+  "created": "2026-10-17",
+  "status": "reviewed-for-publication",
+  "base_code_commit": "0bbe82bcf0cafd73e2326152740cb06b90222405",
+  "base_architecture_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e",
+  "mandate": "Plan and review locally, fix findings in loops, then create GitHub epic and issues. This is not authority to execute implementation or live migrations.",
+  "phases": {
+    "P0": "Inventory and binding design decisions",
+    "P1": "Rust foundation and first read-only vertical slice",
+    "P2": "Durability, authority and atomic writes",
+    "P3": "Accounting and business capability parity",
+    "P4": "Providers, identity and runtime",
+    "P5": "Agent, web and desktop interfaces",
+    "P6": "Verification, distribution, cutover and retirement"
+  },
+  "global_acceptance": [
+    "One shared Rust accounting engine with a versioned API for web, local desktop and remote desktop.",
+    "Retain React; use qualified GPUI for native UI; core local accounting needs no separately installed Bun/Node/Docker.",
+    "One runtime owns each writable workspace; legal entities keep separate ledgers and evidence.",
+    "No company-specific code/defaults; synthetic checked-in test data only.",
+    "Existing correctness/security/backup/release obligations remain binding; known defects require explicit corrected contracts.",
+    "No remote-offline edit/sync, multi-master, microservices, PostgreSQL move or new SaaS control plane.",
+    "No implementation issue closes based only on GDD validity, a test label or a worker claim.",
+    "Named owner journeys J01–J07 pass; native core tasks cannot be waived into generic specialist exceptions."
+  ],
+  "issues": [
+    {
+      "id": "R01",
+      "title": "Freeze the migration baseline and complete the feature/contract inventory",
+      "phase": "P0",
+      "component": "component.application",
+      "depends_on": [],
+      "summary": "Define exactly what must survive the rewrite before treating module counts or passing tests as coverage.",
+      "scope": [
+        "Inventory core operations, schema/migrations, HTTP routes, CLI keys, MCP tools, browser screens, providers, jobs and release contracts",
+        "Record supported, partial, unavailable and open-roadmap status at an exact working-tree revision",
+        "Map every behavior to one delivery issue, oracle, negative case and applicable interface; rebase the inventory at each cutover candidate",
+        "Record per-operation input, success/refusal/parse/protocol failure schemas, casing, nullability, stdout/stderr/exit behavior, MCP text/structuredContent and CLI-only/MCP-only boundaries."
+      ],
+      "acceptance": [
+        "No unowned product capability, route, command or screen remains; intentional exclusions name an existing issue and reason",
+        "Open enhancements are not silently declared implemented or imported as new rewrite scope",
+        "Record existing known bugs separately from behavior to preserve; changes in the old product trigger an explicit delta review"
+      ],
+      "source_paths": [
+        "src/agent-discovery-catalog.ts",
+        "src/cli-meta",
+        "src/mcp/registry.ts",
+        "src/server/router.ts",
+        "app/src/views",
+        "docs/compliance/requirements-by-area.md"
+      ],
+      "related_existing": [
+        363,
+        664,
+        641,
+        643,
+        642,
+        625,
+        624,
+        612,
+        611,
+        566,
+        543,
+        525,
+        524,
+        512,
+        511,
+        330,
+        329,
+        328
+      ],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r01"
+      ]
+    },
+    {
+      "id": "R02",
+      "title": "Specify GDD contracts, component boundaries and per-slice readiness",
+      "phase": "P0",
+      "component": "component.application",
+      "depends_on": [
+        "R01"
+      ],
+      "summary": "Refine the target graph into executable work scopes without equating valid plans with implementation evidence.",
+      "scope": [
+        "Retain stable IDs, preserved source bytes and revision-bound model change records",
+        "Define public application/domain/storage contracts and precise forbidden imports",
+        "Define a readiness checklist and independent acceptance/check plans for each slice"
+      ],
+      "acceptance": [
+        "Each implementation scope has typed inputs/context/output, effects, errors, postconditions and five risk categories with scenarios",
+        "Model validity, authorization, readiness and execution evidence remain separate",
+        "A source-based architecture negative control detects a forbidden client-to-storage import; planned labels alone cannot pass it"
+      ],
+      "source_paths": [
+        "docs/architecture/rust-target/gdd.json",
+        "docs/architecture/rust-target/ARCHITECTURE.md",
+        "AGENTS.md"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r02"
+      ]
+    },
+    {
+      "id": "R03",
+      "title": "Define exact money, schema, audit and wire compatibility",
+      "phase": "P0",
+      "component": "component.domain",
+      "depends_on": [
+        "R01"
+      ],
+      "summary": "Resolve numeric and persistent-format compatibility before selecting Rust representations or enabling readers/writers.",
+      "scope": [
+        "Document supported SQLite/control-schema versions, triggers, constraints, migration checksums and read-only snapshot behavior",
+        "Define monetary bounds, currency scale, rounding, FX rates, dates, identifiers, JSON encoding and canonical hash/signature bytes",
+        "Decide additive/versioned API changes for existing JSON-number clients versus exact-string clients",
+        "Specify preservation or explicit mapping of stable principal, workspace/company/ledger identities and idempotency receipts/tombstones across credential rotation, re-enrollment and local/server transfer."
+      ],
+      "acceptance": [
+        "Synthetic cross-language vectors cover boundary/overflow, negative/tie rounding, dates, Unicode, null/omitted fields and historical canonicalization",
+        "Legacy hashes/signatures validate without rewriting old audit history; incompatible formats fail closed",
+        "An explicit compatibility matrix defines schema direction, old-client behavior and rollback constraints",
+        "A lost-response mutation retried after credential/host migration cannot execute twice; unsupported identity mapping blocks cutover rather than inventing a new scope."
+      ],
+      "source_paths": [
+        "src/core/money.ts",
+        "src/core/dates.ts",
+        "src/core/schema.sql",
+        "src/core/db.ts",
+        "src/core/workspace-control.ts",
+        "src/core/idempotency.ts",
+        "src/core/actor.ts",
+        "src/core/system-backups.ts",
+        "app/src/lib/api/_shared.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r03"
+      ]
+    },
+    {
+      "id": "R04",
+      "title": "Resolve hosted/native identity and cross-database authorization ordering",
+      "phase": "P0",
+      "component": "component.runtime",
+      "depends_on": [
+        "R01"
+      ],
+      "summary": "Choose a supported identity approach and an enforceable revocation/commit ordering before porting authenticated writes.",
+      "scope": [
+        "Compare retaining Better Auth during transition with the eventual supported Rust-hosted identity design",
+        "Specify browser/native login, MFA/recovery/reset, service principals, credential migration and re-enrollment where required",
+        "Define linearization/fencing for membership revocation versus company-ledger commit and process-crash recovery",
+        "Specify execution authority and revoke/cancel/lease/dispatch ordering for already committed external jobs, including provider-consent changes, crash and restore."
+      ],
+      "acceptance": [
+        "A decision record selects implementable identity and synchronization contracts with threat model, revocation ordering and failure semantics",
+        "Existing MFA/recovery/session/last-owner/service-account protections are explicitly preserved",
+        "A temporary TypeScript identity dependency has a named removal gate and cannot satisfy the all-Rust-backend exit criterion",
+        "Decision tables cover revoke before dispatch, during an external call, after lease expiry and after restore; committed job history does not silently grant permanent future authority."
+      ],
+      "source_paths": [
+        "src/server/better-auth.ts",
+        "src/server/auth.ts",
+        "src/core/workspace-control.ts",
+        "src/core/workspace-service-principals.ts",
+        "docs/security-multi-user-scope.md"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r04"
+      ]
+    },
+    {
+      "id": "R05",
+      "title": "Specify versioned API, typed failures and capability negotiation",
+      "phase": "P0",
+      "component": "component.runtime",
+      "depends_on": [
+        "R01",
+        "R03"
+      ],
+      "summary": "Give React, GPUI, CLI and MCP one explicit transport contract for compatibility and uncertain writes.",
+      "scope": [
+        "Specify OpenAPI/JSON-schema or equivalent versioned request/response contracts, exact amounts and binary/file routes",
+        "Define limits, pagination/filter ordering, errors, idempotency/revision/confirm semantics and capabilities",
+        "Document auth-required discovery versus public build/protocol metadata and compatibility windows",
+        "Produce an operation-by-operation retry matrix: key support/scope/TTL/tombstone, natural dedup, authoritative read-back and unresolved provider outcome; adding key support is an explicit versioned implementation change.",
+        "Record exact CLI versus MCP versus HTTP success/error schema mappings; retain existing intentionally distinct envelopes, arrays, field casing and SDK errors through an explicit compatibility policy."
+      ],
+      "acceptance": [
+        "Old React clients have an explicit supported compatibility path; no numeric-wire breaking change is silent",
+        "Unknown capabilities/incompatible protocol refuse dependent actions before mutation",
+        "Lost response, malformed binary error, revoked session and cancelled reads have explicit safe client outcomes",
+        "Every advertised operation has an exact input/success/refusal/parse-protocol schema and a retry class; generic original-key recovery is never promised for unsupported operations."
+      ],
+      "source_paths": [
+        "docs/cockpit-api.md",
+        "src/server/discovery.ts",
+        "src/server/response-body.ts",
+        "src/agent-discovery-catalog.ts",
+        "app/src/lib/api/_shared.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r05"
+      ]
+    },
+    {
+      "id": "R06",
+      "title": "Qualify GPUI Kit, accessibility and target-platform feasibility",
+      "phase": "P0",
+      "component": "component.desktop",
+      "depends_on": [
+        "R01"
+      ],
+      "summary": "Prove the native toolkit can serve accounting workflows before committing to full desktop implementation.",
+      "scope": [
+        "Pin/evaluate GPUI Kit and GPUI licenses/toolchain/platforms using official sources",
+        "Prototype virtualized tables, keyboard/focus, accessibility, input/IME, file dialogs and PDF/evidence preview",
+        "Assess macOS/Windows/Linux packaging and credential-store integration; preserve current visual identity"
+      ],
+      "acceptance": [
+        "A small read-only synthetic prototype is exercised on each claimed platform with recorded versions and limitations",
+        "Keyboard/screen-reader, large-table and document-preview checks have observable results",
+        "Any inability to meet the GPUI product direction is reported as a decision blocker, not silently replaced by another UI stack"
+      ],
+      "source_paths": [
+        "DESIGN.md",
+        "docs/architecture/rust-target/ARCHITECTURE.md",
+        "app/src/views/JournalView.tsx"
+      ],
+      "related_existing": [],
+      "excludes": "Qualification only; no production write UI, new design system or live workspace access.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r06"
+      ]
+    },
+    {
+      "id": "R07",
+      "title": "Bootstrap the Rust workspace, build tooling and architecture checks",
+      "phase": "P1",
+      "component": "component.runtime",
+      "depends_on": [
+        "R02"
+      ],
+      "summary": "Add the smallest buildable Rust foundation while preserving the current TypeScript product.",
+      "scope": [
+        "Create locked Cargo/toolchain setup and engine/server/client/CLI/MCP/desktop build boundaries as needed",
+        "Add lint, formatting, deterministic test entrypoints, license/dependency checks and source-based boundary checks",
+        "Keep TypeScript build/release paths working throughout transition"
+      ],
+      "acceptance": [
+        "Fresh supported development setup builds/tests a minimal engine and binary without hidden machine state",
+        "Forbidden UI/network/SQL imports into domain are caught with a negative control",
+        "No new production runtime dependencies or needless crate layers are introduced without a consumer"
+      ],
+      "source_paths": [
+        "package.json",
+        "app/package.json",
+        "scripts/release",
+        ".github/workflows"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r07"
+      ]
+    },
+    {
+      "id": "R08",
+      "title": "Build the synthetic differential and fault-injection acceptance harness",
+      "phase": "P1",
+      "component": "component.application",
+      "depends_on": [
+        "R01",
+        "R03"
+      ],
+      "summary": "Make behavior preservation independently measurable without treating the existing implementation as infallible.",
+      "scope": [
+        "Create synthetic multi-company ledgers, documents, migrations and fixed hand-calculated expected outcomes",
+        "Execute TypeScript and Rust operations on isolated copies; compare canonical business state, refusals and audit",
+        "Support clock/ID determinism, transport loss, process crashes and provider fakes; retain revision-bound receipts"
+      ],
+      "acceptance": [
+        "Known wrong amount, omitted gate, cross-company access and injected partial commit make the harness fail",
+        "Existing defects are recorded with explicit corrected expectations instead of copied blindly",
+        "Real company data and credentials are absent; source/oracle files are not mutated by a comparison run"
+      ],
+      "source_paths": [
+        "tests/unit",
+        "tests/helpers",
+        "src/core/schema.sql",
+        "src/core/sqlite-readonly-snapshot.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r08"
+      ]
+    },
+    {
+      "id": "R09",
+      "title": "Implement exact accounting value types and invariant evaluation",
+      "phase": "P1",
+      "component": "component.domain",
+      "depends_on": [
+        "R03",
+        "R07"
+      ],
+      "summary": "Make amounts, currencies, dates and accounting validation explicit Rust domain values.",
+      "scope": [
+        "Implement checked exact monetary/rate arithmetic and canonical serialization from R03",
+        "Port fiscal dates, account/ID types, debit-credit balance and rule-version evaluation",
+        "Return typed refusals with no I/O from pure validation"
+      ],
+      "acceptance": [
+        "Cross-language boundary/rounding vectors and independent fixed expectations pass",
+        "Overflow, invalid currency/scale/date and unbalanced input fail without coercion",
+        "Pure domain code has no network, UI, SQL or credential dependency"
+      ],
+      "source_paths": [
+        "src/core/money.ts",
+        "src/core/dates.ts",
+        "src/core/fiscal-year.ts",
+        "src/core/ids.ts",
+        "src/core/rules-metadata.ts",
+        "src/core/ledger.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r09"
+      ]
+    },
+    {
+      "id": "R10",
+      "title": "Implement a strictly read-only SQLite/workspace adapter",
+      "phase": "P1",
+      "component": "component.storage",
+      "depends_on": [
+        "R03",
+        "R07"
+      ],
+      "summary": "Read supported data without accidental migrations, WAL changes or adoption of unknown directories.",
+      "scope": [
+        "Open supported company and control schemas through an explicit read-only snapshot strategy",
+        "Resolve workspace/company paths safely and reject symlink/path escape or unsupported schemas",
+        "Expose consistent typed read queries and close handles deterministically"
+      ],
+      "acceptance": [
+        "Before/after workspace byte inventories are unchanged, including WAL/SHM policy specified in R03",
+        "Unsupported/future schema, corrupt database, missing ledger and traversal fail closed",
+        "Two synthetic companies cannot be confused by slug/path reuse"
+      ],
+      "source_paths": [
+        "src/core/sqlite.ts",
+        "src/core/sqlite-readonly-snapshot.ts",
+        "src/core/ledger-inspection.ts",
+        "src/core/paths.ts",
+        "src/core/workspace.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r10"
+      ]
+    },
+    {
+      "id": "R11",
+      "title": "Deliver the first Rust vertical slice: read-only trial-balance parity",
+      "phase": "P1",
+      "component": "component.application",
+      "depends_on": [
+        "R08",
+        "R09",
+        "R10"
+      ],
+      "summary": "Demonstrate one complete user outcome through Rust before expanding the rewrite.",
+      "scope": [
+        "Read an explicitly selected synthetic company and report its trial balance over a consistent snapshot",
+        "Provide a bounded read-only fixture runner and fixed output contract",
+        "Compare period, reversal, opening-balance and foreign-currency cases to fixed and legacy expectations"
+      ],
+      "acceptance": [
+        "Exact totals and deterministic ordering pass for zero, negative, boundary and multi-company fixtures",
+        "Unsupported schema/access and invalid periods fail without writes",
+        "Source byte-inventory proof and revision-bound comparison output are attached; this slice does not enable live posting"
+      ],
+      "source_paths": [
+        "src/core/financial-statements.ts",
+        "src/server/data/statements/trial-balance.ts",
+        "src/cli/report.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r11"
+      ]
+    },
+    {
+      "id": "R12",
+      "title": "Implement workspace ownership, transactional storage and safe migrations",
+      "phase": "P2",
+      "component": "component.storage",
+      "depends_on": [
+        "R03",
+        "R07"
+      ],
+      "summary": "Establish one writable runtime and verifiable schema changes before domain mutation work.",
+      "scope": [
+        "Implement workspace ownership/IPC discovery, busy handling and verified stale-owner recovery",
+        "Port company/control migrations, checksums, append-only guards, sequence allocation and transaction primitives",
+        "Define lock ordering, crash/fsync semantics and read/write coexistence; refuse simultaneous legacy/Rust writers"
+      ],
+      "acceptance": [
+        "Two runtime processes cannot acquire one workspace; PID reuse and stale/missing lock cases do not permit unsafe takeover",
+        "Migration failure/crash leaves a recoverable old or fully migrated schema with no half-applied state",
+        "Unsupported downgrade, tampered migration and direct UPDATE/DELETE against immutable records fail"
+      ],
+      "source_paths": [
+        "src/core/db.ts",
+        "src/core/schema.sql",
+        "src/core/workspace-control.ts",
+        "src/core/migrations",
+        "src/core/workspace-migrations",
+        "src/core/sequences.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r12"
+      ]
+    },
+    {
+      "id": "R13",
+      "title": "Port workspace/company authorization and revocation fencing",
+      "phase": "P2",
+      "component": "component.application",
+      "depends_on": [
+        "R04",
+        "R12"
+      ],
+      "summary": "Carry company access and actor attribution into every Rust use case with explicit concurrent revocation semantics.",
+      "scope": [
+        "Port membership/RBAC, workspace access/bootstrap/invitations and last-owner invariants",
+        "Implement R04 trusted principal and authorization fencing across control and ledger stores",
+        "Preserve authorization-denial/audit records without allowing rejected writes to leave business residue"
+      ],
+      "acceptance": [
+        "Permission matrix and cross-company/file/portfolio tests pass for human, local and service identities",
+        "Concurrent revoke/post and last-owner removals produce only the specified allowed sequential outcomes",
+        "Caller-supplied actor or workspace ownership alone cannot grant company access"
+      ],
+      "source_paths": [
+        "src/core/access-permissions.ts",
+        "src/core/workspace-access.ts",
+        "src/core/workspace-invitations.ts",
+        "src/core/workspace-bootstrap.ts",
+        "src/server/actor.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r13"
+      ]
+    },
+    {
+      "id": "R14",
+      "title": "Port atomic posting, reversal, idempotency and shared mutation gates",
+      "phase": "P2",
+      "component": "component.application",
+      "depends_on": [
+        "R09",
+        "R12",
+        "R13",
+        "R15"
+      ],
+      "summary": "Provide the single authoritative write pipeline used by all interfaces.",
+      "scope": [
+        "Port dry-run/post/reverse with actor, confirm, period, evidence, backup and rule gates",
+        "Commit journal, audit chain, sequences and scoped idempotency receipt together",
+        "Preserve expiry/tombstone/replay behavior and exact refusal taxonomy; compose later VAT/domain validators before their features are enabled"
+      ],
+      "acceptance": [
+        "Crash between every write rolls back all business-success state; reversal appends rather than edits",
+        "Concurrent same-key calls return one receipt; changed payload conflicts; revoked replays reveal no protected result",
+        "Closed period, missing confirmation, invalid evidence and backup-lock denial leave no partial posting"
+      ],
+      "source_paths": [
+        "src/core/ledger.ts",
+        "src/core/actor.ts",
+        "src/core/audit-log.ts",
+        "src/core/idempotency.ts",
+        "src/server/mutations.ts",
+        "src/core/transaction-rejection.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r14"
+      ]
+    },
+    {
+      "id": "R15",
+      "title": "Port immutable document storage, safe ingestion and evidence access",
+      "phase": "P2",
+      "component": "component.storage",
+      "depends_on": [
+        "R12",
+        "R13"
+      ],
+      "summary": "Preserve original accounting evidence across filesystem and ledger crashes.",
+      "scope": [
+        "Port type/size validation, hashing, deduplication, immutable original registration and access auditing",
+        "Stage and verify files before publication; reconcile orphan/staged files after interruption",
+        "Preserve document metadata/context/link history and original byte identity"
+      ],
+      "acceptance": [
+        "Crash at each file/database boundary leaves no committed dangling reference and no silent loss of registered originals",
+        "Traversal, symlinks, concurrent replacement, fake file extension and unauthorized document access fail",
+        "Duplicate ingest is deterministic and metadata changes never rewrite original evidence"
+      ],
+      "source_paths": [
+        "src/core/documents.ts",
+        "src/core/document-storage.ts",
+        "src/core/atomic-file.ts",
+        "src/core/document-company-context.ts",
+        "src/server/document-access-audit.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r15"
+      ]
+    },
+    {
+      "id": "R16",
+      "title": "Port accounts, contacts, parties and supplier identity",
+      "phase": "P3",
+      "component": "component.application",
+      "depends_on": [
+        "R09",
+        "R12",
+        "R13"
+      ],
+      "summary": "Retain reusable master data and evidence-bound business identities without company-specific defaults.",
+      "scope": [
+        "Port chart/accounts/roles, contacts/customers/vendors, party registry/assertions and supplier identity",
+        "Preserve source-bound document-party links, review and supersession semantics",
+        "Keep configuration/mappings local to each workspace and resolve ambiguous identity to review"
+      ],
+      "acceptance": [
+        "Same supplier name with different legal identities cannot be merged silently",
+        "Historical party decisions remain auditable; conflicting review/version input fails",
+        "Synthetic company configurations produce distinct valid account mappings; no real CVR/accounts are hardcoded"
+      ],
+      "source_paths": [
+        "src/core/master-data.ts",
+        "src/core/chart-of-accounts.ts",
+        "src/core/account-roles.ts",
+        "src/core/party-registry.ts",
+        "src/core/supplier-identity.ts",
+        "src/core/document-party-links.ts"
+      ],
+      "related_existing": [
+        524,
+        624,
+        641
+      ],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r16"
+      ]
+    },
+    {
+      "id": "R17",
+      "title": "Port VAT rules, purchase evidence, filings and reconciliations",
+      "phase": "P3",
+      "component": "component.application",
+      "depends_on": [
+        "R14",
+        "R16"
+      ],
+      "summary": "Preserve the complete configured Danish VAT behavior and evidence requirements.",
+      "scope": [
+        "Port VAT line/account semantics, purchase preflight/evidence, reverse charge, representation and non-VAT cases",
+        "Port period reports, return/filing lifecycle, roll-forward, VIES-list and OSS behavior",
+        "Retain documented legal-rule versions and explicit legacy corrections"
+      ],
+      "acceptance": [
+        "Synthetic domestic/EU/foreign/no-VAT and mixed evidence cases match fixed expected amounts and rubric mappings",
+        "Missing/ambiguous basis, inconsistent net/VAT/gross and closed filing periods refuse safely",
+        "Filed/legacy evidence is never silently reinterpreted; differences from known bugs are explicit",
+        "Across API/web/native, VAT tasks show period/basis, blockers/source evidence and next action, and distinguish computed draft, reviewed/locked and actually recorded filing; unsupported automatic submission is stated plainly."
+      ],
+      "source_paths": [
+        "src/core/vat.ts",
+        "src/core/vat-lines.ts",
+        "src/core/vat-account-semantics.ts",
+        "src/core/vat-filing.ts",
+        "src/core/vat-oss.ts",
+        "src/core/purchase-vat-preflight.ts",
+        "src/core/purchase-vat-evidence.ts"
+      ],
+      "related_existing": [
+        625
+      ],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r17"
+      ]
+    },
+    {
+      "id": "R18",
+      "title": "Port invoice issuance, immutable PDFs and invoice numbering",
+      "phase": "P3",
+      "component": "component.application",
+      "depends_on": [
+        "R14",
+        "R16",
+        "R17",
+        "R38"
+      ],
+      "summary": "Issue valid invoices once with immutable evidence and consistent accounting identifiers.",
+      "scope": [
+        "Port invoice drafts/validation/issuance, legal fields, currencies, numbering and issued snapshots",
+        "Port deterministic PDF generation/rendering and archive verification",
+        "Separate creation/rendering from explicit delivery effects"
+      ],
+      "acceptance": [
+        "Concurrent issue allocates unique scoped numbers and one immutable issued snapshot",
+        "Render/read cannot replace an issued PDF; interrupted issue recovers without orphan success",
+        "Missing mandatory data and mismatched evidence fail; retry does not issue/send another invoice"
+      ],
+      "source_paths": [
+        "src/core/invoice.ts",
+        "src/core/issued-invoices.ts",
+        "src/core/invoice-pdf.ts",
+        "src/core/invoice-journal-evidence.ts",
+        "src/core/sequences.ts"
+      ],
+      "related_existing": [
+        612
+      ],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r18"
+      ]
+    },
+    {
+      "id": "R19",
+      "title": "Port receivables, settlement, credits, FX and overdue claims",
+      "phase": "P3",
+      "component": "component.application",
+      "depends_on": [
+        "R18",
+        "R21"
+      ],
+      "summary": "Carry the entire issued-invoice lifecycle into the shared Rust engine.",
+      "scope": [
+        "Port payments/settlement, refunds, credit notes, imported receivables and bad-debt handling",
+        "Port FX differences, reminders, interest and compensation with configured rule versions",
+        "Maintain exact invoice-to-journal/bank evidence and reversal relationships"
+      ],
+      "acceptance": [
+        "Partial/full payment, overpayment, credit/refund, FX gain/loss and bad-debt scenarios reconcile to journal/bank",
+        "Duplicate settlement/claim and invalid reversal/reference combinations cannot overstate balances",
+        "Legacy externally issued receivables are not reissued or resent during migration"
+      ],
+      "source_paths": [
+        "src/core/invoice-settlement.ts",
+        "src/core/invoice-payments.ts",
+        "src/core/invoice-refunds.ts",
+        "src/core/credit-notes.ts",
+        "src/core/invoice-fx-receivable.ts",
+        "src/core/invoice-interest.ts",
+        "src/core/invoice-compensation.ts",
+        "src/core/imported-receivables.ts"
+      ],
+      "related_existing": [
+        612
+      ],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r19"
+      ]
+    },
+    {
+      "id": "R20",
+      "title": "Port purchases, payables and supplier commitments",
+      "phase": "P3",
+      "component": "component.application",
+      "depends_on": [
+        "R14",
+        "R15",
+        "R16",
+        "R17"
+      ],
+      "summary": "Preserve expense/payable workflows, documented tax basis and recurring supplier obligations.",
+      "scope": [
+        "Port direct expense, payable registration/payment and purchase-VAT evidence",
+        "Port supplier-commitment schedules, occurrence matching and corrections",
+        "Keep bank-based and payable-based correction paths consistent and auditable"
+      ],
+      "acceptance": [
+        "Direct-bank purchase and payable paths produce the same intended expense/VAT without duplicate liabilities",
+        "Partial payment, corrected tax basis and commitment occurrence replays preserve exact evidence links",
+        "Ambiguous/duplicate document identity and unsupported VAT treatment remain review blockers"
+      ],
+      "source_paths": [
+        "src/core/expense-booking.ts",
+        "src/core/payables.ts",
+        "src/core/supplier-commitments.ts",
+        "src/core/direct-bank-purchase-payable-correction.ts"
+      ],
+      "related_existing": [
+        625
+      ],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r20"
+      ]
+    },
+    {
+      "id": "R21",
+      "title": "Port canonical bank import, matching and reconciliation corrections",
+      "phase": "P3",
+      "component": "component.application",
+      "depends_on": [
+        "R14",
+        "R16"
+      ],
+      "summary": "Retain one canonical bank truth across CSV and future providers.",
+      "scope": [
+        "Port bank accounts/profiles, source identity/import overlap, matching and reconciliation links",
+        "Port bank-journal and direct-purchase correction history",
+        "Carry resolved contracts from existing identity/reconciliation issues rather than creating parallel fixes"
+      ],
+      "acceptance": [
+        "Overlapping imports, changed evidence, duplicate rows and multiple observations produce deterministic canonical results",
+        "One journal cannot reconcile incompatible/multiple bank transactions contrary to reviewed rules",
+        "Correction/replay/rollback cases preserve balances and history with multi-company isolation"
+      ],
+      "source_paths": [
+        "src/core/bank.ts",
+        "src/core/bank-profiles.ts",
+        "src/core/bank-journal-reconciliation.ts",
+        "src/core/bank-suggest-matches.ts",
+        "src/core/reconciliation.ts"
+      ],
+      "related_existing": [
+        643,
+        642
+      ],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r21"
+      ]
+    },
+    {
+      "id": "R22",
+      "title": "Port posting rules, exceptions and bank-based bookkeeping workbench",
+      "phase": "P3",
+      "component": "component.application",
+      "depends_on": [
+        "R17",
+        "R20",
+        "R21"
+      ],
+      "summary": "Keep the reviewable bank-to-evidence-to-posting workflow coherent across interfaces.",
+      "scope": [
+        "Port posting-rule proposal/review/application and exception queues",
+        "Port deterministic workbench suggestions, purchase grouping and review evidence",
+        "Separate suggestions/dry-runs from confirmed accounting effects"
+      ],
+      "acceptance": [
+        "A suggestion never mutates the ledger and carries source/rule provenance",
+        "Conflicting/missing evidence becomes an actionable exception; repeated grouping does not duplicate postings",
+        "Reviewed plan changes invalidate prior approval and dry-run results"
+      ],
+      "source_paths": [
+        "src/core/posting-rules.ts",
+        "src/core/exceptions.ts",
+        "src/core/bookkeeping-workbench.ts",
+        "src/core/messages.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r22"
+      ]
+    },
+    {
+      "id": "R23",
+      "title": "Port versioned drafts, batch review and exact approval/apply",
+      "phase": "P3",
+      "component": "component.application",
+      "depends_on": [
+        "R14",
+        "R22"
+      ],
+      "summary": "Preserve human/agent review separation and apply precisely the approved version.",
+      "scope": [
+        "Port append-only draft and bookkeeping-batch events, payload hashes and principal-bound approvals",
+        "Port prepare/persist/dry-run/submit/reject/approve/apply lifecycle and retry receipts",
+        "Enforce distinct reviewer policy and whole-operation rollback"
+      ],
+      "acceptance": [
+        "Approving stale/changed payload or self-review where forbidden fails with no partial ledger writes",
+        "Concurrent approvals/apply yield one committed outcome and immutable review history",
+        "Batch crash at item boundaries leaves the specified atomic outcome, not a partially accepted batch"
+      ],
+      "source_paths": [
+        "src/core/accounting-drafts.ts",
+        "src/core/bookkeeping-batch.ts",
+        "src/mcp/tools/bookkeeping-batch.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r23"
+      ]
+    },
+    {
+      "id": "R24",
+      "title": "Port fixed assets and depreciation",
+      "phase": "P3",
+      "component": "component.application",
+      "depends_on": [
+        "R14",
+        "R17"
+      ],
+      "summary": "Retain asset acquisition, depreciation and disposal with traceable balances.",
+      "scope": [
+        "Port configurable asset registers, schedules, booked depreciation and disposals",
+        "Respect period locks, evidence and company account mappings",
+        "Keep already-booked schedule occurrences immutable and retryable"
+      ],
+      "acceptance": [
+        "Acquisition/depreciation/disposal fixtures reconcile to journal and remaining carrying value",
+        "Repeated schedule runs do not double-book; invalid dates/negative residuals refuse",
+        "Corrections and closed-period cases preserve history"
+      ],
+      "source_paths": [
+        "src/core/assets.ts",
+        "src/cli/asset.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r24"
+      ]
+    },
+    {
+      "id": "R25",
+      "title": "Port accruals and mileage accounting",
+      "phase": "P3",
+      "component": "component.application",
+      "depends_on": [
+        "R14",
+        "R17"
+      ],
+      "summary": "Preserve two bounded periodic accounting workflows without embedding company-specific rules.",
+      "scope": [
+        "Port accrual schedules, recognition and reversal",
+        "Port mileage records, rate-version selection and posting",
+        "Use shared date/money/policy and evidence services"
+      ],
+      "acceptance": [
+        "Accrual allocation sums exactly to the source amount across period boundaries",
+        "Mileage rate/date/configuration and duplicate-post scenarios match fixed expectations",
+        "Closed periods, invalid intervals and missing required evidence refuse without partial writes"
+      ],
+      "source_paths": [
+        "src/core/accruals.ts",
+        "src/core/mileage.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r25"
+      ]
+    },
+    {
+      "id": "R26",
+      "title": "Port period readiness, closing and opening balances",
+      "phase": "P3",
+      "component": "component.application",
+      "depends_on": [
+        "R17",
+        "R19",
+        "R20",
+        "R21",
+        "R23",
+        "R24",
+        "R25"
+      ],
+      "summary": "Close and reopen periods only through documented accounting gates.",
+      "scope": [
+        "Port fiscal calendars, close-readiness reviews, close/reopen policy and opening balances",
+        "Bind close evidence to exact unresolved items and report versions",
+        "Preserve VAT/control-account carry-forward and year boundary behavior"
+      ],
+      "acceptance": [
+        "Open exceptions, unmatched bank/evidence and stale close reviews block according to policy",
+        "Close/reopen races with posting have one specified valid order",
+        "Opening balances and post-close reversals reconcile across shifted fiscal years without editing history"
+      ],
+      "source_paths": [
+        "src/core/periods.ts",
+        "src/core/period-close-readiness.ts",
+        "src/core/opening-balance.ts",
+        "src/core/fiscal-year.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r26"
+      ]
+    },
+    {
+      "id": "R27",
+      "title": "Port historical imports, provenance and migration open items",
+      "phase": "P3",
+      "component": "component.integrations",
+      "depends_on": [
+        "R14",
+        "R15",
+        "R16",
+        "R17",
+        "R19",
+        "R21"
+      ],
+      "summary": "Import supported source formats without weakening evidence rules globally.",
+      "scope": [
+        "Port source detection, Dinero and currently supported Billy/CSV paths, archive validation and mapping",
+        "Preserve contact/invoice/bank/document provenance, reconciliation and explicit open-item resolution",
+        "Keep unsupported source data and company-specific mappings as local audited decisions"
+      ],
+      "acceptance": [
+        "Repeat import is idempotent and ambiguous identity/overlap or tampered archive fails before partial import",
+        "Imported invoices/documents preserve historical semantics without resend/reissue",
+        "Open Billy feature requests stay explicit unless separately delivered into the baseline"
+      ],
+      "source_paths": [
+        "src/core/import",
+        "src/core/import-provenance.ts",
+        "src/core/migration-open-items.ts",
+        "src/core/imported-receivables.ts"
+      ],
+      "related_existing": [
+        330,
+        329,
+        328,
+        612
+      ],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r27"
+      ]
+    },
+    {
+      "id": "R28",
+      "title": "Port dimensions, budgets, commitments and CFO analytics",
+      "phase": "P3",
+      "component": "component.application",
+      "depends_on": [
+        "R11",
+        "R20",
+        "R21"
+      ],
+      "summary": "Retain management views as explainable projections of authoritative accounting data.",
+      "scope": [
+        "Port dimension lifecycle/provenance and dimension-budget plans",
+        "Port budgets, cashflow/liquidity forecasts, commitment overlays and CFO calculations",
+        "Preserve read-only and deterministic as-of behavior"
+      ],
+      "acceptance": [
+        "Dimension/budget changes obey revision/conflict rules and leave accounting facts intact",
+        "Analytics totals reconcile to ledger and source commitments with explicit uncertainty",
+        "Missing data and stale plans cannot be presented as verified accounting facts"
+      ],
+      "source_paths": [
+        "src/core/accounting-dimensions.ts",
+        "src/core/budget.ts",
+        "src/core/cfo-analytics.ts",
+        "src/core/liquidity-forecast.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r28"
+      ]
+    },
+    {
+      "id": "R29",
+      "title": "Port ownership graphs, intercompany and consolidation reporting",
+      "phase": "P3",
+      "component": "component.application",
+      "depends_on": [
+        "R13",
+        "R26",
+        "R32"
+      ],
+      "summary": "Retain legal-entity separation and explicit read-only group reporting.",
+      "scope": [
+        "Port effective-dated group/ownership facts and corporate authorization scope",
+        "Port intercompany reconciliation/dispositions/liquidity and elimination rules",
+        "Keep consolidation profiles and company mappings in workspace configuration"
+      ],
+      "acceptance": [
+        "Ownership date boundaries and corrected facts produce explainable historical group membership",
+        "Eliminations are explicit and balance; consolidated reads never write company ledgers",
+        "Unauthorized entity/group access fails even when the actor owns the workspace"
+      ],
+      "source_paths": [
+        "src/core/ownership-graph.ts",
+        "src/core/group-manifest.ts",
+        "src/core/intercompany-reconciliation.ts",
+        "src/core/intercompany-dispositions.ts",
+        "src/core/consolidated-reports.ts",
+        "src/core/consolidation-eliminations.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r29"
+      ]
+    },
+    {
+      "id": "R30",
+      "title": "Port company knowledge, corporate records and workspace inbox",
+      "phase": "P3",
+      "component": "component.application",
+      "depends_on": [
+        "R13",
+        "R15",
+        "R16"
+      ],
+      "summary": "Preserve audited business context and safe document assignment across companies.",
+      "scope": [
+        "Port company-knowledge assertions, corporate-record governance and party/ownership references",
+        "Port workspace document inbox claim/handoff/assignment and recovery",
+        "Preserve principal scope and no implicit workspace-to-company authority"
+      ],
+      "acceptance": [
+        "Concurrent handoff/assignment cannot attach one source ambiguously to multiple companies",
+        "Versioned knowledge/corporate corrections preserve provenance and review history",
+        "Knowledge CLI/MCP/HTTP company scope matches the resolved existing contract"
+      ],
+      "source_paths": [
+        "src/core/company-knowledge.ts",
+        "src/core/corporate-records.ts",
+        "src/core/workspace-document-inbox.ts"
+      ],
+      "related_existing": [
+        641
+      ],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r30"
+      ]
+    },
+    {
+      "id": "R31",
+      "title": "Port annual accounts, tax and statutory export formats",
+      "phase": "P3",
+      "component": "component.application",
+      "depends_on": [
+        "R17",
+        "R26",
+        "R32"
+      ],
+      "summary": "Preserve supported annual-report/tax and external accounting export behavior.",
+      "scope": [
+        "Port annual-report compilation, tax projections and iXBRL",
+        "Port SAF-T and authority/accountant exports with required context and evidence manifests",
+        "Preserve explicitly documented unsupported filing/submission boundaries"
+      ],
+      "acceptance": [
+        "Synthetic year-end reports reconcile to trial balance and required export fields",
+        "Format validators/fixed fixtures detect omitted audit/accounts/evidence and inconsistent totals",
+        "A generated report is not falsely presented as a submitted or regulator-approved filing",
+        "Statutory/VAT tasks consistently distinguish calculated, reviewed/locked and actually recorded/submitted states; show period, source evidence, blockers and next user action without inventing new legal guarantees."
+      ],
+      "source_paths": [
+        "src/core/annual-report.ts",
+        "src/core/tax-return.ts",
+        "src/core/ixbrl.ts",
+        "src/core/saft-export.ts",
+        "src/core/authority-export.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r31"
+      ]
+    },
+    {
+      "id": "R32",
+      "title": "Port financial reports, dashboard and read projections",
+      "phase": "P3",
+      "component": "component.application",
+      "depends_on": [
+        "R11",
+        "R17",
+        "R19",
+        "R20",
+        "R21",
+        "R28"
+      ],
+      "summary": "Provide complete report/read parity for browser, native and agent consumers.",
+      "scope": [
+        "Port journal, income/balance/multi-year, portfolio, cashflow and obligation projections",
+        "Port existing static dashboard/HTML artifacts and file/PDF statement exports",
+        "Retain filters, drill-down, pagination, as-of semantics and account classification"
+      ],
+      "acceptance": [
+        "Report totals/drill-down reconcile to canonical ledger on fixed and differential fixtures",
+        "All report endpoints and static artifacts in R01 are mapped; no silent removal of export formats",
+        "Reads are deterministic, company-authorized and do not trigger renderer/provider writes",
+        "Statutory/VAT tasks consistently distinguish calculated, reviewed/locked and actually recorded/submitted states; show period, source evidence, blockers and next user action without inventing new legal guarantees."
+      ],
+      "source_paths": [
+        "src/core/financial-statements.ts",
+        "src/core/dashboard.ts",
+        "src/core/dashboard",
+        "src/core/account-classification.ts",
+        "src/server/data"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r32"
+      ]
+    },
+    {
+      "id": "R33",
+      "title": "Port backup, restore, signatures and workspace transfer",
+      "phase": "P3",
+      "component": "component.storage",
+      "depends_on": [
+        "R03",
+        "R12",
+        "R13",
+        "R15"
+      ],
+      "summary": "Make data recovery and local/server moves a verified operation before cutover.",
+      "scope": [
+        "Port company backups, governance/destinations/locks and credential-free workspace snapshots",
+        "Port staged signature/hash/audit/inventory verification and atomic publication",
+        "Resolve the existing overwrite/runtime contract and preserve recoverable replaced targets where supported",
+        "Preserve stable accounting/replay scope IDs or apply the verified R03 mapping while excluding credentials; expose user-facing verified backup/destination/status/export and fresh-target recovery paths."
+      ],
+      "acceptance": [
+        "Tampered signature, missing file, path traversal, wrong target and missing confirmation refuse before publication",
+        "Restore to a fresh destination passes inventory/audit/state parity; retry never silently overwrites live data",
+        "Local-to-hosted and hosted-to-local restore re-provisions identity/secrets explicitly; remote placements preserve actual provider/region evidence",
+        "Loss of the computer can be recovered on a fresh machine from a separately held verified backup and required trust material; backup on the lost disk alone is not counted as recovery.",
+        "Missing destination access or trust material produces clear recovery instructions; UI distinguishes self-service owner tasks from server-operator tasks."
+      ],
+      "source_paths": [
+        "src/core/system-backups.ts",
+        "src/core/system-restore.ts",
+        "src/core/workspace-snapshot.ts",
+        "src/core/backup-governance.ts",
+        "src/core/backup-remote-provider.ts",
+        "src/core/tar.ts"
+      ],
+      "related_existing": [
+        664,
+        525
+      ],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r33"
+      ]
+    },
+    {
+      "id": "R34",
+      "title": "Port retention, GDPR and versioned regulatory evidence",
+      "phase": "P3",
+      "component": "component.application",
+      "depends_on": [
+        "R14",
+        "R15",
+        "R33"
+      ],
+      "summary": "Preserve retention and privacy obligations with verifiable, versioned rule evidence.",
+      "scope": [
+        "Port retention calculations, legal holds, discovery/forget and deletion authorization",
+        "Port compliance/regulatory coverage reports, legal-source/rule metadata and immutable audit visibility",
+        "Keep product compliance checks separate from actual legal/regulatory approval"
+      ],
+      "acceptance": [
+        "Premature deletion, legal hold, missing authority and wrong-company requests fail",
+        "Eligible forgetting preserves mandatory financial/audit evidence and records the actual effect",
+        "Rule/source IDs and versions validate consistently; no external legal claim is invented by a Rust port"
+      ],
+      "source_paths": [
+        "src/core/retention.ts",
+        "src/core/gdpr.ts",
+        "src/core/compliance-report.ts",
+        "src/core/regulatory-coverage.ts",
+        "src/core/legal-provisions.ts",
+        "rules/dk",
+        "docs/compliance/requirements.md"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r34"
+      ]
+    },
+    {
+      "id": "R35",
+      "title": "Implement durable jobs, external effects and restart recovery",
+      "phase": "P4",
+      "component": "component.integrations",
+      "depends_on": [
+        "R12",
+        "R13",
+        "R14"
+      ],
+      "summary": "Provide recoverable external delivery/scheduling without claiming cross-provider exactly-once transactions.",
+      "scope": [
+        "Implement committed effect records, job state/leases, bounded retry/backoff and reconciliation",
+        "Define schema upgrades, cancellation, lease expiry and process-crash recovery",
+        "Expose task status/read-back with redacted logs and explicit caller authorization",
+        "Implement R04 dispatch authority/revocation policy; explicitly define local-versus-hosted scheduler activation, timezone/DST, sleep, shutdown/restart, missed-occurrence catch-up/skip and cancellation semantics."
+      ],
+      "acceptance": [
+        "Crash before/after provider acceptance and lease expiry cannot silently double-deliver or lose committed work",
+        "Ambiguous outcomes remain visible for reconciliation; provider capability controls safe retry",
+        "Read-only inspection never performs network effects or starts a scheduler implicitly",
+        "Revoke/cancel before dispatch, in-flight provider calls and restore of committed jobs follow the documented authority order.",
+        "Local app shutdown stops its managed worker; no unattended service is implied. Reopening shows missed/paused/failed/last/next runs and uses the chosen explicit catch-up policy without duplicates."
+      ],
+      "source_paths": [
+        "src/core/recurring-runner.ts",
+        "src/core/recurring-delivery-adapter.ts",
+        "src/server/observability.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r35"
+      ]
+    },
+    {
+      "id": "R36",
+      "title": "Port explicit email delivery and recurring invoice automation",
+      "phase": "P4",
+      "component": "component.integrations",
+      "depends_on": [
+        "R18",
+        "R35"
+      ],
+      "summary": "Preserve explicit delivery and recurrence semantics while separating issue, post and send.",
+      "scope": [
+        "Port existing email adapter contracts and recurring definition/run history",
+        "Use R35 durable jobs and provider-specific reconciliation; retain human/agent confirmation boundaries",
+        "Document baseline delivery gaps and correlate with existing transport work"
+      ],
+      "acceptance": [
+        "Repeated scheduled occurrence produces one intended invoice; lost send response is reconciled without blind resend",
+        "Dry-run/status/list do not send mail; credentials never enter ledger/report/logs",
+        "Existing real-email enhancement stays open unless implemented separately and included in the baseline",
+        "Closed app, sleeping computer, DST/timezone change and delayed restart produce documented skipped/catch-up occurrences; UI never presents an unexecuted invoice/send as completed."
+      ],
+      "source_paths": [
+        "src/core/email.ts",
+        "src/core/recurring-invoices.ts",
+        "src/core/recurring-workspace.ts",
+        "src/core/recurring-runner.ts"
+      ],
+      "related_existing": [
+        611
+      ],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r36"
+      ]
+    },
+    {
+      "id": "R37",
+      "title": "Port bilagsmail, EML and IMAP intake",
+      "phase": "P4",
+      "component": "component.integrations",
+      "depends_on": [
+        "R15",
+        "R16",
+        "R35",
+        "R38"
+      ],
+      "summary": "Keep mail evidence ingestion deterministic and credential-safe.",
+      "scope": [
+        "Port maildrop/EML/IMAP transport, attachment handling and workspace routing",
+        "Preserve stable message/attachment dedup identities, original evidence and exception routing",
+        "Keep Gmail OAuth and attachmentless receipts aligned with their separately tracked status"
+      ],
+      "acceptance": [
+        "Duplicate poll, changed attachment, uncertain company and interrupted mailbox read preserve one evidenced result or actionable exception",
+        "Malformed/oversized mail and credential failures do not disclose secrets or create partial ingestion",
+        "A status/read tool never polls a mailbox or imports attachments unexpectedly"
+      ],
+      "source_paths": [
+        "src/core/mail-intake.ts",
+        "src/core/bilagsmail.ts",
+        "src/core/imap-intake.ts",
+        "src/cli/mail-intake.ts"
+      ],
+      "related_existing": [
+        543,
+        566
+      ],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r37"
+      ]
+    },
+    {
+      "id": "R38",
+      "title": "Replace PDF parsing/rendering, extraction and scanning runtime dependencies",
+      "phase": "P4",
+      "component": "component.integrations",
+      "depends_on": [
+        "R03",
+        "R07",
+        "R15",
+        "R35"
+      ],
+      "summary": "Remove hidden JavaScript runtime dependencies while retaining document capability and limits.",
+      "scope": [
+        "Qualify Rust/native or explicit provider adapters for current pdf.js parsing, invoice/report rendering and scanning/extraction",
+        "Preserve text/layout evidence, parser version/hash, cache/tamper rules and no-text-layer outcomes",
+        "Apply bounded memory/time/process isolation; record provider capability and credential limits"
+      ],
+      "acceptance": [
+        "Existing synthetic PDF parser benchmark corpus and layout/no-text-layer/tamper cases have explicit parity or reviewed semantic differences",
+        "Local promised operations work without a hidden Bun/Node sidecar; optional network extraction remains explicit",
+        "Malformed/hostile/encrypted/oversized inputs and worker crash cannot bypass evidence gates or exhaust the host unboundedly"
+      ],
+      "source_paths": [
+        "src/core/document-pdf-parser.ts",
+        "src/core/document-pdf-parser-worker.ts",
+        "src/core/invoice-extraction.ts",
+        "src/server/document-scanner.ts",
+        "src/server/invoice-extractor.ts",
+        "scripts/benchmark-pdf-parser.ts",
+        "package.json"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r38"
+      ]
+    },
+    {
+      "id": "R39",
+      "title": "Port DigiSense, NemHandel and external reference adapters",
+      "phase": "P4",
+      "component": "component.integrations",
+      "depends_on": [
+        "R16",
+        "R17",
+        "R18",
+        "R35"
+      ],
+      "summary": "Preserve e-invoice and identity-reference integrations with current release gates.",
+      "scope": [
+        "Port configured DigiSense/onboarding/send/receive/status and public e-invoice contracts",
+        "Port CVR, VIES and EAN lookup/validation evidence as explicit external effects",
+        "Retain external approval, sandbox and provider permission boundaries"
+      ],
+      "acceptance": [
+        "Provider fake covers acceptance, timeout, replay, rejection, wrong-company and credential-generation changes",
+        "Immutable invoice/evidence identity is conserved through send/receive/status without resubmission on read",
+        "Existing Digisense review is not assumed to approve new Rust bytes; candidate and reviewed production status remain distinct"
+      ],
+      "source_paths": [
+        "src/core/efaktura",
+        "src/core/public-einvoice.ts",
+        "src/core/cvr.ts",
+        "src/core/vies.ts",
+        "src/core/ean.ts",
+        "docs/release/README.md"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r39"
+      ]
+    },
+    {
+      "id": "R40",
+      "title": "Integrate the existing BYO bank roadmap through Rust adapter contracts",
+      "phase": "P4",
+      "component": "component.integrations",
+      "depends_on": [
+        "R21",
+        "R35",
+        "R41"
+      ],
+      "summary": "Keep the existing Open Banking epic authoritative instead of creating a second bank-sync project.",
+      "scope": [
+        "Map current capability/status and contracts from #363 and its children to Rust modules",
+        "Port only behavior that is implemented in the current baseline, and bind later upstream changes explicitly",
+        "Preserve prepare/stage/plan/apply separation, consent/account/credential generations and source identity"
+      ],
+      "acceptance": [
+        "Classify every CSV/provider overlap, consent/secret-generation and prepared-plan case as implemented baseline, contract-preparation or pending #363 roadmap; execute only implemented-baseline parity and fake contract checks, without turning unfinished bank enhancements into hidden rewrite requirements.",
+        "No payment initiation, shared provider account or newly promised live-bank support is added",
+        "Unimplemented existing children remain visible external dependencies; this issue does not duplicate their implementation work"
+      ],
+      "source_paths": [
+        "src/core/bank.ts",
+        "src/core/workspace-control.ts",
+        "src/agent-discovery-catalog.ts"
+      ],
+      "related_existing": [
+        363,
+        660,
+        661,
+        662,
+        663,
+        358,
+        357,
+        359,
+        356,
+        643,
+        642
+      ],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r40"
+      ]
+    },
+    {
+      "id": "R41",
+      "title": "Implement hosted identity, native login and service-principal lifecycle",
+      "phase": "P4",
+      "component": "component.runtime",
+      "depends_on": [
+        "R04",
+        "R05",
+        "R13",
+        "R35"
+      ],
+      "summary": "Deliver the selected identity design with browser/native/agent parity and a path off Better Auth.",
+      "scope": [
+        "Implement supported browser/native auth, sessions, MFA/recovery/reset/invites and redacted auth audit",
+        "Port service-account credential create/rotate/revoke/reconcile and one-time secret delivery",
+        "Implement credential/account migration or explicit re-enrollment without copying insecure state"
+      ],
+      "acceptance": [
+        "Revocation, recovery replay, CSRF/origin, rate-limit and concurrent owner/service-credential scenarios pass",
+        "Native auth binds exact server/account, handles cancellation and stores secrets in OS facilities",
+        "Temporary Better Auth bridge cannot satisfy retirement; final runtime identity path needs no Bun/Node/TypeScript service",
+        "Credential rotation/re-enrollment and local↔hosted move preserve or explicitly map stable accounting/replay identities: accepted writes with lost replies are never replayed as new writes; unauthorized old receipts remain inaccessible.",
+        "Revoked human/service credentials cannot authorize newly dispatched jobs contrary to R04; in-flight results remain auditable and reconcilable."
+      ],
+      "source_paths": [
+        "src/server/better-auth.ts",
+        "src/server/auth-email.ts",
+        "src/core/auth-audit.ts",
+        "src/core/workspace-service-principals.ts",
+        "src/core/workspace-invitations.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r41"
+      ]
+    },
+    {
+      "id": "R42",
+      "title": "Implement the Rust HTTP server and operational API pipeline",
+      "phase": "P4",
+      "component": "component.runtime",
+      "depends_on": [
+        "R05",
+        "R12",
+        "R13",
+        "R14",
+        "R35",
+        "R41"
+      ],
+      "summary": "Serve the shared engine locally and hosted with explicit operational boundaries.",
+      "scope": [
+        "Implement route dispatch, limits, binary/static SPA responses and trusted principal translation",
+        "Implement health/readiness, graceful shutdown, configuration validation and secret-free observability",
+        "Register only supported capabilities and map remaining domain routes incrementally from R01"
+      ],
+      "acceptance": [
+        "Malformed input/oversized bodies/untrusted origin and unauthenticated cross-company requests refuse safely",
+        "Health/readiness are read-only and report unsupported/migration states without leaking company data",
+        "Loopback and hosted profiles cannot silently inherit one another; termination/restart preserves committed work"
+      ],
+      "source_paths": [
+        "src/server/app.ts",
+        "src/server/router.ts",
+        "src/server/static.ts",
+        "src/server/config.ts",
+        "src/server/observability.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r42"
+      ]
+    },
+    {
+      "id": "R43",
+      "title": "Implement the Rust API client and connection-scoped caches",
+      "phase": "P4",
+      "component": "component.desktop",
+      "depends_on": [
+        "R05",
+        "R07"
+      ],
+      "summary": "Give installed clients safe, typed access to local and remote server contracts.",
+      "scope": [
+        "Implement version/capability negotiation, exact serialization, authenticated transport and binary streaming",
+        "Scope connection/account/workspace/company caches and cancel stale reads on changes",
+        "Represent uncertain writes distinctly from definite refusals and recover according to R05 per-operation retry matrix; retain original keys only where actually supported."
+      ],
+      "acceptance": [
+        "Server mismatch, expired/revoked credentials, cancellation and malformed binary failures have typed outcomes",
+        "Remote failure cannot trigger local fallback, blind retry or a new key for a key-idempotent operation; non-key operations use their specified read-back/provider reconciliation.",
+        "TLS trust and credential redaction are verified; user-controlled server URLs cannot exfiltrate another profile credential"
+      ],
+      "source_paths": [
+        "app/src/lib/api/_shared.ts",
+        "docs/architecture/rust-target/ARCHITECTURE.md"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r43"
+      ]
+    },
+    {
+      "id": "R44",
+      "title": "Port the CLI, local launcher and machine-readable contracts",
+      "phase": "P5",
+      "component": "component.agent",
+      "depends_on": [
+        "R05",
+        "R14",
+        "R33",
+        "R42",
+        "R43"
+      ],
+      "summary": "Retain stable automation and explicit local/server operation in Rust.",
+      "scope": [
+        "Port all R01 command keys, help/examples, actor/config policy, exits and output envelopes",
+        "Support explicit local company/workspace and remote connection selection without hidden company defaults",
+        "Make local ownership, stdin/files, cancellation and destructive confirmations consistent"
+      ],
+      "acceptance": [
+        "Contract fixtures cover 0/1/2 exit semantics, flags, JSON/human output and refusal codes",
+        "Local CLI joins the owning runtime or refuses competing writes; remote actors derive from credentials",
+        "Existing scripts have a documented compatibility path; unsupported operations are discoverably unavailable",
+        "Per-operation fixtures preserve bare arrays, flat write results, snake_case, stdout/stderr and exact 0/1/2 exits, including CLI-only operations; standardization requires versioned compatibility."
+      ],
+      "source_paths": [
+        "src/cli.ts",
+        "src/cli",
+        "src/cli-meta",
+        "docs/cli-contract.md",
+        "docs/runtime-agent-contract.md",
+        "bin"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r44"
+      ]
+    },
+    {
+      "id": "R45",
+      "title": "Port MCP, capability discovery and agent workflow parity",
+      "phase": "P5",
+      "component": "component.agent",
+      "depends_on": [
+        "R05",
+        "R14",
+        "R42",
+        "R43"
+      ],
+      "summary": "Allow agents to operate Rust Rentemester correctly without reading source.",
+      "scope": [
+        "Port supported MCP transport/tools, schemas/annotations, resources and authentication",
+        "Port compact capability search, workflow descriptions, retry classes and operation coverage",
+        "Preserve explicit scope, actor/confirm gates and read/dry-run/review/apply separation"
+      ],
+      "acceptance": [
+        "Discovery coverage matches actual registered CLI/HTTP/MCP operations and never advertises missing tools as supported",
+        "Read-only annotations, required inputs, typed errors and uncertain-effect recovery match executed behavior",
+        "Service-principal revocation, company isolation, protocol errors and reconnect tests pass",
+        "Per-operation fixtures preserve data/camelCase shapes, structuredContent/text agreement, SDK schema/parse errors and tool-result failures; MCP-only and CLI-only boundaries are explicit."
+      ],
+      "source_paths": [
+        "src/mcp/server.ts",
+        "src/mcp/registry.ts",
+        "src/mcp/tool-runtime.ts",
+        "src/agent-discovery-catalog.ts",
+        "docs/mcp-tool-surface.md",
+        "docs/mcp-agent-contract.md"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r45"
+      ]
+    },
+    {
+      "id": "R46",
+      "title": "Retain React cockpit parity against the Rust server",
+      "phase": "P5",
+      "component": "component.web",
+      "depends_on": [
+        "R23",
+        "R24",
+        "R25",
+        "R27",
+        "R29",
+        "R30",
+        "R31",
+        "R32",
+        "R33",
+        "R34",
+        "R36",
+        "R37",
+        "R39",
+        "R40",
+        "R41",
+        "R42"
+      ],
+      "summary": "Keep the browser product functional throughout the backend replacement.",
+      "scope": [
+        "Update the shared API client for R05 compatibility while retaining current React/design conventions",
+        "Exercise every R01 screen and file/export workflow against the Rust API",
+        "Retain onboarding, memberships/invites/MFA, review and task navigation behavior"
+      ],
+      "acceptance": [
+        "Browser E2E covers every supported capability, not only happy-path dashboard reads",
+        "Expired auth, insufficient permission, stale review, uncertain write and large-data/file errors are actionable",
+        "Keyboard/accessibility and existing local/hosted journeys pass without hidden TypeScript backend fallback",
+        "Statutory/VAT tasks consistently distinguish calculated, reviewed/locked and actually recorded/submitted states; show period, source evidence, blockers and next user action without inventing new legal guarantees."
+      ],
+      "source_paths": [
+        "app/src/lib/api",
+        "app/src/lib/auth-client.ts",
+        "app/src/views",
+        "app/e2e",
+        "DESIGN.md"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r46"
+      ]
+    },
+    {
+      "id": "R47",
+      "title": "Build the GPUI local shell and managed backend lifecycle",
+      "phase": "P5",
+      "component": "component.desktop",
+      "depends_on": [
+        "R06",
+        "R12",
+        "R42",
+        "R43"
+      ],
+      "summary": "Make local desktop operation work without the user installing or managing a server.",
+      "scope": [
+        "Build local/remote connection chooser, explicit workspace create/open and company navigation",
+        "Package/start the compatible Rust runtime, await readiness and own shutdown/restart",
+        "Use private ephemeral loopback credentials and verified ownership discovery; preserve user-selected data paths"
+      ],
+      "acceptance": [
+        "Fresh offline installation can create/open a synthetic local workspace without Bun/Node/Docker",
+        "Two app instances, port collision, backend crash, upgrade interruption and unclean shutdown have recoverable outcomes",
+        "Local secrets are not logged/persisted in ledger; remote failure never opens a local workspace automatically",
+        "J01/J02 native onboarding covers company identity, VAT/non-VAT, shifted fiscal year, actor/account plan, bank mapping, import/opening balance and a clear path to first reviewed posting/report/verified backup; ordinary setup needs no JSON/CLI.",
+        "App closure, sleep and restart show explicit local automation status and never promise background work without a separately installed, explicitly enabled supported service."
+      ],
+      "source_paths": [
+        "src/cli/local.ts",
+        "docs/deployment-modes.md",
+        "docs/architecture/rust-target/ARCHITECTURE.md"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r47"
+      ]
+    },
+    {
+      "id": "R48",
+      "title": "Build GPUI read workflows, reports and evidence inspection",
+      "phase": "P5",
+      "component": "component.desktop",
+      "depends_on": [
+        "R06",
+        "R32",
+        "R43",
+        "R47"
+      ],
+      "summary": "Provide native accounting visibility with explicit feature coverage and accessible navigation.",
+      "scope": [
+        "Implement portfolio/dashboard, journal, financial/VAT reports, bank/evidence and obligation views",
+        "Add virtual tables, search/filter, keyboard focus, PDF preview and export",
+        "Map remaining read/admin screens from R01 explicitly; follow the existing design identity"
+      ],
+      "acceptance": [
+        "Each in-scope read feature has a desktop entrypoint and equivalent result to web/API",
+        "Large synthetic tables remain usable with documented measured limits on claimed platforms",
+        "Keyboard/screen-reader, empty/loading/error states and connection/company switching do not reveal stale foreign data",
+        "Statutory/VAT tasks consistently distinguish calculated, reviewed/locked and actually recorded/submitted states; show period, source evidence, blockers and next user action without inventing new legal guarantees.",
+        "Backup status, destination/access failure and last verified recovery point are visible with safe next steps; an unverified backup is not presented as recoverable."
+      ],
+      "source_paths": [
+        "app/src/views",
+        "DESIGN.md",
+        "docs/architecture/rust-target/ARCHITECTURE.md"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r48"
+      ]
+    },
+    {
+      "id": "R49",
+      "title": "Build GPUI bookkeeping, review and administration workflows",
+      "phase": "P5",
+      "component": "component.desktop",
+      "depends_on": [
+        "R19",
+        "R23",
+        "R24",
+        "R25",
+        "R26",
+        "R27",
+        "R28",
+        "R29",
+        "R30",
+        "R31",
+        "R33",
+        "R34",
+        "R36",
+        "R37",
+        "R39",
+        "R40",
+        "R41",
+        "R48"
+      ],
+      "summary": "Complete native task workflows using server authority and exact review/confirmation boundaries.",
+      "scope": [
+        "Implement bank/evidence-to-dry-run/post, drafts/batches, invoices/payables and periodic actions",
+        "Expose configured domain/admin/backup/retention/provider workflows from the R01 UI capability map",
+        "Use explicit confirmations and source-bound review state; keep business decisions on server"
+      ],
+      "acceptance": [
+        "Every supported write/admin capability has a native UI path. A specialist-only exception names the exact function, reason, visible alternative and explicit product decision; normal setup, bookkeeping, evidence review, VAT, invoicing and backup cannot use this exception.",
+        "Stale approval, revoked access, cancellation, uncertain response and retry cannot cause unintended duplicate effects",
+        "A real task-based synthetic journey completes without constructing JSON or opening the CLI",
+        "Statutory/VAT tasks consistently distinguish calculated, reviewed/locked and actually recorded/submitted states; show period, source evidence, blockers and next user action without inventing new legal guarantees.",
+        "J01/J02 complete in the native UI from setup through first reviewed posting, report and verified backup for both VAT and non-VAT/shifted-year fixtures.",
+        "J05 owner recovery can find status/destination, create/export a verified backup and restore to a fresh place; operator-only steps are named with an actionable handoff."
+      ],
+      "source_paths": [
+        "app/src/views/BookkeepingBatchView.tsx",
+        "app/src/views/AccountingDraftsView.tsx",
+        "app/src/views/WorkspaceAccessView.tsx",
+        "docs/confirm-contract.md"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r49"
+      ]
+    },
+    {
+      "id": "R50",
+      "title": "Complete remote desktop login, profiles and reconnection",
+      "phase": "P5",
+      "component": "component.desktop",
+      "depends_on": [
+        "R41",
+        "R43",
+        "R47",
+        "R48"
+      ],
+      "summary": "Make the same installed app a reliable client of a server-owned workspace.",
+      "scope": [
+        "Integrate native auth, per-server accounts, credential stores and capability-aware profile selection",
+        "Show active server/company clearly and cancel/invalidate old-context reads",
+        "Implement reconnect/read-back and safe logout/revocation without offline mutation queues"
+      ],
+      "acceptance": [
+        "Web and desktop show the same server ledger after permitted writes",
+        "Changing server/account/company during pending requests cannot leak data or execute under stale context",
+        "Lost responses use the R05 operation-specific key/read-back/provider reconciliation; server unavailability never creates local accounting effects.",
+        "After a verified move, the active destination and moved/read-only source are visible; reconnecting an old source cannot look like continuing the authoritative accounting workspace."
+      ],
+      "source_paths": [
+        "docs/architecture/rust-target/ARCHITECTURE.md",
+        "app/src/lib/api/_shared.ts"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r50"
+      ]
+    },
+    {
+      "id": "R51",
+      "title": "Verify complete cross-interface, concurrency and security parity",
+      "phase": "P6",
+      "component": "component.application",
+      "depends_on": [
+        "R19",
+        "R23",
+        "R24",
+        "R25",
+        "R26",
+        "R27",
+        "R28",
+        "R29",
+        "R30",
+        "R31",
+        "R32",
+        "R33",
+        "R34",
+        "R36",
+        "R37",
+        "R38",
+        "R39",
+        "R40",
+        "R44",
+        "R45",
+        "R46",
+        "R49",
+        "R50"
+      ],
+      "summary": "Establish a release candidate can replace the old product across the full behavior inventory.",
+      "scope": [
+        "Run R01 operation/screen matrix over CLI/MCP/HTTP/web/native and local/remote profiles",
+        "Run crash/concurrency/revocation, hostile-input and cross-company suites with negative controls",
+        "Perform human bookkeeping usability/accessibility review and independent interface/security review",
+        "Run the named J01–J07 end-user acceptance journeys, including fresh/new and existing businesses, VAT/non-VAT, shifted fiscal year, lost computer and moved-source reopen."
+      ],
+      "acceptance": [
+        "All baseline features map to passing evidence or an explicit blocked release condition; no silent downgrade of acceptance",
+        "Accounting/audit/evidence totals reconcile over a synthetic full-year lifecycle, restart and restore",
+        "External adversarial and applicable provider/regulatory review gates remain tracked separately and cannot be self-certified away",
+        "J01–J07 each attach scenario-specific evidence from qualified platforms/profiles; one generic happy path cannot satisfy owner acceptance."
+      ],
+      "source_paths": [
+        "docs/architecture/rust-target/epic/plan.json",
+        "docs/security-multi-user-scope.md",
+        "tests",
+        "app/e2e"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r51"
+      ]
+    },
+    {
+      "id": "R52",
+      "title": "Package signed desktop apps and safe application updates",
+      "phase": "P6",
+      "component": "component.desktop",
+      "depends_on": [
+        "R06",
+        "R47",
+        "R49",
+        "R50"
+      ],
+      "summary": "Deliver installable native applications with verified compatible backend bytes.",
+      "scope": [
+        "Produce macOS/Windows/Linux artifacts for the qualified OS/CPU matrix",
+        "Implement signing/notarization as applicable, artifact manifests and authenticated update verification",
+        "Couple UI/backend compatibility and staged update/recovery; use explicit data-migration fencing"
+      ],
+      "acceptance": [
+        "Clean install/offline launch, update interruption, signature failure and uninstall/data-retention journeys pass on each claimed platform",
+        "An incompatible/downgraded binary cannot open writable newer data; failed update preserves the previous runnable package",
+        "Evidence identifies exact shipped bytes/toolchains and unavailable signing credentials remain release blockers",
+        "Installed app documents worker lifetime and shows missed/paused/error automation state after sleep/closure/update; no background operation is promised merely because recurrence was configured."
+      ],
+      "source_paths": [
+        "docs/architecture/rust-target/ARCHITECTURE.md",
+        "docs/versioning.md",
+        "scripts/release"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r52"
+      ]
+    },
+    {
+      "id": "R53",
+      "title": "Package the Rust server and preserve candidate/release provenance",
+      "phase": "P6",
+      "component": "component.runtime",
+      "depends_on": [
+        "R38",
+        "R39",
+        "R41",
+        "R42",
+        "R46"
+      ],
+      "summary": "Keep self-hosted server deployment reproducible and distinguish usable candidates from reviewed releases.",
+      "scope": [
+        "Build pinned non-root server images including built React assets with documented volume/env/TLS/proxy contract",
+        "Adapt SBOM/license/supply-chain/build identity and candidate digest verification to Rust",
+        "Preserve promotion-without-rebuild, local/full verification and existing Digisense approval boundaries"
+      ],
+      "acceptance": [
+        "Fresh volume/restart/readonly-root/resource-limit server smoke passes with synthetic documents and no Bun/Node runtime",
+        "Reverse proxy, secure cookies/client-IP trust, readiness, backup/recovery and orderly shutdown are exercised",
+        "Reviewed production promotion uses the exact approved digest; no hidden test duplication or bypass of human/provider gates"
+      ],
+      "source_paths": [
+        "Dockerfile",
+        "docker-compose.example.yml",
+        ".github/workflows",
+        "scripts/release",
+        "docs/release/README.md"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r53"
+      ]
+    },
+    {
+      "id": "R54",
+      "title": "Rehearse fenced cutover, local/server transfer and rollback",
+      "phase": "P6",
+      "component": "component.storage",
+      "depends_on": [
+        "R27",
+        "R33",
+        "R51",
+        "R52",
+        "R53"
+      ],
+      "summary": "Prove the migration is recoverable before any real accounting workspace is switched.",
+      "scope": [
+        "Freeze source writes/jobs, verify snapshot, stage compatible target and re-provision credentials",
+        "Verify complete state/audit/evidence/job inventories and activate exactly one writer",
+        "Rehearse pre-write abort and post-write recovery, preserving new committed activity for explicit reconciliation",
+        "Provide J06 source/destination handoff UX/runbook, mark the source connection/workspace moved/read-only and block ordinary reopen as an active writer; identify operator-only transfer steps."
+      ],
+      "acceptance": [
+        "Source/target processes cannot write simultaneously, including restored jobs/effects and older clients",
+        "Injected corrupt snapshot, wrong identity, migration failure and activation crash leave a known recoverable authority",
+        "Post-cutover rollback does not discard accepted new entries or reopen incompatible data; runbook states recovery point/time from measured rehearsals",
+        "Credential rotation/re-enrollment and local↔hosted move preserve or explicitly map stable accounting/replay identities: accepted writes with lost replies are never replayed as new writes; unauthorized old receipts remain inaccessible.",
+        "J06 shows source, destination, stop, verification and activation clearly; source tombstone/fencing survives reboot and copied configuration while immutable archived data remains readable.",
+        "Restored pending external effects are fenced from source dispatch; completed/ambiguous outcomes remain reconciled and cannot be blindly redelivered."
+      ],
+      "source_paths": [
+        "src/core/workspace-snapshot.ts",
+        "src/core/system-restore.ts",
+        "docs/deployment-modes.md",
+        "docs/release/README.md"
+      ],
+      "related_existing": [
+        664
+      ],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r54"
+      ]
+    },
+    {
+      "id": "R55",
+      "title": "Retire the TypeScript backend and complete documentation/support handover",
+      "phase": "P6",
+      "component": "component.runtime",
+      "depends_on": [
+        "R51",
+        "R52",
+        "R53",
+        "R54"
+      ],
+      "summary": "Finish the rewrite rather than leaving an undeclared permanent dual-runtime product.",
+      "scope": [
+        "Remove replaced Bun/Node backend, CLI/MCP and PDF/auth worker dependencies after coverage/cutover gates",
+        "Retain React build tooling as development tooling; document the final runtime dependency bill",
+        "Update installation, operations, agent contracts, migration/recovery, support matrix and version policy"
+      ],
+      "acceptance": [
+        "Production desktop/server/CLI/MCP accounting and identity paths require no TypeScript/Bun/Node service or hidden fallback",
+        "Complete baseline coverage and external release gates remain valid for the exact retirement revision",
+        "Old-runtime data cannot be reopened unsafely; retained historical evidence and compatibility documentation remain accessible",
+        "Support guides let an owner find backup/recovery, diagnose a failed local runtime, identify moved data and know when server-operator help is needed; secrets/private accounting data are excluded from support bundles."
+      ],
+      "source_paths": [
+        "package.json",
+        "bin",
+        "src/cli.ts",
+        "src/mcp/server.ts",
+        "src/server/app.ts",
+        "docs/onboarding.md",
+        "docs/mcp-install.md",
+        "docs/runtime-agent-contract.md"
+      ],
+      "related_existing": [],
+      "excludes": "No live migration or unrelated new product capabilities.",
+      "status": "planned",
+      "gdd_scope": [
+        "action.delivery.r55"
+      ]
+    }
+  ],
+  "dependency_semantics": "Edges are completion prerequisites. Contract-driven scaffolding/prototypes may begin earlier with explicit stable interfaces; no dependent acceptance is claimed before prerequisites pass. Readiness is checked per bounded implementation package, not for an entire phase at once.",
+  "journeys": [
+    {
+      "id": "J01",
+      "name": "Fresh local owner, VAT company",
+      "issues": [
+        "R47",
+        "R49",
+        "R51"
+      ],
+      "given": "Fresh qualified machine, no Bun/Node/Docker, synthetic VAT-registered company.",
+      "when": "Install, choose data directory, configure identity/fiscal/VAT/account plan/bank, ingest receipt, review/post, inspect report and verify/export backup.",
+      "then": "Owner completes normal setup/accounting without JSON/CLI, exact report/evidence links and off-device recovery instructions are visible."
+    },
+    {
+      "id": "J02",
+      "name": "Existing business, no VAT and shifted year",
+      "issues": [
+        "R27",
+        "R47",
+        "R49",
+        "R51"
+      ],
+      "given": "Supported synthetic imported business, non-VAT configuration, shifted fiscal year and opening balances.",
+      "when": "Import/restore with explicit mapping, review open items, post first expense and inspect period/report/backup.",
+      "then": "No invented VAT or duplicate opening balances; unresolved historical evidence blocks correctly and the owner gets the next action."
+    },
+    {
+      "id": "J03",
+      "name": "Remote multi-user operation and access loss",
+      "issues": [
+        "R41",
+        "R46",
+        "R50",
+        "R51"
+      ],
+      "given": "Hosted workspace, two companies, owner/bookkeeper/service identities.",
+      "when": "Log in web/native, switch company, review/post, revoke access during a pending read/write.",
+      "then": "Same authoritative ledger, visible server/company and role-correct actions; no cross-company/stale-cache disclosure or local fallback."
+    },
+    {
+      "id": "J04",
+      "name": "VAT/annual task state and required user action",
+      "issues": [
+        "R17",
+        "R31",
+        "R46",
+        "R48",
+        "R49",
+        "R51"
+      ],
+      "given": "A synthetic period with VAT source evidence and an unresolved blocker.",
+      "when": "Review basis, resolve blocker, prepare/lock/record filing as actually supported.",
+      "then": "UI distinguishes draft/reviewed/recorded from submission, shows sources/deadline rules and the next manual action without false filing claims."
+    },
+    {
+      "id": "J05",
+      "name": "Lost computer and verified owner recovery",
+      "issues": [
+        "R33",
+        "R48",
+        "R49",
+        "R51",
+        "R54",
+        "R55"
+      ],
+      "given": "Separately held verified backup and trust material, then source device unavailable.",
+      "when": "On a fresh device restore to a fresh directory; re-provision secrets and inspect bank/evidence/journal.",
+      "then": "Exact supported inventory/audit restores, missing destination/key produces actionable help, owner/operator responsibilities are explicit."
+    },
+    {
+      "id": "J06",
+      "name": "Local-to-server and server-to-local handoff",
+      "issues": [
+        "R33",
+        "R50",
+        "R51",
+        "R54",
+        "R55"
+      ],
+      "given": "A supported synthetic workspace with an accepted write whose response was lost, plus pending/ambiguous external effects.",
+      "when": "Stop/fence source, verify transfer, map identity/receipts, activate destination, retry original operation and reopen old source.",
+      "then": "One writer/dispatcher, no duplicate booking/delivery, replay obeys access policy; owner sees destination and moved/read-only source."
+    },
+    {
+      "id": "J07",
+      "name": "Local closure/sleep versus hosted automation",
+      "issues": [
+        "R35",
+        "R36",
+        "R47",
+        "R51",
+        "R52"
+      ],
+      "given": "Explicitly enabled supported recurring/intake/backup tasks in local and hosted profiles.",
+      "when": "Close app/sleep/change timezone or DST, then restart; revoke/cancel a queued task.",
+      "then": "Documented catch-up/skip and dispatch-authority policy, last/next/missed/pause/error visible, no implied unattended local service."
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "format": "rentemester-rust-increment/1",
+  "implementation": "rust-readonly-1",
+  "code_revision": "sha256:9bfda4453edcc03d768f660da823107622b29a4637fa9b22fa94546e26800aae",
+  "assets": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "1c7717aeef925f025537f88ff8c2118ee9edcf3628c707807a5950b999fa11ed"
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256": "78a1a7efdad6d65624a52fc5e1b2692506135ac68d11b5659f30dcfbdda64a0a"
+    },
+    {
+      "path": "crates/rentemester-cli/Cargo.toml",
+      "sha256": "f99c2371bdda4fbe7179db6ca2719a9c14b74dd3dc0c83908f1850b9803c2a03"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "4042985de6da4545b7e1cb1866fdd0d1d5bf922c421a5620d62cf22105dcb733"
+    },
+    {
+      "path": "crates/rentemester-engine/Cargo.toml",
+      "sha256": "888de533b1fa8cc359b7677d155956c39b1383099d91636396cd1ee1a60bf5cb"
+    },
+    {
+      "path": "crates/rentemester-engine/src/lib.rs",
+      "sha256": "e17e339aaba107998e8895535f1d223beee00ded7f20f02f14c1e6349df32da2"
+    },
+    {
+      "path": "crates/rentemester-engine/src/money.rs",
+      "sha256": "d3fa39b13aef5c63fe5537ffaf4adc4a73117c9695c3653770655d80bf21f1f1"
+    },
+    {
+      "path": "crates/rentemester-engine/src/trial_balance.rs",
+      "sha256": "7aa6066ff6a9368ec6b05aaf3968bab9534c3422d6304518717015eca14936f9"
+    },
+    {
+      "path": "crates/rentemester-storage/Cargo.toml",
+      "sha256": "ad1ccef07f9968ba073e176e4feae9c9cf37d5795121a08e433d335ae8e93d7e"
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-schema.json",
+      "sha256": "b424cec385abad3f313ca633a291f8cf3f07d5cbece16523cd8fa0674cf729c7"
+    },
+    {
+      "path": "crates/rentemester-storage/src/lib.rs",
+      "sha256": "a59d720e896e8a04fef122fc7d88768ea63690b1c5cc52f88f3ed5f5692abd97"
+    },
+    {
+      "path": "crates/rentemester-storage/src/snapshot.rs",
+      "sha256": "207ab711dd4fe2108a4721d1c8a9af2a80840e537a0726a6c4be450c3a568579"
+    },
+    {
+      "path": "rust-toolchain.toml",
+      "sha256": "f53198ae4fdecfd87da36fe431c771b54c51e975d01c0e99f653bc14d5d48211"
+    },
+    {
+      "path": "scripts/rust/capture-baseline.ts",
+      "sha256": "109b98a3a0811e7b735cc0bf9ab7e39047cd967932c06293227b017c5a69b96e"
+    },
+    {
+      "path": "scripts/rust/check-boundaries.ts",
+      "sha256": "06b1a41c73167c56eb88ff23aa15f9f75c32203084f3ed9b5a0998b5a232db0c"
+    },
+    {
+      "path": "scripts/rust/schema-contract.ts",
+      "sha256": "a66f71458f936a968c516f4c39af50c7ce2018b3123f46ae1b7e7e7986ea8ba8"
+    },
+    {
+      "path": "scripts/rust/verify-readonly.ts",
+      "sha256": "6121ebbf2ef2f03bede82ba170ea3066b37a568999824271f36116806add2011"
+    },
+    {
+      "path": "scripts/rust/verify.ts",
+      "sha256": "f01c463a4e41a4605433ae64473795e509cc8753c36added8196c1f746eca4b0"
+    }
+  ],
+  "gdd_spec_revision": "sha256:2da7e799a99c7bfe1c66cc50a8acefb375e9d4dacf5945f9fafcc9ff1c7cb166",
+  "readiness": "PASS for action.report only",
+  "executed_checks": [
+    {
+      "command": "bun run rust:verify",
+      "exit": 0,
+      "rust_unit_tests": 7,
+      "synthetic_integration_checks": 34,
+      "includes": [
+        "cargo fmt",
+        "cargo clippy -D warnings",
+        "exact schema catalogue drift check",
+        "domain dependency/direct-I/O boundary checks with negative controls"
+      ]
+    },
+    {
+      "command": "bun test tests/unit/financial-statements.test.ts tests/unit/money.test.ts tests/unit/schema-version.test.ts",
+      "exit": 0,
+      "tests": 29,
+      "assertions": 125
+    },
+    {
+      "command": "bun run typecheck:runtime",
+      "exit": 0
+    },
+    {
+      "command": "bunx biome lint scripts/rust --error-on-warnings",
+      "exit": 0
+    },
+    {
+      "command": "bun run agent-discovery:coverage",
+      "exit": 0
+    },
+    {
+      "command": "bun scripts/rust/capture-baseline.ts /tmp/rm-baseline-final-replay.json /tmp/rm-current-issues.json",
+      "exit": 0,
+      "note": "Baseline replay only; initial snapshot retained as history. package.json now has a reviewed development-script delta."
+    }
+  ],
+  "review": {
+    "rounds": 2,
+    "first_round_findings": 3,
+    "fixed": [
+      "physical report column/FK/unique-index metadata",
+      "terminal slash/dot root symlink bypass",
+      "legacy unsafe entry-ID precision"
+    ],
+    "second_round": "No material unresolved findings within the bounded experimental read-only scope; reviewer repeated storage and 34 integration checks."
+  },
+  "limitations": [
+    "No hosted authorization, full audit/trigger/view health, production migration or qualified Windows storage.",
+    "Exact-string experimental CLI is a new format, not a silent replacement of numeric legacy interfaces.",
+    "Whole epic issues R01/R02/R03/R07/R08/R09/R10/R11 are not declared complete.",
+    "This report binds inspected code bytes and actual session execution; it is not a host-attested GDD implementation-acceptance record."
+  ]
+}

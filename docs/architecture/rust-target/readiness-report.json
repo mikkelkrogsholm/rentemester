@@ -1,0 +1,1720 @@
+{
+  "format": "gdd-report/0.2",
+  "tool": {
+    "name": "gdd-validator",
+    "version": "0.8.0"
+  },
+  "spec_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e",
+  "profiles": [
+    "readiness"
+  ],
+  "scope": [
+    "action.report"
+  ],
+  "checks": [
+    {
+      "check_id": "representation.schema",
+      "dimension": "model",
+      "result": "PASS",
+      "scope": [],
+      "reason": "Local JSON Schema validation.",
+      "diagnostics": []
+    },
+    {
+      "check_id": "representation.schema",
+      "dimension": "model",
+      "result": "PASS",
+      "scope": [],
+      "reason": "Local JSON Schema validation.",
+      "diagnostics": []
+    },
+    {
+      "check_id": "model.semantics",
+      "dimension": "model",
+      "result": "PASS",
+      "scope": [],
+      "reason": "Core references, endpoints, identity, refinement, machines, types and declared extension data checked.",
+      "diagnostics": []
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action needs full contract and behavior.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Action needs full contract and behavior.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.authenticate"
+          },
+          "related_ids": [
+            "action.authenticate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.effects_incomplete",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Effects/dependencies are not declared complete.",
+      "diagnostics": [
+        {
+          "code": "EFFECTS_INCOMPLETE",
+          "severity": "error",
+          "message": "Effects/dependencies are not declared complete.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.authenticate"
+          },
+          "related_ids": [
+            "action.authenticate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action needs a normal scenario.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Action needs a normal scenario.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.authenticate"
+          },
+          "related_ids": [
+            "action.authenticate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: authorization.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: authorization.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.authenticate"
+          },
+          "related_ids": [
+            "action.authenticate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: idempotency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: idempotency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.authenticate"
+          },
+          "related_ids": [
+            "action.authenticate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: boundaries.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: boundaries.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.authenticate"
+          },
+          "related_ids": [
+            "action.authenticate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: concurrency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: concurrency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.authenticate"
+          },
+          "related_ids": [
+            "action.authenticate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: atomicity.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: atomicity.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.authenticate"
+          },
+          "related_ids": [
+            "action.authenticate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action needs full contract and behavior.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Action needs full contract and behavior.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.connect"
+          },
+          "related_ids": [
+            "action.connect"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.effects_incomplete",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Effects/dependencies are not declared complete.",
+      "diagnostics": [
+        {
+          "code": "EFFECTS_INCOMPLETE",
+          "severity": "error",
+          "message": "Effects/dependencies are not declared complete.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.connect"
+          },
+          "related_ids": [
+            "action.connect"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: authorization.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: authorization.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.connect"
+          },
+          "related_ids": [
+            "action.connect"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: idempotency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: idempotency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.connect"
+          },
+          "related_ids": [
+            "action.connect"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: boundaries.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: boundaries.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.connect"
+          },
+          "related_ids": [
+            "action.connect"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: concurrency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: concurrency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.connect"
+          },
+          "related_ids": [
+            "action.connect"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: atomicity.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: atomicity.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.connect"
+          },
+          "related_ids": [
+            "action.connect"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action needs full contract and behavior.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Action needs full contract and behavior.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.deliver"
+          },
+          "related_ids": [
+            "action.deliver"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.effects_incomplete",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Effects/dependencies are not declared complete.",
+      "diagnostics": [
+        {
+          "code": "EFFECTS_INCOMPLETE",
+          "severity": "error",
+          "message": "Effects/dependencies are not declared complete.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.deliver"
+          },
+          "related_ids": [
+            "action.deliver"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action needs a normal scenario.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Action needs a normal scenario.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.deliver"
+          },
+          "related_ids": [
+            "action.deliver"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: authorization.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: authorization.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.deliver"
+          },
+          "related_ids": [
+            "action.deliver"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: idempotency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: idempotency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.deliver"
+          },
+          "related_ids": [
+            "action.deliver"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: boundaries.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: boundaries.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.deliver"
+          },
+          "related_ids": [
+            "action.deliver"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: concurrency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: concurrency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.deliver"
+          },
+          "related_ids": [
+            "action.deliver"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: atomicity.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: atomicity.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.deliver"
+          },
+          "related_ids": [
+            "action.deliver"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action needs full contract and behavior.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Action needs full contract and behavior.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.migrate"
+          },
+          "related_ids": [
+            "action.migrate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.effects_incomplete",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Effects/dependencies are not declared complete.",
+      "diagnostics": [
+        {
+          "code": "EFFECTS_INCOMPLETE",
+          "severity": "error",
+          "message": "Effects/dependencies are not declared complete.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.migrate"
+          },
+          "related_ids": [
+            "action.migrate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action needs a normal scenario.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Action needs a normal scenario.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.migrate"
+          },
+          "related_ids": [
+            "action.migrate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: authorization.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: authorization.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.migrate"
+          },
+          "related_ids": [
+            "action.migrate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: idempotency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: idempotency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.migrate"
+          },
+          "related_ids": [
+            "action.migrate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: boundaries.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: boundaries.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.migrate"
+          },
+          "related_ids": [
+            "action.migrate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: concurrency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: concurrency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.migrate"
+          },
+          "related_ids": [
+            "action.migrate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: atomicity.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: atomicity.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.migrate"
+          },
+          "related_ids": [
+            "action.migrate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action needs full contract and behavior.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Action needs full contract and behavior.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.negotiate"
+          },
+          "related_ids": [
+            "action.negotiate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.effects_incomplete",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Effects/dependencies are not declared complete.",
+      "diagnostics": [
+        {
+          "code": "EFFECTS_INCOMPLETE",
+          "severity": "error",
+          "message": "Effects/dependencies are not declared complete.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.negotiate"
+          },
+          "related_ids": [
+            "action.negotiate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action needs a normal scenario.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Action needs a normal scenario.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.negotiate"
+          },
+          "related_ids": [
+            "action.negotiate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: authorization.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: authorization.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.negotiate"
+          },
+          "related_ids": [
+            "action.negotiate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: idempotency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: idempotency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.negotiate"
+          },
+          "related_ids": [
+            "action.negotiate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: boundaries.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: boundaries.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.negotiate"
+          },
+          "related_ids": [
+            "action.negotiate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: concurrency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: concurrency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.negotiate"
+          },
+          "related_ids": [
+            "action.negotiate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: atomicity.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: atomicity.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.negotiate"
+          },
+          "related_ids": [
+            "action.negotiate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action needs full contract and behavior.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Action needs full contract and behavior.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.post"
+          },
+          "related_ids": [
+            "action.post"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.effects_incomplete",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Effects/dependencies are not declared complete.",
+      "diagnostics": [
+        {
+          "code": "EFFECTS_INCOMPLETE",
+          "severity": "error",
+          "message": "Effects/dependencies are not declared complete.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.post"
+          },
+          "related_ids": [
+            "action.post"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action needs a normal scenario.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Action needs a normal scenario.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.post"
+          },
+          "related_ids": [
+            "action.post"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: authorization.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: authorization.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.post"
+          },
+          "related_ids": [
+            "action.post"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: idempotency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: idempotency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.post"
+          },
+          "related_ids": [
+            "action.post"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: boundaries.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: boundaries.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.post"
+          },
+          "related_ids": [
+            "action.post"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: concurrency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: concurrency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.post"
+          },
+          "related_ids": [
+            "action.post"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: atomicity.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: atomicity.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.post"
+          },
+          "related_ids": [
+            "action.post"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action needs full contract and behavior.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Action needs full contract and behavior.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.report"
+          },
+          "related_ids": [
+            "action.report"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.effects_incomplete",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Effects/dependencies are not declared complete.",
+      "diagnostics": [
+        {
+          "code": "EFFECTS_INCOMPLETE",
+          "severity": "error",
+          "message": "Effects/dependencies are not declared complete.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.report"
+          },
+          "related_ids": [
+            "action.report"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action needs a normal scenario.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Action needs a normal scenario.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.report"
+          },
+          "related_ids": [
+            "action.report"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: authorization.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: authorization.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.report"
+          },
+          "related_ids": [
+            "action.report"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: idempotency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: idempotency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.report"
+          },
+          "related_ids": [
+            "action.report"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: boundaries.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: boundaries.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.report"
+          },
+          "related_ids": [
+            "action.report"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: concurrency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: concurrency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.report"
+          },
+          "related_ids": [
+            "action.report"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: atomicity.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: atomicity.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.report"
+          },
+          "related_ids": [
+            "action.report"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action needs full contract and behavior.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Action needs full contract and behavior.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.store"
+          },
+          "related_ids": [
+            "action.store"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.effects_incomplete",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Effects/dependencies are not declared complete.",
+      "diagnostics": [
+        {
+          "code": "EFFECTS_INCOMPLETE",
+          "severity": "error",
+          "message": "Effects/dependencies are not declared complete.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.store"
+          },
+          "related_ids": [
+            "action.store"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action needs a normal scenario.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Action needs a normal scenario.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.store"
+          },
+          "related_ids": [
+            "action.store"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: authorization.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: authorization.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.store"
+          },
+          "related_ids": [
+            "action.store"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: idempotency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: idempotency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.store"
+          },
+          "related_ids": [
+            "action.store"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: boundaries.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: boundaries.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.store"
+          },
+          "related_ids": [
+            "action.store"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: concurrency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: concurrency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.store"
+          },
+          "related_ids": [
+            "action.store"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: atomicity.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: atomicity.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.store"
+          },
+          "related_ids": [
+            "action.store"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action needs full contract and behavior.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Action needs full contract and behavior.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.validate"
+          },
+          "related_ids": [
+            "action.validate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.effects_incomplete",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Effects/dependencies are not declared complete.",
+      "diagnostics": [
+        {
+          "code": "EFFECTS_INCOMPLETE",
+          "severity": "error",
+          "message": "Effects/dependencies are not declared complete.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.validate"
+          },
+          "related_ids": [
+            "action.validate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Action needs a normal scenario.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Action needs a normal scenario.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.validate"
+          },
+          "related_ids": [
+            "action.validate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: authorization.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: authorization.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.validate"
+          },
+          "related_ids": [
+            "action.validate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: idempotency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: idempotency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.validate"
+          },
+          "related_ids": [
+            "action.validate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: boundaries.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: boundaries.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.validate"
+          },
+          "related_ids": [
+            "action.validate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: concurrency.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: concurrency.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.validate"
+          },
+          "related_ids": [
+            "action.validate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Missing risk assessment: atomicity.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Missing risk assessment: atomicity.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.validate"
+          },
+          "related_ids": [
+            "action.validate"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Required entity fields are unspecified.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Required entity fields are unspecified.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/entity.connection"
+          },
+          "related_ids": [
+            "entity.connection"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Required entity fields are unspecified.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Required entity fields are unspecified.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/entity.effect"
+          },
+          "related_ids": [
+            "entity.effect"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Required entity fields are unspecified.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Required entity fields are unspecified.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/entity.evidence"
+          },
+          "related_ids": [
+            "entity.evidence"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.readiness_contract_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Required entity fields are unspecified.",
+      "diagnostics": [
+        {
+          "code": "READINESS_CONTRACT_MISSING",
+          "severity": "error",
+          "message": "Required entity fields are unspecified.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/entity.ledger"
+          },
+          "related_ids": [
+            "entity.ledger"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.question_blocks_scope",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Open question blocks implementation context.",
+      "diagnostics": [
+        {
+          "code": "QUESTION_BLOCKS_SCOPE",
+          "severity": "error",
+          "message": "Open question blocks implementation context.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/questions/question.compatibility"
+          },
+          "related_ids": [
+            "question.compatibility"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.question_blocks_scope",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Open question blocks implementation context.",
+      "diagnostics": [
+        {
+          "code": "QUESTION_BLOCKS_SCOPE",
+          "severity": "error",
+          "message": "Open question blocks implementation context.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/questions/question.identity"
+          },
+          "related_ids": [
+            "question.identity"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.question_blocks_scope",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Open question blocks implementation context.",
+      "diagnostics": [
+        {
+          "code": "QUESTION_BLOCKS_SCOPE",
+          "severity": "error",
+          "message": "Open question blocks implementation context.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/questions/question.revocation"
+          },
+          "related_ids": [
+            "question.revocation"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.question_blocks_scope",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Open question blocks implementation context.",
+      "diagnostics": [
+        {
+          "code": "QUESTION_BLOCKS_SCOPE",
+          "severity": "error",
+          "message": "Open question blocks implementation context.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/questions/question.platforms"
+          },
+          "related_ids": [
+            "question.platforms"
+          ]
+        }
+      ]
+    },
+    {
+      "check_id": "check.question_blocks_scope",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Open question blocks implementation context.",
+      "diagnostics": [
+        {
+          "code": "QUESTION_BLOCKS_SCOPE",
+          "severity": "error",
+          "message": "Open question blocks implementation context.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/questions/question.protocol"
+          },
+          "related_ids": [
+            "question.protocol"
+          ]
+        }
+      ]
+    }
+  ]
+}

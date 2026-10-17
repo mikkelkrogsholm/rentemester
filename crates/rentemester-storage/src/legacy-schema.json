@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "name": "rentemester-schema-baseline-v1",
+    "checksum": "6956ccf6f1bdb360abb5f166582075e6726ca01b75cdbb38dfcbbc500af16728"
+  },
+  {
+    "id": 2,
+    "name": "rentemester-peppol-submission-events-v2",
+    "checksum": "2f057c6c9d6285ee708056ff6a1048c30ce1da578de62d470965d0d64ad69744"
+  },
+  {
+    "id": 3,
+    "name": "rentemester-recurring-automation-v3",
+    "checksum": "cc6fc5abfbe81ebc20c72a4e6e4167033102585e441fbe65f64ef57d8dd48db0"
+  },
+  {
+    "id": 4,
+    "name": "rentemester-dinero-import-provenance-v4",
+    "checksum": "7fd903452593c334314462bd52f6609e22c6a771c0c7e80682dba2c97d06e5b8"
+  },
+  {
+    "id": 5,
+    "name": "rentemester-migration-open-items-v5",
+    "checksum": "082b8aea529dc4f7d825112ce743192a5b9d4a1daea68a73c7b410d08ed94549"
+  },
+  {
+    "id": 6,
+    "name": "rentemester-bank-journal-reconciliation-links-v6",
+    "checksum": "0f265c2da784e26d380351b32bc1af93ec17fbaf3b506120e4363dcb8bb384ff"
+  },
+  {
+    "id": 7,
+    "name": "rentemester-document-scan-evidence-v7",
+    "checksum": "0229f030127d6cf27091cd60363b9f731ce552c042b3037ca84401af0d2e2c23"
+  },
+  {
+    "id": 8,
+    "name": "rentemester-issued-invoice-pdf-immutability-v8",
+    "checksum": "d845f51395d2e57718b4314ad974429070a1304190c5cfb9f0b5cfd2cbc48f7b"
+  },
+  {
+    "id": 9,
+    "name": "rentemester-accounting-draft-workflow-v9",
+    "checksum": "a42abed893e67d753bd04ec02a65f002c8aa683023d1689ea17bc7c259082868"
+  },
+  {
+    "id": 10,
+    "name": "rentemester-internal-voucher-evidence-v10",
+    "checksum": "f59bbb6a5508542fd20251c0730e520beed0a55d6b4d5bf9b19bce8ee79bc47c"
+  },
+  {
+    "id": 11,
+    "name": "rentemester-purchase-vat-preflight-v11",
+    "checksum": "81c453572db4317dc07274ecf2e5511a32b06a2a4a967e3d89253ef9595acd28"
+  },
+  {
+    "id": 12,
+    "name": "rentemester-posting-rules-v12",
+    "checksum": "a2f166cd61e0575e130cc68673401631dc12059460dbf9966bdba0100ddb1009"
+  },
+  {
+    "id": 13,
+    "name": "rentemester-bookkeeping-batches-v13",
+    "checksum": "ca9ba9c93fdbe06cb386d2360bf9b4c1858eff6bd00442d4435d1901bff28960"
+  },
+  {
+    "id": 14,
+    "name": "rentemester-invoice-extraction-evidence-v14",
+    "checksum": "8888935cae0d7f824fe1df1702e17ff7b7e4670eb58787a3e983032e67762f26"
+  },
+  {
+    "id": 15,
+    "name": "rentemester-bookkeeping-batch-retries-v15",
+    "checksum": "cafeb1820ccf838b6f880d4a91a67ae776c4cfb32caa41a6496adbba6f8443dc"
+  },
+  {
+    "id": 16,
+    "name": "rentemester-invoice-extraction-actors-v16",
+    "checksum": "797a993d7a64e079c3cfeb8ec2f2fb6afb82f34fe3cd9f8c28a1ee4923ea73ed"
+  },
+  {
+    "id": 17,
+    "name": "rentemester-document-pdf-parses-v17",
+    "checksum": "7652ef9725a8dfb26aabb09e234e9916f47d14b52384cb467494be791fcee3d1"
+  },
+  {
+    "id": 18,
+    "name": "rentemester-document-metadata-enrichments-v18",
+    "checksum": "fb1b3657dfbf88d3b57234dbba7107cc9e889c6aaebab9baa263a9ee152b2cb6"
+  },
+  {
+    "id": 19,
+    "name": "rentemester-document-company-contexts-v19",
+    "checksum": "abf7eb8be59d256b253d9340929791ecafa6e34f310cd64c4f02502ad06a57bc"
+  },
+  {
+    "id": 20,
+    "name": "rentemester-mutation-idempotency-foundation-v20",
+    "checksum": "69ce065a316b622abdd19ff73a4ca70855d540b901e925d5176c056f8b6564f3"
+  },
+  {
+    "id": 21,
+    "name": "rentemester-bookkeeping-batch-revisions-v21",
+    "checksum": "90f29766dcf05100678d6a79e185e5315220aa7fa2884942d1ac3f3fac1a270c"
+  },
+  {
+    "id": 22,
+    "name": "rentemester-period-close-readiness-v22",
+    "checksum": "803a7be16e6d9f9a2fbc7cfa259e986aee140bfac9bc3ebe8c4ba228bf174b52"
+  },
+  {
+    "id": 23,
+    "name": "rentemester-local-idempotency-tombstones-v23",
+    "checksum": "3712c6083defe694350eb52dafc779a8193fca60558051d93a35210d004ab6d9"
+  },
+  {
+    "id": 24,
+    "name": "rentemester-bookkeeping-batch-principals-v24",
+    "checksum": "c4d3061f8bec76cd042b7aa542a271aed8b950132090e19e9c85b9df977516a3"
+  },
+  {
+    "id": 25,
+    "name": "rentemester-period-close-reviews-v25",
+    "checksum": "cb3bc9556c05e456943a520346d95c0c52aa95df9254af11aac2021226c6c848"
+  },
+  {
+    "id": 26,
+    "name": "rentemester-document-party-links-v26",
+    "checksum": "14183f81ac55c336441ef217492c1bb873356e5e3d979c94ae8b5f808e00e157"
+  },
+  {
+    "id": 27,
+    "name": "rentemester-supplier-commitments-v27",
+    "checksum": "520ee643532f0f2c74474f53639a7e1fb0959a7ef5a835c4d7f951707a7d4aed"
+  },
+  {
+    "id": 28,
+    "name": "rentemester-accounting-dimensions-v28",
+    "checksum": "47792cf3e31b1d2f8dd3a9a38cf3db8d7e7882ca3d8d799ba8b9d79d64b8f532"
+  },
+  {
+    "id": 29,
+    "name": "rentemester-document-party-resolution-v29",
+    "checksum": "148440875bf5b4c9a28274bac3b1ae5e3b511680bed27e8337e27ef3d7ba3abe"
+  },
+  {
+    "id": 30,
+    "name": "rentemester-accounting-dimension-lifecycle-v30",
+    "checksum": "b4b20e5939fee88fcf4d8fb46577600d03745e7e25aa5c0d7fd21f6f4608a921"
+  },
+  {
+    "id": 31,
+    "name": "rentemester-supplier-commitment-occurrence-matches-v31",
+    "checksum": "562db260cd2477560a990f92ea9d5e391ebe565ad12d2268b7f993ac3d5d9195"
+  },
+  {
+    "id": 32,
+    "name": "rentemester-dimension-budget-and-provenance-v32",
+    "checksum": "638fa1273bc722fc473579f0028a4913c598a2fea21985f649b3be779bb3a23b"
+  },
+  {
+    "id": 33,
+    "name": "rentemester-bank-reconciliation-corrections-v33",
+    "checksum": "bdf4715fd5a31c8ffb644ece98b92b163fa8f8e2e549795a8d65a25d1462e33b"
+  },
+  {
+    "id": 34,
+    "name": "rentemester-direct-bank-purchase-payable-corrections-v34",
+    "checksum": "76c03106346fda40df08e8f370a39577b228fb11dea552d8265d1bdec9fc7aed"
+  },
+  {
+    "id": 35,
+    "name": "rentemester-bank-reconciliation-account-role-fallback-v35",
+    "checksum": "0e77c291943dd51b91deca2583c9655c051b6170c95dd1238316620f17be6fbf"
+  },
+  {
+    "id": 36,
+    "name": "rentemester-imported-receivables-v36",
+    "checksum": "785396ccd7d7f1f340e89564b0ecffe4580fced541b7b85b878320216c7a549a"
+  }
+]

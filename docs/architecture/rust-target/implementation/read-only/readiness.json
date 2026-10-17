@@ -1,0 +1,53 @@
+{
+  "format": "gdd-report/0.2",
+  "tool": {
+    "name": "gdd-validator",
+    "version": "0.8.0"
+  },
+  "spec_revision": "sha256:b5ffe833c229ea158afbe914d1fa93cc4ee23545309d6c9e02e11a384f4eb8dd",
+  "profiles": [
+    "readiness"
+  ],
+  "scope": [
+    "action.report"
+  ],
+  "checks": [
+    {
+      "check_id": "representation.schema",
+      "dimension": "model",
+      "result": "PASS",
+      "scope": [],
+      "reason": "Local JSON Schema validation.",
+      "diagnostics": []
+    },
+    {
+      "check_id": "model.semantics",
+      "dimension": "model",
+      "result": "PASS",
+      "scope": [],
+      "reason": "Core references, endpoints, identity, refinement, machines, types and declared extension data checked.",
+      "diagnostics": []
+    },
+    {
+      "check_id": "check.scenario_category_missing",
+      "dimension": "readiness",
+      "result": "FAIL",
+      "scope": [],
+      "reason": "Error source_changed needs negative/boundary scenario.",
+      "diagnostics": [
+        {
+          "code": "SCENARIO_CATEGORY_MISSING",
+          "severity": "error",
+          "message": "Error source_changed needs negative/boundary scenario.",
+          "location": {
+            "file": "gdd.json",
+            "pointer": "/nodes/action.report"
+          },
+          "related_ids": [
+            "action.report"
+          ]
+        }
+      ]
+    }
+  ]
+}

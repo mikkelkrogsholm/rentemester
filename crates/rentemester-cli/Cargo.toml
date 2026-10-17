@@ -1,0 +1,18 @@
+[package]
+name = "rentemester-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "rentemester-rust"
+path = "src/main.rs"
+
+[dependencies]
+rentemester-engine = { path = "../rentemester-engine" }
+rentemester-storage = { path = "../rentemester-storage" }
+serde_json.workspace = true
+
+[lints]
+workspace = true

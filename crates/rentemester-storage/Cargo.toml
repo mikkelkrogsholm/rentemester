@@ -1,0 +1,21 @@
+[package]
+name = "rentemester-storage"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+rentemester-engine = { path = "../rentemester-engine" }
+rusqlite = { version = "0.40.2", features = ["bundled"] }
+ryu-js = "1.0.3"
+serde.workspace = true
+serde_json.workspace = true
+sha2 = "0.10"
+tempfile = "3"
+
+[target.'cfg(unix)'.dependencies]
+rustix = { version = "1.1.5", features = ["fs"] }
+
+[lints]
+workspace = true

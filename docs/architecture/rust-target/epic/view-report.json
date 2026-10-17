@@ -1,0 +1,38 @@
+{
+  "format": "gdd-report/0.2",
+  "tool": {
+    "name": "gdd-validator",
+    "version": "0.8.0"
+  },
+  "spec_revision": "sha256:859fe7a4edf8f10d9da3481fd2de1a54e8421e8da754e9d6154dde0830a947d9",
+  "profiles": [
+    "visualization"
+  ],
+  "scope": [],
+  "checks": [
+    {
+      "check_id": "representation.schema",
+      "dimension": "model",
+      "result": "PASS",
+      "scope": [],
+      "reason": "Local JSON Schema validation.",
+      "diagnostics": []
+    },
+    {
+      "check_id": "model.semantics",
+      "dimension": "model",
+      "result": "PASS",
+      "scope": [],
+      "reason": "Core references, endpoints, identity, refinement, machines, types and declared extension data checked.",
+      "diagnostics": []
+    },
+    {
+      "check_id": "integration.visualization",
+      "dimension": "integration",
+      "result": "PASS",
+      "scope": [],
+      "reason": "Exact artifact matches this renderer and current model snapshot; browser conformance is tested separately.",
+      "diagnostics": []
+    }
+  ]
+}

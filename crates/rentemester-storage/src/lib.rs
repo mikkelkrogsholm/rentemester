@@ -1,0 +1,375 @@
+//! Current-schema legacy reads. Originals are never opened through SQLite.
+use rentemester_engine::{
+    Error,
+    money::Money,
+    trial_balance::{self, Line, Period, Report},
+};
+use rusqlite::{Connection, OpenFlags, types::ValueRef};
+use serde::Deserialize;
+use std::{fs::OpenOptions, io::Write, path::Path, time::Duration};
+use tempfile::TempDir;
+#[cfg(unix)]
+mod snapshot;
+
+#[derive(Deserialize)]
+struct Migration {
+    id: i64,
+    name: String,
+    checksum: String,
+}
+fn invalid(error: impl std::fmt::Display) -> Error {
+    Error::new("invalid_ledger", error.to_string())
+}
+
+/// Copy, validate and report one explicitly selected local company. No migration.
+pub fn trial_balance(company: &Path, period: Period) -> Result<Report, Error> {
+    let period = Period::new(&period.start, &period.end)?;
+    #[cfg(not(unix))]
+    {
+        let _ = (company, period);
+        Err(Error::new(
+            "source_unavailable",
+            "this reader has not yet qualified source capture on this platform",
+        ))
+    }
+    #[cfg(unix)]
+    {
+        let captured = snapshot::capture(company)?;
+        let dir = tempfile::tempdir().map_err(|e| Error::new("storage_failure", e.to_string()))?;
+        let path = dir.path().join("snapshot.sqlite");
+        for source in captured {
+            if source.suffix == "-shm" {
+                continue;
+            }
+            let mut options = OpenOptions::new();
+            options.write(true).create_new(true);
+            use std::os::unix::fs::OpenOptionsExt;
+            options.mode(0o600);
+            let mut file = options
+                .open(format!("{}{}", path.display(), source.suffix))
+                .map_err(invalid)?;
+            file.write_all(&source.bytes).map_err(invalid)?;
+        }
+        let copy = Snapshot::open(dir, &path)?;
+        validate(&copy.conn)?;
+        let mut statement=copy.conn.prepare("SELECT a.account_no,a.name,a.type,a.normal_balance,je.id,jl.debit_amount,jl.credit_amount FROM journal_entries je JOIN journal_lines jl ON jl.journal_entry_id=je.id JOIN accounts a ON a.id=jl.account_id WHERE je.transaction_date>=?1 AND je.transaction_date<=?2 ORDER BY a.account_no,je.id,jl.id").map_err(invalid)?;
+        let mut rows = statement
+            .query([&period.start, &period.end])
+            .map_err(invalid)?;
+        let mut lines = Vec::new();
+        while let Some(row) = rows.next().map_err(invalid)? {
+            let kind: String = row.get(2).map_err(invalid)?;
+            let normal: String = row.get(3).map_err(invalid)?;
+            if !["asset", "liability", "equity", "income", "expense", "vat"]
+                .contains(&kind.as_str())
+                || !["debit", "credit"].contains(&normal.as_str())
+            {
+                return Err(invalid("invalid account classification"));
+            }
+            lines.push(Line {
+                account_no: row.get(0).map_err(invalid)?,
+                name: row.get(1).map_err(invalid)?,
+                kind,
+                normal_balance: normal,
+                entry_id: safe_entry_id(row.get(4).map_err(invalid)?)?,
+                debit: legacy_money(row.get_ref(5).map_err(invalid)?)?,
+                credit: legacy_money(row.get_ref(6).map_err(invalid)?)?,
+            });
+        }
+        Ok(trial_balance::build(period, lines))
+    }
+}
+struct Snapshot {
+    conn: Connection,
+    _dir: TempDir,
+}
+impl Snapshot {
+    fn open(dir: TempDir, path: &Path) -> Result<Self, Error> {
+        // Recovery/checkpoint happens only on private, disposable files.
+        let recovery = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_WRITE)
+            .map_err(invalid)?;
+        recovery
+            .busy_timeout(Duration::from_secs(1))
+            .map_err(invalid)?;
+        recovery
+            .query_row("SELECT count(*) FROM sqlite_schema", [], |r| {
+                r.get::<_, i64>(0)
+            })
+            .map_err(invalid)?;
+        let busy: i64 = recovery
+            .query_row("PRAGMA wal_checkpoint(TRUNCATE)", [], |r| r.get(0))
+            .map_err(invalid)?;
+        if busy != 0 {
+            return Err(invalid("private snapshot recovery is busy"));
+        }
+        drop(recovery);
+        let conn = Connection::open_with_flags(
+            path,
+            OpenFlags::SQLITE_OPEN_READ_ONLY | OpenFlags::SQLITE_OPEN_NO_MUTEX,
+        )
+        .map_err(invalid)?;
+        conn.execute_batch(
+            "PRAGMA query_only=ON; PRAGMA foreign_keys=ON; PRAGMA trusted_schema=OFF;",
+        )
+        .map_err(invalid)?;
+        Ok(Self { conn, _dir: dir })
+    }
+}
+fn validate(db: &Connection) -> Result<(), Error> {
+    let expected: Vec<Migration> =
+        serde_json::from_str(include_str!("legacy-schema.json")).map_err(invalid)?;
+    let mut statement = db
+        .prepare("SELECT id,name,checksum FROM schema_migrations ORDER BY id")
+        .map_err(|_| {
+            Error::new(
+                "unsupported_schema",
+                "current checksummed schema history is required",
+            )
+        })?;
+    let rows = statement
+        .query_map([], |r| {
+            Ok(Migration {
+                id: r.get(0)?,
+                name: r.get(1)?,
+                checksum: r.get(2)?,
+            })
+        })
+        .map_err(invalid)?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(invalid)?;
+    if rows.len() != expected.len()
+        || rows
+            .iter()
+            .zip(&expected)
+            .any(|(a, b)| a.id != b.id || a.name != b.name || a.checksum != b.checksum)
+    {
+        return Err(Error::new(
+            "unsupported_schema",
+            "pending, newer or altered schema history; no migration performed",
+        ));
+    }
+    let check: String = db
+        .query_row("PRAGMA quick_check", [], |r| r.get(0))
+        .map_err(invalid)?;
+    if check != "ok" {
+        return Err(invalid("SQLite integrity check failed"));
+    }
+    let mut foreign = db.prepare("PRAGMA foreign_key_check").map_err(invalid)?;
+    if foreign
+        .query([])
+        .map_err(invalid)?
+        .next()
+        .map_err(invalid)?
+        .is_some()
+    {
+        return Err(invalid("ledger contains foreign-key violations"));
+    }
+    // History provenance is not physical-schema proof. Validate the direct read contract.
+    for (table, required) in [
+        (
+            "accounts",
+            &[
+                ("id", "INTEGER", 0, 1),
+                ("account_no", "TEXT", 1, 0),
+                ("name", "TEXT", 1, 0),
+                ("type", "TEXT", 1, 0),
+                ("normal_balance", "TEXT", 1, 0),
+            ][..],
+        ),
+        (
+            "journal_entries",
+            &[("id", "INTEGER", 0, 1), ("transaction_date", "TEXT", 1, 0)][..],
+        ),
+        (
+            "journal_lines",
+            &[
+                ("id", "INTEGER", 0, 1),
+                ("journal_entry_id", "INTEGER", 1, 0),
+                ("account_id", "INTEGER", 1, 0),
+                ("debit_amount", "NUMERIC", 1, 0),
+                ("credit_amount", "NUMERIC", 1, 0),
+            ][..],
+        ),
+    ] {
+        let kind: String = db
+            .query_row(
+                "SELECT type FROM sqlite_schema WHERE name=?1",
+                [table],
+                |r| r.get(0),
+            )
+            .map_err(invalid)?;
+        if kind != "table" {
+            return Err(Error::new(
+                "unsupported_schema",
+                "required report source must be a table",
+            ));
+        }
+        let mut q = db
+            .prepare(&format!("PRAGMA table_info({table})"))
+            .map_err(invalid)?;
+        let cols = q
+            .query_map([], |r| {
+                Ok((
+                    r.get::<_, String>(1)?,
+                    r.get::<_, String>(2)?.to_ascii_uppercase(),
+                    r.get::<_, i64>(3)?,
+                    r.get::<_, i64>(5)?,
+                ))
+            })
+            .map_err(invalid)?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(invalid)?;
+        if required.iter().any(|(name, kind, notnull, pk)| {
+            !cols
+                .iter()
+                .any(|c| c.0 == *name && c.1 == *kind && c.2 == *notnull && c.3 == *pk)
+        }) {
+            return Err(Error::new(
+                "unsupported_schema",
+                "required report column metadata differs",
+            ));
+        }
+    }
+    for (table, required) in [
+        (
+            "journal_lines",
+            &[
+                ("journal_entry_id", "journal_entries", "id"),
+                ("account_id", "accounts", "id"),
+            ][..],
+        ),
+        (
+            "journal_entries",
+            &[
+                ("document_id", "documents", "id"),
+                ("source_bank_transaction_id", "bank_transactions", "id"),
+            ][..],
+        ),
+    ] {
+        let mut q = db
+            .prepare(&format!("PRAGMA foreign_key_list({table})"))
+            .map_err(invalid)?;
+        let refs = q
+            .query_map([], |r| {
+                Ok((
+                    r.get::<_, String>(3)?,
+                    r.get::<_, String>(2)?,
+                    r.get::<_, String>(4)?,
+                ))
+            })
+            .map_err(invalid)?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(invalid)?;
+        if required.iter().any(|(from, to, col)| {
+            !refs
+                .iter()
+                .any(|r| r.0 == *from && r.1 == *to && r.2 == *col)
+        }) {
+            return Err(Error::new(
+                "unsupported_schema",
+                "required report foreign-key metadata differs",
+            ));
+        }
+    }
+    let mut q = db
+        .prepare("SELECT name FROM pragma_index_list('accounts') WHERE [unique]=1 AND partial=0")
+        .map_err(invalid)?;
+    let indexes = q
+        .query_map([], |r| r.get::<_, String>(0))
+        .map_err(invalid)?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(invalid)?;
+    let mut unique_account = false;
+    for name in indexes {
+        let mut q = db
+            .prepare("SELECT name FROM pragma_index_info(?1) ORDER BY seqno")
+            .map_err(invalid)?;
+        let cols = q
+            .query_map([name], |r| r.get::<_, String>(0))
+            .map_err(invalid)?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(invalid)?;
+        if cols == ["account_no"] {
+            unique_account = true;
+        }
+    }
+    if !unique_account {
+        return Err(Error::new(
+            "unsupported_schema",
+            "unique account-number constraint is required",
+        ));
+    }
+
+    Ok(())
+}
+fn safe_entry_id(id: i64) -> Result<i64, Error> {
+    if id.unsigned_abs() > 9_007_199_254_740_991 {
+        return Err(invalid(
+            "unsupported legacy journal entry identifier precision",
+        ));
+    }
+    Ok(id)
+}
+fn legacy_money(value: ValueRef<'_>) -> Result<Money, Error> {
+    let value = match value {
+        ValueRef::Integer(n) if n.unsigned_abs() <= 9_007_199_254_740_991 => n as f64,
+        ValueRef::Real(n) if n.is_finite() => n,
+        _ => return Err(invalid("unsupported legacy amount storage or precision")),
+    };
+    if value < 0.0 {
+        return Err(invalid("negative ledger debit/credit amount"));
+    }
+    Money::parse(ryu_js::Buffer::new().format_finite(value)).map_err(invalid)
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn physical_schema_and_safe_identity_are_required() {
+        assert!(safe_entry_id(9_007_199_254_740_993).is_err());
+        for drift in ["wrong-type", "missing-foreign-key"] {
+            let db = Connection::open_in_memory().unwrap();
+            db.execute_batch("CREATE TABLE schema_migrations(id INTEGER,name TEXT,checksum TEXT); CREATE TABLE accounts(id INTEGER PRIMARY KEY,account_no TEXT NOT NULL UNIQUE,name TEXT NOT NULL,type TEXT NOT NULL,normal_balance TEXT NOT NULL); CREATE TABLE journal_entries(id INTEGER PRIMARY KEY,transaction_date TEXT NOT NULL); CREATE TABLE journal_lines(id INTEGER PRIMARY KEY,journal_entry_id INTEGER NOT NULL,account_id INTEGER NOT NULL,debit_amount NUMERIC NOT NULL,credit_amount NUMERIC NOT NULL);").unwrap();
+            let expected: Vec<Migration> =
+                serde_json::from_str(include_str!("legacy-schema.json")).unwrap();
+            for m in expected {
+                db.execute(
+                    "INSERT INTO schema_migrations VALUES (?1,?2,?3)",
+                    rusqlite::params![m.id, m.name, m.checksum],
+                )
+                .unwrap();
+            }
+            if drift == "wrong-type" {
+                db.execute_batch("DROP TABLE journal_lines;CREATE TABLE journal_lines(id TEXT,journal_entry_id TEXT,account_id TEXT,debit_amount TEXT,credit_amount TEXT);").unwrap();
+            }
+            db.execute("INSERT INTO journal_lines VALUES (1,1,999,1,0)", [])
+                .unwrap();
+            assert_eq!(
+                validate(&db).unwrap_err().code,
+                "unsupported_schema",
+                "{drift}"
+            );
+        }
+    }
+    #[test]
+    fn sql_number_conversion_does_not_round_twice() {
+        for (n, amount) in [
+            (1.0049999999999997, "1.00"),
+            (0.004999999999999999, "0.00"),
+            (999999999999.9949, "999999999999.99"),
+            (1.005, "1.01"),
+        ] {
+            assert_eq!(legacy_money(ValueRef::Real(n)).unwrap().decimal(), amount);
+        }
+        for value in [
+            ValueRef::Real(f64::INFINITY),
+            ValueRef::Real(f64::NAN),
+            ValueRef::Real(-1.0),
+            ValueRef::Integer(9_007_199_254_740_993),
+            ValueRef::Text(b"1.00"),
+            ValueRef::Null,
+        ] {
+            assert!(legacy_money(value).is_err());
+        }
+    }
+}

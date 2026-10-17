@@ -1,0 +1,13 @@
+[package]
+name = "rentemester-engine"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+num-bigint = "0.5"
+serde.workspace = true
+
+[lints]
+workspace = true

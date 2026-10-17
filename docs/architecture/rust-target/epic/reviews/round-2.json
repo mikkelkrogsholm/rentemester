@@ -1,0 +1,12 @@
+{
+  "round": 2,
+  "plan_sha256": "52bf54c823e9e6739fbdd4f43b80e9b16e7ed412d4ea4909dc1a79c9bedb6f81",
+  "integration_review": "No remaining material findings within reviewed scope; actual changed contracts and all 55 dependency IDs checked.",
+  "product_review": "All seven product findings resolved; one publication finding: inline all named journey definitions in the actual GitHub bodies.",
+  "publication_finding": {
+    "id": "P8",
+    "severity": "medium",
+    "resolution": "Renderer now includes J01\u2013J07 in epic and each owning child issue.",
+    "status": "fixed-and-re-reviewed-in-round-3"
+  }
+}

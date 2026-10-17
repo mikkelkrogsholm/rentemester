@@ -1,0 +1,8 @@
+{
+  "format": "rentemester-source-coverage/1",
+  "files": 680,
+  "core_files": 253,
+  "unmapped_core_files": [],
+  "scope": "Module-level initial planning traceability only; not a complete operation inventory or implementation evidence. R01 owns public behavior and baseline drift.",
+  "all_owners_exist": true
+}

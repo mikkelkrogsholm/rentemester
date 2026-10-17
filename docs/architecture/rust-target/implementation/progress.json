@@ -1,0 +1,22 @@
+{
+  "goal": "Complete epic #672, unchanged",
+  "branch": "codex/rust-platform",
+  "current_increment": "rust-readonly-1",
+  "code_revision": "sha256:9bfda4453edcc03d768f660da823107622b29a4637fa9b22fa94546e26800aae",
+  "spec_revision": "sha256:2da7e799a99c7bfe1c66cc50a8acefb375e9d4dacf5945f9fafcc9ff1c7cb166",
+  "state": "verified-experimental-readonly",
+  "issues_closed": [],
+  "next": [
+    "R01: per-operation contract/error/retry/domain/fixture coverage beyond draft registry inventory",
+    "R02/R03: refine only next actual implementation scope; do not treat broad sketch as ready",
+    "Continue reviewed dependency graph into durable owner/auth/posting foundation and remaining product scope"
+  ],
+  "preserve_unrelated_paths": [
+    ".claude/settings.json",
+    ".codex/hooks.json",
+    "AGENTS.md",
+    "docs/graphify.md",
+    ".gitattributes"
+  ],
+  "all_goal_requirements_complete": false
+}

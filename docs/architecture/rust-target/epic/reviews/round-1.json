@@ -1,0 +1,161 @@
+{
+  "round": 1,
+  "base_plan_sha256": "6ff25b663303ac645d14205ad6ab15d1a82cd0a05ad59f1946ac88d938292338",
+  "result_plan_sha256": "1f76b576f7e232d584e9f0b4fbd34ad3bde2b672b6d1537b692f8381ea6b897a",
+  "reviewers": [
+    "integration-review (native read-only agent)",
+    "virksomhedsejer-review (native read-only agent)",
+    "main-agent DAG/source review"
+  ],
+  "findings": [
+    {
+      "id": "I1",
+      "severity": "high",
+      "issues": [
+        "R03",
+        "R04",
+        "R33",
+        "R54"
+      ],
+      "finding": "Stable accounting identity/replay scopes across credential migration",
+      "resolution": "Added exact preservation/mapping contract and lost-reply transfer/re-enrollment scenarios.",
+      "status": "fixed-pending-re-review"
+    },
+    {
+      "id": "I2",
+      "severity": "high",
+      "issues": [
+        "R04",
+        "R35",
+        "R41",
+        "R54"
+      ],
+      "finding": "Authority of queued effects after revoke/cancel",
+      "resolution": "Added execution/lease/dispatch ordering and crash/restore fencing cases.",
+      "status": "fixed-pending-re-review"
+    },
+    {
+      "id": "I3",
+      "severity": "medium",
+      "issues": [
+        "R05",
+        "R43",
+        "R50"
+      ],
+      "finding": "Overgeneralized original-key recovery",
+      "resolution": "Added per-operation retry matrix and conditional client key/read-back handling.",
+      "status": "fixed-pending-re-review"
+    },
+    {
+      "id": "I4",
+      "severity": "medium",
+      "issues": [
+        "R01",
+        "R05",
+        "R44",
+        "R45"
+      ],
+      "finding": "Distinct per-operation interface schemas",
+      "resolution": "Added explicit input/result/error/casing/streams/SDK matrix and versioned changes.",
+      "status": "fixed-pending-re-review"
+    },
+    {
+      "id": "P1",
+      "severity": "high",
+      "issues": [
+        "R47",
+        "R49",
+        "R51"
+      ],
+      "finding": "Incomplete owner onboarding",
+      "resolution": "Added J01/J02 complete new/imported VAT/non-VAT/shifted-year journeys.",
+      "status": "fixed-pending-re-review"
+    },
+    {
+      "id": "P2",
+      "severity": "high",
+      "issues": [
+        "R35",
+        "R36",
+        "R47",
+        "R52"
+      ],
+      "finding": "Closed desktop automation behavior undefined",
+      "resolution": "Added local/hosted lifecycle, DST/missed occurrence and visible status requirements.",
+      "status": "fixed-pending-re-review"
+    },
+    {
+      "id": "P3",
+      "severity": "high",
+      "issues": [
+        "R17",
+        "R31",
+        "R32",
+        "R46",
+        "R48",
+        "R49"
+      ],
+      "finding": "Statutory task status unclear",
+      "resolution": "Added consistent draft/reviewed/locked/recorded versus actual submission and next actions.",
+      "status": "fixed-pending-re-review"
+    },
+    {
+      "id": "P4",
+      "severity": "medium",
+      "issues": [
+        "R33",
+        "R48",
+        "R49",
+        "R54",
+        "R55"
+      ],
+      "finding": "Owner cannot find/perform recovery",
+      "resolution": "Added J05 lost-device off-device backup/fresh-target recovery and operator handoff.",
+      "status": "fixed-pending-re-review"
+    },
+    {
+      "id": "P5",
+      "severity": "medium",
+      "issues": [
+        "R50",
+        "R54",
+        "R55"
+      ],
+      "finding": "Transfer owner/source handoff unclear",
+      "resolution": "Added J06 destination visibility and durable moved-source fencing.",
+      "status": "fixed-pending-re-review"
+    },
+    {
+      "id": "P6",
+      "severity": "medium",
+      "issues": [
+        "R49"
+      ],
+      "finding": "Generic native feature exception loophole",
+      "resolution": "Restricted named exceptions to specialist functions with explicit product decision; protected core tasks.",
+      "status": "fixed-pending-re-review"
+    },
+    {
+      "id": "P7",
+      "severity": "low",
+      "issues": [
+        "R40"
+      ],
+      "finding": "Pending bank roadmap accidentally blocks rewrite",
+      "resolution": "Classified implemented baseline vs contract prep vs pending upstream work.",
+      "status": "fixed-pending-re-review"
+    },
+    {
+      "id": "M1",
+      "severity": "medium",
+      "issues": [
+        "R46",
+        "R49"
+      ],
+      "finding": "Incomplete cross-domain completion prerequisites",
+      "resolution": "Added missing domain completion edges and explicit scaffolding-vs-completion semantics.",
+      "status": "fixed-pending-re-review"
+    }
+  ],
+  "limits": "Plan review only; no implementation behavior was executed. Raw reviewer results remain in this task conversation."
+}

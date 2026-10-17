@@ -1,0 +1,394 @@
+{
+  "RM-RUST": {
+    "number": 672,
+    "id": 5898450839,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/672",
+    "title": "EPIC: Rust-platform for Rentemester \u2014 server, web og lokal/remote GPUI-desktop",
+    "native_parent_linked": false
+  },
+  "R01": {
+    "number": 673,
+    "id": 5898451086,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/673",
+    "title": "[Rust R01] Freeze the migration baseline and complete the feature/contract inventory",
+    "native_parent_linked": true
+  },
+  "R02": {
+    "number": 674,
+    "id": 5898451765,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/674",
+    "title": "[Rust R02] Specify GDD contracts, component boundaries and per-slice readiness",
+    "native_parent_linked": true
+  },
+  "R03": {
+    "number": 675,
+    "id": 5898452331,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/675",
+    "title": "[Rust R03] Define exact money, schema, audit and wire compatibility",
+    "native_parent_linked": true
+  },
+  "R04": {
+    "number": 676,
+    "id": 5898452949,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/676",
+    "title": "[Rust R04] Resolve hosted/native identity and cross-database authorization ordering",
+    "native_parent_linked": true
+  },
+  "R05": {
+    "number": 677,
+    "id": 5898453656,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/677",
+    "title": "[Rust R05] Specify versioned API, typed failures and capability negotiation",
+    "native_parent_linked": true
+  },
+  "R06": {
+    "number": 678,
+    "id": 5898454311,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/678",
+    "title": "[Rust R06] Qualify GPUI Kit, accessibility and target-platform feasibility",
+    "native_parent_linked": true
+  },
+  "R07": {
+    "number": 679,
+    "id": 5898454919,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/679",
+    "title": "[Rust R07] Bootstrap the Rust workspace, build tooling and architecture checks",
+    "native_parent_linked": true
+  },
+  "R08": {
+    "number": 680,
+    "id": 5898455488,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/680",
+    "title": "[Rust R08] Build the synthetic differential and fault-injection acceptance harness",
+    "native_parent_linked": true
+  },
+  "R09": {
+    "number": 681,
+    "id": 5898456215,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/681",
+    "title": "[Rust R09] Implement exact accounting value types and invariant evaluation",
+    "native_parent_linked": true
+  },
+  "R10": {
+    "number": 682,
+    "id": 5898456845,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/682",
+    "title": "[Rust R10] Implement a strictly read-only SQLite/workspace adapter",
+    "native_parent_linked": true
+  },
+  "R11": {
+    "number": 683,
+    "id": 5898457439,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/683",
+    "title": "[Rust R11] Deliver the first Rust vertical slice: read-only trial-balance parity",
+    "native_parent_linked": true
+  },
+  "R12": {
+    "number": 684,
+    "id": 5898458133,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/684",
+    "title": "[Rust R12] Implement workspace ownership, transactional storage and safe migrations",
+    "native_parent_linked": true
+  },
+  "R13": {
+    "number": 685,
+    "id": 5898458723,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/685",
+    "title": "[Rust R13] Port workspace/company authorization and revocation fencing",
+    "native_parent_linked": true
+  },
+  "R15": {
+    "number": 686,
+    "id": 5898459323,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/686",
+    "title": "[Rust R15] Port immutable document storage, safe ingestion and evidence access",
+    "native_parent_linked": true
+  },
+  "R14": {
+    "number": 687,
+    "id": 5898459940,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/687",
+    "title": "[Rust R14] Port atomic posting, reversal, idempotency and shared mutation gates",
+    "native_parent_linked": true
+  },
+  "R16": {
+    "number": 688,
+    "id": 5898460530,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/688",
+    "title": "[Rust R16] Port accounts, contacts, parties and supplier identity",
+    "native_parent_linked": true
+  },
+  "R17": {
+    "number": 689,
+    "id": 5898461075,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/689",
+    "title": "[Rust R17] Port VAT rules, purchase evidence, filings and reconciliations",
+    "native_parent_linked": true
+  },
+  "R35": {
+    "number": 690,
+    "id": 5898461687,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/690",
+    "title": "[Rust R35] Implement durable jobs, external effects and restart recovery",
+    "native_parent_linked": true
+  },
+  "R38": {
+    "number": 691,
+    "id": 5898462261,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/691",
+    "title": "[Rust R38] Replace PDF parsing/rendering, extraction and scanning runtime dependencies",
+    "native_parent_linked": true
+  },
+  "R18": {
+    "number": 692,
+    "id": 5898462905,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/692",
+    "title": "[Rust R18] Port invoice issuance, immutable PDFs and invoice numbering",
+    "native_parent_linked": true
+  },
+  "R21": {
+    "number": 693,
+    "id": 5898463528,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/693",
+    "title": "[Rust R21] Port canonical bank import, matching and reconciliation corrections",
+    "native_parent_linked": true
+  },
+  "R19": {
+    "number": 694,
+    "id": 5898464107,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/694",
+    "title": "[Rust R19] Port receivables, settlement, credits, FX and overdue claims",
+    "native_parent_linked": true
+  },
+  "R20": {
+    "number": 695,
+    "id": 5898464713,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/695",
+    "title": "[Rust R20] Port purchases, payables and supplier commitments",
+    "native_parent_linked": true
+  },
+  "R22": {
+    "number": 696,
+    "id": 5898465313,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/696",
+    "title": "[Rust R22] Port posting rules, exceptions and bank-based bookkeeping workbench",
+    "native_parent_linked": true
+  },
+  "R23": {
+    "number": 697,
+    "id": 5898465940,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/697",
+    "title": "[Rust R23] Port versioned drafts, batch review and exact approval/apply",
+    "native_parent_linked": true
+  },
+  "R24": {
+    "number": 698,
+    "id": 5898466621,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/698",
+    "title": "[Rust R24] Port fixed assets and depreciation",
+    "native_parent_linked": true
+  },
+  "R25": {
+    "number": 699,
+    "id": 5898467302,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/699",
+    "title": "[Rust R25] Port accruals and mileage accounting",
+    "native_parent_linked": true
+  },
+  "R26": {
+    "number": 700,
+    "id": 5898467870,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/700",
+    "title": "[Rust R26] Port period readiness, closing and opening balances",
+    "native_parent_linked": true
+  },
+  "R27": {
+    "number": 701,
+    "id": 5898468528,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/701",
+    "title": "[Rust R27] Port historical imports, provenance and migration open items",
+    "native_parent_linked": true
+  },
+  "R28": {
+    "number": 702,
+    "id": 5898469283,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/702",
+    "title": "[Rust R28] Port dimensions, budgets, commitments and CFO analytics",
+    "native_parent_linked": true
+  },
+  "R32": {
+    "number": 703,
+    "id": 5898469904,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/703",
+    "title": "[Rust R32] Port financial reports, dashboard and read projections",
+    "native_parent_linked": true
+  },
+  "R29": {
+    "number": 704,
+    "id": 5898470498,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/704",
+    "title": "[Rust R29] Port ownership graphs, intercompany and consolidation reporting",
+    "native_parent_linked": true
+  },
+  "R30": {
+    "number": 705,
+    "id": 5898471070,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/705",
+    "title": "[Rust R30] Port company knowledge, corporate records and workspace inbox",
+    "native_parent_linked": true
+  },
+  "R31": {
+    "number": 706,
+    "id": 5898471715,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/706",
+    "title": "[Rust R31] Port annual accounts, tax and statutory export formats",
+    "native_parent_linked": true
+  },
+  "R33": {
+    "number": 707,
+    "id": 5898472344,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/707",
+    "title": "[Rust R33] Port backup, restore, signatures and workspace transfer",
+    "native_parent_linked": true
+  },
+  "R34": {
+    "number": 708,
+    "id": 5898472946,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/708",
+    "title": "[Rust R34] Port retention, GDPR and versioned regulatory evidence",
+    "native_parent_linked": true
+  },
+  "R36": {
+    "number": 709,
+    "id": 5898473395,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/709",
+    "title": "[Rust R36] Port explicit email delivery and recurring invoice automation",
+    "native_parent_linked": true
+  },
+  "R37": {
+    "number": 710,
+    "id": 5898474032,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/710",
+    "title": "[Rust R37] Port bilagsmail, EML and IMAP intake",
+    "native_parent_linked": true
+  },
+  "R39": {
+    "number": 711,
+    "id": 5898474589,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/711",
+    "title": "[Rust R39] Port DigiSense, NemHandel and external reference adapters",
+    "native_parent_linked": true
+  },
+  "R41": {
+    "number": 712,
+    "id": 5898475161,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/712",
+    "title": "[Rust R41] Implement hosted identity, native login and service-principal lifecycle",
+    "native_parent_linked": true
+  },
+  "R40": {
+    "number": 713,
+    "id": 5898475605,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/713",
+    "title": "[Rust R40] Integrate the existing BYO bank roadmap through Rust adapter contracts",
+    "native_parent_linked": true
+  },
+  "R42": {
+    "number": 714,
+    "id": 5898476071,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/714",
+    "title": "[Rust R42] Implement the Rust HTTP server and operational API pipeline",
+    "native_parent_linked": true
+  },
+  "R43": {
+    "number": 715,
+    "id": 5898476575,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/715",
+    "title": "[Rust R43] Implement the Rust API client and connection-scoped caches",
+    "native_parent_linked": true
+  },
+  "R44": {
+    "number": 716,
+    "id": 5898477065,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/716",
+    "title": "[Rust R44] Port the CLI, local launcher and machine-readable contracts",
+    "native_parent_linked": true
+  },
+  "R45": {
+    "number": 717,
+    "id": 5898477650,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/717",
+    "title": "[Rust R45] Port MCP, capability discovery and agent workflow parity",
+    "native_parent_linked": true
+  },
+  "R46": {
+    "number": 718,
+    "id": 5898478160,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/718",
+    "title": "[Rust R46] Retain React cockpit parity against the Rust server",
+    "native_parent_linked": true
+  },
+  "R47": {
+    "number": 719,
+    "id": 5898478687,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/719",
+    "title": "[Rust R47] Build the GPUI local shell and managed backend lifecycle",
+    "native_parent_linked": true
+  },
+  "R48": {
+    "number": 720,
+    "id": 5898479163,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/720",
+    "title": "[Rust R48] Build GPUI read workflows, reports and evidence inspection",
+    "native_parent_linked": true
+  },
+  "R49": {
+    "number": 721,
+    "id": 5898479630,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/721",
+    "title": "[Rust R49] Build GPUI bookkeeping, review and administration workflows",
+    "native_parent_linked": true
+  },
+  "R50": {
+    "number": 722,
+    "id": 5898480129,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/722",
+    "title": "[Rust R50] Complete remote desktop login, profiles and reconnection",
+    "native_parent_linked": true
+  },
+  "R51": {
+    "number": 723,
+    "id": 5898480647,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/723",
+    "title": "[Rust R51] Verify complete cross-interface, concurrency and security parity",
+    "native_parent_linked": true
+  },
+  "R52": {
+    "number": 724,
+    "id": 5898481069,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/724",
+    "title": "[Rust R52] Package signed desktop apps and safe application updates",
+    "native_parent_linked": true
+  },
+  "R53": {
+    "number": 725,
+    "id": 5898481611,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/725",
+    "title": "[Rust R53] Package the Rust server and preserve candidate/release provenance",
+    "native_parent_linked": true
+  },
+  "R54": {
+    "number": 726,
+    "id": 5898482159,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/726",
+    "title": "[Rust R54] Rehearse fenced cutover, local/server transfer and rollback",
+    "native_parent_linked": true
+  },
+  "R55": {
+    "number": 727,
+    "id": 5898482789,
+    "url": "https://github.com/mikkelkrogsholm/rentemester/issues/727",
+    "title": "[Rust R55] Retire the TypeScript backend and complete documentation/support handover",
+    "native_parent_linked": true
+  }
+}

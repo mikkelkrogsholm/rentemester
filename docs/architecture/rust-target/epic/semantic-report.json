@@ -1,0 +1,12 @@
+{
+  "format": "rentemester-semantic-update/1",
+  "result": "PASS",
+  "sources": 58,
+  "cache_sources_saved": 58,
+  "nodes_added": 63,
+  "edges_added": 241,
+  "all_existing_nodes_and_links_preserved": true,
+  "actual_token_usage": null,
+  "ast_update": false,
+  "note": "Semantic extraction and merge only; product source was unchanged."
+}
