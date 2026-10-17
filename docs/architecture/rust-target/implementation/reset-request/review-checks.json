@@ -1,0 +1,85 @@
+{
+  "review": "reset-request-final",
+  "result": "PASS",
+  "checks": 484,
+  "requestChecks": 63,
+  "read_only": true,
+  "remaining_material_findings": [],
+  "command": "bun run scripts/rust/verify-mfa-login.ts",
+  "process_report": "/tmp/rm-request-review-process.json",
+  "stderr_report": "/tmp/rm-request-review-process.err",
+  "focused_native": {
+    "command": "cargo test --release -p rentemester-runtime recovery::tests",
+    "result": "PASS 3 tests",
+    "report": "/tmp/rm-request-review-native.txt"
+  },
+  "gdd": {
+    "result": "3 PASS",
+    "report": "/tmp/rm-request-review-readiness.json",
+    "spec_revision": "sha256:29f7c3865217b1b3d89361c5239dbc79480f1df28d4536c172027ce080917d71",
+    "matches_current_report": true,
+    "source_contract_hash_matches": true,
+    "structural_only": true
+  },
+  "reviewed_scope": [
+    "Unbiased bounded OS 24-alnum entropy and zeroizing wrappers",
+    "Explicit 32-entry/4096-byte parsed HTTP(S) origin policy, loopback Development restriction, restricted root-relative targets",
+    "Exact JS encodeURIComponent link escaping and URLSearchParams.set callback ordering, duplicates, query and fragment handling",
+    "Canonical current-user issuance with unique token collision check, one-hour overflow-safe clock, no access/MFA/credential mutation",
+    "Unknown email same unit success, unused token generation, HMAC audit, no mail and no unrelated verification cleanup; no constant-time claim",
+    "Known commit before external port with no writer held, no mail on rollback or OutcomeUnknown, opaque Committed delivery uncertainty, no automatic reissue",
+    "Stable deferred read callback shares strict completion token/user/unique-row/time rules, no consumption or false reservation",
+    "WAL/DELETE rollback/contention/commit-busy, native-issued link/source callback and completion, source swallowed mail failure and encoding oracle"
+  ],
+  "assumptions": [
+    "No real mail/network adapter was invoked; only injected synthetic ports and installed framework in-memory sender.",
+    "Internal APIs only; public acknowledgement mapping, rate/CSRF/origin admission, bounded delivery transport, durable outbox and physical handle/lifetime admission remain explicitly pending."
+  ],
+  "source_hashes_unchanged_during_final_repeat": true,
+  "sha256": {
+    "Cargo.lock": "8fcda5e982d1d55f35c8782f2fb3d9d6ec730261a69791f1959d0b0df29b6eca",
+    "crates/rentemester-runtime/Cargo.toml": "4f61fe0d7fb1da8c1fef3cce47d4ca1fba4eca883a4ae268841d9ad709f34b13",
+    "crates/rentemester-runtime/src/auth.rs": "ab1910c9d17ab452ed8086243cd42d05b2340581dcba0ae0cdccc6824f4083e1",
+    "crates/rentemester-runtime/src/recovery.rs": "ca106b46471509a4cd8d3461e21b9c0fb06c5362c3684844098c502ffb0513ad",
+    "crates/rentemester-runtime/src/lib.rs": "d714e2fe51b1b2264b3c3ce9581adaa7db54a34e22cba6398b0c13cb5e1bcc8a",
+    "crates/rentemester-storage/src/reset_request.rs": "001778840e074d2441bdd5e3fefdeb36b68090f90a75bee625c3bf13c90ae03f",
+    "crates/rentemester-storage/src/password_reset.rs": "64df3f8acfa40355711ee46fe12e8786980d57f24af218175b28841f0a7a01b7",
+    "crates/rentemester-storage/src/lib.rs": "12a96ce7bb3b5182859b9043135e768d690f97c4ebbb7fe93311dffe9392fc9a",
+    "crates/rentemester-application/src/reset_request.rs": "aa5f4a66c1476a9319a0aa2e71a0dfda5ea06f6c4a90c0a4c0910336233ed776",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "17234551f5d7c6a651cef0f4289102454925bc78615a1d3364900f898f4990bc",
+    "crates/rentemester-application/src/lib.rs": "423383c874909d24a83734b77c1bb1c707f452b55894283acee693b768b729bf",
+    "scripts/rust/reset-request-cases.ts": "5d052cdd8fe7b2da78f4f0cb32151c7c1139d3beb85c316a99162e923c225672",
+    "scripts/rust/verify-mfa-login.ts": "a89a57c38c9bd7426fb1b7681e0b95ae026eea03a43631887e24c1245ec73d33",
+    "docs/architecture/rust-target/implementation/reset-request/CONTRACT.md": "f41601da0907c51e7b21dfe42747c206083dc8aa5c3a9ffe0966a724634a7d87",
+    "docs/architecture/rust-target/implementation/reset-request/gdd.json": "5f45b132dbe357915ce1ff2490fb7fdaf64afc8eb715ddd1deb026d0bbbffa8e",
+    "docs/architecture/rust-target/implementation/reset-request/readiness.json": "91623b83a78fdfdf61c6a70e7b0cec344270a47b490ef10f4996599bde40dc67",
+    "docs/architecture/rust-target/implementation/README.md": "b1bd7998cc6aded52343e6ec7273c6a553d843ce25acaccbcf5ebda9036dc764"
+  },
+  "previous_sha256_before_report_metadata_fix": {
+    "Cargo.lock": "8fcda5e982d1d55f35c8782f2fb3d9d6ec730261a69791f1959d0b0df29b6eca",
+    "crates/rentemester-runtime/Cargo.toml": "4f61fe0d7fb1da8c1fef3cce47d4ca1fba4eca883a4ae268841d9ad709f34b13",
+    "crates/rentemester-runtime/src/auth.rs": "ab1910c9d17ab452ed8086243cd42d05b2340581dcba0ae0cdccc6824f4083e1",
+    "crates/rentemester-runtime/src/recovery.rs": "ca106b46471509a4cd8d3461e21b9c0fb06c5362c3684844098c502ffb0513ad",
+    "crates/rentemester-runtime/src/lib.rs": "d714e2fe51b1b2264b3c3ce9581adaa7db54a34e22cba6398b0c13cb5e1bcc8a",
+    "crates/rentemester-storage/src/reset_request.rs": "001778840e074d2441bdd5e3fefdeb36b68090f90a75bee625c3bf13c90ae03f",
+    "crates/rentemester-storage/src/password_reset.rs": "64df3f8acfa40355711ee46fe12e8786980d57f24af218175b28841f0a7a01b7",
+    "crates/rentemester-storage/src/lib.rs": "12a96ce7bb3b5182859b9043135e768d690f97c4ebbb7fe93311dffe9392fc9a",
+    "crates/rentemester-application/src/reset_request.rs": "aa5f4a66c1476a9319a0aa2e71a0dfda5ea06f6c4a90c0a4c0910336233ed776",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "17234551f5d7c6a651cef0f4289102454925bc78615a1d3364900f898f4990bc",
+    "crates/rentemester-application/src/lib.rs": "423383c874909d24a83734b77c1bb1c707f452b55894283acee693b768b729bf",
+    "scripts/rust/reset-request-cases.ts": "5d052cdd8fe7b2da78f4f0cb32151c7c1139d3beb85c316a99162e923c225672",
+    "scripts/rust/verify-mfa-login.ts": "8680895ca0485fd68795e5933554d8e4727056f87fc7f25cb2bf44ebb589ade4",
+    "docs/architecture/rust-target/implementation/reset-request/CONTRACT.md": "f41601da0907c51e7b21dfe42747c206083dc8aa5c3a9ffe0966a724634a7d87",
+    "docs/architecture/rust-target/implementation/reset-request/gdd.json": "5f45b132dbe357915ce1ff2490fb7fdaf64afc8eb715ddd1deb026d0bbbffa8e",
+    "docs/architecture/rust-target/implementation/reset-request/readiness.json": "91623b83a78fdfdf61c6a70e7b0cec344270a47b490ef10f4996599bde40dc67",
+    "docs/architecture/rust-target/implementation/README.md": "b1bd7998cc6aded52343e6ec7273c6a553d843ce25acaccbcf5ebda9036dc764"
+  },
+  "final_descriptive_metadata_repeat": {
+    "result": "PASS",
+    "checks": 484,
+    "requestChecks": 63,
+    "verified_diff": "Only report.scope and first limits string changed; reversing those two exact strings reproduces prior reviewed main-harness SHA256. Other 16 scoped file hashes unchanged.",
+    "process_report": "/tmp/rm-request-review-process.json",
+    "native_and_gdd_not_rerun": "unchanged source/docs; previous independent native3 and GDD3 PASS retained"
+  }
+}

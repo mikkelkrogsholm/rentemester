@@ -2,6 +2,7 @@
 pub mod auth;
 pub mod mfa;
 pub mod password;
+pub mod recovery;
 use std::path::Path;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

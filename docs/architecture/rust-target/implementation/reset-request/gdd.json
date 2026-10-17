@@ -1,0 +1,337 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native reset request, post-commit mail and callback",
+    "goal": "Commit source-compatible reset issuance before sensitive mail handoff and offer non-consuming current-link redirect preview",
+    "scope": "R04/R41 internal recovery chain; public acknowledgement/HTTP mail adapter/physical lifetime remain gated"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native credential use-case orchestration",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Atomic recovery issuance/audit, known-commit unlocked mail handoff and stable read-only callback preview",
+        "rationale": "Recovery needs the complete internal request/link/preview/completion sequence and truthful external-effect failure states",
+        "excludes": [
+          "Public origin/rate/acknowledgement mapping, concrete network mail adapter, outbox/guaranteed delivery, actual physical handle/lifetime and full provider identity"
+        ]
+      },
+      "interfaces": [
+        "action.reset_request",
+        "action.reset_callback"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Known request commits a one-hour source-format link and audit before unlocked mail; unknown identity acknowledges without mail; valid preview returns allowed source-compatible redirect without consumption",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic admitted control, injected clock/URL/mail dependencies",
+        "when": "Request recovery and preview links through independent native/source processes",
+        "then": "Known request commits a one-hour source-format link and audit before unlocked mail; unknown identity acknowledges without mail; valid preview returns allowed source-compatible redirect without consumption"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Unready control, disabled mail, invalid email/URL/config/clock or ambiguous current link refuses without external mail or authority grant",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic admitted control, injected clock/URL/mail dependencies",
+        "when": "Request recovery and preview links through independent native/source processes",
+        "then": "Unready control, disabled mail, invalid email/URL/config/clock or ambiguous current link refuses without external mail or authority grant"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Confirmed rollback restores issuance/audit; commit uncertainty withholds mail and retires handle; post-commit mail failure reports Committed and preserves possibly delivered link",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic admitted control, injected clock/URL/mail dependencies",
+        "when": "Request recovery and preview links through independent native/source processes",
+        "then": "Confirmed rollback restores issuance/audit; commit uncertainty withholds mail and retires handle; post-commit mail failure reports Committed and preserves possibly delivered link"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "No account-existence bearer output, no false delivery/rollback claim and no unrelated cleanup; strict preview shares completion rules and explicit native URL/source corrections",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic admitted control, injected clock/URL/mail dependencies",
+        "when": "Request recovery and preview links through independent native/source processes",
+        "then": "No account-existence bearer output, no false delivery/rollback claim and no unrelated cleanup; strict preview shares completion rules and explicit native URL/source corrections"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "One writer serializes issuance, mail runs after commit without writer, and preview never reserves a link against later consumption",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic admitted control, injected clock/URL/mail dependencies",
+        "when": "Request recovery and preview links through independent native/source processes",
+        "then": "One writer serializes issuance, mail runs after commit without writer, and preview never reserves a link against later consumption"
+      }
+    },
+    "action.reset_request": {
+      "kind": "action",
+      "description": "Issue a recovery link with confidential audit and post-commit mail handoff",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "canonicalizable_email_and_optional_redirect": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "admitted_control_clock_hmac_url_policy_and_bounded_sender": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "NotCommitted for pre-commit refusal; OutcomeUnknown on commit error without mail; Committed/auth_delivery_unconfirmed after successful issuance but uncertain external handoff"
+        },
+        "preconditions": [
+          "Caller owns actual control/workspace lifetime and injected secret/clock/origin allowlist; sender is configured and bounded",
+          "Future public mapper conceals account existence and committed-delivery details; no raw request host or authority claims"
+        ],
+        "postconditions": [
+          "Issuance and attempted audit atomically commit before any mail, with no transaction held at send",
+          "Known/unknown unit output has no bearer/existence field; explicit failure stage preserves truthful database and external-effect state"
+        ],
+        "external_effects": [
+          "Known user reset row and confidential attempted canonical telemetry/workspace audit",
+          "Only after known commit, injected mail port receives sensitive recipient/token/action URL; no new token retry or guaranteed delivery"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Separate durable issuance from external delivery. No send before known commit; Committed delivery uncertainty is never rollback and must be concealed in public acknowledgement. Parsed allowlisted URLs and HMAC audit prevent redirect and secret disclosure.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Separate durable issuance from external delivery. No send before known commit; Committed delivery uncertainty is never rollback and must be concealed in public acknowledgement. Parsed allowlisted URLs and HMAC audit prevent redirect and secret disclosure.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Separate durable issuance from external delivery. No send before known commit; Committed delivery uncertainty is never rollback and must be concealed in public acknowledgement. Parsed allowlisted URLs and HMAC audit prevent redirect and secret disclosure.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Separate durable issuance from external delivery. No send before known commit; Committed delivery uncertainty is never rollback and must be concealed in public acknowledgement. Parsed allowlisted URLs and HMAC audit prevent redirect and secret disclosure.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Separate durable issuance from external delivery. No send before known commit; Committed delivery uncertainty is never rollback and must be concealed in public acknowledgement. Parsed allowlisted URLs and HMAC audit prevent redirect and secret disclosure.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Preflight/config/input, OS token, writer current-user resolution, atomic issuance/audit commit, unlocked mail or explicit committed uncertainty"
+    },
+    "action.reset_callback": {
+      "kind": "action",
+      "description": "Preview an allowed reset redirect without consuming or reserving current link",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "reset_token_and_optional_callback": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "admitted_control_trusted_clock_and_origin_policy": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "NotCommitted opaque invalid_control, invalid_redirect, connection/config/clock failure; missing/expired token instead returns INVALID_TOKEN redirect"
+        },
+        "preconditions": [
+          "Caller owns actual control/workspace lifetime and injected secret/clock/origin allowlist; sender is configured and bounded",
+          "Future public mapper conceals account existence and committed-delivery details; no raw request host or authority claims"
+        ],
+        "postconditions": [
+          "No database writes, mail, consumption or reservation; strict current row rules match completion",
+          "Only allowed destination and current validity determine sensitive redirect after successful read end"
+        ],
+        "external_effects": [],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Separate durable issuance from external delivery. No send before known commit; Committed delivery uncertainty is never rollback and must be concealed in public acknowledgement. Parsed allowlisted URLs and HMAC audit prevent redirect and secret disclosure.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Separate durable issuance from external delivery. No send before known commit; Committed delivery uncertainty is never rollback and must be concealed in public acknowledgement. Parsed allowlisted URLs and HMAC audit prevent redirect and secret disclosure.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Separate durable issuance from external delivery. No send before known commit; Committed delivery uncertainty is never rollback and must be concealed in public acknowledgement. Parsed allowlisted URLs and HMAC audit prevent redirect and secret disclosure.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Separate durable issuance from external delivery. No send before known commit; Committed delivery uncertainty is never rollback and must be concealed in public acknowledgement. Parsed allowlisted URLs and HMAC audit prevent redirect and secret disclosure.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Separate durable issuance from external delivery. No send before known commit; Committed delivery uncertainty is never rollback and must be concealed in public acknowledgement. Parsed allowlisted URLs and HMAC audit prevent redirect and secret disclosure.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Preflight destination policy, stable read/current strict token rules, end snapshot and return sensitive redirect"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.reset_request",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.reset_request",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.reset_request",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.reset_request",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.reset_request",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.reset_request",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.callback_owner",
+      "from": "action.reset_callback",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.callback_normal",
+      "from": "scenario.normal",
+      "to": "action.reset_callback",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.callback_refusal",
+      "from": "scenario.refusal",
+      "to": "action.reset_callback",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.callback_preservation",
+      "from": "scenario.preservation",
+      "to": "action.reset_callback",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.callback_correction",
+      "from": "scenario.correction",
+      "to": "action.reset_callback",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.callback_concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.reset_callback",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native reset request, post-commit mail and callback",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "f41601da0907c51e7b21dfe42747c206083dc8aa5c3a9ffe0966a724634a7d87"
+      }
+    }
+  }
+}

@@ -19,6 +19,7 @@ base64 = "0.22.1"
 hmac = "0.12.1"
 sha2 = "0.10"
 percent-encoding = "2.3"
+url = "=2.5.8"
 
 [target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]
 rustix = { version = "1.1.5", features = ["fs"] }

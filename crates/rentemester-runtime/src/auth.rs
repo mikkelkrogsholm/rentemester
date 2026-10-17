@@ -312,6 +312,37 @@ pub fn new_token() -> Result<OpaqueToken, AuthError> {
 pub fn new_challenge_token() -> Result<OpaqueToken, AuthError> {
     random_token("2fa-")
 }
+/// Source-compatible 24-character recovery bearer with unbiased OS randomness.
+pub fn new_reset_token() -> Result<OpaqueToken, AuthError> {
+    const ALPHABET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let mut value = Zeroizing::new(String::with_capacity(24));
+    let mut entropy = Zeroizing::new([0u8; 32]);
+    for _ in 0..8 {
+        getrandom::fill(&mut *entropy).map_err(|_| AuthError::CryptoUnavailable)?;
+        for b in entropy.iter().copied().filter(|b| *b < 248) {
+            value.push(ALPHABET[usize::from(b % 62)] as char);
+            if value.len() == 24 {
+                return Ok(OpaqueToken(value));
+            }
+        }
+    }
+    Err(AuthError::CryptoUnavailable)
+}
+impl CookieVerifier {
+    /// Canonical identity is supplied by the validated use case, never stored as plaintext audit.
+    pub fn audit_identity_hash(&self, canonical_identity: &str) -> Result<String, AuthError> {
+        let mut mac = Hmac::<Sha256>::new_from_slice(self.key.as_bytes())
+            .map_err(|_| AuthError::InvalidConfig)?;
+        mac.update(b"rentemester-auth-audit-v1\0");
+        mac.update(canonical_identity.as_bytes());
+        Ok(mac
+            .finalize()
+            .into_bytes()
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect())
+    }
+}
 fn random_token(prefix: &str) -> Result<OpaqueToken, AuthError> {
     let mut entropy = Zeroizing::new([0u8; 32]);
     getrandom::fill(&mut *entropy).map_err(|_| AuthError::CryptoUnavailable)?;

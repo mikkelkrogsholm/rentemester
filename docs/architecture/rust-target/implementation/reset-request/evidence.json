@@ -1,0 +1,83 @@
+{
+  "increment": "reset-request-1",
+  "code_revision": "sha256:b4fd6b366b09f9acb67da7c850d1ff016c96b3fe152975c60699b629a1f0ab49",
+  "spec_revision": "sha256:29f7c3865217b1b3d89361c5239dbc79480f1df28d4536c172027ce080917d71",
+  "state": "verified-native-reset-issuance-postcommit-mail-and-callback",
+  "checks": {
+    "native_tests_passed": 93,
+    "ignored_subprocess_helpers": 19,
+    "integration_checks": 11547,
+    "mfa_and_identity_process_checks": 484,
+    "new_distinct_request_process_cases": 63,
+    "independent_final_harness_repetitions": 1,
+    "strict_fmt_clippy_boundaries_typecheck_lint": "PASS"
+  },
+  "claims": [
+    "Native source-format24-alnum OS-random reset issuance and one-hour current-row/audit effects commit atomically under admitted control writer",
+    "Injected mail port runs only after known commit without a transaction/writer; rollback/unknown commit never sends; postcommit mail uncertainty explicitly reports Committed",
+    "Known/unknown normal unit output excludes bearers/existence; unknown sends nothing or inserts no link and never globally cleans unrelated verification rows; public internal-state concealment remains required",
+    "HMAC identity audit uses existing source domain/key string bytes, fixed attempted telemetry and one trusted clock; access/email/MFA/session/provider state is unchanged",
+    "Pinned parsed URL origin policy, source encodeURIComponent mail links, loopback development and URLSearchParams query positioning support actual source interop",
+    "Stable readonly preview reuses completion strict unique current token/existing-user/timestamp/lifetime/expiry rules without consumption/reservation",
+    "Actual source callback and completion accept native-issued links; installed source swallowed mail error is observed and treated as explicit native correction",
+    "Independent WAL/DELETE processes qualify postcommit visibility/unlocked mail, contention, complete late rollback and real no-mail commit-busy"
+  ],
+  "limits": [
+    "No concrete Rust HTTP mail transport/deadline/retry implementation, durable outbox/guaranteed delivery or production email",
+    "Internal Committed delivery error must never be exposed as an account-existence public status; HTTP acknowledgement/CSRF/rate/bounded dispatch remains pending",
+    "No constant-time/constant-I/O email existence privacy claim; sender success is handoff only and a link can be consumed before actual delivery",
+    "HTTPS/loopback-development URL restrictions, strict callback duplicate/expiry/lifetime policy and no unrelated cleanup are explicit source corrections",
+    "No actual physical SQLite-handle/workspace lifetime admission, live dual writers, production data adoption, full identity/provider/trusted-device revocation, distribution or cutover",
+    "Semantic Graphify refresh covers current implementation README/CONTRACT; generated JSON/logs/historical/unrelated sources are not claimed refreshed"
+  ],
+  "validation_metadata_delta": {
+    "path": "scripts/rust/verify-mfa-login.ts",
+    "full_pipeline_script_sha256": "8680895ca0485fd68795e5933554d8e4727056f87fc7f25cb2bf44ebb589ade4",
+    "final_script_sha256": "a89a57c38c9bd7426fb1b7681e0b95ae026eea03a43631887e24c1245ec73d33",
+    "only_two_descriptive_report_strings_changed": true,
+    "all_other_reviewed_sources_unchanged": true
+  },
+  "verification_mode": "One full functional-source rust:verify run; afterward only test-report scope/limits prose was corrected, with independent final484-case repetition on all final sources and three focused runtime release units",
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": {
+    "Cargo.lock": "8fcda5e982d1d55f35c8782f2fb3d9d6ec730261a69791f1959d0b0df29b6eca",
+    "crates/rentemester-application/src/lib.rs": "423383c874909d24a83734b77c1bb1c707f452b55894283acee693b768b729bf",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "17234551f5d7c6a651cef0f4289102454925bc78615a1d3364900f898f4990bc",
+    "crates/rentemester-application/src/reset_request.rs": "aa5f4a66c1476a9319a0aa2e71a0dfda5ea06f6c4a90c0a4c0910336233ed776",
+    "crates/rentemester-runtime/Cargo.toml": "4f61fe0d7fb1da8c1fef3cce47d4ca1fba4eca883a4ae268841d9ad709f34b13",
+    "crates/rentemester-runtime/src/auth.rs": "ab1910c9d17ab452ed8086243cd42d05b2340581dcba0ae0cdccc6824f4083e1",
+    "crates/rentemester-runtime/src/lib.rs": "d714e2fe51b1b2264b3c3ce9581adaa7db54a34e22cba6398b0c13cb5e1bcc8a",
+    "crates/rentemester-runtime/src/recovery.rs": "ca106b46471509a4cd8d3461e21b9c0fb06c5362c3684844098c502ffb0513ad",
+    "crates/rentemester-storage/src/lib.rs": "12a96ce7bb3b5182859b9043135e768d690f97c4ebbb7fe93311dffe9392fc9a",
+    "crates/rentemester-storage/src/password_reset.rs": "64df3f8acfa40355711ee46fe12e8786980d57f24af218175b28841f0a7a01b7",
+    "crates/rentemester-storage/src/reset_request.rs": "001778840e074d2441bdd5e3fefdeb36b68090f90a75bee625c3bf13c90ae03f",
+    "docs/architecture/rust-target/implementation/README.md": "b1bd7998cc6aded52343e6ec7273c6a553d843ce25acaccbcf5ebda9036dc764",
+    "docs/architecture/rust-target/implementation/reset-request/CONTRACT.md": "f41601da0907c51e7b21dfe42747c206083dc8aa5c3a9ffe0966a724634a7d87",
+    "docs/architecture/rust-target/implementation/reset-request/gdd.json": "5f45b132dbe357915ce1ff2490fb7fdaf64afc8eb715ddd1deb026d0bbbffa8e",
+    "docs/architecture/rust-target/implementation/reset-request/readiness.json": "91623b83a78fdfdf61c6a70e7b0cec344270a47b490ef10f4996599bde40dc67",
+    "node_modules/better-auth/dist/api/middlewares/origin-check.mjs": "103714fc95928483d5f00e44a1b9782de98bbc8e3a1510257d410f681f3c2006",
+    "node_modules/better-auth/dist/api/routes/password.mjs": "a2c44c376d1aba333161d3b9cc688e1cab6522b14d895f61382f1a8e31620286",
+    "node_modules/better-auth/dist/auth/trusted-origins.mjs": "7a2670580776933a40c9c633988585245d9942994ecf9520e5c81831c52855dc",
+    "node_modules/better-auth/dist/context/create-context.mjs": "579065017c5601dedac6ad95666835307b279e8f8ae45311d74d4e336f032d7c",
+    "node_modules/better-auth/dist/db/internal-adapter.mjs": "69e3e9b76d7b310fd53c7ef0a276ab2727a97ae8df57aea8a493d673cbaf75bd",
+    "scripts/rust/reset-request-cases.ts": "5d052cdd8fe7b2da78f4f0cb32151c7c1139d3beb85c316a99162e923c225672",
+    "scripts/rust/verify-mfa-login.ts": "a89a57c38c9bd7426fb1b7681e0b95ae026eea03a43631887e24c1245ec73d33",
+    "scripts/rust/verify.ts": "6234bca4d9e5f80df53276f5cedc7021c13c5d1e677f807a0d881dc72a7aacc1",
+    "src/core/auth-audit.ts": "ee7f0d7ceb6bb2fb83f828adabcdbb41df0fe9b2a0791c70a320428cb2329559",
+    "src/core/workspace-migrations/0002-better-auth-foundation.json": "67a59795585ea55c9eefbec1be63c9a716a55ede779c89bec63c2b9f77ce80bf",
+    "src/core/workspace-migrations/0006-auth-audit-v6.json": "e19f1ee45191ef58864b204a889126fab04ce7a13ca7df2c70cb7924a9bd5274",
+    "src/core/workspace-migrations/0012-auth-recovery-telemetry-v12.json": "bb9f9dea7aed5ed09a50285019bf3f94749ed874ccdb6647d217604ce779e87a",
+    "src/server/auth-email.ts": "1d922d82d3dc4e2a9be1337c8e0f22c506510f97ce6afa4f899a771f784f25d3",
+    "src/server/better-auth.ts": "9513797eb1b1a82b0c9d592fb00e3317d6d33b6eb29c7bf0c548a0a4c58c9b73"
+  },
+  "evidence_files": {
+    "rust-verify.txt": "35a9f8aa4d3d53b3d0834af548d940bdf4cc8d97279910a24227dbe31e240f1f",
+    "review-native.txt": "d0f144ffaf49353bb8fd3dae4c537c39ba9e785fe63ef872a547a8ef823d7551",
+    "review-process.json": "9924ef716cd451884eb5def051fc65410529504b37b9619ab0b247cbf3791908",
+    "review-checks.json": "89d61d22a679e6da5b4f549920c7d3d043b1fede5097619f136180d4e49eb31c",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "c5c010213eb3e53c096e07310477d7f4fac104f2d3da3ba6a3b8f8641a865508"
+  }
+}

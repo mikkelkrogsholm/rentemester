@@ -1,0 +1,10 @@
+   Compiling rentemester-runtime v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-runtime)
+    Finished `release` profile [optimized] target(s) in 1.42s
+     Running unittests src/lib.rs (target/release/deps/rentemester_runtime-13036831fcc9a16a)
+
+running 3 tests
+test recovery::tests::configuration_is_explicit_and_http_is_loopback_development_only ... ok
+test recovery::tests::trusted_origins_and_sensitive_links_use_standard_url_boundaries ... ok
+test recovery::tests::recovery_bearers_have_source_grammar_and_no_observed_duplicate ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 27 filtered out; finished in 0.00s

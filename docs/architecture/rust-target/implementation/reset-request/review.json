@@ -1,0 +1,40 @@
+{
+  "scope": "Independent read-only native reset issuance, post-commit sensitive mail port and non-consuming callback",
+  "verdict": "No remaining material scoped findings",
+  "evidence": {
+    "native_focused_tests": 3,
+    "process_checks": 484,
+    "request_process_cases": 63,
+    "independent_final_harness_repetitions": 1,
+    "reviewed_source_sha256": {
+      "Cargo.lock": "8fcda5e982d1d55f35c8782f2fb3d9d6ec730261a69791f1959d0b0df29b6eca",
+      "crates/rentemester-runtime/Cargo.toml": "4f61fe0d7fb1da8c1fef3cce47d4ca1fba4eca883a4ae268841d9ad709f34b13",
+      "crates/rentemester-runtime/src/auth.rs": "ab1910c9d17ab452ed8086243cd42d05b2340581dcba0ae0cdccc6824f4083e1",
+      "crates/rentemester-runtime/src/recovery.rs": "ca106b46471509a4cd8d3461e21b9c0fb06c5362c3684844098c502ffb0513ad",
+      "crates/rentemester-runtime/src/lib.rs": "d714e2fe51b1b2264b3c3ce9581adaa7db54a34e22cba6398b0c13cb5e1bcc8a",
+      "crates/rentemester-storage/src/reset_request.rs": "001778840e074d2441bdd5e3fefdeb36b68090f90a75bee625c3bf13c90ae03f",
+      "crates/rentemester-storage/src/password_reset.rs": "64df3f8acfa40355711ee46fe12e8786980d57f24af218175b28841f0a7a01b7",
+      "crates/rentemester-storage/src/lib.rs": "12a96ce7bb3b5182859b9043135e768d690f97c4ebbb7fe93311dffe9392fc9a",
+      "crates/rentemester-application/src/reset_request.rs": "aa5f4a66c1476a9319a0aa2e71a0dfda5ea06f6c4a90c0a4c0910336233ed776",
+      "crates/rentemester-application/src/mfa_login/tests.rs": "17234551f5d7c6a651cef0f4289102454925bc78615a1d3364900f898f4990bc",
+      "crates/rentemester-application/src/lib.rs": "423383c874909d24a83734b77c1bb1c707f452b55894283acee693b768b729bf",
+      "scripts/rust/reset-request-cases.ts": "5d052cdd8fe7b2da78f4f0cb32151c7c1139d3beb85c316a99162e923c225672",
+      "scripts/rust/verify-mfa-login.ts": "a89a57c38c9bd7426fb1b7681e0b95ae026eea03a43631887e24c1245ec73d33",
+      "docs/architecture/rust-target/implementation/reset-request/CONTRACT.md": "f41601da0907c51e7b21dfe42747c206083dc8aa5c3a9ffe0966a724634a7d87",
+      "docs/architecture/rust-target/implementation/reset-request/gdd.json": "5f45b132dbe357915ce1ff2490fb7fdaf64afc8eb715ddd1deb026d0bbbffa8e",
+      "docs/architecture/rust-target/implementation/reset-request/readiness.json": "91623b83a78fdfdf61c6a70e7b0cec344270a47b490ef10f4996599bde40dc67",
+      "docs/architecture/rust-target/implementation/README.md": "b1bd7998cc6aded52343e6ec7273c6a553d843ce25acaccbcf5ebda9036dc764"
+    }
+  },
+  "review_loop": [
+    "Source research identified that Better Auth swallows sender rejection after persisting a link; native distinguishes committed delivery uncertainty and requires public acknowledgement concealment",
+    "Main initial actual-source HTTP callback test observed a changed full DB image; corrected oracle scope to required verification nonconsumption because HTTP middleware may write operational state. Native preview still separately proves full image preservation",
+    "Main validated explicit wildcard/config limits, shared strict current-row inspection, source URL escaping/query positioning, no-lock post-commit mail and confidential HMAC audit",
+    "Final test-report scope/limits descriptions were corrected to include request/callback/injected mail; functional Rust source and test assertions stayed unchanged. Independent final484 repetition binds the corrected metadata and all source hashes",
+    "Independent source/contract review, three runtime release units and actual scoped GDD structural validation passed without material findings"
+  ],
+  "limits": [
+    "Injected trusted bounded sender seam, no concrete Rust network adapter or durable delivery/outbox",
+    "Public acknowledgement concealment/CSRF/rate/blocking, actual physical handle/workspace lifetime, full identity/provider and platform migration/cutover remain unqualified"
+  ]
+}

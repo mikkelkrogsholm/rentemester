@@ -85,6 +85,87 @@ fn probe() {
         clock: &clock,
         audit_key_version: 1,
     };
+    if matches!(
+        request["mode"].as_str(),
+        Some("reset-request" | "reset-callback")
+    ) {
+        use rentemester_runtime::recovery::{
+            DeliveryUnconfirmed, RecoveryLinks, ResetMessage, ResetSender,
+        };
+        struct Sender {
+            enabled: bool,
+            fail: bool,
+            path: String,
+            marker: Option<String>,
+            sent: Vec<Value>,
+        }
+        impl ResetSender for Sender {
+            fn enabled(&self) -> bool {
+                self.enabled
+            }
+            fn send(&mut self, message: &ResetMessage<'_>) -> Result<(), DeliveryUnconfirmed> {
+                let other = Connection::open(&self.path).unwrap();
+                other.busy_timeout(std::time::Duration::ZERO).unwrap();
+                other
+                    .execute_batch("BEGIN IMMEDIATE;ROLLBACK")
+                    .expect("mail called while writer held");
+                self.sent.push(json!({"recipient":message.recipient(),"token":message.token(),"url":message.action_url()}));
+                if let Some(marker) = &self.marker {
+                    std::fs::write(marker, "called").unwrap();
+                }
+                if self.fail {
+                    Err(DeliveryUnconfirmed)
+                } else {
+                    Ok(())
+                }
+            }
+        }
+        let origins: Vec<&str> = request["trustedOrigins"]
+            .as_array()
+            .map(|a| a.iter().map(|v| v.as_str().unwrap()).collect())
+            .unwrap_or(vec!["https://example.invalid"]);
+        let links = match RecoveryLinks::new(
+            request["baseOrigin"]
+                .as_str()
+                .unwrap_or("https://example.invalid"),
+            &origins,
+            if request["development"] == true {
+                CookieProfile::Development
+            } else {
+                CookieProfile::Secure
+            },
+        ) {
+            Ok(l) => l,
+            Err(e) => {
+                println!(
+                    "RM_MFA_LOGIN_RESULT={}",
+                    json!({"ok":false,"code":e.code(),"stage":"NotCommitted","reusable":true,"sent":[]})
+                );
+                return;
+            }
+        };
+        let runtime = crate::reset_request::Runtime {
+            cookies: &cookies,
+            clock: &clock,
+            links: &links,
+            audit_key_version: request["auditVersion"].as_u64().unwrap_or(1),
+        };
+        let mut sender = Sender {
+            enabled: request["disabled"] != true,
+            fail: request["deliveryFail"] == true,
+            path: request["control"].as_str().unwrap().to_owned(),
+            marker: request["mailMarker"].as_str().map(str::to_owned),
+            sent: vec![],
+        };
+        let mut output = if request["mode"] == "reset-request" {
+            crate::reset_request::execute(&mut db,&runtime,&mut sender,request["email"].as_str().unwrap_or("u@example.invalid"),request["redirect"].as_str()).map(|()|json!({"ok":true})).unwrap_or_else(|f|json!({"ok":false,"code":f.error.code,"stage":format!("{:?}",f.stage),"reusable":f.connection_reusable}))
+        } else {
+            crate::reset_request::callback(&mut db,&runtime,request["token"].as_str().unwrap_or(""),request["redirect"].as_str()).map(|url|json!({"ok":true,"url":url.as_str()})).unwrap_or_else(|f|json!({"ok":false,"code":f.error.code,"stage":format!("{:?}",f.stage),"reusable":f.connection_reusable}))
+        };
+        output["sent"] = json!(sender.sent);
+        println!("RM_MFA_LOGIN_RESULT={output}");
+        return;
+    }
     let result = if request["mode"] == "password-reset" {
         let runtime = crate::password_reset::Runtime {
             clock: &clock,
