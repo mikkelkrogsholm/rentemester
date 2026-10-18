@@ -1,0 +1,219 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native password-bound HTTP MFA enrollment",
+    "goal": "Complete pre-session password-bound setup, one-time backup disclosure and retained React acknowledgement",
+    "scope": "Finite R04/R41/R42 enrollment slice; no product data opener or deployment authority"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native HTTP enrollment boundary",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Password-bound begin, known-commit confirmation and safe one-time recovery-code presentation",
+        "rationale": "Unenrolled users must configure MFA without first-factor session authority or losing the one-time disclosure",
+        "excludes": [
+          "Default workspace opener, actual writer/lifetime authority, persistent/global rate, full R41/R42"
+        ]
+      },
+      "interfaces": [
+        "action.http_enrollment"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Native WAL/DELETE enrollment begin yields pending URI only; confirmation yields exact ten codes and source-compatible browser session",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Actual Rust loopback HTTP with native synthetic control transactions and retained React component tests",
+        "when": "Begin and confirm password-bound MFA setup",
+        "then": "Native WAL/DELETE enrollment begin yields pending URI only; confirmation yields exact ten codes and source-compatible browser session"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Cross-ceremony credentials, mixed service credentials, issuer/options/duplicate JSON refuse without authority",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Actual Rust loopback HTTP with native synthetic control transactions and retained React component tests",
+        "when": "Begin and confirm password-bound MFA setup",
+        "then": "Cross-ceremony credentials, mixed service credentials, issuer/options/duplicate JSON refuse without authority"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Restart preserves account failures and invalidates old setup; success revokes old sessions before issuing fresh session; replay reveals no codes",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Actual Rust loopback HTTP with native synthetic control transactions and retained React component tests",
+        "when": "Begin and confirm password-bound MFA setup",
+        "then": "Restart preserves account failures and invalidates old setup; success revokes old sessions before issuing fresh session; replay reveals no codes"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Manual setup key and escape path are actionable; codes wait explicit acknowledgement; unknown begin/confirm are truthful without retries",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Actual Rust loopback HTTP with native synthetic control transactions and retained React component tests",
+        "when": "Begin and confirm password-bound MFA setup",
+        "then": "Manual setup key and escape path are actionable; codes wait explicit acknowledgement; unknown begin/confirm are truthful without retries"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Two below-rate HTTP confirms yield one disclosure/session; observed begin and confirm commit-busy are OutcomeUnknown without URI/codes/cookie",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Actual Rust loopback HTTP with native synthetic control transactions and retained React component tests",
+        "when": "Begin and confirm password-bound MFA setup",
+        "then": "Two below-rate HTTP confirms yield one disclosure/session; observed begin and confirm commit-busy are OutcomeUnknown without URI/codes/cookie"
+      }
+    },
+    "action.http_enrollment": {
+      "kind": "action",
+      "description": "Password-bound native HTTP enrollment and one-time UI disclosure",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "native_enrollment_HTTP_request": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "configured_origin_profile_socket_peer_admitted_executor": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Strict credential/origin/body/rate refusal; credential/code401; lock429; unknown/operational503 AUTH_UNCONFIRMED"
+        },
+        "preconditions": [
+          "Owner supplies actual socket ConnectInfo and lifetime-admitted executor with safe logging/connection retirement",
+          "No default product data opener or writer authority; existing migration/release gates remain binding"
+        ],
+        "postconditions": [
+          "Begin returns only pendingcookie/URI after known commit and never session/backup codes",
+          "Confirm returns exact ten codes plus browser session only after known commit; replay cannot redisclose",
+          "Native context isolates login and enrollment and preserves budgets across restart",
+          "React manual-key setup and escape are usable; code display waits explicit acknowledgement; uncertainty clears old form with no auto retry"
+        ],
+        "external_effects": [
+          "Trusted owner native transactions alone alter enrollment/factor/session/audit state",
+          "Intentional one-time URI/code disclosure; client keeps secrets only transiently in memory"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Require current password-bound ceremony, known commit before authority/disclosure, stage separation and safe one-time UI acknowledgement.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Require current password-bound ceremony, known commit before authority/disclosure, stage separation and safe one-time UI acknowledgement.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Require current password-bound ceremony, known commit before authority/disclosure, stage separation and safe one-time UI acknowledgement.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Require current password-bound ceremony, known commit before authority/disclosure, stage separation and safe one-time UI acknowledgement.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Require current password-bound ceremony, known commit before authority/disclosure, stage separation and safe one-time UI acknowledgement.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Strict gate, native password-bound begin and namespace-specific confirm, disclose sensitive result only after known commit and retain codes until acknowledgement"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.http_enrollment",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.http_enrollment",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.http_enrollment",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.http_enrollment",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.http_enrollment",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.http_enrollment",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native password-bound HTTP MFA enrollment",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "d2d94f0fd331d66ff8b76db4d50ef46966ab041e4fd23a5b6c272d6480f1aac5"
+      }
+    }
+  }
+}

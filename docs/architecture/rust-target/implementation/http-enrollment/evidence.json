@@ -1,0 +1,79 @@
+{
+  "increment": "http-enrollment-1",
+  "code_revision": "sha256:34ffcf1378beb5c4c89b020e0b986aa4203b81c57fb54ad9c0e71e839ed17b13",
+  "spec_revision": "sha256:861dd0922e7f36ee58f9c4e8253aac6cb51466ad684decf3c4d1a78cadbf8bf2",
+  "state": "verified-native-http-mfa-enrollment-and-one-time-ui-disclosure",
+  "checks": {
+    "native_tests_passed": 119,
+    "ignored_subprocess_helpers": 22,
+    "integration_checks": 11715,
+    "http_identity_process_checks": 82,
+    "enrollment_new_process_checks": 38,
+    "independent_http_release_tests": 25,
+    "auth_UI_tests": 32,
+    "app_typecheck": "PASS",
+    "strict_fmt_clippy_boundaries_runtime_typecheck_lint": "PASS"
+  },
+  "verification_environment": {
+    "RUST_TEST_THREADS": "2",
+    "reason": "Retain prior qualified bounded native test concurrency; no production/test invariant weakened"
+  },
+  "claims": [
+    "Optional native enrollment routes remain404 unless trusted owner supplies both admitted handlers",
+    "Password-bound begin yields only pendingcookie/URI after known commit; confirm alone yields browser session and exact ten current backup codes once",
+    "Real WAL/DELETE HTTP covers cross-ceremony separation, source crypto/URI, old-session revocation, replay, preserved restart budget, stale setup invalidation and two below-rate simultaneous confirmations with one disclosure",
+    "Private native observation proves begin/confirm real DELETE commit-busy OutcomeUnknown; public503 with no URI/codes/cookie or rollback/retry claim",
+    "Retained React requires exact409 then password reentry, offers manual-key TOTP instructions and login/restart escape, holds codes until explicit saved acknowledgement before refresh",
+    "One bare same-origin fetch per explicit setup action; uncertain begin is truthful, uncertain confirmation removes old form and offers normal login without automatic replay/redisclosure"
+  ],
+  "limits": [
+    "No default product data opener, actual physical/workspace lifetime/writer admission or deployable server/cockpit authority",
+    "Email verification, service/API-key/provider/trusted-device identity, /api/me/product context and full browser/server parity remain pending",
+    "Process-local admission/rate is not persistent/global/proxy/TLS/header/socket/shutdown qualification",
+    "Sensitive JSON/serde/HTTP/browser copies and trusted logger/panic hook are not universally zeroized or sanitized; lost disclosure needs normal TOTP login and later explicit management, not redisclosure",
+    "Existing deeper native enrollment changed-fact/lock/expiry/late-rollback checks are separate evidence, not newly exhaustive HTTP qualification",
+    "Graphify explicit AST and two Markdown semantic sources refreshed; generated logs/JSON, historical and unrelated docs are outside semantic refresh",
+    "No real-data migration, external email or production deployment; full shared Rust engine/API/CLI/MCP/GPUI/platform/distribution/cutover goal stays active"
+  ],
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": {
+    "Cargo.lock": "afa478fa68fc506f910b9085dd4d97fd03eb9cb1ca318adc87e649fa5bd6ecc4",
+    "app/src/auth-ui.test.tsx": "5c2aea385db738fe9b40e08b4fa72d641511253636cac475f3a08c233e09d2d1",
+    "app/src/lib/auth-context.tsx": "ac62f9fa617931172d3b8dd4dd2fa5e8442284d382d0238c0850f99c541228b4",
+    "app/src/lib/native-enrollment.ts": "e750e1f4a9db78641beaf254c0432cc699f25d2adc8db870f705f11c197561ad",
+    "app/src/views/LoginView.tsx": "5d4ce9947b15081af9308a92664cd15dbcc41e505cc33fc6376be02c14f11482",
+    "app/src/views/MfaEnrollmentView.tsx": "347f974fd7345f673ab0036fb1ac8d08d8fb636f56d1e0a8fc9938fe45a75cc5",
+    "crates/rentemester-application/src/mfa_enrollment.rs": "77e20c85bff346ddd893e14de9ccc9b2e929929f6f2a527be59720d631d801e0",
+    "crates/rentemester-application/src/mfa_login.rs": "283a54824efde1ee76da398e11be69a77808606f077bf0fac480e5f63d4a1e00",
+    "crates/rentemester-runtime/src/auth.rs": "0573c802064f2d48324eedadc96fb95201d6c97c685e86a6b9054c43a8d72ef8",
+    "crates/rentemester-runtime/src/mfa/enrollment.rs": "1bea43484097459c6fc105e3de4179636b4fb73bf7997851df2dbdf0ab8d1b1d",
+    "crates/rentemester-server/Cargo.toml": "82a83b21b404b2e4be1f21e5e7f01f9b6a78a202371960e2b4eb2b2a129b0379",
+    "crates/rentemester-server/src/auth_http.rs": "8aa45fc24d15c2e6d51e0057104be982697efb787c15f3e58b95b8867a8bd45e",
+    "crates/rentemester-server/src/auth_http/enrollment.rs": "fc20dc3a87d1147e9277cdbae36c076ea3818057f98c32d6a9104063dae7e28d",
+    "crates/rentemester-server/src/auth_http/tests.rs": "e0abaeeed603a2ade64e41e8fa053a61ff8f679748acef4edbf978d4fa90c7a5",
+    "crates/rentemester-server/src/lib.rs": "d21be0090f40a48c3d5641d8360bfc68e8a9bc0f50e9fe38a046e28db3f44032",
+    "crates/rentemester-storage/src/mfa_login.rs": "f48fa2510fa68f48e9a36df36e7e37c5553e8ba19ed4ad0b8f7715575d9e1b7a",
+    "docs/architecture/rust-target/implementation/README.md": "f2ee8c4b90dc09b25006828937d191d03c583126e7370781d2a06a9a178f79c6",
+    "docs/architecture/rust-target/implementation/http-enrollment/CONTRACT.md": "d2d94f0fd331d66ff8b76db4d50ef46966ab041e4fd23a5b6c272d6480f1aac5",
+    "docs/architecture/rust-target/implementation/http-enrollment/gdd.json": "63067e26a1fba95227526e6b8ed87562f8846f1c3f44bc462d0db571a9a8bf2c",
+    "docs/architecture/rust-target/implementation/http-enrollment/readiness.json": "097edf570eb4c150356bc180bb86faa9d1078d7c4003ef8eb287e50ab20beb44",
+    "node_modules/@better-auth/utils/dist/otp.mjs": "185fd7e184d588f3e6b31d095c63fe0795b7604875f65042f3105608b1fc2838",
+    "node_modules/better-auth/dist/plugins/two-factor/totp/index.mjs": "24d976f6f8e18d749ab07adc4a5836492ab8623844c354fb83d0c09596c26e3c",
+    "scripts/rust/http-enrollment-cases.ts": "64fcb6ad4134ec901784fc8d9e4ef0beb268d379ba46552b8535003a76257bd5",
+    "scripts/rust/verify-http-login.ts": "2edb88400e04e34483abaf746e90505791966887eb4aced5bad37c9304c9d6c6",
+    "scripts/rust/verify.ts": "e24e427dd98a6e881006d3e123f49daa3432002cf5378878e0677bc3473528f8",
+    "src/server/better-auth.ts": "9513797eb1b1a82b0c9d592fb00e3317d6d33b6eb29c7bf0c548a0a4c58c9b73"
+  },
+  "evidence_files": {
+    "rust-verify.txt": "4eecd98b425a461217c9b30671387948e5a778ed810e6ba53f168a5e449362d1",
+    "review-native.txt": "e6afeed468e72886a84112fe9ea4bd04aa6eb3ee56c0f9b31edc852d572ecaf3",
+    "review-process.json": "f220ae5f587203f72932e2d6dfeb650fdca5907b5050988bf29c5b75001f14cd",
+    "review-checks.json": "c1ef80127c719231bfc736d262a6478aa1fad601f2e1783b53d5e04f51da66eb",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "6191782ee23394df4df6f41d1e25ccbf9df205d25d5b7f9d8451c2445772deb0",
+    "review-ui.txt": "fca17f934a47e2f809affcb6711574a74ca292177f43ad0e4a943b2a278c7b74",
+    "ui-typecheck.txt": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+  }
+}

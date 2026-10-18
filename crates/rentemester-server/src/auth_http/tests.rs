@@ -16,9 +16,26 @@ fn probe() {
             Ok(self.0)
         }
     }
+    fn observe<T>(log: &Option<String>, operation: &str, result: &Result<T, ContinuationFailure>) {
+        if let Some(path) = log {
+            let value = match result {
+                Ok(_) => serde_json::json!({"operation":operation,"ok":true}),
+                Err(e) => {
+                    serde_json::json!({"operation":operation,"ok":false,"stage":format!("{:?}",e.stage),"code":e.error.code})
+                }
+            };
+            let mut f = std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(path)
+                .unwrap();
+            writeln!(f, "{value}").unwrap();
+        }
+    }
     let mut line = String::new();
     std::io::stdin().lock().read_line(&mut line).unwrap();
     let config: serde_json::Value = serde_json::from_str(&line).unwrap();
+    let outcome_log = config["outcomeLog"].as_str().map(str::to_owned);
     let path = config["control"].as_str().unwrap().to_owned();
     let key = config["key"].as_str().unwrap().to_owned();
     let cookies = Arc::new(CookieVerifier::new("w", CookieProfile::Development, &key).unwrap());
@@ -63,7 +80,51 @@ fn probe() {
     let session_open = open.clone();
     let logout_c = cookies.clone();
     let logout_t = clock.clone();
+    let begin_c = cookies.clone();
+    let begin_k = keys.clone();
+    let begin_t = clock.clone();
+    let begin_open = open.clone();
+    let confirm_c = cookies.clone();
+    let confirm_k = keys.clone();
+    let confirm_t = clock.clone();
+    let confirm_open = open.clone();
+    let begin_log = outcome_log.clone();
+    let confirm_log = outcome_log;
+    let enrollment = EnrollmentHandlers {
+        begin: Box::new(move |i| {
+            let result = rentemester_application::mfa_enrollment::begin(
+                &mut begin_open(),
+                &mfa_login::Runtime {
+                    cookies: &begin_c,
+                    keys: &begin_k,
+                    clock: begin_t.as_ref(),
+                    audit_key_version: 1,
+                },
+                i.email(),
+                i.password(),
+                "Rentemester",
+            );
+            observe(&begin_log, "begin", &result);
+            result
+        }),
+        confirm: Box::new(move |i| {
+            let result = rentemester_application::mfa_enrollment::confirm(
+                &mut confirm_open(),
+                &mfa_login::Runtime {
+                    cookies: &confirm_c,
+                    keys: &confirm_k,
+                    clock: confirm_t.as_ref(),
+                    audit_key_version: 1,
+                },
+                i.challenge(),
+                i.code(),
+            );
+            observe(&confirm_log, "confirm", &result);
+            result
+        }),
+    };
     let auth = AuthHandlers {
+        enrollment: Some(enrollment),
         cookies,
         sign_in: Box::new(move |i| {
             mfa_login::begin(
@@ -177,6 +238,7 @@ fn handlers(cookies: Arc<CookieVerifier>, calls: Arc<AtomicUsize>, mode: u8) -> 
     let backup = factor(cookies.clone(), calls.clone());
     let count = calls.clone();
     AuthHandlers {
+        enrollment: None,
         cookies,
         sign_in,
         totp,
@@ -242,6 +304,21 @@ fn set_cookies(r: &reqwest::Response) -> Vec<String> {
         .iter()
         .map(|v| v.to_str().unwrap().to_owned())
         .collect()
+}
+
+#[tokio::test]
+async fn enrollment_routes_require_explicit_trusted_handlers() {
+    let (o, server, calls, _) = start(0).await;
+    for path in [
+        "/api/auth/mfa-enrollment/begin",
+        "/api/auth/mfa-enrollment/confirm",
+    ] {
+        let r = post(&client(), &o, path, "{}").send().await.unwrap();
+        assert_eq!(r.status(), StatusCode::NOT_FOUND);
+        assert!(set_cookies(&r).is_empty());
+    }
+    assert_eq!(calls.load(Ordering::SeqCst), 0);
+    server.abort();
 }
 
 #[tokio::test]

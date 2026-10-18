@@ -3,12 +3,14 @@ import { FormEvent, useEffect, useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { authClient } from "../lib/auth-client";
 import { useAuth } from "../lib/auth-context";
+import { beginNativeEnrollment, confirmNativeEnrollment, NativeEnrollmentFailure } from "../lib/native-enrollment";
 
 export function LoginView() {
   const { refresh } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [needsTotp, setNeedsTotp] = useState(false);
+  const [nativeEnrollment, setNativeEnrollment] = useState(false);
   const [verificationMethod, setVerificationMethod] = useState<"totp" | "backup">("totp");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -17,6 +19,9 @@ export function LoginView() {
     event.preventDefault(); setBusy(true); setError(null);
     try {
       const result = await authClient.signIn.email({ email, password, rememberMe: false }, { retry: 0 });
+      if (result.error?.code === "MFA_ENROLLMENT_REQUIRED" && result.error.status === 409) {
+        setPassword(""); setNativeEnrollment(true); return;
+      }
       if (result.error) throw new Error("sign in failed");
       if (result.data && "twoFactorRedirect" in result.data && result.data.twoFactorRedirect) {
         setPassword("");
@@ -38,6 +43,7 @@ export function LoginView() {
     catch { setError("Koden kunne ikke bekræftes. Prøv igen."); }
     finally { setCode(""); setBusy(false); }
   };
+  if (nativeEnrollment) return <NativeEnrollmentView email={email} onLogin={() => { setNativeEnrollment(false); setNeedsTotp(false); setPassword(""); setError(null); }} />;
   return <AuthPanel title={needsTotp ? "Bekræft din kode" : "Log ind"}>
     {error && <p className="banner error" role="alert">{error}</p>}
     {needsTotp ? <form onSubmit={verify}>
@@ -47,6 +53,48 @@ export function LoginView() {
       <Button variant="secondary" className="btn secondary" type="button" disabled={busy} onClick={() => { setCode(""); setError(null); setVerificationMethod((current) => current === "totp" ? "backup" : "totp"); }}>{verificationMethod === "totp" ? "Brug recovery code" : "Brug autentifikator-kode"}</Button>
     </form>
       : <form onSubmit={submit}><label>E-mail<Input aria-label="E-mail" autoComplete="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label><label>Adgangskode<Input aria-label="Adgangskode" autoComplete="current-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label><Button className="btn" type="submit" disabled={busy}>Log ind</Button><p><Link to="/forgot-password">Glemt adgangskode?</Link></p><p><Link to="/verify-email">Send bekræftelsesmail igen</Link></p></form>}
+  </AuthPanel>;
+}
+
+function NativeEnrollmentView({ email, onLogin }: { email: string; onLogin: () => void }) {
+  const { refresh } = useAuth();
+  const [password, setPassword] = useState("");
+  const [setupKey, setSetupKey] = useState<string | null>(null);
+  const [code, setCode] = useState("");
+  const [codes, setCodes] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [unconfirmed, setUnconfirmed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const begin = async (event: FormEvent) => {
+    event.preventDefault(); setBusy(true); setError(null);
+    try { setSetupKey(await beginNativeEnrollment(email, password)); }
+    catch (error) {
+      setError(error instanceof NativeEnrollmentFailure && !error.unconfirmed
+        ? "Kunne ikke starte opsætningen. Kontrollér dine oplysninger."
+        : "Opsætningen kunne ikke bekræftes. Den kan være startet. Indtast din adgangskode for at starte igen, eller gå tilbage til login.");
+    }
+    finally { setPassword(""); setBusy(false); }
+  };
+  const confirm = async (event: FormEvent) => {
+    event.preventDefault(); setBusy(true); setError(null);
+    try { setCodes(await confirmNativeEnrollment(code)); setSetupKey(null); }
+    catch (error) {
+      if (!(error instanceof NativeEnrollmentFailure) || error.unconfirmed) {
+        setSetupKey(null); setPassword(""); setUnconfirmed(true);
+      } else setError("Koden kunne ikke bekræftes. Kontrollér koden og prøv igen.");
+    } finally { setCode(""); setBusy(false); }
+  };
+  const acknowledge = async () => {
+    setCodes([]); setBusy(true);
+    try { await refresh(); } finally { setBusy(false); onLogin(); }
+  };
+  return <AuthPanel title="Opsæt totrinsbekræftelse">
+    {error && <p role="alert" className="banner error">{error}</p>}
+    {unconfirmed ? <><p role="status">Vi kunne ikke bekræfte resultatet. Opsætningen kan være gennemført. Gå til login og brug din autentifikator-app.</p><Button type="button" onClick={onLogin}>Tilbage til login</Button></>
+      : codes.length ? <section aria-label="Recovery codes"><h3>Gem dine recovery codes</h3><p>Opsætningen er gennemført. Gem koderne sikkert nu. De vises kun denne ene gang.</p><ul>{codes.map((backup) => <li key={backup}>{backup}</li>)}</ul><Button type="button" disabled={busy} onClick={() => void acknowledge()}>Jeg har gemt koderne</Button></section>
+      : setupKey ? <form onSubmit={confirm}><p>Åbn din autentifikator-app, vælg Tilføj konto og derefter Indtast opsætningsnøgle. Vælg en tidsbaseret kode (TOTP).</p><p>Konto: {email}. Tjeneste: Rentemester.</p><label>Opsætningsnøgle<Input aria-label="Opsætningsnøgle" readOnly value={setupKey} autoComplete="off" spellCheck={false} /></label><p>Brug 6 cifre og et interval på 30 sekunder, hvis appen spørger.</p><label>Engangskode<Input aria-label="Engangskode" inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value)} required /></label><Button type="submit" disabled={busy}>Bekræft opsætning</Button><Button type="button" disabled={busy} onClick={() => { setSetupKey(null); setCode(""); setError(null); }}>Start opsætning forfra</Button></form>
+      : <form onSubmit={begin}><p>Bekræft din adgangskode for at tilføje Rentemester i din autentifikator-app.</p><label>Adgangskode<Input aria-label="Adgangskode" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label><Button type="submit" disabled={busy}>Start opsætning</Button></form>}
+    {!unconfirmed && !codes.length && <Button type="button" disabled={busy} onClick={onLogin}>Tilbage til login</Button>}
   </AuthPanel>;
 }
 

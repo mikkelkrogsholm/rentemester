@@ -85,11 +85,17 @@ enum Operation {
     Backup,
     Session,
     SignOut,
+    EnrollmentBegin,
+    EnrollmentConfirm,
 }
 impl Operation {
     fn rate(self) -> (Duration, u8) {
         match self {
-            Self::SignIn | Self::Totp | Self::Backup => (Duration::from_secs(10), 3),
+            Self::SignIn
+            | Self::Totp
+            | Self::Backup
+            | Self::EnrollmentBegin
+            | Self::EnrollmentConfirm => (Duration::from_secs(10), 3),
             Self::Request => (WINDOW, 3),
             _ => (WINDOW, 10),
         }
@@ -219,7 +225,8 @@ fn build_router(
         );
     }
     if state.auth.is_some() {
-        router = auth_http::routes(router);
+        let enrollment = state.auth.as_ref().is_some_and(|a| a.enrollment.is_some());
+        router = auth_http::routes(router, enrollment);
     }
     Ok(router.with_state(state))
 }

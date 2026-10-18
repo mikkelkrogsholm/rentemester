@@ -1,0 +1,67 @@
+{
+  "result": "PASS",
+  "reviewed_at_utc": "2026-10-18T00:58:44.797550+00:00",
+  "findings": [],
+  "checks": 82,
+  "enrollmentChecks": 38,
+  "native_tests": {
+    "passed": 25,
+    "failed": 0,
+    "ignored": 2
+  },
+  "ui_tests": {
+    "passed": 32,
+    "failed": 0
+  },
+  "app_typecheck": "PASS",
+  "gdd": {
+    "checks": 3,
+    "result": "PASS",
+    "scope": [
+      "action.http_enrollment",
+      "component.application"
+    ],
+    "spec_revision": "sha256:861dd0922e7f36ee58f9c4e8253aac6cb51466ad684decf3c4d1a78cadbf8bf2",
+    "matches_repository_report": true,
+    "contract_source_hash_matches": true
+  },
+  "evidence": {
+    "native": "/tmp/rm-enroll-review-native.txt",
+    "process": "/tmp/rm-enroll-review-process.json",
+    "process_stderr": "/tmp/rm-enroll-review-process.err",
+    "ui": "/tmp/rm-enroll-review-ui.txt",
+    "typecheck": "/tmp/rm-enroll-review-ui-typecheck.txt",
+    "readiness": "/tmp/rm-enroll-review-readiness.json"
+  },
+  "scope": [
+    "Optional password-bound enrollment HTTP routes, strict gate and outcome mappings",
+    "Native transaction result/cookie custody and enrollment/login stage isolation",
+    "Manual-key client response validation and one-time recovery-code acknowledgement",
+    "Actual loopback source/native harness including races and observed unknown commits"
+  ],
+  "limits": [
+    "Synthetic admitted handlers only; no real-data opener, lifetime admission or deployment authority qualified",
+    "Retained UI is component-tested with a mocked client; no deployed browser/native integration claimed",
+    "GDD PASS is structural, not independent behavioral proof",
+    "No full regression pipeline duplicated; main owns full-suite result",
+    "No repository files modified"
+  ],
+  "sha256": {
+    "Cargo.lock": "afa478fa68fc506f910b9085dd4d97fd03eb9cb1ca318adc87e649fa5bd6ecc4",
+    "crates/rentemester-server/Cargo.toml": "82a83b21b404b2e4be1f21e5e7f01f9b6a78a202371960e2b4eb2b2a129b0379",
+    "crates/rentemester-server/src/lib.rs": "d21be0090f40a48c3d5641d8360bfc68e8a9bc0f50e9fe38a046e28db3f44032",
+    "crates/rentemester-server/src/auth_http.rs": "8aa45fc24d15c2e6d51e0057104be982697efb787c15f3e58b95b8867a8bd45e",
+    "crates/rentemester-server/src/auth_http/tests.rs": "e0abaeeed603a2ade64e41e8fa053a61ff8f679748acef4edbf978d4fa90c7a5",
+    "crates/rentemester-server/src/auth_http/enrollment.rs": "fc20dc3a87d1147e9277cdbae36c076ea3818057f98c32d6a9104063dae7e28d",
+    "app/src/views/LoginView.tsx": "5d4ce9947b15081af9308a92664cd15dbcc41e505cc33fc6376be02c14f11482",
+    "app/src/lib/native-enrollment.ts": "e750e1f4a9db78641beaf254c0432cc699f25d2adc8db870f705f11c197561ad",
+    "app/src/auth-ui.test.tsx": "5c2aea385db738fe9b40e08b4fa72d641511253636cac475f3a08c233e09d2d1",
+    "scripts/rust/verify-http-login.ts": "2edb88400e04e34483abaf746e90505791966887eb4aced5bad37c9304c9d6c6",
+    "scripts/rust/http-enrollment-cases.ts": "64fcb6ad4134ec901784fc8d9e4ef0beb268d379ba46552b8535003a76257bd5",
+    "scripts/rust/verify.ts": "e24e427dd98a6e881006d3e123f49daa3432002cf5378878e0677bc3473528f8",
+    "docs/architecture/rust-target/implementation/README.md": "f2ee8c4b90dc09b25006828937d191d03c583126e7370781d2a06a9a178f79c6",
+    "docs/architecture/rust-target/implementation/http-enrollment/CONTRACT.md": "d2d94f0fd331d66ff8b76db4d50ef46966ab041e4fd23a5b6c272d6480f1aac5",
+    "docs/architecture/rust-target/implementation/http-enrollment/gdd.json": "63067e26a1fba95227526e6b8ed87562f8846f1c3f44bc462d0db571a9a8bf2c",
+    "docs/architecture/rust-target/implementation/http-enrollment/readiness.json": "097edf570eb4c150356bc180bb86faa9d1078d7c4003ef8eb287e50ab20beb44"
+  }
+}

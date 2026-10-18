@@ -1,0 +1,47 @@
+{
+  "scope": "Password-bound native HTTP MFA setup and retained React one-time code acknowledgement",
+  "verdict": "No remaining material scoped findings",
+  "review_loop": [
+    "Core review preserved distinct enrollment namespace/password authority and confirmed known-commit-only disclosures with no first-factor session",
+    "Race harness initially allowed IP rate429 to stop the second request; fresh listener and explicit no429 ensure both calls reach native admission",
+    "Actual DELETE reader private stage observation proves begin and confirm OutcomeUnknown/commit_outcome_unknown before public503 withholding URI/codes/cookie",
+    "UI uncertainty test initially selected the implicit status role of test location output; it now selects the actual uncertainty message without weakening state assertions",
+    "Product review found raw URI unactionable, missing login escape and imprecise begin uncertainty; manual Base32 key/instructions, both escape paths and may-have-started message with explicit restart/login fix all three",
+    "Independent25 release units,82 real HTTP/native/source checks,32 retained UI tests,app typecheck and scopedGDD3 pass on final hashes"
+  ],
+  "evidence": {
+    "native_focused_tests": 25,
+    "process_checks": 82,
+    "enrollment_new_process_checks": 38,
+    "auth_UI_tests": 32,
+    "app_typecheck": "PASS",
+    "GDD_structural_checks": 3,
+    "reviewed_source_sha256": {
+      "Cargo.lock": "afa478fa68fc506f910b9085dd4d97fd03eb9cb1ca318adc87e649fa5bd6ecc4",
+      "crates/rentemester-server/Cargo.toml": "82a83b21b404b2e4be1f21e5e7f01f9b6a78a202371960e2b4eb2b2a129b0379",
+      "crates/rentemester-server/src/lib.rs": "d21be0090f40a48c3d5641d8360bfc68e8a9bc0f50e9fe38a046e28db3f44032",
+      "crates/rentemester-server/src/auth_http.rs": "8aa45fc24d15c2e6d51e0057104be982697efb787c15f3e58b95b8867a8bd45e",
+      "crates/rentemester-server/src/auth_http/tests.rs": "e0abaeeed603a2ade64e41e8fa053a61ff8f679748acef4edbf978d4fa90c7a5",
+      "crates/rentemester-server/src/auth_http/enrollment.rs": "fc20dc3a87d1147e9277cdbae36c076ea3818057f98c32d6a9104063dae7e28d",
+      "app/src/views/LoginView.tsx": "5d4ce9947b15081af9308a92664cd15dbcc41e505cc33fc6376be02c14f11482",
+      "app/src/lib/native-enrollment.ts": "e750e1f4a9db78641beaf254c0432cc699f25d2adc8db870f705f11c197561ad",
+      "app/src/auth-ui.test.tsx": "5c2aea385db738fe9b40e08b4fa72d641511253636cac475f3a08c233e09d2d1",
+      "scripts/rust/verify-http-login.ts": "2edb88400e04e34483abaf746e90505791966887eb4aced5bad37c9304c9d6c6",
+      "scripts/rust/http-enrollment-cases.ts": "64fcb6ad4134ec901784fc8d9e4ef0beb268d379ba46552b8535003a76257bd5",
+      "scripts/rust/verify.ts": "e24e427dd98a6e881006d3e123f49daa3432002cf5378878e0677bc3473528f8",
+      "docs/architecture/rust-target/implementation/README.md": "f2ee8c4b90dc09b25006828937d191d03c583126e7370781d2a06a9a178f79c6",
+      "docs/architecture/rust-target/implementation/http-enrollment/CONTRACT.md": "d2d94f0fd331d66ff8b76db4d50ef46966ab041e4fd23a5b6c272d6480f1aac5",
+      "docs/architecture/rust-target/implementation/http-enrollment/gdd.json": "63067e26a1fba95227526e6b8ed87562f8846f1c3f44bc462d0db571a9a8bf2c",
+      "docs/architecture/rust-target/implementation/http-enrollment/readiness.json": "097edf570eb4c150356bc180bb86faa9d1078d7c4003ef8eb287e50ab20beb44"
+    }
+  },
+  "limits": [
+    "No default product data opener, actual physical/workspace lifetime/writer admission or deployable server/cockpit authority",
+    "Email verification, service/API-key/provider/trusted-device identity, /api/me/product context and full browser/server parity remain pending",
+    "Process-local admission/rate is not persistent/global/proxy/TLS/header/socket/shutdown qualification",
+    "Sensitive JSON/serde/HTTP/browser copies and trusted logger/panic hook are not universally zeroized or sanitized; lost disclosure needs normal TOTP login and later explicit management, not redisclosure",
+    "Existing deeper native enrollment changed-fact/lock/expiry/late-rollback checks are separate evidence, not newly exhaustive HTTP qualification",
+    "Graphify explicit AST and two Markdown semantic sources refreshed; generated logs/JSON, historical and unrelated docs are outside semantic refresh",
+    "No real-data migration, external email or production deployment; full shared Rust engine/API/CLI/MCP/GPUI/platform/distribution/cutover goal stays active"
+  ]
+}

@@ -1,0 +1,40 @@
+bun test v1.4.0 (34cbb9a40)
+
+src/auth-ui.test.tsx:
+(pass) hosted cockpit auth shell > no hosted session shows login and never fetches portfolio [49.40ms]
+(pass) hosted cockpit auth shell > forgot-password returns the same generic response for an existing or absent e-mail [147.52ms]
+(pass) hosted cockpit auth shell > verification resend is sessionless and has a generic result for failures [188.47ms]
+(pass) hosted cockpit auth shell > reset-password consumes the token from the link and removes it from the route [65.48ms]
+(pass) hosted cockpit auth shell > reset-password failure clears the entered secret and remains generic [54.53ms]
+(pass) hosted cockpit auth shell > unconfirmed reset offers recovery without claiming success or retrying [57.64ms]
+(pass) hosted cockpit auth shell > transport loss reset offers recovery without claiming success or retrying [55.37ms]
+(pass) hosted cockpit auth shell > malformed acknowledgement reset offers recovery without claiming success or retrying [51.67ms]
+(pass) hosted cockpit auth shell > native setup shows recovery codes after confirmation and refreshes only after acknowledgement [155.09ms]
+(pass) hosted cockpit auth shell > native setup unknown removes secret form without retry [150.61ms]
+(pass) hosted cockpit auth shell > native setup transport removes secret form without retry [155.10ms]
+(pass) hosted cockpit auth shell > native setup malformed removes secret form without retry [152.20ms]
+(pass) hosted cockpit auth shell > native setup bad code keeps ceremony and clears the input [139.14ms]
+(pass) hosted cockpit auth shell > native setup failed begin clears password and permits an explicit password-bound restart [161.11ms]
+(pass) hosted cockpit auth shell > enrollment error code with a different HTTP status cannot enter native setup [80.67ms]
+(pass) hosted cockpit auth shell > login two-factor redirect requires a TOTP code without trusted device [101.39ms]
+(pass) hosted cockpit auth shell > TOTP result errors remain generic and do not enter the cockpit [99.26ms]
+(pass) hosted cockpit auth shell > recovery-code verification uses Better Auth with no trusted device and enters only after success [124.91ms]
+(pass) hosted cockpit auth shell > recovery-code failures stay generic and can switch back to TOTP [124.82ms]
+(pass) hosted cockpit auth shell > verified user without MFA is routed to enrollment [3.23ms]
+(pass) hosted cockpit auth shell > MFA enrollment result errors remain generic and do not reveal setup data [47.85ms]
+(pass) hosted cockpit auth shell > account menu signs out and revoke-all is confirmation gated [13.37ms]
+(pass) hosted cockpit auth shell > revoke-all is not called when cancelled, and clears only after success [43.26ms]
+(pass) hosted cockpit auth shell > revoke-all error keeps the current shell and shows a generic failure [25.92ms]
+(pass) hosted cockpit auth shell > shows safe role and session metadata and confirmation-gates one-session revocation [25.71ms]
+(pass) hosted cockpit auth shell > authenticated password change replaces every old session and clears entered secrets [143.17ms]
+(pass) hosted cockpit auth shell > account dialogs relate to their triggers and dismiss password fields without retaining secrets [72.56ms]
+(pass) hosted cockpit auth shell > company switcher contains only server-authorized memberships [4.47ms]
+(pass) hosted cockpit auth shell > a normal API 401 after the cockpit loaded clears stale UI to login [7.23ms]
+(pass) hosted cockpit auth shell > health failure or unknown profile never starts auth or cockpit [2.34ms]
+(pass) hosted cockpit auth shell > local-container opens the local cockpit without hosted auth [7.56ms]
+(pass) hosted cockpit auth shell > failed health never starts auth or cockpit [2.23ms]
+
+ 32 pass
+ 0 fail
+ 177 expect() calls
+Ran 32 tests across 1 file. [3.31s]

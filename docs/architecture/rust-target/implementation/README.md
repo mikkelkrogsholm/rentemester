@@ -174,3 +174,7 @@ The [recovery contract](http-recovery/CONTRACT.md) binds actual source302/200/er
 ## Enrolled human HTTP login and current session
 
 The [http-login contract](http-login/CONTRACT.md) adds admitted native password→pending MFA→TOTP/backup→browser session→token-free current metadata→logout. Real WAL/DELETE HTTP journeys interoperate with installed source crypto/cookie reader. Mixed credentials refuse before handlers; unknown results issue no authority or false revocation claim. Current-session reads never refresh or clean up. Enrollment HTTP, /api/me, product exposure and full epic acceptance remain pending; all55 child issues stay open.
+
+## Password-bound HTTP MFA enrollment
+
+The [http-enrollment contract](http-enrollment/CONTRACT.md) connects native password-bound setup and one-time confirmation to the retained React login path. Begin issues only pending cookie/URI; confirmation issues browser session and ten codes after known commit. Manual-key instructions, login/restart escape and explicit saved-code acknowledgement complete the setup flow; unknown results never replay or redisclose. Real WAL/DELETE HTTP covers separate ceremony contexts, preserved restart budgets, races and observed commit-unknown at both stages. Product context, email verification, physical admission, deployment and complete epic acceptance remain pending.

@@ -139,6 +139,91 @@ describe("hosted cockpit auth shell", () => {
     expect(authMocks.resetPassword).toHaveBeenCalledTimes(1);
   });
 
+  async function nativeSetup(reply: (path: string, init?: RequestInit) => Promise<Response>) {
+    authMocks.getSession.mockResolvedValue({ data: null });
+    authMocks.signInEmail.mockResolvedValue({ data: null, error: { code: "MFA_ENROLLMENT_REQUIRED", status: 409 } });
+    hostedFetch(); const base = globalThis.fetch;
+    stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const path = String(input);
+      if (path.startsWith("/api/auth/mfa-enrollment/")) return reply(path, init);
+      return base(input, init);
+    }));
+    renderApp(); const user = userEvent.setup();
+    await user.type(await screen.findByLabelText("E-mail"), "owner@example.test");
+    await user.type(screen.getByLabelText("Adgangskode"), "not-stored-password");
+    await user.click(screen.getByRole("button", { name: "Log ind" }));
+    await screen.findByRole("heading", { name: "Opsæt totrinsbekræftelse" });
+    expect(screen.getByLabelText("Adgangskode")).toHaveValue("");
+    await user.type(screen.getByLabelText("Adgangskode"), "reentered-password");
+    await user.click(screen.getByRole("button", { name: "Start opsætning" }));
+    return user;
+  }
+  const setupUri = "otpauth://totp/Rentemester:owner?secret=ABCDEFGHIJKLMNOP&issuer=Rentemester&digits=6&period=30";
+  const recoveryCodes = Array.from({length:10},(_,i)=>`AAAA${i}-BBBB${i}`);
+  const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), {status,headers:{"content-type":"application/json"}});
+  test("native setup shows recovery codes after confirmation and refreshes only after acknowledgement", async () => {
+    const calls: string[] = [];
+    const user = await nativeSetup(async (path, init) => {
+      calls.push(path); expect(init?.credentials).toBe("same-origin"); expect(init?.cache).toBe("no-store");
+      if (path.endsWith("begin")) { expect(JSON.parse(String(init?.body))).toEqual({email:"owner@example.test",password:"reentered-password"}); return json({method:"totp",totpURI:setupUri}); }
+      expect(JSON.parse(String(init?.body))).toEqual({code:"123456"}); return json({status:true,backupCodes:recoveryCodes});
+    });
+    expect(await screen.findByLabelText("Opsætningsnøgle")).toBeInTheDocument();
+    expect(screen.queryByText("Gem dine recovery codes")).not.toBeInTheDocument();
+    await user.type(screen.getByLabelText("Engangskode"),"123456"); await user.click(screen.getByRole("button",{name:"Bekræft opsætning"}));
+    expect(await screen.findByText("Gem dine recovery codes")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Opsætningsnøgle")).not.toBeInTheDocument();
+    for(const code of recoveryCodes) expect(screen.getByText(code)).toBeInTheDocument();
+    expect(authMocks.getSession).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole("button",{name:"Jeg har gemt koderne"}));
+    await waitFor(()=>expect(authMocks.getSession).toHaveBeenCalledTimes(2));
+    expect(calls).toEqual(["/api/auth/mfa-enrollment/begin","/api/auth/mfa-enrollment/confirm"]);
+    expect(authMocks.enable).not.toHaveBeenCalled(); expect(authMocks.verifyTotp).not.toHaveBeenCalled();
+  });
+  for(const outcome of ["unknown","transport","malformed"] as const) test(`native setup ${outcome} removes secret form without retry`, async () => {
+    let confirms=0;
+    const user=await nativeSetup(async(path)=>{
+      if(path.endsWith("begin"))return json({method:"totp",totpURI:setupUri});
+      confirms++; if(outcome==="transport")throw new Error("private provider detail");
+      return outcome==="unknown"?json({code:"AUTH_UNCONFIRMED",message:"private provider detail"},503):json({status:true,backupCodes:[]});
+    });
+    await screen.findByLabelText("Engangskode"); await user.type(screen.getByLabelText("Engangskode"),"123456");
+    await user.click(screen.getByRole("button",{name:"Bekræft opsætning"}));
+    expect(await screen.findByText(/Vi kunne ikke bekræfte resultatet/)).toHaveTextContent("Opsætningen kan være gennemført");
+    expect(screen.queryByLabelText("Opsætningsnøgle")).not.toBeInTheDocument(); expect(screen.queryByLabelText("Engangskode")).not.toBeInTheDocument();
+    expect(screen.queryByText("private provider detail")).not.toBeInTheDocument(); expect(authMocks.getSession).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole("button",{name:"Tilbage til login"}));
+    expect(await screen.findByRole("heading",{name:"Log ind"})).toBeInTheDocument(); expect(confirms).toBe(1);
+  });
+  test("native setup bad code keeps ceremony and clears the input", async()=>{
+    const user=await nativeSetup(async path=>path.endsWith("begin")?json({method:"totp",totpURI:setupUri}):json({code:"INVALID_CODE"},401));
+    await screen.findByLabelText("Engangskode"); await user.type(screen.getByLabelText("Engangskode"),"123456");
+    await user.click(screen.getByRole("button",{name:"Bekræft opsætning"}));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Kontrollér koden"); expect(screen.getByLabelText("Engangskode")).toHaveValue("");
+    expect(screen.getByLabelText("Opsætningsnøgle")).toBeInTheDocument(); expect(authMocks.getSession).toHaveBeenCalledTimes(1);
+  });
+
+  test("native setup failed begin clears password and permits an explicit password-bound restart", async()=>{
+    let begins=0;
+    const user=await nativeSetup(async()=>{ begins++; return begins===1?json({code:"AUTH_UNCONFIRMED"},503):json({method:"totp",totpURI:setupUri}); });
+    expect(await screen.findByRole("alert")).toHaveTextContent("Opsætningen kunne ikke bekræftes");
+    expect(screen.getByLabelText("Adgangskode")).toHaveValue(""); expect(begins).toBe(1);
+    await user.type(screen.getByLabelText("Adgangskode"),"new-password-proof");
+    await user.click(screen.getByRole("button",{name:"Start opsætning"}));
+    expect(await screen.findByLabelText("Opsætningsnøgle")).toBeInTheDocument(); expect(begins).toBe(2);
+    await user.click(screen.getByRole("button",{name:"Start opsætning forfra"}));
+    expect(screen.queryByLabelText("Opsætningsnøgle")).not.toBeInTheDocument(); expect(screen.getByLabelText("Adgangskode")).toHaveValue("");
+    expect(begins).toBe(2); expect(authMocks.getSession).toHaveBeenCalledTimes(1);
+  });
+
+  test("enrollment error code with a different HTTP status cannot enter native setup", async()=>{
+    authMocks.getSession.mockResolvedValue({data:null}); authMocks.signInEmail.mockResolvedValue({error:{code:"MFA_ENROLLMENT_REQUIRED",status:401}});
+    hostedFetch(); renderApp(); const user=userEvent.setup();
+    await user.type(await screen.findByLabelText("E-mail"),"owner@example.test"); await user.type(screen.getByLabelText("Adgangskode"),"not-stored-password");
+    await user.click(screen.getByRole("button",{name:"Log ind"})); expect(await screen.findByRole("alert")).toHaveTextContent("Kunne ikke logge ind");
+    expect(screen.queryByRole("heading",{name:"Opsæt totrinsbekræftelse"})).not.toBeInTheDocument();
+  });
+
   test("login two-factor redirect requires a TOTP code without trusted device", async () => {
     authMocks.getSession.mockResolvedValue({ data: null });
     authMocks.signInEmail.mockResolvedValue({ data: { twoFactorRedirect: true } });

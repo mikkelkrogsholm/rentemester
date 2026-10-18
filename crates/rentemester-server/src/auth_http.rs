@@ -1,5 +1,7 @@
 //! Human-only enrolled login. Trusted handlers alone own admitted native connections/lifetimes.
 use super::*;
+mod enrollment;
+pub use enrollment::EnrollmentHandlers;
 use rentemester_application::{
     mfa_login::{BeginOutcome, Rejection, VerifyOutcome},
     password_login::FailureStage,
@@ -54,6 +56,7 @@ impl FactorInput {
 /// All outcomes must come from known native transaction results. No handler is supplied by HTTP.
 pub struct AuthHandlers {
     pub cookies: Arc<CookieVerifier>,
+    pub enrollment: Option<EnrollmentHandlers>,
     pub sign_in: Box<dyn Fn(LoginInput) -> Result<BeginOutcome, ContinuationFailure> + Send + Sync>,
     pub totp: Box<dyn Fn(FactorInput) -> Result<VerifyOutcome, ContinuationFailure> + Send + Sync>,
     pub backup:
@@ -62,8 +65,8 @@ pub struct AuthHandlers {
         Box<dyn Fn(VerifiedCookie) -> Result<SessionView, ContinuationFailure> + Send + Sync>,
     pub sign_out: Box<dyn Fn(VerifiedCookie) -> Result<Outcome, ContinuationFailure> + Send + Sync>,
 }
-pub(super) fn routes(router: Router<Arc<StateData>>) -> Router<Arc<StateData>> {
-    router
+pub(super) fn routes(router: Router<Arc<StateData>>, enrollment: bool) -> Router<Arc<StateData>> {
+    let router = router
         .route("/api/auth/sign-in/email", post(sign_in))
         .route("/api/auth/two-factor/verify-totp", post(totp))
         .route("/api/auth/two-factor/verify-backup-code", post(backup))
@@ -76,7 +79,12 @@ pub(super) fn routes(router: Router<Arc<StateData>>) -> Router<Arc<StateData>> {
                 r
             }),
         )
-        .route("/api/auth/sign-out", post(sign_out))
+        .route("/api/auth/sign-out", post(sign_out));
+    if enrollment {
+        self::enrollment::routes(router)
+    } else {
+        router
+    }
 }
 fn denied() -> Response {
     response(
@@ -120,7 +128,7 @@ fn auth(state: &StateData) -> &AuthHandlers {
 fn cookie_response(
     state: &StateData,
     status: StatusCode,
-    body: &'static str,
+    body: &str,
     new: Option<&IssuedCookie>,
 ) -> Response {
     let clear = auth(state).cookies.clear_native_session_cookies();
@@ -136,7 +144,8 @@ fn cookie_response(
         value.set_sensitive(true);
         headers.push(value);
     }
-    let mut r = response(status, body);
+    let mut r = response(status, "");
+    *r.body_mut() = axum::body::Body::from(body.to_owned());
     for value in headers {
         r.headers_mut().append("set-cookie", value);
     }
