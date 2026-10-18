@@ -1,0 +1,139 @@
+{
+  "ok": true,
+  "checks": 44,
+  "observations": [
+    {
+      "id": "password-change/delete-false-source-KDF-verifies-new-only-bounded-own-receipt"
+    },
+    {
+      "id": "password-change/delete-false-atomic-session-lifecycle-and-preserved-factor-user-replay"
+    },
+    {
+      "id": "password-change/delete-false-own-reset-invalidation-and-secret-free-exact-audit"
+    },
+    {
+      "id": "password-change/delete-false-credential-event-invalidates-earlier-pending-context"
+    },
+    {
+      "id": "password-change/delete-false-old-login-refuses-new-password-continues-only-to-MFA"
+    },
+    {
+      "id": "password-change/delete-true-source-KDF-verifies-new-only-bounded-own-receipt"
+    },
+    {
+      "id": "password-change/delete-true-atomic-session-lifecycle-and-preserved-factor-user-replay"
+    },
+    {
+      "id": "password-change/delete-true-own-reset-invalidation-and-secret-free-exact-audit"
+    },
+    {
+      "id": "password-change/delete-true-credential-event-invalidates-earlier-pending-context"
+    },
+    {
+      "id": "password-change/delete-true-old-login-refuses-new-password-continues-only-to-MFA"
+    },
+    {
+      "id": "password-change/wal-false-source-KDF-verifies-new-only-bounded-own-receipt"
+    },
+    {
+      "id": "password-change/wal-false-atomic-session-lifecycle-and-preserved-factor-user-replay"
+    },
+    {
+      "id": "password-change/wal-false-own-reset-invalidation-and-secret-free-exact-audit"
+    },
+    {
+      "id": "password-change/wal-false-credential-event-invalidates-earlier-pending-context"
+    },
+    {
+      "id": "password-change/wal-false-old-login-refuses-new-password-continues-only-to-MFA"
+    },
+    {
+      "id": "password-change/wal-true-source-KDF-verifies-new-only-bounded-own-receipt"
+    },
+    {
+      "id": "password-change/wal-true-atomic-session-lifecycle-and-preserved-factor-user-replay"
+    },
+    {
+      "id": "password-change/wal-true-own-reset-invalidation-and-secret-free-exact-audit"
+    },
+    {
+      "id": "password-change/wal-true-credential-event-invalidates-earlier-pending-context"
+    },
+    {
+      "id": "password-change/wal-true-old-login-refuses-new-password-continues-only-to-MFA"
+    },
+    {
+      "id": "password-change/wrong-password-no-credential-session-link-audit-or-receipt-effect"
+    },
+    {
+      "id": "password-change/new-too-short-no-credential-session-link-audit-or-receipt-effect"
+    },
+    {
+      "id": "password-change/stale-no-credential-session-link-audit-or-receipt-effect"
+    },
+    {
+      "id": "password-change/disabled-no-credential-session-link-audit-or-receipt-effect"
+    },
+    {
+      "id": "password-change/unverified-factor-no-credential-session-link-audit-or-receipt-effect"
+    },
+    {
+      "id": "password-change/revoked-no-credential-session-link-audit-or-receipt-effect"
+    },
+    {
+      "id": "password-change/bad-user-result-no-credential-session-link-audit-or-receipt-effect"
+    },
+    {
+      "id": "password-change/late-SQL-no-credential-session-link-audit-or-receipt-effect"
+    },
+    {
+      "id": "password-change/wrong-workspace-no-credential-session-link-audit-or-receipt-effect"
+    },
+    {
+      "id": "password-change/audit-version-no-credential-session-link-audit-or-receipt-effect"
+    },
+    {
+      "id": "password-change/change-hashed-credential-unlocked-KDF-recheck-refuses-stale-authority"
+    },
+    {
+      "id": "password-change/change-hashed-session-unlocked-KDF-recheck-refuses-stale-authority"
+    },
+    {
+      "id": "password-change/change-hashed-access-unlocked-KDF-recheck-refuses-stale-authority"
+    },
+    {
+      "id": "password-change/password:unlocked-credential-unlocked-KDF-recheck-refuses-stale-authority"
+    },
+    {
+      "id": "password-change/password:unlocked-session-unlocked-KDF-recheck-refuses-stale-authority"
+    },
+    {
+      "id": "password-change/password:unlocked-access-unlocked-KDF-recheck-refuses-stale-authority"
+    },
+    {
+      "id": "password-change/concurrent-password-change-only-current-snapshot-can-commit"
+    },
+    {
+      "id": "password-change/held-writer-excludes-second-password-change"
+    },
+    {
+      "id": "password-change/killed-before-commit-rolls-back-credential-delete-newsession-resetlinks-and-audit"
+    },
+    {
+      "id": "password-change/DELETE-false-actual-commit-busy-withholds-user-cookie-and-confirmation"
+    },
+    {
+      "id": "password-change/DELETE-true-actual-commit-busy-withholds-user-cookie-and-confirmation"
+    },
+    {
+      "id": "password-change/original-UTF16-twelve-units-and-source-Unicode-KDF-compatible-change"
+    },
+    {
+      "id": "password-change/actual-source-session-reader-accepts-native-password-rotation-cookie"
+    },
+    {
+      "id": "password-change/native-current-credential-fence-accepts-actual-source-HTTP-password-change"
+    }
+  ],
+  "scope": "Focused password change core"
+}

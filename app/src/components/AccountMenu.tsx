@@ -117,16 +117,16 @@ export function AccountMenu() {
     setBusy(true);
     try {
       const result = await authClient.changePassword({
-        currentPassword, newPassword, revokeOtherSessions: true,
+        currentPassword, newPassword, revokeOtherSessions: true, fetchOptions: { retry: 0 },
       });
-      if (result.error) throw new Error("password change failed");
+      if (result.error || result.data?.user?.id !== session.id || "status" in result.data && result.data.status !== true) throw new Error("password change unconfirmed");
       setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
       setShowPassword(false);
       await refresh();
       setMessage("Adgangskoden er ændret, og alle tidligere sessioner er afsluttet.");
     } catch {
       setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
-      setError("Adgangskoden kunne ikke ændres. Log ind igen og prøv på ny.");
+      setError("Adgangskodeskiftet kunne ikke bekræftes. Log ind igen. Prøv den nye adgangskode først og derefter den tidligere.");
     } finally { setBusy(false); }
   };
   return <div className="account-menu" role="group" aria-label="Konto">

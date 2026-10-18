@@ -270,6 +270,21 @@ fn probe() {
             request["newPassword"].as_str().unwrap_or(""),
         )
         .map(|()| json!({"ok":true}))
+    } else if request["mode"] == "password-change" {
+        let signer = CookieVerifier::new(
+            request["proofWorkspace"].as_str().unwrap_or("w"),
+            if request["proofDevelopment"] == true {
+                CookieProfile::Development
+            } else {
+                CookieProfile::Secure
+            },
+            request["proofKey"].as_str().unwrap_or(key),
+        )
+        .unwrap();
+        match signer.verify(request["cookie"].as_str(),request["service"].as_str()) {
+            Err(e)=>Err(failure(error(e.code()),true)),
+            Ok(proof)=>crate::password_change::execute(&mut db,&crate::password_change::Runtime{cookies:&cookies,clock:&clock,audit_key_version:request["auditVersion"].as_u64().unwrap_or(1)},&proof,request["password"].as_str().unwrap_or("Synthetic password 123!"),request["newPassword"].as_str().unwrap_or(""),request["revokeOtherSessions"].as_bool().unwrap_or(false)).map(|o|json!({"ok":true,"cookie":o.cookie.as_ref().map(|c|c.request_header()),"user":serde_json::from_str::<Value>(&o.user_json).unwrap()})),
+        }
     } else if request["mode"]
         .as_str()
         .is_some_and(|s| s.starts_with("session-"))

@@ -1,0 +1,89 @@
+{
+  "result": "PASS",
+  "reviewed_at_utc": "2026-10-18T03:26:27.093639+00:00",
+  "material_findings": [],
+  "resolved_evidence_gap": {
+    "id": "PC-E01",
+    "problem": "Preserved replay claim previously had no actual replay fixture",
+    "resolution": "Four WAL/DELETE false/true branches now establish actual native TOTP acceptance, capture existing rm-native-totp-step-v1 record and assert exact preservation; rotation deletion counts derive preexisting owned sessions"
+  },
+  "execution": {
+    "core_process_checks": 44,
+    "http_process_checks": 28,
+    "server_unit_tests": 2,
+    "UI_tests": 72,
+    "app_typecheck": "PASS",
+    "core": "/tmp/rm-password-change-review-core.json",
+    "http": "/tmp/rm-password-change-review-http.json",
+    "native": "/tmp/rm-password-change-review-native.txt",
+    "ui": "/tmp/rm-password-change-review-ui.txt",
+    "typecheck": "/tmp/rm-password-change-review-ui-typecheck.txt",
+    "actual_installed_client_redacted": "/tmp/rm-password-change-review-client.json"
+  },
+  "projections": {
+    "core_sha256": "0481421f82697196236c70ab824b52a724a5ce37e56854d7398bff8db7cb1737",
+    "http_sha256": "ac436d53e1bb531622874e2a6b2b0500a55d77d0d2dbf951445676344e06e492",
+    "scope": "Original current helper/fixture initialization with absolute imports/root; core also copies exact original opts declaration from later try-body; only password-change modules invoked",
+    "setup_correction": "Initial core projection had undefined opts because source declares it later in try body. Corrected local projection, no product mutation or assertion failure; final44checks pass. Raw failed output withheld."
+  },
+  "reviewed_invariants": [
+    "Both KDFs outside SQL; immutable configured proof and current candidate/session/access rechecked under writer",
+    "Canonical owned credential CAS plus source-compatible native hash",
+    "Own source reset siblings removed; foreign/unrelated verification preserved",
+    "Credential lifecycle invalidates old pending challenges",
+    "False/omitted preserves exact session/factor/user/replay state; true deletes all own old/expired and creates one fresh12h session preserving other subjects",
+    "Bounded user metadata serialization inside writer so malformed user rolls all effects back",
+    "Known commit only receipt and optional signed browser cookie; unknown and operational failure withhold both",
+    "Strict HTTP object/password byte and original UTF16 policy; null/type/duplicate optionalbool refused; no caller subject",
+    "UI requires ownuser ACK, refuses present nontrue status, disables retries, clears password fields and uses truthful uncertainty",
+    "Actual installed-client proxy sends expected password/bool fields and strips fetchOptions from body; report redacts values"
+  ],
+  "remaining_gates": [
+    "No physical workspace/lifetime writer admission or live legacy routing qualification",
+    "Mocked React plus actual native/source sockets are separate, no deployed browser integration claim",
+    "No full pipeline duplicated; broad regression owned by main"
+  ],
+  "sha256": {
+    "crates/rentemester-storage/src/password_change.rs": "6f4f6f5ffea0105703b8b5b8eb50ff475cff0675f4d0320342809f59378cde6e",
+    "crates/rentemester-storage/src/lib.rs": "19929510734d55ea0c2779df62983588bfab2d88967f0a14844bd8331a549ace",
+    "crates/rentemester-storage/src/session_view.rs": "6c7e77080c63abc6628a27dc277d772dbd3ce412fbe50cfe88099f53b61f1f9f",
+    "crates/rentemester-application/src/password_change.rs": "7e3de5ea4e84c94a07587ab9ed26e0e3ff36efccd48fa964ecf201a127ba447d",
+    "crates/rentemester-application/src/lib.rs": "ac07383884d73786087fdb6566f741b7e620357965de6f110d1cd74937e52460",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "8ec3448be069e400203bc63554093e45982bec24f867a5da24cbf2ebd40edd0b",
+    "crates/rentemester-server/src/auth_http/password_change.rs": "8c11177e8a95dd21945638edea3b36ee19d701408d8bfd70be81810a43ff0e67",
+    "crates/rentemester-server/src/auth_http.rs": "4498634d28e500b185eeafdf1174d879ea8975073ed40dc67ecb88d2f135a25d",
+    "crates/rentemester-server/src/lib.rs": "837dadc4a2d29b8d18807d527867027d0eceddbe4e399952f8800c3ae437f543",
+    "crates/rentemester-server/src/auth_http/tests.rs": "b09c97395011d333ce345f2c4b4bd6fa4ce8291308ed3f802a1736966350a2e8",
+    "crates/rentemester-server/src/tests.rs": "d6de50623c40ccc22240d423a9253c6ec8dacca44429e9e962d22d837b15e762",
+    "scripts/rust/password-change-cases.ts": "a7ee447ca713557bed5accacabd0e37c70a03c3b27965dd72c117da2b97226b4",
+    "scripts/rust/http-password-change-cases.ts": "142679e2a7d0030be0efa224519f2fc3fed9b892d0e6a1e635b38c21a23223ec",
+    "scripts/rust/verify-mfa-login.ts": "f63082f55084fcd0c20d50e00d1f124cd6d2377807f8257390210230645b6701",
+    "scripts/rust/verify-http-login.ts": "6cc068c872944ea7ed4976de904657451f54326ac0838d127d8cb92eee723a9f",
+    "app/src/components/AccountMenu.tsx": "f739c717e1ee59d9eef43daefa91be42e1b64b2076ae42c17133a8904684301d",
+    "app/src/auth-ui.test.tsx": "1a32eeeb83f8fe1ce576b2bfd3761f9f19f393470611329fe9d44e727fa5388d",
+    "docs/architecture/rust-target/implementation/password-change/CONTRACT.md": "e0250928ff1ef77eb7a2ba3ae38b389bd3dad7b4f8e4c56dd5f96e3341f3aced",
+    "docs/architecture/rust-target/implementation/password-change/gdd.json": "e3ba04f1bfd6030fb239d617b0a891f6d50d8854bee7799240714b1099410c61",
+    "docs/architecture/rust-target/implementation/password-change/readiness.json": "75c97a6b7352cf406bf6fe6a91f4baf5105d320eb262b9295b4ee1d05495ff61",
+    "docs/architecture/rust-target/implementation/README.md": "9b1793182a9fee88d87d750eefd065d7cdccd839391b2125128e321b3526620d"
+  },
+  "docs_review": {
+    "result": "PASS",
+    "reviewed_at_utc": "2026-10-18T03:30:32.871181+00:00",
+    "material_findings": [],
+    "gdd_checks": 3,
+    "spec_revision": "sha256:935094de454581b016640079222fcb1b90cea6ce29c2a95a23da94461cf41381",
+    "independent_report": "/tmp/rm-password-change-review-readiness.json",
+    "matches_repository_readiness": true,
+    "normative_contract_hash_matches": true,
+    "functional_hashes_unchanged": true,
+    "aligned_claims": [
+      "Unlocked two-KDF/capture then exact writer recheck and trusted storage caller preconditions",
+      "False/omitted exact session preservation vs true all-own revocation and one prepared new session",
+      "Own reset revocation, MFA/replay/user preservation, bounded metadata prepared before commit",
+      "Unknown commit withholding does not guarantee rollback or authorize automatic retry",
+      "Strict optional boolean/null/body/cookie policy and own3-per10s bucket with conservative60s Retry-After",
+      "Source {token,user} vs native true/null-token receipt correction; explicit ownuser ACK and no replay",
+      "No physical/lifetime/live legacy/deployed browser/full epic closure claim"
+    ]
+  }
+}

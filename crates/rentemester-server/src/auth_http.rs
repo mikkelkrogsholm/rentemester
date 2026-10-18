@@ -2,6 +2,8 @@
 use super::*;
 mod backup_management;
 pub use backup_management::{BackupManagementHandler, BackupManagementInput};
+mod password_change;
+pub use password_change::{PasswordChangeHandler, PasswordChangeInput};
 mod enrollment;
 mod sessions;
 pub use sessions::{SessionAction, SessionControlInput};
@@ -67,6 +69,7 @@ pub struct AuthHandlers {
     pub enrollment: Option<EnrollmentHandlers>,
     pub verification: Option<VerificationHandlers>,
     pub backup_management: Option<BackupManagementHandler>,
+    pub password_change: Option<PasswordChangeHandler>,
     pub session_control: Option<SessionControlHandler>,
     pub sign_in: Box<dyn Fn(LoginInput) -> Result<BeginOutcome, ContinuationFailure> + Send + Sync>,
     pub totp: Box<dyn Fn(FactorInput) -> Result<VerifyOutcome, ContinuationFailure> + Send + Sync>,
@@ -96,6 +99,7 @@ pub(super) fn routes(router: Router<Arc<StateData>>, enrollment: bool) -> Router
     } else {
         router
     };
+    let router = self::password_change::routes(router);
     // Each route owns the canonical path; there is no legacy auth-handler fallback.
     self::verification::routes(self::sessions::routes(self::backup_management::routes(
         router,

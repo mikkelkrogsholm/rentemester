@@ -88,6 +88,7 @@ enum Operation {
     SessionList,
     SessionRevoke,
     BackupManagement,
+    PasswordChange,
     EnrollmentBegin,
     EnrollmentConfirm,
     VerificationRequest,
@@ -101,7 +102,8 @@ impl Operation {
             | Self::Backup
             | Self::EnrollmentBegin
             | Self::EnrollmentConfirm
-            | Self::BackupManagement => (Duration::from_secs(10), 3),
+            | Self::BackupManagement
+            | Self::PasswordChange => (Duration::from_secs(10), 3),
             Self::Request | Self::VerificationRequest => (WINDOW, 3),
             _ => (WINDOW, 10),
         }

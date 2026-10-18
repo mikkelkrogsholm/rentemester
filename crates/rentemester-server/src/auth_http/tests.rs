@@ -135,10 +135,15 @@ fn probe() {
     let backup_t = clock.clone();
     let backup_open = open.clone();
     let backup_log = outcome_log.clone();
+    let change_c = cookies.clone();
+    let change_t = clock.clone();
+    let change_open = open.clone();
+    let change_log = outcome_log.clone();
     let mut auth = AuthHandlers {
         enrollment: Some(enrollment),
         verification: None,
         backup_management: None,
+        password_change: None,
         session_control: None,
         cookies,
         sign_in: Box::new(move |i| {
@@ -172,6 +177,24 @@ fn probe() {
             )
         }),
     };
+    if config["passwordChange"] == true {
+        auth.password_change = Some(Box::new(move |i| {
+            let result = rentemester_application::password_change::execute(
+                &mut change_open(),
+                &rentemester_application::password_change::Runtime {
+                    cookies: &change_c,
+                    clock: change_t.as_ref(),
+                    audit_key_version: 1,
+                },
+                i.proof(),
+                i.current_password(),
+                i.new_password(),
+                i.revoke_other_sessions(),
+            );
+            observe(&change_log, "password-change", &result);
+            result
+        }));
+    }
     if config["backupManagement"] == true {
         auth.backup_management = Some(Box::new(move |i| {
             let result = rentemester_application::backup_management::execute(
@@ -330,6 +353,7 @@ fn handlers(cookies: Arc<CookieVerifier>, calls: Arc<AtomicUsize>, mode: u8) -> 
         enrollment: None,
         verification: None,
         backup_management: None,
+        password_change: None,
         session_control: None,
         cookies,
         sign_in,
@@ -1061,4 +1085,98 @@ async fn backup_management_head_query_duplicate_cookie_and_nonobject_never_dispa
         assert_eq!(calls.load(Ordering::SeqCst), 0);
         task.abort();
     }
+}
+
+async fn password_change_server(
+    mode: u8,
+) -> (
+    String,
+    tokio::task::JoinHandle<()>,
+    Arc<AtomicUsize>,
+    String,
+) {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let origin = format!("http://{}", listener.local_addr().unwrap());
+    let cookies = verifier(CookieProfile::Development);
+    let cookie = cookies
+        .issue_session("password-change-private-unit")
+        .unwrap()
+        .request_header()
+        .to_owned();
+    let calls = Arc::new(AtomicUsize::new(0));
+    let mut auth = handlers(cookies, calls.clone(), 0);
+    let count = calls.clone();
+    auth.password_change = Some(Box::new(move |_| {
+        count.fetch_add(1, Ordering::SeqCst);
+        match mode {
+            0 => {
+                let mut e = failure(false);
+                e.error.code = "invalid_credentials";
+                Err(e)
+            }
+            1 => Err(failure(true)),
+            2 => panic!("synthetic password change panic"),
+            _ => Ok(rentemester_application::password_change::Outcome {
+                cookie: None,
+                user_json: "not-json".to_owned(),
+            }),
+        }
+    }));
+    let app = identity_router(&origin, CookieProfile::Development, auth).unwrap();
+    let task = tokio::spawn(async move {
+        axum::serve(
+            listener,
+            app.into_make_service_with_connect_info::<SocketAddr>(),
+        )
+        .await
+        .unwrap();
+    });
+    (origin, task, calls, cookie)
+}
+#[tokio::test]
+async fn password_change_refusal_unknown_panic_bad_receipt_or_missing_rotation_never_succeeds() {
+    let client = reqwest::Client::builder().no_proxy().build().unwrap();
+    for mode in 0..4 {
+        let (origin, task, calls, cookie) = password_change_server(mode).await;
+        for rotate in [false, true] {
+            let r=client.post(format!("{origin}/api/auth/change-password")).header("origin",&origin).header("cookie",&cookie).header("content-type","application/json").body(serde_json::json!({"currentPassword":"synthetic-current","newPassword":"synthetic-replacement","revokeOtherSessions":rotate}).to_string()).send().await.unwrap();
+            assert_eq!(r.status().as_u16(), if mode == 0 { 401 } else { 503 });
+            assert!(r.headers().get("set-cookie").is_none());
+            let body = r.text().await.unwrap();
+            assert!(!body.contains("\"user\""));
+            assert!(!body.contains("\"status\":true"));
+        }
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+        task.abort();
+    }
+}
+#[tokio::test]
+async fn password_change_head_and_invalid_objects_never_dispatch_or_consume_head_budget() {
+    let (origin, task, calls, cookie) = password_change_server(1).await;
+    let client = reqwest::Client::builder().no_proxy().build().unwrap();
+    let url = format!("{origin}/api/auth/change-password");
+    for _ in 0..12 {
+        assert_eq!(
+            client.head(&url).send().await.unwrap().status().as_u16(),
+            405
+        );
+    }
+    for body in [
+        r#"["old","new-password-123",true]"#,
+        r#"{"currentPassword":"old","newPassword":"new-password-123","revokeOtherSessions":null}"#,
+        r#"{"currentPassword":"old","newPassword":"new-password-123","revokeOtherSessions":true,"revokeOtherSessions":false}"#,
+    ] {
+        let r = client
+            .post(&url)
+            .header("origin", &origin)
+            .header("cookie", &cookie)
+            .header("content-type", "application/json")
+            .body(body)
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(r.status().as_u16(), 400);
+    }
+    assert_eq!(calls.load(Ordering::SeqCst), 0);
+    task.abort();
 }

@@ -1,0 +1,253 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native authenticated password change, HTTP and retained account UI",
+    "goal": "Deliver current-password self change with atomic credential/reset/session effects and truthful native/source-compatible account acknowledgement",
+    "scope": "Synthetic native transaction/HTTP and retained React qualification; no live writer grant, deployed browser or full platform parity"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native own authenticated credential change",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Current-password/credential/session fencing, atomic own effects and bounded postcommit user/cookie receipt through HTTP and UI",
+        "rationale": "Password and optional session rotation cannot partially commit or turn uncertainty into success",
+        "excludes": [
+          "Physical/lifetime/live legacy admission, provider setPassword and complete identity/platform deployment"
+        ]
+      },
+      "interfaces": [
+        "action.password_change"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "WAL/DELETE false/true and omitted HTTP flag change source-compatible hash with token-free own receipt and precise optional session rotation",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic controls, trusted runtime, source crypto/cookies and native processes plus retained React fixtures",
+        "when": "Explicit current-password change with optional rotation",
+        "then": "WAL/DELETE false/true and omitted HTTP flag change source-compatible hash with token-free own receipt and precise optional session rotation"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Strict JSON/password/boolean/cookie/origin/subject input and current authorization failures release no mutation or receipt",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic controls, trusted runtime, source crypto/cookies and native processes plus retained React fixtures",
+        "when": "Explicit current-password change with optional rotation",
+        "then": "Strict JSON/password/boolean/cookie/origin/subject input and current authorization failures release no mutation or receipt"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Own reset links invalidated, foreign/other namespaces intact; exact MFA/user/actual-TOTP replay rows preserved, false retains sessions and credential history invalidates old pending context",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic controls, trusted runtime, source crypto/cookies and native processes plus retained React fixtures",
+        "when": "Explicit current-password change with optional rotation",
+        "then": "Own reset links invalidated, foreign/other namespaces intact; exact MFA/user/actual-TOTP replay rows preserved, false retains sessions and credential history invalidates old pending context"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Bounded user projection and cookie prepared before commit; malformed/false/wrong-user/transport UI responses never confirm or replay; source user-only positive ACK stays supported",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic controls, trusted runtime, source crypto/cookies and native processes plus retained React fixtures",
+        "when": "Explicit current-password change with optional rotation",
+        "then": "Bounded user projection and cookie prepared before commit; malformed/false/wrong-user/transport UI responses never confirm or replay; source user-only positive ACK stays supported"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Credential/session/access races across unlocked KDF boundaries, current snapshot writer races, late failure/death rollback and real DELETE unknown withholding remain atomic/truthful",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic controls, trusted runtime, source crypto/cookies and native processes plus retained React fixtures",
+        "when": "Explicit current-password change with optional rotation",
+        "then": "Credential/session/access races across unlocked KDF boundaries, current snapshot writer races, late failure/death rollback and real DELETE unknown withholding remain atomic/truthful"
+      }
+    },
+    "action.password_change": {
+      "kind": "action",
+      "description": "Native authenticated password change and HTTP/account acknowledgement",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "currentPassword": {
+            "type": "string",
+            "description": "Exact current password bounded4096 UTF-8 bytes"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "Original12..128 UTF-16 units before NFKC KDF"
+          },
+          "revokeOtherSessions": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Omitted/false preserves all sessions; true deletes all own and creates one fresh session. Explicit null is invalid."
+          }
+        },
+        "context": {
+          "configured_origin_native_handlers_cookie_verifier_direct_peer": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object",
+          "description": "Known commit only: status:true, token:null and bounded allowlisted own user; true additionally sets prepared rotation cookie, false sets none.",
+          "properties": {
+            "status": {
+              "type": "boolean"
+            },
+            "token": {
+              "type": "string",
+              "nullable": true,
+              "description": "Always null, never native bearer"
+            },
+            "user": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "status",
+            "token",
+            "user"
+          ]
+        },
+        "errors": {
+          "refused": "Strict HTTP refusal/new-password policy;401 invalid credentials or503 unconfirmed without user/cookie receipt"
+        },
+        "preconditions": [
+          "Trusted admitted control connection and runtime-bound current-session proof; existing local credential/password and current Fresh verified MFA/access",
+          "Serving owner retains physical/lifetime, unusable-handle retirement and exclusive legacy routing before real enablement"
+        ],
+        "postconditions": [
+          "Both KDFs outside writer; current credential/session/access rechecked under final writer",
+          "Credential, own reset invalidation, optional all-own rotation, lifecycle triggers and audit commit together",
+          "Prepared bounded user JSON and cookie released only after known commit; no bearer JSON, no replay after unknown",
+          "Source positive user receipt and native true own-user receipt accepted; malformed/error/transport never claims UI success"
+        ],
+        "external_effects": [
+          "Atomic native credential/reset/session/lifecycle/audit transaction",
+          "Bounded shared process admission and post-known-commit HTTP user/cookie response",
+          "Explicit account UI confirmation/refresh or cleared-input uncertainty guidance only"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Current password/session ownership and atomic effects must survive KDF races, native commit uncertainty and HTTP/client acknowledgement without partial success or bearer disclosure",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Current password/session ownership and atomic effects must survive KDF races, native commit uncertainty and HTTP/client acknowledgement without partial success or bearer disclosure",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Current password/session ownership and atomic effects must survive KDF races, native commit uncertainty and HTTP/client acknowledgement without partial success or bearer disclosure",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Current password/session ownership and atomic effects must survive KDF races, native commit uncertainty and HTTP/client acknowledgement without partial success or bearer disclosure",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Current password/session ownership and atomic effects must survive KDF races, native commit uncertainty and HTTP/client acknowledgement without partial success or bearer disclosure",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Unlocked KDFs, exact credential/session writer recheck, atomic credential/own reset/optional session/audit, bounded prepared user receipt, strict native HTTP and truthful source/native UI"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.password_change",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.password_change",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.password_change",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.password_change",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.password_change",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.password_change",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native authenticated password change, HTTP and retained account UI",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "e0250928ff1ef77eb7a2ba3ae38b389bd3dad7b4f8e4c56dd5f96e3341f3aced"
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+    Blocking waiting for file lock on artifact directory
+    Finished `release` profile [optimized] target(s) in 4.09s
+     Running unittests src/lib.rs (target/release/deps/rentemester_server-36d1a0541332a7c7)
+
+running 2 tests
+test auth_http::tests::password_change_refusal_unknown_panic_bad_receipt_or_missing_rotation_never_succeeds ... ok
+test auth_http::tests::password_change_head_and_invalid_objects_never_dispatch_or_consume_head_budget ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.01s

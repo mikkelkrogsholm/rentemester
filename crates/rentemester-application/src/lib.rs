@@ -5,6 +5,7 @@ pub mod control_fence;
 pub mod email_verification;
 pub mod mfa_enrollment;
 pub mod mfa_login;
+pub mod password_change;
 pub mod password_login;
 pub mod password_reset;
 pub mod reset_request;

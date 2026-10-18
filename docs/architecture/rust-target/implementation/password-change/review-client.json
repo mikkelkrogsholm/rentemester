@@ -1,0 +1,1 @@
+{"ok":true,"requests":[{"path":"/api/auth/change-password","method":"POST","bodyFields":["currentPassword","newPassword","revokeOtherSessions"],"passwordTypes":["string","string"],"rotationType":"boolean","fetchOptionsLeaked":false}]}

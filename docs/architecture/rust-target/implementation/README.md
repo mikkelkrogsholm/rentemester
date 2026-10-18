@@ -202,3 +202,7 @@ Canonical native session list/revoke routes now use token-free metadata and ID t
 ## Native HTTP backup-code management
 
 Password-bound own remaining-code view and confirmed regeneration now dispatch through explicit native HTTP handlers with shared bounded admission and post-known-commit-only disclosure. The retained account dialog validates codes, disables retries, clears sensitive display state and discards late hidden responses with truthful regeneration uncertainty. The view endpoint is a secured native extension; it never exposes the source server-only userId helper. Current contract, scoped GDD and evidence are in [http-backup-management](http-backup-management/CONTRACT.md). Physical/lifetime/live legacy admission, remaining identity and full platform parity remain required.
+
+## Native authenticated password change
+
+Current-password change now uses unlocked KDFs, exact current credential/session admission and one atomic credential/reset-link/optional all-own-session rotation/audit transaction. Canonical native HTTP returns a bounded prepared own-user receipt and rotation cookie only after known commit, with no bearer JSON. The retained account menu accepts explicit source/native positive receipts, disables retries and reports uncertainty truthfully. Current contract, scoped GDD and native/source/HTTP/UI evidence are in [password-change](password-change/CONTRACT.md). Remaining identity, physical/lifetime/live legacy routing, product context and complete platform/distribution/cutover parity remain open.

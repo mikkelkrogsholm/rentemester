@@ -472,6 +472,7 @@ describe("hosted cockpit auth shell", () => {
       currentPassword: "current-password-secret",
       newPassword: "new-password-secret",
       revokeOtherSessions: true,
+      fetchOptions: { retry: 0 },
     });
     expect(await screen.findByText(/alle tidligere sessioner er afsluttet/)).toBeInTheDocument();
     expect(screen.queryByDisplayValue(/password-secret/)).not.toBeInTheDocument();
@@ -565,4 +566,34 @@ describe("hosted cockpit auth shell", () => {
     expect(authMocks.getSession).not.toHaveBeenCalled();
     expect(screen.queryByText("Portefølje")).not.toBeInTheDocument();
   });
+  test.each(["empty", "null", "wrong-user", "false-ack", "transport"])("unconfirmed password change %s never claims success or replays", async kind => {
+    authMocks.getSession.mockResolvedValue({ data: { user: { id: "u1", email: "owner@example.test", emailVerified: true, twoFactorEnabled: true } } });
+    if (kind === "transport") authMocks.changePassword.mockRejectedValue(new Error("private password failure"));
+    else authMocks.changePassword.mockResolvedValue({ data: kind === "empty" ? {} : kind === "null" ? null : kind === "wrong-user" ? { user: { id: "foreign" } } : { status: false, user: { id: "u1" } } });
+    hostedFetch(); renderApp(); const user = userEvent.setup(); await screen.findByText("owner@example.test");
+    await user.click(screen.getByRole("button", { name: "Skift adgangskode" }));
+    await user.type(screen.getByLabelText("Nuværende adgangskode"), "old-private-password");
+    await user.type(screen.getByLabelText("Ny adgangskode"), "replacement-private-password");
+    await user.type(screen.getByLabelText("Gentag ny adgangskode"), "replacement-private-password");
+    await user.click(within(screen.getByRole("dialog", { name: "Skift adgangskode" })).getByRole("button", { name: "Skift adgangskode" }));
+    expect(await screen.findByText("Adgangskodeskiftet kunne ikke bekræftes. Log ind igen. Prøv den nye adgangskode først og derefter den tidligere.")).toBeInTheDocument();
+    expect(screen.queryByText("Adgangskoden er ændret, og alle tidligere sessioner er afsluttet.")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Nuværende adgangskode")).toHaveValue(""); expect(screen.getByLabelText("Ny adgangskode")).toHaveValue("");
+    expect(authMocks.changePassword).toHaveBeenCalledTimes(1); expect(authMocks.getSession).toHaveBeenCalledTimes(1);
+  });
+
+  test("native positive own-user password receipt refreshes without replay", async () => {
+    authMocks.getSession.mockResolvedValue({ data: { user: { id: "u1", email: "owner@example.test", emailVerified: true, twoFactorEnabled: true } } });
+    authMocks.changePassword.mockResolvedValue({ data: { status: true, token: null, user: { id: "u1" } } });
+    hostedFetch(); renderApp(); const user = userEvent.setup(); await screen.findByText("owner@example.test");
+    await user.click(screen.getByRole("button", { name: "Skift adgangskode" }));
+    await user.type(screen.getByLabelText("Nuværende adgangskode"), "old-private-password");
+    await user.type(screen.getByLabelText("Ny adgangskode"), "replacement-private-password");
+    await user.type(screen.getByLabelText("Gentag ny adgangskode"), "replacement-private-password");
+    await user.click(within(screen.getByRole("dialog", { name: "Skift adgangskode" })).getByRole("button", { name: "Skift adgangskode" }));
+    expect(await screen.findByText("Adgangskoden er ændret, og alle tidligere sessioner er afsluttet.")).toBeInTheDocument();
+    expect(authMocks.changePassword).toHaveBeenCalledTimes(1);
+    expect(authMocks.changePassword.mock.calls[0]![0].fetchOptions).toEqual({ retry: 0 });
+  });
+
 });

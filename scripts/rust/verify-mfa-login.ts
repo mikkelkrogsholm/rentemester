@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { verifyVerificationRequest } from "./verification-request-cases";
 import { verifyEmailVerification } from "./email-verification-cases";
+import { verifyPasswordChange } from "./password-change-cases";
 import { verifyPasswordReset } from "./password-reset-cases";
 import { verifyResetRequest } from "./reset-request-cases";
 import { verifySessionControl } from "./session-control-cases";
@@ -981,6 +982,7 @@ try {
 			opts,
 		})),
 	);
+	sensitiveRecoveryCodes.push(...(await verifyPasswordChange({ fixture,run,start,done,marker,sql,image,record,now,key,opts })));
 	sensitiveRecoveryCodes.push(
 		...(await verifyPasswordReset({
 			fixture,

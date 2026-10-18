@@ -22,6 +22,7 @@ pub mod email_verification;
 mod journal_hash;
 pub mod journal_preview;
 pub mod mfa_login;
+pub mod password_change;
 pub mod password_credential;
 pub mod password_reset;
 pub mod reset_request;

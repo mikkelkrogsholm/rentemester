@@ -1,5 +1,6 @@
 /** Real native HTTP enrolled login, actual control transactions, source crypto and cookie oracle. */
 import assert from "node:assert/strict";
+import { verifyHttpPasswordChange } from "./http-password-change-cases";
 import { verifyHttpBackupManagement } from "./http-backup-management-cases";
 import { verifyHttpSessions } from "./http-session-cases";
 import { verifyHttpVerification } from "./http-verification-cases";
@@ -312,6 +313,7 @@ try {
 		}
 	}
 	await verifyHttpEnrollment({ fixture, start, key, now, password, note });
+	await verifyHttpPasswordChange({ fixture,start,key,now,note });
 	await verifyHttpBackupManagement({ fixture, start, key, now, note });
 	await verifyHttpSessions({ fixture, start, key, now, note });
 	await verifyHttpVerification({ fixture, start, key, now, note });

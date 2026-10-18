@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "http-backup-management-1",
-  "code_revision": "sha256:bde7e7ed766700680fd3b83b402264d19a704ae8021cd52e40a3592cd8a78f72",
-  "spec_revision": "sha256:97cff1797b93e48cc8fa7c7a502eb5783bc1195240a164a114492d7ee917b513",
-  "state": "verified-native-http-authenticated-backup-management-and-ephemeral-ui",
+  "current_increment": "password-change-1",
+  "code_revision": "sha256:adc92c406020369501ff5d2f96c9099d5f380c91ea38656edbed4c5d23ed2fd5",
+  "spec_revision": "sha256:935094de454581b016640079222fcb1b90cea6ce29c2a95a23da94461cf41381",
+  "state": "verified-native-atomic-authenticated-password-change-http-and-account-ui",
   "issues_closed": [],
   "next": [
-    "Continue native authenticated password management and remaining service/API-key/trusted-device/provider identity plus /api/me product context. Qualify native-only routing/legacy writer drain, physical/lifetime/restore history, distributed/proxy/rate/TLS/listener gates, then full API/CLI/MCP/React/GPUI/distribution/cutover epic.",
+    "Continue remaining service/API-key/trusted-device/provider identity and /api/me product context. Qualify native-only routing/legacy writer drain, physical/lifetime/restore history, distributed/proxy/rate/TLS/listener gates, then full API/CLI/MCP/React/GPUI/distribution/cutover epic.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,20 +21,21 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "http-sessions-1",
-    "code_revision": "sha256:057a0e73f0e07a3d6c8b31bbead7d6f012240877bd29f3ee2c5d558cf3586909",
-    "spec_revision": "sha256:ac194f3035f0de3572f9ccd325ded41c68115f8c08dc5b7621d28f40c192abe1",
-    "state": "verified-native-http-own-session-management-and-truthful-react-account-menu"
+    "current_increment": "http-backup-management-1",
+    "code_revision": "sha256:bde7e7ed766700680fd3b83b402264d19a704ae8021cd52e40a3592cd8a78f72",
+    "spec_revision": "sha256:97cff1797b93e48cc8fa7c7a502eb5783bc1195240a164a114492d7ee917b513",
+    "state": "verified-native-http-authenticated-backup-management-and-ephemeral-ui"
   },
   "evidence": {
-    "report": "http-backup-management/evidence.json",
-    "parity": "http-backup-management/review-process.json",
-    "regression": "http-backup-management/regression.json",
-    "rust_tests_passed": 132,
+    "report": "password-change/evidence.json",
+    "parity": "password-change/review-core.json",
+    "regression": "password-change/regression.json",
+    "rust_tests_passed": 134,
     "ignored_subprocess_helpers": 23,
-    "integration_checks": 11927,
-    "http_backup_management_process_checks": 33,
-    "ui_tests": 66,
+    "integration_checks": 11999,
+    "password_change_core_checks": 44,
+    "password_change_http_checks": 28,
+    "ui_tests": 72,
     "writer_authority": false,
     "whole_issues_closed": false
   },
@@ -272,6 +273,12 @@
       "code_revision": "sha256:057a0e73f0e07a3d6c8b31bbead7d6f012240877bd29f3ee2c5d558cf3586909",
       "spec_revision": "sha256:ac194f3035f0de3572f9ccd325ded41c68115f8c08dc5b7621d28f40c192abe1",
       "state": "verified-native-http-own-session-management-and-truthful-react-account-menu"
+    },
+    {
+      "current_increment": "http-backup-management-1",
+      "code_revision": "sha256:bde7e7ed766700680fd3b83b402264d19a704ae8021cd52e40a3592cd8a78f72",
+      "spec_revision": "sha256:97cff1797b93e48cc8fa7c7a502eb5783bc1195240a164a114492d7ee917b513",
+      "state": "verified-native-http-authenticated-backup-management-and-ephemeral-ui"
     }
   ]
 }

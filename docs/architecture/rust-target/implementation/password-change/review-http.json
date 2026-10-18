@@ -1,0 +1,91 @@
+{
+  "ok": true,
+  "checks": 28,
+  "observations": [
+    {
+      "id": "password-change/WAL-true-source-KDF-and-token-free-receipt-with-exact-optional-rotation"
+    },
+    {
+      "id": "password-change/WAL-false-source-KDF-and-token-free-receipt-with-exact-optional-rotation"
+    },
+    {
+      "id": "password-change/WAL-omitted-source-KDF-and-token-free-receipt-with-exact-optional-rotation"
+    },
+    {
+      "id": "password-change/DELETE-true-source-KDF-and-token-free-receipt-with-exact-optional-rotation"
+    },
+    {
+      "id": "password-change/DELETE-false-source-KDF-and-token-free-receipt-with-exact-optional-rotation"
+    },
+    {
+      "id": "password-change/DELETE-omitted-source-KDF-and-token-free-receipt-with-exact-optional-rotation"
+    },
+    {
+      "id": "password-change/null-flag-strict-admission-before-native-dispatch"
+    },
+    {
+      "id": "password-change/string-flag-strict-admission-before-native-dispatch"
+    },
+    {
+      "id": "password-change/duplicate-flag-strict-admission-before-native-dispatch"
+    },
+    {
+      "id": "password-change/array-strict-admission-before-native-dispatch"
+    },
+    {
+      "id": "password-change/subject-strict-admission-before-native-dispatch"
+    },
+    {
+      "id": "password-change/missing-current-strict-admission-before-native-dispatch"
+    },
+    {
+      "id": "password-change/new-short-strict-admission-before-native-dispatch"
+    },
+    {
+      "id": "password-change/new-long-strict-admission-before-native-dispatch"
+    },
+    {
+      "id": "password-change/current-bound-strict-admission-before-native-dispatch"
+    },
+    {
+      "id": "password-change/bare-cookie-strict-admission-before-native-dispatch"
+    },
+    {
+      "id": "password-change/service-strict-admission-before-native-dispatch"
+    },
+    {
+      "id": "password-change/origin-strict-admission-before-native-dispatch"
+    },
+    {
+      "id": "password-change/content-strict-admission-before-native-dispatch"
+    },
+    {
+      "id": "password-change/body-bound-strict-admission-before-native-dispatch"
+    },
+    {
+      "id": "password-change/wrong-no-update-rotation-audit-or-receipt"
+    },
+    {
+      "id": "password-change/stale-no-update-rotation-audit-or-receipt"
+    },
+    {
+      "id": "password-change/disabled-no-update-rotation-audit-or-receipt"
+    },
+    {
+      "id": "password-change/bad-result-no-update-rotation-audit-or-receipt"
+    },
+    {
+      "id": "password-change/DELETE-false-actual-unknown-commit-no-user-cookie-or-success"
+    },
+    {
+      "id": "password-change/DELETE-true-actual-unknown-commit-no-user-cookie-or-success"
+    },
+    {
+      "id": "password-change/HEAD-no-rate-charge-direct-peer-KDF-budget-ignores-forwarded-and-rotation-flag"
+    },
+    {
+      "id": "password-change/missing-trusted-handler-no-legacy-fallback"
+    }
+  ],
+  "scope": "Focused password change http"
+}

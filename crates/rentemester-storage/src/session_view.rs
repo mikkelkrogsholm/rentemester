@@ -59,6 +59,11 @@ pub struct SessionView {
     session: SessionMetadata,
     user: SessionUser,
 }
+impl SessionView {
+    pub fn user(&self) -> &SessionUser {
+        &self.user
+    }
+}
 /// Requires existing control-writer admission. Result is display data, never later authority.
 pub fn current(tx: &Transaction<'_>, token: &str, now: i64) -> Result<SessionView, Error> {
     let current = crate::cookie_session::resolve(
