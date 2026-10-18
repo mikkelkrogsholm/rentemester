@@ -337,5 +337,7 @@ impl NamespaceGuard {
     }
 }
 
+mod documents;
+
 #[cfg(test)]
 mod tests;

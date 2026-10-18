@@ -108,6 +108,9 @@ impl Operation {
             | Self::BackupManagement
             | Self::PasswordChange => (Duration::from_secs(10), 3),
             Self::Request | Self::VerificationRequest => (WINDOW, 3),
+            // A browser refresh reads both session and workspace context. Keep
+            // ordinary navigation usable without changing credential budgets.
+            Self::Session | Self::WorkspaceContext => (WINDOW, 120),
             _ => (WINDOW, 10),
         }
     }

@@ -54,6 +54,15 @@ impl NamespaceGuard {
     ) -> Result<Self, NamespaceError> {
         Err(NamespaceError::Unsupported)
     }
+    pub fn publish_document(
+        &mut self,
+        _: &crate::document::Prepared,
+    ) -> Result<String, NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
+    pub fn read_document(&mut self, _: &str, _: &str) -> Result<Vec<u8>, NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
     pub fn ensure_current(&mut self) -> Result<(), NamespaceError> {
         Err(NamespaceError::Unsupported)
     }

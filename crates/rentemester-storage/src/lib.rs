@@ -499,3 +499,5 @@ pub mod fresh;
 pub mod bootstrap;
 
 pub mod cockpit;
+
+pub mod documents;

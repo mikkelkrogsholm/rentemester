@@ -1389,6 +1389,7 @@ version = "0.1.0"
 dependencies = [
  "num-bigint",
  "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -1437,6 +1438,7 @@ name = "rentemester-server"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "base64 0.22.1",
  "chrono",
  "hmac",
  "percent-encoding",

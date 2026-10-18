@@ -28,3 +28,5 @@ pub mod service_company;
 pub mod bootstrap;
 
 pub mod owned_report;
+
+pub mod documents;

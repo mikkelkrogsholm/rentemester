@@ -2,7 +2,7 @@
 
 Rust-serveren leverer det eksisterende React-cockpit og behandler selv login,
 ejeroprettelse, MFA, sessions, virksomhedsadgang, manuel bogføring, tilbageførsel
-samt resultatopgørelse, balance og saldobalance med CSV/PDF-eksport. Den
+samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport. Den
 starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Prøv med syntetiske data
@@ -44,6 +44,23 @@ ikke findes et tidligere år i ledgeren. Momskonti placeres i aktiver eller
 passiver efter deres normale debet-/kreditside. PDF-filer med mange kontolinjer
 fordeles over flere sider. CSV bruger UTF-8, semikolon og danske decimalkommaer.
 
+## Indlæs og åbn et bilag
+
+Åbn **Bogføring → Bilag → Indlæs bilag**. Vælg en fil, bilagstype og kilde,
+og udfyld oplysningerne. Ved **Kassebon** kan du eksempelvis angive dato,
+bruttobeløb og momsbeløb. Indlæs bilaget, luk kvitteringen, og vælg **Åbn bilag**
+på bilagslisten for at se originalfilen.
+
+Rust gemmer originalen med indholdshash og registrerer metadata, bilagsnummer,
+opbevaringsfrist og aktør. Filtypen kontrolleres, eksisterende originaler
+overskrives ikke, og identisk filindhold afvises som dublet. Originalfilen kan
+kun læses med virksomhedens bilagsadgang og efter hashkontrol. Bilaget og
+originalfilen bevares ved servergenstart.
+
+Bankimport, bankmatch og **Bogfør bilag** er endnu ikke koblet til Rust.
+Bilagsindlæsning alene bogfører derfor ingen udgift. Tvungen indlæsning og
+leverandørkobling afvises eksplicit, indtil de tilsvarende forløb er porteret.
+
 ## Tilbagefør en postering
 
 Åbn posteringen under **Posteringer**, vælg **Tilbagefør postering**, og angiv
@@ -74,7 +91,10 @@ uforanderlighed og saldobalancen og afviser dobbelt tilbageførsel og tilbagefø
 af en tilbageførsel. Rapporttesten åbner alle tre rapportsider, bruger de
 rigtige downloadknapper og kontrollerer CSV-indhold, læsbar PDF-tekst og
 deterministiske PDF-bytes. Filerne gemmes i `/tmp/rentemester-rust-reports/`.
-Testdata fjernes fra Docker efter kørslen.
+Bilagstesten indlæser en kassebon i browseren, kontrollerer originalfilens
+nøjagtige bytes før og efter genstart og afviser dublet, forkert filtype og
+uautentificeret adgang. Skærmbilledet gemmes som
+`/tmp/rentemester-rust-documents.png`. Testdata fjernes fra Docker efter kørslen.
 
 ## Aktuel afgrænsning
 

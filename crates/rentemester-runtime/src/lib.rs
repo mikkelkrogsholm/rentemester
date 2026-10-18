@@ -163,3 +163,5 @@ pub mod posting_time;
 pub mod namespace;
 
 pub mod bootstrap;
+
+pub mod document;

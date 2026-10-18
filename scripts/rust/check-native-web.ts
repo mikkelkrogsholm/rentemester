@@ -1,4 +1,5 @@
 // Real browser journey against run-web-demo.py --check; no intercepted requests or fixtures.
+import { checkNativeDocuments } from "./check-native-documents";
 import { checkNativeReports } from "./check-native-reports";
 import { checkNativeReversal } from "./check-native-reversal";
 import { chromium } from "@playwright/test";
@@ -27,6 +28,8 @@ function totp(secret: string): string {
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  page.setDefaultTimeout(30_000);
+  page.setDefaultNavigationTimeout(60_000);
   const failures: string[] = [];
   page.on("pageerror", (error) => failures.push(error.message));
   let postedBody: string | null = null;
@@ -56,6 +59,7 @@ try {
     if (rows.length !== 2 || !rows.every((row) => row.includes("125,50"))) throw new Error("Reopened trial balance changed");
     await page.screenshot({ path: process.env.RM_NATIVE_WEB_SCREENSHOT ?? "/tmp/rentemester-rust-first-journey.png", fullPage: true });
     console.log("PASS: Rust server restart → browser login → persisted posting and balance; idempotent replay creates no duplicate");
+    await checkNativeDocuments(page, base, true);
     await checkNativeReversal(page, base);
   } else {
   if (setup) {
@@ -112,6 +116,7 @@ try {
   await page.reload();
   await page.getByText("Saldobalancen stemmer — debet = kredit.", { exact: true }).waitFor();
   await checkNativeReports(page, base);
+  await checkNativeDocuments(page, base);
   if (failures.length) throw new Error(`Browser errors: ${failures.join("; ")}`);
   await page.screenshot({ path: process.env.RM_NATIVE_WEB_SCREENSHOT ?? "/tmp/rentemester-rust-first-journey.png", fullPage: true });
   if (statePath) writeFileSync(statePath, JSON.stringify({ backup, postedBody }), { mode: 0o600 });

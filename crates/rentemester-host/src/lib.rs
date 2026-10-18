@@ -495,6 +495,93 @@ impl Owner {
             )
         })
     }
+    fn document_action<T>(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        work: impl FnOnce(
+            &mut Connection,
+            &mut Connection,
+            &mut NamespaceGuard,
+            rentemester_application::documents::Context<'_>,
+        )
+            -> Result<Committed<T>, rentemester_application::control_fence::Failure>,
+    ) -> Result<
+        Attempt<Result<Committed<T>, rentemester_application::control_fence::Failure>>,
+        OwnerError,
+    > {
+        self.admit()?;
+        let slots = self.held.0.as_mut().unwrap();
+        let context = rentemester_application::documents::Context {
+            cookie,
+            clock,
+            selection: CompanySelection {
+                workspace: &self.workspace,
+                slug: &self.slug,
+                registered: true,
+                archived: false,
+            },
+        };
+        let outcome = work(
+            slots.control.as_mut().unwrap(),
+            slots.company.as_mut().unwrap(),
+            &mut slots.guard,
+            context,
+        );
+        let reusable = outcome.as_ref().map_or_else(
+            |f| f.control_reusable && f.company_reusable,
+            |v| v.control_reusable,
+        );
+        let retired = self.finish(reusable);
+        Ok(Attempt { outcome, retired })
+    }
+    pub fn ingest_document(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        input: rentemester_application::documents::Ingest<'_>,
+    ) -> Result<
+        Attempt<
+            Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, g, context| {
+            rentemester_application::documents::ingest(c, l, g, context, input)
+        })
+    }
+    pub fn documents(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+    ) -> Result<
+        Attempt<
+            Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, _, context| {
+            rentemester_application::documents::list(c, l, context)
+        })
+    }
+    pub fn document_original(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        id: i64,
+    ) -> Result<
+        Attempt<
+            Result<
+                Committed<rentemester_application::documents::Original>,
+                rentemester_application::control_fence::Failure,
+            >,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, g, context| {
+            rentemester_application::documents::read(c, l, g, context, id)
+        })
+    }
     pub fn cockpit_snapshot(
         &mut self,
         cookie: &VerifiedCookie,
