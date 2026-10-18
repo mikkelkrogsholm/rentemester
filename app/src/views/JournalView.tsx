@@ -12,6 +12,7 @@ import { ButtonLink, Button, Input, PageHeader } from "../components/ui";
 // afspejles i URL-params (`q`, `from`, `to`, `amountMin`, `amountMax`) så
 // ejeren kan dele linket eller komme tilbage til samme udsnit.
 
+import { JournalReversalForm } from "../components/JournalReversalForm";
 import { ManualJournalForm } from "../components/ManualJournalForm";
 import { useCapabilities } from "../lib/useCapabilities";
 import { useMemo, useState } from "react";
@@ -255,6 +256,8 @@ export function JournalView() {
               currency={currency}
               slug={slug}
               archived={j.archived}
+              reversalRuleVersion={j.nativePosting?.ruleVersion}
+              onChanged={state.reload}
             />
           ))}
         </ul>
@@ -279,7 +282,11 @@ function EntryRow({
   currency,
   slug,
   archived,
+  reversalRuleVersion,
+  onChanged,
 }: {
+  reversalRuleVersion?: string;
+  onChanged?: () => void;
   entry: JournalEntry;
   currency: string;
   slug: string;
@@ -291,6 +298,8 @@ function EntryRow({
   archived: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [reversing, setReversing] = useState(false);
+  const { can } = useCapabilities();
   // #379 — en post har et bilag når både linkage og fil-route er meningsfulde.
   // Arkiverede år vises altid som "Intet bilag" (filen er ikke i `documents`).
   const hasDocument = !archived && entry.documentId !== null;
@@ -314,6 +323,10 @@ function EntryRow({
       </Button>
       {open && (
         <div className="entry-lines table-scroll">
+          {entry.reversalOfEntryNo && <p>Tilbageførsel af {entry.reversalOfEntryNo}</p>}
+          {entry.reversedByEntryNo && <p>Tilbageført ved {entry.reversedByEntryNo}</p>}
+          {reversalRuleVersion && !archived && entry.reversalOfEntryId == null && entry.reversedByEntryId == null && can("company.ledger.post") && <Button variant="secondary" onClick={() => setReversing(true)}>Tilbagefør postering</Button>}
+          {reversing && reversalRuleVersion && <JournalReversalForm slug={slug} entry={entry} ruleVersion={reversalRuleVersion} onSaved={() => onChanged?.()} onClose={() => setReversing(false)} />}
           <table className="data statement-table">
             <thead>
               <tr>

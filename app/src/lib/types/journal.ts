@@ -15,6 +15,10 @@ export type JournalLine = {
 };
 
 export type JournalEntry = {
+  reversalOfEntryId?: number | null;
+  reversalOfEntryNo?: string | null;
+  reversedByEntryId?: number | null;
+  reversedByEntryNo?: string | null;
   id: number;
   entryNo: string;
   date: string;

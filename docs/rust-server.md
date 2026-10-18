@@ -1,7 +1,8 @@
 # Kør Rust-serveren med web-UI'et
 
 Rust-serveren leverer det eksisterende React-cockpit og behandler selv login,
-ejeroprettelse, MFA, sessions, virksomhedsadgang, manuel bogføring og saldobalance. Den starter
+ejeroprettelse, MFA, sessions, virksomhedsadgang, manuel bogføring, tilbageførsel
+og saldobalance. Den starter
 ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Prøv med syntetiske data
@@ -32,6 +33,17 @@ kræver fortsat bilag; domænekontrollen er ikke lempet for demoen.
 Ctrl-C stopper demoen og fjerner dens container og datavolume. Kun en separat
 Rust-buildcache bevares. Eksisterende virksomhedsdata bruges ikke.
 
+## Tilbagefør en postering
+
+Åbn posteringen under **Posteringer**, vælg **Tilbagefør postering**, og angiv
+dato og begrundelse. Gennemse og bekræft tilbageførslen. Originalen bevares;
+der oprettes en ny postering med omvendt debet og kredit, og begge posteringer
+viser deres forbindelse. En allerede tilbageført postering kan ikke tilbageføres igen.
+
+Ved demoens postering på 125,50 kr. går begge kontosaldi tilbage til nul efter
+tilbageførsel. Saldobalancens samlede debet og kredit er hver 251,00 kr., fordi
+både originalen og tilbageførslen stadig indgår i historikken.
+
 ## Kontroller hele forløbet
 
 Med Playwrights Chromium installeret:
@@ -46,7 +58,9 @@ brugte installationslinks, gennemfører login og MFA, bogfører 125,50 kr., kont
 saldobalancen, genstarter serveren og logger ind igen med en recovery code.
 Den kontrollerer derefter den bevarede postering og saldobalance samt, at
 samme idempotente bogføringskald ikke opretter en dublet. Et skærmbillede gemmes
-som `/tmp/rentemester-rust-first-journey.png`. Testdata fjernes efter kørslen.
+som `/tmp/rentemester-rust-first-journey.png`. Testen gennemfører også en tilbageførsel i browseren, kontrollerer originalens
+uforanderlighed og saldobalancen og afviser dobbelt tilbageførsel og tilbageførsel
+af en tilbageførsel. Testdata fjernes efter kørslen.
 
 ## Aktuel afgrænsning
 

@@ -82,7 +82,7 @@ pub fn read(
         None
     };
     let mut entries = Vec::new();
-    let mut statement = tx.prepare("SELECT je.id,je.entry_no,je.transaction_date,je.text,je.document_id,d.document_no FROM journal_entries je LEFT JOIN documents d ON d.id=je.document_id WHERE je.transaction_date>=?1 AND je.transaction_date<=?2 ORDER BY je.transaction_date DESC,je.id DESC").map_err(invalid)?;
+    let mut statement = tx.prepare("SELECT je.id,je.entry_no,je.transaction_date,je.text,je.document_id,d.document_no,je.reversal_of_entry_id,original.entry_no,(SELECT rv.id FROM journal_entries rv WHERE rv.reversal_of_entry_id=je.id ORDER BY rv.id LIMIT 1),(SELECT rv.entry_no FROM journal_entries rv WHERE rv.reversal_of_entry_id=je.id ORDER BY rv.id LIMIT 1) FROM journal_entries je LEFT JOIN documents d ON d.id=je.document_id LEFT JOIN journal_entries original ON original.id=je.reversal_of_entry_id WHERE je.transaction_date>=?1 AND je.transaction_date<=?2 ORDER BY je.transaction_date DESC,je.id DESC").map_err(invalid)?;
     let mut records = statement
         .query([&period.start, &period.end])
         .map_err(invalid)?;
@@ -102,7 +102,7 @@ pub fn read(
         if account.is_some_and(|no| !wire.iter().any(|l| l["accountNo"] == no)) {
             continue;
         }
-        entries.push(json!({"id":id,"entryNo":r.get::<_,String>(1).map_err(invalid)?,"date":r.get::<_,String>(2).map_err(invalid)?,"text":r.get::<_,String>(3).map_err(invalid)?,"documentId":r.get::<_,Option<i64>>(4).map_err(invalid)?,"documentNo":r.get::<_,Option<String>>(5).map_err(invalid)?,"total":number(&total)?,"lines":wire}));
+        entries.push(json!({"id":id,"entryNo":r.get::<_,String>(1).map_err(invalid)?,"date":r.get::<_,String>(2).map_err(invalid)?,"text":r.get::<_,String>(3).map_err(invalid)?,"documentId":r.get::<_,Option<i64>>(4).map_err(invalid)?,"documentNo":r.get::<_,Option<String>>(5).map_err(invalid)?,"total":number(&total)?,"lines":wire,"reversalOfEntryId":r.get::<_,Option<i64>>(6).map_err(invalid)?,"reversalOfEntryNo":r.get::<_,Option<String>>(7).map_err(invalid)?,"reversedByEntryId":r.get::<_,Option<i64>>(8).map_err(invalid)?,"reversedByEntryNo":r.get::<_,Option<String>>(9).map_err(invalid)?}));
     }
     base["entries"] = json!(entries);
     base["accountFilter"] = filter

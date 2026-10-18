@@ -9,7 +9,7 @@ use axum::{
     routing::{get, post},
 };
 use rentemester_application::{
-    control_fence::FailureStage, journal_post, owned_report::CockpitRequest,
+    control_fence::FailureStage, journal_post, journal_reversal, owned_report::CockpitRequest,
 };
 use rentemester_runtime::auth::{SystemClock, VerifiedCookie};
 use serde::Deserialize;
@@ -37,6 +37,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/trial-balance", get(read))
         .route("/api/companies/{slug}/fiscal-years", get(read))
         .route("/api/companies/{slug}/manual-journal", post(write))
+        .route("/api/companies/{slug}/manual-journal-reversal", post(write))
         .with_state(state)
 }
 fn response(status: StatusCode, value: Value) -> Response {
@@ -204,10 +205,21 @@ async fn read(State(state): State<Product>, request: Request) -> Response {
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
-struct PostWire {
+struct PostWire<T> {
     confirm: bool,
-    input: journal_post::Input,
+    input: T,
 }
+enum Mutation {
+    Post(journal_post::Input),
+    Reverse(journal_reversal::Input),
+}
+type MutationResult = Result<
+    Value,
+    (
+        rentemester_application::control_fence::Failure,
+        Option<Value>,
+    ),
+>;
 async fn write(State(state): State<Product>, request: Request) -> Response {
     let cookie = match proof(&state, &request, true) {
         Ok(v) => v,
@@ -228,43 +240,73 @@ async fn write(State(state): State<Product>, request: Request) -> Response {
     let Ok(permit) = state.workers.clone().try_acquire_owned() else {
         return refused(StatusCode::SERVICE_UNAVAILABLE, "busy");
     };
+    let reversal = request.uri().path().ends_with("/manual-journal-reversal");
     let bytes = match to_bytes(request.into_body(), 65_536).await {
         Ok(b) => b,
         Err(_) => return refused(StatusCode::PAYLOAD_TOO_LARGE, "body_too_large"),
     };
-    let wire: PostWire = match serde_json::from_slice(&bytes) {
-        Ok(w) => w,
-        Err(_) => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
+    let command = if reversal {
+        let wire: PostWire<journal_reversal::Input> = match serde_json::from_slice(&bytes) {
+            Ok(w) => w,
+            Err(_) => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
+        };
+        if !wire.confirm || wire.input.idempotency_key.is_none() {
+            return refused(StatusCode::BAD_REQUEST, "confirmation_and_key_required");
+        }
+        Mutation::Reverse(wire.input)
+    } else {
+        let wire: PostWire<journal_post::Input> = match serde_json::from_slice(&bytes) {
+            Ok(w) => w,
+            Err(_) => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
+        };
+        if !wire.confirm || wire.input.idempotency_key.is_none() {
+            return refused(StatusCode::BAD_REQUEST, "confirmation_and_key_required");
+        }
+        Mutation::Post(wire.input)
     };
-    if !wire.confirm || wire.input.idempotency_key.is_none() {
-        return refused(StatusCode::BAD_REQUEST, "confirmation_and_key_required");
-    }
     let native = state.native;
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
         let mut owner = native.owner.lock().map_err(|_| ())?;
-        owner
-            .post_human(
-                &cookie,
-                &SystemClock,
-                &journal_post::Policy::default(),
-                wire.input,
-            )
-            .map_err(|_| ())
+        let outcome: MutationResult = match command {
+            Mutation::Post(input) => owner
+                .post_human(
+                    &cookie,
+                    &SystemClock,
+                    &journal_post::Policy::default(),
+                    input,
+                )
+                .map_err(|_| ())?
+                .outcome
+                .map(|v| v.value.result)
+                .map_err(|f| (f.fence, f.business)),
+            Mutation::Reverse(input) => owner
+                .reverse_human(
+                    &cookie,
+                    &SystemClock,
+                    &journal_reversal::Policy::default(),
+                    input,
+                )
+                .map_err(|_| ())?
+                .outcome
+                .map(|v| v.value.result)
+                .map_err(|f| (f.fence, f.business)),
+        };
+        Ok::<_, ()>(outcome)
     })
     .await;
     match result {
-        Ok(Ok(attempt)) => match attempt.outcome {
-            Ok(committed) => response(StatusCode::OK, committed.value.result),
-            Err(f) if f.fence.stage == FailureStage::OutcomeUnknown => {
+        Ok(Ok(outcome)) => match outcome {
+            Ok(value) => response(StatusCode::OK, value),
+            Err((f, _)) if f.stage == FailureStage::OutcomeUnknown => {
                 refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unknown")
             }
-            Err(f) if f.fence.error.code == "invalid_credentials" => {
+            Err((f, _)) if f.error.code == "invalid_credentials" => {
                 refused(StatusCode::UNAUTHORIZED, "unauthorized")
             }
-            Err(f) => match f.business {
+            Err((f, business)) => match business {
                 Some(value) => response(StatusCode::UNPROCESSABLE_ENTITY, value),
-                None => refused(StatusCode::BAD_REQUEST, f.fence.error.code),
+                None => refused(StatusCode::BAD_REQUEST, f.error.code),
             },
         },
         _ => refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed"),

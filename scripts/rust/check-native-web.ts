@@ -1,4 +1,5 @@
 // Real browser journey against run-web-demo.py --check; no intercepted requests or fixtures.
+import { checkNativeReversal } from "./check-native-reversal";
 import { chromium } from "@playwright/test";
 import { readFileSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
@@ -54,6 +55,7 @@ try {
     if (rows.length !== 2 || !rows.every((row) => row.includes("125,50"))) throw new Error("Reopened trial balance changed");
     await page.screenshot({ path: process.env.RM_NATIVE_WEB_SCREENSHOT ?? "/tmp/rentemester-rust-first-journey.png", fullPage: true });
     console.log("PASS: Rust server restart → browser login → persisted posting and balance; idempotent replay creates no duplicate");
+    await checkNativeReversal(page, base);
   } else {
   if (setup) {
     const unauthorized = await page.request.post(`${base}/api/setup/first-owner`, { headers: { origin: base, "content-type": "application/json", "x-rentemester-install-token": "invalid" }, data: { name: "Synthetic Intruder", email: "intruder@example.invalid", password: "synthetic-password-456" } });
