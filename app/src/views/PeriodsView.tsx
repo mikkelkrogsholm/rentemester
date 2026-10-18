@@ -1,3 +1,4 @@
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { useDiscardGuard } from "../lib/useDiscardGuard";
 import { useCapabilities } from "../lib/useCapabilities";
@@ -36,6 +37,7 @@ const STATUS_LABEL: Record<string, string> = {
 export function PeriodsView() {
   const { slug = "" } = useParams();
   const [error, setError] = useState<string | null>(null);
+  const [reportTarget, setReportTarget] = useState<AccountingPeriodRow | null>(null);
   const [openClose, setOpenClose] = useState(false);
   const [reopenTarget, setReopenTarget] =
     useState<AccountingPeriodRow | null>(null);
@@ -137,6 +139,9 @@ export function PeriodsView() {
                   <td className="muted">{p.closedBy ?? "—"}</td>
                   <td className="muted">{p.reference ?? "—"}</td>
                   <td>
+                    {data.reportingAvailable && p.effectiveStatus === "closed" && p.closePacketHash && (
+                      <Button requiredPermission="company.review" variant="secondary" onClick={() => setReportTarget(p)}>Registrér indberetning</Button>
+                    )}
                     {p.effectiveStatus === "closed" && (
                       <Button requiredPermission="company.review" variant="secondary"
                         type="button"
@@ -162,6 +167,17 @@ export function PeriodsView() {
         )}
       </section>
 
+      {reportTarget && <ConfirmDialog
+        title="Registrér indberetning" confirmLabel="Registrér indberetning"
+        body={<p>Registrér kvitteringen for den allerede gennemførte indberetning for {reportTarget.periodStart} – {reportTarget.periodEnd}. Dette sender ikke oplysninger til myndighederne. Perioden kan herefter ikke genåbnes, og kvitteringsreferencen kan ikke ændres.</p>}
+        noteLabel="Kvitteringsreference" operationKey={String(reportTarget.id)}
+        onClose={() => setReportTarget(null)} onRefresh={state.reload}
+        onConfirm={async (reference) => {
+          if (!reference) throw new Error("Angiv kvitteringsreferencen.");
+          await api.reportPeriod(slug, { periodStart: reportTarget.periodStart, periodEnd: reportTarget.periodEnd, kind: reportTarget.kind, packetHash: reportTarget.closePacketHash!, reference });
+          state.reload();
+        }}
+      />}
       {openClose && (
         <ClosePeriodModal
           slug={slug}

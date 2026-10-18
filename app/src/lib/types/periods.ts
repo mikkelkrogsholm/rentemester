@@ -69,6 +69,7 @@ export type AccountingPeriodRow = {
   kind: AccountingPeriodKind;
   rowStatus: AccountingPeriodStatus;
   effectiveStatus: AccountingPeriodStatus;
+  closePacketHash?: string | null;
   closedAt: string | null;
   closedBy: string | null;
   reference: string | null;
@@ -76,6 +77,7 @@ export type AccountingPeriodRow = {
 
 export type CompanyPeriods = {
   slug: string;
+  reportingAvailable?: boolean;
   company: {
     name: string;
     cvr: string | null;
@@ -93,3 +95,5 @@ export type PeriodsResponse = {
 
 export type PeriodCloseReadinessResponse = { ok: true; packet: PeriodCloseReadinessPacket };
 export type PeriodCloseReviewResponse = { ok: true; review: PeriodCloseReview };
+
+export type ReportPeriodInput = { periodStart: string; periodEnd: string; kind: AccountingPeriodKind; packetHash: string; reference: string };

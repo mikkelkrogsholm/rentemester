@@ -42,6 +42,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies", get(companies))
         .route("/api/companies/{slug}/periods", get(periods::handle))
         .route(
+            "/api/companies/{slug}/periods/report",
+            post(periods::handle),
+        )
+        .route(
             "/api/companies/{slug}/periods/close-readiness",
             get(periods::handle),
         )

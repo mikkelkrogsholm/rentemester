@@ -36,6 +36,16 @@ pub struct Reopen {
     pub reason: String,
     pub confirm: bool,
 }
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Report {
+    pub period_start: String,
+    pub period_end: String,
+    pub kind: Option<String>,
+    pub reference: String,
+    pub packet_hash: String,
+    pub confirm: bool,
+}
 pub(crate) fn bounds(start: &str, end: &str) -> Result<(), Error> {
     if Date::parse(start)? > Date::parse(end)? {
         return Err(refused("period start must not exceed period end"));
@@ -69,7 +79,7 @@ pub(crate) fn effective(tx: &Transaction<'_>, id: i64, mut state: String) -> Res
 }
 pub fn list(tx: &Transaction<'_>, slug: &str) -> Result<Value, Error> {
     let company:Value=tx.query_row("SELECT name,cvr,country,currency FROM companies WHERE id=1",[],|r|Ok(json!({"name":r.get::<_,String>(0)?,"cvr":r.get::<_,Option<String>>(1)?,"country":r.get::<_,String>(2)?,"currency":r.get::<_,String>(3)?}))).map_err(invalid)?;
-    let mut q=tx.prepare("SELECT id,period_start,period_end,kind,status,closed_at,closed_by,reference FROM accounting_periods ORDER BY period_start,id").map_err(invalid)?;
+    let mut q=tx.prepare("SELECT id,period_start,period_end,kind,status,closed_at,closed_by,reference,(SELECT packet_hash FROM period_close_decisions d WHERE d.period_id=accounting_periods.id AND d.decision IN ('closed','forced_closed') ORDER BY d.id DESC LIMIT 1) FROM accounting_periods ORDER BY period_start,id").map_err(invalid)?;
     let mut rs = q.query([]).map_err(invalid)?;
     let mut rows = vec![];
     let mut counts = json!({"open":0,"closed":0,"reported":0});
@@ -83,9 +93,11 @@ pub fn list(tx: &Transaction<'_>, slug: &str) -> Result<Value, Error> {
                 .ok_or_else(|| refused("invalid period state"))?
                 + 1
         );
-        rows.push(json!({"id":id,"periodStart":r.get::<_,String>(1).map_err(invalid)?,"periodEnd":r.get::<_,String>(2).map_err(invalid)?,"kind":r.get::<_,String>(3).map_err(invalid)?,"rowStatus":status,"effectiveStatus":state,"closedAt":r.get::<_,Option<String>>(5).map_err(invalid)?,"closedBy":r.get::<_,Option<String>>(6).map_err(invalid)?,"reference":r.get::<_,Option<String>>(7).map_err(invalid)?}));
+        rows.push(json!({"id":id,"periodStart":r.get::<_,String>(1).map_err(invalid)?,"periodEnd":r.get::<_,String>(2).map_err(invalid)?,"kind":r.get::<_,String>(3).map_err(invalid)?,"rowStatus":status,"effectiveStatus":state,"closedAt":r.get::<_,Option<String>>(5).map_err(invalid)?,"closedBy":r.get::<_,Option<String>>(6).map_err(invalid)?,"reference":r.get::<_,Option<String>>(7).map_err(invalid)?,"closePacketHash":r.get::<_,Option<String>>(8).map_err(invalid)?}));
     }
-    Ok(json!({"slug":slug,"company":company,"periods":rows,"byStatus":counts}))
+    Ok(
+        json!({"slug":slug,"company":company,"periods":rows,"byStatus":counts,"reportingAvailable":true}),
+    )
 }
 pub fn review(tx: &Transaction<'_>, packet: &Value, actor: &str) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
@@ -244,6 +256,80 @@ pub fn reopen(
     )
 }
 
+/// Record an already completed external filing against its original close proof.
+/// The locked period cannot be evaluated against a new readiness packet.
+pub fn report(tx: &Transaction<'_>, input: &Report, actor: &str) -> Result<Value, Error> {
+    crate::journal_post::require_current(tx)?;
+    bounds(&input.period_start, &input.period_end)?;
+    let kind = kind(input.kind.as_deref())?;
+    let reference = input.reference.trim();
+    if !input.confirm
+        || reference.is_empty()
+        || reference.len() > 4096
+        || reference.chars().any(char::is_control)
+    {
+        return Err(refused(
+            "confirmation and bounded filing receipt reference required",
+        ));
+    }
+    let row:Option<(i64,String,Option<String>)>=tx.query_row("SELECT id,status,reference FROM accounting_periods WHERE period_start=?1 AND period_end=?2 AND (kind=?3 OR (?3='vat_period' AND kind='vat_quarter')) ORDER BY CASE kind WHEN 'vat_period' THEN 0 ELSE 1 END,id DESC LIMIT 1",params![input.period_start,input.period_end,kind],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).optional().map_err(invalid)?;
+    let (id, status, existing) =
+        row.ok_or_else(|| refused("closed accounting period required before recording filing"))?;
+    let state = effective(tx, id, status.clone())?;
+    let proof:Option<(String,String)>=tx.query_row("SELECT d.packet_hash,p.packet_json FROM period_close_decisions d JOIN period_close_readiness_packets p ON p.packet_hash=d.packet_hash WHERE d.period_id=?1 AND d.decision IN ('closed','forced_closed') ORDER BY d.id DESC LIMIT 1",[id],|r|Ok((r.get(0)?,r.get(1)?))).optional().map_err(invalid)?;
+    let (hash, packet) = proof.ok_or_else(|| refused("PERIOD_REPORT_CLOSE_PACKET_MISMATCH"))?;
+    if hash != input.packet_hash {
+        return Err(refused("PERIOD_REPORT_CLOSE_PACKET_MISMATCH"));
+    }
+    if state == "reported" {
+        if existing.as_deref().is_some_and(|value| value != reference) {
+            return Err(refused("reported period filing receipt is immutable"));
+        }
+        if status == "reported" {
+            if existing.as_deref() != Some(reference) {
+                return Err(refused("reported period filing receipt is immutable"));
+            }
+            return Ok(
+                json!({"id":id,"periodStart":input.period_start,"periodEnd":input.period_end,"kind":kind,"status":"reported","reference":reference}),
+            );
+        }
+    } else if state != "closed" {
+        return Err(refused(
+            "only a currently closed period can be marked reported",
+        ));
+    }
+    tx.execute("UPDATE accounting_periods SET status='reported',reported_at=COALESCE(reported_at,CURRENT_TIMESTAMP),reference=?1 WHERE id=?2 AND status='closed'",params![reference,id]).map_err(invalid)?;
+    let event_type = if state == "reported" {
+        "period_report_reference_backfill"
+    } else {
+        "period_report"
+    };
+    event(
+        tx,
+        id,
+        event_type,
+        actor,
+        &format!(
+            "Recorded filing receipt for {kind} {}..{} ({reference})",
+            input.period_start, input.period_end
+        ),
+    )?;
+    if state != "reported" {
+        let packet: Value = serde_json::from_str(&packet).map_err(invalid)?;
+        decision(
+            tx,
+            id,
+            &packet,
+            "closed",
+            actor,
+            Some(&format!("reported:{reference}")),
+        )?;
+    }
+    Ok(
+        json!({"id":id,"periodStart":input.period_start,"periodEnd":input.period_end,"kind":kind,"status":"reported","reference":reference}),
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -319,6 +405,45 @@ mod tests {
                 .unwrap(),
             1
         );
+        let receipt = |reference: &str, hash: &Value| {
+            serde_json::from_value::<Report>(json!({"periodStart":"2026-07-01","periodEnd":"2026-09-30","reference":reference,"packetHash":hash,"confirm":true})).unwrap()
+        };
+        assert!(report(&tx, &receipt(" ", &current["hash"]), "synthetic").is_err());
+        assert!(report(&tx, &receipt("SYN-FILING", &json!("wrong")), "synthetic").is_err());
+        assert_eq!(
+            report(&tx, &receipt("SYN-FILING", &current["hash"]), "synthetic").unwrap()["status"],
+            "reported"
+        );
+        let events: i64 = tx
+            .query_row("SELECT count(*) FROM audit_log", [], |r| r.get(0))
+            .unwrap();
+        report(&tx, &receipt("SYN-FILING", &current["hash"]), "synthetic").unwrap();
+        assert_eq!(
+            tx.query_row::<i64, _, _>("SELECT count(*) FROM audit_log", [], |r| r.get(0))
+                .unwrap(),
+            events
+        );
+        assert_eq!(
+            tx.query_row::<i64, _, _>("SELECT count(*) FROM period_close_decisions", [], |r| r
+                .get(0))
+                .unwrap(),
+            4
+        );
+        assert!(report(&tx, &receipt("OTHER-FILING", &current["hash"]), "synthetic").is_err());
+        assert!(
+            reopen(
+                &tx,
+                &reopen_input("Cannot reopen a filed period"),
+                &packet(),
+                "synthetic"
+            )
+            .is_err()
+        );
+        assert_eq!(post("2026-08-03")["ok"], false);
+        let rows = list(&tx, "synthetic").unwrap();
+        assert_eq!(rows["byStatus"]["reported"], 1);
+        assert_eq!(rows["periods"][0]["reference"], "SYN-FILING");
+        assert_eq!(rows["periods"][0]["closePacketHash"], current["hash"]);
         let mut future = input(&approved);
         future.period_start = "2026-10-01".into();
         future.period_end = "2026-12-31".into();

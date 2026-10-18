@@ -14,6 +14,7 @@ pub enum Action<'a> {
     Review(&'a rentemester_storage::periods::Bounds),
     Close(&'a rentemester_storage::periods::Close),
     Reopen(&'a rentemester_storage::periods::Reopen),
+    Report(&'a rentemester_storage::periods::Report),
 }
 fn evidence(tx: &Transaction<'_>, guard: &mut NamespaceGuard) -> Result<Vec<Value>, Error> {
     let mut result = vec![];
@@ -94,6 +95,9 @@ pub fn execute(
         |tx, actor| {
             let (start, end) = match action {
                 Action::List => return rentemester_storage::periods::list(tx, slug),
+                Action::Report(input) => {
+                    return rentemester_storage::periods::report(tx, input, actor);
+                }
                 Action::Readiness(start, end) => (start, end),
                 Action::Review(input) => {
                     if !input.confirm {
@@ -118,7 +122,7 @@ pub fn execute(
                 Action::Reopen(input) => {
                     rentemester_storage::periods::reopen(tx, input, &packet, actor)
                 }
-                Action::List => unreachable!(),
+                Action::List | Action::Report(_) => unreachable!(),
             }
         },
     )

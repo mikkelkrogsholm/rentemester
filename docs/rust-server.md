@@ -109,7 +109,7 @@ bankevidens ikke overskrives eller bliver til en ekstra betaling. Rettelse af
 den type kildekonflikt kræver fortsat et særskilt korrektionsforløb.
 Bankkontrollen er
 et grundlag for dette forløb. Review og almindelig periodelåsning er nu porteret;
-tvangslukning og registrering af ekstern indberetningskvittering mangler stadig.
+tvangslukning mangler stadig. Eksterne indberetningskvitteringer kan registreres fra **Perioder og låsning**.
 
 Udgiftsbogføring understøtter DKK og valutakøb med standardkøbsmoms, momsfri
 behandling eller ikke-fradragsberettiget moms. Manglende kontomoms kræver et
@@ -161,7 +161,7 @@ Tallene er foreløbige i en åben periode. Kopiering til en momsangivelse er
 slået fra. **Hent PDF** gemmer samme periode, frist, rubrikker og status som
 siden. Udskriften er et arbejdsgrundlag og markerer, når den ikke kan indberettes.
 Gennemgået periodelukning og genåbning er nu tilgængelige i Rust-cockpittet;
-registrering af ekstern indberetning mangler stadig.
+tvangslukning mangler stadig.
 
 Momsberegningen bruger præcise ørebeløb, kontotyper, bekræftede kontoroller og
 posteringernes eksplicitte momskoder. Kontoens aktuelle standardmomskode
@@ -227,6 +227,13 @@ ikke en bankbetaling eller en momsafregningspostering.
    Den oprindelige perioderække bevares; genåbningen appendes til revisionssporet
    og beslutningshistorikken. Momstallene bliver foreløbige igen. Et nyt review
    kan lukke samme periode på ny. En indberettet periode kan ikke genåbnes.
+5. Når indberetningen er gennemført uden for Rentemester, åbn **Perioder og låsning**,
+   vælg **Registrér indberetning** på den lukkede periode, og angiv
+   **Kvitteringsreference**. Det registrerer den eksterne kvittering mod det
+   oprindelige lukkegrundlag; det sender intet til myndighederne. Perioden bliver
+   **Indberettet**, og momsoverblikket vælger næste aktive periode. Kvitteringen
+   kan ikke ændres, perioden kan ikke genåbnes, og gentagelse med samme reference
+   opretter ingen nye beslutninger eller audit-hændelser.
 
 Kontrollerne omfatter bankafstemning, uafhængige DKK-kontrolkonti, åbne bilag,
 batcher og undtagelser, udestående poster, journalhashkæde og sekvens,
@@ -239,9 +246,9 @@ Review, periodelås, beslutning og audit gemmes atomisk under aktuelle rettighed
 **Periodelås** viser periodernes effektive status og kan også udføre almindelig
 lukning/genåbning. API'et er `GET .../periods`, `GET .../periods/close-readiness`,
 `POST .../periods/close-review`, `POST .../periods/close` og
-`POST .../periods/reopen`. Tidligere importer og endnu ikke porterede auditforløb,
+`POST .../periods/reopen` og `POST .../periods/report`. Tidligere importer og endnu ikke porterede auditforløb,
 fx bankkorrektioner og særlige debitorkrav, afvises i kontrollen. Tvangslukning
-og registrering af ekstern indberetning er endnu ikke porteret.
+er endnu ikke porteret.
 
 ## Opret kunde, udsted faktura og bogfør salget
 
@@ -568,3 +575,8 @@ origin, når serveren kører bag Docker-portmapping.
 Rust-cockpittets startside viser foreløbig virksomhedsvælgeren. Resten af
 porteføljeoverblikket, øvrige bogførings-, rapport- og eksportforløb, desktop og produktionsdrift
 er fortsat under omskrivning. Denne demo er ikke den færdige Rust-migration.
+
+Browserkontrollen registrerer også en ekstern indberetningskvittering via UI’et,
+kontrollerer næste aktive momsperiode og afviser ændret reference, genåbning og
+ny bogføring i den indberettede periode, også efter servergenstart. Skærmbilledet
+gemmes som `/tmp/rentemester-rust-period-report.png`.

@@ -1,4 +1,5 @@
 import type {
+  ReportPeriodInput,
   ClosePeriodInput,
   ClosePeriodResponse,
   PeriodsResponse,
@@ -10,6 +11,8 @@ import type {
 import { request, type ReadRequestOptions } from "./_shared";
 
 export const periodsApi = {
+  reportPeriod: (slug: string, input: ReportPeriodInput) =>
+    request<ClosePeriodResponse>(`/api/companies/${encodeURIComponent(slug)}/periods/report`, { method: "POST", body: JSON.stringify({ ...input, confirm: true }) }).then((r) => r.period),
   /**
    * #342 — Periodelås-liste (read).
    */

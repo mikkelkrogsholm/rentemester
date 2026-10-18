@@ -6,6 +6,7 @@ enum Command {
     Review(rentemester_storage::periods::Bounds),
     Close(rentemester_storage::periods::Close),
     Reopen(rentemester_storage::periods::Reopen),
+    Report(rentemester_storage::periods::Report),
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
     let mutation = request.method() != axum::http::Method::GET;
@@ -35,6 +36,10 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             },
             Some("close") => match serde_json::from_slice(&bytes) {
                 Ok(i) => Command::Close(i),
+                Err(_) => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
+            },
+            Some("report") => match serde_json::from_slice(&bytes) {
+                Ok(i) => Command::Report(i),
                 Err(_) => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
             },
             Some("reopen") => match serde_json::from_slice(&bytes) {
@@ -90,6 +95,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             Command::Review(i) => Action::Review(i),
             Command::Close(i) => Action::Close(i),
             Command::Reopen(i) => Action::Reopen(i),
+            Command::Report(i) => Action::Report(i),
         };
         owner
             .periods(&cookie, &SystemClock, action, &today)
