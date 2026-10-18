@@ -113,6 +113,12 @@ pub fn reverse(
             "journal entry {id} is already a reversal entry"
         )));
     }
+    let payable:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM payables WHERE journal_entry_id=?1) OR EXISTS(SELECT 1 FROM payable_payments WHERE journal_entry_id=?1)",[id],|r|r.get(0)).map_err(failed)?;
+    if payable {
+        return Ok(refusal(
+            "payable evidence requires an atomic payable correction workflow".into(),
+        ));
+    }
     if let Some(document) = document {
         let protected:Option<String>=tx.query_row("SELECT document_type FROM main.documents WHERE id=?1 AND document_type IN ('issued_invoice','credit_note')",[document],|r|r.get(0)).optional().map_err(failed)?;
         if let Some(kind) = protected {

@@ -2,7 +2,7 @@
 
 Rust-serveren leverer det eksisterende React-cockpit og behandler selv login,
 ejeroprettelse, MFA, sessions, virksomhedsadgang, manuel bogføring, tilbageførsel,
-virksomhedsstamdata, kontooprettelse, bekræftelse af kontoroller, bankkonti, generisk bankimport, bilagsbogføring med valutakøb samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport samt momsoverblik med PDF, kundeoprettelse, udstedelse/bogføring af danske salgsfakturaer samt betalinger, kreditnotaer, afstemning af kundetilbagebetalinger og leverandørkort med bilagsudfyldning. Den
+virksomhedsstamdata, kontooprettelse, bekræftelse af kontoroller, bankkonti, generisk bankimport, bilagsbogføring med valutakøb samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport samt momsoverblik med PDF, kundeoprettelse, udstedelse/bogføring af danske salgsfakturaer samt betalinger, kreditnotaer, afstemning af kundetilbagebetalinger og leverandørkort med bilagsudfyldning samt leverandørgæld med senere bankbetaling. Den
 starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Prøv med syntetiske data
@@ -259,6 +259,45 @@ virksomhedsstamdata. Ændringen og auditsporet er atomiske. Som ved kunder afvis
 vedligehold i workspaces med tidligere GDPR-sletninger foreløbig, indtil deres
 identitets-/aliasforløb er porteret. Arkiverede leverandører redigeres ikke her.
 
+## Bogfør en ubetalt leverandørfaktura og afstem betalingen senere
+
+1. Opret en kreditorkonto under **Kontoplan**, med type **Gæld** og normal
+   saldo **Kredit**, og bekræft rollen **Kreditorer**. Standardmoms kræver også
+   den bekræftede købsmomskonto og virksomhedens momsregistrering.
+2. Indlæs købsbilaget med originalfil, fakturadato og parter under **Bilag**.
+   Købet må ikke allerede være bogført direkte mod banken.
+3. Åbn **Leverandørfaktura → Registrér leverandørfaktura**. Vælg bilag,
+   udgiftskonto, momsbehandling og forfaldsdato, eventuelt også leverandørkortet.
+   Bilagsdatoen skal være originalens dato; den kan ikke flytte købet til en
+   anden periode. Forfaldsdatoen må ikke ligge før bilagsdatoen. Registrér.
+4. En faktura på 1.250 kr. med 250 kr. dansk moms bogføres som 1.000 kr.
+   udgift, 250 kr. købsmoms og 1.250 kr. leverandørgæld. Den åbne kreditorliste
+   viser gæld og forfald; der er endnu ingen bankbevægelse.
+5. Når betalingen er gennemført, importeres den udgående bankpost. Vælg
+   **Markér betalt** på kreditorposten og angiv **Banktransaktions-id**.
+   Handlingen afstemmer en allerede gennemført betaling; den sender ikke penge.
+   En bankbetaling på 500 kr. efterlader 750 kr. åbent. En efterfølgende betaling
+   på 750 kr. udligner resten og viser fakturaen under **Betalte**.
+
+Betalingerne berører kun bank og den oprindeligt bogførte kreditorkonto.
+Ændringer af kreditorkontorollen flytter ikke gammel gæld. Udgiften og momsen
+bogføres én gang. Bankpostens fulde beløb og dato bruges, og beløbet må ikke
+være større end den åbne gæld. En bankpost kan ikke afstemmes to gange.
+Originalfilen kontrolleres før både registrering og betaling og bevares uændret.
+
+`GET /api/companies/{slug}/payables` understøtter `status=open|paid|overdue|all`
+og `asOf=YYYY-MM-DD`. Historiske saldi medtager kun betalinger med betalingsdato på eller før
+den valgte dato. Registrering og betaling bruger
+henholdsvis `POST .../payables` og `POST .../payables/{id}/pay`, begge med
+`confirm: true`, aktuelle bogføringsrettigheder og atomisk journal-/domæne-/auditspor.
+
+Forløbet understøtter DKK-køb med standardmoms, momsfri behandling eller
+ikke-fradragsberettiget moms. Det genbruger købskontrollen fra bankbogførte
+udgifter, også for bilagets momsfordeling. Fremmed valuta og særskilt korrektion
+eller kreditering af kreditorposter mangler stadig. Generel tilbageførsel af
+kreditorposten eller dens betalinger afvises, så gældsregister og ledger ikke
+kan komme ud af trit.
+
 ## Afstem kundens betaling mod fakturaen
 
 1. Importér de indgående betalinger på fakturaens DKK-bankkonto under **Bank**.
@@ -428,6 +467,12 @@ navn og adresse, rydder telefon og noter og afviser modstridende identitet og
 ugyldig standardkonto. Efter genstart kontrolleres både stamdata, bilagets gamle
 afsender og de nøjagtige originalbytes. Skærmbilledet gemmes i
 `/tmp/rentemester-rust-vendor.png`.
+Kreditortesten indlæser endnu en leverandørfaktura, registrerer den som ubetalt
+og kontrollerer den første gæld på 1.250 kr. Derefter afstemmes 500 og 750 kr.
+gennem UI'et. Testen kontrollerer **Betalt**, nul kreditorsaldo, ti afstemte
+bankposter og ét samlet udgifts-/momsbeløb uden gentagelse ved betaling. En
+sidste servergenstart bekræfter gældsregister, rapporter og de uændrede
+originalbytes. Skærmbilledet gemmes i `/tmp/rentemester-rust-payable.png`.
 Testdata fjernes fra Docker efter kørslen.
 
 ## Aktuel afgrænsning

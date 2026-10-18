@@ -139,7 +139,7 @@ fn audit(
     tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,?2,?3,?4,?5)",params![event,entity,id.to_string(),message,format!("user:{actor}")]).map_err(invalid)?;
     Ok(())
 }
-fn context(
+pub(crate) fn context(
     tx: &Transaction<'_>,
     slug: &str,
     today: &str,

@@ -505,6 +505,7 @@ pub mod documents;
 pub mod bank;
 
 pub mod expense;
+pub mod payables;
 
 pub mod company_setup;
 

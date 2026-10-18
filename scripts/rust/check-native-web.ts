@@ -1,3 +1,4 @@
+import { checkNativePayable } from "./check-native-payable";
 import { checkNativeCustomerEdit } from "./check-native-customer-edit";
 // Real browser journey against run-web-demo.py --check; no intercepted requests or fixtures.
 import { checkNativeRefund } from "./check-native-refund";
@@ -52,11 +53,11 @@ try {
     await page.getByLabel("Adgangskode", { exact: true }).fill("synthetic-password-123");
     await page.getByRole("button", { name: "Log ind", exact: true }).click();
     await page.getByRole("button", { name: "Brug recovery code" }).click();
-    await page.getByLabel("Recovery code", { exact: true }).fill(process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "1" ? state.backup2 : state.backup);
+    await page.getByLabel("Recovery code", { exact: true }).fill(process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "2" ? state.backup3 : process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "1" ? state.backup2 : state.backup);
     await page.getByRole("button", { name: "Bekræft", exact: true }).click();
     await page.getByRole("link", { name: "Åbn bogføring" }).click();
     await page.getByText("Synthetic opening transfer", { exact: true }).waitFor();
-    if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "1") { await checkNativeCompanySetup(page, base, true); await checkNativeVat(page, base, true); await checkNativeSales(page, base, true); await checkNativeSettlement(page, base, true); await checkNativeCredit(page, base, true); await checkNativeRefund(page, base, true); await checkNativeCustomerEdit(page, base, true); } else {
+    if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "2") { await checkNativePayable(page,base,true); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "1") { await checkNativeCompanySetup(page, base, true); await checkNativeVat(page, base, true); await checkNativeSales(page, base, true); await checkNativeSettlement(page, base, true); await checkNativeCredit(page, base, true); await checkNativeRefund(page, base, true); await checkNativeCustomerEdit(page, base, true); await checkNativePayable(page,base); } else {
     // Replaying the same browser operation must not create another journal entry.
     const replay = await page.request.post(`${base}/api/companies/synthetic/manual-journal`, { headers: { origin: base, "content-type": "application/json" }, data: JSON.parse(state.postedBody) });
     if (!replay.ok()) throw new Error(`Idempotency replay refused: ${replay.status()}`);
@@ -114,6 +115,7 @@ try {
   await page.getByLabel("Engangskode", { exact: true }).fill(totp(secret));
   await page.getByRole("button", { name: "Bekræft opsætning" }).click();
   const backup = await page.getByRole("region", { name: "Recovery codes" }).locator("li").first().textContent();
+  const backup3 = await page.getByRole("region", { name: "Recovery codes" }).locator("li").nth(2).textContent();
   const backup2 = await page.getByRole("region", { name: "Recovery codes" }).locator("li").nth(1).textContent();
   await page.getByRole("button", { name: "Jeg har gemt koderne" }).click();
   console.log("Browser: native MFA and session complete");
@@ -140,7 +142,7 @@ try {
   await checkNativeDocuments(page, base);
   if (failures.length) throw new Error(`Browser errors: ${failures.join("; ")}`);
   await page.screenshot({ path: process.env.RM_NATIVE_WEB_SCREENSHOT ?? "/tmp/rentemester-rust-first-journey.png", fullPage: true });
-  if (statePath) writeFileSync(statePath, JSON.stringify({ backup, backup2, postedBody }), { mode: 0o600 });
+  if (statePath) writeFileSync(statePath, JSON.stringify({ backup, backup2, backup3, postedBody }), { mode: 0o600 });
   console.log("PASS: real browser → Rust: first owner, verification, MFA, company selection, manual post, correct persisted trial balance");
   }
 } finally { await browser.close(); }

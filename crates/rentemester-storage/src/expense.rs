@@ -30,14 +30,15 @@ pub struct Input {
     pub transaction_date: Option<String>,
     pub text: Option<String>,
 }
-fn role(tx: &Transaction<'_>, role: &str) -> Result<String, Error> {
+pub(crate) fn role(tx: &Transaction<'_>, role: &str) -> Result<String, Error> {
     let kind = match role {
         "bank" => "asset",
         "input_vat" => "vat",
+        "creditors" => "liability",
         _ => return Err(fail("unsupported expense account role")),
     };
     tx.query_row(
-        "SELECT m.account_no FROM account_role_mappings m JOIN accounts a ON a.account_no=m.account_no WHERE m.role=?1 AND m.status='confirmed' AND a.active=1 AND a.type=?2 AND a.normal_balance='debit'",
+        "SELECT m.account_no FROM account_role_mappings m JOIN accounts a ON a.account_no=m.account_no WHERE m.role=?1 AND m.status='confirmed' AND a.active=1 AND a.type=?2 AND a.normal_balance=CASE WHEN ?1='creditors' THEN 'credit' ELSE 'debit' END",
         [role,kind],
         |r| r.get(0),
     )
@@ -45,7 +46,7 @@ fn role(tx: &Transaction<'_>, role: &str) -> Result<String, Error> {
     .map_err(sql)?
     .ok_or_else(|| fail(format!("confirmed account role '{role}' required")))
 }
-fn metadata(tx: &Transaction<'_>, id: i64) -> Result<Metadata, Error> {
+pub(crate) fn metadata(tx: &Transaction<'_>, id: i64) -> Result<Metadata, Error> {
     let payload: Option<String> = tx
         .query_row(
             "SELECT payload_json FROM documents WHERE id=?1",
@@ -77,6 +78,192 @@ pub fn options(tx: &Transaction<'_>, slug: &str, id: i64) -> Result<Value, Error
     let bank=q.query_map([],|r|Ok(json!({"id":r.get::<_,i64>(0)?,"date":r.get::<_,String>(1)?,"text":r.get::<_,String>(2)?,"amount":r.get::<_,f64>(3)?,"currency":r.get::<_,String>(4)?,"amountDkk":r.get::<_,Option<f64>>(5)?,"fxRateToDkk":r.get::<_,Option<f64>>(6)?,"reference":r.get::<_,Option<String>>(7)?}))).map_err(sql)?.collect::<Result<Vec<_>,_>>().map_err(sql)?;
     Ok(json!({"document":document,"expenseAccounts":accounts,"unmatchedOutgoingBank":bank}))
 }
+pub(crate) fn line(
+    account: &str,
+    debit: Money,
+    credit: Money,
+    code: Option<&str>,
+    text: String,
+) -> Result<JournalLine, Error> {
+    Ok(JournalLine {
+        account_no: AccountNo::parse(account)?,
+        debit_amount: debit,
+        credit_amount: credit,
+        vat_code: code.map(str::to_owned),
+        text: Some(text),
+    })
+}
+pub(crate) struct Allocation {
+    pub lines: Vec<JournalLine>,
+    pub net: Money,
+    pub deductible: Money,
+    pub treatment: String,
+}
+pub(crate) fn purchase(
+    tx: &Transaction<'_>,
+    meta: &Metadata,
+    expense: &str,
+    requested: Option<&str>,
+    gross_dkk: &Money,
+    rate: &FxRate,
+) -> Result<Allocation, Error> {
+    let (kind, active, default): (String, i64, Option<String>) = tx
+        .query_row(
+            "SELECT type,active,default_vat_code FROM accounts WHERE account_no=?1",
+            [expense.trim()],
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+        )
+        .map_err(sql)?;
+    if kind != "expense" || active != 1 {
+        return Err(fail("expense account must be active and of type expense"));
+    }
+    let gross = meta
+        .amount_inc_vat
+        .as_ref()
+        .map(money)
+        .transpose()?
+        .ok_or_else(|| fail("document gross amount required"))?;
+    let vat = meta
+        .vat_amount
+        .as_ref()
+        .map(money)
+        .transpose()?
+        .unwrap_or_default();
+    if gross == Money::default()
+        || gross.is_negative()
+        || vat.is_negative()
+        || gross.subtract(&vat).is_negative()
+    {
+        return Err(fail(
+            "document requires positive gross and VAT between zero and gross",
+        ));
+    }
+    let registered: Option<String> = tx
+        .query_row(
+            "SELECT vat_period_type FROM companies WHERE id=1",
+            [],
+            |r| r.get(0),
+        )
+        .map_err(sql)?;
+    let treatment = requested
+        .or(match default.as_deref() {
+            Some("DK_PURCHASE_25") => Some(if registered.is_some() {
+                "standard"
+            } else {
+                "non_deductible"
+            }),
+            Some("EU_SERVICE_REVERSE_CHARGE") => Some("reverse_charge"),
+            Some("EU_GOODS_ACQUISITION") => Some("eu_goods_acquisition"),
+            Some("REPRESENTATION_SPECIAL") => Some(if registered.is_some() {
+                "representation"
+            } else {
+                "non_deductible"
+            }),
+            _ => None,
+        })
+        .ok_or_else(|| {
+            fail("expense account has no mapped VAT treatment; choose an explicit treatment")
+        })?;
+    if !["standard", "exempt", "non_deductible"].contains(&treatment) {
+        return Err(fail(
+            "this VAT treatment is not ported to native expense booking yet",
+        ));
+    }
+    if treatment == "exempt" && vat != Money::default() {
+        return Err(fail("exempt expense requires zero document VAT"));
+    }
+    if treatment == "standard" {
+        if registered.is_none() {
+            return Err(fail("company is not VAT registered; use non_deductible"));
+        }
+        let supplier = meta
+            .sender
+            .as_ref()
+            .ok_or_else(|| fail("Danish supplier identity required"))?;
+        if rentemester_engine::document::supplier(supplier)?.kind != "dk_cvr" {
+            return Err(fail("deductible Danish VAT requires a Danish supplier CVR"));
+        }
+        if meta.kind() == "purchase_sale"
+            && meta
+                .recipient
+                .as_ref()
+                .is_none_or(|p| p.vat_or_cvr.as_ref().is_none_or(|s| s.trim().is_empty()))
+        {
+            return Err(fail(
+                "invoice-stated recipient identity or hash-bound simplified invoice context required",
+            ));
+        }
+        let difference = vat.subtract(&gross.subtract(&vat).percent("25")?);
+        if vat == Money::default()
+            || meta.purchase_vat_lines.is_none()
+                && difference != Money::default()
+                && difference != Money::parse("0.01")?
+                && difference != Money::parse("-0.01")?
+        {
+            return Err(fail("standard VAT must reconcile with the 25% base"));
+        }
+    }
+    let mut lines = Vec::new();
+    let expense = expense.trim();
+    let deductible = if treatment == "standard" {
+        rate.apply(&vat)
+    } else {
+        Money::default()
+    };
+    let net = gross_dkk.subtract(&deductible);
+    if treatment == "standard" {
+        if let Some(split) = &meta.purchase_vat_lines {
+            let scaled = expense_fx::scale_net(split, rate, &net)?;
+            for (part, amount) in split.iter().zip(scaled) {
+                lines.push(line(
+                    expense,
+                    amount,
+                    Money::default(),
+                    Some(if part.classification == "dk_purchase_25" {
+                        "DK_PURCHASE_25"
+                    } else {
+                        "DK_PURCHASE_EXEMPT"
+                    }),
+                    "Udgift, grundbeløb".into(),
+                )?);
+            }
+        } else {
+            lines.push(line(
+                expense,
+                net.clone(),
+                Money::default(),
+                Some("DK_PURCHASE_25"),
+                "Udgift, grundbeløb".into(),
+            )?);
+        }
+        lines.push(line(
+            &role(tx, "input_vat")?,
+            deductible.clone(),
+            Money::default(),
+            None,
+            "Købsmoms".into(),
+        )?);
+    } else {
+        lines.push(line(
+            expense,
+            gross_dkk.clone(),
+            Money::default(),
+            None,
+            if treatment == "non_deductible" {
+                "Udgift inkl. ikke-fradragsberettiget moms"
+            } else {
+                "Udgift"
+            }
+            .into(),
+        )?);
+    }
+    Ok(Allocation {
+        lines,
+        net,
+        deductible,
+        treatment: treatment.into(),
+    })
+}
 pub fn post(
     tx: &Transaction<'_>,
     input: &Input,
@@ -91,15 +278,17 @@ pub fn post(
     {
         return Err(fail("positive document and bank references required"));
     }
-    let (kind, active, default): (String, i64, Option<String>) = tx
+    let registered: bool = tx
         .query_row(
-            "SELECT type,active,default_vat_code FROM accounts WHERE account_no=?1",
-            [input.expense_account_no.trim()],
-            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+            "SELECT EXISTS(SELECT 1 FROM payables WHERE document_id=?1)",
+            [input.document_id],
+            |r| r.get(0),
         )
         .map_err(sql)?;
-    if kind != "expense" || active != 1 {
-        return Err(fail("expense account must be active and of type expense"));
+    if registered {
+        return Err(fail(
+            "purchase is already registered as a payable; settle its creditor balance",
+        ));
     }
     let meta = metadata(tx, input.document_id)?;
     let gross = meta
@@ -169,39 +358,15 @@ pub fn post(
             "bank transaction is already linked to a journal entry",
         ));
     }
-    let registered: Option<String> = tx
-        .query_row(
-            "SELECT vat_period_type FROM companies WHERE id=1",
-            [],
-            |r| r.get(0),
-        )
-        .map_err(sql)?;
-    let treatment = input
-        .vat_treatment
-        .as_deref()
-        .or(match default.as_deref() {
-            Some("DK_PURCHASE_25") => Some(if registered.is_some() {
-                "standard"
-            } else {
-                "non_deductible"
-            }),
-            Some("EU_SERVICE_REVERSE_CHARGE") => Some("reverse_charge"),
-            Some("EU_GOODS_ACQUISITION") => Some("eu_goods_acquisition"),
-            Some("REPRESENTATION_SPECIAL") => Some(if registered.is_some() {
-                "representation"
-            } else {
-                "non_deductible"
-            }),
-            _ => None,
-        })
-        .ok_or_else(|| {
-            fail("expense account has no mapped VAT treatment; choose an explicit treatment")
-        })?;
-    if !["standard", "exempt", "non_deductible"].contains(&treatment) {
-        return Err(fail(
-            "this VAT treatment is not ported to native expense booking yet",
-        ));
-    }
+    let allocated = purchase(
+        tx,
+        &meta,
+        &input.expense_account_no,
+        input.vat_treatment.as_deref(),
+        &basis.gross_dkk,
+        &basis.rate,
+    )?;
+    let treatment = allocated.treatment.as_str();
     let date = input.transaction_date.as_deref().unwrap_or(&bank_date);
     if meta.kind() == "internal_voucher" {
         let bound: i64 = tx
@@ -215,40 +380,6 @@ pub fn post(
             return Err(fail(
                 "internal voucher must use its bound bank row, bank date and exempt treatment",
             ));
-        }
-    }
-    if treatment == "exempt" && vat != Money::default() {
-        return Err(fail("exempt expense requires zero document VAT"));
-    }
-    if treatment == "standard" {
-        if registered.is_none() {
-            return Err(fail("company is not VAT registered; use non_deductible"));
-        }
-        let supplier = meta
-            .sender
-            .as_ref()
-            .ok_or_else(|| fail("Danish supplier identity required"))?;
-        if rentemester_engine::document::supplier(supplier)?.kind != "dk_cvr" {
-            return Err(fail("deductible Danish VAT requires a Danish supplier CVR"));
-        }
-        if meta.kind() == "purchase_sale"
-            && meta
-                .recipient
-                .as_ref()
-                .is_none_or(|p| p.vat_or_cvr.as_ref().is_none_or(|s| s.trim().is_empty()))
-        {
-            return Err(fail(
-                "invoice-stated recipient identity or hash-bound simplified invoice context required",
-            ));
-        }
-        let difference = vat.subtract(&gross.subtract(&vat).percent("25")?);
-        if vat == Money::default()
-            || meta.purchase_vat_lines.is_none()
-                && difference != Money::default()
-                && difference != Money::parse("0.01")?
-                && difference != Money::parse("-0.01")?
-        {
-            return Err(fail("standard VAT must reconcile with the 25% base"));
         }
     }
     let payment = match input
@@ -267,74 +398,9 @@ pub fn post(
     if !valid {
         return Err(fail("payment account must be an active asset account"));
     }
-    let line = |account: &str,
-                debit: Money,
-                credit: Money,
-                code: Option<&str>,
-                text: String|
-     -> Result<JournalLine, Error> {
-        Ok(JournalLine {
-            account_no: AccountNo::parse(account)?,
-            debit_amount: debit,
-            credit_amount: credit,
-            vat_code: code.map(str::to_owned),
-            text: Some(text),
-        })
-    };
-    let mut lines = Vec::new();
-    let expense = input.expense_account_no.trim();
-    let deductible = if treatment == "standard" {
-        basis.rate.apply(&vat)
-    } else {
-        Money::default()
-    };
-    let net = basis.gross_dkk.subtract(&deductible);
-    if treatment == "standard" {
-        if let Some(split) = &meta.purchase_vat_lines {
-            let scaled = expense_fx::scale_net(split, &basis.rate, &net)?;
-            for (part, amount) in split.iter().zip(scaled) {
-                lines.push(line(
-                    expense,
-                    amount,
-                    Money::default(),
-                    Some(if part.classification == "dk_purchase_25" {
-                        "DK_PURCHASE_25"
-                    } else {
-                        "DK_PURCHASE_EXEMPT"
-                    }),
-                    "Udgift, grundbeløb".into(),
-                )?);
-            }
-        } else {
-            lines.push(line(
-                expense,
-                net.clone(),
-                Money::default(),
-                Some("DK_PURCHASE_25"),
-                "Udgift, grundbeløb".into(),
-            )?);
-        }
-        lines.push(line(
-            &role(tx, "input_vat")?,
-            deductible.clone(),
-            Money::default(),
-            None,
-            "Købsmoms".into(),
-        )?);
-    } else {
-        lines.push(line(
-            expense,
-            basis.gross_dkk.clone(),
-            Money::default(),
-            None,
-            if treatment == "non_deductible" {
-                "Udgift inkl. ikke-fradragsberettiget moms"
-            } else {
-                "Udgift"
-            }
-            .into(),
-        )?);
-    }
+    let mut lines = allocated.lines;
+    let net = allocated.net;
+    let deductible = allocated.deductible;
     lines.push(line(
         &payment,
         Money::default(),
