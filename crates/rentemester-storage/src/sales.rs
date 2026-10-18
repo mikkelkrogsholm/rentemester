@@ -32,7 +32,20 @@ pub fn create_customer(
     actor: &str,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
-    let name = sales_invoice::text(&input.name, 256)?;
+    validate_customer(input)?;
+    let name = input.name.trim();
+    let id:i64=tx.query_row("INSERT INTO customers(name,address,vat_or_cvr,email,phone,website,payment_terms_days,default_currency,notes) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9) RETURNING id",params![name,input.address,input.vat_or_cvr,input.email,input.phone,input.website,input.payment_terms_days,input.default_currency.as_deref().unwrap_or("DKK"),input.notes],|r|r.get(0)).map_err(|_|refused("customer already exists or could not be stored"))?;
+    audit(
+        tx,
+        "customer_add",
+        id,
+        &format!("Created customer {name}"),
+        actor,
+    )?;
+    Ok(json!({"id":id}))
+}
+fn validate_customer(input: &Customer) -> Result<(), Error> {
+    sales_invoice::text(&input.name, 256)?;
     for text in [
         &input.address,
         &input.vat_or_cvr,
@@ -61,16 +74,56 @@ pub fn create_customer(
     if input.ean_number.as_deref().is_some_and(|s| !s.is_empty()) {
         return Err(refused("public-recipient customer setup is not ported yet"));
     }
-    let id:i64=tx.query_row("INSERT INTO customers(name,address,vat_or_cvr,email,phone,website,payment_terms_days,default_currency,notes) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9) RETURNING id",params![name,input.address,input.vat_or_cvr,input.email,input.phone,input.website,input.payment_terms_days,input.default_currency.as_deref().unwrap_or("DKK"),input.notes],|r|r.get(0)).map_err(|_|refused("customer already exists or could not be stored"))?;
+    Ok(())
+}
+/// Merge a strict partial patch; omitted fields survive, explicit null clears optional fields.
+pub fn update_customer(
+    tx: &Transaction<'_>,
+    id: i64,
+    patch: &Value,
+    actor: &str,
+) -> Result<Value, Error> {
+    crate::journal_post::require_current(tx)?;
+    let fields = patch
+        .as_object()
+        .ok_or_else(|| refused("customer patch must be an object"))?;
+    if id <= 0 || fields.is_empty() || fields.get("defaultCurrency").is_some_and(Value::is_null) {
+        return Err(refused("invalid customer patch"));
+    }
+    let mut value: Value = tx.query_row("SELECT name,address,vat_or_cvr,email,phone,website,ean_number,payment_terms_days,default_currency,notes FROM customers WHERE id=?1 AND archived=0", [id], |r| Ok(json!({"name":r.get::<_,String>(0)?,"address":r.get::<_,Option<String>>(1)?,"vatOrCvr":r.get::<_,Option<String>>(2)?,"email":r.get::<_,Option<String>>(3)?,"phone":r.get::<_,Option<String>>(4)?,"website":r.get::<_,Option<String>>(5)?,"eanNumber":r.get::<_,Option<String>>(6)?,"paymentTermsDays":r.get::<_,Option<i64>>(7)?,"defaultCurrency":r.get::<_,String>(8)?,"notes":r.get::<_,Option<String>>(9)?}))).optional().map_err(invalid)?.ok_or_else(||refused("customer not found"))?;
+    // The native erasure/identity-alias workflow is still pending. Preserve its
+    // evidence instead of allowing an edit to bypass a prior erasure's scope.
+    let erasures: bool = tx
+        .query_row("SELECT EXISTS(SELECT 1 FROM gdpr_erasures)", [], |r| {
+            r.get(0)
+        })
+        .map_err(invalid)?;
+    if erasures {
+        return Err(refused(
+            "customer editing with prior GDPR erasures requires the identity-alias workflow",
+        ));
+    }
+    for (key, item) in fields {
+        value
+            .as_object_mut()
+            .unwrap()
+            .insert(key.clone(), item.clone());
+    }
+    let input: Customer =
+        serde_json::from_value(value).map_err(|_| refused("invalid customer field"))?;
+    validate_customer(&input)?;
+    let name = input.name.trim();
+    tx.execute("UPDATE customers SET name=?1,address=?2,vat_or_cvr=?3,email=?4,phone=?5,website=?6,ean_number=?7,payment_terms_days=?8,default_currency=?9,notes=?10 WHERE id=?11 AND archived=0", params![name,input.address,input.vat_or_cvr,input.email,input.phone,input.website,input.ean_number,input.payment_terms_days,input.default_currency,input.notes,id]).map_err(|_|refused("customer already exists or could not be stored"))?;
     audit(
         tx,
-        "customer_add",
+        "customer_update",
         id,
-        &format!("Created customer {name}"),
+        &format!("Updated customer {name}"),
         actor,
     )?;
-    Ok(json!({"id":id}))
+    Ok(json!({"id":id,"ok":true}))
 }
+
 fn audit(
     tx: &Transaction<'_>,
     event: &str,
@@ -78,7 +131,7 @@ fn audit(
     message: &str,
     actor: &str,
 ) -> Result<(), Error> {
-    let entity = if event == "customer_add" {
+    let entity = if event.starts_with("customer_") {
         "customer"
     } else {
         "document"
@@ -569,6 +622,46 @@ mod tests {
         assert_eq!(result["grossAmount"].as_f64(), Some(1250.0));
         let id = result["documentId"].as_i64().unwrap();
         assert!(pdf_id(&tx, id).is_ok());
+        let original: String = tx
+            .query_row(
+                "SELECT payload_json FROM documents WHERE id=?1",
+                [id],
+                |r| r.get(0),
+            )
+            .unwrap();
+        let customer_id = customer["id"].as_i64().unwrap();
+        update_customer(&tx,customer_id,&json!({"name":"Synthetic Renamed Buyer","address":"Synthetic New Street 3","paymentTermsDays":7,"email":"synthetic@example.invalid"}),"synthetic").unwrap();
+        let next = prepare(&tx, &input, "2026-10-18T12:00:00Z", false).unwrap();
+        assert_eq!(next["buyer"]["name"], "Synthetic Renamed Buyer");
+        assert_eq!(next["buyer"]["address"], "Synthetic New Street 3");
+        assert_eq!(next["dueDate"], "2026-10-25");
+        assert_eq!(next["buyer"]["vatOrCvr"], "DK12345678");
+        assert_eq!(
+            tx.query_row::<String, _, _>(
+                "SELECT payload_json FROM documents WHERE id=?1",
+                [id],
+                |r| r.get(0)
+            )
+            .unwrap(),
+            original
+        );
+        for invalid_patch in [
+            json!({"name":null}),
+            json!({"name":" "}),
+            json!({"unknownField":true}),
+            json!({"paymentTermsDays":0}),
+            json!({"defaultCurrency":null}),
+        ] {
+            assert!(update_customer(&tx, customer_id, &invalid_patch, "synthetic").is_err());
+        }
+        assert!(update_customer(&tx, 999, &json!({"name":"Missing"}), "synthetic").is_err());
+        update_customer(&tx, customer_id, &json!({"email":null}), "synthetic").unwrap();
+        assert_eq!(
+            contacts(&tx, "synthetic", "2026-10-18").unwrap()["customers"][0]["email"],
+            Value::Null
+        );
+        assert_eq!(tx.query_row::<i64,_,_>("SELECT count(*) FROM audit_log WHERE event_type='customer_update' AND entity_type='customer'",[],|r|r.get(0)).unwrap(),2);
+
         assert_eq!(
             prepare(&tx, &input, "2026-10-18T12:00:00Z", false).unwrap()["invoiceNumber"],
             "2026-0002"

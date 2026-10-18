@@ -12,6 +12,7 @@ use serde_json::Value;
 pub enum Action<'a> {
     Contacts,
     Customers(&'a Customer),
+    UpdateCustomer(i64, &'a Value),
     List,
     Issue(&'a Input),
     Preview(&'a Input),
@@ -91,7 +92,7 @@ pub fn execute(
     } = request;
     let permission = match action {
         Action::Contacts | Action::List => Permission::CompanyRead,
-        Action::Customers(_) => Permission::CompanyMasterData,
+        Action::Customers(_) | Action::UpdateCustomer(_, _) => Permission::CompanyMasterData,
         Action::Issue(_) | Action::Preview(_) => Permission::CompanyDraftWrite,
         Action::Post(_) | Action::Settle(_) | Action::Credit(_) | Action::Refund(_) => {
             Permission::CompanyLedgerPost
@@ -114,6 +115,9 @@ pub fn execute(
             Ok(match action {
                 Action::Contacts => Output::Json(sales::contacts(tx, slug, today)?),
                 Action::Customers(input) => Output::Json(sales::create_customer(tx, input, actor)?),
+                Action::UpdateCustomer(id, input) => {
+                    Output::Json(sales::update_customer(tx, id, input, actor)?)
+                }
                 Action::List => Output::Json(sales::list(tx, slug, today, year)?),
                 Action::Issue(input) | Action::Preview(input) => {
                     let issue = matches!(action, Action::Issue(_));

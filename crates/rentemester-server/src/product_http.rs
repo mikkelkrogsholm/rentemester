@@ -40,6 +40,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies", get(companies))
         .route("/api/companies/{slug}/contacts", get(sales::handle))
         .route("/api/companies/{slug}/customers", post(sales::handle))
+        .route(
+            "/api/companies/{slug}/customers/{id}",
+            axum::routing::patch(sales::handle),
+        )
         .route("/api/companies/{slug}/invoices", get(sales::handle))
         .route("/api/companies/{slug}/invoices/issue", post(sales::handle))
         .route(

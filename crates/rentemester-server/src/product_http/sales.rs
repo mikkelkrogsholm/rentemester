@@ -5,6 +5,7 @@ use rentemester_storage::sales::{Customer, Post};
 enum Command {
     Contacts,
     Customer(Customer),
+    UpdateCustomer(i64, Value),
     List,
     Issue(Input),
     Preview(Input),
@@ -15,7 +16,8 @@ enum Command {
     Pdf(i64),
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
-    let mutation = request.method() != axum::http::Method::GET;
+    let method = request.method().clone();
+    let mutation = method != axum::http::Method::GET;
     let cookie = match proof(&state, &request, mutation) {
         Ok(p) => p,
         Err(r) => return *r,
@@ -44,7 +46,20 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let Ok(bytes) = to_bytes(request.into_body(), 256 * 1024).await else {
             return refused(StatusCode::PAYLOAD_TOO_LARGE, "invalid_input");
         };
-        if path.ends_with("/customers") {
+        if method == axum::http::Method::PATCH {
+            let Some(id) = path
+                .rsplit('/')
+                .next()
+                .and_then(|s| s.parse::<i64>().ok())
+                .filter(|n| *n > 0)
+            else {
+                return refused(StatusCode::BAD_REQUEST, "invalid_input");
+            };
+            match serde_json::from_slice::<Value>(&bytes) {
+                Ok(input) if input.is_object() => Command::UpdateCustomer(id, input),
+                _ => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
+            }
+        } else if path.ends_with("/customers") {
             match serde_json::from_slice(&bytes) {
                 Ok(input) => Command::Customer(input),
                 Err(_) => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
@@ -97,7 +112,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     };
     let key = match command {
         Command::Contacts => "contacts",
-        Command::Customer(_) => "customer",
+        Command::Customer(_) | Command::UpdateCustomer(_, _) => "customer",
         Command::List => "invoices",
         Command::Post(_) => "posting",
         Command::Settle(_) => "settlement",
@@ -114,6 +129,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let action = match &command {
             Command::Contacts => Action::Contacts,
             Command::Customer(i) => Action::Customers(i),
+            Command::UpdateCustomer(id, i) => Action::UpdateCustomer(*id, i),
             Command::List => Action::List,
             Command::Issue(i) => Action::Issue(i),
             Command::Preview(i) => Action::Preview(i),

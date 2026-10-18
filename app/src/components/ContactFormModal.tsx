@@ -254,6 +254,11 @@ export function ContactFormModal({
         if (notes !== undefined) input.notes = notes;
 
         if (customer) {
+          // Clearing an optional field in edit mode sends null; omitted PATCH
+          // fields intentionally leave the saved value unchanged.
+          for (const field of ["address", "vatOrCvr", "email", "phone", "website", "eanNumber", "notes"] as const) {
+            input[field] = maybe(form[field]) ?? null;
+          }
           await api.updateCustomer(slug, customer.id, input).catch(outcome.reject);
         } else {
           await api.createCustomer(slug, input).catch(outcome.reject);

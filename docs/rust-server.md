@@ -213,8 +213,25 @@ Dette forløb understøtter foreløbig fulde danske DKK-fakturaer med standard
 og dobbelt bogføring afvises. PDF understøtter det nuværende latinske tegnsæt,
 herunder danske bogstaver; tekst uden for tegnsættet afvises ved input.
 Fremmed valuta, andre momstyper, offentlig e-faktura,
-ekstern maillevering og redigering/sletning af kontakter mangler stadig i Rust.
+ekstern maillevering, sletning af kunder samt redigering/sletning af leverandører
+mangler stadig i Rust.
 Der sendes ingen fakturaer eksternt i dette forløb.
+
+## Ret kundens oplysninger
+
+Under **Kontakter** vælges **Redigér** på kunden. Ret navn, adresse,
+CVR/moms, kontaktoplysninger, betalingsfrist eller noter, og vælg
+**Gem ændringer**. Et tømt valgfrit tekstfelt ryddes fra kundekortet.
+Fremtidige fakturaer og forhåndsvisninger bruger de nye oplysninger;
+allerede udstedte fakturaers JSON og PDF bevares uændret.
+
+API'et bruger `PATCH /api/companies/{slug}/customers/{id}`: udeladte felter
+bevares, og eksplicit `null` rydder valgfrie felter. Ændringen og auditsporet
+gemmes under samme transaktion og aktuelle rettighed til virksomhedsstamdata.
+Ukendte felter, tomt navn, ugyldig valuta/betalingsfrist og ukendt kunde afvises.
+Arkiverede kunder redigeres ikke gennem dette forløb. I workspaces med tidligere
+GDPR-sletninger afvises redigering foreløbig, indtil det tilhørende identitets-
+og aliasforløb er porteret; tidligere sletningsbeviser må ikke omgås ved navneskift.
 
 ## Afstem kundens betaling mod fakturaen
 
@@ -374,6 +391,11 @@ importerer to udbetalinger og afstemmer først 500 og derefter 750 kr. gennem
 UI'et. Den kontrollerer status **Refunderet**, nul debitorsaldo, otte afstemte
 bankposter og uændrede originalfiler efter genstart. Dobbelt afstemning afvises.
 Skærmbilledet gemmes i `/tmp/rentemester-rust-refund.png`.
+Kunderedigeringstesten omdøber kunden gennem UI'et, ændrer adresse og
+betalingsfrist og rydder telefonnummeret. Den kontrollerer delvis PATCH,
+afviste ugyldige felter, nye forhåndsvisningers adresse/forfald og uændrede
+udstedte JSON-/PDF-originaler før og efter genstart. Skærmbilledet gemmes i
+`/tmp/rentemester-rust-customer-edit.png`.
 Testdata fjernes fra Docker efter kørslen.
 
 ## Aktuel afgrænsning
