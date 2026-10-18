@@ -85,6 +85,8 @@ enum Operation {
     Backup,
     Session,
     SignOut,
+    SessionList,
+    SessionRevoke,
     EnrollmentBegin,
     EnrollmentConfirm,
     VerificationRequest,
@@ -379,7 +381,7 @@ fn admission_for(
     let headers = request.headers();
     let allowed = if matches!(
         operation,
-        Operation::Callback | Operation::VerifyEmail | Operation::Session
+        Operation::Callback | Operation::VerifyEmail | Operation::Session | Operation::SessionList
     ) {
         one(headers, "host") == Some(state.authority.as_str())
             && (!headers.contains_key("origin")
@@ -402,7 +404,7 @@ fn admission_for(
         }
     } else if !matches!(
         operation,
-        Operation::Callback | Operation::VerifyEmail | Operation::Session
+        Operation::Callback | Operation::VerifyEmail | Operation::Session | Operation::SessionList
     ) && !json_content(headers)
     {
         return Err(StatusCode::UNSUPPORTED_MEDIA_TYPE);

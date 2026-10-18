@@ -1,0 +1,130 @@
+{
+  "ok": true,
+  "checks": 41,
+  "observations": [
+    {
+      "id": "session-control/WAL-HEAD-no-dispatch-or-rate-charge"
+    },
+    {
+      "id": "session-control/WAL-fresh-owned-active-token-free-stable-list-with-audit"
+    },
+    {
+      "id": "session-control/WAL-missing-and-foreign-targets-indistinguishable-audited-noop"
+    },
+    {
+      "id": "session-control/WAL-one-owned-ID-deleted-without-cookie-clear"
+    },
+    {
+      "id": "session-control/WAL-others-atomically-removes-expired-and-preserves-current-and-foreign"
+    },
+    {
+      "id": "session-control/WAL-all-clears-only-known-commit-and-exact-own-deletion-audit"
+    },
+    {
+      "id": "session-control/WAL-revoked-cookie-cannot-list-or-resurrect"
+    },
+    {
+      "id": "session-control/WAL-one-current-clears-only-after-deletion"
+    },
+    {
+      "id": "session-control/DELETE-HEAD-no-dispatch-or-rate-charge"
+    },
+    {
+      "id": "session-control/DELETE-fresh-owned-active-token-free-stable-list-with-audit"
+    },
+    {
+      "id": "session-control/DELETE-missing-and-foreign-targets-indistinguishable-audited-noop"
+    },
+    {
+      "id": "session-control/DELETE-one-owned-ID-deleted-without-cookie-clear"
+    },
+    {
+      "id": "session-control/DELETE-others-atomically-removes-expired-and-preserves-current-and-foreign"
+    },
+    {
+      "id": "session-control/DELETE-all-clears-only-known-commit-and-exact-own-deletion-audit"
+    },
+    {
+      "id": "session-control/DELETE-revoked-cookie-cannot-list-or-resurrect"
+    },
+    {
+      "id": "session-control/DELETE-one-current-clears-only-after-deletion"
+    },
+    {
+      "id": "session-control/no-cookie-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/bad-signature-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/bare-beside-valid-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/service-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/origin-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/cross-site-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/query-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/bearer-target-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/duplicate-target-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/extra-subject-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/blank-target-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/control-target-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/long-target-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/null-target-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/array-target-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/array-empty-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/unknown-empty-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/body-budget-refused-before-native-dispatch"
+    },
+    {
+      "id": "session-control/stale-withholds-list-and-headers-no-partial-audit"
+    },
+    {
+      "id": "session-control/disabled-withholds-list-and-headers-no-partial-audit"
+    },
+    {
+      "id": "session-control/malformed-owned-display-withholds-list-and-headers-no-partial-audit"
+    },
+    {
+      "id": "session-control/list-sessions-real-DELETE-commit-busy-withholds-data-success-and-cookies"
+    },
+    {
+      "id": "session-control/revoke-sessions-real-DELETE-commit-busy-withholds-data-success-and-cookies"
+    },
+    {
+      "id": "session-control/revoke-family-shares-direct-peer-budget-ignores-forwarded-and-target-rotation"
+    },
+    {
+      "id": "session-control/missing-trusted-handler-fails-closed-no-legacy-fallback"
+    }
+  ],
+  "scope": "Independent focused HTTP own-session control"
+}

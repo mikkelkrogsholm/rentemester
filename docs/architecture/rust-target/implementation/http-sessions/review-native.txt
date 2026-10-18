@@ -1,0 +1,10 @@
+    Finished `release` profile [optimized] target(s) in 0.12s
+     Running unittests src/lib.rs (target/release/deps/rentemester_server-36d1a0541332a7c7)
+
+running 4 tests
+test auth_http::tests::session_listing_body_and_duplicate_cookie_headers_never_dispatch ... ok
+test auth_http::tests::session_navigation_gates_and_head_never_dispatch ... ok
+test auth_http::tests::pending_factor_is_not_session_and_success_cookie_has_browser_lifetime ... ok
+test auth_http::tests::session_management_never_clears_or_succeeds_on_refusal_unknown_or_panic ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.01s

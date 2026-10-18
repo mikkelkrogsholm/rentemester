@@ -7,7 +7,8 @@ import { useAuth } from "../lib/auth-context";
 
 type ListedSession = {
   id: string;
-  token: string;
+  token?: string;
+  current?: boolean;
   createdAt: string | Date;
   userAgent?: string | null;
 };
@@ -63,10 +64,10 @@ export function AccountMenu() {
   const revokeAll = async () => {
     setBusy(true); setError(null);
     try {
-      const result = await authClient.revokeSessions();
-      if (result.error) throw new Error("revoke failed");
+      const result = await authClient.revokeSessions({ fetchOptions: { retry: 0 } });
+      if (result.error || result.data?.status !== true) throw new Error("revoke failed");
       clear();
-    } catch { const message = "Kunne ikke logge ud på alle enheder. Din nuværende session er stadig aktiv."; throw new Error(message); }
+    } catch { const message = "Kunne ikke bekræfte, at alle enheder er logget ud. Kontrollér din session ved at logge ind igen."; throw new Error(message); }
     finally { setBusy(false); }
   };
   const showSessions = async () => {
@@ -74,22 +75,34 @@ export function AccountMenu() {
     closePassword();
     setBusy(true); setError(null);
     try {
-      const result = await authClient.listSessions();
+      const result = await authClient.listSessions({ fetchOptions: { retry: 0 } });
       if (result.error || !Array.isArray(result.data)) throw new Error("list failed");
-      setSessions(result.data.flatMap((entry) =>
-        typeof entry.id === "string" && typeof entry.token === "string"
-          ? [{ id: entry.id, token: entry.token, createdAt: entry.createdAt, userAgent: entry.userAgent }]
-          : []));
+      // Native rows carry an explicit current flag and no bearer. Legacy rows remain
+      // supported until backend cutover, but contracts must never be mixed or guessed.
+      const entries: ListedSession[] = result.data.map((value: unknown) => {
+        if (!value || typeof value !== "object") throw new Error("invalid session");
+        const entry = value as Record<string, unknown>;
+        if (typeof entry.id !== "string" || typeof entry.createdAt !== "string" && !(entry.createdAt instanceof Date)
+          || entry.userAgent != null && typeof entry.userAgent !== "string") throw new Error("invalid session");
+        const display = { id: entry.id, createdAt: entry.createdAt, userAgent: entry.userAgent as string | null | undefined };
+        if (typeof entry.current === "boolean" && !("token" in entry)) return { ...display, current: entry.current };
+        if (!("current" in entry) && typeof entry.token === "string") return { ...display, token: entry.token };
+        throw new Error("invalid session contract");
+      });
+      if (entries.some((entry) => typeof entry.current !== typeof entries[0]?.current)) throw new Error("mixed sessions");
+      setSessions(entries);
     } catch { setError("Kunne ikke hente aktive sessioner."); }
     finally { setBusy(false); }
   };
   const revokeOne = async (listed: ListedSession) => {
     setBusy(true); setError(null);
     try {
-      const result = await authClient.revokeSession({ token: listed.token });
-      if (result.error) throw new Error("revoke failed");
+      const result = typeof listed.current === "boolean"
+        ? await authClient.$fetch<{ status: boolean }>("/revoke-session", { method: "POST", body: { sessionId: listed.id }, retry: 0 })
+        : await authClient.revokeSession({ token: listed.token!, fetchOptions: { retry: 0 } });
+      if (result.error || result.data?.status !== true) throw new Error("revoke failed");
       setSessions((current) => current?.filter((entry) => entry.id !== listed.id) ?? null);
-    } catch { const message = "Kunne ikke afslutte sessionen."; throw new Error(message); }
+    } catch { const message = "Kunne ikke bekræfte, at sessionen er afsluttet. Hent sessionsoversigten igen."; throw new Error(message); }
     finally { setBusy(false); }
   };
   const changePassword = async () => {
@@ -122,8 +135,8 @@ export function AccountMenu() {
       <div className="account-panel">
       {sessions.length === 0 && <p>Ingen aktive sessioner.</p>}
       <ul>{sessions.map((listed) => <li key={listed.id}>
-        <span><strong>{listed.id === currentSessionId ? "Denne enhed" : deviceHint(listed.userAgent)}</strong><small>{createdLabel(listed.createdAt)}</small></span>
-        {listed.id !== currentSessionId && <Button type="button" className="account-revoke" disabled={busy} onClick={() => setConfirmation(listed)}>Afslut</Button>}
+        <span><strong>{(listed.current ?? listed.id === currentSessionId) ? "Denne enhed" : deviceHint(listed.userAgent)}</strong><small>{createdLabel(listed.createdAt)}</small></span>
+        {!(listed.current ?? listed.id === currentSessionId) && <Button type="button" className="account-revoke" disabled={busy} onClick={() => setConfirmation(listed)}>Afslut</Button>}
       </li>)}</ul>
       <Button className="account-revoke" type="button" onClick={() => setConfirmation("all")} disabled={busy}>Log ud på alle enheder</Button>
       <div className="modal-actions"><Button variant="secondary" onClick={() => setSessions(null)} disabled={busy}>Luk</Button></div>

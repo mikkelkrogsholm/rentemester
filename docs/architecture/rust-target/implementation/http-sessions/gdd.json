@@ -1,0 +1,226 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native HTTP own-session management and React account menu",
+    "goal": "Expose native own-session list/revoke with ID targets and truthful commit-aware account UI",
+    "scope": "Synthetic native HTTP/React account qualification; no live legacy routing, production writer grant or full identity parity"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native HTTP own-session boundary",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Dispatch owned-session listing and revocation with strict cookie/browser admission and commit-aware UI",
+        "rationale": "Native session authority and known outcomes must survive transport and browser parsing",
+        "excludes": [
+          "Physical/lifetime/live legacy writer admission, production deployment, full identity and platform parity"
+        ]
+      },
+      "interfaces": [
+        "action.http_sessions"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "WAL/DELETE native socket lists only owned active metadata; confirmed owned ID/others/all revokes and cookie clearing match final facts",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control, source cookies and native HTTP socket with retained React fixture",
+        "when": "List or explicitly confirm owned-session revocation",
+        "then": "WAL/DELETE native socket lists only owned active metadata; confirmed owned ID/others/all revokes and cookie clearing match final facts"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Strict body/object/duplicate/cookie/origin/query/credential/budget refusals precede native dispatch; stale/disabled/invalid metadata release no partial audit",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control, source cookies and native HTTP socket with retained React fixture",
+        "when": "List or explicitly confirm owned-session revocation",
+        "then": "Strict body/object/duplicate/cookie/origin/query/credential/budget refusals precede native dispatch; stale/disabled/invalid metadata release no partial audit"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Foreign/missing targets are indistinguishable; expired others removed atomically; current/foreign facts protected and no bearer listed",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control, source cookies and native HTTP socket with retained React fixture",
+        "when": "List or explicitly confirm owned-session revocation",
+        "then": "Foreign/missing targets are indistinguishable; expired others removed atomically; current/foreign facts protected and no bearer listed"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "React native/legacy contracts cannot mix; empty/false/null ACK and transport failure never remove rows or clear shell; retry0 explicit",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control, source cookies and native HTTP socket with retained React fixture",
+        "when": "List or explicitly confirm owned-session revocation",
+        "then": "React native/legacy contracts cannot mix; empty/false/null ACK and transport failure never remove rows or clear shell; retry0 explicit"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Shared direct-peer revoke budget ignores forwarded/target rotation; real DELETE commit-busy withholds both list and revoke-all success/cookies",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic control, source cookies and native HTTP socket with retained React fixture",
+        "when": "List or explicitly confirm owned-session revocation",
+        "then": "Shared direct-peer revoke budget ignores forwarded/target rotation; real DELETE commit-busy withholds both list and revoke-all success/cookies"
+      }
+    },
+    "action.http_sessions": {
+      "kind": "action",
+      "description": "Native HTTP list and revoke own sessions",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "native_cookie_empty_list_or_revoke_object_optional_sessionId": {
+            "type": "object",
+            "description": "GET has no body. POST one requires sessionId only; others/all require empty body or object. Cookie is authenticated context, never a target bearer."
+          }
+        },
+        "context": {
+          "configured_origin_native_handlers_cookie_verifier_direct_peer": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "any",
+          "description": "Operation-specific wire result: list success is a direct array of allowlisted SessionSummary objects; revoke success is {status:true}; refusals are fixed error objects. No wrapper list object; CONTRACT.md specifies exact allowlist and headers."
+        },
+        "errors": {
+          "refused": "Strict request refusal;401 INVALID_CREDENTIALS or503 AUTH_UNCONFIRMED, without data/cookie success"
+        },
+        "preconditions": [
+          "Trusted configured origin/profile and native handler with retained admitted control/lifetime",
+          "Exclusive routing and old legacy writer drain before real enablement"
+        ],
+        "postconditions": [
+          "List only owned active allowlisted metadata, never bearer or partial result",
+          "Only known committed revocation returns status:true; only all/current-one clears configured cookies",
+          "HEAD and malformed inputs never dispatch; foreign/missing targets remain indistinguishable",
+          "React native ID or existing legacy token contracts stay explicit; ambiguous rows refuse; empty/false/null/error/transport ACK never claims success; retry0"
+        ],
+        "external_effects": [
+          "Native audited session transaction and lifecycle-triggered deletions",
+          "Bounded process rate/capacity and HTTP response/cookies",
+          "React confirmation and explicit shell/list changes only after true ACK"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Session ownership, strict wire boundaries and unknown commit must survive HTTP and UI without bearer leakage or false confirmed deletion",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Session ownership, strict wire boundaries and unknown commit must survive HTTP and UI without bearer leakage or false confirmed deletion",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Session ownership, strict wire boundaries and unknown commit must survive HTTP and UI without bearer leakage or false confirmed deletion",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Session ownership, strict wire boundaries and unknown commit must survive HTTP and UI without bearer leakage or false confirmed deletion",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Session ownership, strict wire boundaries and unknown commit must survive HTTP and UI without bearer leakage or false confirmed deletion",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Strict native-only owned-session HTTP with token-free list, ID target, bounded shared rate/capacity, commit-aware response and explicit non-replayed UI actions"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.http_sessions",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.http_sessions",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.http_sessions",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.http_sessions",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.http_sessions",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.http_sessions",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native HTTP own-session management and React account menu",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "b796aa90d2f5bea0f98ce7944fb11788c056ece77efb1dcf78ca87e635f03b2e"
+      }
+    }
+  }
+}

@@ -1,5 +1,6 @@
 /** Real native HTTP enrolled login, actual control transactions, source crypto and cookie oracle. */
 import assert from "node:assert/strict";
+import { verifyHttpSessions } from "./http-session-cases";
 import { verifyHttpVerification } from "./http-verification-cases";
 import { verifyHttpEnrollment } from "./http-enrollment-cases";
 import { Database } from "bun:sqlite";
@@ -310,6 +311,7 @@ try {
 		}
 	}
 	await verifyHttpEnrollment({ fixture, start, key, now, password, note });
+	await verifyHttpSessions({ fixture, start, key, now, note });
 	await verifyHttpVerification({ fixture, start, key, now, note });
 	console.log(JSON.stringify({ ok: true, checks, observations }));
 } finally {

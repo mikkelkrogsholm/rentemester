@@ -194,3 +194,7 @@ The [email-token contract](email-token/CONTRACT.md) provides source-readable HS2
 ## Native HTTP email verification and recovery UI
 
 [Contract](http-verification/CONTRACT.md) adds native-only canonical send/verify routes, strict optional caller/query admission, generic minimum-duration request acknowledgement, known/invalid/unknown completion outcomes and fixed React recovery guidance. Real sockets/source signers and current synthetic controls qualify the bounded surface. Exclusive routing and legacy writer drain remain deployment gates; the full epic remains open.
+
+## Native HTTP own-session management
+
+Canonical native session list/revoke routes now use token-free metadata and ID targets, shared bounded admission and known-commit-only success/cookie clearing. The retained account menu accepts native or existing legacy rows explicitly, refuses mixed shapes, disables retries and requires status:true before claiming revocation. Current contract, scoped GDD and execution evidence are in [http-sessions](http-sessions/CONTRACT.md). Physical/lifetime/live legacy admission, other identity and full platform parity remain required.

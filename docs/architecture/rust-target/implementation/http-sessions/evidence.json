@@ -1,0 +1,69 @@
+{
+  "increment": "http-sessions-1",
+  "code_revision": "sha256:057a0e73f0e07a3d6c8b31bbead7d6f012240877bd29f3ee2c5d558cf3586909",
+  "spec_revision": "sha256:ac194f3035f0de3572f9ccd325ded41c68115f8c08dc5b7621d28f40c192abe1",
+  "state": "verified-native-http-own-session-management-and-truthful-react-account-menu",
+  "checks": {
+    "native_tests_passed": 130,
+    "ignored_subprocess_helpers": 23,
+    "integration_checks": 11894,
+    "identity_http_process_checks": 154,
+    "new_session_http_process_checks": 41,
+    "independent_session_http_process_checks": 41,
+    "independent_server_session_tests": 4,
+    "ui_tests": 50,
+    "GDD_structural_checks": 3,
+    "strict_fmt_clippy_boundaries_runtime_and_app_typecheck_lint": "PASS"
+  },
+  "claims": [
+    "Canonical native optional-handler list/revoke routes with strict cookie/browser/body/query admission and shared revoke-family direct-peer rate/capacity",
+    "Real WAL/DELETE owned active token-free metadata, ID-target foreign/missing noops and one/others/all deletion/cookie facts",
+    "Real DELETE list/revoke-all commit-busy withholds success/data/cookies; socket unknown/panic/refusal never clears; HEAD/invalid body/cookies no dispatch",
+    "React native ID versus existing legacy token contract explicit, mixed/ambiguous refused; native current labels and confirmations retained",
+    "Both revoke UI paths require status:true; false/empty/null/error/transport outcomes retain display with unconfirmed wording and retry0; installed client confirms actual encoding/falseACK behavior"
+  ],
+  "limits": [
+    "Trusted owner must retain admitted control/physical/workspace lifetime and exclusive canonical routing/legacy writer drain; no deployable opener/default writer authority added",
+    "Mocked retained UI and separate actual native/source sockets, no deployed browser full account/security/provider/service/API-key/trusteddevice flow claimed",
+    "Rate state process-local; proxy/distributed/TLS/listener/shutdown/logging and live legacy mutation/history/restore admission unqualified",
+    "OutcomeUnknown does not assert database unchanged; reconcile with current authoritative observations, never replay/resurrect automatically",
+    "Full Rust engine/server/CLI/MCP/React/GPUI distribution/parity/cutover and TypeScript retirement remain required",
+    "Explicit Graphify AST plus current2Markdown semantic refresh; generatedJSON/logs/history/unrelateddocs outside semantic scope"
+  ],
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": {
+    "app/src/auth-ui.test.tsx": "67a0b5d94bc7389b87cbfdc102a1a73e02572c685a026206f0f3f78407929395",
+    "app/src/components/AccountMenu.tsx": "47a5b5632a5b5f2f81039b5f15a857609e3e77ce250d26ea87a1dc7fb9052d6f",
+    "app/src/lib/auth-client.ts": "c3658c2718a5bd0f0fed68ea4630552a74bd08189b9152d7ab4635824cf77881",
+    "crates/rentemester-application/src/session_control.rs": "f39d911427bd596ee6757e6468e5c48615b77294beabf85ec0f510edd27fb226",
+    "crates/rentemester-server/src/auth_http.rs": "faa22bdad63b395f3872390e348b0a2dd123ae68596b9d1fece55d7f89cc6089",
+    "crates/rentemester-server/src/auth_http/sessions.rs": "a1ad9ce2999bf2521823f1e1dc2208bdd26baea2e2e1bab74f0e2b09d3700678",
+    "crates/rentemester-server/src/auth_http/tests.rs": "1c18ed4dcbcb2b3af14ee87db64946a3b213b35553c1c0bc4f731c76c07fd695",
+    "crates/rentemester-server/src/lib.rs": "0f4b4be0160f3f7cf064dda36abe304db77a5d3d6a05d9aa68cb882f9458b363",
+    "crates/rentemester-server/src/tests.rs": "d6de50623c40ccc22240d423a9253c6ec8dacca44429e9e962d22d837b15e762",
+    "crates/rentemester-storage/src/session_control.rs": "8330f26bc7e2f2f7e5b9a79dc09f2348ac8369446dabe53a048d9f283696ac19",
+    "docs/architecture/rust-target/implementation/README.md": "d2a0a266795fb8ff7beda2f893e7a434ff20c94bdbb539d20b6916a41d1b4062",
+    "docs/architecture/rust-target/implementation/http-sessions/CONTRACT.md": "b796aa90d2f5bea0f98ce7944fb11788c056ece77efb1dcf78ca87e635f03b2e",
+    "docs/architecture/rust-target/implementation/http-sessions/gdd.json": "f34b62d0678edc0936a0187707311ce73e8b2229aeaae52209e33cefcd6fcf71",
+    "docs/architecture/rust-target/implementation/http-sessions/readiness.json": "9059341b061510bf38c47f690559e223fdbf1206c6d4abbac747cfd367a585b3",
+    "node_modules/better-auth/dist/api/routes/session.mjs": "831a00b6e144c1560c21406de1db586a67089630ad58fb2f3c7dcd3c5c963d57",
+    "node_modules/better-call/dist/cookies.mjs": "f7d6cf754197ae194950d53111319634405b5e98b5ace8dd1dfc14843ef631f5",
+    "scripts/rust/http-session-cases.ts": "e86ba883ef35ebdf5786096c917f3ab4b70f9a0045d965f6cf020d5c617dc4af",
+    "scripts/rust/verify-http-login.ts": "532ef582f4a911bf8fa9c400b56217241fab06beee2fe4e5113b8784ca9758c9",
+    "scripts/rust/verify.ts": "70af5c51025b9660310f0e0be7513d4c8be15e22410facf5836fc4f4838b5d35"
+  },
+  "evidence_files": {
+    "process.json": "d9c788aaf7db56a24322c4700483075fcf063b9bc6d620b6766f2301932b000b",
+    "review-process.json": "31518ec59d78cebf5117e5c47e1e796016258303375b94fa2b76911cb679c2ad",
+    "review-native.txt": "cc43d69521530978cea262caf56999fb2c5f9fe990d68d281718a9c5b02153e8",
+    "review-client.json": "d88b3261418aa89554d3f4a703e0af3e6fe5a8ba01d80ad56ccdf87c62902ba5",
+    "review.json": "e59d5894c7d6001a8e0fb90cee8443d1b0bbaa11fe8ae72dbf0f6970d8a1bc11",
+    "ui.txt": "51b10e70a58184d60371e6bb10368b2d5891365f74d9ea865a2f13fad505fdf9",
+    "app-typecheck.txt": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "ab2fc122d4fbbd63388288d33f2126af68b577410429ad0dbb26fe8e8ef2e2b4",
+    "regression.json": "008828cb558d05080eda48791264735dd690fc9f807515e51325dc2df8ad8855"
+  }
+}

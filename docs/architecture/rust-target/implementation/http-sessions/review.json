@@ -1,0 +1,86 @@
+{
+  "result": "PASS",
+  "reviewed_at_utc": "2026-10-18T02:41:38.128333+00:00",
+  "material_findings": [],
+  "resolved_findings": [
+    {
+      "id": "HTTP-S01",
+      "severity": "P2",
+      "problem": "Revocation UI trusted HTTP200 absent error without positive status; malformed/false ACK removed row or cleared shell",
+      "evidence": "Actual installed BetterAuth $fetch returns data:{status:false},error:null for synthetic HTTP200, recorded /tmp/rm-http-sessions-review-client.json",
+      "fix": "Both native/legacy one-session and revoke-all require data.status===true; six malformed/false/null ACK tests retain row/shell without retries"
+    }
+  ],
+  "execution": {
+    "focused_process_checks": 41,
+    "server_session_unit_tests": 4,
+    "ui_tests": 50,
+    "app_typecheck": "PASS",
+    "process": "/tmp/rm-http-sessions-review-process.json",
+    "process_stderr": "/tmp/rm-http-sessions-review-process.err",
+    "native": "/tmp/rm-http-sessions-review-native.txt",
+    "ui": "/tmp/rm-http-sessions-review-ui.txt",
+    "typecheck": "/tmp/rm-http-sessions-review-ui-typecheck.txt",
+    "installed_client": "/tmp/rm-http-sessions-review-client.json"
+  },
+  "projection": {
+    "path": "/tmp/rm-http-sessions-review-focused.ts",
+    "sha256": "6a6c86b27930bb6953cb733741b5fd7bdf8e6e629ab811ce5d10bab72c8575cc",
+    "description": "Original current initialization/fixture/socket helper verified exact after absolute path rewriting; invokes only verifyHttpSessions"
+  },
+  "reviewed_invariants": [
+    "Owned ID revocation, no bearer list/target; missing/foreign indistinguishable noops",
+    "Fresh verified active MFA identity and strict factor through existing native store",
+    "GET HEAD/query/body and POST strict object/duplicate/unknown/type/size admission",
+    "Cookie provenance and mixed credential refusal before dispatch",
+    "Shared fixed direct-peer revoke rate and four owned blocking permits",
+    "Only known committed native outcome emits list/status/clear cookies; failure/unknown/panic withholds all",
+    "Token-free explicit-current native shape separated from legacy bearer shape; mixed/ambiguous list refused",
+    "Actual installed $fetch sends /api/auth/revoke-session POST body{sessionId} and requires caller validation of ACK"
+  ],
+  "remaining_gates": [
+    "No native deployable opener/physical lifetime admission or legacy writer drain qualification",
+    "Mocked UI and actual native/source HTTP tested separately, no deployed browser journey claimed",
+    "Broad suite owned by main, not duplicated"
+  ],
+  "sha256": {
+    "crates/rentemester-server/src/auth_http/sessions.rs": "a1ad9ce2999bf2521823f1e1dc2208bdd26baea2e2e1bab74f0e2b09d3700678",
+    "crates/rentemester-server/src/auth_http.rs": "faa22bdad63b395f3872390e348b0a2dd123ae68596b9d1fece55d7f89cc6089",
+    "crates/rentemester-server/src/lib.rs": "0f4b4be0160f3f7cf064dda36abe304db77a5d3d6a05d9aa68cb882f9458b363",
+    "crates/rentemester-server/src/auth_http/tests.rs": "1c18ed4dcbcb2b3af14ee87db64946a3b213b35553c1c0bc4f731c76c07fd695",
+    "crates/rentemester-server/src/tests.rs": "d6de50623c40ccc22240d423a9253c6ec8dacca44429e9e962d22d837b15e762",
+    "crates/rentemester-storage/src/session_control.rs": "8330f26bc7e2f2f7e5b9a79dc09f2348ac8369446dabe53a048d9f283696ac19",
+    "crates/rentemester-application/src/session_control.rs": "f39d911427bd596ee6757e6468e5c48615b77294beabf85ec0f510edd27fb226",
+    "scripts/rust/http-session-cases.ts": "e86ba883ef35ebdf5786096c917f3ab4b70f9a0045d965f6cf020d5c617dc4af",
+    "scripts/rust/verify-http-login.ts": "532ef582f4a911bf8fa9c400b56217241fab06beee2fe4e5113b8784ca9758c9",
+    "app/src/components/AccountMenu.tsx": "47a5b5632a5b5f2f81039b5f15a857609e3e77ce250d26ea87a1dc7fb9052d6f",
+    "app/src/auth-ui.test.tsx": "67a0b5d94bc7389b87cbfdc102a1a73e02572c685a026206f0f3f78407929395",
+    "app/src/lib/auth-client.ts": "c3658c2718a5bd0f0fed68ea4630552a74bd08189b9152d7ab4635824cf77881",
+    "docs/architecture/rust-target/implementation/http-sessions/CONTRACT.md": "b796aa90d2f5bea0f98ce7944fb11788c056ece77efb1dcf78ca87e635f03b2e",
+    "docs/architecture/rust-target/implementation/http-sessions/gdd.json": "f34b62d0678edc0936a0187707311ce73e8b2229aeaae52209e33cefcd6fcf71",
+    "docs/architecture/rust-target/implementation/http-sessions/readiness.json": "9059341b061510bf38c47f690559e223fdbf1206c6d4abbac747cfd367a585b3",
+    "docs/architecture/rust-target/implementation/README.md": "d2a0a266795fb8ff7beda2f893e7a434ff20c94bdbb539d20b6916a41d1b4062"
+  },
+  "docs_review": {
+    "result": "PASS",
+    "reviewed_at_utc": "2026-10-18T02:43:33.023435+00:00",
+    "gdd_checks": 3,
+    "gdd_spec_revision": "sha256:ac194f3035f0de3572f9ccd325ded41c68115f8c08dc5b7621d28f40c192abe1",
+    "independent_readiness": "/tmp/rm-http-sessions-review-readiness.json",
+    "repository_readiness_matches": true,
+    "contract_source_hash_matches": true,
+    "functional_hashes_unchanged": true,
+    "resolved_doc_findings": [
+      "Removed copied verification email/callback/token input coordinate",
+      "Operation-specific direct-array list vs object revoke/error output described using valid GDD any type",
+      "Unknown commit withholds result; audit persistence is explicitly unconfirmed"
+    ],
+    "aligned_claims": [
+      "Host/optional matching Origin and present fetch-site admission for GET",
+      "Shared three-revoke10/minute budget and separate list bucket",
+      "Native all-owned-row validation and bounded filtered list/serialized1MiB",
+      "Nonbearer native ID target correction and explicit legacy UI shape support",
+      "No deployed writer/physical/lifetime or old-writer drain qualification"
+    ]
+  }
+}

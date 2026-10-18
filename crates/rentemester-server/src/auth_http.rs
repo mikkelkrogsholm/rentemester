@@ -1,6 +1,8 @@
 //! Human-only enrolled login. Trusted handlers alone own admitted native connections/lifetimes.
 use super::*;
 mod enrollment;
+mod sessions;
+pub use sessions::{SessionAction, SessionControlInput};
 mod verification;
 pub use enrollment::EnrollmentHandlers;
 use rentemester_application::{
@@ -56,10 +58,13 @@ impl FactorInput {
     }
 }
 /// All outcomes must come from known native transaction results. No handler is supplied by HTTP.
+pub type SessionControlHandler =
+    Box<dyn Fn(SessionControlInput) -> Result<Outcome, ContinuationFailure> + Send + Sync>;
 pub struct AuthHandlers {
     pub cookies: Arc<CookieVerifier>,
     pub enrollment: Option<EnrollmentHandlers>,
     pub verification: Option<VerificationHandlers>,
+    pub session_control: Option<SessionControlHandler>,
     pub sign_in: Box<dyn Fn(LoginInput) -> Result<BeginOutcome, ContinuationFailure> + Send + Sync>,
     pub totp: Box<dyn Fn(FactorInput) -> Result<VerifyOutcome, ContinuationFailure> + Send + Sync>,
     pub backup:
@@ -89,7 +94,7 @@ pub(super) fn routes(router: Router<Arc<StateData>>, enrollment: bool) -> Router
         router
     };
     // Each route owns the canonical path; there is no legacy auth-handler fallback.
-    self::verification::routes(router)
+    self::verification::routes(self::sessions::routes(router))
 }
 fn denied() -> Response {
     response(

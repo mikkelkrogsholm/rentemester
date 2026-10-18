@@ -126,9 +126,14 @@ fn probe() {
     let email_open = open.clone();
     let email_c = cookies.clone();
     let email_t = clock.clone();
+    let control_c = cookies.clone();
+    let control_t = clock.clone();
+    let control_open = open.clone();
+    let control_log = outcome_log.clone();
     let mut auth = AuthHandlers {
         enrollment: Some(enrollment),
         verification: None,
+        session_control: None,
         cookies,
         sign_in: Box::new(move |i| {
             mfa_login::begin(
@@ -161,6 +166,22 @@ fn probe() {
             )
         }),
     };
+    if config["sessions"] == true {
+        auth.session_control = Some(Box::new(move |i| {
+            let result = session_control::execute(
+                &mut control_open(),
+                &session_control::Runtime {
+                    cookies: &control_c,
+                    clock: control_t.as_ref(),
+                    audit_key_version: 1,
+                },
+                i.proof(),
+                i.operation(),
+            );
+            observe(&control_log, "session-control", &result);
+            result
+        }));
+    }
     tokio::runtime::Runtime::new()
         .unwrap()
         .block_on(async move {
@@ -284,6 +305,7 @@ fn handlers(cookies: Arc<CookieVerifier>, calls: Arc<AtomicUsize>, mode: u8) -> 
     AuthHandlers {
         enrollment: None,
         verification: None,
+        session_control: None,
         cookies,
         sign_in,
         totp,
@@ -783,4 +805,112 @@ async fn verification_callback_never_turns_unknown_or_panic_into_success() {
         assert_eq!(calls.load(Ordering::SeqCst), 2);
         task.abort();
     }
+}
+
+async fn session_control_server(
+    mode: u8,
+) -> (
+    String,
+    tokio::task::JoinHandle<()>,
+    Arc<AtomicUsize>,
+    String,
+) {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let origin = format!("http://{}", listener.local_addr().unwrap());
+    let cookies = verifier(CookieProfile::Development);
+    let cookie = cookies
+        .issue_session("http-sessions-private-unit")
+        .unwrap()
+        .request_header()
+        .to_owned();
+    let calls = Arc::new(AtomicUsize::new(0));
+    let mut auth = handlers(cookies, calls.clone(), 0);
+    let count = calls.clone();
+    auth.session_control = Some(Box::new(move |_| {
+        count.fetch_add(1, Ordering::SeqCst);
+        match mode {
+            0 => {
+                let mut e = failure(false);
+                e.error.code = "invalid_credentials";
+                Err(e)
+            }
+            1 => Err(failure(true)),
+            _ => panic!("synthetic session-control handler panic"),
+        }
+    }));
+    let router = identity_router(&origin, CookieProfile::Development, auth).unwrap();
+    let task = tokio::spawn(async move {
+        axum::serve(
+            listener,
+            router.into_make_service_with_connect_info::<SocketAddr>(),
+        )
+        .await
+        .unwrap();
+    });
+    (origin, task, calls, cookie)
+}
+#[tokio::test]
+async fn session_management_never_clears_or_succeeds_on_refusal_unknown_or_panic() {
+    let client = reqwest::Client::builder().no_proxy().build().unwrap();
+    for mode in 0..3 {
+        let (origin, task, calls, cookie) = session_control_server(mode).await;
+        for path in [
+            "list-sessions",
+            "revoke-session",
+            "revoke-other-sessions",
+            "revoke-sessions",
+        ] {
+            let mut request = if path == "list-sessions" {
+                client.get(format!("{origin}/api/auth/{path}"))
+            } else {
+                client
+                    .post(format!("{origin}/api/auth/{path}"))
+                    .header("origin", &origin)
+                    .header("content-type", "application/json")
+                    .body(if path == "revoke-session" {
+                        r#"{"sessionId":"target"}"#
+                    } else {
+                        "{}"
+                    })
+            };
+            request = request.header("cookie", &cookie);
+            let r = request.send().await.unwrap();
+            assert_eq!(r.status().as_u16(), if mode == 0 { 401 } else { 503 });
+            assert!(r.headers().get("set-cookie").is_none());
+            let v: serde_json::Value = serde_json::from_str(&r.text().await.unwrap()).unwrap();
+            assert_eq!(
+                v["code"],
+                if mode == 0 {
+                    "INVALID_CREDENTIALS"
+                } else {
+                    "AUTH_UNCONFIRMED"
+                }
+            );
+        }
+        assert_eq!(calls.load(Ordering::SeqCst), 4);
+        task.abort();
+    }
+}
+#[tokio::test]
+async fn session_listing_body_and_duplicate_cookie_headers_never_dispatch() {
+    let (origin, task, calls, cookie) = session_control_server(1).await;
+    let client = reqwest::Client::builder().no_proxy().build().unwrap();
+    let r = client
+        .get(format!("{origin}/api/auth/list-sessions"))
+        .header("cookie", &cookie)
+        .body("{}")
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(r.status().as_u16(), 400);
+    let r = client
+        .get(format!("{origin}/api/auth/list-sessions"))
+        .header("cookie", &cookie)
+        .header("cookie", &cookie)
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(r.status().as_u16(), 400);
+    assert_eq!(calls.load(Ordering::SeqCst), 0);
+    task.abort();
 }

@@ -7,7 +7,7 @@ import { stubGlobal } from "./test/globals";
 const authMocks = {
   getSession: vi.fn(), signOut: vi.fn(), revokeSessions: vi.fn(),
   listSessions: vi.fn(), revokeSession: vi.fn(),
-  changePassword: vi.fn(),
+  changePassword: vi.fn(), nativeFetch: vi.fn(),
   signInEmail: vi.fn(), verifyTotp: vi.fn(), verifyBackupCode: vi.fn(), enable: vi.fn(), sendVerificationEmail: vi.fn(), requestPasswordReset: vi.fn(), resetPassword: vi.fn(),
 };
 
@@ -19,6 +19,7 @@ vi.mock("./lib/auth-client", () => ({
     listSessions: authMocks.listSessions,
     revokeSession: authMocks.revokeSession,
     changePassword: authMocks.changePassword,
+    $fetch: authMocks.nativeFetch,
     signIn: { email: authMocks.signInEmail },
     twoFactor: { verifyTotp: authMocks.verifyTotp, verifyBackupCode: authMocks.verifyBackupCode, enable: authMocks.enable },
     sendVerificationEmail: authMocks.sendVerificationEmail,
@@ -48,8 +49,9 @@ describe("hosted cockpit auth shell", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     authMocks.signOut.mockResolvedValue({ data: {} });
-    authMocks.revokeSessions.mockResolvedValue({ data: {} });
+    authMocks.revokeSessions.mockResolvedValue({ data: { status: true } });
     authMocks.listSessions.mockResolvedValue({ data: [] });
+    authMocks.nativeFetch.mockResolvedValue({ data: { status: true } });
     authMocks.revokeSession.mockResolvedValue({ data: { status: true } });
     authMocks.changePassword.mockResolvedValue({ data: { user: { id: "u1" } } });
     authMocks.requestPasswordReset.mockResolvedValue({ data: { status: true } });
@@ -360,7 +362,7 @@ describe("hosted cockpit auth shell", () => {
     await user.click(screen.getByRole("button", { name: "Sessioner" }));
     await user.click(screen.getByRole("button", { name: "Log ud på alle enheder" }));
     await user.click(within(screen.getByRole("dialog", { name: "Log ud på alle enheder?" })).getByRole("button", { name: "Log ud" }));
-    expect(await screen.findByText("Kunne ikke logge ud på alle enheder. Din nuværende session er stadig aktiv.")).toBeInTheDocument();
+    expect(await screen.findByText("Kunne ikke bekræfte, at alle enheder er logget ud. Kontrollér din session ved at logge ind igen.")).toBeInTheDocument();
     expect(screen.getByText("owner@example.test")).toBeInTheDocument();
   });
 
@@ -381,8 +383,76 @@ describe("hosted cockpit auth shell", () => {
     expect(screen.queryByText(/never-render|secret raw agent/)).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Afslut" }));
     await user.click(within(screen.getByRole("dialog", { name: "Afslut session?" })).getByRole("button", { name: "Afslut session" }));
-    expect(authMocks.revokeSession).toHaveBeenCalledWith({ token: "never-render-other-token" });
+    expect(authMocks.revokeSession).toHaveBeenCalledWith({ token: "never-render-other-token", fetchOptions: { retry: 0 } });
     expect(screen.queryByText("Chrome")).not.toBeInTheDocument();
+  });
+
+
+  test("native session metadata revokes by ID without bearer and hides current action", async () => {
+    authMocks.getSession.mockResolvedValue({ data: { user: { id: "u1", email: "owner@example.test", emailVerified: true, twoFactorEnabled: true } } });
+    authMocks.listSessions.mockResolvedValue({ data: [
+      { id: "native-current", current: true, createdAt: "2026-08-23T10:00:00Z", userAgent: "Safari raw private agent" },
+      { id: "native-other", current: false, createdAt: "2026-08-23T10:00:00Z", userAgent: "Firefox raw private agent" },
+    ] });
+    hostedFetch(); renderApp(); const user = userEvent.setup();
+    await screen.findByText("owner@example.test");
+    await user.click(screen.getByRole("button", { name: "Sessioner" }));
+    expect(await screen.findByText("Denne enhed")).toBeInTheDocument();
+    expect(screen.queryByText(/raw private agent/)).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Afslut" })).toHaveLength(1);
+    await user.click(screen.getByRole("button", { name: "Afslut" }));
+    await user.click(within(screen.getByRole("dialog", { name: "Afslut session?" })).getByRole("button", { name: "Afslut session" }));
+    expect(authMocks.nativeFetch).toHaveBeenCalledWith("/revoke-session", { method: "POST", body: { sessionId: "native-other" }, retry: 0 });
+    expect(authMocks.revokeSession).not.toHaveBeenCalled();
+    expect(screen.queryByText("Firefox")).not.toBeInTheDocument();
+    expect(authMocks.listSessions).toHaveBeenCalledWith({ fetchOptions: { retry: 0 } });
+  });
+
+  test.each(["rejected", "transport"])("native revoke %s keeps uncertain row and never replays", async (failure) => {
+    authMocks.getSession.mockResolvedValue({ data: { user: { id: "u1", email: "owner@example.test", emailVerified: true, twoFactorEnabled: true } } });
+    authMocks.listSessions.mockResolvedValue({ data: [{ id: "native-other", current: false, createdAt: "2026-08-23T10:00:00Z", userAgent: "Firefox" }] });
+    if (failure === "transport") authMocks.nativeFetch.mockRejectedValue(new Error("private transport detail"));
+    else authMocks.nativeFetch.mockResolvedValue({ data: null, error: { code: "AUTH_UNCONFIRMED" } });
+    hostedFetch(); renderApp(); const user = userEvent.setup();
+    await screen.findByText("owner@example.test");
+    await user.click(screen.getByRole("button", { name: "Sessioner" }));
+    await user.click(await screen.findByRole("button", { name: "Afslut" }));
+    await user.click(within(screen.getByRole("dialog", { name: "Afslut session?" })).getByRole("button", { name: "Afslut session" }));
+    expect(await screen.findByText("Kunne ikke bekræfte, at sessionen er afsluttet. Hent sessionsoversigten igen.")).toBeInTheDocument();
+    expect(screen.getByText("Firefox")).toBeInTheDocument();
+    expect(authMocks.nativeFetch).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("private transport detail")).not.toBeInTheDocument();
+  });
+
+  test.each(["ambiguous", "mixed", "missing"])("rejects %s session contract", async (kind) => {
+    const rows = kind === "ambiguous" ? [{ id: "a", current: true, token: "ambiguous-private-token", createdAt: "2026-08-23" }]
+      : kind === "mixed" ? [{ id: "a", current: true, createdAt: "2026-08-23" }, { id: "b", token: "mixed-private-token", createdAt: "2026-08-23" }]
+      : [{ id: "missing-contract", createdAt: "2026-08-23" }];
+    authMocks.getSession.mockResolvedValue({ data: { user: { id: "u1", email: "owner@example.test", emailVerified: true, twoFactorEnabled: true } } });
+    authMocks.listSessions.mockResolvedValue({ data: rows });
+    hostedFetch(); renderApp(); const user = userEvent.setup();
+    await screen.findByText("owner@example.test");
+    await user.click(screen.getByRole("button", { name: "Sessioner" }));
+    expect(await screen.findByText("Kunne ikke hente aktive sessioner.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Afslut" })).not.toBeInTheDocument();
+    expect(authMocks.nativeFetch).not.toHaveBeenCalled();
+  });
+
+  test.each(["native-empty", "native-false", "native-null", "legacy-empty", "all-empty", "all-false"])("unconfirmed %s ACK never removes session or signs out", async (kind) => {
+    authMocks.getSession.mockResolvedValue({ data: { user: { id: "u1", email: "owner@example.test", emailVerified: true, twoFactorEnabled: true } } });
+    const legacy = kind.startsWith("legacy"), all = kind.startsWith("all");
+    authMocks.listSessions.mockResolvedValue({ data: [{ id: "other", ...(legacy ? { token: "legacy-private-target" } : { current: false }), createdAt: "2026-08-23T10:00:00Z", userAgent: "Firefox" }] });
+    const response = { data: kind.endsWith("false") ? { status: false } : kind.endsWith("null") ? null : {} };
+    authMocks.nativeFetch.mockResolvedValue(response); authMocks.revokeSession.mockResolvedValue(response); authMocks.revokeSessions.mockResolvedValue(response);
+    hostedFetch(); renderApp(); const user = userEvent.setup();
+    await screen.findByText("owner@example.test");
+    await user.click(screen.getByRole("button", { name: "Sessioner" }));
+    await user.click(await screen.findByRole("button", { name: all ? "Log ud på alle enheder" : "Afslut" }));
+    const dialog = screen.getByRole("dialog", { name: all ? "Log ud på alle enheder?" : "Afslut session?" });
+    await user.click(within(dialog).getByRole("button", { name: all ? "Log ud" : "Afslut session" }));
+    expect(await screen.findByText(all ? "Kunne ikke bekræfte, at alle enheder er logget ud. Kontrollér din session ved at logge ind igen." : "Kunne ikke bekræfte, at sessionen er afsluttet. Hent sessionsoversigten igen.")).toBeInTheDocument();
+    expect(screen.getByText("owner@example.test")).toBeInTheDocument(); expect(screen.getByText("Firefox")).toBeInTheDocument();
+    expect((all ? authMocks.revokeSessions : legacy ? authMocks.revokeSession : authMocks.nativeFetch)).toHaveBeenCalledTimes(1);
   });
 
   test("authenticated password change replaces every old session and clears entered secrets", async () => {
