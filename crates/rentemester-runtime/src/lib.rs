@@ -148,3 +148,5 @@ impl WorkspaceLayout {
 // Tests spawning fork/exec must not inherit another test's transient lease.
 #[cfg(test)]
 static LEASE_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+pub mod service_key;

@@ -97,11 +97,31 @@ pub fn current(
             |r| r.get(0),
         )
         .map_err(invalid)?;
-    if !text(&current.subject, 4096) || !text(&email, 4096) {
+    project(
+        tx,
+        current.subject,
+        workspace_role,
+        email,
+        true,
+        true,
+        catalog,
+    )
+}
+/// Internal shared projection: caller must hold canonical writer and authenticate current human/service.
+pub(crate) fn project(
+    tx: &Transaction<'_>,
+    subject: String,
+    workspace_role: String,
+    email: String,
+    email_verified: bool,
+    two_factor_enabled: bool,
+    catalog: &Catalog,
+) -> Result<WorkspaceContext, Error> {
+    if !text(&subject, 4096) || !text(&email, 4096) {
         return Err(invalid("user"));
     }
     let mut q=tx.prepare("SELECT e.company_slug,e.event_type,e.company_role FROM main.rm_company_membership_events e JOIN (SELECT company_slug,MAX(id) latest_id FROM main.rm_company_membership_events WHERE user_id=?1 COLLATE BINARY GROUP BY company_slug) latest ON latest.latest_id=e.id WHERE e.user_id=?1 COLLATE BINARY").map_err(invalid)?;
-    let mut rows = q.query([&current.subject]).map_err(invalid)?;
+    let mut rows = q.query([&subject]).map_err(invalid)?;
     let mut roles = HashMap::new();
     while let Some(row) = rows.next().map_err(invalid)? {
         // Bound history cardinality before building the result, including dangling grants.
@@ -141,10 +161,10 @@ pub fn current(
     let result = Context {
         ok: true,
         user: User {
-            id: current.subject,
+            id: subject,
             email,
-            email_verified: true,
-            two_factor_enabled: true,
+            email_verified,
+            two_factor_enabled,
         },
         workspace_role,
         companies,

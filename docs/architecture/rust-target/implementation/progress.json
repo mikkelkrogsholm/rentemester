@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "workspace-context-1",
-  "code_revision": "sha256:cc39d4baa5c6d01a362249368d90dfcf6783f6c282ac608522a418873bfefaaf",
-  "spec_revision": "sha256:084397dbd7321d44e23c8a2c030dcff5b806804808c1ce6c4626e972141f5cef",
-  "state": "verified-native-human-workspace-context-and-http",
+  "current_increment": "service-context-1",
+  "code_revision": "sha256:44b06b67cc0c8add9704a9711982fc2bc09fac587ca16717f52d71e49992e64e",
+  "spec_revision": "sha256:a7aa44c6e911a0bd889de7947e1ddadbcab13e4890ec019633e087a67c87c5c8",
+  "state": "verified-native-source-issued-service-admission-quota-rate-and-context-http",
   "issues_closed": [],
   "next": [
-    "Continue remaining service/API-key/trusted-device/provider identity and complete serving runtime. Qualify native-only routing/legacy writer drain, physical/lifetime/restore history, distributed/proxy/rate/TLS/listener gates, then full API/CLI/MCP/React/GPUI/distribution/cutover epic.",
+    "Continue native service lifecycle create/rotate/revoke/reconcile and current service control-to-company/dispatch fencing, then shared client/CLI/MCP adapters. Qualify physical/lifetime/restore/native-only routing and legacy writer drain, distributed/proxy/rate/TLS/listener gates; full React/GPUI/distribution/cutover epic unchanged.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,20 +21,20 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "password-change-1",
-    "code_revision": "sha256:adc92c406020369501ff5d2f96c9099d5f380c91ea38656edbed4c5d23ed2fd5",
-    "spec_revision": "sha256:935094de454581b016640079222fcb1b90cea6ce29c2a95a23da94461cf41381",
-    "state": "verified-native-atomic-authenticated-password-change-http-and-account-ui"
+    "current_increment": "workspace-context-1",
+    "code_revision": "sha256:cc39d4baa5c6d01a362249368d90dfcf6783f6c282ac608522a418873bfefaaf",
+    "spec_revision": "sha256:084397dbd7321d44e23c8a2c030dcff5b806804808c1ce6c4626e972141f5cef",
+    "state": "verified-native-human-workspace-context-and-http"
   },
   "evidence": {
-    "report": "workspace-context/evidence.json",
-    "parity": "workspace-context/review-core.json",
-    "regression": "workspace-context/regression.json",
-    "rust_tests_passed": 136,
+    "report": "service-context/evidence.json",
+    "parity": "service-context/review-core.json",
+    "regression": "service-context/regression.json",
+    "rust_tests_passed": 139,
     "ignored_subprocess_helpers": 23,
-    "integration_checks": 12057,
-    "context_core_checks": 33,
-    "context_http_checks": 25,
+    "integration_checks": 12140,
+    "service_core_checks": 61,
+    "service_http_checks": 22,
     "ui_tests": 72,
     "writer_authority": false,
     "whole_issues_closed": false
@@ -285,6 +285,12 @@
       "code_revision": "sha256:adc92c406020369501ff5d2f96c9099d5f380c91ea38656edbed4c5d23ed2fd5",
       "spec_revision": "sha256:935094de454581b016640079222fcb1b90cea6ce29c2a95a23da94461cf41381",
       "state": "verified-native-atomic-authenticated-password-change-http-and-account-ui"
+    },
+    {
+      "current_increment": "workspace-context-1",
+      "code_revision": "sha256:cc39d4baa5c6d01a362249368d90dfcf6783f6c282ac608522a418873bfefaaf",
+      "spec_revision": "sha256:084397dbd7321d44e23c8a2c030dcff5b806804808c1ce6c4626e972141f5cef",
+      "state": "verified-native-human-workspace-context-and-http"
     }
   ]
 }

@@ -414,7 +414,7 @@ export async function verifyHttpWorkspaceContext(c: any) {
     [
       "service-key",
       { headers: { "x-rentemester-service-key": "private-service" } },
-      401,
+      404,
     ],
     ["missing-cookie", { headers: { cookie: "" } }, 401],
     [

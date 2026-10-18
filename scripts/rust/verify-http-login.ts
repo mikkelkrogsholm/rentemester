@@ -1,3 +1,4 @@
+import { verifyHttpServiceContext } from "./service-context-cases";
 import { verifyHttpWorkspaceContext } from "./workspace-context-cases";
 /** Real native HTTP enrolled login, actual control transactions, source crypto and cookie oracle. */
 import assert from "node:assert/strict";
@@ -314,6 +315,7 @@ try {
 		}
 	}
 	await verifyHttpEnrollment({ fixture, start, key, now, password, note });
+	await verifyHttpServiceContext({fixture,start,note});
 	await verifyHttpWorkspaceContext({fixture,start,key,now,note});
 	await verifyHttpPasswordChange({ fixture,start,key,now,note });
 	await verifyHttpBackupManagement({ fixture, start, key, now, note });

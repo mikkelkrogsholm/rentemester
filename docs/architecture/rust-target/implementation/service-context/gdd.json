@@ -1,0 +1,242 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native service admission and own workspace context",
+    "goal": "Admit source-issued service credentials and own context with one atomic current authorization/quota/rate policy",
+    "scope": "Synthetic admitted service native/HTTP; no lifecycle, company fence or full deployment/adapter parity"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native service credential admission and context",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Workspace-bound key lookup, current service authorization, atomic quota/rate and bounded own-context receipt",
+        "rationale": "Service identity cannot bypass current access or split quota/rate effects across adapters",
+        "excludes": [
+          "Service lifecycle/company write fencing, physical lifetime and full adapter deployment"
+        ]
+      },
+      "interfaces": [
+        "action.service_context"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Source-issued service default/custom/nullable policy yields exact own context and expected usage only",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic WAL/DELETE, source-issued keys and trusted runtime/catalog",
+        "when": "Service admission for GET /api/me",
+        "then": "Source-issued service default/custom/nullable policy yields exact own context and expected usage only"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Invalid/expired/disabled/malformed/ambiguous/revoked/rate/quota credentials withhold context and roll back usage",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic WAL/DELETE, source-issued keys and trusted runtime/catalog",
+        "when": "Service admission for GET /api/me",
+        "then": "Invalid/expired/disabled/malformed/ambiguous/revoked/rate/quota credentials withhold context and roll back usage"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Stable own identity/current latest memberships/catalog order/archive retained; nonusage business/user/session/audit preserved",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic WAL/DELETE, source-issued keys and trusted runtime/catalog",
+        "when": "Service admission for GET /api/me",
+        "then": "Stable own identity/current latest memberships/catalog order/archive retained; nonusage business/user/session/audit preserved"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Strict expiry equality/date/numeric bounds, exclusive HTTP service credential and no cookie/legacy fallback; atomic source/MCP corrections explicit",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic WAL/DELETE, source-issued keys and trusted runtime/catalog",
+        "when": "Service admission for GET /api/me",
+        "then": "Strict expiry equality/date/numeric bounds, exclusive HTTP service credential and no cookie/legacy fallback; atomic source/MCP corrections explicit"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Final quota race only one commit; writer excludes revocation; late failure/death rollback and actual unknown commit withhold context",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic WAL/DELETE, source-issued keys and trusted runtime/catalog",
+        "when": "Service admission for GET /api/me",
+        "then": "Final quota race only one commit; writer excludes revocation; late failure/death rollback and actual unknown commit withhold context"
+      }
+    },
+    "action.service_context": {
+      "kind": "action",
+      "description": "Native service credential GET /api/me",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {},
+        "context": {
+          "trusted_workspace_key_clock_catalog": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object",
+          "description": "ok:true with own user id/email/readiness flags, workspaceRole and explicit membership companies only",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "user": {
+              "type": "object"
+            },
+            "workspaceRole": {
+              "type": "string"
+            },
+            "companies": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          },
+          "required": [
+            "ok",
+            "user",
+            "workspaceRole",
+            "companies"
+          ]
+        },
+        "errors": {
+          "refused": "Opaque401 invalid/revoked/expired/quota/rate/access or503 malformed/operational/unknown without context"
+        },
+        "preconditions": [
+          "Admitted same-workspace control/catalog lifetime and exact raw service credential",
+          "Canonical source API-key config/registry/current access, supported strict typed quota/rate/date facts"
+        ],
+        "postconditions": [
+          "Current exact service key/registry/access and bounded own memberships projected under writer",
+          "Only exact own usage counters/timestamps changed, in one transaction",
+          "Known commit only bounded own context; unknown never replay or success",
+          "Shared reusable policy for later CLI/MCP, no claim of complete adapters or lifecycle"
+        ],
+        "external_effects": [
+          "Atomic own API-key usage metadata and post-known-commit context response"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Service current credential/role and quota/rate effects must share one writer through prepared context and known commit; no stale grant or partial usage",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Service current credential/role and quota/rate effects must share one writer through prepared context and known commit; no stale grant or partial usage",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Service current credential/role and quota/rate effects must share one writer through prepared context and known commit; no stale grant or partial usage",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Service current credential/role and quota/rate effects must share one writer through prepared context and known commit; no stale grant or partial usage",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Service current credential/role and quota/rate effects must share one writer through prepared context and known commit; no stale grant or partial usage",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Hash exact key then writer-fenced current service/access admission and atomic quota/rate/context; known commit only receipt"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.service_context",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.service_context",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.service_context",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.service_context",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.service_context",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.service_context",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native service admission and own workspace context",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "490dcc1b2ef202606338e2f7396cbe39b9db5f85c61885d7f4b6f5d8d82f755d"
+      }
+    }
+  }
+}

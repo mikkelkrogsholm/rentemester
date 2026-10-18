@@ -85,6 +85,32 @@ fn probe() {
         clock: &clock,
         audit_key_version: 1,
     };
+    if request["mode"] == "service-context" {
+        let input = rentemester_runtime::service_key::ServiceKey::new(
+            request["credentialWorkspace"].as_str().unwrap_or("w"),
+            request["serviceSecret"].as_str().unwrap(),
+        )
+        .unwrap();
+        let catalog = crate::workspace_context::Catalog {
+            workspace: request["catalogWorkspace"]
+                .as_str()
+                .unwrap_or("w")
+                .to_owned(),
+            companies: request["catalog"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|e| crate::workspace_context::RegisteredCompany {
+                    slug: e["slug"].as_str().unwrap().to_owned(),
+                    name: e["name"].as_str().unwrap().to_owned(),
+                    archived: e["archived"].as_bool().unwrap(),
+                })
+                .collect(),
+        };
+        let result=crate::service_context::execute(&mut db,request["workspace"].as_str().unwrap_or("w"),&clock,&input,&catalog).map(|v|json!({"ok":true,"context":serde_json::from_str::<Value>(v.as_json()).unwrap()})).unwrap_or_else(|f|json!({"ok":false,"code":f.error.code,"stage":format!("{:?}",f.stage),"reusable":f.connection_reusable}));
+        println!("RM_MFA_LOGIN_RESULT={result}");
+        return;
+    }
     if request["mode"] == "workspace-context" {
         let verifier = CookieVerifier::new(
             request["proofWorkspace"].as_str().unwrap_or("w"),

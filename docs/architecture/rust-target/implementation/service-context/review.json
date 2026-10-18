@@ -1,0 +1,164 @@
+{
+  "status": "FINAL_SOURCE_AND_DOCUMENTATION_REVIEW",
+  "result": "PASS",
+  "scope": "Completed read-only functional source review, independent focused core61/HTTP22/server2/runtime1 execution, and final CONTRACT/GDD/readiness/README review with independent GDD3PASS. No repository or graph changes; existing evidence and source/document hashes retained.",
+  "graphify_first": true,
+  "findings": [
+    {
+      "id": "SC01",
+      "severity": "medium",
+      "path": "scripts/rust/service-context-cases.ts",
+      "finding": "Frozen actual-source exact-window oracle kan blive hængende: source reset er elapsed>window, men increment CAS kræver lastRequest>now-window; ved præcis lighed fejler CAS og source recurses med uændret clock.",
+      "needed": "Separat native boundary assertion og eksplicit installed source CAS boundary limitation; undgå frozen exact-equality actual-source invocation.",
+      "status": "RESOLVED",
+      "resolution": "Frozen exact-window source oracle removed; native equality assertion retained and source defect disclosed."
+    },
+    {
+      "id": "SC02",
+      "severity": "medium",
+      "path": "crates/rentemester-storage/src/service_context.rs",
+      "finding": "window/max0 nægtes også når rate disabled eller NULL-skip gør felterne inaktive; source springer her rate over.",
+      "needed": "Begræns positivkravet til effektiv enabled rate med begge felter Some, eller dokumentér/test eksplicit strengere native correction.",
+      "status": "RESOLVED",
+      "resolution": "Positive rate limits required only for enabled rate with both fields present; actual-source inactive-zero/null variants pass."
+    }
+  ],
+  "other_material_findings": [],
+  "execution": {
+    "focused_core": {
+      "result": "PASS",
+      "checks": 61,
+      "report": "/tmp/rm-service-review-core.json",
+      "stderr_summary": "/tmp/rm-service-review-core.err",
+      "command": "python3 /tmp/rm-service-review-run.py core",
+      "scope": "Current original harness initialization + verifyServiceContext only; source helper/native usage parity, source rotate stable identity, WAL/DELETE transaction races/rollback/unknown."
+    },
+    "focused_http": {
+      "result": "PASS",
+      "checks": 22,
+      "report": "/tmp/rm-service-review-http.json",
+      "stderr_summary": "/tmp/rm-service-review-http.err",
+      "command": "python3 /tmp/rm-service-review-run.py http",
+      "scope": "Current original HTTP harness initialization + verifyHttpServiceContext only; native real sockets and actual human/service shared peer admission."
+    },
+    "native": {
+      "result": "PASS",
+      "tests": 2,
+      "report": "/tmp/rm-service-review-native.txt",
+      "command": "cargo test --locked --release -p rentemester-server service_context_"
+    },
+    "crypto": {
+      "result": "PASS",
+      "tests": 1,
+      "report": "/tmp/rm-service-review-crypto.txt",
+      "command": "cargo test --locked --release -p rentemester-runtime service_key::tests::exact_utf8_unpadded_sha256_and_bounded_input"
+    },
+    "attempt_history": "No failed independent execution attempts for this frozen repeat. Prior main fixture setup failures and source-oracle boundary were diagnosed separately; initial review preserved above.",
+    "gdd": {
+      "result": "PASS",
+      "checks": 3,
+      "spec_revision": "sha256:a7aa44c6e911a0bd889de7947e1ddadbcab13e4890ec019633e087a67c87c5c8",
+      "report": "/tmp/rm-service-review-readiness.json",
+      "command": "/Users/mikkelfreltoftkrogsholm/Projekter/gdd/.venv/bin/gdd validate docs/architecture/rust-target/implementation/service-context/gdd.json --profile readiness --scope action.service_context --scope component.application",
+      "contract_source_hash_verified": true,
+      "stored_readiness_revision_matches": true
+    }
+  },
+  "source_sha256": {
+    "crates/rentemester-runtime/src/service_key.rs": "d6e18f5d71d8c63b0703206da0a657d4909680ee066067c135b87e5d9c59e6b1",
+    "crates/rentemester-storage/src/service_context.rs": "4b8a631daa868d03d7946c463b88e0d48c33c509e833d32bb0da72a5ebd18051",
+    "crates/rentemester-storage/src/workspace_context.rs": "bcdf429f990675da21e57eecec428e30019d7168a58ddd9ac911163ea9f6769b",
+    "crates/rentemester-application/src/service_context.rs": "f95cbaeb9d69d73954f905d8c89602646d0fe174426c3c08af95bb09bfc90af8",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "6267ab8a41574d42e5470564745eb6a89e5a61de6ffcd1d8b559d77e2dd1e3a3",
+    "crates/rentemester-server/src/auth_http/context.rs": "f5d005c11d84089ed0bff3b3714a91536d3f35884c4524dcec7eb0233659217c",
+    "crates/rentemester-server/src/auth_http.rs": "9b363a040d0a2d2129ec5ab0ad5e2a06121660f338a6514baec4bfd9922919b0",
+    "crates/rentemester-server/src/auth_http/tests.rs": "9f6994befde03362f5c79995afe5604a39f54b58772a52ffc783eb7079b545a7",
+    "crates/rentemester-server/src/lib.rs": "3f15c431e3ba162dc3c8a22513af1fb1e9820de195dbc19b3c0dddc2034f1b73",
+    "scripts/rust/service-context-cases.ts": "5d1515e3c00d1b3b1e2d1326963130d6231b9dc6751f2b0af00606335ef07052",
+    "scripts/rust/verify-mfa-login.ts": "8ff4fcd090d4f1179526d229e2b06caa58f91f1db741914b2962897e9ca79c89",
+    "scripts/rust/verify-http-login.ts": "82f660f457b2e68a099f1586198cfb856a294cc401e1acdbe15097281388989a",
+    "crates/rentemester-runtime/src/lib.rs": "cbc64637dc463224e36d334f48107efb9987572d7506e7d6a0fbc70dec1218ca",
+    "crates/rentemester-storage/src/lib.rs": "ffa009f04ea100de6390ab5a37357ccfca3b17d02b60c279cca7f285658b98e5",
+    "crates/rentemester-application/src/lib.rs": "12c9bb81284dc0ebb435dba46ef934a4d94c3914f61676f504c1c019fc00f241"
+  },
+  "initial_source_review": {
+    "status": "INITIAL_SOURCE_REVIEW_PENDING_FREEZE",
+    "result": "FINDINGS_REPORTED",
+    "findings": [
+      {
+        "id": "SC01",
+        "severity": "medium",
+        "path": "scripts/rust/service-context-cases.ts",
+        "finding": "Frozen actual-source exact-window oracle kan blive hængende: source reset er elapsed>window, men increment CAS kræver lastRequest>now-window; ved præcis lighed fejler CAS og source recurses med uændret clock.",
+        "needed": "Separat native boundary assertion og eksplicit installed source CAS boundary limitation; undgå frozen exact-equality actual-source invocation.",
+        "status": "RESOLVED",
+        "resolution": "Frozen exact-window source oracle removed; native equality assertion retained and source defect disclosed."
+      },
+      {
+        "id": "SC02",
+        "severity": "medium",
+        "path": "crates/rentemester-storage/src/service_context.rs",
+        "finding": "window/max0 nægtes også når rate disabled eller NULL-skip gør felterne inaktive; source springer her rate over.",
+        "needed": "Begræns positivkravet til effektiv enabled rate med begge felter Some, eller dokumentér/test eksplicit strengere native correction.",
+        "status": "RESOLVED",
+        "resolution": "Positive rate limits required only for enabled rate with both fields present; actual-source inactive-zero/null variants pass."
+      }
+    ],
+    "source_sha256": {
+      "crates/rentemester-runtime/src/service_key.rs": "d6e18f5d71d8c63b0703206da0a657d4909680ee066067c135b87e5d9c59e6b1",
+      "crates/rentemester-storage/src/service_context.rs": "fb607f07e5a3de139b29202422fc80a2950dba9068136357bc915ace33b63526",
+      "crates/rentemester-storage/src/workspace_context.rs": "bcdf429f990675da21e57eecec428e30019d7168a58ddd9ac911163ea9f6769b",
+      "crates/rentemester-application/src/service_context.rs": "f95cbaeb9d69d73954f905d8c89602646d0fe174426c3c08af95bb09bfc90af8",
+      "crates/rentemester-application/src/mfa_login/tests.rs": "6267ab8a41574d42e5470564745eb6a89e5a61de6ffcd1d8b559d77e2dd1e3a3",
+      "crates/rentemester-server/src/auth_http/context.rs": "f4232dce66acddb1f1c1344449db70cea8aa9939c8c522adf67ac8667a2a631c",
+      "crates/rentemester-server/src/auth_http.rs": "9b363a040d0a2d2129ec5ab0ad5e2a06121660f338a6514baec4bfd9922919b0",
+      "crates/rentemester-server/src/auth_http/tests.rs": "9f6994befde03362f5c79995afe5604a39f54b58772a52ffc783eb7079b545a7",
+      "crates/rentemester-server/src/lib.rs": "3f15c431e3ba162dc3c8a22513af1fb1e9820de195dbc19b3c0dddc2034f1b73",
+      "scripts/rust/service-context-cases.ts": "73748c46d40dd1ff88c1626f409989b530832c17d785fe95569eb54113328543",
+      "scripts/rust/verify-mfa-login.ts": "8ff4fcd090d4f1179526d229e2b06caa58f91f1db741914b2962897e9ca79c89",
+      "scripts/rust/verify-http-login.ts": "82f660f457b2e68a099f1586198cfb856a294cc401e1acdbe15097281388989a"
+    }
+  },
+  "verified_utc": "2026-10-18T04:06:34.112911+00:00",
+  "projection_sha256": {
+    "/tmp/rm-service-review-core.ts": "f96affb2ac9e30044ae6e4f6b98843262b21d1fbf54aeedbfe31a6518122e500",
+    "/tmp/rm-service-review-http.ts": "7431128f4ad6527e14d6bc2a152a648d70f709d1619297f404d232d7ef2e01e1",
+    "/tmp/rm-service-review-run.py": "4d518f1a3e0bcfdf510585dc29a10b14a2449d49ad0beed2699e4a7fb191dc23"
+  },
+  "checks_reviewed": [
+    "Exact source UTF8 SHA256/unpadded base64url, opaque bounded transient lookup not authority",
+    "Canonical schema plus unique hash across configs; exact registry/user/current workspace access under held writer",
+    "Safe nonnegative integer/null policy; strict expiry/future observation dates and deliberate native differences",
+    "Source strict refill and idle-reset paths, disabled/NULL rate branches, no expired/exhausted deletion",
+    "Context projection/refusal before usage update, same-writer rollback, known/unknown commit behavior",
+    "Strict optional service handler on GET only, mixed/duplicate/invalid credentials and body no dispatch or human fallback",
+    "No human session/account/MFA creation; owner does not inherit company memberships; source rotation retains subject and revokes prior key"
+  ],
+  "limitations": [
+    "Physical handle/workspace/catalog lifetime admission remains injected trusted-owner prerequisite; no default opener or deployed authority verified.",
+    "Full native issuance/rotation/revoke/reconcile, company-writer service fence, jobs dispatch, CLI/MCP adapters and legacy cutover remain open.",
+    "Focused projections reuse original test setup and assertions; this is not an independent full-suite rerun or live migration.",
+    "JavaScript/HTTP secret memory cannot be claimed securely erased; zeroizing owned native hash covers only its owned buffer."
+  ],
+  "documentation_review": {
+    "result": "PASS",
+    "verified_utc": "2026-10-18T04:09:19.640418+00:00",
+    "material_findings": [],
+    "alignment": [
+      "Exact UTF8/hash input, HTTP normalization and exclusive service selection",
+      "Strict typed/null/expiry corrections; positive rate constraint only effective enabled both-present policy",
+      "Partial-null/zero refill fallback, unlimited quota, idle-reset and exact-boundary source CAS disclosure",
+      "Atomic current authorization/projection/security-metadata usage; known commit only payload; unknown no success/replay/unchanged-state claim",
+      "Bounded display projection and archive/membership visibility without later company authority",
+      "Legacy TS/MCP differences, full lifecycle/company/dispatch/client/CLI/MCP/physical/cutover gates explicitly open"
+    ],
+    "functional_source_hashes_still_match": true,
+    "source_and_test_rerun": "Not repeated for documentation-only review; existing independent core61/HTTP22/server2/runtime1 evidence retained."
+  },
+  "documentation_sha256": {
+    "docs/architecture/rust-target/implementation/service-context/CONTRACT.md": "490dcc1b2ef202606338e2f7396cbe39b9db5f85c61885d7f4b6f5d8d82f755d",
+    "docs/architecture/rust-target/implementation/service-context/gdd.json": "15091e64e982fa0260628bd96e105def1f02a08fe3afe78e97386c5fb0458b95",
+    "docs/architecture/rust-target/implementation/service-context/readiness.json": "fa294da0dbc19aec7728ee8e8d049ae3f70f0821726614f7fd4f794742bb41c0",
+    "docs/architecture/rust-target/implementation/README.md": "b03ed7c7e419b075c96251033231576894e60df1479056a76716f05c1769d9d5"
+  }
+}

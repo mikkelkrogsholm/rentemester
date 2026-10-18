@@ -1,0 +1,190 @@
+{
+  "ok": true,
+  "checks": 61,
+  "observations": [
+    {
+      "id": "service-context/WAL-source-issued-key-exact-own-context-and-usage-only"
+    },
+    {
+      "id": "service-context/WAL-registered-flags0-no-human-session-password-or-MFA"
+    },
+    {
+      "id": "service-context/WAL-restart-observes-persisted-admission-count"
+    },
+    {
+      "id": "service-context/DELETE-source-issued-key-exact-own-context-and-usage-only"
+    },
+    {
+      "id": "service-context/DELETE-registered-flags0-no-human-session-password-or-MFA"
+    },
+    {
+      "id": "service-context/DELETE-restart-observes-persisted-admission-count"
+    },
+    {
+      "id": "service-context/actual-source-rotation-disables-old-and-retains-stable-own-service-context"
+    },
+    {
+      "id": "service-context/service-owner-never-inherits-ungranted-companies"
+    },
+    {
+      "id": "service-context/actual-source-default-exact-usage-and-context"
+    },
+    {
+      "id": "service-context/actual-source-quota-exact-usage-and-context"
+    },
+    {
+      "id": "service-context/actual-source-refill-due-exact-usage-and-context"
+    },
+    {
+      "id": "service-context/actual-source-refill-equality-decrement-exact-usage-and-context"
+    },
+    {
+      "id": "service-context/actual-source-refill-from-created-exact-usage-and-context"
+    },
+    {
+      "id": "service-context/actual-source-unlimited-ignores-refill-exact-usage-and-context"
+    },
+    {
+      "id": "service-context/actual-source-partial-null-refill-exact-usage-and-context"
+    },
+    {
+      "id": "service-context/actual-source-zero-refill-exact-usage-and-context"
+    },
+    {
+      "id": "service-context/actual-source-rate-disabled-exact-usage-and-context"
+    },
+    {
+      "id": "service-context/actual-source-null-rate-fields-exact-usage-and-context"
+    },
+    {
+      "id": "service-context/actual-source-null-rate-enabled-exact-usage-and-context"
+    },
+    {
+      "id": "service-context/actual-source-idle-reset-count-above-max-exact-usage-and-context"
+    },
+    {
+      "id": "service-context/actual-source-null-expiry-exact-usage-and-context"
+    },
+    {
+      "id": "service-context/actual-source-disabled-zero-rate-policy-exact-usage-and-context"
+    },
+    {
+      "id": "service-context/actual-source-null-window-zero-max-skip-exact-usage-and-context"
+    },
+    {
+      "id": "service-context/native-exact-window-increments-without-source-CAS-recursion"
+    },
+    {
+      "id": "service-context/disabled-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/null-enabled-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/bad-enabled-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/expired-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/expiry-equality-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/wrong-config-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/quota-zero-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/rate-full-equality-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/refill-equality-no-slot-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/negative-quota-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/fractional-count-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/unsafe-count-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/null-count-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/bad-rate-flag-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/zero-rate-max-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/negative-window-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/bad-expiry-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/future-created-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/future-updated-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/future-request-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/future-refill-no-context-no-partial-usage"
+    },
+    {
+      "id": "service-context/disabled-access-rollback-includes-usage"
+    },
+    {
+      "id": "service-context/invalid-key-rollback-includes-usage"
+    },
+    {
+      "id": "service-context/wrong-workspace-rollback-includes-usage"
+    },
+    {
+      "id": "service-context/wrong-catalog-rollback-includes-usage"
+    },
+    {
+      "id": "service-context/bad-context-rollback-includes-usage"
+    },
+    {
+      "id": "service-context/late-SQL-rollback-includes-usage"
+    },
+    {
+      "id": "service-context/duplicate-hash-across-configs-refuses-all-usage"
+    },
+    {
+      "id": "service-context/unregistered-human-subject-never-becomes-service"
+    },
+    {
+      "id": "service-context/WAL-last-quota-slot-one-commit"
+    },
+    {
+      "id": "service-context/WAL-writer-excludes-revoke-then-next-admission-refuses"
+    },
+    {
+      "id": "service-context/WAL-death-before-commit-rolls-back-usage"
+    },
+    {
+      "id": "service-context/DELETE-last-quota-slot-one-commit"
+    },
+    {
+      "id": "service-context/DELETE-writer-excludes-revoke-then-next-admission-refuses"
+    },
+    {
+      "id": "service-context/DELETE-death-before-commit-rolls-back-usage"
+    },
+    {
+      "id": "service-context/actual-DELETE-commit-busy-unknown-withholds-context-no-replay"
+    },
+    {
+      "id": "service-context/actual-busy-writer-no-usage-or-context"
+    }
+  ],
+  "scope": "Focused service context core"
+}

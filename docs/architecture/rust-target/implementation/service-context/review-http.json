@@ -1,0 +1,73 @@
+{
+  "ok": true,
+  "checks": 22,
+  "observations": [
+    {
+      "id": "service-context/WAL-source-issued-key-own-context-and-exact-usage-only"
+    },
+    {
+      "id": "service-context/WAL-current-membership-revocation-not-cached"
+    },
+    {
+      "id": "service-context/WAL-current-credential-revocation-no-fallback-or-usage"
+    },
+    {
+      "id": "service-context/DELETE-source-issued-key-own-context-and-exact-usage-only"
+    },
+    {
+      "id": "service-context/DELETE-current-membership-revocation-not-cached"
+    },
+    {
+      "id": "service-context/DELETE-current-credential-revocation-no-fallback-or-usage"
+    },
+    {
+      "id": "service-context/empty-no-context-no-usage-no-human-dispatch"
+    },
+    {
+      "id": "service-context/oversize-no-context-no-usage-no-human-dispatch"
+    },
+    {
+      "id": "service-context/mixed-cookie-no-context-no-usage-no-human-dispatch"
+    },
+    {
+      "id": "service-context/mixed-authorization-no-context-no-usage-no-human-dispatch"
+    },
+    {
+      "id": "service-context/invalid-no-context-no-usage-no-human-dispatch"
+    },
+    {
+      "id": "service-context/query-no-context-no-usage-no-human-dispatch"
+    },
+    {
+      "id": "service-context/origin-no-context-no-usage-no-human-dispatch"
+    },
+    {
+      "id": "service-context/fetch-site-no-context-no-usage-no-human-dispatch"
+    },
+    {
+      "id": "service-context/encoding-no-context-no-usage-no-human-dispatch"
+    },
+    {
+      "id": "service-context/expired-same-opaque-denial-without-usage"
+    },
+    {
+      "id": "service-context/quota-same-opaque-denial-without-usage"
+    },
+    {
+      "id": "service-context/rate-same-opaque-denial-without-usage"
+    },
+    {
+      "id": "service-context/HEAD-no-charge-shared-human-service-direct-peer-context-budget"
+    },
+    {
+      "id": "service-context/absent-service-handler-no-human-or-legacy-fallback"
+    },
+    {
+      "id": "service-context/human-only-session-route-never-admits-service"
+    },
+    {
+      "id": "service-context/actual-DELETE-unknown-no-context-cookie-or-success"
+    }
+  ],
+  "scope": "Focused service context http"
+}

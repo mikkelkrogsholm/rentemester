@@ -1,0 +1,8 @@
+    Finished `release` profile [optimized] target(s) in 0.14s
+     Running unittests src/lib.rs (target/release/deps/rentemester_server-36d1a0541332a7c7)
+
+running 2 tests
+test auth_http::tests::service_context_duplicate_mixed_and_get_body_never_dispatch_or_fall_back ... ok
+test auth_http::tests::service_context_refusal_unknown_and_panic_withhold_user_and_cookie ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 38 filtered out; finished in 0.00s

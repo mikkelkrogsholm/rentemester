@@ -210,3 +210,7 @@ Current-password change now uses unlocked KDFs, exact current credential/session
 ## Native human workspace context
 
 [Workspace context contract](workspace-context/CONTRACT.md) and its GDD/evidence qualify human-cookie GET `/api/me`: current own user/workspace role and explicit latest memberships intersect the trusted registered catalog in manifest order, including archive flags. It opens no company ledger, modifies no control rows and grants no later company authority. Service identity, physical/lifetime/legacy routing and full platform delivery remain open.
+
+## Native service admission and workspace context
+
+[Service context contract](service-context/CONTRACT.md) qualifies source-issued keys on native GET `/api/me`, with current registry/access, bounded own context and atomic persisted quota/refill/inactivity-rate admission. Human and service credentials are exclusive; security counters commit before a service context is released. Native expiry/typing/atomicity and source CAS-boundary corrections are explicit. Full service lifecycle, company/dispatch fencing, client/CLI/MCP adapters and actual runtime/cutover gates remain open.
