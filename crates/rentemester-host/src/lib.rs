@@ -434,6 +434,15 @@ impl Owner {
         let retired = self.finish(reusable);
         Ok(Attempt { outcome, retired })
     }
+    pub fn first_identity_phase(
+        &mut self,
+        operator: &rentemester_runtime::bootstrap::Operator,
+    ) -> AuthAttempt<Option<rentemester_application::bootstrap::Phase>> {
+        self.control_auth(
+            operator.workspace(),
+            rentemester_application::bootstrap::phase,
+        )
+    }
     pub fn verify_login_factor(
         &mut self,
         runtime: &rentemester_application::mfa_login::Runtime<'_>,

@@ -321,3 +321,13 @@ pub fn complete(
     current.phase = Phase::AccessCompleted;
     Ok(current)
 }
+
+/// Trusted installer observation; never exposes the reserved email or identity.
+pub fn phase(tx: &Transaction<'_>) -> Result<Option<Phase>, Error> {
+    writer(tx)?;
+    let current = state(tx)?;
+    if current.is_none() && count(tx, "SELECT count(*) FROM main.user")? != 0 {
+        return Err(denied());
+    }
+    Ok(current.map(|s| s.phase))
+}

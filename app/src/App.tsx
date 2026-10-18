@@ -27,6 +27,7 @@ import { ButtonLink } from "./components/ui";
 // (`CompanyNav`); the chosen year is carried in the URL as `?year=`.
 
 import { Navigate, NavLink, Route, Routes, Link, useLocation, useParams, useSearchParams } from "react-router-dom";
+import { WorkspaceSetupView } from "./views/WorkspaceSetupView";
 import { AuthProvider, useAuth } from "./lib/auth-context";
 import { api } from "./lib/api";
 import { useAsync } from "./lib/useAsync";
@@ -156,6 +157,7 @@ export function App() {
   ) {
     return <div className="state-msg" role="alert">Kunne ikke bekræfte Rentemesters sikkerhedsprofil. Prøv igen senere.</div>;
   }
+  if (health.data?.backend === "rust" && health.data.setupRequired) return <WorkspaceSetupView onComplete={health.reload} />;
   return <AuthProvider hosted={profile === "hosted"} backend={health.data?.backend}><AuthGate /></AuthProvider>;
 }
 

@@ -191,3 +191,18 @@ pub fn execute(
 }
 #[cfg(test)]
 mod tests;
+
+/// Private installer status on the admitted control connection.
+pub fn phase(control: &mut Connection) -> Result<Option<Phase>, crate::password_login::Failure> {
+    use crate::mfa_login::{error, failure};
+    control_fence::connection_ready(control)
+        .map_err(|_| failure(error("connection_refused"), false))?;
+    let tx = control
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .map_err(|_| failure(error("control_busy_or_unavailable"), false))?;
+    let result = store::phase(&tx);
+    if tx.rollback().is_err() || control_fence::connection_ready(control).is_err() {
+        return Err(failure(error("connection_refused"), false));
+    }
+    result.map_err(|e| failure(e, true))
+}

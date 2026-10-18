@@ -35,6 +35,8 @@ struct Config {
     #[serde(default)]
     first_owner: Option<FirstOwner>,
     #[serde(default)]
+    setup_actor: Option<String>,
+    #[serde(default)]
     operator_actors: Vec<String>,
     #[serde(default)]
     accounts: Vec<rentemester_storage::fresh::InitialAccount>,
@@ -64,6 +66,8 @@ impl Drop for Config {
 pub struct Backend {
     pub(crate) owner: Mutex<Owner>,
     pub(crate) cookies: Arc<CookieVerifier>,
+    pub(crate) setup: Option<crate::setup_http::Installer>,
+    pub(crate) setup_pending: std::sync::atomic::AtomicBool,
     keys: MfaKeyring,
     signer: EmailTokenSigner,
     links: RecoveryLinks,
@@ -161,8 +165,36 @@ impl Backend {
                 "First owner initialized; verification links are in the private workspace .rentemester directory."
             );
         }
+        let setup = if let Some(actor) = &config.setup_actor {
+            let operator = rentemester_runtime::bootstrap::Operator::from_policy(
+                &config.workspace,
+                actor,
+                &config.operator_actors,
+            )?;
+            let phase = unwrap(owner.first_identity_phase(&operator))
+                .map_err(|_| "installer status unavailable")?;
+            if phase == Some(rentemester_application::bootstrap::Phase::AccessCompleted) {
+                None
+            } else {
+                let token = rentemester_runtime::auth::new_token()?;
+                println!("Workspace setup: {origin}/#setup={}", token.as_str());
+                Some(crate::setup_http::Installer::new(
+                    operator,
+                    rentemester_runtime::bootstrap::ReservationKey::new(
+                        &config.workspace,
+                        &config.cookie_key,
+                    )?,
+                    token,
+                ))
+            }
+        } else {
+            None
+        };
+        let setup_pending = std::sync::atomic::AtomicBool::new(setup.is_some());
         Ok(Arc::new(Self {
             owner: Mutex::new(owner),
+            setup,
+            setup_pending,
             cookies,
             keys,
             signer,
@@ -177,6 +209,41 @@ impl Backend {
                 }],
             },
         }))
+    }
+    pub(crate) fn install_owner(
+        &self,
+        installer: &crate::setup_http::Installer,
+        input: rentemester_application::bootstrap::Input<'_>,
+    ) -> Result<(), String> {
+        let verification = email_verification::Runtime {
+            signer: &self.signer,
+            clock: &SystemClock,
+            audit_key_version: 1,
+        };
+        let request = verification_request::Runtime {
+            verification: &verification,
+            cookies: &self.cookies,
+            links: &self.links,
+        };
+        let runtime = rentemester_application::bootstrap::Runtime {
+            reservation_key: &installer.key,
+            verification: &request,
+        };
+        self.owner
+            .lock()
+            .map_err(|_| "owner unavailable".to_owned())?
+            .bootstrap_first_identity(
+                &installer.operator,
+                &runtime,
+                &mut Spool(self.spool.clone()),
+                input,
+            )
+            .map_err(|_| "owner unavailable".to_owned())?
+            .outcome
+            .map_err(|f| f.error.code.to_owned())?;
+        self.setup_pending
+            .store(false, std::sync::atomic::Ordering::Release);
+        Ok(())
     }
     fn mfa(&self) -> mfa_login::Runtime<'_> {
         mfa_login::Runtime {

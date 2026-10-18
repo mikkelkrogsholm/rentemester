@@ -1,11 +1,13 @@
 // Real browser journey against run-web-demo.py --check; no intercepted requests or fixtures.
 import { chromium } from "@playwright/test";
 import { readFileSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { createHmac } from "node:crypto";
 
 const base = process.env.RM_NATIVE_WEB_URL;
-const verification = process.env.RM_NATIVE_WEB_LINK;
-if (!base || (!verification && !process.env.RM_NATIVE_WEB_REOPEN)) throw new Error("Start with: python3 scripts/rust/run-web-demo.py --check");
+let verification = process.env.RM_NATIVE_WEB_LINK;
+const setup = process.env.RM_NATIVE_WEB_SETUP;
+if (!base || (!verification && !setup && !process.env.RM_NATIVE_WEB_REOPEN)) throw new Error("Start with: python3 scripts/rust/run-web-demo.py --check");
 function totp(secret: string): string {
   let bits = 0, count = 0;
   const bytes: number[] = [];
@@ -53,6 +55,24 @@ try {
     await page.screenshot({ path: process.env.RM_NATIVE_WEB_SCREENSHOT ?? "/tmp/rentemester-rust-first-journey.png", fullPage: true });
     console.log("PASS: Rust server restart → browser login → persisted posting and balance; idempotent replay creates no duplicate");
   } else {
+  if (setup) {
+    const unauthorized = await page.request.post(`${base}/api/setup/first-owner`, { headers: { origin: base, "content-type": "application/json", "x-rentemester-install-token": "invalid" }, data: { name: "Synthetic Intruder", email: "intruder@example.invalid", password: "synthetic-password-456" } });
+    if (unauthorized.status() !== 403) throw new Error("Installer accepted an invalid capability");
+    await page.goto(setup);
+    await page.getByLabel("Dit navn").fill("Synthetic Owner");
+    await page.getByLabel("E-mail", { exact: true }).fill("owner@example.invalid");
+    await page.getByLabel("Ny adgangskode", { exact: true }).fill("synthetic-password-123");
+    await page.getByLabel("Gentag adgangskode", { exact: true }).fill("synthetic-password-123");
+    await page.getByRole("button", { name: "Opret ejer", exact: true }).click();
+    await page.getByRole("heading", { name: "Første ejer er oprettet" }).waitFor();
+    const container = process.env.RM_NATIVE_WEB_CONTAINER;
+    if (!container || !/^rm-native-web-[a-f0-9]+$/.test(container)) throw new Error("Missing synthetic outbox container");
+    verification = execFileSync("docker", ["exec", container, "sh", "-c", 'for f in /qualified/parent/workspace/.rentemester/verification-*.txt; do cat "$f"; break; done'], { encoding: "utf8" });
+    await page.getByRole("button", { name: "Til login", exact: true }).click();
+    const consumed = await page.request.post(`${base}/api/setup/first-owner`, { headers: { origin: base, "content-type": "application/json", "x-rentemester-install-token": new URLSearchParams(new URL(setup).hash.slice(1)).get("setup")! }, data: { name: "Synthetic Intruder", email: "intruder@example.invalid", password: "synthetic-password-456" } });
+    if (consumed.status() !== 403) throw new Error("Consumed installer capability was reused");
+    console.log("Browser: first owner created through private installer; invalid and consumed capabilities refused");
+  }
   await page.goto(verification!);
   await page.goto(base);
   console.log("Browser: verification link accepted; opening login");

@@ -1,6 +1,7 @@
 //! Standalone Rust HTTP process serving the existing cockpit on the API origin.
 mod backend;
 mod product_http;
+mod setup_http;
 use axum::{
     Router,
     http::{HeaderValue, StatusCode},
@@ -83,13 +84,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let identity = native
         .as_ref()
         .map(|backend| {
-            backend
-                .identity(&origin)
-                .map(|identity| identity.merge(product_http::router(backend.clone(), &origin)))
+            backend.identity(&origin).map(|identity| {
+                identity
+                    .merge(product_http::router(backend.clone(), &origin))
+                    .merge(setup_http::router(backend.clone(), &origin))
+            })
         })
         .transpose()
         .map_err(|_| "invalid identity HTTP configuration")?;
-    let app = cockpit_router(web, identity);
+    let app = cockpit_router(web, identity, native.clone());
     println!("Rentemester Rust: http://{}", listener.local_addr()?);
     println!(
         "Cockpit served directly by Rust. Native workspace connected: {}",
@@ -103,18 +106,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn cockpit_router(web: PathBuf, identity: Option<Router>) -> Router {
+fn cockpit_router(
+    web: PathBuf,
+    identity: Option<Router>,
+    native: Option<std::sync::Arc<backend::Backend>>,
+) -> Router {
     // API misses must never return index.html with a successful status.
     let connected = identity.is_some();
     let api = Router::new()
-        .route("/health", get(move || async move {
+        .route("/health", get(move || {
+            let native = native.clone();
+            async move {
             let body = if connected {
-                r#"{"ok":true,"service":"rentemester","backend":"rust","authRequired":true,"deploymentProfile":"hosted","workspaceReady":true}"#
+                serde_json::json!({"ok":true,"service":"rentemester","backend":"rust","authRequired":true,"deploymentProfile":"hosted","workspaceReady":true,"setupRequired":native.as_ref().is_some_and(|b|b.setup_pending.load(std::sync::atomic::Ordering::Acquire))}).to_string()
             } else {
-                r#"{"ok":true,"backend":"rust","workspaceReady":false}"#
+                r#"{"ok":true,"backend":"rust","workspaceReady":false}"#.to_owned()
             };
             ([ ("content-type", "application/json") ], body)
-        }))
+        }}))
         .fallback(move || async move {
             let body = if connected {
                 r#"{"ok":false,"code":"rust_endpoint_not_implemented","errors":["This endpoint is not implemented by the Rust server yet"]}"#

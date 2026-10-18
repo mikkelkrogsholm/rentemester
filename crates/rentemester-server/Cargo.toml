@@ -18,6 +18,7 @@ serde_json.workspace = true
 url = "=2.5.8"
 zeroize = "1.8"
 percent-encoding = "2.3"
+subtle = "2.6.1"
 chrono = { version = "=0.4.45", default-features = false, features = ["std"] }
 tower-http = { version = "=0.6.11", features = ["fs", "set-header"] }
 

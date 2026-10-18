@@ -47,7 +47,7 @@ def main():
         config = {'root':'/qualified/parent/workspace','brokerUid':10001,'workspace':'synthetic-native-web',
                   'companySlug':'synthetic','companyName':'Synthetic Rust Web','cookieKey':key(),'mfaKey':key(),
                   'operatorActors':['system:synthetic-installer'],
-                  'firstOwner':{'actor':'system:synthetic-installer','email':'owner@example.invalid','name':'Synthetic Owner','password':'synthetic-password-123'},
+                  'setupActor':'system:synthetic-installer',
                   'accounts':[{'accountNo':'1800','name':'Synthetic bank','type':'asset','normalBalance':'debit'},
                               {'accountNo':'8000','name':'Synthetic opening equity','type':'equity','normalBalance':'credit'}]}
         (stage/'synthetic.json').write_text(json.dumps(config))
@@ -70,17 +70,23 @@ def main():
                     messages.put(line)
                 messages.put(None)
             threading.Thread(target=read,args=(server,output),daemon=True).start()
+            setup_link = None
             while True:
                 line = output.get(timeout=90)
                 if line is None:
                     raise RuntimeError('Rust server exited before readiness')
+                if line.startswith('Workspace setup: '):
+                    setup_link = line.strip().removeprefix('Workspace setup: ')
+                    if args.check:
+                        print('Private browser installer prepared',flush=True)
+                        continue
                 print(line.rstrip(),flush=True)
                 if 'Native workspace connected: true' in line:
                     break
-            link = run(['docker','exec',prefix,'sh','-c','for f in /qualified/parent/workspace/.rentemester/verification-*.txt; do cat "$f"; break; done'],capture_output=True,text=True).stdout
-            print(f'Open {origin}. Synthetic login: owner@example.invalid / synthetic-password-123',flush=True)
+            if not setup_link: raise RuntimeError('Missing private installer link')
+            print(f'Rust cockpit ready: {origin}',flush=True)
             if args.check:
-                environment = {**os.environ,'RM_NATIVE_WEB_URL':origin,'RM_NATIVE_WEB_LINK':link,'RM_NATIVE_WEB_STATE':str(Path(temp)/'browser-state.json')}
+                environment = {**os.environ,'RM_NATIVE_WEB_URL':origin,'RM_NATIVE_WEB_SETUP':setup_link,'RM_NATIVE_WEB_CONTAINER':prefix,'RM_NATIVE_WEB_STATE':str(Path(temp)/'browser-state.json')}
                 run(['bun','run','scripts/rust/check-native-web.ts'],cwd=REPO,env=environment)
                 run(['docker','restart','-t','2',prefix],stdout=subprocess.DEVNULL)
                 server.wait(timeout=15)
@@ -95,7 +101,9 @@ def main():
                     if 'Native workspace connected: true' in line: break
                 run(['bun','run','scripts/rust/check-native-web.ts'],cwd=REPO,env={**environment,'RM_NATIVE_WEB_REOPEN':'1'})
             else:
-                print('Private synthetic verification URL (open it before login): '+link,flush=True)
+                print('Open the private setup link above to create your synthetic owner.',flush=True)
+                print('After owner creation, read the local verification link in another terminal:',flush=True)
+                print("docker exec "+prefix+" sh -c 'cat /qualified/parent/workspace/.rentemester/verification-*.txt'",flush=True)
                 print('Press Ctrl-C to stop and remove this disposable workspace.',flush=True)
                 server.wait()
         finally:
