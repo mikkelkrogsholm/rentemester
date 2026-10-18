@@ -1,0 +1,223 @@
+{
+  "ok": true,
+  "checks": 72,
+  "observations": [
+    {
+      "id": "service-lifecycle/WAL-atomic-source-compatible-key-user-registry-events-no-implicit-authority"
+    },
+    {
+      "id": "service-lifecycle/WAL-precise-current-owner-audit-and-operation-order"
+    },
+    {
+      "id": "service-lifecycle/WAL-pure-bounded-owner-inventory-no-secret-or-hash"
+    },
+    {
+      "id": "service-lifecycle/WAL-same-operation-never-reissues-or-rediscloses"
+    },
+    {
+      "id": "service-lifecycle/WAL-completed-lost-reply-nonsecret-targeted-readback"
+    },
+    {
+      "id": "service-lifecycle/WAL-actual-installed-source-verifies-native-issued-key"
+    },
+    {
+      "id": "service-lifecycle/WAL-rotation-one-new-key-old-disabled-stable-subject-custom-expiry"
+    },
+    {
+      "id": "service-lifecycle/WAL-source-old-refuses-and-new-accepts-after-native-rotation"
+    },
+    {
+      "id": "service-lifecycle/WAL-explicit-lost-secret-target-cleanup-without-secret-readback"
+    },
+    {
+      "id": "service-lifecycle/WAL-disabled-credentials-remain-visible-for-owner-inspection"
+    },
+    {
+      "id": "service-lifecycle/DELETE-atomic-source-compatible-key-user-registry-events-no-implicit-authority"
+    },
+    {
+      "id": "service-lifecycle/DELETE-precise-current-owner-audit-and-operation-order"
+    },
+    {
+      "id": "service-lifecycle/DELETE-pure-bounded-owner-inventory-no-secret-or-hash"
+    },
+    {
+      "id": "service-lifecycle/DELETE-same-operation-never-reissues-or-rediscloses"
+    },
+    {
+      "id": "service-lifecycle/DELETE-completed-lost-reply-nonsecret-targeted-readback"
+    },
+    {
+      "id": "service-lifecycle/DELETE-actual-installed-source-verifies-native-issued-key"
+    },
+    {
+      "id": "service-lifecycle/DELETE-rotation-one-new-key-old-disabled-stable-subject-custom-expiry"
+    },
+    {
+      "id": "service-lifecycle/DELETE-source-old-refuses-and-new-accepts-after-native-rotation"
+    },
+    {
+      "id": "service-lifecycle/DELETE-explicit-lost-secret-target-cleanup-without-secret-readback"
+    },
+    {
+      "id": "service-lifecycle/DELETE-disabled-credentials-remain-visible-for-owner-inspection"
+    },
+    {
+      "id": "service-lifecycle/member-no-orphan-key-event-or-secret"
+    },
+    {
+      "id": "service-lifecycle/disabled-owner-no-orphan-key-event-or-secret"
+    },
+    {
+      "id": "service-lifecycle/unverified-no-orphan-key-event-or-secret"
+    },
+    {
+      "id": "service-lifecycle/factor-no-orphan-key-event-or-secret"
+    },
+    {
+      "id": "service-lifecycle/revoked-no-orphan-key-event-or-secret"
+    },
+    {
+      "id": "service-lifecycle/wrong-workspace-no-orphan-key-event-or-secret"
+    },
+    {
+      "id": "service-lifecycle/wrong-key-no-orphan-key-event-or-secret"
+    },
+    {
+      "id": "service-lifecycle/bad-name-no-orphan-key-event-or-secret"
+    },
+    {
+      "id": "service-lifecycle/bad-uuid-no-orphan-key-event-or-secret"
+    },
+    {
+      "id": "service-lifecycle/bad-expiry-no-orphan-key-event-or-secret"
+    },
+    {
+      "id": "service-lifecycle/lateSQL-no-orphan-key-event-or-secret"
+    },
+    {
+      "id": "service-lifecycle/Current-list-Fresh-mutation-exact-ten-minute-boundary"
+    },
+    {
+      "id": "service-lifecycle/foreign-target-never-disabled-or-replacement-issued"
+    },
+    {
+      "id": "service-lifecycle/source-compatible-enabled-count-includes-expired-and-null-not-live-auth"
+    },
+    {
+      "id": "service-lifecycle/actual-source-create-before-provider-create-marker-cleanup-never-reactivates-old"
+    },
+    {
+      "id": "service-lifecycle/create-before-provider-create-terminal-recovery-never-reissues-or-mutates"
+    },
+    {
+      "id": "service-lifecycle/actual-source-create-after-provider-create-marker-cleanup-never-reactivates-old"
+    },
+    {
+      "id": "service-lifecycle/create-after-provider-create-terminal-recovery-never-reissues-or-mutates"
+    },
+    {
+      "id": "service-lifecycle/actual-source-rotate-after-provider-create-marker-cleanup-never-reactivates-old"
+    },
+    {
+      "id": "service-lifecycle/rotate-after-provider-create-terminal-recovery-never-reissues-or-mutates"
+    },
+    {
+      "id": "service-lifecycle/actual-source-rotate-after-old-disabled-marker-cleanup-never-reactivates-old"
+    },
+    {
+      "id": "service-lifecycle/rotate-after-old-disabled-terminal-recovery-never-reissues-or-mutates"
+    },
+    {
+      "id": "service-lifecycle/fresh-sql-strict-source-timestamp-and-recovery-state"
+    },
+    {
+      "id": "service-lifecycle/fresh-iso-strict-source-timestamp-and-recovery-state"
+    },
+    {
+      "id": "service-lifecycle/exact-lease-strict-source-timestamp-and-recovery-state"
+    },
+    {
+      "id": "service-lifecycle/failed-strict-source-timestamp-and-recovery-state"
+    },
+    {
+      "id": "service-lifecycle/revoke-recovery-first-true-terminal-completed-readback-false"
+    },
+    {
+      "id": "service-lifecycle/marker-reuse-refuses-cleanup-before-any-key-event-effect"
+    },
+    {
+      "id": "service-lifecycle/future-refuses-cleanup-before-any-key-event-effect"
+    },
+    {
+      "id": "service-lifecycle/bad-transition-refuses-cleanup-before-any-key-event-effect"
+    },
+    {
+      "id": "service-lifecycle/null-completed-refuses-cleanup-before-any-key-event-effect"
+    },
+    {
+      "id": "service-lifecycle/changed-owner-refuses-cleanup-before-any-key-event-effect"
+    },
+    {
+      "id": "service-lifecycle/actual-source-failed-compensation-cleanup-disables-only-unreceived-replacement"
+    },
+    {
+      "id": "service-lifecycle/deleted-revoke-target-completes-without-fabricated-key-event"
+    },
+    {
+      "id": "service-lifecycle/recovery-foreign-config-target-never-disabled-or-completed"
+    },
+    {
+      "id": "service-lifecycle/unproducible-revoke-recovered-history-refused"
+    },
+    {
+      "id": "service-lifecycle/recovery-MAXminus1-two-appends-roll-back-without-random-ID"
+    },
+    {
+      "id": "service-lifecycle/inventory1001-principals-refuses-without-partial-output"
+    },
+    {
+      "id": "service-lifecycle/inventory-credentials-bound-no-partial-or-secret-output"
+    },
+    {
+      "id": "service-lifecycle/inventory-serialized-bound-no-partial-or-secret-output"
+    },
+    {
+      "id": "service-lifecycle/WAL-concurrent-rotate-exact-success-count-no-partial-key-or-operation"
+    },
+    {
+      "id": "service-lifecycle/WAL-concurrent-revoke-exact-success-count-no-partial-key-or-operation"
+    },
+    {
+      "id": "service-lifecycle/DELETE-concurrent-rotate-exact-success-count-no-partial-key-or-operation"
+    },
+    {
+      "id": "service-lifecycle/DELETE-concurrent-revoke-exact-success-count-no-partial-key-or-operation"
+    },
+    {
+      "id": "service-lifecycle/rm_workspace_service_principal_events-MAXminus1-multiappend-rolls-back-no-random-order"
+    },
+    {
+      "id": "service-lifecycle/rm_workspace_service_principal_operation_events-MAXminus1-multiappend-rolls-back-no-random-order"
+    },
+    {
+      "id": "service-lifecycle/MAX-and-auto-lower-poison-never-trusted-as-current-history"
+    },
+    {
+      "id": "service-lifecycle/WAL-same-operation-concurrent-one-issuance"
+    },
+    {
+      "id": "service-lifecycle/WAL-held-writer-excludes-owner-revocation-and-death-rolls-back-all"
+    },
+    {
+      "id": "service-lifecycle/DELETE-same-operation-concurrent-one-issuance"
+    },
+    {
+      "id": "service-lifecycle/DELETE-held-writer-excludes-owner-revocation-and-death-rolls-back-all"
+    },
+    {
+      "id": "service-lifecycle/actual-DELETE-commit-unknown-no-secret-or-success"
+    }
+  ],
+  "scope": "Focused owner service lifecycle core"
+}

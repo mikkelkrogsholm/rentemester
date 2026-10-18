@@ -142,6 +142,9 @@ fn probe() {
     let context_open = open.clone();
     let context_c = cookies.clone();
     let context_t = clock.clone();
+    let lifecycle_open = open.clone();
+    let lifecycle_c = cookies.clone();
+    let lifecycle_t = clock.clone();
     let service_open = open.clone();
     let service_clock = clock.clone();
     let mut auth = AuthHandlers {
@@ -151,6 +154,7 @@ fn probe() {
         password_change: None,
         workspace_context: None,
         service_context: None,
+        service_lifecycle: None,
         session_control: None,
         cookies,
         sign_in: Box::new(move |i| {
@@ -184,6 +188,20 @@ fn probe() {
             )
         }),
     };
+    if config["serviceLifecycle"] == true {
+        let log = outcome_log.clone();
+        auth.service_lifecycle = Some(Box::new(move |i| {
+            let r = rentemester_application::service_lifecycle::execute(
+                &mut lifecycle_open(),
+                &lifecycle_c,
+                lifecycle_t.as_ref(),
+                i.proof(),
+                i.operation(),
+            );
+            observe(&log, "service-lifecycle", &r);
+            r
+        }));
+    }
     if config["serviceContext"].is_array() {
         let log = outcome_log.clone();
         let catalog = rentemester_application::workspace_context::Catalog {
@@ -427,6 +445,7 @@ fn handlers(cookies: Arc<CookieVerifier>, calls: Arc<AtomicUsize>, mode: u8) -> 
         password_change: None,
         workspace_context: None,
         service_context: None,
+        service_lifecycle: None,
         session_control: None,
         cookies,
         sign_in,
@@ -1439,4 +1458,114 @@ async fn service_context_refusal_unknown_and_panic_withhold_user_and_cookie() {
         assert_eq!(calls.load(Ordering::SeqCst), 1);
         task.abort();
     }
+}
+
+#[tokio::test]
+async fn service_lifecycle_refusal_unknown_panic_never_discloses_secret_or_cookie() {
+    for mode in 0..3 {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let origin = format!("http://{}", listener.local_addr().unwrap());
+        let cookies = verifier(CookieProfile::Development);
+        let cookie = cookies
+            .issue_session("lifecycle-private-unit")
+            .unwrap()
+            .request_header()
+            .to_owned();
+        let calls = Arc::new(AtomicUsize::new(0));
+        let mut auth = handlers(cookies, calls.clone(), 0);
+        let count = calls.clone();
+        auth.service_lifecycle = Some(Box::new(move |_| {
+            count.fetch_add(1, Ordering::SeqCst);
+            match mode {
+                0 => {
+                    let mut e = failure(false);
+                    e.error.code = "invalid_credentials";
+                    Err(e)
+                }
+                1 => Err(failure(true)),
+                _ => panic!("synthetic lifecycle panic"),
+            }
+        }));
+        let app = identity_router(&origin, CookieProfile::Development, auth).unwrap();
+        let task = tokio::spawn(async move {
+            axum::serve(
+                listener,
+                app.into_make_service_with_connect_info::<SocketAddr>(),
+            )
+            .await
+            .unwrap();
+        });
+        let r = client()
+            .post(format!("{origin}/api/workspace/service-principals"))
+            .header("origin", &origin)
+            .header("content-type", "application/json")
+            .header("cookie", &cookie)
+            .body(r#"{"confirm":true,"displayName":"Synthetic"}"#)
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(r.status().as_u16(), if mode == 0 { 401 } else { 503 });
+        assert!(set_cookies(&r).is_empty());
+        let body = r.text().await.unwrap();
+        for forbidden in ["\"secret\"", "serviceAccountId", "credentialId", "private"] {
+            assert!(!body.contains(forbidden));
+        }
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+        task.abort();
+    }
+}
+#[tokio::test]
+async fn service_lifecycle_strict_body_and_duplicate_headers_never_dispatch() {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let origin = format!("http://{}", listener.local_addr().unwrap());
+    let cookies = verifier(CookieProfile::Development);
+    let cookie = cookies
+        .issue_session("lifecycle-private-unit")
+        .unwrap()
+        .request_header()
+        .to_owned();
+    let calls = Arc::new(AtomicUsize::new(0));
+    let mut auth = handlers(cookies, calls.clone(), 0);
+    let count = calls.clone();
+    auth.service_lifecycle = Some(Box::new(move |_| {
+        count.fetch_add(1, Ordering::SeqCst);
+        Err(failure(false))
+    }));
+    let app = identity_router(&origin, CookieProfile::Development, auth).unwrap();
+    let task = tokio::spawn(async move {
+        axum::serve(
+            listener,
+            app.into_make_service_with_connect_info::<SocketAddr>(),
+        )
+        .await
+        .unwrap();
+    });
+    let c = client();
+    let url = format!("{origin}/api/workspace/service-principals");
+    for mode in 0..5 {
+        let r = if mode == 0 {
+            c.get(&url).header("cookie", &cookie).body("{}")
+        } else {
+            let r = c
+                .post(&url)
+                .header("origin", &origin)
+                .header("content-type", "application/json")
+                .header("cookie", &cookie);
+            match mode {
+                1 => r
+                    .header("cookie", &cookie)
+                    .body(r#"{"confirm":true,"displayName":"Synthetic"}"#),
+                2 => r.body(r#"{"confirm":true,"displayName":"Synthetic","secret":"private"}"#),
+                3 => r.body(r#"{"confirm":true,"displayName":"Synthetic","operationId":null}"#),
+                _ => r.body("X".repeat(8193)),
+            }
+        }
+        .send()
+        .await
+        .unwrap();
+        assert!(r.status().is_client_error());
+        assert!(set_cookies(&r).is_empty());
+    }
+    assert_eq!(calls.load(Ordering::SeqCst), 0);
+    task.abort();
 }

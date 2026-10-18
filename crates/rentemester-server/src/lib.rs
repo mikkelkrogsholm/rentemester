@@ -90,6 +90,8 @@ enum Operation {
     BackupManagement,
     PasswordChange,
     WorkspaceContext,
+    ServiceLifecycle,
+    ServiceLifecycleList,
     EnrollmentBegin,
     EnrollmentConfirm,
     VerificationRequest,
@@ -305,6 +307,11 @@ impl StateData {
         self.allow_route_at(peer, Operation::Request, now)
     }
     fn allow_route_at(&self, peer: IpAddr, operation: Operation, now: Instant) -> bool {
+        let operation = if operation == Operation::ServiceLifecycleList {
+            Operation::ServiceLifecycle
+        } else {
+            operation
+        };
         let Ok(mut keys) = self.rate.lock() else {
             return false;
         };
@@ -391,6 +398,7 @@ fn admission_for(
             | Operation::Session
             | Operation::SessionList
             | Operation::WorkspaceContext
+            | Operation::ServiceLifecycleList
     ) {
         one(headers, "host") == Some(state.authority.as_str())
             && (!headers.contains_key("origin")
@@ -418,6 +426,7 @@ fn admission_for(
             | Operation::Session
             | Operation::SessionList
             | Operation::WorkspaceContext
+            | Operation::ServiceLifecycleList
     ) && !json_content(headers)
     {
         return Err(StatusCode::UNSUPPORTED_MEDIA_TYPE);

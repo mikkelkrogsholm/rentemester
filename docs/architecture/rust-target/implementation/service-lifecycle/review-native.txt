@@ -1,0 +1,15 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling rentemester-storage v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-storage)
+   Compiling rentemester-runtime v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-runtime)
+   Compiling rentemester-application v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-application)
+   Compiling rentemester-server v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-server)
+    Finished `release` profile [optimized] target(s) in 8.27s
+     Running unittests src/lib.rs (target/release/deps/rentemester_server-36d1a0541332a7c7)
+
+running 2 tests
+test auth_http::tests::service_lifecycle_strict_body_and_duplicate_headers_never_dispatch ... ok
+test auth_http::tests::service_lifecycle_refusal_unknown_panic_never_discloses_secret_or_cookie ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 40 filtered out; finished in 0.01s

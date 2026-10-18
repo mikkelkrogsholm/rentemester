@@ -16,3 +16,5 @@ pub mod verification_request;
 pub mod workspace_context;
 
 pub mod service_context;
+
+pub mod service_lifecycle;

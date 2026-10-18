@@ -1,3 +1,4 @@
+import { verifyHttpServiceLifecycle } from "./service-lifecycle-cases";
 import { verifyHttpServiceContext } from "./service-context-cases";
 import { verifyHttpWorkspaceContext } from "./workspace-context-cases";
 /** Real native HTTP enrolled login, actual control transactions, source crypto and cookie oracle. */
@@ -315,6 +316,7 @@ try {
 		}
 	}
 	await verifyHttpEnrollment({ fixture, start, key, now, password, note });
+	await verifyHttpServiceLifecycle({fixture,start,note});
 	await verifyHttpServiceContext({fixture,start,note});
 	await verifyHttpWorkspaceContext({fixture,start,key,now,note});
 	await verifyHttpPasswordChange({ fixture,start,key,now,note });

@@ -1,0 +1,228 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native owner service lifecycle",
+    "goal": "Owner-only atomic service create/rotate/revoke, bounded inventory and secret-free historical recovery/readback",
+    "scope": "Admitted synthetic native use cases/HTTP; full deployment/UI/company fence/adapter parity remains open"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Owner service lifecycle",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Current owner/Fresh mutation gate, atomic lifecycle/events and one-time issuance, bounded inventory and historical recovery",
+        "rationale": "Lost replies and legacy saga states must not reissue secrets or silently leave unmanageable keys",
+        "excludes": [
+          "Actual physical/legacy drain, company/dispatch fence and full UI/adapter/platform delivery"
+        ]
+      },
+      "interfaces": [
+        "action.service_lifecycle"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "WAL/DELETE create/rotate/revoke and inventory match source crypto/schema/events and explicit nonsecret cleanup extensions",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic WAL/DELETE controls and actual source owner/provider oracles",
+        "when": "Owner lifecycle or historical recovery call",
+        "then": "WAL/DELETE create/rotate/revoke and inventory match source crypto/schema/events and explicit nonsecret cleanup extensions"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Member/unverified/stale/revoked/mixed credentials, malformed input or reused operation refuse without effects or secrets",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic WAL/DELETE controls and actual source owner/provider oracles",
+        "when": "Owner lifecycle or historical recovery call",
+        "then": "Member/unverified/stale/revoked/mixed credentials, malformed input or reused operation refuse without effects or secrets"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Stable service subject, no implicit access/password/session, exact target and foreign preservation, only known commit discloses new secret once",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic WAL/DELETE controls and actual source owner/provider oracles",
+        "when": "Owner lifecycle or historical recovery call",
+        "then": "Stable service subject, no implicit access/password/session, exact target and foreign preservation, only known commit discloses new secret once"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Historical stream/timestamp/marker/MAXID validation, terminal readback and inventory bounded extensions keep lost-reply handling explicit",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic WAL/DELETE controls and actual source owner/provider oracles",
+        "when": "Owner lifecycle or historical recovery call",
+        "then": "Historical stream/timestamp/marker/MAXID validation, terminal readback and inventory bounded extensions keep lost-reply handling explicit"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Concurrent operationId one issuance, current owner fence, busy/late failure/death rollback and unknown commit no secret",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic WAL/DELETE controls and actual source owner/provider oracles",
+        "when": "Owner lifecycle or historical recovery call",
+        "then": "Concurrent operationId one issuance, current owner fence, busy/late failure/death rollback and unknown commit no secret"
+      }
+    },
+    "action.service_lifecycle": {
+      "kind": "action",
+      "description": "Owner-only list/create/rotate/revoke/recover",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {},
+        "context": {
+          "trusted_owner_cookie_clock_drained_control": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object",
+          "description": "Bounded inventory/known-commit one-time issuance/revocation or secret-free recovery readback",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok"
+          ]
+        },
+        "errors": {
+          "refused": "401 invalid owner;400 strict input;409 operation reuse;503 malformed/operational/unknown without receipt"
+        },
+        "preconditions": [
+          "Admitted physical/control/workspace lifetime and actual legacy/provider writer drain owned by trusted runtime",
+          "Runtime-bound current verified human workspace_owner; Fresh for all writes/recovery"
+        ],
+        "postconditions": [
+          "All native user/registry/key/events or historical cleanup commit atomically",
+          "Only exact owned targets touched; no implicit access or human identity",
+          "No operation reuse or secret redisclosure; known commit only issuance receipt",
+          "Bounded nonsecret inventory/readback permits explicit cleanup after lost reply"
+        ],
+        "external_effects": [
+          "Atomic service credential/registry/user/lifecycle operation events",
+          "One-time new secret over known-success HTTP only; no external provider/mail actions"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Current owner and one-time secrets, historical recovery and exact target/events must survive lost replies, MAXID, concurrent mutations and commit uncertainty",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Current owner and one-time secrets, historical recovery and exact target/events must survive lost replies, MAXID, concurrent mutations and commit uncertainty",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Current owner and one-time secrets, historical recovery and exact target/events must survive lost replies, MAXID, concurrent mutations and commit uncertainty",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Current owner and one-time secrets, historical recovery and exact target/events must survive lost replies, MAXID, concurrent mutations and commit uncertainty",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Current owner and one-time secrets, historical recovery and exact target/events must survive lost replies, MAXID, concurrent mutations and commit uncertainty",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Writer-fenced current owner, atomic lifecycle and bounded prepared receipt; no secret until known commit; validated historical cleanup/readback"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.service_lifecycle",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.service_lifecycle",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.service_lifecycle",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.service_lifecycle",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.service_lifecycle",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.service_lifecycle",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native owner service lifecycle",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "c5f9e99695fec481838a2f113132dfb7857d0984819c4e6e17c71b9b25828667"
+      }
+    }
+  }
+}

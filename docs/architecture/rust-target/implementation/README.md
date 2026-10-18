@@ -214,3 +214,7 @@ Current-password change now uses unlocked KDFs, exact current credential/session
 ## Native service admission and workspace context
 
 [Service context contract](service-context/CONTRACT.md) qualifies source-issued keys on native GET `/api/me`, with current registry/access, bounded own context and atomic persisted quota/refill/inactivity-rate admission. Human and service credentials are exclusive; security counters commit before a service context is released. Native expiry/typing/atomicity and source CAS-boundary corrections are explicit. Full service lifecycle, company/dispatch fencing, client/CLI/MCP adapters and actual runtime/cutover gates remain open.
+
+## Native owner service lifecycle
+
+[Service lifecycle contract](service-lifecycle/CONTRACT.md) qualifies owner-only native list/create/rotate/revoke/recover and five HTTP routes. New lifecycle effects are atomic; secret issuance follows known commit only. Bounded nonsecret credential inventory and operation readback support explicit lost-response cleanup. Historical source saga recovery validates timestamps, transitions, marker binding and event-ID headroom; an expired lease never substitutes for actual legacy/provider drain. Full management UI, service company/dispatch fencing and platform delivery remain open.

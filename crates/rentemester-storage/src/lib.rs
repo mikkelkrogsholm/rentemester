@@ -467,3 +467,5 @@ mod tests {
 pub mod workspace_context;
 
 pub mod service_context;
+
+pub mod service_lifecycle;

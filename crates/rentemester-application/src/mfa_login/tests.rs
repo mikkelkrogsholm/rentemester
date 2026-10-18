@@ -85,6 +85,57 @@ fn probe() {
         clock: &clock,
         audit_key_version: 1,
     };
+    if request["mode"] == "service-lifecycle" {
+        use crate::service_lifecycle::Operation;
+        let verifier = CookieVerifier::new(
+            request["proofWorkspace"].as_str().unwrap_or("w"),
+            if request["proofDevelopment"] == true {
+                CookieProfile::Development
+            } else {
+                CookieProfile::Secure
+            },
+            request["proofKey"].as_str().unwrap_or(key),
+        )
+        .unwrap();
+        let cookie = verifier
+            .issue_browser_session(request["token"].as_str().unwrap())
+            .unwrap();
+        let proof = verifier
+            .verify(Some(cookie.request_header()), None)
+            .unwrap();
+        let id = request["operationId"].as_str().map(str::to_owned);
+        let subject = request["serviceAccountId"]
+            .as_str()
+            .unwrap_or("")
+            .to_owned();
+        let credential = request["credentialId"].as_str().unwrap_or("").to_owned();
+        let expires = request["expiresInSeconds"].as_u64();
+        let op = match request["action"].as_str().unwrap_or("list") {
+            "create" => Operation::Create {
+                display_name: request["displayName"].as_str().unwrap_or("").to_owned(),
+                operation_id: id,
+                expires_in_seconds: expires,
+            },
+            "rotate" => Operation::Rotate {
+                subject,
+                credential,
+                operation_id: id,
+                expires_in_seconds: expires,
+            },
+            "revoke" => Operation::Revoke {
+                subject,
+                credential,
+                operation_id: id,
+            },
+            "recover" => Operation::Recover {
+                operation_id: id.unwrap_or_default(),
+            },
+            _ => Operation::List,
+        };
+        let result=crate::service_lifecycle::execute(&mut db,&cookies,&clock,&proof,&op).map(|v|json!({"ok":true,"status":v.status(),"receipt":serde_json::from_str::<Value>(v.as_json()).unwrap()})).unwrap_or_else(|f|json!({"ok":false,"code":f.error.code,"stage":format!("{:?}",f.stage),"reusable":f.connection_reusable}));
+        println!("RM_MFA_LOGIN_RESULT={result}");
+        return;
+    }
     if request["mode"] == "service-context" {
         let input = rentemester_runtime::service_key::ServiceKey::new(
             request["credentialWorkspace"].as_str().unwrap_or("w"),

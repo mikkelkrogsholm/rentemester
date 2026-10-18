@@ -1,0 +1,79 @@
+{
+  "ok": true,
+  "checks": 24,
+  "observations": [
+    {
+      "id": "service-lifecycle/WAL-known-create201-secret-once-owner-inventory"
+    },
+    {
+      "id": "service-lifecycle/WAL-lost-reply-readback-and-reused-operation-conflict"
+    },
+    {
+      "id": "service-lifecycle/WAL-rotation-stable-subject-old-disabled"
+    },
+    {
+      "id": "service-lifecycle/WAL-explicit-targeted-cleanup-after-secret-loss"
+    },
+    {
+      "id": "service-lifecycle/DELETE-known-create201-secret-once-owner-inventory"
+    },
+    {
+      "id": "service-lifecycle/DELETE-lost-reply-readback-and-reused-operation-conflict"
+    },
+    {
+      "id": "service-lifecycle/DELETE-rotation-stable-subject-old-disabled"
+    },
+    {
+      "id": "service-lifecycle/DELETE-explicit-targeted-cleanup-after-secret-loss"
+    },
+    {
+      "id": "service-lifecycle/no-confirm-strict-admission-no-secret-or-effects"
+    },
+    {
+      "id": "service-lifecycle/null-id-strict-admission-no-secret-or-effects"
+    },
+    {
+      "id": "service-lifecycle/unknown-actor-strict-admission-no-secret-or-effects"
+    },
+    {
+      "id": "service-lifecycle/array-strict-admission-no-secret-or-effects"
+    },
+    {
+      "id": "service-lifecycle/duplicate-strict-admission-no-secret-or-effects"
+    },
+    {
+      "id": "service-lifecycle/expiry-strict-admission-no-secret-or-effects"
+    },
+    {
+      "id": "service-lifecycle/query-strict-admission-no-secret-or-effects"
+    },
+    {
+      "id": "service-lifecycle/bare-cookie-strict-admission-no-secret-or-effects"
+    },
+    {
+      "id": "service-lifecycle/service-strict-admission-no-secret-or-effects"
+    },
+    {
+      "id": "service-lifecycle/foreign-origin-strict-admission-no-secret-or-effects"
+    },
+    {
+      "id": "service-lifecycle/missing-recover-id-strict-admission-no-secret-or-effects"
+    },
+    {
+      "id": "service-lifecycle/nonowner-target-strict-admission-no-secret-or-effects"
+    },
+    {
+      "id": "service-lifecycle/current-list-Fresh-mutation-boundary"
+    },
+    {
+      "id": "service-lifecycle/missing-handler-no-provider-or-legacy-fallback"
+    },
+    {
+      "id": "service-lifecycle/HEAD-no-charge-one-direct-peer-list-mutation-budget"
+    },
+    {
+      "id": "service-lifecycle/actual-DELETE-unknown-no-issued-receipt-cookie-or-success"
+    }
+  ],
+  "scope": "Focused owner service lifecycle http"
+}

@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "service-context-1",
-  "code_revision": "sha256:44b06b67cc0c8add9704a9711982fc2bc09fac587ca16717f52d71e49992e64e",
-  "spec_revision": "sha256:a7aa44c6e911a0bd889de7947e1ddadbcab13e4890ec019633e087a67c87c5c8",
-  "state": "verified-native-source-issued-service-admission-quota-rate-and-context-http",
+  "current_increment": "service-lifecycle-1",
+  "code_revision": "sha256:9855fc241223d10a2c18c9ba4b3ced26746b702be923c8638121cb025b71fba4",
+  "spec_revision": "sha256:000418df1242181dc9100619998ec507f7ca37a7d5cd4af668512463e658c4b0",
+  "state": "verified-native-owner-service-lifecycle-inventory-and-historical-recovery-http",
   "issues_closed": [],
   "next": [
-    "Continue native service lifecycle create/rotate/revoke/reconcile and current service control-to-company/dispatch fencing, then shared client/CLI/MCP adapters. Qualify physical/lifetime/restore/native-only routing and legacy writer drain, distributed/proxy/rate/TLS/listener gates; full React/GPUI/distribution/cutover epic unchanged.",
+    "Continue current service control-to-company/dispatch fencing and full native product operations, then shared client/CLI/MCP and deployed management UI. Qualify physical/lifetime/restore and actual native-only routing/legacy/provider drain, distributed/proxy/TLS/listener gates; full React/GPUI/distribution/cutover epic unchanged.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,20 +21,20 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "workspace-context-1",
-    "code_revision": "sha256:cc39d4baa5c6d01a362249368d90dfcf6783f6c282ac608522a418873bfefaaf",
-    "spec_revision": "sha256:084397dbd7321d44e23c8a2c030dcff5b806804808c1ce6c4626e972141f5cef",
-    "state": "verified-native-human-workspace-context-and-http"
+    "current_increment": "service-context-1",
+    "code_revision": "sha256:44b06b67cc0c8add9704a9711982fc2bc09fac587ca16717f52d71e49992e64e",
+    "spec_revision": "sha256:a7aa44c6e911a0bd889de7947e1ddadbcab13e4890ec019633e087a67c87c5c8",
+    "state": "verified-native-source-issued-service-admission-quota-rate-and-context-http"
   },
   "evidence": {
-    "report": "service-context/evidence.json",
-    "parity": "service-context/review-core.json",
-    "regression": "service-context/regression.json",
-    "rust_tests_passed": 139,
+    "report": "service-lifecycle/evidence.json",
+    "parity": "service-lifecycle/review-core.json",
+    "regression": "service-lifecycle/regression.json",
+    "rust_tests_passed": 142,
     "ignored_subprocess_helpers": 23,
-    "integration_checks": 12140,
-    "service_core_checks": 61,
-    "service_http_checks": 22,
+    "integration_checks": 12236,
+    "lifecycle_core_checks": 72,
+    "lifecycle_http_checks": 24,
     "ui_tests": 72,
     "writer_authority": false,
     "whole_issues_closed": false
@@ -291,6 +291,12 @@
       "code_revision": "sha256:cc39d4baa5c6d01a362249368d90dfcf6783f6c282ac608522a418873bfefaaf",
       "spec_revision": "sha256:084397dbd7321d44e23c8a2c030dcff5b806804808c1ce6c4626e972141f5cef",
       "state": "verified-native-human-workspace-context-and-http"
+    },
+    {
+      "current_increment": "service-context-1",
+      "code_revision": "sha256:44b06b67cc0c8add9704a9711982fc2bc09fac587ca16717f52d71e49992e64e",
+      "spec_revision": "sha256:a7aa44c6e911a0bd889de7947e1ddadbcab13e4890ec019633e087a67c87c5c8",
+      "state": "verified-native-source-issued-service-admission-quota-rate-and-context-http"
     }
   ]
 }

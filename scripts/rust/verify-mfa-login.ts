@@ -1,3 +1,4 @@
+import { verifyServiceLifecycle } from "./service-lifecycle-cases";
 import { verifyServiceContext } from "./service-context-cases";
 import { verifyWorkspaceContext } from "./workspace-context-cases";
 /** Native enrolled MFA flow, actual source crypto/session oracle, independent process races. */
@@ -986,6 +987,7 @@ try {
 			opts,
 		})),
 	);
+	sensitiveRecoveryCodes.push(...(await verifyServiceLifecycle({fixture,run,start,done,marker,record})));
 	sensitiveRecoveryCodes.push(...(await verifyServiceContext({fixture,run,start,done,marker,record,key})));
 	sensitiveRecoveryCodes.push(...(await verifyWorkspaceContext({ fixture,run,start,done,marker,sql,image,record,now,key })));
 	sensitiveRecoveryCodes.push(...(await verifyPasswordChange({ fixture,run,start,done,marker,sql,image,record,now,key,opts })));
