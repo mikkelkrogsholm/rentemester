@@ -18,6 +18,7 @@ pub enum OwnerError {
     Namespace(NamespaceError),
     Database,
     Retired,
+    Context,
 }
 impl std::fmt::Display for OwnerError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -25,6 +26,7 @@ impl std::fmt::Display for OwnerError {
             Self::Namespace(error) => error.code(),
             Self::Database => "broker_database_refused",
             Self::Retired => "broker_owner_retired",
+            Self::Context => "broker_context_refused",
         })
     }
 }
@@ -103,6 +105,8 @@ pub struct Owner {
 }
 /// Preserve the original application outcome even if subsequent observation
 /// retires this owner: a committed transaction must never become a retry signal.
+pub type AuthAttempt<T> =
+    Result<Attempt<Result<T, rentemester_application::password_login::Failure>>, OwnerError>;
 pub struct Attempt<T> {
     pub outcome: T,
     pub retired: bool,
@@ -236,6 +240,266 @@ impl Owner {
                 owner: Box::new(self),
             })
         }
+    }
+    /// Private local operator bootstrap. This must never be mounted as an open
+    /// signup endpoint. Operator policy, physical/native admission and bounded
+    /// KDF/mail execution belong to the trusted host adapter.
+    pub fn bootstrap_first_identity(
+        &mut self,
+        operator: &rentemester_runtime::bootstrap::Operator,
+        runtime: &rentemester_application::bootstrap::Runtime<'_>,
+        sender: &mut dyn rentemester_runtime::recovery::VerificationSender,
+        input: rentemester_application::bootstrap::Input<'_>,
+    ) -> Result<
+        Attempt<
+            Result<
+                rentemester_application::bootstrap::Reservation,
+                rentemester_application::bootstrap::Failure,
+            >,
+        >,
+        OwnerError,
+    > {
+        self.admit()?;
+        let outcome = rentemester_application::bootstrap::execute(
+            self.held.0.as_mut().unwrap().control.as_mut().unwrap(),
+            operator,
+            runtime,
+            sender,
+            CompanySelection {
+                workspace: &self.workspace,
+                slug: &self.slug,
+                registered: true,
+                archived: false,
+            },
+            input,
+        );
+        let reusable = match &outcome {
+            Ok(_) => true,
+            Err(f) => f.connection_reusable,
+        };
+        let retired = self.finish(reusable);
+        Ok(Attempt { outcome, retired })
+    }
+    pub fn request_email_verification(
+        &mut self,
+        runtime: &rentemester_application::verification_request::Runtime<'_>,
+        sender: &mut dyn rentemester_runtime::recovery::VerificationSender,
+        email: &str,
+        redirect: Option<&str>,
+        caller: Option<&VerifiedCookie>,
+    ) -> Result<Attempt<Result<(), rentemester_application::reset_request::Failure>>, OwnerError>
+    {
+        self.admit_auth(runtime.cookies.workspace())?;
+        let outcome = rentemester_application::verification_request::execute(
+            self.held.0.as_mut().unwrap().control.as_mut().unwrap(),
+            runtime,
+            sender,
+            email,
+            redirect,
+            caller,
+        );
+        let reusable = outcome
+            .as_ref()
+            .map_or_else(|f| f.connection_reusable, |_| true);
+        let retired = self.finish(reusable);
+        Ok(Attempt { outcome, retired })
+    }
+    fn admit_auth(&mut self, workspace: &str) -> Result<(), OwnerError> {
+        self.admit()?;
+        if workspace != self.workspace {
+            return Err(OwnerError::Context);
+        }
+        Ok(())
+    }
+    pub fn complete_email_verification(
+        &mut self,
+        runtime: &rentemester_application::verification_request::Runtime<'_>,
+        token: &str,
+        redirect: Option<&str>,
+    ) -> AuthAttempt<Option<rentemester_runtime::recovery::SensitiveUrl>> {
+        self.admit_auth(runtime.cookies.workspace())?;
+        if runtime.verification.signer.workspace() != self.workspace {
+            return Err(OwnerError::Context);
+        }
+        let outcome = rentemester_application::verification_request::complete(
+            self.held.0.as_mut().unwrap().control.as_mut().unwrap(),
+            runtime,
+            token,
+            redirect,
+        );
+        let reusable = match &outcome {
+            Ok(_) => true,
+            Err(f) => f.connection_reusable,
+        };
+        let retired = self.finish(reusable);
+        Ok(Attempt { outcome, retired })
+    }
+    pub fn begin_password_login(
+        &mut self,
+        runtime: &rentemester_application::mfa_login::Runtime<'_>,
+        email: &str,
+        password: &str,
+    ) -> AuthAttempt<rentemester_application::mfa_login::BeginOutcome> {
+        self.admit_auth(runtime.cookies.workspace())?;
+        let outcome = rentemester_application::mfa_login::begin(
+            self.held.0.as_mut().unwrap().control.as_mut().unwrap(),
+            runtime,
+            email,
+            password,
+        );
+        let reusable = match &outcome {
+            Ok(_) => true,
+            Err(f) => f.connection_reusable,
+        };
+        let retired = self.finish(reusable);
+        Ok(Attempt { outcome, retired })
+    }
+    pub fn begin_mfa_enrollment(
+        &mut self,
+        runtime: &rentemester_application::mfa_login::Runtime<'_>,
+        email: &str,
+        password: &str,
+        issuer: &str,
+    ) -> AuthAttempt<rentemester_application::mfa_enrollment::Setup> {
+        self.admit_auth(runtime.cookies.workspace())?;
+        let outcome = rentemester_application::mfa_enrollment::begin(
+            self.held.0.as_mut().unwrap().control.as_mut().unwrap(),
+            runtime,
+            email,
+            password,
+            issuer,
+        );
+        let reusable = match &outcome {
+            Ok(_) => true,
+            Err(f) => f.connection_reusable,
+        };
+        let retired = self.finish(reusable);
+        Ok(Attempt { outcome, retired })
+    }
+    pub fn confirm_mfa_enrollment(
+        &mut self,
+        runtime: &rentemester_application::mfa_login::Runtime<'_>,
+        challenge: &rentemester_runtime::auth::VerifiedChallenge,
+        code: &str,
+    ) -> AuthAttempt<rentemester_application::mfa_enrollment::ConfirmOutcome> {
+        self.admit_auth(runtime.cookies.workspace())?;
+        let outcome = rentemester_application::mfa_enrollment::confirm(
+            self.held.0.as_mut().unwrap().control.as_mut().unwrap(),
+            runtime,
+            challenge,
+            code,
+        );
+        let reusable = match &outcome {
+            Ok(_) => true,
+            Err(f) => f.connection_reusable,
+        };
+        let retired = self.finish(reusable);
+        Ok(Attempt { outcome, retired })
+    }
+    // Private dispatch keeps lifetime admission and retirement identical for all
+    // fixed identity operations; callers cannot supply connection callbacks.
+    fn control_auth<T>(
+        &mut self,
+        workspace: &str,
+        work: impl FnOnce(
+            &mut Connection,
+        ) -> Result<T, rentemester_application::password_login::Failure>,
+    ) -> AuthAttempt<T> {
+        self.admit_auth(workspace)?;
+        let outcome = work(self.held.0.as_mut().unwrap().control.as_mut().unwrap());
+        let reusable = outcome
+            .as_ref()
+            .map_or_else(|f| f.connection_reusable, |_| true);
+        let retired = self.finish(reusable);
+        Ok(Attempt { outcome, retired })
+    }
+    pub fn verify_login_factor(
+        &mut self,
+        runtime: &rentemester_application::mfa_login::Runtime<'_>,
+        challenge: &rentemester_runtime::auth::VerifiedChallenge,
+        code: &str,
+        backup: bool,
+    ) -> AuthAttempt<rentemester_application::mfa_login::VerifyOutcome> {
+        self.control_auth(runtime.cookies.workspace(), |control| {
+            if backup {
+                rentemester_application::mfa_login::verify_backup(control, runtime, challenge, code)
+            } else {
+                rentemester_application::mfa_login::verify(control, runtime, challenge, code)
+            }
+        })
+    }
+    pub fn current_session(
+        &mut self,
+        cookies: &rentemester_runtime::auth::CookieVerifier,
+        clock: &dyn Clock,
+        proof: &VerifiedCookie,
+    ) -> AuthAttempt<rentemester_application::session_read::SessionView> {
+        self.control_auth(cookies.workspace(), |control| {
+            rentemester_application::session_read::execute(control, cookies, clock, proof)
+        })
+    }
+    pub fn sign_out(
+        &mut self,
+        runtime: &rentemester_application::session_control::Runtime<'_>,
+        proof: &VerifiedCookie,
+    ) -> AuthAttempt<rentemester_application::session_control::Outcome> {
+        self.control_auth(runtime.cookies.workspace(), |control| {
+            rentemester_application::session_control::execute(
+                control,
+                runtime,
+                proof,
+                rentemester_application::session_control::Operation::SignOut,
+            )
+        })
+    }
+    pub fn workspace_context(
+        &mut self,
+        cookies: &rentemester_runtime::auth::CookieVerifier,
+        clock: &dyn Clock,
+        proof: &VerifiedCookie,
+        catalog: &rentemester_application::workspace_context::Catalog,
+    ) -> AuthAttempt<rentemester_application::workspace_context::WorkspaceContext> {
+        self.control_auth(cookies.workspace(), |control| {
+            rentemester_application::workspace_context::execute(
+                control, cookies, clock, proof, catalog,
+            )
+        })
+    }
+    pub fn trial_balance(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        period: rentemester_engine::trial_balance::Period,
+    ) -> Result<
+        Attempt<
+            Result<
+                Committed<rentemester_engine::trial_balance::Report>,
+                rentemester_application::control_fence::Failure,
+            >,
+        >,
+        OwnerError,
+    > {
+        self.admit()?;
+        let slots = self.held.0.as_mut().unwrap();
+        let outcome = rentemester_application::owned_report::trial_balance(
+            slots.control.as_mut().unwrap(),
+            slots.company.as_mut().unwrap(),
+            cookie,
+            clock,
+            CompanySelection {
+                workspace: &self.workspace,
+                slug: &self.slug,
+                registered: true,
+                archived: false,
+            },
+            period,
+        );
+        let reusable = match &outcome {
+            Ok(v) => v.control_reusable,
+            Err(f) => f.control_reusable && f.company_reusable,
+        };
+        let retired = self.finish(reusable);
+        Ok(Attempt { outcome, retired })
     }
     pub fn post_human(
         &mut self,

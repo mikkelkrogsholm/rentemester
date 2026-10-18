@@ -161,3 +161,5 @@ pub mod service_key;
 pub mod posting_time;
 
 pub mod namespace;
+
+pub mod bootstrap;

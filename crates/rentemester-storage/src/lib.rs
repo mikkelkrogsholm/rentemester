@@ -59,7 +59,26 @@ fn invalid(error: impl std::fmt::Display) -> Error {
 pub fn trial_balance(company: &Path, period: Period) -> Result<Report, Error> {
     let period = Period::new(&period.start, &period.end)?;
     let copy = Snapshot::capture(company)?;
-    let mut statement=copy.conn.prepare("SELECT a.account_no,a.name,a.type,a.normal_balance,je.id,jl.debit_amount,jl.credit_amount FROM journal_entries je JOIN journal_lines jl ON jl.journal_entry_id=je.id JOIN accounts a ON a.id=jl.account_id WHERE je.transaction_date>=?1 AND je.transaction_date<=?2 ORDER BY a.account_no,je.id,jl.id").map_err(invalid)?;
+    trial_balance_connection(&copy.conn, period)
+}
+/// Read an already owned transaction without snapshotting/reopening any inode.
+/// Caller must hold workspace lifetime and current company-read authorization.
+pub fn trial_balance_owned(
+    company: &rusqlite::Transaction<'_>,
+    period: Period,
+) -> Result<Report, Error> {
+    if company
+        .transaction_state(Some(rusqlite::MAIN_DB))
+        .map_err(invalid)?
+        == rusqlite::TransactionState::None
+    {
+        return Err(invalid("report requires held transaction"));
+    }
+    validate(company)?;
+    trial_balance_connection(company, Period::new(&period.start, &period.end)?)
+}
+fn trial_balance_connection(company: &Connection, period: Period) -> Result<Report, Error> {
+    let mut statement=company.prepare("SELECT a.account_no,a.name,a.type,a.normal_balance,je.id,jl.debit_amount,jl.credit_amount FROM journal_entries je JOIN journal_lines jl ON jl.journal_entry_id=je.id JOIN accounts a ON a.id=jl.account_id WHERE je.transaction_date>=?1 AND je.transaction_date<=?2 ORDER BY a.account_no,je.id,jl.id").map_err(invalid)?;
     let mut rows = statement
         .query([&period.start, &period.end])
         .map_err(invalid)?;
@@ -476,3 +495,5 @@ pub mod journal_post;
 pub mod journal_reversal;
 
 pub mod fresh;
+
+pub mod bootstrap;
