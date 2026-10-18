@@ -5,6 +5,7 @@ use rustix::fs::{
 };
 use std::{
     fs::File,
+    io::Write,
     path::{Component, Path, PathBuf},
 };
 
@@ -67,7 +68,7 @@ fn identity(s: &Stat) -> RootIdentity {
         inode: s.st_ino,
     }
 }
-fn walk(root: &Path, uid: u32) -> Result<(Vec<RootIdentity>, File), Error> {
+fn walk(root: &Path, uid: u32, private_root: bool) -> Result<(Vec<RootIdentity>, File), Error> {
     if !root.is_absolute()
         || root
             .components()
@@ -87,7 +88,7 @@ fn walk(root: &Path, uid: u32) -> Result<(Vec<RootIdentity>, File), Error> {
             }
         })
         .collect();
-    if parts.is_empty() {
+    if private_root && parts.is_empty() {
         return Err(Error::Invalid);
     }
     for i in 0..=parts.len() {
@@ -95,7 +96,10 @@ fn walk(root: &Path, uid: u32) -> Result<(Vec<RootIdentity>, File), Error> {
         if stat.st_uid != 0 && stat.st_uid != uid || stat.st_mode & 0o7022 != 0 {
             return Err(Error::Invalid);
         }
-        if i == parts.len() && (stat.st_uid != uid || stat.st_mode & 0o7777 != 0o700) {
+        if private_root
+            && i == parts.len()
+            && (stat.st_uid != uid || stat.st_mode & 0o7777 != 0o700)
+        {
             return Err(Error::Invalid);
         }
         acl_fd(&file)?;
@@ -175,7 +179,7 @@ impl NamespaceGuard {
             return Err(Error::Invalid);
         }
         let root: PathBuf = root.components().collect();
-        let (ancestors, directory) = walk(&root, uid)?;
+        let (ancestors, directory) = walk(&root, uid, true)?;
         let lease = WorkspaceLease::acquire(&root).map_err(|e| {
             if e == LeaseError::Busy {
                 Error::Busy
@@ -183,6 +187,22 @@ impl NamespaceGuard {
                 Error::Invalid
             }
         })?;
+        Self::bind(root, uid, workspace, slug, ancestors, directory, lease)
+    }
+    fn bind(
+        root: PathBuf,
+        uid: u32,
+        workspace: &str,
+        slug: &str,
+        ancestors: Vec<RootIdentity>,
+        directory: File,
+        mut lease: WorkspaceLease,
+    ) -> Result<Self, Error> {
+        if lease.ensure_current_root().map_err(|_| Error::Changed)?
+            != identity(&fstat(&directory).map_err(|_| Error::Invalid)?)
+        {
+            return Err(Error::Changed);
+        }
         metadata(&root, &directory, uid, slug)?;
         let layout = WorkspaceLayout::bind(lease, workspace, slug).map_err(|_| Error::Invalid)?;
         let mut result = Self {
@@ -196,9 +216,97 @@ impl NamespaceGuard {
         result.ensure_current()?;
         Ok(result)
     }
+    /// Create a NEW protected namespace. Existing paths, including empty dirs and
+    /// symlinks, are refused. No chmod/chown/adoption/removal or retry repair.
+    /// On error a private partial directory may remain; it is never reused here.
+    /// Every regular creation descriptor closes before the first SQLite open.
+    pub fn create_fresh(
+        root: &Path,
+        uid: u32,
+        workspace: &str,
+        slug: &str,
+        name: &str,
+        created_at: &str,
+    ) -> Result<Self, Error> {
+        process(uid)?;
+        let manifest = serde_json::to_vec(&serde_json::json!({"version":1,"companies":[
+            {"slug":slug,"name":name,"createdAt":created_at,"archived":false}
+        ]}))
+        .map_err(|_| Error::Invalid)?;
+        WorkspaceLayout::validate_new_manifest(workspace, slug, &manifest)
+            .map_err(|_| Error::Invalid)?;
+        if !root.is_absolute()
+            || root
+                .components()
+                .any(|p| matches!(p, Component::ParentDir | Component::CurDir))
+        {
+            return Err(Error::Invalid);
+        }
+        let parent = root.parent().ok_or(Error::Invalid)?;
+        let leaf = root.file_name().ok_or(Error::Invalid)?;
+        let (prior_ancestors, parent_directory) = walk(parent, uid, false)?;
+        rustix::fs::mkdirat(&parent_directory, leaf, Mode::from_raw_mode(0o700)).map_err(
+            |error| {
+                if error == rustix::io::Errno::EXIST {
+                    Error::Exists
+                } else {
+                    Error::Invalid
+                }
+            },
+        )?;
+        let root: PathBuf = root.components().collect();
+        let (ancestors, directory) = walk(&root, uid, true)?;
+        if ancestors[..ancestors.len() - 1] != prior_ancestors {
+            return Err(Error::Changed);
+        }
+        let lease = WorkspaceLease::acquire(&root).map_err(|_| Error::Invalid)?;
+        for name in [
+            ".rentemester".to_owned(),
+            slug.to_owned(),
+            format!("{slug}/data"),
+        ] {
+            rustix::fs::mkdirat(&directory, name.as_str(), Mode::from_raw_mode(0o700))
+                .map_err(|_| Error::Invalid)?;
+        }
+        for (name, bytes) in [
+            ("workspace.json".to_owned(), manifest.as_slice()),
+            (".rentemester/workspace-control.sqlite".to_owned(), &[][..]),
+            (format!("{slug}/data/ledger.sqlite"), &[][..]),
+        ] {
+            let mut file = File::from(
+                openat(
+                    &directory,
+                    name.as_str(),
+                    OFlags::WRONLY
+                        | OFlags::CREATE
+                        | OFlags::EXCL
+                        | OFlags::NOFOLLOW
+                        | OFlags::CLOEXEC,
+                    Mode::from_raw_mode(0o600),
+                )
+                .map_err(|_| Error::Invalid)?,
+            );
+            file.write_all(bytes).map_err(|_| Error::Invalid)?;
+            file.sync_all().map_err(|_| Error::Invalid)?;
+        }
+        for name in [
+            ".rentemester".to_owned(),
+            format!("{slug}/data"),
+            slug.to_owned(),
+        ] {
+            let dir = File::from(
+                openat(&directory, name.as_str(), DIRECTORY, Mode::empty())
+                    .map_err(|_| Error::Invalid)?,
+            );
+            dir.sync_all().map_err(|_| Error::Invalid)?;
+        }
+        directory.sync_all().map_err(|_| Error::Invalid)?;
+        parent_directory.sync_all().map_err(|_| Error::Invalid)?;
+        Self::bind(root, uid, workspace, slug, ancestors, directory, lease)
+    }
     fn observe(&mut self) -> Result<(), Error> {
         process(self.uid)?;
-        let (ancestors, directory) = walk(&self.root, self.uid)?;
+        let (ancestors, directory) = walk(&self.root, self.uid, true)?;
         if ancestors != self.ancestors {
             return Err(Error::Changed);
         }

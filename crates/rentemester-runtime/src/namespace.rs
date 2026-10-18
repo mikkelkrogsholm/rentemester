@@ -7,6 +7,7 @@ pub enum NamespaceError {
     Unsupported,
     Process,
     Invalid,
+    Exists,
     Busy,
     Changed,
 }
@@ -16,6 +17,7 @@ impl NamespaceError {
             Self::Unsupported => "unsupported_broker_profile",
             Self::Process => "unsafe_broker_process",
             Self::Invalid => "unsafe_broker_namespace",
+            Self::Exists => "workspace_exists",
             Self::Busy => "workspace_busy",
             Self::Changed => "broker_namespace_changed",
         }
@@ -40,6 +42,16 @@ pub struct NamespaceGuard {
 #[cfg(not(target_os = "linux"))]
 impl NamespaceGuard {
     pub fn acquire(_: &Path, _: u32, _: &str, _: &str) -> Result<Self, NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
+    pub fn create_fresh(
+        _: &Path,
+        _: u32,
+        _: &str,
+        _: &str,
+        _: &str,
+        _: &str,
+    ) -> Result<Self, NamespaceError> {
         Err(NamespaceError::Unsupported)
     }
     pub fn ensure_current(&mut self) -> Result<(), NamespaceError> {

@@ -157,6 +157,18 @@ pub struct WorkspaceLayout {
     lease: WorkspaceLease,
 }
 impl WorkspaceLayout {
+    #[cfg(target_os = "linux")]
+    pub(crate) fn validate_new_manifest(
+        workspace: &str,
+        slug: &str,
+        bytes: &[u8],
+    ) -> Result<(), LayoutError> {
+        if !metadata_text(workspace, 1024) || !valid_slug(slug) {
+            return Err(LayoutError::InvalidSelection);
+        }
+        parse(bytes, slug)
+    }
+
     pub fn bind(
         mut lease: WorkspaceLease,
         workspace: &str,

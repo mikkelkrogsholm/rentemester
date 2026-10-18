@@ -1,0 +1,144 @@
+{
+  "scope": "Final bounded exclusive fresh Linux namespace+native control/company schema initializer review; existingdata/reopenlineage/bootstrap/domainactivation explicitly outside this proof",
+  "captured_at": "2026-10-18T08:30:58.881115+00:00",
+  "source_hashes": {
+    "crates/rentemester-runtime/src/namespace.rs": "f9fcf6a675a7a2adf724b05b0c4cf5a3e8706753fc7cf92261cdb6497dc3b40a",
+    "crates/rentemester-runtime/src/namespace/linux.rs": "b155f5381a9ff31ebd168630141d0f72353f40244b1b984106d337ffbbda611f",
+    "crates/rentemester-runtime/src/local/layout.rs": "56f7d84efdef3f2390b2477e7a7081bbc6a5c5c998ec294d22497610dae750a6",
+    "crates/rentemester-storage/src/fresh.rs": "b2f4972a391bee6b90a7f646d7aae2aea0d03be28e655b4fbcd63526d8b9871d",
+    "crates/rentemester-storage/src/fresh/tests.rs": "de3396f18e2222de1421bbac43dbdbb30e87b14180667e99e3548f7dfd14a4a6",
+    "crates/rentemester-storage/src/control_migration.rs": "4a37278cdf6b9cae20733055cae360e761cd5c4f2f2396e59555dd2f99abbb70",
+    "crates/rentemester-storage/src/company_baseline.rs": "956d27a3aa7d8c26ea62faa0e674518fe4a38f1bf2321c80dcd425d6f3f031cc",
+    "crates/rentemester-storage/src/lib.rs": "eca4eb716455e2ee14c11436224018c48ce4e7268a6e9e92b79c19cd0f4804ed",
+    "crates/rentemester-host/src/lib.rs": "51ada37fd963b012b52b6d3d7751b6dab7bdeaf15482950e01d7a8bfe0e883d4",
+    "crates/rentemester-host/src/tests.rs": "2d89554b636d78e17785da118a6c4b8e6fd1867dc934a816fb164e9acfac365d",
+    "crates/rentemester-host/Cargo.toml": "ececefc726c263c501e2c1d75ca6baeae4255a45c4013ef6f655edcd495d0027",
+    "src/core/migrations/0020-mutation-idempotency-receipts.json": "69ce065a316b622abdd19ff73a4ca70855d540b901e925d5176c056f8b6564f3",
+    "scripts/rust/verify-broker-owner-linux.py": "94587c80a29e7a67b5f4af59cc6be1568d29846118636fc6fee54712acd6c00b",
+    "scripts/rust/verify-broker-namespace-linux.py": "18a4f4e68cdb447bb9c469ca98c6929aeada6959a726d97768237ce5672f645f",
+    "docs/architecture/rust-target/implementation/fresh-workspace/CONTRACT.md": "38c44e2177aa1994c29fabb308d1758fc37bff6e1f4f99285cdf6a12a5aeceba",
+    "docs/architecture/rust-target/implementation/fresh-workspace/gdd.json": "b117a77401420ed538a47010bae98933248904bc325f0ad5e530df732fb4cfd8",
+    "docs/architecture/rust-target/implementation/fresh-workspace/readiness.json": "2bea7c407e87dd1fc94a28f9e82d143624ddf9147c29779e0ed12a6a524f7392"
+  },
+  "status": "No unresolved material findings within bounded fresh-only initializer and measured physical ownership scope",
+  "findings": [],
+  "source_checks": [
+    {
+      "property": "Strict fresh root creation after safe parent validation",
+      "evidence": "process(uid), manifest metadata validation and absolute noParent root preflight precede walk(parent,false). walk checks all ancestors owner/root/no groupworldwrite/specialbits and absence access/defaultACL before mkdirat0700. Existing dir/file/symlink returnsEXIST; no adoption or chmod/chown/unlinkrepair."
+    },
+    {
+      "property": "Physical ancestor binding and original lease transfer",
+      "evidence": "After exclusive root mkdir, walk(root,true) observes privateuid0700root, compares exact prior ancestor identities. WorkspaceLease acquired once, retained while internalfiles created, then moved through NamespaceGuard::bind\u2192WorkspaceLayout::bind into Owner::open_guarded. bind compares lease root and retained directory identity; no release/reacquire window."
+    },
+    {
+      "property": "Exclusive regular file construction and no descriptor-close lock hazard",
+      "evidence": "Internaldirs created0700 and files WRONLY|CREATE|EXCL|NOFOLLOW|CLOEXEC0600. Each creation File closes at endof foriteration before directoryfsync/bind and before OwneropensSQLites. Namespace layout retainedfiles then follow established close-after-SQLite lifetime. Live namespace/handlechecks unchanged statat/read_at/fstat."
+    },
+    {
+      "property": "Partial creation and constructor cleanup",
+      "evidence": "Any create error may leave brokerprivatepartialroot, never reused by create_new. Owner::open_guarded already retains guard before either SQLiteopen; Owner::create_new marksfalse before fresh_fault/storage initialization and ? errors drop through established explicitclose/BUSYquarantine. No Owner or Initialized returned on failure."
+    },
+    {
+      "property": "Twoempty preflight and independent transactions",
+      "evidence": "fresh::empty checks bothRW/autocommit/main+tempempty/noattachments/userversion0/appid0/queryonly0 before persistentSQL. Control/fullcompany schemahistory each materialize in own BEGINIMMEDIATE transaction. Companycontention can leave controlcommitted/companyempty, deliberately no cross-DBatomic claim or retry. Error requires retiring/discarding privatepartialinitializer."
+    },
+    {
+      "property": "Canonical schema and history",
+      "evidence": "Existing checksumcatalogues/embeddedSQL reused. Control compares canonical30migrationreference/history plus integrity; company loadsbaseline+steps, guards/invariants/integrity, exactcurrent schema and36history. AllDL+metadata/history+companyrow are within respective per-DBtransaction."
+    },
+    {
+      "property": "No companyspecific hardcoding or implicit authority",
+      "evidence": "Caller companyname checked nonblank/bounded/controlfree then SQLparameterized singletoncompaniesid1. No default companyname/account seed/user/session/member/bootstrap grants. Existing migration20 seeds immutable randomblob16 ledgerUUID; synthetictests checkdifferentUUID andpersistedidentity. Schema singletonid1 is general per-ledger convention, not real-company logic."
+    },
+    {
+      "property": "Unsupported profile refusal",
+      "evidence": "NonLinux NamespaceGuard::create_fresh same signature returnsUnsupported before touchingpaths; source includes no fallbackwriter or filesystemmutation bypass."
+    }
+  ],
+  "evidence_review": [
+    {
+      "property": "Actual fresh constructor reaches live native initializers",
+      "evidence": "Linux fresh_probe directly calls Owner::create_new; createdmarker emitted only after30control/36company migration counts, callername and emptycredentials/access/accounts assertions on owned canonical connections. Storage Mac5tests independently recognize completecanonicalcompanyschema/history and bothschemafingerprints."
+    },
+    {
+      "property": "Preflightbeforemutation",
+      "evidence": "fresh::initialize_empty_pair source executesempty(control),empty(company) beforeallpragma/configDDL; actual native5tests checkeitherexistingtable/temp/attachment/metadata/queryonly/activeTXrefusal leavesothertableempty andtotalchangesunchanged. No falseoldfilefreshness inference; exclusivehostnamespacecreation suppliesprovenance."
+    },
+    {
+      "property": "ParentACL and process refusals",
+      "evidence": "Driver installsdefaultACL usingactualruntimefixture and requires installed-and-read-back beforefreshrefusal; verifies absentroot afterward. Invalidname/workspace/currentumask/writableparent similarly refusebeforecreation."
+    },
+    {
+      "property": "Exclusive creation and lifetime",
+      "evidence": "Actual newOwner staysalive while rootleasecontenders reportbusy/free duringcompletedSQLinit, repeatcreateExists, clientUID66operationsdenied. Bothcreatorprocesses launched separately, exactonecreated andoneExists. Source transfers originalleasebyvalue withnorelease/reacquire."
+    },
+    {
+      "property": "Persistent identity and no reinitialization",
+      "evidence": "Afterconfirmedownerclose, newprocessOwner::open_protected on just-createdfixture readsidenticalledgerUUID+36history, but this is explicitlyphysicalpersistence not arbitrary-existing nativeoriginattestation. Closedrootcreate againExists."
+    },
+    {
+      "property": "PartialconstructionBUSY",
+      "evidence": "Actualcreate_new cfgtestfresh_fault executesafterbothprotectedopens/beforestorageinit, beginscontrolwriter/forgetsrealstatement thenreturnsDatabaseErr. Driverobservesleasebusy/controlbusy/companyfree, retrycreateExists and allfreedonlyafterprocessExit. Ordinary owner50casesrerun."
+    },
+    {
+      "property": "Cleanup/sourcebinding",
+      "evidence": "Standalone report emittedaftercheckedcleanup; owned_resources_removedtrue. Source295hashes plusexactdriver/supportSHA matchcurrent checkout, including requiredcompiletime schemaJSON. No hostworkspace mounts; onlytemporary sourcecopy+task-owned Docker volumes."
+    }
+  ],
+  "verification": [
+    {
+      "owner": "main executed; reviewer validated driverreachability/currenthashes/resultlog",
+      "command": "python3 scripts/rust/verify-broker-owner-linux.py --fresh --clippy --output /tmp/rm-fresh-linux-parity.json",
+      "result": "69checksPASS=50priorowner+19fresh;7x66=462actualdifferentUIDdenials;LinuxARM64extfamilycandidate;ownedresourcesremoved",
+      "source_files": 295,
+      "source_mismatches": 0,
+      "artifact": "/tmp/rm-fresh-linux-parity.json"
+    },
+    {
+      "owner": "main executed via checked support.run; reviewer inspected exactdriverpath andPASSreport",
+      "command": "docker exec <owned-container> cargo clippy --locked -p rentemester-runtime -p rentemester-storage -p rentemester-host --all-targets -- -D warnings",
+      "result": "PASS selectedLinuxcrates/alltargets; rustupcomponentclippy installedfirst; subprocessreturncode checked0",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_transcript": "Notretainedon success bysupport.run; do notinterpret emptystdoutSHA as missingrun or inventClippystderrlog."
+    },
+    {
+      "owner": "main executed; reviewer parsedactualsummaries/testnames",
+      "result": "170nativeunit+6compilefaildoc=176passed,0failed,31ignored;freshstorage5casespresentPASS",
+      "artifact": "/tmp/rm-fresh-workspace-native.txt"
+    },
+    {
+      "owner": "main executed; reviewer inspectedactualFinished",
+      "result": "MacworkspaceClippyPASS",
+      "artifact": "/tmp/rm-fresh-clippy-final.txt"
+    },
+    {
+      "owner": "reviewer executed",
+      "command": "uv run --project /Users/mikkelfreltoftkrogsholm/Projekter/gdd gdd validate docs/architecture/rust-target/implementation/fresh-workspace/gdd.json --profile readiness --scope action.fresh_workspace --scope component.host --output /tmp/rm-fresh-review-readiness.json",
+      "result": "3PASS",
+      "spec_revision": "sha256:7a408a717e710e4c8144c563a26b2aa783199cb5b26a71287e7ae412693d981d",
+      "artifact": "/tmp/rm-fresh-review-readiness.json"
+    }
+  ],
+  "limits": [
+    "Reviewer did not repeat69Linuxchecks/native/Clippy/broadintegration; inspected mainexecutedevidence and independentlyvalidated exactsourcehashes/freshGDD.",
+    "Freshschemas/physicalowner only; no native-origin attestation for arbitraryreopen, adoption/drain,firstuserbootstrap,accountchart/defaultroles setup or successfulauthenticatedcanonicaldomain/interfaceactivation claimed.",
+    "Owner::open_protected remains preexistingphysicalprimitive withcaller-native/offlineadoptiongate; fixturefresh_reopenprovespersistencenotgenericlineage.",
+    "Independentcontrol/companycommits canleaveprivatepartialroot andonecompletedschema; failclosednoretry/noadoption remainsrequired.",
+    "SameUID/rootoperatortrusted; prior/inherited/passedFDs prohibited byofflinefreshprovisioningprofile.",
+    "No diskpowerloss/deployment/macOSlocalnamespacequalification inferred fromcontainerfsynccalls.",
+    "GDDstructuralreadinessauthoredduringimplementationnotpreimplementationproof/fullissueclosure.",
+    "LinuxClippysuccesshascheckedexitpath+matchingdriverhashandreport, but no retainedsuccessstderrtranscript; emptyhash is stdoutonly.",
+    "Packagedtextlogs maystriptrailingblanklines; report hashes here bind actualreviewed/tmp originals, not unverified normalized copies."
+  ],
+  "artifact_hashes": {
+    "/tmp/rm-fresh-linux-parity.json": "fbbfccace208817b9457f4b1b56c57a2491e27ad17c9be0a5e8f1f33d8451db3",
+    "/tmp/rm-fresh-linux-parity.txt": "fcbe1d0651d2d2db0d69194938f8f9b7f4ae2b555f998dac7107365ea164fc78",
+    "/tmp/rm-fresh-workspace-native.txt": "db4bb3026c424ffc7d765b077e4fd36fcd93b95dbdb27cc30d7cde68a395da80",
+    "/tmp/rm-fresh-clippy-final.txt": "c7be0687f9e8192ac924cc273b08e030a99c687bf0e27f8ca56d4c06f86448a0",
+    "/tmp/rm-fresh-readiness-final.json": "2bea7c407e87dd1fc94a28f9e82d143624ddf9147c29779e0ed12a6a524f7392",
+    "/tmp/rm-fresh-review-readiness.json": "2bea7c407e87dd1fc94a28f9e82d143624ddf9147c29779e0ed12a6a524f7392",
+    "/tmp/rm-fresh-review-readiness.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/tmp/rm-fresh-review-readiness.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

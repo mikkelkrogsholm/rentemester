@@ -1,0 +1,261 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Exclusive fresh native workspace initialization",
+    "goal": "Create protected new files with uninterrupted ownership and complete native canonical schemas without adopting existing data",
+    "scope": "Fresh native creation only; bootstrap, attested reopen/adoption, transports and full platform remain required"
+  },
+  "nodes": {
+    "component.host": {
+      "kind": "component",
+      "description": "Fresh namespace and native schema owning initialization",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Exclusive protected namespace before SQLite, original lease transfer and both-empty canonical schema construction with safe failure lifetime",
+        "rationale": "Fresh creation supplies provenance instead of silently adopting existing ledgers",
+        "excludes": [
+          "First-user bootstrap, attested existing-file reopen lineage, adoption/drain, endpoints/deployment, macOS namespace profile"
+        ]
+      },
+      "interfaces": [
+        "action.fresh_workspace"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Complete versions30/36, new ledger UUID, caller company name, empty credentials/access/account plan; original lease retained",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "New absolute path below trusted private parent, strict broker profile and validated embedded schema artifacts",
+        "when": "Create protected namespace, initialize canonical schema pair and explicitly close",
+        "then": "Complete versions30/36, new ledger UUID, caller company name, empty credentials/access/account plan; original lease retained"
+      }
+    },
+    "scenario.busy": {
+      "kind": "scenario",
+      "description": "Exact connection and whole original namespace lease quarantined until process exit; private partial tree never reused",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Actual fresh constructor has an outstanding control statement and transaction",
+        "when": "Constructor returns an error and Drop encounters close BUSY",
+        "then": "Exact connection and whole original namespace lease quarantined until process exit; private partial tree never reused"
+      }
+    },
+    "scenario.partial": {
+      "kind": "scenario",
+      "description": "Control is complete, company empty, no initialized owner/report returned; private partial namespace remains",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Both databases empty but independent company writer competes",
+        "when": "Control initialization commits before company BEGIN IMMEDIATE is refused",
+        "then": "Control is complete, company empty, no initialized owner/report returned; private partial namespace remains"
+      }
+    },
+    "scenario.retired": {
+      "kind": "scenario",
+      "description": "Existing contents untouched; invalid or unsafe input creates no new directory",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Existing path, bad input or unsafe process/parent/default ACL",
+        "when": "Attempt exclusive new creation",
+        "then": "Existing contents untouched; invalid or unsafe input creates no new directory"
+      }
+    },
+    "scenario.privacy": {
+      "kind": "scenario",
+      "description": "Complete private resource set follows confirmed-close/BUSY retention; no raw connection or partial owner escapes",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Fresh owning constructor has opened real SQLite handles",
+        "when": "Any later initialization or physical validation fails",
+        "then": "Complete private resource set follows confirmed-close/BUSY retention; no raw connection or partial owner escapes"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Exactly one creator wins; original lease excludes other owners through schema initialization",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Two strict broker processes target the same absent root",
+        "when": "Both attempt exclusive creation while lock contenders inspect returned owner",
+        "then": "Exactly one creator wins; original lease excludes other owners through schema initialization"
+      }
+    },
+    "scenario.outcome": {
+      "kind": "scenario",
+      "description": "Both preflight before persistent writes, preserve existing data/identity and refuse rather than repair or resume",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Either database already has schema/data/temp objects/attachments/metadata or active transaction",
+        "when": "Attempt schema initialization or repeat creation",
+        "then": "Both preflight before persistent writes, preserve existing data/identity and refuse rather than repair or resume"
+      }
+    },
+    "action.fresh_workspace": {
+      "kind": "action",
+      "description": "Exclusively create a protected fresh native workspace",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "new_path_profile_workspace_company_metadata": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "trusted_offline_launcher_and_embedded_product_catalogues": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object",
+          "description": "Opaque Owner plus schema versions/fingerprints and new ledger UUID; no first-user/adoption authority"
+        },
+        "errors": {
+          "refused": "Unsafe/unsupported process or namespace, existing root, nonempty/invalid database, SQL/I/O failure or unresolved close"
+        },
+        "preconditions": [
+          "Strict dedicated-UID profile and trusted/enrolled broker code",
+          "Absent destination below validated trusted parent; no earlier/inherited/passed client descriptors",
+          "Host owns both fresh actual connections and full physical lifetime before schema construction"
+        ],
+        "postconditions": [
+          "Existing destination is never reused, altered, repaired or recursively deleted",
+          "Original root lease held before SQLite and through returned owner or unresolved-close quarantine",
+          "Both schemas validated before report; no credential, access or account plan seeded; independent commits may leave a private partial failure"
+        ],
+        "external_effects": [
+          "Create new0700 namespace and0600 files, fsync files/directories/parent and hold directory flock",
+          "Commit canonical control/company schema/history and company profile; generate immutable ledger UUID",
+          "Retain a private partial tree on failure; quarantine unresolved handles/lease until process exit"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Exclusive creation, all-input/ancestor checks and empty-only data refusal",
+            "scenarios": [
+              "scenario.retired",
+              "scenario.outcome"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Exclusive mkdir winner and uninterrupted original lease through schema creation",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "authorization": {
+            "relevant": true,
+            "rationale": "No first-user/access authority seeded; strict broker and offline provisioning remain required",
+            "scenarios": [
+              "scenario.retired",
+              "scenario.privacy"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Creation is deliberately non-idempotent; repeat/partial trees refused without adoption",
+            "scenarios": [
+              "scenario.outcome"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Each DB schema is transactional but two commits are independent; failed constructor never returns owner",
+            "scenarios": [
+              "scenario.partial",
+              "scenario.busy"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.busy",
+            "scenario.partial",
+            "scenario.retired",
+            "scenario.outcome"
+          ]
+        }
+      },
+      "behavior": "Validate process/input/parent before exclusive mkdir; retain original lease before file creation, close creation descriptors before SQLite open, validate both empty connections, commit each complete canonical schema transaction, return owned native pair only after physical revalidation"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.fresh_workspace",
+      "to": "component.host",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.fresh_workspace",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.busy",
+      "from": "scenario.busy",
+      "to": "action.fresh_workspace",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.partial",
+      "from": "scenario.partial",
+      "to": "action.fresh_workspace",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.retired",
+      "from": "scenario.retired",
+      "to": "action.fresh_workspace",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.privacy",
+      "from": "scenario.privacy",
+      "to": "action.fresh_workspace",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.fresh_workspace",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.outcome",
+      "from": "scenario.outcome",
+      "to": "action.fresh_workspace",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Exclusive fresh native workspace initialization",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "38c44e2177aa1994c29fabb308d1758fc37bff6e1f4f99285cdf6a12a5aeceba"
+      }
+    }
+  }
+}

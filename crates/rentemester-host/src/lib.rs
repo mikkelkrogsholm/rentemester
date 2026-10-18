@@ -135,6 +135,43 @@ impl Owner {
     ) -> Result<Self, OwnerError> {
         let guard = NamespaceGuard::acquire(root, broker_uid, workspace, slug)
             .map_err(OwnerError::Namespace)?;
+        Self::open_guarded(root, workspace, slug, guard)
+    }
+    /// Exclusively create a fresh protected Linux namespace and complete native
+    /// schemas. Existing paths and private partial failures are never adopted.
+    /// Credentials/access/bootstrap and reopen lineage are separate required work.
+    pub fn create_new(
+        root: &Path,
+        broker_uid: u32,
+        workspace: &str,
+        slug: &str,
+        name: &str,
+        created_at: &str,
+    ) -> Result<(Self, rentemester_storage::fresh::Initialized), OwnerError> {
+        let guard =
+            NamespaceGuard::create_fresh(root, broker_uid, workspace, slug, name, created_at)
+                .map_err(OwnerError::Namespace)?;
+        let mut owner = Self::open_guarded(root, workspace, slug, guard)?;
+        owner.reusable = false;
+        #[cfg(test)]
+        tests::fresh_fault(&mut owner)?;
+        let slots = owner.held.0.as_mut().unwrap();
+        let initialized = rentemester_storage::fresh::initialize_empty_pair(
+            slots.control.as_mut().unwrap(),
+            slots.company.as_mut().unwrap(),
+            name,
+        )
+        .map_err(|_| OwnerError::Database)?;
+        owner.observe()?;
+        owner.reusable = true;
+        Ok((owner, initialized))
+    }
+    fn open_guarded(
+        root: &Path,
+        workspace: &str,
+        slug: &str,
+        guard: NamespaceGuard,
+    ) -> Result<Self, OwnerError> {
         let mut owner = Self {
             held: Held(Some(Slots {
                 control: None,

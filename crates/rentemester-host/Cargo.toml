@@ -6,6 +6,7 @@ rust-version.workspace = true
 publish.workspace = true
 
 [dependencies]
+rentemester-storage = { path = "../rentemester-storage" }
 rentemester-application = { path = "../rentemester-application" }
 rentemester-runtime = { path = "../rentemester-runtime" }
 rusqlite = { version = "=0.40.2", features = ["bundled", "rentemester_identity"] }

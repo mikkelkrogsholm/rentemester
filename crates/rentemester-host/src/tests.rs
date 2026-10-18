@@ -303,3 +303,138 @@ fn reopen() {
     }
     println!("RM_OWNER_REOPEN={}/{}", counts[0], counts[1]);
 }
+
+#[cfg(not(target_os = "linux"))]
+#[test]
+fn unsupported_creation_does_not_touch_new_or_existing_paths() {
+    let root = tempfile::tempdir().unwrap();
+    let absent = root.path().join("absent");
+    for path in [root.path(), &absent] {
+        assert!(matches!(
+            Owner::create_new(path, 10001, "w", "a", "Synthetic", "2026-01-01"),
+            Err(OwnerError::Namespace(NamespaceError::Unsupported))
+        ));
+    }
+    assert!(!absent.exists());
+    assert_eq!(std::fs::read_dir(root.path()).unwrap().count(), 0);
+}
+pub(super) fn fresh_fault(owner: &mut Owner) -> Result<(), OwnerError> {
+    if std::env::var("RM_FRESH_FAULT").as_deref() == Ok("busy") {
+        let db = owner.held.0.as_ref().unwrap().control.as_ref().unwrap();
+        db.execute_batch("BEGIN IMMEDIATE").unwrap();
+        std::mem::forget(db.prepare("SELECT 1").unwrap());
+        return Err(OwnerError::Database);
+    }
+    Ok(())
+}
+#[cfg(target_os = "linux")]
+#[test]
+#[ignore = "dedicated-UID fresh native creation only"]
+fn fresh_probe() {
+    let root = std::env::var("RM_OWNER_ROOT").unwrap();
+    let name = std::env::var("RM_FRESH_NAME").unwrap_or_else(|_| "Synthetic fresh company".into());
+    let workspace = std::env::var("RM_FRESH_WORKSPACE").unwrap_or_else(|_| "w".into());
+    let mut owner = match Owner::create_new(
+        Path::new(&root),
+        10001,
+        &workspace,
+        "a",
+        &name,
+        "2026-01-01",
+    ) {
+        Ok((owner, report)) => {
+            let slots = owner.held.0.as_ref().unwrap();
+            let control = slots.control.as_ref().unwrap();
+            let company = slots.company.as_ref().unwrap();
+            assert_eq!(
+                control
+                    .query_row(
+                        "SELECT count(*) FROM workspace_schema_migrations",
+                        [],
+                        |r| r.get::<_, i64>(0)
+                    )
+                    .unwrap(),
+                30
+            );
+            assert_eq!(
+                company
+                    .query_row("SELECT count(*) FROM schema_migrations", [], |r| r
+                        .get::<_, i64>(0))
+                    .unwrap(),
+                36
+            );
+            assert_eq!(
+                company
+                    .query_row("SELECT name FROM companies WHERE id=1", [], |r| r
+                        .get::<_, String>(0))
+                    .unwrap(),
+                name
+            );
+            for table in [
+                "user",
+                "account",
+                "session",
+                "rm_workspace_bootstrap_events",
+                "rm_workspace_user_access_events",
+                "rm_company_membership_events",
+            ] {
+                assert_eq!(
+                    control
+                        .query_row(&format!("SELECT count(*) FROM {table}"), [], |r| r
+                            .get::<_, i64>(0))
+                        .unwrap(),
+                    0
+                );
+            }
+            assert_eq!(
+                company
+                    .query_row("SELECT count(*) FROM accounts", [], |r| r.get::<_, i64>(0))
+                    .unwrap(),
+                0
+            );
+            println!("RM_FRESH_UUID={}", report.ledger_uuid);
+            println!("RM_FRESH_RESULT=created-30-36-no-access");
+            Some(owner)
+        }
+        Err(error) => {
+            println!("RM_FRESH_RESULT={error}");
+            None
+        }
+    };
+    std::io::stdout().flush().unwrap();
+    for line in std::io::stdin().lock().lines() {
+        match line.unwrap().as_str() {
+            "close" => {
+                owner.take().unwrap().try_close().unwrap();
+                println!("RM_FRESH_CLOSE=closed");
+            }
+            "exit" => break,
+            _ => panic!("unsupported fresh test command"),
+        }
+        std::io::stdout().flush().unwrap();
+    }
+}
+#[cfg(target_os = "linux")]
+#[test]
+#[ignore = "physical reopen of just-created synthetic fresh native pair only"]
+fn fresh_reopen() {
+    let root = std::env::var("RM_OWNER_ROOT").unwrap();
+    let owner = Owner::open_protected(Path::new(&root), 10001, "w", "a").unwrap();
+    let company = owner.held.0.as_ref().unwrap().company.as_ref().unwrap();
+    let uuid: String = company
+        .query_row(
+            "SELECT ledger_uuid FROM ledger_identity WHERE id=1",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(
+        company
+            .query_row("SELECT count(*) FROM schema_migrations", [], |r| r
+                .get::<_, i64>(0))
+            .unwrap(),
+        36
+    );
+    println!("RM_FRESH_REOPEN_UUID={uuid}");
+    owner.try_close().unwrap();
+}

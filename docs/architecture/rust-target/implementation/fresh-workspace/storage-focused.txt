@@ -1,0 +1,12 @@
+   Compiling rentemester-storage v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.62s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_storage-6059f64216165de7)
+
+running 5 tests
+test fresh::tests::either_nonempty_database_refuses_before_mutating_the_other ... ok
+test fresh::tests::temporary_attached_metadata_readonly_or_active_transaction_refuses ... ok
+test fresh::tests::company_write_contention_leaves_control_complete_and_company_empty ... ok
+test fresh::tests::repeat_initialization_cannot_replace_native_identity_or_any_data ... ok
+test fresh::tests::complete_empty_native_pair_persists_without_credentials_accounts_or_access ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 57 filtered out; finished in 3.21s

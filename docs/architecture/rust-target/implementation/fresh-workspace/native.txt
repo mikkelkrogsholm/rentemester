@@ -1,0 +1,318 @@
+   Compiling rentemester-storage v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-storage)
+   Compiling rentemester-runtime v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-runtime)
+   Compiling rentemester-application v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-application)
+   Compiling rentemester-cli v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-cli)
+   Compiling rentemester-server v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-server)
+   Compiling rentemester-host v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-host)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.94s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_application-01e3600d43cd1e82)
+
+running 20 tests
+test control_fence::tests::child ... ignored, native process fence helper selected by control-fence harness
+test control_fence::tests::cookie_child ... ignored, synthetic cookie/fence process helper selected by session-cookie harness
+test journal_post::tests::child ... ignored, canonical synthetic real journal post process helper
+test journal_reversal::tests::child ... ignored, canonical synthetic real journal reversal process helper
+test mfa_login::tests::probe ... ignored, synthetic enrolled MFA login process helper selected by independent harness
+test password_login::tests::probe ... ignored, synthetic canonical control native helper selected by independent process harness
+test service_company::tests::child ... ignored, canonical synthetic service company quota/post/reversal process helper
+test access::tests::company_roles_never_grant_workspace_or_public_permissions ... ok
+test access::tests::reevaluation_observes_revocation_and_never_changes_prior_facts ... ok
+test password_reset::tests::original_utf16_password_policy_precedes_normalization ... ok
+test service_company::tests::failure_debug_never_discloses_error_detail_or_business_payload ... ok
+test access::tests::exact_vocabulary_and_slug_grammar ... ok
+test access::tests::unknown_roles_and_nonstring_permissions_refuse ... ok
+test mfa_login::tests::pending_bearer_is_not_a_session_and_binds_signer_profile_key_workspace ... ok
+test control_fence::tests::committed_cleanup_failure_keeps_committed_value ... ok
+test password_login::tests::invalid_input_never_calls_continuation ... ok
+test control_fence::tests::manual_commit_is_unknown_never_false_rollback ... ok
+test control_fence::tests::current_observation_commit_and_business_rollback ... ok
+test control_fence::tests::cookie_clock_failure_workspace_binding_and_admission_time ... ok
+test control_fence::tests::durable_receipt_replay_is_below_current_authorization_fence ... ok
+
+test result: ok. 13 passed; 0 failed; 7 ignored; 0 measured; 0 filtered out; finished in 0.68s
+
+     Running tests/access_vectors.rs (target/debug/deps/access_vectors-9b04281fd313bdce)
+
+running 1 test
+test vectors ... ignored, independent access corpus explicitly selected by Bun harness
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/rentemester_rust-3424ce36b094244e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/arithmetic_vectors.rs (target/debug/deps/arithmetic_vectors-17dfe9331e2e6ac3)
+
+running 3 tests
+test vectors ... ignored, synthetic exact arithmetic corpus helper selected by Bun harness
+test canonical_serde_refuses_coercion_and_keeps_scale ... ok
+test computed_values_roundtrip_beyond_raw_decimal_input_budget ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/fiscal_vectors.rs (target/debug/deps/fiscal_vectors-09c037c133a81232)
+
+running 2 tests
+test vectors ... ignored, synthetic cross-language fixture helper selected by Bun harness
+test serde_values_require_canonical_typed_inputs ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/manual_journal_vectors.rs (target/debug/deps/manual_journal_vectors-e3a6bcd6720b5976)
+
+running 2 tests
+test vectors ... ignored, synthetic pure manual journal corpus selected by Bun harness
+test row_identity_wire_is_exact_and_nominal ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rentemester_engine-0c522fa6aa1cc39f)
+
+running 15 tests
+test currency::tests::currency_is_canonical_syntax_not_a_registry_or_normalizer ... ok
+test calendar::tests::deadlines_use_real_target_calendar_and_trimmed_low_years ... ok
+test decimal::tests::signed_division_is_half_away_and_rejects_zero ... ok
+test fiscal_year::tests::canonical_dates_reject_rollover_and_lexical_coercion ... ok
+test fiscal_year::tests::six_month_deadline_preserves_month_end_and_clamps_day ... ok
+test fx::tests::exact_huge_values_and_rate_canonical_boundaries ... ok
+test identifiers::tests::exact_ids_and_opaque_accounts ... ok
+test fx::tests::explicit_quantization_stages_and_exact_fx_halves ... ok
+test fiscal_year::tests::fiscal_boundaries_labels_and_checked_years ... ok
+test manual_journal::reversal_tests::source_bound_reversal_policy_does_not_weaken_manual_admission ... ok
+test money::tests::arbitrary_integer_precision_and_bounded_input ... ok
+test trial_balance::tests::calendar_boundaries_and_strict_input ... ok
+test money::tests::exact_rounding_and_no_negative_zero ... ok
+test trial_balance::tests::independently_rounded_lines_and_touched_accounts ... ok
+test fiscal_year::tests::every_fiscal_start_contains_its_date_and_labels_are_stable ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rentemester_host-28e813b74b76a074)
+
+running 5 tests
+test tests::contender ... ignored, subprocess lock contender
+test tests::unsupported_creation_does_not_touch_new_or_existing_paths ... ok
+test tests::unsupported_owner_cannot_create_a_workspace ... ok
+test tests::confirmed_close_releases_persistent_wal_and_delete_files ... ok
+test tests::busy_retains_actual_connection_and_layout_until_explicit_retry ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running unittests src/lib.rs (target/debug/deps/rentemester_runtime-b163d836528cd894)
+
+running 49 tests
+test auth_mail::tests::probe ... ignored, synthetic TLS gateway process probe selected by independent harness
+test email_token::tests::probe ... ignored, synthetic private JWT protocol selected by installed-source oracle
+test local::layout::connection_tests::lock_child ... ignored, synthetic cross-process SQLite lock contender
+test local::layout::probe ... ignored, synthetic native probe selected by independent manifest harness
+test auth::tests::pure_local_clear_has_no_bearer_and_preserves_selected_profile ... ok
+test email_token::tests::invalid_config_clock_and_coordinate_refuse ... ok
+test local::layout::tests::child ... ignored, synthetic layout owner process selected by parent
+test email_token::tests::compact_input_is_bounded_canonical_and_authenticated ... ok
+test auth::tests::optional_cookie_never_downgrades_named_invalid_credentials_to_anonymous ... ok
+test auth::tests::current_session_proof_binds_workspace_key_profile_and_kind ... ok
+test email_token::tests::fresh_nonce_current_window_and_bound_proof ... ok
+test auth::tests::independent_python_wire_vectors_and_fixed_errors ... ok
+test email_token::tests::signed_ambiguity_and_other_purposes_are_refused ... ok
+test auth_mail::tests::gateway_input_refuses_credential_and_url_ambiguity ... ok
+test local::layout::connection_tests::refused_manifest_alias_never_releases_a_live_database_lock ... ok
+test mfa::backup::tests::strict_pool_consumption_preserves_order_and_case ... ok
+test mfa::enrollment::tests::source_uri_encodes_raw_utf8_and_distinct_path_form_rules ... ok
+test mfa::tests::config_and_envelope_grammar_are_fail_closed ... ok
+test mfa::tests::independent_libsodium_vectors_and_strict_utf8 ... ok
+test mfa::tests::probe ... ignored, synthetic native MFA crypto/OTP probe selected by independent harness
+test mfa::tests::rfc_hotp_totp_and_trusted_clock_refusals ... ok
+test namespace::tests::unsupported_profile_does_not_touch_the_requested_root ... ok
+test password::tests::canonical_grammar_and_input_bounds_are_explicit ... ok
+test local::layout::connection_tests::identity_observation_preserves_real_cross_process_sqlite_locks ... ok
+test password::tests::probe ... ignored, synthetic native crypto process probe selected by independent harness
+test local::layout::connection_tests::restored_path_does_not_hide_wrong_open_handle ... ok
+test posting_time::tests::danish_midnight_dst_and_configured_horizon_are_trusted_arithmetic ... ok
+test recovery::tests::configuration_is_explicit_and_http_is_loopback_development_only ... ok
+test recovery::tests::recovery_bearers_have_source_grammar_and_no_observed_duplicate ... ok
+test recovery::tests::trusted_origins_and_sensitive_links_use_standard_url_boundaries ... ok
+test recovery::tests::verification_links_are_bounded_and_callbacks_inject_only_known_error_outcomes ... ok
+test service_key::tests::exact_utf8_unpadded_sha256_and_bounded_input ... ok
+test service_key::tests::generated_keys_and_uuid_have_source_shapes_and_fresh_entropy ... ok
+test tests::lexical_roots_are_explicit_and_bound_once ... ok
+test local::layout::connection_tests::memory_swapped_connections_and_link_changes_refuse_stickily ... ok
+test local::layout::connection_tests::actual_handles_match_retained_files_in_wal_and_delete ... ok
+test local::layout::tests::binding_preserves_sources_and_holds_ownership_until_drop ... ok
+test local::layout::tests::bounded_manifest_and_selection_have_no_defaults ... ok
+test local::layout::tests::canonical_manifest_profile_refuses_coercions_and_ambiguity ... ok
+test local::layout::tests::every_component_change_is_sticky_even_after_restoration ... ok
+test local::layout::tests::every_path_level_refuses_symlinks_and_missing_objects ... ok
+test local::layout::tests::files_refuse_hardlinks_directories_and_fifos_without_blocking ... ok
+test local::layout::tests::manifest_bytes_hardlink_and_root_changes_invalidate ... ok
+test local::layout::tests::real_process_layout_owns_lease_and_kernel_death_releases ... ok
+test local::tests::known_network_and_unknown_families_refuse ... ok
+test local::tests::moved_root_is_permanently_invalid_even_if_returned ... ok
+test local::tests::same_process_exclusion_drop_and_ordinary_close ... ok
+test password::tests::fixed_python_credential_and_missing_hash_refuse_uniformly ... ok
+test password::tests::unicode17_official_nfkc_vectors ... ok
+
+test result: ok. 42 passed; 0 failed; 7 ignored; 0 measured; 0 filtered out; finished in 16.97s
+
+     Running unittests src/lib.rs (target/debug/deps/rentemester_server-2c6a7dfe15a36d39)
+
+running 42 tests
+test auth_http::tests::probe ... ignored, synthetic admitted native HTTP identity server; private fixture on stdin
+test auth_http::tests::cookie_profile_is_bound_and_browser_lifetime_preserves_signature ... ok
+test auth_http::tests::enrollment_required_clears_previous_identity_without_issuing_session ... ok
+test auth_http::tests::session_listing_body_and_duplicate_cookie_headers_never_dispatch ... ok
+test auth_http::tests::logout_accepts_source_empty_body_and_clears_only_known_outcomes ... ok
+test auth_http::tests::enrollment_routes_require_explicit_trusted_handlers ... ok
+test auth_http::tests::fixed_factor_rate_cannot_be_bypassed_by_forwarded_identity ... ok
+test auth_http::tests::pending_factor_is_not_session_and_success_cookie_has_browser_lifetime ... ok
+test auth_http::tests::service_context_duplicate_mixed_and_get_body_never_dispatch_or_fall_back ... ok
+test auth_http::tests::service_lifecycle_strict_body_and_duplicate_headers_never_dispatch ... ok
+test auth_http::tests::service_context_refusal_unknown_and_panic_withhold_user_and_cookie ... ok
+test auth_http::tests::service_lifecycle_refusal_unknown_panic_never_discloses_secret_or_cookie ... ok
+test auth_http::tests::session_navigation_gates_and_head_never_dispatch ... ok
+test auth_http::tests::uncertainty_never_issues_or_clears_authority ... ok
+test auth_http::tests::backup_management_head_query_duplicate_cookie_and_nonobject_never_dispatch ... ok
+test auth_http::tests::verification_head_and_invalid_destinations_never_dispatch ... ok
+test auth_http::tests::backup_management_never_discloses_on_refusal_unknown_panic_or_short_regeneration ... ok
+test auth_http::tests::password_change_refusal_unknown_panic_bad_receipt_or_missing_rotation_never_succeeds ... ok
+test auth_http::tests::workspace_context_refusal_unknown_or_panic_never_discloses_projection_or_cookie ... ok
+test tests::parallel_rate_admission_never_exceeds_three ... ok
+test tests::probe ... ignored, synthetic native HTTP reset integration server; private fixture paths on stdin only
+test tests::profiles_and_strict_wire_refuse ... ok
+test recovery_tests::real_mail_navigation_redirect_does_not_require_origin ... ok
+test auth_http::tests::workspace_context_get_body_query_and_duplicate_headers_never_dispatch ... ok
+test auth_http::tests::session_management_never_clears_or_succeeds_on_refusal_unknown_or_panic ... ok
+test auth_http::tests::password_change_head_and_invalid_objects_never_dispatch_or_consume_head_budget ... ok
+test recovery_tests::callback_decodes_once_refuses_query_ambiguity_and_encoded_token ... ok
+test auth_http::tests::verification_callback_never_turns_unknown_or_panic_into_success ... ok
+test recovery_tests::completion_checks_original_utf16_strict_wire_and_body_token ... ok
+test tests::real_http_body_cap_and_unimplemented_routes ... ok
+test tests::real_http_ack_and_rate_ignore_forwarded_identity ... ok
+test auth_http::tests::unsupported_options_and_ambiguous_json_never_dispatch ... ok
+test recovery_tests::completion_body_limit_origin_and_shared_pool_cancel ... ok
+test tests::real_http_conceals_failure_stages_and_executor_panic ... ok
+test tests::real_http_refuses_origin_media_and_structural_ambiguity_before_work ... ok
+test recovery_tests::uncertain_completion_and_bad_callback_never_claim_success_or_replay ... ok
+test tests::cancellation_keeps_permit_until_blocking_work_finishes ... ok
+test recovery_tests::callback_rate_uses_fixed_operation_without_bearer_key ... ok
+test auth_http::tests::mixed_credentials_never_dispatch_even_with_valid_browser_proofs ... ok
+test tests::sliding_rate_identity_capacity_and_boundary ... ok
+test tests::chunked_limit_and_slow_body_use_real_socket ... ok
+test auth_http::tests::verification_admitted_ack_is_generic_for_error_unknown_delivery_and_panic ... ok
+
+test result: ok. 40 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 2.55s
+
+     Running unittests src/lib.rs (target/debug/deps/rentemester_storage-818ec2ba8bedbf9b)
+
+running 62 tests
+test company_baseline::tests::crash_child ... ignored, subprocess helper selected by process-death parent
+test company_baseline::tests::normalization_child ... ignored, parity/process-death helper invoked by parent or independent TS harness
+test company_physical::tests::crash_child ... ignored, actual process-death helper selected by parent
+test company_vat::tests::crash_child ... ignored, actual VAT crash/parity child invoked by parent/independent harness
+test control_migration::tests::all_control_artifacts_are_bound_and_public_errors_are_opaque ... ok
+test control_migration::tests::crash_child ... ignored, subprocess helper selected explicitly by process-death parent
+test company_baseline::tests::original_column_digest_ignores_new_columns_but_detects_changed_old_cells ... ok
+test control_migration::tests::legal_sqlite_like_user_objects_are_not_internal_or_empty ... ok
+test control_access::tests::deferred_snapshot_is_not_a_control_writer_fence ... ok
+test company_baseline::tests::normalization_guard_failure_rolls_back_seeds_and_prior_deadline_updates ... ok
+test company_baseline::tests::normalization_preserves_original_full_width_ids_with_sqlite_random_rowid_allocation ... ok
+test cookie_session::tests::timestamps_are_canonical_not_coerced ... ok
+test company_baseline::tests::normalization_seeds_audited_roles_backfills_only_missing_and_is_idempotent ... ok
+test control_migration::tests::real_history_insert_failure_rolls_back_entire_suffix_including_sessions ... ok
+test fresh::tests::either_nonempty_database_refuses_before_mutating_the_other ... ok
+test fresh::tests::company_write_contention_leaves_control_complete_and_company_empty ... ok
+test fresh::tests::temporary_attached_metadata_readonly_or_active_transaction_refuses ... ok
+test idempotency::tests::canonical_bounds_utf16_keys_and_native_precision ... ok
+test idempotency::tests::child ... ignored, native idempotency process helper
+test company_baseline::tests::normalization_process_death_rolls_back_all_data_effects ... ok
+test control_migration::tests::mfa_upgrade_and_immutable_guards_match_real_sql ... ok
+test company_physical::tests::catalogue_binding_unknown_objects_and_vat_conflicts_refuse ... ok
+test control_migration::tests::process_death_restores_whole_prefix_and_sessions_or_commits_all ... ok
+test journal_hash::tests::legacy_json_numbers_and_rounding_bytes ... ok
+test control_migration::tests::ordered_event_exhaustion_is_sticky_and_does_not_reject_counted_evidence ... ok
+test journal_post::tests::child ... ignored, canonical synthetic storage post crash/fault process helper
+test company_baseline::tests::fresh_schema_is_complete_and_images_are_byte_bound ... ok
+test idempotency::tests::deferred_read_transaction_and_invalid_inputs_refuse_before_callback ... ok
+test journal_reversal::tests::child ... ignored, canonical synthetic reversal crash/fault process helper
+test fresh::tests::repeat_initialization_cannot_replace_native_identity_or_any_data ... ok
+test idempotency::tests::stable_receipt_replay_conflict_retention_and_business_rollback ... ok
+test idempotency::tests::principal_operation_scope_and_late_audit_failure ... ok
+test migration::tests::crash_child ... ignored, subprocess helper selected by actual_process_death test
+test migration::tests::digest_preserves_type_multiplicity_and_bytes_without_row_order ... ok
+test migration::tests::exact_artifact_bytes_and_optional_identity_are_bound ... ok
+test migration::tests::sql_and_history_failure_roll_back_one_step_and_preserve_prior_commits ... ok
+test idempotency::tests::malformed_stored_outcome_and_id_exhaustion_never_reexecute ... ok
+test password_credential::tests::practical_email_is_ascii_case_folded_without_trimming ... ok
+test migration::tests::suffix_rehearsal_and_receivable_constraints ... ok
+test migration::tests::actual_process_death_never_leaves_half_applied_step ... ok
+test journal_post::tests::actual_native_header_lines_hash_audit_and_rollback ... ok
+test journal_post::tests::legacy_numeric_roundtrip_and_writer_boundary ... ok
+test sequences::tests::process_child ... ignored, synthetic process/parity helper selected explicitly
+test journal_reversal::tests::request_cannot_supply_original_evidence_or_policy ... ok
+test snapshot::tests::unstable_capture_is_bounded_and_can_recover ... ok
+test tests::physical_schema_and_safe_identity_are_required ... ok
+test tests::sql_number_conversion_does_not_round_twice ... ok
+test company_vat::tests::other_trigger_and_later_data_failure_roll_back_kind_and_named_guard ... ok
+test journal_reversal::tests::real_append_only_reversal_and_single_use ... ok
+test journal_preview::tests::complete_current_image_matches_reconstructed_native_schema ... ok
+test sequences::tests::invalid_storage_deferred_and_failed_sql_require_owner_abort ... ok
+test sequences::tests::exact_values_scope_guards_and_owner_rollback ... ok
+test sequences::tests::killed_process_rolls_back_sequence_and_companion_row ... ok
+test sequences::tests::wal_reader_snapshot_and_deferred_write_state_are_explicit ... ok
+test company_baseline::tests::populated_recurring_columns_and_dimension_defaults_preserve_old_values ... ok
+test company_vat::tests::current_fk_children_exact_schema_history_and_nonlegacy_cells_survive ... ok
+test fresh::tests::complete_empty_native_pair_persists_without_credentials_accounts_or_access ... ok
+test sequences::tests::concurrent_processes_commit_unique_numbers_and_one_reservation ... ok
+test company_baseline::tests::bootstrap_and_early_step_crashes_leave_complete_prefixes ... ok
+test company_physical::tests::actual_process_death_rolls_back_whole_unversioned_baseline has been running for over 60 seconds
+test company_physical::tests::all_known_layout_combinations_preserve_data_and_restore_constraints has been running for over 60 seconds
+test company_vat::tests::actual_process_death_restores_exact_guard_and_current_fk_data has been running for over 60 seconds
+test company_vat::tests::actual_process_death_restores_exact_guard_and_current_fk_data ... ok
+test company_physical::tests::actual_process_death_rolls_back_whole_unversioned_baseline ... ok
+test company_physical::tests::all_known_layout_combinations_preserve_data_and_restore_constraints ... ok
+
+test result: ok. 52 passed; 0 failed; 10 ignored; 0 measured; 0 filtered out; finished in 73.64s
+
+   Doc-tests rentemester_application
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rentemester_engine
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rentemester_host
+
+running 6 tests
+test crates/rentemester-host/src/lib.rs - Owner (line 68) - compile fail ... ok
+test crates/rentemester-host/src/lib.rs - Owner (line 73) - compile fail ... ok
+test crates/rentemester-host/src/lib.rs - Owner (line 93) - compile fail ... ok
+test crates/rentemester-host/src/lib.rs - Owner (line 78) - compile fail ... ok
+test crates/rentemester-host/src/lib.rs - Owner (line 88) - compile fail ... ok
+test crates/rentemester-host/src/lib.rs - Owner (line 83) - compile fail ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.68s
+
+   Doc-tests rentemester_runtime
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rentemester_server
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rentemester_storage
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

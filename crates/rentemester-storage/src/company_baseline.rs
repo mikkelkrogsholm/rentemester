@@ -138,6 +138,38 @@ fn final_guards(db: &Connection, images: &Images) -> Result<(), Error> {
     }
     Ok(())
 }
+// All DDL/history for a fresh ledger is one transaction; no source normalization.
+pub(super) fn initialize_empty(db: &mut Connection, company_name: &str) -> Result<(), Error> {
+    if !schema(db)?.is_empty() {
+        return Err(unsupported("native company requires an empty database"));
+    }
+    let expected = catalogue()?;
+    let images = load_images()?;
+    let steps = steps(&RAW, &expected)?;
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .map_err(failed)?;
+    create_baseline(&tx, &images)?;
+    stamp(&tx, &expected[0])?;
+    for step in &steps {
+        tx.execute_batch(&step.sql).map_err(failed)?;
+        stamp(&tx, &step.identity)?;
+    }
+    final_guards(&tx, &images)?;
+    tx.execute(
+        "INSERT INTO companies(id,name) VALUES(1,?1)",
+        [company_name],
+    )
+    .map_err(failed)?;
+    integrity(&tx)?;
+    introduced_invariants(&tx, 0)?;
+    let mut current = images.current;
+    current.sort_by(|a, b| a.name.cmp(&b.name));
+    if schema(&tx)? != current || strict_history(&tx, "schema_migrations", &expected)?.len() != 36 {
+        return Err(unsupported("fresh company schema or history differs"));
+    }
+    tx.commit().map_err(failed)
+}
 fn reference(images: &Images, steps: &[Step], version: usize) -> Result<Vec<SchemaObject>, Error> {
     let db = Connection::open_in_memory().map_err(invalid)?;
     if version > 0 {

@@ -119,6 +119,28 @@ fn steps(raw: &[&str], expected: &[Migration]) -> Result<Vec<Step>, Error> {
         })
         .collect()
 }
+// Native empty-file construction, not source adoption or the rehearsal API.
+pub(super) fn initialize_empty(db: &mut Connection) -> Result<(), Error> {
+    if !schema(db)?.is_empty() {
+        return Err(unsupported("native control requires an empty database"));
+    }
+    let expected = catalogue()?;
+    let steps = steps(&ARTIFACTS, &expected)?;
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .map_err(failed)?;
+    for step in &steps {
+        tx.execute_batch(&step.sql).map_err(failed)?;
+        tx.execute("INSERT INTO workspace_schema_migrations(id,name,checksum,applied_by_version,applied_by_commit) VALUES (?1,?2,?3,?4,NULL)",params![step.identity.id,step.identity.name,step.identity.checksum,concat!("rentemester-rust/",env!("CARGO_PKG_VERSION"))]).map_err(failed)?;
+    }
+    integrity(&tx)?;
+    if schema(&tx)? != reference(&steps, 30)?
+        || strict_history(&tx, "workspace_schema_migrations", &expected)?.len() != 30
+    {
+        return Err(unsupported("fresh control schema or history differs"));
+    }
+    tx.commit().map_err(failed)
+}
 fn reference(steps: &[Step], version: usize) -> Result<Vec<crate::migration::SchemaObject>, Error> {
     let db = Connection::open_in_memory().map_err(invalid)?;
     db.execute_batch("PRAGMA foreign_keys=ON; PRAGMA trusted_schema=OFF;")

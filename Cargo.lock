@@ -1381,6 +1381,7 @@ version = "0.1.0"
 dependencies = [
  "rentemester-application",
  "rentemester-runtime",
+ "rentemester-storage",
  "rusqlite",
  "tempfile",
 ]

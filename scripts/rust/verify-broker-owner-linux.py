@@ -149,9 +149,96 @@ def qualify(container, host_exe, runtime_exe):
     return checks
 
 
+def qualify_fresh(container, host_exe, runtime_exe):
+    h = support.helpers(container, runtime_exe)
+    checks = []
+    parent = '/qualified/fresh-parent'
+    run(['docker','exec',container,'mkdir','-m','0700',parent])
+    run(['docker','exec',container,'chown','10001:10001',parent])
+    def record(label):
+        checks.append('fresh/' + label)
+        print('fresh/' + label, flush=True)
+    def command(root, extra=None, test='fresh_probe', interactive=False):
+        args = ['docker','exec'] + (['-i'] if interactive else [])
+        for key,value in {'RM_OWNER_ROOT':root, **(extra or {})}.items():
+            args += ['-e',key+'='+value]
+        return args + [container,'setpriv','--bounding-set=-all','--reuid=10001',
+                       '--regid=10001','--clear-groups','--no-new-privs','sh','-c',
+                       'umask 077; exec "$@"','rm-fresh',host_exe,
+                       '--ignored','--exact','tests::'+test,'--nocapture']
+    def missing(root):
+        run(['docker','exec',container,'test','!','-e',root])
+    def refused(root, marker, extra=None):
+        output = run(command(root,extra))
+        assert 'RM_FRESH_RESULT='+marker in output, output
+    def lock(root,name,expected):
+        out=run(command(root,{'RM_OWNER_DATABASE':name},test='contender'))
+        assert 'RM_OWNER_LOCK='+expected in out,out
+    root = parent+'/normal'
+    owner = Hold(command(root, interactive=True),'RM_FRESH_RESULT=created-30-36-no-access')
+    try:
+        uuid_line = next(line for line in owner.log if line and 'RM_FRESH_UUID=' in line)
+        identity = uuid_line.split('RM_FRESH_UUID=',1)[1].strip()
+        assert len(identity)==32
+        record('real-native-schemas-30-36-and-no-credentials-or-access')
+        lock(root,'.rentemester/workspace-control.sqlite','busy/free')
+        lock(root,'a/data/ledger.sqlite','busy/free');record('original-lease-retained-through-SQL-initialization')
+        refused(root,'workspace_exists');record('repeat-create-while-held-refused')
+        out=run(h.command(root,test='client',uid=10002))
+        assert 'RM_BROKER_CLIENT_DENIED=66' in out,out;record('66-real-different-UID-denials')
+        owner.send('close','RM_FRESH_CLOSE=closed')
+        lock(root,'a/data/ledger.sqlite','free/free');record('confirmed-close-releases-fresh-owner')
+        owner.finish()
+        out=run(command(root,test='fresh_reopen'))
+        assert 'RM_FRESH_REOPEN_UUID='+identity in out,out;record('second-process-physical-reopen-preserves-ledger-UUID')
+        refused(root,'workspace_exists');record('closed-native-workspace-never-reinitialized')
+    finally:
+        if owner.process.poll() is None:owner.finish()
+    for label,setup in [
+        ('existing-empty-directory',lambda p:run(['docker','exec',container,'mkdir',p])),
+        ('existing-regular-file',lambda p:run(['docker','exec',container,'touch',p])),
+        ('existing-symlink',lambda p:run(['docker','exec',container,'ln','-s',root,p])),
+    ]:
+        path=parent+'/'+label;setup(path);refused(path,'workspace_exists');record(label+'/refused')
+    for label,extra in [('empty-name',{'RM_FRESH_NAME':''}),('invalid-workspace',{'RM_FRESH_WORKSPACE':' '})]:
+        path=parent+'/'+label;refused(path,'unsafe_broker_namespace',extra);missing(path);record(label+'/no-directory-created')
+    path=parent+'/wrong-umask';args=command(path);args[args.index('umask 077; exec "$@"')]='umask 022; exec "$@"'
+    assert 'RM_FRESH_RESULT=unsafe_broker_process' in run(args);missing(path);record('unsafe-process-before-creation')
+    for label in ['writable-parent','default-ACL-parent']:
+        unsafe=parent+'/'+label
+        run(['docker','exec',container,'mkdir','-m','0700',unsafe]);run(['docker','exec',container,'chown','10001:10001',unsafe])
+        if label=='writable-parent':
+            run(['docker','exec',container,'chmod','0777',unsafe])
+        else:
+            out=run(['docker','exec','-e','RM_BROKER_ROOT='+unsafe,'-e','RM_BROKER_ACL_KIND=default',container,runtime_exe,'--ignored','--exact',support.BASE+'acl_fixture','--nocapture'])
+            assert 'RM_BROKER_ACL=installed-and-read-back' in out,out
+        path=unsafe+'/absent';refused(path,'unsafe_broker_namespace');missing(path);record(label+'/refused-before-creation')
+    path=parent+'/partial-error'
+    failed=Hold(command(path,{'RM_FRESH_FAULT':'busy'},interactive=True),'RM_FRESH_RESULT=broker_database_refused')
+    try:
+        lock(path,'.rentemester/workspace-control.sqlite','busy/busy')
+        lock(path,'a/data/ledger.sqlite','busy/free');record('constructor-error-quarantines-with-original-lease')
+        refused(path,'workspace_exists');record('partial-namespace-not-reused')
+        failed.finish();lock(path,'.rentemester/workspace-control.sqlite','free/free');record('failed-creation-process-exit-releases')
+    finally:
+        if failed.process.poll() is None:failed.finish()
+    path=parent+'/race'
+    processes=[subprocess.Popen(command(path),stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True) for _ in range(2)]
+    outputs=[]
+    for process in processes:
+        stdout,stderr=process.communicate(timeout=30)
+        assert process.returncode==0,(stdout,stderr);outputs.append(stdout)
+    assert sum('RM_FRESH_RESULT=created-30-36-no-access' in out for out in outputs)==1,outputs
+    assert sum('RM_FRESH_RESULT=workspace_exists' in out for out in outputs)==1,outputs
+    record('concurrent-creators-have-one-exclusive-winner')
+    return checks
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--fresh', action='store_true', help='Also qualify exclusive fresh native creation')
+    parser.add_argument('--clippy', action='store_true', help='Install pinned toolchain Clippy and check changed Linux crates')
     args = parser.parse_args()
     if args.output.exists():
         raise SystemExit('Refusing to overwrite qualification evidence')
@@ -191,9 +278,16 @@ def main():
                 if row.get('executable'):
                     artifacts[row['target']['name']] = row['executable']
             checks = qualify(prefix, artifacts['rentemester_host'], artifacts['rentemester_runtime'])
+            if args.fresh:
+                checks.extend(qualify_fresh(prefix, artifacts['rentemester_host'], artifacts['rentemester_runtime']))
+            clippy_log = None
+            if args.clippy:
+                run(['docker','exec',prefix,'rustup','component','add','clippy'])
+                clippy_log = run(['docker','exec',prefix,'cargo','clippy','--locked','-p','rentemester-runtime','-p','rentemester-storage','-p','rentemester-host','--all-targets','--','-D','warnings'])
             assert all(hashlib.sha256((repo / p).read_bytes()).hexdigest() == digest
                        for p, digest in hashes.items()), 'Source changed during qualification'
-            report = {'ok': True, 'checks': len(checks), 'observations': checks,
+            report = {'ok': True, 'checks': len(checks), 'fresh_workspace_qualification': args.fresh, 'Linux_clippy': 'PASS' if args.clippy else 'not-run',
+                      'Linux_clippy_stdout_sha256': hashlib.sha256(clippy_log.encode()).hexdigest() if clippy_log is not None else None, 'observations': checks,
                       'image_repository_digest': IMAGE, 'image_configuration_digest': image['Id'],
                       'architecture': image['Architecture'],
                       'filesystem': run(['docker', 'exec', prefix, 'stat', '-f', '-c', '%T', '/qualified']).strip(),
@@ -201,7 +295,7 @@ def main():
                       'driver_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                       'support_sha256': hashlib.sha256(support_path.read_bytes()).hexdigest(),
                       'build_log_sha256': hashlib.sha256(build.encode()).hexdigest(),
-                      'limits': ['Synthetic physical-owner qualification; no canonical bootstrap/adoption or deployment',
+                      'limits': ['Synthetic physical owner and optional fresh schema initialization; no first-user bootstrap, existing-data adoption or deployment',
                                  'Fixed typed dispatch compiles; complete domain/transport composition remains unqualified',
                                  'Root and enrolled broker UID trusted; prior descriptors require offline provisioning',
                                  'macOS local namespace profile remains to be implemented']}
