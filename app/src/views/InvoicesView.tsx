@@ -519,7 +519,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                   const knownStatus = Object.hasOwn(STATUS_META, row.status);
                   const meta = STATUS_META[row.status] ?? { label: "Ukendt status", tone: "neutral" };
                   // Settlement only makes sense while a balance is open.
-                  const canSettle = !inv.nativeSales && knownStatus && row.openBalance > 0;
+                  const canSettle = (!inv.nativeSales || inv.nativeSales.settlementAvailable === true) && row.posted !== false && knownStatus && row.openBalance > 0;
                   // #412: Krediter is offered for any posted invoice that has
                   // not already been written off / refunded / fully credited.
                   // A partial credit reduces the open balance but leaves the

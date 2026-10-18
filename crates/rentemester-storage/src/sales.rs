@@ -511,7 +511,7 @@ pub fn list(
         .map_err(invalid)?
         .collect::<Result<Vec<_>, _>>()
         .map_err(invalid)?;
-    base["nativeSales"] = json!({"revenueAccounts":accounts});
+    base["nativeSales"] = json!({"revenueAccounts":accounts,"settlementAvailable":true});
     Ok(base)
 }
 
@@ -595,6 +595,94 @@ mod tests {
             contacts(&tx, "synthetic", "2026-10-18").unwrap()["customers"][0]["openBalance"]
                 .as_f64(),
             Some(1250.0)
+        );
+        // A later role change must not strand this invoice's original receivable.
+        tx.execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('A','Synthetic bank','asset','debit'),('R2','Synthetic new receivables','asset','debit');UPDATE account_role_mappings SET status='superseded' WHERE role='debtors';INSERT INTO account_role_mappings(role,account_no,version,confirmed_by) VALUES('debtors','R2',2,'synthetic');INSERT INTO bank_accounts(slug,name,ledger_account_no) VALUES('synthetic','Synthetic bank','A');").unwrap();
+        let csv = "date;text;amount;currency;reference\n2026-10-18;Synthetic part one;500;DKK;part-one\n2026-10-18;Synthetic part two;750;DKK;part-two\n2026-10-18;Synthetic excess;2000;DKK;too-large\n2026-10-18;Synthetic ambiguous A;1;DKK;ambiguous\n2026-10-18;Synthetic ambiguous B;2;DKK;ambiguous\n";
+        let rows = rentemester_engine::bank::parse(csv).unwrap();
+        crate::bank::import(
+            &tx,
+            csv,
+            &rows,
+            Some("synthetic"),
+            "synthetic",
+            "2026-10-18T12:00:00Z",
+            "synthetic-original",
+        )
+        .unwrap();
+        let payment = |reference: &str, amount: Option<i32>| {
+            serde_json::from_value::<crate::invoice_settlement::Input>(json!({"invoiceDocumentId":id,"bankTransactionReference":reference,"amount":amount,"confirm":true})).unwrap()
+        };
+        let latest = Date::parse("2026-10-18").unwrap();
+        assert!(
+            crate::invoice_settlement::settle(
+                &tx,
+                &payment("too-large", None),
+                "synthetic",
+                latest
+            )
+            .is_err()
+        );
+        assert!(
+            crate::invoice_settlement::settle(
+                &tx,
+                &payment("ambiguous", None),
+                "synthetic",
+                latest
+            )
+            .is_err()
+        );
+        assert!(
+            crate::invoice_settlement::settle(
+                &tx,
+                &payment("part-one", Some(499)),
+                "synthetic",
+                latest
+            )
+            .is_err()
+        );
+        assert_eq!(
+            crate::invoice_settlement::settle(&tx, &payment("part-one", None), "synthetic", latest)
+                .unwrap()["openBalance"]
+                .as_f64(),
+            Some(750.0)
+        );
+        assert!(
+            crate::invoice_settlement::settle(&tx, &payment("part-one", None), "synthetic", latest)
+                .is_err()
+        );
+        assert_eq!(
+            crate::invoice_settlement::settle(&tx, &payment("part-two", None), "synthetic", latest)
+                .unwrap()["openBalance"]
+                .as_f64(),
+            Some(0.0)
+        );
+        let report = crate::cockpit::read(&tx, "synthetic", "2026-10-18", None, None).unwrap();
+        let debtor = report.trial_balance["rows"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|r| r["accountNo"] == "R")
+            .unwrap();
+        assert_eq!(debtor["balance"].as_f64(), Some(0.0));
+        assert_eq!(
+            report.income_statement["totalIncome"].as_f64(),
+            Some(1000.0)
+        );
+        assert_eq!(
+            crate::vat_report::read(&tx, "synthetic", "2026-10-18", None).unwrap()["outputVat"]
+                .as_f64(),
+            Some(250.0)
+        );
+        assert_eq!(
+            contacts(&tx, "synthetic", "2026-10-18").unwrap()["customers"][0]["openBalance"]
+                .as_f64(),
+            Some(0.0)
+        );
+        assert_eq!(
+            tx.query_row::<i64, _, _>("SELECT count(*) FROM journal_entries", [], |r| r.get(0))
+                .unwrap(),
+            3
         );
     }
 }

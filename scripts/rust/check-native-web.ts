@@ -1,4 +1,5 @@
 // Real browser journey against run-web-demo.py --check; no intercepted requests or fixtures.
+import { checkNativeSettlement } from "./check-native-settlement";
 import { checkNativeSales } from "./check-native-sales";
 import { checkNativeVat } from "./check-native-vat";
 import { checkNativeCompanySetup } from "./check-native-company-setup";
@@ -52,7 +53,7 @@ try {
     await page.getByRole("button", { name: "Bekræft", exact: true }).click();
     await page.getByRole("link", { name: "Åbn bogføring" }).click();
     await page.getByText("Synthetic opening transfer", { exact: true }).waitFor();
-    if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "1") { await checkNativeCompanySetup(page, base, true); await checkNativeVat(page, base, true); await checkNativeSales(page, base, true); } else {
+    if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "1") { await checkNativeCompanySetup(page, base, true); await checkNativeVat(page, base, true); await checkNativeSales(page, base, true); await checkNativeSettlement(page, base, true); } else {
     // Replaying the same browser operation must not create another journal entry.
     const replay = await page.request.post(`${base}/api/companies/synthetic/manual-journal`, { headers: { origin: base, "content-type": "application/json" }, data: JSON.parse(state.postedBody) });
     if (!replay.ok()) throw new Error(`Idempotency replay refused: ${replay.status()}`);
@@ -72,6 +73,7 @@ try {
     await checkNativeCompanySetup(page, base);
     await checkNativeVat(page, base);
     await checkNativeSales(page, base);
+    await checkNativeSettlement(page, base);
     }
   } else {
   if (setup) {

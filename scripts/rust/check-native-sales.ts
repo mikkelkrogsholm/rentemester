@@ -83,7 +83,7 @@ export async function checkNativeSales(page: Page, base: string, reopened = fals
   await page.getByRole("heading", { name: "Fakturaer", exact: true }).waitFor();
   const invoices = await (await page.request.get(`${url}/invoices`)).json();
   const rows = invoices.invoices.invoices;
-  if (rows.length !== 1 || rows[0].grossAmount !== 1250 || rows[0].openBalance !== 1250 || rows[0].posted !== true) throw new Error(`Incorrect sales invoice state: ${JSON.stringify(invoices)}`);
+  if (rows.length !== 1 || rows[0].grossAmount !== 1250 || rows[0].openBalance !== (reopened ? 0 : 1250) || rows[0].posted !== true) throw new Error(`Incorrect sales invoice state: ${JSON.stringify(invoices)}`);
   const pdf = await page.request.get(`${url}/invoices/${rows[0].documentId}/pdf`);
   if (!pdf.ok()) throw new Error("Issued invoice PDF missing");
   const path = "/tmp/rentemester-rust-reports/native-sales-invoice.pdf";
@@ -98,7 +98,7 @@ export async function checkNativeSales(page: Page, base: string, reopened = fals
   if (vat.vat.outputVat !== 250 || vat.vat.inputVat !== 25 || vat.vat.payable !== 225 || vat.vat.vatReportErrors.length) throw new Error(`Sales VAT not reconciled: ${JSON.stringify(vat)}`);
   const contacts = await (await page.request.get(`${url}/contacts`)).json();
   const customer = contacts.contacts.customers.find((c: { name: string }) => c.name === "Synthetic Customer");
-  if (!customer || customer.openBalance !== 1250 || customer.openInvoiceCount !== 1) throw new Error("Customer receivable not retained");
+  if (!customer || customer.openBalance !== (reopened ? 0 : 1250) || customer.openInvoiceCount !== (reopened ? 0 : 1)) throw new Error("Customer receivable not retained");
   await page.goto(`${base}/companies/synthetic/resultatopgorelse`);
   await page.getByText("Synthetic domestic sales", { exact: true }).waitFor();
   await page.screenshot({ path: "/tmp/rentemester-rust-sales.png", fullPage: true });

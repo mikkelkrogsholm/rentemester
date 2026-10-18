@@ -83,7 +83,7 @@ export type CompanyInvoiceRow = {
 };
 
 export type CompanyInvoices = {
-  nativeSales?: { revenueAccounts: Array<{ accountNo: string; name: string }> };
+  nativeSales?: { settlementAvailable?: boolean; revenueAccounts: Array<{ accountNo: string; name: string }> };
   slug: string;
   selectedYear: string;
   archived: boolean;

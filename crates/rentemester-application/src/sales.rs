@@ -16,6 +16,7 @@ pub enum Action<'a> {
     Issue(&'a Input),
     Preview(&'a Input),
     Post(&'a Post),
+    Settle(&'a rentemester_storage::invoice_settlement::Input),
     Pdf(i64),
 }
 pub enum Output {
@@ -61,7 +62,7 @@ pub fn execute(
         Action::Contacts | Action::List => Permission::CompanyRead,
         Action::Customers(_) => Permission::CompanyMasterData,
         Action::Issue(_) | Action::Preview(_) => Permission::CompanyDraftWrite,
-        Action::Post(_) => Permission::CompanyLedgerPost,
+        Action::Post(_) | Action::Settle(_) => Permission::CompanyLedgerPost,
         Action::Pdf(_) => Permission::CompanyDocumentsRead,
     };
     let slug = context.selection.slug;
@@ -135,6 +136,26 @@ pub fn execute(
                     }
                     original(tx, guard, sales::pdf_id(tx, input.invoice_document_id)?)?;
                     Output::Json(sales::post(tx, input, actor, Date::parse(today)?)?)
+                }
+                Action::Settle(input) => {
+                    let json = original(tx, guard, input.invoice_document_id)?;
+                    let payload: String = tx
+                        .query_row(
+                            "SELECT payload_json FROM documents WHERE id=?1",
+                            [input.invoice_document_id],
+                            |r| r.get(0),
+                        )
+                        .map_err(|_| evidence_error())?;
+                    if json != payload.as_bytes() {
+                        return Err(evidence_error());
+                    }
+                    original(tx, guard, sales::pdf_id(tx, input.invoice_document_id)?)?;
+                    Output::Json(rentemester_storage::invoice_settlement::settle(
+                        tx,
+                        input,
+                        actor,
+                        Date::parse(today)?,
+                    )?)
                 }
                 Action::Pdf(id) => Output::Pdf(original(tx, guard, sales::pdf_id(tx, id)?)?),
             })

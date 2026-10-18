@@ -212,9 +212,41 @@ Dette forløb understøtter foreløbig fulde danske DKK-fakturaer med standard
 25% moms og danske CVR/momsidentiteter. Ugyldige beløb og datoer, nummergenbrug
 og dobbelt bogføring afvises. PDF understøtter det nuværende latinske tegnsæt,
 herunder danske bogstaver; tekst uden for tegnsættet afvises ved input.
-Kundebetaling, kreditnota, fremmed valuta, andre momstyper, offentlig e-faktura,
+Kreditnota, fremmed valuta, andre momstyper, offentlig e-faktura,
 ekstern maillevering og redigering/sletning af kontakter mangler stadig i Rust.
 Der sendes ingen fakturaer eksternt i dette forløb.
+
+## Afstem kundens betaling mod fakturaen
+
+1. Importér de indgående betalinger på fakturaens DKK-bankkonto under **Bank**.
+   CSV'en skal have en entydig reference til hver indbetaling, eksempelvis:
+
+   ```csv
+   date;text;amount;currency;reference
+   2026-10-18;Første delbetaling;500;DKK;betaling-1
+   2026-10-18;Sidste delbetaling;750;DKK;betaling-2
+   ```
+
+2. Åbn den bogførte faktura på 1.250 kr. under **Fakturaer**. Vælg **Afstem**,
+   angiv `betaling-1` som bankreference, og bekræft. Fakturaen har nu 750 kr.
+   tilbage at modtage.
+3. Afstem derefter `betaling-2`. Fakturaen vises som **Betalt**, og både
+   kundekortet og den bogførte debitorkonto viser nul tilgodehavende.
+4. Banken viser begge indbetalinger som afstemt. Resultat og moms ændres ikke:
+   betalingen flytter beløbet fra debitorer til bank og bogfører intet nyt salg.
+
+Afstemningen bruger fakturaens oprindeligt bogførte debitorkonto. En senere
+ændring af kontorollen flytter ikke det gamle tilgodehavende. Bankkontoens
+konkrete ledger-mapping er tilsvarende styrende for bankdebeten. Faktura,
+bankbetaling, journalpost og betalingsregistrering forbindes i samme transaktion
+med auditspor; datoen følger den importerede bankpost.
+
+En bankpost kan kun afstemmes én gang, og hele bankpostens beløb bruges.
+Delbetalinger understøttes; overbetaling, tvetydig reference, forkert beløb,
+fremmed valuta, betaling før fakturadato og manglende bogføring afvises.
+Fakturaer med kreditnota eller tab på debitorer kræver deres endnu ikke porterede
+afregningsforløb. Beløb, der afviger mellem fakturaens rest og ledgerens
+tilgodehavende, må ikke skjules ved at markere fakturaen betalt.
 
 ## Tilbagefør en postering
 
@@ -274,6 +306,11 @@ bogføring og kontrollerer tilgodehavende, resultat og moms efter genstart samt,
 at den gemte faktura-PDF har uændrede bytes. Fakturaen gemmes som
 `/tmp/rentemester-rust-reports/native-sales-invoice.pdf`, og et skærmbillede
 som `/tmp/rentemester-rust-sales.png`.
+Betalingstesten importerer to indbetalinger, afstemmer dem gennem fakturalistens
+bekræftelsesdialog og kontrollerer den delvise og fulde betaling. Efter genstart
+kontrolleres nul åbent tilgodehavende, to rene bank-/debitorposteringer, seks
+afstemte bankposter og uændret salg, moms og resultat. Skærmbilledet gemmes som
+`/tmp/rentemester-rust-settlement.png`.
 Testdata fjernes fra Docker efter kørslen.
 
 ## Aktuel afgrænsning

@@ -9,6 +9,7 @@ enum Command {
     Issue(Input),
     Preview(Input),
     Post(Post),
+    Settle(rentemester_storage::invoice_settlement::Input),
     Pdf(i64),
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
@@ -44,6 +45,11 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         if path.ends_with("/customers") {
             match serde_json::from_slice(&bytes) {
                 Ok(input) => Command::Customer(input),
+                Err(_) => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
+            }
+        } else if path.ends_with("/settle") {
+            match serde_json::from_slice(&bytes) {
+                Ok(input) => Command::Settle(input),
                 Err(_) => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
             }
         } else if path.ends_with("/post") {
@@ -82,6 +88,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         Command::Customer(_) => "customer",
         Command::List => "invoices",
         Command::Post(_) => "posting",
+        Command::Settle(_) => "settlement",
         _ => "invoice",
     };
     let Ok(permit) = state.workers.clone().try_acquire_owned() else {
@@ -97,6 +104,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             Command::Issue(i) => Action::Issue(i),
             Command::Preview(i) => Action::Preview(i),
             Command::Post(i) => Action::Post(i),
+            Command::Settle(i) => Action::Settle(i),
             Command::Pdf(id) => Action::Pdf(*id),
         };
         let now = chrono::DateTime::<chrono::Utc>::from(std::time::SystemTime::now());

@@ -78,7 +78,7 @@ export async function checkNativeCompanySetup(page: Page, base: string, reopened
   const inputVat = chart.accounts.accountRoles.resolutions.find((r: { role: string }) => r.role === "input_vat");
   if (!inputVat.ok || inputVat.accountNo !== "4100" || !chart.accounts.accounts.some((a: { accountNo: string; defaultVatCode: string }) => a.accountNo === "3100" && a.defaultVatCode === "DK_PURCHASE_25")) throw new Error("Chart setup not retained");
   const bank = await (await page.request.get(`${url}/bank`)).json();
-  if (bank.bank.transactions.length !== 4 || bank.bank.matchedCount !== 4 || bank.bank.unmatchedCount !== 0 || bank.bank.bookedBalance !== -1867.25) throw new Error(`Incorrect bank balance after deductible VAT: ${JSON.stringify(bank)}`);
+  if (bank.bank.transactions.length !== (reopened ? 6 : 4) || bank.bank.matchedCount !== (reopened ? 6 : 4) || bank.bank.unmatchedCount !== 0 || bank.bank.bookedBalance !== (reopened ? -617.25 : -1867.25)) throw new Error(`Incorrect bank balance after deductible VAT: ${JSON.stringify(bank)}`);
   await page.goto(`${base}/companies/synthetic/resultatopgorelse`);
   await page.getByRole("heading", { name: "Resultatopgørelse", exact: true }).waitFor();
   await page.getByText("Synthetic domestic purchases", { exact: true }).waitFor();
@@ -92,5 +92,5 @@ export async function checkNativeCompanySetup(page: Page, base: string, reopened
   await page.getByRole("heading", { name: "Balance", exact: true }).waitFor();
   await page.getByText("Synthetic deductible VAT", { exact: true }).waitFor();
   await page.screenshot({ path: "/tmp/rentemester-rust-company-setup.png", fullPage: true });
-  console.log(reopened ? "PASS: company settings, confirmed VAT role, chart accounts and deductible purchase persist after restart; four reconciled payments and correct profit" : "PASS: real browser VAT setup → create chart accounts → confirm input VAT → import payment → invoice → deductible purchase → correct profit; incompatible role, overwrite and open-VAT deregistration refused");
+  console.log(reopened ? "PASS: company settings, confirmed VAT role, chart accounts and deductible purchase persist after restart; reconciled bank payments and correct profit" : "PASS: real browser VAT setup → create chart accounts → confirm input VAT → import payment → invoice → deductible purchase → correct profit; incompatible role, overwrite and open-VAT deregistration refused");
 }
