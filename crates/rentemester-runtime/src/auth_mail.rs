@@ -61,15 +61,7 @@ fn bounded(s: &str, max: usize) -> bool {
     !s.trim().is_empty() && s.len() <= max && !s.chars().any(char::is_control)
 }
 fn email(s: &str) -> bool {
-    bounded(s, 4096)
-        && s.trim() == s
-        && !s.chars().any(|c| c.is_whitespace() || c == '\u{feff}')
-        && s.split_once('@').is_some_and(|(a, b)| {
-            !a.is_empty()
-                && !b.contains('@')
-                && b.rsplit_once('.')
-                    .is_some_and(|(x, y)| !x.is_empty() && !y.is_empty())
-        })
+    crate::recovery::mail_recipient(s)
 }
 struct GatewayDns(Option<TokioResolver>);
 impl reqwest::dns::Resolve for GatewayDns {
@@ -282,6 +274,22 @@ impl ResetSender for HttpJsonAuthSender {
         )
     }
 }
+impl crate::recovery::VerificationSender for HttpJsonAuthSender {
+    fn enabled(&self) -> bool {
+        true
+    }
+    fn send(
+        &mut self,
+        message: &crate::recovery::VerificationMessage,
+    ) -> Result<(), DeliveryUnconfirmed> {
+        self.deliver(
+            MailKind::Verification,
+            message.recipient(),
+            message.token(),
+            message.action_url(),
+        )
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -373,7 +381,22 @@ mod tests {
                     "workspace-invitation" => MailKind::WorkspaceInvitation,
                     _ => MailKind::PasswordReset,
                 };
-                let result = if r["asResetSender"] == true {
+                let result = if r["asVerificationSender"] == true {
+                    let links = crate::recovery::RecoveryLinks::new(
+                        "https://example.invalid",
+                        &["https://example.invalid"],
+                        crate::auth::CookieProfile::Secure,
+                    )
+                    .unwrap();
+                    let message = links
+                        .verification_message(
+                            r["recipient"].as_str().unwrap(),
+                            r["token"].as_str().unwrap(),
+                            Some("/login"),
+                        )
+                        .unwrap();
+                    crate::recovery::VerificationSender::send(&mut sender, &message)
+                } else if r["asResetSender"] == true {
                     let links = crate::recovery::RecoveryLinks::new(
                         "https://example.invalid",
                         &["https://example.invalid"],

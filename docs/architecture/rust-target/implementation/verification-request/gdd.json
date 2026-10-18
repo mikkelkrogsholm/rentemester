@@ -1,0 +1,224 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native verification request postcommit mail and destination",
+    "goal": "Prepare bounded verification delivery before issuance commit, send after known commit and return only truthful completion destinations",
+    "scope": "Application and runtime mail/destination composition, no public HTTP or deployed verification authority"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native verification request composition",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Prepare and commit native verification intent then hand off mail; validate destination before completion",
+        "rationale": "External delivery and redirect claims must follow the real transaction outcome",
+        "excludes": [
+          "Public HTTP/cookie parsing/generic acknowledgement/timing/rate policy, legacy dualwriters and deployed authority"
+        ]
+      },
+      "interfaces": [
+        "action.verification_request"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Canonical native issuance commits then sends source-compatible verification mail outside SQLite; known completion returns prevalidated destination",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control handle, injected sender and native process barriers",
+        "when": "Request verification mail or complete with callback",
+        "then": "Canonical native issuance commits then sends source-compatible verification mail outside SQLite; known completion returns prevalidated destination"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Unsafe or oversized destinations roll back tentative issuance; disabled sender, caller mismatch/revocation/expiry/workspace and stale links refuse",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control handle, injected sender and native process barriers",
+        "when": "Request verification mail or complete with callback",
+        "then": "Unsafe or oversized destinations roll back tentative issuance; disabled sender, caller mismatch/revocation/expiry/workspace and stale links refuse"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Absent/verified address yields generic internal unit with no mail/intent; existing credential/MFA/access/session state is preserved",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control handle, injected sender and native process barriers",
+        "when": "Request verification mail or complete with callback",
+        "then": "Absent/verified address yields generic internal unit with no mail/intent; existing credential/MFA/access/session state is preserved"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Uncertain delivery is Committed and retains original link; unknown commit sends no mail and yields no success URL; callbacks do not inject bearer",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control handle, injected sender and native process barriers",
+        "when": "Request verification mail or complete with callback",
+        "then": "Uncertain delivery is Committed and retains original link; unknown commit sends no mail and yields no success URL; callbacks do not inject bearer"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "WAL/DELETE barriers recheck current caller after writer, allow postcommit changes to invalidate links and expose SQL/commit failures truthfully",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic control handle, injected sender and native process barriers",
+        "when": "Request verification mail or complete with callback",
+        "then": "WAL/DELETE barriers recheck current caller after writer, allow postcommit changes to invalidate links and expose SQL/commit failures truthfully"
+      }
+    },
+    "action.verification_request": {
+      "kind": "action",
+      "description": "Native verification mail request and completion destination",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "canonical_email_or_original_bearer_and_optional_callback": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "admitted_control_trusted_signer_clock_cookie_verifier_links_and_sender": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Fixed errors with NotCommitted/OutcomeUnknown/Committed and checked connection reuse"
+        },
+        "preconditions": [
+          "Trusted runtime configuration, canonical admitted control handle and bounded injected sender",
+          "Future HTTP must conceal account existence and close authoritative legacy verify-email bypass before enablement"
+        ],
+        "postconditions": [
+          "Full message prepared before intent commit; no send before known commit and no automatic new-token retry",
+          "Optional caller rechecked to current matching email/session under writer without MFA/access/session grants",
+          "Unknown commits release no mail/success destination; delivery errors retain committed link with Committed stage",
+          "Completion destination validated before mutation; no injected verification bearer and reserved query coordinates removed"
+        ],
+        "external_effects": [
+          "Canonical issuance or completion transaction inherited from persisted verification",
+          "Postcommit synchronous injected mail; concrete HTTPS gateway bounded retries keep payload/token/idempotency key",
+          "Trusted Clock and OS entropy; no public route or automatically created session"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "External mail and callback results must follow known native transaction outcome and fresh caller/intent facts",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "External mail and callback results must follow known native transaction outcome and fresh caller/intent facts",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "External mail and callback results must follow known native transaction outcome and fresh caller/intent facts",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "External mail and callback results must follow known native transaction outcome and fresh caller/intent facts",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "External mail and callback results must follow known native transaction outcome and fresh caller/intent facts",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Preflight, validate redirect, recheck optional caller and prepare bounded message under writer; known commit then unlocked send; prevalidate success destination before completion"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.verification_request",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.verification_request",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.verification_request",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.verification_request",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.verification_request",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.verification_request",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native verification request postcommit mail and destination",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "7b7c076102d917902ef40d3cc2e16f09433f84fa6479010bc8b9497e65b2a8e3"
+      }
+    }
+  }
+}

@@ -351,6 +351,56 @@ try {
 		asResetSender: true,
 	});
 	assert.equal(JSON.parse(viaTrait.captured[0].body).actionUrl, actionUrl);
+	const verificationToken = "e30.e30.c2ln";
+	const verificationUrl = `https://example.invalid/api/auth/verify-email?token=${verificationToken}&callbackURL=%2Flogin`;
+	const viaVerification = await exercise(
+		"native-verification-sender-trait-real-TLS",
+		[202],
+		{
+			asVerificationSender: true,
+			token: verificationToken,
+			kind: "verification",
+		},
+	);
+	assert.equal(
+		JSON.parse(viaVerification.captured[0].body).actionUrl,
+		verificationUrl,
+	);
+	assert.equal(
+		JSON.parse(viaVerification.captured[0].body).kind,
+		"verification",
+	);
+	let verificationOracle: Request | undefined;
+	const verificationSender = createHttpJsonV1AuthEmailSender(
+		{
+			url: viaVerification.endpoint,
+			bearerToken: bearer,
+			from,
+			idempotencySecret: key,
+		},
+		{
+			async fetch(r) {
+				verificationOracle = r;
+				return new Response(null, { status: 202 });
+			},
+		},
+	);
+	await verificationSender.send({
+		kind: "verification",
+		recipient,
+		url: verificationUrl,
+		token: verificationToken,
+	});
+	assert(verificationOracle);
+	assert.deepEqual(
+		JSON.parse(viaVerification.captured[0].body),
+		await verificationOracle.json(),
+	);
+	assert.equal(
+		viaVerification.captured[0].headers["idempotency-key"],
+		verificationOracle.headers.get("idempotency-key"),
+	);
+	note("verification-trait-actual-source-wire-HMAC");
 	for (const status of [200, 204]) {
 		const r = await exercise(`status-${status}`, [status]);
 		assert.equal(r.captured.length, 1);

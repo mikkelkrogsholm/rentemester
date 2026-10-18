@@ -36,6 +36,43 @@ pub trait ResetSender {
     fn enabled(&self) -> bool;
     fn send(&mut self, message: &ResetMessage<'_>) -> Result<(), DeliveryUnconfirmed>;
 }
+/// Owned sensitive verification delivery, constructed before its issuance commits.
+pub struct VerificationMessage {
+    recipient: Zeroizing<String>,
+    token: Zeroizing<String>,
+    url: SensitiveUrl,
+}
+impl VerificationMessage {
+    pub fn recipient(&self) -> &str {
+        &self.recipient
+    }
+    pub fn token(&self) -> &str {
+        &self.token
+    }
+    pub fn action_url(&self) -> &str {
+        self.url.as_str()
+    }
+}
+pub trait VerificationSender {
+    fn enabled(&self) -> bool;
+    fn send(&mut self, message: &VerificationMessage) -> Result<(), DeliveryUnconfirmed>;
+}
+pub struct DisabledVerificationSender;
+impl VerificationSender for DisabledVerificationSender {
+    fn enabled(&self) -> bool {
+        false
+    }
+    fn send(&mut self, _: &VerificationMessage) -> Result<(), DeliveryUnconfirmed> {
+        Err(DeliveryUnconfirmed)
+    }
+}
+/// A known transaction result only, never a request-supplied verification assertion.
+#[derive(Clone, Copy)]
+pub enum VerificationResult {
+    Accepted,
+    InvalidToken,
+    Unconfirmed,
+}
 pub struct DisabledResetSender;
 impl ResetSender for DisabledResetSender {
     fn enabled(&self) -> bool {
@@ -44,6 +81,19 @@ impl ResetSender for DisabledResetSender {
     fn send(&mut self, _: &ResetMessage<'_>) -> Result<(), DeliveryUnconfirmed> {
         Err(DeliveryUnconfirmed)
     }
+}
+pub(crate) fn mail_recipient(s: &str) -> bool {
+    !s.trim().is_empty()
+        && s.len() <= 4096
+        && !s.chars().any(char::is_control)
+        && s.trim() == s
+        && !s.chars().any(|c| c.is_whitespace() || c == '\u{feff}')
+        && s.split_once('@').is_some_and(|(a, b)| {
+            !a.is_empty()
+                && !b.contains('@')
+                && b.rsplit_once('.')
+                    .is_some_and(|(x, y)| !x.is_empty() && !y.is_empty())
+        })
 }
 fn clean(s: &str) -> bool {
     !s.is_empty()
@@ -131,6 +181,87 @@ impl RecoveryLinks {
             Some(v) => self.destination(v).map(|_| ()),
         }
     }
+    /// Canonical native JWT is supplied only by the issuer; this URL helper grants no authority.
+    pub fn verification_message(
+        &self,
+        recipient: &str,
+        token: &str,
+        redirect: Option<&str>,
+    ) -> Result<VerificationMessage, AuthError> {
+        self.validate_redirect(redirect)?;
+        if token.is_empty()
+            || token.len() > 8192
+            || token.split('.').count() != 3
+            || token.split('.').any(str::is_empty)
+            || !token
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b"-_.".contains(&b))
+        {
+            return Err(AuthError::InvalidCredentials);
+        }
+        if !mail_recipient(recipient) {
+            return Err(AuthError::InvalidCredentials);
+        }
+        let mut target = self
+            .base
+            .join("/api/auth/verify-email")
+            .map_err(|_| AuthError::InvalidConfig)?;
+        target
+            .query_pairs_mut()
+            .append_pair("token", token)
+            .append_pair(
+                "callbackURL",
+                redirect.filter(|v| !v.is_empty()).unwrap_or("/"),
+            );
+        let url: String = target.into();
+        if url.len() > 16384 {
+            return Err(AuthError::InvalidCredentials);
+        }
+        Ok(VerificationMessage {
+            recipient: Zeroizing::new(recipient.to_owned()),
+            token: Zeroizing::new(token.to_owned()),
+            url: SensitiveUrl(Zeroizing::new(url)),
+        })
+    }
+    /// Returns no destination when the caller requested a JSON response. Injects no verification bearer.
+    pub fn verification_callback(
+        &self,
+        redirect: Option<&str>,
+        result: VerificationResult,
+    ) -> Result<Option<SensitiveUrl>, AuthError> {
+        self.validate_redirect(redirect)?;
+        let Some(value) = redirect.filter(|v| !v.is_empty()) else {
+            return Ok(None);
+        };
+        let mut target = self.destination(value)?;
+        // Strip stale success/error/bearer coordinates; only the known outcome may be added.
+        let pairs: Vec<(String, String)> = target
+            .query_pairs()
+            .filter(|(k, _)| !matches!(k.as_ref(), "error" | "token" | "verified"))
+            .map(|(k, v)| (k.into_owned(), v.into_owned()))
+            .collect();
+        target.set_query(None);
+        if !pairs.is_empty() || !matches!(result, VerificationResult::Accepted) {
+            let mut query = target.query_pairs_mut();
+            for (k, v) in pairs {
+                query.append_pair(&k, &v);
+            }
+            match result {
+                VerificationResult::Accepted => {}
+                VerificationResult::InvalidToken => {
+                    query.append_pair("error", "INVALID_TOKEN");
+                }
+                VerificationResult::Unconfirmed => {
+                    query.append_pair("error", "VERIFICATION_UNCONFIRMED");
+                }
+            }
+        }
+        let url: String = target.into();
+        if url.len() > 16384 {
+            return Err(AuthError::InvalidCredentials);
+        }
+        Ok(Some(SensitiveUrl(Zeroizing::new(url))))
+    }
     pub fn message<'a>(
         &self,
         recipient: &'a str,
@@ -208,6 +339,76 @@ impl RecoveryLinks {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn verification_links_are_bounded_and_callbacks_inject_only_known_error_outcomes() {
+        let links = RecoveryLinks::new(
+            "https://example.invalid",
+            &["https://example.invalid", "https://other.invalid"],
+            CookieProfile::Secure,
+        )
+        .unwrap();
+        let token = "e30.e30.c2ln";
+        let message = links
+            .verification_message("u@example.invalid", token, None)
+            .unwrap();
+        let url = Url::parse(message.action_url()).unwrap();
+        assert_eq!(url.path(), "/api/auth/verify-email");
+        assert_eq!(
+            url.query_pairs().collect::<Vec<_>>(),
+            vec![
+                ("token".into(), token.into()),
+                ("callbackURL".into(), "/".into())
+            ]
+        );
+        let redirect =
+            "https://other.invalid/login?token=old&error=old&verified=true&x=a%20b#fragment";
+        let good = links
+            .verification_callback(Some(redirect), VerificationResult::Accepted)
+            .unwrap()
+            .unwrap();
+        assert_eq!(good.as_str(), "https://other.invalid/login?x=a+b#fragment");
+        for (result, code) in [
+            (VerificationResult::InvalidToken, "INVALID_TOKEN"),
+            (VerificationResult::Unconfirmed, "VERIFICATION_UNCONFIRMED"),
+        ] {
+            let bad = links
+                .verification_callback(Some(redirect), result)
+                .unwrap()
+                .unwrap();
+            assert_eq!(
+                bad.as_str(),
+                format!("https://other.invalid/login?x=a+b&error={code}#fragment")
+            );
+        }
+        assert_eq!(
+            links
+                .verification_callback(Some("/login"), VerificationResult::Accepted)
+                .unwrap()
+                .unwrap()
+                .as_str(),
+            "https://example.invalid/login"
+        );
+        assert!(
+            links
+                .verification_callback(None, VerificationResult::Accepted)
+                .unwrap()
+                .is_none()
+        );
+        assert!(
+            links
+                .verification_callback(Some("//evil.invalid"), VerificationResult::Accepted)
+                .is_err()
+        );
+        for token in ["", "a..b", "a.b.c.d", "a.b.c&x=1", "a.b.c=", "a.b.\n"] {
+            assert!(
+                links
+                    .verification_message("u@example.invalid", token, None)
+                    .is_err()
+            );
+        }
+        assert!(!DisabledVerificationSender.enabled());
+        assert!(DisabledVerificationSender.send(&message).is_err());
+    }
     #[test]
     fn trusted_origins_and_sensitive_links_use_standard_url_boundaries() {
         let links = RecoveryLinks::new(

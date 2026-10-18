@@ -10,3 +10,4 @@ pub mod password_reset;
 pub mod reset_request;
 pub mod session_control;
 pub mod session_read;
+pub mod verification_request;

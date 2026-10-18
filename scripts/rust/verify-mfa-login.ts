@@ -1,5 +1,6 @@
 /** Native enrolled MFA flow, actual source crypto/session oracle, independent process races. */
 import assert from "node:assert/strict";
+import { verifyVerificationRequest } from "./verification-request-cases";
 import { verifyEmailVerification } from "./email-verification-cases";
 import { verifyPasswordReset } from "./password-reset-cases";
 import { verifyResetRequest } from "./reset-request-cases";
@@ -1012,6 +1013,19 @@ try {
 	);
 	sensitiveRecoveryCodes.push(
 		...(await verifyEmailVerification({
+			fixture,
+			run,
+			start,
+			done,
+			marker,
+			sql,
+			image,
+			record,
+			now,
+		})),
+	);
+	sensitiveRecoveryCodes.push(
+		...(await verifyVerificationRequest({
 			fixture,
 			run,
 			start,

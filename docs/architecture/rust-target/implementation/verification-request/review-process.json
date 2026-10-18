@@ -1,0 +1,115 @@
+{
+  "ok": true,
+  "checks": 36,
+  "observations": [
+    {
+      "id": "verification-request-wal-committed-digest-before-unlocked-mail"
+    },
+    {
+      "id": "verification-request-wal-known-completion-no-session-no-injected-bearer"
+    },
+    {
+      "id": "verification-request-wal-replay-no-success-destination"
+    },
+    {
+      "id": "verification-request-delete-committed-digest-before-unlocked-mail"
+    },
+    {
+      "id": "verification-request-delete-known-completion-no-session-no-injected-bearer"
+    },
+    {
+      "id": "verification-request-delete-replay-no-success-destination"
+    },
+    {
+      "id": "verification-request-missing-same-unit-ack-no-mail-or-intent"
+    },
+    {
+      "id": "verification-request-verified-same-unit-ack-no-mail-or-intent"
+    },
+    {
+      "id": "verification-request-default-message-root-and-no-callback-JSON-continuation"
+    },
+    {
+      "id": "verification-request-redirect-refused-20"
+    },
+    {
+      "id": "verification-request-redirect-refused-34"
+    },
+    {
+      "id": "verification-request-redirect-refused-31"
+    },
+    {
+      "id": "verification-request-redirect-refused-15"
+    },
+    {
+      "id": "verification-request-redirect-refused-7"
+    },
+    {
+      "id": "verification-request-redirect-refused-10"
+    },
+    {
+      "id": "verification-request-oversize-message-prepared-before-commit"
+    },
+    {
+      "id": "verification-request-disabled-known"
+    },
+    {
+      "id": "verification-request-disabled-unknown"
+    },
+    {
+      "id": "verification-request-uncertain-delivery-retains-one-committed-link-no-automatic-reissue"
+    },
+    {
+      "id": "verification-request-wal-late-SQL-no-mail"
+    },
+    {
+      "id": "verification-request-delete-late-SQL-no-mail"
+    },
+    {
+      "id": "verification-request-current-unverified-caller-can-resend-own-address-without-session-refresh"
+    },
+    {
+      "id": "verification-request-caller-other-address"
+    },
+    {
+      "id": "verification-request-caller-expired"
+    },
+    {
+      "id": "verification-request-caller-revoked"
+    },
+    {
+      "id": "verification-request-caller-other-workspace"
+    },
+    {
+      "id": "verification-request-unready-disabled-bad-input-5"
+    },
+    {
+      "id": "verification-request-unready-disabled-bad-input-20"
+    },
+    {
+      "id": "verification-request-unready-disabled-bad-input-27"
+    },
+    {
+      "id": "verification-request-destination-validation-precedes-email-flag-mutation"
+    },
+    {
+      "id": "verification-request-wal-current-caller-rechecked-after-writer"
+    },
+    {
+      "id": "verification-request-wal-postcommit-stale-link-cannot-verify-current-user"
+    },
+    {
+      "id": "verification-request-delete-current-caller-rechecked-after-writer"
+    },
+    {
+      "id": "verification-request-delete-postcommit-stale-link-cannot-verify-current-user"
+    },
+    {
+      "id": "verification-request-verification-request-unknown-commit-no-mail-or-success-redirect"
+    },
+    {
+      "id": "verification-request-verification-callback-unknown-commit-no-mail-or-success-redirect"
+    }
+  ],
+  "scope": "Independent focused verification request/callback projection"
+}

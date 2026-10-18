@@ -2,7 +2,7 @@
 use crate::mfa_login::{error, failure};
 pub use crate::password_login::{Failure, FailureStage};
 use rentemester_runtime::{
-    auth::{AuthError, Clock, new_token},
+    auth::{AuthError, Clock, CookieVerifier, VerifiedCookie, new_token},
     email_token::{EmailToken, EmailTokenSigner, VerifiedEmailToken},
 };
 use rentemester_storage::{email_verification as store, password_credential};
@@ -79,8 +79,40 @@ pub fn issue(
     runtime: &Runtime<'_>,
     email: &str,
 ) -> Result<Option<EmailToken>, Failure> {
+    issue_prepared(control, runtime, email, None, |token, _| Ok(token))
+}
+/// Caller binding is re-resolved under the same writer as issuance. It grants no role/MFA rights.
+pub(crate) fn issue_prepared<T>(
+    control: &mut Connection,
+    runtime: &Runtime<'_>,
+    email: &str,
+    caller: Option<(&CookieVerifier, &VerifiedCookie)>,
+    prepare: impl FnOnce(EmailToken, &str) -> Result<T, rentemester_engine::Error>,
+) -> Result<Option<T>, Failure> {
     write(control, runtime, |tx, clock| {
         let email = password_credential::lookup_email(email)?;
+        if let Some((cookies, proof)) = caller {
+            if cookies.workspace() != runtime.signer.workspace() || !cookies.accepts_session(proof)
+            {
+                return Err(error("invalid_credentials"));
+            }
+            let identity = rentemester_storage::cookie_session::resolve(
+                tx,
+                proof.token(),
+                clock.0,
+                rentemester_storage::cookie_session::SessionRequirement::Current,
+            )?;
+            let current_email: String = tx
+                .query_row(
+                    "SELECT email FROM main.user WHERE id=?1 COLLATE BINARY",
+                    [identity.subject],
+                    |r| r.get(0),
+                )
+                .map_err(|_| error("invalid_credentials"))?;
+            if current_email != email {
+                return Err(error("invalid_credentials"));
+            }
+        }
         let token = runtime
             .signer
             .issue(&email, clock)
@@ -96,7 +128,11 @@ pub fn issue(
             id.as_str(),
             clock.0,
         )?;
-        Ok(known.then_some(token))
+        if known {
+            prepare(token, &email).map(Some)
+        } else {
+            Ok(None)
+        }
     })
 }
 /// Verify the original bearer again using the single trusted time sampled AFTER writer admission.

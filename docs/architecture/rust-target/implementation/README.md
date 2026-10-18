@@ -186,3 +186,7 @@ The [email-token contract](email-token/CONTRACT.md) provides source-readable HS2
 ## Native persisted email verification
 
 [Contract](email-verification/CONTRACT.md) covers digest-bound issuance and atomic single consumption under a fresh admitted writer. Current subject/address/credential/lifecycle binding, rollback and unknown-commit handling add address verification without session or workspace access grants. Mail/HTTP/public policy and legacy verification-bypass closure remain required before enablement; this increment does not complete the epic.
+
+## Native verification mail and completion destination
+
+[Contract](verification-request/CONTRACT.md) adds precommit bounded message preparation, optional current caller/email checks, postcommit VerificationSender handoff and truthful completion destinations. Concrete local HTTPS/source-wire checks cover the verification gateway trait. Public HTTP/React integration and legacy verification-writer closure remain the next enablement requirements; the full epic stays open.

@@ -109,7 +109,7 @@ fn probe() {
     }
     if matches!(
         request["mode"].as_str(),
-        Some("reset-request" | "reset-callback")
+        Some("reset-request" | "reset-callback" | "verification-request" | "verification-callback")
     ) {
         use rentemester_runtime::recovery::{
             DeliveryUnconfirmed, RecoveryLinks, ResetMessage, ResetSender,
@@ -121,17 +121,24 @@ fn probe() {
             marker: Option<String>,
             sent: Vec<Value>,
         }
-        impl ResetSender for Sender {
-            fn enabled(&self) -> bool {
-                self.enabled
-            }
-            fn send(&mut self, message: &ResetMessage<'_>) -> Result<(), DeliveryUnconfirmed> {
+        impl Sender {
+            fn deliver(
+                &mut self,
+                recipient: &str,
+                token: &str,
+                url: &str,
+            ) -> Result<(), DeliveryUnconfirmed> {
                 let other = Connection::open(&self.path).unwrap();
                 other.busy_timeout(std::time::Duration::ZERO).unwrap();
                 other
                     .execute_batch("BEGIN IMMEDIATE;ROLLBACK")
                     .expect("mail called while writer held");
-                self.sent.push(json!({"recipient":message.recipient(),"token":message.token(),"url":message.action_url()}));
+                let count: i64 = other
+                    .query_row("SELECT COUNT(*) FROM verification", [], |r| r.get(0))
+                    .unwrap();
+                assert!(count > 0, "mail called before persisted intent");
+                self.sent
+                    .push(json!({"recipient":recipient,"token":token,"url":url}));
                 if let Some(marker) = &self.marker {
                     std::fs::write(marker, "called").unwrap();
                 }
@@ -140,6 +147,25 @@ fn probe() {
                 } else {
                     Ok(())
                 }
+            }
+        }
+        impl ResetSender for Sender {
+            fn enabled(&self) -> bool {
+                self.enabled
+            }
+            fn send(&mut self, message: &ResetMessage<'_>) -> Result<(), DeliveryUnconfirmed> {
+                self.deliver(message.recipient(), message.token(), message.action_url())
+            }
+        }
+        impl rentemester_runtime::recovery::VerificationSender for Sender {
+            fn enabled(&self) -> bool {
+                self.enabled
+            }
+            fn send(
+                &mut self,
+                message: &rentemester_runtime::recovery::VerificationMessage,
+            ) -> Result<(), DeliveryUnconfirmed> {
+                self.deliver(message.recipient(), message.token(), message.action_url())
             }
         }
         let origins: Vec<&str> = request["trustedOrigins"]
@@ -179,6 +205,50 @@ fn probe() {
             marker: request["mailMarker"].as_str().map(str::to_owned),
             sent: vec![],
         };
+        if matches!(
+            request["mode"].as_str(),
+            Some("verification-request" | "verification-callback")
+        ) {
+            let signer = rentemester_runtime::email_token::EmailTokenSigner::new(
+                request["workspace"].as_str().unwrap_or("w"),
+                key,
+            )
+            .unwrap();
+            let verification = crate::email_verification::Runtime {
+                signer: &signer,
+                clock: &clock,
+                audit_key_version: request["auditVersion"].as_u64().unwrap_or(1),
+            };
+            let runtime = crate::verification_request::Runtime {
+                verification: &verification,
+                cookies: &cookies,
+                links: &links,
+            };
+            let caller_cookies = CookieVerifier::new(
+                request["callerWorkspace"]
+                    .as_str()
+                    .unwrap_or(request["workspace"].as_str().unwrap_or("w")),
+                cookies.profile(),
+                key,
+            )
+            .unwrap();
+            let caller_cookie = request["callerToken"]
+                .as_str()
+                .map(|t| caller_cookies.issue_session(t).unwrap());
+            let caller = caller_cookie.as_ref().map(|c| {
+                caller_cookies
+                    .verify(Some(c.request_header()), None)
+                    .unwrap()
+            });
+            let mut output = if request["mode"] == "verification-request" {
+                crate::verification_request::execute(&mut db,&runtime,&mut sender,request["email"].as_str().unwrap_or("u@example.invalid"),request["redirect"].as_str(),caller.as_ref()).map(|()|json!({"ok":true})).unwrap_or_else(|f|json!({"ok":false,"code":f.error.code,"stage":format!("{:?}",f.stage),"reusable":f.connection_reusable}))
+            } else {
+                crate::verification_request::complete(&mut db,&runtime,request["token"].as_str().unwrap_or(""),request["redirect"].as_str()).map(|url|json!({"ok":true,"url":url.as_ref().map(|u|u.as_str())})).unwrap_or_else(|f|json!({"ok":false,"code":f.error.code,"stage":format!("{:?}",f.stage),"reusable":f.connection_reusable}))
+            };
+            output["sent"] = json!(sender.sent);
+            println!("RM_MFA_LOGIN_RESULT={output}");
+            return;
+        }
         let mut output = if request["mode"] == "reset-request" {
             crate::reset_request::execute(&mut db,&runtime,&mut sender,request["email"].as_str().unwrap_or("u@example.invalid"),request["redirect"].as_str()).map(|()|json!({"ok":true})).unwrap_or_else(|f|json!({"ok":false,"code":f.error.code,"stage":format!("{:?}",f.stage),"reusable":f.connection_reusable}))
         } else {

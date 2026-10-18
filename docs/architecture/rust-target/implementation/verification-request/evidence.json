@@ -1,0 +1,63 @@
+{
+  "increment": "verification-request-1",
+  "code_revision": "sha256:1f8e4a7c56583b41be0c4a003c4428c1ae4dd995d5ec09133686d9e4c006e621",
+  "spec_revision": "sha256:92068ca885678f2e88102f7f740e33627175127b04e8e016d8342f9203d1f8d3",
+  "state": "verified-native-verification-postcommit-mail-and-destination",
+  "checks": {
+    "native_tests_passed": 124,
+    "ignored_subprocess_helpers": 23,
+    "integration_checks": 11822,
+    "new_verification_request_process_checks": 36,
+    "independent_verification_request_process_checks": 36,
+    "independent_new_runtime_tests": 1,
+    "concrete_mail_transport_checks": 42,
+    "new_verification_sender_source_wire_checks": 2,
+    "GDD_structural_checks": 3,
+    "strict_fmt_clippy_boundaries_runtime_typecheck_lint": "PASS"
+  },
+  "claims": [
+    "Precommit full bounded message preparation and optional current session/email caller recheck under admitted writer",
+    "Known issuance commit precedes unlocked sender; uncertain delivery retains original usable link with Committed stage",
+    "Concrete verification HTTPS trait preserves source wire/idempotency HMAC and bounded identical retries",
+    "Prevalidated completion destination only after known commit, no injected verification bearer, reserved query coordinates removed",
+    "WAL/DELETE current-caller/stale-link barriers and SQL/unknown-commit tests pass without mail/success on uncertain commit"
+  ],
+  "limits": [
+    "Application/runtime composition only; public HTTP mapper/session-cookie parser/timing/rate/React and full R04/R41/R42 acceptance remain required",
+    "Legacy verify-email ignores native context: close authoritative bypass together with native route enablement",
+    "Internal failures/recipient knowledge must be concealed by future generic public mapper; no whole-operation constant-time claim",
+    "Other callback path/query values and absolute fragments preserved; no guarantee that caller input contains no secrets",
+    "No physical/lifetime admission, real-data migration, external email, durable outbox/guaranteed delivery or deployed dualwriter qualification",
+    "Full Rust engine/server/CLI/MCP/React/GPUI, distribution, parity, cutover and TypeScript retirement remain required",
+    "Graphify AST plus two changed Markdown semantics refreshed; generated JSON/logs and unrelated/historical docs outside semantic refresh"
+  ],
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": {
+    "crates/rentemester-application/src/email_verification.rs": "7c5f311c2b6a03eb584ef27b9ba040ad23fecb9dcd50ff40fed0a6b57c7b4b49",
+    "crates/rentemester-application/src/lib.rs": "fbf05fd80e9a6e4ce03ff87500d0428c58a76ed616868e43be76fbb7561d631a",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "50e2cc090deb9bec97350e1ea953533783d6d273cc7b8a522acf0697910d087c",
+    "crates/rentemester-application/src/verification_request.rs": "e0a19660bc11e367788fb63d787d11aaf2b18125efc26b48879c9a7924f2bb03",
+    "crates/rentemester-runtime/src/auth_mail.rs": "6376a32e98464810144b6c7f94182a8d855bf283fc3b75d51448f61805f42346",
+    "crates/rentemester-runtime/src/recovery.rs": "89712f6dd791d7f6c69cfe7e840dc870eaeb3a9d6dbcc113f3829939521c4199",
+    "docs/architecture/rust-target/implementation/README.md": "cb40b4c3217c41e01861d89a498c67acba8ec00dafe6989a2beb4e535952524b",
+    "docs/architecture/rust-target/implementation/verification-request/CONTRACT.md": "7b7c076102d917902ef40d3cc2e16f09433f84fa6479010bc8b9497e65b2a8e3",
+    "docs/architecture/rust-target/implementation/verification-request/gdd.json": "98bba8e5997a74d0b3826249a1e3c54f44eec422ce9d2b078be001d6f6d3e945",
+    "docs/architecture/rust-target/implementation/verification-request/readiness.json": "5c68ee842b13e77906a05c0d22ba1bc088632edb831816a0f2427506606ada89",
+    "scripts/rust/verification-request-cases.ts": "ef24ecf9456fe8be71cad38c0e4e52c08eae64a2ee47a72808075963f339a610",
+    "scripts/rust/verify-auth-mail.ts": "d0d04fa117b634d1ca2ce70675eac2445cbb990771d58eaa229479e6c08c6900",
+    "scripts/rust/verify-mfa-login.ts": "699da26e3158005e1eb1944830d1df65291699ec95c23b7c72fc34889047d9bd",
+    "scripts/rust/verify.ts": "70af5c51025b9660310f0e0be7513d4c8be15e22410facf5836fc4f4838b5d35",
+    "src/server/auth-email.ts": "1d922d82d3dc4e2a9be1337c8e0f22c506510f97ce6afa4f899a771f784f25d3"
+  },
+  "evidence_files": {
+    "review-process.json": "a6ab28cca70a1dbb46cd215a08140518f538ceeb4d2c0217ac344e49aca3d078",
+    "review-native.txt": "183dec3ebae840a22e382a63899e7b2ab63e1be3901fa8e80c47dd4c286a5689",
+    "review.json": "d55fd6ca4f78545b46b4dfe4874809dc2a4256458b0115ee81b22f3075220ef0",
+    "transport.txt": "30aa2bb13e3ab6b25f3c26711810c8b480077dbed00ec851bf0da71337f04883",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "269bd3eeb34859b86d9096d447dc03d274c3a0bb6883cc8c77b5678531b99725",
+    "regression.json": "222146bc552e9ea316ef06c9ee55694e5ba724df43e66b2a1db09c8b3dec44f7"
+  }
+}

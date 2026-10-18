@@ -1,0 +1,53 @@
+{
+  "result": "PASS",
+  "reviewed_at_utc": "2026-10-18T02:01:01.772523+00:00",
+  "material_findings": [],
+  "resolved_comment": "Callback promises now distinguish no injected verification bearer/reserved query cleanup from preserved user input fragments and other values",
+  "scope": "Native persisted issuance with beforecommit message preparation, postcommit injected sender, optional current caller, and completion destination; no native HTTP enabled",
+  "checks": 36,
+  "native_tests": 1,
+  "evidence": {
+    "process": "/tmp/rm-verification-request-review-process.json",
+    "stderr": "/tmp/rm-verification-request-review-process.err",
+    "native": "/tmp/rm-verification-request-review-native.txt"
+  },
+  "projection": {
+    "path": "/tmp/rm-verification-request-review-focused.ts",
+    "sha256": "9fef6b93a6897dd9406435fcceaa402145d0d0fd9715a7c5049fa9e98b609da1",
+    "description": "Current original initialization and fixture/run/start/barriers with absolute imports/root; only verifyVerificationRequest invoked"
+  },
+  "reviewed_invariants": [
+    "Invalid/oversize destinations cannot commit an undeliverable intent",
+    "Known commit precedes unlocked mail handoff; no automatic retry/newtoken",
+    "Delivery failure retains committed link with Committed stage",
+    "Current optional caller key/workspace/profile/kind provenance and session/email resolve inside writer",
+    "Unknown commit returns neither mail nor successful destination",
+    "Callbacks strip reserved query coordinates without injecting bearer; arbitrary other caller values preserved",
+    "No session/access/MFA authority granted"
+  ],
+  "remaining_gates": [
+    "Legacy verify-email writer must close before native route enablement",
+    "Public HTTP concealment/timing/rate/ack mapper remains required",
+    "No actual workspace/lifetime opener or full deployment qualified"
+  ],
+  "sha256": {
+    "crates/rentemester-runtime/src/recovery.rs": "89712f6dd791d7f6c69cfe7e840dc870eaeb3a9d6dbcc113f3829939521c4199",
+    "crates/rentemester-runtime/src/auth_mail.rs": "6376a32e98464810144b6c7f94182a8d855bf283fc3b75d51448f61805f42346",
+    "crates/rentemester-application/src/email_verification.rs": "7c5f311c2b6a03eb584ef27b9ba040ad23fecb9dcd50ff40fed0a6b57c7b4b49",
+    "crates/rentemester-application/src/verification_request.rs": "e0a19660bc11e367788fb63d787d11aaf2b18125efc26b48879c9a7924f2bb03",
+    "crates/rentemester-application/src/lib.rs": "fbf05fd80e9a6e4ce03ff87500d0428c58a76ed616868e43be76fbb7561d631a",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "50e2cc090deb9bec97350e1ea953533783d6d273cc7b8a522acf0697910d087c",
+    "scripts/rust/verification-request-cases.ts": "ef24ecf9456fe8be71cad38c0e4e52c08eae64a2ee47a72808075963f339a610",
+    "scripts/rust/verify-mfa-login.ts": "699da26e3158005e1eb1944830d1df65291699ec95c23b7c72fc34889047d9bd",
+    "scripts/rust/verify-auth-mail.ts": "d0d04fa117b634d1ca2ce70675eac2445cbb990771d58eaa229479e6c08c6900"
+  },
+  "transport_delta_review": {
+    "result": "PASS",
+    "checks": 42,
+    "execution_owner": "main agent; independently reviewed delta and recorded results, no separate transport repeat",
+    "evidence": "/tmp/rm-verification-request-transport.txt",
+    "reviewed": "Actual VerificationSender dispatch constructs RecoveryLinks VerificationMessage, real local TLS capture validates actionUrl/kind, complete parsed JSON wire and idempotency HMAC agree with installed source sender; no production test trust override",
+    "new_checks": 2,
+    "reviewed_at_utc": "2026-10-18T02:01:48.555647+00:00"
+  }
+}
