@@ -34,3 +34,5 @@ impl std::error::Error for Error {}
 pub mod document;
 
 pub mod bank;
+
+pub mod expense_fx;

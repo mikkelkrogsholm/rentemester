@@ -241,6 +241,11 @@ pub fn parse(content: &str) -> Result<Vec<Row>, Error> {
         if get("text").is_empty() {
             return Err(fail("bank row text is required"));
         }
+        if currency == "DKK" && amount_dkk.as_ref().is_some_and(|dkk| dkk != &amount) {
+            return Err(fail(
+                "DKK bank amount_dkk must equal its signed settlement amount",
+            ));
+        }
         if currency != "DKK"
             && (amount_dkk.is_none()
                 || rate
@@ -280,6 +285,7 @@ mod tests {
             "date;text;amount\n05/04/2026;x;1",
             "date;text;amount\n2026-10-18;x;0xff",
             "date;text;amount\n2026-10-18;\"x;1",
+            "date;text;amount;amount_dkk\n2026-10-18;Synthetic mismatch;-100;100",
         ] {
             assert!(parse(csv).is_err());
         }

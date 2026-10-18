@@ -3,7 +3,9 @@ use rentemester_engine::{
     Error,
     currency::Currency,
     document::{Metadata, money},
+    expense_fx::{self, Payment},
     fiscal_year::Date,
+    fx::FxRate,
     identifiers::{AccountNo, BankTransactionId, DocumentId},
     manual_journal::{JournalLine, ManualJournal},
     money::Money,
@@ -121,19 +123,46 @@ pub fn post(
             "document requires positive gross and VAT between zero and gross",
         ));
     }
-    if meta.currency() != "DKK" {
-        return Err(fail("foreign-currency expense booking is not ported yet"));
+    struct BankSource {
+        date: String,
+        text: String,
+        currency: String,
+        amount: f64,
+        amount_dkk: Option<f64>,
+        rate: Option<f64>,
+        payment: Option<String>,
     }
-    let (bank_date,bank_text,bank_currency,raw_amount,payment):(String,String,String,f64,Option<String>)=tx.query_row("SELECT bt.transaction_date,bt.text,bt.currency,bt.amount,ba.ledger_account_no FROM bank_transactions bt LEFT JOIN bank_accounts ba ON ba.id=bt.bank_account_id WHERE bt.id=?1",[input.bank_transaction_id],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?))).map_err(sql)?;
-    let bank_amount = crate::bank::signed_money(rusqlite::types::ValueRef::Real(raw_amount))?;
-    if !bank_amount.is_negative()
-        || bank_currency != "DKK"
-        || Money::default().subtract(&bank_amount) != gross
-    {
-        return Err(fail(
-            "bank transaction must be an outgoing DKK payment equal to document gross",
-        ));
-    }
+    let bank=tx.query_row("SELECT bt.transaction_date,bt.text,bt.currency,bt.amount,bt.amount_dkk,bt.fx_rate_to_dkk,ba.ledger_account_no FROM bank_transactions bt LEFT JOIN bank_accounts ba ON ba.id=bt.bank_account_id WHERE bt.id=?1",[input.bank_transaction_id],|r|Ok(BankSource{date:r.get(0)?,text:r.get(1)?,currency:r.get(2)?,amount:r.get(3)?,amount_dkk:r.get(4)?,rate:r.get(5)?,payment:r.get(6)?})).map_err(sql)?;
+    let signed = |value| crate::bank::signed_money(rusqlite::types::ValueRef::Real(value));
+    let bank_amount = signed(bank.amount)?;
+    let bank_dkk = bank.amount_dkk.map(signed).transpose()?;
+    let bank_rate = bank
+        .rate
+        .map(|value| {
+            if !value.is_finite() {
+                return Err(fail("bank FX rate must be finite"));
+            }
+            FxRate::parse(ryu_js::Buffer::new().format_finite(value))
+        })
+        .transpose()?;
+    let currency = meta.currency();
+    let bank_currency = bank.currency.trim().to_uppercase();
+    let basis = expense_fx::resolve(
+        &currency,
+        &gross,
+        Payment {
+            currency: &bank_currency,
+            amount: &bank_amount,
+            amount_dkk: bank_dkk.as_ref(),
+            rate: bank_rate.as_ref(),
+        },
+    )?;
+    let BankSource {
+        date: bank_date,
+        text: bank_text,
+        payment,
+        ..
+    } = bank;
     let linked:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM bank_journal_reconciliations WHERE bank_transaction_id=?1)",[input.bank_transaction_id],|r|r.get(0)).map_err(sql)?;
     if linked {
         return Err(fail(
@@ -255,17 +284,18 @@ pub fn post(
     let mut lines = Vec::new();
     let expense = input.expense_account_no.trim();
     let deductible = if treatment == "standard" {
-        vat.clone()
+        basis.rate.apply(&vat)
     } else {
         Money::default()
     };
-    let net = gross.subtract(&deductible);
+    let net = basis.gross_dkk.subtract(&deductible);
     if treatment == "standard" {
         if let Some(split) = &meta.purchase_vat_lines {
-            for part in split {
+            let scaled = expense_fx::scale_net(split, &basis.rate, &net)?;
+            for (part, amount) in split.iter().zip(scaled) {
                 lines.push(line(
                     expense,
-                    money(&part.net_amount)?,
+                    amount,
                     Money::default(),
                     Some(if part.classification == "dk_purchase_25" {
                         "DK_PURCHASE_25"
@@ -294,7 +324,7 @@ pub fn post(
     } else {
         lines.push(line(
             expense,
-            gross.clone(),
+            basis.gross_dkk.clone(),
             Money::default(),
             None,
             if treatment == "non_deductible" {
@@ -308,7 +338,7 @@ pub fn post(
     lines.push(line(
         &payment,
         Money::default(),
-        gross.clone(),
+        basis.gross_dkk.clone(),
         None,
         bank_text,
     )?);
@@ -322,12 +352,12 @@ pub fn post(
     let request = ManualJournal {
         transaction_date: Date::parse(date)?,
         text,
-        currency: Currency::parse("DKK")?,
+        currency: Currency::parse(&currency)?,
         document_id: Some(DocumentId::from_sqlite(input.document_id)),
         source_bank_transaction_id: Some(BankTransactionId::from_sqlite(input.bank_transaction_id)),
-        amount_foreign: None,
-        amount_dkk: None,
-        fx_rate_to_dkk: None,
+        amount_foreign: (currency != "DKK").then(|| gross.clone()),
+        amount_dkk: (currency != "DKK").then(|| basis.gross_dkk.clone()),
+        fx_rate_to_dkk: (currency != "DKK").then(|| basis.rate.clone()),
         created_by_program: None,
         lines,
     };
@@ -352,13 +382,20 @@ pub fn post(
         ("grossAmount", crate::cockpit::number(&gross)?),
         ("netAmount", crate::cockpit::number(&net)?),
         ("vatAmount", crate::cockpit::number(&deductible)?),
-        ("grossAmountDkk", crate::cockpit::number(&gross)?),
+        ("grossAmountDkk", crate::cockpit::number(&basis.gross_dkk)?),
         ("netAmountDkk", crate::cockpit::number(&net)?),
         ("vatAmountDkk", crate::cockpit::number(&deductible)?),
         ("grossAmountForeign", crate::cockpit::number(&gross)?),
-        ("fxRateToDkk", json!(1)),
+        (
+            "fxRateToDkk",
+            json!(crate::journal_post::rate(&basis.rate)?),
+        ),
     ] {
         result[key] = value;
+    }
+    if let Some(source) = basis.rate_source {
+        result["fxRateSource"] = json!(source);
+        result["fxReconstructionDifferenceDkk"] = json!(0);
     }
     Ok(result)
 }
@@ -424,6 +461,62 @@ mod tests {
             tx.query_row::<i64, _, _>("SELECT count(*) FROM journal_entries", [], |r| r.get(0))
                 .unwrap(),
             1
+        );
+    }
+}
+
+#[cfg(test)]
+mod fx_tests {
+    use super::*;
+    #[test]
+    fn foreign_settlement_persists_positive_quote_and_dkk_lines_without_deducting_foreign_tax() {
+        let mut control = rusqlite::Connection::open_in_memory().unwrap();
+        let mut company = rusqlite::Connection::open_in_memory().unwrap();
+        crate::fresh::initialize_empty_pair(&mut control, &mut company, "Synthetic FX").unwrap();
+        let tx = company
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        tx.execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('A','Synthetic cash','asset','debit'),('X','Synthetic expense','expense','debit');INSERT INTO bank_accounts(slug,name,ledger_account_no) VALUES('synthetic','Synthetic bank','A');").unwrap();
+        let meta:Metadata=serde_json::from_value(json!({"source":"synthetic","documentType":"cash_register_receipt","issueDate":"2026-10-18","amountIncVat":100,"vatAmount":20,"currency":"EUR"})).unwrap();
+        crate::documents::register(
+            &tx,
+            crate::documents::Original {
+                filename: "synthetic.txt",
+                hash: &"b".repeat(64),
+                path: "synthetic-original",
+                mime: "text/plain",
+            },
+            &meta,
+            "synthetic",
+            "2026-10-18",
+        )
+        .unwrap();
+        let csv = "date;text;amount\n2026-10-18;Synthetic EUR settlement;-746.25\n";
+        let rows = rentemester_engine::bank::parse(csv).unwrap();
+        crate::bank::import(
+            &tx,
+            csv,
+            &rows,
+            Some("synthetic"),
+            "synthetic",
+            "2026-10-18T12:00:00Z",
+            "synthetic-original",
+        )
+        .unwrap();
+        let input:Input=serde_json::from_value(json!({"documentId":1,"bankTransactionId":1,"expenseAccountNo":"X","vatTreatment":"non_deductible"})).unwrap();
+        let posted = post(&tx, &input, "synthetic", Date::parse("2026-12-01").unwrap()).unwrap();
+        assert_eq!(posted["grossAmountDkk"].as_f64(), Some(746.25));
+        assert_eq!(posted["fxRateSource"], "derived_dkk_settlement");
+        assert_eq!(posted["vatAmountDkk"].as_f64(), Some(0.0));
+        let (currency,foreign,dkk,rate):(String,f64,f64,f64)=tx.query_row("SELECT currency,amount_foreign,amount_dkk,fx_rate_to_dkk FROM journal_entries WHERE id=1",[],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?))).unwrap();
+        assert_eq!(
+            (currency.as_str(), foreign, dkk, rate),
+            ("EUR", 100.0, 746.25, 7.4625)
+        );
+        let amounts:Vec<(String,f64,f64)>=tx.prepare("SELECT a.account_no,jl.debit_amount,jl.credit_amount FROM journal_lines jl JOIN accounts a ON a.id=jl.account_id ORDER BY jl.id").unwrap().query_map([],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).unwrap().collect::<Result<_,_>>().unwrap();
+        assert_eq!(
+            amounts,
+            vec![("X".into(), 746.25, 0.0), ("A".into(), 0.0, 746.25)]
         );
     }
 }

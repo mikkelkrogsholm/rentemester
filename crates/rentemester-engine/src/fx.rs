@@ -31,6 +31,22 @@ impl FxRate {
         }
         Ok(Self(rate))
     }
+    /// One six-decimal quote derived from a documented DKK settlement.
+    /// The caller must also verify that this persisted precision reconstructs it.
+    pub fn from_settlement(foreign: &Money, dkk: &Money) -> Result<Self, Error> {
+        if foreign.is_negative()
+            || foreign == &Money::default()
+            || dkk.is_negative()
+            || dkk == &Money::default()
+        {
+            return Err(Error::new(
+                "invalid_rate",
+                "positive foreign and DKK settlement amounts required",
+            ));
+        }
+        let scaled = decimal::round_div(&(&dkk.0 * BigInt::from(1_000_000u32)), &foreign.0)?;
+        Self::parse_canonical(&decimal::format_scaled(&scaled, 6))
+    }
     pub fn decimal(&self) -> String {
         decimal::format_scaled(&self.0, 6)
     }

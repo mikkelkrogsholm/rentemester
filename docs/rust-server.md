@@ -2,7 +2,7 @@
 
 Rust-serveren leverer det eksisterende React-cockpit og behandler selv login,
 ejeroprettelse, MFA, sessions, virksomhedsadgang, manuel bogføring, tilbageførsel,
-bankkonti, generisk bankimport, bilagsbogføring samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport. Den
+bankkonti, generisk bankimport, bilagsbogføring med valutakøb samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport. Den
 starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Prøv med syntetiske data
@@ -91,17 +91,49 @@ Når CSV'en ikke indeholder en understøttet saldo, viser banken en ukendt
 kontoudtogssaldo. Den bogførte saldo beregnes fra ledgeren inklusive
 modposteringer fra tilbageførsler; den forveksles ikke med kontoudtogets saldo.
 
-Udgiftsbogføring understøtter foreløbig DKK med standardkøbsmoms, momsfri
+Udgiftsbogføring understøtter DKK og valutakøb med standardkøbsmoms, momsfri
 behandling eller ikke-fradragsberettiget moms. Manglende kontomoms kræver et
 aktivt valg. Standardkøb kræver momsregistrering, dokumenteret dansk
 leverandør, korrekt 25%-grundlag og en aktiv, bekræftet købsmomskonto.
 Originalens hash og de eksisterende dato-, periode- og journalkontroller
 kontrolleres ved bogføring. En allerede afstemt bankpost kan ikke bruges igen.
 
-Navngivne bankprofiler, valutakøb, omvendt betalingspligt, EU-varekøb,
+Navngivne bankprofiler, omvendt betalingspligt, EU-varekøb,
 repræsentation, forenklede fakturaers virksomhedskontekst og automatisk
 oprettelse af undtagelsesopgaver mangler fortsat i Rust og afvises eller
 udelades eksplicit. De er del af den resterende omskrivning.
+
+## Bogfør et valutakøb
+
+Indlæs eksempelvis en kassebon på **100 EUR**, og angiv beløb, valuta og
+bilagsdato. Importér derefter betalingen via bankdialogen. Rust understøtter
+to dokumenterede omregningsgrundlag:
+
+- En DKK-betaling på **−746,25 DKK** for bilagets 100 EUR. Hvis bankposten
+  ikke angiver en kurs, udleder og gemmer Rust kurs **7,462500** fra betalingen.
+- En EUR-bankpost på **−100 EUR**, der angiver **−746 DKK** og kurs **7,460000**.
+  Her bruger Rust bankens importerede kurs.
+
+Eksempel på de to bankposter i samme generiske CSV:
+
+```csv
+date;text;amount;currency;amount_dkk;fx_rate_to_dkk
+2026-10-18;EUR-køb betalt i DKK;-746,25;DKK;;
+2026-10-18;EUR-køb med bankkurs;-100;EUR;-746;7,46
+```
+
+Vælg bilaget, betalingen, udgiftskontoen og den passende momsbehandling i
+**Bogfør bilag**. Med **Ikke fradragsberettiget** indgår hele betalingen i
+udgiften, inklusive eventuel udenlandsk lokal moms. Den bliver ikke til dansk
+købsmoms. Journalen bevarer bilagets valuta, det positive originalbeløb,
+DKK-værdien og den positive seks-decimale kurs. Rapporter og bankafstemning
+bruger DKK-beløbet.
+
+En importeret eller udledt kurs skal kunne genskabe den dokumenterede
+DKK-betaling til øren. Rust afviser uforenelige beløb eller valutaer og kurser,
+hvor seks decimaler ikke er tilstrækkeligt. Der hentes ingen udokumenteret
+markedskurs. Ved blandet købsmoms fordeles en eventuel afrundingsrest på en
+momsfri nettolinje, når der findes en, så totalen stadig svarer til betalingen.
 
 ## Tilbagefør en postering
 
@@ -141,6 +173,10 @@ en CSV importeres, bilaget matches og udgiften bogføres. Testen kontrollerer
 bankafstemning og resultat, afviser manglende momsvalg, fremtidig dato og
 dobbelt bogføring og verificerer resultatet efter endnu en genstart.
 Skærmbilledet gemmes i `/tmp/rentemester-rust-expense.png`.
+Valutatesten indlæser to EUR-bilag i browseren, bruger både udledt DKK-kurs og
+importeret bankkurs, kontrollerer bogføringskvitteringernes omregning og
+verificerer det samlede DKK-resultat og alle bankmatches efter genstart.
+Skærmbilledet gemmes i `/tmp/rentemester-rust-fx-expense.png`.
 Testdata fjernes fra Docker efter kørslen.
 
 ## Aktuel afgrænsning
