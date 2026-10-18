@@ -317,3 +317,11 @@ test("paginates after filtering and resets to the first page when the search cha
   expect(screen.getByText("Synthetic bank post 1")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Forrige" })).toBeDisabled();
 });
+
+test("ambiguous statement evidence remains unknown and explains the problem", async () => {
+  mockFetch(route({actualBalance:null,difference:null,bankStatementStatus:"unavailable",bankStatementProblem:"Rækkefølgen i kontoudtoget giver ikke en entydig slutsaldo."}));
+  renderView();
+  expect(await screen.findByText(/Rækkefølgen i kontoudtoget giver ikke en entydig slutsaldo/)).toBeInTheDocument();
+  expect(screen.queryByText(/Intet kontoudtog importeret/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/Kontoudtog og bogført saldo stemmer/)).not.toBeInTheDocument();
+});

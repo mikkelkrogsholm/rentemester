@@ -83,6 +83,7 @@ export async function checkNativePayable(page:Page,base:string,reopened=false){
  if(report.incomeStatement.totalExpense!==2842.25||report.incomeStatement.result!==-2842.25||vat.vat.inputVat!==275||vat.vat.payable!==-275||vat.vat.vatReportErrors.length)throw new Error("Payable payments repeated expense or VAT");
  const bank=await(await page.request.get(`${url}/bank`)).json();
  if(bank.bank.transactions.length!==10||bank.bank.matchedCount!==10||bank.bank.unmatchedCount!==0||bank.bank.bookedBalance!==-3117.25)throw new Error("Payable bank reconciliation incorrect");
+ if(bank.bank.transactions.find((t:{text:string})=>t.text==="Synthetic office payment")?.runningBalance!==-250||bank.bank.actualBalance!==null||bank.bank.bankStatementStatus!=="unavailable")throw new Error("Original statement balance lost or later missing balances falsely treated as reconciled");
  const original=await page.request.get(`${url}/documents/${evidence.document}/file`);
  if(!(await original.body()).equals(Buffer.from(evidence.original,"base64")))throw new Error("Payable settlement changed purchase original");
  await page.goto(`${base}/companies/synthetic/leverandoerfaktura`);

@@ -70,8 +70,8 @@ leverandørkobling afvises eksplicit, indtil de tilsvarende forløb er porteret.
    angiv bankkontoens slug, og lad bankformatet være tomt. Brug bilagets dato:
 
    ```csv
-   dato;tekst;beløb;valuta
-   2026-10-18;Kontorartikler;-250,00;DKK
+   dato;tekst;beløb;valuta;saldo
+   2026-10-18;Kontorartikler;-250,00;DKK;-250,00
    ```
 
 4. Åbn bilaget og vælg **Bogfør bilag**. Vælg demoens udgiftskonto **3000**
@@ -87,9 +87,28 @@ at gætte mellem dag og måned. Genimport springer dubletter over, men to ens
 betalinger i samme fil bevares som to forekomster. Den originale importtekst
 gemmes uforanderligt under `bank/processed/` med indholdshash.
 
-Når CSV'en ikke indeholder en understøttet saldo, viser banken en ukendt
-kontoudtogssaldo. Den bogførte saldo beregnes fra ledgeren inklusive
-modposteringer fra tilbageførsler; den forveksles ikke med kontoudtogets saldo.
+CSV-kolonnen **saldo** (også `balance_after`, `balance` eller `running_balance`)
+gemmer bankens oplyste saldo efter den enkelte bevægelse. Med eksemplet ovenfor
+viser **Bank** først faktisk saldo −250 kr., bogført saldo 0 kr. og difference
+250 kr. Efter bogføring vises **Kontoudtog og bogført saldo stemmer: −250 kr.**
+Bankens saldo beregnes aldrig fra bogføringen. Den bogførte saldo indeholder
+også modposteringer fra tilbageførsler.
+
+Slutsaldoen bestemmes ud fra sammenhængen mellem beløb og løbende saldi på den
+seneste bankdato; filens rækkeorden afgør den ikke. DKK-saldi fra flere bankkonti
+summeres kun, når alle konti har et entydigt grundlag. Manglende saldi,
+modstridende rækkefølge, blandede tilknyttede/ikke-tilknyttede konti eller en
+kontos saldo i fremmed valuta vises som uafklaret med en forklaring. Når ingen
+saldo-kolonne er leveret, vises fortsat ukendt kontoudtogssaldo. En postering i
+fremmed valuta på en DKK-bankkonto bruger det dokumenterede DKK-beløb ved
+kontrollens saldoforløb; bankkontoens valuta bestemmer saldoens enhed.
+
+Genimport med samme saldo springes over som en dublet. En ændret eller senere
+tilføjet saldo på samme transaktionsidentitet afvises, så den oprindelige
+bankevidens ikke overskrives eller bliver til en ekstra betaling. Rettelse af
+den type kildekonflikt kræver fortsat et særskilt korrektionsforløb.
+Momsafslutningens review/låsning er stadig under portering; bankkontrollen er
+en forudsætning for dette forløb.
 
 Udgiftsbogføring understøtter DKK og valutakøb med standardkøbsmoms, momsfri
 behandling eller ikke-fradragsberettiget moms. Manglende kontomoms kræver et
@@ -473,6 +492,12 @@ gennem UI'et. Testen kontrollerer **Betalt**, nul kreditorsaldo, ti afstemte
 bankposter og ét samlet udgifts-/momsbeløb uden gentagelse ved betaling. En
 sidste servergenstart bekræfter gældsregister, rapporter og de uændrede
 originalbytes. Skærmbilledet gemmes i `/tmp/rentemester-rust-payable.png`.
+Bankens saldotest importerer en kassebonbetaling med en eksplicit saldo fra
+kontoudtoget. UI'et viser først differencen, derefter nul difference efter
+bogføring og afstemning. Senere importer uden saldo må ikke få en opdigtet
+slutsaldo. Rust-testen kontrollerer omvendt filrækkefølge, flere konti,
+dubletkonflikt og uafklaret saldogrundlag; UI-testen kontrollerer forklaringen.
+Skærmbilledet gemmes i `/tmp/rentemester-rust-bank-balance.png`.
 Testdata fjernes fra Docker efter kørslen.
 
 ## Aktuel afgrænsning

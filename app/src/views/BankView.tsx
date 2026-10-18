@@ -262,6 +262,8 @@ export function BankView() {
                     would wrongly suggest the import failed. */}
                 {b.actualBalance !== null
                   ? "Seneste saldo fra kontoudtoget"
+                  : b.bankStatementStatus === "unavailable"
+                    ? "Banksaldo kræver afklaring — se beskeden ovenfor"
                   : b.bankStatementStatus === "no-balance-column"
                     ? "Banksaldo ukendt — kontoudtoget havde ingen saldo-kolonne"
                     : "Intet kontoudtog importeret"}
@@ -517,7 +519,7 @@ function BankDifferenceBanner({
       <div className="card bank-diff-banner neutral">
         <span className="flag">Bank</span>
         <p>
-          {noBalanceColumn ? (
+          {bank.bankStatementProblem ? <>{bank.bankStatementProblem} Den faktiske saldo kan endnu ikke sammenlignes med bogføringen.</> : noBalanceColumn ? (
             <>
               Kontoudtoget for {bank.selectedYear} indeholder ingen
               saldo-kolonne, så den faktiske banksaldo er ukendt — kun den

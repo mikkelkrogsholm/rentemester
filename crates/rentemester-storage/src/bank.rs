@@ -217,6 +217,25 @@ pub fn import(
             )
             .map_err(sql)?;
         if exists {
+            if let Some(balance) = &row.balance_after {
+                let stored: Option<Money> = tx
+                    .query_row(
+                        "SELECT balance_after FROM bank_transactions WHERE transaction_hash=?1",
+                        [&hash],
+                        |r| match r.get_ref(0)? {
+                            rusqlite::types::ValueRef::Null => Ok(None),
+                            value => signed_money(value)
+                                .map(Some)
+                                .map_err(|_| rusqlite::Error::InvalidQuery),
+                        },
+                    )
+                    .map_err(sql)?;
+                if stored.as_ref() != Some(balance) {
+                    return Err(fail(
+                        "duplicate bank transaction has different or previously missing statement balance; source evidence requires explicit correction",
+                    ));
+                }
+            }
             skipped.push(format!(
                 "{} {} {} {}",
                 row.date,
@@ -230,7 +249,7 @@ pub fn import(
             row.booking_date.as_deref().unwrap_or(&row.date),
             month as u32,
         )?;
-        tx.execute("INSERT INTO bank_transactions(transaction_date,booking_date,text,amount,currency,reference,amount_dkk,fx_rate_to_dkk,source_file_hash,import_batch_id,transaction_hash,status,retain_until,bank_account_id) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,'imported',?12,?13)",params![row.date,row.booking_date,row.text,crate::journal_post::money(&row.amount)?,row.currency,row.reference,row.amount_dkk.as_ref().map(crate::journal_post::money).transpose()?,row.rate.as_ref().map(crate::journal_post::rate).transpose()?,source_hash,batch,hash,retain,account_id]).map_err(sql)?;
+        tx.execute("INSERT INTO bank_transactions(transaction_date,booking_date,text,amount,currency,reference,amount_dkk,fx_rate_to_dkk,source_file_hash,import_batch_id,transaction_hash,status,retain_until,bank_account_id,balance_after) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,'imported',?12,?13,?14)",params![row.date,row.booking_date,row.text,crate::journal_post::money(&row.amount)?,row.currency,row.reference,row.amount_dkk.as_ref().map(crate::journal_post::money).transpose()?,row.rate.as_ref().map(crate::journal_post::rate).transpose()?,source_hash,batch,hash,retain,account_id,row.balance_after.as_ref().map(crate::journal_post::money).transpose()?]).map_err(sql)?;
         imported += 1;
     }
     audit(
@@ -282,28 +301,306 @@ pub fn read(
     let start = year.start.to_string();
     let end = year.end.to_string();
     let all_accounts = accounts(tx, slug)?;
-    let mut q=tx.prepare("SELECT bt.id,bt.transaction_date,bt.text,COALESCE(bt.amount_dkk,bt.amount),br.journal_entry_no FROM bank_transactions bt LEFT JOIN bank_journal_reconciliations br ON br.bank_transaction_id=bt.id WHERE bt.transaction_date BETWEEN ?1 AND ?2 ORDER BY bt.transaction_date,bt.id").map_err(sql)?;
-    let transactions=q.query_map(params![start,end],|r|{let journal:Option<String>=r.get(4)?;Ok(json!({"id":r.get::<_,i64>(0)?,"date":r.get::<_,String>(1)?,"text":r.get::<_,String>(2)?,"amount":r.get::<_,f64>(3)?,"runningBalance":Value::Null,"reconciliationStatus":if journal.is_some(){"matched"}else{"unmatched"},"journalEntryNo":journal}))}).map_err(sql)?.collect::<Result<Vec<_>,_>>().map_err(sql)?;
+    let mut q=tx.prepare("SELECT bt.id,bt.transaction_date,bt.text,COALESCE(bt.amount_dkk,bt.amount),br.journal_entry_no,bt.balance_after,bt.currency,ba.currency FROM bank_transactions bt LEFT JOIN bank_accounts ba ON ba.id=bt.bank_account_id LEFT JOIN bank_journal_reconciliations br ON br.bank_transaction_id=bt.id WHERE bt.transaction_date BETWEEN ?1 AND ?2 ORDER BY bt.transaction_date,bt.id").map_err(sql)?;
+    let transactions=q.query_map(params![start,end],|r|{let journal:Option<String>=r.get(4)?;Ok(json!({"id":r.get::<_,i64>(0)?,"date":r.get::<_,String>(1)?,"text":r.get::<_,String>(2)?,"amount":r.get::<_,f64>(3)?,"runningBalance":if r.get::<_,Option<String>>(7)?.as_deref().unwrap_or(&r.get::<_,String>(6)?)=="DKK" {r.get::<_,Option<f64>>(5)?}else{None},"reconciliationStatus":if journal.is_some(){"matched"}else{"unmatched"},"journalEntryNo":journal}))}).map_err(sql)?.collect::<Result<Vec<_>,_>>().map_err(sql)?;
     let matched = transactions
         .iter()
         .filter(|v| v["reconciliationStatus"] == "matched")
         .count();
     let mut booked = Money::default();
-    let mut balances=tx.prepare("SELECT jl.debit_amount,jl.credit_amount FROM journal_lines jl JOIN journal_entries je ON je.id=jl.journal_entry_id JOIN accounts a ON a.id=jl.account_id WHERE je.status IN ('posted','reversed') AND je.transaction_date<=?1 AND a.account_no IN (SELECT ledger_account_no FROM bank_accounts WHERE ledger_account_no IS NOT NULL)").map_err(sql)?;
+    let mut balances=tx.prepare("SELECT jl.debit_amount,jl.credit_amount FROM journal_lines jl JOIN journal_entries je ON je.id=jl.journal_entry_id JOIN accounts a ON a.id=jl.account_id WHERE je.status IN ('posted','reversed') AND je.transaction_date<=?1 AND a.account_no IN (SELECT ledger_account_no FROM bank_accounts WHERE ledger_account_no IS NOT NULL UNION SELECT account_no FROM account_role_mappings WHERE role='bank' AND status='confirmed')").map_err(sql)?;
     let mut rows = balances.query([&end]).map_err(sql)?;
     while let Some(r) = rows.next().map_err(sql)? {
         booked.add(&crate::legacy_money(r.get_ref(0).map_err(sql)?)?);
         booked.add(&Money::default().subtract(&crate::legacy_money(r.get_ref(1).map_err(sql)?)?));
     }
+    let statement = statement_balance(tx, &end)?;
+    let difference = statement
+        .balance
+        .as_ref()
+        .map(|balance| crate::cockpit::number(&booked.subtract(balance)))
+        .transpose()?;
     let fiscal_years:Vec<_>=years.values().map(|y|json!({"label":y.display_label,"start":y.start.to_string(),"end":y.end.to_string(),"source":"live"})).collect();
     Ok(
-        json!({"slug":slug,"selectedYear":label,"archived":false,"company":all_accounts["company"],"fiscalYears":fiscal_years,"periodStart":start,"periodEnd":end,"accounts":all_accounts["accounts"],"bookedBalance":crate::cockpit::number(&booked)?,"actualBalance":Value::Null,"difference":Value::Null,"bankStatementStatus":if transactions.is_empty(){"none"}else{"no-balance-column"},"matchedCount":matched,"unmatchedCount":transactions.len()-matched,"transactions":transactions}),
+        json!({"slug":slug,"selectedYear":label,"archived":false,"company":all_accounts["company"],"fiscalYears":fiscal_years,"periodStart":start,"periodEnd":end,"accounts":all_accounts["accounts"],"bookedBalance":crate::cockpit::number(&booked)?,"actualBalance":statement.balance.as_ref().map(crate::cockpit::number).transpose()?,"difference":difference,"bankStatementStatus":statement.status,"bankStatementProblem":statement.problem,"matchedCount":matched,"unmatchedCount":transactions.len()-matched,"transactions":transactions}),
     )
+}
+
+/// Independent statement evidence; never synthesize a closing balance from the ledger.
+pub(crate) struct StatementBalance {
+    pub balance: Option<Money>,
+    pub status: &'static str,
+    pub problem: Option<String>,
+}
+pub(crate) fn statement_balance(
+    tx: &Transaction<'_>,
+    cutoff: &str,
+) -> Result<StatementBalance, Error> {
+    let missing = |problem: String| StatementBalance {
+        balance: None,
+        status: "unavailable",
+        problem: Some(problem),
+    };
+    let any: bool = tx
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM bank_transactions WHERE transaction_date<=?1)",
+            [cutoff],
+            |r| r.get(0),
+        )
+        .map_err(sql)?;
+    if !any {
+        return Ok(StatementBalance {
+            balance: None,
+            status: "none",
+            problem: None,
+        });
+    }
+    let balances:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM bank_transactions WHERE transaction_date<=?1 AND balance_after IS NOT NULL)",[cutoff],|r|r.get(0)).map_err(sql)?;
+    if !balances {
+        return Ok(StatementBalance {
+            balance: None,
+            status: "no-balance-column",
+            problem: None,
+        });
+    }
+    let mut q=tx.prepare("SELECT id,name,currency FROM bank_accounts WHERE ledger_account_no IS NOT NULL OR EXISTS(SELECT 1 FROM bank_transactions t WHERE t.bank_account_id=bank_accounts.id AND t.transaction_date<=?1) ORDER BY id").map_err(sql)?;
+    let mut streams = q
+        .query_map([cutoff], |r| {
+            Ok((
+                Some(r.get::<_, i64>(0)?),
+                r.get::<_, String>(1)?,
+                r.get::<_, String>(2)?,
+            ))
+        })
+        .map_err(sql)?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(sql)?;
+    let unassigned:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM bank_transactions WHERE bank_account_id IS NULL AND transaction_date<=?1)",[cutoff],|r|r.get(0)).map_err(sql)?;
+    if unassigned {
+        if !streams.is_empty() {
+            return Ok(missing("Kontoudtoget indeholder både tilknyttede og ikke-tilknyttede bankkonti. Saldoernes sammenhæng skal afklares.".into()));
+        }
+        streams.push((None, "Ikke tilknyttet bankkonto".into(), "DKK".into()));
+    }
+    if streams.is_empty() {
+        return Ok(missing(
+            "Kontoudtogets bankkonto kan ikke bestemmes.".into(),
+        ));
+    }
+    let mut total = Money::default();
+    for (account, name, currency) in streams {
+        if currency != "DKK" {
+            return Ok(missing(format!(
+                "Kontoudtogets saldo for {name} er i {currency}; en uafhængig DKK-slutsaldo mangler."
+            )));
+        }
+        let latest:Option<String>=tx.query_row("SELECT MAX(transaction_date) FROM bank_transactions WHERE bank_account_id IS ?1 AND transaction_date<=?2",params![account,cutoff],|r|r.get(0)).map_err(sql)?;
+        let Some(latest) = latest else {
+            return Ok(missing(format!("Der mangler et kontoudtog for {name}.")));
+        };
+        let mut q=tx.prepare("SELECT COALESCE(amount_dkk,amount),balance_after,currency FROM bank_transactions WHERE bank_account_id IS ?1 AND transaction_date=?2 ORDER BY id").map_err(sql)?;
+        let mut rows = q.query(params![account, latest]).map_err(sql)?;
+        let mut candidates = vec![];
+        while let Some(row) = rows.next().map_err(sql)? {
+            if account.is_none() && row.get::<_, String>(2).map_err(sql)? != "DKK" {
+                return Ok(missing(
+                    "Bankkontoens saldovaluta skal afklares før en DKK-sammenligning.".into(),
+                ));
+            }
+            let amount = signed_money(row.get_ref(0).map_err(sql)?)?;
+            if row.get_ref(1).map_err(sql)? == rusqlite::types::ValueRef::Null {
+                return Ok(missing(format!(
+                    "Der mangler saldi på bankposter for {name} den {latest}."
+                )));
+            }
+            let balance = signed_money(row.get_ref(1).map_err(sql)?)?;
+            candidates.push((amount, balance));
+        }
+        let before: std::collections::HashSet<_> = candidates
+            .iter()
+            .map(|(amount, balance)| balance.subtract(amount).decimal())
+            .collect();
+        let endpoints: Vec<_> = candidates
+            .iter()
+            .filter(|(_, balance)| !before.contains(&balance.decimal()))
+            .collect();
+        if endpoints.len() != 1 {
+            return Ok(missing(format!(
+                "Rækkefølgen i kontoudtoget for {name} den {latest} giver ikke en entydig slutsaldo."
+            )));
+        }
+        // A terminal balance alone is insufficient if unrelated or branching
+        // row fragments were mixed into the same account/day.
+        let mut degree: HashMap<String, i64> = HashMap::new();
+        let mut adjacent: HashMap<String, Vec<String>> = HashMap::new();
+        for (amount, balance) in &candidates {
+            let from = balance.subtract(amount).decimal();
+            let to = balance.decimal();
+            *degree.entry(from.clone()).or_default() += 1;
+            *degree.entry(to.clone()).or_default() -= 1;
+            adjacent.entry(from.clone()).or_default().push(to.clone());
+            adjacent.entry(to).or_default().push(from);
+        }
+        let end = endpoints[0].1.decimal();
+        let mut seen = std::collections::HashSet::new();
+        let mut pending = vec![end.clone()];
+        while let Some(node) = pending.pop() {
+            if seen.insert(node.clone()) {
+                pending.extend(
+                    adjacent
+                        .get(&node)
+                        .into_iter()
+                        .flatten()
+                        .filter(|n| !seen.contains(*n))
+                        .cloned(),
+                );
+            }
+        }
+        if seen.len() != degree.len()
+            || degree.values().filter(|v| **v == 1).count() != 1
+            || degree.get(&end) != Some(&-1)
+            || degree.values().any(|v| !(-1..=1).contains(v))
+            || degree.values().filter(|v| **v == -1).count() != 1
+        {
+            return Ok(missing(format!(
+                "Saldoerne i kontoudtoget for {name} den {latest} hænger ikke sammen i ét forløb."
+            )));
+        }
+        total.add(&endpoints[0].1);
+    }
+    Ok(StatementBalance {
+        balance: Some(total),
+        status: "known",
+        problem: None,
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn independent_statement_balance_ignores_import_order_and_refuses_missing_or_ambiguous_evidence()
+     {
+        let mut control = rusqlite::Connection::open_in_memory().unwrap();
+        let mut db = rusqlite::Connection::open_in_memory().unwrap();
+        crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic Bank").unwrap();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        tx.execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('A','Synthetic bank','asset','debit');").unwrap();
+        let account = |name: &str| {
+            serde_json::from_value::<AccountInput>(json!({"name":name,"ledgerAccountNo":"A"}))
+                .unwrap()
+        };
+        create_account(&tx, &account("First"), "synthetic").unwrap();
+        // The ending row comes first: insertion order cannot pick the balance.
+        let csv = "date;text;amount;saldo\n2026-10-18;Synthetic outgoing;-250;750\n2026-10-18;Synthetic incoming;1000;1000\n";
+        let rows = rentemester_engine::bank::parse(csv).unwrap();
+        import(
+            &tx,
+            csv,
+            &rows,
+            Some("first"),
+            "synthetic",
+            "2026-10-18T12:00:00Z",
+            "synthetic-original",
+        )
+        .unwrap();
+        let value = read(&tx, "synthetic", "2026-10-18", None).unwrap();
+        assert_eq!(value["actualBalance"].as_f64(), Some(750.0));
+        assert_eq!(value["difference"].as_f64(), Some(-750.0));
+        assert_eq!(
+            value["transactions"][0]["runningBalance"].as_f64(),
+            Some(750.0)
+        );
+        assert_eq!(
+            import(
+                &tx,
+                csv,
+                &rows,
+                Some("first"),
+                "synthetic",
+                "2026-10-18T12:00:00Z",
+                "synthetic-original"
+            )
+            .unwrap()["imported"],
+            0
+        );
+        let changed = csv.replace(";750\n", ";751\n");
+        assert!(
+            import(
+                &tx,
+                &changed,
+                &rentemester_engine::bank::parse(&changed).unwrap(),
+                Some("first"),
+                "synthetic",
+                "2026-10-18T12:00:00Z",
+                "synthetic-original"
+            )
+            .is_err()
+        );
+        create_account(&tx, &account("Second"), "synthetic").unwrap();
+        assert_eq!(
+            read(&tx, "synthetic", "2026-10-18", None).unwrap()["bankStatementStatus"],
+            "unavailable"
+        );
+        let second =
+            "date;text;amount;balance_after\n2026-10-18;Synthetic second account;100;100\n";
+        import(
+            &tx,
+            second,
+            &rentemester_engine::bank::parse(second).unwrap(),
+            Some("second"),
+            "synthetic",
+            "2026-10-18T12:00:00Z",
+            "synthetic-original",
+        )
+        .unwrap();
+        assert_eq!(
+            read(&tx, "synthetic", "2026-10-18", None).unwrap()["actualBalance"].as_f64(),
+            Some(850.0)
+        );
+        let ambiguous = "date;text;amount;balance_after\n2026-10-19;Synthetic ambiguous first;100;100\n2026-10-19;Synthetic ambiguous second;50;250\n";
+        import(
+            &tx,
+            ambiguous,
+            &rentemester_engine::bank::parse(ambiguous).unwrap(),
+            Some("first"),
+            "synthetic",
+            "2026-10-19T12:00:00Z",
+            "synthetic-original",
+        )
+        .unwrap();
+        let value = read(&tx, "synthetic", "2026-10-19", None).unwrap();
+        assert_eq!(value["actualBalance"], Value::Null);
+        assert_eq!(value["difference"], Value::Null);
+        assert_eq!(value["bankStatementStatus"], "unavailable");
+        assert!(
+            value["bankStatementProblem"]
+                .as_str()
+                .unwrap()
+                .contains("entydig")
+        );
+        let disconnected = "date;text;amount;balance_after\n2026-10-20;Synthetic cycle one;100;100\n2026-10-20;Synthetic cycle two;-100;0\n2026-10-20;Synthetic disconnected;50;250\n";
+        import(
+            &tx,
+            disconnected,
+            &rentemester_engine::bank::parse(disconnected).unwrap(),
+            Some("first"),
+            "synthetic",
+            "2026-10-20T12:00:00Z",
+            "synthetic-original",
+        )
+        .unwrap();
+        let value = read(&tx, "synthetic", "2026-10-20", None).unwrap();
+        assert_eq!(value["actualBalance"], Value::Null);
+        assert!(
+            value["bankStatementProblem"]
+                .as_str()
+                .unwrap()
+                .contains("hænger ikke sammen")
+        );
+    }
     #[test]
     fn repeated_identical_payments_keep_occurrences_and_account_identity() {
         let mut control = rusqlite::Connection::open_in_memory().unwrap();

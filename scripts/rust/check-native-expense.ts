@@ -3,7 +3,7 @@ import type { Page } from "@playwright/test";
 export async function checkNativeExpense(page: Page, base: string, reopened = false) {
   const headers = { origin: base, "content-type": "application/json" };
   const today = new Date().toISOString().slice(0, 10);
-  const csv = `dato;tekst;beløb;valuta\n${today};Synthetic office payment;-250,00;DKK\n`;
+  const csv = `dato;tekst;beløb;valuta;saldo\n${today};Synthetic office payment;-250,00;DKK;-250,00\n`;
   const list = await (await page.request.get(`${base}/api/companies/synthetic/documents`)).json();
   const document = list.documents.documents.find((d: { filename: string }) => d.filename === "synthetic-native-receipt.txt");
   if (!document) throw new Error("Missing receipt for expense journey");
@@ -26,7 +26,10 @@ export async function checkNativeExpense(page: Page, base: string, reopened = fa
     await dialog.getByText(/1 transaktion importeret/).waitFor().catch(async (error) => { console.error(await dialog.innerText()); throw error; });
     await dialog.getByRole("button", { name: "Luk", exact: true }).click();
     await page.getByText("Synthetic office payment", { exact: true }).waitFor();
-    console.log("Browser: real CSV payment imported");
+    const unmatched=await(await page.request.get(`${base}/api/companies/synthetic/bank`)).json();
+    if(unmatched.bank.actualBalance!==-250||unmatched.bank.bookedBalance!==0||unmatched.bank.difference!==250)throw new Error("Imported independent statement balance missing before booking");
+    await page.getByText("Difference",{exact:true}).first().waitFor();
+    console.log("Browser: real CSV payment with independent closing balance imported; unbooked difference visible");
     const options = await (await page.request.get(`${base}/api/companies/synthetic/documents/${document.id}/booking-options`)).json();
     const bank = options.options.unmatchedOutgoingBank.find((row: { text: string }) => row.text === "Synthetic office payment");
     if (!bank) throw new Error("Imported payment not offered for voucher match");
@@ -52,7 +55,9 @@ export async function checkNativeExpense(page: Page, base: string, reopened = fa
   const row = page.getByRole("row").filter({ hasText: "Synthetic office payment" });
   await row.waitFor();
   const bank = await (await page.request.get(`${base}/api/companies/synthetic/bank`)).json();
-  if (bank.bank.transactions.length !== 1 || bank.bank.matchedCount !== 1 || bank.bank.unmatchedCount !== 0 || bank.bank.bookedBalance !== -250 || bank.bank.actualBalance !== null) throw new Error(`Bank match/balance response: ${JSON.stringify(bank.bank)}`);
+  if (bank.bank.transactions.length !== 1 || bank.bank.matchedCount !== 1 || bank.bank.unmatchedCount !== 0 || bank.bank.bookedBalance !== -250 || bank.bank.actualBalance !== -250 || bank.bank.difference !== 0 || bank.bank.bankStatementStatus !== "known") throw new Error(`Bank match/balance response: ${JSON.stringify(bank.bank)}`);
+  await page.getByText(/Kontoudtog og bogført saldo stemmer/).waitFor();
+  await page.screenshot({path:"/tmp/rentemester-rust-bank-balance.png",fullPage:true});
   await page.goto(`${base}/companies/synthetic/resultatopgorelse`);
   await page.getByRole("heading", { name: "Resultatopgørelse", exact: true }).waitFor();
   await page.getByText("Synthetic office supplies", { exact: true }).waitFor();

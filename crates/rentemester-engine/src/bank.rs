@@ -8,6 +8,7 @@ pub struct Row {
     pub amount: Money,
     pub currency: String,
     pub reference: Option<String>,
+    pub balance_after: Option<Money>,
     pub amount_dkk: Option<Money>,
     pub rate: Option<FxRate>,
 }
@@ -32,6 +33,7 @@ fn canonical(value: &str) -> String {
         "valuta" => "currency",
         "ref" | "bilagsnummer" => "reference",
         "belob_dkk" => "amount_dkk",
+        "saldo" | "balance" | "running_balance" => "balance_after",
         "kurs" | "valutakurs" => "fx_rate_to_dkk",
         _ => return key,
     }
@@ -263,6 +265,9 @@ pub fn parse(content: &str) -> Result<Vec<Row>, Error> {
             amount,
             currency,
             reference: optional("reference"),
+            balance_after: optional("balance_after")
+                .map(|s| numeric(&s).and_then(|v| Money::parse(&v)))
+                .transpose()?,
             amount_dkk,
             rate,
         });
@@ -275,6 +280,25 @@ pub fn parse(content: &str) -> Result<Vec<Row>, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn optional_localized_statement_balance_is_preserved_not_inferred() {
+        let rows =
+            parse("dato;tekst;beløb;saldo\n2026-10-18;Synthetic outgoing;250,00-;1.250,50-\n")
+                .unwrap();
+        assert_eq!(
+            rows[0].balance_after.as_ref().unwrap().decimal(),
+            "-1250.50"
+        );
+        assert!(
+            parse("date;text;amount\n2026-10-18;Synthetic no balance;1\n").unwrap()[0]
+                .balance_after
+                .is_none()
+        );
+        assert!(
+            parse("date;text;amount;balance_after\n2026-10-18;Synthetic invalid;1;unknown\n")
+                .is_err()
+        );
+    }
     #[test]
     fn quoted_multiline_localized_amounts_and_dates() {
         let rows=parse("\u{feff}Dato;Tekst;Beløb\r\n18.10.2026;\"Synthetic; supplies\nsecond line\";1.234,56-\r\n").unwrap();

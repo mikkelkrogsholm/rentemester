@@ -46,7 +46,8 @@ export type CompanyBank = {
    *    no balance column, so the bank saldo is unknown (NOT "not imported");
    *  - `none`              — no bank statement has been imported at all.
    */
-  bankStatementStatus: "known" | "no-balance-column" | "none";
+  bankStatementStatus: "known" | "no-balance-column" | "none" | "unavailable";
+  bankStatementProblem?: string | null;
   transactions: BankTransactionRow[];
   matchedCount: number;
   unmatchedCount: number;
