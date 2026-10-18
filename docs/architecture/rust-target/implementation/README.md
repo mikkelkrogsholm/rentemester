@@ -178,3 +178,7 @@ The [http-login contract](http-login/CONTRACT.md) adds admitted native passwordâ
 ## Password-bound HTTP MFA enrollment
 
 The [http-enrollment contract](http-enrollment/CONTRACT.md) connects native password-bound setup and one-time confirmation to the retained React login path. Begin issues only pending cookie/URI; confirmation issues browser session and ten codes after known commit. Manual-key instructions, login/restart escape and explicit saved-code acknowledgement complete the setup flow; unknown results never replay or redisclose. Real WAL/DELETE HTTP covers separate ceremony contexts, preserved restart budgets, races and observed commit-unknown at both stages. Product context, email verification, physical admission, deployment and complete epic acceptance remain pending.
+
+## Native email token prerequisite
+
+The [email-token contract](email-token/CONTRACT.md) provides source-readable HS256 with mandatory native purpose/workspace/random nonce and strict single-hour time/profile validation. It is crypto metadata only. Native email verification still requires persistent issuance bound to current subject/email/credential/lifecycle, atomic one-time consumption, fresh writer-time checks, mail/HTTP and legacy verification-route closure. The legacy handler ignores extra claims, so interop does not qualify coexistence. Full epic remains active.

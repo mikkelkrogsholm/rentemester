@@ -1,0 +1,63 @@
+{
+  "result": "PASS",
+  "material_findings": [],
+  "native": {
+    "passed": 4,
+    "ignored": 1
+  },
+  "source_process_checks": 24,
+  "evidence": [
+    "/tmp/rm-email-token-review-native.txt",
+    "/tmp/rm-email-token-review-process.json"
+  ],
+  "scope": "Crypto envelope only; no persisted issuance/consumption or HTTP identity authority",
+  "future_integration_requirements": [
+    "Recheck expiry at writer admission, not merely signer.accepts(proof), which checks workspace/key only",
+    "Bind recorded issuance to concrete subject/current email/credential-lifecycle; consume atomically and distinguish unknown commit",
+    "Prevent existing Better Auth verify-email from bypassing native context during coexistence: source intentionally accepts native envelope and ignores added claims",
+    "Keep legacy/change-email and Unicode/full user lookup policy exclusions explicit"
+  ],
+  "sha256": {
+    "crates/rentemester-runtime/src/email_token.rs": "f11151091ed34c800e372c96c3cac93e1fca4222c5b61048dfc1dcfa8ebf0905",
+    "crates/rentemester-runtime/src/email_token/tests.rs": "07664382c2122a723ddb09b76d7a6621ac55205e94b86cfa7b2e2894178a6e24",
+    "crates/rentemester-runtime/src/lib.rs": "44983147408f049c36cd9ba250179bc2e75d083cac6fbc71c4a5113713d3d145",
+    "scripts/rust/verify-email-token.ts": "2a16828320a627bd19a1c679172b7195795ed1505beaa1c98cf398493873e432",
+    "scripts/rust/verify.ts": "70af5c51025b9660310f0e0be7513d4c8be15e22410facf5836fc4f4838b5d35",
+    "docs/architecture/rust-target/implementation/email-token/CONTRACT.md": "640f1e5175dde6e456323455f8ba28c6445770e27f6b73131f3ef64ae06ee1a7",
+    "docs/architecture/rust-target/implementation/email-token/gdd.json": "423bb83fe60e6df04393125f0dd92f8c8021b792197ddf168451e1c51cfc7654",
+    "docs/architecture/rust-target/implementation/email-token/readiness.json": "919aea52a71cf87f8e9faca7065ff3395c67c7066cfdac22a9f93967f8291743",
+    "docs/architecture/rust-target/implementation/README.md": "bee00273d8af0685648aa42d6aa8af2a35a18e5b32063721e32188dc1ba3dc15",
+    "crates/rentemester-server/src/tests.rs": "d6de50623c40ccc22240d423a9253c6ec8dacca44429e9e962d22d837b15e762"
+  },
+  "reviewed_at_utc": "2026-10-18T01:21:01.592267+00:00",
+  "previous_sha256": {
+    "crates/rentemester-runtime/src/email_token.rs": "f11151091ed34c800e372c96c3cac93e1fca4222c5b61048dfc1dcfa8ebf0905",
+    "crates/rentemester-runtime/src/email_token/tests.rs": "07664382c2122a723ddb09b76d7a6621ac55205e94b86cfa7b2e2894178a6e24",
+    "crates/rentemester-runtime/src/lib.rs": "44983147408f049c36cd9ba250179bc2e75d083cac6fbc71c4a5113713d3d145",
+    "scripts/rust/verify-email-token.ts": "2a16828320a627bd19a1c679172b7195795ed1505beaa1c98cf398493873e432",
+    "scripts/rust/verify.ts": "70af5c51025b9660310f0e0be7513d4c8be15e22410facf5836fc4f4838b5d35",
+    "docs/architecture/rust-target/implementation/email-token/CONTRACT.md": "748767c5e3fa5bf49bbaca1570e32c6841b6b9fedec1ddc2977a3edd7a229c89"
+  },
+  "functional_hashes_unchanged": true,
+  "final_repeat": {
+    "native_passed": 4,
+    "native_ignored": 1,
+    "source_process_checks": 24
+  },
+  "gdd": {
+    "result": "PASS",
+    "checks": 3,
+    "spec_revision": "sha256:6bc07db5d65ac935b5ecac1cd42b3b1d9944b73302487c16798d2fa3c7884324",
+    "matches_repository_report": true,
+    "contract_source_hash_matches": true
+  },
+  "integration_gates_documented": true,
+  "server_regression_repair": {
+    "result": "PASS",
+    "native_passed": 25,
+    "ignored": 2,
+    "evidence": "/tmp/rm-email-token-review-server.txt",
+    "review": "Only test repair: accepts complete framed fixed HTTP refusal before TCP reset, still requires exact 413/408 status, unique matching Content-Length, complete expected body, and original 408 elapsed bounds. Truncation errors still fail; production unchanged.",
+    "verified_at_utc": "2026-10-18T01:23:24.577411+00:00"
+  }
+}

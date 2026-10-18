@@ -329,13 +329,44 @@ async fn chunked_limit_and_slow_body_use_real_socket() {
     let address = o.strip_prefix("http://").unwrap().to_owned();
     let origin = o.clone();
     tokio::task::spawn_blocking(move || {
-        use std::io::{Read,Write};
-        let mut socket=std::net::TcpStream::connect(&address).unwrap();socket.set_read_timeout(Some(Duration::from_secs(5))).unwrap();
+        use std::io::{BufRead, BufReader, Read, Write};
+        fn read_refusal(socket: std::net::TcpStream, status: u16) {
+            // Early body rejection may close with RST after the complete response. Read exact
+            // HTTP framing instead of requiring a clean TCP EOF; truncated replies still fail.
+            let mut reader = BufReader::new(socket);
+            let mut line = String::new();
+            reader.read_line(&mut line).unwrap();
+            assert!(line.starts_with(&format!("HTTP/1.1 {status} ")));
+            let mut length = None;
+            let mut complete = false;
+            for _ in 0..64 {
+                line.clear();
+                assert!(reader.read_line(&mut line).unwrap() > 0);
+                assert!(line.len() <= 8192);
+                if line == "\r\n" { complete = true; break; }
+                if let Some((name, value)) = line.split_once(':')
+                    && name.eq_ignore_ascii_case("content-length") {
+                    assert!(length.is_none());
+                    length = Some(value.trim().parse::<usize>().unwrap());
+                }
+            }
+            assert!(complete);
+            let expected = br#"{"code":"request_refused"}"#;
+            assert_eq!(length, Some(expected.len()));
+            let mut body = vec![0; expected.len()];
+            reader.read_exact(&mut body).unwrap();
+            assert_eq!(body, expected);
+        }
+        let mut socket = std::net::TcpStream::connect(&address).unwrap();
+        socket.set_read_timeout(Some(Duration::from_secs(5))).unwrap();
         write!(socket,"POST {PATH} HTTP/1.1\r\nHost: {address}\r\nOrigin: {origin}\r\nContent-Type: application/json\r\nTransfer-Encoding: chunked\r\nConnection: close\r\n\r\n2001\r\n{}\r\n0\r\n\r\n","x".repeat(BODY_LIMIT+1)).unwrap();
-        let mut out=String::new();socket.read_to_string(&mut out).unwrap();assert!(out.starts_with("HTTP/1.1 413"));
-        let mut socket=std::net::TcpStream::connect(&address).unwrap();socket.set_read_timeout(Some(Duration::from_secs(5))).unwrap();
+        read_refusal(socket,413);
+        let mut socket = std::net::TcpStream::connect(&address).unwrap();
+        socket.set_read_timeout(Some(Duration::from_secs(5))).unwrap();
         write!(socket,"POST {PATH} HTTP/1.1\r\nHost: {address}\r\nOrigin: {origin}\r\nContent-Type: application/json\r\nContent-Length: 100\r\nConnection: close\r\n\r\n{{").unwrap();
-        let now=Instant::now();let mut out=String::new();socket.read_to_string(&mut out).unwrap();assert!(out.starts_with("HTTP/1.1 408"));assert!(now.elapsed()>=Duration::from_millis(1800)&&now.elapsed()<Duration::from_secs(5));
+        let now=Instant::now();
+        read_refusal(socket,408);
+        assert!(now.elapsed()>=Duration::from_millis(1800)&&now.elapsed()<Duration::from_secs(5));
     }).await.unwrap();
     server.abort();
 }

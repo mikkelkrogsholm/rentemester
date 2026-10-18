@@ -1,0 +1,11 @@
+    Finished `release` profile [optimized] target(s) in 0.11s
+     Running unittests src/lib.rs (target/release/deps/rentemester_runtime-b57e689831c555d0)
+
+running 5 tests
+test email_token::tests::probe ... ignored, synthetic private JWT protocol selected by installed-source oracle
+test email_token::tests::invalid_config_clock_and_coordinate_refuse ... ok
+test email_token::tests::compact_input_is_bounded_canonical_and_authenticated ... ok
+test email_token::tests::fresh_nonce_current_window_and_bound_proof ... ok
+test email_token::tests::signed_ambiguity_and_other_purposes_are_refused ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 32 filtered out; finished in 0.00s

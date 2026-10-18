@@ -1,0 +1,68 @@
+{
+  "increment": "email-token-1",
+  "code_revision": "sha256:df420f2d6ab38f1c8bff3d2815658cb3a7db728fde812afeefc365894c6cc808",
+  "spec_revision": "sha256:6bc07db5d65ac935b5ecac1cd42b3b1d9944b73302487c16798d2fa3c7884324",
+  "state": "verified-native-purpose-bound-email-token-prerequisite",
+  "checks": {
+    "native_tests_passed": 123,
+    "ignored_subprocess_helpers": 23,
+    "integration_checks": 11739,
+    "email_token_source_checks": 24,
+    "independent_native_token_tests": 4,
+    "independent_server_tests": 25,
+    "GDD_structural_checks": 3,
+    "strict_fmt_clippy_boundaries_runtime_typecheck_lint": "PASS"
+  },
+  "verification_environment": {
+    "RUST_TEST_THREADS": "2",
+    "initial_full_failure": "Existing socket test required TCP EOF after complete early refusal; repaired exact HTTP framing, independently verified; logs retained",
+    "second_fast_failure": "Clippy nested-if in new test helper fixed without suppression"
+  },
+  "claims": [
+    "Source-readable HS256 active-key JWT envelope with mandatory nativepurpose/workspace/random256bitnonce and exact hour timing",
+    "Strict bounded canonical compact input and signed JSON duplicate/unknown/algorithm/claim/type/lifetime/purpose/workspace/key refusal",
+    "Native proof binds signer key/workspace and carries metadata/digest only; not principal/current-user/replay/consumption authority",
+    "Actual installed signer and readers interoperate with native profile; legacy stateless/change-email/missing-time envelopes deliberately refused",
+    "Existing rawsocket tests now require a complete exact HTTP refusal without a clean TCP EOF requirement; real body limit and408 deadline preserved"
+  ],
+  "limits": [
+    "Crypto metadata only; no native email issuance/consumption/current-user update, HTTP/mail, role/MFA/session authority or full R04/R41/R42 acceptance",
+    "Future admitted writer must bind persisted issuance to current subject/email/credential/lifecycle, recheck time and consume once with known/unknown commit semantics",
+    "Legacy verify-email accepts native JWT and ignores added context claims; close that authoritative bypass before native verification enablement",
+    "Only active configured key, no retained-key fallback or legacy/change-email token adoption; coordinate validation is not complete storage email/user policy",
+    "Owned sensitive buffers zeroize where supported, not all parser/library/allocator copies or whole-operation constant-time",
+    "No actual writer/lifetime/product deployment, real-data migration or external email; full Rust engine/server/CLI/MCP/React/GPUI/platform/distribution/cutover remains required",
+    "Graphify AST and two current Markdown semantic sources refreshed; generated JSON/logs and unrelated/historical docs outside semantic refresh"
+  ],
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": {
+    "crates/rentemester-runtime/src/email_token.rs": "f11151091ed34c800e372c96c3cac93e1fca4222c5b61048dfc1dcfa8ebf0905",
+    "crates/rentemester-runtime/src/email_token/tests.rs": "07664382c2122a723ddb09b76d7a6621ac55205e94b86cfa7b2e2894178a6e24",
+    "crates/rentemester-runtime/src/lib.rs": "44983147408f049c36cd9ba250179bc2e75d083cac6fbc71c4a5113713d3d145",
+    "crates/rentemester-server/src/tests.rs": "d6de50623c40ccc22240d423a9253c6ec8dacca44429e9e962d22d837b15e762",
+    "docs/architecture/rust-target/implementation/README.md": "bee00273d8af0685648aa42d6aa8af2a35a18e5b32063721e32188dc1ba3dc15",
+    "docs/architecture/rust-target/implementation/email-token/CONTRACT.md": "640f1e5175dde6e456323455f8ba28c6445770e27f6b73131f3ef64ae06ee1a7",
+    "docs/architecture/rust-target/implementation/email-token/gdd.json": "423bb83fe60e6df04393125f0dd92f8c8021b792197ddf168451e1c51cfc7654",
+    "docs/architecture/rust-target/implementation/email-token/readiness.json": "919aea52a71cf87f8e9faca7065ff3395c67c7066cfdac22a9f93967f8291743",
+    "node_modules/better-auth/dist/api/routes/email-verification.mjs": "f240c0d7e592edecaec282658e0ae217e14564f574a37d6055755c8404a6afee",
+    "node_modules/better-auth/dist/crypto/jwt.mjs": "21850eb3477ea95a75bb691da39ce61ad82cc4f5313ddf0b0473a3fec22f536e",
+    "node_modules/jose/dist/webapi/jwt/verify.js": "b5e1af340cb1567a9c805ac1917c0ab1cb362bfecaea0d64d6edf809c0cbc634",
+    "scripts/rust/verify-email-token.ts": "2a16828320a627bd19a1c679172b7195795ed1505beaa1c98cf398493873e432",
+    "scripts/rust/verify.ts": "70af5c51025b9660310f0e0be7513d4c8be15e22410facf5836fc4f4838b5d35",
+    "src/server/better-auth.ts": "9513797eb1b1a82b0c9d592fb00e3317d6d33b6eb29c7bf0c548a0a4c58c9b73"
+  },
+  "evidence_files": {
+    "rust-verify.txt": "2c19390c158ee2f1c41cd1c6be9e4c026a15cfb32ab15fcb3ba52dd36e71846a",
+    "review-native.txt": "1d6d065c534808ee6e7342294caa148d0970cbe98666829764043dde13473b11",
+    "review-process.json": "7b0c0593433a81760678cc41b4c735d19bea6a1490ae4df9c7e6e073b5994da8",
+    "review-checks.json": "887f3c6d81eab69181e25fd27ffeea7ba83bec245f5279785d69995209b19ab9",
+    "review-server.txt": "ec7ea67bff9755dcd7093208ecec18ef725820ea4c879c5a201ae0ed22699776",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "2cc06e473699c3a62b82258c391a5a8a6207051b82ec5200ee58259356ee6785",
+    "initial-rust-verify.txt": "557ff201a5a753e7f12af910639dcc11635c2cd9ea792dcd97120653a4bd47f5",
+    "socket-recheck.txt": "3a5779abae86561863940bf75df0e697df3c48c4e08077d8304cc0dc81bcf3f9",
+    "clippy-repair.txt": "5794ed6cacc492a893d76ecb344e0eb8b4688f7017592c614e69498cad2f40b5"
+  }
+}

@@ -1,0 +1,198 @@
+$ bun run scripts/rust/verify.ts
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.17s
+   Compiling rentemester-runtime v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-runtime)
+   Compiling rentemester-application v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-application)
+   Compiling rentemester-server v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.95s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_application-e7f027843604b45d)
+
+running 15 tests
+test access::tests::company_roles_never_grant_workspace_or_public_permissions ... ok
+test access::tests::reevaluation_observes_revocation_and_never_changes_prior_facts ... ok
+test access::tests::exact_vocabulary_and_slug_grammar ... ok
+test control_fence::tests::child ... ignored, native process fence helper selected by control-fence harness
+test access::tests::unknown_roles_and_nonstring_permissions_refuse ... ok
+test control_fence::tests::cookie_child ... ignored, synthetic cookie/fence process helper selected by session-cookie harness
+test control_fence::tests::committed_cleanup_failure_keeps_committed_value ... ok
+test control_fence::tests::cookie_clock_failure_workspace_binding_and_admission_time ... ok
+test control_fence::tests::current_observation_commit_and_business_rollback ... ok
+test mfa_login::tests::pending_bearer_is_not_a_session_and_binds_signer_profile_key_workspace ... ok
+test mfa_login::tests::probe ... ignored, synthetic enrolled MFA login process helper selected by independent harness
+test password_login::tests::invalid_input_never_calls_continuation ... ok
+test password_login::tests::probe ... ignored, synthetic canonical control native helper selected by independent process harness
+test password_reset::tests::original_utf16_password_policy_precedes_normalization ... ok
+test control_fence::tests::manual_commit_is_unknown_never_false_rollback ... ok
+
+test result: ok. 11 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 0.63s
+
+     Running tests/access_vectors.rs (target/debug/deps/access_vectors-72cc093f6e5abad5)
+
+running 1 test
+test vectors ... ignored, independent access corpus explicitly selected by Bun harness
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/rentemester_rust-fc2dd5def5974b57)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/arithmetic_vectors.rs (target/debug/deps/arithmetic_vectors-ad8ca3bd61f4dd96)
+
+running 3 tests
+test canonical_serde_refuses_coercion_and_keeps_scale ... ok
+test vectors ... ignored, synthetic exact arithmetic corpus helper selected by Bun harness
+test computed_values_roundtrip_beyond_raw_decimal_input_budget ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/fiscal_vectors.rs (target/debug/deps/fiscal_vectors-4353e0a459b8bc9b)
+
+running 2 tests
+test vectors ... ignored, synthetic cross-language fixture helper selected by Bun harness
+test serde_values_require_canonical_typed_inputs ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/manual_journal_vectors.rs (target/debug/deps/manual_journal_vectors-cc0d5d376f9a2500)
+
+running 2 tests
+test vectors ... ignored, synthetic pure manual journal corpus selected by Bun harness
+test row_identity_wire_is_exact_and_nominal ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rentemester_engine-0c522fa6aa1cc39f)
+
+running 14 tests
+test calendar::tests::deadlines_use_real_target_calendar_and_trimmed_low_years ... ok
+test currency::tests::currency_is_canonical_syntax_not_a_registry_or_normalizer ... ok
+test fiscal_year::tests::canonical_dates_reject_rollover_and_lexical_coercion ... ok
+test decimal::tests::signed_division_is_half_away_and_rejects_zero ... ok
+test fiscal_year::tests::fiscal_boundaries_labels_and_checked_years ... ok
+test fiscal_year::tests::six_month_deadline_preserves_month_end_and_clamps_day ... ok
+test fx::tests::exact_huge_values_and_rate_canonical_boundaries ... ok
+test fx::tests::explicit_quantization_stages_and_exact_fx_halves ... ok
+test identifiers::tests::exact_ids_and_opaque_accounts ... ok
+test money::tests::arbitrary_integer_precision_and_bounded_input ... ok
+test money::tests::exact_rounding_and_no_negative_zero ... ok
+test trial_balance::tests::calendar_boundaries_and_strict_input ... ok
+test trial_balance::tests::independently_rounded_lines_and_touched_accounts ... ok
+test fiscal_year::tests::every_fiscal_start_contains_its_date_and_labels_are_stable ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/rentemester_runtime-ca90c839a114964c)
+
+running 37 tests
+test auth::tests::current_session_proof_binds_workspace_key_profile_and_kind ... ok
+test auth::tests::pure_local_clear_has_no_bearer_and_preserves_selected_profile ... ok
+test auth::tests::independent_python_wire_vectors_and_fixed_errors ... ok
+test auth_mail::tests::probe ... ignored, synthetic TLS gateway process probe selected by independent harness
+test email_token::tests::compact_input_is_bounded_canonical_and_authenticated ... ok
+test email_token::tests::fresh_nonce_current_window_and_bound_proof ... ok
+test email_token::tests::invalid_config_clock_and_coordinate_refuse ... ok
+test email_token::tests::probe ... ignored, synthetic private JWT protocol selected by installed-source oracle
+test auth_mail::tests::gateway_input_refuses_credential_and_url_ambiguity ... ok
+test local::layout::probe ... ignored, synthetic native probe selected by independent manifest harness
+test email_token::tests::signed_ambiguity_and_other_purposes_are_refused ... ok
+test local::layout::tests::binding_preserves_sources_and_holds_ownership_until_drop ... ok
+test local::layout::tests::bounded_manifest_and_selection_have_no_defaults ... ok
+test local::layout::tests::child ... ignored, synthetic layout owner process selected by parent
+test local::layout::tests::canonical_manifest_profile_refuses_coercions_and_ambiguity ... ok
+test local::layout::tests::every_component_change_is_sticky_even_after_restoration ... ok
+test local::layout::tests::every_path_level_refuses_symlinks_and_missing_objects ... ok
+test local::layout::tests::files_refuse_hardlinks_directories_and_fifos_without_blocking ... ok
+test local::layout::tests::manifest_bytes_hardlink_and_root_changes_invalidate ... ok
+test local::layout::tests::real_process_layout_owns_lease_and_kernel_death_releases ... ok
+test local::tests::known_network_and_unknown_families_refuse ... ok
+test local::tests::moved_root_is_permanently_invalid_even_if_returned ... ok
+test local::tests::same_process_exclusion_drop_and_ordinary_close ... ok
+test mfa::enrollment::tests::source_uri_encodes_raw_utf8_and_distinct_path_form_rules ... ok
+test mfa::backup::tests::strict_pool_consumption_preserves_order_and_case ... ok
+test mfa::tests::independent_libsodium_vectors_and_strict_utf8 ... ok
+test mfa::tests::probe ... ignored, synthetic native MFA crypto/OTP probe selected by independent harness
+test mfa::tests::config_and_envelope_grammar_are_fail_closed ... ok
+test mfa::tests::rfc_hotp_totp_and_trusted_clock_refusals ... ok
+test password::tests::canonical_grammar_and_input_bounds_are_explicit ... ok
+test password::tests::probe ... ignored, synthetic native crypto process probe selected by independent harness
+test password::tests::fixed_python_credential_and_missing_hash_refuse_uniformly ... ok
+test recovery::tests::configuration_is_explicit_and_http_is_loopback_development_only ... ok
+test recovery::tests::recovery_bearers_have_source_grammar_and_no_observed_duplicate ... ok
+test recovery::tests::trusted_origins_and_sensitive_links_use_standard_url_boundaries ... ok
+test tests::lexical_roots_are_explicit_and_bound_once ... ok
+test password::tests::unicode17_official_nfkc_vectors ... ok
+
+test result: ok. 31 passed; 0 failed; 6 ignored; 0 measured; 0 filtered out; finished in 16.75s
+
+     Running unittests src/lib.rs (target/debug/deps/rentemester_server-ad0da00fc9fb3cc5)
+
+running 27 tests
+test auth_http::tests::cookie_profile_is_bound_and_browser_lifetime_preserves_signature ... ok
+test auth_http::tests::enrollment_required_clears_previous_identity_without_issuing_session ... ok
+test auth_http::tests::enrollment_routes_require_explicit_trusted_handlers ... ok
+test auth_http::tests::logout_accepts_source_empty_body_and_clears_only_known_outcomes ... ok
+test auth_http::tests::fixed_factor_rate_cannot_be_bypassed_by_forwarded_identity ... ok
+test auth_http::tests::pending_factor_is_not_session_and_success_cookie_has_browser_lifetime ... ok
+test auth_http::tests::probe ... ignored, synthetic admitted native HTTP identity server; private fixture on stdin
+test auth_http::tests::session_navigation_gates_and_head_never_dispatch ... ok
+test auth_http::tests::uncertainty_never_issues_or_clears_authority ... ok
+test auth_http::tests::unsupported_options_and_ambiguous_json_never_dispatch ... ok
+test recovery_tests::callback_decodes_once_refuses_query_ambiguity_and_encoded_token ... ok
+test auth_http::tests::mixed_credentials_never_dispatch_even_with_valid_browser_proofs ... ok
+test recovery_tests::callback_rate_uses_fixed_operation_without_bearer_key ... ok
+test recovery_tests::completion_checks_original_utf16_strict_wire_and_body_token ... ok
+test recovery_tests::real_mail_navigation_redirect_does_not_require_origin ... ok
+test recovery_tests::uncertain_completion_and_bad_callback_never_claim_success_or_replay ... ok
+test recovery_tests::completion_body_limit_origin_and_shared_pool_cancel ... ok
+test tests::chunked_limit_and_slow_body_use_real_socket ... FAILED
+test tests::parallel_rate_admission_never_exceeds_three ... ok
+test tests::probe ... ignored, synthetic native HTTP reset integration server; private fixture paths on stdin only
+test tests::profiles_and_strict_wire_refuse ... ok
+test tests::real_http_ack_and_rate_ignore_forwarded_identity ... ok
+test tests::real_http_body_cap_and_unimplemented_routes ... ok
+test tests::real_http_conceals_failure_stages_and_executor_panic ... ok
+test tests::real_http_refuses_origin_media_and_structural_ambiguity_before_work ... ok
+test tests::cancellation_keeps_permit_until_blocking_work_finishes ... ok
+test tests::sliding_rate_identity_capacity_and_boundary ... ok
+
+failures:
+
+---- tests::chunked_limit_and_slow_body_use_real_socket stdout ----
+
+thread 'tokio-rt-worker' (5630459) panicked at crates/rentemester-server/src/tests.rs:335:67:
+called `Result::unwrap()` on an `Err` value: Os { code: 54, kind: ConnectionReset, message: "Connection reset by peer" }
+
+thread 'tests::chunked_limit_and_slow_body_use_real_socket' (5630458) panicked at crates/rentemester-server/src/tests.rs:339:14:
+called `Result::unwrap()` on an `Err` value: JoinError::Panic(Id(262), "called `Result::unwrap()` on an `Err` value: Os { code: 54, kind: ConnectionReset, message: \"Connection reset by peer\" }", ...)
+
+
+failures:
+    tests::chunked_limit_and_slow_body_use_real_socket
+
+test result: FAILED. 24 passed; 1 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+error: test failed, to rerun pass `-p rentemester-server --lib`
+53 |   const result = Bun.spawnSync(command, {
+54 |     cwd: root,
+55 |     stdout: "inherit",
+56 |     stderr: "inherit",
+57 |   });
+58 |   assert.equal(
+              ^
+AssertionError: Rust verification failed: test --locked --workspace
+
+101 !== 0
+
+ generatedMessage: false,
+     actual: 101,
+   expected: 0,
+   operator: "strictEqual",
+       diff: "simple",
+       code: "ERR_ASSERTION"
+
+      at /Users/mikkelfreltoftkrogsholm/Projekter/rentemester/scripts/rust/verify.ts:58:10
+
+Bun v1.4.0 (macOS arm64)
+error: script "rust:verify" exited with code 1

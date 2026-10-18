@@ -1,0 +1,8 @@
+   Compiling rentemester-server v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.18s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_server-ad0da00fc9fb3cc5)
+
+running 1 test
+test tests::chunked_limit_and_slow_body_use_real_socket ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 26 filtered out; finished in 2.01s

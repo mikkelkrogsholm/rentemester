@@ -1,0 +1,38 @@
+{
+  "scope": "Native purpose-bound source-readable email-token prerequisite and complete-response socket test repair",
+  "verdict": "No remaining material scoped findings",
+  "review_loop": [
+    "Source research established active-secret-only stateless JWTs, same-second duplicate tokens, no current-context or one-time consumption, permissive missing/future timing and dangerous change-email session branches",
+    "Native purpose/workspace/random256bitjti/exacthour/strictJSON/compact contract is crypto metadata only; explicit legacy-route bypass and writer-time/current-fact gates added after independent review",
+    "Full regression exposed old rawsocket read_to_string requiring clean EOF after early413. Test now requires exactstatus/uniqueContent-Length/fullfixedbody via read_exact; RST after fullresponse is irrelevant and truncation still fails;408deadline unchanged",
+    "Targeted socket test and independent25server tests pass; small test-helper Clippy nested-if warning fixed without suppression",
+    "Independent4native/24actualsource/GDD3 pass with final hashes; full final regression123native/11739checks passed with RUST_TEST_THREADS=2"
+  ],
+  "evidence": {
+    "native_token_tests": 4,
+    "source_process_checks": 24,
+    "independent_server_tests": 25,
+    "GDD_structural_checks": 3,
+    "reviewed_source_sha256": {
+      "crates/rentemester-runtime/src/email_token.rs": "f11151091ed34c800e372c96c3cac93e1fca4222c5b61048dfc1dcfa8ebf0905",
+      "crates/rentemester-runtime/src/email_token/tests.rs": "07664382c2122a723ddb09b76d7a6621ac55205e94b86cfa7b2e2894178a6e24",
+      "crates/rentemester-runtime/src/lib.rs": "44983147408f049c36cd9ba250179bc2e75d083cac6fbc71c4a5113713d3d145",
+      "scripts/rust/verify-email-token.ts": "2a16828320a627bd19a1c679172b7195795ed1505beaa1c98cf398493873e432",
+      "scripts/rust/verify.ts": "70af5c51025b9660310f0e0be7513d4c8be15e22410facf5836fc4f4838b5d35",
+      "docs/architecture/rust-target/implementation/email-token/CONTRACT.md": "640f1e5175dde6e456323455f8ba28c6445770e27f6b73131f3ef64ae06ee1a7",
+      "docs/architecture/rust-target/implementation/email-token/gdd.json": "423bb83fe60e6df04393125f0dd92f8c8021b792197ddf168451e1c51cfc7654",
+      "docs/architecture/rust-target/implementation/email-token/readiness.json": "919aea52a71cf87f8e9faca7065ff3395c67c7066cfdac22a9f93967f8291743",
+      "docs/architecture/rust-target/implementation/README.md": "bee00273d8af0685648aa42d6aa8af2a35a18e5b32063721e32188dc1ba3dc15",
+      "crates/rentemester-server/src/tests.rs": "d6de50623c40ccc22240d423a9253c6ec8dacca44429e9e962d22d837b15e762"
+    }
+  },
+  "limits": [
+    "Crypto metadata only; no native email issuance/consumption/current-user update, HTTP/mail, role/MFA/session authority or full R04/R41/R42 acceptance",
+    "Future admitted writer must bind persisted issuance to current subject/email/credential/lifecycle, recheck time and consume once with known/unknown commit semantics",
+    "Legacy verify-email accepts native JWT and ignores added context claims; close that authoritative bypass before native verification enablement",
+    "Only active configured key, no retained-key fallback or legacy/change-email token adoption; coordinate validation is not complete storage email/user policy",
+    "Owned sensitive buffers zeroize where supported, not all parser/library/allocator copies or whole-operation constant-time",
+    "No actual writer/lifetime/product deployment, real-data migration or external email; full Rust engine/server/CLI/MCP/React/GPUI/platform/distribution/cutover remains required",
+    "Graphify AST and two current Markdown semantic sources refreshed; generated JSON/logs and unrelated/historical docs outside semantic refresh"
+  ]
+}

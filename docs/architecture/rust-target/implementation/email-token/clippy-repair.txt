@@ -1,0 +1,48 @@
+$ bun run scripts/rust/verify.ts
+    Checking rentemester-server v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-server)
+error: this `if` statement can be collapsed
+   --> crates/rentemester-server/src/tests.rs:347:17
+    |
+347 | /                 if let Some((name, value)) = line.split_once(':') {
+348 | |                     if name.eq_ignore_ascii_case("content-length") {
+349 | |                         assert!(length.is_none());
+350 | |                         length = Some(value.trim().parse::<usize>().unwrap());
+351 | |                     }
+352 | |                 }
+    | |_________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#collapsible_if
+    = note: `-D clippy::collapsible-if` implied by `-D clippy::all`
+    = help: to override `-D clippy::all` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+    |
+347 ~                 if let Some((name, value)) = line.split_once(':')
+348 ~                     && name.eq_ignore_ascii_case("content-length") {
+349 |                         assert!(length.is_none());
+350 |                         length = Some(value.trim().parse::<usize>().unwrap());
+351 ~                     }
+    |
+
+error: could not compile `rentemester-server` (lib test) due to 1 previous error
+53 |   const result = Bun.spawnSync(command, {
+54 |     cwd: root,
+55 |     stdout: "inherit",
+56 |     stderr: "inherit",
+57 |   });
+58 |   assert.equal(
+              ^
+AssertionError: Rust verification failed: clippy --locked --workspace --all-targets -- -D warnings
+
+101 !== 0
+
+ generatedMessage: false,
+     actual: 101,
+   expected: 0,
+   operator: "strictEqual",
+       diff: "simple",
+       code: "ERR_ASSERTION"
+
+      at /Users/mikkelfreltoftkrogsholm/Projekter/rentemester/scripts/rust/verify.ts:58:10
+
+Bun v1.4.0 (macOS arm64)
+error: script "rust:verify" exited with code 1

@@ -1,0 +1,217 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native purpose-bound email token prerequisite",
+    "goal": "Provide bounded source-readable HS256 metadata for future one-time native email verification",
+    "scope": "Crypto only, no user/issuance database mutation, HTTP/mail or email-verification authority"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native email token crypto boundary",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Sign and verify purpose/workspace/key/time-bound email-token metadata",
+        "rationale": "Future admitted one-time verification needs explicit native context claims instead of stateless source authority",
+        "excludes": [
+          "Database issuance/consumption, current-user mutation, HTTP/mail, legacy coexistence and deployment"
+        ]
+      },
+      "interfaces": [
+        "action.email_token"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Native tokens are accepted by installed jose/source reader, and actual source signer emits a native-compatible bound envelope",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Native crypto and installed source/JWT oracle on synthetic metadata",
+        "when": "Issue or verify an email token",
+        "then": "Native tokens are accepted by installed jose/source reader, and actual source signer emits a native-compatible bound envelope"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Strict canonical compact encoding, signed duplicate/unknown fields, wrong key/workspace/purpose/nonce and change-email envelopes refuse",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Native crypto and installed source/JWT oracle on synthetic metadata",
+        "when": "Issue or verify an email token",
+        "then": "Strict canonical compact encoding, signed duplicate/unknown fields, wrong key/workspace/purpose/nonce and change-email envelopes refuse"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Pure crypto produces no user/membership/MFA/session mutation or one-time consumption authority",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Native crypto and installed source/JWT oracle on synthetic metadata",
+        "when": "Issue or verify an email token",
+        "then": "Pure crypto produces no user/membership/MFA/session mutation or one-time consumption authority"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Legacy stateless links, missing/future time and excessive lifetime are refused; retained keyring is not verification fallback",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Native crypto and installed source/JWT oracle on synthetic metadata",
+        "when": "Issue or verify an email token",
+        "then": "Legacy stateless links, missing/future time and excessive lifetime are refused; retained keyring is not verification fallback"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Independent256bit random nonce separates same-clock issuances; trusted time boundaries are exact",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Native crypto and installed source/JWT oracle on synthetic metadata",
+        "when": "Issue or verify an email token",
+        "then": "Independent256bit random nonce separates same-clock issuances; trusted time boundaries are exact"
+      }
+    },
+    "action.email_token": {
+      "kind": "action",
+      "description": "Pure bound email JWT metadata",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "token_or_lowercase_ascii_coordinate": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "trusted_workspace_active_key_clock": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Fixed AuthError, no raw bearer/claim/parser text"
+        },
+        "preconditions": [
+          "Trusted active key/workspace and Clock, not request-supplied time/configuration",
+          "Future consumer must bind native issuance/current user and recheck time under admitted writer; legacy endpoint cannot bypass context"
+        ],
+        "postconditions": [
+          "Metadata only, never an authenticated principal or verified user",
+          "Source-readable HS256 envelope with mandatory native purpose/workspace/random nonce and exact hour",
+          "Strict profile rejects legacy/change-email/padded/ambiguous/incorrect-time envelopes"
+        ],
+        "external_effects": [
+          "OS entropy and trusted Clock sampling only; no database/filesystem/network/user mutation"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Do not confuse a valid signature or key/workspace proof binding with current user authority, freshness at later consumption, replay prevention or safe legacy coexistence.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Do not confuse a valid signature or key/workspace proof binding with current user authority, freshness at later consumption, replay prevention or safe legacy coexistence.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Do not confuse a valid signature or key/workspace proof binding with current user authority, freshness at later consumption, replay prevention or safe legacy coexistence.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Do not confuse a valid signature or key/workspace proof binding with current user authority, freshness at later consumption, replay prevention or safe legacy coexistence.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Do not confuse a valid signature or key/workspace proof binding with current user authority, freshness at later consumption, replay prevention or safe legacy coexistence.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Bound compact bytes, authenticate exact signing input, strictly decode native envelope and check single sampled time"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.email_token",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.email_token",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.email_token",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.email_token",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.email_token",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.email_token",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native purpose-bound email token prerequisite",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "640f1e5175dde6e456323455f8ba28c6445770e27f6b73131f3ef64ae06ee1a7"
+      }
+    }
+  }
+}
