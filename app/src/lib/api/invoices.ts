@@ -25,6 +25,10 @@ function invoiceRequestPayload(input: InvoiceIssueInput) {
 }
 
 export const invoicesApi = {
+  postNativeInvoice: (slug: string, invoiceDocumentId: number, revenueAccountNo: string) =>
+    request<{ ok: true; posting: { entryId: number; entryNo: string } }>(`/api/companies/${encodeURIComponent(slug)}/invoices/post`, {
+      method: "POST", body: JSON.stringify({ confirm: true, invoiceDocumentId, revenueAccountNo }),
+    }).then(r => r.posting),
   invoices: (slug: string, year?: string, options?: ReadRequestOptions) =>
     request<InvoicesResponse>(
       `/api/companies/${encodeURIComponent(slug)}/invoices${

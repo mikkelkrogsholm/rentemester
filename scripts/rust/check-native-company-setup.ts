@@ -83,7 +83,7 @@ export async function checkNativeCompanySetup(page: Page, base: string, reopened
   await page.getByRole("heading", { name: "Resultatopgørelse", exact: true }).waitFor();
   await page.getByText("Synthetic domestic purchases", { exact: true }).waitFor();
   const report = await (await page.request.get(`${url}/income-statement`)).json();
-  if (report.incomeStatement.result !== -1842.25 || report.incomeStatement.totalExpense !== 1842.25) throw new Error("Deductible VAT was incorrectly expensed");
+  if (report.incomeStatement.result !== (reopened ? -842.25 : -1842.25) || report.incomeStatement.totalExpense !== 1842.25) throw new Error("Deductible VAT was incorrectly expensed");
   await page.goto(`${base}/companies/synthetic/balance`);
   const balanceResponse = await page.request.get(`${url}/trial-balance`);
   const balance = await balanceResponse.json();

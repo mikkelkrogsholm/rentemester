@@ -263,6 +263,7 @@ export function InvoiceIssueForm({
    */
   function buildPartyAndExtras() {
     return {
+      customerId: selectedCustomerId ? Number(selectedCustomerId) : undefined,
       currency: currency.trim() || "DKK",
       dueDate: dueDate.trim() || undefined,
       seller:

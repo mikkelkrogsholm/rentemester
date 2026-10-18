@@ -1,3 +1,4 @@
+import { NativeInvoicePost } from "../components/NativeInvoicePost";
 // Fakturaer — the per-company issued invoices (cockpit-redesign iteration 5;
 // human write-actions added in #213, slice 4).
 //
@@ -518,14 +519,14 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                   const knownStatus = Object.hasOwn(STATUS_META, row.status);
                   const meta = STATUS_META[row.status] ?? { label: "Ukendt status", tone: "neutral" };
                   // Settlement only makes sense while a balance is open.
-                  const canSettle = knownStatus && row.openBalance > 0;
+                  const canSettle = !inv.nativeSales && knownStatus && row.openBalance > 0;
                   // #412: Krediter is offered for any posted invoice that has
                   // not already been written off / refunded / fully credited.
                   // A partial credit reduces the open balance but leaves the
                   // source invoice in its open/paid/overdue state, so those
                   // remain creditable until the core refuses on "already fully
                   // credited" (mapped to a 409 by the mutation pipeline).
-                  const canCredit =
+                  const canCredit = !inv.nativeSales &&
                     knownStatus && row.status !== "credited" &&
                     row.status !== "refunded" &&
                     row.status !== "written_off";
@@ -535,24 +536,24 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                   // A pre-acceptance transport failure is retryable. Once the
                   // access point has returned a queued document id, only the
                   // status action is allowed — never a second delivery.
-                  const canSendPublic =
+                  const canSendPublic = !inv.nativeSales &&
                     Boolean(row.buyerEanNumber) &&
                     row.buyerPublicRecipient &&
                     (row.peppolStatus === null || row.peppolStatus.status === "retryable");
-                  const canCheckPublicStatus = row.peppolStatus?.status === "queued";
+                  const canCheckPublicStatus = !inv.nativeSales && row.peppolStatus?.status === "queued";
                   // #429: "Send på mail" appears only when the customer
                   // has an e-mail on the kontaktkort — without it the
                   // dialog has no recipient to prefill, and the issue
                   // body asks the cockpit to hide the action instead of
                   // surfacing an empty form.
-                  const canSendEmail = Boolean(row.customerEmail);
+                  const canSendEmail = !inv.nativeSales && Boolean(row.customerEmail);
                   // #434: "Send rykker" appears only when the row is
                   // overdue AND a customer e-mail is on file AND the
                   // statutory cap of 3 reminders has not been reached
                   // (rentel. § 9b). Hidden for archived years (no live
                   // ledger to register the reminder into).
                   const reminderSeq = row.lastReminderSequence ?? 0;
-                  const canSendReminder =
+                  const canSendReminder = !inv.nativeSales &&
                     row.status === "overdue" &&
                     Boolean(row.customerEmail) &&
                     reminderSeq < 3;
@@ -572,7 +573,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                       </td>
                       <td role="cell" data-label="Status">
                         <span className={`flag ${meta.tone}`}>
-                          {meta.label}
+                          {row.posted === false ? "Udstedt – afventer bogføring" : meta.label}
                           {/* Singular/plural — "· 1 dage" is wrong Danish. */}
                           {row.status === "overdue" && row.overdueDays > 0
                             ? ` · ${row.overdueDays} ${
@@ -648,6 +649,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                               whole point of issuing an invoice is to send it
                               to the customer. `target="_blank"` so the browser
                               opens it inline without losing the table view. */}
+                          {inv.nativeSales && row.posted === false && can("company.ledger.post") && <NativeInvoicePost slug={slug} id={row.documentId} number={row.invoiceNo} accounts={inv.nativeSales.revenueAccounts} onPosted={state.reload} />}
                           <a
                             className="btn secondary"
                             href={api.invoicePdfUrl(slug, row.documentId)}

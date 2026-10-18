@@ -551,6 +551,38 @@ impl Owner {
             rentemester_application::owned_report::vat(c, l, context, today, year)
         })
     }
+    pub fn sales(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        action: rentemester_application::sales::Action<'_>,
+        today: &str,
+        now: &str,
+        year: Option<&str>,
+    ) -> Result<
+        Attempt<
+            Result<
+                Committed<rentemester_application::sales::Output>,
+                rentemester_application::control_fence::Failure,
+            >,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, g, context| {
+            rentemester_application::sales::execute(
+                c,
+                l,
+                g,
+                context,
+                rentemester_application::sales::Request {
+                    action,
+                    today,
+                    now,
+                    year,
+                },
+            )
+        })
+    }
     pub fn company_setup(
         &mut self,
         cookie: &VerifiedCookie,

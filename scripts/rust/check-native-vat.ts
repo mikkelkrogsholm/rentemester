@@ -8,7 +8,7 @@ export async function checkNativeVat(page: Page, base: string, reopened = false)
   const response = await page.request.get(`${base}/api/companies/synthetic/vat`);
   const result = await response.json();
   const v = result.vat;
-  if (!response.ok() || v.inputVat !== 25 || v.outputVat !== 0 || v.outputVatAdjustment !== 0 || v.payable !== -25 || v.rubrikker.kobsmoms !== 25 || v.rubrikker.momstilsvar !== -25 || v.periodStatus !== "open" || v.momsangivelseReady || v.vatReportErrors.length) throw new Error(`Wrong VAT return: ${JSON.stringify(result)}`);
+  if (!response.ok() || v.inputVat !== 25 || v.outputVat !== (reopened ? 250 : 0) || v.outputVatAdjustment !== 0 || v.payable !== (reopened ? 225 : -25) || v.rubrikker.kobsmoms !== 25 || v.rubrikker.momstilsvar !== (reopened ? 225 : -25) || v.periodStatus !== "open" || v.momsangivelseReady || v.vatReportErrors.length) throw new Error(`Wrong VAT return: ${JSON.stringify(result)}`);
   await page.getByRole("row").filter({ hasText: "Købsmoms (indgående moms)" }).getByText("25,00 kr.", { exact: true }).waitFor();
   await page.getByText("SKAT-rubrikker (foreløbige — åben periode)", { exact: true }).waitFor();
   if (await page.getByRole("button", { name: "Kopier Købsmoms", exact: true }).isEnabled()) throw new Error("Open VAT period advertised ready to file");

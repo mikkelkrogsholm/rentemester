@@ -31,6 +31,7 @@ export type InvoicePeppolStatus = {
 };
 
 export type CompanyInvoiceRow = {
+  posted?: boolean;
   documentId: number;
   invoiceNo: string;
   invoiceDate: string | null;
@@ -82,6 +83,7 @@ export type CompanyInvoiceRow = {
 };
 
 export type CompanyInvoices = {
+  nativeSales?: { revenueAccounts: Array<{ accountNo: string; name: string }> };
   slug: string;
   selectedYear: string;
   archived: boolean;

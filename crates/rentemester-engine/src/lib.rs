@@ -39,3 +39,6 @@ pub mod expense_fx;
 
 pub mod vat_period;
 pub mod vat_report;
+
+pub mod invoice_pdf;
+pub mod sales_invoice;

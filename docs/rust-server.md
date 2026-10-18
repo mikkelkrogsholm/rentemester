@@ -2,7 +2,7 @@
 
 Rust-serveren leverer det eksisterende React-cockpit og behandler selv login,
 ejeroprettelse, MFA, sessions, virksomhedsadgang, manuel bogføring, tilbageførsel,
-virksomhedsstamdata, kontooprettelse, bekræftelse af kontoroller, bankkonti, generisk bankimport, bilagsbogføring med valutakøb samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport samt momsoverblik med PDF. Den
+virksomhedsstamdata, kontooprettelse, bekræftelse af kontoroller, bankkonti, generisk bankimport, bilagsbogføring med valutakøb samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport samt momsoverblik med PDF, kundeoprettelse og udstedelse/bogføring af danske salgsfakturaer. Den
 starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Prøv med syntetiske data
@@ -182,6 +182,40 @@ hvor seks decimaler ikke er tilstrækkeligt. Der hentes ingen udokumenteret
 markedskurs. Ved blandet købsmoms fordeles en eventuel afrundingsrest på en
 momsfri nettolinje, når der findes en, så totalen stadig svarer til betalingen.
 
+## Opret kunde, udsted faktura og bogfør salget
+
+1. Under **Kontoplan** oprettes den ønskede omsætningskonto med type
+   **Indtægt** og normal saldo **Kredit**, en debitorkonto med type **Aktiv**
+   og normal saldo **Debet**, samt en salgsmomskonto med type **Moms** og
+   normal saldo **Kredit**. Bekræft rollerne **Debitorer** og **Salgsmoms**.
+   Kontonumrene vælges lokalt; produktet indsætter ingen virksomhedsbestemt kontoplan.
+2. Åbn **Kontakter → Tilføj kunde**. Gem navn, adresse, CVR/moms og
+   betalingsfrist. Kundekortet viser også åbne tilgodehavender på tværs af år.
+3. Åbn **Fakturaer → Udsted faktura**, vælg kunden og indtast dato,
+   sælgeroplysninger og linjernes beskrivelse, antal og enhedspris ekskl. moms.
+   Virksomhedens navn/adresse og kundens oplysninger udfyldes fra stamdata,
+   når felterne ikke er overstyret. Betalingsfristen følger kundekortet eller
+   virksomhedens standard, medmindre en forfaldsdato angives eksplicit.
+4. **Forhåndsvis** viser PDF uden at oprette faktura eller bruge et nummer.
+   **Udsted faktura** gemmer JSON og PDF som uforanderlige originaler med hash,
+   aktør og opbevaringsfrist. Nummeret følger regnskabsåret og den fælles
+   fortløbende fakturaserie, eksempelvis `2026-0001`.
+5. På fakturalisten vælges **Bogfør faktura**, og omsætningskontoen vælges.
+   Bekræft **Bogfør salget**. Debitorkonto og salgsmoms følger de eksplicit
+   bekræftede roller. Udstedelse og bogføring er separate handlinger.
+6. To linjeenheder til 500 kr. giver 1.000 kr. salg, 250 kr. salgsmoms og
+   1.250 kr. tilgode hos kunden. Resultatopgørelsen, momsoversigten og
+   kundekortet viser disse beløb. **Hent PDF** læser altid de gemte bytes;
+   ændrede stamdata eller servergenstart omskriver ikke den udstedte faktura.
+
+Dette forløb understøtter foreløbig fulde danske DKK-fakturaer med standard
+25% moms og danske CVR/momsidentiteter. Ugyldige beløb og datoer, nummergenbrug
+og dobbelt bogføring afvises. PDF understøtter det nuværende latinske tegnsæt,
+herunder danske bogstaver; tekst uden for tegnsættet afvises ved input.
+Kundebetaling, kreditnota, fremmed valuta, andre momstyper, offentlig e-faktura,
+ekstern maillevering og redigering/sletning af kontakter mangler stadig i Rust.
+Der sendes ingen fakturaer eksternt i dette forløb.
+
 ## Tilbagefør en postering
 
 Åbn posteringen under **Posteringer**, vælg **Tilbagefør postering**, og angiv
@@ -234,6 +268,12 @@ Momstesten åbner siden efter det danske køb, kontrollerer 25 kr. købsmoms,
 −25 kr. momstilsvar, foreløbige rubrikker og en rigtig PDF-download med samme
 tal, periode og frist. Den kontrollerer også efter genstart og afviser anonym
 adgang. Skærmbilledet gemmes i `/tmp/rentemester-rust-vat.png`.
+Salgstesten opretter konti og roller, opretter kunden i UI'et, forhåndsviser og
+udsteder en faktura og bogfører salget. Den afviser nummergenbrug og dobbelt
+bogføring og kontrollerer tilgodehavende, resultat og moms efter genstart samt,
+at den gemte faktura-PDF har uændrede bytes. Fakturaen gemmes som
+`/tmp/rentemester-rust-reports/native-sales-invoice.pdf`, og et skærmbillede
+som `/tmp/rentemester-rust-sales.png`.
 Testdata fjernes fra Docker efter kørslen.
 
 ## Aktuel afgrænsning
