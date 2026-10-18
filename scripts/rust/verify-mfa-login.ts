@@ -1,3 +1,4 @@
+import { verifyWorkspaceContext } from "./workspace-context-cases";
 /** Native enrolled MFA flow, actual source crypto/session oracle, independent process races. */
 import assert from "node:assert/strict";
 import { verifyVerificationRequest } from "./verification-request-cases";
@@ -130,6 +131,8 @@ function start(f: any, request: any = {}, point = "") {
 			env: {
 				...process.env,
 				RM_MFA_POINT: point.startsWith("password:") ? "" : point,
+                RM_FENCE_POINT: point === "context-read" ? point : "",
+                RM_FENCE_MARKER: f.marker,
 				RM_MFA_MARKER: f.marker,
 				RM_PASSWORD_LOGIN_POINT: point.startsWith("password:")
 					? point.slice(9)
@@ -982,6 +985,7 @@ try {
 			opts,
 		})),
 	);
+	sensitiveRecoveryCodes.push(...(await verifyWorkspaceContext({ fixture,run,start,done,marker,sql,image,record,now,key })));
 	sensitiveRecoveryCodes.push(...(await verifyPasswordChange({ fixture,run,start,done,marker,sql,image,record,now,key,opts })));
 	sensitiveRecoveryCodes.push(
 		...(await verifyPasswordReset({

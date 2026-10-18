@@ -1,0 +1,378 @@
+{
+  "kind": "bounded_read_only_next_step_research",
+  "result": "COMPLETE",
+  "language": "da",
+  "created_utc": "2026-10-18T03:52:37.034966+00:00",
+  "scope": "Eksisterende TS/installeret Better Auth service credential-kontrakt og resterende native vertikal. Ingen implementering, GitHub-issues, netværksmail, repo- eller grafændringer.",
+  "graphify": {
+    "query": "service principal API key verify issuance rotate revoke actor rate expiry native access",
+    "performed_before_source_review": true
+  },
+  "source_status": {
+    "installed_api_key_version": "1.7.1",
+    "native_crypto_verifier": false,
+    "native_service_current_observation_and_fence": false,
+    "native_lifecycle": false,
+    "existing_pure_access_evaluator_supports_service_facts": true,
+    "current_native_workspace_context": "human-cookie only; ikke fuld source /api/me serviceparitet"
+  },
+  "contract": {
+    "wire": {
+      "http_header": "x-rentemester-service-key",
+      "config_id": "workspace-service-principal",
+      "not_authorization_bearer": true,
+      "source_trims_header": true,
+      "source_empty_header": "absent, så menneskecookie kan vælges",
+      "source_valid_header_with_cookie": "service vinder; native bør eksplicit afvise blandet authority",
+      "source_failure": "opaque401 missing or invalid credentials; også plugin rate/quota-fejl skjules",
+      "mcp": "RENTEMESTER_SERVICE_PRINCIPAL_TOKEN + RENTEMESTER_WORKSPACE; secret indlæses én gang og env slettes; hosted/service mode kræver begge; check per tool",
+      "server_only_verification": "verifyApiKey er intern serverOnly, ikke en ny public verification-route",
+      "source_mutation_origin": "Alle unsafe hosted katalogruter kræver trusted Origin eller Referer, også service-authenticated requests (ingen source service-undtagelse). En maskinklient skal aktuelt levere godkendt origin; ændring kræver eksplicit auth-specific CSRF-kontrakt, ikke automatisk cookie fallback."
+    },
+    "crypto": {
+      "hash": "base64url-no-padding(SHA256(UTF8(rawkey)))",
+      "no_auth_signing_key_dependency": true,
+      "source_default_issue": "rms_ + 64 tilfældige ASCII bogstaver fra a-z/A-Z; længde68; defaultKeyGenerator bruger generateRandomString",
+      "source_default_start": "første6 tegn gemmes som start; ikke credential authority",
+      "source_verify": "hashlookup, ikke kun prefix-/formatcheck; eventuel streng native grammar skal markeres som kompatibilitetskorrektion",
+      "schema": "hashindex er IKKE unique; native skal nægte flere matches, cross-config/owner ambiguity og malformed metadata fremfor first-row lookup"
+    },
+    "expiry": {
+      "default_seconds": 7776000,
+      "custom_input_unit": "sekunder; plugin validerer input/86400 mod min1/max365 dage",
+      "custom_http_exposure": "core accepterer expiresInSeconds; de fem source workspace-ruter videresender det ikke",
+      "source_http_boundary": "afviser når Date.now()>expiresAt, dvs equality accepteret; NULL er ikke-udløbende",
+      "native_recommendation": "trusted clock, strengt now<expires, format/type/bounds før adgang; eksplicit beslutning om eksisterende NULL og custom rows, ingen utilsigtet nulstilling/forlængelse"
+    },
+    "rate_and_quota": {
+      "configured": {
+        "max_requests": 600,
+        "window_ms": 60000
+      },
+      "actual_algorithm": "Tæller incrementeres for hvert accepteret verify, lastRequest sættes til now hver gang; reset først efter strengt mere end60s siden seneste accepterede request. Derfor inactivity-reset counter, hverken fast kalender/minut eller almindelig glidende600/min. Ved quota kræves idle før reset.",
+      "row_overrides": "rateLimitEnabled=false eller nullable rateLimitTimeWindow/rateLimitMax kan springe rate over; remaining/refill* kan være yderligere begrænsning. Standard source-oprettede rows har remaining/refill NULL og rate true/600/60000.",
+      "writes": "HTTP verify laver guarded remaining/rate-opdateringer og updatedAt før domain authorization; fejlet domain authorization kan stadig have brugt requestslot. MCP bruger ingen af dem.",
+      "native_requirement": "Specificér én fælles policy på HTTP/CLI/MCP, rollback/commit-outcome og præcis hvornår et slot tælles. Bevar source-algoritme eller registrér bevidst rettelse; kald den ikke blot600/min. Detaljer må ikke lække nøglen eller rå providerfejl.",
+      "remaining_exact": "remaining nonnull konsumeres FØR ratecheck; refillInterval er millisekunder; hvis truthy refillInterval/refillAmount og now-lastRefillAt(orcreatedAt)>interval, guarded CAS sætter remaining=refillAmount-1 og lastRefillAt=now; ellers decrement kunremaining>0. Rateafvisning kan derfor efterlade allerede brugt remaining i source, fordi det er separate updates uden fælles transaction. Native atomicitet er en bevidst kontraktbeslutning."
+    },
+    "identity_and_authorization": {
+      "stable_subject": "user:<service_<uuidhex>> i HTTP actor; intern service-account subject + credentialId; rotation bevarer subject og replay/accounting identity",
+      "no_human_readiness": "Registreret service kræver hverken emailVerified eller MFA; syntetisk user har begge0 og ingen password/account/session",
+      "no_embedded_role": "Nøglen giver ingen workspace/company rolle; current access events bestemmer aktive roller. Owner giver ikke implicit company membership; archived company nægtes beskyttede operationer.",
+      "actor_separation": "MCP clientInfo/actor er advisory attribution; principal fra verificeret nøgle. CLI --actor/env og actor-allowlist er lokal policy, ikke server-auth. Caller actor må aldrig vælge remote subject eller overtage credential authority.",
+      "freshness": "Current enabled/expiry/registry/workspace/member og operation-permission skal recheckes under fælles control writer indtil relevant protected commit/dispatch. Pure Service{registered,live_credential} er ikke proof."
+    },
+    "lifecycle": {
+      "owner_only": "Hosted browser BetterAuth principal + current workspace.manage (owner); services må ikke selv oprette/rotere/revoke via disse routes, selv hvis workspace_owner. Native cookie-owner authority skal genobserveres i writer, ikke kun middleware.",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/api/workspace/service-principals",
+          "response": "{ok:true,principals:[{serviceAccountId,displayName,createdAt,activeCredentialCount}]}",
+          "order": "created_at,user_id"
+        },
+        {
+          "method": "POST",
+          "path": "/api/workspace/service-principals",
+          "body": "confirm:true,displayName,operationId?",
+          "status": 201,
+          "response": "{ok:true,serviceAccountId,credentialId,secret}"
+        },
+        {
+          "method": "POST",
+          "path": "/api/workspace/service-principals/rotate",
+          "body": "confirm:true,serviceAccountId,credentialId,operationId?",
+          "response": "{ok:true,serviceAccountId,credentialId,secret}"
+        },
+        {
+          "method": "POST",
+          "path": "/api/workspace/service-principals/revoke",
+          "body": "confirm:true,serviceAccountId,credentialId,operationId?",
+          "response": "{ok:true,revoked:true}"
+        },
+        {
+          "method": "POST",
+          "path": "/api/workspace/service-principals/recover",
+          "body": "confirm:true,operationId",
+          "response": "{ok:true,operationId,status,recovered}"
+        }
+      ],
+      "create": "Først user+immutable registry+created+pendingoperation; provider create mellem separate handles/transactions; derefter issued+completed. Ingen implicit access/membership/session. Secret kun efter kendt completion.",
+      "rotate": "Opret ny nøgle, disable præcis gammel owner/config-bound nøgle, append rotated+revoked+completed; stabil serviceAccountId; fejl best-effort disable ny nøgle. Afbrudt rotation kan have slået gammel nøgle fra.",
+      "revoke": "enabled=false på præcis credential/owner/config; append revoked+completed. Ikke blot audit-event eller cookie-delete.",
+      "operation_id": "UUID version1..8/variant89ab, lowercases. pending/recovering kræver recovery; completed nægter secret-redisclosure; failed/recovered kræver nyt operationId. Derfor ikke almindelig key-idempotent secret retry.",
+      "recovery": "30s standard claimlease, claimId CAS på latest operationevent. Revoke fuldføres; create/rotate finder marker-matchede enabled keys og disables dem, ender failed+recovered. Genudsteder/viser aldrig gammel secret, genaktiverer ikke gammel roteret nøgle. completed/recovered readback er terminal.",
+      "native_atomicity": "En ren native lifecycle kan samle key+events i samme controltransaction og fjerne provider-saga for nye operationer; eksisterende pending saga rows kræver stadig reconcile/migrationskontrakt. OutcomeUnknown/lost reply skal aldrig returnere secret som kendt succes eller blindt genissue.",
+      "inventory_correction": "source activeCredentialCount tæller enabled inkl udløbne; native skal enten bevare og navngive dette præcist eller bevidst rette til live count med trusted clock.",
+      "numeric_event_order": "service event/operationstream bruger INTEGER PRIMARY KEY og ORDER BY id DESC. Native latest-state/recovery skal tage samme MAX_ROWID exhaustion-problem alvorligt som den leverede event-order correction; nuværende guard gælder kun de3 allerede specificerede adgangs/security streams.",
+      "owner_freshness": "Source central route gate kræver browser-session alder finite og0..600s inklusiv ved unsafe workspace.manage. Native ownerflow skal bevare step-up/freshness plus current own session/verified factor."
+    }
+  },
+  "material_gaps": [
+    {
+      "id": "S01",
+      "severity": "high",
+      "surface": "MCP vs HTTP",
+      "finding": "MCP expiry er en tekstsammenligning af ISO expiresAt med SQLite CURRENT_TIMESTAMP, ikke samme tidsværdi; kan acceptere en nøgle efter udløb samme UTC-dag.",
+      "evidence": "SQLite synthetic in-memory: 2030-01-02T09:00:00.000Z > 2030-01-02 12:00:00 gav1, julianday-sammenligning0. Installeret SQLite adapter skriver date via toISOString.",
+      "needed": "Fælles native strict timestamp parser/trusted clock og boundary tests; legacy drainage gate før full parity-claim."
+    },
+    {
+      "id": "S02",
+      "severity": "high",
+      "surface": "MCP vs HTTP",
+      "finding": "MCP verifier forbruger hverken remaining eller requestCount. Samme credential har dermed forskellige quota/rate-kontrakter, og pure read tool kan skjule security-counterwrites i en fælles native verifier.",
+      "needed": "Beslut og dokumentér præcis fælles admission-rate/quota og read-only annotationens betydning for authmetadata; verificér concurrency og denial efter adgangsafvisning."
+    },
+    {
+      "id": "S03",
+      "severity": "high",
+      "surface": "native authority",
+      "finding": "Ingen native serviceverifier eller service-specifik current-control observation/fence. Pure boolfacts må ikke opgraderes til faktisk authority.",
+      "needed": "Typed ikke-deserialiserbar credential observation + current exact registry/key/access recheck under writer frem til operation/dispatch; bind workspace/credential/subject."
+    },
+    {
+      "id": "S04",
+      "severity": "medium",
+      "surface": "lifecycle",
+      "finding": "Source saga kan efterlade enabled men ikke leveret nøgle; lost replies er ikke idempotent secret delivery. Native skal håndtere historiske pending/recovering operationer.",
+      "needed": "Én native lifecycletransaction samt nonsecret status/reconcile; explicit unknown/no-redisclosure policy og crash/recovery tests."
+    },
+    {
+      "id": "S05",
+      "severity": "medium",
+      "surface": "wire compatibility",
+      "finding": "Source tom serviceheader falder til cookie; valid service vinder cookie. Eksisterende native human-router afviser serviceheaders.",
+      "needed": "Tilføj eksplicit credential selection til service-enabled operationer; nægt tom/duplikeret/mixed header/cookie/Authorization og beskyt human-only auth/lifecycle routes mod service dispatch."
+    }
+  ],
+  "recommended_next_slice": {
+    "name": "Native service admission og egen workspace-context, source-issued credential interop",
+    "purpose": "Én lille faktisk HTTP/native rejse med genbrugelig auth/use-case-kontrakt til senere CLI/MCP; ikke endnu fullservice lifecycle eller produkt-write authority.",
+    "steps": [
+      "Runtime pure SHA256/base64url helper og secret wrapper; source helper som uafhængigt oracle. Ingen hash/proof fra caller som authority.",
+      "Storage current-service observation med exact one key/config match, registered subject/user, typed enabled/expiry/rate/quota/clock; canonical schema og writerpreflight. Unsupported row variants nægtes eksplicit, aldrig ignoreres. Standard source-created rows skal virke.",
+      "Application service-context transaction: writeradmission, current access, durable authcounter policy, bounded own user/company display context; output først ved kendt commit og ingen bearer/cipher/keyhash. Current credential observation har ingen senere action-grant.",
+      "Additiv optional trusted native service handler på GET /api/me; behold human-flow og samme bounds/order/archive-visibility. Ingen default opener eller implicit TSfallback; strict exclusive credential extraction, socketpeer shared admission + per-key persisted rate.",
+      "Afslut core/API kontrakt og capabilitymetadata med samme nonsecret subject/credential/error semantics; CLI/MCP adapters følger R43/R44/R45. Native service-context support må ikke annoncere endnu ikke eksisterende posting/lifecycle/tools."
+    ],
+    "decision_before_code": [
+      "600/idle60s source algorithm versus eksplicit corrected rolling policy; eksakt rate/quota commit semantics",
+      "NULL expiry/enabled og custom rate/refill migration matrix; et standard-only første increment må kaldes dette tydeligt",
+      "HTTP invalid/rate fixed outcomes og RetryAfter uden credential oracle; ingen silent cookie fallback",
+      "Er GET securitymetadata-muterende pga authquota? Beskriv scope og test uændrede businessdata fremfor global DB read-only påstand."
+    ],
+    "acceptance": [
+      "Source-issued valid key læses native; disabled/expired/equalexpiry/wrongconfig/orphanregistry/duplicatehash/malformedflags nægtes uden metadata",
+      "Services med emailVerified0/MFA0 accepteres kun ved current registry+activeaccess; revocation og membership changes kan ikke smutte mellem verify og context",
+      "Source/native outputs har samme stable own identity, ordering og bounded memberships; owner har ikke implicit company grants; arkivsynlighed holdes adskilt fra action permission",
+      "WAL og DELETE, samtidige rate-slot sidsteplads, rollback/lateSQL/commitbusy OutcomeUnknown uden contextpayload; real writer competition",
+      "Empty/duplicate/mixed headers/cookies/Authorization og spoofed forwardedIP nægtes før trusted dispatch; human-only endpoints forbliver human-only",
+      "Logs/reports/audits indeholder ingen rawkey/hash; kun nødvendige nonsecret subject/credential identifiers",
+      "GET request kan ikke skabe service/user/session/access; ingen scheduler/companyledger/provider dispatch"
+    ],
+    "must_remain_open": [
+      "Owner-only native list/create/rotate/revoke/reconcile + one-time secret/lostreply/migrering af pending source-saga",
+      "Current service revocation fence for company writes samt pre-dispatch reauthorization og in-flight/restart/restore policy",
+      "Full supported per-row quota/refill/custom expiry semantics eller eksplicit legacy migration; ingen skjult tab af support",
+      "Rust client server/profile credential custody + actual CLI/MCP tools/discovery/transports + full operation parity",
+      "Legacy verifiers/drain/cutover og fysisk workspace/DB lifetime authority før realdata eksponering",
+      "Service-write Origin/Referer-kontrakt og owner-lifecycle freshness: kildens centrale sikkerhedsgates skal bevares eller bevidst revideres, ikke bortfalde ved credentialtype-skift."
+    ]
+  },
+  "issue_mapping": [
+    {
+      "id": "R04",
+      "path": "docs/architecture/rust-target/epic/issues/R04.md",
+      "contribution": "Identity, stable subject, revoke/dispatch ordering og deliberate compatibility corrections"
+    },
+    {
+      "id": "R05",
+      "path": "docs/architecture/rust-target/epic/issues/R05.md",
+      "contribution": "Exact schema/errors/rate/unknown/retry/capability kontrakt"
+    },
+    {
+      "id": "R13",
+      "path": "docs/architecture/rust-target/epic/issues/R13.md",
+      "contribution": "Current service authorization og control-to-company fence"
+    },
+    {
+      "id": "R35",
+      "path": "docs/architecture/rust-target/epic/issues/R35.md",
+      "contribution": "Revoked credential før job dispatch, recovery/restore og external effects"
+    },
+    {
+      "id": "R41",
+      "path": "docs/architecture/rust-target/epic/issues/R41.md",
+      "contribution": "Service verifier + complete create/rotate/revoke/reconcile engangsdellevering"
+    },
+    {
+      "id": "R42",
+      "path": "docs/architecture/rust-target/epic/issues/R42.md",
+      "contribution": "Native shared HTTP credential translation/admission og supported routes"
+    },
+    {
+      "id": "R43",
+      "path": "docs/architecture/rust-target/epic/issues/R43.md",
+      "contribution": "Shared Rust authenticated client og connection credential custody"
+    },
+    {
+      "id": "R44",
+      "path": "docs/architecture/rust-target/epic/issues/R44.md",
+      "contribution": "Remote CLI credentials fremfor caller actor authority; lokalpolicy bevares"
+    },
+    {
+      "id": "R45",
+      "path": "docs/architecture/rust-target/epic/issues/R45.md",
+      "contribution": "Authenticated MCP, tool scope/discovery/retry og servicedrain parity"
+    }
+  ],
+  "verification": {
+    "type": "source_research_plus_one_synthetic_SQL_probe",
+    "tests_not_run": "Ingen bred/native/fullservice suite; ingen implementation eller live data er muteret.",
+    "synthetic_sql_probe": {
+      "lexicalLive": 1,
+      "chronologicalLive": 0
+    }
+  },
+  "sources": [
+    {
+      "path": "src/server/better-auth.ts",
+      "lines": "116-117,375-394,473-496",
+      "role": "Konfiguration og privat serviceverifikation",
+      "sha256": "9513797eb1b1a82b0c9d592fb00e3317d6d33b6eb29c7bf0c548a0a4c58c9b73"
+    },
+    {
+      "path": "src/server/auth.ts",
+      "lines": "57-89",
+      "role": "Serviceheader før cookie, registry og stabil principal",
+      "sha256": "be531af3c308a417d767dc30960777c45408ff8883d767702199dbcbdae942cc"
+    },
+    {
+      "path": "src/core/workspace-service-principals.ts",
+      "lines": "1-200",
+      "role": "Oprettelse, rotation, revoke, operation/recovery og engangshemmelighed",
+      "sha256": "d5fe1972813891f9b47f059ee3922f6d491938ab47641fc52cb73fd79bf4f7af"
+    },
+    {
+      "path": "src/server/router/service-principals.ts",
+      "lines": "1-88",
+      "role": "Owner-only livscyklus HTTP",
+      "sha256": "e37a1116417ec8f9e305a41e31d37f51bcb5e4ec172d80d2b58274fbbaaa644e"
+    },
+    {
+      "path": "src/server/router.ts",
+      "lines": "284-288,757-772",
+      "role": "Eksakte ruter",
+      "sha256": "e1f20be917fccd193f8423eecd5abbf9f3c37e4f81b9639d96abc9ee780ded54"
+    },
+    {
+      "path": "src/core/workspace-access.ts",
+      "lines": "whole",
+      "role": "Aktuel workspace/company RBAC for mennesker og services",
+      "sha256": "0e034fcee922d6cd4733da1fbdc85f05dce0a443461083903a5808554fb84b2e"
+    },
+    {
+      "path": "src/server/router/me.ts",
+      "lines": "1-34",
+      "role": "Eksisterende service /api/me",
+      "sha256": "fa4cd8d192ea1b55ebf2bcd0b201dbb6aa42afb040c79b5a1cd2f7d4552270f5"
+    },
+    {
+      "path": "src/mcp/security.ts",
+      "lines": "41-170",
+      "role": "Stdio-secret, read-only verifikation og tool permission scopes",
+      "sha256": "b82fc1c9db60bdf85ba2dbda531bd309eccd994300043aa390feaf8b51874b20"
+    },
+    {
+      "path": "src/mcp/server.ts",
+      "lines": "64-80",
+      "role": "Hosted/service-mode kræver credential",
+      "sha256": "c56eb59749fc7a6f512eeb3e41b44cdb5e86628c54ed084be2e63c71d6c6e107"
+    },
+    {
+      "path": "src/mcp/actor.ts",
+      "lines": "whole",
+      "role": "Klientoplyst audit-attribution er ikke authentication",
+      "sha256": "fa7107941abfc73214a43a6feb7847e90589d88aa5b923601c81f61ef526b5ef"
+    },
+    {
+      "path": "src/mcp/tool-runtime.ts",
+      "lines": "286-299,364-367",
+      "role": "Advisory actor kontra stabil authenticated principal",
+      "sha256": "c0d61ca59947da8c2ab13c79028994ab5aacb0683929d1035f418c8389016936"
+    },
+    {
+      "path": "src/server/actor.ts",
+      "lines": "whole",
+      "role": "HTTP user:<id> attribution",
+      "sha256": "fafac84a231ae83bba5b2c35fa9939fe25646c5719c5f79fe7f9ef7e9789c991"
+    },
+    {
+      "path": "src/core/workspace-migrations/0017-service-principals-v17.json",
+      "lines": "sql",
+      "role": "apikey + immutable registry/events",
+      "sha256": "15b5d5fe4da768c10a015c4f362ca0f61046719a50e542682c681be6be27dee5"
+    },
+    {
+      "path": "src/core/workspace-migrations/0018-service-principal-saga-v18.json",
+      "lines": "sql",
+      "role": "Append-only operation events",
+      "sha256": "76bc8d098370055957b5e376cf245e203d96bc4a1ccd46e0bfbe1ffb1fa5bb9b"
+    },
+    {
+      "path": "node_modules/@better-auth/api-key/dist/index.mjs",
+      "lines": "729-838,1578-1713,1717-1868,1945-2028,2310-2358",
+      "role": "Installeret 1.7.1 crypto/issuance/rate/verify",
+      "sha256": "6d022f3c46371520dc13d78722e8246c447812b8ece06d0f1bbb930588094ef0"
+    },
+    {
+      "path": "node_modules/@better-auth/core/dist/db/adapter/factory.mjs",
+      "lines": "128,163,242",
+      "role": "Date serialiseres som ISO når supportsDates=false",
+      "sha256": "a29c8924fe90d19e25120017669edbe16e903dc7fff4cadd66b95221a665f795"
+    },
+    {
+      "path": "node_modules/@better-auth/kysely-adapter/dist/index.mjs",
+      "lines": "567",
+      "role": "SQLite supportsDates=false",
+      "sha256": "c54adf58fa78a99c82882e733a08c589dae03aa36ef90b004954b0785d23e7bd"
+    },
+    {
+      "path": "crates/rentemester-application/src/access.rs",
+      "lines": "170-180,250-270",
+      "role": "Service-facts er pure evaluator, ikke verifier",
+      "sha256": "07d55edfa4bf1636927aae51caddb01531851f0b61a161de1aeac46970e902b9"
+    },
+    {
+      "path": "crates/rentemester-storage/src/control_access.rs",
+      "lines": "1-100",
+      "role": "Nuværende observation er human-only",
+      "sha256": "e085e4e1e0669d44cbd2cdca4a74b3350b66495b160f3710f018432d60032202"
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence.rs",
+      "lines": "1-115",
+      "role": "Nuværende orchestration accepterer kun HumanSession",
+      "sha256": "b25212c08eae11a115c1a5babbfd38161b1cb3f6566468d9f5a96a5b50cd53ce"
+    },
+    {
+      "path": "crates/rentemester-storage/src/workspace_context.rs",
+      "lines": "whole",
+      "role": "Aktuel bounded human context projektion",
+      "sha256": "af1e4375fc0164b1438c5da82a41dc19d0854aa5dd191a230b9d6c4d0abf70d8"
+    },
+    {
+      "path": "docs/cli-contract.md",
+      "lines": "whole",
+      "role": "Lokal actor-policy/exitkontrakt er separat fra remote credentials",
+      "sha256": "b90f94f0816478d79db9305bab0b5bd3904d520dfb3d5e4bf30259ae7d3d54bc"
+    },
+    {
+      "path": "src/server/mutations.ts",
+      "lines": "203-222",
+      "role": "Hosted mutation origin gate gælder også service credentials",
+      "sha256": "a00f2a72a148105481c5ad3954ed13071cae8d314c065cfcb26ea65c73aa850c"
+    }
+  ]
+}

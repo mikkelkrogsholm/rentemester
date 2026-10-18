@@ -85,6 +85,55 @@ fn probe() {
         clock: &clock,
         audit_key_version: 1,
     };
+    if request["mode"] == "workspace-context" {
+        let verifier = CookieVerifier::new(
+            request["proofWorkspace"].as_str().unwrap_or("w"),
+            if request["proofDevelopment"] == true {
+                CookieProfile::Development
+            } else {
+                CookieProfile::Secure
+            },
+            request["proofKey"].as_str().unwrap_or(key),
+        )
+        .unwrap();
+        let cookie = verifier
+            .issue_browser_session(request["token"].as_str().unwrap())
+            .unwrap();
+        let proof = verifier
+            .verify(Some(cookie.request_header()), None)
+            .unwrap();
+        let catalog = crate::workspace_context::Catalog {
+            workspace: request["catalogWorkspace"]
+                .as_str()
+                .unwrap_or("w")
+                .to_owned(),
+            companies: request["catalog"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|e| crate::workspace_context::RegisteredCompany {
+                    slug: e["slug"].as_str().unwrap().to_owned(),
+                    name: e["name"].as_str().unwrap().to_owned(),
+                    archived: e["archived"].as_bool().unwrap(),
+                })
+                .collect(),
+        };
+        let result=crate::workspace_context::execute(&mut db,&cookies,&clock,&proof,&catalog)
+            .map(|v|json!({"ok":true,"context":serde_json::from_str::<Value>(v.as_json()).unwrap()}))
+            .unwrap_or_else(|f|json!({"ok":false,"code":f.error.code,"stage":format!("{:?}",f.stage),"reusable":f.connection_reusable}));
+        let result = if request["repeat"] == true {
+            let again =
+                crate::workspace_context::execute(&mut db, &cookies, &clock, &proof, &catalog)
+                    .unwrap();
+            let mut value = result;
+            value["repeatContext"] = serde_json::from_str::<Value>(again.as_json()).unwrap();
+            value
+        } else {
+            result
+        };
+        println!("RM_MFA_LOGIN_RESULT={result}");
+        return;
+    }
     if matches!(
         request["mode"].as_str(),
         Some("email-issue" | "email-complete")

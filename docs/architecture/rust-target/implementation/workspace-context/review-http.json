@@ -1,0 +1,82 @@
+{
+  "ok": true,
+  "checks": 25,
+  "observations": [
+    {
+      "id": "workspace-context/WAL-source-exact-read-only-current-human-context"
+    },
+    {
+      "id": "workspace-context/WAL-current-membership-revocation-without-stale-cache"
+    },
+    {
+      "id": "workspace-context/DELETE-source-exact-read-only-current-human-context"
+    },
+    {
+      "id": "workspace-context/DELETE-current-membership-revocation-without-stale-cache"
+    },
+    {
+      "id": "workspace-context/query-no-context-or-write"
+    },
+    {
+      "id": "workspace-context/foreign-origin-no-context-or-write"
+    },
+    {
+      "id": "workspace-context/fetch-site-no-context-or-write"
+    },
+    {
+      "id": "workspace-context/service-no-context-or-write"
+    },
+    {
+      "id": "workspace-context/service-key-no-context-or-write"
+    },
+    {
+      "id": "workspace-context/missing-cookie-no-context-or-write"
+    },
+    {
+      "id": "workspace-context/bare-cookie-no-context-or-write"
+    },
+    {
+      "id": "workspace-context/duplicate-cookie-no-context-or-write"
+    },
+    {
+      "id": "workspace-context/bare-before-valid-no-context-or-write"
+    },
+    {
+      "id": "workspace-context/secure-bare-before-valid-no-context-or-write"
+    },
+    {
+      "id": "workspace-context/secure-bare-after-valid-no-context-or-write"
+    },
+    {
+      "id": "workspace-context/pending-cookie-no-context-or-write"
+    },
+    {
+      "id": "workspace-context/encoding-no-context-or-write"
+    },
+    {
+      "id": "workspace-context/revoked-native-refusal-no-context"
+    },
+    {
+      "id": "workspace-context/disabled-native-refusal-no-context"
+    },
+    {
+      "id": "workspace-context/bad-user-native-refusal-no-context"
+    },
+    {
+      "id": "workspace-context/bad-catalog-native-refusal-no-context"
+    },
+    {
+      "id": "workspace-context/wrong-workspace-native-refusal-no-context"
+    },
+    {
+      "id": "workspace-context/HEAD-no-rate-charge-and-direct-peer-bound-ignores-forwarded"
+    },
+    {
+      "id": "workspace-context/missing-handler-no-legacy-fallback"
+    },
+    {
+      "id": "workspace-context/actual-writer-contention-no-context"
+    }
+  ],
+  "scope": "Focused native workspace context http"
+}

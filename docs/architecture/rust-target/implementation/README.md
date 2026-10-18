@@ -206,3 +206,7 @@ Password-bound own remaining-code view and confirmed regeneration now dispatch t
 ## Native authenticated password change
 
 Current-password change now uses unlocked KDFs, exact current credential/session admission and one atomic credential/reset-link/optional all-own-session rotation/audit transaction. Canonical native HTTP returns a bounded prepared own-user receipt and rotation cookie only after known commit, with no bearer JSON. The retained account menu accepts explicit source/native positive receipts, disables retries and reports uncertainty truthfully. Current contract, scoped GDD and native/source/HTTP/UI evidence are in [password-change](password-change/CONTRACT.md). Remaining identity, physical/lifetime/live legacy routing, product context and complete platform/distribution/cutover parity remain open.
+
+## Native human workspace context
+
+[Workspace context contract](workspace-context/CONTRACT.md) and its GDD/evidence qualify human-cookie GET `/api/me`: current own user/workspace role and explicit latest memberships intersect the trusted registered catalog in manifest order, including archive flags. It opens no company ledger, modifies no control rows and grants no later company authority. Service identity, physical/lifetime/legacy routing and full platform delivery remain open.

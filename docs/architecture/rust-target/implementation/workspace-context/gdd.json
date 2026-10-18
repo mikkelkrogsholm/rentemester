@@ -1,0 +1,242 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native human workspace context",
+    "goal": "Provide retained cockpit own current user/workspace/company context from native session and membership facts",
+    "scope": "Synthetic admitted controls/trusted catalog and HTTP; full runtime/service/physical/cutover remains open"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Own human workspace context",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Same-writer current session/access/membership projection and bounded secret-free HTTP response",
+        "rationale": "Company visibility cannot outlive its authorization snapshot or inherit owner access",
+        "excludes": [
+          "Service identity, physical/lifetime admission and company action authorization"
+        ]
+      },
+      "interfaces": [
+        "action.workspace_context"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Valid own context matches source with manifest order, archived and explicit roles",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic WAL/DELETE control and trusted runtime/catalog",
+        "when": "Own GET /api/me",
+        "then": "Valid own context matches source with manifest order, archived and explicit roles"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Current identity/cookie/access or malformed projection refuses all context",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic WAL/DELETE control and trusted runtime/catalog",
+        "when": "Own GET /api/me",
+        "then": "Current identity/cookie/access or malformed projection refuses all context"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Latest-id grants only, no owner inheritance, no foreign/dangling disclosure and exact all-table preservation",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic WAL/DELETE control and trusted runtime/catalog",
+        "when": "Own GET /api/me",
+        "then": "Latest-id grants only, no owner inheritance, no foreign/dangling disclosure and exact all-table preservation"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Catalog/workspace/output bounds and HTTP query/body/service/provenance gates refuse; missing handler has no fallback",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic WAL/DELETE control and trusted runtime/catalog",
+        "when": "Own GET /api/me",
+        "then": "Catalog/workspace/output bounds and HTTP query/body/service/provenance gates refuse; missing handler has no fallback"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Writer contention refuses; admitted lock excludes competing revocation until read completes; later request sees revocation",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic WAL/DELETE control and trusted runtime/catalog",
+        "when": "Own GET /api/me",
+        "then": "Writer contention refuses; admitted lock excludes competing revocation until read completes; later request sees revocation"
+      }
+    },
+    "action.workspace_context": {
+      "kind": "action",
+      "description": "Native human GET /api/me context",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {},
+        "context": {
+          "configured_session_clock_workspace_catalog": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object",
+          "description": "ok:true with own user id/email/readiness flags, workspaceRole and explicit membership companies only",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "user": {
+              "type": "object"
+            },
+            "workspaceRole": {
+              "type": "string"
+            },
+            "companies": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          },
+          "required": [
+            "ok",
+            "user",
+            "workspaceRole",
+            "companies"
+          ]
+        },
+        "errors": {
+          "refused": "401 invalid current credentials or503 operational/projection refusal, no context/cookies"
+        },
+        "preconditions": [
+          "Admitted control and same-workspace configured current-cookie proof; trusted clock and catalog lifetime",
+          "Serving owner retains physical/lifetime and exclusive native routing/legacy writer gates"
+        ],
+        "postconditions": [
+          "Current identity/access and latest-id own memberships resolved under writer",
+          "Registered catalog order/archive/explicit role only, no inherited owner access",
+          "No data writes, audit, session refresh, cookies, secret or company action grant",
+          "Bounded full typed context released after successful read rollback/readiness only"
+        ],
+        "external_effects": [
+          "Bounded shared HTTP admission and secret-free snapshot response"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Current identity/membership snapshot and trusted catalog must not disclose foreign/revoked/invalid data or become later action authority",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Current identity/membership snapshot and trusted catalog must not disclose foreign/revoked/invalid data or become later action authority",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Current identity/membership snapshot and trusted catalog must not disclose foreign/revoked/invalid data or become later action authority",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Current identity/membership snapshot and trusted catalog must not disclose foreign/revoked/invalid data or become later action authority",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Current identity/membership snapshot and trusted catalog must not disclose foreign/revoked/invalid data or become later action authority",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Verify configured session; current writer-fenced identity/access/latest membership projection; bounded context returned only after read rollback"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.workspace_context",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.workspace_context",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.workspace_context",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.workspace_context",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.workspace_context",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.workspace_context",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native human workspace context",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "b26007b58b8105624f5979b97343db496718d9fc5e65cec41658314be24dd393"
+      }
+    }
+  }
+}

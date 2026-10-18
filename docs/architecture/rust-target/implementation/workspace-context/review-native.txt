@@ -1,0 +1,9 @@
+    Blocking waiting for file lock on artifact directory
+    Finished `release` profile [optimized] target(s) in 0.89s
+     Running unittests src/lib.rs (target/release/deps/rentemester_server-36d1a0541332a7c7)
+
+running 2 tests
+test auth_http::tests::workspace_context_get_body_query_and_duplicate_headers_never_dispatch ... ok
+test auth_http::tests::workspace_context_refusal_unknown_or_panic_never_discloses_projection_or_cookie ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.00s

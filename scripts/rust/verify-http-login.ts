@@ -1,3 +1,4 @@
+import { verifyHttpWorkspaceContext } from "./workspace-context-cases";
 /** Real native HTTP enrolled login, actual control transactions, source crypto and cookie oracle. */
 import assert from "node:assert/strict";
 import { verifyHttpPasswordChange } from "./http-password-change-cases";
@@ -313,6 +314,7 @@ try {
 		}
 	}
 	await verifyHttpEnrollment({ fixture, start, key, now, password, note });
+	await verifyHttpWorkspaceContext({fixture,start,key,now,note});
 	await verifyHttpPasswordChange({ fixture,start,key,now,note });
 	await verifyHttpBackupManagement({ fixture, start, key, now, note });
 	await verifyHttpSessions({ fixture, start, key, now, note });

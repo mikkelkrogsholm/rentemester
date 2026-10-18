@@ -336,7 +336,7 @@ fn finish_committed<T>(value: T, control: Transaction<'_>) -> Committed<T> {
     }
 }
 #[cfg(test)]
-fn checkpoint(point: &str) {
+pub(crate) fn checkpoint(point: &str) {
     if std::env::var("RM_FENCE_POINT").ok().as_deref() == Some(point) {
         std::fs::write(std::env::var("RM_FENCE_MARKER").unwrap(), point).unwrap();
         let mut line = String::new();

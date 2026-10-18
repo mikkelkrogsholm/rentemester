@@ -1,5 +1,7 @@
 //! Human-only enrolled login. Trusted handlers alone own admitted native connections/lifetimes.
 use super::*;
+mod context;
+pub use context::WorkspaceContextHandler;
 mod backup_management;
 pub use backup_management::{BackupManagementHandler, BackupManagementInput};
 mod password_change;
@@ -70,6 +72,7 @@ pub struct AuthHandlers {
     pub verification: Option<VerificationHandlers>,
     pub backup_management: Option<BackupManagementHandler>,
     pub password_change: Option<PasswordChangeHandler>,
+    pub workspace_context: Option<WorkspaceContextHandler>,
     pub session_control: Option<SessionControlHandler>,
     pub sign_in: Box<dyn Fn(LoginInput) -> Result<BeginOutcome, ContinuationFailure> + Send + Sync>,
     pub totp: Box<dyn Fn(FactorInput) -> Result<VerifyOutcome, ContinuationFailure> + Send + Sync>,
@@ -99,7 +102,7 @@ pub(super) fn routes(router: Router<Arc<StateData>>, enrollment: bool) -> Router
     } else {
         router
     };
-    let router = self::password_change::routes(router);
+    let router = self::context::routes(self::password_change::routes(router));
     // Each route owns the canonical path; there is no legacy auth-handler fallback.
     self::verification::routes(self::sessions::routes(self::backup_management::routes(
         router,

@@ -1,0 +1,106 @@
+{
+  "ok": true,
+  "checks": 33,
+  "observations": [
+    {
+      "id": "workspace-context/wal-source-exact-manifest-order-archive-explicit-latest-ID-membership-no-writes"
+    },
+    {
+      "id": "workspace-context/wal-owner-no-company-inheritance"
+    },
+    {
+      "id": "workspace-context/wal-empty-catalog-hides-dangling-grants"
+    },
+    {
+      "id": "workspace-context/wal-nonfresh-current-session-needs-no-password-credential"
+    },
+    {
+      "id": "workspace-context/delete-source-exact-manifest-order-archive-explicit-latest-ID-membership-no-writes"
+    },
+    {
+      "id": "workspace-context/delete-owner-no-company-inheritance"
+    },
+    {
+      "id": "workspace-context/delete-empty-catalog-hides-dangling-grants"
+    },
+    {
+      "id": "workspace-context/delete-nonfresh-current-session-needs-no-password-credential"
+    },
+    {
+      "id": "workspace-context/revoked-session-no-context-no-write"
+    },
+    {
+      "id": "workspace-context/expired-session-no-context-no-write"
+    },
+    {
+      "id": "workspace-context/unverified-email-no-context-no-write"
+    },
+    {
+      "id": "workspace-context/disabled-MFA-no-context-no-write"
+    },
+    {
+      "id": "workspace-context/unverified-factor-no-context-no-write"
+    },
+    {
+      "id": "workspace-context/disabled-access-no-context-no-write"
+    },
+    {
+      "id": "workspace-context/bad-user-email-no-context-no-write"
+    },
+    {
+      "id": "workspace-context/wrong-proof-workspace-no-context-no-write"
+    },
+    {
+      "id": "workspace-context/wrong-proof-profile-no-context-no-write"
+    },
+    {
+      "id": "workspace-context/wrong-proof-key-no-context-no-write"
+    },
+    {
+      "id": "workspace-context/wrong-catalog-workspace-no-context-no-write"
+    },
+    {
+      "id": "workspace-context/duplicate-catalog-no-context-no-write"
+    },
+    {
+      "id": "workspace-context/invalid-slug-no-context-no-write"
+    },
+    {
+      "id": "workspace-context/blank-name-no-context-no-write"
+    },
+    {
+      "id": "workspace-context/control-name-no-context-no-write"
+    },
+    {
+      "id": "workspace-context/long-name-no-context-no-write"
+    },
+    {
+      "id": "workspace-context/catalog-count-no-context-no-write"
+    },
+    {
+      "id": "workspace-context/same-connection-successful-rollback-reuse-without-effects"
+    },
+    {
+      "id": "workspace-context/catalog-slug-byte-bound-no-partial-output"
+    },
+    {
+      "id": "workspace-context/serialized-output-bound-no-partial-context"
+    },
+    {
+      "id": "workspace-context/exact1000-latest-membership-slugs-including-revoked-pass"
+    },
+    {
+      "id": "workspace-context/1001-latest-membership-slugs-refuse-independent-of-catalog-output-bound"
+    },
+    {
+      "id": "workspace-context/writer-held-through-projection-excludes-revocation"
+    },
+    {
+      "id": "workspace-context/next-request-observes-revocation-after-lock-release"
+    },
+    {
+      "id": "workspace-context/actual-control-writer-contention-withholds-context"
+    }
+  ],
+  "scope": "Focused native workspace context core"
+}

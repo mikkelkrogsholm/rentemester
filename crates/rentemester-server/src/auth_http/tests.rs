@@ -139,11 +139,15 @@ fn probe() {
     let change_t = clock.clone();
     let change_open = open.clone();
     let change_log = outcome_log.clone();
+    let context_open = open.clone();
+    let context_c = cookies.clone();
+    let context_t = clock.clone();
     let mut auth = AuthHandlers {
         enrollment: Some(enrollment),
         verification: None,
         backup_management: None,
         password_change: None,
+        workspace_context: None,
         session_control: None,
         cookies,
         sign_in: Box::new(move |i| {
@@ -177,6 +181,38 @@ fn probe() {
             )
         }),
     };
+    if config["workspaceContext"].is_array() {
+        let context_log = outcome_log.clone();
+        let catalog = rentemester_application::workspace_context::Catalog {
+            workspace: config["catalogWorkspace"]
+                .as_str()
+                .unwrap_or("w")
+                .to_owned(),
+            companies: config["workspaceContext"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(
+                    |e| rentemester_application::workspace_context::RegisteredCompany {
+                        slug: e["slug"].as_str().unwrap().to_owned(),
+                        name: e["name"].as_str().unwrap().to_owned(),
+                        archived: e["archived"].as_bool().unwrap(),
+                    },
+                )
+                .collect(),
+        };
+        auth.workspace_context = Some(Box::new(move |p| {
+            let r = rentemester_application::workspace_context::execute(
+                &mut context_open(),
+                &context_c,
+                context_t.as_ref(),
+                &p,
+                &catalog,
+            );
+            observe(&context_log, "workspace-context", &r);
+            r
+        }));
+    }
     if config["passwordChange"] == true {
         auth.password_change = Some(Box::new(move |i| {
             let result = rentemester_application::password_change::execute(
@@ -354,6 +390,7 @@ fn handlers(cookies: Arc<CookieVerifier>, calls: Arc<AtomicUsize>, mode: u8) -> 
         verification: None,
         backup_management: None,
         password_change: None,
+        workspace_context: None,
         session_control: None,
         cookies,
         sign_in,
@@ -1176,6 +1213,100 @@ async fn password_change_head_and_invalid_objects_never_dispatch_or_consume_head
             .await
             .unwrap();
         assert_eq!(r.status().as_u16(), 400);
+    }
+    assert_eq!(calls.load(Ordering::SeqCst), 0);
+    task.abort();
+}
+
+async fn workspace_context_server(
+    mode: u8,
+) -> (
+    String,
+    tokio::task::JoinHandle<()>,
+    Arc<AtomicUsize>,
+    String,
+) {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let origin = format!("http://{}", listener.local_addr().unwrap());
+    let cookies = verifier(CookieProfile::Development);
+    let cookie = cookies
+        .issue_session("workspace-context-private-unit")
+        .unwrap()
+        .request_header()
+        .to_owned();
+    let calls = Arc::new(AtomicUsize::new(0));
+    let mut auth = handlers(cookies, calls.clone(), 0);
+    let count = calls.clone();
+    auth.workspace_context = Some(Box::new(move |_| {
+        count.fetch_add(1, Ordering::SeqCst);
+        match mode {
+            0 => {
+                let mut e = failure(false);
+                e.error.code = "invalid_credentials";
+                Err(e)
+            }
+            1 => Err(failure(true)),
+            _ => panic!("synthetic context panic"),
+        }
+    }));
+    let app = identity_router(&origin, CookieProfile::Development, auth).unwrap();
+    let task = tokio::spawn(async move {
+        axum::serve(
+            listener,
+            app.into_make_service_with_connect_info::<SocketAddr>(),
+        )
+        .await
+        .unwrap();
+    });
+    (origin, task, calls, cookie)
+}
+#[tokio::test]
+async fn workspace_context_refusal_unknown_or_panic_never_discloses_projection_or_cookie() {
+    for mode in 0..3 {
+        let (origin, task, calls, cookie) = workspace_context_server(mode).await;
+        let r = client()
+            .get(format!("{origin}/api/me"))
+            .header("cookie", cookie)
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(r.status().as_u16(), if mode == 0 { 401 } else { 503 });
+        assert!(set_cookies(&r).is_empty());
+        let body = r.text().await.unwrap();
+        assert!(!body.contains("\"user\""));
+        assert!(!body.contains("\"companies\""));
+        assert!(!body.contains("private"));
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+        task.abort();
+    }
+}
+#[tokio::test]
+async fn workspace_context_get_body_query_and_duplicate_headers_never_dispatch() {
+    let c = client();
+    let (origin, task, calls, cookie) = workspace_context_server(0).await;
+    let url = format!("{origin}/api/me");
+    for body in ["{}", "[]", "userId=foreign"] {
+        let r = c
+            .get(&url)
+            .header("cookie", &cookie)
+            .body(body)
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(r.status().as_u16(), 400);
+        assert!(set_cookies(&r).is_empty());
+    }
+    for header in ["cookie", "host", "origin"] {
+        let r = c
+            .get(&url)
+            .header("cookie", &cookie)
+            .header(header, if header == "cookie" { &cookie } else { &origin })
+            .header(header, if header == "cookie" { &cookie } else { &origin })
+            .send()
+            .await
+            .unwrap();
+        assert!(r.status().is_client_error());
+        assert!(set_cookies(&r).is_empty());
     }
     assert_eq!(calls.load(Ordering::SeqCst), 0);
     task.abort();

@@ -1,0 +1,88 @@
+{
+  "result": "PASS",
+  "reviewed_at_utc": "2026-10-18T03:45:44.630657+00:00",
+  "material_findings": [],
+  "resolved_findings": [
+    {
+      "id": "WC01",
+      "severity": "P2",
+      "problem": "Context HTTP used regular cookie verifier and accepted bare named credential beside valid cookie",
+      "resolution": "Uses strict verify_optional and requires Some; actual HTTP covers both orders of plain/secure bare names"
+    },
+    {
+      "id": "WC-E01",
+      "problem": "Membership cardinality bound had no isolated boundary oracle",
+      "resolution": "Exactly1000 latest slugs including revoked rows passes with small catalog/result;1001st dangling grant refuses without context/write, distinct from catalog/result limits"
+    }
+  ],
+  "execution": {
+    "core_process_checks": 33,
+    "http_process_checks": 25,
+    "server_unit_tests": 2,
+    "core": "/tmp/rm-context-review-core.json",
+    "http": "/tmp/rm-context-review-http.json",
+    "core_stderr_redacted": "/tmp/rm-context-review-core.err",
+    "http_stderr_redacted": "/tmp/rm-context-review-http.err",
+    "native": "/tmp/rm-context-review-native.txt"
+  },
+  "projections": {
+    "scope": "Exact current original initialization/fixture/run/start/barrier helpers with absolute imports/root; only respective workspace context module function invoked",
+    "core_sha256": "3aaf3646352668fcf46b1024348d6959e62b4fe5069090f216771111edc6d8f8",
+    "http_sha256": "ed4d0d5291fe997f5725babc94aa5a5f1bb8242e9a98278d15619ab1e04dbb51"
+  },
+  "reviewed_invariants": [
+    "Same writer current human session/access/strict MFA facts; Current not Fresh; no local password credential required",
+    "Caller supplied catalog trusted only, bound to proof workspace; typed slug/name/archive/cardinality and duplicate constraints",
+    "Membership latest numeric-ID semantics, own registered intersection in catalog order, archive retained and owner never inherits company roles",
+    "Bounded latest membership cardinality including revoked/dangling and1MiB fullserialized result before disclosure",
+    "No SQL data writes/refresh/audit; successful rollback/preflight before release; repeated same native handle remains reusable",
+    "Writer retained through projection excludes competing revocation; next request observes revocation",
+    "HTTP strict query/body/Host/Origin/fetch/cookie/service refusal and fixed process rate; no cookie or legacy fallback",
+    "Source exact own-context oracle on WAL/DELETE without company config/ledger lookup or hidden companies"
+  ],
+  "remaining_gates": [
+    "Trusted owner must retain catalog/manifest/control/physical/workspace lifetime admission; no actual opener/deployment qualification",
+    "Human cookie only; service principal/runtime/platform parity remains pending",
+    "No full pipeline duplicated; main owns broad regression"
+  ],
+  "sha256": {
+    "crates/rentemester-storage/src/workspace_context.rs": "af1e4375fc0164b1438c5da82a41dc19d0854aa5dd191a230b9d6c4d0abf70d8",
+    "crates/rentemester-storage/src/lib.rs": "ff9c6eb762bd9932bd202a03b1f378b26a000184be4d64e2a6c65da3be34b680",
+    "crates/rentemester-application/src/workspace_context.rs": "5d38188a8c7603e95a52308684f0bdb265261f29744a097924a66585d47145e3",
+    "crates/rentemester-application/src/lib.rs": "cb0e016491d2bdaa97fa2ed3f59cfdc9d19bb511d8ef6278d2b94230a799523d",
+    "crates/rentemester-application/src/control_fence.rs": "b25212c08eae11a115c1a5babbfd38161b1cb3f6566468d9f5a96a5b50cd53ce",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "f1245a95952a99ba6570be0c7ecaf52457f8f4b27ce296a68243fd0dc2de9ad1",
+    "crates/rentemester-server/src/auth_http/context.rs": "0907fb58eaf5acabed4dd56595c59d02e3c6eb9b560a2b369bd6a9b904825f5d",
+    "crates/rentemester-server/src/auth_http.rs": "86418561881da8673f16e32378e6da76e741576a37ca6380201a5eb0143ba520",
+    "crates/rentemester-server/src/lib.rs": "3f15c431e3ba162dc3c8a22513af1fb1e9820de195dbc19b3c0dddc2034f1b73",
+    "crates/rentemester-server/src/auth_http/tests.rs": "5bc248094630116bb16eda42cbe6cf24f7ef887867a36043a5722d0434904dc2",
+    "crates/rentemester-server/src/tests.rs": "d6de50623c40ccc22240d423a9253c6ec8dacca44429e9e962d22d837b15e762",
+    "scripts/rust/workspace-context-cases.ts": "5b6095b45e635996193631b02ee5a999d06a1c1a0498faa6fd57365c8cae7269",
+    "scripts/rust/verify-mfa-login.ts": "67edb4a3fe8a0e2225bf11a9fec05f563cda0ecc447eca621b086cf49b0d4e8f",
+    "scripts/rust/verify-http-login.ts": "2867d05dca9039dd94e129728fe54823edfd428c90602a90768e2a0867cd91f5",
+    "docs/architecture/rust-target/implementation/workspace-context/CONTRACT.md": "b26007b58b8105624f5979b97343db496718d9fc5e65cec41658314be24dd393",
+    "docs/architecture/rust-target/implementation/workspace-context/gdd.json": "ca76d8d9596f340da1dda1137c0172d1704648449cc819fa16f57b28f041c9ad",
+    "docs/architecture/rust-target/implementation/workspace-context/readiness.json": "5019e194a8b0ac0d56347745a440b507d103929c16a275995952d24bd383256b",
+    "docs/architecture/rust-target/implementation/README.md": "e5e2aa976d7afcb5e9aded5bba15a19e219f0877e3ce02adbb4ab5613b4d04eb"
+  },
+  "docs_review": {
+    "result": "PASS",
+    "reviewed_at_utc": "2026-10-18T03:46:22.365942+00:00",
+    "material_findings": [],
+    "gdd_checks": 3,
+    "spec_revision": "sha256:084397dbd7321d44e23c8a2c030dcff5b806804808c1ce6c4626e972141f5cef",
+    "independent_report": "/tmp/rm-context-review-readiness.json",
+    "repository_report_matches": true,
+    "contract_source_hash_matches": true,
+    "functional_hashes_unchanged": true,
+    "aligned_claims": [
+      "Human Current not Fresh, strict native factor/timing/schema correction vs source flags",
+      "Trusted same-workspace catalog, no physical manifest or later action grant",
+      "Exact own projection/manifest order/archive/current role, no owner inheritance",
+      "1000 registered entries/1000 distinct latest membership histories including revoked/dangling, strict text and1MiB output bounds",
+      "Read rollback/readiness before disclosure, no SQL writes/audit/refresh/cookies",
+      "Host/optional exact Origin/fetch-site and strict query/body/credential gates; HEAD no dispatch/ratecharge",
+      "No service/full runtime/deployed browser/platform closure claim"
+    ]
+  }
+}
