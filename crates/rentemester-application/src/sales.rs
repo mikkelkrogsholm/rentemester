@@ -12,6 +12,8 @@ use serde_json::Value;
 pub enum Action<'a> {
     Contacts,
     Customers(&'a Customer),
+    Vendor(&'a rentemester_storage::vendors::Vendor),
+    UpdateVendor(i64, &'a Value),
     UpdateCustomer(i64, &'a Value),
     List,
     Issue(&'a Input),
@@ -92,7 +94,10 @@ pub fn execute(
     } = request;
     let permission = match action {
         Action::Contacts | Action::List => Permission::CompanyRead,
-        Action::Customers(_) | Action::UpdateCustomer(_, _) => Permission::CompanyMasterData,
+        Action::Customers(_)
+        | Action::UpdateCustomer(_, _)
+        | Action::Vendor(_)
+        | Action::UpdateVendor(_, _) => Permission::CompanyMasterData,
         Action::Issue(_) | Action::Preview(_) => Permission::CompanyDraftWrite,
         Action::Post(_) | Action::Settle(_) | Action::Credit(_) | Action::Refund(_) => {
             Permission::CompanyLedgerPost
@@ -114,6 +119,12 @@ pub fn execute(
         |tx, actor| {
             Ok(match action {
                 Action::Contacts => Output::Json(sales::contacts(tx, slug, today)?),
+                Action::Vendor(input) => {
+                    Output::Json(rentemester_storage::vendors::create(tx, input, actor)?)
+                }
+                Action::UpdateVendor(id, input) => {
+                    Output::Json(rentemester_storage::vendors::update(tx, id, input, actor)?)
+                }
                 Action::Customers(input) => Output::Json(sales::create_customer(tx, input, actor)?),
                 Action::UpdateCustomer(id, input) => {
                     Output::Json(sales::update_customer(tx, id, input, actor)?)

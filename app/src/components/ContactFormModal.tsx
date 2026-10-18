@@ -286,6 +286,9 @@ export function ContactFormModal({
         if (notes !== undefined) input.notes = notes;
 
         if (vendor) {
+          for (const field of ["address", "vatOrCvr", "countryCode", "identifierKind", "email", "phone", "website", "defaultExpenseAccount", "defaultVatTreatment", "notes"] as const) {
+            if (!form[field].trim()) input[field] = null;
+          }
           await api.updateVendor(slug, vendor.id, input).catch(outcome.reject);
         } else {
           await api.createVendor(slug, input).catch(outcome.reject);

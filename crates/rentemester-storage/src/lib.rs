@@ -511,6 +511,7 @@ pub mod company_setup;
 pub mod vat_report;
 
 pub mod sales;
+pub mod vendors;
 
 pub mod invoice_settlement;
 

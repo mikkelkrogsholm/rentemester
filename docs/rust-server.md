@@ -2,7 +2,7 @@
 
 Rust-serveren leverer det eksisterende React-cockpit og behandler selv login,
 ejeroprettelse, MFA, sessions, virksomhedsadgang, manuel bogføring, tilbageførsel,
-virksomhedsstamdata, kontooprettelse, bekræftelse af kontoroller, bankkonti, generisk bankimport, bilagsbogføring med valutakøb samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport samt momsoverblik med PDF, kundeoprettelse, udstedelse/bogføring af danske salgsfakturaer samt betalinger, kreditnotaer og afstemning af kundetilbagebetalinger. Den
+virksomhedsstamdata, kontooprettelse, bekræftelse af kontoroller, bankkonti, generisk bankimport, bilagsbogføring med valutakøb samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport samt momsoverblik med PDF, kundeoprettelse, udstedelse/bogføring af danske salgsfakturaer samt betalinger, kreditnotaer, afstemning af kundetilbagebetalinger og leverandørkort med bilagsudfyldning. Den
 starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Prøv med syntetiske data
@@ -213,8 +213,7 @@ Dette forløb understøtter foreløbig fulde danske DKK-fakturaer med standard
 og dobbelt bogføring afvises. PDF understøtter det nuværende latinske tegnsæt,
 herunder danske bogstaver; tekst uden for tegnsættet afvises ved input.
 Fremmed valuta, andre momstyper, offentlig e-faktura,
-ekstern maillevering, sletning af kunder samt redigering/sletning af leverandører
-mangler stadig i Rust.
+ekstern maillevering samt sletning af kunder og leverandører mangler stadig i Rust.
 Der sendes ingen fakturaer eksternt i dette forløb.
 
 ## Ret kundens oplysninger
@@ -232,6 +231,33 @@ Ukendte felter, tomt navn, ugyldig valuta/betalingsfrist og ukendt kunde afvises
 Arkiverede kunder redigeres ikke gennem dette forløb. I workspaces med tidligere
 GDPR-sletninger afvises redigering foreløbig, indtil det tilhørende identitets-
 og aliasforløb er porteret; tidligere sletningsbeviser må ikke omgås ved navneskift.
+
+## Opret leverandør og brug oplysningerne på et køb
+
+1. Vælg **Kontakter → Tilføj leverandør**. Gem navn, adresse og kontaktoplysninger.
+   Angiv land og identitetstype eksplicit: **Dansk CVR**, **EU-momsnr.** eller
+   **Ikke-EU**. Dansk CVR normaliseres til `DK` efterfulgt af otte cifre.
+   Land, type og identifikator skal passe sammen. Uden eksplicit land/type
+   gemmes kontakten som uafklaret; et vilkårligt nummer bliver ikke et momsbevis.
+2. En eventuel **Standard udgiftskonto** skal findes som aktiv udgiftskonto i
+   virksomhedens egen kontoplan. Momsbehandling kan gemmes på leverandørkortet.
+   Bogføringsforløbet kræver fortsat, at man vælger og kontrollerer konto og
+   momsbehandling på det konkrete bilag.
+3. Vælg **Bilag → Indlæs bilag → Udfyld fra leverandør (valgfri)**. Valget
+   kopierer navn, adresse og den typede identitet til bilagets afsenderfelter.
+   Ret eventuelle afvigelser efter det faktiske bilag, udfyld beløb og øvrige
+   fakturaoplysninger, og indlæs originalfilen. Valget er en udfyldningshjælp;
+   det ændrer ikke indholdet af den modtagne fil.
+4. Bogfør bilaget mod en importeret udgående bankpost som i købsforløbet ovenfor.
+   Momsfradraget afgøres stadig af bilagsbeviset og de gældende bogføringsregler.
+5. **Kontakter → Redigér** kan nu ændre leverandøren. Tømte valgfrie felter ryddes.
+   Eksisterende bilag beholder deres oprindelige afsender og originalfil.
+
+API'et understøtter `POST /api/companies/{slug}/vendors` og delvis
+`PATCH /api/companies/{slug}/vendors/{id}` under den aktuelle rettighed til
+virksomhedsstamdata. Ændringen og auditsporet er atomiske. Som ved kunder afvises
+vedligehold i workspaces med tidligere GDPR-sletninger foreløbig, indtil deres
+identitets-/aliasforløb er porteret. Arkiverede leverandører redigeres ikke her.
 
 ## Afstem kundens betaling mod fakturaen
 
@@ -396,6 +422,12 @@ betalingsfrist og rydder telefonnummeret. Den kontrollerer delvis PATCH,
 afviste ugyldige felter, nye forhåndsvisningers adresse/forfald og uændrede
 udstedte JSON-/PDF-originaler før og efter genstart. Skærmbilledet gemmes i
 `/tmp/rentemester-rust-customer-edit.png`.
+Leverandørtesten opretter et dansk leverandørkort gennem UI'et, vælger det ved
+indlæsningen af købsfakturaen og bogfører/afstemmer købet. Den retter derefter
+navn og adresse, rydder telefon og noter og afviser modstridende identitet og
+ugyldig standardkonto. Efter genstart kontrolleres både stamdata, bilagets gamle
+afsender og de nøjagtige originalbytes. Skærmbilledet gemmes i
+`/tmp/rentemester-rust-vendor.png`.
 Testdata fjernes fra Docker efter kørslen.
 
 ## Aktuel afgrænsning

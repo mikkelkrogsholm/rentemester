@@ -19,6 +19,7 @@ import { Button, Dialog, Input, Select, Textarea, MoneyInput } from "./ui";
 import { useRef, useState } from "react";
 import { api, type DocumentIngestMetadata } from "../lib/api";
 import { Banner } from "./Feedback";
+import { useAsync } from "../lib/useAsync";
 import { LockBanner } from "./LockBanner";
 
 /** Shape of the API error the cockpit's `api.ts` throws. */
@@ -56,6 +57,8 @@ export function DocumentIngestModal({
   onIngested,
   onClose: onDismiss,
 }: DocumentIngestModalProps) {
+  const contacts = useAsync((signal) => api.contacts(slug, { signal }), [slug]);
+  const [selectedVendor, setSelectedVendor] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileBase64, setFileBase64] = useState<string | null>(null);
   const [documentType, setDocumentType] =
@@ -479,6 +482,18 @@ export function DocumentIngestModal({
 
             {isPurchaseSale && (
               <>
+                {contacts.loading && <p className="muted" role="status">Henter leverandører…</p>}
+                {contacts.error && <p className="muted">Leverandører kunne ikke hentes. Udfyld afsenderoplysningerne manuelt.</p>}
+                {!!contacts.data?.vendors.length && <label className="modal-field">
+                  Udfyld fra leverandør (valgfri)
+                  <Select value={selectedVendor} disabled={outcome.blocked || busy} onChange={event => {
+                    setSelectedVendor(event.target.value);
+                    const vendor = contacts.data?.vendors.find(item => String(item.id) === event.target.value);
+                    if (!vendor) return;
+                    setSenderName(vendor.name); setSenderAddress(vendor.address ?? ""); setSenderVat(vendor.vatOrCvr ?? "");
+                    setSenderCountryCode(vendor.countryCode ?? ""); setSenderIdentifierKind(vendor.identifierKind ?? "");
+                  }}><option value="">Udfyld manuelt</option>{contacts.data.vendors.map(vendor => <option key={vendor.id} value={vendor.id}>{vendor.name}</option>)}</Select>
+                </label>}
                 <div className="modal-field-grid">
                   <label className="modal-field">
                     Afsender

@@ -5,6 +5,8 @@ use rentemester_storage::sales::{Customer, Post};
 enum Command {
     Contacts,
     Customer(Customer),
+    Vendor(rentemester_storage::vendors::Vendor),
+    UpdateVendor(i64, Value),
     UpdateCustomer(i64, Value),
     List,
     Issue(Input),
@@ -56,8 +58,19 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                 return refused(StatusCode::BAD_REQUEST, "invalid_input");
             };
             match serde_json::from_slice::<Value>(&bytes) {
-                Ok(input) if input.is_object() => Command::UpdateCustomer(id, input),
+                Ok(input) if input.is_object() => {
+                    if path.contains("/vendors/") {
+                        Command::UpdateVendor(id, input)
+                    } else {
+                        Command::UpdateCustomer(id, input)
+                    }
+                }
                 _ => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
+            }
+        } else if path.ends_with("/vendors") {
+            match serde_json::from_slice(&bytes) {
+                Ok(input) => Command::Vendor(input),
+                Err(_) => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
             }
         } else if path.ends_with("/customers") {
             match serde_json::from_slice(&bytes) {
@@ -112,6 +125,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     };
     let key = match command {
         Command::Contacts => "contacts",
+        Command::Vendor(_) | Command::UpdateVendor(_, _) => "vendor",
         Command::Customer(_) | Command::UpdateCustomer(_, _) => "customer",
         Command::List => "invoices",
         Command::Post(_) => "posting",
@@ -128,6 +142,8 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let mut owner = state.native.owner.lock().map_err(|_| ())?;
         let action = match &command {
             Command::Contacts => Action::Contacts,
+            Command::Vendor(input) => Action::Vendor(input),
+            Command::UpdateVendor(id, input) => Action::UpdateVendor(*id, input),
             Command::Customer(i) => Action::Customers(i),
             Command::UpdateCustomer(id, i) => Action::UpdateCustomer(*id, i),
             Command::List => Action::List,

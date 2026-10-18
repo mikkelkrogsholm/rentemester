@@ -28,7 +28,7 @@ async function pickReceiptType() {
 }
 
 describe("DocumentIngestModal", () => {
-  test("renders the dialog with a file picker and metadata fields", () => {
+  test("renders the dialog with a file picker and metadata fields", async () => {
     render(
       <DocumentIngestModal slug="acme-aps" onIngested={noop} onClose={noop} />,
     );
@@ -38,6 +38,7 @@ describe("DocumentIngestModal", () => {
     expect(screen.getByLabelText("Bilagsfil")).toBeInTheDocument();
     expect(screen.getByLabelText("Bilagstype")).toBeInTheDocument();
     expect(screen.getByLabelText("Kilde")).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByText("Henter leverandører…")).not.toBeInTheDocument());
   });
 
   test("the Indlæs button is disabled until a file is chosen", async () => {
@@ -258,4 +259,16 @@ describe("DocumentIngestModal", () => {
     await userEvent.click(screen.getByRole("button", { name: "Annullér" }));
     expect(onClose).toHaveBeenCalled();
   });
+});
+
+test("copies a selected supplier into the editable voucher snapshot", async () => {
+  mockFetch({"GET /api/companies/acme-aps/contacts": {contacts:{vendors:[{id:7,name:"Synthetic Supplier",address:"Synthetic Street 1",vatOrCvr:"DK12345678",countryCode:"DK",identifierKind:"dk_cvr"}]}}});
+  render(<DocumentIngestModal slug="acme-aps" onIngested={noop} onClose={noop} />);
+  await userEvent.selectOptions(await screen.findByLabelText("Udfyld fra leverandør (valgfri)"),"7");
+  expect(screen.getByLabelText("Afsender")).toHaveValue("Synthetic Supplier");
+  expect(screen.getByLabelText("Afsenderadresse")).toHaveValue("Synthetic Street 1");
+  expect(screen.getByLabelText("Afsender CVR/moms")).toHaveValue("DK12345678");
+  await userEvent.clear(screen.getByLabelText("Afsenderadresse"));
+  await userEvent.type(screen.getByLabelText("Afsenderadresse"),"Synthetic document override");
+  expect(screen.getByLabelText("Afsenderadresse")).toHaveValue("Synthetic document override");
 });

@@ -1,3 +1,4 @@
+import { createNativeVendor, checkNativeVendor } from "./check-native-vendor";
 import type { Page } from "@playwright/test";
 
 export async function checkNativeCompanySetup(page: Page, base: string, reopened = false) {
@@ -46,11 +47,13 @@ export async function checkNativeCompanySetup(page: Page, base: string, reopened
     await bank.getByRole("button", { name: "Importér", exact: true }).click();
     await bank.getByText(/1 transaktion importeret/).waitFor();
     await bank.getByRole("button", { name: "Luk", exact: true }).click();
+    const vendorId=await createNativeVendor(page,base);
     await page.goto(`${base}/companies/synthetic/bilag`);
     await page.getByRole("button", { name: "Indlæs bilag", exact: true }).click();
     const upload = page.getByRole("dialog");
     await upload.getByLabel("Bilagsfil", { exact: true }).setInputFiles({ name: "synthetic-domestic-vat.txt", mimeType: "text/plain", buffer: Buffer.from("Synthetic domestic invoice SYN-VAT-1; net DKK 100; VAT DKK 25; gross DKK 125\n") });
-    for (const [label, value] of Object.entries({ "Bilagsdato": today, "Fakturanr. (valgfri)": "SYN-VAT-1", "Beløb inkl. moms": "125,00", "Momsbeløb": "25,00", "Beskrivelse af leverance": "Synthetic office supplies", "Afsender": "Synthetic Supplier", "Afsender CVR/moms": "DK12345678", "Afsenderadresse": "Synthetic Supplier Street 2", "Modtager": "Synthetic Company", "Modtager CVR/moms": "DK87654321", "Modtageradresse": "Synthetic Street 1" })) {
+    await upload.getByLabel(/^Udfyld fra leverandør/).selectOption(String(vendorId));
+    for (const [label, value] of Object.entries({ "Bilagsdato": today, "Fakturanr. (valgfri)": "SYN-VAT-1", "Beløb inkl. moms": "125,00", "Momsbeløb": "25,00", "Beskrivelse af leverance": "Synthetic office supplies", "Modtager": "Synthetic Company", "Modtager CVR/moms": "DK87654321", "Modtageradresse": "Synthetic Street 1" })) {
       await upload.getByLabel(label, { exact: true }).fill(value);
     }
     await upload.getByRole("button", { name: "Indlæs bilag", exact: true }).click();
@@ -72,6 +75,7 @@ export async function checkNativeCompanySetup(page: Page, base: string, reopened
     const deregister = await page.request.patch(`${url}/company`, { headers, data: { address: "Should roll back", vatPeriodType: null } });
     if (deregister.status() !== 422) throw new Error("Open VAT activity allowed deregistration");
   }
+  await checkNativeVendor(page,base,reopened);
   const company = await (await page.request.get(`${url}/company`)).json();
   if (company.company.vatPeriodType !== "quarter" || company.company.address !== "Synthetic Street 1") throw new Error("Company settings lost or refused update partially applied");
   const chart = await (await page.request.get(`${url}/accounts`)).json();
