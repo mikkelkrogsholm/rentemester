@@ -250,6 +250,49 @@ lukning/genåbning. API'et er `GET .../periods`, `GET .../periods/close-readines
 fx bankkorrektioner og særlige debitorkrav, afvises i kontrollen. Tvangslukning
 er endnu ikke porteret.
 
+## Registrér et anlæg og bogfør afskrivning
+
+Rust-serveren understøtter anlægskartotek og lineær afskrivning i DKK gennem det
+eksisterende web-UI. Konti vælges eksplicit fra virksomhedens egen kontoplan.
+
+1. Opret om nødvendigt anlægskonto (aktiv/debet), akkumulerede afskrivninger
+   (aktiv/kredit) og afskrivningskonto (udgift/debet) under **Kontoplan**.
+2. Indlæs købsbilaget under **Bilag**. Bogfør anskaffelsen på anlægskontoen via
+   **Posteringer → Ny postering**, vælg bilaget i **Bilag (valgfrit)** og den
+   korrekte modkonto. Denne enkle formular bogfører et samlet beløb uden
+   momsfordeling; et køb med fradragsmoms skal have sin fulde, korrekte
+   anskaffelsespostering, før det registreres her.
+3. Åbn **Anlæg → Registrér anlæg**. Vælg de tre konti, købsbilag, navn, kategori,
+   anskaffelsesdato, kostpris og levetid. Registreringen opretter planen; den
+   bogfører ikke købet igen. Rust afviser kostpris, der ikke er kapitaliseret
+   på bilaget og anlægskontoen, eller allerede er fordelt til andre anlæg.
+4. Vælg **Beregn afskrivning** på aktivet. Dialogen viser perioden og det konkrete
+   beløb. Bekræft **Bogfør afskrivning**. Afskrivningskontoen debiteres og
+   akkumulerede afskrivninger krediteres med link til det originale bilag.
+   Anlæggets restværdi og resultatopgørelsen opdateres.
+
+Beregningen bruger hele øre. Eksempel: 1.000 kr. over tre perioder giver
+333,33 + 333,33 + 333,34 kr. Samme periode kan ikke bogføres to gange, og
+periodelåsen gælder også afskrivninger. Brugeren vælger dato, levetid og
+regnskabsmæssig behandling; afskrivning kan ikke ligge før anskaffelsen.
+Originalfilens integritet og aktuelle bogføringsrettigheder kontrolleres ved
+registrering og afskrivning. En generel tilbageførsel af en registreret
+anskaffelse eller afskrivning afvises, indtil et samlet korrektionsforløb er
+porteret. Gamle modposterede afskrivninger kræver tilsvarende afklaring.
+
+API: `GET/POST .../assets`, `GET .../assets/:id/next-depreciation` og
+`POST .../assets/:id/depreciate`. Straksafskrivning, anlægskorrektioner og andre
+valutaer er stadig under omskrivning; straksafskrivningsknappen vises derfor
+ikke på Rust-backenden. Eventuel eksisterende straksafskrivningshistorik vises.
+
+Browserkontrollen gennemfører bilagsindlæsning, manuel kapitalisering,
+registrering og første afskrivning, verificerer restværdi og regnskabsrapporter
+og gentager læsningen efter servergenstart. Den afviser et ubogført aktiv,
+dobbelt disponering af kostpris og dobbelt afskrivning. Skærmbilledet gemmes
+som `/tmp/rentemester-rust-assets.png`. Kør forløbet isoleret med
+`python3 scripts/rust/run-web-demo.py --check-assets`; den bruger et nyt syntetisk
+workspace og kontrollerer samme anlægsforløb igen efter genstart.
+
 ## Opret kunde, udsted faktura og bogfør salget
 
 1. Under **Kontoplan** oprettes den ønskede omsætningskonto med type

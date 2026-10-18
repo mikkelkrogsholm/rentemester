@@ -35,6 +35,8 @@ export type AssetWriteOffRow = {
 
 /** Backs `GET /api/companies/:slug/assets` — the Anlæg page payload. */
 export type CompanyAssets = {
+  nativeAssetAccounts?: boolean;
+  writeOffAvailable?: boolean;
   slug: string;
   company: StatementCompany;
   assets: AssetRow[];

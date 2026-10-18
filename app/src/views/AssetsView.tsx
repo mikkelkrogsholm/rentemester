@@ -35,6 +35,7 @@ import type {
   AssetRow,
   AssetWriteOffRow,
   CompanyAssets,
+  AssetNextDepreciation,
   CompanyDocuments,
   DocumentRow,
 } from "../lib/types";
@@ -127,7 +128,7 @@ export function AssetsView() {
         >
           Registrér anlæg
         </Button>
-        <Button requiredPermission="company.ledger.post" variant="secondary"
+        {data.writeOffAvailable !== false && <Button requiredPermission="company.ledger.post" variant="secondary"
           type="button"
           className="btn secondary"
           onClick={() => {
@@ -136,7 +137,7 @@ export function AssetsView() {
           }}
         >
           Straksafskriv
-        </Button>
+        </Button>}
       </div>
 
       {actionError ? (
@@ -204,9 +205,7 @@ export function AssetsView() {
       {data.writeOffs.length === 0 ? (
         <div className="card archived-notice">
           <p className="muted">
-            Ingen straksafskrivninger endnu. Brug "Straksafskriv" når en
-            småanskaffelse er under det skattemæssige minimum og bogføres
-            direkte som udgift.
+            {data.writeOffAvailable === false ? "Straksafskrivning er endnu ikke tilgængelig." : 'Ingen straksafskrivninger endnu. Brug "Straksafskriv" når en småanskaffelse kan bogføres direkte som udgift.'}
           </p>
         </div>
       ) : (
@@ -233,14 +232,12 @@ export function AssetsView() {
       )}
 
       <p className="statement-check ok">
-        Alle afskrivninger bogføres via den deterministiske kerne (linje:
-        debit afskrivnings-udgift, kredit akkumuleret afskrivning) — det er
-        samme kode CLI'en og MCP-kald bruger, så posteringerne er identiske
-        på tværs af kanaler.
+        Afskrivninger bogføres med reference til købsbilaget og fremgår af regnskabet.
       </p>
 
       {registerOpen ? (
         <RegisterAssetModal
+          nativeAccounts={data.nativeAssetAccounts === true}
           slug={slug}
           onClose={() => setRegisterOpen(false)}
           onRefresh={state.reload}
@@ -284,7 +281,7 @@ function AssetRowView({
   onError: (msg: string) => void;
 }) {
   const [busy, setBusy] = useState(false);
-  const [pending, setPending] = useState(false);
+  const [preview, setPreview] = useState<AssetNextDepreciation | null>(null);
   const canDepreciate = row.status === "active" && row.remainingPeriods > 0;
 
   async function doDepreciate() {
@@ -294,6 +291,7 @@ function AssetRowView({
         // Use the LOCAL date — `toISOString()` is UTC and would mis-date a
         // BOOKED afskrivning in Danish evening hours (UTC+1/+2 → off by one).
         transactionDate: todayIso(),
+        ...(preview?.nextPeriodIndex ? { periodIndex: preview.nextPeriodIndex } : {}),
       });
       onPosted();
     } catch (err) {
@@ -331,20 +329,28 @@ function AssetRowView({
         <Button requiredPermission="company.ledger.post" variant="secondary"
           type="button"
           className="btn secondary"
-          onClick={() => setPending(true)}
+          onClick={async () => {
+            setBusy(true);
+            try {
+              const next = await api.assetNextDepreciation(slug, row.assetId);
+              if (next.nextPeriodIndex === null) { onPosted(); throw new Error("Anlægget er allerede fuldt afskrevet."); }
+              setPreview(next);
+            }
+            catch (err) { onError(err instanceof Error ? err.message : "Kunne ikke beregne afskrivningen."); }
+            finally { setBusy(false); }
+          }}
           disabled={!canDepreciate || busy}
           aria-label={`Beregn afskrivning for ${row.name}`}
         >
-          {busy ? "Bogfører…" : "Beregn afskrivning"}
+          {busy ? "Arbejder…" : "Beregn afskrivning"}
         </Button>
-        {pending && (
+        {preview && (
           <ConfirmDialog
             title={`Bogfør afskrivning: ${row.name}`}
             body={
               <p>
-                Bogfører næste afskrivningsperiode for anlægget. Posteringen
-                kan ikke fortrydes — kun rettes ved at lave en modpostering
-                bagefter.
+                Bogfører periode {preview.nextPeriodIndex} af {preview.totalPeriods}: {formatKroner(preview.nextPeriodAmount ?? 0, currency)}. Posteringen
+                gemmes med købsbilaget og revisionsspor.
               </p>
             }
             confirmLabel="Bogfør afskrivning"
@@ -352,7 +358,8 @@ function AssetRowView({
             onConfirm={async () => {
               await doDepreciate();
             }}
-            onClose={() => setPending(false)} onRefresh={onPosted}
+            operationKey={`asset-depreciation:${row.assetId}:${preview.nextPeriodIndex}`}
+            onClose={() => setPreview(null)} onRefresh={onPosted}
           />
         )}
       </td>
@@ -386,6 +393,7 @@ function useDocumentPicker(slug: string) {
 
 function RegisterAssetModal({
   slug,
+  nativeAccounts,
   onClose: onDismiss,
   onRefresh,
   onCreated,
@@ -394,10 +402,15 @@ function RegisterAssetModal({
   slug: string;
   onClose: () => void;
   onRefresh: () => void;
+  nativeAccounts: boolean;
   onCreated: () => void;
   onError: (msg: string) => void;
 }) {
   const docs = useDocumentPicker(slug);
+  const chart = useAsync((signal) => nativeAccounts ? api.accounts(slug, { signal }) : Promise.resolve(null), [slug, nativeAccounts]);
+  const [assetAccount, setAssetAccount] = useState("");
+  const [depreciationAccount, setDepreciationAccount] = useState("");
+  const [accumulatedAccount, setAccumulatedAccount] = useState("");
   const [name, setName] = useState("");
   const [category, setCategory] = useState("hardware");
   // Default to the LOCAL date — `toISOString()` is UTC and is off-by-one in
@@ -410,7 +423,7 @@ function RegisterAssetModal({
   const [busy, setBusy] = useState(false);
 
   const outcome = useMutationOutcome(onRefresh);
-  const guard = useDiscardGuard(Boolean(name || cost || purchaseDocumentId || note) || category !== "hardware" || acquisitionDate !== todayIso() || usefulLifeMonths !== "36", onDismiss);
+  const guard = useDiscardGuard(Boolean(name || cost || purchaseDocumentId || note || assetAccount || depreciationAccount || accumulatedAccount) || category !== "hardware" || acquisitionDate !== todayIso() || usefulLifeMonths !== "36", onDismiss);
   const { onClose } = guard;
 
   async function handleSubmit(event: React.FormEvent) {
@@ -437,6 +450,7 @@ function RegisterAssetModal({
         cost: costNumber,
         usefulLifeMonths: months,
         purchaseDocumentId: docId,
+        ...(nativeAccounts ? { assetAccountNo: assetAccount, depreciationExpenseAccountNo: depreciationAccount, accumulatedDepreciationAccountNo: accumulatedAccount } : {}),
         ...(note.trim() ? { note: note.trim() } : {}),
       }).catch(outcome.reject);
       guard.dismiss();
@@ -462,7 +476,17 @@ function RegisterAssetModal({
       {guard.confirmation}
 
 
+        {nativeAccounts && <p>Bogfør først købet på anlægskontoen med købsbilaget via Ny postering. Registreringen her opretter afskrivningsplanen uden at bogføre købet igen.</p>}
         <form onSubmit={handleSubmit}>
+          {nativeAccounts && <>
+            {chart.error && <p role="alert">{chart.error}</p>}
+            {([
+              ["Anlægskonto", assetAccount, setAssetAccount, "asset", "debit"],
+              ["Afskrivningskonto", depreciationAccount, setDepreciationAccount, "expense", "debit"],
+              ["Akkumulerede afskrivninger", accumulatedAccount, setAccumulatedAccount, "asset", "credit"],
+            ] as const).map(([label,value,setValue,type,balance]) => <label key={label}>{label}<Select required disabled={outcome.blocked} value={value} onChange={(e) => setValue(e.target.value)}><option value="">Vælg konto</option>{(chart.data?.accounts ?? []).filter((a) => a.active !== false && a.type === type && a.normalBalance === balance).map((a) => <option key={a.accountNo} value={a.accountNo}>{a.accountNo} · {a.name}</option>)}</Select></label>)}
+          </>}
+
           <label>
             <span>Navn</span>
             <Input disabled={outcome.blocked}

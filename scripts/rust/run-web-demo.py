@@ -22,9 +22,11 @@ def run(args, **kwargs):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true', help='Run the complete Chromium journey and clean up')
+    parser.add_argument('--check-assets', action='store_true', help='Run installer, asset journey and restart persistence only')
     parser.add_argument('--port', type=int, default=44321)
     parser.add_argument('--skip-web-build', action='store_true')
     args = parser.parse_args()
+    checking = args.check or args.check_assets
     if not 1 <= args.port <= 65535:
         parser.error('--port must be 1–65535')
     if not args.skip_web_build:
@@ -78,7 +80,7 @@ def main():
                     raise RuntimeError('Rust server exited before readiness')
                 if line.startswith('Workspace setup: '):
                     setup_link = line.strip().removeprefix('Workspace setup: ')
-                    if args.check:
+                    if checking:
                         print('Private browser installer prepared',flush=True)
                         continue
                 print(line.rstrip(),flush=True)
@@ -86,10 +88,11 @@ def main():
                     break
             if not setup_link: raise RuntimeError('Missing private installer link')
             print(f'Rust cockpit ready: {origin}',flush=True)
-            if args.check:
+            if checking:
                 environment = {**os.environ,'RM_NATIVE_WEB_URL':origin,'RM_NATIVE_WEB_SETUP':setup_link,'RM_NATIVE_WEB_CONTAINER':prefix,'RM_NATIVE_WEB_STATE':str(Path(temp)/'browser-state.json')}
                 run(['bun','run','scripts/rust/check-native-web.ts'],cwd=REPO,env=environment)
-                for phase in ['0', '1', '2', '3', '4']:
+                phases = ['assets', 'assets-reopen'] if args.check_assets else ['0', '1', '2', '3', '4', '5']
+                for phase in phases:
                     run(['docker','restart','-t','2',prefix],stdout=subprocess.DEVNULL)
                     server.wait(timeout=15)
                     if '--create' in command: command.remove('--create')

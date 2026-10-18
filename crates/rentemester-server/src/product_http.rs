@@ -1,4 +1,5 @@
 //! Thin browser adapter over the same owner used for authentication.
+mod assets;
 mod bank;
 mod company_setup;
 mod documents;
@@ -40,6 +41,18 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
     };
     Router::new()
         .route("/api/companies", get(companies))
+        .route(
+            "/api/companies/{slug}/assets",
+            get(assets::handle).post(assets::handle),
+        )
+        .route(
+            "/api/companies/{slug}/assets/{id}/next-depreciation",
+            get(assets::handle),
+        )
+        .route(
+            "/api/companies/{slug}/assets/{id}/depreciate",
+            post(assets::handle),
+        )
         .route("/api/companies/{slug}/periods", get(periods::handle))
         .route(
             "/api/companies/{slug}/periods/report",

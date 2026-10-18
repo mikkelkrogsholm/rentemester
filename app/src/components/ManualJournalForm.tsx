@@ -1,3 +1,5 @@
+import { api } from "../lib/api";
+import { useAsync } from "../lib/useAsync";
 import { useRef, useState, type FormEvent } from "react";
 import { Button, Field, Input, Select } from "./ui";
 import { ConfirmDialog } from "./ConfirmDialog";
@@ -6,6 +8,8 @@ import type { NativePostingOptions } from "../lib/types/journal";
 
 /** Small manual transfer. Domain validation, document requirements and access stay in Rust. */
 export function ManualJournalForm({ slug, currency, options, onSaved, onClose }: { slug: string; currency: string; options: NativePostingOptions; onSaved: () => void; onClose: () => void }) {
+  const docs = useAsync((signal) => api.documents(slug, { signal }), [slug]);
+  const [documentId, setDocumentId] = useState("");
   const [date, setDate] = useState(() => new Date().toLocaleDateString("sv-SE"));
   const [text, setText] = useState("");
   const [debit, setDebit] = useState("");
@@ -31,7 +35,7 @@ export function ManualJournalForm({ slug, currency, options, onSaved, onClose }:
   const post = async () => {
     await request(`/api/companies/${encodeURIComponent(slug)}/manual-journal`, { method: "POST", body: JSON.stringify({ confirm: true, input: {
       format: "rentemester-manual-journal-post/1", expectedRuleVersion: options.ruleVersion, idempotencyKey: key.current,
-      request: { transactionDate: date, text, currency, lines: [{ accountNo: debit, debitAmount: canonicalAmount() }, { accountNo: credit, creditAmount: canonicalAmount() }] },
+      request: { transactionDate: date, text, currency, ...(documentId ? { documentId } : {}), lines: [{ accountNo: debit, debitAmount: canonicalAmount() }, { accountNo: credit, creditAmount: canonicalAmount() }] },
     } }) });
     onSaved(); onClose();
   };
@@ -40,6 +44,8 @@ export function ManualJournalForm({ slug, currency, options, onSaved, onClose }:
     <form onSubmit={review}>
       <Field label="Dato"><Input type="date" required value={date} onChange={(e) => setDate(e.target.value)} /></Field>
       <Field label="Posteringstekst"><Input required maxLength={500} value={text} onChange={(e) => setText(e.target.value)} /></Field>
+      <Field label="Bilag (valgfrit)"><Select value={documentId} onChange={(e) => setDocumentId(e.target.value)}><option value="">Vælg bilag</option>{(docs.data?.documents ?? []).map((d) => <option key={d.id} value={String(d.id)}>{d.documentNo} · {d.supplierName ?? d.filename}</option>)}</Select></Field>
+      {docs.error && <p role="alert">Bilagslisten kunne ikke hentes: {docs.error}</p>}
       <Field label="Debetkonto"><Select required value={debit} onChange={(e) => setDebit(e.target.value)}><option value="">Vælg konto</option>{accounts.map((a) => <option key={a.accountNo} value={a.accountNo}>{a.accountNo} · {a.name}</option>)}</Select></Field>
       <Field label="Kreditkonto"><Select required value={credit} onChange={(e) => setCredit(e.target.value)}><option value="">Vælg konto</option>{accounts.map((a) => <option key={a.accountNo} value={a.accountNo}>{a.accountNo} · {a.name}</option>)}</Select></Field>
       <Field label={`Beløb i ${currency}`}><Input required inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} /></Field>

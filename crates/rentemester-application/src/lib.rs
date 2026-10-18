@@ -40,3 +40,5 @@ pub mod company_setup;
 pub mod sales;
 
 pub mod periods;
+
+pub mod assets;

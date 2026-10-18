@@ -518,3 +518,5 @@ pub mod vendors;
 pub mod invoice_settlement;
 
 pub mod credit_note;
+
+pub mod assets;

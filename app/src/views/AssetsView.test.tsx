@@ -108,6 +108,9 @@ describe("AssetsView — Anlægskartotek (#336)", () => {
           { status: 200, headers: { "content-type": "application/json" } },
         );
       }
+      if (method === "GET" && path === "/api/companies/acme-aps/assets/1/next-depreciation") {
+        return new Response(JSON.stringify({ ok: true, nextDepreciation: { assetId: 1, totalPeriods: 36, postedPeriods: 6, remainingPeriods: 30, nextPeriodIndex: 7, nextPeriodAmount: 1333.33 } }), { headers: { "content-type": "application/json" } });
+      }
       if (
         method === "POST" &&
         path === "/api/companies/acme-aps/assets/1/depreciate"
@@ -144,6 +147,7 @@ describe("AssetsView — Anlægskartotek (#336)", () => {
     const dialog = await screen.findByRole("dialog", {
       name: /Bogfør afskrivning: MacBook Pro/,
     });
+    expect(within(dialog as HTMLElement).getByText(/1.333,33/)).toBeInTheDocument();
     const confirmBtn = within(dialog as HTMLElement).getByRole("button", {
       name: /Bogfør afskrivning/,
     });

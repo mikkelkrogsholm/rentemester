@@ -44,3 +44,5 @@ pub mod invoice_pdf;
 pub mod sales_invoice;
 
 pub mod credit_note;
+
+pub mod asset;
