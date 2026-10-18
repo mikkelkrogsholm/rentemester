@@ -26,7 +26,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useCapabilities } from "../lib/useCapabilities";
-import { formatDateDa, formatKroner, todayIso } from "../lib/format";
+import { formatDateDa, formatKroner, parseDanishAmount, todayIso } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
 import type {
   CompanyInvoiceRow,
@@ -72,6 +72,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
   const [settling, setSettling] = useState<CompanyInvoiceRow | null>(null);
   // The invoice row whose "Krediter" ConfirmDialog is open, if any (#412).
   const [crediting, setCrediting] = useState<CompanyInvoiceRow | null>(null);
+  const [creditGross, setCreditGross] = useState("");
   // The invoice row whose "Send e-faktura" ConfirmDialog is open (#428).
   const [sendingPublic, setSendingPublic] = useState<CompanyInvoiceRow | null>(null);
   const [checkingPublicStatus, setCheckingPublicStatus] = useState<CompanyInvoiceRow | null>(null);
@@ -192,12 +193,14 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
         <ConfirmDialog operationKey={String(crediting.documentId)}
           title="Udsted kreditnota"
           body={
-            <p>
+            <><p>
               Kreditér faktura <strong>{crediting.invoiceNo}</strong>. En
               kreditnota bogføres som modgående postering med eget nummer fra
               kreditnota-serien. Handlingen kan ikke fortrydes og kræver en
               begrundelse til revisionssporet.
             </p>
+            {inv.nativeSales && <label>Beløb inkl. moms (valgfrit)<Input inputMode="decimal" value={creditGross} onChange={e => setCreditGross(e.target.value)} placeholder="Tomt felt krediterer hele restbeløbet" /></label>}
+            </>
           }
           confirmLabel="Udsted kreditnota"
           confirmKind="danger"
@@ -211,7 +214,10 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                   "Angiv en begrundelse for kreditnotaen — den indgår i revisionssporet.",
               };
             }
+            const amount = creditGross.trim() ? parseDanishAmount(creditGross) : undefined;
+            if (amount === null || (amount !== undefined && amount <= 0)) throw new Error("Angiv et positivt kreditbeløb.");
             await api.creditInvoice(slug, {
+              ...(amount !== undefined ? { grossAmount: amount } : {}),
               invoiceDocumentId: crediting.documentId,
               // Use the LOCAL date — `toISOString()` is UTC and would mis-date
               // the BOOKED credit note in Danish evening hours (UTC+1/+2).
@@ -526,7 +532,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                   // source invoice in its open/paid/overdue state, so those
                   // remain creditable until the core refuses on "already fully
                   // credited" (mapped to a 409 by the mutation pipeline).
-                  const canCredit = !inv.nativeSales &&
+                  const canCredit = (!inv.nativeSales || inv.nativeSales.creditAvailable === true) && row.posted !== false && (row.creditableBalance === undefined || row.creditableBalance > 0) &&
                     knownStatus && row.status !== "credited" &&
                     row.status !== "refunded" &&
                     row.status !== "written_off";
@@ -675,7 +681,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                             <Button
                               type="button"
                               className="btn secondary"
-                              onClick={() => { setInteractionScope(currentScope); setCrediting(row); }}
+                              onClick={() => { setInteractionScope(currentScope); setCreditGross(""); setCrediting(row); }}
                             >
                               Kreditér
                             </Button>

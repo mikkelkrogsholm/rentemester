@@ -17,6 +17,7 @@ pub enum Action<'a> {
     Preview(&'a Input),
     Post(&'a Post),
     Settle(&'a rentemester_storage::invoice_settlement::Input),
+    Credit(&'a rentemester_storage::credit_note::Input),
     Pdf(i64),
 }
 pub enum Output {
@@ -38,6 +39,35 @@ fn original(
     guard
         .read_document(&e.path, &e.hash)
         .map_err(|_| evidence_error())
+}
+fn verify_invoice(
+    tx: &rusqlite::Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    id: i64,
+) -> Result<(), Error> {
+    let bytes = original(tx, guard, id)?;
+    let payload: String = tx
+        .query_row(
+            "SELECT payload_json FROM documents WHERE id=?1",
+            [id],
+            |r| r.get(0),
+        )
+        .map_err(|_| evidence_error())?;
+    if bytes != payload.as_bytes() {
+        return Err(evidence_error());
+    }
+    original(tx, guard, sales::pdf_id(tx, id)?)?;
+    let mut q=tx.prepare("SELECT c.id,c.payload_json FROM credit_note_postings p JOIN documents c ON c.id=p.credit_note_document_id WHERE p.original_invoice_document_id=?1").map_err(|_|evidence_error())?;
+    let rows = q
+        .query_map([id], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, String>(1)?)))
+        .map_err(|_| evidence_error())?;
+    for row in rows {
+        let (id, payload) = row.map_err(|_| evidence_error())?;
+        if original(tx, guard, id)? != payload.as_bytes() {
+            return Err(evidence_error());
+        }
+    }
+    Ok(())
 }
 pub struct Request<'a> {
     pub action: Action<'a>,
@@ -62,10 +92,11 @@ pub fn execute(
         Action::Contacts | Action::List => Permission::CompanyRead,
         Action::Customers(_) => Permission::CompanyMasterData,
         Action::Issue(_) | Action::Preview(_) => Permission::CompanyDraftWrite,
-        Action::Post(_) | Action::Settle(_) => Permission::CompanyLedgerPost,
+        Action::Post(_) | Action::Settle(_) | Action::Credit(_) => Permission::CompanyLedgerPost,
         Action::Pdf(_) => Permission::CompanyDocumentsRead,
     };
     let slug = context.selection.slug;
+    let clock = context.clock;
     control_fence::execute_cookie_subject(
         control,
         company,
@@ -123,38 +154,49 @@ pub fn execute(
                     }
                 }
                 Action::Post(input) => {
-                    let json = original(tx, guard, input.invoice_document_id)?;
-                    let payload: String = tx
-                        .query_row(
-                            "SELECT payload_json FROM documents WHERE id=?1",
-                            [input.invoice_document_id],
-                            |r| r.get(0),
-                        )
-                        .map_err(|_| evidence_error())?;
-                    if json != payload.as_bytes() {
-                        return Err(evidence_error());
-                    }
-                    original(tx, guard, sales::pdf_id(tx, input.invoice_document_id)?)?;
+                    verify_invoice(tx, guard, input.invoice_document_id)?;
                     Output::Json(sales::post(tx, input, actor, Date::parse(today)?)?)
                 }
                 Action::Settle(input) => {
-                    let json = original(tx, guard, input.invoice_document_id)?;
-                    let payload: String = tx
-                        .query_row(
-                            "SELECT payload_json FROM documents WHERE id=?1",
-                            [input.invoice_document_id],
-                            |r| r.get(0),
-                        )
-                        .map_err(|_| evidence_error())?;
-                    if json != payload.as_bytes() {
-                        return Err(evidence_error());
-                    }
-                    original(tx, guard, sales::pdf_id(tx, input.invoice_document_id)?)?;
+                    verify_invoice(tx, guard, input.invoice_document_id)?;
                     Output::Json(rentemester_storage::invoice_settlement::settle(
                         tx,
                         input,
                         actor,
                         Date::parse(today)?,
+                    )?)
+                }
+                Action::Credit(input) => {
+                    verify_invoice(tx, guard, input.invoice_document_id)?;
+                    let prepared = rentemester_storage::credit_note::prepare(tx, input, now)?;
+                    let no = prepared.payload["creditNoteNumber"]
+                        .as_str()
+                        .ok_or_else(evidence_error)?;
+                    let file = Prepared::new(
+                        format!("{no}.json"),
+                        serde_json::to_vec_pretty(&prepared.payload)
+                            .map_err(|_| evidence_error())?,
+                    )
+                    .map_err(|_| evidence_error())?;
+                    let path = guard
+                        .publish_document(&file)
+                        .map_err(|_| evidence_error())?;
+                    let latest = rentemester_runtime::posting_time::latest_date(
+                        clock.now_unix_ms().map_err(|_| evidence_error())?,
+                        45,
+                    )
+                    .map_err(|_| evidence_error())?;
+                    Output::Json(rentemester_storage::credit_note::register_and_post(
+                        tx,
+                        prepared,
+                        Artifact {
+                            filename: file.filename(),
+                            path: &path,
+                            hash: file.hash(),
+                            mime: file.mime(),
+                        },
+                        actor,
+                        Date::parse(&latest)?,
                     )?)
                 }
                 Action::Pdf(id) => Output::Pdf(original(tx, guard, sales::pdf_id(tx, id)?)?),

@@ -212,7 +212,7 @@ Dette forløb understøtter foreløbig fulde danske DKK-fakturaer med standard
 25% moms og danske CVR/momsidentiteter. Ugyldige beløb og datoer, nummergenbrug
 og dobbelt bogføring afvises. PDF understøtter det nuværende latinske tegnsæt,
 herunder danske bogstaver; tekst uden for tegnsættet afvises ved input.
-Kreditnota, fremmed valuta, andre momstyper, offentlig e-faktura,
+Fremmed valuta, andre momstyper, offentlig e-faktura,
 ekstern maillevering og redigering/sletning af kontakter mangler stadig i Rust.
 Der sendes ingen fakturaer eksternt i dette forløb.
 
@@ -244,9 +244,40 @@ med auditspor; datoen følger den importerede bankpost.
 En bankpost kan kun afstemmes én gang, og hele bankpostens beløb bruges.
 Delbetalinger understøttes; overbetaling, tvetydig reference, forkert beløb,
 fremmed valuta, betaling før fakturadato og manglende bogføring afvises.
-Fakturaer med kreditnota eller tab på debitorer kræver deres endnu ikke porterede
-afregningsforløb. Beløb, der afviger mellem fakturaens rest og ledgerens
+Restbeløbet efter en delkreditering kan betales på samme måde. Fakturaer med
+tab på debitorer kræver deres endnu ikke porterede afregningsforløb. Beløb, der afviger mellem fakturaens rest og ledgerens
 tilgodehavende, må ikke skjules ved at markere fakturaen betalt.
+
+## Kreditér en faktura
+
+1. Åbn en bogført faktura under **Fakturaer**, og vælg **Kreditér**.
+2. Angiv en begrundelse og eventuelt et beløb inklusive moms. Et tomt beløbsfelt
+   krediterer hele det beløb, der endnu kan krediteres: originalens bruttobeløb
+   minus tidligere kreditnotaer. Betalinger reducerer ikke dette loft.
+3. Bekræft **Udsted kreditnota**. Listen, kundekortet, resultatopgørelsen og
+   momsoversigten opdateres fra de bogførte effekter.
+
+Eksempel: En ubetalt faktura på 625 kr. indeholder 500 kr. salg og 125 kr.
+moms. En delkredit på 250 kr. reducerer salget med 200 kr. og momsen med
+50 kr. De resterende 375 kr. kan betales eller krediteres. Krediteres resten,
+vises fakturaen som **Krediteret**, og dens tilgodehavende, salg og moms er nul.
+
+Kreditnotaen får eget nummer i serien `CN-<regnskabsår>-<nummer>`, egen dato,
+begrundelse og direkte reference til originalfakturaen. Originalfakturaens JSON
+og PDF bevares uændret. Kreditnotaens uforanderlige JSON-original kan åbnes fra
+**Bilag**; registrering, hash, opbevaringsfrist, journalpost og forbindelsen til
+originalen gemmes under samme transaktion og aktørkontrol.
+
+Bogføringen spejler originalens debitorkonto, omsætningskonti og momskoder.
+Senere kontorolleændringer flytter ikke gamle beløb. Ved gentagne delkrediteringer
+fordeles ørebeløbene kumulativt, så den sidste fulde kreditering udligner hver
+oprindelig konto præcist. Kreditering uden begrundelse, over kreditloftet,
+før originalens dato eller af en allerede fuldt krediteret faktura afvises.
+
+En kreditering af en allerede betalt faktura kan give kunden penge til gode;
+listen viser da **Overbetalt**. Selve tilbagebetalingen til kunden er endnu
+ikke porteret. Generel tilbageførsel må ikke bruges til at omgå fakturaens eller
+kreditnotaens sammenhængende korrektionsforløb.
 
 ## Tilbagefør en postering
 
@@ -311,6 +342,12 @@ bekræftelsesdialog og kontrollerer den delvise og fulde betaling. Efter genstar
 kontrolleres nul åbent tilgodehavende, to rene bank-/debitorposteringer, seks
 afstemte bankposter og uændret salg, moms og resultat. Skærmbilledet gemmes som
 `/tmp/rentemester-rust-settlement.png`.
+Kreditnotatesten udsteder og bogfører en anden faktura i UI'et, krediterer den
+først delvist og derefter fuldt, og kontrollerer ændringerne i tilgodehavende,
+salg og moms. Den afviser manglende begrundelse, overkreditering og gentagen
+fuld kredit. Efter genstart kontrolleres kreditstatus, begge JSON-originalers
+nøjagtige bytes og originalfakturaens uændrede PDF. Skærmbilledet gemmes i
+`/tmp/rentemester-rust-credit-note.png`.
 Testdata fjernes fra Docker efter kørslen.
 
 ## Aktuel afgrænsning

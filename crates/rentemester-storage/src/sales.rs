@@ -105,7 +105,7 @@ pub fn contacts(tx: &Transaction<'_>, slug: &str, today: &str) -> Result<Value, 
     let mut q=tx.prepare("SELECT id,name,address,vat_or_cvr,email,phone,website,ean_number,payment_terms_days,default_currency,notes FROM customers WHERE archived=0 ORDER BY name,id").map_err(invalid)?;
     let mut rows = q.query([]).map_err(invalid)?;
     let mut customers = Vec::new();
-    let mut invoice_query = tx.prepare("SELECT d.amount_inc_vat,d.payload_json,COALESCE((SELECT SUM(p.amount) FROM invoice_payments p WHERE p.invoice_document_id=d.id),0) FROM documents d WHERE d.document_type='issued_invoice'").map_err(invalid)?;
+    let mut invoice_query = tx.prepare("SELECT d.amount_inc_vat,d.payload_json,COALESCE((SELECT SUM(p.amount) FROM invoice_payments p WHERE p.invoice_document_id=d.id),0),d.id FROM documents d WHERE d.document_type='issued_invoice'").map_err(invalid)?;
     let mut invoice_rows = invoice_query.query([]).map_err(invalid)?;
     let mut invoices = Vec::new();
     while let Some(row) = invoice_rows.next().map_err(invalid)? {
@@ -117,7 +117,11 @@ pub fn contacts(tx: &Transaction<'_>, slug: &str, today: &str) -> Result<Value, 
             ));
         }
         let open = legacy_money(row.get_ref(0).map_err(invalid)?)?
-            .subtract(&legacy_money(row.get_ref(2).map_err(invalid)?)?);
+            .subtract(&legacy_money(row.get_ref(2).map_err(invalid)?)?)
+            .subtract(&crate::credit_note::credited(
+                tx,
+                row.get(3).map_err(invalid)?,
+            )?);
         let overdue = payload["dueDate"].as_str().is_some_and(|due| due < today);
         invoices.push((payload["customerId"].as_i64(), open, overdue));
     }
@@ -480,7 +484,9 @@ pub fn list(
                 |r| legacy_money(r.get_ref(0)?).map_err(|_| rusqlite::Error::InvalidQuery),
             )
             .map_err(invalid)?;
-        let open = gross.subtract(&paid);
+        let credited = crate::credit_note::credited(tx, id)?;
+        let creditable = gross.subtract(&credited);
+        let open = creditable.subtract(&paid);
         total.add(&gross);
         open_total.add(&open);
         let due = payload["dueDate"].as_str();
@@ -497,7 +503,7 @@ pub fn list(
         if overdue > 0 && open != Money::default() {
             overdue_count += 1;
         }
-        rows.push(json!({"documentId":id,"invoiceNo":r.get::<_,String>(1).map_err(invalid)?,"invoiceDate":r.get::<_,String>(2).map_err(invalid)?,"customerName":r.get::<_,Option<String>>(3).map_err(invalid)?,"customerEmail":null,"customerId":payload["customerId"],"buyerEanNumber":null,"buyerPublicRecipient":false,"peppolStatus":null,"lastEmailedAt":null,"lastReminderAt":null,"lastReminderSequence":0,"grossAmount":wire(&gross)?,"openBalance":wire(&open)?,"currency":r.get::<_,String>(4).map_err(invalid)?,"status":if open==Money::default(){"paid"}else if overdue>0{"overdue"}else{"open"},"effectiveDueDate":due,"overdueDays":overdue,"posted":r.get::<_,Option<i64>>(7).map_err(invalid)?.is_some()}));
+        rows.push(json!({"documentId":id,"invoiceNo":r.get::<_,String>(1).map_err(invalid)?,"invoiceDate":r.get::<_,String>(2).map_err(invalid)?,"customerName":r.get::<_,Option<String>>(3).map_err(invalid)?,"customerEmail":null,"customerId":payload["customerId"],"buyerEanNumber":null,"buyerPublicRecipient":false,"peppolStatus":null,"lastEmailedAt":null,"lastReminderAt":null,"lastReminderSequence":0,"grossAmount":wire(&gross)?,"openBalance":wire(&open)?,"currency":r.get::<_,String>(4).map_err(invalid)?,"creditableBalance":wire(&creditable)?,"status":if open.is_negative(){"overpaid"}else if open==Money::default(){if credited==gross && paid==Money::default(){"credited"}else{"paid"}}else if overdue>0{"overdue"}else{"open"},"effectiveDueDate":due,"overdueDays":overdue,"posted":r.get::<_,Option<i64>>(7).map_err(invalid)?.is_some()}));
     }
     base["invoices"] = json!(rows);
     base["totalGross"] = wire(&total)?;
@@ -511,7 +517,8 @@ pub fn list(
         .map_err(invalid)?
         .collect::<Result<Vec<_>, _>>()
         .map_err(invalid)?;
-    base["nativeSales"] = json!({"revenueAccounts":accounts,"settlementAvailable":true});
+    base["nativeSales"] =
+        json!({"revenueAccounts":accounts,"settlementAvailable":true,"creditAvailable":true});
     Ok(base)
 }
 

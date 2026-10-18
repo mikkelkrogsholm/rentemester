@@ -106,10 +106,16 @@ pub fn settle(
         ));
     }
     let id = input.invoice_document_id;
-    let adjusted:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM credit_note_postings WHERE original_invoice_document_id=?1) OR EXISTS(SELECT 1 FROM invoice_bad_debt_writeoffs WHERE invoice_document_id=?1)",[id],|r|r.get(0)).map_err(invalid)?;
+    let adjusted: bool = tx
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM invoice_bad_debt_writeoffs WHERE invoice_document_id=?1)",
+            [id],
+            |r| r.get(0),
+        )
+        .map_err(invalid)?;
     if adjusted {
         return Err(refused(
-            "invoices with credit notes or bad-debt adjustments require their settlement flow to be ported first",
+            "invoices with bad-debt adjustments require their settlement flow to be ported first",
         ));
     }
 
@@ -133,13 +139,15 @@ pub fn settle(
         }
         paid.add(&legacy_money(r.get_ref(0).map_err(invalid)?)?);
     }
-    let open = gross.subtract(&paid);
+    let open = gross
+        .subtract(&crate::credit_note::credited(tx, id)?)
+        .subtract(&paid);
     if open.subtract(&amount).is_negative() {
         return Err(refused(
             "receipt exceeds the invoice's outstanding principal; overpayments and claims require a separate flow",
         ));
     }
-    let mut q=tx.prepare("SELECT jl.debit_amount,jl.credit_amount FROM journal_lines jl JOIN journal_entries j ON j.id=jl.journal_entry_id WHERE j.document_id=?1 AND jl.account_id=?2").map_err(invalid)?;
+    let mut q=tx.prepare("SELECT jl.debit_amount,jl.credit_amount FROM journal_lines jl JOIN journal_entries j ON j.id=jl.journal_entry_id WHERE (j.document_id=?1 OR j.id IN (SELECT journal_entry_id FROM credit_note_postings WHERE original_invoice_document_id=?1)) AND jl.account_id=?2").map_err(invalid)?;
     let mut rows = q.query(params![id, debtor_id]).map_err(invalid)?;
     let mut carrying = Money::default();
     while let Some(r) = rows.next().map_err(invalid)? {

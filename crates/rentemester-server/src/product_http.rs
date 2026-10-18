@@ -49,6 +49,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/invoices/post", post(sales::handle))
         .route("/api/companies/{slug}/invoices/settle", post(sales::handle))
         .route(
+            "/api/companies/{slug}/invoices/credit-note",
+            post(sales::handle),
+        )
+        .route(
             "/api/companies/{slug}/invoices/{id}/pdf",
             get(sales::handle),
         )

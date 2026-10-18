@@ -3,7 +3,7 @@ import type { Page } from "@playwright/test";
 export async function checkNativeSettlement(page: Page, base: string, reopened = false) {
   const url = `${base}/api/companies/synthetic`;
   const invoices = await (await page.request.get(`${url}/invoices`)).json();
-  const invoice = invoices.invoices.invoices[0];
+  const invoice = invoices.invoices.invoices.find((i: { invoiceNo: string }) => i.invoiceNo.endsWith("-0001"));
   if (!invoice) throw new Error("Settlement invoice missing");
   if (!reopened) {
     const today = new Date().toISOString().slice(0, 10);
@@ -33,7 +33,8 @@ export async function checkNativeSettlement(page: Page, base: string, reopened =
     if (duplicate.status() !== 422) throw new Error("Customer receipt settled twice");
   }
   const current = await (await page.request.get(`${url}/invoices`)).json();
-  if (current.invoices.invoices[0].status !== "paid" || current.invoices.invoices[0].openBalance !== 0 || current.invoices.totalOpen !== 0) throw new Error("Invoice remains outstanding");
+  const settled = current.invoices.invoices.find((i: { documentId: number }) => i.documentId === invoice.documentId);
+  if (!settled || settled.status !== "paid" || settled.openBalance !== 0 || current.invoices.totalOpen !== 0) throw new Error("Invoice remains outstanding");
   const contacts = await (await page.request.get(`${url}/contacts`)).json();
   const customer = contacts.contacts.customers.find((c: { name: string }) => c.name === "Synthetic Customer");
   if (!customer || customer.openBalance !== 0 || customer.openInvoiceCount !== 0) throw new Error("Customer receivable remains outstanding");

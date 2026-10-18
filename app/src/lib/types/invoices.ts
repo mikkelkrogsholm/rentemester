@@ -32,6 +32,7 @@ export type InvoicePeppolStatus = {
 
 export type CompanyInvoiceRow = {
   posted?: boolean;
+  creditableBalance?: number;
   documentId: number;
   invoiceNo: string;
   invoiceDate: string | null;
@@ -83,7 +84,7 @@ export type CompanyInvoiceRow = {
 };
 
 export type CompanyInvoices = {
-  nativeSales?: { settlementAvailable?: boolean; revenueAccounts: Array<{ accountNo: string; name: string }> };
+  nativeSales?: { creditAvailable?: boolean; settlementAvailable?: boolean; revenueAccounts: Array<{ accountNo: string; name: string }> };
   slug: string;
   selectedYear: string;
   archived: boolean;

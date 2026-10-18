@@ -513,3 +513,5 @@ pub mod vat_report;
 pub mod sales;
 
 pub mod invoice_settlement;
+
+pub mod credit_note;
