@@ -1,10 +1,15 @@
 //! Pinned namespace observations only; never a SQLite-handle or writer capability.
 use super::WorkspaceLease;
 use crate::{LayoutError, RootIdentity};
-use rustix::fs::{Mode, OFlags, openat};
+use rustix::fs::{AtFlags, FileType, Mode, OFlags, openat, statat};
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
-use std::{fs::File, io::Read, os::unix::fs::MetadataExt};
+use std::os::fd::AsFd;
+use std::{
+    fs::File,
+    io::Read,
+    os::unix::fs::{FileExt, MetadataExt},
+};
 const LIMIT: u64 = 1_048_576;
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -111,6 +116,30 @@ fn bytes(file: &mut File) -> Result<Vec<u8>, LayoutError> {
     }
     Ok(bytes)
 }
+// Read the retained manifest without opening or cloning any namespace file.
+// A substituted manifest may alias a live SQLite inode; even a refused open
+// followed by close could release that process's database locks.
+fn retained_bytes(file: &File) -> Result<Vec<u8>, LayoutError> {
+    if file.metadata().map_err(|_| LayoutError::Unavailable)?.len() > LIMIT {
+        return Err(LayoutError::InvalidManifest);
+    }
+    let mut bytes = vec![0; LIMIT as usize + 1];
+    let mut offset = 0;
+    while offset < bytes.len() {
+        let read = file
+            .read_at(&mut bytes[offset..], offset as u64)
+            .map_err(|_| LayoutError::Unavailable)?;
+        if read == 0 {
+            break;
+        }
+        offset += read;
+    }
+    if offset as u64 > LIMIT {
+        return Err(LayoutError::InvalidManifest);
+    }
+    bytes.truncate(offset);
+    Ok(bytes)
+}
 struct Binding {
     parts: Vec<String>,
     directory: bool,
@@ -181,6 +210,29 @@ impl WorkspaceLayout {
         result.ensure_current()?;
         Ok(result)
     }
+    /// Compare actual SQLite main handles with the retained control/ledger files.
+    /// Sticky refusal; this observation alone does not exclude namespace changes
+    /// between calls or qualify a deployment for persistent writers.
+    pub fn ensure_connections(
+        &mut self,
+        control: &rusqlite::Connection,
+        company: &rusqlite::Connection,
+    ) -> Result<(), LayoutError> {
+        self.ensure_current()?;
+        let matches = |connection: &rusqlite::Connection, index: usize| {
+            connection.main_file_identity().is_ok_and(|actual| {
+                actual.device == self.bindings[index].identity.device
+                    && actual.inode == self.bindings[index].identity.inode
+                    && actual.links == 1
+            })
+        };
+        // bind() fixes these slots; they never depend on request input.
+        if !matches(control, 2) || !matches(company, 5) {
+            self.invalidated = true;
+            return Err(LayoutError::Changed);
+        }
+        self.ensure_current()
+    }
     pub fn workspace(&self) -> &str {
         &self.workspace
     }
@@ -188,6 +240,7 @@ impl WorkspaceLayout {
         &self.slug
     }
     /// Sticky observation. Namespace races between checks require a separate writer fence.
+    #[allow(clippy::unnecessary_cast)] // Unix stat field widths differ across supported targets.
     pub fn ensure_current(&mut self) -> Result<(), LayoutError> {
         if self.invalidated {
             return Err(LayoutError::Changed);
@@ -196,15 +249,38 @@ impl WorkspaceLayout {
             self.lease
                 .ensure_current_root()
                 .map_err(LayoutError::Lease)?;
-            for binding in &self.bindings {
-                let mut current = open_relative(&self.lease, &binding.parts, binding.directory)?;
+            for (index, binding) in self.bindings.iter().enumerate() {
+                if index == 0 || index == 2 || index == 5 {
+                    // Closing any ordinary descriptor for an SQLite inode can
+                    // release this process's POSIX SQLite locks. Revalidation
+                    // must only stat these names, never open/close them.
+                    let parent = if index == 0 {
+                        self.lease.directory.as_fd()
+                    } else {
+                        self.bindings[index - 1].file.as_fd()
+                    };
+                    let name = binding.parts.last().ok_or(LayoutError::Changed)?;
+                    let current = statat(parent, name.as_str(), AtFlags::SYMLINK_NOFOLLOW)
+                        .map_err(|_| LayoutError::Changed)?;
+                    if physical(&binding.file, false)? != binding.identity
+                        || current.st_dev as u64 != binding.identity.device
+                        || current.st_ino as u64 != binding.identity.inode
+                        || current.st_nlink != 1
+                        || FileType::from_raw_mode(current.st_mode) != FileType::RegularFile
+                    {
+                        return Err(LayoutError::Changed);
+                    }
+                    if index == 0
+                        && Sha256::digest(retained_bytes(&binding.file)?).as_slice()
+                            != self.manifest_hash
+                    {
+                        return Err(LayoutError::Changed);
+                    }
+                    continue;
+                }
+                let current = open_relative(&self.lease, &binding.parts, binding.directory)?;
                 if physical(&binding.file, binding.directory)? != binding.identity
                     || physical(&current, binding.directory)? != binding.identity
-                {
-                    return Err(LayoutError::Changed);
-                }
-                if binding.parts == ["workspace.json"]
-                    && Sha256::digest(bytes(&mut current)?).as_slice() != self.manifest_hash
                 {
                     return Err(LayoutError::Changed);
                 }
@@ -564,3 +640,6 @@ fn probe() {
     };
     println!("RM_LAYOUT_RESULT={output}");
 }
+
+#[cfg(test)]
+mod connection_tests;

@@ -1,0 +1,12 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_runtime-342e850aea2de907)
+
+running 6 tests
+test local::layout::connection_tests::lock_child ... ignored, synthetic cross-process SQLite lock contender
+test local::layout::connection_tests::actual_handles_match_retained_files_in_wal_and_delete ... ok
+test local::layout::connection_tests::identity_observation_preserves_real_cross_process_sqlite_locks ... ok
+test local::layout::connection_tests::memory_swapped_connections_and_link_changes_refuse_stickily ... ok
+test local::layout::connection_tests::refused_manifest_alias_never_releases_a_live_database_lock ... ok
+test local::layout::connection_tests::restored_path_does_not_hide_wrong_open_handle ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 42 filtered out; finished in 0.24s

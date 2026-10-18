@@ -1,0 +1,23 @@
+   Compiling rentemester-runtime v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.58s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_runtime-342e850aea2de907)
+
+running 16 tests
+test local::layout::connection_tests::lock_child ... ignored, synthetic cross-process SQLite lock contender
+test local::layout::probe ... ignored, synthetic native probe selected by independent manifest harness
+test local::layout::tests::child ... ignored, synthetic layout owner process selected by parent
+test local::layout::connection_tests::memory_swapped_connections_and_link_changes_refuse_stickily ... ok
+test local::layout::connection_tests::restored_path_does_not_hide_wrong_open_handle ... ok
+test local::layout::connection_tests::identity_observation_preserves_real_cross_process_sqlite_locks ... ok
+test local::layout::tests::binding_preserves_sources_and_holds_ownership_until_drop ... ok
+test local::layout::connection_tests::actual_handles_match_retained_files_in_wal_and_delete ... ok
+test local::layout::tests::canonical_manifest_profile_refuses_coercions_and_ambiguity ... ok
+test local::layout::tests::files_refuse_hardlinks_directories_and_fifos_without_blocking ... ok
+test local::layout::tests::every_component_change_is_sticky_even_after_restoration ... ok
+test local::layout::tests::every_path_level_refuses_symlinks_and_missing_objects ... ok
+test local::layout::tests::manifest_bytes_hardlink_and_root_changes_invalidate ... ok
+test local::layout::tests::real_process_layout_owns_lease_and_kernel_death_releases ... ok
+test local::layout::connection_tests::refused_manifest_alias_never_releases_a_live_database_lock ... ok
+test local::layout::tests::bounded_manifest_and_selection_have_no_defaults ... ok
+
+test result: ok. 13 passed; 0 failed; 3 ignored; 0 measured; 32 filtered out; finished in 0.33s

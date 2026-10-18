@@ -137,6 +137,13 @@ impl WorkspaceLayout {
     pub fn ensure_current(&mut self) -> Result<(), LayoutError> {
         Err(LayoutError::Lease(LeaseError::UnsupportedPlatform))
     }
+    pub fn ensure_connections(
+        &mut self,
+        _: &rusqlite::Connection,
+        _: &rusqlite::Connection,
+    ) -> Result<(), LayoutError> {
+        Err(LayoutError::Lease(LeaseError::UnsupportedPlatform))
+    }
     pub fn workspace(&self) -> &str {
         ""
     }

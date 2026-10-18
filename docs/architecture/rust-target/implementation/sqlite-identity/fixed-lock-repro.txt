@@ -1,0 +1,3 @@
+before=busy
+after=busy
+sqlite_still_in_transaction=true

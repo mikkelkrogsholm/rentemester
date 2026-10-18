@@ -1,0 +1,83 @@
+{
+  "increment": "sqlite-identity-1",
+  "code_revision": "sha256:e976460f8b6a36250d7031af0d2b968c5577c6ac646fc31f08a8069b96d46e7d",
+  "spec_revision": "sha256:90568e15ed01c91ea1ef824feddb2e1fa9098f8524dc42d742fe5f67ee0452c6",
+  "state": "verified-actual-main-handle-identity-and-lock-preserving-layout-observation",
+  "checks": {
+    "native_tests_passed": 160,
+    "ignored_subprocess_helpers": 30,
+    "integration_checks": 12698,
+    "new_connection_tests": 5,
+    "linux_local_lease_layout_tests": 16,
+    "linux_ignored_helpers": 3,
+    "all_layout_tests": 13,
+    "independent_connection_tests": 5,
+    "upstream_files": 94,
+    "modified_upstream_files": 4,
+    "GDD_structural_checks": 3,
+    "fmt_clippy_boundaries_root_typecheck_lint": "PASS"
+  },
+  "sources": {
+    ".graphifyignore": "0efcc022cfbc61f73a2826e76dafccd96790e5798a4a1744368cb82f47d2f71e",
+    "Cargo.lock": "8f26402a8caaf12537fd6cc1f27d6aa84ae56017dc701a2d2320543f6ef2a973",
+    "Cargo.toml": "9ca4b9e85ed9d13c4a8673ad6cd985a3ea0b204dbe2ed77361f7fca9b2400954",
+    "crates/rentemester-runtime/Cargo.toml": "6c40d32eaa5ac0b3af15a68e5423b41aa2219679837d09b0701fe07006e9a990",
+    "crates/rentemester-runtime/src/lib.rs": "2c51fb9225b28b3ad67e744c1bf473c604407a16b52008d457695b7c683652e5",
+    "crates/rentemester-runtime/src/local/layout.rs": "6d03701b005935a0a888e567c0ae873e11ff7f4b2b12a15e4abb7da6af176d6f",
+    "crates/rentemester-runtime/src/local/layout/connection_tests.rs": "3685823a6e0af64fed10aaa5d2df1728e174e7cd1d0447f1c2211af2b6c8bcd6",
+    "crates/rentemester-storage/Cargo.toml": "fe91d42a993a0da09713af22b134b83976cd4deda7cec44507835d1210c0fafc",
+    "docs/architecture/rust-target/implementation/README.md": "33d1db3bbe2f129ea762a0cf5a6c6da46421c7588764aa6a8fef28eceaf5addf",
+    "docs/architecture/rust-target/implementation/sqlite-identity/CONTRACT.md": "c9b59d81dbbc11c7608bdebff37e12a5b9bd5e7881b5792278255a632ca4c050",
+    "docs/architecture/rust-target/implementation/sqlite-identity/gdd.json": "4c0a99cad7e180aed17f2a204555929cc55f4476908a1cc838d629d479bb6474",
+    "docs/architecture/rust-target/implementation/sqlite-identity/readiness.json": "f9fb36e21c0573f24b7c36ac8fee9eac985d39f72fbf218629d39305e554f4c0",
+    "docs/architecture/rust-target/implementation/workspace-layout/CONTRACT.md": "2035d35f6d05778cc07b57bc64bd8f5f3d1f6917f1b8cf55dbd9352eb33f8adb",
+    "scripts/rust/verify-vendored-sqlite.ts": "3a756c0b5302060f759db4957c61d668c508661c40b69e82c0e7f0485c7fd79c",
+    "scripts/rust/verify.ts": "937ccebe675c73d86f27e4a8d748858fe456dc51e4bba70f67a35530d10c7975",
+    "vendor/libsqlite3-sys-0.38.2/sqlite3/sqlite3.c": "52e5b617185361d6e10454726ee1333e8485eacb4296a5298be335899300fe9b",
+    "vendor/rusqlite-0.40.2/Cargo.toml": "0caf77d1ad70851eaa13e249ac4c8eca6fa4cc197da17f05a5a08ecf4cde3b0e",
+    "vendor/rusqlite-0.40.2/Cargo.toml.orig": "eca265d7eed3284bb4847cbb491ecc347a2dbce9abc8436f82746d5cd4515a39",
+    "vendor/rusqlite-0.40.2/src/lib.rs": "c3820990e4bd780ab899c04f21520df2ff09a8a37fc4f32ac5cdd6c5f456f39b",
+    "vendor/sqlite-identity.patch": "04f88063fc01a77e36981dadffba0a6667f9b69f0efa34cfa789c5a02fa1bdb7",
+    "vendor/sqlite-provenance.json": "521ec4723fe80d605a99850984b4fa1a5050188a7de6dada81458289cef3bedd"
+  },
+  "evidence_files": {
+    "review.json": "de8e93510d215c73102f0200abb5c90f11d38d969207c8f4df753fb7361413f7",
+    "targeted-tests.txt": "0ecc5f49ad961e8fed59199afa0c72848147c78caaa1553bb6a1e0e01c37c738",
+    "review-targeted-tests.txt": "5119965971334ddded08886fbd9412321b6101cd20e50e6446cd95834fcc4430",
+    "prior-lock-failure.txt": "b630f8e37ac289d4f0dcad555ae399a8a12cc24db1176063d4e3fb1531b6be7c",
+    "fixed-lock-repro.txt": "db5b23bf0f32eb0b01de12136f03baee00070bcd2df35015d9e0ed93d999a316",
+    "lock-repro.rs": "b05b34287bb512308c438553a9a07c00cda4d5fe8533858eef72e631d937b1b1",
+    "upstream-proof.json": "b2d171bd0073e01e6e55eb83a594e6e9c0a1851a3befc18ca0cc166b722975e6",
+    "patch-proof.json": "47b955690c0505632c58a943459e01c3d1f2177c04801473b09b602f464313a4",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "f38eab9d69273d3ee82f2769744d6ba435dfb2ddf22ed523dbd1b1b789e53396",
+    "linux.json": "11b9f2756a36bd527a46d43d9fc58fde8e51311e9b77112111cca4cd26acee52",
+    "linux-tests.txt": "0c559e4f3242d0b5af483161f153ee22f23b528e9e9ae0cfa8395d52d0ec6154",
+    "regression.json": "1e6bbb89c9899f86089f1b64795c3308b6ec536f90f9b76146cb90c78253bf57",
+    "review-artifacts.json": "846387393f2622ff5193f990c1c8857655b6d44e59bf662ac8b68735485b951f"
+  },
+  "claims": [
+    "Safe pinned VFS main descriptor identity; no path-based substitute",
+    "Deterministic restored-path ABA refuses wrong actual handles on both database slots",
+    "statat for all regular namespace entries and retained read_at manifest preserve live cross-process SQLite locks even on substituted manifest hardlinks",
+    "Exact complete vendored snapshots and full recorded patch independently reconstructed from checksum-verified original archives"
+  ],
+  "limits": [
+    "Physical observation only; no product writer admission or enabled transport",
+    "bind must precede SQLite open; every SQLite handle must close before layout drop; owning runtime must enforce this",
+    "Namespace/sidecar lifetime, legacy writer exclusion, schema/logical IDs, bootstrap, persistent process owner and full transports remain required",
+    "No actual user data/mail/migration/deployment or complete issue/platform claim",
+    "macOS candidate and Linux ARM64 tmpfs container tests; Linux host-storage/deployment, Windows build and actual cross-UID denial remain open",
+    "Upstream build overrides can omit patched VFS; actual identity probe must refuse, bundled feature alone is not release qualification",
+    "Graphify AST and three current Markdown sources semantically refreshed; vendor excluded and historical/generated reports not semantically refreshed"
+  ],
+  "authoring_corrections": [
+    "Initial FFI helper import and cross-platform stat fd/type compilation corrected",
+    "Independent review reproduced and fixed accidental POSIX lock release and missing portable method stub",
+    "Main found and fixed refused manifest alias variant; final independent5tests verify it",
+    "Earlier broad runs superseded after these source fixes; only final v3 terminal result counts"
+  ],
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false
+}

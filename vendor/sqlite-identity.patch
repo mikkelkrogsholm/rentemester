@@ -1,0 +1,114 @@
+--- rusqlite-0.40.2/Cargo.toml
++++ rusqlite-0.40.2/Cargo.toml
+@@ -68,6 +68,7 @@
+ status = "actively-developed"
+ 
+ [features]
++rentemester_identity = ["bundled"]
+ array = [
+     "vtab",
+     "pointer",
+--- rusqlite-0.40.2/Cargo.toml.orig
++++ rusqlite-0.40.2/Cargo.toml.orig
+@@ -34,6 +34,7 @@
+ members = ["libsqlite3-sys"]
+ 
+ [features]
++rentemester_identity = ["bundled"]
+ # if not SQLITE_OMIT_LOAD_EXTENSION
+ load_extension = []
+ # hot-backup interface
+--- rusqlite-0.40.2/src/lib.rs
++++ rusqlite-0.40.2/src/lib.rs
+@@ -631,6 +631,41 @@
+     #[inline]
+     pub fn path(&self) -> Option<&str> {
+         unsafe { inner_connection::db_filename(std::marker::PhantomData, self.handle(), MAIN_DB) }
++    }
++
++    /// Actual main database descriptor identity from the Rentemester patched Unix VFS.
++    /// Returns an error for memory databases, unsupported VFSes or a missing patch.
++    /// This observation does not lock the namespace or authorize database writes.
++    #[cfg(feature = "rentemester_identity")]
++    pub fn main_file_identity(&self) -> Result<MainFileIdentity> {
++        const MAGIC: u64 = 0x524d4944454e5431;
++        let mut words = [MAGIC, 1, 0, 0, 0, 0, 0, 0];
++        // SAFETY: the live connection is borrowed for this synchronous call;
++        // RefCell excludes other internal borrows. `main` is fixed and NUL
++        // terminated. The pinned VFS opcode writes at most eight aligned u64s
++        // to this initialized stack buffer, retaining no pointer. No raw
++        // handle or descriptor escapes. Unsupported VFSes return an error.
++        let db = self.db.borrow_mut();
++        let rc = unsafe {
++            ffi::sqlite3_file_control(
++                db.db(),
++                c"main".as_ptr(),
++                0x524d0101,
++                words.as_mut_ptr().cast(),
++            )
++        };
++        if rc != ffi::SQLITE_OK {
++            return Err(crate::error::error_from_sqlite_code(rc, None));
++        }
++        if words[0] != MAGIC || words[1] != 1 || words[6] != 0 || words[7] != 0 {
++            return Err(crate::error::error_from_sqlite_code(ffi::SQLITE_NOTFOUND, None));
++        }
++        Ok(MainFileIdentity {
++            device: words[2],
++            inode: words[3],
++            mode: words[4],
++            links: words[5],
++        })
+     }
+ 
+     /// Attempts to free as much heap memory as possible from the database
+@@ -2362,3 +2397,18 @@
+         Ok(())
+     }
+ }
++
++/// Snapshot of the actual main database descriptor; contains no OS handle.
++/// Fields are raw Unix metadata and are not a deployment admission decision.
++#[cfg(feature = "rentemester_identity")]
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub struct MainFileIdentity {
++    /// Unix st_dev of the open main descriptor.
++    pub device: u64,
++    /// Unix st_ino of the open main descriptor.
++    pub inode: u64,
++    /// Unix st_mode; the VFS requires a regular file.
++    pub mode: u64,
++    /// Current hard-link count; zero means unlinked.
++    pub links: u64,
++}
+--- libsqlite3-sys-0.38.2/sqlite3/sqlite3.c
++++ libsqlite3-sys-0.38.2/sqlite3/sqlite3.c
+@@ -44328,6 +44328,28 @@
+ static int unixFileControl(sqlite3_file *id, int op, void *pArg){
+   unixFile *pFile = (unixFile*)id;
+   switch( op ){
++    /* Rentemester ABI v1: eight aligned sqlite3_uint64 words. This
++    ** observes the actual open descriptor, never a pathname. No lock,
++    ** pager, journal or namespace state is modified. Unsupported VFSes
++    ** do not implement this application-private opcode. */
++    case 0x524d0101: {
++      sqlite3_uint64 *out = (sqlite3_uint64*)pArg;
++      struct stat st;
++      if( out==0 || out[0]!=0x524d4944454e5431ULL || out[1]!=1 ){
++        return SQLITE_MISUSE;
++      }
++      memset(out, 0, 8*sizeof(*out));
++      if( pFile->h<0 ) return SQLITE_NOTFOUND;
++      if( osFstat(pFile->h, &st)!=0 ) return SQLITE_IOERR_FSTAT;
++      if( !S_ISREG(st.st_mode) ) return SQLITE_NOTFOUND;
++      out[0] = 0x524d4944454e5431ULL;
++      out[1] = 1;
++      out[2] = (sqlite3_uint64)st.st_dev;
++      out[3] = (sqlite3_uint64)st.st_ino;
++      out[4] = (sqlite3_uint64)st.st_mode;
++      out[5] = (sqlite3_uint64)st.st_nlink;
++      return SQLITE_OK;
++    }
+ #if defined(__linux__) && defined(SQLITE_ENABLE_BATCH_ATOMIC_WRITE)
+     case SQLITE_FCNTL_BEGIN_ATOMIC_WRITE: {
+       int rc = osIoctl(pFile->h, F2FS_IOC_START_ATOMIC_WRITE);

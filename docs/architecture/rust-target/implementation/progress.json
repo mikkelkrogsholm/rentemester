@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "service-company-1",
-  "code_revision": "sha256:233da9db130f2bc21e787908a9b28cabba34dc36260622735adfcf96e8fdde35",
-  "spec_revision": "sha256:2bc5156db04cbdfa09492971d2e28bd3b558dc2948df0191cf4aba53c2bf7d01",
-  "state": "verified-charged-service-company-post-reversal-and-fresh-current-authority-on-admitted-connections",
+  "current_increment": "sqlite-identity-1",
+  "code_revision": "sha256:e976460f8b6a36250d7031af0d2b968c5577c6ac646fc31f08a8069b96d46e7d",
+  "spec_revision": "sha256:90568e15ed01c91ea1ef824feddb2e1fa9098f8524dc42d742fe5f67ee0452c6",
+  "state": "verified-actual-main-handle-identity-and-lock-preserving-layout-observation",
   "issues_closed": [],
   "next": [
-    "Build the concrete persistent native runtime/owned-connection admission prerequisite and runnable server/CLI/MCP vertical slice using current human/service post/reverse/report use cases. Resolve SQLite-handle-to-retained-identity/lifetime and legacy-writer gates explicitly before production/adoption; synthetic persistent files qualify implementation without touching real data. Preserve applicable actor-policy/confirmation/backup gates and full React/GPUI/distribution/cutover objective.",
+    "Enforce retained-layout/SQLite open-close lifetime in persistent owner; qualify broker namespace/sidecars and legacy exclusion, then fresh-only canonical initialization/reopen/bootstrap and runnable actual HTTP/CLI/MCP post/reversal/report composition. Handle identity observation alone does not admit a writer; full React/GPUI/distribution/cutover objective unchanged.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,21 +21,18 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "journal-reversal-1",
-    "code_revision": "sha256:526b2e3d36fe4b2f6fd46d2b6880cff7ab5de2b72f55d91d97e5b3eef991ad67",
-    "spec_revision": "sha256:7971b43ee15b852e302d8fc9778de7ac83940bd3afdde83e2c3b1661a9e55021",
-    "state": "verified-native-authenticated-append-only-manual-reversal-on-admitted-connections"
+    "current_increment": "service-company-1",
+    "code_revision": "sha256:233da9db130f2bc21e787908a9b28cabba34dc36260622735adfcf96e8fdde35",
+    "spec_revision": "sha256:2bc5156db04cbdfa09492971d2e28bd3b558dc2948df0191cf4aba53c2bf7d01",
+    "state": "verified-charged-service-company-post-reversal-and-fresh-current-authority-on-admitted-connections"
   },
   "evidence": {
-    "report": "service-company/evidence.json",
-    "parity": "service-company/parity.json",
-    "regression": "service-company/regression.json",
-    "rust_tests_passed": 155,
-    "ignored_subprocess_helpers": 29,
+    "report": "sqlite-identity/evidence.json",
+    "regression": "sqlite-identity/regression.json",
+    "rust_tests_passed": 160,
+    "ignored_subprocess_helpers": 30,
     "integration_checks": 12698,
-    "service_company_process_checks": 92,
-    "human_post_process_checks": 127,
-    "human_reversal_process_checks": 111,
+    "new_connection_tests": 5,
     "writer_authority": false,
     "whole_issues_closed": false
   },
@@ -321,6 +318,12 @@
       "code_revision": "sha256:526b2e3d36fe4b2f6fd46d2b6880cff7ab5de2b72f55d91d97e5b3eef991ad67",
       "spec_revision": "sha256:7971b43ee15b852e302d8fc9778de7ac83940bd3afdde83e2c3b1661a9e55021",
       "state": "verified-native-authenticated-append-only-manual-reversal-on-admitted-connections"
+    },
+    {
+      "current_increment": "service-company-1",
+      "code_revision": "sha256:233da9db130f2bc21e787908a9b28cabba34dc36260622735adfcf96e8fdde35",
+      "spec_revision": "sha256:2bc5156db04cbdfa09492971d2e28bd3b558dc2948df0191cf4aba53c2bf7d01",
+      "state": "verified-charged-service-company-post-reversal-and-fresh-current-authority-on-admitted-connections"
     }
   ]
 }

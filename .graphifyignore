@@ -26,3 +26,6 @@ coverage/
 .cache/
 tmp/
 *.log
+
+# Audited upstream dependency snapshots; patch contract is indexed separately.
+vendor/

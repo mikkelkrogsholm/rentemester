@@ -1,0 +1,214 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Actual SQLite main-handle identity",
+    "goal": "Distinguish actual SQLite descriptors from restored names and preserve live cross-process locks",
+    "scope": "Pinned dependency identity observation and retained layout comparison; no persistent writer admission"
+  },
+  "nodes": {
+    "component.runtime": {
+      "kind": "component",
+      "description": "Descriptor identity observation",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Safe pinned main-handle metadata and sticky comparison without releasing process locks",
+        "rationale": "Path ABA can hide wrong open handles and ordinary close can silently release POSIX locks",
+        "excludes": [
+          "Namespace lifetime, product owner/bootstrap, existing data adoption or deployment qualification"
+        ]
+      },
+      "interfaces": [
+        "action.sqlite_identity"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Device/inode match and persistent synthetic rows survive reopening",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Retained synthetic control/ledger files and matching SQLite handles in WAL or DELETE",
+        "when": "Compare live handles, commit, close and reopen",
+        "then": "Device/inode match and persistent synthetic rows survive reopening"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Refuse and retain sticky invalidation; no fallback to paths",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Memory, swapped, hardlinked, unlinked or wrong-inode SQLite handles",
+        "when": "Compare actual main descriptors",
+        "then": "Refuse and retain sticky invalidation; no fallback to paths"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Only integer metadata escapes; no SQL data, locks or namespace mutations",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Unchanged control and ledger data with trusted patched default VFS",
+        "when": "Observe main descriptor metadata",
+        "then": "Only integer metadata escapes; no SQL data, locks or namespace mutations"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Path oracle passes but actual handle refuses and stays invalid",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Original file retained, alternate database opened at its path then original path restored",
+        "when": "Run pathname-only negative oracle then actual handle comparison",
+        "then": "Path oracle passes but actual handle refuses and stays invalid"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Contender stays busy until explicit parent rollback; no accidental lock release",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Parent holds BEGIN IMMEDIATE and an actual separate process contends in WAL/DELETE on either database",
+        "when": "Run ensure_current and ensure_connections and refuse a substituted manifest hardlink to either live database",
+        "then": "Contender stays busy until explicit parent rollback; no accidental lock release"
+      }
+    },
+    "action.sqlite_identity": {
+      "kind": "action",
+      "description": "Observe actual main handles and compare retained layout",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "control_and_company_connections": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "retained_layout_and_trusted_patched_vfs": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object",
+          "description": "Successful physical observation only, no writer authorization"
+        },
+        "errors": {
+          "refused": "Changed/unavailable/unsupported layout or unsupported SQLite identity VFS"
+        },
+        "preconditions": [
+          "Bind retained layout before opening SQLite handles; close all handles before layout drop",
+          "Pinned trusted default Unix VFS and bundled dependencies; explicit safe selected company"
+        ],
+        "postconditions": [
+          "Both actual main descriptors match exact retained files with one link or sticky refusal",
+          "No transient regular-file descriptor is opened/closed during revalidation, including refused manifest aliases",
+          "No pointer, descriptor, logical authority or write capability escapes"
+        ],
+        "external_effects": [
+          "Read-only statat/fstat and connection file_control observations; no data/namespace writes"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Fixed ABI output and no descriptor/pointer escape; unsupported VFS refuses",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "statat must preserve actual process SQLite locks",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "authorization": {
+            "relevant": false,
+            "rationale": "Read-only physical observation neither authenticates nor grants rights; deployment authorization remains required outside this action",
+            "scenarios": []
+          },
+          "idempotency": {
+            "relevant": false,
+            "rationale": "No persistent effects or mutation retries; invalidation remains sticky in memory",
+            "scenarios": []
+          },
+          "atomicity": {
+            "relevant": false,
+            "rationale": "No transactions or persistent mutation; namespace snapshots explicitly do not provide atomic lifetime admission",
+            "scenarios": []
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal",
+            "scenario.correction"
+          ]
+        }
+      },
+      "behavior": "Check layout with no transient DB opens; fstat actual SQLite main descriptors through versioned patched VFS; require exact dev/ino/single-link; any error invalidates layout permanently; recheck layout"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.sqlite_identity",
+      "to": "component.runtime",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.sqlite_identity",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.sqlite_identity",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.sqlite_identity",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.sqlite_identity",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.sqlite_identity",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Actual SQLite main-handle identity",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "c9b59d81dbbc11c7608bdebff37e12a5b9bd5e7881b5792278255a632ca4c050"
+      }
+    }
+  }
+}

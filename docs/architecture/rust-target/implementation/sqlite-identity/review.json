@@ -1,0 +1,178 @@
+{
+  "scope": "Read-only C/Rust FFI, actual open SQLite descriptor identity, layout sticky checks, portable refusal, provenance and build prerequisite review; no product writer or atomic namespace authority",
+  "captured_at": "2026-10-18T07:11:13.844763+00:00",
+  "base_head": "0c05fba0e32f849ff1205e4724564fb879df2546",
+  "source_hashes": {
+    "Cargo.toml": "9ca4b9e85ed9d13c4a8673ad6cd985a3ea0b204dbe2ed77361f7fca9b2400954",
+    "Cargo.lock": "8f26402a8caaf12537fd6cc1f27d6aa84ae56017dc701a2d2320543f6ef2a973",
+    "vendor/sqlite-provenance.json": "521ec4723fe80d605a99850984b4fa1a5050188a7de6dada81458289cef3bedd",
+    "vendor/sqlite-identity.patch": "04f88063fc01a77e36981dadffba0a6667f9b69f0efa34cfa789c5a02fa1bdb7",
+    "vendor/rusqlite-0.40.2/Cargo.toml": "0caf77d1ad70851eaa13e249ac4c8eca6fa4cc197da17f05a5a08ecf4cde3b0e",
+    "vendor/rusqlite-0.40.2/Cargo.toml.orig": "eca265d7eed3284bb4847cbb491ecc347a2dbce9abc8436f82746d5cd4515a39",
+    "vendor/rusqlite-0.40.2/src/lib.rs": "c3820990e4bd780ab899c04f21520df2ff09a8a37fc4f32ac5cdd6c5f456f39b",
+    "vendor/libsqlite3-sys-0.38.2/sqlite3/sqlite3.c": "52e5b617185361d6e10454726ee1333e8485eacb4296a5298be335899300fe9b",
+    "crates/rentemester-runtime/Cargo.toml": "6c40d32eaa5ac0b3af15a68e5423b41aa2219679837d09b0701fe07006e9a990",
+    "crates/rentemester-storage/Cargo.toml": "fe91d42a993a0da09713af22b134b83976cd4deda7cec44507835d1210c0fafc",
+    "crates/rentemester-runtime/src/lib.rs": "2c51fb9225b28b3ad67e744c1bf473c604407a16b52008d457695b7c683652e5",
+    "crates/rentemester-runtime/src/local/layout.rs": "6d03701b005935a0a888e567c0ae873e11ff7f4b2b12a15e4abb7da6af176d6f",
+    "crates/rentemester-runtime/src/local/layout/connection_tests.rs": "3685823a6e0af64fed10aaa5d2df1728e174e7cd1d0447f1c2211af2b6c8bcd6",
+    "scripts/rust/verify-vendored-sqlite.ts": "3a756c0b5302060f759db4957c61d668c508661c40b69e82c0e7f0485c7fd79c",
+    "docs/architecture/rust-target/implementation/sqlite-identity/CONTRACT.md": "c9b59d81dbbc11c7608bdebff37e12a5b9bd5e7881b5792278255a632ca4c050",
+    "docs/architecture/rust-target/implementation/sqlite-identity/gdd.json": "4c0a99cad7e180aed17f2a204555929cc55f4476908a1cc838d629d479bb6474",
+    "docs/architecture/rust-target/implementation/sqlite-identity/readiness.json": "f9fb36e21c0573f24b7c36ac8fee9eac985d39f72fbf218629d39305e554f4c0"
+  },
+  "status": "No unresolved material findings within final actual main-handle identity prerequisite; transient database and refused-manifest-alias descriptor-close variants corrected; targeted5connection tests independently pass.",
+  "findings": [
+    {
+      "id": "HANDLE-01",
+      "severity": "high",
+      "status": "fixed and independently verified",
+      "source": "runtime local/layout.rs ensure_current and ensure_connections",
+      "description": "ensure_current opens then closes ordinary OS File descriptors on actual SQLite database inodes. On Unix DELETE transactions these close operations silently release SQLite process POSIX locks while SQLite still believes transaction active. New ensure_connections invokes this twice and therefore undermines the cross-process writer fence. Retained binding descriptor drop has same lifetime constraint.",
+      "reproduction": "/tmp/rm-handle-lock-repro.rs, binary /tmp/rm-handle-lock-repro, output /tmp/rm-handle-lock-repro.txt",
+      "observed": "before=busy; after=acquired; sqlite_still_in_transaction=true",
+      "required": "No transient DB inode descriptors opened/closed during any layout revalidation; use nofollow descriptor-relative metadata observation from retained parent dirs. Explicit bind/drop ownership must surround all SQLite connection lifetimes. Regression requires independent process DELETE contender before and after checks.",
+      "resolution": "All regular namespace entries (manifest/control/ledger) now use statat(SYMLINK_NOFOLLOW) from retained parent dirs and fstat on retained files. Manifest bytes use read_at on retained handle, with no cloning/opening/closing. Only DIRECTORY opens remain. Contract retains bind-before-SQLite-open and close-all-SQLite-before-layout-drop duty; owning runtime still pending. Independent5tests verify both DBs WAL/DELETE contention and alias refusal preserving locks."
+    },
+    {
+      "id": "HANDLE-02",
+      "severity": "medium",
+      "status": "fixed by source inspection; unsupported-target cross-compilation not performed",
+      "source": "runtime src/lib.rs non-linux/macos WorkspaceLayout stub",
+      "description": "ensure_connections has no portable stub, so generic caller fails to compile on Windows instead of receiving explicit unsupported platform refusal.",
+      "required": "Provide same public signature returning typed UnsupportedPlatform on unsupported targets; no false platform qualification.",
+      "resolution": "Same-signature non-linux/macos ensure_connections stub returns typed UnsupportedPlatform."
+    },
+    {
+      "id": "HANDLE-03",
+      "severity": "high",
+      "status": "main discovered variant; fixed and independently verified",
+      "source": "runtime local/layout.rs regular manifest revalidation",
+      "description": "First repair still reopened current manifest, so replacement manifest hardlink to live database could make a refused nlink check drop ordinary FD and release SQLite POSIX locks.",
+      "resolution": "No regular namespace inode is opened/closed during revalidation; statat covers index0/2/5 and retained manifest read_at preserves descriptor. New refused_manifest_alias_never_releases_a_live_database_lock test passes for both databases and DELETE/WAL, independent contender stays busy until rollback."
+    }
+  ],
+  "reviewed_properties": [
+    {
+      "claim": "C and Rust ABI buffers align",
+      "evidence": "Rust initialized8u64 stack buffer; C sqlite3_uint64 writes exactly8 words with same magic/version; synchronous sqlite3_file_control under internal connection RefCell mutable borrow; no retained pointers or exported descriptor."
+    },
+    {
+      "claim": "Descriptor identity is actual open database, not filename",
+      "evidence": "C unixFileControl applies osFstat to unixFile.h and refuses nonregular descriptors; Rust returns device/inode/mode/link count. ABA test restores original pathname while wrong connection still reports replacement identity."
+    },
+    {
+      "claim": "Missing patch/unsupported VFS/memory refusal",
+      "evidence": "Non-SQLITE_OK propagates; output magic/version/reserved fields validated; memory and other unimplemented VFS cases return errors; layout invalidates on errors/mismatch."
+    },
+    {
+      "claim": "Sticky mismatched handle refusal",
+      "evidence": "ensure_connections invalidates layout on actual control/ledger mismatch or linkcount !=1; ensure_current honors permanent invalidation."
+    },
+    {
+      "claim": "Vendored provenance independently checked against cached crates archives",
+      "evidence": "Both archive SHA256 match provenance and original Cargo.lock checksums;69rusqlite and25sys upstream member hashes verified; actual diff set exactly3rusqlite files+1sys amalgamation."
+    }
+  ],
+  "executed": [
+    {
+      "command": "bun run scripts/rust/verify-vendored-sqlite.ts > /tmp/rm-handle-vendor-check.json 2> /tmp/rm-handle-vendor-check.stderr",
+      "result": "PASS",
+      "artifact": "/tmp/rm-handle-vendor-check.json"
+    },
+    {
+      "command": "python tar/hash comparison of cached rusqlite0.40.2 and libsqlite3-sys0.38.2 archives versus vendored manifest",
+      "result": "PASS94upstream files and exact4modified file set",
+      "artifact": "/tmp/rm-handle-upstream-proof.json"
+    },
+    {
+      "command": "rustc /tmp/rm-handle-lock-repro.rs against already-built pre-fix runtime/rusqlite rlibs; /tmp/rm-handle-lock-repro /tmp/rm-handle-lock-repro.Y5YhSR",
+      "result": "REPRODUCED lock release defect,exit0",
+      "artifact": "/tmp/rm-handle-lock-repro.txt"
+    },
+    {
+      "command": "/Users/mikkelfreltoftkrogsholm/.cargo/bin/cargo test --locked -p rentemester-runtime local::layout::connection_tests > /tmp/rm-handle-fixed-tests.txt 2>&1",
+      "result": "PASS4 tests,0failed,1ignored child helper",
+      "artifact": "/tmp/rm-handle-fixed-tests.txt"
+    },
+    {
+      "command": "Compile same /tmp/rm-handle-lock-repro.rs against current runtime and rerun /tmp/rm-handle-lock-fixed on new synthetic root",
+      "result": "PASS:before=busy;after=busy;SQLite transaction still active; old binary/log retained separately",
+      "artifact": "/tmp/rm-handle-fixed-repro.txt"
+    },
+    {
+      "command": "Extract94original cached crate files to private /tmp and apply vendor/sqlite-identity.patch with patch -p0; compare all output bytes to vendored snapshot",
+      "result": "PASS complete recorded patch reconstructs exact94file snapshot with4modified upstream files",
+      "artifact": "/tmp/rm-handle-patch-proof.json"
+    },
+    {
+      "command": "/Users/mikkelfreltoftkrogsholm/.cargo/bin/cargo test --locked -p rentemester-runtime local::layout::connection_tests > /tmp/rm-handle-connection-tests-final-review.txt 2>&1",
+      "result": "PASS5 tests,0failed,1ignored helper including final manifest-hardlink lock preservation regression",
+      "artifact": "/tmp/rm-handle-connection-tests-final-review.txt"
+    }
+  ],
+  "limits": [
+    "Current-source hash-bound final targeted review; subsequent edits require revalidation.",
+    "Main broad verification belongs main; not duplicated. This reviewer ran only targeted4connection tests plus independent cross-process repro and provenance checks.",
+    "Linux ARM64 container result inspected against exact current221file source map; Windows/otherVFS/SQLCipher/systemSQLite deployment qualification remains unexecuted.",
+    "Upstream build.rs permits LIBSQLITE3_SYS_USE_PKG_CONFIG/loadable_extension/sqlcipher overrides; bundled feature alone does not prove patched amalgamation is linked. Identity probes must reject absent patch; release build qualification remains required.",
+    "Private opcode correctness assumes trusted bundled VFS and pinnedABI; custom third-party VFSes require explicit qualification and must not be presumed compatible.",
+    "Physical main-fd identity proves neither WAL/journal/SHM path identity nor atomic namespace security, current authorization, legacy writer admission or supported release.",
+    "Any ordinary same-process DB inode close, including future retained-layout destruction or independent file capture, can affect POSIX SQLite locks; future runtime must enforce entire handle lifetime discipline.",
+    "Unsupported-platform stub inspected. Exact-source Linux ARM64 container compilation/16local tests verified from recorded log/image/source map; no Linux host-storage, cross-UID or Windows/deployment qualification.",
+    "Correct bind/open/close/drop ordering is explicitly required by contract but not yet enforced by an owning runtime type. That remains a real precondition before persistent product writers.",
+    "Final requested rerun was targeted connection_tests only; GDD/source docs hash captured but no fresh independent GDD invocation or broad suite rerun in this final alias pass."
+  ],
+  "prior_capture_source_hashes": {
+    "Cargo.toml": "9ca4b9e85ed9d13c4a8673ad6cd985a3ea0b204dbe2ed77361f7fca9b2400954",
+    "Cargo.lock": "8f26402a8caaf12537fd6cc1f27d6aa84ae56017dc701a2d2320543f6ef2a973",
+    "vendor/sqlite-provenance.json": "521ec4723fe80d605a99850984b4fa1a5050188a7de6dada81458289cef3bedd",
+    "vendor/sqlite-identity.patch": "04f88063fc01a77e36981dadffba0a6667f9b69f0efa34cfa789c5a02fa1bdb7",
+    "vendor/rusqlite-0.40.2/Cargo.toml": "0caf77d1ad70851eaa13e249ac4c8eca6fa4cc197da17f05a5a08ecf4cde3b0e",
+    "vendor/rusqlite-0.40.2/Cargo.toml.orig": "eca265d7eed3284bb4847cbb491ecc347a2dbce9abc8436f82746d5cd4515a39",
+    "vendor/rusqlite-0.40.2/src/lib.rs": "c3820990e4bd780ab899c04f21520df2ff09a8a37fc4f32ac5cdd6c5f456f39b",
+    "vendor/libsqlite3-sys-0.38.2/sqlite3/sqlite3.c": "52e5b617185361d6e10454726ee1333e8485eacb4296a5298be335899300fe9b",
+    "crates/rentemester-runtime/Cargo.toml": "6c40d32eaa5ac0b3af15a68e5423b41aa2219679837d09b0701fe07006e9a990",
+    "crates/rentemester-storage/Cargo.toml": "fe91d42a993a0da09713af22b134b83976cd4deda7cec44507835d1210c0fafc",
+    "crates/rentemester-runtime/src/lib.rs": "2c51fb9225b28b3ad67e744c1bf473c604407a16b52008d457695b7c683652e5",
+    "crates/rentemester-runtime/src/local/layout.rs": "9c2b962cd0e9572098138f33020377cabc02387140e52a44b78d5580f6e82843",
+    "crates/rentemester-runtime/src/local/layout/connection_tests.rs": "ed7d3b916030f8f9fc04ac1200324d53c79d765048024b42169296ac85da82f1",
+    "scripts/rust/verify-vendored-sqlite.ts": "3a756c0b5302060f759db4957c61d668c508661c40b69e82c0e7f0485c7fd79c"
+  },
+  "artifact_hashes": {
+    "/tmp/rm-handle-lock-repro.txt": "b630f8e37ac289d4f0dcad555ae399a8a12cc24db1176063d4e3fb1531b6be7c",
+    "/tmp/rm-handle-vendor-check.json": "6d3f3d37d8df959c7186f3f3b0e61d0cd98a60693709f25424d267e320d11611",
+    "/tmp/rm-handle-upstream-proof.json": "b2d171bd0073e01e6e55eb83a594e6e9c0a1851a3befc18ca0cc166b722975e6",
+    "/tmp/rm-handle-lock-repro.rs": "b05b34287bb512308c438553a9a07c00cda4d5fe8533858eef72e631d937b1b1",
+    "/tmp/rm-handle-fixed-repro.txt": "db5b23bf0f32eb0b01de12136f03baee00070bcd2df35015d9e0ed93d999a316",
+    "/tmp/rm-handle-patch-proof.json": "47b955690c0505632c58a943459e01c3d1f2177c04801473b09b602f464313a4",
+    "/tmp/rm-handle-fixed-tests.txt": "3c9066a1e2c362c9413b82d0e4a07b91a6456333ecb289fb516aea4c5cad294e",
+    "/tmp/rm-handle-vendor-check.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/tmp/rm-handle-connection-tests-final-review.txt": "09a4a33bd500810d1217f13bbf9e721f9139e1368dfb4d6d2ded69e22bc18a3c",
+    "/tmp/rm-handle-linux.json": "11b9f2756a36bd527a46d43d9fc58fde8e51311e9b77112111cca4cd26acee52",
+    "/tmp/rm-handle-linux-tests.txt": "58ea6af9cd66ce1996739ad6d669b8b5a3673efebf98eeeb1e5fb3253538af45"
+  },
+  "final_alias_source_review": "ensure_current regular entry branch statat-only; retained_bytes bounded fstat+read_at reads existing manifest without clone/open/drop; other branches are retained directory metadata and DIRECTORY/NOFOLLOW directory observations. Both initial and final ensure_connections layout checks share fixed code.",
+  "linux_candidate_evidence_review": {
+    "reviewed_at": "2026-10-18T07:18:10.223115+00:00",
+    "execution_owner": "main executed Linux tests; this reviewer independently inspected evidence, not rerun",
+    "manifest": "/tmp/rm-handle-linux.json",
+    "log": "/tmp/rm-handle-linux-tests.txt",
+    "log_sha256": "58ea6af9cd66ce1996739ad6d669b8b5a3673efebf98eeeb1e5fb3253538af45",
+    "source_map_verified_current_files": 221,
+    "source_map_mismatches": 0,
+    "command": "cargo test --locked -p rentemester-runtime local::",
+    "tests_passed": 16,
+    "ignored_helpers": 3,
+    "rustc_log_header": "rustc 1.94.1 (e408947bf 2026-03-25)",
+    "image_read_only_inspection": {
+      "command": "docker image inspect rust@sha256:cf9dd0ec73e75f827fe59123fff9dc65af1a1c8363c3c31ee8d7f8ad0b6a5fb2 --format '{{json .Architecture}} {{json .Os}} {{json .Id}} {{json .RepoDigests}}'",
+      "architecture": "arm64",
+      "os": "linux",
+      "id": "sha256:e4a4af32317a1c595914eaa208460f155d7d32ea241bec5f4b8bd2500a4891de",
+      "repository_digest": "rust@sha256:cf9dd0ec73e75f827fe59123fff9dc65af1a1c8363c3c31ee8d7f8ad0b6a5fb2"
+    },
+    "candidate": "container tmpfs for synthetic fixtures; no real host files or deployment profile",
+    "limit": "Linux ARM64 container compilation and synthetic tmpfs behavior only; no Linux host storage, cross-UID isolation, deployment or Windows qualification."
+  }
+}
