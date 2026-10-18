@@ -1,0 +1,229 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native manual journal posting",
+    "goal": "Real canonical journal lines/hash/sequence/retention/audit/exceptions and receipt under current human authorization",
+    "scope": "Authenticated admitted-connection manual posting; original writer admission, reversal and deployed transports remain open"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Authenticated real manual posting",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Current subject-bound human fence and transaction-current manual validation; real canonical journal/sequence/hash/retention/audit/exceptions/receipt",
+        "rationale": "Real ledger effects must be atomic and backward-readable; advisory snapshots and synthetic effect callbacks cannot stand in for posting",
+        "excludes": [
+          "Original physical/lifetime/restore admission, service company quota fence, reversal and deployed transport backup/confirmation/policy adapters"
+        ]
+      },
+      "interfaces": [
+        "action.journal_post"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Real manual posting matches source rows/hash/fiscal number/retention/audit and native keyed replay has one journal",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic company databases, actual source manual posting and current human authorization",
+        "when": "Native real manual post or protected replay under admitted current writer, including refusal/fault/death/concurrency paths",
+        "then": "Real manual posting matches source rows/hash/fiscal number/retention/audit and native keyed replay has one journal"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Current revoked authorization, locked periods, invalid facts/evidence/VAT/FX/rules and SQL FKs/indexes refuse without partial posting",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic company databases, actual source manual posting and current human authorization",
+        "when": "Native real manual post or protected replay under admitted current writer, including refusal/fault/death/concurrency paths",
+        "then": "Current revoked authorization, locked periods, invalid facts/evidence/VAT/FX/rules and SQL FKs/indexes refuse without partial posting"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Source text/null/explicit VAT, stable scope, company fiscal settings, predecessor hash and mandatory companions preserved",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic company databases, actual source manual posting and current human authorization",
+        "when": "Native real manual post or protected replay under admitted current writer, including refusal/fault/death/concurrency paths",
+        "then": "Source text/null/explicit VAT, stable scope, company fiscal settings, predecessor hash and mandatory companions preserved"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Native typed protocol and exact numeric/ID boundaries refuse unsafe storage; trusted Copenhagen horizon and known commit determine admission/output",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic company databases, actual source manual posting and current human authorization",
+        "when": "Native real manual post or protected replay under admitted current writer, including refusal/fault/death/concurrency paths",
+        "then": "Native typed protocol and exact numeric/ID boundaries refuse unsafe storage; trusted Copenhagen horizon and known commit determine admission/output"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "WAL/DELETE posters serialize IDs/numbers/hash; process death and injected faults preserve atomic companions; commit uncertainty withholds result",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic company databases, actual source manual posting and current human authorization",
+        "when": "Native real manual post or protected replay under admitted current writer, including refusal/fault/death/concurrency paths",
+        "then": "WAL/DELETE posters serialize IDs/numbers/hash; process death and injected faults preserve atomic companions; commit uncertainty withholds result"
+      }
+    },
+    "action.journal_post": {
+      "kind": "action",
+      "description": "Post a real manual journal under current authenticated company writer",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "manual_journal": {
+            "type": "object"
+          },
+          "expected_rule_version": {
+            "type": "string"
+          },
+          "optional_idempotency_key": {
+            "type": "string"
+          }
+        },
+        "context": {
+          "trusted_cookie_clock_policy_selection": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object",
+          "description": "Known committed source-shaped post result and optional typed native receipt; original business errors after rollback"
+        },
+        "errors": {
+          "refused": "Current authority/connection/schema/rule/manual/FK/index/precision refusal, full rollback; commit error outcome unknown"
+        },
+        "preconditions": [
+          "Current verified cookie company ledger.post authorization with subject derived under held control writer",
+          "Admitted canonical physical company; runtime Clock and configured Copenhagen future horizon"
+        ],
+        "postconditions": [
+          "Journal header, ordered lines, source-compatible chained hash, fiscal sequence/retention, exact audit and bank exception companions atomic",
+          "Same native keyed payload replays protected original result only after current authorization",
+          "Validation/no-key business and SQL/companion failures fully roll back; uncertain commit withholds result"
+        ],
+        "external_effects": [
+          "One canonical posted journal and ordered DKK lines, journal_entry sequence, journal_post audit, matching positive bank exception resolution",
+          "Optional stable-principal tombstone/outcome/audits in same transaction; no deployed endpoint, original data, mail or live migration"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Real accounting writes require transaction-bound facts, exact legacy numeric/hash compatibility, complete companions, current authority, trustworthy Copenhagen date, idempotency and commit/death concurrency evidence",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Real accounting writes require transaction-bound facts, exact legacy numeric/hash compatibility, complete companions, current authority, trustworthy Copenhagen date, idempotency and commit/death concurrency evidence",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Real accounting writes require transaction-bound facts, exact legacy numeric/hash compatibility, complete companions, current authority, trustworthy Copenhagen date, idempotency and commit/death concurrency evidence",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Real accounting writes require transaction-bound facts, exact legacy numeric/hash compatibility, complete companions, current authority, trustworthy Copenhagen date, idempotency and commit/death concurrency evidence",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Real accounting writes require transaction-bound facts, exact legacy numeric/hash compatibility, complete companions, current authority, trustworthy Copenhagen date, idempotency and commit/death concurrency evidence",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Current human fence binds subject; current transaction facts validate manual rules; all real journal companions and receipt commit together; known commit only output"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.journal_post",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.journal_post",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.journal_post",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.journal_post",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.journal_post",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.journal_post",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native manual journal posting",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "01375f0f78da95e25f624c6e809500b9b8225e28d782a59423ba65d5141d1e2b"
+      }
+    }
+  }
+}

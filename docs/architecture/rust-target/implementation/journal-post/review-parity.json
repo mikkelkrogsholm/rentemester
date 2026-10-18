@@ -1,0 +1,388 @@
+{
+  "ok": true,
+  "scope": "actual native manual journal post/source accounting parity and authenticated admitted-connection process faults; no deployed original writer authority or reversal",
+  "checks": 127,
+  "observations": [
+    {
+      "id": "wal/source-real-capital"
+    },
+    {
+      "id": "wal/source-real-future-boundary"
+    },
+    {
+      "id": "wal/source-real-dkk-optional-header"
+    },
+    {
+      "id": "wal/source-real-bank-negative"
+    },
+    {
+      "id": "wal/source-real-bank-zero"
+    },
+    {
+      "id": "wal/source-real-document"
+    },
+    {
+      "id": "wal/source-real-manual-vat"
+    },
+    {
+      "id": "wal/source-real-fx"
+    },
+    {
+      "id": "wal/source-real-bank-exceptions"
+    },
+    {
+      "id": "wal/source-real-unicode-empty-null"
+    },
+    {
+      "id": "wal/source-real-fiscal-span"
+    },
+    {
+      "id": "wal/source-real-fiscal-start"
+    },
+    {
+      "id": "wal/source-real-retention-leap"
+    },
+    {
+      "id": "wal/second-post-chains"
+    },
+    {
+      "id": "wal/wide-entry-number-floor"
+    },
+    {
+      "id": "wal/actual-post-receipt-replay-and-conflict"
+    },
+    {
+      "id": "wal/refusal-fx-amount"
+    },
+    {
+      "id": "wal/refusal-zero-document"
+    },
+    {
+      "id": "wal/refusal-blank-text"
+    },
+    {
+      "id": "wal/refusal-unbalanced"
+    },
+    {
+      "id": "wal/refusal-missing-account"
+    },
+    {
+      "id": "wal/refusal-inactive-account"
+    },
+    {
+      "id": "wal/refusal-negative-amount"
+    },
+    {
+      "id": "wal/refusal-document-required"
+    },
+    {
+      "id": "wal/refusal-document-missing"
+    },
+    {
+      "id": "wal/refusal-bank-missing"
+    },
+    {
+      "id": "wal/refusal-vat-code"
+    },
+    {
+      "id": "wal/refusal-fx-missing"
+    },
+    {
+      "id": "wal/refusal-future-date"
+    },
+    {
+      "id": "wal/refusal-closed-period"
+    },
+    {
+      "id": "wal/optional-balance-document-actual-fk"
+    },
+    {
+      "id": "wal/direct-bank-source-actual-unique-index"
+    },
+    {
+      "id": "wal/closed-reopened-period"
+    },
+    {
+      "id": "wal/native-precision-refusal"
+    },
+    {
+      "id": "wal/legacy-fx-multiplication-refusal"
+    },
+    {
+      "id": "wal/receipt-storage-failure-rolls-back-real-post"
+    },
+    {
+      "id": "wal/schema-drift-hides-committed-receipt"
+    },
+    {
+      "id": "wal/credit-note-duplicate-matches-source"
+    },
+    {
+      "id": "wal/reported-period-is-terminal"
+    },
+    {
+      "id": "wal/wrong-rule-version"
+    },
+    {
+      "id": "wal/current-revocation-hides-real-receipt"
+    },
+    {
+      "id": "wal/authority-archived"
+    },
+    {
+      "id": "wal/authority-unregistered"
+    },
+    {
+      "id": "wal/authority-wrong_workspace"
+    },
+    {
+      "id": "wal/authority-mixed"
+    },
+    {
+      "id": "wal/late-sql-sequence"
+    },
+    {
+      "id": "wal/death-sequence"
+    },
+    {
+      "id": "wal/late-sql-header"
+    },
+    {
+      "id": "wal/death-header"
+    },
+    {
+      "id": "wal/late-sql-line-0"
+    },
+    {
+      "id": "wal/death-line-0"
+    },
+    {
+      "id": "wal/late-sql-line-1"
+    },
+    {
+      "id": "wal/death-line-1"
+    },
+    {
+      "id": "wal/late-sql-lines"
+    },
+    {
+      "id": "wal/death-lines"
+    },
+    {
+      "id": "wal/late-sql-audit"
+    },
+    {
+      "id": "wal/death-audit"
+    },
+    {
+      "id": "wal/late-sql-exceptions"
+    },
+    {
+      "id": "wal/death-exceptions"
+    },
+    {
+      "id": "wal/death-real-receipt-precommit"
+    },
+    {
+      "id": "wal/death-real-receipt-postcommit"
+    },
+    {
+      "id": "wal/actual-concurrent-posters"
+    },
+    {
+      "id": "wal/concurrent-same-key"
+    },
+    {
+      "id": "delete/source-real-capital"
+    },
+    {
+      "id": "delete/source-real-future-boundary"
+    },
+    {
+      "id": "delete/source-real-dkk-optional-header"
+    },
+    {
+      "id": "delete/source-real-bank-negative"
+    },
+    {
+      "id": "delete/source-real-bank-zero"
+    },
+    {
+      "id": "delete/source-real-document"
+    },
+    {
+      "id": "delete/source-real-manual-vat"
+    },
+    {
+      "id": "delete/source-real-fx"
+    },
+    {
+      "id": "delete/source-real-bank-exceptions"
+    },
+    {
+      "id": "delete/source-real-unicode-empty-null"
+    },
+    {
+      "id": "delete/source-real-fiscal-span"
+    },
+    {
+      "id": "delete/source-real-fiscal-start"
+    },
+    {
+      "id": "delete/source-real-retention-leap"
+    },
+    {
+      "id": "delete/second-post-chains"
+    },
+    {
+      "id": "delete/wide-entry-number-floor"
+    },
+    {
+      "id": "delete/actual-post-receipt-replay-and-conflict"
+    },
+    {
+      "id": "delete/refusal-fx-amount"
+    },
+    {
+      "id": "delete/refusal-zero-document"
+    },
+    {
+      "id": "delete/refusal-blank-text"
+    },
+    {
+      "id": "delete/refusal-unbalanced"
+    },
+    {
+      "id": "delete/refusal-missing-account"
+    },
+    {
+      "id": "delete/refusal-inactive-account"
+    },
+    {
+      "id": "delete/refusal-negative-amount"
+    },
+    {
+      "id": "delete/refusal-document-required"
+    },
+    {
+      "id": "delete/refusal-document-missing"
+    },
+    {
+      "id": "delete/refusal-bank-missing"
+    },
+    {
+      "id": "delete/refusal-vat-code"
+    },
+    {
+      "id": "delete/refusal-fx-missing"
+    },
+    {
+      "id": "delete/refusal-future-date"
+    },
+    {
+      "id": "delete/refusal-closed-period"
+    },
+    {
+      "id": "delete/optional-balance-document-actual-fk"
+    },
+    {
+      "id": "delete/direct-bank-source-actual-unique-index"
+    },
+    {
+      "id": "delete/closed-reopened-period"
+    },
+    {
+      "id": "delete/native-precision-refusal"
+    },
+    {
+      "id": "delete/legacy-fx-multiplication-refusal"
+    },
+    {
+      "id": "delete/receipt-storage-failure-rolls-back-real-post"
+    },
+    {
+      "id": "delete/schema-drift-hides-committed-receipt"
+    },
+    {
+      "id": "delete/credit-note-duplicate-matches-source"
+    },
+    {
+      "id": "delete/reported-period-is-terminal"
+    },
+    {
+      "id": "delete/wrong-rule-version"
+    },
+    {
+      "id": "delete/current-revocation-hides-real-receipt"
+    },
+    {
+      "id": "delete/authority-archived"
+    },
+    {
+      "id": "delete/authority-unregistered"
+    },
+    {
+      "id": "delete/authority-wrong_workspace"
+    },
+    {
+      "id": "delete/authority-mixed"
+    },
+    {
+      "id": "delete/late-sql-sequence"
+    },
+    {
+      "id": "delete/death-sequence"
+    },
+    {
+      "id": "delete/late-sql-header"
+    },
+    {
+      "id": "delete/death-header"
+    },
+    {
+      "id": "delete/late-sql-line-0"
+    },
+    {
+      "id": "delete/death-line-0"
+    },
+    {
+      "id": "delete/late-sql-line-1"
+    },
+    {
+      "id": "delete/death-line-1"
+    },
+    {
+      "id": "delete/late-sql-lines"
+    },
+    {
+      "id": "delete/death-lines"
+    },
+    {
+      "id": "delete/late-sql-audit"
+    },
+    {
+      "id": "delete/death-audit"
+    },
+    {
+      "id": "delete/late-sql-exceptions"
+    },
+    {
+      "id": "delete/death-exceptions"
+    },
+    {
+      "id": "delete/death-real-receipt-precommit"
+    },
+    {
+      "id": "delete/death-real-receipt-postcommit"
+    },
+    {
+      "id": "delete/actual-concurrent-posters"
+    },
+    {
+      "id": "delete/concurrent-same-key"
+    },
+    {
+      "id": "actual-delete-post-commit-unknown"
+    }
+  ]
+}

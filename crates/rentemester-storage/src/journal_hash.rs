@@ -16,32 +16,32 @@ pub struct Report {
 
 // Declaration order is historical hash data. Do not replace with a sorted map.
 #[derive(Serialize)]
-struct Entry {
-    id: i64,
-    entry_no: String,
-    transaction_date: String,
-    text: String,
-    source_bank_transaction_id: Option<i64>,
-    document_id: Option<i64>,
-    currency: String,
-    amount_foreign: Option<Box<RawValue>>,
-    amount_dkk: Option<Box<RawValue>>,
-    fx_rate_to_dkk: Option<Box<RawValue>>,
-    rule_version: String,
-    created_by: String,
-    created_by_program: String,
-    status: String,
-    reversal_of_entry_id: Option<i64>,
-    lines: Vec<Line>,
+pub(super) struct Entry {
+    pub(super) id: i64,
+    pub(super) entry_no: String,
+    pub(super) transaction_date: String,
+    pub(super) text: String,
+    pub(super) source_bank_transaction_id: Option<i64>,
+    pub(super) document_id: Option<i64>,
+    pub(super) currency: String,
+    pub(super) amount_foreign: Option<Box<RawValue>>,
+    pub(super) amount_dkk: Option<Box<RawValue>>,
+    pub(super) fx_rate_to_dkk: Option<Box<RawValue>>,
+    pub(super) rule_version: String,
+    pub(super) created_by: String,
+    pub(super) created_by_program: String,
+    pub(super) status: String,
+    pub(super) reversal_of_entry_id: Option<i64>,
+    pub(super) lines: Vec<Line>,
 }
 #[derive(Serialize)]
-struct Line {
-    ordinal: usize,
-    account_no: String,
-    debit_amount: Box<RawValue>,
-    credit_amount: Box<RawValue>,
-    vat_code: Option<String>,
-    text: Option<String>,
+pub(super) struct Line {
+    pub(super) ordinal: usize,
+    pub(super) account_no: String,
+    pub(super) debit_amount: Box<RawValue>,
+    pub(super) credit_amount: Box<RawValue>,
+    pub(super) vat_code: Option<String>,
+    pub(super) text: Option<String>,
 }
 
 fn number(value: ValueRef<'_>) -> Result<f64, Error> {
@@ -53,7 +53,7 @@ fn number(value: ValueRef<'_>) -> Result<f64, Error> {
         )),
     }
 }
-fn json_number(value: f64) -> Result<Box<RawValue>, Error> {
+pub(super) fn json_number(value: f64) -> Result<Box<RawValue>, Error> {
     if !value.is_finite() {
         return Err(invalid("legacy hash numeric normalization overflow"));
     }
@@ -118,6 +118,20 @@ fn read_entry(row: &Row<'_>, db: &Connection) -> Result<Entry, Error> {
         lines,
     })
 }
+pub(super) fn canonical_hash(entry: &Entry, previous: &str) -> Result<String, Error> {
+    Ok(format!(
+        "{:x}",
+        Sha256::new()
+            .chain_update(serde_json::to_vec(entry).map_err(invalid)?)
+            .chain_update(previous.as_bytes())
+            .finalize()
+    ))
+}
+pub(super) fn stored_hash(db: &Connection, id: i64, previous: &str) -> Result<String, Error> {
+    db.query_row("SELECT id,entry_no,transaction_date,text,source_bank_transaction_id,document_id,currency,amount_foreign,amount_dkk,fx_rate_to_dkk,rule_version,created_by,created_by_program,status,reversal_of_entry_id FROM journal_entries WHERE id=?1", [id], |row| Ok(read_entry(row,db)))
+        .map_err(invalid)?
+        .and_then(|entry| canonical_hash(&entry, previous))
+}
 pub(super) fn verify(db: &Connection) -> Result<Report, Error> {
     require_columns(
         db,
@@ -154,14 +168,7 @@ pub(super) fn verify(db: &Connection) -> Result<Report, Error> {
         let entry = read_entry(row, db)?;
         let previous_hash: Option<String> = row.get(15).map_err(invalid)?;
         let stored: String = row.get(16).map_err(invalid)?;
-        let bytes = serde_json::to_vec(&entry).map_err(invalid)?;
-        let expected = format!(
-            "{:x}",
-            Sha256::new()
-                .chain_update(bytes)
-                .chain_update(previous.as_bytes())
-                .finalize()
-        );
+        let expected = canonical_hash(&entry, &previous)?;
         if entry.lines.is_empty() {
             errors.push(format!("{}: entry has no journal lines", entry.entry_no));
         }

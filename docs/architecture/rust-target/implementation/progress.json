@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "idempotency-1",
-  "code_revision": "sha256:0ec51ec1a68d2ff4285321bef20f788f97d1d1f8a9c34cb262746fe4867c49ec",
-  "spec_revision": "sha256:5afa7d40a5f598514869708c8963f69f26d7b3ce79f8c47c814df02ea1bfda5e",
-  "state": "verified-native-durable-keyed-receipt-storage-and-current-human-fence-composition",
+  "current_increment": "journal-post-1",
+  "code_revision": "sha256:1545193f20eb263f9843b4d98bb2fd52feffb6a45d728c77d093c8b07e33a4ab",
+  "spec_revision": "sha256:7858ec76cd26d24536ce89ab72008439e3ebc64a204a6f61dff11be2586fabf4",
+  "state": "verified-native-authenticated-real-manual-journal-post-on-admitted-connections",
   "issues_closed": [],
   "next": [
-    "Port a complete native manual journal post/reverse use case using current borrowed transaction facts, compiled rules, real journal lines/hash/sequence/audit and durable receipts. Preserve actual domain/period/evidence/actor/outer confirm+backup gates; then implement service current company admission/quota protocol and shared transports. Full React/GPUI/distribution/cutover epic unchanged.",
+    "Implement complete native append-only manual reversal with protected invoice/payment/credit-note evidence, internal historical/VAT policy, exact swapped lines, canonical hash/sequence/audit and durable receipts. Then service current company admission/quota protocol and actual physical/outer policy/confirmation/backup/shared transports. Full React/GPUI/distribution/cutover epic unchanged.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,19 +21,19 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "service-lifecycle-1",
-    "code_revision": "sha256:9855fc241223d10a2c18c9ba4b3ced26746b702be923c8638121cb025b71fba4",
-    "spec_revision": "sha256:000418df1242181dc9100619998ec507f7ca37a7d5cd4af668512463e658c4b0",
-    "state": "verified-native-owner-service-lifecycle-inventory-and-historical-recovery-http"
+    "current_increment": "idempotency-1",
+    "code_revision": "sha256:0ec51ec1a68d2ff4285321bef20f788f97d1d1f8a9c34cb262746fe4867c49ec",
+    "spec_revision": "sha256:5afa7d40a5f598514869708c8963f69f26d7b3ce79f8c47c814df02ea1bfda5e",
+    "state": "verified-native-durable-keyed-receipt-storage-and-current-human-fence-composition"
   },
   "evidence": {
-    "report": "idempotency/evidence.json",
-    "parity": "idempotency/parity.json",
-    "regression": "idempotency/regression.json",
-    "rust_tests_passed": 148,
-    "ignored_subprocess_helpers": 24,
-    "integration_checks": 12368,
-    "receipt_process_checks": 132,
+    "report": "journal-post/evidence.json",
+    "parity": "journal-post/parity.json",
+    "regression": "journal-post/regression.json",
+    "rust_tests_passed": 151,
+    "ignored_subprocess_helpers": 26,
+    "integration_checks": 12495,
+    "post_process_checks": 127,
     "ui_tests": 633,
     "writer_authority": false,
     "whole_issues_closed": false
@@ -302,6 +302,12 @@
       "code_revision": "sha256:9855fc241223d10a2c18c9ba4b3ced26746b702be923c8638121cb025b71fba4",
       "spec_revision": "sha256:000418df1242181dc9100619998ec507f7ca37a7d5cd4af668512463e658c4b0",
       "state": "verified-native-owner-service-lifecycle-inventory-and-historical-recovery-http"
+    },
+    {
+      "current_increment": "idempotency-1",
+      "code_revision": "sha256:0ec51ec1a68d2ff4285321bef20f788f97d1d1f8a9c34cb262746fe4867c49ec",
+      "spec_revision": "sha256:5afa7d40a5f598514869708c8963f69f26d7b3ce79f8c47c814df02ea1bfda5e",
+      "state": "verified-native-durable-keyed-receipt-storage-and-current-human-fence-composition"
     }
   ]
 }

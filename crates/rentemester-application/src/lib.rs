@@ -18,3 +18,5 @@ pub mod workspace_context;
 pub mod service_context;
 
 pub mod service_lifecycle;
+
+pub mod journal_post;

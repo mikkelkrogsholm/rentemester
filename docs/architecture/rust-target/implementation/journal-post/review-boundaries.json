@@ -1,0 +1,1 @@
+{"ok":true,"scope":"current domain/application dependency boundaries and pure domain/access module imports","negativeControls":["forbidden domain SQL and unclassified OS dependencies","direct filesystem/SQL/storage imports in pure modules"],"limits":"Direct import scan supplements dependency inspection and code review; it is not an exhaustive Rust semantic analyzer."}

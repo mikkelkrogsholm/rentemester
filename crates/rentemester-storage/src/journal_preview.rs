@@ -37,7 +37,7 @@ pub struct PreviewReport {
 struct Catalogue {
     bundles: Vec<RuleBundle>,
 }
-fn compiled_rules() -> Result<ManualJournalRules, Error> {
+pub(crate) fn compiled_rules() -> Result<ManualJournalRules, Error> {
     let catalogue: Catalogue = serde_json::from_str(include_str!("manual-rule-bundles.json"))
         .map_err(|_| Error::new("invalid_rules", "compiled manual metadata is invalid"))?;
     ManualJournalRules::from_bundles(catalogue.bundles)
@@ -64,18 +64,7 @@ pub fn preview_manual_journal(company: &Path, input: PreviewInput) -> Result<Pre
     // Unvalidated capture lets EVERY admission/refusal pass through checked owned cleanup.
     let Snapshot { conn, _dir } = Snapshot::capture_unvalidated(company)?;
     let result = (|| {
-        crate::validate(&conn)?;
-        let expected: Vec<crate::Migration> =
-            serde_json::from_str(include_str!("legacy-schema.json")).map_err(malformed)?;
-        let history = migration::strict_history(&conn, "schema_migrations", &expected)?;
-        if history.len() != expected.len()
-            || migration::schema(&conn)? != company_baseline::load_images()?.current
-        {
-            return Err(Error::new(
-                "unsupported_schema",
-                "journal preview requires complete canonical current company schema",
-            ));
-        }
+        require_current(&conn)?;
         let facts = collect_facts(&conn, &input.request, input.latest_allowed_date)?;
         let validation =
             manual_journal::validate(&input.request, &facts, &rules, &input.expected_rule_version)?;
@@ -106,6 +95,22 @@ pub fn preview_manual_journal(company: &Path, input: PreviewInput) -> Result<Pre
     cleanup?;
     result
 }
+/// Canonical current ledger gate shared by captured preview and admitted writes.
+pub(crate) fn require_current(conn: &Connection) -> Result<(), Error> {
+    crate::validate(conn)?;
+    let expected: Vec<crate::Migration> =
+        serde_json::from_str(include_str!("legacy-schema.json")).map_err(malformed)?;
+    let history = migration::strict_history(conn, "schema_migrations", &expected)?;
+    if history.len() != expected.len()
+        || migration::schema(conn)? != company_baseline::load_images()?.current
+    {
+        return Err(Error::new(
+            "unsupported_schema",
+            "journal preview requires complete canonical current company schema",
+        ));
+    }
+    Ok(())
+}
 fn account_kind(value: &str) -> Result<AccountKind, Error> {
     Ok(match value {
         "asset" => AccountKind::Asset,
@@ -126,7 +131,7 @@ fn period_kind(value: &str) -> Result<PeriodKind, Error> {
         _ => return Err(malformed("period kind")),
     })
 }
-fn collect_facts(
+pub(crate) fn collect_facts(
     db: &Connection,
     request: &ManualJournal,
     latest_allowed_date: Date,

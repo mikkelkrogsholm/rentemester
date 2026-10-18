@@ -14,7 +14,7 @@ function checkDependencies(crate: string, names: string[]) {
   const allowed = new Set(
     crate === "rentemester-engine"
       ? ["num-bigint", "serde"]
-      : ["serde", "rentemester-engine", "rentemester-storage", "rentemester-runtime", "rusqlite"],
+      : ["serde", "serde_json", "rentemester-engine", "rentemester-storage", "rentemester-runtime", "rusqlite"],
   );
   assert(
     names.every((n) => allowed.has(n)),
@@ -46,6 +46,8 @@ for (const crate of ["rentemester-engine", "rentemester-application"]) {
     if (crate === "rentemester-engine" || f === "access.rs")
       checkSource(readFileSync(join(dir, f), "utf8"));
 }
+// Application canonicalizes typed receipt fingerprints/results; JSON grants no I/O.
+assert.throws(() => checkDependencies("rentemester-engine", ["serde_json"]));
 for (const crate of ["rentemester-engine", "rentemester-application"]) {
   if (crate === "rentemester-engine")
     assert.throws(() => checkDependencies(crate, ["serde", "rusqlite"]));

@@ -1,0 +1,284 @@
+{
+  "result": "PASS",
+  "scope": "Completed read-only source/docs/GDD/boundaries review; independent127 source/process checks before narrow tail-sentinel fix, runtime1/fence5/storage2 checks and final targeted fixed-tail/no-effects probe. Current hashes include equivalent final let-chain/format delta. Main owns broad final regression. No repository or graph writes.",
+  "graphify_first": true,
+  "verified_utc": "2026-10-18T05:43:29.056405+00:00",
+  "material_findings": [],
+  "checked": [
+    "Current authenticated subject is returned by same held controlwriter and used for user:<subject> actor; caller createdByProgram refused and company permission/current membership precede callback/receipt",
+    "Canonical company schema/integrity gate precedes receiptlookup; fresh domainvalidator executes only on receiptmiss; replay payload is explicitly new native typed contract, not arbitrary source transportfingerprint",
+    "ExactMoney/FxRate scaled checked-safe conversion uses decimal-normalized JS rendering roundtrip and matching source BigInt normalization, followed by storedNUMERIC/hash readback",
+    "Source ordered header/line ordinal hash fields and lateststored previoushash; default DKKlinecurrency, VAT ECMAtrim, nullable/empty text retained",
+    "Source firstcompany settings/defaults, CVRnormalization, fiscalstrategy/floor/sequence/variablewidth number and retention arithmetic",
+    "Exact journal/audit/positivebank exception companion writes, trigger/FK/uniqueconstraints retained, everyposteffect error requires outerrollback",
+    "Receiptbusinessrejection preserves errors afterrollback; no domain effects on validatorrefusal; conflict audit maycommit withrefusedresult per primitivecontract",
+    "Trusted UTC→Copenhagen compiledtimezone horizon; no request horizon/hosttimezone authority"
+  ],
+  "execution": {
+    "storage": {
+      "result": "PASS",
+      "tests": 1,
+      "ignored": 1,
+      "command": "cargo test --locked --release -p rentemester-storage journal_post::tests::",
+      "log": "/tmp/rm-post-review-native.txt"
+    },
+    "time": {
+      "result": "PASS",
+      "tests": 1,
+      "command": "cargo test --locked --release -p rentemester-runtime posting_time::tests::",
+      "log": "/tmp/rm-post-review-time.txt"
+    },
+    "fence": {
+      "result": "PASS",
+      "tests": 5,
+      "ignored": 2,
+      "command": "cargo test --locked --release -p rentemester-application control_fence::tests::",
+      "log": "/tmp/rm-post-review-fence.txt"
+    },
+    "gdd": {
+      "result": "PASS",
+      "report": "/tmp/rm-post-review-readiness.json",
+      "limitation": "Structural readiness, not actualpostingparity."
+    },
+    "parity127_before_tail_fix": {
+      "result": "PASS",
+      "checks": 127,
+      "command": "bun run scripts/rust/verify-journal-post.ts",
+      "report": "/tmp/rm-post-review-parity.json",
+      "stderr": "/tmp/rm-post-review-parity.err",
+      "stderr_bytes": 0,
+      "revision_scope": "Ran on frozen source before JP01 narrow tail-check correction. Do not describe as full final-afterfix independent matrix. Covers source effects/hash, realpost receipts, currentauthority, percompanion faults/kills, concurrent ordinary/samekey WAL/DELETE, commitunknown."
+    },
+    "final_storage": {
+      "result": "PASS",
+      "tests": 2,
+      "ignored": 1,
+      "command": "cargo test --locked --release -p rentemester-storage journal_post",
+      "report": "/tmp/rm-post-review-tail-fixed-native.txt",
+      "revision_scope": "After Option-tail correction and addedcorruptionassertion; final later let-chain/fmt equivalent only."
+    },
+    "final_runtime": {
+      "result": "PASS",
+      "tests": 1,
+      "command": "cargo test --locked --release -p rentemester-runtime posting_time::tests::",
+      "report": "/tmp/rm-post-review-final-time.txt",
+      "revision_scope": "Runtime functional source unchanged after this run."
+    },
+    "final_fence": {
+      "result": "PASS",
+      "tests": 5,
+      "ignored": 2,
+      "command": "cargo test --locked --release -p rentemester-application control_fence::tests::",
+      "report": "/tmp/rm-post-review-final-fence.txt",
+      "revision_scope": "Fence/application functional source unchanged after this run."
+    },
+    "tail_probe": {
+      "result": "PASS",
+      "checks": 1,
+      "command": "bun run /tmp/rm-post-review-sentinel.ts",
+      "report": "/tmp/rm-post-review-sentinel.json",
+      "stderr": "/tmp/rm-post-review-sentinel.err",
+      "unchanged_all_tables": true,
+      "revision_scope": "Current Option-tail fix, before equivalent final let-chain/fmt. Actual canonicalDB/sourcepost then corrupttail with exact guard restoration; no repo modifications."
+    },
+    "boundaries": {
+      "result": "PASS",
+      "command": "bun run scripts/rust/check-boundaries.ts",
+      "report": "/tmp/rm-post-review-boundaries.json",
+      "review": "serde_json allowed application only, explicit negativecontrol still denies engine serde_json; pureengine/access directIO/SQL checks retained."
+    },
+    "final_gdd": {
+      "result": "PASS",
+      "checks": 3,
+      "spec_revision": "sha256:7858ec76cd26d24536ce89ab72008439e3ebc64a204a6f61dff11be2586fabf4",
+      "report": "/tmp/rm-post-review-final-readiness.json",
+      "stored_report_and_contract_hash_match": true,
+      "command": "/Users/mikkelfreltoftkrogsholm/Projekter/gdd/.venv/bin/gdd validate docs/architecture/rust-target/implementation/journal-post/gdd.json --profile readiness --scope action.journal_post --scope component.application > /tmp/rm-post-review-final-readiness.json"
+    }
+  },
+  "limitations": [
+    "Independent complete127 matrix is pre-JP01fix; finalnarrowfix is independently covered by updated storage2 and all-table no-effects sentinelprobe. Main current broad regression covers finalfullsources; no independent whole127rerun afterfix was requested.",
+    "Final let-chain and fmt changed syntax only after fixed storage/probe; current hashes capture it and source equivalence was inspected.",
+    "Original-path/physical/workspace/catalog/control lifetime, restore/legacy writer drain, runtime policy and outer actor-policy/backup/confirmation adapters remain deploymentpreconditions.",
+    "No servicequota/company fence, productHTTP/CLI/MCP endpoint, reversal/fullR14 or platform/distribution/cutover completion.",
+    "Callback work and Clock remain trusted in-process contracts, not sandboxed SQL or caller-provided authority."
+  ],
+  "source_sha256": {
+    "crates/rentemester-storage/src/journal_post.rs": "2ce521ff630781c3d80851038363e15da0eec0cfb99b36c1b2c2c9e6a51fe425",
+    "crates/rentemester-storage/src/journal_post/tests.rs": "e548b5f8ac0fda40d4f42881bcdb16635eef5274b3395280f7842d8948197651",
+    "crates/rentemester-storage/src/journal_preview.rs": "f86fe6929386ca6e57e2bdd17bb459b7fd4714df0fff5317480dba251d05ca5f",
+    "crates/rentemester-storage/src/journal_hash.rs": "8ffeef370b6dbecc8e9af0be65ad5b4b5fc4d86088db30432c242169ff9ff4e6",
+    "crates/rentemester-application/src/journal_post.rs": "8a0cdd06b396aa31234eb30abdb97d92eb793ae5db3839c3bc6b2f60c7850edc",
+    "crates/rentemester-application/src/journal_post/tests.rs": "50d394eb892b542dd569cf2b182ae34b8c95f13f3f3095c2efab55da7bc0017e",
+    "crates/rentemester-application/src/control_fence.rs": "4d809d507ba5936214e07a57affb60ce80f2d5cb4df30894ab767b8c637c7bee",
+    "crates/rentemester-runtime/src/posting_time.rs": "3d1527c90b8c10f6f22a5adc55be0d08deea3fb236bcfa1bbeac7693019b8457",
+    "crates/rentemester-runtime/Cargo.toml": "0e2bfebab38d9cbf69b9d5cc9d8d21738d48906276235b8a89992ddd1b8113c9",
+    "Cargo.lock": "de74cc19af2061389758a3bdaa4f7f3f00e06e9245ea2c5fd518d2e6d7bdb88a",
+    "docs/architecture/rust-target/implementation/journal-post/CONTRACT.md": "01375f0f78da95e25f624c6e809500b9b8225e28d782a59423ba65d5141d1e2b",
+    "docs/architecture/rust-target/implementation/journal-post/gdd.json": "2034978546b9a10c9cda5b8625ed230eebbdbfc18baab91336efcc05a1cb91c7",
+    "docs/architecture/rust-target/implementation/journal-post/readiness.json": "10bb23811cac718030b094c0f766567ee7df8bbb39f8d33474563f77573a4f07",
+    "src/core/ledger.ts": "605cfbe6b7800cf789d0a9b773f70fe43ebd54fdd965b4841f2e50ab4dd0cfbe",
+    "src/core/money.ts": "e013c3ca23bb2391105aa2f1e2f307dcdaaf85bec60159e5d63b39aa7e7c3bf8",
+    "src/core/company.ts": "3179bc6511c6790ed4b86db926b40da78f85d977ff329f802693c3832416a63e",
+    "src/core/retention.ts": "f7c7fc4fcdf952065ca0c8ad39e0dc91014569d032e6e5d4e9fd95705aecaec6",
+    "src/core/exceptions.ts": "39caa898af49d669fb32b75f116f3a5f776d7b28bdeace22b553e7b175707932",
+    "scripts/rust/verify-journal-post.ts": "14a02d2279bff97156f591c7edc752418bd760d14f862dfb43cfafc1285c786e",
+    "scripts/rust/verify.ts": "783f4fecba2e36cf456b5a59a558f13c103a56b072a4bd83058bc9499fdf522d",
+    "scripts/rust/check-boundaries.ts": "dfc5784fd8f3f508cf663e96700845cbc61aeb913bc39e268b292cb9a6905d3a",
+    "crates/rentemester-application/Cargo.toml": "0fca1bf29a7f7ea822a61f52839365131180932871337f3bdd95841ce2cd309e",
+    "crates/rentemester-storage/src/lib.rs": "0d7629ba1213a8fff043a38b58d1cda60cefeb94ddfcbc35db334bba75b95322",
+    "crates/rentemester-application/src/lib.rs": "b93b8a384bbc064d45c7ed518c3da0ec6660d68d1544a175fe349a5ce364e9c6",
+    "crates/rentemester-runtime/src/lib.rs": "9324c184fa7349078bfcacc958a758a57e334a88ce274da7e57c9631a0ee00d5",
+    "docs/architecture/rust-target/ARCHITECTURE.md": "4fc6664263d80b01b067d4121f06d0ac5e05872dbc41866c042d34b0e840dfb0",
+    "docs/architecture/rust-target/implementation/README.md": "73eabeed7142334a6dc5c8acb011a4ba5029417d23ab8b076062a3edfbf9a67d"
+  },
+  "initial_review": {
+    "result": "PASS_SCOPED_EARLY_REVIEW",
+    "scope": "Bounded read-only early manual post implementation/source/normativecontract review while main authors actualsource/processharness; no fullparity/finalacceptance claim. No repository/graph edits.",
+    "execution": {
+      "storage": {
+        "result": "PASS",
+        "tests": 1,
+        "ignored": 1,
+        "command": "cargo test --locked --release -p rentemester-storage journal_post::tests::",
+        "log": "/tmp/rm-post-review-native.txt"
+      },
+      "time": {
+        "result": "PASS",
+        "tests": 1,
+        "command": "cargo test --locked --release -p rentemester-runtime posting_time::tests::",
+        "log": "/tmp/rm-post-review-time.txt"
+      },
+      "fence": {
+        "result": "PASS",
+        "tests": 5,
+        "ignored": 2,
+        "command": "cargo test --locked --release -p rentemester-application control_fence::tests::",
+        "log": "/tmp/rm-post-review-fence.txt"
+      },
+      "gdd": {
+        "result": "PASS",
+        "report": "/tmp/rm-post-review-readiness.json",
+        "limitation": "Structural readiness, not actualpostingparity."
+      },
+      "parity127_before_tail_fix": {
+        "result": "PASS",
+        "checks": 127,
+        "command": "bun run scripts/rust/verify-journal-post.ts",
+        "report": "/tmp/rm-post-review-parity.json",
+        "stderr": "/tmp/rm-post-review-parity.err",
+        "stderr_bytes": 0,
+        "revision_scope": "Ran on frozen source before JP01 narrow tail-check correction. Do not describe as full final-afterfix independent matrix. Covers source effects/hash, realpost receipts, currentauthority, percompanion faults/kills, concurrent ordinary/samekey WAL/DELETE, commitunknown."
+      },
+      "final_storage": {
+        "result": "PASS",
+        "tests": 2,
+        "ignored": 1,
+        "command": "cargo test --locked --release -p rentemester-storage journal_post",
+        "report": "/tmp/rm-post-review-tail-fixed-native.txt",
+        "revision_scope": "After Option-tail correction and addedcorruptionassertion; final later let-chain/fmt equivalent only."
+      },
+      "final_runtime": {
+        "result": "PASS",
+        "tests": 1,
+        "command": "cargo test --locked --release -p rentemester-runtime posting_time::tests::",
+        "report": "/tmp/rm-post-review-final-time.txt",
+        "revision_scope": "Runtime functional source unchanged after this run."
+      },
+      "final_fence": {
+        "result": "PASS",
+        "tests": 5,
+        "ignored": 2,
+        "command": "cargo test --locked --release -p rentemester-application control_fence::tests::",
+        "report": "/tmp/rm-post-review-final-fence.txt",
+        "revision_scope": "Fence/application functional source unchanged after this run."
+      },
+      "tail_probe": {
+        "result": "PASS",
+        "checks": 1,
+        "command": "bun run /tmp/rm-post-review-sentinel.ts",
+        "report": "/tmp/rm-post-review-sentinel.json",
+        "stderr": "/tmp/rm-post-review-sentinel.err",
+        "unchanged_all_tables": true,
+        "revision_scope": "Current Option-tail fix, before equivalent final let-chain/fmt. Actual canonicalDB/sourcepost then corrupttail with exact guard restoration; no repo modifications."
+      },
+      "boundaries": {
+        "result": "PASS",
+        "command": "bun run scripts/rust/check-boundaries.ts",
+        "report": "/tmp/rm-post-review-boundaries.json",
+        "review": "serde_json allowed application only, explicit negativecontrol still denies engine serde_json; pureengine/access directIO/SQL checks retained."
+      },
+      "final_gdd": {
+        "result": "PASS",
+        "checks": 3,
+        "spec_revision": "sha256:e9e4cbfb44b06ef63fae9c017c869afbe0e25e2c6adcc27af7deba65ce414b42",
+        "report": "/tmp/rm-post-review-final-readiness.json",
+        "stored_report_and_contract_hash_match": true
+      }
+    },
+    "source_sha256": {
+      "crates/rentemester-storage/src/journal_post.rs": "e6135852324a011f9d11d481517693a6850b525e61035876dc62c07612ec2e8d",
+      "crates/rentemester-storage/src/journal_post/tests.rs": "ba6015498c54c4f9a341bf4eb38ae2c54dd895ecdc287c3916e7bb65ce19e8d7",
+      "crates/rentemester-storage/src/journal_preview.rs": "f86fe6929386ca6e57e2bdd17bb459b7fd4714df0fff5317480dba251d05ca5f",
+      "crates/rentemester-storage/src/journal_hash.rs": "8ffeef370b6dbecc8e9af0be65ad5b4b5fc4d86088db30432c242169ff9ff4e6",
+      "crates/rentemester-application/src/journal_post.rs": "8a0cdd06b396aa31234eb30abdb97d92eb793ae5db3839c3bc6b2f60c7850edc",
+      "crates/rentemester-application/src/journal_post/tests.rs": "50d394eb892b542dd569cf2b182ae34b8c95f13f3f3095c2efab55da7bc0017e",
+      "crates/rentemester-application/src/control_fence.rs": "4d809d507ba5936214e07a57affb60ce80f2d5cb4df30894ab767b8c637c7bee",
+      "crates/rentemester-runtime/src/posting_time.rs": "3d1527c90b8c10f6f22a5adc55be0d08deea3fb236bcfa1bbeac7693019b8457",
+      "crates/rentemester-runtime/Cargo.toml": "0e2bfebab38d9cbf69b9d5cc9d8d21738d48906276235b8a89992ddd1b8113c9",
+      "Cargo.lock": "de74cc19af2061389758a3bdaa4f7f3f00e06e9245ea2c5fd518d2e6d7bdb88a",
+      "docs/architecture/rust-target/implementation/journal-post/CONTRACT.md": "dc0effc69fc0e8ea4e01c300f35946cb2c9507d20f8905c0f6b6ad1640d9c4f9",
+      "docs/architecture/rust-target/implementation/journal-post/gdd.json": "1f072d2fc6ceec92e8f1f1dc96326003ca10a06a17b254aaf41c7f24cc7e5c31",
+      "docs/architecture/rust-target/implementation/journal-post/readiness.json": "065a94d8bfb88406614f1fe80409fdd65c608c7b77b58a63b7cbcecf141b0ff3",
+      "src/core/ledger.ts": "605cfbe6b7800cf789d0a9b773f70fe43ebd54fdd965b4841f2e50ab4dd0cfbe",
+      "src/core/money.ts": "e013c3ca23bb2391105aa2f1e2f307dcdaaf85bec60159e5d63b39aa7e7c3bf8",
+      "src/core/company.ts": "3179bc6511c6790ed4b86db926b40da78f85d977ff329f802693c3832416a63e",
+      "src/core/retention.ts": "f7c7fc4fcdf952065ca0c8ad39e0dc91014569d032e6e5d4e9fd95705aecaec6",
+      "src/core/exceptions.ts": "39caa898af49d669fb32b75f116f3a5f776d7b28bdeace22b553e7b175707932"
+    },
+    "limitations": [
+      "Full actual TypeScript/native posting processmatrix, concurrentrealposts, crashcheckpoints, lateSQL faults and exact effects/hash parity remain under main harness authoring; not independently executed by this initialreview.",
+      "Storagepostunit itself only exercises ordinary canonical capitalpost/hash/rollback; it cannot establish all declared finalacceptance scenarios.",
+      "Outer physical/originalpath/lifetime/restore/legacydrain, trusted policy/clock/catalog, actor-policy/backup/confirmation adapters remain explicit preconditions before deployment.",
+      "No service companyquota fence, productHTTP/CLI/MCP postendpoint, reversal or fullR14/cutover completeness claimed.",
+      "Sources may evolve during harnessauthoring; hashes identify reviewedcurrent files rather than final frozen delivery."
+    ]
+  },
+  "status": "FINAL_BOUNDED_REVIEW_WITH_EXPLICIT_PRE_FIX_MATRIX_SCOPE",
+  "findings": [
+    {
+      "id": "JP01",
+      "severity": "medium",
+      "status": "RESOLVED_VERIFIED",
+      "path": "crates/rentemester-storage/src/journal_post.rs",
+      "finding": "Existing tail entry_hash=GENESIS passed the synthetic empty-ledger sentinel exception despite malformed tailmetadata and contract GENESIS-only-empty.",
+      "resolution": "Tailquery retains Option; any present row must contain64lowercasehex, fallbackGENESIS onlyNone. Canonical-DDL corruption assertion added inside storageunit. Final source let-chain is equivalent style change.",
+      "evidence": "Independent fixed storage2PASS plus /tmp fixture restoring exact canonical triggers before attempt: not_committed, posting_storage_failure, one priorentry and unchanged all typedtables. Initial defect diagnosed by sourceinspection; no original red execution claimed."
+    }
+  ],
+  "documentation_review": {
+    "result": "PASS",
+    "remaining_material_findings": [],
+    "alignment": [
+      "Current canonical schema+human authority before receipt; new domainvalidation afterreceiptmiss",
+      "Native typed receiptfingerprint explicitly distinguished from legacytransportpayloads",
+      "Exactcent/microrate legacy roundtrip; source binary64/exact FX ambiguity refused without changing advisoryengine",
+      "Zero-document income/expense source truthiness/errorformat retained at storageadapter",
+      "Currentactor fixedprogram, real atomic companions, sourcehash/readback, retention/sequence and eventheadroom",
+      "No productopener/endpoint/CLI/MCP writer, outeractor/backup/confirmation or physical/legacydrain completion claimed"
+    ],
+    "metadata_delta": "Reviewed corrected five scenario contexts/triggers; they now match actual manual-post scope and existing127-process evidence."
+  },
+  "probe_sha256": "bc155d021feeeceee394400898597898e0f2644c2f5e4af16c0c239b28d5dcae",
+  "documentation_metadata_history": {
+    "previous_spec_revision": "sha256:e9e4cbfb44b06ef63fae9c017c869afbe0e25e2c6adcc27af7deba65ce414b42",
+    "previous_sha256": {
+      "docs/architecture/rust-target/implementation/journal-post/gdd.json": "b44776651aa2b923d61f3b96c2465a6b396bffe29e92622d8670e1a8b51c392b",
+      "docs/architecture/rust-target/implementation/journal-post/readiness.json": "7969b16820211573d7f101a9d60d37486686b02a4fff34aff0e4935175fbc90b"
+    },
+    "change": "Five scenario given/when fields corrected from copied receipt executor/execute-prune wording to actual source manual posting and native current-writer post/protected replay/refusal/fault/death/concurrency. No functional code, CONTRACT or README changes.",
+    "verified_utc": "2026-10-18T05:51:04.109516+00:00",
+    "functional_hashes_preserved": true,
+    "functional_tests_rerun": false
+  }
+}

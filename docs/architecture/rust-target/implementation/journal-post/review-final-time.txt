@@ -1,0 +1,12 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on artifact directory
+    Finished `release` profile [optimized] target(s) in 4.00s
+     Running unittests src/lib.rs (target/release/deps/rentemester_runtime-396c29f53dd7d6ad)
+
+running 1 test
+test posting_time::tests::danish_midnight_dst_and_configured_horizon_are_trusted_arithmetic ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 41 filtered out; finished in 0.00s

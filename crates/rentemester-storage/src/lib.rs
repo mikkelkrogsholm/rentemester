@@ -471,3 +471,5 @@ pub mod service_context;
 pub mod service_lifecycle;
 
 pub mod idempotency;
+
+pub mod journal_post;

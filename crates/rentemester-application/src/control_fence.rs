@@ -125,7 +125,7 @@ pub fn execute<T>(
                 session_id: principal.session_id.to_owned(),
             })
         },
-        apply,
+        |tx, _| apply(tx),
     )
 }
 struct ResolvedHuman {
@@ -147,6 +147,24 @@ pub fn execute_cookie<T>(
     selection: CompanySelection<'_>,
     permission: Permission,
     apply: impl FnOnce(&Transaction<'_>) -> Result<T, Error>,
+) -> Result<Committed<T>, Failure> {
+    execute_cookie_subject(
+        control,
+        company,
+        authorization,
+        selection,
+        permission,
+        |tx, _| apply(tx),
+    )
+}
+/// Trusted current subject bound to the same held control authorization as the company callback.
+pub fn execute_cookie_subject<T>(
+    control: &mut Connection,
+    company: &mut Connection,
+    authorization: CookieAuthorization<'_>,
+    selection: CompanySelection<'_>,
+    permission: Permission,
+    apply: impl FnOnce(&Transaction<'_>, &str) -> Result<T, Error>,
 ) -> Result<Committed<T>, Failure> {
     let CookieAuthorization {
         cookie,
@@ -182,7 +200,7 @@ fn execute_resolved<T>(
     selection: CompanySelection<'_>,
     permission: Permission,
     resolve: impl FnOnce(&Transaction<'_>) -> Result<ResolvedHuman, Error>,
-    apply: impl FnOnce(&Transaction<'_>) -> Result<T, Error>,
+    apply: impl FnOnce(&Transaction<'_>, &str) -> Result<T, Error>,
 ) -> Result<Committed<T>, Failure> {
     connection_ready(control).map_err(initial)?;
     connection_ready(company).map_err(initial)?;
@@ -257,15 +275,18 @@ fn execute_resolved<T>(
         {
             return Err(error("access_denied"));
         }
-        Ok(())
+        Ok(principal.subject)
     })();
-    if let Err(error) = authorize {
-        let reusable = control_tx.rollback().is_ok();
-        return Err(Failure {
-            control_reusable: reusable,
-            ..initial(error)
-        });
-    }
+    let subject = match authorize {
+        Ok(subject) => subject,
+        Err(error) => {
+            let reusable = control_tx.rollback().is_ok();
+            return Err(Failure {
+                control_reusable: reusable,
+                ..initial(error)
+            });
+        }
+    };
     #[cfg(test)]
     checkpoint("authorized");
     let company_tx = match company.transaction_with_behavior(TransactionBehavior::Immediate) {
@@ -289,7 +310,7 @@ fn execute_resolved<T>(
         });
     }
     let changes_before = control_tx.total_changes();
-    let result = apply(&company_tx);
+    let result = apply(&company_tx, &subject);
     if company_tx.is_autocommit()
         || control_tx.is_autocommit()
         || control_tx.total_changes() != changes_before

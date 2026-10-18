@@ -1,0 +1,8 @@
+$ bun run --filter rentemester-cockpit test:parallel
+rentemester-cockpit test:parallel: bun test v1.4.0 (34cbb9a40)
+rentemester-cockpit test:parallel:
+rentemester-cockpit test:parallel:  633 pass
+rentemester-cockpit test:parallel:  0 fail
+rentemester-cockpit test:parallel:  1817 expect() calls
+rentemester-cockpit test:parallel: Ran 633 tests across 70 files. [30.75s]
+rentemester-cockpit test:parallel: Exited with code 0
