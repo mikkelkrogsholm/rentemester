@@ -84,9 +84,33 @@ describe("hosted cockpit auth shell", () => {
     const user = userEvent.setup();
     await user.type(await screen.findByLabelText("E-mail"), "missing@example.test");
     await user.click(screen.getByRole("button", { name: "Send bekræftelsesmail" }));
-    expect(authMocks.sendVerificationEmail).toHaveBeenCalledWith({ email: "missing@example.test", callbackURL: window.location.origin });
+    expect(authMocks.sendVerificationEmail).toHaveBeenCalledWith({ email: "missing@example.test", callbackURL: window.location.origin }, { retry: 0 });
     expect(await screen.findByText("Hvis e-mailadressen kan bruges, modtager du en e-mail med næste trin.")).toBeInTheDocument();
     expect(screen.queryByText("provider detail")).not.toBeInTheDocument();
+    expect(screen.queryByText("Portefølje")).not.toBeInTheDocument();
+  });
+
+  test.each(["success", "rejected", "transport"])("authenticated verification resend stays generic for %s and never claims delivery", async (outcome) => {
+    authMocks.getSession.mockResolvedValue({ data: { user: { id: "u1", email: "owner@example.test", emailVerified: false, twoFactorEnabled: false } } });
+    if (outcome === "rejected") authMocks.sendVerificationEmail.mockResolvedValueOnce({ data: null, error: { message: "private delivery detail" } });
+    if (outcome === "transport") authMocks.sendVerificationEmail.mockRejectedValueOnce(new Error("private delivery detail"));
+    hostedFetch(); renderApp(); const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: "Send bekræftelsesmail igen" }));
+    expect(await screen.findByText("Hvis e-mailadressen kan bruges, modtager du en e-mail med næste trin.")).toHaveAttribute("role", "status");
+    expect(screen.queryByText("E-mail sendt")).not.toBeInTheDocument();
+    expect(screen.queryByText("private delivery detail")).not.toBeInTheDocument();
+    expect(authMocks.sendVerificationEmail).toHaveBeenCalledTimes(1);
+    expect(authMocks.sendVerificationEmail).toHaveBeenCalledWith({ email: "owner@example.test", callbackURL: "/" }, { retry: 0 });
+    expect(authMocks.signInEmail).not.toHaveBeenCalled();
+  });
+
+  test.each(["VERIFICATION_UNCONFIRMED", "INVALID_TOKEN", "TOKEN_EXPIRED"])("verification callback %s gives recovery without claiming success or taking action", async (code) => {
+    authMocks.getSession.mockResolvedValue({ data: null }); hostedFetch(); renderApp(`/?error=${code}`);
+    expect(await screen.findByRole("alert")).toHaveTextContent(code === "VERIFICATION_UNCONFIRMED" ? "resultat kunne ikke fastslås" : "ugyldigt, udløbet eller allerede brugt");
+    await waitFor(() => expect(screen.getByTestId("location-path").textContent).toBe("/"));
+    expect(authMocks.signInEmail).not.toHaveBeenCalled();
+    expect(authMocks.sendVerificationEmail).not.toHaveBeenCalled();
+    expect(screen.getByRole("link", { name: "Send bekræftelsesmail igen" })).toHaveAttribute("href", "/verify-email");
     expect(screen.queryByText("Portefølje")).not.toBeInTheDocument();
   });
 

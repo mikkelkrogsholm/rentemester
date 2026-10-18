@@ -1,0 +1,99 @@
+{
+  "result": "PASS",
+  "reviewed_at_utc": "2026-10-18T02:20:23.284627+00:00",
+  "material_findings": [],
+  "resolved_findings": [
+    {
+      "id": "HTTP-V01",
+      "problem": "Named bare cookie ignored alongside valid credential",
+      "resolution": "Optional verifier rejects named malformed fragment/multiple session names before verify; both bare-name orderings and profiles covered by runtime and actual HTTP"
+    }
+  ],
+  "execution": {
+    "focused_process_checks": 31,
+    "cookie_unit_tests": 1,
+    "server_verification_unit_tests": 3,
+    "ui_tests": 38,
+    "app_typecheck": "PASS",
+    "process": "/tmp/rm-http-verification-review-process.json",
+    "process_stderr": "/tmp/rm-http-verification-review-process.err",
+    "cookie": "/tmp/rm-http-verification-review-cookie.txt",
+    "server": "/tmp/rm-http-verification-review-native.txt",
+    "ui": "/tmp/rm-http-verification-review-ui.txt",
+    "ui_typecheck": "/tmp/rm-http-verification-review-ui-typecheck.txt"
+  },
+  "projection": {
+    "path": "/tmp/rm-http-verification-review-focused.ts",
+    "sha256": "e26791dc212f163633550fef6c9920c6a6b98820d462dfb73bec89913697bf0e",
+    "description": "Original verify-http-login initialization/fixtures/start helper; absolute imports/root; only verifyHttpVerification invoked"
+  },
+  "reviewed_contract": [
+    "Strict request body/schema/email/callback/cookie provenance before native dispatch",
+    "Identical admitted request ACK including failures/panic with minimum floor, no constant-time privacy claim",
+    "Originless host-bound mail GET; HEAD405 does not mutate or rate-charge",
+    "Canonical raw JWT and strict decoded-once UTF8/percent callback query",
+    "Known success only authority-free JSON/redirect; consumed replay and unissued/legacy links refused",
+    "Real DELETE commit-busy proves OutcomeUnknown with no mail/success",
+    "Retained UI shows fixed recovery notices, removes error query and takes no automatic resend/login action; resend retries disabled"
+  ],
+  "remaining_gates": [
+    "Legacy verification writer drain and exclusive deployment routing before actual enablement",
+    "No actual workspace/lifetime opener or deployment product qualification",
+    "UI tested as retained mocked component, native loopback HTTP separately; no deployed browser integration claimed",
+    "No full pipeline duplicated; main owns broad regression"
+  ],
+  "sha256": {
+    "crates/rentemester-runtime/src/auth.rs": "4cbe7f4ef162b1e576e788b305eaf6273c759854eb4c50c9b7c62c41227539eb",
+    "crates/rentemester-server/src/lib.rs": "8ace094679624cd75f91fff2595f84371fe78fd0f50d48f8af8fa60a2ba3a5fe",
+    "crates/rentemester-server/src/auth_http.rs": "3aaefdc1cf2f2f9550079c354d3cbe862aebfd4099667d68ba2788cf028a6dbb",
+    "crates/rentemester-server/src/auth_http/verification.rs": "6c5ae1cecad7e18cbe6d4814f01d55ac226eaa450efc16c853a8505f28e6742f",
+    "crates/rentemester-server/src/auth_http/tests.rs": "579a43eaefb7dc223a669b0404394222ca05d80967f2a5051158dd978d53b4d5",
+    "crates/rentemester-server/src/tests.rs": "d6de50623c40ccc22240d423a9253c6ec8dacca44429e9e962d22d837b15e762",
+    "scripts/rust/http-verification-cases.ts": "37caf203a4571578586793324800f7e72138a12797b46ae122371760feb5e38f",
+    "scripts/rust/verify-http-login.ts": "31ca345a0fd2088b5d6438aa7d556fcec73602e035ea983eeae27c2780d23f4f",
+    "app/src/views/LoginView.tsx": "3b0c4ba9799c8bda42bf6095eea72140fedc816fa7dd2c83296dadf7b66251d4",
+    "app/src/auth-ui.test.tsx": "2538e62e89ad919a3f0a91da817b13d2c5489c9b288276477233f9af66e9da30",
+    "app/src/views/MfaEnrollmentView.tsx": "c9f107b7c85f05c411500591542d36133ddfc26125662bf0b12ac056d2b1e819"
+  },
+  "previous_sha256": {
+    "crates/rentemester-runtime/src/auth.rs": "4cbe7f4ef162b1e576e788b305eaf6273c759854eb4c50c9b7c62c41227539eb",
+    "crates/rentemester-server/src/lib.rs": "8ace094679624cd75f91fff2595f84371fe78fd0f50d48f8af8fa60a2ba3a5fe",
+    "crates/rentemester-server/src/auth_http.rs": "3aaefdc1cf2f2f9550079c354d3cbe862aebfd4099667d68ba2788cf028a6dbb",
+    "crates/rentemester-server/src/auth_http/verification.rs": "6c5ae1cecad7e18cbe6d4814f01d55ac226eaa450efc16c853a8505f28e6742f",
+    "crates/rentemester-server/src/auth_http/tests.rs": "579a43eaefb7dc223a669b0404394222ca05d80967f2a5051158dd978d53b4d5",
+    "crates/rentemester-server/src/tests.rs": "d6de50623c40ccc22240d423a9253c6ec8dacca44429e9e962d22d837b15e762",
+    "scripts/rust/http-verification-cases.ts": "ac3f189696f149de8932f308b6031b3b45e4064d5dd7d74ce123ca969e8b58a3",
+    "scripts/rust/verify-http-login.ts": "31ca345a0fd2088b5d6438aa7d556fcec73602e035ea983eeae27c2780d23f4f",
+    "app/src/views/LoginView.tsx": "aa3c776c0dfa4834c040e47ed2e6cde9c2e17fd70fcfa914852b85181e71683d",
+    "app/src/auth-ui.test.tsx": "c6c19504c98d493d6275b9c9742f1590f5d0cdfdaee550b3cbaea187b594c4ef"
+  },
+  "final_repeat": {
+    "result": "PASS",
+    "checks": 31,
+    "verification_oracle_id": "verification/actual-source-current-clock-stateless-and-signed-unissued-native-envelope-refused-no-legacy-fallback",
+    "reviewed_at_utc": "2026-10-18T02:24:04.320941+00:00",
+    "strengthening": "Each actual source JWT is admitted with a fresh native server clock equal to its decoded issued-at and exact one-hour expiry asserted; unissued native-envelope refusal cannot be explained by future-iat. Product hashes and prior native/UI evidence unchanged."
+  },
+  "previous_ui_delta_sha256": {
+    "crates/rentemester-runtime/src/auth.rs": "4cbe7f4ef162b1e576e788b305eaf6273c759854eb4c50c9b7c62c41227539eb",
+    "crates/rentemester-server/src/lib.rs": "8ace094679624cd75f91fff2595f84371fe78fd0f50d48f8af8fa60a2ba3a5fe",
+    "crates/rentemester-server/src/auth_http.rs": "3aaefdc1cf2f2f9550079c354d3cbe862aebfd4099667d68ba2788cf028a6dbb",
+    "crates/rentemester-server/src/auth_http/verification.rs": "6c5ae1cecad7e18cbe6d4814f01d55ac226eaa450efc16c853a8505f28e6742f",
+    "crates/rentemester-server/src/auth_http/tests.rs": "579a43eaefb7dc223a669b0404394222ca05d80967f2a5051158dd978d53b4d5",
+    "crates/rentemester-server/src/tests.rs": "d6de50623c40ccc22240d423a9253c6ec8dacca44429e9e962d22d837b15e762",
+    "scripts/rust/http-verification-cases.ts": "37caf203a4571578586793324800f7e72138a12797b46ae122371760feb5e38f",
+    "scripts/rust/verify-http-login.ts": "31ca345a0fd2088b5d6438aa7d556fcec73602e035ea983eeae27c2780d23f4f",
+    "app/src/views/LoginView.tsx": "aa3c776c0dfa4834c040e47ed2e6cde9c2e17fd70fcfa914852b85181e71683d",
+    "app/src/auth-ui.test.tsx": "c6c19504c98d493d6275b9c9742f1590f5d0cdfdaee550b3cbaea187b594c4ef"
+  },
+  "ui_delta_review": {
+    "result": "PASS",
+    "ui_tests": 38,
+    "app_typecheck": "PASS",
+    "reviewed_at_utc": "2026-10-18T02:33:29.081797+00:00",
+    "product_fix": "Authenticated VerificationRequiredView no longer interprets generic acknowledgement as delivered email: shared conditional message for success/rejected/transport, retry0, busy button, no login effect",
+    "oracle_fix": "Initial independent35pass/3fail exposed ambiguous findByRole(status) matching test output; exact recovery text with explicit role assertion now passes",
+    "initial_failure_evidence": "/tmp/rm-http-verification-review-ui-before-selector-fix.txt",
+    "native_process_evidence": "Prior31 HTTP process checks, cookie1/server3 units retained; native/process source hashes verified unchanged; no rerun needed for UI-only delta"
+  }
+}

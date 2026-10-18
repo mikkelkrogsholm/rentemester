@@ -1,6 +1,7 @@
 //! Human-only enrolled login. Trusted handlers alone own admitted native connections/lifetimes.
 use super::*;
 mod enrollment;
+mod verification;
 pub use enrollment::EnrollmentHandlers;
 use rentemester_application::{
     mfa_login::{BeginOutcome, Rejection, VerifyOutcome},
@@ -9,6 +10,7 @@ use rentemester_application::{
     session_read::SessionView,
 };
 use rentemester_runtime::auth::{CookieVerifier, IssuedCookie, VerifiedChallenge, VerifiedCookie};
+pub use verification::{VerificationCompletion, VerificationHandlers, VerificationRequest};
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 struct LoginWire {
@@ -57,6 +59,7 @@ impl FactorInput {
 pub struct AuthHandlers {
     pub cookies: Arc<CookieVerifier>,
     pub enrollment: Option<EnrollmentHandlers>,
+    pub verification: Option<VerificationHandlers>,
     pub sign_in: Box<dyn Fn(LoginInput) -> Result<BeginOutcome, ContinuationFailure> + Send + Sync>,
     pub totp: Box<dyn Fn(FactorInput) -> Result<VerifyOutcome, ContinuationFailure> + Send + Sync>,
     pub backup:
@@ -80,11 +83,13 @@ pub(super) fn routes(router: Router<Arc<StateData>>, enrollment: bool) -> Router
             }),
         )
         .route("/api/auth/sign-out", post(sign_out));
-    if enrollment {
+    let router = if enrollment {
         self::enrollment::routes(router)
     } else {
         router
-    }
+    };
+    // Each route owns the canonical path; there is no legacy auth-handler fallback.
+    self::verification::routes(router)
 }
 fn denied() -> Response {
     response(

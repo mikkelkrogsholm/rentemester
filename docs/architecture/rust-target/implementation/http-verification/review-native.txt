@@ -1,0 +1,10 @@
+    Blocking waiting for file lock on artifact directory
+    Finished `release` profile [optimized] target(s) in 3.73s
+     Running unittests src/lib.rs (target/release/deps/rentemester_server-36d1a0541332a7c7)
+
+running 3 tests
+test auth_http::tests::verification_head_and_invalid_destinations_never_dispatch ... ok
+test auth_http::tests::verification_callback_never_turns_unknown_or_panic_into_success ... ok
+test auth_http::tests::verification_admitted_ack_is_generic_for_error_unknown_delivery_and_panic ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 27 filtered out; finished in 2.52s

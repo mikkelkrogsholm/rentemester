@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "verification-request-1",
-  "code_revision": "sha256:1f8e4a7c56583b41be0c4a003c4428c1ae4dd995d5ec09133686d9e4c006e621",
-  "spec_revision": "sha256:92068ca885678f2e88102f7f740e33627175127b04e8e016d8342f9203d1f8d3",
-  "state": "verified-native-verification-postcommit-mail-and-destination",
+  "current_increment": "http-verification-1",
+  "code_revision": "sha256:b6c1d60b938e977be97ba5248189b4f914f912425956a0f2926e1dcf50e26b4f",
+  "spec_revision": "sha256:964f0841e3eb706bc7b7604ac533ff5a69666f1722cf7294db3881534e4cfdc0",
+  "state": "verified-native-http-email-verification-and-react-recovery",
   "issues_closed": [],
   "next": [
-    "Implement native send-verification-email and verify-email HTTP boundary: generic admitted acknowledgement including uncertain delivery/commit/panic, caller-cookie/session rules, safe callback/error outcomes, public timing/rate/socket/source/React checks. Close authoritative legacy verify-email bypass coherently before native enablement. Continue remaining identity/provider/service, /api/me, physical/lifetime and legacy writers/history, TLS/listener and full epic.",
+    "Continue native identity surface parity (own-session/backup/password management, service/API-key/trusted-device/provider) and /api/me product context. Qualify coherent native-only deployment routing and legacy verification writer drain, plus actual physical/lifetime/legacy writers/history, shared rate/TLS/listener gates, then full API/CLI/MCP/React/GPUI/distribution/cutover epic.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,20 +21,20 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "email-verification-1",
-    "code_revision": "sha256:4d4908a86b2954b7fd39b3f09e0940db77ef23af3c5a46e0ec8916453ea8a0e8",
-    "spec_revision": "sha256:51986e2e1e93212e2f7dd8e98b76eff9ea9d666bd621bcd56d1d8b7c34e434eb",
-    "state": "verified-native-persisted-one-time-email-verification"
+    "current_increment": "verification-request-1",
+    "code_revision": "sha256:1f8e4a7c56583b41be0c4a003c4428c1ae4dd995d5ec09133686d9e4c006e621",
+    "spec_revision": "sha256:92068ca885678f2e88102f7f740e33627175127b04e8e016d8342f9203d1f8d3",
+    "state": "verified-native-verification-postcommit-mail-and-destination"
   },
   "evidence": {
-    "report": "verification-request/evidence.json",
-    "parity": "verification-request/review-process.json",
-    "regression": "verification-request/regression.json",
-    "rust_tests_passed": 124,
+    "report": "http-verification/evidence.json",
+    "parity": "http-verification/review-process.json",
+    "regression": "http-verification/regression.json",
+    "rust_tests_passed": 128,
     "ignored_subprocess_helpers": 23,
-    "integration_checks": 11822,
-    "verification_request_process_checks": 36,
-    "concrete_mail_transport_checks": 42,
+    "integration_checks": 11853,
+    "http_verification_process_checks": 31,
+    "ui_tests": 38,
     "writer_authority": false,
     "whole_issues_closed": false
   },
@@ -254,6 +254,12 @@
       "code_revision": "sha256:4d4908a86b2954b7fd39b3f09e0940db77ef23af3c5a46e0ec8916453ea8a0e8",
       "spec_revision": "sha256:51986e2e1e93212e2f7dd8e98b76eff9ea9d666bd621bcd56d1d8b7c34e434eb",
       "state": "verified-native-persisted-one-time-email-verification"
+    },
+    {
+      "current_increment": "verification-request-1",
+      "code_revision": "sha256:1f8e4a7c56583b41be0c4a003c4428c1ae4dd995d5ec09133686d9e4c006e621",
+      "spec_revision": "sha256:92068ca885678f2e88102f7f740e33627175127b04e8e016d8342f9203d1f8d3",
+      "state": "verified-native-verification-postcommit-mail-and-destination"
     }
   ]
 }

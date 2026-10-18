@@ -1,0 +1,100 @@
+{
+  "ok": true,
+  "checks": 31,
+  "observations": [
+    {
+      "id": "verification/DELETE-generic-ack-floor-committed-unlocked-mail"
+    },
+    {
+      "id": "verification/DELETE-HEAD-no-consume-or-rate-charge"
+    },
+    {
+      "id": "verification/DELETE-known-completion-sanitized-redirect-no-session"
+    },
+    {
+      "id": "verification/DELETE-one-time-replay-refusal"
+    },
+    {
+      "id": "verification/WAL-generic-ack-floor-committed-unlocked-mail"
+    },
+    {
+      "id": "verification/WAL-HEAD-no-consume-or-rate-charge"
+    },
+    {
+      "id": "verification/WAL-known-completion-sanitized-redirect-no-session"
+    },
+    {
+      "id": "verification/WAL-one-time-replay-refusal"
+    },
+    {
+      "id": "verification/missing-same-public-ack-no-delivery-claim"
+    },
+    {
+      "id": "verification/verified-same-public-ack-no-delivery-claim"
+    },
+    {
+      "id": "verification/delivery-fail-same-public-ack-no-delivery-claim"
+    },
+    {
+      "id": "verification/writer-busy-same-public-ack-no-delivery-claim"
+    },
+    {
+      "id": "verification/no-callback-token-free-JSON-success"
+    },
+    {
+      "id": "verification/unknown-field-before-native-dispatch"
+    },
+    {
+      "id": "verification/null-callback-before-native-dispatch"
+    },
+    {
+      "id": "verification/duplicate-field-before-native-dispatch"
+    },
+    {
+      "id": "verification/bad-email-before-native-dispatch"
+    },
+    {
+      "id": "verification/bad-origin-before-native-dispatch"
+    },
+    {
+      "id": "verification/bad-content-before-native-dispatch"
+    },
+    {
+      "id": "verification/service-before-native-dispatch"
+    },
+    {
+      "id": "verification/unsafe-callback-before-native-dispatch"
+    },
+    {
+      "id": "verification/bad-cookie-before-native-dispatch"
+    },
+    {
+      "id": "verification/oversize-before-native-dispatch"
+    },
+    {
+      "id": "verification/strict-query-duplicates-UTF8-escape-origin-before-mutation"
+    },
+    {
+      "id": "verification/actual-source-current-clock-stateless-and-signed-unissued-native-envelope-refused-no-legacy-fallback"
+    },
+    {
+      "id": "verification/expired-link-fixed-error-redirect-no-mutation"
+    },
+    {
+      "id": "verification/actual-source-cookie-resolves-current-unverified-caller"
+    },
+    {
+      "id": "verification/malformed-named-plus-valid-cookie-never-downgrades-or-dispatches"
+    },
+    {
+      "id": "verification/request-real-unknown-commit-no-success-or-reissue"
+    },
+    {
+      "id": "verification/complete-real-unknown-commit-no-success-or-reissue"
+    },
+    {
+      "id": "verification/direct-peer-fixed-operation-rates-ignore-forwarded-address-and-token-rotation"
+    }
+  ],
+  "scope": "Independent focused native HTTP verification"
+}

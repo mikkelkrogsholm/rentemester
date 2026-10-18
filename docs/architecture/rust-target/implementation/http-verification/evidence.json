@@ -1,0 +1,69 @@
+{
+  "increment": "http-verification-1",
+  "code_revision": "sha256:b6c1d60b938e977be97ba5248189b4f914f912425956a0f2926e1dcf50e26b4f",
+  "spec_revision": "sha256:964f0841e3eb706bc7b7604ac533ff5a69666f1722cf7294db3881534e4cfdc0",
+  "state": "verified-native-http-email-verification-and-react-recovery",
+  "checks": {
+    "native_tests_passed": 128,
+    "ignored_subprocess_helpers": 23,
+    "integration_checks": 11853,
+    "new_http_verification_process_checks": 31,
+    "final_independent_http_verification_process_checks": 31,
+    "independent_cookie_unit_tests": 1,
+    "independent_server_verification_tests": 3,
+    "ui_tests": 38,
+    "GDD_structural_checks": 3,
+    "strict_fmt_clippy_boundaries_runtime_and_app_typecheck_lint": "PASS"
+  },
+  "verification_note": "Full regression uses initial source-JWT time oracle; final independent31 HTTP repeat aligns actual source iat with server clock. Rust functional/native-test source hashes unchanged; final UI follow-up separately qualifies 38 cases and app typecheck. Old/final test hashes retained in review/regression. No unchanged broad scopes repeated.",
+  "claims": [
+    "Canonical native-only send/verify routes, strict JSON/cookie/query/origin and shared direct-peer rate/capacity",
+    "Admitted request errors/unknown commit/delivery/panic share500msminimum status/body without existence/bearer/delivery claim",
+    "Known completion only yields sanitized allowed redirect or JSON user:null; replay/legacy/unissued/expiry refuse and unknown never succeeds",
+    "HEAD no consumption/ratecharge; optional malformed named credentials cannot downgrade beside valid cookies",
+    "React fixed invalid/unknown recovery guidance consumes queryerror and never auto logins/resends; explicit resend retry0"
+  ],
+  "limits": [
+    "Serving owner must drain independently running legacy verify-email writer and route exclusively to Rust before real enablement; native router itself never falls back",
+    "No deployed browser/full identity/provider/service parity, physical/lifetime admission, real-data migration, external mail or production rollout qualified",
+    "Equal ACK/floor does not prove constant-time privacy for slow delivery; rate state is process-local, proxy/distributed/TLS/listener/shutdown/panic-log qualification remains",
+    "Other callback user values/fragments preserved; helper injects no verification bearer but cannot scrub arbitrary user secrets",
+    "Full Rust engine/server/CLI/MCP/React/GPUI, distribution, parity, cutover and TypeScript retirement remain required",
+    "Graphify AST refreshed after final oracle correction plus two current Markdown semantics; generated JSON/logs and unrelated/historical docs outside semantic refresh"
+  ],
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": {
+    "app/src/auth-ui.test.tsx": "2538e62e89ad919a3f0a91da817b13d2c5489c9b288276477233f9af66e9da30",
+    "app/src/views/LoginView.tsx": "3b0c4ba9799c8bda42bf6095eea72140fedc816fa7dd2c83296dadf7b66251d4",
+    "app/src/views/MfaEnrollmentView.tsx": "c9f107b7c85f05c411500591542d36133ddfc26125662bf0b12ac056d2b1e819",
+    "crates/rentemester-runtime/src/auth.rs": "4cbe7f4ef162b1e576e788b305eaf6273c759854eb4c50c9b7c62c41227539eb",
+    "crates/rentemester-server/src/auth_http.rs": "3aaefdc1cf2f2f9550079c354d3cbe862aebfd4099667d68ba2788cf028a6dbb",
+    "crates/rentemester-server/src/auth_http/tests.rs": "579a43eaefb7dc223a669b0404394222ca05d80967f2a5051158dd978d53b4d5",
+    "crates/rentemester-server/src/auth_http/verification.rs": "6c5ae1cecad7e18cbe6d4814f01d55ac226eaa450efc16c853a8505f28e6742f",
+    "crates/rentemester-server/src/lib.rs": "8ace094679624cd75f91fff2595f84371fe78fd0f50d48f8af8fa60a2ba3a5fe",
+    "crates/rentemester-server/src/tests.rs": "d6de50623c40ccc22240d423a9253c6ec8dacca44429e9e962d22d837b15e762",
+    "docs/architecture/rust-target/implementation/README.md": "0391ce448fddd1152e9b4de84967c4285cb7496a802526977645f45cb2f340b6",
+    "docs/architecture/rust-target/implementation/http-verification/CONTRACT.md": "8d2297e3ef36f67e7892c3153e2d0ebe03159a6829cc9420d3b8107889101208",
+    "docs/architecture/rust-target/implementation/http-verification/gdd.json": "333b86ed40976e7bb1fcfda6dbafca6518e446f2760229ccda3ffb5b334ac77c",
+    "docs/architecture/rust-target/implementation/http-verification/readiness.json": "2764f85f0302664e9a5d0ddc4e717de4dcef9363c173d16d4aa21cd52277615f",
+    "node_modules/better-auth/dist/api/routes/email-verification.mjs": "f240c0d7e592edecaec282658e0ae217e14564f574a37d6055755c8404a6afee",
+    "node_modules/better-auth/dist/crypto/jwt.mjs": "21850eb3477ea95a75bb691da39ce61ad82cc4f5313ddf0b0473a3fec22f536e",
+    "node_modules/better-call/dist/cookies.mjs": "f7d6cf754197ae194950d53111319634405b5e98b5ace8dd1dfc14843ef631f5",
+    "scripts/rust/http-verification-cases.ts": "37caf203a4571578586793324800f7e72138a12797b46ae122371760feb5e38f",
+    "scripts/rust/verify-http-login.ts": "31ca345a0fd2088b5d6438aa7d556fcec73602e035ea983eeae27c2780d23f4f",
+    "scripts/rust/verify.ts": "70af5c51025b9660310f0e0be7513d4c8be15e22410facf5836fc4f4838b5d35"
+  },
+  "evidence_files": {
+    "review-process.json": "d67d67de6179ffc8918f35f8d0a1874db9667f1c5dcc69ef039f794fa54f49bf",
+    "review-cookie.txt": "320256ce6b5a2824355d48367f2decde8bcefc1849cfeec12958b441a06fd2af",
+    "review-native.txt": "05b90fa9c22f501e5fc3596bda2a29417c07b1b706ce54efe1d1593db7405b01",
+    "review.json": "d2716f308288d52cdae94214884aae08701ac9143b6500534442ad8d13cf41de",
+    "ui.txt": "f79e6d25e19a760e7d35fc192bb4823e87ece46c033d8a781d40f73c548258b2",
+    "app-typecheck.txt": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "511bb8b81ca61dbab05644d14c6bceefd1f550b0fea64167e2fb8a32913c6b6f",
+    "regression.json": "8077a08d7234615335a6e0d2bfa8ea03b8c4de251518db8e170183bd6e722682"
+  }
+}

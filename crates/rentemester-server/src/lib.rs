@@ -87,6 +87,8 @@ enum Operation {
     SignOut,
     EnrollmentBegin,
     EnrollmentConfirm,
+    VerificationRequest,
+    VerifyEmail,
 }
 impl Operation {
     fn rate(self) -> (Duration, u8) {
@@ -96,7 +98,7 @@ impl Operation {
             | Self::Backup
             | Self::EnrollmentBegin
             | Self::EnrollmentConfirm => (Duration::from_secs(10), 3),
-            Self::Request => (WINDOW, 3),
+            Self::Request | Self::VerificationRequest => (WINDOW, 3),
             _ => (WINDOW, 10),
         }
     }
@@ -375,11 +377,14 @@ fn admission_for(
     operation: Operation,
 ) -> Result<(), StatusCode> {
     let headers = request.headers();
-    let allowed = if matches!(operation, Operation::Callback | Operation::Session) {
+    let allowed = if matches!(
+        operation,
+        Operation::Callback | Operation::VerifyEmail | Operation::Session
+    ) {
         one(headers, "host") == Some(state.authority.as_str())
             && (!headers.contains_key("origin")
                 || one(headers, "origin") == Some(state.origin.as_str()))
-            && (operation == Operation::Callback
+            && (matches!(operation, Operation::Callback | Operation::VerifyEmail)
                 || !headers.contains_key("sec-fetch-site")
                 || matches!(
                     one(headers, "sec-fetch-site"),
@@ -395,8 +400,10 @@ fn admission_for(
         if headers.contains_key("content-encoding") {
             return Err(StatusCode::UNSUPPORTED_MEDIA_TYPE);
         }
-    } else if !matches!(operation, Operation::Callback | Operation::Session)
-        && !json_content(headers)
+    } else if !matches!(
+        operation,
+        Operation::Callback | Operation::VerifyEmail | Operation::Session
+    ) && !json_content(headers)
     {
         return Err(StatusCode::UNSUPPORTED_MEDIA_TYPE);
     }

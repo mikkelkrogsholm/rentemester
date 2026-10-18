@@ -6,6 +6,20 @@ import { useAuth } from "../lib/auth-context";
 import { beginNativeEnrollment, confirmNativeEnrollment, NativeEnrollmentFailure } from "../lib/native-enrollment";
 
 export function LoginView() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [verificationNotice] = useState(() => {
+    const code = new URLSearchParams(location.search).get("error");
+    if (code === "VERIFICATION_UNCONFIRMED") return "Bekræftelsens resultat kunne ikke fastslås. Prøv at logge ind for at kontrollere status. Du kan også anmode om en ny bekræftelsesmail.";
+    if (code === "INVALID_TOKEN" || code === "TOKEN_EXPIRED") return "Bekræftelseslinket er ugyldigt, udløbet eller allerede brugt. Prøv at logge ind, eller anmod om en ny bekræftelsesmail.";
+    return null;
+  });
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (!verificationNotice || !params.has("error")) return;
+    params.delete("error");
+    navigate({ pathname: location.pathname, search: params.size ? `?${params}` : "" }, { replace: true });
+  }, [location.pathname, location.search, navigate, verificationNotice]);
   const { refresh } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,6 +59,7 @@ export function LoginView() {
   };
   if (nativeEnrollment) return <NativeEnrollmentView email={email} onLogin={() => { setNativeEnrollment(false); setNeedsTotp(false); setPassword(""); setError(null); }} />;
   return <AuthPanel title={needsTotp ? "Bekræft din kode" : "Log ind"}>
+    {verificationNotice && <p className="banner error" role="alert">{verificationNotice}</p>}
     {error && <p className="banner error" role="alert">{error}</p>}
     {needsTotp ? <form onSubmit={verify}>
       <p>{verificationMethod === "totp" ? "Indtast koden fra din autentifikator-app." : "Indtast én af dine recovery codes."}</p>
@@ -98,7 +113,7 @@ function NativeEnrollmentView({ email, onLogin }: { email: string; onLogin: () =
   </AuthPanel>;
 }
 
-const recoveryMessage = "Hvis e-mailadressen kan bruges, modtager du en e-mail med næste trin.";
+export const recoveryMessage = "Hvis e-mailadressen kan bruges, modtager du en e-mail med næste trin.";
 
 export function ForgotPasswordView() {
   const [email, setEmail] = useState("");
@@ -117,7 +132,7 @@ export function VerificationRecoveryView() {
   const [submitted, setSubmitted] = useState(false);
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    try { await authClient.sendVerificationEmail({ email, callbackURL: window.location.origin }); }
+    try { await authClient.sendVerificationEmail({ email, callbackURL: window.location.origin }, { retry: 0 }); }
     catch { /* Deliberately identical response to prevent account enumeration. */ }
     finally { setEmail(""); setSubmitted(true); }
   };

@@ -1,0 +1,224 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native HTTP email verification and React recovery",
+    "goal": "Expose native persisted verification through bounded same-origin request and token callback routes with truthful unknown outcomes",
+    "scope": "HTTP/native synthetic control and UI recovery qualification; no production legacy writer closure or deployment"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native HTTP email verification boundary",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Dispatch canonical native verification requests and completion with strict admission, fixed public outcomes and recovery UI",
+        "rationale": "Crypto and application authority must survive HTTP parsing, optional caller and uncertain outcomes",
+        "excludes": [
+          "Physical/lifetime or independently running legacy writer qualification, production rollout and full identity parity"
+        ]
+      },
+      "interfaces": [
+        "action.http_verification"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Real WAL/DELETE requests issue committed mail and consume once with known JSON/sanitized redirect, no session cookie",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Native socket server and current canonical synthetic controls plus source signers and React fixture",
+        "when": "Request verification or navigate token callback",
+        "then": "Real WAL/DELETE requests issue committed mail and consume once with known JSON/sanitized redirect, no session cookie"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Strict JSON/null/duplicate/cookie/query/origin/credential/budget refusal occurs before native dispatch; source stateless and unissued native tokens refuse",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Native socket server and current canonical synthetic controls plus source signers and React fixture",
+        "when": "Request verification or navigate token callback",
+        "then": "Strict JSON/null/duplicate/cookie/query/origin/credential/budget refusal occurs before native dispatch; source stateless and unissued native tokens refuse"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "No source fallback or session grant; missing/verified/delivery failure/busy share public ACK, HEAD does not consume or charge callback rate",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Native socket server and current canonical synthetic controls plus source signers and React fixture",
+        "when": "Request verification or navigate token callback",
+        "then": "No source fallback or session grant; missing/verified/delivery failure/busy share public ACK, HEAD does not consume or charge callback rate"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Bare named plus valid cookie refuses; unknown/panic never maps to success; React guidance never retries or automatically signs in",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Native socket server and current canonical synthetic controls plus source signers and React fixture",
+        "when": "Request verification or navigate token callback",
+        "then": "Bare named plus valid cookie refuses; unknown/panic never maps to success; React guidance never retries or automatically signs in"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Shared direct-peer fixed operation rate/capacity and actual DELETE commit busy preserve truthful outcome despite callback/request uncertainty",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Native socket server and current canonical synthetic controls plus source signers and React fixture",
+        "when": "Request verification or navigate token callback",
+        "then": "Shared direct-peer fixed operation rate/capacity and actual DELETE commit busy preserve truthful outcome despite callback/request uncertainty"
+      }
+    },
+    "action.http_verification": {
+      "kind": "action",
+      "description": "Native HTTP send/verify email and error recovery",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "JSON_email_optional_callback_or_query_original_token": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "configured_origin_native_handlers_cookie_verifier_direct_peer": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Strict admission codes; native invalid token or explicit unconfirmed completion; all admitted request outcomes generic"
+        },
+        "preconditions": [
+          "Trusted configured origin/profile and native handlers on admitted control handles",
+          "Exclusive canonical routing and old legacy writer drain before real enablement; no legacy proxy fallback"
+        ],
+        "postconditions": [
+          "Admitted POST returns same status/body after minimum500ms without existence/bearer/delivery claim; no automatic resend",
+          "GET validates callback before native mutation; only known commit yields success, unknown never does",
+          "HEAD/malformed queries and malformed named credentials cannot dispatch or downgrade to anonymous",
+          "React removes known error coordinate and offers recovery without login/resend side effects"
+        ],
+        "external_effects": [
+          "Native application issuance/postcommit injected mail or atomic completion under caller-owned writer",
+          "HTTP responses/redirect and bounded shared process rate/capacity state",
+          "React history replacement and explicit user resend only"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "HTTP parsing/caller provenance and current native transaction outcome must not widen authority or turn uncertainty into success",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "HTTP parsing/caller provenance and current native transaction outcome must not widen authority or turn uncertainty into success",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "HTTP parsing/caller provenance and current native transaction outcome must not widen authority or turn uncertainty into success",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "HTTP parsing/caller provenance and current native transaction outcome must not widen authority or turn uncertainty into success",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "HTTP parsing/caller provenance and current native transaction outcome must not widen authority or turn uncertainty into success",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Strict HTTP/cookie/query admission; bounded shared capacity/rate; generic minimum-duration request ACK; native completion known/invalid/unknown mapping; fixed React guidance"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.http_verification",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.http_verification",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.http_verification",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.http_verification",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.http_verification",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.http_verification",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native HTTP email verification and React recovery",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "8d2297e3ef36f67e7892c3153e2d0ebe03159a6829cc9420d3b8107889101208"
+      }
+    }
+  }
+}

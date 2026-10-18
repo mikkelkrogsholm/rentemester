@@ -2,14 +2,19 @@ import { Button, Input } from "../components/ui";
 import { FormEvent, useState } from "react";
 import { authClient } from "../lib/auth-client";
 import { useAuth } from "../lib/auth-context";
-import { AuthPanel } from "./LoginView";
+import { AuthPanel, recoveryMessage } from "./LoginView";
 
 export function VerificationRequiredView() {
   const { session } = useAuth();
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const resend = async () => { setError(null); try { const result = await authClient.sendVerificationEmail({ email: session?.email ?? "", callbackURL: "/" }); if (result.error) throw new Error("resend failed"); setSent(true); } catch { setError("Kunne ikke sende bekræftelsesmailen. Prøv igen senere."); } };
-  return <AuthPanel title="Bekræft din e-mail"><p>Du skal bekræfte din e-mail, før du kan fortsætte.</p>{error && <p className="banner error" role="alert">{error}</p>}<Button className="btn" type="button" onClick={() => void resend()}>{sent ? "E-mail sendt" : "Send bekræftelsesmail igen"}</Button></AuthPanel>;
+  const [submitted, setSubmitted] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const resend = async () => {
+    setBusy(true);
+    try { await authClient.sendVerificationEmail({ email: session?.email ?? "", callbackURL: "/" }, { retry: 0 }); }
+    catch { /* A generic acknowledgement must not claim that delivery failed or succeeded. */ }
+    finally { setBusy(false); setSubmitted(true); }
+  };
+  return <AuthPanel title="Bekræft din e-mail"><p>Du skal bekræfte din e-mail, før du kan fortsætte.</p>{submitted && <p role="status">{recoveryMessage}</p>}<Button className="btn" type="button" disabled={busy} onClick={() => void resend()}>Send bekræftelsesmail igen</Button></AuthPanel>;
 }
 
 export function MfaEnrollmentView() {

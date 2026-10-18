@@ -89,7 +89,7 @@ fn probe() {
     let confirm_t = clock.clone();
     let confirm_open = open.clone();
     let begin_log = outcome_log.clone();
-    let confirm_log = outcome_log;
+    let confirm_log = outcome_log.clone();
     let enrollment = EnrollmentHandlers {
         begin: Box::new(move |i| {
             let result = rentemester_application::mfa_enrollment::begin(
@@ -123,8 +123,12 @@ fn probe() {
             result
         }),
     };
-    let auth = AuthHandlers {
+    let email_open = open.clone();
+    let email_c = cookies.clone();
+    let email_t = clock.clone();
+    let mut auth = AuthHandlers {
         enrollment: Some(enrollment),
+        verification: None,
         cookies,
         sign_in: Box::new(move |i| {
             mfa_login::begin(
@@ -162,6 +166,46 @@ fn probe() {
         .block_on(async move {
             let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
             let origin = format!("http://{}", listener.local_addr().unwrap());
+            if config["verification"]==true {
+                use rentemester_runtime::{email_token::EmailTokenSigner,recovery::{VerificationSender,VerificationMessage,DeliveryUnconfirmed}};
+                struct Sender {path:Option<String>,control:String,fail:bool}
+                impl VerificationSender for Sender {
+                    fn enabled(&self)->bool{true}
+                    fn send(&mut self,m:&VerificationMessage)->Result<(),DeliveryUnconfirmed>{
+                        let db=rusqlite::Connection::open(&self.control).unwrap();
+                        db.busy_timeout(Duration::ZERO).unwrap();
+                        db.execute_batch("BEGIN IMMEDIATE;ROLLBACK").expect("verification mail while writer held");
+                        if let Some(path)=&self.path {
+                            let mut file=std::fs::OpenOptions::new().create(true).append(true).open(path).unwrap();
+                            writeln!(file,"{}",serde_json::json!({"recipient":m.recipient(),"token":m.token(),"url":m.action_url()})).unwrap();
+                        }
+                        if self.fail {Err(DeliveryUnconfirmed)}else{Ok(())}
+                    }
+                }
+                let signer=Arc::new(EmailTokenSigner::new("w",&key).unwrap());
+                let links=Arc::new(RecoveryLinks::new(&origin,&[&origin],CookieProfile::Development).unwrap());
+                let send_signer=signer.clone();let send_links=links.clone();let send_c=email_c.clone();let send_t=email_t.clone();let send_open=email_open.clone();
+                let mail_log=config["mailLog"].as_str().map(str::to_owned);
+                let mail_control=config["control"].as_str().unwrap().to_owned();
+                let delivery_fail=config["deliveryFail"]==true;let request_log=outcome_log.clone();
+                auth.verification=Some(VerificationHandlers{
+                    request:Box::new(move|i|{
+                        let mut sender=Sender{path:mail_log.clone(),control:mail_control.clone(),fail:delivery_fail};
+                        let verification=rentemester_application::email_verification::Runtime{signer:&send_signer,clock:send_t.as_ref(),audit_key_version:1};
+                        let r=rentemester_application::verification_request::execute(&mut send_open(),&rentemester_application::verification_request::Runtime{verification:&verification,cookies:&send_c,links:&send_links},&mut sender,i.email(),i.callback(),i.caller());
+                        if let Some(path)=&request_log {
+                            let value=match &r {Ok(())=>serde_json::json!({"operation":"verification-request","ok":true}),Err(e)=>serde_json::json!({"operation":"verification-request","ok":false,"stage":format!("{:?}",e.stage),"code":e.error.code})};
+                            let mut f=std::fs::OpenOptions::new().create(true).append(true).open(path).unwrap();writeln!(f,"{value}").unwrap();
+                        }
+                        r
+                    }),
+                    complete:Box::new(move|i|{
+                        let verification=rentemester_application::email_verification::Runtime{signer:&signer,clock:email_t.as_ref(),audit_key_version:1};
+                        let r=rentemester_application::verification_request::complete(&mut email_open(),&rentemester_application::verification_request::Runtime{verification:&verification,cookies:&email_c,links:&links},i.token(),i.callback()).map(|_|());
+                        observe(&outcome_log,"verify-email",&r);r
+                    }),
+                });
+            }
             let app = identity_router(&origin, CookieProfile::Development, auth).unwrap();
             println!("{}", serde_json::json!({"origin":origin}));
             std::io::stdout().flush().unwrap();
@@ -239,6 +283,7 @@ fn handlers(cookies: Arc<CookieVerifier>, calls: Arc<AtomicUsize>, mode: u8) -> 
     let count = calls.clone();
     AuthHandlers {
         enrollment: None,
+        verification: None,
         cookies,
         sign_in,
         totp,
@@ -584,4 +629,158 @@ fn cookie_profile_is_bound_and_browser_lifetime_preserves_signature() {
         )
         .is_err()
     );
+}
+
+async fn verification_server(mode: u8) -> (String, tokio::task::JoinHandle<()>, Arc<AtomicUsize>) {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let origin = format!("http://{}", listener.local_addr().unwrap());
+    let calls = Arc::new(AtomicUsize::new(0));
+    let request_calls = calls.clone();
+    let complete_calls = calls.clone();
+    let mut auth = handlers(verifier(CookieProfile::Development), calls.clone(), 0);
+    auth.verification = Some(VerificationHandlers {
+        request: Box::new(move |_| {
+            request_calls.fetch_add(1, Ordering::SeqCst);
+            if mode == 3 {
+                panic!("synthetic verification request panic");
+            }
+            if mode == 0 {
+                Ok(())
+            } else {
+                Err(rentemester_application::reset_request::Failure {
+                    stage: match mode {
+                        1 => rentemester_application::reset_request::Stage::NotCommitted,
+                        2 => rentemester_application::reset_request::Stage::OutcomeUnknown,
+                        _ => rentemester_application::reset_request::Stage::Committed,
+                    },
+                    error: failure(false).error,
+                    connection_reusable: false,
+                })
+            }
+        }),
+        complete: Box::new(move |_| {
+            complete_calls.fetch_add(1, Ordering::SeqCst);
+            match mode {
+                0 => Ok(()),
+                1 => Err(failure(false)),
+                2 => Err(failure(true)),
+                _ => panic!("synthetic verification completion panic"),
+            }
+        }),
+    });
+    let app = identity_router(&origin, CookieProfile::Development, auth).unwrap();
+    let task = tokio::spawn(async move {
+        axum::serve(
+            listener,
+            app.into_make_service_with_connect_info::<SocketAddr>(),
+        )
+        .await
+        .unwrap();
+    });
+    (origin, task, calls)
+}
+#[tokio::test]
+async fn verification_admitted_ack_is_generic_for_error_unknown_delivery_and_panic() {
+    for mode in 0..5 {
+        let (o, task, calls) = verification_server(mode).await;
+        let started = Instant::now();
+        let r = reqwest::Client::builder()
+            .no_proxy()
+            .build()
+            .unwrap()
+            .post(format!("{o}/api/auth/send-verification-email"))
+            .header("origin", &o)
+            .header("content-type", "application/json")
+            .body(r#"{"email":"u@example.invalid"}"#)
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(r.status(), StatusCode::OK);
+        assert_eq!(r.headers()["cache-control"], "no-store");
+        assert!(!r.headers().contains_key("set-cookie"));
+        assert_eq!(r.text().await.unwrap(), r#"{"status":true}"#);
+        assert!(started.elapsed() >= Duration::from_millis(450));
+        assert_eq!(calls.load(Ordering::SeqCst), 1);
+        task.abort();
+    }
+}
+#[tokio::test]
+async fn verification_head_and_invalid_destinations_never_dispatch() {
+    let (o, task, calls) = verification_server(0).await;
+    let c = reqwest::Client::builder().no_proxy().build().unwrap();
+    assert_eq!(
+        c.head(format!("{o}/api/auth/verify-email?token=e30.e30.c2ln"))
+            .send()
+            .await
+            .unwrap()
+            .status(),
+        StatusCode::METHOD_NOT_ALLOWED
+    );
+    for query in [
+        "token=e30.e30.c2ln&callbackURL=https%3A%2F%2Fevil.invalid",
+        "token=e30.e30.c2ln&token=e30.e30.c2ln",
+        "token=e30.e30.c2ln&callbackURL=%FF",
+        "token=%6530.e30.c2ln",
+    ] {
+        assert_eq!(
+            c.get(format!("{o}/api/auth/verify-email?{query}"))
+                .send()
+                .await
+                .unwrap()
+                .status(),
+            StatusCode::BAD_REQUEST
+        );
+    }
+    assert_eq!(calls.load(Ordering::SeqCst), 0);
+    task.abort();
+}
+#[tokio::test]
+async fn verification_callback_never_turns_unknown_or_panic_into_success() {
+    let c = reqwest::Client::builder()
+        .no_proxy()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .unwrap();
+    for (mode, status, code) in [
+        (0, StatusCode::OK, ""),
+        (1, StatusCode::UNAUTHORIZED, "INVALID_TOKEN"),
+        (
+            2,
+            StatusCode::SERVICE_UNAVAILABLE,
+            "VERIFICATION_UNCONFIRMED",
+        ),
+        (
+            3,
+            StatusCode::SERVICE_UNAVAILABLE,
+            "VERIFICATION_UNCONFIRMED",
+        ),
+    ] {
+        let (o, task, calls) = verification_server(mode).await;
+        let r = c
+            .get(format!("{o}/api/auth/verify-email?token=e30.e30.c2ln"))
+            .header("sec-fetch-site", "cross-site")
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(r.status(), status);
+        let body = r.text().await.unwrap();
+        if mode == 0 {
+            assert_eq!(body, r#"{"status":true,"user":null}"#);
+        } else {
+            assert!(body.contains(code));
+        }
+        let r=c.get(format!("{o}/api/auth/verify-email?token=e30.e30.c2ln&callbackURL=%2Flogin%3Ftoken%3Dold%26error%3Dold%26verified%3Dtrue")).send().await.unwrap();
+        assert_eq!(r.status(), StatusCode::FOUND);
+        assert_eq!(
+            r.headers()["location"],
+            if mode == 0 {
+                format!("{o}/login")
+            } else {
+                format!("{o}/login?error={code}")
+            }
+        );
+        assert!(!r.headers().contains_key("set-cookie"));
+        assert_eq!(calls.load(Ordering::SeqCst), 2);
+        task.abort();
+    }
 }

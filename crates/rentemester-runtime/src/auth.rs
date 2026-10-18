@@ -200,6 +200,48 @@ impl CookieVerifier {
             true,
         )
     }
+    /// Optional caller only: unrelated cookies grant no session. A named but malformed,
+    /// duplicate or wrong-profile session never falls back to anonymous handling.
+    pub fn verify_optional(
+        &self,
+        header: Option<&str>,
+        service_header: Option<&str>,
+    ) -> Result<Option<VerifiedCookie>, AuthError> {
+        if service_header.is_some() {
+            return Err(AuthError::InvalidCredentials);
+        }
+        let Some(header) = header else {
+            return Ok(None);
+        };
+        if header.len() > 8192
+            || !header.is_ascii()
+            || header.bytes().any(|b| b.is_ascii_control() && b != b'\t')
+        {
+            return Err(AuthError::InvalidCredentials);
+        }
+        let mut count = 0;
+        for part in header.split(';') {
+            let part = part.trim_matches([' ', '\t']);
+            let pair = part.split_once('=');
+            let name = pair
+                .map_or(part, |(name, _)| name)
+                .trim_matches([' ', '\t']);
+            if matches!(
+                name,
+                "better-auth.session_token" | "__Secure-better-auth.session_token"
+            ) {
+                count += 1;
+                if pair.is_none() || count > 1 {
+                    return Err(AuthError::InvalidCredentials);
+                }
+            }
+        }
+        if count > 0 {
+            self.verify(Some(header), None).map(Some)
+        } else {
+            Ok(None)
+        }
+    }
     fn verify_named(
         &self,
         header: Option<&str>,
@@ -429,6 +471,49 @@ mod tests {
         let challenge = v.verify_challenge(Some(c.request_header()), None).unwrap();
         assert!(v.accepts_challenge(&challenge));
         assert!(!v.accepts_session(&challenge.cookie));
+    }
+    #[test]
+    fn optional_cookie_never_downgrades_named_invalid_credentials_to_anonymous() {
+        let v = CookieVerifier::new(
+            "w",
+            CookieProfile::Development,
+            "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+        )
+        .unwrap();
+        for header in [
+            None,
+            Some("theme=dark"),
+            Some("better-auth.two_factor=pending"),
+        ] {
+            assert!(v.verify_optional(header, None).unwrap().is_none());
+        }
+        for header in [
+            "better-auth.session_token",
+            "better-auth.session_token=bad",
+            "__Secure-better-auth.session_token=bad",
+            "better-auth.session_token=bad;better-auth.session_token=bad",
+            "x=\n",
+        ] {
+            assert!(v.verify_optional(Some(header), None).is_err());
+        }
+        assert!(v.verify_optional(None, Some("service")).is_err());
+        let cookie = v.issue_session("synthetic-optional-session").unwrap();
+        assert!(
+            v.verify_optional(Some(cookie.request_header()), None)
+                .unwrap()
+                .is_some()
+        );
+        for bare in [
+            "better-auth.session_token",
+            "__Secure-better-auth.session_token",
+        ] {
+            for header in [
+                format!("{bare}; {}", cookie.request_header()),
+                format!("{}; {bare}", cookie.request_header()),
+            ] {
+                assert!(v.verify_optional(Some(&header), None).is_err());
+            }
+        }
     }
     #[test]
     fn independent_python_wire_vectors_and_fixed_errors() {

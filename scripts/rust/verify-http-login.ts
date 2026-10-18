@@ -1,5 +1,6 @@
 /** Real native HTTP enrolled login, actual control transactions, source crypto and cookie oracle. */
 import assert from "node:assert/strict";
+import { verifyHttpVerification } from "./http-verification-cases";
 import { verifyHttpEnrollment } from "./http-enrollment-cases";
 import { Database } from "bun:sqlite";
 import { mkdtempSync, mkdirSync, copyFileSync, rmSync } from "node:fs";
@@ -309,6 +310,7 @@ try {
 		}
 	}
 	await verifyHttpEnrollment({ fixture, start, key, now, password, note });
+	await verifyHttpVerification({ fixture, start, key, now, note });
 	console.log(JSON.stringify({ ok: true, checks, observations }));
 } finally {
 	rmSync(work, { recursive: true, force: true });

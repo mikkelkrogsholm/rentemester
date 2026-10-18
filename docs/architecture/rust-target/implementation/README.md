@@ -190,3 +190,7 @@ The [email-token contract](email-token/CONTRACT.md) provides source-readable HS2
 ## Native verification mail and completion destination
 
 [Contract](verification-request/CONTRACT.md) adds precommit bounded message preparation, optional current caller/email checks, postcommit VerificationSender handoff and truthful completion destinations. Concrete local HTTPS/source-wire checks cover the verification gateway trait. Public HTTP/React integration and legacy verification-writer closure remain the next enablement requirements; the full epic stays open.
+
+## Native HTTP email verification and recovery UI
+
+[Contract](http-verification/CONTRACT.md) adds native-only canonical send/verify routes, strict optional caller/query admission, generic minimum-duration request acknowledgement, known/invalid/unknown completion outcomes and fixed React recovery guidance. Real sockets/source signers and current synthetic controls qualify the bounded surface. Exclusive routing and legacy writer drain remain deployment gates; the full epic remains open.
