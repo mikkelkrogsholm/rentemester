@@ -535,6 +535,36 @@ impl Owner {
         let retired = self.finish(reusable);
         Ok(Attempt { outcome, retired })
     }
+    pub fn bank(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        action: rentemester_application::bank::Action<'_>,
+    ) -> Result<
+        Attempt<
+            Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, g, context| {
+            rentemester_application::bank::execute(c, l, g, context, action)
+        })
+    }
+    pub fn expense(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        action: rentemester_application::expense::Action<'_>,
+    ) -> Result<
+        Attempt<
+            Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, g, context| {
+            rentemester_application::expense::execute(c, l, g, context, action)
+        })
+    }
     pub fn ingest_document(
         &mut self,
         cookie: &VerifiedCookie,

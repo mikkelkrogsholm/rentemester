@@ -1,4 +1,5 @@
 //! Thin browser adapter over the same owner used for authentication.
+mod bank;
 mod documents;
 use crate::backend::Backend;
 use axum::{
@@ -34,6 +35,12 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
     };
     Router::new()
         .route("/api/companies", get(companies))
+        .route("/api/companies/{slug}/bank", get(bank::handle))
+        .route(
+            "/api/companies/{slug}/bank-accounts",
+            get(bank::handle).post(bank::handle),
+        )
+        .route("/api/companies/{slug}/bank/import", post(bank::handle))
         .route("/api/companies/{slug}/documents", get(documents::list))
         .route(
             "/api/companies/{slug}/documents/ingest",
@@ -42,6 +49,14 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route(
             "/api/companies/{slug}/documents/{id}/file",
             get(documents::file),
+        )
+        .route(
+            "/api/companies/{slug}/documents/{id}/booking-options",
+            get(documents::expense),
+        )
+        .route(
+            "/api/companies/{slug}/documents/book-expense",
+            post(documents::expense),
         )
         .route("/api/companies/{slug}/journal", get(read))
         .route("/api/companies/{slug}/trial-balance", get(read))

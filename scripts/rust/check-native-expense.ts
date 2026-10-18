@@ -1,0 +1,66 @@
+import type { Page } from "@playwright/test";
+
+export async function checkNativeExpense(page: Page, base: string, reopened = false) {
+  const headers = { origin: base, "content-type": "application/json" };
+  const today = new Date().toISOString().slice(0, 10);
+  const csv = `dato;tekst;beløb;valuta\n${today};Synthetic office payment;-250,00;DKK\n`;
+  const list = await (await page.request.get(`${base}/api/companies/synthetic/documents`)).json();
+  const document = list.documents.documents.find((d: { filename: string }) => d.filename === "synthetic-native-receipt.txt");
+  if (!document) throw new Error("Missing receipt for expense journey");
+  if (!reopened) {
+    await page.goto(`${base}/companies/synthetic/bankkonti`);
+    await page.getByRole("button", { name: "Opret bankkonto …", exact: true }).click();
+    const create = page.getByRole("dialog");
+    await create.getByLabel("Navn (påkrævet)", { exact: true }).fill("Synthetic operating bank");
+    await create.getByLabel("Ledger-konto (valgfri)", { exact: true }).fill("1800");
+    await create.getByRole("button", { name: "Opret bankkonto", exact: true }).click();
+    await page.getByRole("dialog").waitFor({ state: "hidden" });
+    await page.getByText("Synthetic operating bank", { exact: true }).waitFor();
+    console.log("Browser: native bank account created and mapped to ledger");
+    await page.goto(`${base}/companies/synthetic/bank`);
+    await page.getByRole("button", { name: "Importér kontoudtog", exact: true }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("CSV-fil", { exact: true }).setInputFiles({ name: "synthetic-bank.csv", mimeType: "text/csv", buffer: Buffer.from(csv) });
+    await dialog.getByLabel(/^Bankkonto \(valgfri\)/).fill("synthetic-operating-bank");
+    await dialog.getByRole("button", { name: "Importér", exact: true }).click();
+    await dialog.getByText(/1 transaktion importeret/).waitFor().catch(async (error) => { console.error(await dialog.innerText()); throw error; });
+    await dialog.getByRole("button", { name: "Luk", exact: true }).click();
+    await page.getByText("Synthetic office payment", { exact: true }).waitFor();
+    console.log("Browser: real CSV payment imported");
+    const options = await (await page.request.get(`${base}/api/companies/synthetic/documents/${document.id}/booking-options`)).json();
+    const bank = options.options.unmatchedOutgoingBank.find((row: { text: string }) => row.text === "Synthetic office payment");
+    if (!bank) throw new Error("Imported payment not offered for voucher match");
+    const data = { confirm: true, documentId: document.id, bankTransactionId: bank.id, expenseAccountNo: "3000" };
+    const ambiguous = await page.request.post(`${base}/api/companies/synthetic/documents/book-expense`, { headers, data });
+    if (ambiguous.status() !== 422 || !(await ambiguous.text()).includes("explicit treatment")) throw new Error(`Missing VAT treatment response: ${ambiguous.status()} ${await ambiguous.text()}`);
+    const future = await page.request.post(`${base}/api/companies/synthetic/documents/book-expense`, { headers, data: { ...data, vatTreatment: "non_deductible", transactionDate: "2099-01-01" } });
+    if (future.status() !== 422) throw new Error("Future expense bypassed journal policy");
+    await page.goto(`${base}/companies/synthetic/bilag`);
+    await page.getByRole("row").filter({ hasText: document.documentNo }).getByRole("link", { name: "Bogfør bilag", exact: true }).click();
+    await page.getByLabel(/^Udgiftskonto/).selectOption("3000");
+    await page.getByLabel(/^Banktransaktion \(uafstemt, udgående\)/).selectOption(String(bank.id));
+    await page.getByLabel(/^Moms-behandling/).selectOption("non_deductible");
+    await page.getByRole("button", { name: "Bogfør", exact: true }).click();
+    await page.getByText(/Bilaget blev bogført som journalpost/).waitFor().catch(async (error) => { console.error(await page.locator("main").innerText()); throw error; });
+    const duplicate = await page.request.post(`${base}/api/companies/synthetic/documents/book-expense`, { headers, data: { ...data, vatTreatment: "non_deductible" } });
+    if (duplicate.status() !== 422 || !(await duplicate.text()).includes("already linked")) throw new Error("Payment booked twice");
+    const reimport = await page.request.post(`${base}/api/companies/synthetic/bank/import`, { headers, data: { confirm: true, csvContent: csv, account: "synthetic-operating-bank" } });
+    const repeated = await reimport.json();
+    if (!reimport.ok() || repeated.import.imported !== 0 || repeated.import.skippedDuplicates !== 1) throw new Error("Reimport duplicated bank payment");
+  }
+  await page.goto(`${base}/companies/synthetic/bank`);
+  const row = page.getByRole("row").filter({ hasText: "Synthetic office payment" });
+  await row.waitFor();
+  const bank = await (await page.request.get(`${base}/api/companies/synthetic/bank`)).json();
+  if (bank.bank.transactions.length !== 1 || bank.bank.matchedCount !== 1 || bank.bank.unmatchedCount !== 0 || bank.bank.bookedBalance !== -250 || bank.bank.actualBalance !== null) throw new Error(`Bank match/balance response: ${JSON.stringify(bank.bank)}`);
+  await page.goto(`${base}/companies/synthetic/resultatopgorelse`);
+  await page.getByRole("heading", { name: "Resultatopgørelse", exact: true }).waitFor();
+  await page.getByText("Synthetic office supplies", { exact: true }).waitFor();
+  const report = await (await page.request.get(`${base}/api/companies/synthetic/income-statement`)).json();
+  if (report.incomeStatement.result !== -250 || report.incomeStatement.totalExpense !== 250) throw new Error("Non-deductible receipt VAT was not absorbed in expense cost");
+  const journal = await (await page.request.get(`${base}/api/companies/synthetic/journal`)).json();
+  const entries = journal.journal.entries.filter((entry: { documentId: number }) => entry.documentId === document.id);
+  if (entries.length !== 1 || entries[0].total !== 250 || entries[0].lines.length !== 2) throw new Error("Voucher expense did not create exactly one balanced two-line posting");
+  await page.screenshot({ path: "/tmp/rentemester-rust-expense.png", fullPage: true });
+  console.log(reopened ? "PASS: expense, voucher link, bank reconciliation and correct profit persist after restart" : "PASS: real browser → create bank → CSV import → match voucher → expense posting → reconciled bank and correct profit; missing treatment, future date, duplicate booking and duplicate import refused");
+}

@@ -14,7 +14,7 @@ struct Upload {
     force: bool,
     vendor_id: Option<i64>,
 }
-fn outcome<T>(
+pub(super) fn outcome<T>(
     attempt: rentemester_host::Attempt<
         Result<
             rentemester_application::control_fence::Committed<T>,
@@ -199,5 +199,78 @@ pub(super) async fn file(State(state): State<Product>, request: Request) -> Resp
             Err(r) => *r,
         },
         _ => refused(StatusCode::SERVICE_UNAVAILABLE, "evidence_unavailable"),
+    }
+}
+
+pub(super) async fn expense(State(state): State<Product>, request: Request) -> Response {
+    use rentemester_application::expense::{Action, Input};
+    let posting = request.method() == axum::http::Method::POST;
+    let cookie = match proof(&state, &request, posting) {
+        Ok(c) => c,
+        Err(r) => return *r,
+    };
+    if !selected(&state, &request) || request.uri().query().is_some() {
+        return refused(StatusCode::BAD_REQUEST, "invalid_input");
+    }
+    let id = if posting {
+        None
+    } else {
+        request
+            .uri()
+            .path()
+            .rsplit('/')
+            .nth(1)
+            .and_then(|s| s.parse::<i64>().ok())
+            .filter(|id| *id > 0 && *id <= 9_007_199_254_740_991)
+    };
+    if !posting && id.is_none() {
+        return refused(StatusCode::NOT_FOUND, "document_not_found");
+    }
+    let Ok(permit) = state.workers.clone().try_acquire_owned() else {
+        return refused(StatusCode::SERVICE_UNAVAILABLE, "busy");
+    };
+    let input: Option<Input> = if posting {
+        if request.headers().contains_key("content-encoding")
+            || !one(request.headers(), "content-type")
+                .is_some_and(|s| s.eq_ignore_ascii_case("application/json"))
+        {
+            return refused(StatusCode::BAD_REQUEST, "invalid_input");
+        }
+        let Ok(bytes) = to_bytes(request.into_body(), 16 * 1024).await else {
+            return refused(StatusCode::PAYLOAD_TOO_LARGE, "invalid_input");
+        };
+        let Ok(mut object) = serde_json::from_slice::<serde_json::Map<String, Value>>(&bytes)
+        else {
+            return refused(StatusCode::BAD_REQUEST, "invalid_input");
+        };
+        if object.remove("confirm") != Some(json!(true)) {
+            return refused(StatusCode::BAD_REQUEST, "confirmation_required");
+        }
+        let Ok(value) = serde_json::from_value(Value::Object(object)) else {
+            return refused(StatusCode::BAD_REQUEST, "invalid_input");
+        };
+        Some(value)
+    } else {
+        None
+    };
+    let result = tokio::task::spawn_blocking(move || {
+        let _permit = permit;
+        let mut owner = state.native.owner.lock().map_err(|_| ())?;
+        let action = match input.as_ref() {
+            Some(input) => Action::Post(input),
+            None => Action::Options(id.unwrap()),
+        };
+        owner.expense(&cookie, &SystemClock, action).map_err(|_| ())
+    })
+    .await;
+    match result {
+        Ok(Ok(attempt)) => match outcome(attempt) {
+            Ok(value) => response(
+                StatusCode::OK,
+                json!({"ok":true,(if posting{"booking"}else{"options"}):value}),
+            ),
+            Err(r) => *r,
+        },
+        _ => refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed"),
     }
 }

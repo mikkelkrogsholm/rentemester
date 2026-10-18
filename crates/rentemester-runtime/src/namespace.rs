@@ -60,6 +60,9 @@ impl NamespaceGuard {
     ) -> Result<String, NamespaceError> {
         Err(NamespaceError::Unsupported)
     }
+    pub fn publish_bank_statement(&mut self, _: &str) -> Result<String, NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
     pub fn read_document(&mut self, _: &str, _: &str) -> Result<Vec<u8>, NamespaceError> {
         Err(NamespaceError::Unsupported)
     }

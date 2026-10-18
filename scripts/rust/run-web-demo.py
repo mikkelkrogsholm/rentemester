@@ -49,7 +49,8 @@ def main():
                   'operatorActors':['system:synthetic-installer'],
                   'setupActor':'system:synthetic-installer',
                   'accounts':[{'accountNo':'1800','name':'Synthetic bank','type':'asset','normalBalance':'debit'},
-                              {'accountNo':'8000','name':'Synthetic opening equity','type':'equity','normalBalance':'credit'}]}
+                              {'accountNo':'8000','name':'Synthetic opening equity','type':'equity','normalBalance':'credit'},
+                              {'accountNo':'3000','name':'Synthetic office supplies','type':'expense','normalBalance':'debit'}]}
         (stage/'synthetic.json').write_text(json.dumps(config))
         try:
             run(['docker','run','-d','--name',prefix,'--security-opt','no-new-privileges',
@@ -88,18 +89,19 @@ def main():
             if args.check:
                 environment = {**os.environ,'RM_NATIVE_WEB_URL':origin,'RM_NATIVE_WEB_SETUP':setup_link,'RM_NATIVE_WEB_CONTAINER':prefix,'RM_NATIVE_WEB_STATE':str(Path(temp)/'browser-state.json')}
                 run(['bun','run','scripts/rust/check-native-web.ts'],cwd=REPO,env=environment)
-                run(['docker','restart','-t','2',prefix],stdout=subprocess.DEVNULL)
-                server.wait(timeout=15)
-                command.remove('--create')
-                server = subprocess.Popen(command,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
-                output = queue.Queue()
-                threading.Thread(target=read,args=(server,output),daemon=True).start()
-                while True:
-                    line = output.get(timeout=90)
-                    if line is None: raise RuntimeError('Rust server did not reopen')
-                    print(line.rstrip(),flush=True)
-                    if 'Native workspace connected: true' in line: break
-                run(['bun','run','scripts/rust/check-native-web.ts'],cwd=REPO,env={**environment,'RM_NATIVE_WEB_REOPEN':'1'})
+                for phase in ['0', '1']:
+                    run(['docker','restart','-t','2',prefix],stdout=subprocess.DEVNULL)
+                    server.wait(timeout=15)
+                    if '--create' in command: command.remove('--create')
+                    server = subprocess.Popen(command,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
+                    output = queue.Queue()
+                    threading.Thread(target=read,args=(server,output),daemon=True).start()
+                    while True:
+                        line = output.get(timeout=90)
+                        if line is None: raise RuntimeError('Rust server did not reopen')
+                        print(line.rstrip(),flush=True)
+                        if 'Native workspace connected: true' in line: break
+                    run(['bun','run','scripts/rust/check-native-web.ts'],cwd=REPO,env={**environment,'RM_NATIVE_WEB_REOPEN':'1','RM_NATIVE_WEB_EXPENSE_REOPEN':phase})
             else:
                 print('Open the private setup link above to create your synthetic owner.',flush=True)
                 print('After owner creation, read the local verification link in another terminal:',flush=True)

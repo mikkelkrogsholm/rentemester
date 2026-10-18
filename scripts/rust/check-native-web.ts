@@ -1,4 +1,5 @@
 // Real browser journey against run-web-demo.py --check; no intercepted requests or fixtures.
+import { checkNativeExpense } from "./check-native-expense";
 import { checkNativeDocuments } from "./check-native-documents";
 import { checkNativeReports } from "./check-native-reports";
 import { checkNativeReversal } from "./check-native-reversal";
@@ -43,10 +44,11 @@ try {
     await page.getByLabel("Adgangskode", { exact: true }).fill("synthetic-password-123");
     await page.getByRole("button", { name: "Log ind", exact: true }).click();
     await page.getByRole("button", { name: "Brug recovery code" }).click();
-    await page.getByLabel("Recovery code", { exact: true }).fill(state.backup);
+    await page.getByLabel("Recovery code", { exact: true }).fill(process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "1" ? state.backup2 : state.backup);
     await page.getByRole("button", { name: "Bekræft", exact: true }).click();
     await page.getByRole("link", { name: "Åbn bogføring" }).click();
     await page.getByText("Synthetic opening transfer", { exact: true }).waitFor();
+    if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "1") { await checkNativeExpense(page, base, true); } else {
     // Replaying the same browser operation must not create another journal entry.
     const replay = await page.request.post(`${base}/api/companies/synthetic/manual-journal`, { headers: { origin: base, "content-type": "application/json" }, data: JSON.parse(state.postedBody) });
     if (!replay.ok()) throw new Error(`Idempotency replay refused: ${replay.status()}`);
@@ -61,6 +63,8 @@ try {
     console.log("PASS: Rust server restart → browser login → persisted posting and balance; idempotent replay creates no duplicate");
     await checkNativeDocuments(page, base, true);
     await checkNativeReversal(page, base);
+    await checkNativeExpense(page, base);
+    }
   } else {
   if (setup) {
     const unauthorized = await page.request.post(`${base}/api/setup/first-owner`, { headers: { origin: base, "content-type": "application/json", "x-rentemester-install-token": "invalid" }, data: { name: "Synthetic Intruder", email: "intruder@example.invalid", password: "synthetic-password-456" } });
@@ -94,6 +98,7 @@ try {
   await page.getByLabel("Engangskode", { exact: true }).fill(totp(secret));
   await page.getByRole("button", { name: "Bekræft opsætning" }).click();
   const backup = await page.getByRole("region", { name: "Recovery codes" }).locator("li").first().textContent();
+  const backup2 = await page.getByRole("region", { name: "Recovery codes" }).locator("li").nth(1).textContent();
   await page.getByRole("button", { name: "Jeg har gemt koderne" }).click();
   console.log("Browser: native MFA and session complete");
   await page.getByRole("link", { name: "Åbn bogføring" }).click();
@@ -119,7 +124,7 @@ try {
   await checkNativeDocuments(page, base);
   if (failures.length) throw new Error(`Browser errors: ${failures.join("; ")}`);
   await page.screenshot({ path: process.env.RM_NATIVE_WEB_SCREENSHOT ?? "/tmp/rentemester-rust-first-journey.png", fullPage: true });
-  if (statePath) writeFileSync(statePath, JSON.stringify({ backup, postedBody }), { mode: 0o600 });
+  if (statePath) writeFileSync(statePath, JSON.stringify({ backup, backup2, postedBody }), { mode: 0o600 });
   console.log("PASS: real browser → Rust: first owner, verification, MFA, company selection, manual post, correct persisted trial balance");
   }
 } finally { await browser.close(); }

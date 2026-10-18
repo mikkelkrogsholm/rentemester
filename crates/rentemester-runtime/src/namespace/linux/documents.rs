@@ -10,14 +10,18 @@ use std::{
     io::{Read, Write},
 };
 impl NamespaceGuard {
-    fn document_directory(&mut self, create: bool) -> Result<File, Error> {
+    fn original_directory(&mut self, create: bool, bank: bool) -> Result<File, Error> {
         self.ensure_current()?;
         let (_, root) = walk(&self.root, self.uid, true)?;
         let mut directory = File::from(
             openat(&root, self.slug.as_str(), DIRECTORY, Mode::empty())
                 .map_err(|_| Error::Invalid)?,
         );
-        for name in ["documents", "originals"] {
+        for name in if bank {
+            ["bank", "processed"]
+        } else {
+            ["documents", "originals"]
+        } {
             if create {
                 match mkdirat(&directory, name, Mode::from_raw_mode(0o700)) {
                     Ok(()) => {
@@ -84,8 +88,25 @@ impl NamespaceGuard {
         Ok(bytes)
     }
     pub fn publish_document(&mut self, input: &crate::document::Prepared) -> Result<String, Error> {
-        let directory = self.document_directory(true)?;
-        let path = input.relative_path();
+        self.publish_original(input, false)
+    }
+    pub fn publish_bank_statement(&mut self, content: &str) -> Result<String, Error> {
+        let input =
+            crate::document::Prepared::new("bank-import.txt".into(), content.as_bytes().to_vec())
+                .map_err(|_| Error::Invalid)?;
+        self.publish_original(&input, true)
+    }
+    fn publish_original(
+        &mut self,
+        input: &crate::document::Prepared,
+        bank: bool,
+    ) -> Result<String, Error> {
+        let directory = self.original_directory(true, bank)?;
+        let path = if bank {
+            format!("bank/processed/{}.txt", input.hash())
+        } else {
+            input.relative_path()
+        };
         let name = path.rsplit('/').next().unwrap();
         match statat(&directory, name, AtFlags::SYMLINK_NOFOLLOW) {
             Ok(_) => {
@@ -149,7 +170,7 @@ impl NamespaceGuard {
         {
             return Err(Error::Invalid);
         }
-        let directory = self.document_directory(false)?;
+        let directory = self.original_directory(false, false)?;
         self.read_original(&directory, name, hash)
     }
 }

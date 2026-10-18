@@ -1,8 +1,8 @@
 # Kør Rust-serveren med web-UI'et
 
 Rust-serveren leverer det eksisterende React-cockpit og behandler selv login,
-ejeroprettelse, MFA, sessions, virksomhedsadgang, manuel bogføring, tilbageførsel
-samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport. Den
+ejeroprettelse, MFA, sessions, virksomhedsadgang, manuel bogføring, tilbageførsel,
+bankkonti, generisk bankimport, bilagsbogføring samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport. Den
 starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Prøv med syntetiske data
@@ -27,8 +27,9 @@ I browseren:
 5. Gennemse og bekræft posteringen.
 6. Åbn **Saldobalance** og kontrollér debet, kredit og saldo.
 
-Demoens to konti bruges til en manuel åbningspostering. Indtægter og udgifter
-kræver fortsat bilag; domænekontrollen er ikke lempet for demoen.
+Demoen har en bankkonto i kontoplanen, egenkapital og en udgiftskonto. Den
+manuelle åbningspostering bruger bank og egenkapital; udgifter bogføres med
+bilag og en importeret bankbetaling som beskrevet nedenfor.
 
 Ctrl-C stopper demoen og fjerner dens container og datavolume. Kun en separat
 Rust-buildcache bevares. Eksisterende virksomhedsdata bruges ikke.
@@ -57,9 +58,50 @@ overskrives ikke, og identisk filindhold afvises som dublet. Originalfilen kan
 kun læses med virksomhedens bilagsadgang og efter hashkontrol. Bilaget og
 originalfilen bevares ved servergenstart.
 
-Bankimport, bankmatch og **Bogfør bilag** er endnu ikke koblet til Rust.
-Bilagsindlæsning alene bogfører derfor ingen udgift. Tvungen indlæsning og
+Bilagsindlæsning alene bogfører ingen udgift. Tvungen indlæsning og
 leverandørkobling afvises eksplicit, indtil de tilsvarende forløb er porteret.
+
+## Importér en bankbetaling og bogfør bilaget
+
+1. Indlæs en kassebon med dato, beløb 250 kr., moms 50 kr. og valuta DKK.
+2. Åbn **Virksomhedsadministration → Bankkonti**, og opret en bankkonto.
+   I demoen kobles den til ledger-konto **1800**. Notér kontoens slug fra listen.
+3. Åbn **Bogføring → Bank → Importér kontoudtog**. Vælg en UTF-8-CSV,
+   angiv bankkontoens slug, og lad bankformatet være tomt. Brug bilagets dato:
+
+   ```csv
+   dato;tekst;beløb;valuta
+   2026-10-18;Kontorartikler;-250,00;DKK
+   ```
+
+4. Åbn bilaget og vælg **Bogfør bilag**. Vælg demoens udgiftskonto **3000**
+   og bankbetalingen. Vælg **Ikke fradragsberettiget**, hvis momsen skal indgå
+   i udgiften, og bekræft bogføringen.
+5. Bankposten vises nu som afstemt. Resultatopgørelsen viser en udgift på
+   250 kr. og et resultat på −250 kr., hvis der ikke findes andre indtægter
+   eller udgifter. Originalbilaget og forbindelsen til bankposten bevares.
+
+CSV-importen accepterer danske kolonnenavne, semikolon, komma eller tabulator,
+komma-decimaler og citerede felter med linjeskift. Brug ISO-datoer for at undgå
+at gætte mellem dag og måned. Genimport springer dubletter over, men to ens
+betalinger i samme fil bevares som to forekomster. Den originale importtekst
+gemmes uforanderligt under `bank/processed/` med indholdshash.
+
+Når CSV'en ikke indeholder en understøttet saldo, viser banken en ukendt
+kontoudtogssaldo. Den bogførte saldo beregnes fra ledgeren inklusive
+modposteringer fra tilbageførsler; den forveksles ikke med kontoudtogets saldo.
+
+Udgiftsbogføring understøtter foreløbig DKK med standardkøbsmoms, momsfri
+behandling eller ikke-fradragsberettiget moms. Manglende kontomoms kræver et
+aktivt valg. Standardkøb kræver momsregistrering, dokumenteret dansk
+leverandør, korrekt 25%-grundlag og en aktiv, bekræftet købsmomskonto.
+Originalens hash og de eksisterende dato-, periode- og journalkontroller
+kontrolleres ved bogføring. En allerede afstemt bankpost kan ikke bruges igen.
+
+Navngivne bankprofiler, valutakøb, omvendt betalingspligt, EU-varekøb,
+repræsentation, forenklede fakturaers virksomhedskontekst og automatisk
+oprettelse af undtagelsesopgaver mangler fortsat i Rust og afvises eller
+udelades eksplicit. De er del af den resterende omskrivning.
 
 ## Tilbagefør en postering
 
@@ -94,7 +136,12 @@ deterministiske PDF-bytes. Filerne gemmes i `/tmp/rentemester-rust-reports/`.
 Bilagstesten indlæser en kassebon i browseren, kontrollerer originalfilens
 nøjagtige bytes før og efter genstart og afviser dublet, forkert filtype og
 uautentificeret adgang. Skærmbilledet gemmes som
-`/tmp/rentemester-rust-documents.png`. Testdata fjernes fra Docker efter kørslen.
+`/tmp/rentemester-rust-documents.png`. Derefter oprettes bankkontoen i UI'et,
+en CSV importeres, bilaget matches og udgiften bogføres. Testen kontrollerer
+bankafstemning og resultat, afviser manglende momsvalg, fremtidig dato og
+dobbelt bogføring og verificerer resultatet efter endnu en genstart.
+Skærmbilledet gemmes i `/tmp/rentemester-rust-expense.png`.
+Testdata fjernes fra Docker efter kørslen.
 
 ## Aktuel afgrænsning
 
