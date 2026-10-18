@@ -2,7 +2,7 @@
 
 Rust-serveren leverer det eksisterende React-cockpit og behandler selv login,
 ejeroprettelse, MFA, sessions, virksomhedsadgang, manuel bogføring, tilbageførsel,
-virksomhedsstamdata, kontooprettelse, bekræftelse af kontoroller, bankkonti, generisk bankimport, bilagsbogføring med valutakøb samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport. Den
+virksomhedsstamdata, kontooprettelse, bekræftelse af kontoroller, bankkonti, generisk bankimport, bilagsbogføring med valutakøb samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport samt momsoverblik med PDF. Den
 starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Prøv med syntetiske data
@@ -128,6 +128,28 @@ Adresse og momsændringer gemmes samlet, så en afvist ændring ikke efterlader
 halvt opdaterede stamdata. Ændring af allerede eksisterende betalingsoplysninger,
 CVR-opslag, omdøbning og arkivering er endnu ikke porteret i dette forløb.
 
+## Se købsmomsen i momsoversigten
+
+Efter købet ovenfor åbnes **Moms og perioder → Moms**. Købet på 125 kr.
+viser 25 kr. købsmoms og et momstilsvar på −25 kr., hvis perioden ikke har
+anden moms. Oversigten bruger virksomhedens registrerede måneds-, kvartals-
+eller halvårsmoms. Den vælger den tidligste aktive, ikke indberettede periode;
+ellers vises den aktuelle periode. Perioder med nul moms, men bogføringsaktivitet,
+kan også kræve opmærksomhed.
+
+Tallene er foreløbige i en åben periode. Kopiering til en momsangivelse er
+slået fra. **Hent PDF** gemmer samme periode, frist, rubrikker og status som
+siden. Udskriften er et arbejdsgrundlag og markerer, når den ikke kan indberettes.
+Periodelukning og indberetning er endnu ikke tilgængelige i Rust-cockpittet.
+
+Momsberegningen bruger præcise ørebeløb, kontotyper, bekræftede kontoroller og
+posteringernes eksplicitte momskoder. Kontoens aktuelle standardmomskode
+omklassificerer ikke tidligere posteringer. Originaler og tilbageførsler indgår
+på deres egne datoer. Overførsler mellem momskonti og den bekræftede
+afregningskonto skaber ikke ny moms. Uforklarede momsbeløb, uoverensstemmende
+momsgrundlag og historiske importer, der kræver endnu ikke porteret kildevalidering,
+blokerer en færdig momsangivelse. Der gættes ikke ud fra kontonumre.
+
 ## Bogfør et valutakøb
 
 Indlæs eksempelvis en kassebon på **100 EUR**, og angiv beløb, valuta og
@@ -208,6 +230,10 @@ momsfradrag. Den kontrollerer nettoomkostning, købsmoms og fire bankmatches,
 afviser inkompatibel rolle, kontooverskrivning og afregistrering med åben moms,
 og genstarter serveren for at kontrollere, at opsætning og resultat bevares.
 Skærmbilledet gemmes i `/tmp/rentemester-rust-company-setup.png`.
+Momstesten åbner siden efter det danske køb, kontrollerer 25 kr. købsmoms,
+−25 kr. momstilsvar, foreløbige rubrikker og en rigtig PDF-download med samme
+tal, periode og frist. Den kontrollerer også efter genstart og afviser anonym
+adgang. Skærmbilledet gemmes i `/tmp/rentemester-rust-vat.png`.
 Testdata fjernes fra Docker efter kørslen.
 
 ## Aktuel afgrænsning

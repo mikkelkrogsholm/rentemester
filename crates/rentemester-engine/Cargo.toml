@@ -7,6 +7,7 @@ publish.workspace = true
 
 [dependencies]
 num-bigint = "0.5"
+time = "0.3"
 serde.workspace = true
 serde_json.workspace = true
 

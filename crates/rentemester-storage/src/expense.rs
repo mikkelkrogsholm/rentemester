@@ -441,6 +441,13 @@ mod tests {
         .unwrap();
         let input:Input=serde_json::from_value(json!({"documentId":1,"bankTransactionId":1,"expenseAccountNo":"X","vatTreatment":"standard"})).unwrap();
         let result = post(&tx, &input, "synthetic", Date::parse("2026-12-01").unwrap()).unwrap();
+        let vat = crate::vat_report::read(&tx, "synthetic", "2026-10-18", None).unwrap();
+        assert_eq!(vat["inputVat"].as_f64(), Some(25.0));
+        assert_eq!(vat["payable"].as_f64(), Some(-25.0));
+        assert_eq!(vat["periodStart"], "2026-10-01");
+        assert_eq!(vat["periodStatus"], "open");
+        assert_eq!(vat["vatReportErrors"], json!([]));
+        assert_eq!(vat["fiscalYears"].as_array().unwrap().len(), 1);
         let bank = crate::bank::read(&tx, "synthetic", "2026-10-18", None).unwrap();
         assert_eq!(bank["matchedCount"], 1, "{bank}");
         assert_eq!(bank["bookedBalance"].as_f64(), Some(-125.0), "{bank}");

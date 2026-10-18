@@ -65,9 +65,8 @@ export function VatView() {
         <Banner kind="warning">
           Denne virksomhed er ikke momsregistreret. Der er derfor ingen momsperiode,
           ingen momsangivelse og ingen SKAT-frist. Tilkøb af bilag med moms bogføres
-          med <code>expense book --vat-treatment non_deductible</code> så momsen
-          absorberes i udgiften. Skal selskabet alligevel momsregistreres, så sæt en
-          momsperiode under <Link to={`/${slug}/manage`}>Indstillinger</Link>.
+          som ikke fradragsberettigede, så momsen indgår i udgiften. Skal selskabet alligevel momsregistreres, så sæt en
+          momsperiode under <Link to={`/companies/${slug}/manage`}>Indstillinger</Link>.
         </Banner>
       </section>
     );
@@ -81,7 +80,7 @@ export function VatView() {
   // closing it now is almost always a mistake, so the confirm dialog warns.
   const periodEndsInFuture = v.periodEnd > todayIso();
   // #301: a closed (not reported) period can be reopened from the cockpit.
-  const canReopen = !v.archived && v.periodStatus === "closed";
+  const canReopen = v.periodActionsAvailable !== false && !v.archived && v.periodStatus === "closed";
   // #303: a momsangivelse is only filing-ready for a closed/reported period.
   const provisional = !v.archived && !v.momsangivelseReady;
 
@@ -92,7 +91,7 @@ export function VatView() {
           {/* #287: closing the VAT period is the prerequisite for a
               momsangivelse — hidden for an archived (read-only) year. Once the
               period is closed the action becomes a reopen instead (#301). */}
-          {!v.archived &&
+          {v.periodActionsAvailable !== false && !v.archived &&
             v.periodStatus === "open" &&
             v.vatReportErrors.length === 0 && (
             <Button requiredPermission="company.review"
@@ -145,6 +144,7 @@ export function VatView() {
       />
 
       {closedNotice && <Banner kind="success">{closedNotice}</Banner>}
+      {v.periodActionsAvailable === false && <Banner kind="warning">Momsoverblikket kan vises og hentes som PDF. Periodelukning og indberetning er endnu ikke tilgængelige.</Banner>}
 
       {v.vatReportErrors.length > 0 && (
         <Banner kind="error">

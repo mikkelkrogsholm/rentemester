@@ -36,3 +36,6 @@ pub mod document;
 pub mod bank;
 
 pub mod expense_fx;
+
+pub mod vat_period;
+pub mod vat_report;

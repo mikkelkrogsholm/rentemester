@@ -53,6 +53,7 @@ export type CompanyVatNotRegistered = CompanyVatCommon & {
 /** A VAT-registered company's momsangivelse data for the selected period. */
 export type CompanyVatRegistered = CompanyVatCommon & {
   vatRegistered: true;
+  periodActionsAvailable?: boolean;
   periodStart: string;
   periodEnd: string;
   /**

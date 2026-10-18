@@ -68,3 +68,25 @@ pub struct CockpitRequest<'a> {
     pub year: Option<&'a str>,
     pub account: Option<&'a str>,
 }
+
+pub fn vat(
+    control: &mut Connection,
+    company: &mut Connection,
+    context: crate::documents::Context<'_>,
+    today: &str,
+    year: Option<&str>,
+) -> Result<Committed<serde_json::Value>, Failure> {
+    let slug = context.selection.slug;
+    control_fence::execute_cookie(
+        control,
+        company,
+        CookieAuthorization {
+            cookie: context.cookie,
+            clock: context.clock,
+            requirement: SessionRequirement::Current,
+        },
+        context.selection,
+        Permission::CompanyRead,
+        |tx| rentemester_storage::vat_report::read(tx, slug, today, year),
+    )
+}

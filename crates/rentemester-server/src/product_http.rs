@@ -2,6 +2,7 @@
 mod bank;
 mod company_setup;
 mod documents;
+mod vat;
 use crate::backend::Backend;
 use axum::{
     Router,
@@ -71,6 +72,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/documents/book-expense",
             post(documents::expense),
         )
+        .route("/api/companies/{slug}/vat", get(vat::read))
+        .route("/api/companies/{slug}/vat/export", get(vat::read))
         .route("/api/companies/{slug}/journal", get(read))
         .route("/api/companies/{slug}/trial-balance", get(read))
         .route("/api/companies/{slug}/income-statement", get(read))

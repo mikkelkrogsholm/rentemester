@@ -81,6 +81,61 @@ fn rows(report: &str, value: &Value) -> Vec<Row> {
         });
     };
     match report {
+        "vat" => {
+            let state = if value["momsangivelseReady"] == true {
+                "Klar til indberetning"
+            } else {
+                "Foreløbig - kan ikke indberettes"
+            };
+            for label in [
+                format!(
+                    "Periode: {} - {}",
+                    text(&value["periodStart"]),
+                    text(&value["periodEnd"])
+                ),
+                format!("Frist: {}", text(&value["deadline"])),
+                state.into(),
+            ] {
+                rows.push(Row {
+                    section: true,
+                    total: false,
+                    label,
+                    amount: String::new(),
+                });
+            }
+            for (key, label) in [
+                ("salgsmoms", "Salgsmoms"),
+                ("momsAfVarekobUdland", "Moms af varekøb i udlandet"),
+                ("momsAfYdelseskobUdland", "Moms af ydelseskøb i udlandet"),
+                ("kobsmoms", "Købsmoms"),
+                ("momstilsvar", "Momstilsvar"),
+                ("rubrikA", "Rubrik A"),
+                ("rubrikB", "Rubrik B"),
+                ("rubrikC", "Rubrik C"),
+            ] {
+                rows.push(Row {
+                    section: false,
+                    total: key == "momstilsvar",
+                    label: label.into(),
+                    amount: amount(&value["rubrikker"][key]),
+                });
+            }
+            for key in ["vatReportErrors", "vatReportWarnings"] {
+                if let Some(notes) = value[key].as_array() {
+                    for note in notes {
+                        let chars: Vec<_> = text(note).chars().collect();
+                        for chunk in chars.chunks(75) {
+                            rows.push(Row {
+                                section: false,
+                                total: false,
+                                label: chunk.iter().collect(),
+                                amount: String::new(),
+                            });
+                        }
+                    }
+                }
+            }
+        }
         "income-statement" => {
             section(
                 "Indtægter",
@@ -476,6 +531,7 @@ pub fn build(report: &str, format: &str, value: &Value, today: &str) -> Option<E
         "balance" => ("Balance", "balance"),
         "trial-balance" => ("Saldobalance", "saldobalance"),
         "journal" => ("Posteringer", "posteringer"),
+        "vat" if value["vatRegistered"] == true => ("Moms", "moms"),
         _ => return None,
     };
     let (bytes, content_type) = match format {

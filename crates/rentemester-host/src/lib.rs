@@ -535,6 +535,22 @@ impl Owner {
         let retired = self.finish(reusable);
         Ok(Attempt { outcome, retired })
     }
+    pub fn vat_report(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        today: &str,
+        year: Option<&str>,
+    ) -> Result<
+        Attempt<
+            Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, _, context| {
+            rentemester_application::owned_report::vat(c, l, context, today, year)
+        })
+    }
     pub fn company_setup(
         &mut self,
         cookie: &VerifiedCookie,
