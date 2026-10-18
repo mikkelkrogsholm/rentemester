@@ -1,0 +1,222 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native persisted one-time email verification",
+    "goal": "Persist native issuance and atomically verify only unchanged current subject/address under an admitted writer",
+    "scope": "Application/storage operations on trusted synthetic control handles, without HTTP/mail or legacy coexistence qualification"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native persisted email verification boundary",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Issue digest-bound current-user intent and atomically consume it to verify address",
+        "rationale": "Signature alone does not establish one-time current subject authority",
+        "excludes": [
+          "HTTP/mail/public acknowledgements, legacy dual writers, physical admission, deployment and full identity parity"
+        ]
+      },
+      "interfaces": [
+        "action.email_verification"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Known unverified address receives committed digest-bound intent and completion flips flag once with audit",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Current canonical synthetic control schema and admitted native operations",
+        "when": "Issue or complete email verification under process barriers",
+        "then": "Known unverified address receives committed digest-bound intent and completion flips flag once with audit"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Expired, wrong key/workspace, recycled address, changed/restored credential, duplicate or corrupt intent refuses without mutation",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Current canonical synthetic control schema and admitted native operations",
+        "when": "Issue or complete email verification under process barriers",
+        "then": "Expired, wrong key/workspace, recycled address, changed/restored credential, duplicate or corrupt intent refuses without mutation"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Account/factor/access/session rows survive; unknown or verified address creates no intent and no membership is granted",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Current canonical synthetic control schema and admitted native operations",
+        "when": "Issue or complete email verification under process barriers",
+        "then": "Account/factor/access/session rows survive; unknown or verified address creates no intent and no membership is granted"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Malformed input cannot bypass connection preflight; NULL and empty credential fields bind distinctly; unknown commit releases no token",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Current canonical synthetic control schema and admitted native operations",
+        "when": "Issue or complete email verification under process barriers",
+        "then": "Malformed input cannot bypass connection preflight; NULL and empty credential fields bind distinctly; unknown commit releases no token"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Separate WAL/DELETE writers serialize consumption and re-read current facts after admission; late SQL faults roll back all effects",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Current canonical synthetic control schema and admitted native operations",
+        "when": "Issue or complete email verification under process barriers",
+        "then": "Separate WAL/DELETE writers serialize consumption and re-read current facts after admission; late SQL faults roll back all effects"
+      }
+    },
+    "action.email_verification": {
+      "kind": "action",
+      "description": "Issue and consume native persisted email verification",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "canonical_email_or_original_bearer": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "admitted_control_current_signer_clock_audit_version": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Fixed errors and NotCommitted/OutcomeUnknown stage; reusable only after checked rollback"
+        },
+        "preconditions": [
+          "Admitted canonical control connection and trusted current workspace/key/Clock",
+          "No public native route enablement alongside authoritative legacy verify-email bypass"
+        ],
+        "postconditions": [
+          "Issue releases internal optional bearer only after committed digest-bound current intent",
+          "Complete atomically consumes exactly one unchanged current intent and sets email flag plus audit/telemetry",
+          "No session, credential, MFA or workspace access grant; failure rollback or explicit unknown outcome"
+        ],
+        "external_effects": [
+          "Canonical control verification/user/audit/telemetry transaction plus existing email_verified trigger",
+          "Trusted Clock and OS entropy; no mail/network/session creation"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Persisted current subject/context, fresh writer-time verification, atomic one-time consume and explicit failure/commit state prevent stale or replayed authority",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Persisted current subject/context, fresh writer-time verification, atomic one-time consume and explicit failure/commit state prevent stale or replayed authority",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Persisted current subject/context, fresh writer-time verification, atomic one-time consume and explicit failure/commit state prevent stale or replayed authority",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Persisted current subject/context, fresh writer-time verification, atomic one-time consume and explicit failure/commit state prevent stale or replayed authority",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Persisted current subject/context, fresh writer-time verification, atomic one-time consume and explicit failure/commit state prevent stale or replayed authority",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Preflight, immediate writer, fresh Clock sample, native crypto/current context recheck, exact single consumption plus flag/audit transaction, known/unknown commit distinction"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.email_verification",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.email_verification",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.email_verification",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.email_verification",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.email_verification",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.email_verification",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native persisted one-time email verification",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "281b4ab41d0ced1edad0449448e801b6fbf30a8a5be5cf599be72d5763810fdc"
+      }
+    }
+  }
+}

@@ -182,3 +182,7 @@ The [http-enrollment contract](http-enrollment/CONTRACT.md) connects native pass
 ## Native email token prerequisite
 
 The [email-token contract](email-token/CONTRACT.md) provides source-readable HS256 with mandatory native purpose/workspace/random nonce and strict single-hour time/profile validation. It is crypto metadata only. Native email verification still requires persistent issuance bound to current subject/email/credential/lifecycle, atomic one-time consumption, fresh writer-time checks, mail/HTTP and legacy verification-route closure. The legacy handler ignores extra claims, so interop does not qualify coexistence. Full epic remains active.
+
+## Native persisted email verification
+
+[Contract](email-verification/CONTRACT.md) covers digest-bound issuance and atomic single consumption under a fresh admitted writer. Current subject/address/credential/lifecycle binding, rollback and unknown-commit handling add address verification without session or workspace access grants. Mail/HTTP/public policy and legacy verification-bypass closure remain required before enablement; this increment does not complete the epic.

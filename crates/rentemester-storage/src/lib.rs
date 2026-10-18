@@ -18,6 +18,7 @@ pub use company_physical::{PhysicalRehearsalReport, rehearse_company_baseline};
 pub mod control_access;
 mod control_migration;
 pub mod cookie_session;
+pub mod email_verification;
 mod journal_hash;
 pub mod journal_preview;
 pub mod mfa_login;

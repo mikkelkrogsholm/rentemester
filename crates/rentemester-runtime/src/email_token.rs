@@ -104,6 +104,9 @@ impl EmailTokenSigner {
             key: Zeroizing::new(key.to_owned()),
         })
     }
+    pub fn workspace(&self) -> &str {
+        &self.workspace
+    }
     pub fn accepts(&self, proof: &VerifiedEmailToken) -> bool {
         use subtle::ConstantTimeEq;
         let tag: [u8; 32] = Sha256::digest(self.key.as_bytes()).into();

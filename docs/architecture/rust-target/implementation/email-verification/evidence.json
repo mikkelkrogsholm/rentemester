@@ -1,0 +1,58 @@
+{
+  "increment": "email-verification-1",
+  "code_revision": "sha256:4d4908a86b2954b7fd39b3f09e0940db77ef23af3c5a46e0ec8916453ea8a0e8",
+  "spec_revision": "sha256:51986e2e1e93212e2f7dd8e98b76eff9ea9d666bd621bcd56d1d8b7c34e434eb",
+  "state": "verified-native-persisted-one-time-email-verification",
+  "checks": {
+    "native_tests_passed": 123,
+    "ignored_subprocess_helpers": 23,
+    "integration_checks": 11784,
+    "email_intent_process_checks": 45,
+    "independent_email_intent_process_checks": 45,
+    "GDD_structural_checks": 3,
+    "strict_fmt_clippy_boundaries_runtime_typecheck_lint": "PASS"
+  },
+  "verification_environment": {
+    "RUST_TEST_THREADS": "2"
+  },
+  "claims": [
+    "Native digest-only persisted issuance releases internal bearer only after known commit",
+    "Fresh time/signature/current user-address-credential-lifecycle binding under immediate writer; exact NULL semantics and immutable lifecycle reject restoration",
+    "Single intent consume, flag, audit/telemetry and lifecycle trigger atomic; no session/access/MFA grant",
+    "Separate WAL/DELETE writer barriers, late SQL rollback and real commit busy distinguish NotCommitted/OutcomeUnknown and retire uncertain handles"
+  ],
+  "limits": [
+    "Application/storage only on caller-admitted canonical handles; no HTTP/mail/public acknowledgement or full R04/R41/R42 acceptance",
+    "Legacy verify-email ignores native context: close authoritative bypass together with native route enablement",
+    "Internal Some/None exposes recipient existence to trusted adapters only; public mapper must conceal it",
+    "No physical/lifetime admission, real-data migration, delivery or deployed dualwriter qualification",
+    "Full shared Rust engine/server/CLI/MCP/React/GPUI, distribution, parity, cutover and TypeScript retirement remain required",
+    "Graphify AST plus two changed Markdown semantics refreshed; generated evidence JSON/logs and unrelated/historical docs outside semantic refresh"
+  ],
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "sources": {
+    "crates/rentemester-application/src/email_verification.rs": "9047bb1a60d289a65f52b6b2c319fc96446840c52a9ff3d44b047a4bb7f6e337",
+    "crates/rentemester-application/src/lib.rs": "59271f0e18777d3a8b0e21b34a036d82ee5d6f332845d3f04f9ac6bce6eae235",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "e1e0f185cde5e7da75ca8932ba93247d0f23247f71966f6b542dc582658e9376",
+    "crates/rentemester-runtime/src/email_token.rs": "9c12f6e4c9e1d9cf652a284ae2f1a1bade7b5ae35b6dc1f477020fd5eb3b5956",
+    "crates/rentemester-storage/src/email_verification.rs": "13d762f51a0615221f9a58cc1687c756ce248958a0414b2c923695a3f4fd132e",
+    "crates/rentemester-storage/src/lib.rs": "4ef66368599090866f4436abe7a616292567ee9fde74f02a5623814a83283f3c",
+    "docs/architecture/rust-target/implementation/README.md": "32decbf5de7f513d7abb2012e0fa97b47287a5aad81961add8ac2406be7c790f",
+    "docs/architecture/rust-target/implementation/email-verification/CONTRACT.md": "281b4ab41d0ced1edad0449448e801b6fbf30a8a5be5cf599be72d5763810fdc",
+    "docs/architecture/rust-target/implementation/email-verification/gdd.json": "f0f319e0f48c2a91c79fef220b20f1df0f9bd4fbb61269eadf7c05160f468f38",
+    "docs/architecture/rust-target/implementation/email-verification/readiness.json": "d5cccc7d5ec0fcc60ae99a1995e4e4f52a7bef54d718a488a19350c72fede4a1",
+    "scripts/rust/email-verification-cases.ts": "bdfee87f0200a831174ee8f570d162a617c3d198f3ea9e73817501e1687f9fc7",
+    "scripts/rust/verify-mfa-login.ts": "c6b456fb4144fdfe42d278c4612817b1f2141cf15d9a8e37f57b564c751f870a",
+    "scripts/rust/verify.ts": "70af5c51025b9660310f0e0be7513d4c8be15e22410facf5836fc4f4838b5d35",
+    "src/core/workspace-migrations/0006-auth-audit-v6.json": "e19f1ee45191ef58864b204a889126fab04ce7a13ca7df2c70cb7924a9bd5274"
+  },
+  "evidence_files": {
+    "rust-verify.txt": "6f8ba61a10e41b594bcc8de9bd1eebd1bb3e9bfc37a3afe52da6da9e8b86484a",
+    "review-process.json": "a961a11fd0afea9194d9b96a473cc0e8d5216d5855042a9582c354560dd80061",
+    "review.json": "b7819b2e2cfe04eae4aca3513354be694859398dc476aad6fd5b3c0371244593",
+    "typecheck.txt": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+    "lint.txt": "2d30c9c891eb1da8c846613a87a9bae2b48a41de99d0761482e644569998545f"
+  }
+}

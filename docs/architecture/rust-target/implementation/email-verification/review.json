@@ -1,0 +1,75 @@
+{
+  "result": "PASS",
+  "reviewed_at_utc": "2026-10-18T01:41:18.706037+00:00",
+  "scope": "Native admitted writer email intent issuance/completion only; no HTTP/mail, deployed authority or legacy writer closure",
+  "material_findings": [],
+  "resolved_findings": [
+    {
+      "id": "E01",
+      "problem": "Invalid email previously bypassed connection preflight and claimed reusable",
+      "resolution": "Lookup inside write closure; invalid email with active transaction/query_only/temp fixtures refuses reusable=false"
+    },
+    {
+      "id": "E02",
+      "problem": "NULL/empty credential fingerprint collision",
+      "resolution": "Explicit per-cell null/some marker and distinct null/zero MFA binding; delete/reinsert NULL-to-empty fixture refuses"
+    },
+    {
+      "id": "E03",
+      "problem": "Change-and-restore test did not restore password",
+      "resolution": "TEMP original password copy, restore and exact full-account equality before completion proves lifecycle rejection"
+    }
+  ],
+  "execution": {
+    "command": "bun run /tmp/rm-email-intent-review-focused.ts",
+    "result": "PASS",
+    "checks": 45,
+    "stdout": "/tmp/rm-email-intent-review-process.json",
+    "stderr": "/tmp/rm-email-intent-review-process.err",
+    "projection": "Unchanged original initialization, fixture/probe/barrier helpers; only new verifyEmailVerification module invoked; imports/root made absolute",
+    "projection_sha256": "1dc2360c581b571931e8d49344c880d16e12dcd088bf35a9c5b9d0a2a1bfffe5"
+  },
+  "reviewed_invariants": [
+    "Token reverified using raw bearer with sampled time after IMMEDIATE admission",
+    "Canonical schema/writer and current subject/credential/lifecycle comparison",
+    "Single intent consumption and email flag/state/audit/telemetry atomically committed",
+    "No session/access/MFA mutation",
+    "Rollback and OutcomeUnknown withholding plus retired handle",
+    "Repeated/recycled email and malformed/duplicate contexts refuse",
+    "Existing nonempty synthetic session table is exactly preserved by issuance/completion"
+  ],
+  "remaining_integration_gates": [
+    "Close legacy verify-email writer before enabling native flow",
+    "No physical handle/lifetime admission claimed",
+    "No HTTP acknowledgement or concrete mail dispatch in this increment"
+  ],
+  "sha256": {
+    "crates/rentemester-storage/src/email_verification.rs": "13d762f51a0615221f9a58cc1687c756ce248958a0414b2c923695a3f4fd132e",
+    "crates/rentemester-application/src/email_verification.rs": "9047bb1a60d289a65f52b6b2c319fc96446840c52a9ff3d44b047a4bb7f6e337",
+    "crates/rentemester-runtime/src/email_token.rs": "9c12f6e4c9e1d9cf652a284ae2f1a1bade7b5ae35b6dc1f477020fd5eb3b5956",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "e1e0f185cde5e7da75ca8932ba93247d0f23247f71966f6b542dc582658e9376",
+    "crates/rentemester-storage/src/lib.rs": "4ef66368599090866f4436abe7a616292567ee9fde74f02a5623814a83283f3c",
+    "crates/rentemester-application/src/lib.rs": "59271f0e18777d3a8b0e21b34a036d82ee5d6f332845d3f04f9ac6bce6eae235",
+    "scripts/rust/email-verification-cases.ts": "bdfee87f0200a831174ee8f570d162a617c3d198f3ea9e73817501e1687f9fc7",
+    "scripts/rust/verify-mfa-login.ts": "c6b456fb4144fdfe42d278c4612817b1f2141cf15d9a8e37f57b564c751f870a"
+  },
+  "previous_sha256": {
+    "crates/rentemester-storage/src/email_verification.rs": "13d762f51a0615221f9a58cc1687c756ce248958a0414b2c923695a3f4fd132e",
+    "crates/rentemester-application/src/email_verification.rs": "9047bb1a60d289a65f52b6b2c319fc96446840c52a9ff3d44b047a4bb7f6e337",
+    "crates/rentemester-runtime/src/email_token.rs": "9c12f6e4c9e1d9cf652a284ae2f1a1bade7b5ae35b6dc1f477020fd5eb3b5956",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "e1e0f185cde5e7da75ca8932ba93247d0f23247f71966f6b542dc582658e9376",
+    "crates/rentemester-storage/src/lib.rs": "4ef66368599090866f4436abe7a616292567ee9fde74f02a5623814a83283f3c",
+    "crates/rentemester-application/src/lib.rs": "59271f0e18777d3a8b0e21b34a036d82ee5d6f332845d3f04f9ac6bce6eae235",
+    "scripts/rust/email-verification-cases.ts": "57800455a8ba80bc76e7699de063c376609016847dae30fe0b80b3e83bb41ebc",
+    "scripts/rust/verify-mfa-login.ts": "0ddf7b45076f13aaa2ac5fecdb0618a03b4c9132d547dc55fec01154f4736213"
+  },
+  "final_repeat": {
+    "result": "PASS",
+    "checks": 45,
+    "existing_session_fixture": true,
+    "product_hashes_unchanged": true,
+    "script_formatting_included": true,
+    "focused_helpers_match_current_source": true,
+    "verified_at_utc": "2026-10-18T01:43:11.526326+00:00"
+  }
+}

@@ -87,6 +87,28 @@ fn probe() {
     };
     if matches!(
         request["mode"].as_str(),
+        Some("email-issue" | "email-complete")
+    ) {
+        let signer = rentemester_runtime::email_token::EmailTokenSigner::new(
+            request["workspace"].as_str().unwrap_or("w"),
+            key,
+        )
+        .unwrap();
+        let runtime = crate::email_verification::Runtime {
+            signer: &signer,
+            clock: &clock,
+            audit_key_version: 1,
+        };
+        let result=if request["mode"]=="email-issue" {
+            crate::email_verification::issue(&mut db,&runtime,request["email"].as_str().unwrap_or("u@example.invalid")).map(|token|json!({"ok":true,"token":token.as_ref().map(|t|t.as_str())}))
+        } else {
+            crate::email_verification::complete(&mut db,&runtime,request["token"].as_str().unwrap_or("")).map(|()|json!({"ok":true}))
+        }.unwrap_or_else(|f|json!({"ok":false,"code":f.error.code,"stage":format!("{:?}",f.stage),"reusable":f.connection_reusable}));
+        println!("RM_MFA_LOGIN_RESULT={result}");
+        return;
+    }
+    if matches!(
+        request["mode"].as_str(),
         Some("reset-request" | "reset-callback")
     ) {
         use rentemester_runtime::recovery::{

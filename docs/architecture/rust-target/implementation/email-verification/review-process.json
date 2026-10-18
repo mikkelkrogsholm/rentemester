@@ -1,0 +1,142 @@
+{
+  "ok": true,
+  "checks": 45,
+  "observations": [
+    {
+      "id": "email-intent-wal-digest-only-persisted-intent"
+    },
+    {
+      "id": "email-intent-wal-flag-audit-consume-only-no-session-role-or-MFA-effects"
+    },
+    {
+      "id": "email-intent-wal-replay"
+    },
+    {
+      "id": "email-intent-wal-sibling-after-success"
+    },
+    {
+      "id": "email-intent-delete-digest-only-persisted-intent"
+    },
+    {
+      "id": "email-intent-delete-flag-audit-consume-only-no-session-role-or-MFA-effects"
+    },
+    {
+      "id": "email-intent-delete-replay"
+    },
+    {
+      "id": "email-intent-delete-sibling-after-success"
+    },
+    {
+      "id": "email-intent-unknown-no-intent"
+    },
+    {
+      "id": "email-intent-already-verified-no-intent"
+    },
+    {
+      "id": "email-intent-password-change"
+    },
+    {
+      "id": "email-intent-credential-change-and-restore"
+    },
+    {
+      "id": "email-intent-credential-deletion"
+    },
+    {
+      "id": "email-intent-credential-coordinate"
+    },
+    {
+      "id": "email-intent-user-updated"
+    },
+    {
+      "id": "email-intent-mfa-change"
+    },
+    {
+      "id": "email-intent-email-recycled"
+    },
+    {
+      "id": "email-intent-lifecycle"
+    },
+    {
+      "id": "email-intent-null-to-empty-replacement"
+    },
+    {
+      "id": "email-intent-duplicate"
+    },
+    {
+      "id": "email-intent-corrupt-binding"
+    },
+    {
+      "id": "email-intent-corrupt-expiry"
+    },
+    {
+      "id": "email-intent-expiry"
+    },
+    {
+      "id": "email-intent-future"
+    },
+    {
+      "id": "email-intent-workspace"
+    },
+    {
+      "id": "email-intent-key"
+    },
+    {
+      "id": "email-intent-last-valid-millisecond"
+    },
+    {
+      "id": "email-intent-address-verification-independent-of-membership-no-access-grant"
+    },
+    {
+      "id": "email-intent-wal-late-SQL-rollback"
+    },
+    {
+      "id": "email-intent-wal-rollback-token-still-usable"
+    },
+    {
+      "id": "email-intent-wal-issuance-no-release-before-commit"
+    },
+    {
+      "id": "email-intent-delete-late-SQL-rollback"
+    },
+    {
+      "id": "email-intent-delete-rollback-token-still-usable"
+    },
+    {
+      "id": "email-intent-delete-issuance-no-release-before-commit"
+    },
+    {
+      "id": "email-intent-malformed-input-unready-5"
+    },
+    {
+      "id": "email-intent-malformed-input-unready-20"
+    },
+    {
+      "id": "email-intent-malformed-input-unready-27"
+    },
+    {
+      "id": "email-intent-wal-serialized-replay"
+    },
+    {
+      "id": "email-intent-wal-single-writer-consumption"
+    },
+    {
+      "id": "email-intent-wal-fresh-facts-after-writer"
+    },
+    {
+      "id": "email-intent-delete-serialized-replay"
+    },
+    {
+      "id": "email-intent-delete-single-writer-consumption"
+    },
+    {
+      "id": "email-intent-delete-fresh-facts-after-writer"
+    },
+    {
+      "id": "email-intent-email-issue-commit-busy-no-bearer-release-retired-handle"
+    },
+    {
+      "id": "email-intent-email-complete-commit-busy-no-bearer-release-retired-handle"
+    }
+  ],
+  "scope": "Independent focused projection: native persisted email verification only"
+}

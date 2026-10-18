@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "email-token-1",
-  "code_revision": "sha256:df420f2d6ab38f1c8bff3d2815658cb3a7db728fde812afeefc365894c6cc808",
-  "spec_revision": "sha256:6bc07db5d65ac935b5ecac1cd42b3b1d9944b73302487c16798d2fa3c7884324",
-  "state": "verified-native-purpose-bound-email-token-prerequisite",
+  "current_increment": "email-verification-1",
+  "code_revision": "sha256:4d4908a86b2954b7fd39b3f09e0940db77ef23af3c5a46e0ec8916453ea8a0e8",
+  "spec_revision": "sha256:51986e2e1e93212e2f7dd8e98b76eff9ea9d666bd621bcd56d1d8b7c34e434eb",
+  "state": "verified-native-persisted-one-time-email-verification",
   "issues_closed": [],
   "next": [
-    "Build native email verification persisted issuance/context bound to current subject/email/credential/lifecycle, fresh writer-time check and atomic single consumption, then mail/HTTP/UI. Crypto envelope is verified only; close legacy verify-email bypass before enabling native authority. Continue service/API-key/trusted-device/provider and /api/me/product context, actual physical/lifetime and legacy writer/history, rate/TLS/listener qualification and full epic.",
+    "Connect native persisted email verification to mail/redirect policy, public HTTP generic acknowledgements/session/caller checks, rate limits and React flows. Close legacy verify-email authoritative bypass at same enablement boundary. Continue service/API-key/trusted-device/provider, /api/me/product context, physical/lifetime and legacy writer/history, TLS/listener qualification and full epic.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,18 +21,18 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "http-enrollment-1",
-    "code_revision": "sha256:34ffcf1378beb5c4c89b020e0b986aa4203b81c57fb54ad9c0e71e839ed17b13",
-    "spec_revision": "sha256:861dd0922e7f36ee58f9c4e8253aac6cb51466ad684decf3c4d1a78cadbf8bf2",
-    "state": "verified-native-http-mfa-enrollment-and-one-time-ui-disclosure"
+    "current_increment": "email-token-1",
+    "code_revision": "sha256:df420f2d6ab38f1c8bff3d2815658cb3a7db728fde812afeefc365894c6cc808",
+    "spec_revision": "sha256:6bc07db5d65ac935b5ecac1cd42b3b1d9944b73302487c16798d2fa3c7884324",
+    "state": "verified-native-purpose-bound-email-token-prerequisite"
   },
   "evidence": {
-    "report": "email-token/evidence.json",
-    "parity": "email-token/review-process.json",
+    "report": "email-verification/evidence.json",
+    "parity": "email-verification/review-process.json",
     "rust_tests_passed": 123,
     "ignored_subprocess_helpers": 23,
-    "integration_checks": 11739,
-    "email_token_source_checks": 24,
+    "integration_checks": 11784,
+    "email_intent_process_checks": 45,
     "writer_authority": false,
     "whole_issues_closed": false
   },
@@ -240,6 +240,12 @@
       "code_revision": "sha256:34ffcf1378beb5c4c89b020e0b986aa4203b81c57fb54ad9c0e71e839ed17b13",
       "spec_revision": "sha256:861dd0922e7f36ee58f9c4e8253aac6cb51466ad684decf3c4d1a78cadbf8bf2",
       "state": "verified-native-http-mfa-enrollment-and-one-time-ui-disclosure"
+    },
+    {
+      "current_increment": "email-token-1",
+      "code_revision": "sha256:df420f2d6ab38f1c8bff3d2815658cb3a7db728fde812afeefc365894c6cc808",
+      "spec_revision": "sha256:6bc07db5d65ac935b5ecac1cd42b3b1d9944b73302487c16798d2fa3c7884324",
+      "state": "verified-native-purpose-bound-email-token-prerequisite"
     }
   ]
 }
