@@ -583,6 +583,22 @@ impl Owner {
             )
         })
     }
+    pub fn periods(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        action: rentemester_application::periods::Action<'_>,
+        today: &str,
+    ) -> Result<
+        Attempt<
+            Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, g, context| {
+            rentemester_application::periods::execute(c, l, g, context, action, today)
+        })
+    }
     pub fn company_setup(
         &mut self,
         cookie: &VerifiedCookie,

@@ -107,8 +107,9 @@ Genimport med samme saldo springes over som en dublet. En ændret eller senere
 tilføjet saldo på samme transaktionsidentitet afvises, så den oprindelige
 bankevidens ikke overskrives eller bliver til en ekstra betaling. Rettelse af
 den type kildekonflikt kræver fortsat et særskilt korrektionsforløb.
-Momsafslutningens review/låsning er stadig under portering; bankkontrollen er
-en forudsætning for dette forløb.
+Bankkontrollen er
+et grundlag for dette forløb. Review og almindelig periodelåsning er nu porteret;
+tvangslukning og registrering af ekstern indberetningskvittering mangler stadig.
 
 Udgiftsbogføring understøtter DKK og valutakøb med standardkøbsmoms, momsfri
 behandling eller ikke-fradragsberettiget moms. Manglende kontomoms kræver et
@@ -159,7 +160,8 @@ kan også kræve opmærksomhed.
 Tallene er foreløbige i en åben periode. Kopiering til en momsangivelse er
 slået fra. **Hent PDF** gemmer samme periode, frist, rubrikker og status som
 siden. Udskriften er et arbejdsgrundlag og markerer, når den ikke kan indberettes.
-Periodelukning og indberetning er endnu ikke tilgængelige i Rust-cockpittet.
+Gennemgået periodelukning og genåbning er nu tilgængelige i Rust-cockpittet;
+registrering af ekstern indberetning mangler stadig.
 
 Momsberegningen bruger præcise ørebeløb, kontotyper, bekræftede kontoroller og
 posteringernes eksplicitte momskoder. Kontoens aktuelle standardmomskode
@@ -200,6 +202,46 @@ DKK-betaling til øren. Rust afviser uforenelige beløb eller valutaer og kurser
 hvor seks decimaler ikke er tilstrækkeligt. Der hentes ingen udokumenteret
 markedskurs. Ved blandet købsmoms fordeles en eventuel afrundingsrest på en
 momsfri nettolinje, når der findes en, så totalen stadig svarer til betalingen.
+
+## Gennemgå, luk og genåbn en momsperiode
+
+Forløbet låser bogføringsperioden og gør momsrapportens rubrikker klar som
+angivelsesgrundlag. Det udfører ingen indberetning til en myndighed og opretter
+ikke en bankbetaling eller en momsafregningspostering.
+
+1. Afstem bankens importerede kontoudtog og bekræft kontorollerne **Bank**,
+   **Debitorer** og **Kreditorer**. Kontoudtogets uafhængige saldo skal stemme med
+   bogføringen; ved manglende eller tvetydig bankevidens kan perioden ikke lukkes.
+2. Åbn **Moms**, vælg et år med en afsluttet momsperiode, og vælg
+   **Luk momsperiode → Luk perioden**. UI'et henter kontrollerne, gemmer et
+   eksplicit review og sender dets hash og id til serveren.
+3. Serveren genberegner kontrollerne i samme transaktion som periodelåsen.
+   Et forældet review, uafstemte bankposter, ukendt kontroldokumentation,
+   blokerende undtagelser eller ufuldstændige bogføringsbatcher afviser lukningen.
+   En momsperiode skal være afsluttet og passe nøjagtigt til virksomhedens
+   registrerede momsperiode. Almindelig lukning omgår ingen kontrol.
+4. Efter lukning viser **Moms** angivelsesgrundlaget og tillader kopiering af
+   rubrikker. **Hent PDF** viser **Klar til indberetning**, periode og beløb.
+   En efterfølgende postering med dato i perioden afvises.
+5. **Genåbn momsperiode** kræver en begrundelse og den aktuelle ret til review.
+   Den oprindelige perioderække bevares; genåbningen appendes til revisionssporet
+   og beslutningshistorikken. Momstallene bliver foreløbige igen. Et nyt review
+   kan lukke samme periode på ny. En indberettet periode kan ikke genåbnes.
+
+Kontrollerne omfatter bankafstemning, uafhængige DKK-kontrolkonti, åbne bilag,
+batcher og undtagelser, udestående poster, journalhashkæde og sekvens,
+journalbalancer og modposteringer, originale bilagsfiler og faktura-PDF'er,
+auditlog, saldobalance, momskontrol og SQLite-integritet. Native packet-formatet
+`rentemester.native-period-close.v1` (version 4) binder også journalens hoved og
+auditrevisionen, så en ny balanceret postering kan gøre et review forældet.
+Review, periodelås, beslutning og audit gemmes atomisk under aktuelle rettigheder.
+
+**Periodelås** viser periodernes effektive status og kan også udføre almindelig
+lukning/genåbning. API'et er `GET .../periods`, `GET .../periods/close-readiness`,
+`POST .../periods/close-review`, `POST .../periods/close` og
+`POST .../periods/reopen`. Tidligere importer og endnu ikke porterede auditforløb,
+fx bankkorrektioner og særlige debitorkrav, afvises i kontrollen. Tvangslukning
+og registrering af ekstern indberetning er endnu ikke porteret.
 
 ## Opret kunde, udsted faktura og bogfør salget
 
@@ -498,6 +540,14 @@ bogføring og afstemning. Senere importer uden saldo må ikke få en opdigtet
 slutsaldo. Rust-testen kontrollerer omvendt filrækkefølge, flere konti,
 dubletkonflikt og uafklaret saldogrundlag; UI-testen kontrollerer forklaringen.
 Skærmbilledet gemmes i `/tmp/rentemester-rust-bank-balance.png`.
+Periodetesten indlæser og bogfører et køb i den foregående afsluttede momsperiode.
+Den kontrollerer først, at bankposten blokerer lukningen, og gennemfører derefter
+review/lukning, afvist efterpostering, begrundet genåbning og ny lukning af samme
+periode gennem UI'et. Efter en ekstra servergenstart kontrolleres periodelås,
+angivelsesgrundlag, PDF og afvist postering igen. Rust-testen viser også, at en
+ny balanceret postering gør et tidligere review forældet. Skærmbilledet er
+`/tmp/rentemester-rust-closed-vat.png`; PDF'en er
+`/tmp/rentemester-rust-reports/native-closed-vat.pdf`.
 Testdata fjernes fra Docker efter kørslen.
 
 ## Aktuel afgrænsning

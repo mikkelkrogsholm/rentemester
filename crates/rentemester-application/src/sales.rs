@@ -44,7 +44,7 @@ fn original(
         .read_document(&e.path, &e.hash)
         .map_err(|_| evidence_error())
 }
-fn verify_invoice(
+pub(crate) fn verify_invoice(
     tx: &rusqlite::Transaction<'_>,
     guard: &mut NamespaceGuard,
     id: i64,

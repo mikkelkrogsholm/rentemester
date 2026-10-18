@@ -89,7 +89,7 @@ def main():
             if args.check:
                 environment = {**os.environ,'RM_NATIVE_WEB_URL':origin,'RM_NATIVE_WEB_SETUP':setup_link,'RM_NATIVE_WEB_CONTAINER':prefix,'RM_NATIVE_WEB_STATE':str(Path(temp)/'browser-state.json')}
                 run(['bun','run','scripts/rust/check-native-web.ts'],cwd=REPO,env=environment)
-                for phase in ['0', '1', '2']:
+                for phase in ['0', '1', '2', '3']:
                     run(['docker','restart','-t','2',prefix],stdout=subprocess.DEVNULL)
                     server.wait(timeout=15)
                     if '--create' in command: command.remove('--create')

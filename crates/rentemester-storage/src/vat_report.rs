@@ -109,6 +109,16 @@ fn numeric(value: &mut Value) -> Result<(), Error> {
     }
     Ok(())
 }
+pub(crate) fn range(tx: &Transaction<'_>, start: &str, end: &str) -> Result<Value, Error> {
+    let chosen = lines(tx)?
+        .into_iter()
+        .filter(|(date, _)| date.as_str() >= start && date.as_str() <= end)
+        .map(|(_, line)| line)
+        .collect::<Vec<_>>();
+    let mut report = serde_json::to_value(vat_report::build(&chosen)?).map_err(invalid)?;
+    numeric(&mut report)?;
+    Ok(report)
+}
 pub fn read(
     tx: &Transaction<'_>,
     slug: &str,
@@ -202,7 +212,7 @@ pub fn read(
         json!((vat_period::date(&window.deadline)? - vat_period::date(today)?).whole_days());
     base["periodStatus"] = json!(state);
     base["momsangivelseReady"] = json!(ready);
-    base["periodActionsAvailable"] = json!(false);
+    base["periodActionsAvailable"] = json!(true);
     base["vatReportErrors"] = base["errors"].take();
     base["vatReportWarnings"] = base["warnings"].take();
     Ok(base)

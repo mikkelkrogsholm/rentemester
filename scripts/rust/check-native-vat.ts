@@ -12,7 +12,7 @@ export async function checkNativeVat(page: Page, base: string, reopened = false)
   await page.getByRole("row").filter({ hasText: "Købsmoms (indgående moms)" }).getByText("25,00 kr.", { exact: true }).waitFor();
   await page.getByText("SKAT-rubrikker (foreløbige — åben periode)", { exact: true }).waitFor();
   if (await page.getByRole("button", { name: "Kopier Købsmoms", exact: true }).isEnabled()) throw new Error("Open VAT period advertised ready to file");
-  if (await page.getByRole("button", { name: "Luk momsperiode", exact: true }).count()) throw new Error("Unported period closure offered as working");
+  await page.getByRole("button", { name: "Luk momsperiode", exact: true }).waitFor();
   const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("link", { name: "Hent PDF", exact: true }).click()]);
   mkdirSync("/tmp/rentemester-rust-reports", { recursive: true });
   const path = "/tmp/rentemester-rust-reports/native-vat.pdf";

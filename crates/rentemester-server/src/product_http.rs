@@ -3,6 +3,7 @@ mod bank;
 mod company_setup;
 mod documents;
 mod payables;
+mod periods;
 mod sales;
 mod vat;
 use crate::backend::Backend;
@@ -39,6 +40,20 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
     };
     Router::new()
         .route("/api/companies", get(companies))
+        .route("/api/companies/{slug}/periods", get(periods::handle))
+        .route(
+            "/api/companies/{slug}/periods/close-readiness",
+            get(periods::handle),
+        )
+        .route(
+            "/api/companies/{slug}/periods/close-review",
+            post(periods::handle),
+        )
+        .route("/api/companies/{slug}/periods/close", post(periods::handle))
+        .route(
+            "/api/companies/{slug}/periods/reopen",
+            post(periods::handle),
+        )
         .route("/api/companies/{slug}/contacts", get(sales::handle))
         .route(
             "/api/companies/{slug}/payables",
