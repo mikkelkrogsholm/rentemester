@@ -21,3 +21,6 @@ pub mod service_lifecycle;
 
 pub mod journal_post;
 pub mod journal_reversal;
+
+mod journal_mutation;
+pub mod service_company;

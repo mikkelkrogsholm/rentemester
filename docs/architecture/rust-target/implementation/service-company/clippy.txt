@@ -1,0 +1,5 @@
+    Checking rentemester-storage v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-storage)
+    Checking rentemester-application v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-application)
+    Checking rentemester-cli v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-cli)
+    Checking rentemester-server v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-server)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.84s

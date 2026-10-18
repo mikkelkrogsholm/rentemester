@@ -1,0 +1,143 @@
+{
+  "scope": "Bounded implementation/transaction/authority review of native admitted-connection service manual post/reversal orchestration; not public integration-only role",
+  "review_role": "default agent; implementation review permitted",
+  "read_only": true,
+  "captured_at": "2026-10-18T06:44:23.192979+00:00",
+  "base_head": "f4128859a2c4c1e4cfebd8dc1e78cb3b907e6aa7",
+  "source_hashes": {
+    "crates/rentemester-application/src/service_company.rs": "6bdff374cf7afb71ca85b549c16c44b92fc9bcd4dcb4b571cb3468a363456158",
+    "crates/rentemester-application/src/journal_mutation.rs": "d9dd1072fb054d90a91a9f7c8ccc1b707b2732d0c7aee92e51a7c717e313219a",
+    "crates/rentemester-application/src/control_fence.rs": "2a25dce94670e7251f97d74fbf312381ee90ba6db420523bad5b9c92ba430b9f",
+    "crates/rentemester-application/src/journal_post.rs": "d89b180a7943645c199fe60ed5f8e02dd86456e3e3a26fd6bc16705e3aae742f",
+    "crates/rentemester-application/src/journal_reversal.rs": "932a4806756966406839ae3d28f244b8a412aabec83fcbc7851985dd2ef1b0bf",
+    "crates/rentemester-application/src/journal_post/tests.rs": "4de3caff249e97ec6ba8e2c26be95b835ec5a41c922c43c0dee0274f358adada",
+    "crates/rentemester-application/src/journal_reversal/tests.rs": "68b89118711a5e7369aa96714356994733b24853139b6baf96fa9a7b99e50944",
+    "crates/rentemester-application/src/service_company/tests.rs": "0af2bcb19d528de97e80f58fb77af005aa453b3fa57f09add0d1886b7e3e6a51",
+    "crates/rentemester-storage/src/service_context.rs": "27692a51b508be2180abc2429a618988b151d16e5e41bd64a0d10e57e16384a0",
+    "crates/rentemester-storage/src/control_access.rs": "2e27d14481cc6120ea30bfed9d0b62cf9a8ad08c34aaa1c4eed5410cf6d0d753",
+    "crates/rentemester-storage/src/idempotency.rs": "7ebc325b373852850c05257899840c8cbf3c8d1f355642bc490d109bda32513b",
+    "crates/rentemester-storage/src/workspace_context.rs": "bcdf429f990675da21e57eecec428e30019d7168a58ddd9ac911163ea9f6769b",
+    "docs/architecture/rust-target/implementation/service-company/CONTRACT.md": "6d27a9fdf6f6b3ca6ea2b89a7a6a769eabd4be2eb06fef71a475d70a51c8da50",
+    "scripts/rust/verify-service-company.ts": "17d258b35184eb6cc24193039a3303ff4e4748fff1463683fdc75dadfec40d51",
+    "docs/architecture/rust-target/implementation/service-company/gdd.json": "bb2ac1a2b3b29b7adb15db31550afac7ecb8e79300e3393586495c7833e51ae7",
+    "docs/architecture/rust-target/implementation/service-company/readiness.json": "aa5f663ca13ccb0505b6c86669f3872d0f596d39771eb82e79e4e00f878fe566"
+  },
+  "status": "No unresolved material findings within bounded admitted-connection service-company scope; final current implementation and process evidence independently reviewed.",
+  "findings": [
+    {
+      "id": "SC-01",
+      "severity": "medium",
+      "status": "fixed and independently verified",
+      "source": "crates/rentemester-application/src/journal_post/tests.rs and journal_reversal/tests.rs",
+      "description": "Extracting shared helper removed json macro imports inherited by both test modules; actual cargo test initially failed6 unresolved macros. Explicit test imports now present and rerun passes."
+    },
+    {
+      "id": "SC-02",
+      "severity": "low",
+      "status": "fixed and independently verified in final source",
+      "source": "crates/rentemester-application/src/journal_mutation.rs:82,84,152",
+      "description": "Shared extraction changes preexisting human error message strings for clock/horizon and unkeyed business rejection. Preserve operation-specific posting/reversal messages and original manual journal refusal string to satisfy unchanged human behavior.",
+      "resolution": "Command::Post/Reverse retain original posting/reversal clock and horizon text; original manual journal business refusal text restored."
+    }
+  ],
+  "checks": [
+    {
+      "claim": "Phase1 observes current credential and explicit selected-company ledger.post authority before charging under control BEGIN IMMEDIATE",
+      "evidence": "service_company::execute charged closure; authorize constructs IdentityKind::Service and calls pure access::authorize; workspace owner supplies no implicit company membership"
+    },
+    {
+      "claim": "Last remaining/rate slot is not charged or headroom-tested again in phase2",
+      "evidence": "storage service_context::admission consume=false bypasses remaining decrement/refill and rate headroom; it still validates metadata/current credential/workspace access"
+    },
+    {
+      "claim": "Current same credential precedes protected receipt",
+      "evidence": "service_company phase2 observe uses original key hash, compares Observation.id and subject to charged binding, reauthorizes company, then execute_authorized opens company transaction and calls journal_mutation::apply"
+    },
+    {
+      "claim": "Control writer remains held through company commit",
+      "evidence": "control_fence::execute_authorized authorization transaction remains alive until company_tx.commit succeeds or fails; successful company result survives finish_committed control cleanup failure"
+    },
+    {
+      "claim": "Quota/business commit outcomes are distinct and conservative",
+      "evidence": "usage commit failure reports OutcomeUnknown and returns before phase2; phase2 failure retains UsageStage::Committed; company commit error maps BusinessStage::OutcomeUnknown and no result/receipt disclosure"
+    },
+    {
+      "claim": "Receipt identity and attribution use stable service subject",
+      "evidence": "journal_mutation uses PrincipalKind::ServiceAccount, stable subject, runtime actor user:subject and service-principal program. Existing verified historical documentless reversal retains original import marker through storage reversal/post branch. Credential ID/hash is never receipt principal or output; client payload cannot select runtime actor."
+    },
+    {
+      "claim": "Normal human authorization/receipt behavior structurally retained apart from reported wording",
+      "evidence": "control_fence diff extracts original human observer unchanged; journal_post/reversal use shared Command with PrincipalKind::User and original envelope mapping"
+    }
+  ],
+  "verification": [
+    {
+      "command": "bun run scripts/rust/verify-service-company.ts > /tmp/rm-service-company-review-parity.json 2> /tmp/rm-service-company-review-parity.stderr",
+      "result": "passed92 checks; stderr0bytes",
+      "artifact": "/tmp/rm-service-company-review-parity.json",
+      "sha256": "ed838feaa1a5b7cb91dca6f1ec8074dccf027c93ea1fea783ca9f4d37455fc8a"
+    },
+    {
+      "command": "/Users/mikkelfreltoftkrogsholm/.cargo/bin/cargo test --locked -p rentemester-application > /tmp/rm-service-company-review-app.txt 2>&1",
+      "result": "13passed,0failed;7ignored unit process helpers and1ignored access corpus test",
+      "artifact": "/tmp/rm-service-company-review-app.txt",
+      "sha256": "a8d886bb06918dc40c522ffef96ccbbc1973fc50a5bbcc85ef56a0e07ae15c0b"
+    },
+    {
+      "command": "/Users/mikkelfreltoftkrogsholm/.cargo/bin/cargo test --locked -p rentemester-application control_fence::tests > /tmp/rm-service-company-review-fence.txt 2>&1",
+      "result": "5passed,0failed,2ignored unit process helpers",
+      "artifact": "/tmp/rm-service-company-review-fence.txt",
+      "sha256": "7a94dfc768ed228cff9c8b2338e9a7449afafb6171ad48ead9578d49fc01fa01"
+    },
+    {
+      "command": "/Users/mikkelfreltoftkrogsholm/.cargo/bin/cargo test --locked -p rentemester-storage journal_post::tests > /tmp/rm-service-company-review-post.txt 2>&1",
+      "result": "2passed,0failed,1ignored process helper",
+      "artifact": "/tmp/rm-service-company-review-post.txt",
+      "sha256": "b776d0408d4e820cd081f66e59fc738e7359c5046e8ab6170238e3a88ca9710d"
+    },
+    {
+      "command": "/Users/mikkelfreltoftkrogsholm/.cargo/bin/cargo test --locked -p rentemester-storage journal_reversal::tests > /tmp/rm-service-company-review-reversal.txt 2>&1",
+      "result": "2passed,0failed,1ignored process helper",
+      "artifact": "/tmp/rm-service-company-review-reversal.txt",
+      "sha256": "8705072d0d51eb9ebcbc4b77a254557c923590e849a4831140c8c749bd6d904d"
+    },
+    {
+      "command": "uv run --project /Users/mikkelfreltoftkrogsholm/Projekter/gdd gdd validate docs/architecture/rust-target/implementation/service-company/gdd.json --profile readiness --scope action.service_company --scope component.application --output /tmp/rm-service-company-review-readiness.json > /tmp/rm-service-company-review-readiness.stdout 2> /tmp/rm-service-company-review-readiness.stderr",
+      "result": "3PASS spec sha256:2bc5156db04cbdfa09492971d2e28bd3b558dc2948df0191cf4aba53c2bf7d01",
+      "artifact": "/tmp/rm-service-company-review-readiness.json",
+      "sha256": "aa5f663ca13ccb0505b6c86669f3872d0f596d39771eb82e79e4e00f878fe566"
+    }
+  ],
+  "limitations": [
+    "This is a SHA-bound bounded implementation review; edits after these hashes require targeted revalidation.",
+    "Current physical manifest/lifetime/legacy-writer admission, actor policy, confirmation and backup gates remain caller duties; no product opener enabled.",
+    "No production data, end-to-end HTTP/CLI/MCP service writer, distribution or full epic acceptance claim.",
+    "Quota and business are separate commits; a lost response or deliberate receipt replay may consume another quota attempt. No automatic retry or cross-database atomicity claimed.",
+    "GDD3PASS is structural readiness, not independent proof of behavior or full issue closure.",
+    "Inherited source provider inactivity exact-window CAS recursion is documented and excluded from frozen source oracle; native correction tested directly."
+  ],
+  "artifact_hashes": {
+    "/tmp/rm-service-company-review-parity.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/tmp/rm-service-company-review-readiness.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/tmp/rm-service-company-review-readiness.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "independent_harness_review": [
+    "Provider-issued service key and source authorization are actual source paths; complete source/native company tables compared and source verifyAuditChain invoked.",
+    "Full canonical control image compare excludes only5 permitted usage fields on the actual credential row, preserving all other keys/rows.",
+    "Actual WAL/DELETE last quota/rate slot, positive/denied admission, replay/conflict, key rotation, phase-gap revoke/disable/expiry, SQL abort, process-death checkpoints and concurrent requests exercised.",
+    "Real DELETE reader prevents usage/company commit and verifies independent unknown axes without result disclosure.",
+    "Frozen-clock source CAS equality recursion is explicitly excluded only in source oracle; native exact-window count+lastRequest directly asserted. This is a documented correction, not an assertion of source equality there."
+  ],
+  "docs_only_attribution_recheck": {
+    "captured_at": "2026-10-18T06:55:52.979906+00:00",
+    "spec_revision": "sha256:2bc5156db04cbdfa09492971d2e28bd3b558dc2948df0191cf4aba53c2bf7d01",
+    "result": "PASS; runtime attribution in journal_mutation matches clarified contract. journal_reversal derives historical documentless import marker from original record; unchanged journal_post preserves marker in final stored entry/audit. No client identity attribution enabled.",
+    "anchors": [
+      "journal_mutation.rs:100\u2013108",
+      "journal_reversal.rs:158\u2013186",
+      "journal_post.rs:241\u2013247,343\u2013380"
+    ],
+    "functional_retests": "none; prior92/app/fence/post/reversal evidence unchanged; all non-document source hashes verified unchanged",
+    "fresh_gdd": "3PASS; old output preserved as /tmp/rm-service-company-review-readiness-before-attribution.json because CLI forbids replacing existing output"
+  }
+}

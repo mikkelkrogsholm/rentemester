@@ -1,0 +1,283 @@
+{
+  "ok": true,
+  "scope": "source-issued service keys, source quota observations and actual native post/reversal under two-stage charged-attempt company authorization; no deployed writer authority",
+  "checks": 92,
+  "observations": [
+    {
+      "id": "wal/real-post-source-company-and-source-issued-key"
+    },
+    {
+      "id": "wal/real-reversal-source-company"
+    },
+    {
+      "id": "wal/last-quota-and-rate-slot"
+    },
+    {
+      "id": "wal/quota-empty"
+    },
+    {
+      "id": "wal/rate-full"
+    },
+    {
+      "id": "wal/disabled"
+    },
+    {
+      "id": "wal/expired"
+    },
+    {
+      "id": "wal/wrong-config"
+    },
+    {
+      "id": "wal/malformed-count"
+    },
+    {
+      "id": "wal/provider-usage-default"
+    },
+    {
+      "id": "wal/provider-usage-rate-disabled"
+    },
+    {
+      "id": "wal/provider-usage-refill-exact"
+    },
+    {
+      "id": "wal/provider-usage-refill-plus-one"
+    },
+    {
+      "id": "wal/native-inactivity-exact-known-source-CAS-correction"
+    },
+    {
+      "id": "wal/provider-usage-inactivity-plus-one"
+    },
+    {
+      "id": "wal/authority-reader"
+    },
+    {
+      "id": "wal/authority-workspace-disabled"
+    },
+    {
+      "id": "wal/authority-membership-revoked"
+    },
+    {
+      "id": "wal/authority-owner-no-company"
+    },
+    {
+      "id": "wal/selection-archive"
+    },
+    {
+      "id": "wal/selection-unregistered"
+    },
+    {
+      "id": "wal/selection-workspace"
+    },
+    {
+      "id": "wal/selection-keyworkspace"
+    },
+    {
+      "id": "wal/preflight-controlQueryOnly"
+    },
+    {
+      "id": "wal/preflight-companyQueryOnly"
+    },
+    {
+      "id": "wal/preflight-controlTransaction"
+    },
+    {
+      "id": "wal/preflight-companyTransaction"
+    },
+    {
+      "id": "wal/invalid-wrong-format"
+    },
+    {
+      "id": "wal/invalid-reserved-program"
+    },
+    {
+      "id": "wal/invalid-bad-key"
+    },
+    {
+      "id": "wal/charged-business-refusal"
+    },
+    {
+      "id": "wal/charged-replay-and-conflict"
+    },
+    {
+      "id": "wal/rotated-key-current-auth-and-receipt"
+    },
+    {
+      "id": "wal/usage-sql-abort-no-company-attempt"
+    },
+    {
+      "id": "wal/company-sql-abort-retains-usage"
+    },
+    {
+      "id": "wal/expiry-between-phases-retains-charge"
+    },
+    {
+      "id": "wal/gap-revoke"
+    },
+    {
+      "id": "wal/gap-disable-key"
+    },
+    {
+      "id": "wal/revoker-waits-for-protected-company-commit"
+    },
+    {
+      "id": "wal/death-usage-precommit"
+    },
+    {
+      "id": "wal/death-usage-committed"
+    },
+    {
+      "id": "wal/death-precommit"
+    },
+    {
+      "id": "wal/death-postcommit"
+    },
+    {
+      "id": "wal/concurrent-last-quota"
+    },
+    {
+      "id": "wal/concurrent-same-key"
+    },
+    {
+      "id": "delete/real-post-source-company-and-source-issued-key"
+    },
+    {
+      "id": "delete/real-reversal-source-company"
+    },
+    {
+      "id": "delete/last-quota-and-rate-slot"
+    },
+    {
+      "id": "delete/quota-empty"
+    },
+    {
+      "id": "delete/rate-full"
+    },
+    {
+      "id": "delete/disabled"
+    },
+    {
+      "id": "delete/expired"
+    },
+    {
+      "id": "delete/wrong-config"
+    },
+    {
+      "id": "delete/malformed-count"
+    },
+    {
+      "id": "delete/provider-usage-default"
+    },
+    {
+      "id": "delete/provider-usage-rate-disabled"
+    },
+    {
+      "id": "delete/provider-usage-refill-exact"
+    },
+    {
+      "id": "delete/provider-usage-refill-plus-one"
+    },
+    {
+      "id": "delete/native-inactivity-exact-known-source-CAS-correction"
+    },
+    {
+      "id": "delete/provider-usage-inactivity-plus-one"
+    },
+    {
+      "id": "delete/authority-reader"
+    },
+    {
+      "id": "delete/authority-workspace-disabled"
+    },
+    {
+      "id": "delete/authority-membership-revoked"
+    },
+    {
+      "id": "delete/authority-owner-no-company"
+    },
+    {
+      "id": "delete/selection-archive"
+    },
+    {
+      "id": "delete/selection-unregistered"
+    },
+    {
+      "id": "delete/selection-workspace"
+    },
+    {
+      "id": "delete/selection-keyworkspace"
+    },
+    {
+      "id": "delete/preflight-controlQueryOnly"
+    },
+    {
+      "id": "delete/preflight-companyQueryOnly"
+    },
+    {
+      "id": "delete/preflight-controlTransaction"
+    },
+    {
+      "id": "delete/preflight-companyTransaction"
+    },
+    {
+      "id": "delete/invalid-wrong-format"
+    },
+    {
+      "id": "delete/invalid-reserved-program"
+    },
+    {
+      "id": "delete/invalid-bad-key"
+    },
+    {
+      "id": "delete/charged-business-refusal"
+    },
+    {
+      "id": "delete/charged-replay-and-conflict"
+    },
+    {
+      "id": "delete/rotated-key-current-auth-and-receipt"
+    },
+    {
+      "id": "delete/usage-sql-abort-no-company-attempt"
+    },
+    {
+      "id": "delete/company-sql-abort-retains-usage"
+    },
+    {
+      "id": "delete/expiry-between-phases-retains-charge"
+    },
+    {
+      "id": "delete/gap-revoke"
+    },
+    {
+      "id": "delete/gap-disable-key"
+    },
+    {
+      "id": "delete/revoker-waits-for-protected-company-commit"
+    },
+    {
+      "id": "delete/death-usage-precommit"
+    },
+    {
+      "id": "delete/death-usage-committed"
+    },
+    {
+      "id": "delete/death-precommit"
+    },
+    {
+      "id": "delete/death-postcommit"
+    },
+    {
+      "id": "delete/concurrent-last-quota"
+    },
+    {
+      "id": "delete/concurrent-same-key"
+    },
+    {
+      "id": "actual-delete-usage-commit-unknown"
+    },
+    {
+      "id": "actual-delete-company-commit-unknown"
+    }
+  ]
+}

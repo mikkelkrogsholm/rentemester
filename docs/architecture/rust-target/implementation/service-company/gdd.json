@@ -1,0 +1,223 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native service company post and reversal",
+    "goal": "Known charged service attempt, fresh current company authority and real atomic journal effects/receipt",
+    "scope": "Two-stage admitted-connection service company orchestration; product physical opener/transports/full platform remain open"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Charged service company mutation orchestration",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Separate durable usage and company outcomes; current exact live credential and role fence; shared real post/reversal/receipt",
+        "rationale": "A quota commit is separate from accounting commit and never grants later stale authority",
+        "excludes": [
+          "Cross-database atomic quota and business guarantee, automatic retry/refund, public reusable admission proof, physical product opener or enabled transport writer"
+        ]
+      },
+      "interfaces": [
+        "action.service_company"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Source-issued service keys create real source-equivalent post/reversal and stable service-principal receipts",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic controls/company ledgers with actual source-issued service keys",
+        "when": "Native service company post/reversal/replay or fault/revoke/death/concurrent attempt",
+        "then": "Source-issued service keys create real source-equivalent post/reversal and stable service-principal receipts"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Bad envelope/connections/current authority/quota refuses before charge; later denial retains charged usage and withholds company outcome",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic controls/company ledgers with actual source-issued service keys",
+        "when": "Native service company post/reversal/replay or fault/revoke/death/concurrent attempt",
+        "then": "Bad envelope/connections/current authority/quota refuses before charge; later denial retains charged usage and withholds company outcome"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Human paths unchanged, only own usage fields change in control, same credential binding/stable subject and source actor attribution preserved",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic controls/company ledgers with actual source-issued service keys",
+        "when": "Native service company post/reversal/replay or fault/revoke/death/concurrent attempt",
+        "then": "Human paths unchanged, only own usage fields change in control, same credential binding/stable subject and source actor attribution preserved"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Last quota/rate slot survives non-consuming phase2; inherited exact-window source CAS correction is native-only; independent unknown axes and explicit recovery",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic controls/company ledgers with actual source-issued service keys",
+        "when": "Native service company post/reversal/replay or fault/revoke/death/concurrent attempt",
+        "then": "Last quota/rate slot survives non-consuming phase2; inherited exact-window source CAS correction is native-only; independent unknown axes and explicit recovery"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "WAL/DELETE gap revoke/held-writer revoke exclusion, lastslot/samekey races, killed writers and real commit-busy prove staged atomicity",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic controls/company ledgers with actual source-issued service keys",
+        "when": "Native service company post/reversal/replay or fault/revoke/death/concurrent attempt",
+        "then": "WAL/DELETE gap revoke/held-writer revoke exclusion, lastslot/samekey races, killed writers and real commit-busy prove staged atomicity"
+      }
+    },
+    "action.service_company": {
+      "kind": "action",
+      "description": "Charge one attempt then freshly authorize real company post/reversal",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "native_post_or_reversal_envelope": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "transient_service_key_clock_selected_company_admitted_connections": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object",
+          "description": "Independent usage and business stages, bounded result/receipt only on known company commit and handle reuse flags; Committed stage alone is not result.ok"
+        },
+        "errors": {
+          "refused": "Before-charge refusal, charged later authority/business refusal, separate usage/business unknown outcomes; no automatic retry/refund"
+        },
+        "preconditions": [
+          "Trusted workspace/key/catalog/lifetime and both connection preflight; statically ledger.post permission",
+          "Current registered live service credential, active workspace and explicit allowed company membership"
+        ],
+        "postconditions": [
+          "Only known usage commit permits fresh company attempt, with no second consumption/headroom requirement",
+          "Same key hash and credential ID/stable subject live binding plus current rights precede protected receipt lookup",
+          "Company effects/receipt atomic, usage independent; original business key and explicit recovery policy govern uncertainty"
+        ],
+        "external_effects": [
+          "First control usage commit may remain despite later company refusal or failure",
+          "Company post/reversal/receipt commit under held fresh control writer; no product endpoint, real data/mail/deployment or automatic refund"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Current same credential authority after known usage commit, stable service receipt scope, independent commit axes and recovery rules prevent stale disclosure, duplicate effects or false refunds",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Current same credential authority after known usage commit, stable service receipt scope, independent commit axes and recovery rules prevent stale disclosure, duplicate effects or false refunds",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Current same credential authority after known usage commit, stable service receipt scope, independent commit axes and recovery rules prevent stale disclosure, duplicate effects or false refunds",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Current same credential authority after known usage commit, stable service receipt scope, independent commit axes and recovery rules prevent stale disclosure, duplicate effects or false refunds",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Current same credential authority after known usage commit, stable service receipt scope, independent commit axes and recovery rules prevent stale disclosure, duplicate effects or false refunds",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Validate envelope/connections, authorize+charge+known control commit, fresh non-consuming exact credential+current company fence, real atomic company effects/receipt, known company output only"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.service_company",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.service_company",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.service_company",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.service_company",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.service_company",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.service_company",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native service company post and reversal",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "6d27a9fdf6f6b3ca6ea2b89a7a6a769eabd4be2eb06fef71a475d70a51c8da50"
+      }
+    }
+  }
+}

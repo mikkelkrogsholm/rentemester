@@ -202,81 +202,95 @@ fn execute_resolved<T>(
     resolve: impl FnOnce(&Transaction<'_>) -> Result<ResolvedHuman, Error>,
     apply: impl FnOnce(&Transaction<'_>, &str) -> Result<T, Error>,
 ) -> Result<Committed<T>, Failure> {
+    execute_authorized(
+        control,
+        company,
+        |control_tx| {
+            let principal = resolve(control_tx)?;
+            let observed = rentemester_storage::control_access::observe_human(
+                control_tx,
+                &principal.subject,
+                &principal.session_id,
+                selection.slug,
+            )?;
+            let workspace_role = observed
+                .workspace_role
+                .map(|r| {
+                    serde::Deserialize::deserialize(serde::de::value::StringDeserializer::<
+                        serde::de::value::Error,
+                    >::new(r))
+                })
+                .transpose()
+                .map_err(|_| error("invalid_control"))?;
+            let company_role = observed
+                .company_role
+                .map(|r| {
+                    serde::Deserialize::deserialize(serde::de::value::StringDeserializer::<
+                        serde::de::value::Error,
+                    >::new(r))
+                })
+                .transpose()
+                .map_err(|_| error("invalid_control"))?;
+            let facts = AccessFacts {
+                identity: observed.user_exists.then_some(IdentityFacts {
+                    workspace: &principal.workspace,
+                    subject: &principal.subject,
+                    authenticated: observed.session_current,
+                    kind: IdentityKind::Human {
+                        email_verified: observed.email_verified,
+                        mfa_enabled: observed.mfa_enabled,
+                    },
+                }),
+                workspace_access: workspace_role.map(|role| WorkspaceAccessFacts {
+                    workspace: &principal.workspace,
+                    subject: &principal.subject,
+                    active: true,
+                    role,
+                }),
+                company: Some(CompanyFacts {
+                    workspace: selection.workspace,
+                    slug: selection.slug,
+                    registered: selection.registered,
+                    archived: selection.archived,
+                    membership: company_role.map(|role| MembershipFacts {
+                        workspace: &principal.workspace,
+                        subject: &principal.subject,
+                        company: selection.slug,
+                        active: true,
+                        role,
+                    }),
+                }),
+            };
+            if !access::authorize(
+                Request {
+                    workspace: selection.workspace,
+                    company: Some(selection.slug),
+                    permission,
+                },
+                &facts,
+            )
+            .allowed
+            {
+                return Err(error("access_denied"));
+            }
+            Ok(principal.subject)
+        },
+        apply,
+    )
+}
+/// Internal only: trusted adapter must resolve current authority under this held writer.
+pub(crate) fn execute_authorized<T>(
+    control: &mut Connection,
+    company: &mut Connection,
+    authorize: impl FnOnce(&Transaction<'_>) -> Result<String, Error>,
+    apply: impl FnOnce(&Transaction<'_>, &str) -> Result<T, Error>,
+) -> Result<Committed<T>, Failure> {
     connection_ready(control).map_err(initial)?;
     connection_ready(company).map_err(initial)?;
     let control_tx = control
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .map_err(|_| initial(error("control_busy_or_unavailable")))?;
-    let authorize = (|| {
-        let principal = resolve(&control_tx)?;
-        let observed = rentemester_storage::control_access::observe_human(
-            &control_tx,
-            &principal.subject,
-            &principal.session_id,
-            selection.slug,
-        )?;
-        let workspace_role = observed
-            .workspace_role
-            .map(|r| {
-                serde::Deserialize::deserialize(serde::de::value::StringDeserializer::<
-                    serde::de::value::Error,
-                >::new(r))
-            })
-            .transpose()
-            .map_err(|_| error("invalid_control"))?;
-        let company_role = observed
-            .company_role
-            .map(|r| {
-                serde::Deserialize::deserialize(serde::de::value::StringDeserializer::<
-                    serde::de::value::Error,
-                >::new(r))
-            })
-            .transpose()
-            .map_err(|_| error("invalid_control"))?;
-        let facts = AccessFacts {
-            identity: observed.user_exists.then_some(IdentityFacts {
-                workspace: &principal.workspace,
-                subject: &principal.subject,
-                authenticated: observed.session_current,
-                kind: IdentityKind::Human {
-                    email_verified: observed.email_verified,
-                    mfa_enabled: observed.mfa_enabled,
-                },
-            }),
-            workspace_access: workspace_role.map(|role| WorkspaceAccessFacts {
-                workspace: &principal.workspace,
-                subject: &principal.subject,
-                active: true,
-                role,
-            }),
-            company: Some(CompanyFacts {
-                workspace: selection.workspace,
-                slug: selection.slug,
-                registered: selection.registered,
-                archived: selection.archived,
-                membership: company_role.map(|role| MembershipFacts {
-                    workspace: &principal.workspace,
-                    subject: &principal.subject,
-                    company: selection.slug,
-                    active: true,
-                    role,
-                }),
-            }),
-        };
-        if !access::authorize(
-            Request {
-                workspace: selection.workspace,
-                company: Some(selection.slug),
-                permission,
-            },
-            &facts,
-        )
-        .allowed
-        {
-            return Err(error("access_denied"));
-        }
-        Ok(principal.subject)
-    })();
+    let authorize = authorize(&control_tx);
     let subject = match authorize {
         Ok(subject) => subject,
         Err(error) => {

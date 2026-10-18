@@ -1,0 +1,316 @@
+//! Charged admission attempt followed by a fresh current service company fence.
+use crate::{
+    access::{
+        self, AccessFacts, CompanyFacts, IdentityFacts, IdentityKind, MembershipFacts, Permission,
+        Request, WorkspaceAccessFacts,
+    },
+    control_fence::{self, CompanySelection, FailureStage},
+    journal_mutation::{self, Command},
+    journal_post, journal_reversal,
+};
+use rentemester_engine::Error;
+use rentemester_runtime::{auth::Clock, service_key::ServiceKey};
+use rentemester_storage::{
+    idempotency::{PrincipalKind, Receipt},
+    service_context::{self, Observation},
+    workspace_context::{Catalog, RegisteredCompany},
+};
+use rusqlite::{Connection, Transaction, TransactionBehavior};
+use serde::Serialize;
+use serde_json::Value;
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum UsageStage {
+    NotCommitted,
+    OutcomeUnknown,
+    Committed,
+}
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum BusinessStage {
+    NotAttempted,
+    NotCommitted,
+    OutcomeUnknown,
+    Committed,
+}
+pub struct ServiceResult {
+    pub usage: UsageStage,
+    pub business: BusinessStage,
+    pub result: Value,
+    pub receipt: Option<Receipt>,
+    pub control_reusable: bool,
+}
+pub struct ServiceFailure {
+    pub usage: UsageStage,
+    pub business: BusinessStage,
+    pub error: Error,
+    pub control_reusable: bool,
+    pub company_reusable: bool,
+    pub rejection: Option<Value>,
+}
+impl std::fmt::Debug for ServiceFailure {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ServiceFailure")
+            .field("usage", &self.usage)
+            .field("business", &self.business)
+            .field("code", &self.error.code)
+            .field("control_reusable", &self.control_reusable)
+            .field("company_reusable", &self.company_reusable)
+            .field("has_rejection", &self.rejection.is_some())
+            .finish()
+    }
+}
+/// Caller owns actual physical/catalog/lifetime/legacy-writer admission. No path opens.
+pub struct Context<'a> {
+    pub key: &'a ServiceKey,
+    pub clock: &'a dyn Clock,
+    pub selection: CompanySelection<'a>,
+    pub max_future_days: u32,
+}
+pub fn execute_post(
+    control: &mut Connection,
+    company: &mut Connection,
+    context: Context<'_>,
+    input: journal_post::Input,
+) -> Result<ServiceResult, ServiceFailure> {
+    execute(control, company, context, Command::Post(&input))
+}
+pub fn execute_reversal(
+    control: &mut Connection,
+    company: &mut Connection,
+    context: Context<'_>,
+    input: journal_reversal::Input,
+) -> Result<ServiceResult, ServiceFailure> {
+    execute(control, company, context, Command::Reverse(&input))
+}
+fn error(code: &'static str) -> Error {
+    Error::new(
+        code,
+        "service company attempt refused; inspect usage/business stages",
+    )
+}
+fn initial(error: Error) -> ServiceFailure {
+    ServiceFailure {
+        usage: UsageStage::NotCommitted,
+        business: BusinessStage::NotAttempted,
+        error,
+        control_reusable: false,
+        company_reusable: false,
+        rejection: None,
+    }
+}
+fn now(clock: &dyn Clock) -> Result<i64, Error> {
+    clock.now_unix_ms().map_err(|_| error("invalid_auth_clock"))
+}
+fn authorize(
+    tx: &Transaction<'_>,
+    observed: &Observation,
+    selection: &CompanySelection<'_>,
+) -> Result<(), Error> {
+    let role = rentemester_storage::control_access::observe_company_role(
+        tx,
+        observed.subject(),
+        selection.slug,
+    )?;
+    fn parse<T: serde::de::DeserializeOwned>(s: String) -> Result<T, Error> {
+        serde::Deserialize::deserialize(serde::de::value::StringDeserializer::<
+            serde::de::value::Error,
+        >::new(s))
+        .map_err(|_| error("invalid_control"))
+    }
+    let facts = AccessFacts {
+        identity: Some(IdentityFacts {
+            workspace: selection.workspace,
+            subject: observed.subject(),
+            authenticated: true,
+            kind: IdentityKind::Service {
+                registered: true,
+                live_credential: true,
+            },
+        }),
+        workspace_access: Some(WorkspaceAccessFacts {
+            workspace: selection.workspace,
+            subject: observed.subject(),
+            active: true,
+            role: parse(observed.workspace_role().to_owned())?,
+        }),
+        company: Some(CompanyFacts {
+            workspace: selection.workspace,
+            slug: selection.slug,
+            registered: selection.registered,
+            archived: selection.archived,
+            membership: role
+                .map(|role| {
+                    Ok(MembershipFacts {
+                        workspace: selection.workspace,
+                        subject: observed.subject(),
+                        company: selection.slug,
+                        active: true,
+                        role: parse(role)?,
+                    })
+                })
+                .transpose()?,
+        }),
+    };
+    if !access::authorize(
+        Request {
+            workspace: selection.workspace,
+            company: Some(selection.slug),
+            permission: Permission::CompanyLedgerPost,
+        },
+        &facts,
+    )
+    .allowed
+    {
+        return Err(error("access_denied"));
+    }
+    Ok(())
+}
+fn execute(
+    control: &mut Connection,
+    company: &mut Connection,
+    context: Context<'_>,
+    command: Command<'_>,
+) -> Result<ServiceResult, ServiceFailure> {
+    command.validate().map_err(initial)?;
+    control_fence::connection_ready(control).map_err(initial)?;
+    control_fence::connection_ready(company).map_err(initial)?;
+    let Context {
+        key,
+        clock,
+        selection,
+        max_future_days,
+    } = context;
+    if key.workspace() != selection.workspace {
+        return Err(initial(error("invalid_credentials")));
+    }
+    let catalog = Catalog {
+        workspace: selection.workspace.to_owned(),
+        companies: if selection.registered {
+            vec![RegisteredCompany {
+                slug: selection.slug.to_owned(),
+                name: selection.slug.to_owned(),
+                archived: selection.archived,
+            }]
+        } else {
+            vec![]
+        },
+    };
+    rentemester_storage::workspace_context::validate_catalog(&catalog).map_err(initial)?;
+    let tx = control
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .map_err(|_| initial(error("control_busy_or_unavailable")))?;
+    let charged = (|| {
+        let time = now(clock)?;
+        let observed = service_context::observe(&tx, key.lookup_hash(), time, &catalog)?;
+        authorize(&tx, &observed, &selection)?;
+        let charged = service_context::charge(&tx, key.lookup_hash(), time, &catalog)?;
+        if !charged.same_credential(&observed) {
+            return Err(error("invalid_credentials"));
+        }
+        #[cfg(test)]
+        if std::env::var("RM_SERVICE_FAIL").ok().as_deref() == Some("usage") {
+            tx.execute(
+                "INSERT INTO rm_service_synthetic_missing_table VALUES(1)",
+                [],
+            )
+            .map_err(|_| error("invalid_control"))?;
+        }
+        #[cfg(test)]
+        checkpoint("usage-precommit");
+        Ok(charged)
+    })();
+    let charged = match charged {
+        Ok(charged) => charged,
+        Err(error) => {
+            let clean = tx.rollback().is_ok() && control_fence::connection_ready(control).is_ok();
+            return Err(ServiceFailure {
+                usage: if clean {
+                    UsageStage::NotCommitted
+                } else {
+                    UsageStage::OutcomeUnknown
+                },
+                control_reusable: clean,
+                company_reusable: true,
+                ..initial(error)
+            });
+        }
+    };
+    if tx.commit().is_err() {
+        return Err(ServiceFailure {
+            usage: UsageStage::OutcomeUnknown,
+            company_reusable: true,
+            ..initial(error("usage_commit_outcome_unknown"))
+        });
+    }
+    #[cfg(test)]
+    checkpoint("usage-committed");
+    let mut rejection = None;
+    let mut attempted = false;
+    let done = control_fence::execute_authorized(
+        control,
+        company,
+        |tx| {
+            let current = service_context::observe(tx, key.lookup_hash(), now(clock)?, &catalog)?;
+            if !current.same_credential(&charged) {
+                return Err(error("invalid_credentials"));
+            }
+            authorize(tx, &current, &selection)?;
+            Ok(current.subject().to_owned())
+        },
+        |tx, subject| {
+            attempted = true;
+            let value = journal_mutation::apply(
+                tx,
+                subject,
+                PrincipalKind::ServiceAccount,
+                clock,
+                max_future_days,
+                command,
+                &mut rejection,
+            )?;
+            #[cfg(test)]
+            if std::env::var("RM_SERVICE_FAIL").ok().as_deref() == Some("company") {
+                tx.execute(
+                    "INSERT INTO rm_service_synthetic_missing_table VALUES(1)",
+                    [],
+                )
+                .map_err(|_| error("synthetic_company_failure"))?;
+            }
+            Ok(value)
+        },
+    );
+    match done {
+        Ok(done) => Ok(ServiceResult {
+            usage: UsageStage::Committed,
+            business: BusinessStage::Committed,
+            result: done.value.result,
+            receipt: done.value.receipt,
+            control_reusable: done.control_reusable,
+        }),
+        Err(f) => Err(ServiceFailure {
+            usage: UsageStage::Committed,
+            business: if f.stage == FailureStage::OutcomeUnknown {
+                BusinessStage::OutcomeUnknown
+            } else if attempted {
+                BusinessStage::NotCommitted
+            } else {
+                BusinessStage::NotAttempted
+            },
+            error: f.error,
+            control_reusable: f.control_reusable,
+            company_reusable: f.company_reusable,
+            rejection,
+        }),
+    }
+}
+#[cfg(test)]
+fn checkpoint(point: &str) {
+    if std::env::var("RM_SERVICE_POINT").ok().as_deref() == Some(point) {
+        std::fs::write(std::env::var("RM_SERVICE_MARKER").unwrap(), point).unwrap();
+        let mut line = String::new();
+        std::io::stdin().read_line(&mut line).unwrap();
+    }
+}
+#[cfg(test)]
+mod tests;

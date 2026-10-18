@@ -1,0 +1,57 @@
+{
+  "result": "PASS_CONTRACT_SCOPE_ONLY",
+  "scope": "Read-only early agent-facing contract review. Active reviewer role prohibits implementation architecture, accounting logic and test review; no implementation acceptance or final feature claim.",
+  "graphify_first": true,
+  "verified_utc": "2026-10-18T06:55:38.418419+00:00",
+  "source_sha256": {
+    "docs/architecture/rust-target/implementation/service-company/CONTRACT.md": "6d27a9fdf6f6b3ca6ea2b89a7a6a769eabd4be2eb06fef71a475d70a51c8da50"
+  },
+  "findings": [
+    {
+      "id": "SC-CONTRACT-01",
+      "severity": "underdescribed",
+      "surface": "internal contract; no CLI/MCP writer enabled",
+      "location": "docs/architecture/rust-target/implementation/service-company/CONTRACT.md:11",
+      "finding": "Separate usage/business uncertainty is specified, but recovery behavior is absent: a consumer cannot determine the safe next action after usage OutcomeUnknown or business OutcomeUnknown.",
+      "consequence": "A consumer might retry without a key or generate a new key, consuming additional quota and potentially duplicating a business mutation after a lost committed response.",
+      "needed": "Before exposing this operation, document a recovery matrix: usageUnknown makes no company attempt but charge is unconfirmed; businessUnknown may have committed, so reconcile using the original stable operation/key and never claim failure or create a replacement key. State explicitly that retries/replays are separately charged, replay may require restored quota/current authority, and no automatic retry is implied. Clarify how callers without an idempotency key reconcile uncertainty.",
+      "status": "RESOLVED_DOCUMENTATION_VERIFIED",
+      "resolution": "Explicit five-row usage/business recovery matrix now describes unknown usage with no company callback, no durable usage-attribution receipt, original unchanged business key recovery after business uncertainty, additional quota charges, no automatic retry, retirement and no-key evidence review. BusinessCommitted explicitly requires result.ok; receipt conflict forbids inventing a fresh key."
+    }
+  ],
+  "observed_contract_boundaries": [
+    "No product HTTP/CLI/MCP writer enabled",
+    "Current company permission required before initial charge and again before protected receipt lookup",
+    "Quota and company commits are expressly separate; no refund/exactly-once quota claim",
+    "Stable service subject, rather than rotated credential identity, owns receipt replay",
+    "No credential secret/hash/ID serialized by orchestration"
+  ],
+  "execution": {
+    "graphify_query": "graphify query \"service company two phase quota permission retry unknown outcome contract\"",
+    "implementation_tests": "NOT_RUN_ROLE_OUT_OF_SCOPE"
+  },
+  "limitations": [
+    "No code review or proof of locking, quota, metadata or rollback correctness performed.",
+    "No current CLI/MCP operation can be judged from this internal contract as deployed functionality.",
+    "Only CONTRACT.md currently exists in the scoped documentation directory; gdd.json not yet present."
+  ],
+  "repository_writes": false,
+  "graph_writes": false,
+  "previous_contract_sha256": "b99dfa1a0798b26cf6e9eae1ebf11056cf092da3b1de592981a4d4b48a6a53e6",
+  "remaining_contract_findings": [],
+  "follow_up_review": {
+    "result": "PASS_CONTRACT_SCOPE_ONLY",
+    "checked": [
+      "Recovery matrix resolves SC-CONTRACT-01",
+      "BusinessCommitted is transaction status, not unconditional domain success",
+      "Installed source exact-window recursive CAS divergence and native-only equality oracle are explicitly disclosed"
+    ],
+    "implementation_attestation": false,
+    "tests_rerun": false,
+    "graphify_first": true,
+    "attribution_clarification": "Read-only documentation delta verified: runtime actor user:subject via service-principal is distinguished from retained verified historical documentless original import marker. Recovery matrix unchanged; no implementation attestation or tests."
+  },
+  "contract_hash_history": [
+    "b62fd177a5096f3e36c34baef716f2104e80049ab6978ad44d51839350bd6bd9"
+  ]
+}

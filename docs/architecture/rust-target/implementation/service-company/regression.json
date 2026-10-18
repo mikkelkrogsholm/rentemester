@@ -1,0 +1,220 @@
+{
+  "command": "RUST_TEST_THREADS=2 bun run rust:verify",
+  "exit_code": 0,
+  "native_tests_passed": 155,
+  "ignored_subprocess_helpers": 29,
+  "integration_checks": 12698,
+  "complete_raw_log_sha256": "f7fab231f550c34dee06798aa603bacd2e77bf983912ea5ccbb4c11e804bfd42",
+  "reports": [
+    {
+      "checks": 2485,
+      "scope": "unspecified",
+      "ok": true,
+      "report_sha256": "4e6b4707102a0df9dd39226982b6e4b39b6a503e56a9cdc92f80bda621f7bf65"
+    },
+    {
+      "checks": 124,
+      "scope": "unspecified",
+      "ok": true,
+      "report_sha256": "499df563c92bd1ee1d70325c487aecd51c07367fc9e135c19a9ecd761c7b4480"
+    },
+    {
+      "checks": 72,
+      "scope": "active-key MAC, locked exact session/time/access policy, actual framework internal session issuance and getSession, before/held token-update/deletion races",
+      "ok": true,
+      "report_sha256": "caa003170c5d34bcd8238a879a024cd323adf38908270ce827ecaf40dfb92d81"
+    },
+    {
+      "checks": 48,
+      "scope": "unspecified",
+      "ok": true,
+      "report_sha256": "a8f120620883bc51d0a9c34209a5467ec75b4f8f5c0f8a0768be9b099ca146cb"
+    },
+    {
+      "checks": 315,
+      "scope": "native existing password-to-pending-MFA transaction; canonical synthetic source fixtures and actual framework oracle",
+      "ok": true,
+      "report_sha256": "4dc77c19612737e21cc7c99b7727c468f166a7b9d139a579a3faf49219daec13"
+    },
+    {
+      "checks": 310,
+      "scope": "Native source-compatible MFA cryptography only; no current identity/challenge/session or replay authority",
+      "ok": true,
+      "report_sha256": "63bf819126ae9324a6866e277a02ef7b8e81ea3def22731ce494aca3e332846a"
+    },
+    {
+      "checks": 775,
+      "scope": "Native MFA enrollment, enrolled TOTP/backup-code login, own-code/session management, reset issuance/completion, postcommit injected mail and callback on admitted synthetic control handles; actual source oracle and independent WAL/DELETE process races",
+      "ok": true,
+      "report_sha256": "0ee41840a0cf7456809bfb34c8755df6a768cd955351a2d82e65d3cd24a7ffb4"
+    },
+    {
+      "checks": 42,
+      "scope": "Concrete native HTTPS auth-mail gateway on synthetic local TLS/DNS with actual source wire oracle",
+      "ok": true,
+      "report_sha256": "47159fe353a74a6c0e5449f93a973f5cc3e003b950ca64e66426ef86b68b8cc4"
+    },
+    {
+      "checks": 20,
+      "scope": "Native loopback HTTP reset request through current synthetic control and postcommit injected mail, actual source acknowledgement oracle",
+      "ok": true,
+      "report_sha256": "64d4b93f03822a91cf1a72d6851e2f93d73ff73f50e60d9aecda8d8a7ecad219"
+    },
+    {
+      "checks": 26,
+      "scope": "Native real HTTP recovery callback/completion and current synthetic WAL/DELETE controls with actual source oracles",
+      "ok": true,
+      "report_sha256": "6c6798960a81bcd447277fd319dcf62e0c8783cc2318d473dbf25221f4e040e1"
+    },
+    {
+      "checks": 286,
+      "scope": "unspecified",
+      "ok": true,
+      "report_sha256": "403dfb4b0adb7e9790289f267ac686f02fd30ad2b088ebbfae80d6691fcbe209"
+    },
+    {
+      "checks": 24,
+      "scope": "unspecified",
+      "ok": true,
+      "report_sha256": "d8249edda2aaf4742b8a144ab58c8af1ad41324e0342306dd002e885735038c6"
+    },
+    {
+      "checks": 34,
+      "scope": "synthetic current-schema read-only Rust trial-balance parity",
+      "ok": true,
+      "report_sha256": "d990f6058824bc915ad8f91211a26e4ee35893de332b20ef22a0a562ac2524e7"
+    },
+    {
+      "checks": 31,
+      "scope": "rentemester-trial-balance-wire-baseline/1",
+      "ok": true,
+      "report_sha256": "1d2be58c7897865e58b2cc216303ffc156a726cb59590ae6c94979dde5f475b5"
+    },
+    {
+      "checks": 29,
+      "scope": "legacy canonical journal hash compatibility on private snapshots",
+      "ok": true,
+      "report_sha256": "2792ef08390470ec4e49838e9c50f41bcb7048cc30314a6333751f57eec9d5c5"
+    },
+    {
+      "checks": 10,
+      "scope": "cooperative physical-directory process lease only",
+      "ok": true,
+      "report_sha256": "3fbc50df590e245b2ad1cca8e2759ed8cca29cc7f6856d6d3fbdf32a258bac35"
+    },
+    {
+      "checks": 22,
+      "scope": "actual canonical legacy manifest writer/loader vs native descriptor layout; exact source inventory preserved; no SQLite admission",
+      "ok": true,
+      "report_sha256": "9b0f288734a3883c010e628eab872ed7c9a992a20e07f4c75cc53d736b4eba32"
+    },
+    {
+      "checks": 25,
+      "scope": "private-copy company suffix32\u201336 rehearsal only",
+      "ok": true,
+      "report_sha256": "4292bfb1182800d8096ae981faabda603cd271870f218ba3d2af57a81d0e2781"
+    },
+    {
+      "checks": 54,
+      "scope": "all control prefixes0\u201330 on private copies; no live writer",
+      "ok": true,
+      "report_sha256": "e42da193f4b11098441e8b5bf0c28b419fd8c846ccee4e067a0894d26a050cd8"
+    },
+    {
+      "checks": 40,
+      "scope": "normalized company bootstrap0 and canonical early prefixes1\u201331; suffix32\u201336 verified separately",
+      "ok": true,
+      "report_sha256": "d5e04e270b13f92f2ba515918acd0145ddb7cbd571f77cff5153a8ee99c010a3"
+    },
+    {
+      "checks": 47,
+      "scope": "native company baseline data effects and explicit corrected retention calendar",
+      "ok": null,
+      "report_sha256": "3f663403bd67ecef922cf79658784408664c45b5d7918d31f8293df13f7b19ee"
+    },
+    {
+      "checks": 37,
+      "scope": "known unversioned physical company baseline rebuilds and full migration parity",
+      "ok": null,
+      "report_sha256": "d10eb16d28d860b5b487486d8e34dd80b6f640a151360e1ae32a91de62021c63"
+    },
+    {
+      "checks": 49,
+      "scope": "FK-safe VAT normalization and complete company prefixes1\u201336",
+      "ok": null,
+      "report_sha256": "c009a8a155095f8305458e6af7a4f3877ca57816a479a2619ca1fdeba9bca118"
+    },
+    {
+      "checks": 128,
+      "scope": "transaction-owned native sequence values against actual TypeScript functions",
+      "ok": null,
+      "report_sha256": "090e5843bd0e333ae4f014d839f3e5531382487a0b5ef7371a6f1d5c0e95c983"
+    },
+    {
+      "checks": 132,
+      "scope": "native durable keyed receipt storage/source interoperability; no complete posting or deployed writer authority",
+      "ok": true,
+      "report_sha256": "b270a87b6253a7b66d267ad67d85f4631044ec6b7cfa07807f41f82d2869715b"
+    },
+    {
+      "checks": 127,
+      "scope": "actual native manual journal post/source accounting parity and authenticated admitted-connection process faults; no deployed original writer authority or reversal",
+      "ok": true,
+      "report_sha256": "98311a2554a85cfce67c641ae394b1f44d32e756806c08e7d74e78db727cc843"
+    },
+    {
+      "checks": 111,
+      "scope": "actual source/native append-only manual reversal, original preservation, current human authority, receipt and process atomicity on admitted canonical connections",
+      "ok": true,
+      "report_sha256": "e677e55d4f2f2fe822404cc424dfa289f4e95f93a294c7ce2736a2bb614d07b5"
+    },
+    {
+      "checks": 92,
+      "scope": "source-issued service keys, source quota observations and actual native post/reversal under two-stage charged-attempt company authorization; no deployed writer authority",
+      "ok": true,
+      "report_sha256": "8d6ac3915dd110955da48d0ac97f5830dd1bff44543b5b4443c9737529dcba1c"
+    },
+    {
+      "checks": 5691,
+      "scope": "typed fiscal calendar: independent Gregorian expectations and exact actual legacy behavior",
+      "ok": null,
+      "report_sha256": "8ca8ab3516bc2c940afebae9c3ba96508b83ef000fcb1a34d71725e7b429f425"
+    },
+    {
+      "checks": 1075,
+      "scope": "exact amount/currency/FX arithmetic with independent Decimal expectations",
+      "ok": null,
+      "report_sha256": "ce4177e3d8b01e170efadec179d77d8cca0dad7ad3ace7613521af2876aa066c"
+    },
+    {
+      "checks": 211,
+      "scope": "pure manual journal exact invariants and compiled rule-version binding",
+      "ok": null,
+      "report_sha256": "24e4c8bfece9f4675bb96e21928cd7dc8fa1e1aadebac7cfdc854ab54181f95b"
+    },
+    {
+      "checks": 226,
+      "scope": "source-backed advisory journal preview:real native CLI and actual legacy validator",
+      "ok": null,
+      "report_sha256": "776f809b32927ae35713eff847ab59a6d96b8e4ea8d2d644ba117da0cf03eddf"
+    }
+  ],
+  "native_result_lines": [
+    "test result: ok. 13 passed; 0 failed; 7 ignored; 0 measured; 0 filtered out; finished in 0.60s",
+    "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+    "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 36 passed; 0 failed; 6 ignored; 0 measured; 0 filtered out; finished in 16.84s",
+    "test result: ok. 40 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 2.58s",
+    "test result: ok. 47 passed; 0 failed; 10 ignored; 0 measured; 0 filtered out; finished in 48.03s",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+  ],
+  "note": "Final main regression includes92 new service company source/provider/process checks,127 human posting and111 human reversal checks after shared orchestration extraction; existing service context/lifecycle suites unchanged. Independent final92 plus app13/fence5/storagepost2/reverse2/readiness3 verified. Source exact-window CAS recursion is inherited documented native correction and excluded only from frozen source oracle, directly asserted natively. Authoring fixture issues corrected empty UPDATE and exact rotation API/clock without relaxing metadata; no UI changes or new UI run claim."
+}

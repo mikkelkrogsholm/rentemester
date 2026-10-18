@@ -1,0 +1,340 @@
+{
+  "ok": true,
+  "scope": "actual source/native append-only manual reversal, original preservation, current human authority, receipt and process atomicity on admitted canonical connections",
+  "checks": 111,
+  "observations": [
+    {
+      "id": "wal/source-capital"
+    },
+    {
+      "id": "wal/source-raw-text"
+    },
+    {
+      "id": "wal/source-document"
+    },
+    {
+      "id": "wal/source-bank-unchanged"
+    },
+    {
+      "id": "wal/source-fx"
+    },
+    {
+      "id": "wal/source-dkk-optional-fx"
+    },
+    {
+      "id": "wal/source-dkk-zero-fx"
+    },
+    {
+      "id": "wal/source-dkk-negative-fx"
+    },
+    {
+      "id": "wal/source-fiscal-span"
+    },
+    {
+      "id": "wal/historical-expense"
+    },
+    {
+      "id": "wal/historical-with-document"
+    },
+    {
+      "id": "wal/fake-import"
+    },
+    {
+      "id": "wal/uncoded-vat"
+    },
+    {
+      "id": "wal/raw-vat-empty"
+    },
+    {
+      "id": "wal/raw-vat-space"
+    },
+    {
+      "id": "wal/inactive"
+    },
+    {
+      "id": "wal/unsupported-vat"
+    },
+    {
+      "id": "wal/protected-invoice"
+    },
+    {
+      "id": "wal/protected-credit-note"
+    },
+    {
+      "id": "wal/missing-original"
+    },
+    {
+      "id": "wal/blank-reason"
+    },
+    {
+      "id": "wal/future"
+    },
+    {
+      "id": "wal/single-reversal-and-reversal-of-reversal"
+    },
+    {
+      "id": "wal/receipt-replay-conflict"
+    },
+    {
+      "id": "wal/receipt-revoked-current-membership"
+    },
+    {
+      "id": "wal/actual-source-historical-import"
+    },
+    {
+      "id": "wal/period-closed"
+    },
+    {
+      "id": "wal/period-reported"
+    },
+    {
+      "id": "wal/period-reopened"
+    },
+    {
+      "id": "wal/no-lines"
+    },
+    {
+      "id": "wal/malformed-current-tail"
+    },
+    {
+      "id": "wal/subcent-original"
+    },
+    {
+      "id": "wal/unsafe-original-number"
+    },
+    {
+      "id": "wal/schema-before-receipt"
+    },
+    {
+      "id": "wal/receipt-write-failure-undoes-real-reversal"
+    },
+    {
+      "id": "wal/authority-archived"
+    },
+    {
+      "id": "wal/authority-unregistered"
+    },
+    {
+      "id": "wal/authority-wrong_workspace"
+    },
+    {
+      "id": "wal/authority-mixed"
+    },
+    {
+      "id": "wal/late-fault-sequence"
+    },
+    {
+      "id": "wal/death-sequence"
+    },
+    {
+      "id": "wal/late-fault-header"
+    },
+    {
+      "id": "wal/death-header"
+    },
+    {
+      "id": "wal/late-fault-line-0"
+    },
+    {
+      "id": "wal/death-line-0"
+    },
+    {
+      "id": "wal/late-fault-line-1"
+    },
+    {
+      "id": "wal/death-line-1"
+    },
+    {
+      "id": "wal/late-fault-lines"
+    },
+    {
+      "id": "wal/death-lines"
+    },
+    {
+      "id": "wal/late-fault-audit"
+    },
+    {
+      "id": "wal/death-audit"
+    },
+    {
+      "id": "wal/receipt-death-precommit"
+    },
+    {
+      "id": "wal/receipt-death-postcommit"
+    },
+    {
+      "id": "wal/concurrent-same-original"
+    },
+    {
+      "id": "wal/concurrent-same-key"
+    },
+    {
+      "id": "delete/source-capital"
+    },
+    {
+      "id": "delete/source-raw-text"
+    },
+    {
+      "id": "delete/source-document"
+    },
+    {
+      "id": "delete/source-bank-unchanged"
+    },
+    {
+      "id": "delete/source-fx"
+    },
+    {
+      "id": "delete/source-dkk-optional-fx"
+    },
+    {
+      "id": "delete/source-dkk-zero-fx"
+    },
+    {
+      "id": "delete/source-dkk-negative-fx"
+    },
+    {
+      "id": "delete/source-fiscal-span"
+    },
+    {
+      "id": "delete/historical-expense"
+    },
+    {
+      "id": "delete/historical-with-document"
+    },
+    {
+      "id": "delete/fake-import"
+    },
+    {
+      "id": "delete/uncoded-vat"
+    },
+    {
+      "id": "delete/raw-vat-empty"
+    },
+    {
+      "id": "delete/raw-vat-space"
+    },
+    {
+      "id": "delete/inactive"
+    },
+    {
+      "id": "delete/unsupported-vat"
+    },
+    {
+      "id": "delete/protected-invoice"
+    },
+    {
+      "id": "delete/protected-credit-note"
+    },
+    {
+      "id": "delete/missing-original"
+    },
+    {
+      "id": "delete/blank-reason"
+    },
+    {
+      "id": "delete/future"
+    },
+    {
+      "id": "delete/single-reversal-and-reversal-of-reversal"
+    },
+    {
+      "id": "delete/receipt-replay-conflict"
+    },
+    {
+      "id": "delete/receipt-revoked-current-membership"
+    },
+    {
+      "id": "delete/actual-source-historical-import"
+    },
+    {
+      "id": "delete/period-closed"
+    },
+    {
+      "id": "delete/period-reported"
+    },
+    {
+      "id": "delete/period-reopened"
+    },
+    {
+      "id": "delete/no-lines"
+    },
+    {
+      "id": "delete/malformed-current-tail"
+    },
+    {
+      "id": "delete/subcent-original"
+    },
+    {
+      "id": "delete/unsafe-original-number"
+    },
+    {
+      "id": "delete/schema-before-receipt"
+    },
+    {
+      "id": "delete/receipt-write-failure-undoes-real-reversal"
+    },
+    {
+      "id": "delete/authority-archived"
+    },
+    {
+      "id": "delete/authority-unregistered"
+    },
+    {
+      "id": "delete/authority-wrong_workspace"
+    },
+    {
+      "id": "delete/authority-mixed"
+    },
+    {
+      "id": "delete/late-fault-sequence"
+    },
+    {
+      "id": "delete/death-sequence"
+    },
+    {
+      "id": "delete/late-fault-header"
+    },
+    {
+      "id": "delete/death-header"
+    },
+    {
+      "id": "delete/late-fault-line-0"
+    },
+    {
+      "id": "delete/death-line-0"
+    },
+    {
+      "id": "delete/late-fault-line-1"
+    },
+    {
+      "id": "delete/death-line-1"
+    },
+    {
+      "id": "delete/late-fault-lines"
+    },
+    {
+      "id": "delete/death-lines"
+    },
+    {
+      "id": "delete/late-fault-audit"
+    },
+    {
+      "id": "delete/death-audit"
+    },
+    {
+      "id": "delete/receipt-death-precommit"
+    },
+    {
+      "id": "delete/receipt-death-postcommit"
+    },
+    {
+      "id": "delete/concurrent-same-original"
+    },
+    {
+      "id": "delete/concurrent-same-key"
+    },
+    {
+      "id": "actual-delete-reversal-commit-unknown"
+    }
+  ]
+}

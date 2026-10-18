@@ -39,13 +39,56 @@ fn flag(v: Option<i64>, nullable: bool) -> Result<bool, Error> {
     }
 }
 /// Caller verifies workspace binding and owns control/catalog lifetime. Hash is sensitive lookup,
-/// not a standalone principal. All updates must commit with the protected operation or roll back.
+/// not a standalone principal. Updates belong to this caller transaction; company attempts
+/// deliberately commit usage separately before acquiring their fresh company fence.
 pub fn current(
     tx: &Transaction<'_>,
     hash: &str,
     now: i64,
     catalog: &Catalog,
 ) -> Result<WorkspaceContext, Error> {
+    admission(tx, hash, now, catalog, true).map(|(context, _)| context)
+}
+/// Transient exact current binding. Not deserializable, serializable, Debug or a later grant.
+pub struct Observation {
+    id: String,
+    subject: String,
+    role: String,
+}
+impl Observation {
+    pub fn subject(&self) -> &str {
+        &self.subject
+    }
+    pub fn workspace_role(&self) -> &str {
+        &self.role
+    }
+    pub fn same_credential(&self, other: &Self) -> bool {
+        self.id == other.id && self.subject == other.subject
+    }
+}
+pub fn observe(
+    tx: &Transaction<'_>,
+    hash: &str,
+    now: i64,
+    catalog: &Catalog,
+) -> Result<Observation, Error> {
+    admission(tx, hash, now, catalog, false).map(|(_, observed)| observed)
+}
+pub fn charge(
+    tx: &Transaction<'_>,
+    hash: &str,
+    now: i64,
+    catalog: &Catalog,
+) -> Result<Observation, Error> {
+    admission(tx, hash, now, catalog, true).map(|(_, observed)| observed)
+}
+fn admission(
+    tx: &Transaction<'_>,
+    hash: &str,
+    now: i64,
+    catalog: &Catalog,
+    consume: bool,
+) -> Result<(WorkspaceContext, Observation), Error> {
     if tx.transaction_state(Some(MAIN_DB)).map_err(invalid)? != TransactionState::Write {
         return Err(Error::new(
             "control_fence_required",
@@ -131,7 +174,7 @@ pub fn current(
         _ => return Err(invalid("access")),
     };
     let now_text = crate::mfa_login::date(now)?;
-    if let Some(left) = remaining {
+    if consume && let Some(left) = remaining {
         if interval.zip(amount).is_some_and(|(i, _)| {
             i > 0 && amount.is_some_and(|a| a > 0) && now - refill_ms.unwrap_or(created) > i
         }) {
@@ -143,7 +186,9 @@ pub fn current(
             return Err(denied());
         }
     }
-    let (next_count, next_last) = if !rate_enabled {
+    let (next_count, next_last) = if !consume {
+        (count, last)
+    } else if !rate_enabled {
         (count, Some(now_text.clone()))
     } else if let Some((window, max)) = window.zip(max) {
         if last_ms.is_none_or(|last| now - last > window) {
@@ -162,8 +207,13 @@ pub fn current(
     } else {
         (count, last)
     };
+    let observation = Observation {
+        id: id.clone(),
+        subject: subject.clone(),
+        role: role.clone(),
+    };
     let context =
         crate::workspace_context::project(tx, subject, role, email, email_verified, mfa, catalog)?;
-    if tx.execute("UPDATE main.apikey SET requestCount=?1,remaining=?2,lastRequest=?3,lastRefillAt=?4,updatedAt=?5 WHERE id=?6 COLLATE BINARY AND key=?7 COLLATE BINARY",params![next_count,remaining,next_last,refill,now_text,id,hash]).map_err(invalid)?!=1 {return Err(invalid("usage update"));}
-    Ok(context)
+    if consume && tx.execute("UPDATE main.apikey SET requestCount=?1,remaining=?2,lastRequest=?3,lastRefillAt=?4,updatedAt=?5 WHERE id=?6 COLLATE BINARY AND key=?7 COLLATE BINARY",params![next_count,remaining,next_last,refill,now_text,id,hash]).map_err(invalid)?!=1 {return Err(invalid("usage update"));}
+    Ok((context, observation))
 }

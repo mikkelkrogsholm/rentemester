@@ -99,6 +99,33 @@ pub fn observe_human(
     })
 }
 
+/// Exact current company role; an observation, never an authorization grant.
+pub fn observe_company_role(
+    control: &Transaction<'_>,
+    subject: &str,
+    company: &str,
+) -> Result<Option<String>, Error> {
+    if control.transaction_state(Some(MAIN_DB)).map_err(refused)? != TransactionState::Write {
+        return Err(refused("writer"));
+    }
+    crate::control_migration::validate_current_control(control).map_err(refused)?;
+    let row:Option<(String,Option<String>)>=control.query_row("SELECT event_type,company_role FROM main.rm_company_membership_events WHERE user_id=?1 COLLATE BINARY AND company_slug=?2 COLLATE BINARY ORDER BY id DESC LIMIT 1",[subject,company],|r|Ok((r.get(0)?,r.get(1)?))).optional().map_err(refused)?;
+    match row {
+        None => Ok(None),
+        Some((event, None)) if event == "revoke" => Ok(None),
+        Some((event, Some(role)))
+            if event == "grant"
+                && matches!(
+                    role.as_str(),
+                    "owner" | "bookkeeper" | "reviewer" | "reader"
+                ) =>
+        {
+            Ok(Some(role))
+        }
+        _ => Err(refused("membership")),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -6,15 +6,12 @@ use crate::{
         SessionRequirement,
     },
 };
-use rentemester_engine::{Error, fiscal_year::Date, manual_journal::ManualJournal};
+use rentemester_engine::{Error, manual_journal::ManualJournal};
 use rentemester_runtime::auth::{Clock, VerifiedCookie};
-use rentemester_storage::{
-    idempotency::{self, Input as ReceiptInput, Operation, Outcome, PrincipalKind, Receipt},
-    journal_post::{self, Actor},
-};
+use rentemester_storage::idempotency::{PrincipalKind, Receipt};
 use rusqlite::Connection;
 use serde::Deserialize;
-use serde_json::{Value, json};
+use serde_json::Value;
 pub const FORMAT: &str = "rentemester-manual-journal-post/1";
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -73,18 +70,11 @@ pub fn execute(
     policy: &Policy,
     input: Input,
 ) -> Result<Committed<PostResult>, PostFailure> {
-    if input.format != FORMAT || input.request.created_by_program.is_some() {
-        return Err(invalid());
-    }
-    if serde_json::to_vec(&input.request)
-        .map_err(|_| invalid())?
-        .len()
-        > rentemester_storage::journal_preview::MAX_REQUEST_BYTES as usize
+    if crate::journal_mutation::Command::Post(&input)
+        .validate()
+        .is_err()
     {
         return Err(invalid());
-    }
-    if let Some(key) = &input.idempotency_key {
-        idempotency::validate_key(key).map_err(|_| invalid())?;
     }
     let mut business = None;
     let result = control_fence::execute_cookie_subject(
@@ -98,70 +88,19 @@ pub fn execute(
         selection,
         Permission::CompanyLedgerPost,
         |tx, subject| {
-            journal_post::require_current(tx)?;
-            let now = clock
-                .now_unix_ms()
-                .map_err(|e| Error::new(e.code(), "posting clock unavailable"))?;
-            let latest =
-                rentemester_runtime::posting_time::latest_date(now, policy.max_future_days)
-                    .map_err(|e| Error::new(e.code(), "posting horizon unavailable"))?;
-            let latest = Date::parse(&latest)?;
-            let actor = format!("user:{subject}");
-            let apply = |tx: &rusqlite::Transaction<'_>| {
-                journal_post::post(
-                    tx,
-                    &input.request,
-                    &input.expected_rule_version,
-                    latest,
-                    Actor {
-                        subject: &actor,
-                        program: "rentemester-rust",
-                    },
-                )
-            };
-            if let Some(key) = &input.idempotency_key {
-                let payload = json!({"format":input.format,"expectedRuleVersion":input.expected_rule_version,"request":input.request});
-                match idempotency::execute(
-                    tx,
-                    ReceiptInput {
-                        key,
-                        operation: Operation::JournalPost,
-                        principal_kind: PrincipalKind::User,
-                        subject,
-                        payload: &payload,
-                        created_by: &actor,
-                        created_by_program: "rentemester-rust",
-                        now_ms: now,
-                    },
-                    apply,
-                ) {
-                    Ok(Outcome::Accepted { result, receipt }) => Ok(PostResult {
-                        result,
-                        receipt: Some(receipt),
-                    }),
-                    Ok(Outcome::Refused { code }) => Ok(PostResult {
-                        result: json!({"ok":false,"code":code,"errors":[code]}),
-                        receipt: None,
-                    }),
-                    Err(f) => {
-                        business = f.rejection;
-                        Err(f.error)
-                    }
-                }
-            } else {
-                let value = apply(tx)?;
-                if value.get("ok") == Some(&Value::Bool(false)) {
-                    business = Some(value);
-                    return Err(Error::new(
-                        "business_rejection",
-                        "manual journal refused; abort transaction",
-                    ));
-                }
-                Ok(PostResult {
-                    result: value,
-                    receipt: None,
-                })
-            }
+            crate::journal_mutation::apply(
+                tx,
+                subject,
+                PrincipalKind::User,
+                clock,
+                policy.max_future_days,
+                crate::journal_mutation::Command::Post(&input),
+                &mut business,
+            )
+            .map(|value| PostResult {
+                result: value.result,
+                receipt: value.receipt,
+            })
         },
     );
     result.map_err(|fence| PostFailure { fence, business })

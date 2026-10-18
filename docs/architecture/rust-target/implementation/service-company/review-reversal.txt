@@ -1,0 +1,10 @@
+    Blocking waiting for file lock on artifact directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.36s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_storage-ed83d363ae399222)
+
+running 3 tests
+test journal_reversal::tests::child ... ignored, canonical synthetic reversal crash/fault process helper
+test journal_reversal::tests::request_cannot_supply_original_evidence_or_policy ... ok
+test journal_reversal::tests::real_append_only_reversal_and_single_use ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 54 filtered out; finished in 1.93s
