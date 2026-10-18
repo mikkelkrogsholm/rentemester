@@ -1,0 +1,330 @@
+{
+  "scope": "Completed bounded read-only frozen-source idempotency implementation/contract/GDD review; independent source/process132 checks, storage5 tests, authorization-fence1 test and GDD3PASS. No repository/graph changes; no posting/deployed writer authority claimed.",
+  "result": "PASS",
+  "graphify_first": true,
+  "verified_utc": "2026-10-18T05:00:43.342977+00:00",
+  "findings": [
+    {
+      "id": "I01",
+      "severity": "high",
+      "status": "RESOLVED_VERIFIED_FINAL",
+      "paths": [
+        "Cargo.toml:13",
+        "crates/rentemester-storage/src/idempotency.rs:143",
+        "crates/rentemester-storage/src/idempotency/tests.rs:248"
+      ],
+      "finding": "Actual source/native canonical hashes differ for the SAME raw JSON decimal:333333333.33333329 and0.9999999999999999. Workspace serde_json enables raw_value but not float_roundtrip; native decimal parsing can choose a differentbinary64 value before ryu-js formats it.",
+      "impact": "An existing source receipt can conflict falsely on replay, or an equivalent validated request can bind a different payload. JS-compatible rendering alone does not qualify JS-compatible parsing.",
+      "needed": "Qualify correct JSON decimal→binary64 parsing (e.g.float_roundtrip feature) and add actual rawJSON cross-language oracle vectors; do not rely only on Rust json! inputs.",
+      "evidence": "/tmp/rm-idempotency-review-canonical.json:12 actualsource/native ignoredhelper checks,2mismatches, helper exits0.",
+      "resolution": "Storage enables serde_json float_roundtrip; rebuilt release storage5PASS and repeat exact12 rawJSONsource/nativevectors0mismatch.",
+      "final_verification": "Final frozen132-check differential/process harness plus release storage5/fence1 passed; source/native rawJSON decimal and padded ECMAScript actor cases included."
+    },
+    {
+      "id": "I02",
+      "severity": "medium",
+      "status": "RESOLVED_VERIFIED_FINAL",
+      "paths": [
+        "crates/rentemester-storage/src/idempotency.rs:299",
+        "src/core/actor.ts:44"
+      ],
+      "finding": "Native renders untrimmed created_by/program; source resolveActor trims both using ECMAScript trim before special system/system rendering.",
+      "impact": "Input with surrounding spaces yields different durable audit attribution despite claimed source-compatible audit fields.",
+      "needed": "Normalize with shared ECMAScript whitespace predicate before rendering/system specialcase, or explicitly require canonical no-surrounding-whitespace actor/program as a documented native correction.",
+      "evidence": "Actual source resolveActor({createdBy:\" user:synthetic \",createdByProgram:\" test \"}) produced user:synthetic via test; native concatenates original strings.",
+      "resolution": "created_by and program now trim_matches(shared ECMAScript whitespace) before emptiness and system/system render; source delta inspected. Full audit differential harness remains separately pending.",
+      "final_verification": "Final frozen132-check differential/process harness plus release storage5/fence1 passed; source/native rawJSON decimal and padded ECMAScript actor cases included."
+    }
+  ],
+  "execution": {
+    "native": {
+      "result": "PASS",
+      "tests": 5,
+      "ignored": 1,
+      "command": "cargo test --locked --release -p rentemester-storage idempotency::tests::",
+      "log": "/tmp/rm-idempotency-review-native.txt"
+    },
+    "fence": {
+      "result": "PASS",
+      "tests": 1,
+      "command": "cargo test --locked --release -p rentemester-application durable_receipt_replay_is_below_current_authorization_fence",
+      "log": "/tmp/rm-idempotency-review-fence.txt"
+    },
+    "canonical_raw_json": {
+      "result": "FAIL",
+      "checks": 12,
+      "mismatches": 2,
+      "command": "bun run /tmp/rm-idempotency-review-canonical.ts",
+      "log": "/tmp/rm-idempotency-review-canonical.json"
+    },
+    "gdd": {
+      "result": "PASS",
+      "checks": 3,
+      "report": "/tmp/rm-idempotency-review-readiness.json",
+      "limitation": "Structural readiness is not behavioral compatibility evidence."
+    },
+    "fixed_native": {
+      "result": "PASS",
+      "tests": 5,
+      "ignored": 1,
+      "command": "cargo test --locked --release -p rentemester-storage idempotency::tests::",
+      "log": "/tmp/rm-idempotency-review-fixed-native.txt"
+    },
+    "fixed_canonical_raw_json": {
+      "result": "PASS",
+      "checks": 12,
+      "mismatches": 0,
+      "command": "bun run /tmp/rm-idempotency-review-fixed-canonical.ts",
+      "log": "/tmp/rm-idempotency-review-fixed-canonical.json"
+    },
+    "final_parity": {
+      "result": "PASS",
+      "checks": 132,
+      "command": "bun run scripts/rust/verify-idempotency.ts",
+      "report": "/tmp/rm-idempotency-review-parity.json",
+      "stderr": "/tmp/rm-idempotency-review-parity.err",
+      "stderr_bytes": 0
+    },
+    "final_native": {
+      "result": "PASS",
+      "tests": 5,
+      "ignored": 1,
+      "command": "cargo test --locked --release -p rentemester-storage idempotency::tests::",
+      "log": "/tmp/rm-idempotency-review-final-native.txt"
+    },
+    "final_fence": {
+      "result": "PASS",
+      "tests": 1,
+      "command": "cargo test --locked --release -p rentemester-application durable_receipt_replay_is_below_current_authorization_fence",
+      "log": "/tmp/rm-idempotency-review-final-fence.txt"
+    },
+    "final_gdd": {
+      "result": "PASS",
+      "checks": 3,
+      "spec_revision": "sha256:5afa7d40a5f598514869708c8963f69f26d7b3ce79f8c47c814df02ea1bfda5e",
+      "report": "/tmp/rm-idempotency-review-final-readiness.json",
+      "stored_readiness_matches": true,
+      "contract_source_hash_matches": true,
+      "command": "gdd validate docs/architecture/rust-target/implementation/idempotency/gdd.json --profile readiness --scope action.idempotency --scope component.application"
+    }
+  },
+  "checked": [
+    "Stable ledger/operation/principal/key identity and conflict-before-expiry precedence",
+    "Writer-owned no-commit composition, result-shaped business refusal requires fullrollback, lateaudit failure",
+    "Conflict/expired diagnostic audit retained only by deliberate owner commit with no domain effects",
+    "Explicit prune vs retainedexpiredoutcome replay, immutable tombstones and ledgeridentity",
+    "UTF16key/ECMAScripttrim/objectkey sorting, strict typed native bounds; rawJSON numeric parser divergence found",
+    "Stored identity/date/hash/outcome validation and bounded positive safe generated IDs",
+    "Current human fence protects receiptlookup/replay and revoked caller gets no result"
+  ],
+  "limitations": [
+    "Trusted caller must authenticate/authorize current principal+operation before any replay and admit canonical company physical/schema/lifetime.",
+    "Trusted synchronous callback discipline remains mandatory; primitive is not a SQL sandbox or independent transaction/commit owner.",
+    "Outcome::Accepted is uncommitted until caller knowncommit. Outcome::Refused diagnostic may commit only if caller deliberately retains it with no prior domain effects; every Err requires fullrollback.",
+    "Native stricter refusals for unsafe integer-valued numbers/depth/lone surrogates/metadata are explicit corrections, not universal acceptance of arbitrary historicalsource JSON.",
+    "Actual manual posting/reversal, full domain gates, service company quota/fence protocol and deployed transport/runtime/cutover remain outside this storage increment.",
+    "Fullrust regression belongs to main; this review independently ran only bounded132process/storage5/fence1/GDD3."
+  ],
+  "source_sha256": {
+    "Cargo.toml": "654e3b8827f3cca89672a887b55d05137253a5f53b3d3edc3de68f31e6d6c08f",
+    "crates/rentemester-storage/src/idempotency.rs": "7ebc325b373852850c05257899840c8cbf3c8d1f355642bc490d109bda32513b",
+    "crates/rentemester-storage/src/idempotency/tests.rs": "87a1a6d7d0698af3546d739365c750acc611779cbf1c5d7e09cf137b7014455e",
+    "crates/rentemester-application/src/control_fence/tests.rs": "5098214db9d8559473ddcf64455504440948e919bd207dcae0cd929c84abbd2f",
+    "docs/architecture/rust-target/implementation/idempotency/CONTRACT.md": "ba950d7a4f07f80ebff69f2e2ba34d4153dd76751a5467b52fa3e297d6f16056",
+    "docs/architecture/rust-target/implementation/idempotency/gdd.json": "46f9eae44e34f33be2d72dca26096efaa19506def03ae05296f4a790d62635af",
+    "docs/architecture/rust-target/implementation/idempotency/readiness.json": "a5a0263c7a4f8f2f9cb3e3d7d2dd0ba13ef163091fbb1e7e088c82e915303830",
+    "src/core/idempotency.ts": "df58afeb9c27ab48c77fd83e961bdc0c9941a625f552d64dd3f1fc238b5178e0",
+    "src/core/actor.ts": "a1651e0ea1869ae05a9faeda42835f2c340d332f767790f56e891f87727c9e2c",
+    "src/core/migrations/0020-mutation-idempotency-receipts.json": "69ce065a316b622abdd19ff73a4ca70855d540b901e925d5176c056f8b6564f3",
+    "src/core/migrations/0023-local-idempotency-tombstones.json": "3712c6083defe694350eb52dafc779a8193fca60558051d93a35210d004ab6d9",
+    "crates/rentemester-storage/Cargo.toml": "7acda95472666766432f8d186e502a46235d74790a67deff5f3e574e5feff4fc",
+    "Cargo.lock": "afa478fa68fc506f910b9085dd4d97fd03eb9cb1ca318adc87e649fa5bd6ecc4",
+    "crates/rentemester-storage/src/lib.rs": "2805f3bc00488997d5f28f7b92670f901ace2a7e9d733384a981d31d6e4a5ce3",
+    "scripts/rust/verify-idempotency.ts": "7ecee5366b6f97cc67fa371724040e86a9bd68552ae816b9dce3ca3bf499627d",
+    "scripts/rust/verify.ts": "95114eb13f07bc4bb36055db7ded1d5531297d090651298d858d3007e96cbb09",
+    "docs/architecture/rust-target/implementation/README.md": "48004a7c5a6d6d2a9233ddf6832c379f586d6be559d5f35426b20e7c7d86a9ae"
+  },
+  "probe_sha256": "9673c9587b4f4851a52e629ceedf7c4f776ae66a2e0f493c128a93f7f9dae759",
+  "initial_evidence": {
+    "source_sha256": {
+      "Cargo.toml": "654e3b8827f3cca89672a887b55d05137253a5f53b3d3edc3de68f31e6d6c08f",
+      "crates/rentemester-storage/src/idempotency.rs": "147de515d87f404c865fd0bc173ea7317223e47edfae96ddf5125f56d2a2faf9",
+      "crates/rentemester-storage/src/idempotency/tests.rs": "e90e4a246059a7eafe50bf5ee4bc43b8d3c34137299a3acc2617902982af210b",
+      "crates/rentemester-application/src/control_fence/tests.rs": "5098214db9d8559473ddcf64455504440948e919bd207dcae0cd929c84abbd2f",
+      "docs/architecture/rust-target/implementation/idempotency/CONTRACT.md": "83d44a3f09f533f5bfb8e0af34dd7c41fb14611b82797b1524a0c30fd3d3add1",
+      "docs/architecture/rust-target/implementation/idempotency/gdd.json": "da41babfdd12bc33ab21199a1e55b569d8de0fb8f513ac16e8ce0a4dc6f2057e",
+      "docs/architecture/rust-target/implementation/idempotency/readiness.json": "9b145d0c8d9ad25707b2e02ac4e10020682089d0810782a3a031275c007fd209",
+      "src/core/idempotency.ts": "df58afeb9c27ab48c77fd83e961bdc0c9941a625f552d64dd3f1fc238b5178e0",
+      "src/core/actor.ts": "a1651e0ea1869ae05a9faeda42835f2c340d332f767790f56e891f87727c9e2c",
+      "src/core/migrations/0020-mutation-idempotency-receipts.json": "69ce065a316b622abdd19ff73a4ca70855d540b901e925d5176c056f8b6564f3",
+      "src/core/migrations/0023-local-idempotency-tombstones.json": "3712c6083defe694350eb52dafc779a8193fca60558051d93a35210d004ab6d9"
+    },
+    "findings": [
+      {
+        "id": "I01",
+        "severity": "high",
+        "status": "OPEN_REPORTED",
+        "paths": [
+          "Cargo.toml:13",
+          "crates/rentemester-storage/src/idempotency.rs:143",
+          "crates/rentemester-storage/src/idempotency/tests.rs:248"
+        ],
+        "finding": "Actual source/native canonical hashes differ for the SAME raw JSON decimal:333333333.33333329 and0.9999999999999999. Workspace serde_json enables raw_value but not float_roundtrip; native decimal parsing can choose a differentbinary64 value before ryu-js formats it.",
+        "impact": "An existing source receipt can conflict falsely on replay, or an equivalent validated request can bind a different payload. JS-compatible rendering alone does not qualify JS-compatible parsing.",
+        "needed": "Qualify correct JSON decimal→binary64 parsing (e.g.float_roundtrip feature) and add actual rawJSON cross-language oracle vectors; do not rely only on Rust json! inputs.",
+        "evidence": "/tmp/rm-idempotency-review-canonical.json:12 actualsource/native ignoredhelper checks,2mismatches, helper exits0."
+      },
+      {
+        "id": "I02",
+        "severity": "medium",
+        "status": "OPEN_REPORTED",
+        "paths": [
+          "crates/rentemester-storage/src/idempotency.rs:299",
+          "src/core/actor.ts:44"
+        ],
+        "finding": "Native renders untrimmed created_by/program; source resolveActor trims both using ECMAScript trim before special system/system rendering.",
+        "impact": "Input with surrounding spaces yields different durable audit attribution despite claimed source-compatible audit fields.",
+        "needed": "Normalize with shared ECMAScript whitespace predicate before rendering/system specialcase, or explicitly require canonical no-surrounding-whitespace actor/program as a documented native correction.",
+        "evidence": "Actual source resolveActor({createdBy:\" user:synthetic \",createdByProgram:\" test \"}) produced user:synthetic via test; native concatenates original strings."
+      }
+    ],
+    "execution": {
+      "native": {
+        "result": "PASS",
+        "tests": 5,
+        "ignored": 1,
+        "command": "cargo test --locked --release -p rentemester-storage idempotency::tests::",
+        "log": "/tmp/rm-idempotency-review-native.txt"
+      },
+      "fence": {
+        "result": "PASS",
+        "tests": 1,
+        "command": "cargo test --locked --release -p rentemester-application durable_receipt_replay_is_below_current_authorization_fence",
+        "log": "/tmp/rm-idempotency-review-fence.txt"
+      },
+      "canonical_raw_json": {
+        "result": "FAIL",
+        "checks": 12,
+        "mismatches": 2,
+        "command": "bun run /tmp/rm-idempotency-review-canonical.ts",
+        "log": "/tmp/rm-idempotency-review-canonical.json"
+      },
+      "gdd": {
+        "result": "PASS",
+        "checks": 3,
+        "report": "/tmp/rm-idempotency-review-readiness.json",
+        "limitation": "Structural readiness is not behavioral compatibility evidence."
+      }
+    }
+  },
+  "status": "FINAL_FROZEN_SOURCE_AND_DOCS_REVIEW",
+  "remaining_material_findings": [],
+  "pre_freeze_review": {
+    "scope": "Completed bounded read-only initial source/contract review, focused native/fence tests and independent rawJSON numeric parser red/green probes. Main full differential/processharness authoring remains pending final frozen acceptance; no repository/graph writes.",
+    "result": "PASS_WITH_LIMITATIONS",
+    "status": "FIXES_REVIEWED_PENDING_FINAL_HARNESS",
+    "source_sha256": {
+      "Cargo.toml": "654e3b8827f3cca89672a887b55d05137253a5f53b3d3edc3de68f31e6d6c08f",
+      "crates/rentemester-storage/src/idempotency.rs": "147de515d87f404c865fd0bc173ea7317223e47edfae96ddf5125f56d2a2faf9",
+      "crates/rentemester-storage/src/idempotency/tests.rs": "87a1a6d7d0698af3546d739365c750acc611779cbf1c5d7e09cf137b7014455e",
+      "crates/rentemester-application/src/control_fence/tests.rs": "5098214db9d8559473ddcf64455504440948e919bd207dcae0cd929c84abbd2f",
+      "docs/architecture/rust-target/implementation/idempotency/CONTRACT.md": "83d44a3f09f533f5bfb8e0af34dd7c41fb14611b82797b1524a0c30fd3d3add1",
+      "docs/architecture/rust-target/implementation/idempotency/gdd.json": "da41babfdd12bc33ab21199a1e55b569d8de0fb8f513ac16e8ce0a4dc6f2057e",
+      "docs/architecture/rust-target/implementation/idempotency/readiness.json": "9b145d0c8d9ad25707b2e02ac4e10020682089d0810782a3a031275c007fd209",
+      "src/core/idempotency.ts": "df58afeb9c27ab48c77fd83e961bdc0c9941a625f552d64dd3f1fc238b5178e0",
+      "src/core/actor.ts": "a1651e0ea1869ae05a9faeda42835f2c340d332f767790f56e891f87727c9e2c",
+      "src/core/migrations/0020-mutation-idempotency-receipts.json": "69ce065a316b622abdd19ff73a4ca70855d540b901e925d5176c056f8b6564f3",
+      "src/core/migrations/0023-local-idempotency-tombstones.json": "3712c6083defe694350eb52dafc779a8193fca60558051d93a35210d004ab6d9",
+      "crates/rentemester-storage/Cargo.toml": "7acda95472666766432f8d186e502a46235d74790a67deff5f3e574e5feff4fc"
+    },
+    "execution": {
+      "native": {
+        "result": "PASS",
+        "tests": 5,
+        "ignored": 1,
+        "command": "cargo test --locked --release -p rentemester-storage idempotency::tests::",
+        "log": "/tmp/rm-idempotency-review-native.txt"
+      },
+      "fence": {
+        "result": "PASS",
+        "tests": 1,
+        "command": "cargo test --locked --release -p rentemester-application durable_receipt_replay_is_below_current_authorization_fence",
+        "log": "/tmp/rm-idempotency-review-fence.txt"
+      },
+      "canonical_raw_json": {
+        "result": "FAIL",
+        "checks": 12,
+        "mismatches": 2,
+        "command": "bun run /tmp/rm-idempotency-review-canonical.ts",
+        "log": "/tmp/rm-idempotency-review-canonical.json"
+      },
+      "gdd": {
+        "result": "PASS",
+        "checks": 3,
+        "report": "/tmp/rm-idempotency-review-readiness.json",
+        "limitation": "Structural readiness is not behavioral compatibility evidence."
+      },
+      "fixed_native": {
+        "result": "PASS",
+        "tests": 5,
+        "ignored": 1,
+        "command": "cargo test --locked --release -p rentemester-storage idempotency::tests::",
+        "log": "/tmp/rm-idempotency-review-fixed-native.txt"
+      },
+      "fixed_canonical_raw_json": {
+        "result": "PASS",
+        "checks": 12,
+        "mismatches": 0,
+        "command": "bun run /tmp/rm-idempotency-review-fixed-canonical.ts",
+        "log": "/tmp/rm-idempotency-review-fixed-canonical.json"
+      },
+      "final_parity": {
+        "result": "PASS",
+        "checks": 132,
+        "command": "bun run scripts/rust/verify-idempotency.ts",
+        "report": "/tmp/rm-idempotency-review-parity.json",
+        "stderr": "/tmp/rm-idempotency-review-parity.err",
+        "stderr_bytes": 0
+      },
+      "final_native": {
+        "result": "PASS",
+        "tests": 5,
+        "ignored": 1,
+        "command": "cargo test --locked --release -p rentemester-storage idempotency::tests::",
+        "log": "/tmp/rm-idempotency-review-final-native.txt"
+      },
+      "final_fence": {
+        "result": "PASS",
+        "tests": 1,
+        "command": "cargo test --locked --release -p rentemester-application durable_receipt_replay_is_below_current_authorization_fence",
+        "log": "/tmp/rm-idempotency-review-final-fence.txt"
+      },
+      "final_gdd": {
+        "result": "PASS",
+        "checks": 3,
+        "spec_revision": "sha256:5afa7d40a5f598514869708c8963f69f26d7b3ce79f8c47c814df02ea1bfda5e",
+        "report": "/tmp/rm-idempotency-review-final-readiness.json",
+        "stored_readiness_matches": true,
+        "contract_source_hash_matches": true,
+        "command": "gdd validate docs/architecture/rust-target/implementation/idempotency/gdd.json --profile readiness --scope action.idempotency --scope component.application"
+      }
+    },
+    "limitations": [
+      "Main processharness is still being authored; no source-generated/native receipt fullinterop/concurrency/processmatrix claimed by this initial review.",
+      "Trusted caller still owns current authentication, operation binding, canonical schema/physical identity and synchronous callback discipline.",
+      "No native journalposting/servicequota fence/endpoint/lifetime/cutover completion; compositiontest uses an effect ledger.",
+      "Source files may evolve; hashes below identify observed current sources; focused logs are initialreview evidence, not final fixedsource acceptance."
+    ]
+  },
+  "documentation_review": {
+    "result": "PASS",
+    "material_findings": [],
+    "alignment": [
+      "Caller-owned transaction and every Err requires rollback; refusal audit requires deliberate commit with no domain effects",
+      "Current stable-principal authorization before receipt lookup/replay; credential/path/actor excluded from identity",
+      "UTF16/ECMAScript trim/sorting, corrected binary64 parse/render, bounded canonical stored outcomes with parsed-value rather than property-order parity",
+      "Strict native numeric/depth/metadata/ID corrections explicit; source retention deletes outcomes, not wallclock automatic expiry",
+      "Actual posting/reverse/service admission/physical/HTTP/CLI/MCP/distribution/cutover remains open; no fullR14 claim"
+    ]
+  }
+}

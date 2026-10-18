@@ -218,3 +218,7 @@ Current-password change now uses unlocked KDFs, exact current credential/session
 ## Native owner service lifecycle
 
 [Service lifecycle contract](service-lifecycle/CONTRACT.md) qualifies owner-only native list/create/rotate/revoke/recover and five HTTP routes. New lifecycle effects are atomic; secret issuance follows known commit only. Bounded nonsecret credential inventory and operation readback support explicit lost-response cleanup. Historical source saga recovery validates timestamps, transitions, marker binding and event-ID headroom; an expired lease never substitutes for actual legacy/provider drain. Full management UI, service company/dispatch fencing and platform delivery remain open.
+
+## Durable keyed mutation receipts
+
+`idempotency-1` adds caller-transaction receipt execution and source/native replay interoperability, canonical UTF16/JSON fingerprints, permanent key tombstones, explicit retention and same-transaction audits. Current human authorization is checked before lookup/replay through the existing fence. [Contract](idempotency/CONTRACT.md), [readiness](idempotency/readiness.json) and [evidence](idempotency/evidence.json). Actual manual posting/reversal, domain gates and service company admission remain the next R14/R13 work; this storage increment does not close those issues or enable deployed writes.

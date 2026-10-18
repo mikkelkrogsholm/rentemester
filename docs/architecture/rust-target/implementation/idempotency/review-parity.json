@@ -1,0 +1,403 @@
+{
+  "ok": true,
+  "scope": "native durable keyed receipt storage/source interoperability; no complete posting or deployed writer authority",
+  "checks": 132,
+  "observations": [
+    {
+      "id": "raw-number/0"
+    },
+    {
+      "id": "raw-number/1"
+    },
+    {
+      "id": "raw-number/2"
+    },
+    {
+      "id": "raw-number/3"
+    },
+    {
+      "id": "raw-number/4"
+    },
+    {
+      "id": "raw-number/5"
+    },
+    {
+      "id": "raw-number/6"
+    },
+    {
+      "id": "raw-number/7"
+    },
+    {
+      "id": "raw-number/8"
+    },
+    {
+      "id": "raw-number/9"
+    },
+    {
+      "id": "raw-number/10"
+    },
+    {
+      "id": "raw-number/11"
+    },
+    {
+      "id": "hash/12"
+    },
+    {
+      "id": "hash/13"
+    },
+    {
+      "id": "hash/14"
+    },
+    {
+      "id": "hash/15"
+    },
+    {
+      "id": "hash/16"
+    },
+    {
+      "id": "hash/17"
+    },
+    {
+      "id": "hash/18"
+    },
+    {
+      "id": "hash/19"
+    },
+    {
+      "id": "hash/20"
+    },
+    {
+      "id": "hash/21"
+    },
+    {
+      "id": "hash/22"
+    },
+    {
+      "id": "hash/23"
+    },
+    {
+      "id": "hash/24"
+    },
+    {
+      "id": "hash/25"
+    },
+    {
+      "id": "hash/26"
+    },
+    {
+      "id": "hash/27"
+    },
+    {
+      "id": "hash/28"
+    },
+    {
+      "id": "hash/29"
+    },
+    {
+      "id": "hash/30"
+    },
+    {
+      "id": "hash/31"
+    },
+    {
+      "id": "hash/32"
+    },
+    {
+      "id": "hash/33"
+    },
+    {
+      "id": "hash/34"
+    },
+    {
+      "id": "hash/35"
+    },
+    {
+      "id": "hash/36"
+    },
+    {
+      "id": "hash/37"
+    },
+    {
+      "id": "hash/38"
+    },
+    {
+      "id": "hash/39"
+    },
+    {
+      "id": "hash/40"
+    },
+    {
+      "id": "hash/41"
+    },
+    {
+      "id": "hash/42"
+    },
+    {
+      "id": "hash/43"
+    },
+    {
+      "id": "hash/44"
+    },
+    {
+      "id": "hash/45"
+    },
+    {
+      "id": "hash/46"
+    },
+    {
+      "id": "hash/47"
+    },
+    {
+      "id": "hash/48"
+    },
+    {
+      "id": "hash/49"
+    },
+    {
+      "id": "hash/50"
+    },
+    {
+      "id": "hash/51"
+    },
+    {
+      "id": "hash/52"
+    },
+    {
+      "id": "hash/53"
+    },
+    {
+      "id": "hash/54"
+    },
+    {
+      "id": "hash/55"
+    },
+    {
+      "id": "hash/56"
+    },
+    {
+      "id": "hash/57"
+    },
+    {
+      "id": "hash/58"
+    },
+    {
+      "id": "hash/59"
+    },
+    {
+      "id": "key/accepted-60"
+    },
+    {
+      "id": "key/accepted-61"
+    },
+    {
+      "id": "key/accepted-62"
+    },
+    {
+      "id": "key/accepted-63"
+    },
+    {
+      "id": "key/accepted-64"
+    },
+    {
+      "id": "key/refused-65"
+    },
+    {
+      "id": "key/refused-66"
+    },
+    {
+      "id": "key/refused-67"
+    },
+    {
+      "id": "key/refused-68"
+    },
+    {
+      "id": "key/refused-69"
+    },
+    {
+      "id": "hash/native-refusal-70"
+    },
+    {
+      "id": "hash/native-refusal-71"
+    },
+    {
+      "id": "wal/new-interoperable"
+    },
+    {
+      "id": "wal/replay-actor-independent"
+    },
+    {
+      "id": "wal/conflict-audit"
+    },
+    {
+      "id": "wal/source-receipt-native-replay"
+    },
+    {
+      "id": "wal/native-receipt-source-replay"
+    },
+    {
+      "id": "wal/scope-principal"
+    },
+    {
+      "id": "wal/scope-kind"
+    },
+    {
+      "id": "wal/scope-operation"
+    },
+    {
+      "id": "wal/scope-raw_key"
+    },
+    {
+      "id": "wal/prune-at-equality"
+    },
+    {
+      "id": "wal/expired-tombstone-replay-refusal"
+    },
+    {
+      "id": "wal/expired-conflict-precedence"
+    },
+    {
+      "id": "wal/rollback-business"
+    },
+    {
+      "id": "wal/rollback-callback"
+    },
+    {
+      "id": "wal/rollback-size"
+    },
+    {
+      "id": "wal/source-rollback-business"
+    },
+    {
+      "id": "wal/source-rollback-callback"
+    },
+    {
+      "id": "wal/source-rollback-size"
+    },
+    {
+      "id": "wal/late-audit-rollback"
+    },
+    {
+      "id": "wal/missing-outcome-before-expiry"
+    },
+    {
+      "id": "wal/concurrent-native-source-one-effect"
+    },
+    {
+      "id": "wal/death-before-commit"
+    },
+    {
+      "id": "delete/new-interoperable"
+    },
+    {
+      "id": "delete/replay-actor-independent"
+    },
+    {
+      "id": "delete/conflict-audit"
+    },
+    {
+      "id": "delete/source-receipt-native-replay"
+    },
+    {
+      "id": "delete/native-receipt-source-replay"
+    },
+    {
+      "id": "delete/scope-principal"
+    },
+    {
+      "id": "delete/scope-kind"
+    },
+    {
+      "id": "delete/scope-operation"
+    },
+    {
+      "id": "delete/scope-raw_key"
+    },
+    {
+      "id": "delete/prune-at-equality"
+    },
+    {
+      "id": "delete/expired-tombstone-replay-refusal"
+    },
+    {
+      "id": "delete/expired-conflict-precedence"
+    },
+    {
+      "id": "delete/rollback-business"
+    },
+    {
+      "id": "delete/rollback-callback"
+    },
+    {
+      "id": "delete/rollback-size"
+    },
+    {
+      "id": "delete/source-rollback-business"
+    },
+    {
+      "id": "delete/source-rollback-callback"
+    },
+    {
+      "id": "delete/source-rollback-size"
+    },
+    {
+      "id": "delete/late-audit-rollback"
+    },
+    {
+      "id": "delete/missing-outcome-before-expiry"
+    },
+    {
+      "id": "delete/concurrent-native-source-one-effect"
+    },
+    {
+      "id": "delete/death-before-commit"
+    },
+    {
+      "id": "operation/expense_book"
+    },
+    {
+      "id": "operation/payable_register"
+    },
+    {
+      "id": "operation/payable_pay"
+    },
+    {
+      "id": "operation/bank_reconciliation_correction_apply"
+    },
+    {
+      "id": "operation/direct_bank_purchase_payable_correction_apply"
+    },
+    {
+      "id": "metadata/ledger"
+    },
+    {
+      "id": "metadata/payload_hash"
+    },
+    {
+      "id": "metadata/expiry"
+    },
+    {
+      "id": "metadata/outcome_time"
+    },
+    {
+      "id": "metadata/rejection"
+    },
+    {
+      "id": "metadata/invalid_json"
+    },
+    {
+      "id": "metadata/oversized"
+    },
+    {
+      "id": "ledger-identity-isolates-key"
+    },
+    {
+      "id": "actual-delete-commit-unknown-withholds-receipt"
+    },
+    {
+      "id": "ids/audit_log-exhausted"
+    },
+    {
+      "id": "ids/mutation_idempotency_tombstones-exhausted"
+    }
+  ]
+}

@@ -427,3 +427,79 @@ fn cookie_clock_failure_workspace_binding_and_admission_time() {
         "invalid_credentials"
     );
 }
+
+#[test]
+fn durable_receipt_replay_is_below_current_authorization_fence() {
+    use rentemester_storage::idempotency::{self, Input, Operation, Outcome, PrincipalKind};
+    let dir = tempfile::tempdir().unwrap();
+    let mut c = Connection::open(dir.path().join("control.sqlite")).unwrap();
+    control(&c);
+    let mut l = Connection::open(dir.path().join("company.sqlite")).unwrap();
+    company(&l);
+    // Exact receipt DDL; company fixture here qualifies authorization composition only.
+    for raw in [
+        include_str!("../../../../src/core/migrations/0020-mutation-idempotency-receipts.json"),
+        include_str!("../../../../src/core/migrations/0023-local-idempotency-tombstones.json"),
+    ] {
+        let v: Value = serde_json::from_str(raw).unwrap();
+        l.execute_batch(v["sql"].as_str().unwrap()).unwrap();
+    }
+    l.execute_batch("CREATE TABLE audit_log(id INTEGER PRIMARY KEY,event_type TEXT,entity_type TEXT,entity_id TEXT,message TEXT,actor TEXT,created_at TEXT DEFAULT CURRENT_TIMESTAMP)").unwrap();
+    let payload = json!({"amount":"100.00"});
+    for replay in [false, true] {
+        let committed = execute(
+            &mut c,
+            &mut l,
+            principal(),
+            selection(),
+            Permission::CompanyLedgerPost,
+            |tx| {
+                idempotency::execute(
+                    tx,
+                    Input {
+                        key: "synthetic-retry",
+                        operation: Operation::JournalPost,
+                        principal_kind: PrincipalKind::User,
+                        subject: "u",
+                        payload: &payload,
+                        created_by: "user:u",
+                        created_by_program: "test",
+                        now_ms: 1_767_225_600_000,
+                    },
+                    |tx| {
+                        if replay {
+                            panic!("replay callback");
+                        }
+                        Ok(json!({"ok":true,"effect":effect(tx)?}))
+                    },
+                )
+                .map_err(|failure| failure.error)
+            },
+        )
+        .unwrap();
+        assert!(
+            matches!(committed.value,Outcome::Accepted{receipt,..} if receipt.replayed==replay)
+        );
+    }
+    c.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor) VALUES('u','a','revoke',NULL,'agent:synthetic')",[]).unwrap();
+    let before = l.total_changes();
+    let denied = execute(
+        &mut c,
+        &mut l,
+        principal(),
+        selection(),
+        Permission::CompanyLedgerPost,
+        |_| -> Result<(), Error> {
+            panic!("revoked principal must not look up or replay protected receipt")
+        },
+    )
+    .err()
+    .unwrap();
+    assert_eq!(denied.error.code, "access_denied");
+    assert_eq!(l.total_changes(), before);
+    assert_eq!(
+        l.query_row("SELECT COUNT(*) FROM companion", [], |r| r.get::<_, i64>(0))
+            .unwrap(),
+        1
+    );
+}

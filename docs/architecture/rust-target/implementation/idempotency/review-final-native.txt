@@ -1,0 +1,16 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling rentemester-storage v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-storage)
+    Finished `release` profile [optimized] target(s) in 3.28s
+     Running unittests src/lib.rs (target/release/deps/rentemester_storage-d46d1b64d1c6941d)
+
+running 6 tests
+test idempotency::tests::child ... ignored, native idempotency process helper
+test idempotency::tests::canonical_bounds_utf16_keys_and_native_precision ... ok
+test idempotency::tests::deferred_read_transaction_and_invalid_inputs_refuse_before_callback ... ok
+test idempotency::tests::malformed_stored_outcome_and_id_exhaustion_never_reexecute ... ok
+test idempotency::tests::stable_receipt_replay_conflict_retention_and_business_rollback ... ok
+test idempotency::tests::principal_operation_scope_and_late_audit_failure ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 45 filtered out; finished in 3.39s

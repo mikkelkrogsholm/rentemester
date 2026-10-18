@@ -1,0 +1,230 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native durable keyed mutation receipts",
+    "goal": "Atomic caller-owned domain effects and stable durable receipt replay with immutable tombstones",
+    "scope": "Storage primitive and current human fence composition, not full native post/reverse or deployment"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Durable receipt storage",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Validated stable receipt scope, canonical payload, source-compatible outcome/audit and retention inside admitted caller write transaction",
+        "rationale": "Cross-interface retries and key rotation must never duplicate company effects or release revoked outcomes",
+        "excludes": [
+          "Complete posting/reversal/domain gates, actual service company admission and physical/deployed runtime qualification"
+        ]
+      },
+      "interfaces": [
+        "action.idempotency"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Fresh source-compatible receipt and same-payload replay execute domain effects once",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic company databases and real source receipt executor",
+        "when": "Native keyed receipt execution or pruning under admitted writer",
+        "then": "Fresh source-compatible receipt and same-payload replay execute domain effects once"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Unauthorized replay, malformed inputs/outcomes and failed business/SQL callbacks refuse and roll back",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic company databases and real source receipt executor",
+        "when": "Native keyed receipt execution or pruning under admitted writer",
+        "then": "Unauthorized replay, malformed inputs/outcomes and failed business/SQL callbacks refuse and roll back"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Ledger UUID, stable principal and operation scope survive path/actor/credential changes; tombstones survive pruning",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic company databases and real source receipt executor",
+        "when": "Native keyed receipt execution or pruning under admitted writer",
+        "then": "Ledger UUID, stable principal and operation scope survive path/actor/credential changes; tombstones survive pruning"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Changed payload conflicts before expired outcome; retained outcomes replay regardless of retention time; malformed metadata and exhausted IDs refuse",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic company databases and real source receipt executor",
+        "when": "Native keyed receipt execution or pruning under admitted writer",
+        "then": "Changed payload conflicts before expired outcome; retained outcomes replay regardless of retention time; malformed metadata and exhausted IDs refuse"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Actual separate same-key writers elect one outcome, process death rolls back uncommitted business/receipt/audit state",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic company databases and real source receipt executor",
+        "when": "Native keyed receipt execution or pruning under admitted writer",
+        "then": "Actual separate same-key writers elect one outcome, process death rolls back uncommitted business/receipt/audit state"
+      }
+    },
+    "action.idempotency": {
+      "kind": "action",
+      "description": "Execute or replay one keyed mutation in caller transaction",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "business_payload": {
+            "type": "object"
+          },
+          "client_key": {
+            "type": "string"
+          },
+          "operation": {
+            "type": "string"
+          }
+        },
+        "context": {
+          "trusted_authorized_transaction": {
+            "type": "object",
+            "description": "Current authenticated stable principal, explicit actor, trusted clock and admitted main writer"
+          }
+        },
+        "output": {
+          "type": "object",
+          "description": "Uncommitted outcome and receipt; application releases only after known commit"
+        },
+        "errors": {
+          "refused": "IDEMPOTENCY_CONFLICT / IDEMPOTENCY_OUTCOME_EXPIRED with optional diagnostic audit; storage/domain rejection requires rollback"
+        },
+        "preconditions": [
+          "Current operation authorization before receipt lookup/replay",
+          "Admitted canonical physical company and main write transaction; synchronous trusted callback"
+        ],
+        "postconditions": [
+          "Successful business effects, tombstone, outcome and audit share caller commit",
+          "Replay invokes no domain callback; stable subject survives credential/actor/path change",
+          "All errors require caller rollback; pruned keys remain permanently reserved"
+        ],
+        "external_effects": [
+          "Business callback, append-only tombstone/outcome and idempotency audit inside one SQLite transaction",
+          "Retention deletes only expired outcomes; no network/mail/production effects"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Replay disclosure and duplicate effects require current authorization, stable scope, atomic domain/receipt/audit, bounded canonical bytes, retained tombstones and actual writer/crash checks",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Replay disclosure and duplicate effects require current authorization, stable scope, atomic domain/receipt/audit, bounded canonical bytes, retained tombstones and actual writer/crash checks",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Replay disclosure and duplicate effects require current authorization, stable scope, atomic domain/receipt/audit, bounded canonical bytes, retained tombstones and actual writer/crash checks",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Replay disclosure and duplicate effects require current authorization, stable scope, atomic domain/receipt/audit, bounded canonical bytes, retained tombstones and actual writer/crash checks",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Replay disclosure and duplicate effects require current authorization, stable scope, atomic domain/receipt/audit, bounded canonical bytes, retained tombstones and actual writer/crash checks",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Authorize before invocation; canonical stable scope; domain+receipt+audit atomic caller commit; every error aborts caller; preserve permanent tombstone"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.idempotency",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.idempotency",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.idempotency",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.idempotency",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.idempotency",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.idempotency",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native durable keyed mutation receipts",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "ba950d7a4f07f80ebff69f2e2ba34d4153dd76751a5467b52fa3e297d6f16056"
+      }
+    }
+  }
+}

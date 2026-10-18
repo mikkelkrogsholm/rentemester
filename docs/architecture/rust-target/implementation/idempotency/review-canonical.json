@@ -1,0 +1,65 @@
+{
+  "checks": 12,
+  "results": [
+    {
+      "index": 0,
+      "inputNumber": "333333333.33333329",
+      "match": false
+    },
+    {
+      "index": 1,
+      "inputNumber": "1e-27",
+      "match": true
+    },
+    {
+      "index": 2,
+      "inputNumber": "4.50",
+      "match": true
+    },
+    {
+      "index": 3,
+      "inputNumber": "2e-3",
+      "match": true
+    },
+    {
+      "index": 4,
+      "inputNumber": "1e-300",
+      "match": true
+    },
+    {
+      "index": 5,
+      "inputNumber": "1.2345678901234567",
+      "match": true
+    },
+    {
+      "index": 6,
+      "inputNumber": "0.9999999999999999",
+      "match": false
+    },
+    {
+      "index": 7,
+      "inputNumber": "1.0000000000000002",
+      "match": true
+    },
+    {
+      "index": 8,
+      "inputNumber": "-0",
+      "match": true
+    },
+    {
+      "index": 9,
+      "inputNumber": "1e-7",
+      "match": true
+    },
+    {
+      "index": 10,
+      "inputNumber": "1e-6",
+      "match": true
+    },
+    {
+      "index": 11,
+      "inputNumber": "9007199254740991",
+      "match": true
+    }
+  ]
+}
