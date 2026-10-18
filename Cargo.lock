@@ -1376,6 +1376,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "rentemester-host"
+version = "0.1.0"
+dependencies = [
+ "rentemester-application",
+ "rentemester-runtime",
+ "rusqlite",
+ "tempfile",
+]
+
+[[package]]
 name = "rentemester-runtime"
 version = "0.1.0"
 dependencies = [

@@ -1,0 +1,143 @@
+{
+  "scope": "Final bounded private Owner lifecycle/API source and main-executed evidence review; no productwriter/domainacceptance claim",
+  "captured_at": "2026-10-18T08:12:36.449277+00:00",
+  "source_hashes": {
+    "crates/rentemester-host/src/lib.rs": "5271688d898eb6eb1b49148be56c860acdd8cb4eb9d85ec1aac3a5a753b3adee",
+    "crates/rentemester-host/Cargo.toml": "8e478819ed80c56bceac05b618d2ec592d9effd8e6dd3c20845b63e18c082e66",
+    "crates/rentemester-runtime/src/namespace.rs": "7a3d89d239503104ece49bbd1704a847b0cafb125c1b61642cdcfb47f9e488a3",
+    "crates/rentemester-runtime/src/namespace/linux.rs": "bde02d44cbca4ac96f1927ca5aa56f51c879da94af64f91c686a17bd0a784080",
+    "crates/rentemester-application/src/journal_post.rs": "d89b180a7943645c199fe60ed5f8e02dd86456e3e3a26fd6bc16705e3aae742f",
+    "crates/rentemester-application/src/journal_reversal.rs": "932a4806756966406839ae3d28f244b8a412aabec83fcbc7851985dd2ef1b0bf",
+    "crates/rentemester-application/src/service_company.rs": "6bdff374cf7afb71ca85b549c16c44b92fc9bcd4dcb4b571cb3468a363456158",
+    "vendor/rusqlite-0.40.2/src/lib.rs": "c3820990e4bd780ab899c04f21520df2ff09a8a37fc4f32ac5cdd6c5f456f39b",
+    "vendor/rusqlite-0.40.2/src/inner_connection.rs": "a2088e3274a33b2e6b4fc17ec16054f8e3add78c3ba898042b76096a9abf71af",
+    "crates/rentemester-host/src/tests.rs": "8a851fa2573dc554125bb0b3a5dcb4a75656e00ced81506e4acb699580d4e728",
+    "scripts/rust/verify-broker-owner-linux.py": "4c9c229b204bfbed888f7f5baa32e3e02592bb5170e3f7644859950502ba351a",
+    "scripts/rust/verify-broker-namespace-linux.py": "18a4f4e68cdb447bb9c469ca98c6929aeada6959a726d97768237ce5672f645f",
+    "docs/architecture/rust-target/implementation/host-owner/CONTRACT.md": "23dff754e2568dbfd1aaab5396f21aab00ddfee0b5f34b12888abbc3a9ba26d5",
+    "docs/architecture/rust-target/implementation/host-owner/gdd.json": "76e153ff9752e6faceeec0c498e04abcaa8f6d5ed6e76a35d9602e327e08f0bc",
+    "docs/architecture/rust-target/implementation/host-owner/readiness.json": "066fdb52aa8b0c042f8363a5b81f8bbbd0c94acbf217c3b3df8f830a45a70697"
+  },
+  "status": "No unresolved material findings within qualified physical-owner lifecycle and private API scope",
+  "findings": [],
+  "source_checks": [
+    {
+      "property": "No owned Connection or guard escape",
+      "evidence": "Owner.held,Slots,Held,CloseFailure.owner private; Owner offers only typed post/reverse human/service, consuming try_close and no accessors/callback/Deref/Clone/raw extraction. Attempt carries concrete application results/failures containing owned data/receipts and reuse flags, not borrowed Connection/Transaction."
+    },
+    {
+      "property": "Partial constructor closes safely",
+      "evidence": "NamespaceGuard acquired before Owner/Held installed and before either SQLite open. Slots initiallyNone; control/company success stored before next ?; all failures drop Owner through Held explicit close. READ_WRITE|NOFOLLOW withoutCREATE; PRAGMA config then identity observation before reusable=true."
+    },
+    {
+      "property": "BUSY close retains exact resource set",
+      "evidence": "Slots.close takes each Option and restores returned Connection on close failure, attempts company thencontrol, returns true onlybothNone. try_close retires and returns opaque CloseFailure owning fullOwner; retry consumesfailure and triesclose again."
+    },
+    {
+      "property": "Drop quarantines unresolved connections and namespace",
+      "evidence": "Held Drop takes Slots, explicitly closes, mem::forget(slots) on unresolvedclose, retaining entire NamespaceGuard/lease/layout descriptors untilprocess exit rather than ordinary Connection destructor failure. On knownclosedall, dropping retained guard is safe."
+    },
+    {
+      "property": "Dispatch sticky retirement and panic",
+      "evidence": "admit checks reusable then setsfalse before observation/application/Clock calls. If app/panic preventsfinish, owner remainsretired. finish restores reuse only on reportedconnection reuse plus freshnamespace/handle observation; namespace invalidation itself sticky."
+    },
+    {
+      "property": "Known commit/outcome preserved",
+      "evidence": "Typed application outcome stored unchanged beforepost-observation. finish returns retiredflag; return Attempt preserves originalCommitted/Failure/Service usage-business axes rather thanmapping knowncommit toOwnerError. Entry admission failure occursbeforeany applicationcall."
+    },
+    {
+      "property": "Supported-platform refusal and crate boundary",
+      "evidence": "NamespaceGuard nonLinux stub refuses acquire beforeworkspace effects; newhost uses existingnamespace default guard and vendored rusqlite identity feature. WorkspaceunsafeCodeforbid inherited; no raw unsafe host code."
+    }
+  ],
+  "changes_since_source_review": [
+    "CloseFailure now privately boxes Owner; retry consumes exact boxed retired owner; no new resource/connection accessor.",
+    "Constructor production hook absent outside cfgtest; actual test fault hook follows control slot storage and precedes company open.",
+    "Contract explicitly warns ordinary SQLite opening/configuring may recover journals; not source-byte-read-only or schemaadoption permission."
+  ],
+  "actual_test_oracles": [
+    {
+      "property": "Qualified Owner rather than generic helper",
+      "evidence": "Linux broker_probe uses actual Owner::open_protected under protected dedicatedUID10001; driver waits RM_OWNER_OPEN=held. Nativegeneric Held tests supplement but do not replace Linux Owner proof."
+    },
+    {
+      "property": "Exact BUSY retention/quarantine",
+      "evidence": "Actual prepared statement forgotten on selected ownercontrol/company, making consuming sqlite3_close BUSY. Target contender sees leasebusy+DBbusy, other sees leasebusy+DBfree. CloseFailure retry remains pending, Drop keeps lease/targetwriter while parentprocessalive; onlyprocessexit frees."
+    },
+    {
+      "property": "Construction fault reachability",
+      "evidence": "cfgtest hook in actualconstructor immediately after first Connection slot is stored. CleanErr closes/release; BUSYErr and caught panic keep controlwriter+wholelease whilecompanyneveropened; bothfreeafterprocessexit."
+    },
+    {
+      "property": "Normal persistence and retirement",
+      "evidence": "WAL/DELETE commits bothsynthetic rows, closes both and freesroot; newprocess reopens physicalfiles and counts2/2. Rootalias changes retireactualOwner permanently afterrestoration; explicitadmissionpanic retires beforecontinuation."
+    },
+    {
+      "property": "No connection extraction",
+      "evidence": "6actual compilefail doctests test privateheld/control/company field access, callback, into_inner and AsMut routes. CloseFailure.owner is private Box by sourceinspection; no separate CloseFailure extraction doctest claimed. Additional externalconsumer CloseFailure.owner E0616, Owner Deref E0277, and all7publicmethodpositivecontrol compiled as expected; no crate-resolution-only falsepositive."
+    },
+    {
+      "property": "Qualification packaging",
+      "evidence": "Driver copies only Cargo/crates/vendor plus required compile-time src/core migrations JSON, into private readonly snapshot; no realworkspace mount. Shared supportcleanup tracks exactnamedcontainers/volumes; successreportonlyaftercleanup. Current final output cleanup_verifiedtrue.",
+      "initial_build_failure": "Recorded /tmp/rm-host-linux-build-errors.json omitted compiletime schemaJSON; finaldriver copies36company+30workspace migration files; final293sourceanchors match."
+    }
+  ],
+  "verification": [
+    {
+      "owner": "main executed; reviewer inspected actual driver/log/manifest",
+      "command": "python3 scripts/rust/verify-broker-owner-linux.py --output /tmp/rm-host-linux-parity.json",
+      "result": "50checksPASS,396actualdifferentUIDsyscall denials6x66,ARM64Linuxextfamilycandidate,cleanupverified",
+      "artifacts": [
+        "/tmp/rm-host-linux-parity.json",
+        "/tmp/rm-host-linux-parity-v2.txt"
+      ],
+      "source_files_verified": 293,
+      "source_mismatches": 0,
+      "driver_hash_matches": true,
+      "support_hash_matches": true
+    },
+    {
+      "owner": "main executed; reviewer parsed logs",
+      "result": "164nativeunit+6compilefaildoc=170passed,0failed,31ignored",
+      "artifact": "/tmp/rm-host-workspace-native.txt"
+    },
+    {
+      "owner": "main executed; reviewer inspected successfulFinished",
+      "result": "macOSworkspaceClippyPASS",
+      "artifact": "/tmp/rm-host-workspace-clippy.txt"
+    },
+    {
+      "owner": "reviewer executed",
+      "command": "uv run --project /Users/mikkelfreltoftkrogsholm/Projekter/gdd gdd validate docs/architecture/rust-target/implementation/host-owner/gdd.json --profile readiness --scope action.host_owner --scope component.host --output /tmp/rm-host-owner-review-readiness.json",
+      "result": "3PASS",
+      "spec_revision": "sha256:1e5a4e9378ad19221248ebe111bdf95ebc06a91160ea12a08b88b2dd62704e5c",
+      "artifact": "/tmp/rm-host-owner-review-readiness.json"
+    },
+    {
+      "owner": "main executed; reviewer inspected exact expecteddiagnostics/positivecontrol",
+      "result": "3externalprivacycasesPASS: CloseFailure.owner inaccessible E0616, Owner Deref absent E0277, all7 publicmethod references compile",
+      "artifact": "/tmp/rm-host-privacy.json",
+      "diagnostic_integrity": "Successful positivecontrol demonstrates crate resolution; expected privacy/type diagnostics occur, not erroneous missingcrate E0463."
+    }
+  ],
+  "limits": [
+    "No duplicate50check/native/macclippy/fullintegration run; independentreview inspects main executed evidence and independently validates exactsourcehashes/GDD.",
+    "Fixedpublictypeddispatch/applicationoutcome preservation source-reviewed and compiles; successfulcanonicaldomainposting/reversal through Owner notruntimequalified in50syntheticphysicalchecks.",
+    "LinuxClippy pending; notclaimedPASS bythisreview.",
+    "No hostinitializer/bootstrap/canonicalschemalogicaladoption/priorwriterdrain or actualserverCLI/MCPcomposition qualification.",
+    "Root/operator and enrolledbrokerUIDcode remaintrusted; priorpassed/inheriteddescriptors requireofflineprovisioning.",
+    "macOSlocalnamespaceprofile,Windows/platform/deployment/powerloss and fullUI/distribution/cutover remainopen.",
+    "GDDwritten duringimplementation;3PASSstructuralreadiness isnotbehavioralacceptance orwholeissuecompletion."
+  ],
+  "artifact_hashes": {
+    "/tmp/rm-host-linux-parity.json": "c3cb427ac6e424fe795387df26fbe7bf908eaadb597a5e244f00b86a58119bdd",
+    "/tmp/rm-host-linux-parity-v2.txt": "1c3e95c2f3b6c446b51856a32627556e58c01da9a8d2c398c441621ea1a323ff",
+    "/tmp/rm-host-linux-build-errors.json": "6fe5ba84a88ea96ed4be6122dd86e897286332b795284c44db475c205366241e",
+    "/tmp/rm-host-workspace-native.txt": "3ed679442e1ac0a5b2c14d8fdd035ec107a11a8a5c16f467e5742c02c24e8792",
+    "/tmp/rm-host-workspace-clippy.txt": "ee00b6d925088eb03f3b875d1ebfa1ac72308358c3192d10d8df10db991b4491",
+    "/tmp/rm-host-owner-review-readiness.json": "066fdb52aa8b0c042f8363a5b81f8bbbd0c94acbf217c3b3df8f830a45a70697",
+    "/tmp/rm-host-owner-review-readiness.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/tmp/rm-host-owner-review-readiness.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/tmp/rm-host-privacy.json": "49c613701513d7964ef343854c5a2ab7cc88996263e0a46152e996645a2acbd3"
+  }
+}

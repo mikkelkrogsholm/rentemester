@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "cases": [
+    {
+      "id": "private_close_failure",
+      "source": "fn inspect(f: rentemester_host::CloseFailure) { let _ = f.owner; }",
+      "exit_code": 1,
+      "expected_diagnostic": "E0616",
+      "stderr": "error[E0616]: field `owner` of struct `CloseFailure` is private\n --> /var/folders/hh/znsnvw8s1p31zr7fywf_cgfc0000gn/T/rm-host-privacy-jydj7qog/private_close_failure.rs:1:59\n  |\n1 | fn inspect(f: rentemester_host::CloseFailure) { let _ = f.owner; }\n  |                                                           ^^^^^ private field\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0616`.\n"
+    },
+    {
+      "id": "no_deref",
+      "source": "fn inspect(o: rentemester_host::Owner) { let _ = std::ops::Deref::deref(&o); }",
+      "exit_code": 1,
+      "expected_diagnostic": "E0277",
+      "stderr": "error[E0277]: the trait bound `Owner: Deref` is not satisfied\n --> /var/folders/hh/znsnvw8s1p31zr7fywf_cgfc0000gn/T/rm-host-privacy-jydj7qog/no_deref.rs:1:73\n  |\n1 | fn inspect(o: rentemester_host::Owner) { let _ = std::ops::Deref::deref(&o); }\n  |                                                  ---------------------- ^^ the trait `Deref` is not implemented for `Owner`\n  |                                                  |\n  |                                                  required by a bound introduced by this call\n\nerror[E0277]: the trait bound `Owner: Deref` is not satisfied\n --> /var/folders/hh/znsnvw8s1p31zr7fywf_cgfc0000gn/T/rm-host-privacy-jydj7qog/no_deref.rs:1:50\n  |\n1 | fn inspect(o: rentemester_host::Owner) { let _ = std::ops::Deref::deref(&o); }\n  |                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Deref` is not implemented for `Owner`\n\nerror: aborting due to 2 previous errors\n\nFor more information about this error, try `rustc --explain E0277`.\n"
+    },
+    {
+      "id": "public_api",
+      "source": "fn use_api() { let _ = rentemester_host::Owner::open_protected; let _ = rentemester_host::Owner::post_human; let _ = rentemester_host::Owner::reverse_human; let _ = rentemester_host::Owner::post_service; let _ = rentemester_host::Owner::reverse_service; let _ = rentemester_host::Owner::try_close; let _ = rentemester_host::CloseFailure::retry; }",
+      "exit_code": 0,
+      "expected_diagnostic": null,
+      "stderr": "warning: function `use_api` is never used\n --> /var/folders/hh/znsnvw8s1p31zr7fywf_cgfc0000gn/T/rm-host-privacy-jydj7qog/public_api.rs:1:4\n  |\n1 | fn use_api() { let _ = rentemester_host::Owner::open_protected; let _ = rentemester_host::Owner::post_human; let _ = rentemester_host...\n  |    ^^^^^^^\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: 1 warning emitted\n\n"
+    }
+  ]
+}

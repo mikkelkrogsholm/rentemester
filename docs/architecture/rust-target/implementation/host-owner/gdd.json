@@ -1,0 +1,263 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Private broker connection owner",
+    "goal": "Own actual SQLite connections and retain namespace protection until every connection is confirmed closed",
+    "scope": "Physical owning runtime and fixed typed dispatch; canonical bootstrap/adoption/transports and full platform qualification remain required"
+  },
+  "nodes": {
+    "component.host": {
+      "kind": "component",
+      "description": "Private broker connection ownership",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Layout before SQLite open, fixed application dispatch, sticky retirement and confirmed-close/BUSY quarantine",
+        "rationale": "Do not release protection while any real SQLite handle survives",
+        "excludes": [
+          "Bootstrap, schema adoption, legacy drain qualification, endpoints, deployment, macOS namespace profile"
+        ]
+      },
+      "interfaces": [
+        "action.host_owner"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Original files preserve committed rows and lease is released after confirmed close",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Offline-provisioned strict Linux profile and synthetic persistent files",
+        "when": "Open actual owner, commit, close both handles and reopen in another process",
+        "then": "Original files preserve committed rows and lease is released after confirmed close"
+      }
+    },
+    "scenario.busy": {
+      "kind": "scenario",
+      "description": "Retain exact busy connection and entire guard until process exit",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Either real SQLite connection has an outstanding prepared statement and active transaction",
+        "when": "Close, retry and drop the owner or close failure",
+        "then": "Retain exact busy connection and entire guard until process exit"
+      }
+    },
+    "scenario.partial": {
+      "kind": "scenario",
+      "description": "Clean connection closes or busy connection and complete guard are quarantined",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Control connection opened while company is not yet opened",
+        "when": "Return an error or unwind a test-only fault in actual constructor",
+        "then": "Clean connection closes or busy connection and complete guard are quarantined"
+      }
+    },
+    "scenario.retired": {
+      "kind": "scenario",
+      "description": "Retirement remains sticky and SQLite locks are preserved",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Owner admitted or physical namespace changed",
+        "when": "Dispatch unwinds or namespace is invalidated and restored",
+        "then": "Retirement remains sticky and SQLite locks are preserved"
+      }
+    },
+    "scenario.privacy": {
+      "kind": "scenario",
+      "description": "Compilation fails; fixed typed methods expose only known application outcomes",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "External consumer of the public host crate",
+        "when": "Attempt mutable callback, connection field or conversion extraction",
+        "then": "Compilation fails; fixed typed methods expose only known application outcomes"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Lease and SQLite locks remain, client file access is refused; process exit releases quarantine",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "First owner holds lease and WAL or DELETE transactions",
+        "when": "Independent same-broker contenders and different-UID clients compete",
+        "then": "Lease and SQLite locks remain, client file access is refused; process exit releases quarantine"
+      }
+    },
+    "scenario.outcome": {
+      "kind": "scenario",
+      "description": "Preserve exact application outcome and separately signal retirement without manufacturing a retry",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Application has committed or reports ambiguous/rejected outcome",
+        "when": "Observe connection reuse flags and physical namespace after dispatch",
+        "then": "Preserve exact application outcome and separately signal retirement without manufacturing a retry"
+      }
+    },
+    "action.host_owner": {
+      "kind": "action",
+      "description": "Own protected connections, dispatch fixed commands and close safely",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "trusted_profile_workspace_selection_and_fixed_commands": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "offline_provisioned_native_workspace_and_verified_credentials": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object",
+          "description": "Opaque Owner or exact typed application outcome with retirement; close failure owns only retired private state"
+        },
+        "errors": {
+          "refused": "Namespace/profile/DB/retired refusal, typed original application failures, or close pending"
+        },
+        "preconditions": [
+          "Offline provision, current strict namespace and enrolled trusted broker UID",
+          "Native schema and prior-writer drain/bootstrap authority established separately by trusted host",
+          "No independent regular descriptor operations on live protected SQLite inodes"
+        ],
+        "postconditions": [
+          "Every SQLite handle closes successfully before layout release, or whole unresolved set survives until process exit",
+          "No public mutable connection/callback/conversion escape",
+          "Retirement is sticky on panic/validation/reuse failure; exact application outcome retained"
+        ],
+        "external_effects": [
+          "Acquire directory flock and actual SQLite handles; ordinary journal recovery may write existing files",
+          "Fixed commands may commit application business/audit/idempotency changes",
+          "Pending-close quarantine retains OS descriptors, locks and memory until process exit"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Private non-escaping API, partial construction and unsupported profile",
+            "scenarios": [
+              "scenario.privacy",
+              "scenario.partial",
+              "scenario.retired"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Real DB locks and entire workspace lease retained through close BUSY",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "authorization": {
+            "relevant": true,
+            "rationale": "Physical ownership does not replace frozen application authorization or trusted provisioning",
+            "scenarios": [
+              "scenario.privacy",
+              "scenario.retired"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Exact application outcome/receipt survives postdispatch retirement; never invent automatic retry",
+            "scenarios": [
+              "scenario.outcome"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Never release pinned resources while either SQLite close remains unconfirmed",
+            "scenarios": [
+              "scenario.busy",
+              "scenario.partial",
+              "scenario.outcome"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.busy",
+            "scenario.partial",
+            "scenario.retired",
+            "scenario.privacy"
+          ]
+        }
+      },
+      "behavior": "Acquire namespace before first open; retain partial state; retire before dispatch; preserve original typed result and separately report retirement; explicitly close every handle or quarantine entire unresolved state"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.host_owner",
+      "to": "component.host",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.host_owner",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.busy",
+      "from": "scenario.busy",
+      "to": "action.host_owner",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.partial",
+      "from": "scenario.partial",
+      "to": "action.host_owner",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.retired",
+      "from": "scenario.retired",
+      "to": "action.host_owner",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.privacy",
+      "from": "scenario.privacy",
+      "to": "action.host_owner",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.host_owner",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.outcome",
+      "from": "scenario.outcome",
+      "to": "action.host_owner",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Private broker connection owner",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "23dff754e2568dbfd1aaab5396f21aab00ddfee0b5f34b12888abbc3a9ba26d5"
+      }
+    }
+  }
+}

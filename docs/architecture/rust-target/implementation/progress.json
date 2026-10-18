@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "broker-namespace-1",
-  "code_revision": "sha256:da08cf307c454775ec304d8f9ffd34922478da6efdd25153221bbb5d6e0708b3",
-  "spec_revision": "sha256:c45af5225ae40c779f1a55baa57aa516d8c778ecd39b5bfd2643dbf9973ad1ec",
-  "state": "verified-dedicated-UID-Linux-namespace-prerequisite-without-owning-runtime",
+  "current_increment": "host-owner-1",
+  "code_revision": "sha256:292994dd1eac502fd5ce4e88df1c2ab4a736e3a5edb31ee861c2cf2594aecb28",
+  "spec_revision": "sha256:1e5a4e9378ad19221248ebe111bdf95ebc06a91160ea12a08b88b2dd62704e5c",
+  "state": "verified-private-physical-owner-confirmed-close-BUSY-quarantine-with-fixed-typed-dispatch",
   "issues_closed": [],
   "next": [
-    "Build minimal host crate with private owning connections and fixed typed application dispatch; enforce layout-before-open and explicit confirmed-close/quarantine on BUSY, including constructor failure/panic. Compose qualified Linux namespace, then fresh initialization/reopen/owner bootstrap and actual HTTP/CLI/MCP; macOS local profile and full React/GPUI/distribution/cutover remain required.",
+    "Build canonical empty-only protected native initializer, reopen/identity lineage and first-owner/auth bootstrap, then successful human/service post/reversal through actual owner and HTTP/CLI/MCP composition. Qualify actual legacy CLI denial/drain, constructor/company and operational failure paths, deployment crash recovery and eventual macOS local namespace; full React/GPUI/distribution/cutover remain required.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,18 +21,25 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "sqlite-identity-1",
-    "code_revision": "sha256:e976460f8b6a36250d7031af0d2b968c5577c6ac646fc31f08a8069b96d46e7d",
-    "spec_revision": "sha256:90568e15ed01c91ea1ef824feddb2e1fa9098f8524dc42d742fe5f67ee0452c6",
-    "state": "verified-actual-main-handle-identity-and-lock-preserving-layout-observation"
+    "current_increment": "broker-namespace-1",
+    "code_revision": "sha256:da08cf307c454775ec304d8f9ffd34922478da6efdd25153221bbb5d6e0708b3",
+    "spec_revision": "sha256:c45af5225ae40c779f1a55baa57aa516d8c778ecd39b5bfd2643dbf9973ad1ec",
+    "state": "verified-dedicated-UID-Linux-namespace-prerequisite-without-owning-runtime"
   },
   "evidence": {
-    "report": "broker-owner/evidence.json",
-    "parity": "broker-owner/parity.json",
-    "rust_tests_passed": 161,
-    "ignored_subprocess_helpers": 30,
-    "Linux_namespace_checks": 41,
-    "different_UID_denials": 132,
+    "report": "host-owner/evidence.json",
+    "parity": "host-owner/parity.json",
+    "native_workspace_tests": 164,
+    "compile_fail_documentation_tests": 6,
+    "ignored_helpers_mac": 31,
+    "Linux_actual_owner_checks": 50,
+    "real_different_UID_denials": 396,
+    "external_consumer_privacy_checks": 3,
+    "GDD_structural_checks": 3,
+    "mac_workspace_clippy": "PASS",
+    "Linux_compilation_and_execution": "PASS",
+    "Linux_clippy_rerun": false,
+    "owned_Docker_cleanup": "confirmed normal success and diagnosed initial build failure",
     "integration_checks_rerun": false,
     "last_full_integration_commit": "3119f2884e04927cea98a7388c98454391545a8d",
     "last_full_integration_checks": 12698,
@@ -333,6 +340,12 @@
       "code_revision": "sha256:e976460f8b6a36250d7031af0d2b968c5577c6ac646fc31f08a8069b96d46e7d",
       "spec_revision": "sha256:90568e15ed01c91ea1ef824feddb2e1fa9098f8524dc42d742fe5f67ee0452c6",
       "state": "verified-actual-main-handle-identity-and-lock-preserving-layout-observation"
+    },
+    {
+      "current_increment": "broker-namespace-1",
+      "code_revision": "sha256:da08cf307c454775ec304d8f9ffd34922478da6efdd25153221bbb5d6e0708b3",
+      "spec_revision": "sha256:c45af5225ae40c779f1a55baa57aa516d8c778ecd39b5bfd2643dbf9973ad1ec",
+      "state": "verified-dedicated-UID-Linux-namespace-prerequisite-without-owning-runtime"
     }
   ]
 }
