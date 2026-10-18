@@ -2,7 +2,7 @@
 
 Rust-serveren leverer det eksisterende React-cockpit og behandler selv login,
 ejeroprettelse, MFA, sessions, virksomhedsadgang, manuel bogføring, tilbageførsel,
-bankkonti, generisk bankimport, bilagsbogføring med valutakøb samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport. Den
+virksomhedsstamdata, kontooprettelse, bekræftelse af kontoroller, bankkonti, generisk bankimport, bilagsbogføring med valutakøb samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport. Den
 starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Prøv med syntetiske data
@@ -103,6 +103,31 @@ repræsentation, forenklede fakturaers virksomhedskontekst og automatisk
 oprettelse af undtagelsesopgaver mangler fortsat i Rust og afvises eller
 udelades eksplicit. De er del af den resterende omskrivning.
 
+## Opsæt og bogfør et dansk køb med momsfradrag
+
+1. Åbn **Virksomhedsadministration → Administrér** og gem virksomhedens
+   adresse og momsperiode under **Virksomhedsoplysninger**.
+2. Åbn **Kontoplan → Tilpas kontoplan → Opret konto**. Opret en momskonto
+   med type **Moms**, normal saldo **Debet** og dit valgte kontonummer.
+3. Under **Bekræft kontorolle** vælger du **Købsmoms**, vælger momskontoen
+   og bekræfter. Rollen kræver en aktiv konto med passende type og normal saldo.
+4. Opret om nødvendigt en udgiftskonto med type **Omkostning**, normal saldo
+   **Debet** og standard momskode `DK_PURCHASE_25`.
+5. Indlæs en dansk købsfaktura med dato, leverance, afsender og modtager med
+   adresser og momsnumre. Eksempelvis 125 kr. inklusive 25 kr. moms.
+6. Importér bankbetalingen på −125 kr. og vælg **Bogfør bilag**. Vælg
+   udgiftskontoen og betalingen. Kontomomskoden kan udlede standardbehandlingen.
+7. Resultatopgørelsen viser 100 kr. i udgift; balancen viser 25 kr. købsmoms
+   og bankens fald på 125 kr. Betalingen er afstemt.
+
+Kontonumre og roller vælges eksplicit i workspacet. Eksisterende kontonumre
+overskrives ikke. Bekræftede rolleændringer versionsgemmes med aktør og auditspor.
+Åben momsaktivitet blokerer afregistrering; momsperioder og aktivitet blokerer
+et direkte skift af momsperiode, som kræver et særskilt dateret migrationsforløb.
+Adresse og momsændringer gemmes samlet, så en afvist ændring ikke efterlader
+halvt opdaterede stamdata. Ændring af allerede eksisterende betalingsoplysninger,
+CVR-opslag, omdøbning og arkivering er endnu ikke porteret i dette forløb.
+
 ## Bogfør et valutakøb
 
 Indlæs eksempelvis en kassebon på **100 EUR**, og angiv beløb, valuta og
@@ -177,6 +202,12 @@ Valutatesten indlæser to EUR-bilag i browseren, bruger både udledt DKK-kurs og
 importeret bankkurs, kontrollerer bogføringskvitteringernes omregning og
 verificerer det samlede DKK-resultat og alle bankmatches efter genstart.
 Skærmbilledet gemmes i `/tmp/rentemester-rust-fx-expense.png`.
+Opsætningstesten gemmer stamdata og momsregistrering gennem UI'et, opretter
+udgifts- og købsmomskonto, bekræfter rollen og bogfører en dansk faktura med
+momsfradrag. Den kontrollerer nettoomkostning, købsmoms og fire bankmatches,
+afviser inkompatibel rolle, kontooverskrivning og afregistrering med åben moms,
+og genstarter serveren for at kontrollere, at opsætning og resultat bevares.
+Skærmbilledet gemmes i `/tmp/rentemester-rust-company-setup.png`.
 Testdata fjernes fra Docker efter kørslen.
 
 ## Aktuel afgrænsning

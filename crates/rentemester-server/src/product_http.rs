@@ -1,5 +1,6 @@
 //! Thin browser adapter over the same owner used for authentication.
 mod bank;
+mod company_setup;
 mod documents;
 use crate::backend::Backend;
 use axum::{
@@ -35,6 +36,18 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
     };
     Router::new()
         .route("/api/companies", get(companies))
+        .route(
+            "/api/companies/{slug}/accounts",
+            get(company_setup::handle).post(company_setup::handle),
+        )
+        .route(
+            "/api/companies/{slug}/company",
+            get(company_setup::handle).patch(company_setup::handle),
+        )
+        .route(
+            "/api/companies/{slug}/account-roles",
+            post(company_setup::handle),
+        )
         .route("/api/companies/{slug}/bank", get(bank::handle))
         .route(
             "/api/companies/{slug}/bank-accounts",
@@ -135,17 +148,31 @@ async fn companies(State(state): State<Product>, request: Request) -> Response {
         let result = owner
             .workspace_context(&native.cookies, &SystemClock, &cookie, &native.catalog)
             .map_err(|_| ())?;
-        result.outcome.map_err(|_| ())
+        let context = result.outcome.map_err(|_| ())?;
+        let mut value: Value = serde_json::from_str(context.as_json()).map_err(|_| ())?;
+        // This server owns one selected company. Read its actual profile under
+        // the same owner rather than inventing portfolio metadata from config.
+        let companies = value["companies"].as_array_mut().ok_or(())?;
+        for company in companies {
+            let attempt = owner
+                .company_setup(
+                    &cookie,
+                    &SystemClock,
+                    rentemester_application::company_setup::Action::Profile,
+                )
+                .map_err(|_| ())?;
+            let profile = attempt.outcome.map_err(|_| ())?.value;
+            company["name"] = profile["name"].clone();
+            company["createdAt"] = profile["createdAt"].clone();
+        }
+        Ok::<_, ()>(value)
     })
     .await;
     match result {
-        Ok(Ok(context)) => match serde_json::from_str::<Value>(context.as_json()) {
-            Ok(value) => response(
-                StatusCode::OK,
-                json!({"ok":true,"companies":value["companies"],"count":value["companies"].as_array().map(Vec::len)}),
-            ),
-            _ => refused(StatusCode::SERVICE_UNAVAILABLE, "read_unconfirmed"),
-        },
+        Ok(Ok(value)) => response(
+            StatusCode::OK,
+            json!({"ok":true,"companies":value["companies"],"count":value["companies"].as_array().map(Vec::len)}),
+        ),
         _ => refused(StatusCode::UNAUTHORIZED, "unauthorized"),
     }
 }

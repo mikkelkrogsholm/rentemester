@@ -7,6 +7,7 @@ export type AccountRow = {
   normalBalance: string;
   defaultVatCode: string | null;
   hasPostings: boolean;
+  active?: boolean;
 };
 
 /** The bookkeeping role a chart-of-accounts mapping serves. */
@@ -36,6 +37,7 @@ export type AccountRoles = {
 };
 
 export type CompanyAccounts = {
+  nativeSetup?: boolean;
   slug: string;
   company: {
     name: string;

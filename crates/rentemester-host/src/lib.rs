@@ -535,6 +535,21 @@ impl Owner {
         let retired = self.finish(reusable);
         Ok(Attempt { outcome, retired })
     }
+    pub fn company_setup(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        action: rentemester_application::company_setup::Action<'_>,
+    ) -> Result<
+        Attempt<
+            Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, _, context| {
+            rentemester_application::company_setup::execute(c, l, context, action)
+        })
+    }
     pub fn bank(
         &mut self,
         cookie: &VerifiedCookie,

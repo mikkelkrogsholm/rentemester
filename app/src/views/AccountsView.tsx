@@ -1,3 +1,4 @@
+import { NativeChartSetup } from "../components/NativeChartSetup";
 import { ButtonLink, Button, Input, PageHeader } from "../components/ui";
 // Kontoplan view (#344) — read-only per-virksomhed liste over alle konti
 // (nummer, navn, type, normal-saldo, evt. moms-mapping) med søg + filter pr.
@@ -119,6 +120,7 @@ export function AccountsView() {
       </section>
 
       <AccountRolesCard accountRoles={data.accountRoles} />
+      {data.nativeSetup && <NativeChartSetup slug={slug} data={data} onSaved={state.reload} />}
 
       <section className="card">
         <h3>
