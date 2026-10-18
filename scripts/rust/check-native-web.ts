@@ -1,0 +1,96 @@
+// Real browser journey against run-web-demo.py --check; no intercepted requests or fixtures.
+import { chromium } from "@playwright/test";
+import { readFileSync, writeFileSync } from "node:fs";
+import { createHmac } from "node:crypto";
+
+const base = process.env.RM_NATIVE_WEB_URL;
+const verification = process.env.RM_NATIVE_WEB_LINK;
+if (!base || (!verification && !process.env.RM_NATIVE_WEB_REOPEN)) throw new Error("Start with: python3 scripts/rust/run-web-demo.py --check");
+function totp(secret: string): string {
+  let bits = 0, count = 0;
+  const bytes: number[] = [];
+  for (const char of secret) {
+    const value = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".indexOf(char);
+    if (value < 0) throw new Error("Invalid synthetic TOTP setup");
+    bits = (bits << 5) | value; count += 5;
+    if (count >= 8) { count -= 8; bytes.push((bits >>> count) & 255); }
+  }
+  const counter = Buffer.alloc(8); counter.writeBigUInt64BE(BigInt(Math.floor(Date.now() / 30_000)));
+  const digest = createHmac("sha1", Buffer.from(bytes)).update(counter).digest();
+  const offset = digest[19] & 15;
+  return String((digest.readUInt32BE(offset) & 0x7fff_ffff) % 1_000_000).padStart(6, "0");
+}
+const browser = await chromium.launch({ headless: true });
+try {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  const failures: string[] = [];
+  page.on("pageerror", (error) => failures.push(error.message));
+  let postedBody: string | null = null;
+  page.on("request", (request) => { if (request.url().endsWith("/manual-journal") && request.method() === "POST") postedBody = request.postData(); });
+  const statePath = process.env.RM_NATIVE_WEB_STATE;
+  if (process.env.RM_NATIVE_WEB_REOPEN) {
+    if (!statePath) throw new Error("Missing synthetic reopen state");
+    const state = JSON.parse(readFileSync(statePath, "utf8"));
+    await page.goto(base);
+    await page.getByLabel("E-mail", { exact: true }).fill("owner@example.invalid");
+    await page.getByLabel("Adgangskode", { exact: true }).fill("synthetic-password-123");
+    await page.getByRole("button", { name: "Log ind", exact: true }).click();
+    await page.getByRole("button", { name: "Brug recovery code" }).click();
+    await page.getByLabel("Recovery code", { exact: true }).fill(state.backup);
+    await page.getByRole("button", { name: "Bekræft", exact: true }).click();
+    await page.getByRole("link", { name: "Åbn bogføring" }).click();
+    await page.getByText("Synthetic opening transfer", { exact: true }).waitFor();
+    // Replaying the same browser operation must not create another journal entry.
+    const replay = await page.request.post(`${base}/api/companies/synthetic/manual-journal`, { headers: { origin: base, "content-type": "application/json" }, data: JSON.parse(state.postedBody) });
+    if (!replay.ok()) throw new Error(`Idempotency replay refused: ${replay.status()}`);
+    await page.reload();
+    await page.getByText("Synthetic opening transfer", { exact: true }).waitFor();
+    if (await page.getByText("Synthetic opening transfer", { exact: true }).count() !== 1) throw new Error("Duplicate posting after replay");
+    await page.locator("section.statement").getByRole("link", { name: "Saldobalance", exact: true }).click();
+    await page.getByText("Saldobalancen stemmer — debet = kredit.", { exact: true }).waitFor();
+    const rows = await page.locator("section.statement tbody tr").allTextContents();
+    if (rows.length !== 2 || !rows.every((row) => row.includes("125,50"))) throw new Error("Reopened trial balance changed");
+    await page.screenshot({ path: process.env.RM_NATIVE_WEB_SCREENSHOT ?? "/tmp/rentemester-rust-first-journey.png", fullPage: true });
+    console.log("PASS: Rust server restart → browser login → persisted posting and balance; idempotent replay creates no duplicate");
+  } else {
+  await page.goto(verification!);
+  await page.goto(base);
+  console.log("Browser: verification link accepted; opening login");
+  await page.getByLabel("E-mail", { exact: true }).fill("owner@example.invalid");
+  await page.getByLabel("Adgangskode", { exact: true }).fill("synthetic-password-123");
+  await page.getByRole("button", { name: "Log ind", exact: true }).click();
+  await page.getByRole("heading", { name: "Opsæt totrinsbekræftelse" }).waitFor();
+  await page.getByLabel("Adgangskode", { exact: true }).fill("synthetic-password-123");
+  await page.getByRole("button", { name: "Start opsætning" }).click();
+  await page.getByLabel("Opsætningsnøgle").waitFor();
+  const secret = await page.getByLabel("Opsætningsnøgle").inputValue();
+  await page.getByLabel("Engangskode", { exact: true }).fill(totp(secret));
+  await page.getByRole("button", { name: "Bekræft opsætning" }).click();
+  const backup = await page.getByRole("region", { name: "Recovery codes" }).locator("li").first().textContent();
+  await page.getByRole("button", { name: "Jeg har gemt koderne" }).click();
+  console.log("Browser: native MFA and session complete");
+  await page.getByRole("link", { name: "Åbn bogføring" }).click();
+  console.log("Browser: company selected and journal loaded");
+  await page.getByRole("button", { name: "Ny postering", exact: true }).click();
+  await page.getByLabel("Posteringstekst").fill("Synthetic opening transfer");
+  await page.getByLabel("Debetkonto").selectOption("1800");
+  await page.getByLabel("Kreditkonto").selectOption("8000");
+  await page.getByLabel("Beløb i DKK").fill("125,50");
+  await page.getByRole("button", { name: "Gennemse postering" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Bogfør postering", exact: true }).click();
+  await page.getByText("Synthetic opening transfer", { exact: true }).waitFor();
+  console.log("Browser: manual journal post visible");
+  await page.locator("section.statement").getByRole("link", { name: "Saldobalance", exact: true }).click();
+  await page.getByRole("heading", { name: "Saldobalance", exact: true }).waitFor();
+  const report = page.locator("section.statement");
+  await report.getByText("Saldobalancen stemmer — debet = kredit.", { exact: true }).waitFor();
+  const rows = await report.locator("tbody tr").allTextContents();
+  if (rows.length !== 2 || !rows.every((row) => row.includes("125,50"))) throw new Error("Unexpected trial balance rows");
+  await page.reload();
+  await page.getByText("Saldobalancen stemmer — debet = kredit.", { exact: true }).waitFor();
+  if (failures.length) throw new Error(`Browser errors: ${failures.join("; ")}`);
+  await page.screenshot({ path: process.env.RM_NATIVE_WEB_SCREENSHOT ?? "/tmp/rentemester-rust-first-journey.png", fullPage: true });
+  if (statePath) writeFileSync(statePath, JSON.stringify({ backup, postedBody }), { mode: 0o600 });
+  console.log("PASS: real browser → Rust: first owner, verification, MFA, company selection, manual post, correct persisted trial balance");
+  }
+} finally { await browser.close(); }

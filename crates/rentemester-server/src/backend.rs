@@ -36,6 +36,8 @@ struct Config {
     first_owner: Option<FirstOwner>,
     #[serde(default)]
     operator_actors: Vec<String>,
+    #[serde(default)]
+    accounts: Vec<rentemester_storage::fresh::InitialAccount>,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -60,13 +62,13 @@ impl Drop for Config {
 }
 
 pub struct Backend {
-    owner: Mutex<Owner>,
-    cookies: Arc<CookieVerifier>,
+    pub(crate) owner: Mutex<Owner>,
+    pub(crate) cookies: Arc<CookieVerifier>,
     keys: MfaKeyring,
     signer: EmailTokenSigner,
     links: RecoveryLinks,
     spool: PathBuf,
-    catalog: Catalog,
+    pub(crate) catalog: Catalog,
 }
 fn unavailable() -> Failure {
     Failure {
@@ -97,7 +99,7 @@ impl Backend {
         let signer = EmailTokenSigner::new(&config.workspace, &config.cookie_key)?;
         let links = RecoveryLinks::new(origin, &[origin], CookieProfile::Development)?;
         let mut owner = if create {
-            Owner::create_new(
+            Owner::create_with_chart(
                 &config.root,
                 config.broker_uid,
                 &config.workspace,
@@ -105,8 +107,8 @@ impl Backend {
                 &config.company_name,
                 &chrono::DateTime::<chrono::Utc>::from(std::time::SystemTime::now())
                     .to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
+                &config.accounts,
             )?
-            .0
         } else {
             Owner::open_protected(
                 &config.root,

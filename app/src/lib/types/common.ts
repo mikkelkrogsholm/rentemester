@@ -22,6 +22,7 @@ export type BuildIdentity = {
 };
 
 export type HealthResponse = {
+  backend?: "rust";
   ok: true;
   service: string;
   build: BuildIdentity;

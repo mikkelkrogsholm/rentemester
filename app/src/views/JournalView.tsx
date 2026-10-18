@@ -12,6 +12,8 @@ import { ButtonLink, Button, Input, PageHeader } from "../components/ui";
 // afspejles i URL-params (`q`, `from`, `to`, `amountMin`, `amountMax`) så
 // ejeren kan dele linket eller komme tilbage til samme udsnit.
 
+import { ManualJournalForm } from "../components/ManualJournalForm";
+import { useCapabilities } from "../lib/useCapabilities";
 import { useMemo, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
@@ -30,6 +32,8 @@ const FILTER_PARAM_KEYS = ["q", "from", "to", "amountMin", "amountMax", "journal
 
 export function JournalView() {
   const { slug = "" } = useParams();
+  const [posting, setPosting] = useState(false);
+  const { can } = useCapabilities();
   const { year, setYear } = useCompanyYear();
   // An optional account drill-down: `?account=<accountNo>` filters the journal
   // to the entries that touch that account (set by the statement views).
@@ -114,6 +118,8 @@ export function JournalView() {
     <section className="statement">
       {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. De tidligere hentede oplysninger vises fortsat.</div>}
       <PageHeader title="Posteringer" actions={<><div className="row-actions">
+          {j.nativePosting && can("company.ledger.post") && <Button onClick={() => setPosting(true)}>Ny postering</Button>}
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/saldobalance${j.selectedYear ? `?year=${encodeURIComponent(j.selectedYear)}` : ""}`}>Saldobalance</ButtonLink>
           {/* #465 — revisor-anmodning: hele kassekladden som CSV. URL'en
               bærer den aktive konto-drilldown med, så ejeren kan eksportere
               "kun denne konto"-udsnittet direkte. */}
@@ -137,6 +143,8 @@ export function JournalView() {
         </div>
 
       </PageHeader>
+
+      {posting && j.nativePosting && <ManualJournalForm slug={slug} currency={currency} options={j.nativePosting} onSaved={state.reload} onClose={() => setPosting(false)} />}
 
       <CompanyNav
         slug={slug}
@@ -299,7 +307,7 @@ function EntryRow({
         </span>
         <span className="entry-no">{entry.entryNo}</span>
         <span className="entry-date">{entry.date}</span>
-        <span className="entry-text">{entry.text}</span>
+        <span {...stylex.props(viewStyles.entryText)}>{entry.text}</span>
         <span className="entry-total num">
           {formatKroner(entry.total, currency)}
         </span>
@@ -466,5 +474,6 @@ function DimensionReview({ slug, journalLineId, current, onChanged }: { slug: st
 }
 
 const viewStyles = stylex.create({
+  entryText: { minWidth: 0, flexGrow: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
 site0: { padding: "var(--space-md)" }
 });

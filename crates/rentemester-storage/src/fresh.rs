@@ -92,3 +92,63 @@ pub fn initialize_empty_pair(
 
 #[cfg(test)]
 mod tests;
+
+/// Explicit workspace configuration, never a product-specific default chart.
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+pub struct InitialAccount {
+    pub account_no: rentemester_engine::identifiers::AccountNo,
+    pub name: String,
+    pub r#type: String,
+    pub normal_balance: String,
+}
+/// Fresh-owner-only chart seed. Refuses any existing chart or journal and commits once.
+pub fn initialize_accounts(
+    company: &mut Connection,
+    accounts: &[InitialAccount],
+) -> Result<(), Error> {
+    if accounts.len() > 10_000 {
+        return Err(refused());
+    }
+    let mut seen = std::collections::BTreeSet::new();
+    for account in accounts {
+        if account.name.trim().is_empty()
+            || account.name.len() > 512
+            || account.name.chars().any(char::is_control)
+            || !["asset", "liability", "equity", "income", "expense", "vat"]
+                .contains(&account.r#type.as_str())
+            || !["debit", "credit"].contains(&account.normal_balance.as_str())
+            || !seen.insert(account.account_no.as_str())
+        {
+            return Err(refused());
+        }
+    }
+    let tx = company
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .map_err(|_| refused())?;
+    crate::validate(&tx)?;
+    for table in ["accounts", "journal_entries"] {
+        if tx
+            .query_row(&format!("SELECT count(*) FROM {table}"), [], |r| {
+                r.get::<_, i64>(0)
+            })
+            .map_err(|_| refused())?
+            != 0
+        {
+            return Err(refused());
+        }
+    }
+    for account in accounts {
+        tx.execute(
+            "INSERT INTO accounts(account_no,name,type,normal_balance) VALUES(?1,?2,?3,?4)",
+            [
+                account.account_no.as_str(),
+                &account.name,
+                &account.r#type,
+                &account.normal_balance,
+            ],
+        )
+        .map_err(|_| refused())?;
+    }
+    tx.commit().map_err(|_| refused())
+}

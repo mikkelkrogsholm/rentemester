@@ -1,0 +1,272 @@
+//! Thin browser adapter over the same owner used for authentication.
+use crate::backend::Backend;
+use axum::{
+    Router,
+    body::to_bytes,
+    extract::{Request, State},
+    http::{HeaderMap, StatusCode},
+    response::{IntoResponse, Response},
+    routing::{get, post},
+};
+use rentemester_application::{
+    control_fence::FailureStage, journal_post, owned_report::CockpitRequest,
+};
+use rentemester_runtime::auth::{SystemClock, VerifiedCookie};
+use serde::Deserialize;
+use serde_json::{Value, json};
+use std::sync::Arc;
+use tokio::sync::Semaphore;
+
+#[derive(Clone)]
+struct Product {
+    native: Arc<Backend>,
+    origin: String,
+    authority: String,
+    workers: Arc<Semaphore>,
+}
+pub fn router(native: Arc<Backend>, origin: &str) -> Router {
+    let state = Product {
+        native,
+        origin: origin.into(),
+        authority: origin.split_once("://").unwrap().1.into(),
+        workers: Arc::new(Semaphore::new(4)),
+    };
+    Router::new()
+        .route("/api/companies", get(companies))
+        .route("/api/companies/{slug}/journal", get(read))
+        .route("/api/companies/{slug}/trial-balance", get(read))
+        .route("/api/companies/{slug}/fiscal-years", get(read))
+        .route("/api/companies/{slug}/manual-journal", post(write))
+        .with_state(state)
+}
+fn response(status: StatusCode, value: Value) -> Response {
+    (
+        status,
+        [
+            ("content-type", "application/json"),
+            ("cache-control", "no-store"),
+        ],
+        value.to_string(),
+    )
+        .into_response()
+}
+fn refused(status: StatusCode, code: &str) -> Response {
+    response(status, json!({"ok":false,"code":code,"errors":[code]}))
+}
+fn one<'a>(headers: &'a HeaderMap, key: &str) -> Option<&'a str> {
+    let mut values = headers.get_all(key).iter();
+    let value = values.next()?.to_str().ok()?;
+    if values.next().is_some() {
+        None
+    } else {
+        Some(value)
+    }
+}
+fn proof(
+    state: &Product,
+    request: &Request,
+    mutation: bool,
+) -> Result<VerifiedCookie, Box<Response>> {
+    let headers = request.headers();
+    if one(headers, "host") != Some(&state.authority)
+        || (mutation || headers.contains_key("origin"))
+            && one(headers, "origin") != Some(&state.origin)
+        || headers.contains_key("sec-fetch-site")
+            && !matches!(
+                one(headers, "sec-fetch-site"),
+                Some("same-origin" | "same-site" | "none")
+            )
+    {
+        return Err(Box::new(refused(StatusCode::FORBIDDEN, "origin_refused")));
+    }
+    if headers.contains_key("authorization") || headers.contains_key("x-rentemester-service-key") {
+        return Err(Box::new(refused(StatusCode::UNAUTHORIZED, "unauthorized")));
+    }
+    state
+        .native
+        .cookies
+        .verify(one(headers, "cookie"), None)
+        .map_err(|_| Box::new(refused(StatusCode::UNAUTHORIZED, "unauthorized")))
+}
+async fn companies(State(state): State<Product>, request: Request) -> Response {
+    let cookie = match proof(&state, &request, false) {
+        Ok(v) => v,
+        Err(r) => return *r,
+    };
+    if request.uri().query().is_some() {
+        return refused(StatusCode::BAD_REQUEST, "invalid_input");
+    }
+    let Ok(permit) = state.workers.clone().try_acquire_owned() else {
+        return refused(StatusCode::SERVICE_UNAVAILABLE, "busy");
+    };
+    let native = state.native;
+    let result = tokio::task::spawn_blocking(move || {
+        let _permit = permit;
+        let mut owner = native.owner.lock().map_err(|_| ())?;
+        let result = owner
+            .workspace_context(&native.cookies, &SystemClock, &cookie, &native.catalog)
+            .map_err(|_| ())?;
+        result.outcome.map_err(|_| ())
+    })
+    .await;
+    match result {
+        Ok(Ok(context)) => match serde_json::from_str::<Value>(context.as_json()) {
+            Ok(value) => response(
+                StatusCode::OK,
+                json!({"ok":true,"companies":value["companies"],"count":value["companies"].as_array().map(Vec::len)}),
+            ),
+            _ => refused(StatusCode::SERVICE_UNAVAILABLE, "read_unconfirmed"),
+        },
+        _ => refused(StatusCode::UNAUTHORIZED, "unauthorized"),
+    }
+}
+#[derive(Default)]
+struct Query {
+    year: Option<String>,
+    account: Option<String>,
+}
+fn query(request: &Request) -> Result<Query, Box<Response>> {
+    let mut result = Query::default();
+    for (key, value) in url::form_urlencoded::parse(request.uri().query().unwrap_or("").as_bytes())
+    {
+        let slot = match key.as_ref() {
+            "year" => &mut result.year,
+            "account" => &mut result.account,
+            _ => return Err(Box::new(refused(StatusCode::BAD_REQUEST, "invalid_query"))),
+        };
+        if slot.is_some() || value.len() > 128 {
+            return Err(Box::new(refused(StatusCode::BAD_REQUEST, "invalid_query")));
+        }
+        *slot = Some(value.into_owned());
+    }
+    Ok(result)
+}
+fn selected(state: &Product, request: &Request) -> bool {
+    request.uri().path().split('/').nth(3) == Some(state.native.catalog.companies[0].slug.as_str())
+}
+async fn read(State(state): State<Product>, request: Request) -> Response {
+    let cookie = match proof(&state, &request, false) {
+        Ok(v) => v,
+        Err(r) => return *r,
+    };
+    if !selected(&state, &request) {
+        return refused(StatusCode::NOT_FOUND, "company_not_found");
+    }
+    let query = match query(&request) {
+        Ok(v) => v,
+        Err(r) => return *r,
+    };
+    let resource = request.uri().path().rsplit('/').next().unwrap().to_owned();
+    let Ok(permit) = state.workers.clone().try_acquire_owned() else {
+        return refused(StatusCode::SERVICE_UNAVAILABLE, "busy");
+    };
+    let native = state.native;
+    let result = tokio::task::spawn_blocking(move || {
+        let _permit = permit;
+        let today = chrono::DateTime::<chrono::Utc>::from(std::time::SystemTime::now())
+            .format("%Y-%m-%d")
+            .to_string();
+        let mut owner = native.owner.lock().map_err(|_| ())?;
+        owner
+            .cockpit_snapshot(
+                &cookie,
+                &SystemClock,
+                CockpitRequest {
+                    today: &today,
+                    year: query.year.as_deref(),
+                    account: query.account.as_deref(),
+                },
+            )
+            .map_err(|_| ())
+    })
+    .await;
+    match result {
+        Ok(Ok(attempt)) => match attempt.outcome {
+            Ok(committed) => {
+                let snapshot = committed.value;
+                let (key, value) = match resource.as_str() {
+                    "journal" => ("journal", snapshot.journal),
+                    "trial-balance" => ("trialBalance", snapshot.trial_balance),
+                    _ => ("fiscalYears", snapshot.fiscal_years),
+                };
+                response(StatusCode::OK, json!({"ok":true,key:value}))
+            }
+            Err(f) if f.error.code == "invalid_credentials" => {
+                refused(StatusCode::UNAUTHORIZED, "unauthorized")
+            }
+            Err(f) if f.stage == FailureStage::NotCommitted => {
+                refused(StatusCode::BAD_REQUEST, f.error.code)
+            }
+            _ => refused(StatusCode::SERVICE_UNAVAILABLE, "read_unconfirmed"),
+        },
+        _ => refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"),
+    }
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PostWire {
+    confirm: bool,
+    input: journal_post::Input,
+}
+async fn write(State(state): State<Product>, request: Request) -> Response {
+    let cookie = match proof(&state, &request, true) {
+        Ok(v) => v,
+        Err(r) => return *r,
+    };
+    if !selected(&state, &request) {
+        return refused(StatusCode::NOT_FOUND, "company_not_found");
+    }
+    if request.uri().query().is_some()
+        || request.headers().contains_key("content-encoding")
+        || !one(request.headers(), "content-type").is_some_and(|s| {
+            s.eq_ignore_ascii_case("application/json")
+                || s.eq_ignore_ascii_case("application/json; charset=utf-8")
+        })
+    {
+        return refused(StatusCode::BAD_REQUEST, "invalid_input");
+    }
+    let Ok(permit) = state.workers.clone().try_acquire_owned() else {
+        return refused(StatusCode::SERVICE_UNAVAILABLE, "busy");
+    };
+    let bytes = match to_bytes(request.into_body(), 65_536).await {
+        Ok(b) => b,
+        Err(_) => return refused(StatusCode::PAYLOAD_TOO_LARGE, "body_too_large"),
+    };
+    let wire: PostWire = match serde_json::from_slice(&bytes) {
+        Ok(w) => w,
+        Err(_) => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
+    };
+    if !wire.confirm || wire.input.idempotency_key.is_none() {
+        return refused(StatusCode::BAD_REQUEST, "confirmation_and_key_required");
+    }
+    let native = state.native;
+    let result = tokio::task::spawn_blocking(move || {
+        let _permit = permit;
+        let mut owner = native.owner.lock().map_err(|_| ())?;
+        owner
+            .post_human(
+                &cookie,
+                &SystemClock,
+                &journal_post::Policy::default(),
+                wire.input,
+            )
+            .map_err(|_| ())
+    })
+    .await;
+    match result {
+        Ok(Ok(attempt)) => match attempt.outcome {
+            Ok(committed) => response(StatusCode::OK, committed.value.result),
+            Err(f) if f.fence.stage == FailureStage::OutcomeUnknown => {
+                refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unknown")
+            }
+            Err(f) if f.fence.error.code == "invalid_credentials" => {
+                refused(StatusCode::UNAUTHORIZED, "unauthorized")
+            }
+            Err(f) => match f.business {
+                Some(value) => response(StatusCode::UNPROCESSABLE_ENTITY, value),
+                None => refused(StatusCode::BAD_REQUEST, f.fence.error.code),
+            },
+        },
+        _ => refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed"),
+    }
+}

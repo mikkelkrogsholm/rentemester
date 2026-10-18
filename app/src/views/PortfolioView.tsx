@@ -5,6 +5,7 @@ import { ButtonLink, PageHeader } from "../components/ui";
 // and one card per company shows the headline health an owner judges a
 // company on. Companies that need attention sort to the top and are flagged.
 
+import { useOptionalAuth } from "../lib/auth-context";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { formatKroner, sortByAttention } from "../lib/format";
@@ -14,6 +15,12 @@ import { ErrorState, Loading } from "../components/Feedback";
 import { Onboarding } from "./Onboarding";
 
 export function PortfolioView() {
+  const auth = useOptionalAuth();
+  if (auth?.backend === "rust") return <section><PageHeader title="Virksomheder" /><div className="company-grid">{auth.context?.companies.map((company) => <article className="card" key={company.slug}><h2>{company.name}</h2><ButtonLink to={`/companies/${company.slug}/posteringer`}>Åbn bogføring</ButtonLink></article>)}</div></section>;
+  return <PortfolioOverview />;
+}
+
+function PortfolioOverview() {
   const navigate = useNavigate();
   const state = useAsync((signal) => api.portfolio(undefined, { signal }), []);
 

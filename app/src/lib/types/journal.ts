@@ -32,7 +32,10 @@ export type JournalEntry = {
   documentNo: string | null;
 };
 
+export type NativePostingOptions = { ruleVersion: string; accounts: Array<{ accountNo: string; name: string; active: boolean; allowDirectPosting: boolean }> };
+
 export type CompanyJournal = {
+  nativePosting?: NativePostingOptions;
   slug: string;
   selectedYear: string;
   /** True when the entries are derived from the #197 archived Posteringer. */

@@ -26,7 +26,7 @@ import { ButtonLink } from "./components/ui";
 // The per-company views share a sub-navigation and a fiscal-year selector
 // (`CompanyNav`); the chosen year is carried in the URL as `?year=`.
 
-import { NavLink, Route, Routes, Link, useLocation, useParams, useSearchParams } from "react-router-dom";
+import { Navigate, NavLink, Route, Routes, Link, useLocation, useParams, useSearchParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./lib/auth-context";
 import { api } from "./lib/api";
 import { useAsync } from "./lib/useAsync";
@@ -156,7 +156,7 @@ export function App() {
   ) {
     return <div className="state-msg" role="alert">Kunne ikke bekræfte Rentemesters sikkerhedsprofil. Prøv igen senere.</div>;
   }
-  return <AuthProvider hosted={profile === "hosted"}><AuthGate /></AuthProvider>;
+  return <AuthProvider hosted={profile === "hosted"} backend={health.data?.backend}><AuthGate /></AuthProvider>;
 }
 
 function AuthGate() {
@@ -229,6 +229,8 @@ function CompanyRouteGate({ id, children }: { id: CompanyRouteId; children: Reac
   const { slug, documentId } = useParams();
   const [params] = useSearchParams();
   const { can } = useCapabilities();
+  const { backend } = useAuth();
+  if (id === "dashboard" && backend === "rust") return <Navigate to={`/companies/${slug}/posteringer`} replace />;
   const permission = id === "contacts" ? "company.master-data" : id === "manage" ? "company.admin" : id === "invoice-create" ? "company.draft.write" : id === "document-booking" ? "company.ledger.post" : "company.read";
   if (!can(permission)) return <ErrorState message="Din adgang giver ikke rettighed til denne side. Vælg en anden side i menuen." />;
   // Reset local forms and manually loaded results at the resource boundary.

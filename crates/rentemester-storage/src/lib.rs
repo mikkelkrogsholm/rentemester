@@ -497,3 +497,5 @@ pub mod journal_reversal;
 pub mod fresh;
 
 pub mod bootstrap;
+
+pub mod cockpit;

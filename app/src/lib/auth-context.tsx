@@ -17,6 +17,7 @@ export type SessionContext = {
 };
 
 export type AuthState = {
+  backend?: "rust";
   loading: boolean;
   hosted: boolean;
   session: SessionUser | null;
@@ -37,7 +38,7 @@ async function currentSession(): Promise<{ user: SessionUser; sessionId: string 
   };
 }
 
-export function AuthProvider({ hosted, children }: { hosted: boolean; children: ReactNode }) {
+export function AuthProvider({ hosted, backend, children }: { hosted: boolean; backend?: "rust"; children: ReactNode }) {
   const [loading, setLoading] = useState(hosted);
   const [session, setSession] = useState<SessionUser | null>(null);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
@@ -81,7 +82,7 @@ export function AuthProvider({ hosted, children }: { hosted: boolean; children: 
     return () => window.removeEventListener("rentemester:auth-expired", onExpired);
   }, [clear]);
 
-  return <AuthContext.Provider value={{ loading, hosted, session, currentSessionId, context, refresh, clear }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ loading, hosted, backend, session, currentSessionId, context, refresh, clear }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthState {

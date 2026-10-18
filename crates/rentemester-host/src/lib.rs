@@ -170,6 +170,27 @@ impl Owner {
         owner.reusable = true;
         Ok((owner, initialized))
     }
+    /// Create a native workspace and install its explicitly supplied chart before serving.
+    pub fn create_with_chart(
+        root: &Path,
+        broker_uid: u32,
+        workspace: &str,
+        slug: &str,
+        name: &str,
+        created_at: &str,
+        accounts: &[rentemester_storage::fresh::InitialAccount],
+    ) -> Result<Self, OwnerError> {
+        let (mut owner, _) = Self::create_new(root, broker_uid, workspace, slug, name, created_at)?;
+        owner.reusable = false;
+        rentemester_storage::fresh::initialize_accounts(
+            owner.held.0.as_mut().unwrap().company.as_mut().unwrap(),
+            accounts,
+        )
+        .map_err(|_| OwnerError::Database)?;
+        owner.observe()?;
+        owner.reusable = true;
+        Ok(owner)
+    }
     fn open_guarded(
         root: &Path,
         workspace: &str,
@@ -464,6 +485,42 @@ impl Owner {
                 control, cookies, clock, proof, catalog,
             )
         })
+    }
+    pub fn cockpit_snapshot(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        request: rentemester_application::owned_report::CockpitRequest<'_>,
+    ) -> Result<
+        Attempt<
+            Result<
+                Committed<rentemester_storage::cockpit::Snapshot>,
+                rentemester_application::control_fence::Failure,
+            >,
+        >,
+        OwnerError,
+    > {
+        self.admit()?;
+        let slots = self.held.0.as_mut().unwrap();
+        let outcome = rentemester_application::owned_report::cockpit(
+            slots.control.as_mut().unwrap(),
+            slots.company.as_mut().unwrap(),
+            cookie,
+            clock,
+            CompanySelection {
+                workspace: &self.workspace,
+                slug: &self.slug,
+                registered: true,
+                archived: false,
+            },
+            request,
+        );
+        let reusable = outcome.as_ref().map_or_else(
+            |f| f.control_reusable && f.company_reusable,
+            |c| c.control_reusable,
+        );
+        let retired = self.finish(reusable);
+        Ok(Attempt { outcome, retired })
     }
     pub fn trial_balance(
         &mut self,

@@ -128,3 +128,34 @@ fn company_write_contention_leaves_control_complete_and_company_empty() {
     blocker.execute_batch("ROLLBACK").unwrap();
     blocker.close().unwrap();
 }
+
+#[test]
+fn explicit_chart_seed_is_atomic_and_never_replaces_an_existing_chart() {
+    let root = tempfile::tempdir().unwrap();
+    let (mut control, mut company) = pair(root.path());
+    initialize_empty_pair(&mut control, &mut company, "Synthetic Chart").unwrap();
+    let chart = |other: &str| {
+        serde_json::from_value::<Vec<InitialAccount>>(serde_json::json!([
+            {"accountNo":"A","name":"Synthetic Asset","type":"asset","normalBalance":"debit"},
+            {"accountNo":other,"name":"Synthetic Equity","type":"equity","normalBalance":"credit"}
+        ]))
+        .unwrap()
+    };
+    assert!(initialize_accounts(&mut company, &chart("A")).is_err());
+    assert_eq!(count(&company, "accounts"), 0);
+    initialize_accounts(&mut company, &chart("B")).unwrap();
+    assert_eq!(count(&company, "accounts"), 2);
+    assert!(initialize_accounts(&mut company, &chart("C")).is_err());
+    assert_eq!(count(&company, "accounts"), 2);
+    assert_eq!(
+        company
+            .query_row(
+                "SELECT account_no FROM accounts WHERE name='Synthetic Equity'",
+                [],
+                |r| r.get::<_, String>(0)
+            )
+            .unwrap(),
+        "B"
+    );
+    assert_eq!(count(&company, "journal_entries"), 0);
+}

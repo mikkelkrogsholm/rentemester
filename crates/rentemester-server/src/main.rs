@@ -1,5 +1,6 @@
 //! Standalone Rust HTTP process serving the existing cockpit on the API origin.
 mod backend;
+mod product_http;
 use axum::{
     Router,
     http::{HeaderValue, StatusCode},
@@ -18,6 +19,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut web = PathBuf::from("app/dist");
     let mut config = None;
     let mut create = false;
+    let mut public_origin: Option<String> = None;
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--listen" => listen = args.next().ok_or("--listen requires an address")?.parse()?,
@@ -28,9 +30,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ))
             }
             "--create" => create = true,
+            "--origin" => public_origin = Some(args.next().ok_or("--origin requires a URL")?),
             "--help" | "-h" => {
                 println!(
-                    "rentemester-server [--listen 127.0.0.1:4319] [--web-dir app/dist] [--config PRIVATE.json] [--create]"
+                    "rentemester-server [--listen 127.0.0.1:4319] [--web-dir app/dist] [--config PRIVATE.json] [--create] [--origin http://localhost:4319]"
                 );
                 println!("Build the cockpit first: cd app && bun run build");
                 println!("Without --config, serve the cockpit and health endpoint only.");
@@ -46,7 +49,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             _ => return Err(format!("unknown option: {arg}").into()),
         }
     }
-    if !listen.ip().is_loopback() {
+    if !listen.ip().is_loopback() && public_origin.is_none() {
         return Err("this development entrypoint requires a loopback listen address".into());
     }
     let web = web
@@ -59,7 +62,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if create && config.is_none() {
         return Err("--create requires --config".into());
     }
-    let origin = format!("http://{}", listener.local_addr()?);
+    let origin =
+        public_origin.unwrap_or_else(|| format!("http://{}", listener.local_addr().unwrap()));
+    rentemester_runtime::recovery::RecoveryLinks::new(
+        &origin,
+        &[&origin],
+        rentemester_runtime::auth::CookieProfile::Development,
+    )?;
     // SQLite/password initialization runs outside Tokio's asynchronous worker threads.
     let setup_origin = origin.clone();
     let native = tokio::task::spawn_blocking(move || {
@@ -73,7 +82,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .map_err(|e| format!("workspace startup refused: {e}"))?;
     let identity = native
         .as_ref()
-        .map(|backend| backend.identity(&origin))
+        .map(|backend| {
+            backend
+                .identity(&origin)
+                .map(|identity| identity.merge(product_http::router(backend.clone(), &origin)))
+        })
         .transpose()
         .map_err(|_| "invalid identity HTTP configuration")?;
     let app = cockpit_router(web, identity);
