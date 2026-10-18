@@ -84,7 +84,7 @@ export type CompanyInvoiceRow = {
 };
 
 export type CompanyInvoices = {
-  nativeSales?: { creditAvailable?: boolean; settlementAvailable?: boolean; revenueAccounts: Array<{ accountNo: string; name: string }> };
+  nativeSales?: { refundAvailable?: boolean; creditAvailable?: boolean; settlementAvailable?: boolean; revenueAccounts: Array<{ accountNo: string; name: string }> };
   slug: string;
   selectedYear: string;
   archived: boolean;

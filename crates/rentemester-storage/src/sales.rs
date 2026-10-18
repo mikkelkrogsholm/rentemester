@@ -122,6 +122,11 @@ pub fn contacts(tx: &Transaction<'_>, slug: &str, today: &str) -> Result<Value, 
                 tx,
                 row.get(3).map_err(invalid)?,
             )?);
+        let mut open = open;
+        open.add(&crate::invoice_settlement::refunded(
+            tx,
+            row.get(3).map_err(invalid)?,
+        )?);
         let overdue = payload["dueDate"].as_str().is_some_and(|due| due < today);
         invoices.push((payload["customerId"].as_i64(), open, overdue));
     }
@@ -486,7 +491,9 @@ pub fn list(
             .map_err(invalid)?;
         let credited = crate::credit_note::credited(tx, id)?;
         let creditable = gross.subtract(&credited);
-        let open = creditable.subtract(&paid);
+        let refunds = crate::invoice_settlement::refunded(tx, id)?;
+        let mut open = creditable.subtract(&paid);
+        open.add(&refunds);
         total.add(&gross);
         open_total.add(&open);
         let due = payload["dueDate"].as_str();
@@ -500,10 +507,10 @@ pub fn list(
             })
             .transpose()?
             .unwrap_or(0);
-        if overdue > 0 && open != Money::default() {
+        if overdue > 0 && !open.is_negative() && open != Money::default() {
             overdue_count += 1;
         }
-        rows.push(json!({"documentId":id,"invoiceNo":r.get::<_,String>(1).map_err(invalid)?,"invoiceDate":r.get::<_,String>(2).map_err(invalid)?,"customerName":r.get::<_,Option<String>>(3).map_err(invalid)?,"customerEmail":null,"customerId":payload["customerId"],"buyerEanNumber":null,"buyerPublicRecipient":false,"peppolStatus":null,"lastEmailedAt":null,"lastReminderAt":null,"lastReminderSequence":0,"grossAmount":wire(&gross)?,"openBalance":wire(&open)?,"currency":r.get::<_,String>(4).map_err(invalid)?,"creditableBalance":wire(&creditable)?,"status":if open.is_negative(){"overpaid"}else if open==Money::default(){if credited==gross && paid==Money::default(){"credited"}else{"paid"}}else if overdue>0{"overdue"}else{"open"},"effectiveDueDate":due,"overdueDays":overdue,"posted":r.get::<_,Option<i64>>(7).map_err(invalid)?.is_some()}));
+        rows.push(json!({"documentId":id,"invoiceNo":r.get::<_,String>(1).map_err(invalid)?,"invoiceDate":r.get::<_,String>(2).map_err(invalid)?,"customerName":r.get::<_,Option<String>>(3).map_err(invalid)?,"customerEmail":null,"customerId":payload["customerId"],"buyerEanNumber":null,"buyerPublicRecipient":false,"peppolStatus":null,"lastEmailedAt":null,"lastReminderAt":null,"lastReminderSequence":0,"grossAmount":wire(&gross)?,"openBalance":wire(&open)?,"currency":r.get::<_,String>(4).map_err(invalid)?,"creditableBalance":wire(&creditable)?,"status":if open.is_negative(){"overpaid"}else if open==Money::default(){if refunds!=Money::default(){"refunded"}else if credited==gross && paid==Money::default(){"credited"}else{"paid"}}else if overdue>0{"overdue"}else{"open"},"effectiveDueDate":due,"overdueDays":overdue,"posted":r.get::<_,Option<i64>>(7).map_err(invalid)?.is_some()}));
     }
     base["invoices"] = json!(rows);
     base["totalGross"] = wire(&total)?;
@@ -517,8 +524,7 @@ pub fn list(
         .map_err(invalid)?
         .collect::<Result<Vec<_>, _>>()
         .map_err(invalid)?;
-    base["nativeSales"] =
-        json!({"revenueAccounts":accounts,"settlementAvailable":true,"creditAvailable":true});
+    base["nativeSales"] = json!({"revenueAccounts":accounts,"settlementAvailable":true,"creditAvailable":true,"refundAvailable":true});
     Ok(base)
 }
 

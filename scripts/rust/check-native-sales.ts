@@ -94,9 +94,9 @@ export async function checkNativeSales(page: Page, base: string, reopened = fals
   const text = execFileSync("pdftotext", ["-layout", path, "-"], { encoding: "utf8" });
   for (const term of [invoice.invoiceNo, "Synthetic Customer", "Synthetic Buyer Street 7", "DK87654321", "Synthetic consulting service", "1000,00", "250,00", "1250,00"]) if (!text.includes(term)) throw new Error(`Invoice PDF missing ${term}: ${text}`);
   const report = await (await page.request.get(`${url}/income-statement`)).json();
-  if (report.incomeStatement.totalIncome !== 1000 || report.incomeStatement.result !== -842.25) throw new Error("Sales not reflected in profit");
+  if (report.incomeStatement.totalIncome !== (reopened ? 0 : 1000) || report.incomeStatement.result !== (reopened ? -1842.25 : -842.25)) throw new Error("Sales not reflected in profit");
   const vat = await (await page.request.get(`${url}/vat`)).json();
-  if (vat.vat.outputVat !== 250 || vat.vat.inputVat !== 25 || vat.vat.payable !== 225 || vat.vat.vatReportErrors.length) throw new Error(`Sales VAT not reconciled: ${JSON.stringify(vat)}`);
+  if (vat.vat.outputVat !== (reopened ? 0 : 250) || vat.vat.inputVat !== 25 || vat.vat.payable !== (reopened ? -25 : 225) || vat.vat.vatReportErrors.length) throw new Error(`Sales VAT not reconciled: ${JSON.stringify(vat)}`);
   const contacts = await (await page.request.get(`${url}/contacts`)).json();
   const customer = contacts.contacts.customers.find((c: { name: string }) => c.name === "Synthetic Customer");
   if (!customer || customer.openBalance !== (reopened ? 0 : 1250) || customer.openInvoiceCount !== (reopened ? 0 : 1)) throw new Error("Customer receivable not retained");

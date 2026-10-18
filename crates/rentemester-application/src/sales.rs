@@ -18,6 +18,7 @@ pub enum Action<'a> {
     Post(&'a Post),
     Settle(&'a rentemester_storage::invoice_settlement::Input),
     Credit(&'a rentemester_storage::credit_note::Input),
+    Refund(&'a rentemester_storage::invoice_settlement::RefundInput),
     Pdf(i64),
 }
 pub enum Output {
@@ -92,7 +93,9 @@ pub fn execute(
         Action::Contacts | Action::List => Permission::CompanyRead,
         Action::Customers(_) => Permission::CompanyMasterData,
         Action::Issue(_) | Action::Preview(_) => Permission::CompanyDraftWrite,
-        Action::Post(_) | Action::Settle(_) | Action::Credit(_) => Permission::CompanyLedgerPost,
+        Action::Post(_) | Action::Settle(_) | Action::Credit(_) | Action::Refund(_) => {
+            Permission::CompanyLedgerPost
+        }
         Action::Pdf(_) => Permission::CompanyDocumentsRead,
     };
     let slug = context.selection.slug;
@@ -160,6 +163,15 @@ pub fn execute(
                 Action::Settle(input) => {
                     verify_invoice(tx, guard, input.invoice_document_id)?;
                     Output::Json(rentemester_storage::invoice_settlement::settle(
+                        tx,
+                        input,
+                        actor,
+                        Date::parse(today)?,
+                    )?)
+                }
+                Action::Refund(input) => {
+                    verify_invoice(tx, guard, input.invoice_document_id)?;
+                    Output::Json(rentemester_storage::invoice_settlement::refund(
                         tx,
                         input,
                         actor,

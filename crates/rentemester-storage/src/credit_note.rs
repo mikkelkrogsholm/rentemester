@@ -433,4 +433,96 @@ mod tests {
             Some(200.0)
         );
     }
+    #[test]
+    fn paid_invoice_credit_and_partial_refunds_close_original_receivable_without_new_tax() {
+        let mut db = fixture();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let csv = "date;text;amount;currency;reference\n2026-10-18;Synthetic receipt;1250;DKK;received\n2026-10-18;Synthetic refund one;-500;DKK;refund-one\n2026-10-18;Synthetic refund two;-750;DKK;refund-two\n2026-10-18;Synthetic excessive refund;-2000;DKK;too-much\n2026-10-18;Synthetic wrong direction;2;DKK;wrong-direction\n";
+        let rows = rentemester_engine::bank::parse(csv).unwrap();
+        crate::bank::import(
+            &tx,
+            csv,
+            &rows,
+            Some("synthetic"),
+            "synthetic",
+            "2026-10-18T12:00:00Z",
+            "synthetic-original",
+        )
+        .unwrap();
+        let receipt = serde_json::from_value(
+            json!({"invoiceDocumentId":1,"bankTransactionReference":"received","confirm":true}),
+        )
+        .unwrap();
+        let latest = Date::parse("2026-10-18").unwrap();
+        crate::invoice_settlement::settle(&tx, &receipt, "synthetic", latest).unwrap();
+        issue(&tx, Some(500), 'c').unwrap();
+        issue(&tx, None, 'd').unwrap();
+        let state = crate::sales::list(&tx, "synthetic", "2026-12-01", None).unwrap();
+        assert_eq!(state["invoices"][0]["status"], "overpaid");
+        assert_eq!(state["overdueCount"], 0);
+        let refund = |reference: &str, amount: Option<i32>| {
+            serde_json::from_value::<crate::invoice_settlement::RefundInput>(json!({"invoiceDocumentId":1,"bankTransactionReference":reference,"amount":amount,"confirm":true})).unwrap()
+        };
+        for request in [
+            refund("wrong-direction", None),
+            refund("too-much", None),
+            refund("refund-one", Some(499)),
+        ] {
+            assert!(crate::invoice_settlement::refund(&tx, &request, "synthetic", latest).is_err());
+        }
+        assert_eq!(
+            crate::invoice_settlement::refund(
+                &tx,
+                &refund("refund-one", None),
+                "synthetic",
+                latest
+            )
+            .unwrap()["remainingCreditBalance"]
+                .as_f64(),
+            Some(750.0)
+        );
+        assert!(
+            crate::invoice_settlement::refund(
+                &tx,
+                &refund("refund-one", None),
+                "synthetic",
+                latest
+            )
+            .is_err()
+        );
+        assert_eq!(
+            crate::invoice_settlement::refund(
+                &tx,
+                &refund("refund-two", None),
+                "synthetic",
+                latest
+            )
+            .unwrap()["remainingCreditBalance"]
+                .as_f64(),
+            Some(0.0)
+        );
+        let state = crate::sales::list(&tx, "synthetic", "2026-10-18", None).unwrap();
+        assert_eq!(state["invoices"][0]["status"], "refunded");
+        assert_eq!(state["totalOpen"].as_f64(), Some(0.0));
+        let report = crate::cockpit::read(&tx, "synthetic", "2026-10-18", None, None).unwrap();
+        assert_eq!(report.income_statement["totalIncome"].as_f64(), Some(0.0));
+        assert_eq!(report.trial_balance["balanced"], true);
+        let debtor = report.trial_balance["rows"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|a| a["accountNo"] == "R")
+            .unwrap();
+        assert_eq!(debtor["balance"].as_f64(), Some(0.0));
+        let vat = crate::vat_report::read(&tx, "synthetic", "2026-10-18", None).unwrap();
+        assert_eq!(vat["outputVat"].as_f64(), Some(0.0));
+        assert_eq!(vat["vatReportErrors"], json!([]));
+        assert_eq!(
+            tx.query_row::<i64, _, _>("SELECT count(*) FROM journal_entries", [], |r| r.get(0))
+                .unwrap(),
+            6
+        );
+    }
 }

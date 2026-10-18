@@ -2,7 +2,7 @@
 
 Rust-serveren leverer det eksisterende React-cockpit og behandler selv login,
 ejeroprettelse, MFA, sessions, virksomhedsadgang, manuel bogføring, tilbageførsel,
-virksomhedsstamdata, kontooprettelse, bekræftelse af kontoroller, bankkonti, generisk bankimport, bilagsbogføring med valutakøb samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport samt momsoverblik med PDF, kundeoprettelse og udstedelse/bogføring af danske salgsfakturaer. Den
+virksomhedsstamdata, kontooprettelse, bekræftelse af kontoroller, bankkonti, generisk bankimport, bilagsbogføring med valutakøb samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport samt momsoverblik med PDF, kundeoprettelse, udstedelse/bogføring af danske salgsfakturaer samt betalinger, kreditnotaer og afstemning af kundetilbagebetalinger. Den
 starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Prøv med syntetiske data
@@ -275,9 +275,30 @@ oprindelig konto præcist. Kreditering uden begrundelse, over kreditloftet,
 før originalens dato eller af en allerede fuldt krediteret faktura afvises.
 
 En kreditering af en allerede betalt faktura kan give kunden penge til gode;
-listen viser da **Overbetalt**. Selve tilbagebetalingen til kunden er endnu
-ikke porteret. Generel tilbageførsel må ikke bruges til at omgå fakturaens eller
-kreditnotaens sammenhængende korrektionsforløb.
+listen viser da **Overbetalt**. Brug nedenstående forløb til at afstemme
+kundens tilbagebetaling. Generel tilbageførsel må ikke bruges til at omgå
+fakturaens eller kreditnotaens sammenhængende korrektionsforløb.
+
+## Afstem en tilbagebetaling
+
+1. Kreditér den betalte faktura, så kunden har et tilgodehavende.
+2. Importér kontoudtoget med den allerede gennemførte bankudbetaling.
+3. Vælg **Afstem tilbagebetaling** på fakturaen, angiv udbetalingens
+   **Bankreference**, og bekræft. Funktionen bogfører den importerede bevægelse;
+   den sender ikke penge fra banken.
+
+En betalt og fuldt krediteret faktura på 1.250 kr. kan fx tilbagebetales med to
+bankudbetalinger på 500 og 750 kr. Efter første afstemning skylder virksomheden
+kunden 750 kr. Efter den anden vises **Refunderet**, og debitorkontoen er udlignet.
+Salg og moms ændres ved kreditnotaen; tilbagebetalingerne berører kun den
+oprindelige debitorkonto og den importerede banks tilknyttede finanskonto.
+
+Hver afstemning bruger hele bankpostens beløb og dato. Retningen skal være en
+udbetaling i DKK, referencen skal være entydig, og beløbet må højst svare til
+kundens resterende tilgodehavende. Genbrug af en bankpost afvises. Oprindelige
+faktura- og kreditnotafiler bevares, og senere ændringer i debitorkontorollen
+flytter ikke den oprindelige saldo. Tilbagebetaling i fremmed valuta og
+særskilte tabs-/kravforløb mangler fortsat.
 
 ## Tilbagefør en postering
 
@@ -338,9 +359,9 @@ at den gemte faktura-PDF har uændrede bytes. Fakturaen gemmes som
 `/tmp/rentemester-rust-reports/native-sales-invoice.pdf`, og et skærmbillede
 som `/tmp/rentemester-rust-sales.png`.
 Betalingstesten importerer to indbetalinger, afstemmer dem gennem fakturalistens
-bekræftelsesdialog og kontrollerer den delvise og fulde betaling. Efter genstart
-kontrolleres nul åbent tilgodehavende, to rene bank-/debitorposteringer, seks
-afstemte bankposter og uændret salg, moms og resultat. Skærmbilledet gemmes som
+bekræftelsesdialog og kontrollerer den delvise og fulde betaling uden gentaget
+salg eller moms. Efter genstart kontrolleres de bevarede betalingsposteringer
+sammen med de efterfølgende kreditnotaer og tilbagebetalinger. Skærmbilledet gemmes som
 `/tmp/rentemester-rust-settlement.png`.
 Kreditnotatesten udsteder og bogfører en anden faktura i UI'et, krediterer den
 først delvist og derefter fuldt, og kontrollerer ændringerne i tilgodehavende,
@@ -348,6 +369,11 @@ salg og moms. Den afviser manglende begrundelse, overkreditering og gentagen
 fuld kredit. Efter genstart kontrolleres kreditstatus, begge JSON-originalers
 nøjagtige bytes og originalfakturaens uændrede PDF. Skærmbilledet gemmes i
 `/tmp/rentemester-rust-credit-note.png`.
+Tilbagebetalingstesten krediterer den allerede betalte første faktura,
+importerer to udbetalinger og afstemmer først 500 og derefter 750 kr. gennem
+UI'et. Den kontrollerer status **Refunderet**, nul debitorsaldo, otte afstemte
+bankposter og uændrede originalfiler efter genstart. Dobbelt afstemning afvises.
+Skærmbilledet gemmes i `/tmp/rentemester-rust-refund.png`.
 Testdata fjernes fra Docker efter kørslen.
 
 ## Aktuel afgrænsning

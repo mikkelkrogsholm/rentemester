@@ -25,6 +25,10 @@ function invoiceRequestPayload(input: InvoiceIssueInput) {
 }
 
 export const invoicesApi = {
+  refundInvoice: (slug: string, invoiceDocumentId: number, bankTransactionReference: string) =>
+    request<{ ok: true; refund: { entryId: number; refundId: number; invoiceNumber: string; remainingCreditBalance: number } }>(`/api/companies/${encodeURIComponent(slug)}/invoices/refund`, {
+      method: "POST", body: JSON.stringify({ invoiceDocumentId, bankTransactionReference, confirm: true }),
+    }).then(r => r.refund),
   postNativeInvoice: (slug: string, invoiceDocumentId: number, revenueAccountNo: string) =>
     request<{ ok: true; posting: { entryId: number; entryNo: string } }>(`/api/companies/${encodeURIComponent(slug)}/invoices/post`, {
       method: "POST", body: JSON.stringify({ confirm: true, invoiceDocumentId, revenueAccountNo }),

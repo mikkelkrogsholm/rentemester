@@ -78,12 +78,12 @@ export async function checkNativeCompanySetup(page: Page, base: string, reopened
   const inputVat = chart.accounts.accountRoles.resolutions.find((r: { role: string }) => r.role === "input_vat");
   if (!inputVat.ok || inputVat.accountNo !== "4100" || !chart.accounts.accounts.some((a: { accountNo: string; defaultVatCode: string }) => a.accountNo === "3100" && a.defaultVatCode === "DK_PURCHASE_25")) throw new Error("Chart setup not retained");
   const bank = await (await page.request.get(`${url}/bank`)).json();
-  if (bank.bank.transactions.length !== (reopened ? 6 : 4) || bank.bank.matchedCount !== (reopened ? 6 : 4) || bank.bank.unmatchedCount !== 0 || bank.bank.bookedBalance !== (reopened ? -617.25 : -1867.25)) throw new Error(`Incorrect bank balance after deductible VAT: ${JSON.stringify(bank)}`);
+  if (bank.bank.transactions.length !== (reopened ? 8 : 4) || bank.bank.matchedCount !== (reopened ? 8 : 4) || bank.bank.unmatchedCount !== 0 || bank.bank.bookedBalance !== -1867.25) throw new Error(`Incorrect bank balance after deductible VAT: ${JSON.stringify(bank)}`);
   await page.goto(`${base}/companies/synthetic/resultatopgorelse`);
   await page.getByRole("heading", { name: "Resultatopgørelse", exact: true }).waitFor();
   await page.getByText("Synthetic domestic purchases", { exact: true }).waitFor();
   const report = await (await page.request.get(`${url}/income-statement`)).json();
-  if (report.incomeStatement.result !== (reopened ? -842.25 : -1842.25) || report.incomeStatement.totalExpense !== 1842.25) throw new Error("Deductible VAT was incorrectly expensed");
+  if (report.incomeStatement.result !== -1842.25 || report.incomeStatement.totalExpense !== 1842.25) throw new Error("Deductible VAT was incorrectly expensed");
   await page.goto(`${base}/companies/synthetic/balance`);
   const balanceResponse = await page.request.get(`${url}/trial-balance`);
   const balance = await balanceResponse.json();

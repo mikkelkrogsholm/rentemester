@@ -1,0 +1,80 @@
+import type { Page } from "@playwright/test";
+import { readFileSync, writeFileSync } from "node:fs";
+const evidencePath = "/tmp/rentemester-rust-reports/native-refund-evidence.json";
+
+export async function checkNativeRefund(page: Page, base: string, reopened = false) {
+  const url = `${base}/api/companies/synthetic`;
+  const headers = { origin: base, "content-type": "application/json" };
+  let evidence: { invoiceId: number; number: string; originalPdf: string; creditId: number; credit: string };
+  if (!reopened) {
+    const list = await (await page.request.get(`${url}/invoices`)).json();
+    const invoice = list.invoices.invoices.find((i: { invoiceNo: string }) => i.invoiceNo.endsWith("-0001"));
+    if (!invoice || invoice.status !== "paid") throw new Error("Refund requires the paid first invoice");
+    const pdf = await page.request.get(`${url}/invoices/${invoice.documentId}/pdf`);
+    await page.goto(`${base}/companies/synthetic/fakturaer`);
+    const row = page.getByRole("row").filter({ hasText: invoice.invoiceNo });
+    await row.getByRole("button", { name: "Kreditér", exact: true }).click();
+    const creditDialog = page.getByRole("dialog");
+    await creditDialog.getByLabel("Begrundelse", { exact: true }).fill("Synthetic cancellation after payment");
+    const [credited] = await Promise.all([page.waitForResponse(r => r.url().endsWith("/invoices/credit-note") && r.request().method() === "POST"), creditDialog.getByRole("button", { name: "Udsted kreditnota", exact: true }).click()]);
+    const credit = await credited.json();
+    if (!credited.ok()) throw new Error(`Paid invoice credit failed: ${JSON.stringify(credit)}`);
+    await creditDialog.waitFor({ state: "hidden" });
+    await row.getByText("Overbetalt", { exact: true }).waitFor();
+    const original = await page.request.get(`${url}/documents/${credit.creditNote.documentId}/file`);
+    const bytes = await original.body();
+    const snapshot = JSON.parse(bytes.toString("utf8"));
+    if (snapshot.grossAmount !== 1250 || snapshot.vatAmount !== 250) throw new Error("Credit did not cancel the original sale/VAT");
+    evidence = { invoiceId: invoice.documentId, number: invoice.invoiceNo, originalPdf: (await pdf.body()).toString("base64"), creditId: credit.creditNote.documentId, credit: bytes.toString("base64") };
+    await page.goto(`${base}/companies/synthetic/bank`);
+    await page.getByRole("button", { name: "Importér kontoudtog", exact: true }).click();
+    const bank = page.getByRole("dialog");
+    const today = new Date().toISOString().slice(0, 10);
+    const csv = `date;text;amount;currency;reference\n${today};Synthetic customer refund one;-500;DKK;synthetic-refund-one\n${today};Synthetic customer refund two;-750;DKK;synthetic-refund-two\n`;
+    await bank.getByLabel("CSV-fil", { exact: true }).setInputFiles({ name: "synthetic-customer-refunds.csv", mimeType: "text/csv", buffer: Buffer.from(csv) });
+    await bank.getByLabel(/^Bankkonto \(valgfri\)/).fill("synthetic-operating-bank");
+    await bank.getByRole("button", { name: "Importér", exact: true }).click();
+    await bank.getByText(/2 transaktioner importeret/).waitFor();
+    await bank.getByRole("button", { name: "Luk", exact: true }).click();
+    for (const [reference, remaining] of [["synthetic-refund-one", 750], ["synthetic-refund-two", 0]] as const) {
+      await page.goto(`${base}/companies/synthetic/fakturaer`);
+      await row.getByRole("button", { name: "Afstem tilbagebetaling", exact: true }).click();
+      const dialog = page.getByRole("dialog");
+      await dialog.getByLabel("Bankreference", { exact: true }).fill(reference);
+      const [posted] = await Promise.all([page.waitForResponse(r => r.url().endsWith("/invoices/refund") && r.request().method() === "POST"), dialog.getByRole("button", { name: "Afstem tilbagebetaling", exact: true }).click()]);
+      const result = await posted.json();
+      if (!posted.ok() || result.refund.remainingCreditBalance !== remaining) throw new Error(`Wrong refund: ${JSON.stringify(result)}`);
+      await dialog.waitFor({ state: "hidden" });
+      if (remaining) await row.getByRole("cell", { name: "-750,00 kr.", exact: true }).waitFor();
+      else await row.getByText("Refunderet", { exact: true }).waitFor();
+    }
+    const duplicate = await page.request.post(`${url}/invoices/refund`, { headers, data: { invoiceDocumentId: evidence.invoiceId, bankTransactionReference: "synthetic-refund-one", confirm: true } });
+    if (duplicate.status() !== 422) throw new Error("Bank refund was applied twice");
+    writeFileSync(evidencePath, JSON.stringify(evidence));
+  } else { evidence = JSON.parse(readFileSync(evidencePath, "utf8")); }
+  const list = await (await page.request.get(`${url}/invoices`)).json();
+  const invoice = list.invoices.invoices.find((i: { documentId: number }) => i.documentId === evidence.invoiceId);
+  if (!invoice || invoice.status !== "refunded" || invoice.openBalance !== 0 || list.invoices.totalOpen !== 0) throw new Error("Refunded invoice not closed");
+  const bank = await (await page.request.get(`${url}/bank`)).json();
+  if (bank.bank.transactions.length !== 8 || bank.bank.matchedCount !== 8 || bank.bank.unmatchedCount !== 0 || bank.bank.bookedBalance !== -1867.25) throw new Error(`Incorrect refund bank reconciliation: ${JSON.stringify(bank)}`);
+  const contacts = await (await page.request.get(`${url}/contacts`)).json();
+  const customer = contacts.contacts.customers.find((c: { name: string }) => c.name === "Synthetic Customer");
+  if (!customer || customer.openBalance !== 0 || customer.openInvoiceCount !== 0) throw new Error("Customer remains open after refund");
+  const balance = await (await page.request.get(`${url}/trial-balance`)).json();
+  if (!balance.trialBalance.balanced || balance.trialBalance.rows.find((a: { accountNo: string }) => a.accountNo === "1100")?.balance !== 0) throw new Error("Refund did not close original ledger receivable");
+  const report = await (await page.request.get(`${url}/income-statement`)).json();
+  const vat = await (await page.request.get(`${url}/vat`)).json();
+  if (report.incomeStatement.totalIncome !== 0 || report.incomeStatement.result !== -1842.25 || vat.vat.outputVat !== 0 || vat.vat.payable !== -25 || vat.vat.vatReportErrors.length) throw new Error("Refund created additional revenue or VAT effects");
+  const journal = await (await page.request.get(`${url}/journal`)).json();
+  const refunds = journal.journal.entries.filter((e: { documentId: number; lines: Array<{ accountNo: string; credit: number }> }) => e.documentId === evidence.invoiceId && e.lines.some(l => l.accountNo === "1800" && l.credit > 0));
+  if (refunds.length !== 2 || refunds.some((e: { lines: Array<{ accountNo: string }> }) => e.lines.length !== 2 || e.lines.some(l => !["1100", "1800"].includes(l.accountNo)))) throw new Error("Refunds contain duplicate or non-cash effects");
+  const pdf = await page.request.get(`${url}/invoices/${evidence.invoiceId}/pdf`);
+  const credit = await page.request.get(`${url}/documents/${evidence.creditId}/file`);
+  if (!pdf.ok() || !credit.ok() || !(await pdf.body()).equals(Buffer.from(evidence.originalPdf, "base64")) || !(await credit.body()).equals(Buffer.from(evidence.credit, "base64"))) throw new Error("Refund altered immutable invoice/credit evidence");
+  await page.goto(`${base}/companies/synthetic/fakturaer`);
+  const row = page.getByRole("row").filter({ hasText: evidence.number });
+  await row.getByText("Refunderet", { exact: true }).waitFor();
+  if (await row.getByRole("button", { name: "Afstem tilbagebetaling", exact: true }).count()) throw new Error("Fully refunded invoice offers another refund");
+  await page.screenshot({ path: "/tmp/rentemester-rust-refund.png", fullPage: true });
+  console.log(reopened ? "PASS: refunded invoice, two refund journals, eight bank matches, cleared original receivable and unchanged invoice/credit originals persist after restart" : "PASS: real browser paid invoice → credit → two imported refunds → partial/full refund matching → refunded status and zero ledger balance; no extra sales/VAT or duplicate refund");
+}

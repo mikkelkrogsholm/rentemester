@@ -22,11 +22,63 @@ pub struct Input {
     pub amount: Option<Number>,
     pub confirm: bool,
 }
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RefundInput {
+    pub invoice_document_id: i64,
+    pub bank_transaction_id: Option<i64>,
+    pub bank_transaction_reference: Option<String>,
+    pub refund_date: Option<String>,
+    pub amount: Option<Number>,
+    pub confirm: bool,
+}
+pub(crate) fn refunded(tx: &Transaction<'_>, id: i64) -> Result<Money, Error> {
+    let mut total = Money::default();
+    let mut q=tx.prepare("SELECT r.amount,r.currency,j.status,EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=j.id) FROM invoice_refunds r JOIN journal_entries j ON j.id=r.journal_entry_id WHERE r.invoice_document_id=?1").map_err(invalid)?;
+    let mut rows = q.query([id]).map_err(invalid)?;
+    while let Some(r) = rows.next().map_err(invalid)? {
+        if r.get::<_, String>(1).map_err(invalid)? != "DKK"
+            || r.get::<_, String>(2).map_err(invalid)? != "posted"
+            || r.get::<_, bool>(3).map_err(invalid)?
+        {
+            return Err(refused(
+                "previous invoice refund evidence requires resolution",
+            ));
+        }
+        total.add(&legacy_money(r.get_ref(0).map_err(invalid)?)?);
+    }
+    Ok(total)
+}
+pub fn refund(
+    tx: &Transaction<'_>,
+    input: &RefundInput,
+    subject: &str,
+    latest: Date,
+) -> Result<Value, Error> {
+    let input = Input {
+        invoice_document_id: input.invoice_document_id,
+        bank_transaction_id: input.bank_transaction_id,
+        bank_transaction_reference: input.bank_transaction_reference.clone(),
+        payment_date: input.refund_date.clone(),
+        amount: input.amount.clone(),
+        confirm: input.confirm,
+    };
+    transfer(tx, &input, subject, latest, true)
+}
 pub fn settle(
     tx: &Transaction<'_>,
     input: &Input,
     subject: &str,
     latest: Date,
+) -> Result<Value, Error> {
+    transfer(tx, input, subject, latest, false)
+}
+fn transfer(
+    tx: &Transaction<'_>,
+    input: &Input,
+    subject: &str,
+    latest: Date,
+    refund: bool,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !input.confirm
@@ -68,10 +120,19 @@ pub fn settle(
             "bank transaction is already linked to a journal entry",
         ));
     }
-    let (date,amount,currency,mapping,account_id,account_currency):(String,Money,String,Option<String>,Option<i64>,Option<String>)=tx.query_row("SELECT bt.transaction_date,bt.amount,bt.currency,ba.ledger_account_no,bt.bank_account_id,ba.currency FROM bank_transactions bt LEFT JOIN bank_accounts ba ON ba.id=bt.bank_account_id WHERE bt.id=?1",[bank_id],|r|Ok((r.get(0)?,legacy_money(r.get_ref(1)?).map_err(|_|rusqlite::Error::InvalidQuery)?,r.get(2)?,r.get(3)?,r.get(4)?,r.get(5)?))).optional().map_err(invalid)?.ok_or_else(||refused("imported bank receipt required"))?;
-    if currency != "DKK" || amount.is_negative() || amount == Money::default() {
-        return Err(refused("positive DKK customer receipt required"));
+    let (date,amount,currency,mapping,account_id,account_currency):(String,Money,String,Option<String>,Option<i64>,Option<String>)=tx.query_row("SELECT bt.transaction_date,bt.amount,bt.currency,ba.ledger_account_no,bt.bank_account_id,ba.currency FROM bank_transactions bt LEFT JOIN bank_accounts ba ON ba.id=bt.bank_account_id WHERE bt.id=?1",[bank_id],|r|Ok((r.get(0)?,crate::bank::signed_money(r.get_ref(1)?).map_err(|_|rusqlite::Error::InvalidQuery)?,r.get(2)?,r.get(3)?,r.get(4)?,r.get(5)?))).optional().map_err(invalid)?.ok_or_else(||refused("imported bank receipt required"))?;
+    if currency != "DKK" || amount == Money::default() || amount.is_negative() != refund {
+        return Err(refused(if refund {
+            "outgoing DKK customer refund required"
+        } else {
+            "positive DKK customer receipt required"
+        }));
     }
+    let amount = if refund {
+        Money::default().subtract(&amount)
+    } else {
+        amount
+    };
     if account_id.is_some() && (mapping.is_none() || account_currency.as_deref() != Some("DKK")) {
         return Err(refused(
             "receipt bank account requires its own compatible ledger mapping",
@@ -93,7 +154,7 @@ pub fn settle(
         .is_some_and(|specified| specified != amount)
     {
         return Err(refused(
-            "settlement amount must equal the imported bank receipt",
+            "amount must equal the absolute imported bank transaction amount",
         ));
     }
     if input
@@ -102,7 +163,7 @@ pub fn settle(
         .is_some_and(|specified| specified != date)
     {
         return Err(refused(
-            "native receipt settlement uses the imported bank transaction date",
+            "native invoice cash movement uses the imported bank transaction date",
         ));
     }
     let id = input.invoice_document_id;
@@ -139,13 +200,24 @@ pub fn settle(
         }
         paid.add(&legacy_money(r.get_ref(0).map_err(invalid)?)?);
     }
-    let open = gross
+    let mut open = gross
         .subtract(&crate::credit_note::credited(tx, id)?)
         .subtract(&paid);
-    if open.subtract(&amount).is_negative() {
-        return Err(refused(
-            "receipt exceeds the invoice's outstanding principal; overpayments and claims require a separate flow",
-        ));
+    open.add(&refunded(tx, id)?);
+    let available = if refund {
+        Money::default().subtract(&open)
+    } else {
+        open.clone()
+    };
+    if available.is_negative()
+        || available == Money::default()
+        || available.subtract(&amount).is_negative()
+    {
+        return Err(refused(if refund {
+            "refund exceeds the invoice's refundable credit balance"
+        } else {
+            "receipt exceeds the invoice's outstanding principal; overpayments and claims require a separate flow"
+        }));
     }
     let mut q=tx.prepare("SELECT jl.debit_amount,jl.credit_amount FROM journal_lines jl JOIN journal_entries j ON j.id=jl.journal_entry_id WHERE (j.document_id=?1 OR j.id IN (SELECT journal_entry_id FROM credit_note_postings WHERE original_invoice_document_id=?1)) AND jl.account_id=?2").map_err(invalid)?;
     let mut rows = q.query(params![id, debtor_id]).map_err(invalid)?;
@@ -167,12 +239,26 @@ pub fn settle(
             debit_amount: debit,
             credit_amount: credit,
             vat_code: None,
-            text: Some(format!("Kundebetaling {no}")),
+            text: Some(format!(
+                "{} {no}",
+                if refund {
+                    "Tilbagebetaling"
+                } else {
+                    "Kundebetaling"
+                }
+            )),
         })
     };
     let request = ManualJournal {
         transaction_date: Date::parse(&date)?,
-        text: format!("Kundebetaling {no}"),
+        text: format!(
+            "{} {no}",
+            if refund {
+                "Tilbagebetaling"
+            } else {
+                "Kundebetaling"
+            }
+        ),
         currency: Currency::parse("DKK")?,
         document_id: Some(DocumentId::from_sqlite(id)),
         source_bank_transaction_id: Some(BankTransactionId::from_sqlite(bank_id)),
@@ -180,10 +266,17 @@ pub fn settle(
         amount_dkk: None,
         fx_rate_to_dkk: None,
         created_by_program: None,
-        lines: vec![
-            line(&bank, amount.clone(), Money::default())?,
-            line(&debtor, Money::default(), amount.clone())?,
-        ],
+        lines: if refund {
+            vec![
+                line(&debtor, amount.clone(), Money::default())?,
+                line(&bank, Money::default(), amount.clone())?,
+            ]
+        } else {
+            vec![
+                line(&bank, amount.clone(), Money::default())?,
+                line(&debtor, Money::default(), amount.clone())?,
+            ]
+        },
     };
     let result = crate::journal_post::post(
         tx,
@@ -197,6 +290,13 @@ pub fn settle(
     )?;
     if result["ok"] != true {
         return Err(refused(result["errors"].to_string()));
+    }
+    if refund {
+        let id:i64=tx.query_row("INSERT INTO invoice_refunds(invoice_document_id,bank_transaction_id,journal_entry_id,refund_date,amount,currency,note) VALUES(?1,?2,?3,?4,?5,'DKK',?6) RETURNING id",params![id,bank_id,result["entryId"].as_i64(),date,wire(&amount)?.as_f64(),format!("Customer refund from transaction {bank_id}")],|r|r.get(0)).map_err(invalid)?;
+        tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('invoice_refund_apply','invoice_refund',?1,?2,?3)",params![id.to_string(),format!("Applied refund {} to invoice {no}",amount.decimal()),format!("user:{subject}")]).map_err(invalid)?;
+        return Ok(
+            json!({"entryId":result["entryId"],"refundId":id,"invoiceNumber":no,"remainingCreditBalance":wire(&available.subtract(&amount))?}),
+        );
     }
     let payment:i64=tx.query_row("INSERT INTO invoice_payments(invoice_document_id,bank_transaction_id,journal_entry_id,payment_date,amount,currency,note) VALUES(?1,?2,?3,?4,?5,'DKK',?6) RETURNING id",params![id,bank_id,result["entryId"].as_i64(),date,wire(&amount)?.as_f64(),format!("Bank settlement from transaction {bank_id}")],|r|r.get(0)).map_err(invalid)?;
     tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('invoice_payment_apply','invoice_payment',?1,?2,?3)",params![payment.to_string(),format!("Applied receipt {} to invoice {no}",amount.decimal()),format!("user:{subject}")]).map_err(invalid)?;

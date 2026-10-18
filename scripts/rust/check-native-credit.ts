@@ -73,7 +73,7 @@ export async function checkNativeCredit(page: Page, base: string, reopened = fal
   if (!original.ok() || !(await original.body()).equals(Buffer.from(evidence.pdf, "base64"))) throw new Error("Original invoice PDF changed during crediting");
   const report = await (await page.request.get(`${url}/income-statement`)).json();
   const vat = await (await page.request.get(`${url}/vat`)).json();
-  if (report.incomeStatement.totalIncome !== 1000 || report.incomeStatement.result !== -842.25 || vat.vat.outputVat !== 250 || vat.vat.payable !== 225 || vat.vat.vatReportErrors.length) throw new Error("Fully credited sale still changes revenue/VAT");
+  if (report.incomeStatement.totalIncome !== (reopened ? 0 : 1000) || report.incomeStatement.result !== (reopened ? -1842.25 : -842.25) || vat.vat.outputVat !== (reopened ? 0 : 250) || vat.vat.payable !== (reopened ? -25 : 225) || vat.vat.vatReportErrors.length) throw new Error("Fully credited sale still changes revenue/VAT");
   const balance = await (await page.request.get(`${url}/trial-balance`)).json();
   if (!balance.trialBalance.balanced || balance.trialBalance.rows.find((a: { accountNo: string }) => a.accountNo === "1100")?.balance !== 0) throw new Error("Credited receivable remains in ledger");
   await page.goto(`${base}/companies/synthetic/fakturaer`);

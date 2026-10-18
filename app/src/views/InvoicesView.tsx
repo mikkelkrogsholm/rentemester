@@ -73,6 +73,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
   // The invoice row whose "Krediter" ConfirmDialog is open, if any (#412).
   const [crediting, setCrediting] = useState<CompanyInvoiceRow | null>(null);
   const [creditGross, setCreditGross] = useState("");
+  const [refunding, setRefunding] = useState<CompanyInvoiceRow | null>(null);
   // The invoice row whose "Send e-faktura" ConfirmDialog is open (#428).
   const [sendingPublic, setSendingPublic] = useState<CompanyInvoiceRow | null>(null);
   const [checkingPublicStatus, setCheckingPublicStatus] = useState<CompanyInvoiceRow | null>(null);
@@ -184,6 +185,13 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
           onClose={() => setSettling(null)}
         />
       )}
+
+      {refunding && inCurrentScope && <ConfirmDialog operationKey={`refund:${refunding.documentId}`}
+        title="Afstem tilbagebetaling" confirmLabel="Afstem tilbagebetaling" confirmKind="danger"
+        body={<p>Registrér den allerede gennemførte tilbagebetaling til kunden på faktura <strong>{refunding.invoiceNo}</strong>. Kunden har {formatKroner(-refunding.openBalance, refunding.currency)} til gode. Den valgte bankpost bogføres mellem bank og fakturaens debitorkonto.</p>}
+        noteLabel="Bankreference" notePlaceholder="Referencen på bankens udbetaling"
+        onConfirm={async reference => { if (!reference.trim()) throw new Error("Angiv bankreferencen på tilbagebetalingen."); await api.refundInvoice(slug, refunding.documentId, reference.trim()); state.reload(); }}
+        onRefresh={state.reload} onClose={() => setRefunding(null)} />}
 
       {/* #412: the Krediter ConfirmDialog. A credit note appends a reversing
           journal entry (and a new credit-note document), so the action is
@@ -664,6 +672,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                           >
                             Hent PDF
                           </a>
+                          {!inv.archived && inv.nativeSales?.refundAvailable && row.posted === true && row.openBalance < 0 && can("company.ledger.post") && <Button type="button" variant="secondary" onClick={() => { setInteractionScope(currentScope); setRefunding(row); }}>Afstem tilbagebetaling</Button>}
                           {!inv.archived && can("company.ledger.post") && canSettle && (
                             <Button
                               type="button"
