@@ -1,0 +1,8 @@
+   Compiling rentemester-storage v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-storage)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.49s
+     Running unittests src/lib.rs (target/debug/deps/rentemester_storage-e8d7cb85c2b25f02)
+
+running 1 test
+test company_vat::tests::actual_process_death_restores_exact_guard_and_current_fk_data ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 44 filtered out; finished in 18.25s

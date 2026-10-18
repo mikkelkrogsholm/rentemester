@@ -1,0 +1,73 @@
+{
+  "result": "PASS",
+  "checks": 44,
+  "native_tests": 24,
+  "ignored_fixture_helpers": 2,
+  "ui_tests": 25,
+  "ui_typecheck": "PASS",
+  "remaining_material_findings": [],
+  "resolved_findings": [
+    {
+      "severity": "P2",
+      "finding": "Human HTTP ignored service-header presence and could use ambient cookie; shared gates now reject service/Authorization presence, including empty/duplicate values. Thirty real HTTP combinations prove zero handler calls."
+    },
+    {
+      "severity": "harness",
+      "finding": "Revocation fixture used unsupported deactivate event; final harness uses canonical disable and all 44 real native cases pass."
+    }
+  ],
+  "reports": {
+    "native": "/tmp/rm-login-review-native.txt",
+    "process": "/tmp/rm-login-review-process.json",
+    "process_stderr": "/tmp/rm-login-review-process.err",
+    "ui": "/tmp/rm-login-review-ui.txt",
+    "ui_typecheck": "/tmp/rm-login-review-ui-typecheck.txt",
+    "gdd": "/tmp/rm-login-review-readiness.json"
+  },
+  "commands": [
+    "/Users/mikkelfreltoftkrogsholm/.cargo/bin/cargo test --locked --release -p rentemester-server",
+    "bun run scripts/rust/verify-http-login.ts",
+    "app: bun test --isolate src/auth-ui.test.tsx",
+    "app: bunx tsc --noEmit",
+    "gdd validate http-login/gdd.json --profile readiness --scope action.http_login --scope component.application"
+  ],
+  "gdd": "3 PASS structural checks, exact current report and normative contract SHA match",
+  "reviewed_scope": [
+    "Native password\u2192pending-only\u2192TOTP/backup\u2192browser-session\u2192current-session\u2192signout journeys under WAL/DELETE",
+    "Runtime profile/MAC binding and noMaxAge browser-cookie correction, strict options and cookie-clears-before-new-authority",
+    "Current exact session/timestamps, verified flags/factor/current access under one writer then rollback; token-free allowlisted metadata with no refresh or cleanup",
+    "Mixed/service credentials and unsupported JSON/options refuse before handler dispatch",
+    "Unknown transaction results release no cookie authority; local clearing without valid proof distinguished from actual server revocation",
+    "Actual installed source crypto/cookie/session reader oracles, source-generated backup pool, canonical access revocation and busy logout",
+    "Retained login/factor calls retry0, component assertions and actual client typecheck"
+  ],
+  "assumptions": [
+    "Only trusted synthetic fixture executors; actual physical/workspace lifetime/legacy writer gates remain closed.",
+    "No external mail or production server/cockpit deployment; /api/me/context, enrollment, verification, service/trusted-device/provider and broad R41/R42 work remain pending.",
+    "UI acceptance uses mocked auth client; actual Rust/source HTTP journey verified separately, not browser deployment parity.",
+    "Process-local rate/capacity, panic hook/trusted-handler logging and platform/TLS/header/socket/shutdown qualification retain their explicit limits."
+  ],
+  "hashes_unchanged_during_final_verification": true,
+  "sha256": {
+    "Cargo.toml": "654e3b8827f3cca89672a887b55d05137253a5f53b3d3edc3de68f31e6d6c08f",
+    "Cargo.lock": "afa478fa68fc506f910b9085dd4d97fd03eb9cb1ca318adc87e649fa5bd6ecc4",
+    "crates/rentemester-application/src/lib.rs": "295f857e7ae8ee6317cb89661808bbb54b520529a45706e1f5b7575168b0f06b",
+    "crates/rentemester-application/src/session_read.rs": "42d72c19952f50240faa55677f80a25730b1fb186633776ab446bdef3170c39b",
+    "crates/rentemester-storage/src/lib.rs": "fb50a35f8e9b7645a54015fbc3c109479c0aa1a5fc3a1f838438ae7d0ed66173",
+    "crates/rentemester-storage/src/session_view.rs": "871496b994295fdee1143a1cd96337eb84c658d23da3e3075e2d420b1cf08fcf",
+    "crates/rentemester-runtime/src/auth.rs": "0573c802064f2d48324eedadc96fb95201d6c97c685e86a6b9054c43a8d72ef8",
+    "crates/rentemester-server/src/lib.rs": "d04bc6e2792419005e3c58455ebb727aede9130fe2d60af00bd438ca235174fe",
+    "crates/rentemester-server/src/auth_http.rs": "a39309bbf742dc00e2cd691fbab7e4725ca28c9745a16ad359bddec854b8c62f",
+    "crates/rentemester-server/src/auth_http/tests.rs": "9237aa37752634588ba73fac979dd68d75860a7218885452fcae391fbe33dff5",
+    "crates/rentemester-server/src/tests.rs": "9ad9e2c7e217f52d19cc57ff041f79d8d6e9eaec502ce8f7b078298c86ebfbcf",
+    "crates/rentemester-server/src/recovery_tests.rs": "ffffb1b71e8d721018c84dd1205a3208868697d15c9f753ac9c1fe6367295f2a",
+    "scripts/rust/verify-http-login.ts": "a51481f2dc693729613c1a19cee204487de881be1f68b826c9280c39ebd1e3bc",
+    "scripts/rust/verify.ts": "e24e427dd98a6e881006d3e123f49daa3432002cf5378878e0677bc3473528f8",
+    "app/src/views/LoginView.tsx": "d79e6fee476c09edc9e1140ed8a97087744b96a0c3df8cf1af9452e2c149427f",
+    "app/src/auth-ui.test.tsx": "266b1178244737d38438b4a61b8434ca7c5d66374645f7065dffd28e3c305acb",
+    "docs/architecture/rust-target/implementation/http-login/CONTRACT.md": "200cd77429fbf19f7fc0f7c8f448c0164baca18bf5890bc7a89ebd5d5172638f",
+    "docs/architecture/rust-target/implementation/http-login/gdd.json": "57ad42046e5d3e7481f0a91460e8cdc3adcd704297a02045681686e898cdcbb3",
+    "docs/architecture/rust-target/implementation/http-login/readiness.json": "8fd80a65769896019584fb555a67a44c9a2197ad25efb85b3d3aacbafdcc73fd",
+    "docs/architecture/rust-target/implementation/README.md": "42be575a3e68cf296978fcab8cd74aef81d8d2bd6fa185616640a134e611b1ae"
+  }
+}

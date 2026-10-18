@@ -1,4 +1,5 @@
 //! HTTP boundary. The owner supplies an admitted executor; no workspace paths or writer grants.
+pub mod auth_http;
 use axum::{
     Router,
     body::to_bytes,
@@ -79,16 +80,32 @@ enum Operation {
     Request,
     Callback,
     Complete,
+    SignIn,
+    Totp,
+    Backup,
+    Session,
+    SignOut,
+}
+impl Operation {
+    fn rate(self) -> (Duration, u8) {
+        match self {
+            Self::SignIn | Self::Totp | Self::Backup => (Duration::from_secs(10), 3),
+            Self::Request => (WINDOW, 3),
+            _ => (WINDOW, 10),
+        }
+    }
 }
 
+type RequestHandler = Box<dyn Fn(ResetRequest) -> Result<(), Failure> + Send + Sync>;
 struct StateData {
     origin: String,
     authority: String,
     links: RecoveryLinks,
     rate: Mutex<HashMap<(IpAddr, Operation), (Instant, u8)>>,
     recovery: Option<RecoveryHandlers>,
+    auth: Option<auth_http::AuthHandlers>,
     workers: Arc<Semaphore>,
-    execute: Box<dyn Fn(ResetRequest) -> Result<(), Failure> + Send + Sync>,
+    execute: Option<RequestHandler>,
 }
 
 #[derive(Debug)]
@@ -103,7 +120,7 @@ pub fn reset_router(
     profile: CookieProfile,
     execute: impl Fn(ResetRequest) -> Result<(), Failure> + Send + Sync + 'static,
 ) -> Result<Router, InvalidConfig> {
-    build_router(origin, profile, execute, None)
+    build_router(origin, profile, Some(Box::new(execute)), None, None)
 }
 /// Complete recovery HTTP surface. All three trusted handlers share rate-map/capacity admission.
 /// Native callback must be read-only; native completion must retain its known/unknown commit result.
@@ -120,19 +137,58 @@ pub fn recovery_router(
     build_router(
         origin,
         profile,
-        request,
+        Some(Box::new(request)),
         Some(RecoveryHandlers {
             callback: Box::new(callback),
             complete: Box::new(complete),
         }),
+        None,
+    )
+}
+/// Enrolled human login/session routes only; no implicit recovery or product data opener.
+pub fn identity_router(
+    origin: &str,
+    profile: CookieProfile,
+    auth: auth_http::AuthHandlers,
+) -> Result<Router, InvalidConfig> {
+    build_router(origin, profile, None, None, Some(auth))
+}
+/// Current identity and recovery share one capacity/rate state in a combined runtime.
+pub fn recovery_identity_router(
+    origin: &str,
+    profile: CookieProfile,
+    request: impl Fn(ResetRequest) -> Result<(), Failure> + Send + Sync + 'static,
+    callback: impl Fn(ResetCallback) -> Result<SensitiveUrl, ContinuationFailure>
+    + Send
+    + Sync
+    + 'static,
+    complete: impl Fn(ResetCompletion) -> Result<(), ContinuationFailure> + Send + Sync + 'static,
+    auth: auth_http::AuthHandlers,
+) -> Result<Router, InvalidConfig> {
+    build_router(
+        origin,
+        profile,
+        Some(Box::new(request)),
+        Some(RecoveryHandlers {
+            callback: Box::new(callback),
+            complete: Box::new(complete),
+        }),
+        Some(auth),
     )
 }
 fn build_router(
     origin: &str,
     profile: CookieProfile,
-    execute: impl Fn(ResetRequest) -> Result<(), Failure> + Send + Sync + 'static,
+    execute: Option<RequestHandler>,
     recovery: Option<RecoveryHandlers>,
+    auth: Option<auth_http::AuthHandlers>,
 ) -> Result<Router, InvalidConfig> {
+    if auth
+        .as_ref()
+        .is_some_and(|a| a.cookies.profile() != profile)
+    {
+        return Err(InvalidConfig);
+    }
     let links = RecoveryLinks::new(origin, &[origin], profile).map_err(|_| InvalidConfig)?;
     let parsed = Url::parse(origin).map_err(|_| InvalidConfig)?;
     let origin = parsed.origin().ascii_serialization();
@@ -143,10 +199,14 @@ fn build_router(
         links,
         rate: Mutex::new(HashMap::new()),
         recovery,
+        auth,
         workers: Arc::new(Semaphore::new(4)),
-        execute: Box::new(execute),
+        execute,
     });
-    let mut router = Router::new().route(PATH, post(request_reset));
+    let mut router = Router::new();
+    if state.execute.is_some() {
+        router = router.route(PATH, post(request_reset));
+    }
     if state.recovery.is_some() {
         router = router.route(COMPLETE, post(complete_reset)).route(
             "/api/auth/reset-password/{token}",
@@ -157,6 +217,9 @@ fn build_router(
                 r
             }),
         );
+    }
+    if state.auth.is_some() {
+        router = auth_http::routes(router);
     }
     Ok(router.with_state(state))
 }
@@ -229,19 +292,13 @@ impl StateData {
         let Ok(mut keys) = self.rate.lock() else {
             return false;
         };
-        keys.retain(|_, (start, _)| now.duration_since(*start) < WINDOW);
+        keys.retain(|(_, op), (start, _)| now.duration_since(*start) < op.rate().0);
         let peer = (canonical_ip(peer), operation);
         if !keys.contains_key(&peer) && keys.len() >= MAX_KEYS {
             return false;
         }
         let (last, count) = keys.entry(peer).or_insert((now, 0));
-        if *count
-            >= if operation == Operation::Request {
-                3
-            } else {
-                10
-            }
-        {
+        if *count >= operation.rate().1 {
             return false;
         }
         *count += 1;
@@ -296,7 +353,7 @@ async fn request_reset(State(state): State<Arc<StateData>>, request: Request) ->
     // No request timeout may claim that admitted side effects were canceled or rolled back.
     let _ = tokio::task::spawn_blocking(move || {
         let _permit = permit;
-        (state.execute)(input)
+        (state.execute.as_ref().expect("registered request"))(input)
     })
     .await;
     response(StatusCode::OK, ACK)
@@ -311,17 +368,29 @@ fn admission_for(
     operation: Operation,
 ) -> Result<(), StatusCode> {
     let headers = request.headers();
-    let allowed = if operation == Operation::Callback {
+    let allowed = if matches!(operation, Operation::Callback | Operation::Session) {
         one(headers, "host") == Some(state.authority.as_str())
             && (!headers.contains_key("origin")
                 || one(headers, "origin") == Some(state.origin.as_str()))
+            && (operation == Operation::Callback
+                || !headers.contains_key("sec-fetch-site")
+                || matches!(
+                    one(headers, "sec-fetch-site"),
+                    Some("same-origin" | "same-site" | "none")
+                ))
     } else {
         admission(headers, state)
     };
     if !allowed {
         return Err(StatusCode::FORBIDDEN);
     }
-    if operation != Operation::Callback && !json_content(headers) {
+    if operation == Operation::SignOut && !headers.contains_key("content-type") {
+        if headers.contains_key("content-encoding") {
+            return Err(StatusCode::UNSUPPORTED_MEDIA_TYPE);
+        }
+    } else if !matches!(operation, Operation::Callback | Operation::Session)
+        && !json_content(headers)
+    {
         return Err(StatusCode::UNSUPPORTED_MEDIA_TYPE);
     }
     let Some(peer) = request.extensions().get::<ConnectInfo<SocketAddr>>() else {

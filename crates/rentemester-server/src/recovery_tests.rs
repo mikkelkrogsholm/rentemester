@@ -315,7 +315,8 @@ async fn completion_body_limit_origin_and_shared_pool_cancel() {
         .unwrap(),
         rate: Mutex::new(HashMap::new()),
         workers: Arc::new(Semaphore::new(1)),
-        execute: Box::new(|_| panic!("overload called request")),
+        execute: Some(Box::new(|_| panic!("overload called request"))),
+        auth: None,
         recovery: Some(RecoveryHandlers {
             callback: Box::new(|_| panic!("overload called callback")),
             complete: Box::new(move |_| {

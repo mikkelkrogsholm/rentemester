@@ -1,0 +1,219 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native enrolled human HTTP login and current session",
+    "goal": "Complete enrolled password/MFA browser-session lifecycle with token-free current metadata and truthful unknown outcomes",
+    "scope": "Finite R04/R41/R42 identity slice; no product data opener, enrollment HTTP or deployment authority"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native human identity HTTP boundary",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Bounded enrolled login, factor completion, token-free current session and exact-token logout",
+        "rationale": "Human login must require MFA and report only known outcomes",
+        "excludes": [
+          "Default workspace opener, actual writer/lifetime authority, persistent/global rate, full R41/R42"
+        ]
+      },
+      "interfaces": [
+        "action.http_login"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Both actual native MFA methods produce browser-session cookie accepted by installed source reader under WAL/DELETE",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Actual local Rust HTTP with synthetic current controls and installed source crypto",
+        "when": "Run enrolled login, MFA, current session and logout",
+        "then": "Both actual native MFA methods produce browser-session cookie accepted by installed source reader under WAL/DELETE"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Mixed credentials, JSON ambiguity, Origin, unsupported options and HEAD refuse before handler authority",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Actual local Rust HTTP with synthetic current controls and installed source crypto",
+        "when": "Run enrolled login, MFA, current session and logout",
+        "then": "Mixed credentials, JSON ambiguity, Origin, unsupported options and HEAD refuse before handler authority"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Pending get-session is null; current view is token-free and never refreshes or cleans up; disabled access still permits exact-token logout",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Actual local Rust HTTP with synthetic current controls and installed source crypto",
+        "when": "Run enrolled login, MFA, current session and logout",
+        "then": "Pending get-session is null; current view is token-free and never refreshes or cleans up; disabled access still permits exact-token logout"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "No source JSON bearer or swallowed logout errors; uncertainty yields503 without cookie authority or retries",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Actual local Rust HTTP with synthetic current controls and installed source crypto",
+        "when": "Run enrolled login, MFA, current session and logout",
+        "then": "No source JSON bearer or swallowed logout errors; uncertainty yields503 without cookie authority or retries"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Process-local shared blocking admission and existing cancellation invariants remain; real writer-busy logout yields503 without revocation claim",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Actual local Rust HTTP with synthetic current controls and installed source crypto",
+        "when": "Run enrolled login, MFA, current session and logout",
+        "then": "Process-local shared blocking admission and existing cancellation invariants remain; real writer-busy logout yields503 without revocation claim"
+      }
+    },
+    "action.http_login": {
+      "kind": "action",
+      "description": "Enrolled human identity routes through admitted native transactions",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "human_identity_HTTP_request": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "configured_origin_profile_socket_peer_admitted_executor": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Strict credential/origin/body/rate refusals; invalid credential/factor401; enrollment409; committed lock429; operational or unknown503 AUTH_UNCONFIRMED"
+        },
+        "preconditions": [
+          "Owner supplies actual socket ConnectInfo and lifetime-admitted executor with safe logging/connection retirement",
+          "No default product data opener or writer authority; existing migration/release gates remain binding"
+        ],
+        "postconditions": [
+          "Pending MFA is not a session; known factor commit alone issues browser-session cookie",
+          "Current session is token-free metadata with current authority checks and rollback without refresh or cleanup",
+          "Logout clears cookies only after known success or explicitly local absent-credential cleanup",
+          "Unknown transactions never issue cookies or claim revocation; mutation client retries disabled"
+        ],
+        "external_effects": [
+          "Trusted lifetime-admitted handlers alone perform native MFA and logout transactions",
+          "Session read rolls back; no default filesystem/workspace authority or automatic retry"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Preserve MFA authority, current facts, no mixed-credential fallback, known commit before cookies and truthful uncertain logout.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Preserve MFA authority, current facts, no mixed-credential fallback, known commit before cookies and truthful uncertain logout.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Preserve MFA authority, current facts, no mixed-credential fallback, known commit before cookies and truthful uncertain logout.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Preserve MFA authority, current facts, no mixed-credential fallback, known commit before cookies and truthful uncertain logout.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Preserve MFA authority, current facts, no mixed-credential fallback, known commit before cookies and truthful uncertain logout.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Gate human credentials and bounded requests, invoke trusted native login/factor/read/signout and map known or unknown outcomes truthfully"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.http_login",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.http_login",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.http_login",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.http_login",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.http_login",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.http_login",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native enrolled human HTTP login and current session",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "200cd77429fbf19f7fc0f7c8f448c0164baca18bf5890bc7a89ebd5d5172638f"
+      }
+    }
+  }
+}

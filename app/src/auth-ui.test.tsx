@@ -150,7 +150,7 @@ describe("hosted cockpit auth shell", () => {
     await screen.findByRole("heading", { name: "Bekræft din kode" });
     await user.type(screen.getByLabelText("Engangskode"), "123456");
     await user.click(screen.getByRole("button", { name: "Bekræft" }));
-    expect(authMocks.verifyTotp).toHaveBeenCalledWith({ code: "123456", trustDevice: false });
+    expect(authMocks.verifyTotp).toHaveBeenCalledWith({ code: "123456", trustDevice: false }, { retry: 0 });
   });
 
   test("TOTP result errors remain generic and do not enter the cockpit", async () => {
@@ -182,7 +182,7 @@ describe("hosted cockpit auth shell", () => {
     expect(screen.queryByText("owner@example.test")).not.toBeInTheDocument();
     await user.type(screen.getByLabelText("Recovery code"), "one-time-code");
     await user.click(screen.getByRole("button", { name: "Bekræft" }));
-    expect(authMocks.verifyBackupCode).toHaveBeenCalledWith({ code: "one-time-code", trustDevice: false });
+    expect(authMocks.verifyBackupCode).toHaveBeenCalledWith({ code: "one-time-code", trustDevice: false }, { retry: 0 });
     expect(await screen.findByText("owner@example.test")).toBeInTheDocument();
   });
 

@@ -147,8 +147,9 @@ fn sliding_rate_identity_capacity_and_boundary() {
         .unwrap(),
         rate: Mutex::new(HashMap::new()),
         recovery: None,
+        auth: None,
         workers: Arc::new(Semaphore::new(4)),
-        execute: Box::new(|_| Ok(())),
+        execute: Some(Box::new(|_| Ok(()))),
     };
     let now = Instant::now();
     let ip = "2001:db8:1:2::1".parse().unwrap();
@@ -234,8 +235,9 @@ fn parallel_rate_admission_never_exceeds_three() {
         .unwrap(),
         rate: Mutex::new(HashMap::new()),
         recovery: None,
+        auth: None,
         workers: Arc::new(Semaphore::new(4)),
-        execute: Box::new(|_| Ok(())),
+        execute: Some(Box::new(|_| Ok(()))),
     });
     let gate = Arc::new(std::sync::Barrier::new(32));
     let jobs: Vec<_> = (0..32)
@@ -272,14 +274,15 @@ async fn cancellation_keeps_permit_until_blocking_work_finishes() {
         .unwrap(),
         rate: Mutex::new(HashMap::new()),
         recovery: None,
+        auth: None,
         workers: Arc::new(Semaphore::new(1)),
-        execute: Box::new(move |_| {
+        execute: Some(Box::new(move |_| {
             a.store(1, Ordering::SeqCst);
             while b.load(Ordering::SeqCst) == 0 {
                 std::thread::sleep(Duration::from_millis(5));
             }
             Ok(())
-        }),
+        })),
     });
     let make = || {
         let mut r = Request::builder()

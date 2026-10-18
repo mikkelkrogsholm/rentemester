@@ -16,7 +16,7 @@ export function LoginView() {
   const submit = async (event: FormEvent) => {
     event.preventDefault(); setBusy(true); setError(null);
     try {
-      const result = await authClient.signIn.email({ email, password, rememberMe: false });
+      const result = await authClient.signIn.email({ email, password, rememberMe: false }, { retry: 0 });
       if (result.error) throw new Error("sign in failed");
       if (result.data && "twoFactorRedirect" in result.data && result.data.twoFactorRedirect) {
         setPassword("");
@@ -30,8 +30,8 @@ export function LoginView() {
     event.preventDefault(); setBusy(true); setError(null);
     try {
       const result = verificationMethod === "totp"
-        ? await authClient.twoFactor.verifyTotp({ code, trustDevice: false })
-        : await authClient.twoFactor.verifyBackupCode({ code, trustDevice: false });
+        ? await authClient.twoFactor.verifyTotp({ code, trustDevice: false }, { retry: 0 })
+        : await authClient.twoFactor.verifyBackupCode({ code, trustDevice: false }, { retry: 0 });
       if (result.error) throw new Error("two factor verification failed");
       await refresh();
     }

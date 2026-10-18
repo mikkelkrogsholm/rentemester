@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "http-recovery-1",
-  "code_revision": "sha256:8ca05af6d34aa57eba96bc0df14b7babb0898f13909f3e5891c55ca26b83f3cc",
-  "spec_revision": "sha256:03a24b3da30377e0a707c3442eb4b24edd9aa70be407187d32ef6def40d77c81",
-  "state": "verified-native-http-recovery-callback-completion-and-ui-uncertainty",
+  "current_increment": "http-login-1",
+  "code_revision": "sha256:40e3bcc1e32df9fa33059c7ebf5021c2d3c2983caa6a1042b3b0e11ec2ebe860",
+  "spec_revision": "sha256:49cc272b03358f633931903e1a24da3f708fc13ad6e31e91ae80ab78e4381258",
+  "state": "verified-native-enrolled-http-login-and-current-session",
   "issues_closed": [],
   "next": [
-    "Continue native HTTP login/MFA/session and remaining email-verification/service/trusted-device/provider identity using admitted owner and source-compatible output. Recovery HTTP request/callback/completion, native HTTPS mail and retained UI uncertainty are verified. Before product exposure qualify actual physical/workspace lifetime, legacy writer/history, enabled provider, persistent/global/proxy rate, TLS/socket/header/shutdown and source in-flight revocation gates.",
+    "Continue native enrollment/email-verification HTTP and remaining service/trusted-device/provider identity and /api/me/product context using admitted owner. Enrolled HTTP password/MFA/session/logout and recovery are verified. Before product exposure qualify physical/workspace lifetime, legacy writer/history, provider/retirement, persistent/global/proxy rate, TLS/socket/header/shutdown and source in-flight revocation gates.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,18 +21,18 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "http-reset-1",
-    "code_revision": "sha256:d2a9c542ffd3d186cc784c632986aa7c31bad1be86b0d769f01ae7f68c5ef625",
-    "spec_revision": "sha256:1f5b4b7c50357d7bfb7f8e39a23ef8c9c0b2b41c49427707c2739fcabadfc111",
-    "state": "verified-native-http-reset-request-boundary"
+    "current_increment": "http-recovery-1",
+    "code_revision": "sha256:8ca05af6d34aa57eba96bc0df14b7babb0898f13909f3e5891c55ca26b83f3cc",
+    "spec_revision": "sha256:03a24b3da30377e0a707c3442eb4b24edd9aa70be407187d32ef6def40d77c81",
+    "state": "verified-native-http-recovery-callback-completion-and-ui-uncertainty"
   },
   "evidence": {
-    "report": "http-recovery/evidence.json",
-    "parity": "http-recovery/review-process.json",
-    "rust_tests_passed": 109,
-    "ignored_subprocess_helpers": 21,
-    "integration_checks": 11633,
-    "http_recovery_process_checks": 26,
+    "report": "http-login/evidence.json",
+    "parity": "http-login/review-process.json",
+    "rust_tests_passed": 118,
+    "ignored_subprocess_helpers": 22,
+    "integration_checks": 11677,
+    "http_login_process_checks": 44,
     "auth_UI_tests": 25,
     "writer_authority": false,
     "whole_issues_closed": false
@@ -223,6 +223,12 @@
       "code_revision": "sha256:d2a9c542ffd3d186cc784c632986aa7c31bad1be86b0d769f01ae7f68c5ef625",
       "spec_revision": "sha256:1f5b4b7c50357d7bfb7f8e39a23ef8c9c0b2b41c49427707c2739fcabadfc111",
       "state": "verified-native-http-reset-request-boundary"
+    },
+    {
+      "current_increment": "http-recovery-1",
+      "code_revision": "sha256:8ca05af6d34aa57eba96bc0df14b7babb0898f13909f3e5891c55ca26b83f3cc",
+      "spec_revision": "sha256:03a24b3da30377e0a707c3442eb4b24edd9aa70be407187d32ef6def40d77c81",
+      "state": "verified-native-http-recovery-callback-completion-and-ui-uncertainty"
     }
   ]
 }

@@ -25,6 +25,7 @@ pub mod password_credential;
 pub mod password_reset;
 pub mod reset_request;
 pub mod session_control;
+pub mod session_view;
 pub use journal_preview::{
     PreviewInput, PreviewReport, manual_journal_rule_version, preview_manual_journal,
 };

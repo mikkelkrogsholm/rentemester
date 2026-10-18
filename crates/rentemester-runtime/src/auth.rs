@@ -78,6 +78,15 @@ impl CookieVerifier {
     pub fn workspace(&self) -> &str {
         &self.workspace
     }
+    pub fn profile(&self) -> CookieProfile {
+        self.profile
+    }
+    pub fn issue_browser_session(&self, token: &str) -> Result<IssuedCookie, AuthError> {
+        let cookie = self.issue_session(token)?;
+        Ok(IssuedCookie(Zeroizing::new(
+            cookie.set_cookie().replace("; Max-Age=43200", ""),
+        )))
+    }
     pub fn issue_session(&self, token: &str) -> Result<IssuedCookie, AuthError> {
         self.issue(token, "session_token", 43200)
     }
