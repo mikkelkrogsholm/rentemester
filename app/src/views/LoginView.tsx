@@ -82,18 +82,24 @@ export function ResetPasswordView() {
   const [token, setToken] = useState(() => new URLSearchParams(location.search).get("token") ?? "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [complete, setComplete] = useState(false);
+  const [outcome, setOutcome] = useState<"editing" | "unconfirmed" | "complete">("editing");
   useEffect(() => { if (location.search) navigate("/reset-password", { replace: true }); }, [location.search, navigate]);
   const submit = async (event: FormEvent) => {
     event.preventDefault(); setError(null);
     if (!token) { setError("Linket er ugyldigt eller udløbet. Anmod om et nyt reset-link."); return; }
     try {
-      const result = await authClient.resetPassword({ newPassword: password, token });
-      if (result.error) throw new Error("reset failed");
-      setPassword(""); setToken(""); setComplete(true);
-    } catch { setPassword(""); setError("Linket er ugyldigt eller udløbet. Anmod om et nyt reset-link."); }
+      const result = await authClient.resetPassword({ newPassword: password, token }, { retry: 0 });
+      if (result.error || result.data?.status !== true) {
+        setPassword("");
+        if (["INVALID_TOKEN", "PASSWORD_TOO_SHORT", "PASSWORD_TOO_LONG"].includes(result.error?.code?.toString() ?? "")) {
+          setError("Linket er ugyldigt eller udløbet. Anmod om et nyt reset-link."); return;
+        }
+        setToken(""); setOutcome("unconfirmed"); return;
+      }
+      setPassword(""); setToken(""); setOutcome("complete");
+    } catch { setPassword(""); setToken(""); setOutcome("unconfirmed"); }
   };
-  return <AuthPanel title="Vælg ny adgangskode">{complete ? <><p role="status">Din adgangskode er opdateret. Log ind igen.</p><p><Link to="/">Til login</Link></p></> : <><p>Vælg en ny adgangskode på mindst 12 tegn.</p>{error && <p className="banner error" role="alert">{error}</p>}<form onSubmit={submit}><label>Ny adgangskode<Input aria-label="Ny adgangskode" autoComplete="new-password" type="password" minLength={12} value={password} onChange={(event) => setPassword(event.target.value)} required /></label><Button className="btn" type="submit">Opdater adgangskode</Button></form></>}</AuthPanel>;
+  return <AuthPanel title="Vælg ny adgangskode">{outcome === "complete" ? <><p role="status">Din adgangskode er opdateret. Log ind igen.</p><p><Link to="/">Til login</Link></p></> : outcome === "unconfirmed" ? <><p role="alert">Vi kunne ikke bekræfte, om adgangskoden blev ændret. Prøv at logge ind med den nye adgangskode, eller anmod om et nyt reset-link.</p><p><Link to="/">Til login</Link></p><p><Link to="/forgot-password">Anmod om et nyt reset-link</Link></p></> : <><p>Vælg en ny adgangskode på mindst 12 tegn.</p>{error && <p className="banner error" role="alert">{error}</p>}<form onSubmit={submit}><label>Ny adgangskode<Input aria-label="Ny adgangskode" autoComplete="new-password" type="password" minLength={12} value={password} onChange={(event) => setPassword(event.target.value)} required /></label><Button className="btn" type="submit">Opdater adgangskode</Button></form></>}</AuthPanel>;
 }
 
 export function AuthPanel({ title, children }: { title: string; children: ReactNode }) {

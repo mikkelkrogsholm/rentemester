@@ -11,9 +11,11 @@ pub struct Runtime<'a> {
     pub clock: &'a dyn Clock,
     pub audit_key_version: u64,
 }
+pub const MIN_PASSWORD_UTF16: usize = 12;
+pub const MAX_PASSWORD_UTF16: usize = 128;
 /// Match source policy on original UTF-16 code units, before the shared NFKC KDF.
 pub fn validate_password(password: &str) -> Result<(), rentemester_engine::Error> {
-    if !(12..=128).contains(&password.encode_utf16().count()) {
+    if !(MIN_PASSWORD_UTF16..=MAX_PASSWORD_UTF16).contains(&password.encode_utf16().count()) {
         Err(error("invalid_password"))
     } else {
         Ok(())

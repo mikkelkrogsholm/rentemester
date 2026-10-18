@@ -1370,6 +1370,7 @@ name = "rentemester-server"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "percent-encoding",
  "rentemester-application",
  "rentemester-runtime",
  "rentemester-storage",

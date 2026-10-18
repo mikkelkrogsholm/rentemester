@@ -99,14 +99,14 @@ describe("hosted cockpit auth shell", () => {
     });
     await user.type(await screen.findByLabelText("Ny adgangskode"), "new-password-123");
     await user.click(screen.getByRole("button", { name: "Opdater adgangskode" }));
-    expect(authMocks.resetPassword).toHaveBeenCalledWith({ newPassword: "new-password-123", token: "one-time-token" });
+    expect(authMocks.resetPassword).toHaveBeenCalledWith({ newPassword: "new-password-123", token: "one-time-token" }, { retry: 0 });
     expect(await screen.findByText("Din adgangskode er opdateret. Log ind igen.")).toBeInTheDocument();
     expect(screen.queryByText("Portefølje")).not.toBeInTheDocument();
   });
 
   test("reset-password failure clears the entered secret and remains generic", async () => {
     authMocks.getSession.mockResolvedValue({ data: null });
-    authMocks.resetPassword.mockResolvedValue({ data: null, error: { message: "provider detail" } }); hostedFetch(); renderApp("/reset-password?token=expired");
+    authMocks.resetPassword.mockResolvedValue({ data: null, error: { code: "INVALID_TOKEN", message: "provider detail" } }); hostedFetch(); renderApp("/reset-password?token=expired");
     const user = userEvent.setup();
     const input = await screen.findByLabelText("Ny adgangskode");
     await user.type(input, "new-password-123");
@@ -115,6 +115,28 @@ describe("hosted cockpit auth shell", () => {
     expect(input).toHaveValue("");
     expect(screen.queryByText("provider detail")).not.toBeInTheDocument();
     expect(screen.queryByText("Portefølje")).not.toBeInTheDocument();
+  });
+
+  test.each(["unconfirmed", "transport loss", "malformed acknowledgement"])("%s reset offers recovery without claiming success or retrying", async (scenario) => {
+    authMocks.getSession.mockResolvedValue({ data: null });
+    if (scenario === "transport loss") authMocks.resetPassword.mockRejectedValue(new Error("private provider detail"));
+    else if (scenario === "malformed acknowledgement") authMocks.resetPassword.mockResolvedValue({ data: null, error: null });
+    else authMocks.resetPassword.mockResolvedValue({ data: null, error: { code: "RESET_UNCONFIRMED", message: "private provider detail" } });
+    hostedFetch(); renderApp("/reset-password?token=uncertain-token");
+    const user = userEvent.setup();
+    await user.type(await screen.findByLabelText("Ny adgangskode"), "new-password-123");
+    await user.click(screen.getByRole("button", { name: "Opdater adgangskode" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Vi kunne ikke bekræfte, om adgangskoden blev ændret");
+    expect(screen.queryByText("Din adgangskode er opdateret. Log ind igen.")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Ny adgangskode")).not.toBeInTheDocument();
+    expect(screen.queryByText("private provider detail")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Til login" })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: "Anmod om et nyt reset-link" })).toHaveAttribute("href", "/forgot-password");
+    expect(authMocks.resetPassword).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId("location-path")).not.toHaveTextContent("uncertain-token");
+    await user.click(screen.getByRole("link", { name: "Anmod om et nyt reset-link" }));
+    expect(await screen.findByRole("button", { name: "Send reset-link" })).toBeInTheDocument();
+    expect(authMocks.resetPassword).toHaveBeenCalledTimes(1);
   });
 
   test("login two-factor redirect requires a TOTP code without trusted device", async () => {

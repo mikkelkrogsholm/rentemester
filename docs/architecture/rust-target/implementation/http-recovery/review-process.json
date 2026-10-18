@@ -1,0 +1,90 @@
+{
+  "ok": true,
+  "scope": "Native real HTTP recovery callback/completion and current synthetic WAL/DELETE controls with actual source oracles",
+  "checks": 26,
+  "observations": [
+    {
+      "id": "actual-source-invalid-token-status-code-body"
+    },
+    {
+      "id": "actual-source-PASSWORD_TOO_SHORT"
+    },
+    {
+      "id": "actual-source-PASSWORD_TOO_LONG"
+    },
+    {
+      "id": "wal-mail-navigation-repeat-preview-nonconsuming"
+    },
+    {
+      "id": "wal-actual-source-invalid-callback-redirect"
+    },
+    {
+      "id": "wal-invalid-password-no-consume-or-session-change"
+    },
+    {
+      "id": "wal-hostile-completion-no-effect"
+    },
+    {
+      "id": "wal-native-completion-credential-source-verifiable-siblings-and-sessions-invalidated"
+    },
+    {
+      "id": "wal-sibling-replay-public-invalid-token"
+    },
+    {
+      "id": "wal-consumed-callback-invalid-without-token-leak"
+    },
+    {
+      "id": "delete-mail-navigation-repeat-preview-nonconsuming"
+    },
+    {
+      "id": "delete-actual-source-invalid-callback-redirect"
+    },
+    {
+      "id": "delete-invalid-password-no-consume-or-session-change"
+    },
+    {
+      "id": "delete-hostile-completion-no-effect"
+    },
+    {
+      "id": "delete-native-completion-credential-source-verifiable-siblings-and-sessions-invalidated"
+    },
+    {
+      "id": "delete-sibling-replay-public-invalid-token"
+    },
+    {
+      "id": "delete-consumed-callback-invalid-without-token-leak"
+    },
+    {
+      "id": "actual-source-accepts-native-http-issued-callback"
+    },
+    {
+      "id": "actual-source-completes-native-http-issued-link"
+    },
+    {
+      "id": "wal-concurrent-http-token-one-success"
+    },
+    {
+      "id": "delete-concurrent-http-token-one-success"
+    },
+    {
+      "id": "actual-delete-commit-busy-is-unconfirmed-no-retry-claim"
+    },
+    {
+      "id": "expiry-callback-invalid-nonconsuming"
+    },
+    {
+      "id": "expiry-completion-invalid-without-state-change"
+    },
+    {
+      "id": "orphan-callback-invalid-nonconsuming"
+    },
+    {
+      "id": "orphan-completion-invalid-without-state-change"
+    }
+  ],
+  "limits": [
+    "Trusted synthetic fixture executor only; no actual physical/workspace/legacy writer admission or product data opener",
+    "No hosted TLS/global-persisted rate/socket/header/shutdown qualification, login/MFA/provider/UI deployment or full R41/R42 completion",
+    "Equal output does not prove constant-time privacy; unknown outcome remains unconfirmed and is never automatically retried"
+  ]
+}

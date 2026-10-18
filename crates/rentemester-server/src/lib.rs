@@ -5,10 +5,13 @@ use axum::{
     extract::{ConnectInfo, Request, State},
     http::{HeaderMap, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
-    routing::post,
+    routing::{get, post},
 };
 use rentemester_application::reset_request::Failure;
-use rentemester_runtime::{auth::CookieProfile, recovery::RecoveryLinks};
+use rentemester_runtime::{
+    auth::CookieProfile,
+    recovery::{RecoveryLinks, SensitiveUrl},
+};
 use serde::Deserialize;
 use std::{
     collections::HashMap,
@@ -21,6 +24,7 @@ use url::Url;
 use zeroize::Zeroizing;
 
 const PATH: &str = "/api/auth/request-password-reset";
+const COMPLETE: &str = "/api/auth/reset-password";
 const ACK: &str = r#"{"status":true,"message":"If this email exists in our system, check your email for the reset link"}"#;
 const WINDOW: Duration = Duration::from_secs(60);
 const MAX_KEYS: usize = 4096;
@@ -40,11 +44,49 @@ impl ResetRequest {
     }
 }
 
+/// Sensitive bearer and callback destination; neither constitutes a reusable admission grant.
+pub struct ResetCallback {
+    token: Zeroizing<String>,
+    redirect: Zeroizing<String>,
+}
+impl ResetCallback {
+    pub fn token(&self) -> &str {
+        &self.token
+    }
+    pub fn redirect(&self) -> &str {
+        &self.redirect
+    }
+}
+pub struct ResetCompletion {
+    token: Zeroizing<String>,
+    password: Zeroizing<String>,
+}
+impl ResetCompletion {
+    pub fn token(&self) -> &str {
+        &self.token
+    }
+    pub fn password(&self) -> &str {
+        &self.password
+    }
+}
+type ContinuationFailure = rentemester_application::password_reset::Failure;
+struct RecoveryHandlers {
+    callback: Box<dyn Fn(ResetCallback) -> Result<SensitiveUrl, ContinuationFailure> + Send + Sync>,
+    complete: Box<dyn Fn(ResetCompletion) -> Result<(), ContinuationFailure> + Send + Sync>,
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+enum Operation {
+    Request,
+    Callback,
+    Complete,
+}
+
 struct StateData {
     origin: String,
     authority: String,
     links: RecoveryLinks,
-    rate: Mutex<HashMap<IpAddr, (Instant, u8)>>,
+    rate: Mutex<HashMap<(IpAddr, Operation), (Instant, u8)>>,
+    recovery: Option<RecoveryHandlers>,
     workers: Arc<Semaphore>,
     execute: Box<dyn Fn(ResetRequest) -> Result<(), Failure> + Send + Sync>,
 }
@@ -61,6 +103,36 @@ pub fn reset_router(
     profile: CookieProfile,
     execute: impl Fn(ResetRequest) -> Result<(), Failure> + Send + Sync + 'static,
 ) -> Result<Router, InvalidConfig> {
+    build_router(origin, profile, execute, None)
+}
+/// Complete recovery HTTP surface. All three trusted handlers share rate-map/capacity admission.
+/// Native callback must be read-only; native completion must retain its known/unknown commit result.
+pub fn recovery_router(
+    origin: &str,
+    profile: CookieProfile,
+    request: impl Fn(ResetRequest) -> Result<(), Failure> + Send + Sync + 'static,
+    callback: impl Fn(ResetCallback) -> Result<SensitiveUrl, ContinuationFailure>
+    + Send
+    + Sync
+    + 'static,
+    complete: impl Fn(ResetCompletion) -> Result<(), ContinuationFailure> + Send + Sync + 'static,
+) -> Result<Router, InvalidConfig> {
+    build_router(
+        origin,
+        profile,
+        request,
+        Some(RecoveryHandlers {
+            callback: Box::new(callback),
+            complete: Box::new(complete),
+        }),
+    )
+}
+fn build_router(
+    origin: &str,
+    profile: CookieProfile,
+    execute: impl Fn(ResetRequest) -> Result<(), Failure> + Send + Sync + 'static,
+    recovery: Option<RecoveryHandlers>,
+) -> Result<Router, InvalidConfig> {
     let links = RecoveryLinks::new(origin, &[origin], profile).map_err(|_| InvalidConfig)?;
     let parsed = Url::parse(origin).map_err(|_| InvalidConfig)?;
     let origin = parsed.origin().ascii_serialization();
@@ -70,12 +142,23 @@ pub fn reset_router(
         authority,
         links,
         rate: Mutex::new(HashMap::new()),
+        recovery,
         workers: Arc::new(Semaphore::new(4)),
         execute: Box::new(execute),
     });
-    Ok(Router::new()
-        .route(PATH, post(request_reset))
-        .with_state(state))
+    let mut router = Router::new().route(PATH, post(request_reset));
+    if state.recovery.is_some() {
+        router = router.route(COMPLETE, post(complete_reset)).route(
+            "/api/auth/reset-password/{token}",
+            get(callback_reset).head(|| async {
+                let mut r = refused(StatusCode::METHOD_NOT_ALLOWED);
+                r.headers_mut()
+                    .insert("allow", HeaderValue::from_static("GET"));
+                r
+            }),
+        );
+    }
+    Ok(router.with_state(state))
 }
 
 fn response(status: StatusCode, body: &'static str) -> Response {
@@ -91,7 +174,12 @@ fn response(status: StatusCode, body: &'static str) -> Response {
     r
 }
 fn refused(status: StatusCode) -> Response {
-    response(status, r#"{"code":"request_refused"}"#)
+    let mut r = response(status, r#"{"code":"request_refused"}"#);
+    if status == StatusCode::TOO_MANY_REQUESTS {
+        r.headers_mut()
+            .insert("retry-after", HeaderValue::from_static("60"));
+    }
+    r
 }
 fn one<'a>(headers: &'a HeaderMap, key: &str) -> Option<&'a str> {
     let mut values = headers.get_all(key).iter();
@@ -129,20 +217,31 @@ fn canonical_ip(ip: IpAddr) -> IpAddr {
     }
 }
 impl StateData {
+    #[cfg(test)]
     fn allow(&self, peer: IpAddr) -> bool {
-        self.allow_at(peer, Instant::now())
+        self.allow_route_at(peer, Operation::Request, Instant::now())
     }
+    #[cfg(test)]
     fn allow_at(&self, peer: IpAddr, now: Instant) -> bool {
+        self.allow_route_at(peer, Operation::Request, now)
+    }
+    fn allow_route_at(&self, peer: IpAddr, operation: Operation, now: Instant) -> bool {
         let Ok(mut keys) = self.rate.lock() else {
             return false;
         };
         keys.retain(|_, (start, _)| now.duration_since(*start) < WINDOW);
-        let peer = canonical_ip(peer);
+        let peer = (canonical_ip(peer), operation);
         if !keys.contains_key(&peer) && keys.len() >= MAX_KEYS {
             return false;
         }
         let (last, count) = keys.entry(peer).or_insert((now, 0));
-        if *count >= 3 {
+        if *count
+            >= if operation == Operation::Request {
+                3
+            } else {
+                10
+            }
+        {
             return false;
         }
         *count += 1;
@@ -164,31 +263,15 @@ async fn request_reset(State(state): State<Arc<StateData>>, request: Request) ->
     if request.uri().query().is_some() || !admission(request.headers(), &state) {
         return refused(StatusCode::FORBIDDEN);
     }
-    if !json_content(request.headers()) {
-        return refused(StatusCode::UNSUPPORTED_MEDIA_TYPE);
-    }
-    let Some(peer) = request.extensions().get::<ConnectInfo<SocketAddr>>() else {
-        return refused(StatusCode::FORBIDDEN);
-    };
-    // Never trust X-Forwarded-For or other caller-selected rate identities.
-    if !state.allow(peer.0.ip()) {
-        let mut r = refused(StatusCode::TOO_MANY_REQUESTS);
-        r.headers_mut()
-            .insert("retry-after", HeaderValue::from_static("60"));
-        return r;
+    if let Err(r) = admission_for(&request, &state, Operation::Request) {
+        return refused(r);
     }
     let Ok(permit) = state.workers.clone().try_acquire_owned() else {
         return refused(StatusCode::SERVICE_UNAVAILABLE);
     };
-    let bytes = match tokio::time::timeout(
-        Duration::from_secs(2),
-        to_bytes(request.into_body(), BODY_LIMIT),
-    )
-    .await
-    {
-        Ok(Ok(bytes)) => Zeroizing::new(bytes.to_vec()),
-        Ok(Err(_)) => return refused(StatusCode::PAYLOAD_TOO_LARGE),
-        Err(_) => return refused(StatusCode::REQUEST_TIMEOUT),
+    let bytes = match body_bytes(request).await {
+        Ok(b) => b,
+        Err(status) => return refused(status),
     };
     let wire: Wire = match serde_json::from_slice(&bytes) {
         Ok(wire) => wire,
@@ -221,3 +304,195 @@ async fn request_reset(State(state): State<Arc<StateData>>, request: Request) ->
 
 #[cfg(test)]
 mod tests;
+
+fn admission_for(
+    request: &Request,
+    state: &StateData,
+    operation: Operation,
+) -> Result<(), StatusCode> {
+    let headers = request.headers();
+    let allowed = if operation == Operation::Callback {
+        one(headers, "host") == Some(state.authority.as_str())
+            && (!headers.contains_key("origin")
+                || one(headers, "origin") == Some(state.origin.as_str()))
+    } else {
+        admission(headers, state)
+    };
+    if !allowed {
+        return Err(StatusCode::FORBIDDEN);
+    }
+    if operation != Operation::Callback && !json_content(headers) {
+        return Err(StatusCode::UNSUPPORTED_MEDIA_TYPE);
+    }
+    let Some(peer) = request.extensions().get::<ConnectInfo<SocketAddr>>() else {
+        return Err(StatusCode::FORBIDDEN);
+    };
+    if !state.allow_route_at(peer.0.ip(), operation, Instant::now()) {
+        return Err(StatusCode::TOO_MANY_REQUESTS);
+    }
+    Ok(())
+}
+fn invalid_token() -> Response {
+    response(
+        StatusCode::BAD_REQUEST,
+        r#"{"message":"Invalid token","code":"INVALID_TOKEN"}"#,
+    )
+}
+fn unconfirmed() -> Response {
+    response(
+        StatusCode::SERVICE_UNAVAILABLE,
+        r#"{"message":"Reset outcome could not be confirmed","code":"RESET_UNCONFIRMED"}"#,
+    )
+}
+async fn callback_reset(State(state): State<Arc<StateData>>, request: Request) -> Response {
+    if let Err(r) = admission_for(&request, &state, Operation::Callback) {
+        return refused(r);
+    }
+    let Some(token) = request
+        .uri()
+        .path()
+        .strip_prefix("/api/auth/reset-password/")
+    else {
+        return invalid_token();
+    };
+    // Only the canonical generated bearer path is accepted: no percent-decoded aliases.
+    if rentemester_storage::password_reset::validate_token(token).is_err() {
+        return invalid_token();
+    }
+    let Some(raw) = request
+        .uri()
+        .query()
+        .filter(|s| s.len() <= 8192)
+        .and_then(|s| s.strip_prefix("callbackURL="))
+    else {
+        return refused(StatusCode::BAD_REQUEST);
+    };
+    if raw.contains('&') {
+        return refused(StatusCode::BAD_REQUEST);
+    }
+    let bytes = raw.as_bytes();
+    for (i, b) in bytes.iter().enumerate() {
+        if *b == b'%'
+            && !(bytes.get(i + 1).is_some_and(u8::is_ascii_hexdigit)
+                && bytes.get(i + 2).is_some_and(u8::is_ascii_hexdigit))
+        {
+            return refused(StatusCode::BAD_REQUEST);
+        }
+    }
+    let raw = raw.replace('+', " ");
+    let Ok(redirect) = percent_encoding::percent_decode_str(&raw).decode_utf8() else {
+        return refused(StatusCode::BAD_REQUEST);
+    };
+    if state.links.validate_redirect(Some(&redirect)).is_err() {
+        return refused(StatusCode::BAD_REQUEST);
+    }
+    let input = ResetCallback {
+        token: Zeroizing::new(token.to_owned()),
+        redirect: Zeroizing::new(redirect.into_owned()),
+    };
+    let Ok(permit) = state.workers.clone().try_acquire_owned() else {
+        return refused(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let work = state.clone();
+    let result = tokio::task::spawn_blocking(move || {
+        let _permit = permit;
+        (work
+            .recovery
+            .as_ref()
+            .expect("registered callback")
+            .callback)(input)
+    })
+    .await;
+    match result {
+        Ok(Ok(url)) if state.links.validate_redirect(Some(url.as_str())).is_ok() => {
+            let Ok(mut location) = HeaderValue::from_str(url.as_str()) else {
+                return unconfirmed();
+            };
+            location.set_sensitive(true);
+            let mut r = response(StatusCode::FOUND, "");
+            r.headers_mut().insert("location", location);
+            r
+        }
+        _ => unconfirmed(),
+    }
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+struct CompleteWire {
+    token: String,
+    new_password: String,
+}
+async fn complete_reset(State(state): State<Arc<StateData>>, request: Request) -> Response {
+    if request.uri().query().is_some() {
+        return refused(StatusCode::BAD_REQUEST);
+    }
+    if let Err(r) = admission_for(&request, &state, Operation::Complete) {
+        return refused(r);
+    }
+    let Ok(permit) = state.workers.clone().try_acquire_owned() else {
+        return refused(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let bytes = match body_bytes(request).await {
+        Ok(b) => b,
+        Err(status) => return refused(status),
+    };
+    let wire: CompleteWire = match serde_json::from_slice(&bytes) {
+        Ok(w) => w,
+        Err(_) => return refused(StatusCode::BAD_REQUEST),
+    };
+    if rentemester_storage::password_reset::validate_token(&wire.token).is_err() {
+        return invalid_token();
+    }
+    let length = wire.new_password.encode_utf16().count();
+    if length < rentemester_application::password_reset::MIN_PASSWORD_UTF16 {
+        return response(
+            StatusCode::BAD_REQUEST,
+            r#"{"message":"Password too short","code":"PASSWORD_TOO_SHORT"}"#,
+        );
+    }
+    if length > rentemester_application::password_reset::MAX_PASSWORD_UTF16 {
+        return response(
+            StatusCode::BAD_REQUEST,
+            r#"{"message":"Password too long","code":"PASSWORD_TOO_LONG"}"#,
+        );
+    }
+    let input = ResetCompletion {
+        token: Zeroizing::new(wire.token),
+        password: Zeroizing::new(wire.new_password),
+    };
+    let result = tokio::task::spawn_blocking(move || {
+        let _permit = permit;
+        (state
+            .recovery
+            .as_ref()
+            .expect("registered completion")
+            .complete)(input)
+    })
+    .await;
+    match result {
+        Ok(Ok(())) => response(StatusCode::OK, r#"{"status":true}"#),
+        Ok(Err(e))
+            if e.stage == rentemester_application::password_reset::FailureStage::NotCommitted
+                && e.error.code == "invalid_credentials" =>
+        {
+            invalid_token()
+        }
+        _ => unconfirmed(),
+    }
+}
+
+#[cfg(test)]
+mod recovery_tests;
+
+async fn body_bytes(request: Request) -> Result<Zeroizing<Vec<u8>>, StatusCode> {
+    match tokio::time::timeout(
+        Duration::from_secs(2),
+        to_bytes(request.into_body(), BODY_LIMIT),
+    )
+    .await
+    {
+        Ok(Ok(b)) => Ok(Zeroizing::new(b.to_vec())),
+        Ok(Err(_)) => Err(StatusCode::PAYLOAD_TOO_LARGE),
+        Err(_) => Err(StatusCode::REQUEST_TIMEOUT),
+    }
+}

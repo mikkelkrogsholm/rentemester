@@ -1,0 +1,29 @@
+   Compiling rentemester-server v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-server)
+    Finished `release` profile [optimized] target(s) in 0.57s
+     Running unittests src/lib.rs (target/release/deps/rentemester_server-36d1a0541332a7c7)
+
+running 16 tests
+test tests::probe ... ignored, synthetic native HTTP reset integration server; private fixture paths on stdin only
+test tests::profiles_and_strict_wire_refuse ... ok
+test tests::parallel_rate_admission_never_exceeds_three ... ok
+test recovery_tests::real_mail_navigation_redirect_does_not_require_origin ... ok
+test tests::real_http_ack_and_rate_ignore_forwarded_identity ... ok
+test tests::real_http_body_cap_and_unimplemented_routes ... ok
+test tests::real_http_conceals_failure_stages_and_executor_panic ... ok
+test tests::real_http_refuses_origin_media_and_structural_ambiguity_before_work ... ok
+test recovery_tests::completion_checks_original_utf16_strict_wire_and_body_token ... ok
+test recovery_tests::callback_decodes_once_refuses_query_ambiguity_and_encoded_token ... ok
+test tests::cancellation_keeps_permit_until_blocking_work_finishes ... ok
+test recovery_tests::uncertain_completion_and_bad_callback_never_claim_success_or_replay ... ok
+test recovery_tests::callback_rate_uses_fixed_operation_without_bearer_key ... ok
+test recovery_tests::completion_body_limit_origin_and_shared_pool_cancel ... ok
+test tests::sliding_rate_identity_capacity_and_boundary ... ok
+test tests::chunked_limit_and_slow_body_use_real_socket ... ok
+
+test result: ok. 15 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.01s
+
+   Doc-tests rentemester_server
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

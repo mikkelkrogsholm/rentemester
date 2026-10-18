@@ -1,0 +1,43 @@
+{
+  "scope": "Concrete native HTTP callback/completion plus retained React uncertainty, through admitted synthetic executor only",
+  "verdict": "No remaining material scoped findings",
+  "evidence": {
+    "native_focused_tests": 15,
+    "process_checks": 26,
+    "auth_UI_tests": 25,
+    "app_typecheck": "PASS",
+    "GDD_structural_checks": 3,
+    "reviewed_source_sha256": {
+      "Cargo.toml": "654e3b8827f3cca89672a887b55d05137253a5f53b3d3edc3de68f31e6d6c08f",
+      "Cargo.lock": "afa478fa68fc506f910b9085dd4d97fd03eb9cb1ca318adc87e649fa5bd6ecc4",
+      "crates/rentemester-server/Cargo.toml": "82a83b21b404b2e4be1f21e5e7f01f9b6a78a202371960e2b4eb2b2a129b0379",
+      "crates/rentemester-server/src/lib.rs": "34b004e211af3cd1521d77f3c8982ee958fe7beb4aa1ac3c996503c9984ec0a2",
+      "crates/rentemester-server/src/tests.rs": "998ffc2bf48b5ecfac23f77219e68dbf9cd74000ef37109460d0e8addf2a6bdf",
+      "crates/rentemester-server/src/recovery_tests.rs": "ff152f87bfdc855fc99a4af4d007dc65457297fe25fc0b09cd0cec2b97d3de09",
+      "crates/rentemester-application/src/password_reset.rs": "4cdf1acf03216bd779a5cb41d1a0df42fe748dced092c302abbf2a9d6195b76f",
+      "scripts/rust/verify-http-recovery.ts": "b9a069c1cc5eefaaa692f9e8ac47eab4895ac781ca52ce4a7c1bf56c312d820d",
+      "scripts/rust/verify-http-reset.ts": "e0af24156086718243641c30f02461be3f7ea3bd6f229b5a063786b8a72d21b1",
+      "scripts/rust/verify.ts": "aa50990c31dcc48d744d4022e2ba174db726e5c3b026bee99c78ee17b8d3f65f",
+      "docs/architecture/rust-target/implementation/http-recovery/CONTRACT.md": "0b6333ff32f5e9e8293b9f9d8e56984a8a7a10f54c1b03b88fcc3a6dc20cc27f",
+      "docs/architecture/rust-target/implementation/http-recovery/gdd.json": "a4eb4370e3f618b34b1232c6b3ff12dc5f3cf383c22b4512e109f5000b3fe45c",
+      "docs/architecture/rust-target/implementation/http-recovery/readiness.json": "59dec02a177537ad84962c0ab24b63cf791983aa6a936b48b7fd0873cb94afb8",
+      "docs/architecture/rust-target/implementation/README.md": "c6ad17da3853b23b96f37e6ed4f8586638557870d929e2e1439b6a63c9201f7f",
+      "app/src/views/LoginView.tsx": "3c22197aae85031af0b8814a2c2be25cc4b149580e92f319094426d505dcac65",
+      "app/src/auth-ui.test.tsx": "229fca085b524a80f66202e1b24f6b24eaca796bb16b210428e5bf0da520236a"
+    }
+  },
+  "review_loop": [
+    "Source research distinguished cross-site email GET navigation from strict POST Origin policy, actual callback302 from misleading OpenAPI200, body token from query fallback and generic10/60 continuation rate",
+    "Shared fixed operation keys prevent callback bearer-path rate evasion; one body helper and shared native password constants avoid drift; four owned permits span all handlers after cancellation",
+    "Independent review found Axum automatic HEAD behavior. Explicit405 and12HEAD-before10GET probe qualify no callback execution/rate use",
+    "Private synthetic completion observation proves real DELETE commit-busy is OutcomeUnknown/commit_outcome_unknown before public503, without retry or rollback promise",
+    "Retained React previously described every failure as invalid link. It now distinguishes uncertainty/transport/malformed ACK, clears secrets/removes old flow, offers recovery and disables per-call retries; success requires true acknowledgement",
+    "Final independent15 release units,26 actual HTTP/source/native process checks,25 UI tests, app typecheck and actualGDD3 passed"
+  ],
+  "limits": [
+    "Injected handlers alone must satisfy actual physical/workspace lifetime, enabled provider and connection retirement; no default product data opener/writer",
+    "Process-local rate is not persisted/global/restart/proxy qualification; socket/header/TLS and whole-runtime shutdown remain pending",
+    "Targeted mocked-client component tests plus real native/source HTTP tests are not deployed browser/backend or whole React/server parity",
+    "Other identity/provider/API/CLI/MCP/GPUI/distribution/cutover remain incomplete; no external email, real-data adoption or production deployment"
+  ]
+}

@@ -1,0 +1,219 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native HTTP recovery callback and completion",
+    "goal": "Complete source-compatible link preview and atomic password reset with truthful unknown outcome and retained UI recovery",
+    "scope": "Finite R41/R42 recovery HTTP/React slice; no physical writer or product deployment authority"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native HTTP recovery boundary",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Bounded non-consuming link preview, known-commit completion mapping and truthful client recovery",
+        "rationale": "An emailed link must complete the native reset journey without false success or unsafe replay",
+        "excludes": [
+          "Default workspace opener, actual writer/lifetime authority, persistent/global rate, full R41/R42"
+        ]
+      },
+      "interfaces": [
+        "action.http_recovery"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Actual source302 callback and200 completion interoperate with native-issued link and source crypto",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Actual local Rust HTTP and current synthetic WAL/DELETE controls with installed source oracle",
+        "when": "Preview or complete current recovery and observe true outcome",
+        "then": "Actual source302 callback and200 completion interoperate with native-issued link and source crypto"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Strict callback/POST/query/password/token/Origin/HEAD/body/rate failures preserve state",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Actual local Rust HTTP and current synthetic WAL/DELETE controls with installed source oracle",
+        "when": "Preview or complete current recovery and observe true outcome",
+        "then": "Strict callback/POST/query/password/token/Origin/HEAD/body/rate failures preserve state"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Preview never consumes; completion atomically updates credential, removes siblings/sessions and preserves user authority",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Actual local Rust HTTP and current synthetic WAL/DELETE controls with installed source oracle",
+        "when": "Preview or complete current recovery and observe true outcome",
+        "then": "Preview never consumes; completion atomically updates credential, removes siblings/sessions and preserves user authority"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Navigation Origin policy differs from POST; fixed token-free callback keys, strict current facts and truthful503/UI replace source ambiguities",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Actual local Rust HTTP and current synthetic WAL/DELETE controls with installed source oracle",
+        "when": "Preview or complete current recovery and observe true outcome",
+        "then": "Navigation Origin policy differs from POST; fixed token-free callback keys, strict current facts and truthful503/UI replace source ambiguities"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Shared blocking permits survive cancellation, native token race yields one success, real commit-busy remains observedOutcomeUnknown/public503",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Actual local Rust HTTP and current synthetic WAL/DELETE controls with installed source oracle",
+        "when": "Preview or complete current recovery and observe true outcome",
+        "then": "Shared blocking permits survive cancellation, native token race yields one success, real commit-busy remains observedOutcomeUnknown/public503"
+      }
+    },
+    "action.http_recovery": {
+      "kind": "action",
+      "description": "Preview and complete native recovery through real HTTP with truthful UI outcomes",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "recovery_HTTP_request": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "configured_origin_profile_socket_peer_admitted_executor": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object"
+        },
+        "errors": {
+          "refused": "Strict403/400/415/413/408/429/503 preconditions; invalid token400; unknown/operational completion503 RESET_UNCONFIRMED without retry promise"
+        },
+        "preconditions": [
+          "Owner supplies actual socket ConnectInfo and lifetime-admitted executor with safe logging/connection retirement",
+          "No default product data opener or writer authority; existing migration/release gates remain binding"
+        ],
+        "postconditions": [
+          "Callback302 is non-consuming and Location is revalidated; HEAD405 invokes no native handler",
+          "Completion200 only after known commit; unknown/operational failure remains503 without replay or rollback claim",
+          "Shared4 blocking jobs and4096 fixed-operation/IP buckets, callback/completion10/60; issuance3/60 remains",
+          "Retained UI handles unconfirmed/transport/malformed ACK without replay or false success"
+        ],
+        "external_effects": [
+          "Only trusted admitted executor may perform native recovery transaction and postcommit mail",
+          "No router-owned filesystem lookup, automatic retries, token reissue or session/cookie"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Do not consume preview, leak bearer to a foreign destination, infer success from unknown commit or auto-replay lost responses; preserve trusted owner lifetime and global exposure gates.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Do not consume preview, leak bearer to a foreign destination, infer success from unknown commit or auto-replay lost responses; preserve trusted owner lifetime and global exposure gates.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Do not consume preview, leak bearer to a foreign destination, infer success from unknown commit or auto-replay lost responses; preserve trusted owner lifetime and global exposure gates.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Do not consume preview, leak bearer to a foreign destination, infer success from unknown commit or auto-replay lost responses; preserve trusted owner lifetime and global exposure gates.",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Do not consume preview, leak bearer to a foreign destination, infer success from unknown commit or auto-replay lost responses; preserve trusted owner lifetime and global exposure gates.",
+            "scenarios": [
+              "scenario.refusal"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Validate navigation/POST separately, decode callback once, hold common capacity and call admitted native handlers; redirect safely or map known/unknown completion"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.http_recovery",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.http_recovery",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.http_recovery",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.http_recovery",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.http_recovery",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.http_recovery",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native HTTP recovery callback and completion",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "0b6333ff32f5e9e8293b9f9d8e56984a8a7a10f54c1b03b88fcc3a6dc20cc27f"
+      }
+    }
+  }
+}

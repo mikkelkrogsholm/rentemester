@@ -1,0 +1,67 @@
+{
+  "result": "PASS",
+  "checks": 26,
+  "native_tests": 15,
+  "ignored_helper": 1,
+  "remaining_material_findings": [],
+  "review_phase": "Final source, scoped normative docs/GDD and retained UI review",
+  "reviewed_scope": [
+    "Optional additive three-handler router preserves no default product-data opener",
+    "GET mail navigation with Host/optional Origin; strict canonical bearer and exactly-once bounded query decoding",
+    "Returned SensitiveUrl revalidated against configured origin before sensitive Location header",
+    "POST strict body-only token and shared original UTF16 constants; known success only 200, invalid credentials400, uncertain/other503 without RetryAfter",
+    "Shared four blocking permits retained after cancellation; fixed operation/IP keys and 4096 total bucket cap",
+    "Real source response/callback/completion oracle, WAL/DELETE reset effects and concurrent single consumption, real DELETE busy commit503"
+  ],
+  "assumptions": [
+    "Only admitted synthetic executors; actual physical/workspace writer admission remains closed.",
+    "Public host/TLS/global-persisted rate/socket/header/shutdown, UI/full identity/R41/R42 are unqualified.",
+    "Panic hook diagnostics outside HTTP mapping still require trusted owner policy."
+  ],
+  "reports": [
+    "/tmp/rm-recovery-review-native.txt",
+    "/tmp/rm-recovery-review-process.json",
+    "/tmp/rm-recovery-review-process.err"
+  ],
+  "sha256": {
+    "Cargo.toml": "654e3b8827f3cca89672a887b55d05137253a5f53b3d3edc3de68f31e6d6c08f",
+    "Cargo.lock": "afa478fa68fc506f910b9085dd4d97fd03eb9cb1ca318adc87e649fa5bd6ecc4",
+    "crates/rentemester-server/Cargo.toml": "82a83b21b404b2e4be1f21e5e7f01f9b6a78a202371960e2b4eb2b2a129b0379",
+    "crates/rentemester-server/src/lib.rs": "34b004e211af3cd1521d77f3c8982ee958fe7beb4aa1ac3c996503c9984ec0a2",
+    "crates/rentemester-server/src/tests.rs": "998ffc2bf48b5ecfac23f77219e68dbf9cd74000ef37109460d0e8addf2a6bdf",
+    "crates/rentemester-server/src/recovery_tests.rs": "ff152f87bfdc855fc99a4af4d007dc65457297fe25fc0b09cd0cec2b97d3de09",
+    "crates/rentemester-application/src/password_reset.rs": "4cdf1acf03216bd779a5cb41d1a0df42fe748dced092c302abbf2a9d6195b76f",
+    "scripts/rust/verify-http-recovery.ts": "b9a069c1cc5eefaaa692f9e8ac47eab4895ac781ca52ce4a7c1bf56c312d820d",
+    "scripts/rust/verify-http-reset.ts": "e0af24156086718243641c30f02461be3f7ea3bd6f229b5a063786b8a72d21b1",
+    "scripts/rust/verify.ts": "aa50990c31dcc48d744d4022e2ba174db726e5c3b026bee99c78ee17b8d3f65f",
+    "docs/architecture/rust-target/implementation/http-recovery/CONTRACT.md": "0b6333ff32f5e9e8293b9f9d8e56984a8a7a10f54c1b03b88fcc3a6dc20cc27f",
+    "docs/architecture/rust-target/implementation/http-recovery/gdd.json": "a4eb4370e3f618b34b1232c6b3ff12dc5f3cf383c22b4512e109f5000b3fe45c",
+    "docs/architecture/rust-target/implementation/http-recovery/readiness.json": "59dec02a177537ad84962c0ab24b63cf791983aa6a936b48b7fd0873cb94afb8",
+    "docs/architecture/rust-target/implementation/README.md": "c6ad17da3853b23b96f37e6ed4f8586638557870d929e2e1439b6a63c9201f7f",
+    "app/src/views/LoginView.tsx": "3c22197aae85031af0b8814a2c2be25cc4b149580e92f319094426d505dcac65",
+    "app/src/auth-ui.test.tsx": "229fca085b524a80f66202e1b24f6b24eaca796bb16b210428e5bf0da520236a"
+  },
+  "resolved_method_note": "Callback HEAD now explicitly 405 with Allow GET and no callback rate/capacity; regression sends 12 HEAD then 10 accepted GET.",
+  "additional_final_evidence": [
+    "Actual DELETE busy response corroborated by private helper stage OutcomeUnknown/commit_outcome_unknown, not generic503 alone",
+    "Strict expiry and orphan reference callback/completion refusal preserve rows",
+    "Astral UTF16 password stored by native verifies with actual source; hostile completion Origin has no effects"
+  ],
+  "ui": {
+    "tests": 25,
+    "result": "PASS",
+    "report": "/tmp/rm-recovery-review-ui.txt",
+    "typecheck": "PASS bun run tsc --noEmit",
+    "typecheck_report": "/tmp/rm-recovery-review-ui-typecheck.txt",
+    "scope": "Focused React component tests with mocked client; no browser/native-server deployment parity claimed.",
+    "retry_evidence": "Installed @better-fetch/fetch/dist/index.js:710 gates retry on truthy options.retry; per-call retry:0 bypasses it; app typecheck validates actual authClient signature."
+  },
+  "gdd": {
+    "result": "3 PASS structural checks",
+    "report": "/tmp/rm-recovery-review-readiness.json",
+    "matches_current_readiness": true,
+    "source_contract_sha_matches": true
+  },
+  "functional_sources_unchanged_since_independent_15_native_26_process": true,
+  "final_ui_review": "Only no-error data.status===true shows success. Known business refusals remain generic; unconfirmed/transport/malformed acknowledgement clears PW/token and removes prior form with login/new recovery links. No provider text exposure or automatic client retry."
+}

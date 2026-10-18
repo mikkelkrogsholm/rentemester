@@ -146,6 +146,7 @@ fn sliding_rate_identity_capacity_and_boundary() {
         )
         .unwrap(),
         rate: Mutex::new(HashMap::new()),
+        recovery: None,
         workers: Arc::new(Semaphore::new(4)),
         execute: Box::new(|_| Ok(())),
     };
@@ -232,6 +233,7 @@ fn parallel_rate_admission_never_exceeds_three() {
         )
         .unwrap(),
         rate: Mutex::new(HashMap::new()),
+        recovery: None,
         workers: Arc::new(Semaphore::new(4)),
         execute: Box::new(|_| Ok(())),
     });
@@ -269,6 +271,7 @@ async fn cancellation_keeps_permit_until_blocking_work_finishes() {
         )
         .unwrap(),
         rate: Mutex::new(HashMap::new()),
+        recovery: None,
         workers: Arc::new(Semaphore::new(1)),
         execute: Box::new(move |_| {
             a.store(1, Ordering::SeqCst);
@@ -344,7 +347,7 @@ fn probe() {
     use std::io::{BufRead, Write};
     let mut line = String::new();
     std::io::stdin().lock().read_line(&mut line).unwrap();
-    let config: serde_json::Value = serde_json::from_str(&line).unwrap();
+    let config: Arc<serde_json::Value> = Arc::new(serde_json::from_str(&line).unwrap());
     struct Fixed(i64);
     impl Clock for Fixed {
         fn now_unix_ms(&self) -> Result<i64, AuthError> {
@@ -389,40 +392,100 @@ fn probe() {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let origin = format!("http://{}", listener.local_addr().unwrap());
         let base = origin.clone();
-        let app = reset_router(&origin, CookieProfile::Development, move |input| {
-            let path = config["control"].as_str().unwrap();
-            let mut db = rusqlite::Connection::open(path).unwrap();
-            db.execute_batch("PRAGMA foreign_keys=ON;PRAGMA synchronous=FULL;")
+        let callback_base = origin.clone();
+        let callback_config = config.clone();
+        let complete_config = config.clone();
+        let app = recovery_router(
+            &origin,
+            CookieProfile::Development,
+            move |input| {
+                let path = config["control"].as_str().unwrap();
+                let mut db = rusqlite::Connection::open(path).unwrap();
+                db.execute_batch("PRAGMA foreign_keys=ON;PRAGMA synchronous=FULL;")
+                    .unwrap();
+                db.busy_timeout(Duration::ZERO).unwrap();
+                let cookies = CookieVerifier::new(
+                    "w",
+                    CookieProfile::Development,
+                    config["key"].as_str().unwrap(),
+                )
                 .unwrap();
-            db.busy_timeout(Duration::ZERO).unwrap();
-            let cookies = CookieVerifier::new(
-                "w",
-                CookieProfile::Development,
-                config["key"].as_str().unwrap(),
-            )
-            .unwrap();
-            let links = RecoveryLinks::new(&base, &[&base], CookieProfile::Development).unwrap();
-            let clock = Fixed(config["now"].as_i64().unwrap());
-            let r = rentemester_application::reset_request::Runtime {
-                cookies: &cookies,
-                clock: &clock,
-                links: &links,
-                audit_key_version: 1,
-            };
-            let mut sender = Sender {
-                path: path.to_owned(),
-                log: config["mailLog"].as_str().unwrap().to_owned(),
-                fail: config["failMail"] == true,
-            };
-            // Each fixture connection is dropped; unusable handles are never pooled.
-            rentemester_application::reset_request::execute(
-                &mut db,
-                &r,
-                &mut sender,
-                input.email(),
-                input.redirect(),
-            )
-        })
+                let links =
+                    RecoveryLinks::new(&base, &[&base], CookieProfile::Development).unwrap();
+                let clock = Fixed(config["now"].as_i64().unwrap());
+                let r = rentemester_application::reset_request::Runtime {
+                    cookies: &cookies,
+                    clock: &clock,
+                    links: &links,
+                    audit_key_version: 1,
+                };
+                let mut sender = Sender {
+                    path: path.to_owned(),
+                    log: config["mailLog"].as_str().unwrap().to_owned(),
+                    fail: config["failMail"] == true,
+                };
+                // Each fixture connection is dropped; unusable handles are never pooled.
+                rentemester_application::reset_request::execute(
+                    &mut db,
+                    &r,
+                    &mut sender,
+                    input.email(),
+                    input.redirect(),
+                )
+            },
+            move |input| {
+                let mut db =
+                    rusqlite::Connection::open(callback_config["control"].as_str().unwrap())
+                        .unwrap();
+                db.execute_batch("PRAGMA foreign_keys=ON;PRAGMA synchronous=FULL;")
+                    .unwrap();
+                db.busy_timeout(Duration::ZERO).unwrap();
+                let cookies = CookieVerifier::new(
+                    "w",
+                    CookieProfile::Development,
+                    callback_config["key"].as_str().unwrap(),
+                )
+                .unwrap();
+                let links = RecoveryLinks::new(
+                    &callback_base,
+                    &[&callback_base],
+                    CookieProfile::Development,
+                )
+                .unwrap();
+                let clock = Fixed(callback_config["now"].as_i64().unwrap());
+                let r = rentemester_application::reset_request::Runtime {
+                    cookies: &cookies,
+                    clock: &clock,
+                    links: &links,
+                    audit_key_version: 1,
+                };
+                rentemester_application::reset_request::callback(
+                    &mut db,
+                    &r,
+                    input.token(),
+                    Some(input.redirect()),
+                )
+            },
+            move |input| {
+                let mut db =
+                    rusqlite::Connection::open(complete_config["control"].as_str().unwrap())
+                        .unwrap();
+                db.execute_batch("PRAGMA foreign_keys=ON;PRAGMA synchronous=FULL;")
+                    .unwrap();
+                db.busy_timeout(Duration::ZERO).unwrap();
+                let clock = Fixed(complete_config["now"].as_i64().unwrap());
+                let r = rentemester_application::password_reset::Runtime {
+                    clock: &clock,
+                    audit_key_version: 1,
+                };
+                let result=rentemester_application::password_reset::execute(&mut db,&r,input.token(),input.password());
+                if let Some(path)=complete_config["completionLog"].as_str() {
+                    let observed=match &result {Ok(())=>serde_json::json!({"ok":true}),Err(e)=>serde_json::json!({"ok":false,"stage":format!("{:?}",e.stage),"code":e.error.code})};
+                    let mut file=std::fs::OpenOptions::new().create(true).append(true).open(path).unwrap();writeln!(file,"{observed}").unwrap();
+                }
+                result
+            },
+        )
         .unwrap();
         println!("{}", serde_json::json!({"origin":origin}));
         std::io::stdout().flush().unwrap();
