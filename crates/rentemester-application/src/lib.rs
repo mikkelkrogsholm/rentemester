@@ -20,3 +20,4 @@ pub mod service_context;
 pub mod service_lifecycle;
 
 pub mod journal_post;
+pub mod journal_reversal;

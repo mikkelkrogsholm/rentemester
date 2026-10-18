@@ -1,0 +1,229 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native append-only manual journal reversal",
+    "goal": "Current human authorization and source-derived original evidence yield one complete immutable reversal with optional receipt",
+    "scope": "Admitted-connection generic manual reversal; invoice repair, deployed transport and physical lifetime authority remain open"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Authenticated append-only manual reversal",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Current authorization and source-derived original policy; real swapped lines, fiscal sequence/hash/retention/audit and optional receipt",
+        "rationale": "Original evidence remains immutable and generic invoice reversal must never bypass domain protection",
+        "excludes": [
+          "Generic invoice repair authority, request-controlled historical/VAT exemptions, product opener/transports and service company quota fence"
+        ]
+      },
+      "interfaces": [
+        "action.journal_reversal"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Actual source/native ordinary and historical/import/uncoded VAT reversals match full effects and preserve originals",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic original journals and actual source in-current reversal",
+        "when": "Native current-human reversal/replay or refusal/fault/death/concurrent attempt",
+        "then": "Actual source/native ordinary and historical/import/uncoded VAT reversals match full effects and preserve originals"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Protected invoice/credit-note, duplicate/reversal original, invalid current facts/periods/authority and precision refuse atomically",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic original journals and actual source in-current reversal",
+        "when": "Native current-human reversal/replay or refusal/fault/death/concurrent attempt",
+        "then": "Protected invoice/credit-note, duplicate/reversal original, invalid current facts/periods/authority and precision refuse atomically"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "Raw original VAT/text/nullable metadata and compatible optional DKK zero/negative FX retained; actor is current",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic original journals and actual source in-current reversal",
+        "when": "Native current-human reversal/replay or refusal/fault/death/concurrent attempt",
+        "then": "Raw original VAT/text/nullable metadata and compatible optional DKK zero/negative FX retained; actor is current"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Private persisted-origin policy preserves manual restrictions; tail hash and new stored hash checked without claiming prior full audit gate",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic original journals and actual source in-current reversal",
+        "when": "Native current-human reversal/replay or refusal/fault/death/concurrent attempt",
+        "then": "Private persisted-origin policy preserves manual restrictions; tail hash and new stored hash checked without claiming prior full audit gate"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "WAL/DELETE faults/death and same-original/key races elect one reversal; DELETE uncertainty withholds receipt",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic original journals and actual source in-current reversal",
+        "when": "Native current-human reversal/replay or refusal/fault/death/concurrent attempt",
+        "then": "WAL/DELETE faults/death and same-original/key races elect one reversal; DELETE uncertainty withholds receipt"
+      }
+    },
+    "action.journal_reversal": {
+      "kind": "action",
+      "description": "Append exactly one generic reversal of a persisted posted original",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "entry_id_date_reason": {
+            "type": "object"
+          },
+          "expected_rule_version": {
+            "type": "string"
+          },
+          "optional_idempotency_key": {
+            "type": "string"
+          }
+        },
+        "context": {
+          "current_human_cookie_trusted_clock_policy_admitted_company": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object",
+          "description": "Known committed source-shaped reversal result and optional native receipt"
+        },
+        "errors": {
+          "refused": "Source business refusal or strict native metadata/precision/authority/schema refusal; whole rollback; unknown commit withholds result"
+        },
+        "preconditions": [
+          "Current human ledger.post permission and canonical admitted main company writer",
+          "Original evidence and policy loaded internally, never supplied as request flags"
+        ],
+        "postconditions": [
+          "Original header and lines unchanged; one new reversed header, swapped ordered lines, fiscal sequence/hash/retention and journal_reverse audit",
+          "Issued invoice/credit note generic reversal refused regardless apparent repair eligibility",
+          "No bank exception reopening/resolution; errors abort all effects; receipt replay still requires current authority"
+        ],
+        "external_effects": [
+          "New reversal header and swapped lines with source-derived raw VAT/text/FX metadata",
+          "Same company transaction allocates sequence, audit and optional stable-principal receipt; no product endpoint, migration or external mail"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Original-derived policy, protected invoice evidence, immutable originals and atomic new effects require current writer facts and real source/process comparison",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Original-derived policy, protected invoice evidence, immutable originals and atomic new effects require current writer facts and real source/process comparison",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Original-derived policy, protected invoice evidence, immutable originals and atomic new effects require current writer facts and real source/process comparison",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Original-derived policy, protected invoice evidence, immutable originals and atomic new effects require current writer facts and real source/process comparison",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Original-derived policy, protected invoice evidence, immutable originals and atomic new effects require current writer facts and real source/process comparison",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Read original under current company writer; protect invoices; validate narrowly derived policy; new reversed header and swapped lines; known commit only output"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.journal_reversal",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.journal_reversal",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.journal_reversal",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.journal_reversal",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.journal_reversal",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.journal_reversal",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native append-only manual journal reversal",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "93918532c474bce4dc4eab2a36f353f46ab1286fb04a359621dac707d8caf66f"
+      }
+    }
+  }
+}

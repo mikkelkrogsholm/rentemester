@@ -36,10 +36,10 @@ fn safe(n: i64) -> Result<i64, Error> {
         Ok(n)
     }
 }
-fn trim(s: &str) -> &str {
+pub(super) fn trim(s: &str) -> &str {
     s.trim_matches(|c|matches!(c,'\u{9}'..='\u{d}'|'\u{20}'|'\u{a0}'|'\u{1680}'|'\u{2000}'..='\u{200a}'|'\u{2028}'|'\u{2029}'|'\u{202f}'|'\u{205f}'|'\u{3000}'|'\u{feff}'))
 }
-fn money(value: &Money) -> Result<f64, Error> {
+pub(super) fn money(value: &Money) -> Result<f64, Error> {
     let scaled = safe(
         value
             .decimal()
@@ -53,7 +53,7 @@ fn money(value: &Money) -> Result<f64, Error> {
     }
     Ok(n)
 }
-fn rate(value: &FxRate) -> Result<f64, Error> {
+pub(super) fn rate(value: &FxRate) -> Result<f64, Error> {
     let scaled = safe(
         value
             .decimal()
@@ -132,10 +132,39 @@ pub fn post(
     latest: Date,
     actor: Actor<'_>,
 ) -> Result<Value, Error> {
+    execute(tx, request, expected_version, latest, actor, None)
+}
+pub(super) struct Reversal {
+    pub id: i64,
+    pub number: String,
+    pub original_program: String,
+    pub document_id: Option<rentemester_engine::identifiers::DocumentId>,
+    pub raw_rate: Option<f64>,
+}
+pub(super) fn execute(
+    tx: &Transaction<'_>,
+    request: &ManualJournal,
+    expected_version: &str,
+    latest: Date,
+    actor: Actor<'_>,
+    reversal: Option<&Reversal>,
+) -> Result<Value, Error> {
     require_current(tx)?;
     let rules = journal_preview::compiled_rules()?;
     let facts = journal_preview::collect_facts(tx, request, latest)?;
-    let mut validation = manual_journal::validate(request, &facts, &rules, expected_version)?;
+    let mut validation = match reversal {
+        None => manual_journal::validate(request, &facts, &rules, expected_version)?,
+        Some(original) => manual_journal::validate_reversal(
+            request,
+            &facts,
+            &rules,
+            expected_version,
+            manual_journal::ReversalOrigin {
+                created_by_program: &original.original_program,
+                document_id: original.document_id,
+            },
+        )?,
+    };
     // Existing v36 readers validate FX with binary64 multiplication. Never persist an
     // exact-engine result which those readers would diagnose as inconsistent.
     if request.currency.as_str() != "DKK"
@@ -197,7 +226,7 @@ pub fn post(
             }).collect::<Result<Vec<String>,Error>>()?}),
         );
     }
-    if request.created_by_program.is_some()
+    if (request.created_by_program.is_some() && reversal.is_none())
         || trim(actor.subject).is_empty()
         || actor.subject.len() > 512
         || trim(actor.program).is_empty()
@@ -210,7 +239,13 @@ pub fn post(
         ));
     }
     let actor_subject = trim(actor.subject);
-    let program = trim(actor.program);
+    let program = if reversal.is_some()
+        && request.created_by_program.as_deref() == Some("rentemester-import-postings")
+    {
+        "rentemester-import-postings"
+    } else {
+        trim(actor.program)
+    };
     let settings = settings(tx)?;
     let fiscal = fiscal_year::for_date(
         request.transaction_date,
@@ -242,7 +277,10 @@ pub fn post(
     let previous = previous.unwrap_or_else(|| "GENESIS".to_owned());
     let foreign = request.amount_foreign.as_ref().map(money).transpose()?;
     let dkk = request.amount_dkk.as_ref().map(money).transpose()?;
-    let fx = request.fx_rate_to_dkk.as_ref().map(rate).transpose()?;
+    let fx = match reversal {
+        Some(original) => original.raw_rate,
+        None => request.fx_rate_to_dkk.as_ref().map(rate).transpose()?,
+    };
     let bank = request
         .source_bank_transaction_id
         .map(|id| safe(id.value()))
@@ -261,12 +299,15 @@ pub fn post(
         safe(account_id)?;
         let debit = money(&line.debit_amount)?;
         let credit = money(&line.credit_amount)?;
-        let vat = line
-            .vat_code
-            .as_deref()
-            .map(trim)
-            .filter(|s| !s.is_empty())
-            .map(str::to_owned);
+        let vat = if reversal.is_some() {
+            line.vat_code.clone()
+        } else {
+            line.vat_code
+                .as_deref()
+                .map(trim)
+                .filter(|s| !s.is_empty())
+                .map(str::to_owned)
+        };
         lines.push(Line {
             ordinal: lines.len(),
             account_no: line.account_no.as_str().to_owned(),
@@ -301,13 +342,18 @@ pub fn post(
         rule_version: rules.version().to_owned(),
         created_by: actor_subject.to_owned(),
         created_by_program: program.to_owned(),
-        status: "posted".to_owned(),
-        reversal_of_entry_id: None,
+        status: if reversal.is_some() {
+            "reversed"
+        } else {
+            "posted"
+        }
+        .to_owned(),
+        reversal_of_entry_id: reversal.map(|r| r.id),
         lines,
     };
     let hash = journal_hash::canonical_hash(&entry, &previous)?;
     checkpoint(tx, "sequence")?;
-    tx.execute("INSERT INTO main.journal_entries(id,entry_no,transaction_date,text,source_bank_transaction_id,document_id,currency,amount_foreign,amount_dkk,fx_rate_to_dkk,rule_version,created_by,created_by_program,status,previous_hash,entry_hash,retain_until) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,'posted',?14,?15,?16)",params![id,number,date,request.text,bank,document,request.currency.as_str(),foreign,dkk,fx,rules.version(),actor_subject,program,previous,hash,retention]).map_err(failed)?;
+    tx.execute("INSERT INTO main.journal_entries(id,entry_no,transaction_date,text,source_bank_transaction_id,document_id,currency,amount_foreign,amount_dkk,fx_rate_to_dkk,rule_version,created_by,created_by_program,status,reversal_of_entry_id,previous_hash,entry_hash,retain_until) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18)",params![id,number,date,request.text,bank,document,request.currency.as_str(),foreign,dkk,fx,rules.version(),actor_subject,program,entry.status,entry.reversal_of_entry_id,previous,hash,retention]).map_err(failed)?;
     checkpoint(tx, "header")?;
     for (ordinal, (account, debit, credit, vat, text)) in bound.into_iter().enumerate() {
         if line_id > SAFE {
@@ -324,9 +370,18 @@ pub fn post(
     } else {
         format!("{actor_subject} via {program}")
     };
-    tx.execute("INSERT INTO main.audit_log(id,event_type,entity_type,entity_id,message,actor) VALUES(?1,'journal_post','journal_entry',?2,?3,?4)",params![audit_id,id.to_string(),format!("Posted journal entry {number}"),audit_actor]).map_err(failed)?;
+    let (event, message) = match reversal {
+        None => ("journal_post", format!("Posted journal entry {number}")),
+        Some(original) => (
+            "journal_reverse",
+            format!("Reversed journal entry {} with {number}", original.number),
+        ),
+    };
+    tx.execute("INSERT INTO main.audit_log(id,event_type,entity_type,entity_id,message,actor) VALUES(?1,?2,'journal_entry',?3,?4,?5)",params![audit_id,event,id.to_string(),message,audit_actor]).map_err(failed)?;
     checkpoint(tx, "audit")?;
-    if let Some(bank) = bank.filter(|id| *id > 0) {
+    if reversal.is_none()
+        && let Some(bank) = bank.filter(|id| *id > 0)
+    {
         tx.execute("UPDATE main.exceptions SET status='resolved',resolved_at=CURRENT_TIMESTAMP,resolved_by=?1,resolution_note=?2 WHERE type='UNMATCHED_BANK_TRANSACTION' AND status='open' AND related_bank_transaction_id=?3",params![actor_subject,format!("Resolved automatically by posted journal entry {number}"),bank]).map_err(failed)?;
     }
     checkpoint(tx, "exceptions")?;
@@ -343,9 +398,11 @@ pub fn post(
     {
         return Err(failed("write readback"));
     }
-    Ok(
-        json!({"ok":true,"appliedRules":validation.required_rules,"errors":[],"entryId":id,"entryNo":number,"entryHash":hash}),
-    )
+    let mut value = json!({"ok":true,"appliedRules":validation.required_rules,"errors":[],"entryId":id,"entryNo":number,"entryHash":hash});
+    if let Some(original) = reversal {
+        value["originalEntryId"] = json!(original.id);
+    }
+    Ok(value)
 }
 fn checkpoint(tx: &Transaction<'_>, point: &str) -> Result<(), Error> {
     #[cfg(test)]

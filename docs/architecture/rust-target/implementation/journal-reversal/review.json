@@ -1,0 +1,348 @@
+{
+  "result": "PASS",
+  "scope": "Completed bounded read-only source/contract and independently executed current manual reversal review on admitted canonical connections; no repository or graph writes.",
+  "graphify_first": true,
+  "verified_utc": "2026-10-18T06:10:01.399619+00:00",
+  "findings": [
+    {
+      "id": "JR01",
+      "severity": "medium",
+      "status": "RESOLVED_VERIFIED",
+      "finding": "Historical documentless income/expense reversal omitted DOCUMENT from appliedRules although source retains it.",
+      "resolution": "DOCUMENT rule retained while historical missing-document diagnostic alone is skipped. Independently passing narrow-policy unit and current actual-source/native111 matrix include actual source historical import."
+    },
+    {
+      "id": "JR02",
+      "severity": "medium",
+      "status": "RESOLVED_VERIFIED",
+      "finding": "Source-generated DKK headers may legitimately carry optional FX0 or negative, and source reverses them. Native persisted fx() parses via positive FxRate and refuses with invalid_rate despite blanket retain-header-FX claim.",
+      "evidence": "Actual source/native compiledhelper probe /tmp/rm-reversal-review-zero-fx.json: rate0 and−1 source postOk/reversalOk true, native not_committed/invalid_rate.",
+      "needed": "Support preserved raw DKKmetadata separately or explicitly document/test bounded legacy adapter refusal (e.g.unsupported_legacy_number); do not weaken positive domain FxRate or silently claim full header metadata parity.",
+      "resolution": "Trusted loaded raw_rate accepts strict safe six-decimal zero/negative metadata while positive typedFxRate remains pureengine validation input. Current source/native0/−1 both reverse and preserve exact raw header rates."
+    },
+    {
+      "id": "JR03",
+      "severity": "low",
+      "status": "RESOLVED_VERIFIED",
+      "finding": "Blanket malformed persisted hash refusal could imply original/prior hash validation not performed by code/source.",
+      "resolution": "CONTRACT now states malformed currenttail refuses/newentry readback, without full prior/original audit gate."
+    }
+  ],
+  "execution": {
+    "reversal": {
+      "result": "PASS",
+      "tests": 1,
+      "ignored": 1,
+      "command": "cargo test --locked --release -p rentemester-storage journal_reversal::tests::",
+      "log": "/tmp/rm-reversal-review-native.txt"
+    },
+    "ordinary_post_regression": {
+      "result": "PASS",
+      "tests": 2,
+      "ignored": 1,
+      "command": "cargo test --locked --release -p rentemester-storage journal_post::tests::",
+      "log": "/tmp/rm-reversal-review-post.txt"
+    },
+    "engine": {
+      "result": "PASS",
+      "tests": 14,
+      "command": "cargo test --locked --release -p rentemester-engine",
+      "log": "/tmp/rm-reversal-review-engine-all.txt"
+    },
+    "initial_empty_engine_filter": {
+      "tests": 0,
+      "log": "/tmp/rm-reversal-review-engine.txt",
+      "note": "manual_journal::tests:: filter matched0; not counted as behavioral proof."
+    },
+    "optional_DKK_fx": {
+      "result": "SOURCE_NATIVE_DIVERGENCE",
+      "checks": 2,
+      "command": "bun run /tmp/rm-reversal-review-zero-fx.ts",
+      "report": "/tmp/rm-reversal-review-zero-fx.json",
+      "observations": [
+        {
+          "rate": 0,
+          "postOk": true,
+          "reversalOk": true,
+          "nativeOutcome": "not_committed",
+          "nativeCode": "invalid_rate"
+        },
+        {
+          "rate": -1,
+          "postOk": true,
+          "reversalOk": true,
+          "nativeOutcome": "not_committed",
+          "nativeCode": "invalid_rate"
+        }
+      ]
+    },
+    "fixed_DKK_fx": {
+      "result": "PASS",
+      "checks": 2,
+      "command": "bun run /tmp/rm-reversal-review-zero-fx-fixed.ts",
+      "report": "/tmp/rm-reversal-review-zero-fx-fixed.json",
+      "stderr": "/tmp/rm-reversal-review-zero-fx-fixed.err",
+      "scope": "Actual source-issued original+source/native reversals on separately copied/checkpointed canonical ledgers; raw header rate preserved in original and new rows. This is not fulltable parity."
+    },
+    "fixed_reversal_unit": {
+      "result": "PASS",
+      "tests": 1,
+      "ignored": 1,
+      "command": "cargo test --locked --release -p rentemester-storage journal_reversal::tests::",
+      "report": "/tmp/rm-reversal-review-fx-fixed-native.txt"
+    },
+    "narrow_policy": {
+      "result": "PASS",
+      "tests": 1,
+      "command": "cargo test --locked --release -p rentemester-engine source_bound_reversal_policy_does_not_weaken_manual_admission",
+      "report": "/tmp/rm-reversal-review-policy.txt",
+      "scope": "Ordinary path still reserved-program/VAT-base/documenterrors; trusted historicalreversal retains DOCUMENT/REVERSAL, rejects forgedorigin and missingreversalrule."
+    },
+    "post_regression_after_fix": {
+      "result": "PASS",
+      "tests": 2,
+      "ignored": 1,
+      "command": "cargo test --locked --release -p rentemester-storage journal_post::tests::",
+      "report": "/tmp/rm-reversal-review-post-after-fx.txt"
+    },
+    "final_process": {
+      "result": "PASS",
+      "checks": 111,
+      "command": "bun run scripts/rust/verify-journal-reversal.ts",
+      "report": "/tmp/rm-reversal-review-parity.json",
+      "stderr": "/tmp/rm-reversal-review-parity.err"
+    },
+    "final_reversal": {
+      "result": "PASS",
+      "tests": 2,
+      "ignored": 1,
+      "command": "cargo test --locked --release -p rentemester-storage journal_reversal::tests::",
+      "log": "/tmp/rm-reversal-review-final-native.txt"
+    },
+    "final_ordinary_post": {
+      "result": "PASS",
+      "tests": 2,
+      "ignored": 1,
+      "command": "cargo test --locked --release -p rentemester-storage journal_post::tests::",
+      "log": "/tmp/rm-reversal-review-final-post.txt"
+    },
+    "final_policy": {
+      "result": "PASS",
+      "tests": 1,
+      "ignored": 0,
+      "command": "cargo test --locked --release -p rentemester-engine source_bound_reversal_policy_does_not_weaken_manual_admission",
+      "log": "/tmp/rm-reversal-review-final-policy.txt"
+    },
+    "final_fence": {
+      "result": "PASS",
+      "tests": 5,
+      "ignored": 2,
+      "command": "cargo test --locked --release -p rentemester-application control_fence::tests::",
+      "log": "/tmp/rm-reversal-review-final-fence.txt"
+    },
+    "final_gdd": {
+      "result": "PASS",
+      "checks": 3,
+      "spec_revision": "sha256:7971b43ee15b852e302d8fc9778de7ac83940bd3afdde83e2c3b1661a9e55021",
+      "report": "/tmp/rm-reversal-review-readiness.json",
+      "command": "/Users/mikkelfreltoftkrogsholm/Projekter/gdd/.venv/bin/gdd validate docs/architecture/rust-target/implementation/journal-reversal/gdd.json --profile readiness --scope action.journal_reversal --scope component.application",
+      "note": "Independently generated report matches repository readiness exactly. Structural readiness is not behavioral proof."
+    }
+  },
+  "checked": [
+    "Protected issuedinvoice/creditnote refuses before prior/no-lines and no generic invoice repair path",
+    "Original evidence and swapped lines read under current companywriter; raw VAT/null/empty and line text mapping align with source",
+    "Exact persisted importmarker plus documentNULL gates historical missing-document exemption; allreversals may uncodedVAT but ordinary manual calls validate_policy(false,false)",
+    "Current actor/knowncommit receipt and currentauth-before-replay application pattern mirrors existingposting; no caller privilegeflag",
+    "Shared execute(None) retains ordinary postedstatus/hash/audit/positivebank exception behavior; Some reversals status/pointer/audit differ and do not mutate original/resolveexceptions",
+    "Tailhash/newreadback/checkedIDs/retention helpers reused without pretending full priorauditverification",
+    "Final strict request cannot supply original evidence/policy; current subject-derived actor and schema/authority gate precede receipt replay.",
+    "Independent111 matrix covers source/native full typed effects, actual historical import, raw metadata, original immutability, WAL/DELETE late faults/death/concurrent same-original/key, receipt-write rollback and DELETE unknown output withholding.",
+    "Current CONTRACT/GDD/README retain admitted-connection and no deployed writer boundaries; final application uses ReversalResult/ReversalFailure and reversal diagnostics."
+  ],
+  "limitations": [
+    "No product HTTP/CLI/MCP writer or exposed agent interface is added by this internal increment.",
+    "No full platform/R14/R13 closure, physical path/lifetime/restore/legacy routing or outer confirmation/backup policy qualification.",
+    "No generic invoice-domain repair or service quota/company fence authority.",
+    "This review covers bounded source-compatible legacy numeric domain, current tail/new-entry hash checks, not full original/prior audit-integrity verification.",
+    "Parent broad regression is separate evidence, not independently rerun here."
+  ],
+  "source_sha256": {
+    "crates/rentemester-application/src/control_fence.rs": "4d809d507ba5936214e07a57affb60ce80f2d5cb4df30894ab767b8c637c7bee",
+    "crates/rentemester-application/src/control_fence/tests.rs": "5098214db9d8559473ddcf64455504440948e919bd207dcae0cd929c84abbd2f",
+    "crates/rentemester-application/src/journal_reversal.rs": "f6be9318f87de2a0e81359769889e03a820db8fcd7ee7a847831b803b6096f75",
+    "crates/rentemester-application/src/journal_reversal/tests.rs": "c46c36dde5ab1a824e047b57fa692f0eb39878683d6efb89f3173810ef4df43c",
+    "crates/rentemester-application/src/lib.rs": "0722b0408c5e1b953e374187dc0089e513f99b89d5a00b5217edb2ab9d220e3c",
+    "crates/rentemester-engine/src/journal_rules.rs": "80d1aac78faae7c35f7c1d44e1eda21bbd35e24765494e4f50f1237dcd9c2f80",
+    "crates/rentemester-engine/src/manual_journal.rs": "0bc8446b966dffce0eb42c71e5c2d2f17114bd4b35f1d23143e21b33df5fadcf",
+    "crates/rentemester-storage/src/journal_post.rs": "b5f773bc4eafe2530bb2501b67b11b959a85385a7341fbcaeed50349065920f3",
+    "crates/rentemester-storage/src/journal_post/tests.rs": "e548b5f8ac0fda40d4f42881bcdb16635eef5274b3395280f7842d8948197651",
+    "crates/rentemester-storage/src/journal_reversal.rs": "206d05dace1a19ada15ef393c4a99fd1f97e0cd56f14ae8e36cbcd0616504ede",
+    "crates/rentemester-storage/src/journal_reversal/tests.rs": "fbe63125454be9454c42d5ef06b76e06a2459265fa210f245082884bbb9e406e",
+    "crates/rentemester-storage/src/lib.rs": "6b92d356f3d462cdda5c5d88c3d53c477f015c0d5cc6a5f1a6a060ef2d91d9e9",
+    "docs/architecture/rust-target/implementation/README.md": "d3a612320297baa864ca826ee9180871d8a95d7c89bbfbc40d7a505446e4eb61",
+    "docs/architecture/rust-target/implementation/journal-reversal/CONTRACT.md": "93918532c474bce4dc4eab2a36f353f46ab1286fb04a359621dac707d8caf66f",
+    "docs/architecture/rust-target/implementation/journal-reversal/gdd.json": "ead358a9c578eace609dc90a278dd9d7612b9e7f76686e1e3f324ed896e41328",
+    "docs/architecture/rust-target/implementation/journal-reversal/readiness.json": "06bc27dff808ef56c8422ea1c2513ee8598e8f945c8d97a1409f18c5dd785362",
+    "scripts/rust/verify-journal-reversal.ts": "ea2df869f4d02c6f93b4209cd063b056a084ba3b99f2491484400582f14e0567",
+    "scripts/rust/verify.ts": "e11ebe345b100114b3aacbc469e0bd49af84c8b8b2824b4afb1db0efe28fddb3",
+    "src/core/import-provenance.ts": "d7162a3af7abb4ecd608d660ab8bc6875aa1c697fce97f0562f1652c1690b2f4",
+    "src/core/ledger.ts": "605cfbe6b7800cf789d0a9b773f70fe43ebd54fdd965b4841f2e50ab4dd0cfbe",
+    "src/core/money.ts": "e013c3ca23bb2391105aa2f1e2f307dcdaaf85bec60159e5d63b39aa7e7c3bf8"
+  },
+  "probe_sha256": "8987f393a69a1058a9d6cdb6fe0d5d2a7c04d5acf8cad627d3e30730fb894d15",
+  "initial_review": {
+    "result": "FINDINGS_PENDING_SCOPE_DECISION",
+    "scope": "Bounded read-only early actual reversal/source/shared-post review during main harness authoring. Not frozen final parity or deployed authority. No repository/graph writes.",
+    "findings": [
+      {
+        "id": "JR01",
+        "severity": "medium",
+        "status": "RESOLVED_CODE_REVIEW",
+        "finding": "Historical documentless income/expense reversal omitted DOCUMENT from appliedRules although source retains it.",
+        "resolution": "Current validate_policy always pushes DOCUMENT for requires_document; only missingdocument diagnostic skips on historicalimport. Sourcefix read; final source/processoracle still pending."
+      },
+      {
+        "id": "JR02",
+        "severity": "medium",
+        "status": "RESOLVED_VERIFIED",
+        "finding": "Source-generated DKK headers may legitimately carry optional FX0 or negative, and source reverses them. Native persisted fx() parses via positive FxRate and refuses with invalid_rate despite blanket retain-header-FX claim.",
+        "evidence": "Actual source/native compiledhelper probe /tmp/rm-reversal-review-zero-fx.json: rate0 and−1 source postOk/reversalOk true, native not_committed/invalid_rate.",
+        "needed": "Support preserved raw DKKmetadata separately or explicitly document/test bounded legacy adapter refusal (e.g.unsupported_legacy_number); do not weaken positive domain FxRate or silently claim full header metadata parity.",
+        "resolution": "Trusted loaded raw_rate accepts strict safe six-decimal zero/negative metadata while positive typedFxRate remains pureengine validation input. Current source/native0/−1 both reverse and preserve exact raw header rates."
+      },
+      {
+        "id": "JR03",
+        "severity": "low",
+        "status": "RESOLVED_DOC_REVIEW",
+        "finding": "Blanket malformed persisted hash refusal could imply original/prior hash validation not performed by code/source.",
+        "resolution": "CONTRACT now states malformed currenttail refuses/newentry readback, without full prior/original audit gate."
+      }
+    ],
+    "execution": {
+      "reversal": {
+        "result": "PASS",
+        "tests": 1,
+        "ignored": 1,
+        "command": "cargo test --locked --release -p rentemester-storage journal_reversal::tests::",
+        "log": "/tmp/rm-reversal-review-native.txt"
+      },
+      "ordinary_post_regression": {
+        "result": "PASS",
+        "tests": 2,
+        "ignored": 1,
+        "command": "cargo test --locked --release -p rentemester-storage journal_post::tests::",
+        "log": "/tmp/rm-reversal-review-post.txt"
+      },
+      "engine": {
+        "result": "PASS",
+        "tests": 14,
+        "command": "cargo test --locked --release -p rentemester-engine",
+        "log": "/tmp/rm-reversal-review-engine-all.txt"
+      },
+      "initial_empty_engine_filter": {
+        "tests": 0,
+        "log": "/tmp/rm-reversal-review-engine.txt",
+        "note": "manual_journal::tests:: filter matched0; not counted as behavioral proof."
+      },
+      "optional_DKK_fx": {
+        "result": "SOURCE_NATIVE_DIVERGENCE",
+        "checks": 2,
+        "command": "bun run /tmp/rm-reversal-review-zero-fx.ts",
+        "report": "/tmp/rm-reversal-review-zero-fx.json",
+        "observations": [
+          {
+            "rate": 0,
+            "postOk": true,
+            "reversalOk": true,
+            "nativeOutcome": "not_committed",
+            "nativeCode": "invalid_rate"
+          },
+          {
+            "rate": -1,
+            "postOk": true,
+            "reversalOk": true,
+            "nativeOutcome": "not_committed",
+            "nativeCode": "invalid_rate"
+          }
+        ]
+      },
+      "fixed_DKK_fx": {
+        "result": "PASS",
+        "checks": 2,
+        "command": "bun run /tmp/rm-reversal-review-zero-fx-fixed.ts",
+        "report": "/tmp/rm-reversal-review-zero-fx-fixed.json",
+        "stderr": "/tmp/rm-reversal-review-zero-fx-fixed.err",
+        "scope": "Actual source-issued original+source/native reversals on separately copied/checkpointed canonical ledgers; raw header rate preserved in original and new rows. This is not fulltable parity."
+      },
+      "fixed_reversal_unit": {
+        "result": "PASS",
+        "tests": 1,
+        "ignored": 1,
+        "command": "cargo test --locked --release -p rentemester-storage journal_reversal::tests::",
+        "report": "/tmp/rm-reversal-review-fx-fixed-native.txt"
+      },
+      "narrow_policy": {
+        "result": "PASS",
+        "tests": 1,
+        "command": "cargo test --locked --release -p rentemester-engine source_bound_reversal_policy_does_not_weaken_manual_admission",
+        "report": "/tmp/rm-reversal-review-policy.txt",
+        "scope": "Ordinary path still reserved-program/VAT-base/documenterrors; trusted historicalreversal retains DOCUMENT/REVERSAL, rejects forgedorigin and missingreversalrule."
+      },
+      "post_regression_after_fix": {
+        "result": "PASS",
+        "tests": 2,
+        "ignored": 1,
+        "command": "cargo test --locked --release -p rentemester-storage journal_post::tests::",
+        "report": "/tmp/rm-reversal-review-post-after-fx.txt"
+      }
+    },
+    "source_sha256": {
+      "crates/rentemester-storage/src/journal_reversal.rs": "206d05dace1a19ada15ef393c4a99fd1f97e0cd56f14ae8e36cbcd0616504ede",
+      "crates/rentemester-storage/src/journal_reversal/tests.rs": "4cb8190c38f993a50f16303fe68d95f0d6f0a9afea216e7c0945487d55686576",
+      "crates/rentemester-storage/src/journal_post.rs": "b5f773bc4eafe2530bb2501b67b11b959a85385a7341fbcaeed50349065920f3",
+      "crates/rentemester-application/src/journal_reversal.rs": "01fc7eca44472b77f56fbe3bc2dccf849d26625e9a17cf05caaeb93b7bea4777",
+      "crates/rentemester-engine/src/manual_journal.rs": "05d543dd2f22d079a55d6fed2d8a881cb6f28da7683b69a7a33900bc3cb421c2",
+      "crates/rentemester-engine/src/journal_rules.rs": "80d1aac78faae7c35f7c1d44e1eda21bbd35e24765494e4f50f1237dcd9c2f80",
+      "docs/architecture/rust-target/implementation/journal-reversal/CONTRACT.md": "93918532c474bce4dc4eab2a36f353f46ab1286fb04a359621dac707d8caf66f",
+      "src/core/ledger.ts": "605cfbe6b7800cf789d0a9b773f70fe43ebd54fdd965b4841f2e50ab4dd0cfbe",
+      "src/core/import-provenance.ts": "d7162a3af7abb4ecd608d660ab8bc6875aa1c697fce97f0562f1652c1690b2f4",
+      "src/core/money.ts": "e013c3ca23bb2391105aa2f1e2f307dcdaaf85bec60159e5d63b39aa7e7c3bf8"
+    }
+  },
+  "remaining_material_findings": [],
+  "reviewed_raw_rate_boundary": "Rawrate is loaded and strictly bounded in storage from original under heldwriter, never deserialized by application input. Positive rates feed existing engine; nonpositive rates yield required-rate refusal for nonDKK, while DKK preserves persisted metadata. Shared ordinarypost None retains existing typed rate path. Generic invoice repair remains denied unconditionally for issuedinvoice/creditnote.",
+  "fixed_probe_sha256": "77bac7d014788df7bf180a4f42eecd3e3dbe2df34e75b16df30d02564a6953c3",
+  "intermediate_review": {
+    "result": "PASS_SCOPED_FIX_REVIEW",
+    "scope": "Read-only intermediate reversal fix review and bounded independent source/native DKK FX checks; source/processharness still evolving, no final83/fullmatrix acceptance claim.",
+    "verified_utc": "2026-10-18T06:07:06.382428+00:00",
+    "source_sha256": {
+      "crates/rentemester-storage/src/journal_reversal.rs": "206d05dace1a19ada15ef393c4a99fd1f97e0cd56f14ae8e36cbcd0616504ede",
+      "crates/rentemester-storage/src/journal_reversal/tests.rs": "6eb6c5184330e47aeee7f60916f56a63acd79bad2c27d65c221877a80ffd20bc",
+      "crates/rentemester-storage/src/journal_post.rs": "b5f773bc4eafe2530bb2501b67b11b959a85385a7341fbcaeed50349065920f3",
+      "crates/rentemester-application/src/journal_reversal.rs": "01fc7eca44472b77f56fbe3bc2dccf849d26625e9a17cf05caaeb93b7bea4777",
+      "crates/rentemester-engine/src/manual_journal.rs": "0bc8446b966dffce0eb42c71e5c2d2f17114bd4b35f1d23143e21b33df5fadcf",
+      "crates/rentemester-engine/src/journal_rules.rs": "80d1aac78faae7c35f7c1d44e1eda21bbd35e24765494e4f50f1237dcd9c2f80",
+      "docs/architecture/rust-target/implementation/journal-reversal/CONTRACT.md": "93918532c474bce4dc4eab2a36f353f46ab1286fb04a359621dac707d8caf66f",
+      "src/core/ledger.ts": "605cfbe6b7800cf789d0a9b773f70fe43ebd54fdd965b4841f2e50ab4dd0cfbe",
+      "src/core/import-provenance.ts": "d7162a3af7abb4ecd608d660ab8bc6875aa1c697fce97f0562f1652c1690b2f4",
+      "src/core/money.ts": "e013c3ca23bb2391105aa2f1e2f307dcdaaf85bec60159e5d63b39aa7e7c3bf8",
+      "scripts/rust/verify-journal-reversal.ts": "df6c875348a59f0ee4c364505536512e849211b4aa82eac6329bed3fe6013a3c"
+    },
+    "limitations": [
+      "Final actualsource accounting/process parity, concurrency/sameoriginal/replay/death/latefault/commitunknown matrix is still under main harness authoring.",
+      "Current source may evolve; code-resolution findings are not a final freeze/hash acceptance.",
+      "No productHTTP/CLI/MCP writer, physical/originalpath/lifetime/restore/legacy drain or outerconfirmation/backup gates qualified.",
+      "Servicequota/company fence and atomic invoice-domain repairs remain outside genericreversal scope."
+    ]
+  },
+  "final_report_sha256": {
+    "/tmp/rm-reversal-review-parity.json": "55d59618ae1fd16d87ca95db202047f99d5eba247bfc29f3d9cfb5f1af592d58",
+    "/tmp/rm-reversal-review-final-native.txt": "3fa556b9d631c57e9cfc69a6cdac8c6e1668ce664925f9b16b4860faeb5f42c5",
+    "/tmp/rm-reversal-review-final-policy.txt": "fd435adb50be011eff680a82494ebbb83cf28291b849f4bc3ec0da86c95ef592",
+    "/tmp/rm-reversal-review-final-post.txt": "74d2088c3105168f1f8f6b572b88230b240ea804c5eb43beacf87604c0cc9a92",
+    "/tmp/rm-reversal-review-final-fence.txt": "d3f47995b6233b111e6bae799921bbe16ff946cb247673a494edea1339301c29",
+    "/tmp/rm-reversal-review-readiness.json": "06bc27dff808ef56c8422ea1c2513ee8598e8f945c8d97a1409f18c5dd785362"
+  }
+}

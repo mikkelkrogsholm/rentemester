@@ -1,0 +1,14 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling rentemester-storage v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-storage)
+    Finished `release` profile [optimized] target(s) in 3.65s
+     Running unittests src/lib.rs (target/release/deps/rentemester_storage-d46d1b64d1c6941d)
+
+running 3 tests
+test journal_post::tests::child ... ignored, canonical synthetic storage post crash/fault process helper
+test journal_post::tests::legacy_numeric_roundtrip_and_writer_boundary ... ok
+test journal_post::tests::actual_native_header_lines_hash_audit_and_rollback ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 54 filtered out; finished in 1.37s

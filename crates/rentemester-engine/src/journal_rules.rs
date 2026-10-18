@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 pub const BALANCED: &str = "DK-BOOKKEEPING-BALANCED-001";
 pub const APPEND_ONLY: &str = "DK-BOOKKEEPING-APPEND-ONLY-001";
+pub const REVERSAL: &str = "DK-BOOKKEEPING-REVERSAL-001";
 pub const DOCUMENT: &str = "DK-BOOKKEEPING-DOCUMENT-001";
 pub const FX: &str = "DK-BOOKKEEPING-FX-001";
 pub const PERIOD_LOCK: &str = "DK-BOOKKEEPING-PERIOD-LOCK-001";
@@ -32,6 +33,7 @@ pub struct RuleBundle {
 #[derive(Debug)]
 pub struct ManualJournalRules {
     version: String,
+    reversal: bool,
 }
 impl ManualJournalRules {
     pub fn from_bundles(mut bundles: Vec<RuleBundle>) -> Result<Self, Error> {
@@ -91,14 +93,25 @@ impl ManualJournalRules {
         {
             return Err(invalid());
         }
+        let reversal = bookkeeping.rule_ids.iter().any(|id| id == REVERSAL);
         bundles.sort_by(|a, b| a.name.cmp(&b.name));
         Ok(Self {
+            reversal,
             version: bundles
                 .iter()
                 .map(|b| format!("{}={}", b.name, b.version))
                 .collect::<Vec<_>>()
                 .join(";"),
         })
+    }
+    pub fn require_reversal(&self) -> Result<(), Error> {
+        if !self.reversal {
+            return Err(Error::new(
+                "invalid_rules",
+                "reversal rule metadata is required",
+            ));
+        }
+        Ok(())
     }
     pub fn version(&self) -> &str {
         &self.version

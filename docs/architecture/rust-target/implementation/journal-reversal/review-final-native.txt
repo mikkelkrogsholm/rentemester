@@ -1,0 +1,14 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on artifact directory
+    Finished `release` profile [optimized] target(s) in 3.68s
+     Running unittests src/lib.rs (target/release/deps/rentemester_storage-d46d1b64d1c6941d)
+
+running 3 tests
+test journal_reversal::tests::child ... ignored, canonical synthetic reversal crash/fault process helper
+test journal_reversal::tests::request_cannot_supply_original_evidence_or_policy ... ok
+test journal_reversal::tests::real_append_only_reversal_and_single_use ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 54 filtered out; finished in 1.37s

@@ -47,6 +47,7 @@ for (const command of [
   [process.execPath, "run", "scripts/rust/verify-sequences.ts"],
   [process.execPath, "run", "scripts/rust/verify-idempotency.ts"],
   [process.execPath, "run", "scripts/rust/verify-journal-post.ts"],
+  [process.execPath, "run", "scripts/rust/verify-journal-reversal.ts"],
   [process.execPath, "run", "scripts/rust/verify-fiscal-calendar.ts"],
   [process.execPath, "run", "scripts/rust/verify-arithmetic.ts"],
   [process.execPath, "run", "scripts/rust/verify-manual-journal.ts"],

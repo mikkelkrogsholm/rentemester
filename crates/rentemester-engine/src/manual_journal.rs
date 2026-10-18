@@ -167,6 +167,51 @@ pub fn validate(
     rules: &ManualJournalRules,
     expected_version: &str,
 ) -> Result<Validation, Error> {
+    validate_policy(request, facts, rules, expected_version, false, false)
+}
+/// Internal-use pure reversal validation. Origin facts must be loaded from the original
+/// under the storage writer. This is not a request DTO or an authorization grant.
+pub struct ReversalOrigin<'a> {
+    pub created_by_program: &'a str,
+    pub document_id: Option<DocumentId>,
+}
+pub fn validate_reversal(
+    request: &ManualJournal,
+    facts: &JournalFacts,
+    rules: &ManualJournalRules,
+    expected_version: &str,
+    origin: ReversalOrigin<'_>,
+) -> Result<Validation, Error> {
+    rules.require_reversal()?;
+    let historical =
+        origin.created_by_program == "rentemester-import-postings" && origin.document_id.is_none();
+    if request.document_id != origin.document_id
+        || request.created_by_program.as_deref()
+            != historical.then_some("rentemester-import-postings")
+    {
+        return Err(Error::new(
+            "invalid_context",
+            "reversal origin does not match derived request",
+        ));
+    }
+    let mut result = validate_policy(request, facts, rules, expected_version, historical, true)?;
+    let mut required = vec![journal_rules::APPEND_ONLY, journal_rules::REVERSAL];
+    for id in result.required_rules {
+        if !required.contains(&id) {
+            required.push(id);
+        }
+    }
+    result.required_rules = required;
+    Ok(result)
+}
+fn validate_policy(
+    request: &ManualJournal,
+    facts: &JournalFacts,
+    rules: &ManualJournalRules,
+    expected_version: &str,
+    historical_import: bool,
+    allow_uncoded_vat_control: bool,
+) -> Result<Validation, Error> {
     rules.require_version(expected_version)?;
     let invalid = || {
         Error::new(
@@ -259,7 +304,9 @@ pub fn validate(
             "at least two journal lines are required",
         );
     }
-    if request.created_by_program.as_deref() == Some("rentemester-import-postings") {
+    if !historical_import
+        && request.created_by_program.as_deref() == Some("rentemester-import-postings")
+    {
         push(
             &mut errors,
             "reserved_program",
@@ -344,7 +391,8 @@ pub fn validate(
             ),
         );
     }
-    if touches_control && !has_base && !(touches_settlement && only_vat) {
+    let valid_vat_base = has_base || (touches_settlement && only_vat);
+    if !allow_uncoded_vat_control && touches_control && !valid_vat_base {
         push(
             &mut errors,
             "vat_base_required",
@@ -403,7 +451,7 @@ pub fn validate(
     if requires_document {
         required_rules.push(journal_rules::DOCUMENT);
         match request.document_id {
-            None => push(
+            None if !historical_import => push(
                 &mut errors,
                 "document_required",
                 "documentId",
@@ -464,4 +512,139 @@ pub fn validate(
         total_credit: credit_sum,
         errors,
     })
+}
+
+#[cfg(test)]
+mod reversal_tests {
+    use super::*;
+    use journal_rules::RuleBundle;
+    #[test]
+    fn source_bound_reversal_policy_does_not_weaken_manual_admission() {
+        let bundles = vec![
+            RuleBundle {
+                name: "bookkeeping".to_owned(),
+                version: "dk-bookkeeping-v0.0.8".to_owned(),
+                rule_ids: [
+                    journal_rules::BALANCED,
+                    journal_rules::APPEND_ONLY,
+                    journal_rules::PERIOD_LOCK,
+                    journal_rules::DOCUMENT,
+                    journal_rules::FX,
+                    journal_rules::REVERSAL,
+                ]
+                .map(str::to_owned)
+                .to_vec(),
+            },
+            RuleBundle {
+                name: "vat".to_owned(),
+                version: "dk-vat-v0.0.5".to_owned(),
+                rule_ids: vec![],
+            },
+        ];
+        let rules = ManualJournalRules::from_bundles(bundles.clone()).unwrap();
+        let request = ManualJournal {
+            transaction_date: Date::parse("2026-01-01").unwrap(),
+            text: "Derived reversal".to_owned(),
+            currency: Currency::parse("DKK").unwrap(),
+            document_id: None,
+            source_bank_transaction_id: None,
+            amount_foreign: None,
+            amount_dkk: None,
+            fx_rate_to_dkk: None,
+            created_by_program: Some("rentemester-import-postings".to_owned()),
+            lines: vec![
+                JournalLine {
+                    account_no: AccountNo::parse("3000").unwrap(),
+                    debit_amount: Money::parse("10").unwrap(),
+                    credit_amount: Money::default(),
+                    vat_code: None,
+                    text: None,
+                },
+                JournalLine {
+                    account_no: AccountNo::parse("4000").unwrap(),
+                    debit_amount: Money::default(),
+                    credit_amount: Money::parse("10").unwrap(),
+                    vat_code: None,
+                    text: None,
+                },
+            ],
+        };
+        let facts = JournalFacts {
+            transaction_date: request.transaction_date,
+            latest_allowed_date: request.transaction_date,
+            accounts: vec![
+                AccountFact {
+                    account_no: AccountNo::parse("3000").unwrap(),
+                    kind: AccountKind::Expense,
+                    active: true,
+                    vat_control: false,
+                    vat_settlement: false,
+                },
+                AccountFact {
+                    account_no: AccountNo::parse("4000").unwrap(),
+                    kind: AccountKind::Vat,
+                    active: true,
+                    vat_control: true,
+                    vat_settlement: false,
+                },
+            ],
+            documents: vec![],
+            banks: vec![],
+            periods: vec![],
+        };
+        let manual = validate(&request, &facts, &rules, rules.version()).unwrap();
+        assert_eq!(
+            manual.errors.iter().map(|e| e.code).collect::<Vec<_>>(),
+            vec!["reserved_program", "vat_base_required", "document_required"]
+        );
+        let reversal = validate_reversal(
+            &request,
+            &facts,
+            &rules,
+            rules.version(),
+            ReversalOrigin {
+                created_by_program: "rentemester-import-postings",
+                document_id: None,
+            },
+        )
+        .unwrap();
+        assert!(reversal.ok);
+        assert!(reversal.required_rules.contains(&journal_rules::DOCUMENT));
+        assert_eq!(
+            reversal.required_rules[..2],
+            [journal_rules::APPEND_ONLY, journal_rules::REVERSAL]
+        );
+        assert!(
+            validate_reversal(
+                &request,
+                &facts,
+                &rules,
+                rules.version(),
+                ReversalOrigin {
+                    created_by_program: "fake-import",
+                    document_id: None
+                }
+            )
+            .is_err()
+        );
+        let mut incomplete = bundles;
+        incomplete[0]
+            .rule_ids
+            .retain(|s| s != journal_rules::REVERSAL);
+        let incomplete = ManualJournalRules::from_bundles(incomplete).unwrap();
+        assert!(validate(&request, &facts, &incomplete, incomplete.version()).is_ok());
+        assert!(
+            validate_reversal(
+                &request,
+                &facts,
+                &incomplete,
+                incomplete.version(),
+                ReversalOrigin {
+                    created_by_program: "rentemester-import-postings",
+                    document_id: None
+                }
+            )
+            .is_err()
+        );
+    }
 }

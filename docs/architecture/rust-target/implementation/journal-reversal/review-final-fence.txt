@@ -1,0 +1,27 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on artifact directory
+   Compiling rentemester-engine v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-engine)
+   Compiling rentemester-storage v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-storage)
+   Compiling rentemester-application v0.1.0 (/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/crates/rentemester-application)
+    Finished `release` profile [optimized] target(s) in 10.26s
+     Running unittests src/lib.rs (target/release/deps/rentemester_application-b639a88e4f8b615e)
+
+running 7 tests
+test control_fence::tests::child ... ignored, native process fence helper selected by control-fence harness
+test control_fence::tests::cookie_child ... ignored, synthetic cookie/fence process helper selected by session-cookie harness
+test control_fence::tests::committed_cleanup_failure_keeps_committed_value ... ok
+test control_fence::tests::manual_commit_is_unknown_never_false_rollback ... ok
+test control_fence::tests::cookie_clock_failure_workspace_binding_and_admission_time ... ok
+test control_fence::tests::current_observation_commit_and_business_rollback ... ok
+test control_fence::tests::durable_receipt_replay_is_below_current_authorization_fence ... ok
+
+test result: ok. 5 passed; 0 failed; 2 ignored; 0 measured; 11 filtered out; finished in 0.51s
+
+     Running tests/access_vectors.rs (target/release/deps/access_vectors-0c9b44ddb0ead7ca)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s

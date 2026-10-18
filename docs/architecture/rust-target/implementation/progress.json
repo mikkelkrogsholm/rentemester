@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "journal-post-1",
-  "code_revision": "sha256:1545193f20eb263f9843b4d98bb2fd52feffb6a45d728c77d093c8b07e33a4ab",
-  "spec_revision": "sha256:7858ec76cd26d24536ce89ab72008439e3ebc64a204a6f61dff11be2586fabf4",
-  "state": "verified-native-authenticated-real-manual-journal-post-on-admitted-connections",
+  "current_increment": "journal-reversal-1",
+  "code_revision": "sha256:526b2e3d36fe4b2f6fd46d2b6880cff7ab5de2b72f55d91d97e5b3eef991ad67",
+  "spec_revision": "sha256:7971b43ee15b852e302d8fc9778de7ac83940bd3afdde83e2c3b1661a9e55021",
+  "state": "verified-native-authenticated-append-only-manual-reversal-on-admitted-connections",
   "issues_closed": [],
   "next": [
-    "Implement complete native append-only manual reversal with protected invoice/payment/credit-note evidence, internal historical/VAT policy, exact swapped lines, canonical hash/sequence/audit and durable receipts. Then service current company admission/quota protocol and actual physical/outer policy/confirmation/backup/shared transports. Full React/GPUI/distribution/cutover epic unchanged.",
+    "Implement current service company admission and durable quota protocol, then compose real post/reverse under stable service principal with fresh authorization before replay. Preserve charged-admission versus company-commit boundary; continue actual physical/lifetime/legacy routing, outer policy/confirmation/backup and shared HTTP/CLI/MCP adapters. Full React/GPUI/distribution/cutover epic unchanged.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,20 +21,20 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "idempotency-1",
-    "code_revision": "sha256:0ec51ec1a68d2ff4285321bef20f788f97d1d1f8a9c34cb262746fe4867c49ec",
-    "spec_revision": "sha256:5afa7d40a5f598514869708c8963f69f26d7b3ce79f8c47c814df02ea1bfda5e",
-    "state": "verified-native-durable-keyed-receipt-storage-and-current-human-fence-composition"
+    "current_increment": "journal-post-1",
+    "code_revision": "sha256:1545193f20eb263f9843b4d98bb2fd52feffb6a45d728c77d093c8b07e33a4ab",
+    "spec_revision": "sha256:7858ec76cd26d24536ce89ab72008439e3ebc64a204a6f61dff11be2586fabf4",
+    "state": "verified-native-authenticated-real-manual-journal-post-on-admitted-connections"
   },
   "evidence": {
-    "report": "journal-post/evidence.json",
-    "parity": "journal-post/parity.json",
-    "regression": "journal-post/regression.json",
-    "rust_tests_passed": 151,
-    "ignored_subprocess_helpers": 26,
-    "integration_checks": 12495,
-    "post_process_checks": 127,
-    "ui_tests": 633,
+    "report": "journal-reversal/evidence.json",
+    "parity": "journal-reversal/parity.json",
+    "regression": "journal-reversal/regression.json",
+    "rust_tests_passed": 154,
+    "ignored_subprocess_helpers": 28,
+    "integration_checks": 12606,
+    "reversal_process_checks": 111,
+    "posting_process_checks": 127,
     "writer_authority": false,
     "whole_issues_closed": false
   },
@@ -308,6 +308,12 @@
       "code_revision": "sha256:0ec51ec1a68d2ff4285321bef20f788f97d1d1f8a9c34cb262746fe4867c49ec",
       "spec_revision": "sha256:5afa7d40a5f598514869708c8963f69f26d7b3ce79f8c47c814df02ea1bfda5e",
       "state": "verified-native-durable-keyed-receipt-storage-and-current-human-fence-composition"
+    },
+    {
+      "current_increment": "journal-post-1",
+      "code_revision": "sha256:1545193f20eb263f9843b4d98bb2fd52feffb6a45d728c77d093c8b07e33a4ab",
+      "spec_revision": "sha256:7858ec76cd26d24536ce89ab72008439e3ebc64a204a6f61dff11be2586fabf4",
+      "state": "verified-native-authenticated-real-manual-journal-post-on-admitted-connections"
     }
   ]
 }
