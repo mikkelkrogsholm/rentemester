@@ -1,0 +1,1 @@
+{"ok":true,"requests":[{"path":"/api/auth/two-factor/view-backup-codes","method":"POST","bodyFields":["password"],"passwordIsString":true,"hasCallerIdentity":false},{"path":"/api/auth/two-factor/generate-backup-codes","method":"POST","bodyFields":["password"],"passwordIsString":true,"hasCallerIdentity":false}]}

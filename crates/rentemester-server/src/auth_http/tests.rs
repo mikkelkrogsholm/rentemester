@@ -130,9 +130,15 @@ fn probe() {
     let control_t = clock.clone();
     let control_open = open.clone();
     let control_log = outcome_log.clone();
+    let backup_c = cookies.clone();
+    let backup_k = keys.clone();
+    let backup_t = clock.clone();
+    let backup_open = open.clone();
+    let backup_log = outcome_log.clone();
     let mut auth = AuthHandlers {
         enrollment: Some(enrollment),
         verification: None,
+        backup_management: None,
         session_control: None,
         cookies,
         sign_in: Box::new(move |i| {
@@ -166,6 +172,24 @@ fn probe() {
             )
         }),
     };
+    if config["backupManagement"] == true {
+        auth.backup_management = Some(Box::new(move |i| {
+            let result = rentemester_application::backup_management::execute(
+                &mut backup_open(),
+                &mfa_login::Runtime {
+                    cookies: &backup_c,
+                    keys: &backup_k,
+                    clock: backup_t.as_ref(),
+                    audit_key_version: 1,
+                },
+                i.proof(),
+                i.password(),
+                i.operation(),
+            );
+            observe(&backup_log, "backup-management", &result);
+            result
+        }));
+    }
     if config["sessions"] == true {
         auth.session_control = Some(Box::new(move |i| {
             let result = session_control::execute(
@@ -305,6 +329,7 @@ fn handlers(cookies: Arc<CookieVerifier>, calls: Arc<AtomicUsize>, mode: u8) -> 
     AuthHandlers {
         enrollment: None,
         verification: None,
+        backup_management: None,
         session_control: None,
         cookies,
         sign_in,
@@ -913,4 +938,127 @@ async fn session_listing_body_and_duplicate_cookie_headers_never_dispatch() {
     assert_eq!(r.status().as_u16(), 400);
     assert_eq!(calls.load(Ordering::SeqCst), 0);
     task.abort();
+}
+
+async fn backup_management_server(
+    mode: u8,
+) -> (
+    String,
+    tokio::task::JoinHandle<()>,
+    Arc<AtomicUsize>,
+    String,
+) {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let origin = format!("http://{}", listener.local_addr().unwrap());
+    let cookies = verifier(CookieProfile::Development);
+    let cookie = cookies
+        .issue_session("http-backup-private-unit")
+        .unwrap()
+        .request_header()
+        .to_owned();
+    let calls = Arc::new(AtomicUsize::new(0));
+    let mut auth = handlers(cookies, calls.clone(), 0);
+    let count = calls.clone();
+    auth.backup_management = Some(Box::new(move |_| {
+        count.fetch_add(1, Ordering::SeqCst);
+        match mode {
+            0 => {
+                let mut e = failure(false);
+                e.error.code = "invalid_credentials";
+                Err(e)
+            }
+            1 => Err(failure(true)),
+            2 => panic!("synthetic backup management panic"),
+            _ => {
+                let keys = rentemester_runtime::mfa::MfaKeyring::new(
+                    &[(1, "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8")],
+                    None,
+                )
+                .unwrap();
+                let encrypted = keys.encrypt(r#"["ABCDE-12345"]"#).unwrap();
+                Ok(
+                    rentemester_runtime::mfa::reveal_backup_codes(&keys, encrypted.as_str())
+                        .unwrap(),
+                )
+            }
+        }
+    }));
+    let router = identity_router(&origin, CookieProfile::Development, auth).unwrap();
+    let task = tokio::spawn(async move {
+        axum::serve(
+            listener,
+            router.into_make_service_with_connect_info::<SocketAddr>(),
+        )
+        .await
+        .unwrap();
+    });
+    (origin, task, calls, cookie)
+}
+#[tokio::test]
+async fn backup_management_never_discloses_on_refusal_unknown_panic_or_short_regeneration() {
+    let client = reqwest::Client::builder().no_proxy().build().unwrap();
+    for mode in 0..4 {
+        let (origin, task, calls, cookie) = backup_management_server(mode).await;
+        for operation in ["view", "generate"] {
+            if mode == 3 && operation == "view" {
+                continue;
+            }
+            let r = client
+                .post(format!(
+                    "{origin}/api/auth/two-factor/{operation}-backup-codes"
+                ))
+                .header("origin", &origin)
+                .header("content-type", "application/json")
+                .header("cookie", &cookie)
+                .body(r#"{"password":"private-password"}"#)
+                .send()
+                .await
+                .unwrap();
+            assert_eq!(r.status().as_u16(), if mode == 0 { 401 } else { 503 });
+            assert!(r.headers().get("set-cookie").is_none());
+            let body = r.text().await.unwrap();
+            assert!(!body.contains("backupCodes"));
+            assert!(!body.contains("ABCDE"));
+        }
+        assert_eq!(calls.load(Ordering::SeqCst), if mode == 3 { 1 } else { 2 });
+        task.abort();
+    }
+}
+#[tokio::test]
+async fn backup_management_head_query_duplicate_cookie_and_nonobject_never_dispatch() {
+    let client = reqwest::Client::builder().no_proxy().build().unwrap();
+    for operation in ["view", "generate"] {
+        let (origin, task, calls, cookie) = backup_management_server(1).await;
+        let url = format!("{origin}/api/auth/two-factor/{operation}-backup-codes");
+        assert_eq!(
+            client
+                .head(&url)
+                .header("cookie", &cookie)
+                .send()
+                .await
+                .unwrap()
+                .status()
+                .as_u16(),
+            405
+        );
+        for (suffix, body, duplicate, status) in [
+            ("?userId=foreign", r#"{"password":"pw"}"#, false, 400),
+            ("", r#"{"password":"pw"}"#, true, 400),
+            ("", r#"["pw"]"#, false, 400),
+        ] {
+            let r = client
+                .post(format!("{url}{suffix}"))
+                .header("origin", &origin)
+                .header("content-type", "application/json")
+                .header("cookie", &cookie);
+            let r = if duplicate {
+                r.header("cookie", &cookie)
+            } else {
+                r
+            };
+            assert_eq!(r.body(body).send().await.unwrap().status().as_u16(), status);
+        }
+        assert_eq!(calls.load(Ordering::SeqCst), 0);
+        task.abort();
+    }
 }

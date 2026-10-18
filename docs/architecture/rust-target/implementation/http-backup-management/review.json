@@ -1,0 +1,76 @@
+{
+  "result": "PASS",
+  "reviewed_at_utc": "2026-10-18T03:01:39.622840+00:00",
+  "material_findings": [],
+  "execution": {
+    "focused_HTTP_checks": 33,
+    "server_unit_tests": 2,
+    "UI_tests": 66,
+    "app_typecheck": "PASS",
+    "process": "/tmp/rm-http-backup-review-process.json",
+    "process_stderr_sanitized": "/tmp/rm-http-backup-review-process.err",
+    "native": "/tmp/rm-http-backup-review-native.txt",
+    "ui": "/tmp/rm-http-backup-review-ui.txt",
+    "ui_typecheck": "/tmp/rm-http-backup-review-ui-typecheck.txt",
+    "installed_client_redacted_metadata": "/tmp/rm-http-backup-review-client.json"
+  },
+  "projection": {
+    "sha256": "b693c1475c4e2bd814dcbf93e2b539259028e9ded5c752efb8d3a233c122cec4",
+    "scope": "Exact current initialization/fixture/start helper after absolute import rewriting, only verifyHttpBackupManagement invoked"
+  },
+  "initial_attempt_caveat": "An initial pre-freeze focused attempt exited1 while main was resolving oracle defects. Raw output was not persisted to protect generated codes/cookies. No exact initial source hash or failure location was captured, so that failure is not attributed to a particular oracle fix. A subsequent pass and final frozen-source33check pass are separate evidence; initial failure is not erased or counted as pass.",
+  "reviewed_invariants": [
+    "Native view is explicit self/password/fresh-session HTTP extension; never source serverOnly userId dispatch",
+    "Known commit before code disclosure; unknown/refusal/panic withholds codes and cookies",
+    "Shared view/generate3-per10second direct-peer KDF budget and owned blocking permits; Retry-After conservatively60seconds",
+    "Strict JSON object/password-only/typed/duplicate/query/cookie/origin/media/body gates",
+    "Current credential/access/factor/pool rechecked by retained native transaction",
+    "Source decrypt matches native regenerated pool; actual backup login proves old-code pool rejection/new-code one-time use",
+    "UI requires explicit password and regeneration confirmation; strict true ACK/canonical unique pool; retry0",
+    "Transient code/password state cleared on close/unmount/pagehide/hidden; late hidden generation response discarded with truthful uncertainty",
+    "Actual installed client sends only password field over canonical POST paths; report retains no password/code/cookie/cipher values"
+  ],
+  "remaining_gates": [
+    "No production opener/physical lifetime or deployed browser-native journey qualification",
+    "Legacy routing/drain and full identity/parity remain owner gates",
+    "Full regression is main agent responsibility and was not duplicated"
+  ],
+  "sha256": {
+    "crates/rentemester-server/src/auth_http/backup_management.rs": "fed0b00aeb08888ea088bc23992ea5a3294054018e219fc613b1f483687036ac",
+    "crates/rentemester-server/src/auth_http.rs": "f1687fc337674b782fa73a7ef79c1b3d10e82a5e27757e8d2ef5f216ee6f94bd",
+    "crates/rentemester-server/src/lib.rs": "616a3109fb289286dc002deb0f8b55c14782d05deaaf91344c7c06f957f72873",
+    "crates/rentemester-server/src/auth_http/tests.rs": "9228d6e525bfcdc742e3a9f1aebabf296e574a8b01365736463b47464c1f7175",
+    "crates/rentemester-server/src/tests.rs": "d6de50623c40ccc22240d423a9253c6ec8dacca44429e9e962d22d837b15e762",
+    "crates/rentemester-application/src/backup_management.rs": "5800f1d9000c876dc522af67055fb05d901f9999f5e496fa84ed79cf7091a028",
+    "crates/rentemester-storage/src/mfa_login.rs": "f48fa2510fa68f48e9a36df36e7e37c5553e8ba19ed4ad0b8f7715575d9e1b7a",
+    "app/src/components/AccountMenu.tsx": "36bb9ebbcd7bd07548e5af85614e675f41dd7afe8f1b96b920ec534029ffe31f",
+    "app/src/components/BackupCodesDialog.tsx": "9572ffe15ee00e8b56831cf70aca42655651fc7c5d050a1a9571116c7433c834",
+    "app/src/components/BackupCodesDialog.test.tsx": "4d246bf802b9a188fef7b8ba7f41c74ab9d646ec61fdabfbdc8889559116620e",
+    "scripts/rust/http-backup-management-cases.ts": "476cbd9e9a7484638f9b3e02bd53b42ee87460ca92fa8ca2954cd2cd3dc1d6cd",
+    "scripts/rust/verify-http-login.ts": "7b29a8f0989e7ee7c42a60dfff13108dff945d2d83381d22944f65177e3fd649",
+    "app/src/auth-ui.test.tsx": "67a0b5d94bc7389b87cbfdc102a1a73e02572c685a026206f0f3f78407929395",
+    "app/src/lib/auth-client.ts": "c3658c2718a5bd0f0fed68ea4630552a74bd08189b9152d7ab4635824cf77881",
+    "docs/architecture/rust-target/implementation/http-backup-management/CONTRACT.md": "2a5472ec5b0ac1200823b04259f46c64ea32f22f6d42511373393489c82badb8",
+    "docs/architecture/rust-target/implementation/http-backup-management/gdd.json": "25c35f4bee8056301abf536dc835147da31c17d8d418ddde07c6d9a7542fb5b9",
+    "docs/architecture/rust-target/implementation/http-backup-management/readiness.json": "be88115f47e5cb2f2f4269fcdd3233ad1ee74ac2eeabb9effb03837c8a0bc29e",
+    "docs/architecture/rust-target/implementation/README.md": "b17cc46b00498675cd73489a1813cd7e1630972693dcfafdb2803b46b7ac9f77"
+  },
+  "docs_review": {
+    "result": "PASS",
+    "verified_at_utc": "2026-10-18T03:03:09.966997+00:00",
+    "gdd_checks": 3,
+    "spec_revision": "sha256:97cff1797b93e48cc8fa7c7a502eb5783bc1195240a164a114492d7ee917b513",
+    "independent_readiness": "/tmp/rm-http-backup-review-readiness.json",
+    "repository_readiness_matches": true,
+    "contract_source_hash_matches": true,
+    "functional_hashes_unchanged": true,
+    "resolved_wording": "JSON disallows caller selectors/raw bearer; HTTP authority accurately described as verified cookie/password/current facts",
+    "aligned_claims": [
+      "Secured native view extension never source serverOnly userId forwarding",
+      "Shared3/10s bucket with conservative60s Retry-After",
+      "Unknown commit withholds codes but pool/audit persistence unconfirmed",
+      "Transient UI state is not secure browser memory erasure",
+      "404 has no fallback; separate mocked UI and native socket scope, no deployed journey"
+    ]
+  }
+}

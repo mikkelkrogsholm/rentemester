@@ -1,0 +1,106 @@
+{
+  "ok": true,
+  "checks": 33,
+  "observations": [
+    {
+      "id": "backup-management/WAL-source-encrypted-pool-own-password-view-no-session-or-pool-change"
+    },
+    {
+      "id": "backup-management/WAL-known-regeneration-source-decrypts-new10-precise-audit-no-other-factor-or-session-change"
+    },
+    {
+      "id": "backup-management/WAL-old-code-cannot-authenticate-after-replacement"
+    },
+    {
+      "id": "backup-management/WAL-new-code-authenticates-once-and-authenticated-view-shows-remaining9"
+    },
+    {
+      "id": "backup-management/DELETE-source-encrypted-pool-own-password-view-no-session-or-pool-change"
+    },
+    {
+      "id": "backup-management/DELETE-known-regeneration-source-decrypts-new10-precise-audit-no-other-factor-or-session-change"
+    },
+    {
+      "id": "backup-management/DELETE-old-code-cannot-authenticate-after-replacement"
+    },
+    {
+      "id": "backup-management/DELETE-new-code-authenticates-once-and-authenticated-view-shows-remaining9"
+    },
+    {
+      "id": "backup-management/remaining-pool-0-valid-view-no-fabricated-codes"
+    },
+    {
+      "id": "backup-management/remaining-pool-1-valid-view-no-fabricated-codes"
+    },
+    {
+      "id": "backup-management/missing-password-refused-before-native-dispatch"
+    },
+    {
+      "id": "backup-management/null-password-refused-before-native-dispatch"
+    },
+    {
+      "id": "backup-management/array-body-refused-before-native-dispatch"
+    },
+    {
+      "id": "backup-management/duplicate-password-refused-before-native-dispatch"
+    },
+    {
+      "id": "backup-management/caller-user-refused-before-native-dispatch"
+    },
+    {
+      "id": "backup-management/caller-email-refused-before-native-dispatch"
+    },
+    {
+      "id": "backup-management/long-password-refused-before-native-dispatch"
+    },
+    {
+      "id": "backup-management/bare-cookie-refused-before-native-dispatch"
+    },
+    {
+      "id": "backup-management/pending-cookie-refused-before-native-dispatch"
+    },
+    {
+      "id": "backup-management/service-refused-before-native-dispatch"
+    },
+    {
+      "id": "backup-management/foreign-origin-refused-before-native-dispatch"
+    },
+    {
+      "id": "backup-management/wrong-content-refused-before-native-dispatch"
+    },
+    {
+      "id": "backup-management/body-bound-refused-before-native-dispatch"
+    },
+    {
+      "id": "backup-management/wrong-password-no-codes-no-replacement-or-accepted-audit"
+    },
+    {
+      "id": "backup-management/stale-no-codes-no-replacement-or-accepted-audit"
+    },
+    {
+      "id": "backup-management/disabled-no-codes-no-replacement-or-accepted-audit"
+    },
+    {
+      "id": "backup-management/unverified-no-codes-no-replacement-or-accepted-audit"
+    },
+    {
+      "id": "backup-management/revoked-no-codes-no-replacement-or-accepted-audit"
+    },
+    {
+      "id": "backup-management/malformed-pool-no-codes-no-replacement-or-accepted-audit"
+    },
+    {
+      "id": "backup-management/view-real-DELETE-commit-busy-withholds-all-codes-and-success"
+    },
+    {
+      "id": "backup-management/generate-real-DELETE-commit-busy-withholds-all-codes-and-success"
+    },
+    {
+      "id": "backup-management/shared-view-regeneration-direct-peer-KDF-budget-ignores-forwarded-rotation"
+    },
+    {
+      "id": "backup-management/missing-trusted-handler-no-source-serverOnly-or-regeneration-fallback"
+    }
+  ],
+  "scope": "Independent focused HTTP backup-code management"
+}

@@ -198,3 +198,7 @@ The [email-token contract](email-token/CONTRACT.md) provides source-readable HS2
 ## Native HTTP own-session management
 
 Canonical native session list/revoke routes now use token-free metadata and ID targets, shared bounded admission and known-commit-only success/cookie clearing. The retained account menu accepts native or existing legacy rows explicitly, refuses mixed shapes, disables retries and requires status:true before claiming revocation. Current contract, scoped GDD and execution evidence are in [http-sessions](http-sessions/CONTRACT.md). Physical/lifetime/live legacy admission, other identity and full platform parity remain required.
+
+## Native HTTP backup-code management
+
+Password-bound own remaining-code view and confirmed regeneration now dispatch through explicit native HTTP handlers with shared bounded admission and post-known-commit-only disclosure. The retained account dialog validates codes, disables retries, clears sensitive display state and discards late hidden responses with truthful regeneration uncertainty. The view endpoint is a secured native extension; it never exposes the source server-only userId helper. Current contract, scoped GDD and evidence are in [http-backup-management](http-backup-management/CONTRACT.md). Physical/lifetime/live legacy admission, remaining identity and full platform parity remain required.

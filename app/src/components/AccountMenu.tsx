@@ -1,4 +1,5 @@
 import { Button, Dialog, Field, Input } from "./ui";
+import { BackupCodesDialog } from "./BackupCodesDialog";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { usePendingChanges } from "../lib/useUnsavedChanges";
 import { useId, useRef, useState } from "react";
@@ -39,6 +40,8 @@ export function AccountMenu() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [sessions, setSessions] = useState<ListedSession[] | null>(null);
+  const [showBackup, setShowBackup] = useState(false);
+  const backupTrigger = useRef<HTMLButtonElement>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -131,6 +134,8 @@ export function AccountMenu() {
     <Button className="btn secondary" type="button" onClick={() => pendingChanges ? setConfirmation("sign-out") : void signOut()} disabled={busy}>Log ud</Button>
     <Button ref={sessionsTrigger} className="account-revoke" type="button" aria-haspopup="dialog" aria-expanded={sessions !== null} aria-controls={sessionsId} onClick={() => void showSessions()} disabled={busy}>Sessioner</Button>
     <Button ref={passwordTrigger} className="account-revoke" type="button" aria-haspopup="dialog" aria-expanded={showPassword} aria-controls={passwordId} onClick={() => { setSessions(null); setError(null); setMessage(null); setShowPassword(true); }} disabled={busy}>Skift adgangskode</Button>
+    <Button ref={backupTrigger} className="account-revoke" type="button" aria-haspopup="dialog" aria-expanded={showBackup} disabled={busy} onClick={() => { closePassword(); setSessions(null); setShowBackup(true); }}>Sikkerhedskoder</Button>
+    {showBackup && <BackupCodesDialog key={`${session.id}:${currentSessionId ?? ""}`} onClose={() => setShowBackup(false)} returnFocusRef={backupTrigger} />}
     {sessions && <Dialog id={sessionsId} title="Aktive sessioner" onClose={() => setSessions(null)} busy={busy} returnFocusRef={sessionsTrigger}>
       <div className="account-panel">
       {sessions.length === 0 && <p>Ingen aktive sessioner.</p>}

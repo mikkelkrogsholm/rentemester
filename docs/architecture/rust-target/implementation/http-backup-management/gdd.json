@@ -1,0 +1,242 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Native HTTP password-bound backup-code management",
+    "goal": "Deliver explicit own remaining-code view and confirmed replacement through native HTTP and retained React without uncertain disclosure/replay",
+    "scope": "Synthetic native HTTP and React backup management; no live writer grant or deployed browser/cutover parity"
+  },
+  "nodes": {
+    "component.application": {
+      "kind": "component",
+      "description": "Native HTTP own backup-code management",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Password-bound existing-pool view/replacement, commit-aware disclosure and ephemeral account UI",
+        "rationale": "Native own-session/credential fencing must survive transport and browser interaction",
+        "excludes": [
+          "Physical/lifetime/live legacy admission, production rollout and full identity/platform parity"
+        ]
+      },
+      "interfaces": [
+        "action.http_backup_management"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "WAL/DELETE current-password view and replacement agree with installed source crypto; old codes refuse and new code authenticates with remaining9",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control, source cookie/crypto and native HTTP plus retained React fixture",
+        "when": "Explicitly view or confirm regeneration with current password",
+        "then": "WAL/DELETE current-password view and replacement agree with installed source crypto; old codes refuse and new code authenticates with remaining9"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Strict object/password/cookie/origin/query/body/subject-selector failures precede native dispatch; current authorization/crypto failures release no codes",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control, source cookie/crypto and native HTTP plus retained React fixture",
+        "when": "Explicitly view or confirm regeneration with current password",
+        "then": "Strict object/password/cookie/origin/query/body/subject-selector failures precede native dispatch; current authorization/crypto failures release no codes"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "View accepts remaining0..10; replacement yields fresh10 while preserving unrelated session/factor/credential/replay facts and exact management audit",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Canonical synthetic control, source cookie/crypto and native HTTP plus retained React fixture",
+        "when": "Explicitly view or confirm regeneration with current password",
+        "then": "View accepts remaining0..10; replacement yields fresh10 while preserving unrelated session/factor/credential/replay facts and exact management audit"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "UI requires true ACK and canonical unique bounded pool; confirmation/retry0/clearing/hidden late-response guard preserve explicit truthful recovery",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Canonical synthetic control, source cookie/crypto and native HTTP plus retained React fixture",
+        "when": "Explicitly view or confirm regeneration with current password",
+        "then": "UI requires true ACK and canonical unique bounded pool; confirmation/retry0/clearing/hidden late-response guard preserve explicit truthful recovery"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Shared direct-peer view/regeneration KDF bucket and blocking capacity; actual DELETE unknown commit withholds all codes and success",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "Canonical synthetic control, source cookie/crypto and native HTTP plus retained React fixture",
+        "when": "Explicitly view or confirm regeneration with current password",
+        "then": "Shared direct-peer view/regeneration KDF bucket and blocking capacity; actual DELETE unknown commit withholds all codes and success"
+      }
+    },
+    "action.http_backup_management": {
+      "kind": "action",
+      "description": "Native HTTP own-factor backup view/regeneration",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "password": {
+            "type": "string",
+            "description": "Exact current password, at most4096 UTF-8 bytes. Sole JSON object field; no caller subject."
+          }
+        },
+        "context": {
+          "configured_origin_native_handlers_cookie_verifier_direct_peer": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object",
+          "description": "Known committed success only; fixed refusals described by errors. No codes after unknown outcome.",
+          "properties": {
+            "status": {
+              "type": "boolean"
+            },
+            "backupCodes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Canonical unique remaining0..10 for view or fresh10 for regeneration"
+            }
+          },
+          "required": [
+            "status",
+            "backupCodes"
+          ]
+        },
+        "errors": {
+          "refused": "Strict HTTP refusal;401 INVALID_CREDENTIALS or503 AUTH_UNCONFIRMED without codes/cookies/success"
+        },
+        "preconditions": [
+          "Trusted origin/profile/current-session proof and admitted native handler retained by serving owner",
+          "Physical/lifetime admission and exclusive legacy writer routing before real enablement"
+        ],
+        "postconditions": [
+          "Only known commit returns strict status:true and remaining0..10 or fresh10 code list, no session cookie",
+          "Native Fresh/password/credential snapshot/factor/access fences and atomic audit stay authoritative",
+          "New codes replace old ones; unknown commit withholds disclosure without unchanged-pool/audit claim",
+          "React explicit password+confirmation/retry0/strict pool validation; hide/unmount epoch discards late disclosure without automatic fallback or regeneration"
+        ],
+        "external_effects": [
+          "Admitted native view audit or encrypted-pool replacement plus audit",
+          "Bounded process rate/capacity and plaintext known-success authenticated HTTP body",
+          "Ephemeral modal state and explicit user confirmation/disclosure only"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "authorization": {
+            "relevant": true,
+            "rationale": "Current own-session/password authority, atomic pool audit and uncertain outcome must survive HTTP and ephemeral browser disclosure without leaking or replaying codes",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Current own-session/password authority, atomic pool audit and uncertain outcome must survive HTTP and ephemeral browser disclosure without leaking or replaying codes",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "atomicity": {
+            "relevant": true,
+            "rationale": "Current own-session/password authority, atomic pool audit and uncertain outcome must survive HTTP and ephemeral browser disclosure without leaking or replaying codes",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Current own-session/password authority, atomic pool audit and uncertain outcome must survive HTTP and ephemeral browser disclosure without leaking or replaying codes",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "idempotency": {
+            "relevant": true,
+            "rationale": "Current own-session/password authority, atomic pool audit and uncertain outcome must survive HTTP and ephemeral browser disclosure without leaking or replaying codes",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal"
+          ]
+        }
+      },
+      "behavior": "Strict authenticated password-only native HTTP, shared bounded admission, post-known-commit disclosure and explicit ephemeral UI without replay"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.http_backup_management",
+      "to": "component.application",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.http_backup_management",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.http_backup_management",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.http_backup_management",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.http_backup_management",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.http_backup_management",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Native HTTP password-bound backup-code management",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "2a5472ec5b0ac1200823b04259f46c64ea32f22f6d42511373393489c82badb8"
+      }
+    }
+  }
+}

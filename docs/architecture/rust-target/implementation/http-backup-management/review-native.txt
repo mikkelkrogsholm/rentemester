@@ -1,0 +1,8 @@
+    Finished `release` profile [optimized] target(s) in 0.11s
+     Running unittests src/lib.rs (target/release/deps/rentemester_server-36d1a0541332a7c7)
+
+running 2 tests
+test auth_http::tests::backup_management_head_query_duplicate_cookie_and_nonobject_never_dispatch ... ok
+test auth_http::tests::backup_management_never_discloses_on_refusal_unknown_panic_or_short_regeneration ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 32 filtered out; finished in 0.00s
