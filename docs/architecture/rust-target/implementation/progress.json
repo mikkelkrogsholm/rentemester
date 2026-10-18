@@ -1,13 +1,13 @@
 {
   "goal": "Complete epic #672, unchanged",
   "branch": "codex/rust-platform",
-  "current_increment": "sqlite-identity-1",
-  "code_revision": "sha256:e976460f8b6a36250d7031af0d2b968c5577c6ac646fc31f08a8069b96d46e7d",
-  "spec_revision": "sha256:90568e15ed01c91ea1ef824feddb2e1fa9098f8524dc42d742fe5f67ee0452c6",
-  "state": "verified-actual-main-handle-identity-and-lock-preserving-layout-observation",
+  "current_increment": "broker-namespace-1",
+  "code_revision": "sha256:da08cf307c454775ec304d8f9ffd34922478da6efdd25153221bbb5d6e0708b3",
+  "spec_revision": "sha256:c45af5225ae40c779f1a55baa57aa516d8c778ecd39b5bfd2643dbf9973ad1ec",
+  "state": "verified-dedicated-UID-Linux-namespace-prerequisite-without-owning-runtime",
   "issues_closed": [],
   "next": [
-    "Enforce retained-layout/SQLite open-close lifetime in persistent owner; qualify broker namespace/sidecars and legacy exclusion, then fresh-only canonical initialization/reopen/bootstrap and runnable actual HTTP/CLI/MCP post/reversal/report composition. Handle identity observation alone does not admit a writer; full React/GPUI/distribution/cutover objective unchanged.",
+    "Build minimal host crate with private owning connections and fixed typed application dispatch; enforce layout-before-open and explicit confirmed-close/quarantine on BUSY, including constructor failure/panic. Compose qualified Linux namespace, then fresh initialization/reopen/owner bootstrap and actual HTTP/CLI/MCP; macOS local profile and full React/GPUI/distribution/cutover remain required.",
     "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
     "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
     "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
@@ -21,18 +21,21 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "service-company-1",
-    "code_revision": "sha256:233da9db130f2bc21e787908a9b28cabba34dc36260622735adfcf96e8fdde35",
-    "spec_revision": "sha256:2bc5156db04cbdfa09492971d2e28bd3b558dc2948df0191cf4aba53c2bf7d01",
-    "state": "verified-charged-service-company-post-reversal-and-fresh-current-authority-on-admitted-connections"
+    "current_increment": "sqlite-identity-1",
+    "code_revision": "sha256:e976460f8b6a36250d7031af0d2b968c5577c6ac646fc31f08a8069b96d46e7d",
+    "spec_revision": "sha256:90568e15ed01c91ea1ef824feddb2e1fa9098f8524dc42d742fe5f67ee0452c6",
+    "state": "verified-actual-main-handle-identity-and-lock-preserving-layout-observation"
   },
   "evidence": {
-    "report": "sqlite-identity/evidence.json",
-    "regression": "sqlite-identity/regression.json",
-    "rust_tests_passed": 160,
+    "report": "broker-owner/evidence.json",
+    "parity": "broker-owner/parity.json",
+    "rust_tests_passed": 161,
     "ignored_subprocess_helpers": 30,
-    "integration_checks": 12698,
-    "new_connection_tests": 5,
+    "Linux_namespace_checks": 41,
+    "different_UID_denials": 132,
+    "integration_checks_rerun": false,
+    "last_full_integration_commit": "3119f2884e04927cea98a7388c98454391545a8d",
+    "last_full_integration_checks": 12698,
     "writer_authority": false,
     "whole_issues_closed": false
   },
@@ -324,6 +327,12 @@
       "code_revision": "sha256:233da9db130f2bc21e787908a9b28cabba34dc36260622735adfcf96e8fdde35",
       "spec_revision": "sha256:2bc5156db04cbdfa09492971d2e28bd3b558dc2948df0191cf4aba53c2bf7d01",
       "state": "verified-charged-service-company-post-reversal-and-fresh-current-authority-on-admitted-connections"
+    },
+    {
+      "current_increment": "sqlite-identity-1",
+      "code_revision": "sha256:e976460f8b6a36250d7031af0d2b968c5577c6ac646fc31f08a8069b96d46e7d",
+      "spec_revision": "sha256:90568e15ed01c91ea1ef824feddb2e1fa9098f8524dc42d742fe5f67ee0452c6",
+      "state": "verified-actual-main-handle-identity-and-lock-preserving-layout-observation"
     }
   ]
 }

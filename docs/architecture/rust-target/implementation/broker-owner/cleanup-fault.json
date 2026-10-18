@@ -1,0 +1,7 @@
+{
+  "ok": true,
+  "fault": "synthetic exception with both tracked containers live",
+  "actual_owned_containers_removed": 2,
+  "actual_owned_volumes_removed": 2,
+  "unrelated_cleanup": false
+}

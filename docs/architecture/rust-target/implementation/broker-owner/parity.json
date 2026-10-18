@@ -1,0 +1,367 @@
+{
+  "ok": true,
+  "checks": 41,
+  "observations": [
+    {
+      "id": "rm-broker-10b95e5731a8-valid/accepted"
+    },
+    {
+      "id": "wrong-current-uid/refused"
+    },
+    {
+      "id": "root-profile/refused"
+    },
+    {
+      "id": "wrong-umask/refused"
+    },
+    {
+      "id": "rm-broker-10b95e5731a8-rootmode/refused"
+    },
+    {
+      "id": "rm-broker-10b95e5731a8-filemode/refused"
+    },
+    {
+      "id": "rm-broker-10b95e5731a8-dirowner/refused"
+    },
+    {
+      "id": "rm-broker-10b95e5731a8-dirmode/refused"
+    },
+    {
+      "id": "rm-broker-10b95e5731a8-fileowner/refused"
+    },
+    {
+      "id": "rm-broker-10b95e5731a8-symlinkdir/refused"
+    },
+    {
+      "id": "rm-broker-10b95e5731a8-missing/refused"
+    },
+    {
+      "id": "rm-broker-10b95e5731a8-hardlink/refused"
+    },
+    {
+      "id": "rm-broker-10b95e5731a8-sidecarlink/refused"
+    },
+    {
+      "id": "rm-broker-10b95e5731a8-sidecaralias/refused"
+    },
+    {
+      "id": "rm-broker-10b95e5731a8-sidecarbadmode/refused"
+    },
+    {
+      "id": "rm-broker-10b95e5731a8-acl-access/refused"
+    },
+    {
+      "id": "actual-ACL/access/read-back"
+    },
+    {
+      "id": "rm-broker-10b95e5731a8-acl-default/refused"
+    },
+    {
+      "id": "actual-ACL/default/read-back"
+    },
+    {
+      "id": "WAL/66-real-different-UID-denials"
+    },
+    {
+      "id": "WAL/sameUID-positive-control"
+    },
+    {
+      "id": "WAL/second-broker-lease-busy"
+    },
+    {
+      "id": "WAL/sqlite-lock-before"
+    },
+    {
+      "id": "WAL/locks-after-validation"
+    },
+    {
+      "id": "WAL/alias-refusal-keeps-lock"
+    },
+    {
+      "id": "WAL/restoration-remains-retired"
+    },
+    {
+      "id": "rm-broker-10b95e5731a8-held-WAL/accepted"
+    },
+    {
+      "id": "WAL/explicit-close-releases-lease-and-lock"
+    },
+    {
+      "id": "DELETE/66-real-different-UID-denials"
+    },
+    {
+      "id": "DELETE/sameUID-positive-control"
+    },
+    {
+      "id": "DELETE/second-broker-lease-busy"
+    },
+    {
+      "id": "DELETE/sqlite-lock-before"
+    },
+    {
+      "id": "DELETE/locks-after-validation"
+    },
+    {
+      "id": "DELETE/alias-refusal-keeps-lock"
+    },
+    {
+      "id": "DELETE/restoration-remains-retired"
+    },
+    {
+      "id": "rm-broker-10b95e5731a8-held-DELETE/accepted"
+    },
+    {
+      "id": "DELETE/explicit-close-releases-lease-and-lock"
+    },
+    {
+      "id": "rm-broker-10b95e5731a8-permissive/refused"
+    },
+    {
+      "id": "permissive-client-success-control"
+    },
+    {
+      "id": "prior-FD-survives-chmod-negative-control"
+    },
+    {
+      "id": "actual-thread-NNP-differs-from-leader"
+    }
+  ],
+  "different_uid_operations_denied": 132,
+  "image_repository_digest": "rust@sha256:cf9dd0ec73e75f827fe59123fff9dc65af1a1c8363c3c31ee8d7f8ad0b6a5fb2",
+  "image_configuration_digest": "sha256:e4a4af32317a1c595914eaa208460f155d7d32ea241bec5f4b8bd2500a4891de",
+  "architecture": "arm64",
+  "filesystem": "ext2/ext3",
+  "source_files_sha256": {
+    "Cargo.lock": "8f26402a8caaf12537fd6cc1f27d6aa84ae56017dc701a2d2320543f6ef2a973",
+    "Cargo.toml": "9ca4b9e85ed9d13c4a8673ad6cd985a3ea0b204dbe2ed77361f7fca9b2400954",
+    "crates/rentemester-application/Cargo.toml": "0fca1bf29a7f7ea822a61f52839365131180932871337f3bdd95841ce2cd309e",
+    "crates/rentemester-application/src/access.rs": "07d55edfa4bf1636927aae51caddb01531851f0b61a161de1aeac46970e902b9",
+    "crates/rentemester-application/src/backup_management.rs": "5800f1d9000c876dc522af67055fb05d901f9999f5e496fa84ed79cf7091a028",
+    "crates/rentemester-application/src/control_fence/tests.rs": "5098214db9d8559473ddcf64455504440948e919bd207dcae0cd929c84abbd2f",
+    "crates/rentemester-application/src/control_fence.rs": "2a25dce94670e7251f97d74fbf312381ee90ba6db420523bad5b9c92ba430b9f",
+    "crates/rentemester-application/src/email_verification.rs": "7c5f311c2b6a03eb584ef27b9ba040ad23fecb9dcd50ff40fed0a6b57c7b4b49",
+    "crates/rentemester-application/src/journal_mutation.rs": "d9dd1072fb054d90a91a9f7c8ccc1b707b2732d0c7aee92e51a7c717e313219a",
+    "crates/rentemester-application/src/journal_post/tests.rs": "4de3caff249e97ec6ba8e2c26be95b835ec5a41c922c43c0dee0274f358adada",
+    "crates/rentemester-application/src/journal_post.rs": "d89b180a7943645c199fe60ed5f8e02dd86456e3e3a26fd6bc16705e3aae742f",
+    "crates/rentemester-application/src/journal_reversal/tests.rs": "68b89118711a5e7369aa96714356994733b24853139b6baf96fa9a7b99e50944",
+    "crates/rentemester-application/src/journal_reversal.rs": "932a4806756966406839ae3d28f244b8a412aabec83fcbc7851985dd2ef1b0bf",
+    "crates/rentemester-application/src/lib.rs": "6d022c071900f14ba51891622bfd7992aa5f01c7e148fd713854d2b11a3484ba",
+    "crates/rentemester-application/src/mfa_enrollment.rs": "77e20c85bff346ddd893e14de9ccc9b2e929929f6f2a527be59720d631d801e0",
+    "crates/rentemester-application/src/mfa_login/tests.rs": "b8c4cb49971df4be4aec3ff43aa5e60f65e33fee0e09adc79f15179c280d6326",
+    "crates/rentemester-application/src/mfa_login.rs": "283a54824efde1ee76da398e11be69a77808606f077bf0fac480e5f63d4a1e00",
+    "crates/rentemester-application/src/password_change.rs": "7e3de5ea4e84c94a07587ab9ed26e0e3ff36efccd48fa964ecf201a127ba447d",
+    "crates/rentemester-application/src/password_login/tests.rs": "7eb6bd4daeb244a859cf75748f8e05965a4a2c5a351d77d7e21bf73533821877",
+    "crates/rentemester-application/src/password_login.rs": "21de7b13e14d005f8266a1659bc155e70ae89b1e96ce109a42d3b4572b118678",
+    "crates/rentemester-application/src/password_reset.rs": "4cdf1acf03216bd779a5cb41d1a0df42fe748dced092c302abbf2a9d6195b76f",
+    "crates/rentemester-application/src/reset_request.rs": "aa5f4a66c1476a9319a0aa2e71a0dfda5ea06f6c4a90c0a4c0910336233ed776",
+    "crates/rentemester-application/src/service_company/tests.rs": "0af2bcb19d528de97e80f58fb77af005aa453b3fa57f09add0d1886b7e3e6a51",
+    "crates/rentemester-application/src/service_company.rs": "6bdff374cf7afb71ca85b549c16c44b92fc9bcd4dcb4b571cb3468a363456158",
+    "crates/rentemester-application/src/service_context.rs": "f95cbaeb9d69d73954f905d8c89602646d0fe174426c3c08af95bb09bfc90af8",
+    "crates/rentemester-application/src/service_lifecycle.rs": "d0d830574ebfb23811004095c2bc3ad3a66badc74444951b42a7a68489c86a80",
+    "crates/rentemester-application/src/session_control.rs": "f39d911427bd596ee6757e6468e5c48615b77294beabf85ec0f510edd27fb226",
+    "crates/rentemester-application/src/session_read.rs": "42d72c19952f50240faa55677f80a25730b1fb186633776ab446bdef3170c39b",
+    "crates/rentemester-application/src/verification_request.rs": "e0a19660bc11e367788fb63d787d11aaf2b18125efc26b48879c9a7924f2bb03",
+    "crates/rentemester-application/src/workspace_context.rs": "5d38188a8c7603e95a52308684f0bdb265261f29744a097924a66585d47145e3",
+    "crates/rentemester-application/tests/access_vectors.rs": "2dee5feffcc5b41d18c4f58b30d2129ea4ef3a6e36fa30ad7f7750c0a7083034",
+    "crates/rentemester-cli/Cargo.toml": "f99c2371bdda4fbe7179db6ca2719a9c14b74dd3dc0c83908f1850b9803c2a03",
+    "crates/rentemester-cli/src/main.rs": "a64e7d6dd68285c4d115bedc3c57712136ca5df80f8ff3563e7818e646cdd92d",
+    "crates/rentemester-cli/tests/arithmetic_vectors.rs": "a3481947c496639959a42da7da501e160aaded27e2d54b69c28f466b4182f7d9",
+    "crates/rentemester-cli/tests/fiscal_vectors.rs": "2ea184a64500b6e33a34f10590e029db98fc7d2da27e2b8e222fa59f60814e3f",
+    "crates/rentemester-cli/tests/manual_journal_vectors.rs": "100281025170333805c49c98c234a28c4e48d44ce9f711bcb9abb9faf32c29f7",
+    "crates/rentemester-engine/Cargo.toml": "888de533b1fa8cc359b7677d155956c39b1383099d91636396cd1ee1a60bf5cb",
+    "crates/rentemester-engine/src/calendar.rs": "8c97d562c589611bb4858918eb9f6f236a14ec9e1b7a658d635fa05703801cd8",
+    "crates/rentemester-engine/src/currency.rs": "0b56f0cabd92891704f4528b2511de91490ec74025865cbd92736776a59e3043",
+    "crates/rentemester-engine/src/decimal.rs": "cf57d279acbd60a05bc0fedb48e071c30e1d1477464a2ea0b465624e1cf490af",
+    "crates/rentemester-engine/src/fiscal_year.rs": "695bcddf67ff6365c6600c19bb5729ce95efdd48a67ab33b6f76c91c48d47988",
+    "crates/rentemester-engine/src/fx.rs": "3a324c09052c99ccb9adaf4ce5515a2070349e498f0ba32a72b965e96caa3db9",
+    "crates/rentemester-engine/src/identifiers.rs": "530e4467ea2f2e7bb2e0fcdd9969fa82b60b407a6d4a889e7b285caf49ec1854",
+    "crates/rentemester-engine/src/journal_rules.rs": "80d1aac78faae7c35f7c1d44e1eda21bbd35e24765494e4f50f1237dcd9c2f80",
+    "crates/rentemester-engine/src/lib.rs": "711140e55d9c1590244b776f6097e51f8a6b9bd6ac9a0524cef013468580a662",
+    "crates/rentemester-engine/src/manual_journal.rs": "0bc8446b966dffce0eb42c71e5c2d2f17114bd4b35f1d23143e21b33df5fadcf",
+    "crates/rentemester-engine/src/money.rs": "5d69282ed77ea59f98a9af6bf492427f8f3d478f654712cbfb3b36222fdd661f",
+    "crates/rentemester-engine/src/trial_balance.rs": "df86b92996f22cc6d635b668d123445c7000c376e50569f818416c56498d13fb",
+    "crates/rentemester-runtime/Cargo.toml": "0813e220b20d318056e08a8ee3257feddd0679d5a47cd0994ba4b40252ee4b82",
+    "crates/rentemester-runtime/examples/workspace-lease.rs": "efc0e0f3291b3260bdc08f54046c4178415031ffab55efc9ab4ddd8ab6e6c5fc",
+    "crates/rentemester-runtime/fixtures/.gitattributes": "830ab06c1bc43e7dd91aa4379bff120f1d9e6d308a015265fb12e571a744101a",
+    "crates/rentemester-runtime/fixtures/NormalizationTest-17.0.0.txt": "5019ffd530751a741900c849c0e010332f142a3612234639bd200b82138a87db",
+    "crates/rentemester-runtime/fixtures/UNICODE-LICENSE.txt": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96",
+    "crates/rentemester-runtime/fixtures/mfa.json": "fc8bcf30cdc4f6383e0a575573e8e9153465438aecf75be3bdc2eaed8975f624",
+    "crates/rentemester-runtime/fixtures/password-sources.json": "57bec92a9978368d16b5099bc60d3de603b80e28abf82d93342daf422e25055d",
+    "crates/rentemester-runtime/fixtures/password.json": "a6a0dbfde3a6e81d447a59b5db3f48637725e37e7ab4eb66351e6b0a5fc81832",
+    "crates/rentemester-runtime/fixtures/session-cookie.json": "1745812ffa60d901d414ec68b476716a45ee77f0fc7f980082e86396d019b6fd",
+    "crates/rentemester-runtime/src/auth.rs": "4cbe7f4ef162b1e576e788b305eaf6273c759854eb4c50c9b7c62c41227539eb",
+    "crates/rentemester-runtime/src/auth_mail.rs": "6376a32e98464810144b6c7f94182a8d855bf283fc3b75d51448f61805f42346",
+    "crates/rentemester-runtime/src/email_token/tests.rs": "07664382c2122a723ddb09b76d7a6621ac55205e94b86cfa7b2e2894178a6e24",
+    "crates/rentemester-runtime/src/email_token.rs": "9c12f6e4c9e1d9cf652a284ae2f1a1bade7b5ae35b6dc1f477020fd5eb3b5956",
+    "crates/rentemester-runtime/src/lib.rs": "bcc742ab76fc1e1a6e8d53e78858e95c5f69f160f7dac206918101165050927c",
+    "crates/rentemester-runtime/src/local/layout/connection_tests.rs": "3685823a6e0af64fed10aaa5d2df1728e174e7cd1d0447f1c2211af2b6c8bcd6",
+    "crates/rentemester-runtime/src/local/layout.rs": "6d03701b005935a0a888e567c0ae873e11ff7f4b2b12a15e4abb7da6af176d6f",
+    "crates/rentemester-runtime/src/local.rs": "90a33c6a5717259a7d2087782200410e81a769fdf1c76f637ae1c2b01dee311c",
+    "crates/rentemester-runtime/src/mfa/backup.rs": "8f2f6d33a07ca983f73baad43dfb322ceda87f0acdaea11b233ceed066d4aee2",
+    "crates/rentemester-runtime/src/mfa/enrollment.rs": "1bea43484097459c6fc105e3de4179636b4fb73bf7997851df2dbdf0ab8d1b1d",
+    "crates/rentemester-runtime/src/mfa/tests.rs": "2c271eb15aa53cd90efdaa60d624116ce2d56db06b74e7f3aaac224a869cbdf0",
+    "crates/rentemester-runtime/src/mfa.rs": "68e645b22e4733fe92b1e682e6cfe5831ee1be337f2b16651f55d27e29c10a9b",
+    "crates/rentemester-runtime/src/namespace/linux/tests.rs": "8fd019ebf8d42e3ae64f4e26fadb1abef604f65856ceb4618857fb3b7741fcf6",
+    "crates/rentemester-runtime/src/namespace/linux.rs": "bde02d44cbca4ac96f1927ca5aa56f51c879da94af64f91c686a17bd0a784080",
+    "crates/rentemester-runtime/src/namespace.rs": "7a3d89d239503104ece49bbd1704a847b0cafb125c1b61642cdcfb47f9e488a3",
+    "crates/rentemester-runtime/src/password.rs": "0c4a2176c57bc3d0fcc5370a17a0dc1286a815a2d1b2c00936a85ea262b982c4",
+    "crates/rentemester-runtime/src/posting_time.rs": "3d1527c90b8c10f6f22a5adc55be0d08deea3fb236bcfa1bbeac7693019b8457",
+    "crates/rentemester-runtime/src/recovery.rs": "89712f6dd791d7f6c69cfe7e840dc870eaeb3a9d6dbcc113f3829939521c4199",
+    "crates/rentemester-runtime/src/service_key.rs": "7ece2f1538c41db0f09add0993c55d30a6836da193f4517ae1e72935a899c1e7",
+    "crates/rentemester-server/Cargo.toml": "82a83b21b404b2e4be1f21e5e7f01f9b6a78a202371960e2b4eb2b2a129b0379",
+    "crates/rentemester-server/src/auth_http/backup_management.rs": "fed0b00aeb08888ea088bc23992ea5a3294054018e219fc613b1f483687036ac",
+    "crates/rentemester-server/src/auth_http/context.rs": "f5d005c11d84089ed0bff3b3714a91536d3f35884c4524dcec7eb0233659217c",
+    "crates/rentemester-server/src/auth_http/enrollment.rs": "fc20dc3a87d1147e9277cdbae36c076ea3818057f98c32d6a9104063dae7e28d",
+    "crates/rentemester-server/src/auth_http/lifecycle.rs": "c9bcdbe1e9bb19349293ad21deb6368d6d0eab8000f0a550460cd1a0d4e948c6",
+    "crates/rentemester-server/src/auth_http/password_change.rs": "8c11177e8a95dd21945638edea3b36ee19d701408d8bfd70be81810a43ff0e67",
+    "crates/rentemester-server/src/auth_http/sessions.rs": "a1ad9ce2999bf2521823f1e1dc2208bdd26baea2e2e1bab74f0e2b09d3700678",
+    "crates/rentemester-server/src/auth_http/tests.rs": "35c3bc7fafc729a4df1e09f45e2d38d0e13e32a9ce3976f270534651d19d4d28",
+    "crates/rentemester-server/src/auth_http/verification.rs": "6c5ae1cecad7e18cbe6d4814f01d55ac226eaa450efc16c853a8505f28e6742f",
+    "crates/rentemester-server/src/auth_http.rs": "022eb38c8933d7b8d778a24ac45851427fbbe390ab3231b00299a5c69c2495f8",
+    "crates/rentemester-server/src/lib.rs": "6a89bddd22c1a1a2d5b230dc6235acaa47f93f76060f47c04c3e58c1cf56ff2d",
+    "crates/rentemester-server/src/recovery_tests.rs": "ffffb1b71e8d721018c84dd1205a3208868697d15c9f753ac9c1fe6367295f2a",
+    "crates/rentemester-server/src/tests.rs": "d6de50623c40ccc22240d423a9253c6ec8dacca44429e9e962d22d837b15e762",
+    "crates/rentemester-storage/Cargo.toml": "fe91d42a993a0da09713af22b134b83976cd4deda7cec44507835d1210c0fafc",
+    "crates/rentemester-storage/src/company_baseline.rs": "bb9725fe573283b4cfd82736057125477625594f7210eaea2184faf80d1f825a",
+    "crates/rentemester-storage/src/company_normalization.rs": "9f017e6da6641dbacb5223d1ab16731b4a2d614a4108eaf5244a8d5946c2c62b",
+    "crates/rentemester-storage/src/company_physical.rs": "bae2e3585e8f9a1193a9eaab7eabdf045226d77a2b5636b8d6265713fe99d734",
+    "crates/rentemester-storage/src/company_vat.rs": "bb84dc18dbefb932e51f3e5a27e35807f980e8bbc196e2f5de164048ae851e97",
+    "crates/rentemester-storage/src/control_access.rs": "2e27d14481cc6120ea30bfed9d0b62cf9a8ad08c34aaa1c4eed5410cf6d0d753",
+    "crates/rentemester-storage/src/control_migration.rs": "25f1ed072816627d4f3647cb4cf18907a5dbffeeab5ec4359c839998c99c9315",
+    "crates/rentemester-storage/src/cookie_session.rs": "cc174b10535dd19129becf965a4c63f909231d02f8891e838c9fbf2ada971bce",
+    "crates/rentemester-storage/src/email_verification.rs": "13d762f51a0615221f9a58cc1687c756ce248958a0414b2c923695a3f4fd132e",
+    "crates/rentemester-storage/src/idempotency/tests.rs": "87a1a6d7d0698af3546d739365c750acc611779cbf1c5d7e09cf137b7014455e",
+    "crates/rentemester-storage/src/idempotency.rs": "7ebc325b373852850c05257899840c8cbf3c8d1f355642bc490d109bda32513b",
+    "crates/rentemester-storage/src/journal_hash.rs": "8ffeef370b6dbecc8e9af0be65ad5b4b5fc4d86088db30432c242169ff9ff4e6",
+    "crates/rentemester-storage/src/journal_post/tests.rs": "e548b5f8ac0fda40d4f42881bcdb16635eef5274b3395280f7842d8948197651",
+    "crates/rentemester-storage/src/journal_post.rs": "b5f773bc4eafe2530bb2501b67b11b959a85385a7341fbcaeed50349065920f3",
+    "crates/rentemester-storage/src/journal_preview.rs": "f86fe6929386ca6e57e2bdd17bb459b7fd4714df0fff5317480dba251d05ca5f",
+    "crates/rentemester-storage/src/journal_reversal/tests.rs": "fbe63125454be9454c42d5ef06b76e06a2459265fa210f245082884bbb9e406e",
+    "crates/rentemester-storage/src/journal_reversal.rs": "206d05dace1a19ada15ef393c4a99fd1f97e0cd56f14ae8e36cbcd0616504ede",
+    "crates/rentemester-storage/src/legacy-company-physical.json": "7ef7c9d00cc78396853a77e4dbd9ee34384b1148261a944cc8613ac79a19a444",
+    "crates/rentemester-storage/src/legacy-company-physical.sha256": "86eac526c5e4068618d9a1e53aa923f5114ee73a7f47a6cc0a8ee802ae8be3fa",
+    "crates/rentemester-storage/src/legacy-company-schemas.json": "e2390746dbb0245f4d128158e146405994ce9b75f93e702b2e04d9e9d04aeb7b",
+    "crates/rentemester-storage/src/legacy-company-schemas.sha256": "2dadb0947b848cb05e65d5a09d81576ecfcfc81e3db89e9722946c53a9add795",
+    "crates/rentemester-storage/src/legacy-schema.json": "b424cec385abad3f313ca633a291f8cf3f07d5cbece16523cd8fa0674cf729c7",
+    "crates/rentemester-storage/src/legacy-workspace-schema.json": "f56992f726def0300aca5350f48f3cb3dabe0c3672f410bc6bd56bd300f8dc08",
+    "crates/rentemester-storage/src/lib.rs": "6b92d356f3d462cdda5c5d88c3d53c477f015c0d5cc6a5f1a6a060ef2d91d9e9",
+    "crates/rentemester-storage/src/manual-rule-bundles.json": "966dcac7eef35c0823d31b7e3a9583e1a028d5c4e228136d7f8d0196705e7779",
+    "crates/rentemester-storage/src/mfa_login.rs": "f48fa2510fa68f48e9a36df36e7e37c5553e8ba19ed4ad0b8f7715575d9e1b7a",
+    "crates/rentemester-storage/src/migration.rs": "708fb44faf17aa7e6a2b55fd0c446e990894cbde6c2d42ee18c66e79370aa315",
+    "crates/rentemester-storage/src/password_change.rs": "6f4f6f5ffea0105703b8b5b8eb50ff475cff0675f4d0320342809f59378cde6e",
+    "crates/rentemester-storage/src/password_credential.rs": "d0ee4d9331a35f5589f58745d50313a8cb3be9795be35867afdbdf039cb10248",
+    "crates/rentemester-storage/src/password_reset.rs": "64df3f8acfa40355711ee46fe12e8786980d57f24af218175b28841f0a7a01b7",
+    "crates/rentemester-storage/src/reset_request.rs": "001778840e074d2441bdd5e3fefdeb36b68090f90a75bee625c3bf13c90ae03f",
+    "crates/rentemester-storage/src/sequences.rs": "3dc55c23949c0ffa835c8632eb339ab66c80256a57eec02122fef1dfef3b4fb9",
+    "crates/rentemester-storage/src/service_context.rs": "27692a51b508be2180abc2429a618988b151d16e5e41bd64a0d10e57e16384a0",
+    "crates/rentemester-storage/src/service_lifecycle.rs": "09e494e6786e5537ca6ce90cb6c8e2319d4392a2a0390630d6b1e24edfa617f1",
+    "crates/rentemester-storage/src/session_control.rs": "8330f26bc7e2f2f7e5b9a79dc09f2348ac8369446dabe53a048d9f283696ac19",
+    "crates/rentemester-storage/src/session_view.rs": "6c7e77080c63abc6628a27dc277d772dbd3ce412fbe50cfe88099f53b61f1f9f",
+    "crates/rentemester-storage/src/snapshot.rs": "3c4cb8708c439c059b87c2692b26c62d927af4447080d808dea89c989e403c28",
+    "crates/rentemester-storage/src/test_support.rs": "cd3dede13336ce9c923f8942403e424cc377c47231aa1f2fcd33dca98d3993ba",
+    "crates/rentemester-storage/src/workspace_context.rs": "bcdf429f990675da21e57eecec428e30019d7168a58ddd9ac911163ea9f6769b",
+    "vendor/libsqlite3-sys-0.38.2/.gitignore": "d89b7a44f37a816f5b0ca8297e0d17067ca5f41e45d1455b0a56d072679a00a6",
+    "vendor/libsqlite3-sys-0.38.2/Cargo.lock": "98613943806be93e12c818c0b612824435f8f8460e9c4acf42fd564b18d37d4c",
+    "vendor/libsqlite3-sys-0.38.2/Cargo.toml": "ce2c66104c29834e8c5e875f765e2ddfc577b9366b1ccef80f3680c2039948b3",
+    "vendor/libsqlite3-sys-0.38.2/Cargo.toml.orig": "f7a4bf06e3f2b8ad8f1e559637b84c19fec5ad3daee05c42b75fb596c3c188e9",
+    "vendor/libsqlite3-sys-0.38.2/LICENSE": "c10c1f27337546471e5f7e4e97fdd398b35b9d4e126115dcd22de8d8e65abf6f",
+    "vendor/libsqlite3-sys-0.38.2/README.md": "17a4e830209b642f0bfebd4b3f581fa4fea24efca5e500e10eee58760de99969",
+    "vendor/libsqlite3-sys-0.38.2/Upgrade.md": "d151a67d4bbb1a5a300d084d210d6cd238d833a6d4bd5d958ae7469a9deccb36",
+    "vendor/libsqlite3-sys-0.38.2/bindgen-bindings/bindgen_3.34.1.rs": "4f94d0192ec890b62773368cb026daf219f5182094952c007d28ed6d3812fd68",
+    "vendor/libsqlite3-sys-0.38.2/bindgen-bindings/bindgen_3.34.1_ext.rs": "44ff11f09886f8c41494f65043ac2ddba4e476bb17a81fe93a8c10c7bffdf4a8",
+    "vendor/libsqlite3-sys-0.38.2/build.rs": "269acf1864de5046ac5b77814926d41fe24108b0d027f635812a1db3c965f81f",
+    "vendor/libsqlite3-sys-0.38.2/sqlcipher/LICENSE": "ea4fcb309f14a22065e1ea45362d494d320012249ed865fe9c7c0946db754131",
+    "vendor/libsqlite3-sys-0.38.2/sqlcipher/bindgen_bundled_version.rs": "971ec006a2405a7cc443ec69500b1b6fbe45cf3f6ababf7f7815e9a3edbd6dbe",
+    "vendor/libsqlite3-sys-0.38.2/sqlcipher/sqlite3.c": "ea0bf0b08f688ca5d9312b2e33e7f81b3f4ae54b5016fb062ae1f2632a30a1b9",
+    "vendor/libsqlite3-sys-0.38.2/sqlcipher/sqlite3.h": "91190701218669c31d2f56835c98882074ad051f2d38afee9f5b9c35d8406149",
+    "vendor/libsqlite3-sys-0.38.2/sqlcipher/sqlite3ext.h": "ea81fb7bd05882e0e0b92c4d60f677b205f7f1fbf085f218b12f0b5b3f0b9e48",
+    "vendor/libsqlite3-sys-0.38.2/sqlite3/bindgen_bundled_version.rs": "5b5a37a74dc728fb0bcd041867eb577c03c95e2fe46285262c589a3b1cd4bbac",
+    "vendor/libsqlite3-sys-0.38.2/sqlite3/bindgen_bundled_version_ext.rs": "445cc206e04a87131d4690742517ee7dcc3a430319bac847ce5e9586f98ee301",
+    "vendor/libsqlite3-sys-0.38.2/sqlite3/sqlite3.c": "52e5b617185361d6e10454726ee1333e8485eacb4296a5298be335899300fe9b",
+    "vendor/libsqlite3-sys-0.38.2/sqlite3/sqlite3.h": "9e69a1353a4288450b0d5239ede11fc7f1f4c8e5eb07491fc8317eacb5b7de7e",
+    "vendor/libsqlite3-sys-0.38.2/sqlite3/sqlite3ext.h": "ac9645e5c9ff0cf176efdd6e75cb5e98f46295d38e02db5c4d208826a39ab4be",
+    "vendor/libsqlite3-sys-0.38.2/sqlite3/wasm32-wasi-vfs.c": "b95842044da2b8777876b7d3fef8c9711e8c201fb4a4255dbac98729a456bb5d",
+    "vendor/libsqlite3-sys-0.38.2/src/error.rs": "9685678a8752bf47e5e39923bb2cf466cc312a25848d91cc206bf89eaccfb7d6",
+    "vendor/libsqlite3-sys-0.38.2/src/lib.rs": "f61d8e306e11357479e20999f7b7adc5f3dbaea40cd17361853574001cf79360",
+    "vendor/libsqlite3-sys-0.38.2/wrapper.h": "b78f576f7eeabf316e183d476b0f16344b6897680b4df47628d3ce38c0aa979a",
+    "vendor/libsqlite3-sys-0.38.2/wrapper_ext.h": "fa7a53fea99318ee29d75e6d5fab4d7ed26e9599803268e6a24396265f2a6f3a",
+    "vendor/rusqlite-0.40.2/.gitignore": "d89b7a44f37a816f5b0ca8297e0d17067ca5f41e45d1455b0a56d072679a00a6",
+    "vendor/rusqlite-0.40.2/Cargo.lock": "087abe4a9e80d908a449c7f04020c5b1f86d18e441b93f17037158f74a0741d0",
+    "vendor/rusqlite-0.40.2/Cargo.toml": "0caf77d1ad70851eaa13e249ac4c8eca6fa4cc197da17f05a5a08ecf4cde3b0e",
+    "vendor/rusqlite-0.40.2/Cargo.toml.orig": "eca265d7eed3284bb4847cbb491ecc347a2dbce9abc8436f82746d5cd4515a39",
+    "vendor/rusqlite-0.40.2/LICENSE": "c10c1f27337546471e5f7e4e97fdd398b35b9d4e126115dcd22de8d8e65abf6f",
+    "vendor/rusqlite-0.40.2/README.md": "17a4e830209b642f0bfebd4b3f581fa4fea24efca5e500e10eee58760de99969",
+    "vendor/rusqlite-0.40.2/benches/cache.rs": "30459d8d7f65dd684909a53590f9be32e2e545a0775cd93ee0ce85dd08410955",
+    "vendor/rusqlite-0.40.2/benches/exec.rs": "a9f5e209dbfc73d1ee574608e0105a6c317b83f73d873ea8afd8b60e07cbc8d7",
+    "vendor/rusqlite-0.40.2/bindings.md": "bf8198fd6ac58c41ca22f3494644a41e95b055b280727b81fa35a9783bca935b",
+    "vendor/rusqlite-0.40.2/examples/load_extension.rs": "f6577107bf9deb2cb899726a7bb4f19781de1068048701d25dcf2595940ebb4f",
+    "vendor/rusqlite-0.40.2/examples/loadable_extension.rs": "2a4beb4ac13d605085f5efc631ca0b137f657c18366343e3158d5b118e3824af",
+    "vendor/rusqlite-0.40.2/examples/owning_rows.rs": "1300fd8251693af3e72f87409359d3d46fcd79bf5e025359fcbce86366486d90",
+    "vendor/rusqlite-0.40.2/examples/owning_statement.rs": "e0e06674c65b48dcd7c7ec30fc9ac6cc54a80b84d19b24268d6771c271bd8fa6",
+    "vendor/rusqlite-0.40.2/examples/persons/README.md": "27da552441890ae2410992b6602affb7663395ebd93f9ced2488b89456d44ec8",
+    "vendor/rusqlite-0.40.2/examples/persons/main.rs": "23d96842f66098b4a5065651b8b17f45a8d4f4ed77de2fb588e4b153fc994b65",
+    "vendor/rusqlite-0.40.2/src/auto_extension.rs": "48de9160b6243fd3b2f0018ee021bab894811b59e7c0f1d478d36d3a55932b2c",
+    "vendor/rusqlite-0.40.2/src/backup.rs": "595d5bc77e3a720791760a3ea61a8cd246a0ad134a317e03030a259ef069eb20",
+    "vendor/rusqlite-0.40.2/src/bind.rs": "83af46d93696bc9eb3ee714ba7375804d62f90d324c3d0e0929fec8a54cc5660",
+    "vendor/rusqlite-0.40.2/src/blob/mod.rs": "11c83bb35ec8617b405c844d6f31f0bbd43c9f2de668a7cc65179ffbc6ff27c0",
+    "vendor/rusqlite-0.40.2/src/blob/pos_io.rs": "ba6a1f3d61ecb6bd79d8bf67193a6eaf8754673d5a5a01fbee82c949fb3c6a0f",
+    "vendor/rusqlite-0.40.2/src/busy.rs": "5917828189828dce9db93e023f08273b00c1e6e7f2edf7535a62c3fcacc0775d",
+    "vendor/rusqlite-0.40.2/src/cache.rs": "aabbbd6f1cb4b1961d1df4e60545def916a2564183a9c6fdf51257713523cca0",
+    "vendor/rusqlite-0.40.2/src/collation.rs": "d6dbe8e79711c6e6f84436e85f7358bacc0dd16493dbe7f82fa44d2538b42c99",
+    "vendor/rusqlite-0.40.2/src/column.rs": "269241f960502475b02f763d981d6f79a2d2dcec40fea9bf434ad69c2750176a",
+    "vendor/rusqlite-0.40.2/src/config.rs": "cf0792d7411a5353e21f9f80bf461e66c3bbc431fdcb73c8e28f8c5e52844b1c",
+    "vendor/rusqlite-0.40.2/src/context.rs": "9ee8c931e03328e64d420ecd159f9a331bb722813b9bf6e0f8e0a31abe0cbc4b",
+    "vendor/rusqlite-0.40.2/src/error.rs": "255d048cddaf8e385b65761f06bc0cf4868ce508ee724858871e31ba41e10b9e",
+    "vendor/rusqlite-0.40.2/src/functions.rs": "082875c1f2cd760da0c2590301526e85f748a8aceaab13508daaf1bf1eeb7084",
+    "vendor/rusqlite-0.40.2/src/hooks/mod.rs": "55d96cf39ffd83c54fe8410f7eb2c396e4964c7cb75c3273b066e56c7426557b",
+    "vendor/rusqlite-0.40.2/src/hooks/preupdate_hook.rs": "92093b0d5255566684072d0b7fe4aa9fa8a87f39d1f5232dfbd129e24cd855ea",
+    "vendor/rusqlite-0.40.2/src/inner_connection.rs": "a2088e3274a33b2e6b4fc17ec16054f8e3add78c3ba898042b76096a9abf71af",
+    "vendor/rusqlite-0.40.2/src/lib.rs": "c3820990e4bd780ab899c04f21520df2ff09a8a37fc4f32ac5cdd6c5f456f39b",
+    "vendor/rusqlite-0.40.2/src/limits.rs": "fd42eee65eb2a1db7e5ba0dafc545546f4ae419dbb432d9b80d789d4324d2005",
+    "vendor/rusqlite-0.40.2/src/load_extension_guard.rs": "40ea2c61e74abf3d1cbe37d882222e2152ec4359de88f699d862e06d0da5e4fa",
+    "vendor/rusqlite-0.40.2/src/params.rs": "5cac2041f4fa8cb479997cbe9d0f716b577dde145e346ec3597d97de0cee6629",
+    "vendor/rusqlite-0.40.2/src/pragma.rs": "80c34e9281093b3df54268f7c8fe21673751e047ba566f70844b6566bc7f2359",
+    "vendor/rusqlite-0.40.2/src/raw_statement.rs": "9c7369e238a409fe6855a2df006e5bbe31d114a8b1c01695dcc71b4dbc2a950e",
+    "vendor/rusqlite-0.40.2/src/row.rs": "ca0d543ee7004db58d365bdf45708aa59d9c81ef20e20b4da40ab3eea6aaa492",
+    "vendor/rusqlite-0.40.2/src/serialize.rs": "2d825edbf9b470f1f8930de5752b841dd08258845b173cb6b1d9fe86ab639122",
+    "vendor/rusqlite-0.40.2/src/session.rs": "b8658cf33cd47ddbb6b63d51fd827db9ec48a4c24aa47d91d200a286679c7555",
+    "vendor/rusqlite-0.40.2/src/statement.rs": "cc53dcc82755d97a48f2fa3b33d4d65c0f06fa45af0896441100e2467bfcc478",
+    "vendor/rusqlite-0.40.2/src/trace.rs": "7efc4190d25c2d6e0b9f33c7a742f26d1324aab8c86f6ccefde65f9e8e623262",
+    "vendor/rusqlite-0.40.2/src/transaction.rs": "ed5d3f13f057415607efaff56eb4e8a46f985a7f4c1c7b7899063604b6809cfd",
+    "vendor/rusqlite-0.40.2/src/types/chrono.rs": "6bb8964a304c7ccf9dee5cf0ce23386ce3fa3722d41c12ea6093cbe9ae3553ad",
+    "vendor/rusqlite-0.40.2/src/types/from_sql.rs": "321815d30a5987df0b775975d70b06b46d258ac32b0b7a095b589063d18af087",
+    "vendor/rusqlite-0.40.2/src/types/jiff.rs": "bc883f6c62effd09927bb6f169e2d245dad755c9b74145cfaecd607fe6d9198c",
+    "vendor/rusqlite-0.40.2/src/types/mod.rs": "ef7836b82f36f6a87e2af14b71b9b2f6dae05eeeeba5d7ded9480193e0ac08c3",
+    "vendor/rusqlite-0.40.2/src/types/serde_json.rs": "421e0f13ddb4d198db92b794c0e0798a875a59092399ca0cdd0d12abc51a5b5e",
+    "vendor/rusqlite-0.40.2/src/types/time.rs": "7277cc235ad96fb9f6238ded9ce5795e051b0cfb9c273de1d3999dc2e4e832ca",
+    "vendor/rusqlite-0.40.2/src/types/to_sql.rs": "0cc8452d1ae0f531918b672bc20384beeba4941c66b6a0619466b78be0b7cddd",
+    "vendor/rusqlite-0.40.2/src/types/url.rs": "dff51bb12720bd7148cb86c43479444210c72fa354d0ff7a94ce9fc5cfbfb7c2",
+    "vendor/rusqlite-0.40.2/src/types/value.rs": "a567e66156a4895332ed481ad362128ea770219b1886c7cccb520993fd0cf92d",
+    "vendor/rusqlite-0.40.2/src/types/value_ref.rs": "7ccb0e379a067ded70ae6754209e3e824bc465cc260bca2f3e57245a65082562",
+    "vendor/rusqlite-0.40.2/src/unlock_notify.rs": "14d1989cba499bc95945b11b827f5180296c081a814b2c84826e01ed3739e4c5",
+    "vendor/rusqlite-0.40.2/src/util/mod.rs": "9d7a788bd1cf0e30df36905586c4222ddde6a994b0faa11b0736bb853fecd53f",
+    "vendor/rusqlite-0.40.2/src/util/param_cache.rs": "754971ed9204b0a6e718d2d60408a161cd4fc53fa9cd361c1134f436f7a91253",
+    "vendor/rusqlite-0.40.2/src/util/small_cstr.rs": "fa180c2f5b4ead9671991659cd58f2eb819bd6f5f2ff948c170610731adf2298",
+    "vendor/rusqlite-0.40.2/src/util/sqlite_string.rs": "60b013b7fc0088d429205715cf054dceb52a5e66d5664e612cacddee3371f42a",
+    "vendor/rusqlite-0.40.2/src/version.rs": "392b327ecd9acc1d289f92abb671104b065e232368456b0bbd5bfaca96d90950",
+    "vendor/rusqlite-0.40.2/src/vtab/array.rs": "9d65a6c411818518badbc1baeb36a3b225b59f944ecc3fa04ad212fc9790fa20",
+    "vendor/rusqlite-0.40.2/src/vtab/csvtab.rs": "0e5246872678ffab8300d8ff763d67c1a3f3da8777f1fbb6462194d34868ec54",
+    "vendor/rusqlite-0.40.2/src/vtab/mod.rs": "d8152c1026bff6cf5097ec8146aaa289631ab60728c9dedaebc9c0e64cd0ee3c",
+    "vendor/rusqlite-0.40.2/src/vtab/series.rs": "5ca96868e72f01928fc4f240063a9ef8e9376a2c446047e3b6d7f035e7d7f2c7",
+    "vendor/rusqlite-0.40.2/src/vtab/vtablog.rs": "f1e2789ef3edf118d62bbbfa67e9c90f9da4c237151137b19fc8944840b312ca",
+    "vendor/rusqlite-0.40.2/test.csv": "3f5649d7b9f80468999b80d4d0e747c6f4f1bba80ade792689eeb4359dc1834a",
+    "vendor/rusqlite-0.40.2/tests/auto_ext.rs": "f157b0f686eb93098026d6d7b71104caf5dab094b5b7cc134b68c9915d3e856b",
+    "vendor/rusqlite-0.40.2/tests/config_log.rs": "3482b49890d6830b3ac18cf165f35f9dd5daea94bceff509b4b4255931514978",
+    "vendor/rusqlite-0.40.2/tests/deny_single_threaded_sqlite_config.rs": "a4e4f89cde3a0fc1405f0175d6d41bc970e2ed541d6a4804000571694a7d4c43",
+    "vendor/rusqlite-0.40.2/tests/vtab.rs": "06fa4a865993c74f7a54608f50fab515e11530b3b5c639d3e8ab555b564997a9",
+    "vendor/sqlite-identity.patch": "04f88063fc01a77e36981dadffba0a6667f9b69f0efa34cfa789c5a02fa1bdb7",
+    "vendor/sqlite-provenance.json": "521ec4723fe80d605a99850984b4fa1a5050188a7de6dada81458289cef3bedd"
+  },
+  "build_log_sha256": "5e26006a88a0a18100f6882af3f642a015e39615617fd3059229fe1bccd2394a",
+  "limits": [
+    "New path access only; a prior open descriptor survives chmod",
+    "Same UID and root/operator remain trusted/enrolled",
+    "No host owner, closeBUSY, canonical domain schema, deployment or macOS profile qualification"
+  ],
+  "owned_resources_removed": true
+}

@@ -244,3 +244,7 @@ Shared transaction-local orchestration preserves existing human post/reversal se
 ## Actual SQLite handle identity
 
 The [SQLite identity contract](sqlite-identity/CONTRACT.md) adds a pinned bundled VFS patch and safe Rust metadata observation, consumed by WorkspaceLayout::ensure_connections. Deterministic restored-name ABA tests distinguish the actual SQLite inode from path observations. Database revalidation uses statat to preserve live POSIX locks, checked by independent child processes in WAL and DELETE. The same locked runtime passes the local lease/layout tests on Linux ARM64 container tmpfs. This is a prerequisite for persistent runtime admission; namespace ownership, the owning runtime and deployment qualification remain open.
+
+## Dedicated-UID broker namespace
+
+The [broker prerequisite contract](broker-owner/CONTRACT.md) adds Linux actual-thread privilege checks, protected ancestry and strict UID/mode/ACL/sidecar observations. A source-only Docker driver exercises separate users and persistent synthetic files, including prior-descriptor and same-UID negative controls. This is the namespace prerequisite for the persistent owner; safe connection shutdown, typed host dispatch, fresh initialization and transport composition remain required.

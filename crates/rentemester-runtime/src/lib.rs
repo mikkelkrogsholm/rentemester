@@ -159,3 +159,5 @@ static LEASE_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 pub mod service_key;
 
 pub mod posting_time;
+
+pub mod namespace;

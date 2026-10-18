@@ -1,0 +1,76 @@
+{
+  "increment": "broker-namespace-1",
+  "code_revision": "sha256:da08cf307c454775ec304d8f9ffd34922478da6efdd25153221bbb5d6e0708b3",
+  "spec_revision": "sha256:c45af5225ae40c779f1a55baa57aa516d8c778ecd39b5bfd2643dbf9973ad1ec",
+  "state": "verified-dedicated-UID-Linux-namespace-prerequisite-without-owning-runtime",
+  "checks": {
+    "native_workspace_tests": 161,
+    "ignored_helpers_mac": 30,
+    "Linux_namespace_checks": 41,
+    "real_different_UID_denials": 132,
+    "GDD_structural_checks": 3,
+    "mac_workspace_and_Linux_runtime_clippy": "PASS",
+    "standalone_success_cleanup": "confirmed",
+    "cleanup_exception_path": "two owned containers and two owned volumes removed"
+  },
+  "integration_regression": {
+    "rerun_in_this_increment": false,
+    "last_full_commit": "3119f2884e04927cea98a7388c98454391545a8d",
+    "last_full_checks": 12698,
+    "scope_note": "New opt-in namespace module and platform-specific tests; domain/transport/storage implementation unchanged. Last full baseline is not claimed as a new integration run."
+  },
+  "sources": {
+    "Cargo.lock": "8f26402a8caaf12537fd6cc1f27d6aa84ae56017dc701a2d2320543f6ef2a973",
+    "Cargo.toml": "9ca4b9e85ed9d13c4a8673ad6cd985a3ea0b204dbe2ed77361f7fca9b2400954",
+    "crates/rentemester-runtime/Cargo.toml": "0813e220b20d318056e08a8ee3257feddd0679d5a47cd0994ba4b40252ee4b82",
+    "crates/rentemester-runtime/src/lib.rs": "bcc742ab76fc1e1a6e8d53e78858e95c5f69f160f7dac206918101165050927c",
+    "crates/rentemester-runtime/src/namespace.rs": "7a3d89d239503104ece49bbd1704a847b0cafb125c1b61642cdcfb47f9e488a3",
+    "crates/rentemester-runtime/src/namespace/linux.rs": "bde02d44cbca4ac96f1927ca5aa56f51c879da94af64f91c686a17bd0a784080",
+    "crates/rentemester-runtime/src/namespace/linux/tests.rs": "8fd019ebf8d42e3ae64f4e26fadb1abef604f65856ceb4618857fb3b7741fcf6",
+    "docs/architecture/rust-target/implementation/README.md": "583010ef05007f42cea2a4e2087ddb6be5888fa617f8edb56dbf473af8a4069c",
+    "docs/architecture/rust-target/implementation/broker-owner/CONTRACT.md": "8277a4b245b84570f3433e5583f2408a087d6c0762c7c12b745304b41842feb7",
+    "docs/architecture/rust-target/implementation/broker-owner/gdd.json": "057cbe96b8589797e092bd8664208d0e653e3264433c02173aa7dd5a453e055c",
+    "docs/architecture/rust-target/implementation/broker-owner/readiness.json": "aef6390fd538fb1c6b1b6ec740755e73aa428a82aed9755ed2e60241ebe003f7",
+    "scripts/rust/verify-broker-namespace-linux.py": "18a4f4e68cdb447bb9c469ca98c6929aeada6959a726d97768237ce5672f645f"
+  },
+  "claims": [
+    "Executing-thread UID4/caps/NoNewPrivs/umask and all ancestor ownership/mode/nofollow/ACL absence checks",
+    "Current metadata protected guard accepts strict broker namespace, refuses unsafe dirs/files/ACLs/sidecars, holds root lease and retires stickily",
+    "All regular live observation avoids ordinary inode opens/closes; real WAL/DELETE correct-lock contender stays excluded on sidecar alias refusal",
+    "Actual different UID cannot acquire new path access; sameUID and permissive positive controls and priorFD survival prove explicit limits",
+    "Privileged fakeWAL changes alternative SQLite lock protocol while original main POSIX lock remains, verified by raw fcntl separately",
+    "Self-contained source-only Docker driver with pinned image/exact224source hashes and confirmed owned-resource cleanup; handling of synthetic exception cleanup inspected and exercised"
+  ],
+  "limits": [
+    "NamespaceGuard only; actual persistent private host owner and confirmed-close/BUSY/quarantine/partial-construction lifetime are not implemented",
+    "No prior/inherited/passed client FD revocation or sameUID/root attacker isolation; trusted offline provisioning and enrolled broker code remain preconditions",
+    "Actual canonical fresh initializer, bootstrap, identity lineage and true legacy actor/CLI denial remain pending; direct filesystem attacks are not falsely named legacy CLI coverage",
+    "Named Linux ext-family candidate only; tmpfs ACL unsupported is refused, not accepted as absence; disk powerloss/Linux deployment and macOS local profile remain required",
+    "No enabled server/CLI/MCP writer, real user data/mail/migration/deployment, wholeissue closure or platform completion",
+    "Current GDD readiness captured after contract and initial source authoring; no pre-implementation validator execution is claimed",
+    "Graphify AST and README/current contract semantic refresh; historical/generated reports not semantically refreshed"
+  ],
+  "authoring_corrections": [
+    "Linux-only empty-xattr buffer inference fixed",
+    "Current-thread proc metadata and explicit priorFD gate corrected in source/contract review",
+    "Stale build fingerprint detected by missing ignored diagnostic; runtime rebuilt explicitly; standalone final uses fresh isolated build volume",
+    "Failed privileged fakeWAL SQLite contender oracle retained and explained with actual raw POSIX control, not hidden as a clean refusal guarantee against root",
+    "Driver cleanup statuses and secondary container tracking fixed; final report follows confirmed cleanup"
+  ],
+  "writer_authority": false,
+  "issues_closed": [],
+  "all_goal_requirements_complete": false,
+  "evidence_files": {
+    "review.json": "7b38f6e4774212f841811a02c305759371af8350712c8368428e27b958b5e7be",
+    "parity.json": "d821dc4c2d6824a46ca7c3b22aab536148a5731454b768b480cd986dc5552c7e",
+    "parity.txt": "bb31ca73cbb35c948062b3663f335dde01b4d25a37bb7b3ab47943bb60e63240",
+    "native.txt": "fc092599eda3a87edee47ca2d6ea25c35e22557640b797e9adf6704e3a398fa0",
+    "clippy.txt": "fecede7c2157efe2f16c8c8b9dce94b0fb4dd384dca8207046c8bf7636eb0ffe",
+    "linux-clippy.txt": "b603251afe6f3c5404b60f730a5e17749c689961aadc307920c5f193f2f3a53a",
+    "linux-clippy-install.txt": "08cc3e5ddf8fdac43e355fa0e3215ff51d62897f38c2b9748679f1984a32d562",
+    "wal-poison.json": "b10ce460aa543713e9238a39c723ed0e3bf529394a53e6756ef57f06977c852e",
+    "wal-poison.txt": "3c1f9fc5ec04ba916dae792af0ec5d6a348f8d7061421455acdb69512c3ee28f",
+    "cleanup-fault.json": "4b963ac8f7721f550ceb3ec19fc6f60a7fa478f9cf3d35cfcf774498c988b925",
+    "review-artifacts.json": "0b19758568b98da0f3fcb018c7067fb4381a1ffb8b9c5080da2807fa94376cf1"
+  }
+}

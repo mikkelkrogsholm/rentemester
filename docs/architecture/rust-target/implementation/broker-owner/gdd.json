@@ -1,0 +1,218 @@
+{
+  "format": "gdd/0.3",
+  "project": {
+    "id": "rentemester.rust-target",
+    "title": "Dedicated-UID broker namespace prerequisite",
+    "goal": "Refuse unsafe Linux namespace/process metadata while retaining lease/layout and live SQLite locks",
+    "scope": "Namespace guard only; persistent host ownership/closeBUSY/initializer/transports remain required"
+  },
+  "nodes": {
+    "component.runtime": {
+      "kind": "component",
+      "description": "Protected broker namespace observation",
+      "maturity": "specified",
+      "boundary": {
+        "responsibility": "Linux actual-thread profile, safe ancestry/modes/ACL/sidecars and sticky physical guard",
+        "rationale": "Different-UID clients must not acquire new filesystem access or become simultaneous legacy writers",
+        "excludes": [
+          "Prior/inherited/passed descriptors; malicious root or broker UID; owning runtime, fresh bootstrap, endpoints, full platform qualification"
+        ]
+      },
+      "interfaces": [
+        "action.broker_namespace"
+      ]
+    },
+    "scenario.normal": {
+      "kind": "scenario",
+      "description": "Accept strict current profile without data mutation and retain exclusive lease",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Offline-provisioned broker0700/0600 named persistent files and actual separate UID processes",
+        "when": "Acquire and validate trusted Linux broker namespace",
+        "then": "Accept strict current profile without data mutation and retain exclusive lease"
+      }
+    },
+    "scenario.refusal": {
+      "kind": "scenario",
+      "description": "Typed path-free refusal; 132 real access attempts denied across WAL and DELETE",
+      "maturity": "specified",
+      "scenario": {
+        "category": "negative",
+        "given": "Unsafe UID/mode/ACL/symlink/hardlink/sidecar or actual thread privilege facts",
+        "when": "Attempt namespace acquisition or actual different-UID file access",
+        "then": "Typed path-free refusal; 132 real access attempts denied across WAL and DELETE"
+      }
+    },
+    "scenario.preservation": {
+      "kind": "scenario",
+      "description": "No ordinary regular-file open/close; SQLite main and WAL writer protocols remain held",
+      "maturity": "specified",
+      "scenario": {
+        "category": "normal",
+        "given": "Held real SQLite transactions and current safe regular namespace",
+        "when": "Read metadata and revalidate namespace/actual handles",
+        "then": "No ordinary regular-file open/close; SQLite main and WAL writer protocols remain held"
+      }
+    },
+    "scenario.correction": {
+      "kind": "scenario",
+      "description": "Use actual thread; prior FD stays writable and requires offline provisioning; root is outside hostile-client boundary",
+      "maturity": "specified",
+      "scenario": {
+        "category": "boundary",
+        "given": "Leader and worker NoNewPrivs differ; a client acquired a descriptor before chmod; root poisons WAL sidecar",
+        "when": "Check current-thread status and exercise explicit negative controls",
+        "then": "Use actual thread; prior FD stays writable and requires offline provisioning; root is outside hostile-client boundary"
+      }
+    },
+    "scenario.concurrent": {
+      "kind": "scenario",
+      "description": "Lease and correct SQLite lock remain; restoration cannot revive retired guard",
+      "maturity": "specified",
+      "scenario": {
+        "category": "concurrency",
+        "given": "First broker holds lease and real WAL/DELETE transaction",
+        "when": "Second broker/SQLite contender competes; namespace is invalidated then restored",
+        "then": "Lease and correct SQLite lock remain; restoration cannot revive retired guard"
+      }
+    },
+    "action.broker_namespace": {
+      "kind": "action",
+      "description": "Acquire and observe protected dedicated-UID namespace",
+      "maturity": "specified",
+      "source_refs": [
+        {
+          "source": "source.contract",
+          "purpose": "contract"
+        }
+      ],
+      "contract": {
+        "input": {
+          "absolute_root_broker_uid_workspace_company": {
+            "type": "object"
+          }
+        },
+        "context": {
+          "trusted_offline_provisioning_and_enrolled_broker_uid": {
+            "type": "object"
+          }
+        },
+        "output": {
+          "type": "object",
+          "description": "Non-Clone private namespace guard, no writer or schema/adoption authority"
+        },
+        "errors": {
+          "refused": "Unsupported profile, unsafe broker thread, invalid namespace, busy lease or sticky changed namespace"
+        },
+        "preconditions": [
+          "Trusted root/installer and enrolled broker UID, all clients/legacy run separate unprivileged UID",
+          "Fresh protected offline provisioning and no pre-opened/inherited/passed client descriptors; guard cannot prove or revoke these",
+          "Launcher before threads establishes UID/caps/NoNewPrivs/umask; no regular descriptors for live SQLite in binding phase"
+        ],
+        "postconditions": [
+          "Wrong metadata/unsupported ACL absence refuses without repair/data write",
+          "Every regular live observation uses statat/xattr/read_at/fstat, preserving process lock discipline",
+          "Guard retains root lease and layout until dropped; owning host must enforce confirmed SQLite close before drop"
+        ],
+        "external_effects": [
+          "Acquire and retain kernel directory flock; no namespace/data repair or SQL mutation"
+        ],
+        "effects_complete": true,
+        "dependencies_complete": true,
+        "risks": {
+          "boundaries": {
+            "relevant": true,
+            "rationale": "Current thread, nofollow metadata, strict ACL support and explicit priorFD/operator limits",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "concurrency": {
+            "relevant": true,
+            "rationale": "Held lease and live SQLite POSIX/WAL lock preservation during no-open validation",
+            "scenarios": [
+              "scenario.concurrent"
+            ]
+          },
+          "authorization": {
+            "relevant": true,
+            "rationale": "OS UID/capability/access boundary; neither sameUID nor priorFD revocation is implied",
+            "scenarios": [
+              "scenario.refusal",
+              "scenario.correction"
+            ]
+          },
+          "idempotency": {
+            "relevant": false,
+            "rationale": "No persistent effects or mutation retries; invalidation remains sticky in memory",
+            "scenarios": []
+          },
+          "atomicity": {
+            "relevant": false,
+            "rationale": "No transactions or persistent mutation; namespace snapshots explicitly do not provide atomic lifetime admission",
+            "scenarios": []
+          }
+        },
+        "error_cases": {
+          "refused": [
+            "scenario.refusal",
+            "scenario.correction"
+          ]
+        }
+      },
+      "behavior": "Validate actual thread privileges and every ancestor, take root lease, stat/check ACL/mode/UID/link/type before regular binding, bind retained layout; revalidate without regular opens and invalidate permanently on any error"
+    }
+  },
+  "edges": [
+    {
+      "id": "edge.owner",
+      "from": "action.broker_namespace",
+      "to": "component.runtime",
+      "relation": "owned_by"
+    },
+    {
+      "id": "edge.normal",
+      "from": "scenario.normal",
+      "to": "action.broker_namespace",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.refusal",
+      "from": "scenario.refusal",
+      "to": "action.broker_namespace",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.preservation",
+      "from": "scenario.preservation",
+      "to": "action.broker_namespace",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.correction",
+      "from": "scenario.correction",
+      "to": "action.broker_namespace",
+      "relation": "exercises"
+    },
+    {
+      "id": "edge.concurrent",
+      "from": "scenario.concurrent",
+      "to": "action.broker_namespace",
+      "relation": "exercises"
+    }
+  ],
+  "sources": {
+    "source.contract": {
+      "role": "input",
+      "title": "Dedicated-UID broker namespace prerequisite",
+      "uri": "CONTRACT.md",
+      "format": "markdown",
+      "normative": true,
+      "revision": {
+        "sha256": "8277a4b245b84570f3433e5583f2408a087d6c0762c7c12b745304b41842feb7"
+      }
+    }
+  }
+}

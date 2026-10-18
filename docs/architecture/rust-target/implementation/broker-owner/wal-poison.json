@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "parent_main_POSIX_lock_before": "busy",
+  "parent_main_POSIX_lock_after_refusal": "busy",
+  "parent_main_POSIX_lock_after_SQLite_contender": "busy",
+  "SQLite_contender_after_privileged_fake_WAL": "acquired via different WAL/SHM protocol",
+  "guard_result": "sticky refusal",
+  "meaning": "Privileged root sidecar poisoning changes SQLite contender lock protocol; main POSIX lock remained, no regular descriptor-close regression",
+  "scope": "Root/operator outside hostile-client model; actual different-UID injection denied separately"
+}
