@@ -1,6 +1,7 @@
 //! Standalone Rust HTTP process serving the existing cockpit on the API origin.
 mod backend;
 mod product_http;
+mod report_export;
 mod setup_http;
 use axum::{
     Router,

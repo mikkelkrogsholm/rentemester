@@ -34,7 +34,7 @@ export function IncomeStatementView() {
 
   const s = state.data!;
   const currency = s.company.currency || "DKK";
-  const priorYear = String(parseInt(s.selectedYear, 10) - 1);
+  const priorYear = s.priorYearLabel ?? String(parseInt(s.selectedYear, 10) - 1);
   const positive = s.result >= 0;
 
   return (

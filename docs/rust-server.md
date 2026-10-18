@@ -2,8 +2,8 @@
 
 Rust-serveren leverer det eksisterende React-cockpit og behandler selv login,
 ejeroprettelse, MFA, sessions, virksomhedsadgang, manuel bogføring, tilbageførsel
-og saldobalance. Den starter
-ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
+samt resultatopgørelse, balance og saldobalance med CSV/PDF-eksport. Den
+starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Prøv med syntetiske data
 
@@ -33,6 +33,17 @@ kræver fortsat bilag; domænekontrollen er ikke lempet for demoen.
 Ctrl-C stopper demoen og fjerner dens container og datavolume. Kun en separat
 Rust-buildcache bevares. Eksisterende virksomhedsdata bruges ikke.
 
+## Åbn og hent rapporter
+
+Under **Rapporter og planlægning** kan du åbne **Resultatopgørelse**, **Balance**
+og **Saldobalance**. Vælg regnskabsår og brug **Hent CSV** eller **Hent PDF** på
+rapportsiden. **Posteringer** kan også hentes som CSV, inklusive et valgt kontofilter.
+
+Sammenligningstal følger det valgte regnskabsår. Balancen viser «—», når der
+ikke findes et tidligere år i ledgeren. Momskonti placeres i aktiver eller
+passiver efter deres normale debet-/kreditside. PDF-filer med mange kontolinjer
+fordeles over flere sider. CSV bruger UTF-8, semikolon og danske decimalkommaer.
+
 ## Tilbagefør en postering
 
 Åbn posteringen under **Posteringer**, vælg **Tilbagefør postering**, og angiv
@@ -46,7 +57,7 @@ både originalen og tilbageførslen stadig indgår i historikken.
 
 ## Kontroller hele forløbet
 
-Med Playwrights Chromium installeret:
+Med Playwrights Chromium og `pdftotext` fra Poppler installeret:
 
 ```sh
 python3 scripts/rust/run-web-demo.py --check
@@ -60,7 +71,10 @@ Den kontrollerer derefter den bevarede postering og saldobalance samt, at
 samme idempotente bogføringskald ikke opretter en dublet. Et skærmbillede gemmes
 som `/tmp/rentemester-rust-first-journey.png`. Testen gennemfører også en tilbageførsel i browseren, kontrollerer originalens
 uforanderlighed og saldobalancen og afviser dobbelt tilbageførsel og tilbageførsel
-af en tilbageførsel. Testdata fjernes efter kørslen.
+af en tilbageførsel. Rapporttesten åbner alle tre rapportsider, bruger de
+rigtige downloadknapper og kontrollerer CSV-indhold, læsbar PDF-tekst og
+deterministiske PDF-bytes. Filerne gemmes i `/tmp/rentemester-rust-reports/`.
+Testdata fjernes fra Docker efter kørslen.
 
 ## Aktuel afgrænsning
 
@@ -78,5 +92,5 @@ og uden flaget genåbnes det eksisterende. `--origin` angiver browserens lokale
 origin, når serveren kører bag Docker-portmapping.
 
 Rust-cockpittets startside viser foreløbig virksomhedsvælgeren. Resten af
-porteføljeoverblikket, øvrige bogføringsforløb, eksport, desktop og produktionsdrift
+porteføljeoverblikket, øvrige bogførings-, rapport- og eksportforløb, desktop og produktionsdrift
 er fortsat under omskrivning. Denne demo er ikke den færdige Rust-migration.

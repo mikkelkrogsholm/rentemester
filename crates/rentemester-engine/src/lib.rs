@@ -2,6 +2,7 @@
 pub mod calendar;
 pub mod currency;
 mod decimal;
+pub mod financial_statements;
 pub mod fiscal_year;
 pub mod fx;
 pub mod identifiers;

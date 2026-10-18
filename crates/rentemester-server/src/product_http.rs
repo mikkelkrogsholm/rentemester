@@ -35,6 +35,9 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies", get(companies))
         .route("/api/companies/{slug}/journal", get(read))
         .route("/api/companies/{slug}/trial-balance", get(read))
+        .route("/api/companies/{slug}/income-statement", get(read))
+        .route("/api/companies/{slug}/balance", get(read))
+        .route("/api/companies/{slug}/{report}/export", get(read))
         .route("/api/companies/{slug}/fiscal-years", get(read))
         .route("/api/companies/{slug}/manual-journal", post(write))
         .route("/api/companies/{slug}/manual-journal-reversal", post(write))
@@ -125,6 +128,7 @@ async fn companies(State(state): State<Product>, request: Request) -> Response {
 struct Query {
     year: Option<String>,
     account: Option<String>,
+    format: Option<String>,
 }
 fn query(request: &Request) -> Result<Query, Box<Response>> {
     let mut result = Query::default();
@@ -133,6 +137,7 @@ fn query(request: &Request) -> Result<Query, Box<Response>> {
         let slot = match key.as_ref() {
             "year" => &mut result.year,
             "account" => &mut result.account,
+            "format" => &mut result.format,
             _ => return Err(Box::new(refused(StatusCode::BAD_REQUEST, "invalid_query"))),
         };
         if slot.is_some() || value.len() > 128 {
@@ -157,16 +162,35 @@ async fn read(State(state): State<Product>, request: Request) -> Response {
         Ok(v) => v,
         Err(r) => return *r,
     };
-    let resource = request.uri().path().rsplit('/').next().unwrap().to_owned();
+    let exporting = request.uri().path().ends_with("/export");
+    let resource = request
+        .uri()
+        .path()
+        .rsplit('/')
+        .nth(usize::from(exporting))
+        .unwrap()
+        .to_owned();
+    let format = query.format.clone().unwrap_or_else(|| "csv".into());
+    if (!exporting && query.format.is_some())
+        || (exporting
+            && !matches!(
+                resource.as_str(),
+                "journal" | "income-statement" | "balance" | "trial-balance"
+            ))
+    {
+        return refused(StatusCode::BAD_REQUEST, "invalid_export");
+    }
+    let today = chrono::DateTime::<chrono::Utc>::from(std::time::SystemTime::now())
+        .format("%Y-%m-%d")
+        .to_string();
+    let snapshot_today = today.clone();
     let Ok(permit) = state.workers.clone().try_acquire_owned() else {
         return refused(StatusCode::SERVICE_UNAVAILABLE, "busy");
     };
     let native = state.native;
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
-        let today = chrono::DateTime::<chrono::Utc>::from(std::time::SystemTime::now())
-            .format("%Y-%m-%d")
-            .to_string();
+        let today = snapshot_today;
         let mut owner = native.owner.lock().map_err(|_| ())?;
         owner
             .cockpit_snapshot(
@@ -188,9 +212,35 @@ async fn read(State(state): State<Product>, request: Request) -> Response {
                 let (key, value) = match resource.as_str() {
                     "journal" => ("journal", snapshot.journal),
                     "trial-balance" => ("trialBalance", snapshot.trial_balance),
+                    "income-statement" => ("incomeStatement", snapshot.income_statement),
+                    "balance" => ("balance", snapshot.balance),
                     _ => ("fiscalYears", snapshot.fiscal_years),
                 };
-                response(StatusCode::OK, json!({"ok":true,key:value}))
+                if exporting {
+                    let Some(export) =
+                        crate::report_export::build(&resource, &format, &value, &today)
+                    else {
+                        return refused(StatusCode::BAD_REQUEST, "invalid_export");
+                    };
+                    let disposition = format!("attachment; filename*=UTF-8''{}", export.filename);
+                    let mut reply = (StatusCode::OK, export.bytes).into_response();
+                    reply.headers_mut().insert(
+                        "content-type",
+                        axum::http::HeaderValue::from_static(export.content_type),
+                    );
+                    reply.headers_mut().insert(
+                        "content-disposition",
+                        axum::http::HeaderValue::from_str(&disposition)
+                            .expect("sanitized filename"),
+                    );
+                    reply.headers_mut().insert(
+                        "cache-control",
+                        axum::http::HeaderValue::from_static("private, no-store"),
+                    );
+                    reply
+                } else {
+                    response(StatusCode::OK, json!({"ok":true,key:value}))
+                }
             }
             Err(f) if f.error.code == "invalid_credentials" => {
                 refused(StatusCode::UNAUTHORIZED, "unauthorized")

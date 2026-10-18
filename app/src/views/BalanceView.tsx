@@ -97,7 +97,7 @@ export function BalanceView() {
               <th>Konto</th>
               <th>Navn</th>
               <th className="num">Pr. {b.asOfDate}</th>
-              <th className="num">Pr. {priorYear}-12-31</th>
+              <th className="num">Pr. {b.priorAsOfDate ?? `${priorYear}-12-31`}</th>
             </tr>
           </thead>
           <BalanceSection

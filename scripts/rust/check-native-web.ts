@@ -1,4 +1,5 @@
 // Real browser journey against run-web-demo.py --check; no intercepted requests or fixtures.
+import { checkNativeReports } from "./check-native-reports";
 import { checkNativeReversal } from "./check-native-reversal";
 import { chromium } from "@playwright/test";
 import { readFileSync, writeFileSync } from "node:fs";
@@ -110,6 +111,7 @@ try {
   if (rows.length !== 2 || !rows.every((row) => row.includes("125,50"))) throw new Error("Unexpected trial balance rows");
   await page.reload();
   await page.getByText("Saldobalancen stemmer — debet = kredit.", { exact: true }).waitFor();
+  await checkNativeReports(page, base);
   if (failures.length) throw new Error(`Browser errors: ${failures.join("; ")}`);
   await page.screenshot({ path: process.env.RM_NATIVE_WEB_SCREENSHOT ?? "/tmp/rentemester-rust-first-journey.png", fullPage: true });
   if (statePath) writeFileSync(statePath, JSON.stringify({ backup, postedBody }), { mode: 0o600 });

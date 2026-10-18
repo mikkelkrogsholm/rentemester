@@ -16,6 +16,7 @@ export type IncomeStatementLine = {
 };
 
 export type CompanyIncomeStatement = {
+  priorYearLabel?: string | null;
   slug: string;
   selectedYear: string;
   /** True when the figures are derived from the #197 archive. */
@@ -61,6 +62,7 @@ export type BalanceSection = {
 };
 
 export type CompanyBalance = {
+  priorAsOfDate?: string | null;
   slug: string;
   selectedYear: string;
   /** True when the figures are derived from the #197 archive. */
