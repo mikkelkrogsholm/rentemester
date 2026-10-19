@@ -353,6 +353,28 @@ impl Managed {
             thread::sleep(Duration::from_millis(50));
         }
     }
+    /// Non-secret identity from the exact owned, persisted profile configuration.
+    pub fn journal_identity(&self) -> Result<String, String> {
+        let path = self.profile.join("server.json");
+        private(&path, false, uid()?)?;
+        let mut bytes = Vec::new();
+        File::open(path)
+            .and_then(|f| f.take(65537).read_to_end(&mut bytes))
+            .map_err(|_| "Lokal identitet kunne ikke læses")?;
+        if bytes.len() > 65536 {
+            return Err("Lokal konfiguration overskrider grænsen".into());
+        }
+        let config: Value =
+            serde_json::from_slice(&bytes).map_err(|_| "Lokal konfiguration er ugyldig")?;
+        let workspace = config["workspace"]
+            .as_str()
+            .filter(|s| !s.is_empty())
+            .ok_or("Lokal workspace-identitet mangler")?;
+        if config["root"] != self.profile.join("workspace").to_string_lossy().as_ref() {
+            return Err("Den lokale datamappe har ændret sig".into());
+        }
+        Ok(json!([self.profile, workspace]).to_string())
+    }
     pub fn browser_url(&self) -> String {
         self.observation
             .lock()
