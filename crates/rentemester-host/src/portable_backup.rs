@@ -254,6 +254,7 @@ impl Owner {
                     .map_err(error)?;
                 let db = slots.company.as_ref().unwrap();
                 let facts = store::company(db)?;
+                super::invoice_email::validate_live_sources(db, &mut slots.guard)?;
                 store::validate_inbox_company(&tx, db, &c.slug)?;
                 companies.push(artifact::Company {
                     slug: c.slug.clone(),
@@ -577,6 +578,7 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
                 return Err(error("original differs"));
             }
         }
+        super::invoice_email::validate_archive_sources(&db, a, &c.slug)?;
         for hash in facts.bank_hashes {
             if !paths.contains_key(format!("{}/bank/processed/{hash}.txt", c.slug).as_str()) {
                 return Err(error("bank archive missing"));

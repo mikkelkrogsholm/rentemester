@@ -1292,3 +1292,5 @@ mod hosted_recurring;
 mod service_identity;
 
 mod password_recovery;
+
+mod invoice_email;
