@@ -1,7 +1,7 @@
 use super::*;
 use rentemester_storage::intercompany as source;
 use serde_json::json;
-fn signed_intercompany(wrong_uuid: bool, corrupt: bool) -> artifact::VerifiedArtifact {
+pub(super) fn signed_intercompany(wrong_uuid: bool, corrupt: bool) -> artifact::VerifiedArtifact {
     // Start with the exact pre-intercompany archive shape to retain backward acceptance.
     let old = tests::signed(false, false, false, false, false, None);
     let mut context = old.manifest().context.clone();

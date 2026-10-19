@@ -1,6 +1,10 @@
 //! Explicit credential-free business codec and full current native ledger checks.
 //! No path opens, archive parsing, signing, grants or operator authority.
+mod consolidation;
 mod corporate;
+pub use consolidation::{
+    initialize as initialize_consolidation, validate_companies as validate_consolidation_companies,
+};
 mod intercompany;
 mod ownership;
 pub use intercompany::{
@@ -46,13 +50,9 @@ const UNSUPPORTED: [(&str, &[&str]); 2] = [
             "rm_intercompany_disposition_lifecycle_events",
         ],
     ),
-    (
-        "consolidation",
-        &[
-            "rm_consolidation_profile_events",
-            "rm_consolidation_elimination_events",
-        ],
-    ),
+    // Preserve the legacy coverage bucket with exactly zero unencoded rows:
+    // both native consolidation tables are now authenticated by their codec.
+    ("consolidation", &[]),
 ];
 const KNOWLEDGE_FORMAT: &str = "rentemester-native-company-knowledge/1";
 const KNOWLEDGE_TABLES: [&str; 2] = [
@@ -132,6 +132,7 @@ pub struct Control {
     pub corporate_bytes: Vec<u8>,
     pub ownership_bytes: Vec<u8>,
     pub intercompany_bytes: Vec<u8>,
+    pub consolidation_bytes: Vec<u8>,
     pub unsupported: Vec<(&'static str, u64)>,
 }
 pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
@@ -163,6 +164,7 @@ pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
         corporate_bytes: corporate::export(tx)?,
         ownership_bytes: ownership::export(tx)?,
         intercompany_bytes: intercompany::export(tx)?,
+        consolidation_bytes: consolidation::export(tx)?,
         unsupported,
     })
 }

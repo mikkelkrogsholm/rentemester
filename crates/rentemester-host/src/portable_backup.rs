@@ -162,6 +162,14 @@ impl Owner {
                     .map(|c| c.slug.clone())
                     .collect::<Vec<_>>(),
             )?;
+            store::validate_consolidation_companies(
+                &tx,
+                &catalog
+                    .companies
+                    .iter()
+                    .map(|c| c.slug.clone())
+                    .collect::<Vec<_>>(),
+            )?;
             let mut entries = vec![];
             let mut companies = vec![];
             add(
@@ -305,12 +313,22 @@ impl Owner {
                     bytes: business.intercompany_bytes,
                 },
             )?;
+            add(
+                &mut entries,
+                artifact::Snapshot {
+                    kind: artifact::EntryKind::ControlBusiness {
+                        section: artifact::BusinessSection::Consolidation,
+                    },
+                    path: "control/consolidation.json".into(),
+                    bytes: business.consolidation_bytes,
+                },
+            )?;
             let unsupported = business
                 .unsupported
                 .into_iter()
-                // Dispositions are checked empty by the producer; this section
-                // authenticates the complete supported manifest/mapping codec.
-                .filter(|(name, _)| *name != "intercompany")
+                // Dispositions are checked empty; all known group, mapping,
+                // profile and elimination rows are encoded in signed sections.
+                .filter(|(name, _)| !["intercompany", "consolidation"].contains(name))
                 .map(|(name, record_count)| {
                     Ok(artifact::UnsupportedSection {
                         section: serde_json::from_value(serde_json::json!(name)).map_err(error)?,
@@ -333,6 +351,7 @@ impl Owner {
                         artifact::BusinessSection::CorporateRecords,
                         artifact::BusinessSection::Ownership,
                         artifact::BusinessSection::Intercompany,
+                        artifact::BusinessSection::Consolidation,
                     ],
                     unsupported,
                     excluded: artifact::Exclusion::ALL.to_vec(),
@@ -486,6 +505,7 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
                     | artifact::BusinessSection::CorporateRecords
                     | artifact::BusinessSection::Ownership
                     | artifact::BusinessSection::Intercompany
+                    | artifact::BusinessSection::Consolidation
             )
         })
     {
@@ -667,6 +687,23 @@ fn restore_business(
         store::initialize_intercompany(
             control,
             entry(artifact::BusinessSection::Intercompany)?.bytes(),
+            &a.manifest()
+                .context
+                .companies
+                .iter()
+                .map(|c| c.slug.clone())
+                .collect::<Vec<_>>(),
+        )?;
+    }
+    if a.manifest()
+        .context
+        .coverage
+        .included
+        .contains(&artifact::BusinessSection::Consolidation)
+    {
+        store::initialize_consolidation(
+            control,
+            entry(artifact::BusinessSection::Consolidation)?.bytes(),
             &a.manifest()
                 .context
                 .companies
@@ -1309,6 +1346,9 @@ mod tests {
         );
     }
 }
+#[cfg(test)]
+#[path = "portable_backup/consolidation_tests.rs"]
+mod consolidation_tests;
 #[cfg(test)]
 #[path = "portable_backup/intercompany_tests.rs"]
 mod intercompany_tests;
