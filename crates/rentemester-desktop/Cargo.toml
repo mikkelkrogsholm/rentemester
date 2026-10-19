@@ -1,0 +1,15 @@
+[package]
+name = "rentemester-desktop"
+version.workspace = true
+edition.workspace = true
+rust-version = "1.95"
+publish.workspace = true
+
+[dependencies]
+gpui-kit = "=0.7.3"
+rentemester-client = { path = "../rentemester-client" }
+serde_json.workspace = true
+tokio = { version = "1", features = ["rt-multi-thread"] }
+
+[lints]
+workspace = true
