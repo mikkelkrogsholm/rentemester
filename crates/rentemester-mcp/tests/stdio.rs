@@ -146,7 +146,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 47);
+    assert_eq!(tools.len(), 48);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -755,4 +755,62 @@ fn commitment_status_change_mcp_preserves_body_and_does_not_generate_key() {
     assert!(wire.starts_with(b"POST /api/companies/demo/supplier-commitments/change "));
     assert!(wire.ends_with(body.as_bytes()));
     task.join().unwrap();
+}
+
+#[test]
+fn annual_tool_is_readonly_and_preserves_preparation_blockers() {
+    let (origin, request, task) = http(
+        "HTTP/1.1 200 OK\r\nContent-Length: 73\r\nConnection:close\r\n\r\n{\"ok\":true,\"annualReport\":{\"report\":{\"ok\":false,\"errors\":[\"open year\"]}}}",
+    );
+    let output = run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "annual_report",
+                json!({"company":"synthetic","fiscalYearStart":"2020-01-01","fiscalYearEnd":"2020-12-31"}),
+            ),
+        ],
+    );
+    let values = parsed(&output);
+    assert_eq!(
+        values[1]["result"]["structuredContent"]["data"],
+        json!({"ok":true,"annualReport":{"report":{"ok":false,"errors":["open year"]}}})
+    );
+    let wire = String::from_utf8(request.recv().unwrap()).unwrap();
+    assert!(wire.starts_with("GET /api/companies/synthetic/annual-report?fiscalYearStart=2020-01-01&fiscalYearEnd=2020-12-31 HTTP/1.1"));
+    task.join().unwrap();
+    let discovery = parsed(&run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),
+        ],
+    ));
+    let tool = discovery[1]["result"]["tools"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|t| t["name"] == "annual_report")
+        .unwrap();
+    assert_eq!(tool["annotations"]["readOnlyHint"], true);
+    assert_eq!(tool["inputSchema"]["additionalProperties"], false);
+}
+#[test]
+fn annual_tool_rejects_bad_dates_and_extra_mutation_fields_without_http() {
+    for args in [
+        json!({"company":"synthetic"}),
+        json!({"company":"synthetic","fiscalYearStart":"2025-02-29","fiscalYearEnd":"2025-12-31"}),
+        json!({"company":"synthetic","fiscalYearStart":"2025-12-31","fiscalYearEnd":"2025-01-01"}),
+        json!({"company":"synthetic","fiscalYearStart":"2025-01-01","fiscalYearEnd":"2025-12-31","confirm":true}),
+    ] {
+        let values = parsed(&run(
+            "http://127.0.0.1:9",
+            &[init("2025-11-25"), ready(), call(2, "annual_report", args)],
+        ));
+        assert_eq!(values[1]["error"]["code"], -32602);
+    }
 }

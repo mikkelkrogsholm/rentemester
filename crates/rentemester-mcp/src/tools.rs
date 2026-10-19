@@ -129,6 +129,7 @@ pub fn list() -> Value {
     tools.extend(crate::periods::tools());
     tools.extend(crate::receivables::tools());
     tools.extend(crate::commitments::tools());
+    tools.extend(crate::annual_reports::tools());
     json!({"tools":tools})
 }
 pub(crate) fn native_body(schema: Value) -> Value {
@@ -192,6 +193,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     }
     let mut idempotency = None;
     let outcome = match name {
+        "annual_report" => crate::annual_reports::call(api, args).await?,
         name if crate::receivables::accepts(name) => {
             crate::receivables::call(api, name, args).await?
         }
