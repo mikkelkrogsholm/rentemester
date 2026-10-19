@@ -110,8 +110,14 @@ export async function checkNativeGdpr(page: Page, base: string, restarted = fals
   await page.getByText(/Originalfiler, øvrige kontaktfelter/).waitFor();
   await page.screenshot({ path: "/tmp/rentemester-rust-gdpr.png", fullPage: true });
   const retentionPageErrors: string[] = [];
+  const authResponses: Array<{ path: string; status: number }> = [];
+  const recordAuthResponse = (response: import("@playwright/test").Response) => {
+    const path = new URL(response.url()).pathname;
+    if (path === "/api/auth/get-session" || path === "/api/me") authResponses.push({ path, status: response.status() });
+  };
   const recordRetentionError = (error: Error) => retentionPageErrors.push(error.message);
   page.on("pageerror", recordRetentionError);
+  page.on("response", recordAuthResponse);
   try {
     const [response] = await Promise.all([
       page.waitForResponse(r => r.url() === `${url}/retention` && r.request().method() === "GET"),
@@ -121,9 +127,10 @@ export async function checkNativeGdpr(page: Page, base: string, restarted = fals
     await page.getByRole("heading", { name: "Opbevaring", exact: true }).waitFor();
   } catch (error) {
     await page.screenshot({ path: "/tmp/rentemester-rust-retention-failure.png", fullPage: true }).catch(() => {});
-    throw new Error(`Retention navigation failed at ${page.url()}; page errors: ${JSON.stringify(retentionPageErrors)}; ${error}`);
+    throw new Error(`Retention navigation failed at ${page.url()}; auth responses: ${JSON.stringify(authResponses)}; page errors: ${JSON.stringify(retentionPageErrors)}; ${error}`);
   } finally {
     page.off("pageerror", recordRetentionError);
+    page.off("response", recordAuthResponse);
   }
   console.log(restarted ? "PASS: GDPR overlays persist after restart, retained originals and journal unchanged; scoped identity fences and unrelated maintenance persist" : "PASS: real retention/GDPR UI → subject export/review → confirmed overlay; retained subject refused, scope/date/confirmation fenced and partial coverage disclosed");
 }

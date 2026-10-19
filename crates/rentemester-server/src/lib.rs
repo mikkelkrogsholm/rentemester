@@ -328,7 +328,12 @@ impl StateData {
             return false;
         }
         *count += 1;
-        *last = (*last).max(now);
+        // Read-only browser navigation has a bounded per-minute window, not
+        // a lifetime allowance that requires a full minute idle to recover.
+        // Credential and sensitive-operation cooldowns keep their existing semantics.
+        if !matches!(operation, Operation::Session | Operation::WorkspaceContext) {
+            *last = (*last).max(now);
+        }
         true
     }
 }

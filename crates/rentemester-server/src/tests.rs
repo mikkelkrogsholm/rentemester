@@ -174,6 +174,29 @@ fn sliding_rate_identity_capacity_and_boundary() {
 }
 
 #[test]
+fn navigation_read_budgets_replenish_without_a_minute_of_inactivity() {
+    let state = StateData {
+        origin: String::new(), authority: String::new(),
+        links: RecoveryLinks::new("https://example.invalid", &["https://example.invalid"], CookieProfile::Secure).unwrap(),
+        rate: Mutex::new(HashMap::new()), recovery: None, auth: None,
+        workers: Arc::new(Semaphore::new(4)), execute: None,
+    };
+    let now = Instant::now();
+    let ip = "192.0.2.15".parse().unwrap();
+    for operation in [Operation::Session, Operation::WorkspaceContext] {
+        for n in 0..120 {
+            assert!(state.allow_route_at(ip, operation, now + Duration::from_millis(n * 499)));
+        }
+        assert!(!state.allow_route_at(ip, operation, now + Duration::from_millis(59_999)));
+        assert!(state.allow_route_at(ip, operation, now + WINDOW));
+        for _ in 1..120 {
+            assert!(state.allow_route_at(ip, operation, now + WINDOW));
+        }
+        assert!(!state.allow_route_at(ip, operation, now + WINDOW));
+    }
+}
+
+#[test]
 fn profiles_and_strict_wire_refuse() {
     assert!(reset_router("http://127.0.0.1", CookieProfile::Secure, |_| Ok(())).is_err());
     assert!(

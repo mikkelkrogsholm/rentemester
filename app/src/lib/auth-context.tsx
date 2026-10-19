@@ -23,6 +23,7 @@ export type AuthState = {
   session: SessionUser | null;
   currentSessionId: string | null;
   context: SessionContext | null;
+  bootstrapError?: string | null;
   refresh: () => Promise<void>;
   clear: () => void;
 };
@@ -31,6 +32,10 @@ const AuthContext = createContext<AuthState | null>(null);
 
 async function currentSession(): Promise<{ user: SessionUser; sessionId: string | null } | null> {
   const result = await authClient.getSession();
+  if (result.error) {
+    if (result.error.status === 401) return null;
+    throw new ApiError("auth_unavailable", "Din session kunne ikke kontrolleres. Prøv igen.", result.error.status ?? 0);
+  }
   if (!result.data?.user) return null;
   return {
     user: result.data.user as SessionUser,
@@ -43,11 +48,13 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
   const [session, setSession] = useState<SessionUser | null>(null);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [context, setContext] = useState<SessionContext | null>(null);
+  const [bootstrapError, setBootstrapError] = useState<string | null>(null);
 
   const clear = useCallback(() => {
     setSession(null);
     setCurrentSessionId(null);
     setContext(null);
+    setBootstrapError(null);
   }, []);
 
   const refresh = useCallback(async () => {
@@ -56,6 +63,7 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
       return;
     }
     setLoading(true);
+    setBootstrapError(null);
     try {
       const current = await currentSession();
       const user = current?.user ?? null;
@@ -68,8 +76,12 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
       const value = await request<SessionContext & { ok: true }>("/api/me");
       setContext({ user: value.user, workspaceRole: value.workspaceRole, companies: value.companies });
     } catch (error) {
-      if (!(error instanceof ApiError) || error.code === "unauthorized") clear();
-      else clear();
+      if (error instanceof ApiError && (error.status === 401 || error.code === "unauthorized")) clear();
+      else {
+        // Unknown authentication is not a logout or permission to show stale books.
+        setContext(null);
+        setBootstrapError("Din session og adgang kunne ikke kontrolleres. Prøv igen.");
+      }
     } finally {
       setLoading(false);
     }
@@ -82,7 +94,7 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
     return () => window.removeEventListener("rentemester:auth-expired", onExpired);
   }, [clear]);
 
-  return <AuthContext.Provider value={{ loading, hosted, backend, session, currentSessionId, context, refresh, clear }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ loading, hosted, backend, session, currentSessionId, context, bootstrapError, refresh, clear }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthState {

@@ -162,11 +162,12 @@ export function App() {
 }
 
 function AuthGate() {
-  const { hosted, loading, session, context } = useAuth();
+  const { hosted, loading, session, context, bootstrapError, refresh } = useAuth();
   const location = useLocation();
   if (!hosted) return <CockpitApp />;
   if (loading) return <div className="state-msg">Kontrollerer din session…</div>;
   if (location.pathname === "/invite") return <InvitationView />;
+  if (bootstrapError) return <div className="state-msg" role="alert">{bootstrapError} <button type="button" onClick={() => void refresh()}>Prøv igen</button></div>;
   if (!session) return <AuthRecoveryRoutes />;
   if (!session.emailVerified) return <VerificationRequiredView />;
   if (!session.twoFactorEnabled) return <MfaEnrollmentView />;
