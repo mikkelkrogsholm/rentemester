@@ -6,7 +6,7 @@ use rentemester_engine::{
     fiscal_year::Date,
     sales_invoice::{Input, Line, Party, refused},
 };
-use rusqlite::{OptionalExtension, Transaction, params};
+use rusqlite::{Connection, OptionalExtension, Transaction, params};
 use serde::Deserialize;
 use serde_json::{Number, Value, json};
 #[derive(Deserialize)]
@@ -52,7 +52,7 @@ struct Template {
     active: bool,
     channel: String,
 }
-fn load(tx: &Transaction<'_>, id: i64) -> Result<Template, Error> {
+fn load(tx: &Connection, id: i64) -> Result<Template, Error> {
     tx.query_row("SELECT id,name,interval,interval_count,first_issue_date,next_issue_date,payment_terms_days,delivery_period_mode,payload_json,active,delivery_channel FROM recurring_invoice_templates WHERE id=?1",[id],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?,r.get(5)?,r.get(6)?,r.get(7)?,r.get::<_,String>(8)?,r.get(9)?,r.get(10)?))).optional().map_err(invalid)?.ok_or_else(||refused("recurring template not found")).and_then(|(id,name,interval,count,first,next,terms,mode,payload,active,channel)|Ok(Template{id,name,interval,count,first,next,terms,mode,payload:serde_json::from_str(&payload).map_err(invalid)?,active,channel}))
 }
 fn audit(
@@ -348,9 +348,9 @@ pub fn list(tx: &Transaction<'_>, slug: &str) -> Result<Value, Error> {
     Ok(json!({"slug":slug,"nativeRecurring":true,"templates":rows}))
 }
 /// Frozen specification for generation scheduling; excludes mutable next date/retirement.
-pub fn scheduled_spec(tx:&Transaction<'_>,id:i64)->Result<Value,Error>{let t=load(tx,id)?;if t.channel!="manual"{return Err(refused("only manual generation supported"));}Ok(json!({"id":t.id,"active":t.active,"specification":{"id":t.id,"name":t.name,"interval":t.interval,"intervalCount":t.count,"firstIssueDate":t.first,"paymentTermsDays":t.terms,"deliveryPeriodMode":t.mode,"payload":t.payload}}))}
-pub fn scheduled_date(tx:&Transaction<'_>,id:i64,index:u32)->Result<String,Error>{let t=load(tx,id)?;issue_date(&t.first,&t.interval,t.count,index)}
-pub fn scheduled_latest(tx:&Transaction<'_>,id:i64,as_of:&str)->Result<Option<u32>,Error>{let t=load(tx,id)?;if as_of<t.first.as_str(){Date::parse(as_of)?;return Ok(None);}period(&t,as_of).map(Some)}
+pub fn scheduled_spec(tx:&Connection,id:i64)->Result<Value,Error>{let t=load(tx,id)?;if t.channel!="manual"{return Err(refused("only manual generation supported"));}Ok(json!({"id":t.id,"active":t.active,"specification":{"id":t.id,"name":t.name,"interval":t.interval,"intervalCount":t.count,"firstIssueDate":t.first,"paymentTermsDays":t.terms,"deliveryPeriodMode":t.mode,"payload":t.payload}}))}
+pub fn scheduled_date(tx:&Connection,id:i64,index:u32)->Result<String,Error>{let t=load(tx,id)?;issue_date(&t.first,&t.interval,t.count,index)}
+pub fn scheduled_latest(tx:&Connection,id:i64,as_of:&str)->Result<Option<u32>,Error>{let t=load(tx,id)?;if as_of<t.first.as_str(){Date::parse(as_of)?;return Ok(None);}period(&t,as_of).map(Some)}
 
 #[cfg(test)]
 mod tests {

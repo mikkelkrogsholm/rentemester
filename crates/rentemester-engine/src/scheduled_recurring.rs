@@ -73,6 +73,14 @@ pub struct Dispatch {
     pub period_index: u32,
     pub confirm: bool,
 }
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Reconsent {
+    pub template_id: i64,
+    pub plan_hash: String,
+    pub reason: String,
+    pub confirm: bool,
+}
 pub fn selection(indices: &[u32]) -> Result<(), Error> {
     let mut v = indices.to_vec();
     v.sort_unstable();

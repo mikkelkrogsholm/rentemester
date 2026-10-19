@@ -114,7 +114,9 @@ fn enable(owner: &mut Owner, proof: &VerifiedCookie, id: i64) {
     .unwrap();
     call(owner, proof, Action::Enable(&input)).unwrap();
     let db = owner.held.0.as_ref().unwrap().company.as_ref().unwrap();
-    let error = rentemester_storage::portable_backup::company(db).err().expect("nonempty scheduling cannot be silently omitted from backup");
+    let error = rentemester_storage::portable_backup::company(db)
+        .err()
+        .expect("nonempty scheduling cannot be silently omitted from backup");
     assert_eq!(error.code, "portable_backup_refused");
     assert!(error.message.contains("scheduled recurring history"));
 }
@@ -306,4 +308,113 @@ fn scheduled_recurring_other_authorized_user_can_stop_but_cannot_inherit_consent
     let cancel=serde_json::from_value(json!({"templateId":id,"expectedStateHash":p["stateHash"],"reason":"Other current owner cancels generation","confirm":true})).unwrap();
     call(&mut owner, &other, Action::Cancel(&cancel)).unwrap();
     assert!(dispatch(&mut owner, &proof, id, 0).is_err());
+}
+
+#[test]
+fn restored_scheduler_requires_current_admin_review_and_preserves_originals() {
+    let (dir, mut owner, cookies, proof, uid) = setup();
+    let id = template(&mut owner, &proof, "2025-12-18");
+    enable(&mut owner, &proof, id);
+    let p = plan(&mut owner, &proof, id);
+    let select = serde_json::from_value(
+        json!({"templateId":id,"planHash":p["planHash"],"periodIndexes":[0],"confirm":true}),
+    )
+    .unwrap();
+    call(&mut owner, &proof, Action::CatchUp(&select)).unwrap();
+    let issued = dispatch(&mut owner, &proof, id, 2).unwrap();
+    let doc = issued["generation"]["documentId"].as_i64().unwrap();
+    let source = plan(&mut owner, &proof, id);
+    let raw = |owner: &Owner| -> Vec<String> {
+        let db = owner.held.0.as_ref().unwrap().company.as_ref().unwrap();
+        let mut q = db
+            .prepare("SELECT canonical_payload FROM native_scheduled_recurring_events ORDER BY id")
+            .unwrap();
+        q.query_map([], |r| r.get(0))
+            .unwrap()
+            .collect::<Result<_, _>>()
+            .unwrap()
+    };
+    let original_events = raw(&owner);
+    {
+        let db = owner.held.0.as_mut().unwrap().company.as_mut().unwrap();
+        rentemester_storage::scheduled_recurring::validate_backup(db).unwrap();
+        let tx = db.transaction().unwrap();
+        rentemester_storage::scheduled_recurring::append_restore_boundary(&tx, &"a".repeat(64))
+            .unwrap();
+        tx.commit().unwrap();
+    }
+    assert_eq!(raw(&owner), original_events);
+    let restored = plan(&mut owner, &proof, id);
+    assert_eq!(restored["restoreConsent"]["required"], true);
+    assert_eq!(restored["restoreConsent"]["historicalOwnerUserId"], "u");
+    assert_eq!(
+        restored["restoreConsent"]["historicalQueued"][0]["periodIndex"],
+        0
+    );
+    assert!(restored["normalDue"].is_null());
+    assert_eq!(restored["queued"], json!([]));
+    assert_ne!(source["planHash"], restored["planHash"]);
+    assert!(dispatch(&mut owner, &proof, id, 0).is_err());
+    let stale=serde_json::from_value(json!({"templateId":id,"planHash":source["planHash"],"reason":"Review restored source","confirm":true})).unwrap();
+    assert!(call(&mut owner, &proof, Action::Reconsent(&stale)).is_err());
+    let input=serde_json::from_value(json!({"templateId":id,"planHash":restored["planHash"],"reason":"Review restored source","confirm":true})).unwrap();
+    owner.held.0.as_mut().unwrap().control.as_mut().unwrap().execute_batch("INSERT INTO user(id,name,email,emailVerified,twoFactorEnabled,createdAt,updatedAt)VALUES('r','Restored owner','r@example.invalid',1,1,'2026-01-01','2026-01-01');INSERT INTO twoFactor(id,secret,backupCodes,userId,verified)VALUES('rf','synthetic','[]','r',1);INSERT INTO session(id,userId,token,createdAt,updatedAt,expiresAt)VALUES('rs','r','restored-token','2026-01-01T00:00:00.000Z','2026-01-01T00:00:00.000Z','2026-01-01T12:00:00.000Z');INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('r','activate','workspace_owner','user:u');").unwrap();
+    let cookie = cookies.issue_session("restored-token").unwrap();
+    let new_owner = cookies
+        .verify(Some(cookie.set_cookie().split(';').next().unwrap()), None)
+        .unwrap();
+    // A current bookkeeper may read/generate under ordinary consent, but cannot create restored authority.
+    owner.held.0.as_mut().unwrap().control.as_mut().unwrap().execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('r','a','grant','bookkeeper','user:u')").unwrap();
+    assert!(call(&mut owner, &new_owner, Action::Reconsent(&input)).is_err());
+    owner.held.0.as_mut().unwrap().control.as_mut().unwrap().execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('r','a','grant','owner','user:u')").unwrap();
+    let result = call(&mut owner, &new_owner, Action::Reconsent(&input)).unwrap();
+    let mut expected = restored["restoreConsent"].clone();
+    expected["required"] = json!(false);
+    assert_eq!(result["scheduledRecurring"]["restoreConsent"], expected);
+    assert_eq!(result["scheduledRecurring"]["ownerUserId"], "r");
+    assert!(dispatch(&mut owner, &proof, id, 0).is_err()); // historical queue never reactivated
+    assert!(dispatch(&mut owner, &proof, id, 2).is_err()); // resolved period never duplicates
+    assert_eq!(raw(&owner)[..original_events.len()], original_events);
+    {
+        let db = owner.held.0.as_mut().unwrap().company.as_mut().unwrap();
+        rentemester_storage::scheduled_recurring::validate_backup(db).unwrap();
+        let tx = db.transaction().unwrap();
+        rentemester_storage::scheduled_recurring::append_restore_boundary(&tx, &"b".repeat(64))
+            .unwrap();
+        tx.commit().unwrap();
+    }
+    let again = call(&mut owner, &proof, Action::List).unwrap();
+    assert_eq!(
+        again["scheduledRecurring"]["rows"][0]["restoreConsent"]["required"],
+        true
+    );
+    owner.try_close().unwrap();
+    let mut owner = Owner::open_with_profile(
+        &dir.path().canonicalize().unwrap().join("workspace"),
+        uid,
+        "w",
+        "a",
+        NamespaceProfile::LocalUserMacos,
+    )
+    .unwrap();
+    assert_eq!(call(&mut owner, &proof, Action::List).unwrap(), again);
+    assert!(
+        !owner
+            .document_original(&proof, &Fixed(NOW), doc)
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value
+            .bytes
+            .is_empty()
+    );
+    let db = owner.held.0.as_mut().unwrap().company.as_mut().unwrap();
+    // A registered PDF metadata cross-reference must not silently disappear from a signed backup.
+    let (trigger, ddl):(String,String)=db.query_row("SELECT name,sql FROM sqlite_master WHERE type='trigger' AND sql LIKE '%issued invoice PDF evidence is immutable and cannot be updated%'",[],|r|Ok((r.get(0)?,r.get(1)?))).unwrap();
+    db.execute_batch(&format!("DROP TRIGGER {trigger}"))
+        .unwrap();
+    db.execute("UPDATE documents SET mime_type='application/octet-stream' WHERE document_type='issued_invoice_pdf'",[]).unwrap();
+    db.execute_batch(&ddl).unwrap(); // restore exact physical schema; validator must detect the corrupted evidence
+
+    assert!(rentemester_storage::scheduled_recurring::validate_backup(db).is_err());
 }

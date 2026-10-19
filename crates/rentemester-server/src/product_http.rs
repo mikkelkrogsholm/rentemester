@@ -167,6 +167,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/scheduled-recurring", get(scheduled_recurring::handle))
         .route("/api/companies/{slug}/scheduled-recurring/{id}/plan", get(scheduled_recurring::handle))
         .route("/api/companies/{slug}/scheduled-recurring/enable", post(scheduled_recurring::handle))
+        .route("/api/companies/{slug}/scheduled-recurring/reconsent", post(scheduled_recurring::handle))
         .route("/api/companies/{slug}/scheduled-recurring/pause", post(scheduled_recurring::handle))
         .route("/api/companies/{slug}/scheduled-recurring/resume", post(scheduled_recurring::handle))
         .route("/api/companies/{slug}/scheduled-recurring/cancel", post(scheduled_recurring::handle))

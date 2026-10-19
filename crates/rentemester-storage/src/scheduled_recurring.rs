@@ -4,11 +4,15 @@ use rentemester_engine::{
     Error,
     scheduled_recurring::{self as engine, Occurrence, refused},
 };
-use rusqlite::{OptionalExtension, Transaction, params};
+use rusqlite::{Connection, OptionalExtension, Transaction, params};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
+mod recovery;
+use recovery::RestoreConsent;
+pub use recovery::{append_restore_boundary, validate_backup};
+
 pub fn sha(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
 }
@@ -42,6 +46,16 @@ struct Payload {
     actor: String,
     at: String,
     data: Data,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    restored_consent: Option<ReconsentProof>,
+}
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ReconsentProof {
+    consent_kind: String,
+    boundary_hash: String,
+    reason: String,
+    reviewed_plan: Value,
 }
 #[derive(Clone)]
 struct Event {
@@ -58,8 +72,9 @@ struct State {
     last: Option<Value>,
     error: Option<String>,
     history: Vec<Value>,
+    restore: Option<RestoreConsent>,
 }
-fn spec(tx: &Transaction<'_>, id: i64) -> Result<(String, bool), Error> {
+fn spec(tx: &Connection, id: i64) -> Result<(String, bool), Error> {
     let v = recurring::scheduled_spec(tx, id)?;
     Ok((
         sha(v["specification"].to_string().as_bytes()),
@@ -69,7 +84,7 @@ fn spec(tx: &Transaction<'_>, id: i64) -> Result<(String, bool), Error> {
 fn chain_hash(previous: &str, payload: &str) -> String {
     sha(json!([previous, payload]).to_string().as_bytes())
 }
-fn events(tx: &Transaction<'_>) -> Result<Vec<Event>, Error> {
+fn events(tx: &Connection) -> Result<Vec<Event>, Error> {
     if !schema::installed(tx)? {
         return Ok(vec![]);
     }
@@ -96,7 +111,9 @@ fn events(tx: &Transaction<'_>) -> Result<Vec<Event>, Error> {
     for (id, template, kind, hash, actor, canonical, prev, event_hash, at) in rows {
         let p: Payload = serde_json::from_str(&canonical).map_err(invalid)?;
         if id != result.len() as i64 + 1
-            || p.version != 1
+            || !matches!(p.version, 1 | 2)
+            || (p.version == 1 && p.restored_consent.is_some())
+            || (p.version == 2 && (p.kind != "enabled" || p.restored_consent.is_none()))
             || p.template_id != template
             || p.kind != kind
             || p.template_hash != hash
@@ -133,7 +150,7 @@ fn events(tx: &Transaction<'_>) -> Result<Vec<Event>, Error> {
     }
     Ok(result)
 }
-fn state(tx: &Transaction<'_>, id: i64, hash: &str, all: &[Event]) -> Result<State, Error> {
+fn state(tx: &Connection, id: i64, hash: &str, all: &[Event]) -> Result<State, Error> {
     let mut s = State {
         state: "disabled",
         owner: None,
@@ -143,11 +160,54 @@ fn state(tx: &Transaction<'_>, id: i64, hash: &str, all: &[Event]) -> Result<Sta
         last: None,
         error: None,
         history: vec![],
+        restore: None,
     };
     let mut pending: Option<Occurrence> = None;
+    let boundaries = recovery::boundaries(tx, all)?;
+    let mut boundary_index = 0;
     for e in all.iter().filter(|e| e.payload.template_id == id) {
+        while boundaries
+            .get(boundary_index)
+            .is_some_and(|b| b.imported_high() < e.id)
+        {
+            recovery::overlay(&mut s, &boundaries[boundary_index]);
+            boundary_index += 1;
+        }
+
         let p = &e.payload;
         let d = &p.data;
+        if let Some(consent) = &p.restored_consent {
+            let required = s
+                .restore
+                .as_ref()
+                .filter(|r| r.required)
+                .ok_or_else(refused)?;
+            let review = &consent.reviewed_plan;
+            let mut canonical = review.clone();
+            let reviewed_hash = canonical
+                .as_object_mut()
+                .ok_or_else(refused)?
+                .remove("planHash")
+                .ok_or_else(refused)?;
+            if p.version != 2
+                || consent.consent_kind != "restored_reconsent"
+                || consent.boundary_hash != required.boundary_hash
+                || engine::reason(&consent.reason)? != consent.reason
+                || !d.occurrences.is_empty()
+                || d.reason.is_some()
+                || d.reviewed_plan.is_some()
+                || d.generation.is_some()
+                || d.error.is_some()
+                || reviewed_hash != sha(canonical.to_string().as_bytes())
+                || review["templateId"] != id
+                || review["templateHash"] != hash
+                || review["stateHash"] != s.hash
+                || review["restoreConsent"] != json!(required)
+                || review["template"] != recurring::scheduled_spec(tx, id)?["specification"]
+            {
+                return Err(refused());
+            }
+        }
         let planned = matches!(p.kind.as_str(), "queued" | "skipped" | "attempted");
         if planned != d.reviewed_plan.is_some()
             || (!matches!(p.kind.as_str(), "succeeded") && d.generation.is_some())
@@ -190,7 +250,17 @@ fn state(tx: &Transaction<'_>, id: i64, hash: &str, all: &[Event]) -> Result<Sta
             return Err(refused());
         }
         match p.kind.as_str() {
-            "enabled" if s.state == "disabled" && d.occurrences.is_empty() => {
+            "enabled"
+                if p.version == 2
+                    && s.state == "paused"
+                    && s.restore.as_ref().is_some_and(|r| r.required)
+                    && pending.is_none() =>
+            {
+                s.state = "enabled";
+                s.owner = Some(p.actor.clone());
+                s.restore.as_mut().unwrap().required = false;
+            }
+            "enabled" if p.version == 1 && s.state == "disabled" && d.occurrences.is_empty() => {
                 s.state = "enabled";
                 s.owner = Some(p.actor.clone());
             }
@@ -274,8 +344,12 @@ fn state(tx: &Transaction<'_>, id: i64, hash: &str, all: &[Event]) -> Result<Sta
         }
         s.hash = e.hash.clone();
         s.history.push(
-            json!({"id":e.id,"kind":p.kind,"actor":p.actor,"at":p.at,"data":d,"eventHash":e.hash}),
+            json!({"id":e.id,"kind":p.kind,"actor":p.actor,"at":p.at,"data":d,"eventHash":e.hash,"version":p.version,"restoredConsent":p.restored_consent}),
         );
+    }
+    while boundary_index < boundaries.len() {
+        recovery::overlay(&mut s, &boundaries[boundary_index]);
+        boundary_index += 1;
     }
     Ok(s)
 }
@@ -287,30 +361,80 @@ fn append(
     at: &str,
     data: Data,
 ) -> Result<(), Error> {
-    let all = events(tx)?;
-    let hash = spec(tx, id)?.0;
-    let prev = all
-        .last()
-        .map(|e| e.hash.clone())
-        .unwrap_or_else(|| "0".repeat(64));
-    let p = Payload {
+    let payload = Payload {
         version: 1,
         template_id: id,
-        template_hash: hash.clone(),
+        template_hash: spec(tx, id)?.0,
         kind: kind.into(),
         actor: actor.into(),
         at: at.into(),
         data,
+        restored_consent: None,
     };
+    append_payload(tx, payload)
+}
+fn append_payload(tx: &Transaction<'_>, p: Payload) -> Result<(), Error> {
+    let all = events(tx)?;
+    let prev = all
+        .last()
+        .map(|e| e.hash.clone())
+        .unwrap_or_else(|| "0".repeat(64));
     let canonical = serde_json::to_string(&p).map_err(invalid)?;
     let event_hash = chain_hash(&prev, &canonical);
-    tx.execute("INSERT INTO native_scheduled_recurring_events(id,template_id,kind,template_hash,actor,canonical_payload,previous_hash,event_hash,created_at) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)",params![all.len()as i64+1,id,kind,hash,actor,canonical,prev,event_hash,at]).map_err(invalid)?;
+    tx.execute("INSERT INTO native_scheduled_recurring_events(id,template_id,kind,template_hash,actor,canonical_payload,previous_hash,event_hash,created_at) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)",params![all.len()as i64+1,p.template_id,p.kind,p.template_hash,p.actor,canonical,prev,event_hash,p.at]).map_err(invalid)?;
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('scheduled_recurring','recurring_invoice_template',?1,?2,?3)",params![p.template_id.to_string(),p.kind,format!("user:{}",p.actor)]).map_err(invalid)?;
     let updated = events(tx)?;
-    state(tx, id, &hash, &updated)?;
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('scheduled_recurring','recurring_invoice_template',?1,?2,?3)",params![id.to_string(),kind,format!("user:{actor}")]).map_err(invalid)?;
+    state(tx, p.template_id, &p.template_hash, &updated)?;
     Ok(())
 }
-fn resolved(tx: &Transaction<'_>, id: i64, s: &State) -> Result<BTreeSet<u32>, Error> {
+/// Fresh current CompanyAdmin authorization is enforced by the application fence.
+pub fn reconsent(
+    tx: &Transaction<'_>,
+    i: &engine::Reconsent,
+    actor: &str,
+    today: &str,
+    at: &str,
+) -> Result<Value, Error> {
+    crate::journal_post::require_current(tx)?;
+    let (hash, active) = spec(tx, i.template_id)?;
+    let s = state(tx, i.template_id, &hash, &events(tx)?)?;
+    let required = s
+        .restore
+        .as_ref()
+        .filter(|r| r.required)
+        .ok_or_else(refused)?;
+    let p = plan_from(tx, i.template_id, today, &hash, &s)?;
+    let reason = engine::reason(&i.reason)?;
+    if !i.confirm
+        || !active
+        || s.state != "paused"
+        || s.error.as_deref() == Some("unresolved_attempt")
+        || p["planHash"] != i.plan_hash
+    {
+        return Err(refused());
+    }
+    let proof = ReconsentProof {
+        consent_kind: "restored_reconsent".into(),
+        boundary_hash: required.boundary_hash.clone(),
+        reason: reason.into(),
+        reviewed_plan: p,
+    };
+    append_payload(
+        tx,
+        Payload {
+            version: 2,
+            template_id: i.template_id,
+            template_hash: hash,
+            kind: "enabled".into(),
+            actor: actor.into(),
+            at: at.into(),
+            data: Data::empty(),
+            restored_consent: Some(proof),
+        },
+    )?;
+    current(tx, i.template_id, today)
+}
+fn resolved(tx: &Connection, id: i64, s: &State) -> Result<BTreeSet<u32>, Error> {
     let mut set = s.resolved.clone();
     let mut q = tx
         .prepare("SELECT period_index FROM recurring_invoice_generations WHERE template_id=?1")
@@ -320,13 +444,7 @@ fn resolved(tx: &Transaction<'_>, id: i64, s: &State) -> Result<BTreeSet<u32>, E
     }
     Ok(set)
 }
-fn plan_from(
-    tx: &Transaction<'_>,
-    id: i64,
-    today: &str,
-    hash: &str,
-    s: &State,
-) -> Result<Value, Error> {
+fn plan_from(tx: &Connection, id: i64, today: &str, hash: &str, s: &State) -> Result<Value, Error> {
     let completed = resolved(tx, id, s)?;
     let latest = recurring::scheduled_latest(tx, id, today)?;
     let mut missed = vec![];
@@ -366,7 +484,7 @@ fn plan_from(
             }
         }
     }
-    let mut p = json!({"templateId":id,"template":recurring::scheduled_spec(tx,id)?["specification"],"templateHash":hash,"stateHash":s.hash,"asOfDate":today,"normalDue":normal,"missed":missed,"missedCount":missed_count,"truncated":missed_count as usize>missed.len(),"queued":s.queued.values().collect::<Vec<_>>()});
+    let mut p = json!({"templateId":id,"template":recurring::scheduled_spec(tx,id)?["specification"],"templateHash":hash,"stateHash":s.hash,"asOfDate":today,"normalDue":normal,"missed":missed,"missedCount":missed_count,"truncated":missed_count as usize>missed.len(),"queued":s.queued.values().collect::<Vec<_>>(),"restoreConsent":s.restore});
     let h = sha(p.to_string().as_bytes());
     p["planHash"] = json!(h);
     Ok(p)
@@ -377,7 +495,7 @@ pub fn plan(tx: &Transaction<'_>, id: i64, today: &str) -> Result<Value, Error> 
     let s = state(tx, id, &hash, &events(tx)?)?;
     plan_from(tx, id, today, &hash, &s)
 }
-pub fn current(tx: &Transaction<'_>, id: i64, today: &str) -> Result<Value, Error> {
+pub fn current(tx: &Connection, id: i64, today: &str) -> Result<Value, Error> {
     let (hash, active) = spec(tx, id)?;
     let s = state(tx, id, &hash, &events(tx)?)?;
     let p = plan_from(tx, id, today, &hash, &s)?;
@@ -401,7 +519,7 @@ pub fn current(tx: &Transaction<'_>, id: i64, today: &str) -> Result<Value, Erro
         }
     };
     Ok(
-        json!({"templateId":id,"templateHash":hash,"state":s.state,"stateHash":s.hash,"ownerUserId":s.owner,"lastRun":s.last,"nextOccurrence":if active{Some(next)}else{None},"missedCount":p["missedCount"],"queued":p["queued"],"error":if !active{Some("template_retired".into())}else{s.error},"history":s.history}),
+        json!({"templateId":id,"templateHash":hash,"state":s.state,"stateHash":s.hash,"ownerUserId":s.owner,"lastRun":s.last,"nextOccurrence":if active{Some(next)}else{None},"missedCount":p["missedCount"],"queued":p["queued"],"error":if !active{Some("template_retired".into())}else{s.error},"history":s.history,"restoreConsent":s.restore}),
     )
 }
 pub fn list(tx: &Transaction<'_>, slug: &str, today: &str) -> Result<Value, Error> {
@@ -445,7 +563,12 @@ pub fn change(
         || i.expected_state_hash != s.hash
         || !match kind {
             "paused" => s.state == "enabled",
-            "resumed" => s.state == "paused" && active && s.owner.as_deref() == Some(actor),
+            "resumed" => {
+                s.state == "paused"
+                    && active
+                    && s.owner.as_deref() == Some(actor)
+                    && !s.restore.as_ref().is_some_and(|r| r.required)
+            }
             "cancelled" => matches!(s.state, "enabled" | "paused"),
             _ => false,
         }
@@ -473,7 +596,12 @@ pub fn select(
     let (template_hash, active) = spec(tx, id)?;
     let s = state(tx, id, &template_hash, &events(tx)?)?;
     let p = plan_from(tx, id, today, &template_hash, &s)?;
-    if !confirmed || !active || p["planHash"] != hash || !matches!(s.state, "enabled" | "paused") {
+    if s.restore.as_ref().is_some_and(|r| r.required)
+        || !confirmed
+        || !active
+        || p["planHash"] != hash
+        || !matches!(s.state, "enabled" | "paused")
+    {
         return Err(refused());
     }
     let available: Vec<Occurrence> =
@@ -514,7 +642,8 @@ pub fn begin(
     let (hash, active) = spec(tx, i.template_id)?;
     let s = state(tx, i.template_id, &hash, &events(tx)?)?;
     let p = plan_from(tx, i.template_id, today, &hash, &s)?;
-    if !i.confirm
+    if s.restore.as_ref().is_some_and(|r| r.required)
+        || !i.confirm
         || !active
         || s.state != "enabled"
         || s.owner.as_deref() != Some(actor)

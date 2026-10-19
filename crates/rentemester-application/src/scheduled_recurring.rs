@@ -22,6 +22,7 @@ pub enum Action<'a> {
     CatchUp(&'a engine::Selection),
     Skip(&'a engine::Skip),
     Dispatch(&'a engine::Dispatch),
+    Reconsent(&'a engine::Reconsent),
 }
 #[allow(clippy::too_many_arguments)]
 pub fn execute(
@@ -45,12 +46,17 @@ pub fn execute(
         context.selection,
         if matches!(action, Action::List | Action::Plan(_)) {
             Permission::CompanyRead
+        } else if matches!(action, Action::Reconsent(_)) {
+            Permission::CompanyAdmin
         } else {
             Permission::CompanyDraftWrite
         },
         |tx, actor| match action {
             Action::List => Ok(json!({"scheduledRecurring":storage::list(tx,slug,today)?})),
             Action::Plan(id) => Ok(json!({"plan":storage::plan(tx,id,today)?})),
+            Action::Reconsent(i) => {
+                Ok(json!({"scheduledRecurring":storage::reconsent(tx,i,actor,today,now)?}))
+            }
             Action::Enable(i) => {
                 Ok(json!({"scheduledRecurring":storage::enable(tx,i,actor,today,now)?}))
             }

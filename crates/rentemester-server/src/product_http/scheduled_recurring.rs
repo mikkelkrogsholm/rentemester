@@ -12,6 +12,7 @@ enum Command {
     CatchUp(engine::Selection),
     Skip(engine::Skip),
     Dispatch(engine::Dispatch),
+    Reconsent(engine::Reconsent),
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
     let path = request.uri().path().to_owned();
@@ -39,6 +40,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         };
         let action = path.rsplit('/').next();
         let parsed = match action {
+            Some("reconsent") => serde_json::from_slice(&bytes).map(Command::Reconsent),
             Some("enable") => serde_json::from_slice(&bytes).map(Command::Enable),
             Some("pause") => serde_json::from_slice(&bytes).map(Command::Pause),
             Some("resume") => serde_json::from_slice(&bytes).map(Command::Resume),
@@ -79,6 +81,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let action = match &command {
             Command::List => Action::List,
             Command::Plan(id) => Action::Plan(*id),
+            Command::Reconsent(i) => Action::Reconsent(i),
             Command::Enable(i) => Action::Enable(i),
             Command::Pause(i) => Action::Pause(i),
             Command::Resume(i) => Action::Resume(i),
