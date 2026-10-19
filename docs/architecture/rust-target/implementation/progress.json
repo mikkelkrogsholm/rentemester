@@ -860,6 +860,18 @@
         "/tmp/rm-transfer56-mcp-tests.log"
       ],
       "mcp_tools": 170
+    },
+    "platform57_pending_checks": {
+      "sdk_tests": "/tmp/rm-platform57-client-tests.log (4 PASS)",
+      "cli_tests": "/tmp/rm-platform57-cli-tests.log (1 PASS)",
+      "mcp_tests": "/tmp/rm-platform57-mcp-tests.log (86 PASS;175tools)",
+      "clients_clippy": "/tmp/rm-platform57-clients-clippy2.log (PASS)",
+      "web_tests": "/tmp/rm-group57-web-tests.log (22 PASS)",
+      "root_web_build": "/tmp/rm-platform57-root-web-build.log (PASS)",
+      "purchase_vat_tests": "/tmp/rm-batch57-vat-tests.log (4 PASS)",
+      "expense_regression": "/tmp/rm-batch57-expense-regression.log (2 PASS)",
+      "purchase_vat_clippy": "/tmp/rm-batch57-vat-clippy.log (PASS)",
+      "scope": "Component evidence only. Whole Group57 workflow not yet qualified."
     }
   },
   "verified_history": [
@@ -1293,14 +1305,15 @@
         "Batch core consumes transaction-local rule and stored VAT/purchase proof adapters; web consumes exact source-shaped routes."
       ],
       "acceptance": "Two original-linked purchases, exact persisted plan, distinct current reviewer, atomic two-posting apply with real audit/TB/range reconciliation/VAT checks; stale/self/authority/fence/rollback/replay/restart proof.",
-      "status": "Four isolated implementation tracks started; no Group57 completion claim.",
-      "execution_policy": "New native atomic_v1 revisions require whole-operation rollback (R23). TypeScript legacy batches use tested partial/resume semantics; preserve their historical bytes and approvals for inspection, refuse native execution of unversioned revisions, and keep full backend parity open. No source TypeScript change or retirement claim."
+      "status": "Rules integrated ad49a5de, purchase/VAT integrated b966dcbb, web integrated8fee0d6f. Thin clients integrated00da872a pass SDK4/CLI1/MCP86 and strict3pkg; core/transport integration and actual two-user browser/restart pending. No Group57 completion claim.",
+      "execution_policy": "New native atomic_v1 revisions require whole-operation rollback (R23). TypeScript legacy batches use tested partial/resume semantics; preserve their historical bytes and approvals for inspection, refuse native execution of unversioned revisions, and keep full backend parity open. No source TypeScript change or retirement claim.",
+      "recovery": "Persist binds explicit caller runKey and reviewed expectedPlanHash. Lost runId recovers through current-authorized read-only exact runKey lookup; no automatic mutation retry."
     }
   ],
   "integrated_pending_browser": [
     "Actual native financial/scheduling GUI remains unqualified after bounded keyboard and focus-repair attempt; no blind repetition.",
     "Actual standalone macOS copied bundle/Finder/signing/notarization and production Linux/HTTPS/provider deployment remain unqualified.",
-    "Other hosted jobs, external provider effects and J06 managed handoff remain incomplete.",
+    "Other hosted jobs/provider effects and remaining J06 receipt families/rollback/old-software boundaries remain incomplete; the bounded Group56 managed handoff is verified.",
     "Group53 actual V3 recovery uses one signed archive and one fresh restore; second restore/reconsent/new worker, sleep/DST and global single-use are not qualified."
   ],
   "pending_deliveries": [],
