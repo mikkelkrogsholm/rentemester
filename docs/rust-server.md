@@ -953,8 +953,8 @@ opbevaring. Originalfilen må højst være 25 MiB; JSON-upload må højst være
 35 MiB. MCP tillader kun den større inputramme ved `ingest_document`; andre
 værktøjer beholder deres grænse på 1 MiB. Original-læsningen returnerer
 filtype og præcise bytes. Agentværktøjerne er bygget og kontrakttestet. Indlæsning, afvisninger og
-præcise originalbytes har også bestået den første samlede browserfase;
-den seneste kørsel nåede endnu ikke genstartskontrollen.
+præcise originalbytes har bestået både den første samlede browserfase og
+genstartskontrollen gennem den rigtige Rust-server (Group18).
 
 Desktop har bilagsliste, valg af original, manuelt angivne bilagsfelter,
 gennemgang og bekræftet upload. Filens SHA-256 sammenholdes med serverens
@@ -969,8 +969,13 @@ udgående banklinje, omkostningskonto og udtrykkelig momsbehandling. Serveren
 validerer og bogfører de præcist bekræftede valg; appen genlæser bilag,
 bankafstemning, journal og regnskabstal. Den native levering bestod 55 tests
 og build. Ved integration blev en manglende afkrydsning til originalgennemgang
-rettet; faktisk vinduesaccept udestår. Ubetalte køb og valutakøb er endnu ikke
-omfattet af dette desktopforløb.
+rettet; faktisk vinduesaccept udestår. Valutakøb er endnu ikke omfattet.
+
+Desktop har desuden et særskilt forløb fra gennemgået original til ubetalt
+leverandørfaktura og senere betaling med en valgt banklinje. Registrering og
+betaling kræver hver sin bekræftelse og kanoniske genlæsning. Den integrerede
+levering bestod 62 tests og native build; faktisk vinduesaccept afventer
+fortsat oplåsning.
 
 ## Knyt en banklinje til en eksisterende postering
 
@@ -989,7 +994,9 @@ den faktiske tilbageførselsrelation og kontrollerer kilde, beløb og historik.
 Bekræftelse med begrundelse gemmer en ny afstemningshændelse og en varig
 kvittering; den foretager ikke selv tilbageførsel eller ny bogføring.
 CLI/MCP tilbyder samme plan og bekræftelse med den oprindelige nøgle.
-Build og fokuserede tests består; samlet browser- og genstartskontrol udestår.
+Den samlede første serverfase (Group18/19) har verificeret web og CLI/MCP,
+herunder kvitteringer og afvisninger. Genstartskontrollen for rettelser er
+endnu ikke nået i den samlede kørsel.
 
 
 ## Tilbagevendende fakturaer gennem agentklienterne
@@ -1000,8 +1007,8 @@ navne med underscore. Oprettelse, generering og afslutning kræver præcist
 JSON og udtrykkelig bekræftelse. Generering udsteder en faktura med original
 PDF; bogføring foretages særskilt. Samme skabelon og periode kan udtrykkeligt
 hente den allerede udstedte faktura. En afsluttet skabelon afviser generering.
-Den første samlede serverfase har verificeret CLI/MCP, PDF og afvisninger;
-genstartskontrollen udestår.
+Den samlede serverkontrol har verificeret CLI/MCP, PDF, afvisninger og
+persistens efter genstart (Group18).
 
 ## Når sessionskontrollen ikke svarer
 
@@ -1031,11 +1038,42 @@ ikke brugere eller rettigheder direkte i databasen.
 
 CLI/MCP kan registrere et anlæg fra det faktiske oprindelige købsgrundlag,
 hente næste afskrivning og bekræfte en udtrykkeligt valgt afskrivningsperiode.
-Serveren beregner beløb og bogfører. Den første samlede serverfase har
-verificeret forløbet og afvisninger mod den kanoniske plan og journal.
+Serveren beregner beløb og bogfører. Den samlede serverkontrol har
+verificeret forløbet, afvisninger og genstart mod den kanoniske plan og journal
+(Group18).
 
 Periodisering har tilsvarende registrering, serverberegnet plan og bekræftet
 indregning af en valgt periode. Registrering kan selv bogføre en postering;
 begge skrivninger kræver udtrykkelig bekræftelse. Klienterne beregner ikke
-fordeling og starter ikke indregning automatisk. Den nye periodiseringskontrol
-og genstartskontrollen kører som del af den samlede kvalifikation.
+fordeling og starter ikke indregning automatisk. Registrering, indregning,
+afvisninger og genstart har bestået den samlede serverkontrol (Group18).
+
+## Budget, kørsel og databeskyttelse gennem agentklienterne
+
+CLI/MCP har budgetlæsning, sammenligning og udtrykkelige budgetrevisioner samt
+kørselsrapport og bekræftet registrering med brugerens valgte sats og grundlag.
+Serveren beregner beløb; kørselsregistrering opretter ingen journalpostering.
+Databeskyttelse omfatter opbevaringsrapport, auditeret personudtræk og bekræftet
+anonymiseringslag med samme begrænsede dækning som webforløbet. Originaler,
+journaler og eksisterende opbevaringskrav bevares.
+
+Alle disse første forløb har bestået mod den rigtige server (Group19). Den
+samlede genstartskontrol afventer den igangværende kørsel; kørselskontrollens
+rækkefølge er rettet, så rapportens gemte totaler omfatter alle eksempelrejser.
+
+## Virksomhedsopsætning gennem agentklienterne
+
+CLI har `company-profile`, `update-company-profile`, `create-account` og
+`confirm-account-role`; MCP har de samme navne med underscore. Den eksisterende
+`accounts` viser den fulde kontoplan og aktuelle rolleopløsninger. Skrivninger
+kræver udtrykkelig bekræftelse og præcist native JSON. Klienterne vælger ingen
+bank- eller momskonti automatisk og ændrer ingen journaler. Serveren kontrollerer
+kontotype, normalbalance og øvrige aktuelle krav.
+
+Den særskilte acceptkørsel bruger en ny tom syntetisk virksomhed med normal
+e-mailbekræftelse og MFA. Den må ikke sammenblandes med andre forløb, fordi
+kontoroller ændres. Build, 164 kontrakttests og faktisk native kontrol med normal MFA og
+servergenstart er bestået. Profil, kontoplan og eksplicitte roller stemmer
+fuldt mellem HTTP, CLI og MCP; journalen er uændret. Inaktive konti kan endnu
+ikke oprettes gennem den eksisterende HTTP-kontrakt og er ikke dækket af
+dette acceptkorpus.
