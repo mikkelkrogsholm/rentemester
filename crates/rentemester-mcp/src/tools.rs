@@ -133,6 +133,7 @@ pub fn list() -> Value {
     tools.extend(crate::reviewed_bookkeeping::tools());
     tools.extend(crate::documents::tools());
     tools.extend(crate::bank_reconciliation::tools());
+    tools.extend(crate::bank_correction::tools());
     json!({"tools":tools})
 }
 pub(crate) fn native_body(schema: Value) -> Value {
@@ -196,6 +197,15 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     }
     let mut idempotency = None;
     let outcome = match name {
+        "bank_reconciliation_correction_plan" | "bank_reconciliation_correction" => {
+            // Correlation only: return the original supported caller key on uncertain outcome.
+            // Never mutate the request or trigger replay.
+            if name=="bank_reconciliation_correction" {
+                idempotency=args.get("body").and_then(Value::as_str).filter(|s|s.len()<=rentemester_client::MAX_BANK_CORRECTION_BODY)
+                    .and_then(|s|serde_json::from_str::<Value>(s).ok()).and_then(|v|v["idempotencyKey"].as_str().map(str::to_owned));
+            }
+            crate::bank_correction::call(api,name,args).await?
+        },
         "bank_reconciliation_candidates" | "bank_reconciliation_link" => crate::bank_reconciliation::call(api,name,args).await?,
         "ingest_document" | "document_original" => crate::documents::call(api,name,args).await?,
         name if crate::reviewed_bookkeeping::accepts(name) => crate::reviewed_bookkeeping::call(api,name,args).await?,

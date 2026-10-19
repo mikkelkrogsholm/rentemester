@@ -151,7 +151,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 59);
+    assert_eq!(tools.len(), 61);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -1137,6 +1137,82 @@ fn bank_reconciliation_schema_forbids_mixed_selectors_and_oversize() {
         ),
         (
             "bank_reconciliation_link",
+            json!({"company":"synthetic","body":"x".repeat(16385),"confirm":true}),
+        ),
+    ] {
+        let values = parsed(&run(
+            "http://127.0.0.1:9",
+            &[init("2025-11-25"), ready(), call(2, name, args)],
+        ));
+        assert_eq!(values[1]["error"]["code"], -32602);
+    }
+}
+
+#[test]
+fn correction_mcp_unknown_keeps_original_key_and_exact_body() {
+    let (origin, request, task) =
+        http("HTTP/1.1 503 Unavailable\r\nContent-Length:0\r\nConnection:close\r\n\r\n");
+    let body=r#"{ "bankTransactionId":7,"replacementJournalEntryId":8,"expectedReconciliationId":"append-only:1","planHash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","reason":"  Synthetic correction  ","idempotencyKey":"  nøgle-🚀  ","confirm":true }
+"#.to_owned();
+    let values = parsed(&run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "bank_reconciliation_correction",
+                json!({"company":"synthetic","body":body,"confirm":true}),
+            ),
+        ],
+    ));
+    let error = &values[1]["result"]["structuredContent"]["error"];
+    assert_eq!(error["code"], "outcome_unknown");
+    assert_eq!(error["idempotencyKey"], "  nøgle-🚀  ");
+    let wire = String::from_utf8(request.recv().unwrap()).unwrap();
+    assert!(
+        wire.starts_with("POST /api/companies/synthetic/bank/reconciliation-correction HTTP/1.1")
+    );
+    assert!(wire.ends_with(&body));
+    task.join().unwrap();
+}
+#[test]
+fn correction_mcp_selectors_extra_fields_and_native_size_are_strict() {
+    let values = parsed(&run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),
+        ],
+    ));
+    let tools = values[1]["result"]["tools"].as_array().unwrap();
+    assert_eq!(
+        tools
+            .iter()
+            .find(|t| t["name"] == "bank_reconciliation_correction_plan")
+            .unwrap()["annotations"]["readOnlyHint"],
+        true
+    );
+    for (name, args) in [
+        (
+            "bank_reconciliation_correction_plan",
+            json!({"company":"synthetic","bankTransactionId":7}),
+        ),
+        (
+            "bank_reconciliation_correction_plan",
+            json!({"company":"synthetic","bankTransactionId":7,"replacementJournalEntryId":0}),
+        ),
+        (
+            "bank_reconciliation_correction_plan",
+            json!({"company":"synthetic","bankTransactionId":7,"replacementJournalEntryId":8,"confirm":true}),
+        ),
+        (
+            "bank_reconciliation_correction",
+            json!({"company":"synthetic","body":"{}","confirm":true,"actor":"other"}),
+        ),
+        (
+            "bank_reconciliation_correction",
             json!({"company":"synthetic","body":"x".repeat(16385),"confirm":true}),
         ),
     ] {

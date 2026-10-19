@@ -1,6 +1,8 @@
 //! Origin-bound HTTP adapter shared by interactive and agent clients. No ledger logic.
 //! Supply a browser session's Cookie request-header value, never a Set-Cookie header.
 //! Authentication/enrollment is currently performed by the server's browser UI.
+mod bank_correction;
+pub use bank_correction::{bank_correction_body_schema,MAX_BANK_CORRECTION_BODY};
 mod bank_reconciliation;
 pub use bank_reconciliation::{bank_reconciliation_body_schema,MAX_BANK_RECONCILIATION_BODY};
 mod documents;
