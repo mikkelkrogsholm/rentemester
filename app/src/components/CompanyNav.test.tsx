@@ -2,11 +2,11 @@
 // per-view filters (Bank's q/from/to/status, a posting account=…) never leak
 // onto sibling tabs.
 
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test, vi } from "bun:test";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useLocation } from "react-router-dom";
-import { CompanyTaskNavigation } from "./CompanyNav";
+import { CompanyTaskNavigation, YearSelector } from "./CompanyNav";
 import { renderAt } from "../test/render";
 
 function renderNav(route: string) {
@@ -97,4 +97,23 @@ describe("CompanyNav query-string whitelist (#UI-4)", () => {
       "/companies/acme-aps/bank?year=2025",
     );
   });
+});
+
+
+test("unsupported archive years stay visible but disabled while legacy years remain selectable", async () => {
+  const changed=vi.fn();
+  renderAt(<YearSelector years={[
+    {label:"2024",source:"live",start:"2024-01-01",end:"2024-12-31"},
+    {label:"2024",source:"archive",start:null,end:null,selectable:false},
+    {label:"2023",source:"archive",start:null,end:null},
+  ]} selected="2024" onChange={changed}/>);
+  const select=screen.getByRole("combobox",{name:"Vælg regnskabsår"});
+  const unsupported=screen.getByRole("option",{name:"2024 (se Arkiv)"});
+  expect(unsupported).toBeDisabled();
+  expect(screen.getByRole("option",{name:"2024"})).not.toBeDisabled();
+  expect(screen.getByRole("option",{name:"2023 (arkiv)"})).not.toBeDisabled();
+  await userEvent.selectOptions(select,unsupported);
+  expect(changed).not.toHaveBeenCalled();
+  await userEvent.selectOptions(select,"2023");
+  expect(changed).toHaveBeenCalledWith("2023");
 });

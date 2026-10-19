@@ -210,9 +210,9 @@ export function YearSelector({
         aria-label="Vælg regnskabsår"
       >
         {years.map((y) => (
-          <option key={y.label} value={y.label}>
+          <option key={`${y.source}:${y.label}`} value={y.label} disabled={y.selectable === false}>
             {y.label}
-            {y.source === "archive" ? " (arkiv)" : ""}
+            {y.selectable === false ? " (se Arkiv)" : y.source === "archive" ? " (arkiv)" : ""}
           </option>
         ))}
       </Select>

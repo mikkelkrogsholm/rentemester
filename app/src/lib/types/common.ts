@@ -55,6 +55,8 @@ export type FiscalYearEntry = {
   start: string | null;
   end: string | null;
   source: "live" | "archive";
+  /** False when only the dedicated archive source view is supported. */
+  selectable?: boolean;
 };
 
 export type FiscalYearsResponse = {
