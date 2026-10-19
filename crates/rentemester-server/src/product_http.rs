@@ -8,6 +8,7 @@ mod documents;
 mod mileage;
 mod payables;
 mod periods;
+mod recurring_invoices;
 mod sales;
 mod vat;
 use crate::backend::Backend;
@@ -55,6 +56,18 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route(
             "/api/companies/{slug}/mileage",
             get(mileage::handle).post(mileage::handle),
+        )
+        .route(
+            "/api/companies/{slug}/recurring-invoices",
+            get(recurring_invoices::handle).post(recurring_invoices::handle),
+        )
+        .route(
+            "/api/companies/{slug}/recurring-invoices/{id}/generate",
+            post(recurring_invoices::handle),
+        )
+        .route(
+            "/api/companies/{slug}/recurring-invoices/{id}/retire",
+            post(recurring_invoices::handle),
         )
         .route(
             "/api/companies/{slug}/accruals",

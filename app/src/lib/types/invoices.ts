@@ -175,6 +175,7 @@ export type RecurringInvoiceTemplateCreatedResult = {
 };
 
 export type CompanyRecurringInvoices = {
+  nativeRecurring?: boolean;
   slug: string;
   templates: RecurringInvoiceTemplateRow[];
 };

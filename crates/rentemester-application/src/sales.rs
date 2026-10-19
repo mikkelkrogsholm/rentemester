@@ -133,42 +133,10 @@ pub fn execute(
                 Action::Issue(input) | Action::Preview(input) => {
                     let issue = matches!(action, Action::Issue(_));
                     let payload = sales::prepare(tx, input, now, issue)?;
-                    let pdf = rentemester_engine::invoice_pdf::build(&payload);
                     if !issue {
-                        Output::Pdf(pdf)
+                        Output::Pdf(rentemester_engine::invoice_pdf::build(&payload))
                     } else {
-                        let no = payload["invoiceNumber"]
-                            .as_str()
-                            .ok_or_else(evidence_error)?;
-                        let json = Prepared::new(
-                            format!("{no}.json"),
-                            serde_json::to_vec_pretty(&payload).map_err(|_| evidence_error())?,
-                        )
-                        .map_err(|_| evidence_error())?;
-                        let pdf = Prepared::new(format!("{no}.pdf"), pdf)
-                            .map_err(|_| evidence_error())?;
-                        let json_path = guard
-                            .publish_document(&json)
-                            .map_err(|_| evidence_error())?;
-                        let pdf_path =
-                            guard.publish_document(&pdf).map_err(|_| evidence_error())?;
-                        Output::Json(sales::register(
-                            tx,
-                            &payload,
-                            Artifact {
-                                filename: json.filename(),
-                                path: &json_path,
-                                hash: json.hash(),
-                                mime: json.mime(),
-                            },
-                            Artifact {
-                                filename: pdf.filename(),
-                                path: &pdf_path,
-                                hash: pdf.hash(),
-                                mime: pdf.mime(),
-                            },
-                            actor,
-                        )?)
+                        Output::Json(issue_payload(tx, guard, &payload, actor)?)
                     }
                 }
                 Action::Post(input) => {
@@ -229,5 +197,45 @@ pub fn execute(
                 Action::Pdf(id) => Output::Pdf(original(tx, guard, sales::pdf_id(tx, id)?)?),
             })
         },
+    )
+}
+
+/// Publish the same immutable JSON/PDF pair for ordinary and recurring issuance.
+pub(crate) fn issue_payload(
+    tx: &rusqlite::Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    payload: &Value,
+    actor: &str,
+) -> Result<Value, Error> {
+    let pdf = rentemester_engine::invoice_pdf::build(payload);
+    let no = payload["invoiceNumber"]
+        .as_str()
+        .ok_or_else(evidence_error)?;
+    let json = Prepared::new(
+        format!("{no}.json"),
+        serde_json::to_vec_pretty(&payload).map_err(|_| evidence_error())?,
+    )
+    .map_err(|_| evidence_error())?;
+    let pdf = Prepared::new(format!("{no}.pdf"), pdf).map_err(|_| evidence_error())?;
+    let json_path = guard
+        .publish_document(&json)
+        .map_err(|_| evidence_error())?;
+    let pdf_path = guard.publish_document(&pdf).map_err(|_| evidence_error())?;
+    sales::register(
+        tx,
+        &payload,
+        Artifact {
+            filename: json.filename(),
+            path: &json_path,
+            hash: json.hash(),
+            mime: json.mime(),
+        },
+        Artifact {
+            filename: pdf.filename(),
+            path: &pdf_path,
+            hash: pdf.hash(),
+            mime: pdf.mime(),
+        },
+        actor,
     )
 }

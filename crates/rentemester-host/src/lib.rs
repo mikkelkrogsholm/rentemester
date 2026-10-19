@@ -693,6 +693,25 @@ impl Owner {
             rentemester_application::accruals::execute(c, l, g, context, action, today)
         })
     }
+    pub fn recurring_invoices(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        action: rentemester_application::recurring_invoices::Action<'_>,
+        today: &str,
+        now: &str,
+    ) -> Result<
+        Attempt<
+            Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, g, context| {
+            rentemester_application::recurring_invoices::execute(
+                c, l, g, context, action, today, now,
+            )
+        })
+    }
     pub fn expense(
         &mut self,
         cookie: &VerifiedCookie,

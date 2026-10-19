@@ -412,3 +412,11 @@ describe("RecurringInvoicesView — Faktura-skabeloner", () => {
     expect(createCall).toBeUndefined();
   });
 });
+
+test("native recurring generation requires confirmation before issuing",async()=>{
+ mockFetch({...routes({nativeRecurring:true}),"POST /api/companies/acme-aps/recurring-invoices/7/generate":{generation:{created:true,templateId:7,periodIndex:5,documentId:12,invoiceNumber:"2026-0009",issueDate:"2026-06-01",dueDate:"2026-06-15"}}});
+ renderView();await screen.findByText("ABC ApS · månedligt abonnement");await userEvent.click(screen.getByRole("button",{name:"Generér"}));await screen.findByRole("dialog");expect((fetch as any).mock.calls.filter((c:any[])=>c[1]?.method==="POST")).toHaveLength(0);await userEvent.click(screen.getByRole("button",{name:"Udsted periodens faktura"}));await screen.findByText(/Udstedte faktura 2026-0009/);const call=(fetch as any).mock.calls.find((c:any[])=>c[1]?.method==="POST");expect(JSON.parse(call[1].body)).toEqual({asOfDate:"2026-06-01",confirm:true});
+});
+test("native template modal exposes explicit manual issuance and inherited tax limits",async()=>{
+ mockFetch({...routes({nativeRecurring:true}),"GET /api/companies/acme-aps/contacts":{contacts:{customers:[]}}});renderView();await screen.findByText("ABC ApS · månedligt abonnement");await userEvent.click(screen.getByRole("button",{name:"Opret skabelon"}));const dialog=screen.getByRole("dialog");const channels=within(dialog).getByLabelText("Afsendelseskanal") as HTMLSelectElement;expect(channels.options.length).toBe(1);expect(channels.value).toBe("manual");expect((within(dialog).getByLabelText("Momssats i procent") as HTMLInputElement).readOnly).toBe(true);expect((within(dialog).getByLabelText("Valuta") as HTMLInputElement).readOnly).toBe(true);
+});

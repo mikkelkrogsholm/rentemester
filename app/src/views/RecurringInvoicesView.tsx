@@ -154,6 +154,7 @@ export function RecurringInvoicesView() {
                 <TemplateCard
                   key={t.id}
                   template={t}
+                  nativeRecurring={r.nativeRecurring}
                   slug={slug}
                   onReload={state.reload}
                 />
@@ -167,6 +168,7 @@ export function RecurringInvoicesView() {
                 <TemplateCard
                   key={t.id}
                   template={t}
+                  nativeRecurring={r.nativeRecurring}
                   slug={slug}
                   onReload={state.reload}
                 />
@@ -179,6 +181,7 @@ export function RecurringInvoicesView() {
       {createOpen && (
         <RecurringInvoiceTemplateModal
           slug={slug}
+          nativeRecurring={r.nativeRecurring}
           onCreated={state.reload}
           onClose={() => setCreateOpen(false)}
         />
@@ -190,10 +193,12 @@ export function RecurringInvoicesView() {
 /** One template's card — header, generate action, retire action, and history. */
 function TemplateCard({
   template,
+  nativeRecurring = false,
   slug,
   onReload,
 }: {
   template: RecurringInvoiceTemplateRow;
+  nativeRecurring?:boolean;
   slug: string;
   onReload: () => void;
 }) {
@@ -202,6 +207,7 @@ function TemplateCard({
   const [busy, setBusy] = useState(false);
   const [retireBusy, setRetireBusy] = useState(false);
   const [retiring, setRetiring] = useState(false);
+  const [generating,setGenerating]=useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -271,18 +277,19 @@ function TemplateCard({
         {!template.active && <span className="muted">(tilbagetrukken)</span>}
       </h4>
       <p className="muted">
-        {(template.intervalCount ?? 1) > 1 ? `hver ${template.intervalCount}. ` : ""}{INTERVAL_LABELS[template.interval]} · {CHANNEL_LABELS[template.deliveryChannel ?? "manual"]} · næste udstedelse{" "}
+        {(template.intervalCount ?? 1) > 1 ? `hver ${template.intervalCount}. ` : ""}{INTERVAL_LABELS[template.interval]} · {nativeRecurring && (template.deliveryChannel??"manual")==="manual" ? "manuel udstedelse" : CHANNEL_LABELS[template.deliveryChannel ?? "manual"]} · næste udstedelse{" "}
         {template.nextIssueDate} · betalingsfrist {template.paymentTermsDays}{" "}
         dage
         {template.notes ? ` · ${template.notes}` : ""}
       </p>
 
-      {template.active && (
+      {template.active && (!nativeRecurring || (template.deliveryChannel??"manual")==="manual") && (
         <div className={["row-actions", stylex.props(viewStyles.site3).className].filter(Boolean).join(" ")} >
           <label>
             Udsted som af
             <Input
               type="date"
+              max={nativeRecurring?new Date().toLocaleDateString("sv-SE",{timeZone:"Europe/Copenhagen"}):undefined}
               value={asOfDate}
               onChange={(e) => setAsOfDate(e.target.value)}
               disabled={outcome.blocked || (busy || retireBusy)}
@@ -290,7 +297,7 @@ function TemplateCard({
           </label>
           <Button requiredPermission="company.draft.write"
             className="btn"
-            onClick={generate}
+            onClick={nativeRecurring?()=>setGenerating(true):generate}
             disabled={outcome.blocked || (busy || retireBusy || asOfDate.length !== 10)}
             type="button"
           >
@@ -315,6 +322,13 @@ function TemplateCard({
         </p>
       )}
 
+      {generating && <ConfirmDialog
+        title={`Udsted fra ${template.name}?`}
+        body={<p>Der udstedes én faktura for den senest forfaldne periode pr. {asOfDate} med skabelonens faste kunde, priser og betalingsfrist. Samme periode genbruger sin eksisterende faktura. PDF kan hentes på fakturasiden; bogføring sker særskilt.</p>}
+        confirmLabel="Udsted periodens faktura"
+        onConfirm={async()=>{await generate();setGenerating(false);}}
+        onClose={()=>setGenerating(false)} onRefresh={onReload}
+      />}
       {retiring && <ConfirmDialog
         title={`Deaktivér skabelonen ${template.name}?`}
         body={<p>Skabelonen kan ikke genaktiveres og kan ikke generere flere fakturaer. Tidligere fakturaer og revisionshistorik bevares. Opret en ny skabelon, hvis beløb eller frekvens skal ændres.</p>}
@@ -343,7 +357,7 @@ function TemplateCard({
               {template.generations.map((g) => (
                 <tr key={g.id}>
                   <td className="account-no">#{g.periodIndex}</td>
-                  <td className="account-no">{g.invoiceNumber}</td>
+                  <td className="account-no"><ButtonLink to={`/companies/${slug}/fakturaer`}>{g.invoiceNumber}</ButtonLink></td>
                   <td className="entry-date">{g.issueDate}</td>
                   <td>
                     {g.deliveryPeriodStart && g.deliveryPeriodEnd

@@ -38,6 +38,7 @@ type MaybeApiError = { code?: string; message?: string };
 export type RecurringInvoiceTemplateModalProps = {
   /** Company slug the template belongs to. */
   slug: string;
+  nativeRecurring?: boolean;
   /** Re-runs the RecurringInvoicesView load after a successful create. */
   onCreated: () => void;
   /** Closes the modal without acting. */
@@ -93,6 +94,7 @@ const DELIVERY_MODE_OPTIONS: Array<{
 
 export function RecurringInvoiceTemplateModal({
   slug,
+  nativeRecurring = false,
   onCreated,
   onClose: onDismiss,
 }: RecurringInvoiceTemplateModalProps) {
@@ -353,12 +355,12 @@ export function RecurringInvoiceTemplateModal({
             disabled={outcome.blocked || (busy)}
             aria-label="Afsendelseskanal"
           >
-            {DELIVERY_CHANNEL_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            {DELIVERY_CHANNEL_OPTIONS.filter(opt=>!nativeRecurring||opt.value==="manual").map((opt) => (
+              <option key={opt.value} value={opt.value}>{nativeRecurring&&opt.value==="manual"?"Manuel udstedelse":opt.label}</option>
             ))}
           </Select>
           <span className={["muted", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
-            Manuel opretter kun fakturaen. E-mail og e-faktura afsendes af den eksterne scheduler, når kanalen er konfigureret.
+            {nativeRecurring ? "Fakturaen udstedes kun efter din bekræftelse. Hent PDF og bogfør særskilt på fakturasiden." : "Manuel opretter kun fakturaen. E-mail og e-faktura afsendes af den eksterne scheduler, når kanalen er konfigureret."}
           </span>
         </label>
 
@@ -383,6 +385,7 @@ export function RecurringInvoiceTemplateModal({
               onChange={(e) => setVatRatePercent(e.target.value)}
               disabled={outcome.blocked || (busy)}
               aria-label="Momssats i procent"
+              readOnly={nativeRecurring}
             />
           </label>
         </div>
@@ -419,6 +422,7 @@ export function RecurringInvoiceTemplateModal({
             onChange={(e) => setCurrency(e.target.value)}
             disabled={outcome.blocked || (busy)}
             aria-label="Valuta"
+            readOnly={nativeRecurring}
           />
         </label>
 
