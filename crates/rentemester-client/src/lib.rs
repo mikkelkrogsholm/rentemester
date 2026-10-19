@@ -391,3 +391,6 @@ pub use payable_correction::{MAX_PAYABLE_CORRECTION_BODY,payable_correction_body
 
 mod intercompany_dispositions;
 pub use intercompany_dispositions::{DispositionAction,MAX_DISPOSITION_BODY,disposition_body_schema};
+
+mod contact_import;
+pub use contact_import::{MAX_CONTACT_IMPORT_BODY,contact_import_body_schema};

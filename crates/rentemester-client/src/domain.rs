@@ -101,7 +101,7 @@ pub fn domain_body_schema(operation: DomainMutation) -> Value {
         }
     } else {
         fields["eanNumber"] = optional_text();
-        fields["paymentTermsDays"] = json!({"type":["integer","null"],"minimum":1,"maximum":365});
+        fields["paymentTermsDays"] = json!({"type":["integer","null"],"minimum":1,"maximum":9007199254740991u64});
         fields["defaultCurrency"] = if matches!(operation, DomainMutation::UpdateCustomer(_)) {
             json!({"type":"string","minLength":3,"maxLength":3,"description":"Uppercase ISO currency; null cannot clear a customer default"})
         } else {

@@ -10,7 +10,7 @@ fn disposition_discovery_keeps_global_status_and_source_actions_explicit() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 185);
+    assert_eq!(tools.len(), 186);
     for (name, read) in [
         ("group_disposition_status", true),
         ("plan_group_disposition", true),

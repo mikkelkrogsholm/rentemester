@@ -276,3 +276,5 @@ mod bookkeeping_batch;
 mod payable_correction;
 
 mod intercompany_dispositions;
+
+mod contact_import;
