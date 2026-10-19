@@ -138,6 +138,14 @@ impl Owner {
                     .map(|c| c.slug.clone())
                     .collect::<Vec<_>>(),
             )?;
+            store::validate_corporate_companies(
+                &tx,
+                &catalog
+                    .companies
+                    .iter()
+                    .map(|c| c.slug.clone())
+                    .collect::<Vec<_>>(),
+            )?;
             let mut entries = vec![];
             let mut companies = vec![];
             add(
@@ -186,6 +194,16 @@ impl Owner {
                     },
                     path: "control/workspace-inbox.json".into(),
                     bytes: business.inbox_bytes,
+                },
+            )?;
+            add(
+                &mut entries,
+                artifact::Snapshot {
+                    kind: artifact::EntryKind::ControlBusiness {
+                        section: artifact::BusinessSection::CorporateRecords,
+                    },
+                    path: "control/corporate-records.json".into(),
+                    bytes: business.corporate_bytes,
                 },
             )?;
             for c in &catalog.companies {
@@ -273,6 +291,7 @@ impl Owner {
                         artifact::BusinessSection::Parties,
                         artifact::BusinessSection::CompanyKnowledge,
                         artifact::BusinessSection::WorkspaceInbox,
+                        artifact::BusinessSection::CorporateRecords,
                     ],
                     unsupported,
                     excluded: artifact::Exclusion::ALL.to_vec(),
@@ -423,6 +442,7 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
                     | artifact::BusinessSection::CompanyKnowledge
                     | artifact::BusinessSection::Parties
                     | artifact::BusinessSection::WorkspaceInbox
+                    | artifact::BusinessSection::CorporateRecords
             )
         })
     {
@@ -561,6 +581,23 @@ fn restore_business(
                 .collect::<Vec<_>>(),
         )?;
     }
+    if a.manifest()
+        .context
+        .coverage
+        .included
+        .contains(&artifact::BusinessSection::CorporateRecords)
+    {
+        store::initialize_corporate(
+            control,
+            entry(artifact::BusinessSection::CorporateRecords)?.bytes(),
+            &a.manifest()
+                .context
+                .companies
+                .iter()
+                .map(|c| c.slug.clone())
+                .collect::<Vec<_>>(),
+        )?;
+    }
     Ok(())
 }
 #[cfg(test)]
@@ -568,6 +605,7 @@ mod tests {
     use super::*;
     use serde_json::json;
     fn signed(
+        corporate: bool,
         knowledge: bool,
         parties: bool,
         invalid: bool,
@@ -605,6 +643,61 @@ mod tests {
                 },
                 "user:historical-owner",
                 "2026-01-02T00:00:00.000Z",
+            )
+            .unwrap();
+            tx.commit().unwrap();
+        }
+        if corporate {
+            let tx = control
+                .transaction_with_behavior(TransactionBehavior::Immediate)
+                .unwrap();
+            use rentemester_storage::corporate_records as corp;
+            for (id, raw, kind) in [
+                (
+                    "record-signed-original",
+                    &b"\x00\xffsynthetic original"[..],
+                    "annual_report",
+                ),
+                (
+                    "record-signed-replacement",
+                    &b"synthetic replacement"[..],
+                    "articles",
+                ),
+            ] {
+                let input=serde_json::from_value(json!({"recordId":id,"type":kind,"bytesBase64":"unused-in-storage","filename":"synthetic.txt","source":"Synthetic signed source","receivedAt":"2026-01-01","uploader":"Historical source uploader","sensitivity":"restricted"})).unwrap();
+                let mut links = vec![corp::Link {
+                    r#type: "company".into(),
+                    id: "synthetic".into(),
+                }];
+                if parties {
+                    links.push(corp::Link {
+                        r#type: "party".into(),
+                        id: "party-signed-synthetic".into(),
+                    });
+                }
+                corp::ingest(&tx, &input, raw, "unused", &links, "user:historical-owner").unwrap();
+            }
+            corp::enrich(
+                &tx,
+                "record-signed-original",
+                &corp::Enrich {
+                    record_id: None,
+                    assertion: "Synthetic signed enrichment".into(),
+                },
+                "user:historical-reviewer",
+                "2026-01-02T00:00:00.000Z",
+            )
+            .unwrap();
+            corp::supersede(
+                &tx,
+                "record-signed-original",
+                &corp::Supersede {
+                    record_id: None,
+                    replacement_record_id: "record-signed-replacement".into(),
+                    reason: "Synthetic reviewed replacement".into(),
+                },
+                "user:historical-reviewer",
+                "2026-01-03T00:00:00.000Z",
             )
             .unwrap();
             tx.commit().unwrap();
@@ -717,6 +810,27 @@ mod tests {
                 record_count,
             })
             .collect::<Vec<_>>();
+        if corporate {
+            let mut bytes = business.corporate_bytes;
+            if invalid {
+                let mut value: Value = serde_json::from_slice(&bytes).unwrap();
+                value["format"] = json!("unsupported-corporate-codec");
+                bytes = serde_json::to_vec(&value).unwrap();
+            }
+            included.push(artifact::BusinessSection::CorporateRecords);
+            entries.push(artifact::Snapshot {
+                kind: artifact::EntryKind::ControlBusiness {
+                    section: artifact::BusinessSection::CorporateRecords,
+                },
+                path: "control/corporate-records.json".into(),
+                bytes,
+            });
+        } else {
+            unsupported.push(artifact::UnsupportedSection {
+                section: artifact::BusinessSection::CorporateRecords,
+                record_count: 0,
+            });
+        }
         if inbox_case.is_some() {
             let mut bytes = business.inbox_bytes;
             if invalid {
@@ -826,7 +940,7 @@ mod tests {
     #[test]
     fn signed_knowledge_coverage_is_semantically_validated_and_old_audit_only_remains_supported() {
         for knowledge in [false, true] {
-            let a = signed(knowledge, false, false, false, None);
+            let a = signed(false, knowledge, false, false, false, None);
             validate(&a).unwrap();
             let mut restored = Connection::open_in_memory().unwrap();
             restore_business(&mut restored, &a, &"a".repeat(64)).unwrap();
@@ -847,12 +961,12 @@ mod tests {
         }
         // Valid cryptographic signature is insufficient: unsupported section
         // codec must fail the pre-publication semantic validator.
-        assert!(validate(&signed(true, false, true, false, None)).is_err());
+        assert!(validate(&signed(false, true, false, true, false, None)).is_err());
     }
     #[test]
     fn signed_party_codec_is_required_validated_and_preserves_facts_without_authority() {
         for knowledge in [false, true] {
-            let a = signed(knowledge, true, false, false, None);
+            let a = signed(false, knowledge, true, false, false, None);
             validate(&a).unwrap();
             assert!(
                 a.manifest()
@@ -893,14 +1007,14 @@ mod tests {
             tx.rollback().unwrap();
         }
         // Correct artifact signatures cannot legitimize an unknown typed codec or a substituted ledger identity.
-        assert!(validate(&signed(false, true, true, false, None)).is_err());
-        assert!(validate(&signed(false, true, false, true, None)).is_err());
+        assert!(validate(&signed(false, false, true, true, false, None)).is_err());
+        assert!(validate(&signed(false, false, true, false, true, None)).is_err());
     }
     #[test]
     fn signed_inbox_pending_split_completed_and_physical_original_semantics_validate_before_publication()
      {
         for case in 0..3 {
-            let a = signed(false, false, false, false, Some(case));
+            let a = signed(false, false, false, false, false, Some(case));
             validate(&a).unwrap();
             let mut restored = Connection::open_in_memory().unwrap();
             restore_business(&mut restored, &a, &"a".repeat(64)).unwrap();
@@ -930,10 +1044,59 @@ mod tests {
                 );
             }
         }
-        assert!(validate(&signed(false, false, true, false, Some(2))).is_err());
+        assert!(validate(&signed(false, false, false, true, false, Some(2))).is_err());
         assert!(
-            validate(&signed(false, false, false, false, Some(3))).is_err(),
+            validate(&signed(false, false, false, false, false, Some(3))).is_err(),
             "signature and codec cannot replace the actual completed document original"
         );
+    }
+    #[test]
+    fn signed_corporate_originals_history_scope_and_sensitive_gates_restore_without_authority() {
+        for parties in [false, true] {
+            let archive = signed(true, true, parties, false, false, None);
+            validate(&archive).unwrap();
+            let mut restored = Connection::open_in_memory().unwrap();
+            restore_business(&mut restored, &archive, &"a".repeat(64)).unwrap();
+            let tx = restored
+                .transaction_with_behavior(TransactionBehavior::Immediate)
+                .unwrap();
+            let read = ["synthetic".to_owned()].into_iter().collect();
+            let none = BTreeSet::new();
+            use rentemester_storage::corporate_records as corp;
+            let record = corp::inspect(&tx, "record-signed-original").unwrap();
+            assert_eq!(record["type"], "annual_report");
+            assert_eq!(record["sensitivity"], "restricted");
+            assert_eq!(record["uploader"], "Historical source uploader");
+            assert_eq!(
+                corp::download(&tx, "record-signed-original").unwrap(),
+                b"\x00\xffsynthetic original"
+            );
+            assert_eq!(
+                record["history"].as_array().unwrap().len(),
+                if parties { 5 } else { 4 }
+            );
+            assert!(!corp::detail_visible(&tx, "record-signed-original", &read, &none).unwrap());
+            assert!(corp::detail_visible(&tx, "record-signed-original", &read, &read).unwrap());
+            assert!(!corp::visible(&tx, "record-signed-original", &none).unwrap());
+            for table in [
+                "user",
+                "account",
+                "session",
+                "twoFactor",
+                "apikey",
+                "rm_company_membership_events",
+                "rm_workspace_user_access_events",
+            ] {
+                assert_eq!(
+                    tx.query_row(&format!("SELECT count(*) FROM {table}"), [], |r| r
+                        .get::<_, i64>(0))
+                        .unwrap(),
+                    0
+                );
+            }
+            tx.rollback().unwrap();
+        }
+        assert!(validate(&signed(true, false, false, true, false, None)).is_err());
+        assert!(validate(&signed(true, false, false, false, true, None)).is_err());
     }
 }

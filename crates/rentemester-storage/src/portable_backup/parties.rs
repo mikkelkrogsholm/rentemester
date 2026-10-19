@@ -618,7 +618,7 @@ mod tests {
         let e = exported(&mut source);
         let serialized = String::from_utf8(e.parties_bytes.clone()).unwrap();
         assert!(!serialized.contains("SYNTHETIC-EXCLUDED"));
-        assert_eq!(e.unsupported.len(), 4);
+        assert_eq!(e.unsupported.len(), 3);
         assert!(!e.unsupported.iter().any(|s| s.0 == "parties"));
         let mut target = Connection::open_in_memory().unwrap();
         initialize_control(&mut target, &e.bytes, &"a".repeat(64)).unwrap();
