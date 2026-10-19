@@ -11,6 +11,7 @@ def main():
  p=argparse.ArgumentParser(description=__doc__)
  for flag in ["server-binary","cli-binary","mcp-binary","web-dir"]:p.add_argument("--"+flag,type=Path,required=True)
  p.add_argument("--evidence",type=Path,help="New, nonexistent JSON evidence file; default unique path under /tmp/rentemester-rust-reports")
+ p.add_argument("--company-creation-clients",action="store_true",help="Also qualify new company creation through CLI/MCP; requires the multi-company server and matching clients")
  args=p.parse_args()
  if args.evidence is not None and os.path.lexists(args.evidence):raise RuntimeError("Evidence output must not already exist")
  if os.uname().sysname!="Darwin" or os.getuid()==0 or os.getuid()!=os.geteuid():raise RuntimeError("Ordinary macOS user required")
@@ -59,11 +60,13 @@ def main():
    raise RuntimeError("Owned server readiness timed out")
   write();start(True)
   env={**os.environ,"RM_SETUP_BASE":origin,"RM_SETUP_WORK":str(work),"RM_NATIVE_CLI_BIN":str(pinned["cli-binary"]),"RM_NATIVE_MCP_BIN":str(pinned["mcp-binary"])}
+  if args.company_creation_clients:env["RM_NATIVE_COMPANY_CREATION"]="1"
   command=["/opt/homebrew/bin/bun","run","scripts/rust/check-native-company-setup-clients.ts"]
   subprocess.run(command,cwd=REPO,env=env,check=True)
   stop();del config["firstOwner"];write();start()
   subprocess.run(command+["--reopen"],cwd=REPO,env=env,check=True);stop()
   data=json.loads((work/"journey.json").read_text())
+  if args.company_creation_clients:data["companyCreationClients"]=json.loads((work/"company-creation-journey.json").read_text())
   data.update({"artifacts":{name:hashlib.sha256(path.read_bytes()).hexdigest() for name,path in pinned.items()},"webIndexSha256":hashlib.sha256((web/"index.html").read_bytes()).hexdigest(),"helperSha256":hashlib.sha256((REPO/"scripts/rust/check-native-company-setup-clients.ts").read_bytes()).hexdigest(),"sourceRevision":subprocess.check_output(["git","rev-parse","HEAD"],cwd=REPO,text=True).strip(),"normalVerificationAndMfa":True,"restartFreshPasswordAndMfa":True,"noOfflineIdentityFixture":True,"inactiveHttpFixtureAvailable":False,"profile":"local-user-macos"})
   directory=Path("/tmp/rentemester-rust-reports");directory.mkdir(mode=0o700,exist_ok=True)
   output=args.evidence or directory/("native-company-setup-clients-"+work.name.removeprefix(PREFIX)+".json")

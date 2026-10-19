@@ -151,7 +151,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 86);
+    assert_eq!(tools.len(), 87);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -1263,7 +1263,7 @@ fn recurring_tools_discovery_and_strict_read_write_admission() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 86);
+    assert_eq!(tools.len(), 87);
     assert_eq!(
         tools
             .iter()
@@ -1334,7 +1334,7 @@ fn asset_readonly_discovery_and_native_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 86);
+    assert_eq!(tools.len(), 87);
     for name in ["assets", "next_asset_depreciation"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
@@ -1401,7 +1401,7 @@ fn accrual_readonly_discovery_and_native_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 86);
+    assert_eq!(tools.len(), 87);
     for name in ["accruals", "accrual_schedule"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
@@ -1496,7 +1496,7 @@ fn budget_mileage_discovery_year_scope_and_body_limits_are_strict() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 86);
+    assert_eq!(tools.len(), 87);
     for name in [
         "budget",
         "budget_vs_actual",
@@ -1598,7 +1598,7 @@ fn privacy_discovery_audited_annotation_and_date_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 86);
+    assert_eq!(tools.len(), 87);
     for (name, readonly) in [
         ("retention", true),
         ("gdpr_export", false),
@@ -1701,7 +1701,7 @@ fn setup_discovery_current_company_read_and_strict_outer_admission() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 86);
+    assert_eq!(tools.len(), 87);
     assert_eq!(
         tools
             .iter()
@@ -1731,5 +1731,20 @@ fn setup_discovery_current_company_read_and_strict_outer_admission() {
             v[1].get("error").is_some() || v[1]["result"]["isError"] == true,
             "{v:?}"
         );
+    }
+}
+
+#[test]
+fn company_creation_is_workspace_scoped_exact_and_unknown_without_replay() {
+    let (origin, request, task)=http("HTTP/1.1 503 Unavailable\r\nContent-Length:0\r\nConnection:close\r\n\r\n");
+    let body="{ \"name\":\" Synthetic Separate Company \",\"fiscalYearStartMonth\":\"7\",\"vatPeriodType\":null }\n";
+    let v=parsed(&run(&origin,&[init("2025-11-25"),ready(),call(2,"create_company",json!({"body":body,"confirm":true}))]));
+    assert_eq!(v[1]["result"]["structuredContent"]["error"]["code"],"outcome_unknown");
+    let wire=String::from_utf8(request.recv().unwrap()).unwrap();assert!(wire.starts_with("POST /api/companies HTTP/1.1"));assert!(wire.ends_with(body));task.join().unwrap();
+    let v=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})]));
+    let tool=v[1]["result"]["tools"].as_array().unwrap().iter().find(|t|t["name"]=="create_company").unwrap();
+    assert_eq!(tool["annotations"]["readOnlyHint"],false);assert_eq!(tool["inputSchema"]["additionalProperties"],false);assert!(tool["inputSchema"]["properties"].get("company").is_none());
+    for args in [json!({"body":"{}","confirm":false}),json!({"body":"{}","confirm":true,"company":"old"}),json!({"body":"{\"name\":\"Synthetic\",\"idempotencyKey\":\"invented\"}","confirm":true})] {
+        let v=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),call(2,"create_company",args)]));assert!(v[1].get("error").is_some()||v[1]["result"]["isError"]==true);
     }
 }
