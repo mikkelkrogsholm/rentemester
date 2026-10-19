@@ -1290,3 +1290,5 @@ mod scheduled_recurring_tests;
 
 mod hosted_recurring;
 mod service_identity;
+
+mod password_recovery;
