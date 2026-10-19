@@ -67,6 +67,9 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         workers: Arc::new(Semaphore::new(8)),
     };
     Router::new()
+        .route("/api/group-eliminations", get(eliminations::overview))
+        .route("/api/companies/{slug}/eliminations", get(eliminations::handle))
+        .route("/api/companies/{slug}/eliminations/{action}", post(eliminations::handle))
         .route("/api/group-reconciliation", get(intercompany::reconciliation))
         .route("/api/companies/{slug}/intercompany", get(intercompany::handle))
         .route("/api/companies/{slug}/intercompany/{action}", post(intercompany::handle))
@@ -672,3 +675,5 @@ async fn write(State(state): State<Product>, request: Request) -> Response {
 mod ownership;
 
 mod intercompany;
+
+mod eliminations;

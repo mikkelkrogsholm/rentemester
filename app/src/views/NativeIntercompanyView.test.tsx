@@ -60,6 +60,7 @@ test("confirmation clears when reviewed payload changes", async () => {
 		"GET /api/companies": {
 			companies: [{ slug: "a", name: "Synthetic A", archived: false }],
 		},
+		"GET /api/companies/a/eliminations": { rows: [] },
 		"GET /api/companies/a/intercompany": {
 			manifest: null,
 			mappings: [],

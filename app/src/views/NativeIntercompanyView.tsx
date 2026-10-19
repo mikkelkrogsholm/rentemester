@@ -1,3 +1,4 @@
+import { NativeEliminationsPanel } from "./NativeEliminationsPanel";
 import { useState, type FormEvent } from "react";
 import { Banner, ErrorState, Loading } from "../components/Feedback";
 import { Button, Input, PageHeader, Select, Textarea } from "../components/ui";
@@ -223,6 +224,11 @@ export function NativeIntercompanyView() {
 					</Banner>
 				)}
 			</section>
+			<NativeEliminationsPanel
+				anchor={anchor}
+				asOf={asOf}
+				mappings={current.error ? [] : (current.data?.mappings ?? [])}
+			/>
 		</section>
 	);
 }
