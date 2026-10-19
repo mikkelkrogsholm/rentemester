@@ -6,9 +6,11 @@ use gpui_kit::{
         button::{Button, ButtonVariants},
         checkbox::Checkbox,
         input::{Input, InputState},
+        radio::RadioGroup,
     },
     *,
 };
+mod local_backend;
 mod login;
 use rentemester_client::{ApiClient, Report};
 use serde_json::Value;
@@ -21,6 +23,11 @@ struct Options {
     company: Option<String>,
     year: String,
     allow_http: bool,
+    local: bool,
+    local_create: bool,
+    local_workspace: PathBuf,
+    server_binary: PathBuf,
+    web: PathBuf,
 }
 impl Options {
     fn parse() -> Result<Self, String> {
@@ -28,12 +35,17 @@ impl Options {
         let mut args = std::env::args().skip(1);
         while let Some(flag) = args.next() {
             match flag.as_str(){
+            "--local"=>result.local=true,
+            "--create-local"=>{result.local=true;result.local_create=true;},
+            "--local-workspace"=>result.local_workspace=args.next().ok_or("--local-workspace requires a path")?.into(),
+            "--server-binary"=>result.server_binary=args.next().ok_or("--server-binary requires a path")?.into(),
+            "--web-dir"=>result.web=args.next().ok_or("--web-dir requires a path")?.into(),
             "--allow-loopback-http"=>result.allow_http=true,
             "--server"=>result.server=args.next().ok_or("--server requires an origin")?,
             "--cookie-file"=>result.cookie=args.next().ok_or("--cookie-file requires a path")?.into(),
             "--company"=>result.company=Some(args.next().ok_or("--company requires a slug")?),
             "--year"=>result.year=args.next().ok_or("--year requires a fiscal label")?,
-            "--help"=>return Err("Usage: rentemester-desktop [--server HTTPS_ORIGIN --cookie-file PATH] [--company SLUG] [--year LABEL] [--allow-loopback-http]\nThe native window can also connect using its fields. Log in with e-mail/password and TOTP or backup code in the native window. Existing MFA cookie files remain supported. Managed local runtime is not implemented: the native server currently requires its qualified Linux runtime. This desktop connects only to explicit remote server origins.".into()),
+            "--help"=>return Err("Usage: rentemester-desktop [--server HTTPS_ORIGIN --cookie-file PATH] [--company SLUG] [--year LABEL] [--allow-loopback-http]\nThe native window can also connect using its fields. Log in with e-mail/password and TOTP or backup code in the native window. Existing MFA cookie files remain supported. For managed local mode use --local [--local-workspace PATH] [--create-local]. Default durable data: ~/Library/Application Support/Rentemester. The app bundle supplies its sibling server and browser assets; development overrides: --server-binary PATH --web-dir PATH. Local mode uses the explicit same-user macOS runtime profile.".into()),
             _=>return Err(format!("Unknown option {flag}; use --help")),
         }
         }
@@ -143,6 +155,13 @@ fn readable(error: rentemester_client::Error) -> String {
 }
 struct Desktop {
     server: Entity<InputState>,
+    local_mode: bool,
+    local_create: bool,
+    local_workspace: Entity<InputState>,
+    local_name: Entity<InputState>,
+    server_binary: PathBuf,
+    web: PathBuf,
+    managed: Option<local_backend::Managed>,
     cookie: Entity<InputState>,
     email: Entity<InputState>,
     password: Entity<InputState>,
@@ -188,7 +207,38 @@ impl Desktop {
                 .placeholder("MFA-kode")
                 .masked(true)
         });
+        let local_path = if options.local_workspace.as_os_str().is_empty() {
+            local_backend::default_profile()
+        } else {
+            options.local_workspace
+        };
+        let local_workspace = cx.new(|cx| {
+            let mut input = InputState::new(window, cx).placeholder("Lokal datamappe");
+            input.set_value(local_path.to_string_lossy().to_string(), window, cx);
+            input
+        });
+        let local_name = cx.new(|cx| {
+            let mut input = InputState::new(window, cx).placeholder("Virksomhedens navn");
+            input.set_value("Min virksomhed", window, cx);
+            input
+        });
+        let (binary, web) = local_backend::bundled_paths();
         let mut desktop = Self {
+            local_mode: options.local,
+            local_create: options.local_create,
+            local_workspace,
+            local_name,
+            server_binary: if options.server_binary.as_os_str().is_empty() {
+                binary
+            } else {
+                options.server_binary
+            },
+            web: if options.web.as_os_str().is_empty() {
+                web
+            } else {
+                options.web
+            },
+            managed: None,
             server,
             cookie,
             year,
@@ -208,10 +258,83 @@ impl Desktop {
                 .into(),
             busy: false,
         };
-        if !options.server.is_empty() && !options.cookie.as_os_str().is_empty() {
+        if !options.local && !options.server.is_empty() && !options.cookie.as_os_str().is_empty() {
             desktop.connect(cx);
         }
         desktop
+    }
+    fn connection_origin(&self, cx: &App) -> String {
+        if self.local_mode {
+            self.managed
+                .as_ref()
+                .map(|m| m.origin.clone())
+                .unwrap_or_default()
+        } else {
+            self.server.read(cx).value().to_string()
+        }
+    }
+    fn start_local(&mut self, cx: &mut Context<Self>) {
+        if self.busy || self.managed.is_some() {
+            return;
+        }
+        self.busy = true;
+        self.status = "Starter din lokale Rust-server…".into();
+        let input = local_backend::Start {
+            profile: PathBuf::from(self.local_workspace.read(cx).value().to_string()),
+            create: self.local_create,
+            company_name: self.local_name.read(cx).value().to_string(),
+            server_binary: self.server_binary.clone(),
+            web: self.web.clone(),
+        };
+        let task = cx
+            .background_executor()
+            .spawn(async move { local_backend::Managed::start(input) });
+        cx.spawn(async move |view, cx| {
+            let result = task.await;
+            let _ = view.update(cx, |this, cx| {
+                this.busy = false;
+                match result {
+                    Ok(managed) => {
+                        this.managed = Some(managed);
+                        this.local_create = false;
+                        this.status = "Lokal server er klar. Ved første start: åbn opsætningen i browseren, bekræft e-mail og opsæt MFA. Log derefter ind her.".into();
+                    }
+                    Err(error) => this.status = error,
+                }
+                cx.notify();
+            });
+        })
+        .detach();
+        cx.notify();
+    }
+    fn stop_local(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.busy {
+            return;
+        }
+        self.reset_login(window, cx);
+        let Some(mut managed) = self.managed.take() else {
+            return;
+        };
+        self.busy = true;
+        self.status = "Stopper den ejede lokale server…".into();
+        let task = cx
+            .background_executor()
+            .spawn(async move { managed.stop() });
+        cx.spawn(async move |view, cx| {
+            let result = task.await;
+            let _ = view.update(cx, |this, cx| {
+                this.busy = false;
+                this.status = result
+                    .map(|_| {
+                        "Den lokale server er stoppet. Data er gemt; vælg Åbn for at fortsætte."
+                            .into()
+                    })
+                    .unwrap_or_else(|error| error);
+                cx.notify();
+            });
+        })
+        .detach();
+        cx.notify();
     }
     fn connect(&mut self, cx: &mut Context<Self>) {
         if self.busy {
@@ -224,9 +347,9 @@ impl Desktop {
         self.companies.clear();
         self.trial = None;
         self.status = "Forbinder…".into();
-        let server = self.server.read(cx).value().to_string();
+        let server = self.connection_origin(cx);
         let cookie = PathBuf::from(self.cookie.read(cx).value().to_string());
-        let allow_http = self.allow_http;
+        let allow_http = self.local_mode || self.allow_http;
         let task = cx.background_executor().spawn(async move {
             let cookie = rentemester_client::read_cookie_file(&cookie).map_err(readable)?;
             let runtime = tokio::runtime::Builder::new_multi_thread()
@@ -283,8 +406,8 @@ impl Desktop {
         self.trial = None;
         self.busy = true;
         self.status = "Kontrollerer login…".into();
-        let origin = self.server.read(cx).value().to_string();
-        let allow_http = self.allow_http;
+        let origin = self.connection_origin(cx);
+        let allow_http = self.local_mode || self.allow_http;
         let email = self.email.read(cx).value().to_string();
         let password = self.password.read(cx).value().to_string();
         self.password
@@ -426,6 +549,8 @@ impl Desktop {
 impl Render for Desktop {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let mut content = div()
+            .id("desktop-scroll")
+            .overflow_y_scroll()
             .flex()
             .flex_col()
             .gap_3()
@@ -434,37 +559,126 @@ impl Render for Desktop {
             .bg(cx.theme().background)
             .text_color(cx.theme().foreground)
             .child(div().text_2xl().child("Rentemester"))
-            .child(div().child("Skrivebord · ekstern server"));
-        if self.session.is_none() {
-            let frozen = self.busy || self.pending.is_some();
-            content = content
-                .child("Serveradresse (HTTPS)")
-                .child(Input::new(&self.server).disabled(frozen))
-                .child(
-                    Checkbox::new("loopback-http")
-                        .label("Tillad HTTP til lokal testserver (kun loopback)")
-                        .checked(self.allow_http)
-                        .disabled(frozen)
-                        .on_change(cx.listener(|this, value, _, cx| {
-                            this.allow_http = *value;
-                            cx.notify();
-                        })),
-                )
-                .child(
-                    Checkbox::new("cookie-mode")
-                        .label("Brug eksisterende cookie-fil (avanceret)")
-                        .checked(self.cookie_mode)
-                        .disabled(frozen)
-                        .on_change(cx.listener(|this, value, window, cx| {
-                            this.cookie_mode = *value;
-                            this.enrollment = None;
-                            this.password
-                                .update(cx, |input, cx| input.set_value("", window, cx));
-                            this.code
-                                .update(cx, |input, cx| input.set_value("", window, cx));
-                            cx.notify();
-                        })),
+            .child(div().child(if self.local_mode {
+                "Skrivebord · lokal virksomhed"
+            } else {
+                "Skrivebord · ekstern server"
+            }))
+            .child(
+                RadioGroup::horizontal("connection-mode")
+                    .flex_none()
+                    .children(["På denne Mac", "Ekstern server"])
+                    .selected_index(Some(if self.local_mode { 0 } else { 1 }))
+                    .disabled(
+                        self.busy
+                            || self.managed.is_some()
+                            || self.session.is_some()
+                            || self.pending.is_some(),
+                    )
+                    .on_change(cx.listener(|this, value, window, cx| {
+                        this.local_mode = *value == 0;
+                        this.reset_login(window, cx);
+                    })),
+            );
+        if self.local_mode {
+            if let Some(managed) = &self.managed {
+                let browser_url = managed.browser_url();
+                content = content
+                    .child(format!("Datamappe: {}", managed.profile.display()))
+                    .child(
+                        Button::new("local-browser")
+                            .label("Åbn lokal opsætning og virksomhed i browser")
+                            .disabled(self.busy)
+                            .on_click(move |_, _, cx| cx.open_url(&browser_url)),
+                    )
+                    .child(
+                        Button::new("local-verification")
+                            .label("Åbn seneste lokale e-mailbekræftelse")
+                            .disabled(self.busy)
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                if let Some(managed) = &this.managed {
+                                    match managed.verification_url() {
+                                        Ok(url) => cx.open_url(&url),
+                                        Err(error) => this.status = error,
+                                    }
+                                }
+                                cx.notify();
+                            })),
+                    )
+                    .child(
+                        Button::new("local-stop")
+                            .label("Stop lokal server")
+                            .disabled(self.busy)
+                            .on_click(
+                                cx.listener(|this, _, window, cx| this.stop_local(window, cx)),
+                            ),
+                    );
+            } else {
+                content = content
+                    .child("Lokal datamappe")
+                    .child(Input::new(&self.local_workspace).disabled(self.busy))
+                    .child(
+                        Checkbox::new("local-create")
+                            .label("Opret ny datamappe og virksomhed")
+                            .checked(self.local_create)
+                            .disabled(self.busy)
+                            .on_change(cx.listener(|this, value, _, cx| {
+                                this.local_create = *value;
+                                cx.notify();
+                            })),
+                    );
+                if self.local_create {
+                    content = content
+                        .child("Virksomhedens navn")
+                        .child(Input::new(&self.local_name).disabled(self.busy));
+                }
+                content = content.child(
+                    Button::new("local-start")
+                        .primary()
+                        .label(if self.local_create {
+                            "Opret og start lokalt"
+                        } else {
+                            "Åbn lokalt"
+                        })
+                        .disabled(self.busy)
+                        .on_click(cx.listener(|this, _, _, cx| this.start_local(cx))),
                 );
+            }
+        }
+        if self.session.is_none() && (!self.local_mode || self.managed.is_some()) {
+            let frozen = self.busy || self.pending.is_some();
+            if self.local_mode {
+                content = content.child(format!("Server: {}", self.connection_origin(cx)));
+            } else {
+                content = content
+                    .child("Serveradresse (HTTPS)")
+                    .child(Input::new(&self.server).disabled(frozen))
+                    .child(
+                        Checkbox::new("loopback-http")
+                            .label("Tillad HTTP til lokal testserver (kun loopback)")
+                            .checked(self.allow_http)
+                            .disabled(frozen)
+                            .on_change(cx.listener(|this, value, _, cx| {
+                                this.allow_http = *value;
+                                cx.notify();
+                            })),
+                    );
+            }
+            content = content.child(
+                Checkbox::new("cookie-mode")
+                    .label("Brug eksisterende cookie-fil (avanceret)")
+                    .checked(self.cookie_mode)
+                    .disabled(frozen)
+                    .on_change(cx.listener(|this, value, window, cx| {
+                        this.cookie_mode = *value;
+                        this.enrollment = None;
+                        this.password
+                            .update(cx, |input, cx| input.set_value("", window, cx));
+                        this.code
+                            .update(cx, |input, cx| input.set_value("", window, cx));
+                        cx.notify();
+                    })),
+            );
             if self.cookie_mode {
                 content = content
                     .child("Cookie-fil fra browserens MFA-session")
@@ -531,9 +745,9 @@ impl Render for Desktop {
                     );
                 }
             }
-        } else {
+        } else if self.session.is_some() {
             content = content
-                .child(format!("Server: {}", self.server.read(cx).value()))
+                .child(format!("Server: {}", self.connection_origin(cx)))
                 .child(
                     Button::new("change-connection")
                         .label("Skift forbindelse")
