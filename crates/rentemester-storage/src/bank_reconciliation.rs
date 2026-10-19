@@ -136,14 +136,35 @@ fn journal_plan(
     require_unmatched_bank: bool,
 ) -> Result<Value, Error> {
     id(journal)?;
-    let bank = bank(tx, bank_id)?;
-    let target = amount(&bank)?;
     let already:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM bank_journal_reconciliations WHERE (?3 AND bank_transaction_id=?1) OR journal_entry_id=?2) OR EXISTS(SELECT 1 FROM bank_journal_reconciliation_links WHERE journal_entry_id=?2) OR EXISTS(SELECT 1 FROM bank_reconciliation_correction_events WHERE replacement_journal_entry_id=?2)",params![bank_id,journal,require_unmatched_bank],|r|r.get(0)).map_err(invalid)?;
     if already {
         return Err(refused(
             "bank row or journal already reconciled; explicit correction required",
         ));
     }
+    let reversed: bool = tx
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM journal_entries WHERE reversal_of_entry_id=?1)",
+            [journal],
+            |r| r.get(0),
+        )
+        .map_err(invalid)?;
+    if reversed {
+        return Err(refused("active original journal required"));
+    }
+    persisted_journal_facts(tx, bank_id, journal)
+}
+/// Read-only historical facts for native period audit. This is not candidate
+/// admission: existing links/reversal children are expected in immutable history.
+/// The caller validates proof/current-chain and verifies the actual archived source.
+pub(crate) fn persisted_journal_facts(
+    tx: &Transaction<'_>,
+    bank_id: i64,
+    journal: i64,
+) -> Result<Value, Error> {
+    id(journal)?;
+    let bank = bank(tx, bank_id)?;
+    let target = amount(&bank)?;
     type JournalProof = (
         String,
         String,
@@ -153,7 +174,7 @@ fn journal_plan(
         Option<i64>,
         String,
     );
-    let entry:Option<JournalProof>=tx.query_row("SELECT entry_no,entry_hash,transaction_date,status,reversal_of_entry_id,source_bank_transaction_id,currency FROM journal_entries WHERE id=?1 AND NOT EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=?1)",[journal],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?,r.get(5)?,r.get(6)?))).optional().map_err(invalid)?;
+    let entry:Option<JournalProof>=tx.query_row("SELECT entry_no,entry_hash,transaction_date,status,reversal_of_entry_id,source_bank_transaction_id,currency FROM journal_entries WHERE id=?1",[journal],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?,r.get(5)?,r.get(6)?))).optional().map_err(invalid)?;
     let (no, hash, date, status, reversal, direct, currency) =
         entry.ok_or_else(|| refused("active original journal required"))?;
     if status != "posted"

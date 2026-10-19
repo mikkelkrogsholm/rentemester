@@ -3,7 +3,7 @@ use super::*;
 use crate::idempotency::{self, Input as ReceiptInput, Operation, Outcome, PrincipalKind};
 use std::collections::BTreeSet;
 
-fn current(tx: &Transaction<'_>, bank: i64) -> Result<(String, i64, String), Error> {
+pub(crate) fn current(tx: &Transaction<'_>, bank: i64) -> Result<(String, i64, String), Error> {
     let mut q=tx.prepare("SELECT reconciliation_id,journal_entry_id,journal_entry_no FROM (SELECT 'direct:'||j.id AS reconciliation_id,j.id AS journal_entry_id,j.entry_no AS journal_entry_no FROM journal_entries j WHERE j.source_bank_transaction_id=?1 AND j.reversal_of_entry_id IS NULL UNION ALL SELECT 'append-only:'||l.id,j.id,j.entry_no FROM bank_journal_reconciliation_links l JOIN journal_entries j ON j.id=l.journal_entry_id WHERE l.bank_transaction_id=?1 UNION ALL SELECT 'correction:'||e.id,j.id,j.entry_no FROM bank_reconciliation_correction_events e JOIN journal_entries j ON j.id=e.replacement_journal_entry_id WHERE e.bank_transaction_id=?1) c WHERE NOT EXISTS(SELECT 1 FROM bank_reconciliation_correction_events e WHERE e.supersedes_reconciliation_id=c.reconciliation_id) ORDER BY reconciliation_id LIMIT 2").map_err(invalid)?;
     let rows = q
         .query_map([bank], |r| {
@@ -126,8 +126,57 @@ pub fn plan(tx: &Transaction<'_>, bank_id: i64, replacement: i64) -> Result<Valu
             "replacement must be a different independently posted journal",
         ));
     }
-    let (reversal_id, reversal_no, reversal_hash, old_hash) = reversal(tx, old)?;
+    reversal(tx, old)?;
     let replacement_plan = super::journal_plan(tx, bank_id, replacement, false)?;
+    plan_facts(
+        tx,
+        bank_id,
+        replacement,
+        (reconciliation, old, old_no),
+        replacement_plan,
+        history(tx, bank_id)?,
+    )
+}
+/// Reconstruct one historical correction proof without granting mutation/candidate
+/// admission. Audit supplies and separately validates the canonical predecessor prefix.
+pub(crate) fn persisted_plan_facts(
+    tx: &Transaction<'_>,
+    bank_id: i64,
+    reconciliation: &str,
+    old: i64,
+    replacement: i64,
+    history: Value,
+) -> Result<Value, Error> {
+    let old_no: String = tx
+        .query_row(
+            "SELECT entry_no FROM journal_entries WHERE id=?1",
+            [old],
+            |r| r.get(0),
+        )
+        .map_err(invalid)?;
+    let replacement_plan = super::persisted_journal_facts(tx, bank_id, replacement)?;
+    plan_facts(
+        tx,
+        bank_id,
+        replacement,
+        (reconciliation.into(), old, old_no),
+        replacement_plan,
+        history,
+    )
+}
+fn plan_facts(
+    tx: &Transaction<'_>,
+    bank_id: i64,
+    replacement: i64,
+    current: (String, i64, String),
+    replacement_plan: Value,
+    history: Value,
+) -> Result<Value, Error> {
+    let (reconciliation, old, old_no) = current;
+    if old == replacement {
+        return Err(refused("replacement must differ from original"));
+    }
+    let (reversal_id, reversal_no, reversal_hash, old_hash) = reversal(tx, old)?;
     // Both original and replacement must move this same mapped bank by the statement amount.
     let bank = bank(tx, bank_id)?;
     let target = amount(&bank)?;
@@ -145,7 +194,7 @@ pub fn plan(tx: &Transaction<'_>, bank_id: i64, replacement: i64) -> Result<Valu
             "current linked journal no longer reconciles to the mapped bank amount",
         ));
     }
-    let mut value = json!({"schemaVersion":"rentemester-bank-reconciliation-correction-v1","bankTransactionId":bank_id,"reconciliationId":reconciliation,"currentJournalEntryId":old,"currentJournalEntryNo":old_no,"currentJournalHash":old_hash,"reversalJournalEntryId":reversal_id,"reversalJournalEntryNo":reversal_no,"reversalJournalHash":reversal_hash,"replacementJournalEntryId":replacement,"replacementJournalEntryNo":replacement_plan["journalEntryNo"],"replacementJournalHash":replacement_plan["journalHash"],"bankAccountNo":bank.account_no,"bankAmountDkk":wire(&target)?,"replacementBankMovement":replacement_plan["journalBankMovement"],"sourceHash":bank.source,"transactionHash":bank.hash,"history":history(tx,bank_id)?,"replacementEvidence":replacement_plan,"originalLines":lines(tx,old,false)?,"reversalLines":lines(tx,reversal_id,false)?,"replacementLines":lines(tx,replacement,false)?,"effect":"correction_evidence_only_no_posting"});
+    let mut value = json!({"schemaVersion":"rentemester-bank-reconciliation-correction-v1","bankTransactionId":bank_id,"reconciliationId":reconciliation,"currentJournalEntryId":old,"currentJournalEntryNo":old_no,"currentJournalHash":old_hash,"reversalJournalEntryId":reversal_id,"reversalJournalEntryNo":reversal_no,"reversalJournalHash":reversal_hash,"replacementJournalEntryId":replacement,"replacementJournalEntryNo":replacement_plan["journalEntryNo"],"replacementJournalHash":replacement_plan["journalHash"],"bankAccountNo":bank.account_no,"bankAmountDkk":wire(&target)?,"replacementBankMovement":replacement_plan["journalBankMovement"],"sourceHash":bank.source,"transactionHash":bank.hash,"history":history,"replacementEvidence":replacement_plan,"originalLines":lines(tx,old,false)?,"reversalLines":lines(tx,reversal_id,false)?,"replacementLines":lines(tx,replacement,false)?,"effect":"correction_evidence_only_no_posting"});
     value["planHash"] = json!(format!(
         "{:x}",
         Sha256::digest(serde_json::to_vec(&value).map_err(invalid)?)
