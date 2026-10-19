@@ -1,7 +1,7 @@
 // Uses the existing real stdio/HTTP harness, with no authentication fixture bypass.
 use super::*;
 #[test]
-fn scheduled_discovery_150_tools_and_strict_read_write_arguments() {
+fn scheduled_discovery_158_tools_and_strict_read_write_arguments() {
     let rows = parsed(&run(
         "http://127.0.0.1:9",
         &[
@@ -11,7 +11,7 @@ fn scheduled_discovery_150_tools_and_strict_read_write_arguments() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 150);
+    assert_eq!(tools.len(), 158);
     for name in ["scheduled_recurring", "scheduled_recurring_plan"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],

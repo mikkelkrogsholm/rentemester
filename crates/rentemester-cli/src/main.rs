@@ -262,3 +262,7 @@ fn main() -> ExitCode {
 }
 
 mod scheduled_recurring;
+
+mod service_principals;
+
+mod hosted_recurring;
