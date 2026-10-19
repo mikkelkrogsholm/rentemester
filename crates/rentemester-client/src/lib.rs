@@ -6,11 +6,13 @@ mod bank_payables;
 mod periods;
 pub use periods::{PeriodMutation, period_body_schema};
 mod domain;
+mod receivables;
 pub use auth::{AuthenticatedSession, LoginProgress, MfaFactor, PendingLogin};
 pub use bank_payables::{BankMutation, bank_body_schema};
 pub use domain::{
     Confirmation, DomainMutation, MAX_DOMAIN_BODY, domain_body_schema, invoice_body_schema,
 };
+pub use receivables::{ReceivablesMutation, receivables_body_schema};
 mod credentials;
 pub use credentials::read_cookie_file;
 

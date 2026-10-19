@@ -146,7 +146,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 37);
+    assert_eq!(tools.len(), 40);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -484,4 +484,122 @@ fn period_close_mcp_preserves_exact_original_proof() {
     assert!(wire.starts_with(b"POST /api/companies/demo/periods/close "));
     assert!(wire.ends_with(body.as_bytes()));
     task.join().unwrap();
+}
+
+#[test]
+fn receivables_tools_forward_exact_native_bodies_and_are_discoverable() {
+    for (name, route, body) in [
+        (
+            "settle_invoice",
+            "settle",
+            r#"{ "invoiceDocumentId":1,"bankTransactionId":2,"confirm":true }"#,
+        ),
+        (
+            "credit_invoice",
+            "credit-note",
+            r#"{"invoiceDocumentId":1,"issueDate":"2026-10-19","reason":"Synthetic","grossAmount":25.01,"confirm":true}"#,
+        ),
+        (
+            "refund_invoice",
+            "refund",
+            r#"{"invoiceDocumentId":1,"bankTransactionReference":"synthetic outgoing","confirm":true}"#,
+        ),
+    ] {
+        let (origin, wire, task) =
+            http("HTTP/1.1 200 OK\r\nContent-Length:11\r\nConnection:close\r\n\r\n{\"ok\":true}");
+        let output = run(
+            &origin,
+            &[
+                init("2025-11-25"),
+                ready(),
+                call(
+                    2,
+                    name,
+                    json!({"company":"synthetic","body":body,"confirm":true}),
+                ),
+            ],
+        );
+        let values = parsed(&output);
+        assert_eq!(values[1]["result"]["isError"], false);
+        let request = wire.recv().unwrap();
+        assert!(request.starts_with(
+            format!("POST /api/companies/synthetic/invoices/{route} HTTP/1.1").as_bytes()
+        ));
+        assert!(request.ends_with(body.as_bytes()));
+        task.join().unwrap();
+    }
+    let output = run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),
+        ],
+    );
+    let values = parsed(&output);
+    let tools = values[1]["result"]["tools"].as_array().unwrap();
+    for name in ["settle_invoice", "credit_invoice", "refund_invoice"] {
+        let tool = tools.iter().find(|t| t["name"] == name).unwrap();
+        assert_eq!(tool["annotations"]["idempotentHint"], false);
+        assert_eq!(
+            tool["inputSchema"]["properties"]["body"]["contentSchema"]["properties"]["confirm"]["const"],
+            true
+        );
+    }
+}
+#[test]
+fn receivables_refusal_unknown_and_mixed_selector_remain_structured() {
+    for (response, expected) in [
+        (
+            "HTTP/1.1 422 Unprocessable Entity\r\nContent-Length:12\r\nConnection:close\r\n\r\n{\"ok\":false}",
+            "server_refused",
+        ),
+        (
+            "HTTP/1.1 503 Unavailable\r\nContent-Length:12\r\nConnection:close\r\n\r\n{\"ok\":false}",
+            "outcome_unknown",
+        ),
+    ] {
+        let (origin, _wire, task) = http(response);
+        let output = run(
+            &origin,
+            &[
+                init("2025-11-25"),
+                ready(),
+                call(
+                    2,
+                    "credit_invoice",
+                    json!({"company":"synthetic","confirm":true,"body":r#"{"invoiceDocumentId":1,"issueDate":"2026-10-19","reason":"Synthetic","confirm":true}"#}),
+                ),
+            ],
+        );
+        let values = parsed(&output);
+        assert_eq!(values[1]["result"]["isError"], true);
+        assert_eq!(
+            values[1]["result"]["structuredContent"]["error"]["code"],
+            expected
+        );
+        assert!(
+            values[1]["result"]["structuredContent"]["error"]
+                .get("idempotencyKey")
+                .is_none()
+        );
+        task.join().unwrap();
+    }
+    let output = run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "settle_invoice",
+                json!({"company":"synthetic","confirm":true,"body":r#"{"invoiceDocumentId":1,"bankTransactionId":2,"bankTransactionReference":"both","confirm":true}"#}),
+            ),
+        ],
+    );
+    let values = parsed(&output);
+    assert_eq!(
+        values[1]["result"]["structuredContent"]["error"]["code"],
+        "invalid_input"
+    );
 }

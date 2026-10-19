@@ -4,6 +4,7 @@
 //! https://modelcontextprotocol.io/specification/2025-11-25/server/tools
 mod bank_payables;
 mod periods;
+mod receivables;
 mod tools;
 use rentemester_client::{ApiClient, read_cookie_file};
 use serde_json::{Value, json};
