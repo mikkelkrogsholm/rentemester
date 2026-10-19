@@ -1593,3 +1593,79 @@ backup blev verificeret uden kilden og den private signeringsnøgle og
 gendannet med ny ejer/MFA uden SMTP-konfiguration; historik og originaler
 blev bevaret uden afsendelse. Testen videresender ingen mails og kvalificerer
 ikke en virkelig SMTP-udbyder, modtagernes postkasser eller produktionsdrift.
+
+
+## Flyt workspace mellem lokal drift og server
+
+Åbn **Workspace → Flyt workspace** på kilden. Gennemgå destinationen og
+begrundelsen, og bekræft frysning. Kilden afviser nu almindelige ændringer,
+bogføring og automatisk afsendelse. Login, autoriserede læsninger og eksport
+bevares. Frysningen ligger i workspace-data og overlever genstart og en
+kopieret serverkonfiguration. Før et flyttearkiv er tilbudt, kan ejeren
+annullere med en begrundelse. Efter eksport kan kilden ikke åbnes for
+skrivning igen gennem denne handling.
+
+Dan det signerede flyttearkiv fra samme side. Serveren registrerer arkivets
+SHA256, før downloadsvaret frigives. Gem også den separat betroede offentlige
+kildenøgle; en nøgle i et modtaget dokument etablerer ingen tillid.
+
+Operatøren klargør et **nyt** mål med ny privat konfiguration, nye cookie- og
+MFA-nøgler, ny `firstOwner`, `restoreActor` og `transferTrustedKeyFile`, som
+peger på den separat kontrollerede offentlige kildenøgle. Start eksempelvis:
+
+```sh
+rentemester-server --config NEW_PRIVATE.json \
+  --restore-backup workspace.transfer.native-backup.json \
+  --trusted-backup-key SOURCE_PUBLIC_KEY \
+  --confirm-target EXACT_CONFIG_ROOT --restore-transfer
+```
+
+`--restore-transfer` kan ikke kombineres med `--source-unavailable` eller
+`--create`. Arkivet verificeres før publicering, og målet får en ny lokal
+instansidentitet og en varig **klargjort** tilstand. Det er endnu ikke en
+skriver. Første ejer verificerer sin e-mail og opsætter MFA som normalt.
+Almindelig gendannelse kan ikke bruges til at omgå en frosset eller klargjort
+flytning.
+
+Målets flytteside viser en udfordring bundet til arkivet, workspace,
+virksomhedernes ledger-identiteter, målidentiteten og den kanoniske origin.
+Kontrollér målet gennem en uafhængig kanal. Gennemgå derefter udfordringen på
+kildens flytteside og frigiv til netop dette mål. Frigivelsen gemmes før
+svaret og kan læses igen efter et tabt svar. Kilden bliver permanent
+skrivebeskyttet. Det betyder, at målet er autoriseret; det beviser ikke,
+at målet faktisk er aktiveret.
+
+Indsæt den signerede frigivelse på målet, kontrollér den separat konfigurerede
+nøgle, og bekræft aktivering. Kun målserverens kanoniske **aktiv**-tilstand
+tillader almindelige ændringer. Andre instansidentiteter, arkiver og nøgler
+afvises. Aktivering starter ingen mails eller planlagte fakturaer. Gamle
+servicenøgler og eksekveringssamtykker giver ingen ny myndighed. Ukendte
+SMTP-forsøg bevarer deres historik og kan ikke automatisk sendes igen.
+Et aktivt mål kan senere starte en ny, udtrykkeligt godkendt flytning med nye
+flytteidentiteter; den tidligere kilde forbliver skrivebeskyttet.
+
+Hvis en bogføring blev accepteret på kilden, men svaret gik tabt, kan den nye
+ejer gennemgå den importerede kvittering og tilknytte den til sin aktuelle
+bruger med en begrundelse. Det ændrer ingen historisk bruger og bogfører
+intet. Efter aktivering kan den nøjagtige oprindelige nøgle og payload returnere
+det bevarede resultat med `receipt.replayed:true` og afklaringsproveniens.
+Aktuelle rettigheder kontrolleres stadig først. Ændret payload, manglende
+resultat, tvetydig kvittering eller manglende tilknytning afvises. Denne
+afklaring understøtter aktuelt `journal_post` og `journal_reverse`; øvrige
+nøglebaserede operationer er fortsat et paritetskrav.
+
+Ved et tabt aktiveringssvar læses tilstanden igen. Der er ingen automatisk
+optøning eller tilbageførsel til den gamle kilde. Gendannelse efter ny aktivitet
+på målet må bevare denne aktivitet; et fuldt efterfølgende rollback-forløb er
+fortsat åbent. Den lokale protokol kan ikke forhindre en betroet operatør i
+at starte en uafhængig kopi fra før frysningen eller bruge ældre software,
+der ignorerer spærren. Der hævdes ingen global beskyttelse mod vilkårlige
+kopier eller produktionskvalifikation på tværs af maskiner.
+
+Dette administrerede flytteforløb er verificeret på syntetiske data med to
+macOS-loopbackservere: almindelig ejer/MFA på begge, særskilt signaturkontrol,
+kvitteringstilknytning uden dobbelt bogføring og genstart med kilden fortsat
+skrivebeskyttet. Et reelt afbrudt SMTP-forsøg forblev uafklaret uden genafsendelse.
+Testen kvalificerer ikke de ovennævnte åbne rollback-/kopigrænser eller en
+installeret desktopapp. Se `implementation/progress.json` under Rust-målarkitekturen
+for revisionsbundne beviser og resterende arbejde.
