@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from "bun:test";
-import { fireEvent, screen } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderAt } from "../test/render";
 
 const companies = vi.fn();
@@ -65,4 +65,77 @@ describe("CfoCockpitView", () => {
     expect(screen.queryByText("0,00 kr.")).not.toBeInTheDocument();
     expect(screen.getByText(/2 bogførte poster uden bilag · 1 åbne undtagelser/)).toBeInTheDocument();
   });
+});
+
+
+test("native signed money and immutable source provenance render exactly without float conversion", async () => {
+  companies.mockResolvedValue([{slug:"alpha",name:"Alpha ApS",archived:false}]);
+  cfoAnalytics.mockResolvedValue({...companyAnalytics,reconciliation:{...companyAnalytics.reconciliation,amountByCurrency:{EUR:"-90071992547409.93"}},rows:[{...companyAnalytics.rows[0],currency:"EUR",amount:"-90071992547409.93",documentPartyName:"Extracted source only",partyLinkProvenance:{linkId:19,role:"supplier",evidenceKind:"reviewed",planHash:"c".repeat(64),linkedAt:"2026-08-30T10:00:00Z"},dimensions:[{dimensionId:"project",memberId:"synthetic",amountMinor:-1234,currency:"EUR"}]}]});
+  renderAt(<CfoCockpitView/>);
+  const rows=await screen.findByRole("region",{name:"Kildeposter"});
+  expect(within(rows).getByText("-90.071.992.547.409,93 EUR")).toBeInTheDocument();
+  fireEvent.click(within(rows).getByText("Kildedetaljer journal:1:line:1"));
+  expect(within(rows).getByText(/Konto: 4200 · Køb/)).toBeInTheDocument();
+  expect(within(rows).getByText(/Udtrukket bilagsnavn.*Extracted source only/)).toBeInTheDocument();
+  expect(within(rows).getByText(/Partstilknytning 19/)).toHaveTextContent("supplier");
+  expect(within(rows).getByText(/Dimension project: synthetic/)).toHaveTextContent("-1234 mindsteenheder EUR");
+  expect(within(rows).getByRole("link",{name:"Åbn originalbilag"})).toHaveAttribute("href","/api/companies/alpha/documents/7/file");
+});
+
+test("company and date changes suppress late previous source responses and reset pagination", async () => {
+  companies.mockResolvedValue([{slug:"alpha",name:"Alpha ApS",archived:false},{slug:"beta",name:"Beta ApS",archived:false}]);
+  let finishOld!:(value:unknown)=>void;
+  cfoAnalytics.mockImplementation((query:any)=>query.companySlug==="alpha"?new Promise(r=>{finishOld=r;}):Promise.resolve({...companyAnalytics,companies:["beta"],rows:[{...companyAnalytics.rows[0],companySlug:"beta",text:"Current beta source"}],page:{limit:1,nextCursor:query.cursor?null:"source-cursor"}}));
+  renderAt(<CfoCockpitView/>);
+  await waitFor(()=>expect(cfoAnalytics).toHaveBeenCalled());
+  fireEvent.change(screen.getByLabelText("Virksomhed"),{target:{value:"beta"}});
+  expect(await screen.findByText("Virksomhed: Beta ApS")).toBeInTheDocument();
+  finishOld(companyAnalytics);
+  await Promise.resolve();
+  expect(screen.queryByText("Virksomhed: Alpha ApS")).toBeNull();
+  fireEvent.click(screen.getByRole("button",{name:"Næste kildeposter"}));
+  await waitFor(()=>expect(cfoAnalytics).toHaveBeenLastCalledWith(expect.objectContaining({companySlug:"beta",cursor:"source-cursor"}),expect.anything()));
+  fireEvent.change(screen.getByLabelText("Fra dato"),{target:{value:"2026-06-01"}});
+  await waitFor(()=>expect(cfoAnalytics).toHaveBeenLastCalledWith(expect.objectContaining({companySlug:"beta",from:"2026-06-01"}),expect.anything()));
+  expect(cfoAnalytics.mock.calls.at(-1)![0].cursor).toBeUndefined();
+});
+
+test("portfolio default omits implicit sums and unavailable evidence never renders ready zeros", async () => {
+  cfoAnalytics.mockResolvedValue({...companyAnalytics,scope:"portfolio",mode:"juxtaposed-non-consolidated",aggregate:"none",rows:[companyAnalytics.rows[0],{...companyAnalytics.rows[0],companySlug:"beta",amount:"-12.34"}],evidenceCompleteness:[{companySlug:"alpha",status:"unavailable",reason:"Current source cannot be verified"}]});
+  renderAt(<CfoCockpitView/>);
+  fireEvent.change(await screen.findByLabelText("Visning"),{target:{value:"portfolio"}});
+  await screen.findByText("Portefølje — ikke konsolideret");
+  expect(screen.queryByRole("heading",{name:"Analyseret bevægelse"})).toBeNull();
+  expect(screen.getByText(/Ikke tilgængelig: Current source cannot be verified/)).toBeInTheDocument();
+  expect(screen.queryByText(/0 bogførte poster uden bilag/)).toBeNull();
+  expect(cfoAnalytics.mock.calls.at(-1)![0].aggregate).toBeUndefined();
+});
+
+test("group profile selection binds the requested profile and missing profiles never request a report", async () => {
+  groupReportProfiles.mockResolvedValue({profiles:[]});
+  const view=renderAt(<CfoCockpitView/>);
+  fireEvent.change(await screen.findByLabelText("Visning"),{target:{value:"group"}});
+  await screen.findByText("Ingen godkendt koncernrapportprofil er tilgængelig pr. den valgte dato.");
+  expect(cfoAnalytics.mock.calls.some(([q]:any[])=>q.scope==="group")).toBe(false);
+  view.unmount();
+  groupReportProfiles.mockResolvedValue({profiles:[{id:"first",currency:"DKK"},{id:"second",currency:"EUR"}]});
+  cfoAnalytics.mockResolvedValue({ok:true,scope:"group",status:"unsupported",asOf:"2026-08-30",limitations:[],group:{status:"blocked",blockers:["Current profile proof unavailable"],consolidatedFigures:null}});
+  renderAt(<CfoCockpitView/>);
+  fireEvent.change(await screen.findByLabelText("Visning"),{target:{value:"group"}});
+  await screen.findByRole("option",{name:"second · EUR"});
+  fireEvent.change(screen.getByLabelText("Koncernprofil"),{target:{value:"second"}});
+  await waitFor(()=>expect(cfoAnalytics).toHaveBeenLastCalledWith(expect.objectContaining({scope:"group",groupProfileId:"second"}),expect.anything()));
+  expect(await screen.findByText("Current profile proof unavailable")).toBeInTheDocument();
+});
+
+
+test("CFO transport preserves repeated company and source filters plus exact monetary response", async () => {
+  const {cfoAnalyticsApi}=await import("../lib/api/cfo-analytics");
+  const response={...companyAnalytics,rows:[{...companyAnalytics.rows[0],amount:"-90071992547409.93"}]};
+  const fetcher=vi.spyOn(globalThis,"fetch").mockResolvedValue(new Response(JSON.stringify(response),{headers:{"content-type":"application/json"}}));
+  const result=await cfoAnalyticsApi.cfoAnalytics({scope:"portfolio",from:"2026-01-01",to:"2026-08-30",companySlug:["alpha","beta"],account:"4200",party:"party:source",dimension:"project:one",currency:"EUR",aggregate:"sum",cursor:"exact-source-cursor",limit:1});
+  const query=new URL(String(fetcher.mock.calls[0]![0]),"http://localhost").searchParams;
+  expect(query.getAll("companySlug")).toEqual(["alpha","beta"]);
+  expect(Object.fromEntries(query.entries())).toMatchObject({account:"4200",party:"party:source",dimension:"project:one",currency:"EUR",aggregate:"sum",cursor:"exact-source-cursor",limit:"1"});
+  expect(result).toEqual(response);
 });
