@@ -1,3 +1,4 @@
+import { ordinaryWorkspaceWriteAllowed } from "../workspace-write-mode";
 // Shared primitives for the cockpit API client.
 //
 // `ApiError` is the canonical error class every per-domain module throws via
@@ -38,6 +39,7 @@ function isWrite(init?: ApiRequestOptions): boolean {
 }
 
 async function fetchResponse(path: string, init?: ApiRequestOptions): Promise<Response> {
+  if (!ordinaryWorkspaceWriteAllowed(path, init?.method ?? "GET", init?.readOnly)) throw new ApiError("workspace_not_active", "Workspace er skrivebeskyttet. Kontrollér flytningens aktuelle tilstand.", 423);
   const { readOnly, ...fetchOptions } = init ?? {};
   try {
     return await fetch(path, {

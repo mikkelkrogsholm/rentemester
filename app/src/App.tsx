@@ -1,3 +1,5 @@
+import { WorkspaceTransferProvider, WorkspaceTransferBanner, WorkspaceReadOnlyGuard } from "./components/WorkspaceTransferProvider";
+import { WorkspaceHandoffView } from "./views/WorkspaceHandoffView";
 import { ScheduledRecurringProvider } from "./components/ScheduledRecurringProvider";
 import { ButtonLink } from "./components/ui";
 // App shell + routing for the cockpit SPA (#171).
@@ -181,11 +183,11 @@ function AuthRecoveryRoutes() {
 }
 
 function CockpitApp() {
-  const { hosted, context } = useAuth();
+  const { hosted, context, backend } = useAuth();
   const location = useLocation();
   const canManageWorkspace = !hosted || context?.workspaceRole === "workspace_owner";
   return (
-    <ScheduledRecurringProvider><div className="app-shell">
+    <WorkspaceTransferProvider><ScheduledRecurringProvider><div className="app-shell">
       <header className="topbar">
         <SkipLink />
         <Link className="brand" to="/">Rentemester <span className="build-version" title="Installeret Rentemester-version">v{packageJson.version}</span></Link>
@@ -194,6 +196,7 @@ function CockpitApp() {
             Portefølje
           </NavLink>
           {hosted && <NavLink to="/cfo">CFO-overblik</NavLink>}
+          {canManageWorkspace && backend === "rust" && <NavLink to="/flytning">Flyt workspace</NavLink>}
           {canManageWorkspace && <NavLink to="/companies/new">Tilføj virksomhed</NavLink>}
           {hosted && canManageWorkspace && <NavLink to="/koncernstruktur">Koncernstruktur</NavLink>}
           {hosted && canManageWorkspace && <NavLink to="/adgang">Brugere</NavLink>}
@@ -204,10 +207,12 @@ function CockpitApp() {
         {hosted && <AccountMenu />}
       </header>
 
+      <WorkspaceTransferBanner />
       <CompanyNavigationShell>
         <CockpitLayout>
-          <Routes>
+          <WorkspaceReadOnlyGuard><Routes>
             <Route path="/" element={<PortfolioView />} />
+            <Route path="/flytning" element={<WorkspaceHandoffView />} />
             {hosted && <Route path="/cfo" element={<CfoCockpitView />} />}
             <Route path="/companies/new" element={canManageWorkspace ? <AddCompanyView /> : <ErrorState message="Du har ikke adgang til at oprette virksomheder." />} />
             {hosted && canManageWorkspace && <Route path="/koncernstruktur" element={<GroupOverviewView />} />}
@@ -222,10 +227,10 @@ function CockpitApp() {
             <Route path="/help" element={<HelpView />} />
             <Route path="/lovgrundlag" element={<RulesView />} />
             <Route path="*" element={<NotFound />} />
-          </Routes>
+          </Routes></WorkspaceReadOnlyGuard>
         </CockpitLayout>
       </CompanyNavigationShell>
-    </div></ScheduledRecurringProvider>
+    </div></ScheduledRecurringProvider></WorkspaceTransferProvider>
   );
 }
 

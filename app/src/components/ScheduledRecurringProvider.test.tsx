@@ -88,3 +88,12 @@ test("hosted or unknown execution mode stops the app before plan fetch and dispa
     expect(posts()).toHaveLength(0); view.unmount();
   }
 });
+test("workspace freeze refuses explicit app activation before any dispatch", async () => {
+  const { Context } = await import("../lib/workspace-transfer-context");
+  const lifecycle = (writable: boolean) => ({enabled:true,writable,scope:"synthetic",transfer:null,error:"",loading:false,refresh:async()=>{},adopt:()=>{}});
+  setup(undefined,true);
+  const content = (writable: boolean) => <AuthProvider hosted backend="rust"><MutationMemoryProvider><Context.Provider value={lifecycle(writable)}><ScheduledRecurringProvider><Start/></ScheduledRecurringProvider></Context.Provider></MutationMemoryProvider></AuthProvider>;
+  const view=renderAt(content(false)); await start(); expect(posts()).toHaveLength(0);
+  expect(screen.queryByText(/Planlagte fakturaer kører, mens denne app er åben/)).toBeNull();
+  view.unmount();
+});

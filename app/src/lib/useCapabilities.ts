@@ -1,3 +1,4 @@
+import { useWorkspaceTransfer } from "./workspace-transfer-context";
 import { useContext } from 'react';
 import { UNSAFE_RouteContext } from 'react-router-dom';
 import { ROUTE_PERMISSION_POLICY, type CompanyRole, type RoutePermission } from '../../../src/core/access-permissions';
@@ -5,6 +6,7 @@ import { useOptionalAuth } from './auth-context';
 
 /** Presentation uses the exact server policy. The server authorizes every request. */
 export function useCapabilities(companySlug?: string) {
+  const lifecycle = useWorkspaceTransfer();
   const route = useContext(UNSAFE_RouteContext);
   const slug = route.matches.at(-1)?.params.slug;
   const auth = useOptionalAuth();
@@ -15,6 +17,7 @@ export function useCapabilities(companySlug?: string) {
   return {
     role, hosted, archived: company?.archived ?? false,
     can(permission: RoutePermission): boolean {
+      if (lifecycle?.enabled && !lifecycle.writable && !(permission.endsWith(".read") || permission === "company.export")) return false;
       if (!hosted) return true;
       if (permission.startsWith('company.')) return role !== null && ROUTE_PERMISSION_POLICY[role].includes(permission);
       return workspaceRole !== undefined && ROUTE_PERMISSION_POLICY[workspaceRole].includes(permission);

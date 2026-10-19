@@ -1,3 +1,4 @@
+import { useWorkspaceTransfer } from "./WorkspaceTransferProvider";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { scheduledRecurringApi } from "../lib/api/scheduled-recurring";
 import { useOptionalAuth } from "../lib/auth-context";
@@ -15,8 +16,10 @@ const key = (job: Pick<Job, "slug" | "templateId">) => JSON.stringify([job.slug,
 /** Only explicit activation in this authenticated app session starts a driver. No persisted worker credentials. */
 export function ScheduledRecurringProvider({ children }: { children: ReactNode }) {
   const auth = useOptionalAuth();
+  const lifecycle = useWorkspaceTransfer();
+  const writable = !lifecycle?.enabled || lifecycle.writable;
   const scope = auth?.backend === "rust" && auth.context?.user.id && auth.currentSessionId
-    ? `${auth.context.user.id}:${auth.currentSessionId}` : null;
+    && writable ? `${auth.context.user.id}:${auth.currentSessionId}` : null;
   const [jobs, setJobs] = useState<Job[]>([]);
   const [message, setMessage] = useState("");
   const [busyCompanies] = useState(() => new Set<string>());
