@@ -193,14 +193,18 @@ def main():
             evidence['webFilesSha256'] = {str(path.relative_to(web)): sha(path) for path in sorted(web.rglob('*')) if path.is_file()}
             evidence['ownedFixture'] = str(work); save()
             def scan_service_plaintext():
-                pattern = re.compile(rb'rms_[A-Za-z0-9_-]{64}')
+                # Native NewServiceKey and storage require exactly64 ASCII letters.
+                # A wider alphabet falsely joins SQLite start/reference/prefix/hash cells.
+                pattern = re.compile(rb'rms_[A-Za-z]{64}')
                 for path in work.rglob('*'):
                     if not path.is_file() or path.is_symlink() or path in pinned.values() or web in path.parents: continue
                     with path.open('rb') as stream:
                         carry = b''
                         while chunk := stream.read(1024*1024):
                             data = carry+chunk
-                            if pattern.search(data): raise RuntimeError('Service plaintext persisted in owned fixture')
+                            if pattern.search(data):
+                                evidence['servicePlaintextDetectedIn'] = str(path.relative_to(work)); save()
+                                raise RuntimeError('Service plaintext persisted in owned fixture: '+str(path.relative_to(work)))
                             carry = data[-80:]
                 if pattern.search(json.dumps(evidence).encode()): raise RuntimeError('Service plaintext entered evidence')
             with socket.socket() as sock: sock.bind(('127.0.0.1', 0)); port = sock.getsockname()[1]
