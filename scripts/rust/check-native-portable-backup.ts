@@ -79,6 +79,7 @@ const digest=(b:Buffer)=>createHash("sha256").update(b).digest("hex");
 const password="synthetic-portable-password-123";
 const slugs=["synthetic","synthetic-portable-second"];
 async function snapshot(){const out:any={};for(const s of slugs){const journal=(await get(s,"journal")).journal;out[s]={uuid:journal.ledgerUuid,entries:journal.entries,balance:(await get(s,`balance?year=${journal.selectedYear}`)).balance};}return out;}
+const ownershipEnabled=process.env.RM_PORTABLE_OWNERSHIP==="1";
 const corporateEnabled=process.env.RM_PORTABLE_CORPORATE==="1";
 const inboxEnabled=process.env.RM_PORTABLE_INBOX==="1";
 const partiesEnabled=process.env.RM_PORTABLE_PARTIES==="1";
@@ -249,6 +250,114 @@ async function prepareCorporate(){
  if(!isDeepStrictEqual(await snapshot(),before))throw Error("Corporate source history changed accounting");
  return views;
 }
+const ownershipReviewerEmail="portable-reviewer@example.invalid";
+const ownershipReviewerPassword="synthetic-portable-reviewer-password-456";
+const ownershipSnapshots=["ownership-portable-initial","ownership-portable-later","ownership-portable-pending","ownership-portable-approved","ownership-portable-rejected"];
+const ownershipDates=["1999-12-31","2000-12-31","2001-01-01","2030-01-01"];
+async function workspaceRequest(actor:Page,path:string,data?:unknown){
+ const response=data===undefined?await actor.request.get(`${base}${path}`):await actor.request.post(`${base}${path}`,{headers,data});
+ if(!response.ok())throw Error(`Owned workspace request ${path} refused ${response.status()}`);
+ return response.json();
+}
+async function prepareOwnershipReviewer(){
+ const spool=join(config.root,".rentemester");
+ const files=(prefix:string)=>readdirSync(spool).filter(n=>n.startsWith(prefix)&&n.endsWith(".txt"));
+ function delivery(prefix:string,before:string[]){
+  const added=files(prefix).filter(n=>!before.includes(n));if(added.length!==1)throw Error("Expected exactly one new owned private delivery");
+  const link=readFileSync(join(spool,added[0]),"utf8").trim();if(new URL(link).origin!==base)throw Error("Owned delivery origin differs");return link;
+ }
+ const before=files("invitation-");
+ const issued=await workspaceRequest(page,"/api/workspace/invitations",{email:ownershipReviewerEmail,workspaceRole:"member",companySlug:slugs[0],companyRole:"owner"});
+ const invitationUrl=delivery("invitation-",before);
+ const listed=await workspaceRequest(page,"/api/workspace/invitations");
+ if(!listed.invitations.some((i:any)=>i.invitationId===issued.invitation.invitationId&&i.status==="delivery_confirmed"))throw Error("Reviewer invitation delivery not canonical");
+ const reviewer=await browser.newPage();reviewer.setDefaultTimeout(45000);
+ try{
+  const verifications=files("verification-");await reviewer.goto(invitationUrl);
+  await reviewer.getByRole("heading",{name:"Acceptér invitation",exact:true}).waitFor();
+  if(new URL(reviewer.url()).hash)throw Error("Invitation bearer retained in browser URL");
+  await reviewer.getByLabel("Navn",{exact:true}).fill("Synthetic Portable Independent Reviewer");
+  await reviewer.getByLabel("Adgangskode",{exact:true}).fill(ownershipReviewerPassword);
+  const [claimed]=await Promise.all([reviewer.waitForResponse(r=>new URL(r.url()).pathname==="/api/invitations/claim"&&r.request().method()==="POST"),reviewer.getByRole("button",{name:"Acceptér invitation",exact:true}).click()]);
+  if(!claimed.ok()||claimed.headers()["set-cookie"])throw Error("Invitation claim failed or minted an authenticated session");
+  await reviewer.getByText("Invitationen er accepteret.",{exact:true}).waitFor();
+  if((await reviewer.request.get(company(slugs[0],"ownership?asOf=2000-12-31"))).ok())throw Error("Invitation bypassed verification/MFA");
+  const pending=(await workspaceRequest(page,"/api/workspace/members")).members.find((m:any)=>m.email===ownershipReviewerEmail);
+  if(pending?.accessReady!==false||pending.emailVerified!==false||pending.twoFactorEnabled!==false||pending.workspaceRole!=="member")throw Error("Invitation fabricated readiness or workspace authority");
+  await reviewer.goto(delivery("verification-",verifications));
+  // Existing ordinary enrollment also clears cookies, waits out the sign-in
+  // throttle and performs a real recovery-code login. No MFA/session cloning.
+  await enroll(reviewer,ownershipReviewerEmail,ownershipReviewerPassword);
+  const current=await workspaceRequest(reviewer,"/api/me"),author=await workspaceRequest(page,"/api/me");
+  if(!current.user?.id||current.user.id===author.user?.id||current.user.id!==pending.userId)throw Error("Distinct current MFA reviewer missing");
+  await workspaceRequest(page,"/api/workspace/members/company",{userId:current.user.id,action:"grant",companySlug:slugs[1],role:"owner"});
+  const member=(await workspaceRequest(page,"/api/workspace/members")).members.find((m:any)=>m.userId===current.user.id);
+  if(member?.workspaceRole!=="member"||member.accessReady!==true||member.memberships.length!==2||slugs.some(slug=>!member.memberships.some((m:any)=>m.companySlug===slug&&m.role==="owner")))throw Error("Reviewer lacks exact explicit company-owner grants or gained workspace-owner authority");
+  const denied=await reviewer.request.get(`${base}/api/workspace/members`);if(denied.status()!==403)throw Error("Company-owner reviewer gained workspace administration");
+  return{reviewer,reviewerId:current.user.id as string,authorId:author.user.id as string,invitationId:issued.invitation.invitationId as string};
+ }catch(error){await reviewer.context().close();throw error;}
+}
+async function ownershipViews(){
+ const views:Record<string,any>={};
+ for(const slug of slugs){
+  const snapshots:Record<string,unknown>={},dated:Record<string,unknown>={},projections:Record<string,unknown>={};
+  for(const id of ownershipSnapshots)snapshots[id]=await get(slug,`ownership/history?snapshotId=${id}`);
+  for(const at of ownershipDates){dated[at]=await get(slug,`ownership?asOf=${at}`);projections[at]=await get(slug,`ownership/history?asOf=${at}`);}
+  views[slug]={history:await get(slug,"ownership/history"),snapshots,dated,projections};
+ }
+ return views;
+}
+async function prepareOwnership(){
+ if(!corporateEnabled||!partiesEnabled)throw Error("Ownership fixture requires canonical party and Corporate evidence");
+ const before=await snapshot();const actor=await prepareOwnershipReviewer();
+ try{
+  const recordId=portableCorporateRecords[0].id;
+  const fact=(from:string,bp:number)=>({owner:{kind:"party",partyId:portablePartyId},ownedCompanySlug:slugs[0],validFrom:from,economicBasisPoints:bp,controlType:"equity",jurisdiction:"DK",evidenceRefs:[recordId,"synthetic-portable-opaque-source"]});
+  const proposedFacts:Record<string,unknown>={},appliedAdditions:Record<string,unknown>={};
+  const propose=async(id:string,from:string,bp:number,companyFact=false)=>{
+   const facts:any[]=[fact(from,bp)];
+   if(companyFact)facts.push({owner:{kind:"company",companySlug:slugs[0]},ownedCompanySlug:slugs[1],validFrom:"2000-01-01",economicBasisPoints:1000,controlType:"equity",jurisdiction:"DK",evidenceRefs:[recordId]});
+   const s=(await post(slugs[0],"ownership/propose",{snapshotId:id,source:"Synthetic portable reviewed ownership source",observedAt:"2026-01-01",facts,confirm:true})).snapshot;
+   if(s.state!=="proposed"||s.principal.id!==actor.authorId||s.diff.unchanged.length!==0)throw Error("Ownership proposal receipt differs");
+   proposedFacts[id]=s.diff.add;return s;
+  };
+  const review=async(id:string,decision:string)=>workspaceRequest(actor.reviewer,`/api/companies/${slugs[0]}/ownership/review`,{snapshotId:id,decision,confirm:true});
+  const apply=async(s:any)=>{
+   const result=await post(slugs[0],"ownership/apply",{snapshotId:s.snapshotId,snapshotHash:s.snapshotHash,diffHash:s.diffHash,confirm:true});
+   if(result.status!=="applied"||result.snapshot.state!=="applied")throw Error("Ownership confirmed apply not canonical");
+   appliedAdditions[s.snapshotId]=s.diff.add;
+  };
+  const initial=await propose(ownershipSnapshots[0],"2000-01-01",2000,true);
+  const refused=await page.request.post(company(slugs[0],"ownership/review"),{headers,data:{snapshotId:initial.snapshotId,decision:"approved",confirm:true}});
+  if(refused.status()!==422||!isDeepStrictEqual((await get(slugs[0],`ownership/history?snapshotId=${initial.snapshotId}`)).history,[initial]))throw Error("Self-review refused with changed source history");
+  await review(initial.snapshotId,"approved");await apply(initial);
+  const later=await propose(ownershipSnapshots[1],"2001-01-01",3000);
+  if(later.diff.endings.length!==1)throw Error("Explicit later ownership did not return one canonical ending");
+  await review(later.snapshotId,"approved");await apply(later);
+  await propose(ownershipSnapshots[2],"2030-01-01",4000);
+  const approved=await propose(ownershipSnapshots[3],"2031-01-01",4000);await review(approved.snapshotId,"approved");
+  const rejected=await propose(ownershipSnapshots[4],"2032-01-01",4000);await review(rejected.snapshotId,"rejected");
+  const views=await ownershipViews(),states=["applied","applied","proposed","approved","rejected"];
+  for(const slug of slugs){
+   const history=views[slug].history.history;
+   if(history.length!==5)throw Error("Ownership full state history inventory differs");
+   for(const[index,id]of ownershipSnapshots.entries()){
+    const s=history.find((r:any)=>r.snapshotId===id);
+    if(!s||s.state!==states[index]||s.principal.id!==actor.authorId||s.principal.kind!=="user"||s.history[0].principal_id!==actor.authorId||s.history[0].actor!==`user:${actor.authorId}`)throw Error("Ownership proposer/state provenance differs");
+    const reviewed=s.history.find((h:any)=>["approved","rejected"].includes(h.event_type));
+    if((s.state!=="proposed"&&(!reviewed||reviewed.principal_id!==actor.reviewerId||reviewed.principal_kind!=="user"||reviewed.actor!==`user:${actor.reviewerId}`))||s.history.some((h:any)=>!h.created_at))throw Error("Independent reviewed principal/history missing");
+   }
+   for(const at of ownershipDates){
+    const graph=views[slug].dated[at],partyFacts=graph.facts.filter((f:any)=>f.owner.partyId===portablePartyId),companies=graph.facts.filter((f:any)=>f.owner.companySlug===slugs[0]);
+    const bp=at<"2000-01-01"?0:at<"2001-01-01"?2000:3000;
+    if(graph.partial!==false||graph.consolidation.eligible!==false||partyFacts.length!==(bp?1:0)||(bp&&(partyFacts[0].economicBasisPoints!==bp||partyFacts[0].validToExclusive!==(bp===2000?"2001-01-01":undefined)))||companies.length!==(bp?1:0)||(bp&&companies[0].economicBasisPoints!==1000))throw Error("Ownership exact dated ending, omitted-fact survival or un-applied state differs");
+   }
+  }
+  for(const slug of slugs){const r=await actor.reviewer.request.get(company(slug,"ownership/history"));if(!r.ok()||!isDeepStrictEqual(await r.json(),views[slug].history))throw Error("Independent current owner cannot read exact source history");}
+  if(!isDeepStrictEqual(await snapshot(),before))throw Error("Ownership observation/review/apply changed accounting");
+  return{views,proposedFacts,appliedAdditions,endings:later.diff.endings,authorId:actor.authorId,reviewerId:actor.reviewerId,invitationId:actor.invitationId};
+ }finally{await actor.reviewer.context().close();}
+}
 async function exportClientArtifacts(){
  const maxBytes=96*1024*1024;
  const maxOutput=8*maxBytes+65536; // MCP text+structuredContent repeat the integer array.
@@ -283,6 +392,7 @@ async function exportClientArtifacts(){
 
 try{
  let saved:any=phase==="source"?{}:JSON.parse(readFileSync(statePath,"utf8"));
+ if(phase!=="source"&&Boolean(saved.ownership)!==ownershipEnabled)throw Error("RM_PORTABLE_OWNERSHIP must match the source fixture in every phase");
  if(phase!=="source"&&Boolean(saved.corporate)!==corporateEnabled)throw Error("RM_PORTABLE_CORPORATE must match the source fixture in every phase");
  if(phase!=="source"&&Boolean(saved.inbox)!==inboxEnabled)throw Error("RM_PORTABLE_INBOX must match the source fixture in every phase");
  if(phase!=="source"&&Boolean(saved.parties)!==partiesEnabled)throw Error("RM_PORTABLE_PARTIES must match the source fixture in every phase");
@@ -345,6 +455,10 @@ try{
    saved.corporatePayloads={assertion:corporateAssertion,reasons:corporateReasons,replacementRecordId:portableCorporateRecords[1].id,originalId:portableCorporateRecords[0].id};
    saved.corporateEvidence={recordIds:portableCorporateRecords.map(r=>r.id),sensitivities:portableCorporateRecords.map(r=>r.sensitivity),sourceViewsSha256:digest(Buffer.from(JSON.stringify(saved.corporate))),associatedCompanies:slugs,partyId:portablePartyId,repeatedSupersessions:2,anonymousAccessRefused:true,accountingEffect:"none",legacyScopeCoverage:"Codec unit tests only: native API does not create pre-20 unscoped links",reducedRoleSensitivityCoverage:"Existing native authorization/codec unit tests; this J05 fixture uses an ordinary all-company owner"};
   }
+  if(ownershipEnabled){
+   const ownership=await prepareOwnership();saved.ownership=ownership.views;saved.ownershipSnapshotFacts=ownership.proposedFacts;saved.ownershipAppliedAdditions=ownership.appliedAdditions;saved.ownershipEndings=ownership.endings;
+   saved.ownershipEvidence={snapshotIds:ownershipSnapshots,states:["applied","applied","proposed","approved","rejected"],asOf:ownershipDates,sourceViewsSha256:digest(Buffer.from(JSON.stringify(saved.ownership))),authorId:ownership.authorId,reviewerId:ownership.reviewerId,invitationId:ownership.invitationId,ordinaryInvitationVerificationAndDistinctMfa:true,reviewerWorkspaceRole:"member",reviewerCompanyRoles:slugs.map(companySlug=>({companySlug,role:"owner"})),selfReviewRefused:true,canonicalEndingCount:1,accountingEffect:"none",legacyV1Coverage:"Codec unit tests only; ordinary current API creates v2",reducedRoleVisibilityCoverage:"Existing native authorization/codec unit tests; J05 compares both company anchors with all-company owners"};
+  }
   if(process.env.RM_PORTABLE_CLIENTS==="1")saved.clientEvidence=await exportClientArtifacts();
   if(partiesEnabled&&!isDeepStrictEqual(await partiesViews(),saved.parties))throw Error("Backup client exports changed party history");
   if(knowledgeEnabled&&!isDeepStrictEqual(await knowledgeViews(),saved.knowledge))throw Error("Backup client exports changed knowledge history");
@@ -366,6 +480,14 @@ try{
    writeFileSync(join(work,"portable.native-backup.json"),await archive.body(),{mode:0o600});
   }
  }else{
+  if(ownershipEnabled){
+   if(!saved.ownership||!isDeepStrictEqual(await ownershipViews(),saved.ownership))throw Error("Restored Ownership canonical context/history/hashes/diffs/states/as-of projections differ");
+   const me=await workspaceRequest(page,"/api/me"),members=await workspaceRequest(page,"/api/workspace/members");
+   if(me.user.id===saved.ownershipEvidence.authorId||me.user.id===saved.ownershipEvidence.reviewerId||members.members.length!==1||members.members[0].userId!==me.user.id)throw Error("Historical ownership principals became restored authority");
+   const oldReviewer=await page.request.post(`${base}/api/auth/sign-in/email`,{headers,data:{email:ownershipReviewerEmail,password:ownershipReviewerPassword}});
+   if(oldReviewer.ok())throw Error("Historical independent reviewer credentials imported");
+   saved.ownershipEvidence[phase==="reopen"?"exactAfterRestart":"exactAfterRestore"]=true;saved.ownershipEvidence.noHistoricalAuthority=true;
+  }
   if(corporateEnabled){
    if(!saved.corporate||!isDeepStrictEqual(await corporateViews(),saved.corporate))throw Error("Restored corporate metadata/links/enrichment/supersession history/visibility/originals differ from original API evidence");
    saved.corporateEvidence[phase==="reopen"?"exactAfterRestart":"exactAfterRestore"]=true;
@@ -398,6 +520,7 @@ try{
    saved.bank=afterBank;saved.snapshot=await snapshot();
   }
  }
+ if(ownershipEnabled&&!isDeepStrictEqual(await ownershipViews(),saved.ownership))throw Error("Portable phase changed Ownership canonical source/history/as-of projections");
  if(corporateEnabled&&!isDeepStrictEqual(await corporateViews(),saved.corporate))throw Error("Portable phase changed corporate canonical source/history/originals");
  if(inboxEnabled&&!isDeepStrictEqual(await inboxViews(),saved.inbox))throw Error("Portable phase changed inbox source/history/document/original views");
  if(partiesEnabled&&!isDeepStrictEqual(await partiesViews(),saved.parties))throw Error("Portable phase changed canonical party source history");
