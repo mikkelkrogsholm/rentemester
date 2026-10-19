@@ -23,6 +23,40 @@ type Run = { companySlug: string; runId: number; plan: BookkeepingBatchPlan; sta
 type Revision = { planHash?: string; approvedAt?: string | null };
 const EMPTY_FILTERS = { status: "", bankAccountId: "", partyId: "", documentQuality: "", account: "", vatTreatment: "", dimension: "", search: "" };
 
+function sourceRecord(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+function sourceText(value: unknown, missing = "Ikke oplyst") {
+  return typeof value === "string" || typeof value === "number" ? String(value) : missing;
+}
+const VAT_LABELS: Record<string, string> = { standard: "Almindeligt momsfradrag", exempt: "Momsfrit", non_deductible: "Ingen fradragsret" };
+const PARTITION_LABELS: Record<string, string> = { ready: "Klar til gennemgang", suggestedMatch: "Match skal gennemgås", missingDocument: "Bilag mangler", humanDecision: "Kræver faglig gennemgang" };
+/** Display the frozen server summary. Amounts and readiness are never calculated here. */
+export function BookkeepingPlanSummary({ plan, slug }: { plan: BookkeepingBatchPlan; slug: string }) {
+  return <section aria-label="Planens regnskabsmæssige oversigt">
+    <p>Bankperiode: {plan.bankFrom} – {plan.bankTo}. Bogføringsperiode: {plan.accountingFrom} – {plan.accountingTo}.</p>
+    <p>Gennemgå hvert bilag, betalingen, kontoen og momsbehandlingen. Alle nye posteringer og afsluttende kontroller skal lykkes samlet. Hvis én fejler, bliver ingen af batchens nye posteringer gemt.</p>
+    <div className="table-scroll"><table className="data"><caption>Posterne i den gennemgåede plan</caption><thead><tr><th>Bilag</th><th>Bankbetaling</th><th>Konto og momsbehandling</th><th>Planens beløb</th><th>Klarhed</th></tr></thead><tbody>
+      {plan.items.map(item => {
+        const bank = sourceRecord(item.detail.bank), doc = sourceRecord(item.detail.document), proposed = sourceRecord(item.detail.proposed);
+        const amounts = sourceRecord(sourceRecord(item.detail.vat).plan);
+        const currency = sourceText(bank.currency, "Valuta ikke oplyst");
+        const amount = (value: unknown, unit = currency) => value === null || value === undefined ? "Ikke oplyst" : `${sourceText(value)} ${unit}`;
+        const account = sourceText(proposed.account), treatment = sourceText(proposed.vatTreatment);
+        const dimensions = Object.entries(sourceRecord(proposed.dimensions));
+        return <tr key={item.actionKey}>
+          <td>{item.documentId ? <Link to={`/companies/${encodeURIComponent(slug)}/bilag?documentId=${item.documentId}`}>{sourceText(doc.invoiceNo, `Bilag #${item.documentId}`)}</Link> : "Bilag mangler"}<div>{sourceText(doc.senderName, "Leverandør ikke oplyst")}</div><div>Bilagets beløb: {amount(doc.amountIncVat, sourceText(doc.currency, "Valuta ikke oplyst"))}</div></td>
+          <td>{item.bankTransactionId ? <Link to={`/companies/${encodeURIComponent(slug)}/bank?transactionId=${item.bankTransactionId}`}>{sourceText(bank.text, `Bankpost #${item.bankTransactionId}`)}</Link> : "Bankpost ikke oplyst"}<div>{sourceText(bank.date, "Dato ikke oplyst")}</div><div>{amount(bank.amount)}</div></td>
+          <td>Konto: {account}<div>{VAT_LABELS[treatment] ?? treatment}</div>{dimensions.length > 0 && <div>Dimensioner: {dimensions.map(([name, member]) => `${name}: ${sourceText(member)}`).join(", ")}</div>}</td>
+          <td>Samlet: {amount(amounts.grossAmount)}<div>Netto: {amount(amounts.netAmount)}</div><div>Momsfradrag: {amount(amounts.vatAmount)}</div></td>
+          <td>{PARTITION_LABELS[item.partition] ?? "Klarhed ikke oplyst"}</td>
+        </tr>;
+      })}
+      {plan.items.length === 0 && <tr><td colSpan={5}>Planen indeholder ingen poster.</td></tr>}
+    </tbody></table></div>
+  </section>;
+}
+
 export function BookkeepingBatchView() {
   const auth = useOptionalAuth();
   const [params] = useSearchParams();
@@ -209,7 +243,7 @@ function BatchWorkflowView({ native }: { native: boolean }) {
     {native && outcome.blocked && !run && persistedRunKey.current && <p role="status">Gemningens udfald er uafklaret. Bevar denne kørselsnøgle til manuel kontrol: <code>{persistedRunKey.current}</code>. En ny planlæsning beviser ikke, om kørslen blev gemt. Start ikke en ny gemning uden afklaring.</p>}
     <PageHeader title="Bogføringskø" description="Gennemgå bankposter og deres dokumentation, før den præcise plan godkendes og bogføres." />
     {native && <form className="card form-grid" onSubmit={async e => {e.preventDefault();setError(undefined);try {await loadRunByKey(lookupKey);} catch(cause) {setError(cause instanceof Error ? cause.message : String(cause));}}}><label>Kørselsnøgle til status<Input aria-label="Kørselsnøgle til status" value={lookupKey} maxLength={1024} disabled={busy} onChange={e=>setLookupKey(e.target.value)} /></label><Button type="submit" variant="secondary" disabled={busy || !lookupKey}>Hent kørsel via nøgle</Button></form>}
-    {native && <><p>Ny native batch: atomic_v1. Alle nye posteringer, kildebeviser og afsluttende kontroller skal lykkes samlet; ellers rulles hele anvendelsen tilbage. Historiske delvise kørsler kan læses, men kan ikke anvendes her.</p><Link to={`/companies/${slug}/batchbogfoering?mode=single`}>Opret én gennemgået bankkladde</Link></>}
+    {native && <><p>Batchen bogføres samlet. Alle nye posteringer og afsluttende kontroller skal lykkes; ellers gemmes ingen af batchens nye posteringer. Historiske delvise kørsler kan læses, men kan ikke anvendes her.</p><Link to={`/companies/${slug}/batchbogfoering?mode=single`}>Opret én gennemgået bankkladde</Link></>}
     <ol className="workflow-progress" aria-label="Bogføringens trin">
       <li aria-current={!visible ? "step" : undefined}>1. Vis arbejdskø</li>
       <li aria-current={visible && !run ? "step" : undefined}>2. Gennemgå plan</li>
@@ -249,9 +283,8 @@ function BatchWorkflowView({ native }: { native: boolean }) {
     </>}
     <section className="card"><h2>Gennemgå og godkend planen</h2>
       <p className="muted">Planen omfatter hele den valgte periode. Filtre ændrer kun visningen af arbejdskøen. Godkendelse skal foretages af en anden bruger end planlæggeren.</p>
-      {visible && <><p>Plan-hash: <code>{visible.planHash}</code></p>{native && <>
-        <p>Virksomheds-id fra ledger: {visible.companyId} · Politik: {visible.executionPolicy ?? "Historisk, uden native eksekveringspolitik"}</p>
-        <details open><summary>Præcis plan, poster og kildebeviser</summary><pre>{JSON.stringify(visible, null, 2)}</pre></details>
+      {visible && <>{native ? <BookkeepingPlanSummary plan={visible} slug={slug} /> : <p>Plan-hash: <code>{visible.planHash}</code></p>}{native && <>
+        <details><summary>Præcis plan, poster og kildebeviser</summary><p>Plan-hash: <code>{visible.planHash}</code></p><pre>{JSON.stringify(visible, null, 2)}</pre></details>
         {visible.executionPolicy !== "atomic_v1" ? <p role="alert">Denne historiske plan er kun til gennemgang. Opret en ny native plan med aktuelle kildebeviser.</p> : <label><input type="checkbox" checked={reviewed} disabled={busy || outcome.blocked} onChange={e => setReviewed(e.target.checked)} />Jeg har gennemgået alle poster, kildebeviser og den præcise plan-hash</label>}
         {selfReview && <p>En anden bruger skal godkende denne plan. Planlæggeren kan ikke godkende sit eget arbejde.</p>}
       </>}</>}
@@ -267,6 +300,6 @@ function BatchWorkflowView({ native }: { native: boolean }) {
       {result.checks?.length > 0 ? <ul aria-label="Afsluttende kontroller">{result.checks.map((check: { name: string; ok: boolean }) => <li key={check.name}>{CHECK_LABELS[check.name] ?? check.name}: {check.ok ? "Bestået" : "Kræver gennemgang"}</li>)}</ul> : <p className="muted">Ingen afsluttende kontroller i dette svar.</p>}
       <Link to={`/companies/${slug}/posteringer`}>Se bogførte posteringer</Link>
     </section>}
-    {native && confirmation && <ConfirmDialog title={confirmation.action === "persist" ? "Gem præcis batchplan" : confirmation.action === "approve" ? "Godkend præcis batchplan" : "Anvend atomisk batchplan"} body={<><p>Kun denne virksomhed og denne plan-hash. Godkendelse og bogføring er særskilte handlinger. Der sendes ingen mail.</p><pre>{JSON.stringify(confirmation.plan, null, 2)}</pre></>} confirmLabel={confirmation.action === "persist" ? "Gem gennemgået plan" : confirmation.action === "approve" ? "Godkend gennemgået plan" : "Bogfør gennemgået batch"} onConfirm={async () => { await perform(confirmation.action); }} onClose={() => setConfirmation(null)} onRefresh={async () => { if (run) { const response = await api.bookkeepingBatchStatus(slug, run.runId); setRun({ ...run, state: response.state }); } else if (persistedRunKey.current) await loadRunByKey(persistedRunKey.current); else await refresh(0); }} operationKey={`batch-${confirmation.action}-${confirmation.planHash}`} />}
+    {native && confirmation && <ConfirmDialog title={confirmation.action === "persist" ? "Gem præcis batchplan" : confirmation.action === "approve" ? "Godkend præcis batchplan" : "Anvend atomisk batchplan"} body={<><p>Godkendelse og bogføring er særskilte handlinger. Der sendes ingen mail.</p><BookkeepingPlanSummary plan={confirmation.plan} slug={slug} /><details><summary>Præcis plan, poster og kildebeviser</summary><pre>{JSON.stringify(confirmation.plan, null, 2)}</pre></details></>} confirmLabel={confirmation.action === "persist" ? "Gem gennemgået plan" : confirmation.action === "approve" ? "Godkend gennemgået plan" : "Bogfør gennemgået batch"} onConfirm={async () => { await perform(confirmation.action); }} onClose={() => setConfirmation(null)} onRefresh={async () => { if (run) { const response = await api.bookkeepingBatchStatus(slug, run.runId); setRun({ ...run, state: response.state }); } else if (persistedRunKey.current) await loadRunByKey(persistedRunKey.current); else await refresh(0); }} operationKey={`batch-${confirmation.action}-${confirmation.planHash}`} />}
   </section>;
 }

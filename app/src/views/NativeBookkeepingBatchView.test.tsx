@@ -11,7 +11,7 @@ const {AuthProvider,useAuth}=await import("../lib/auth-context");
 const {MutationMemoryProvider}=await import("../lib/mutation-memory");
 const {BookkeepingBatchView}=await import("./BookkeepingBatchView");
 const {PostingRulesView}=await import("./PostingRulesView");
-const plan={companyId:9,executionPolicy:"atomic_v1",accountingFrom:"2026-01-01",accountingTo:"2026-01-31",bankFrom:"2026-01-01",bankTo:"2026-01-31",planHash:"a".repeat(64),candidateSetHash:"b".repeat(64),sourceIdentities:{ready:[{originalHash:"exact-original-hash",amount:"12.34"}]},items:[{actionKey:"purchase:3:bank:7",evidenceHash:"c".repeat(64),partition:"ready",documentId:3,bankTransactionId:7,detail:{account:"3000",vatTreatment:"standard"}}]};
+const plan={companyId:9,executionPolicy:"atomic_v1",accountingFrom:"2026-01-01",accountingTo:"2026-01-31",bankFrom:"2026-01-01",bankTo:"2026-01-31",planHash:"a".repeat(64),candidateSetHash:"b".repeat(64),sourceIdentities:{ready:[{originalHash:"exact-original-hash",amount:"12.34"}]},items:[{actionKey:"purchase:3:bank:7",evidenceHash:"c".repeat(64),partition:"ready",documentId:3,bankTransactionId:7,detail:{bank:{id:7,date:"2026-01-22",text:"Synthetic supplier payment",amount:"-125.37",currency:"DKK"},document:{id:3,invoiceNo:"SYN-INV-3",senderName:"Synthetic supplier",amountIncVat:"125.37",currency:"DKK"},proposed:{account:"3000",vatTreatment:"standard",dimensions:{}},vat:{plan:{grossAmount:"125.37",netAmount:"107.26",vatAmount:"18.11"}}}}]};
 const state=(approved=false,p=plan)=>({run:{runId:4,runKey:"source-run",planHash:p.planHash,plan:JSON.stringify(p),createdAt:"2026-01-31"},revisions:[{planHash:p.planHash,plannerKind:"user",plannerSubjectId:"author",approvedAt:approved?"2026-01-31":null}],attempts:[],receipts:[],finalChecks:[]});
 const workbench={state:"available",counts:{ready:1},population:{total:1,ready:1,blockers:0},selection:{total:1,ready:1,blockers:0},rows:[],page:{nextCursor:null},completeness:{nextAction:"Review exact source"},periodClose:{status:"available",blockers:0},plan:{planHash:plan.planHash}};
 function setup(extra:Record<string,unknown>={}){mockFetch({"GET /api/me":{user:currentUser,workspaceRole:"member",companies:[{slug:"synthetic",name:"Synthetic",role:"owner",archived:false}]},"GET /api/companies/synthetic/bank/accounts":{accounts:[]},"GET /api/companies/synthetic/workspace-parties":{rows:[]},"GET /api/companies/synthetic/bookkeeping-workbench":{workbench},"GET /api/companies/synthetic/bookkeeping-batch":{dryRun:true,plan},"GET /api/companies/synthetic/bookkeeping-batch/runs/4":{state:state()},...extra});}
@@ -50,4 +50,14 @@ test("leaving the current session/company view during fresh approval check preve
  stubGlobal("fetch",vi.fn(async (input:RequestInfo|URL,init?:RequestInit)=>{if(String(input).endsWith("/bookkeeping-batch/runs/4")) await gate;return previous(input,init);}));
  await confirm("Godkend","Godkend præcis batchplan","Godkend gennemgået plan"); view.unmount(); release(); await new Promise(resolve=>setTimeout(resolve,0));
  expect(writes()).toHaveLength(0);
+});
+
+test("human summary reuses exact server source amounts, account and readiness while proof stays collapsed",async()=>{
+ setup();mount();await userEvent.click(await screen.findByRole("button",{name:"Vis arbejdskø"}));await screen.findByText("Plan-hash:");
+ const table=screen.getByRole("table",{name:"Posterne i den gennemgåede plan"});
+ expect(within(table).getByRole("link",{name:"SYN-INV-3"})).toHaveAttribute("href","/companies/synthetic/bilag?documentId=3");
+ expect(within(table).getByRole("link",{name:"Synthetic supplier payment"})).toHaveAttribute("href","/companies/synthetic/bank?transactionId=7");
+ expect(within(table).getByText("2026-01-22")).toBeInTheDocument();expect(within(table).getByText("Konto: 3000")).toBeInTheDocument();expect(within(table).getByText("Almindeligt momsfradrag")).toBeInTheDocument();expect(within(table).getByText("Netto: 107.26 DKK")).toBeInTheDocument();expect(within(table).getByText("Momsfradrag: 18.11 DKK")).toBeInTheDocument();expect(within(table).getByText("Klar til gennemgang")).toBeInTheDocument();
+ expect(screen.getByText("Præcis plan, poster og kildebeviser").closest("details")).not.toHaveAttribute("open");
+ await review();await userEvent.click(screen.getByRole("button",{name:"Gem eksakt plan"}));const dialog=await screen.findByRole("dialog",{name:"Gem præcis batchplan"});expect(within(dialog).getByRole("table",{name:"Posterne i den gennemgåede plan"})).toHaveTextContent("Momsfradrag: 18.11 DKK");expect(within(dialog).getByText("Præcis plan, poster og kildebeviser").closest("details")).not.toHaveAttribute("open");expect(writes()).toHaveLength(0);
 });
