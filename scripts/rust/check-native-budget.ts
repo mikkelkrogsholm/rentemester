@@ -40,14 +40,14 @@ export async function checkNativeBudget(page:Page,base:string,restarted=false){
  const query=`?year=${encodeURIComponent(evidence.year)}`;
  const plan=(await read(`budget${query}`)).budget;
  const line=plan.lines.find((l:{accountNo:string;period:string})=>l.accountNo===no&&l.period===evidence.period);
- if(!line||line.id!==evidence.lastId||line.amount!==30.01||plan.dimensionActualsAvailable!==false)throw new Error(`Effective budget wrong: ${JSON.stringify(plan)}`);
+ if(!line||line.id!==evidence.lastId||line.amount!==30.01||plan.dimensionActualsAvailable!==true)throw new Error(`Effective budget wrong: ${JSON.stringify(plan)}`);
  const comparison=(await read(`budget-vs-actual${query}`)).budgetVsActual;
  const actual=comparison.lines.find((l:{accountNo:string;period:string})=>l.accountNo===no&&l.period===evidence.period);
  if(!actual||actual.budget!==30.01||actual.actual!==12.34||actual.variance!==17.67)throw new Error(`Budget comparison wrong: ${JSON.stringify(actual)}`);
  await page.goto(`${base}/companies/synthetic/budget${query}`);const cell=page.getByLabel(`Budget for konto ${no} ${evidence.period}`,{exact:true});await cell.waitFor();if(await cell.inputValue()!=="30.01")throw new Error("Reloaded cell lost budget revision");
  await page.getByRole("button",{name:"Sammenlign med faktisk",exact:true}).click();const row=page.getByRole("row").filter({hasText:name});await row.waitFor();for(const text of ["30,01","12,34","17,67"]){if(!(await row.innerText()).includes(text))throw new Error(`UI comparison missing ${text}`);}
- await page.getByText(/Dimensionssammenligning er endnu ikke tilgængelig/).waitFor();
+ await page.getByRole("heading",{name:"Dimensioner mod konto-budget",exact:true}).waitFor();
  await page.reload();await page.getByLabel(`Budget for konto ${no} ${evidence.period}`,{exact:true}).waitFor();
  await page.screenshot({path:`${directory}/native-budget${restarted?"-restarted":""}.png`,fullPage:true});
- console.log(restarted?"PASS: account budget revision, known actual and variance persist across native server restart":"PASS: React budget create → append revision → exact known actual and variance → reload; no journal mutation, invalid month and spoofed actor refused; unavailable dimensions explicit");
+ console.log(restarted?"PASS: account budget revision, known actual and variance persist across native server restart":"PASS: React budget create → append revision → exact known actual and variance → reload; no journal mutation, invalid month and spoofed actor refused; dimension comparison available");
 }
