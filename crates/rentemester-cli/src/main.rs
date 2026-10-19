@@ -14,6 +14,7 @@ mod parties;
 mod workspace_inbox;
 mod corporate_records;
 mod ownership;
+mod intercompany;
 mod accruals;
 mod assets;
 mod recurring_invoices;

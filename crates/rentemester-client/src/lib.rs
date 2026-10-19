@@ -359,3 +359,6 @@ pub use corporate_records::{CorporateRecordMutation,MAX_CORPORATE_BODY,MAX_CORPO
 
 mod ownership;
 pub use ownership::{OwnershipMutation,MAX_OWNERSHIP_BODY,MAX_OWNERSHIP_PROPOSE_BODY,ownership_body_schema};
+
+mod intercompany;
+pub use intercompany::{IntercompanyMutation,MAX_INTERCOMPANY_BODY,intercompany_body_schema};
