@@ -32,8 +32,27 @@ export async function checkNativeReminderClaims(page:Page,base:string,restarted=
    const posted=(await post("invoices/post",{invoiceDocumentId:invoice.documentId,revenueAccountNo:"8799",confirm:true})).posting;
    const bank=(await post("bank-accounts",{name:"Synthetic reminder claim bank",slug:"synthetic-reminder-claims",currency:"DKK",ledgerAccountNo:"1798"})).bankAccount;
    const csv=`date;text;amount;currency;reference\n${today};Synthetic reminder principal;100;DKK;SYN-REMINDER-PRINCIPAL\n${today};Synthetic reminder partial;20;DKK;SYN-REMINDER-PART\n${today};Synthetic reminder final;30;DKK;SYN-REMINDER-FINAL\n${today};Synthetic reminder outgoing;-1;DKK;SYN-REMINDER-OUT\n${today};Synthetic reminder excess;51;DKK;SYN-REMINDER-EXCESS\n`;
-   await post("bank/import",{account:bank.slug,csvContent:csv,confirm:true});
-   const all=(await get("bank")).bank,rows=all.transactions as Array<{id:number;reference:string}>;const bid=(reference:string)=>{const b=rows.find(b=>b.reference===reference);if(!b)throw new Error("Own synthetic bank row missing");return b.id;};
+   const imported=(await post("bank/import",{account:bank.slug,csvContent:csv,confirm:true})).import;
+   if(imported.imported!==5||imported.skippedDuplicates!==0)throw new Error("Own five synthetic bank rows not imported exactly once");
+   const all=(await get("bank")).bank,rows=all.transactions as Array<{id:number;date:string;text:string;amount:number}>;
+   const expectedBankRows=[
+    ["SYN-REMINDER-PRINCIPAL","Synthetic reminder principal",100],
+    ["SYN-REMINDER-PART","Synthetic reminder partial",20],
+    ["SYN-REMINDER-FINAL","Synthetic reminder final",30],
+    ["SYN-REMINDER-OUT","Synthetic reminder outgoing",-1],
+    ["SYN-REMINDER-EXCESS","Synthetic reminder excess",51],
+   ] as const;
+   const ownIds=new Map<string,number>();
+   const incoming=(await get(`invoices/${invoice.documentId}/reminder-claims`)).reminderClaims.incomingBankTransactions;
+   for(const [reference,text,amount]of expectedBankRows){
+    const matches=rows.filter(row=>row.date===today&&row.text===text&&row.amount===amount);
+    if(matches.length!==1||!Number.isSafeInteger(matches[0].id))throw new Error("Own bank row missing or ambiguous by canonical date/text/amount");
+    const id=matches[0].id;
+    if(amount>0&&!incoming.some((row:{id:number;reference:string;bankAccountNo:string})=>row.id===id&&row.reference===reference&&row.bankAccountNo==="1798"))throw new Error("Incoming claim source does not corroborate own bank ID/reference/account");
+    ownIds.set(reference,id);
+   }
+   if(new Set(ownIds.values()).size!==5)throw new Error("Synthetic bank rows do not have five distinct identities");
+   const bid=(reference:string)=>{const id=ownIds.get(reference);if(id===undefined)throw new Error("Unknown owned bank reference");return id;};
    await page.goto(`${base}/companies/synthetic/fakturaer?year=${encodeURIComponent(all.selectedYear)}`);
    const row=page.getByRole("row").filter({hasText:invoice.invoiceNumber});await row.getByRole("button",{name:"Rykkergebyrer og krav",exact:true}).click();
    const panel=page.getByRole("region",{name:"Rykkergebyrer og krav",exact:true});await panel.getByLabel("Rykkerdato",{exact:true}).fill(reminderDate);await panel.getByLabel("Rykkergebyr i DKK",{exact:true}).fill("50");await panel.getByRole("button",{name:"Gennemgå registrering af gebyr",exact:true}).click();let dialog=page.getByRole("dialog");await dialog.getByRole("button",{name:"Registrér gebyr",exact:true}).click();await dialog.waitFor({state:"hidden"});
