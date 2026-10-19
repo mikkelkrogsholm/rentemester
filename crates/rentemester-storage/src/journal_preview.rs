@@ -102,7 +102,7 @@ pub(crate) fn require_current(conn: &Connection) -> Result<(), Error> {
         serde_json::from_str(include_str!("legacy-schema.json")).map_err(malformed)?;
     let history = migration::strict_history(conn, "schema_migrations", &expected)?;
     if history.len() != expected.len()
-        || migration::schema(conn)? != company_baseline::load_images()?.current
+        || crate::scheduled_recurring_schema::validate(conn, &company_baseline::load_images()?.current).is_err()
     {
         return Err(Error::new(
             "unsupported_schema",

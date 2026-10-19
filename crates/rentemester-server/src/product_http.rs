@@ -28,6 +28,7 @@ mod payables;
 mod periods;
 mod portable_backup;
 mod recurring_invoices;
+mod scheduled_recurring;
 mod reviewed_bookkeeping;
 mod sales;
 mod supplier_commitments;
@@ -163,6 +164,15 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/mileage",
             get(mileage::handle).post(mileage::handle),
         )
+        .route("/api/companies/{slug}/scheduled-recurring", get(scheduled_recurring::handle))
+        .route("/api/companies/{slug}/scheduled-recurring/{id}/plan", get(scheduled_recurring::handle))
+        .route("/api/companies/{slug}/scheduled-recurring/enable", post(scheduled_recurring::handle))
+        .route("/api/companies/{slug}/scheduled-recurring/pause", post(scheduled_recurring::handle))
+        .route("/api/companies/{slug}/scheduled-recurring/resume", post(scheduled_recurring::handle))
+        .route("/api/companies/{slug}/scheduled-recurring/cancel", post(scheduled_recurring::handle))
+        .route("/api/companies/{slug}/scheduled-recurring/catch-up", post(scheduled_recurring::handle))
+        .route("/api/companies/{slug}/scheduled-recurring/skip", post(scheduled_recurring::handle))
+        .route("/api/companies/{slug}/scheduled-recurring/dispatch", post(scheduled_recurring::handle))
         .route(
             "/api/companies/{slug}/recurring-invoices",
             get(recurring_invoices::handle).post(recurring_invoices::handle),

@@ -89,3 +89,5 @@ pub mod intercompany;
 
 pub mod eliminations;
 pub mod consolidation;
+
+pub mod scheduled_recurring;

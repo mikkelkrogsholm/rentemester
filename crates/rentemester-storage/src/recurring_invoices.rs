@@ -347,6 +347,11 @@ pub fn list(tx: &Transaction<'_>, slug: &str) -> Result<Value, Error> {
     }
     Ok(json!({"slug":slug,"nativeRecurring":true,"templates":rows}))
 }
+/// Frozen specification for generation scheduling; excludes mutable next date/retirement.
+pub fn scheduled_spec(tx:&Transaction<'_>,id:i64)->Result<Value,Error>{let t=load(tx,id)?;if t.channel!="manual"{return Err(refused("only manual generation supported"));}Ok(json!({"id":t.id,"active":t.active,"specification":{"id":t.id,"name":t.name,"interval":t.interval,"intervalCount":t.count,"firstIssueDate":t.first,"paymentTermsDays":t.terms,"deliveryPeriodMode":t.mode,"payload":t.payload}}))}
+pub fn scheduled_date(tx:&Transaction<'_>,id:i64,index:u32)->Result<String,Error>{let t=load(tx,id)?;issue_date(&t.first,&t.interval,t.count,index)}
+pub fn scheduled_latest(tx:&Transaction<'_>,id:i64,as_of:&str)->Result<Option<u32>,Error>{let t=load(tx,id)?;if as_of<t.first.as_str(){Date::parse(as_of)?;return Ok(None);}period(&t,as_of).map(Some)}
+
 #[cfg(test)]
 mod tests {
     use super::*;
