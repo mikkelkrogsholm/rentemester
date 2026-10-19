@@ -137,7 +137,7 @@ function TransferConfirmation({ review, onClose, onDone }: { review: Review; onC
   const marker = useMutationBlock(`${lifecycle.scope}:workspace-transfer:${review.action}`);
   const [confirmed, setConfirmed] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState("");
   const sending = useRef(false), alive = useRef(true);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   async function send() {
     if (!confirmed || sending.current || marker.isBlocked()) return;
     sending.current = true; setBusy(true); setError("");

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, expect, mock, test } from "bun:test";
+import { StrictMode } from "react";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { mockFetch } from "../test/fixtures";
@@ -50,4 +51,14 @@ test("staged receipt mapping reviews retained outcome and maps only exact bounda
  const row={receiptId:7,operation:"journal_post",keyHash:"k",payloadHash:"p",ledgerUuid:"ledger",sourcePrincipal:{kind:"user",subject:"source-owner"},createdAt:"now",expiresAt:"later",archiveSha256:"archive",restoreBoundaryId:3,resultAvailable:true,result:{ok:true,entryId:12},stateHash:"d".repeat(64),mapping:null};
  const mapped={...row,mapping:{targetUserId:user.id,actor:user.id,at:"now",reason:"Verified retained source outcome",archiveSha256:"archive",restoreBoundaryId:3}};
  mockFetch({"GET /api/me":me,"GET /api/workspace/transfer":{transfer:{...frozen,mode:"staged"}},"GET /api/companies/a/restore/receipts":{restoredReceipts:{rows:[row]}},"POST /api/companies/a/restore/receipts/reconcile":{restoredReceipts:{rows:[mapped]}}});mount();await screen.findByRole("heading",{name:"Importerede kvitteringer"});await userEvent.selectOptions(screen.getByLabelText("Virksomhed til kvitteringer"),"a");await screen.findByRole("article",{name:"Kvittering 7"});await userEvent.type(screen.getByLabelText("Begrundelse for tilknytning"),"Verified retained source outcome");await userEvent.click(screen.getByRole("button",{name:"Gennemgå tilknytning af kvittering 7"}));const d=await screen.findByRole("dialog",{name:"Bekræft tilknytning af kvittering"});expect(within(d).getByText(/entryId/)).toBeInTheDocument();expect(posts()).toHaveLength(0);await userEvent.click(within(d).getByRole("checkbox",{name:"Jeg bekræfter den gennemgåede handling"}));await userEvent.click(within(d).getByRole("button",{name:"Tilknyt kvittering til min bruger"}));await screen.findByText("Kvitteringen er tilknyttet. Ingen postering er udført.");expect(posts()).toHaveLength(1);expect(JSON.parse(posts()[0][1].body)).toEqual({receiptId:7,expectedStateHash:row.stateHash,reason:"Verified retained source outcome",confirm:true});
+});
+
+test("StrictMode effect replay preserves confirmed freeze POST and canonical receipt",async()=>{
+ mockFetch({"GET /api/me":me,"GET /api/workspace/transfer":{transfer:active},"POST /api/workspace/transfer/freeze":{transfer:frozen}});
+ renderAt(<StrictMode><AuthProvider hosted backend="rust"><MutationMemoryProvider><WorkspaceTransferProvider><WorkspaceHandoffView/></WorkspaceTransferProvider></MutationMemoryProvider></AuthProvider></StrictMode>,{route:"/flytning"});
+ await freeze(); await waitFor(()=>expect(posts()).toHaveLength(1));
+ expect(posts()[0][0]).toBe("/api/workspace/transfer/freeze");
+ expect(JSON.parse(posts()[0][1].body)).toEqual({expectedStateHash:active.stateHash,destination:"Synthetic destination",reason:"Owner reviewed destination",confirm:true});
+ await waitFor(()=>expect(screen.queryByRole("dialog",{name:"Bekræft frysning"})).toBeNull());
+ expect(JSON.parse(sessionStorage.getItem("rentemester:uncertain-operations:v1")!)).toHaveLength(0);
 });
