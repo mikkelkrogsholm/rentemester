@@ -336,9 +336,13 @@ pub struct Company {
     pub bank_hashes: Vec<String>,
 }
 pub fn company(db: &Connection) -> Result<Company, Error> {
-    crate::validate(db)?;
-    if !crate::company_baseline::recognizes(db, 36)? {
-        return Err(refused("complete current native company schema required"));
+    crate::journal_preview::require_current(db)
+        .map_err(|_| refused("complete current native company schema required"))?;
+    if crate::scheduled_recurring_schema::installed(db)? {
+        let count: i64 = db.query_row("SELECT COUNT(*) FROM native_scheduled_recurring_events", [], |r| r.get(0)).map_err(sql)?;
+        if count != 0 {
+            return Err(refused("scheduled recurring history requires a supported backup codec; no archive was produced"));
+        }
     }
     crate::migration::integrity(db)?;
     let report = crate::journal_hash::verify(db)?;
@@ -439,6 +443,18 @@ mod tests {
         crate::fresh::initialize_empty_pair(&mut c, &mut l, "Synthetic portable").unwrap();
         (c, l)
     }
+    #[test]
+    fn empty_known_native_schedule_schema_is_valid_but_corruption_is_not() {
+        let (_, mut db) = pair();
+        assert!(company(&db).is_ok());
+        let tx = db.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate).unwrap();
+        crate::scheduled_recurring_schema::install(&tx).unwrap();
+        tx.commit().unwrap();
+        assert!(company(&db).is_ok());
+        db.execute_batch("DROP TRIGGER native_scheduled_events_no_update;").unwrap();
+        assert!(company(&db).is_err());
+    }
+
     #[test]
     fn business_codec_preserves_historical_evidence_without_auth_or_grants() {
         let (mut source, _) = pair();

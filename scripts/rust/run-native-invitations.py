@@ -4,9 +4,9 @@ import argparse,base64,hashlib,json,os,secrets,shutil,signal,socket,subprocess,t
 from pathlib import Path
 REPO=Path(__file__).resolve().parents[2]
 def main():
- p=argparse.ArgumentParser(description=__doc__);p.add_argument('--server-binary',type=Path,required=True);p.add_argument('--web-dir',type=Path,required=True);p.add_argument('--with-ownership',action='store_true');p.add_argument('--with-intercompany',choices=['browser','clients']);p.add_argument('--with-consolidation',choices=['browser','clients']);p.add_argument('--with-eliminations',action='store_true');p.add_argument('--with-elimination-clients',action='store_true');p.add_argument('--evidence',type=Path);p.add_argument('--cli-binary',type=Path);p.add_argument('--mcp-binary',type=Path);args=p.parse_args()
- if sum([args.with_ownership,bool(args.with_intercompany),bool(args.with_consolidation),args.with_eliminations,args.with_elimination_clients])>1:p.error('Use separate fresh fixtures for each feature')
- feature='ownership' if args.with_ownership else 'intercompany-'+args.with_intercompany if args.with_intercompany else 'consolidation-'+args.with_consolidation if args.with_consolidation else 'eliminations' if args.with_eliminations else 'elimination-clients' if args.with_elimination_clients else None
+ p=argparse.ArgumentParser(description=__doc__);p.add_argument('--server-binary',type=Path,required=True);p.add_argument('--web-dir',type=Path,required=True);p.add_argument('--with-ownership',action='store_true');p.add_argument('--with-intercompany',choices=['browser','clients']);p.add_argument('--with-consolidation',choices=['browser','clients']);p.add_argument('--with-eliminations',action='store_true');p.add_argument('--with-elimination-clients',action='store_true');p.add_argument('--with-scheduled-recurring',action='store_true');p.add_argument('--evidence',type=Path);p.add_argument('--cli-binary',type=Path);p.add_argument('--mcp-binary',type=Path);args=p.parse_args()
+ if sum([args.with_ownership,bool(args.with_intercompany),bool(args.with_consolidation),args.with_eliminations,args.with_elimination_clients,args.with_scheduled_recurring])>1:p.error('Use separate fresh fixtures for each feature')
+ feature='ownership' if args.with_ownership else 'intercompany-'+args.with_intercompany if args.with_intercompany else 'consolidation-'+args.with_consolidation if args.with_consolidation else 'eliminations' if args.with_eliminations else 'elimination-clients' if args.with_elimination_clients else 'scheduled-recurring' if args.with_scheduled_recurring else None
  if feature and (not args.cli_binary or not args.mcp_binary):p.error('Feature qualification requires explicit --cli-binary and --mcp-binary')
  evidence=args.evidence or (Path('/tmp/rentemester-rust-reports')/('native-'+feature+'-integrated-'+uuid.uuid4().hex+'.json') if feature else Path('/tmp/rentemester-rust-reports/native-workspace-invitations.json'))
  if (args.evidence or feature) and evidence.exists():p.error('Evidence destination must be new')
@@ -45,6 +45,7 @@ def main():
    if args.with_consolidation:env['RM_INVITATION_CONSOLIDATION']=args.with_consolidation
    if args.with_eliminations:env['RM_INVITATION_ELIMINATIONS']='1'
    if args.with_elimination_clients:env['RM_INVITATION_ELIMINATION_CLIENTS']='1'
+   if args.with_scheduled_recurring:env['RM_INVITATION_SCHEDULED_RECURRING']='1'
    for name,source in [('CLI',args.cli_binary),('MCP',args.mcp_binary)]:
     destination=work/('rentemester-'+name.lower());shutil.copyfile(source.resolve(strict=True),destination);destination.chmod(0o700);env['RM_NATIVE_'+name+'_BIN']=str(destination)
   subprocess.run(['/opt/homebrew/bin/bun','run','scripts/rust/check-native-workspace-invitations.ts'],cwd=REPO,env=env,check=True)
@@ -56,6 +57,7 @@ def main():
    if args.with_consolidation:files=['native-consolidation-browser.json' if args.with_consolidation=='browser' else 'native-consolidation-clients.json']
    if args.with_eliminations:files=['native-eliminations.json','native-consolidation-clients.json']
    if args.with_elimination_clients:files=['native-elimination-clients.json']
+   if args.with_scheduled_recurring:files=['native-scheduled-recurring.json']
    data['featureEvidence']={name:json.loads((Path('/tmp/rentemester-rust-reports')/name).read_text()) for name in files};data['clientArtifacts']={name:hashlib.sha256(Path(env['RM_NATIVE_'+name+'_BIN']).read_bytes()).hexdigest() for name in ['CLI','MCP']}
   evidence.parent.mkdir(parents=True,exist_ok=True)
   with evidence.open('x' if feature or args.evidence else 'w') as output:json.dump(data,output,indent=2)

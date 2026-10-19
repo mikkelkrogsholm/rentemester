@@ -26,6 +26,8 @@ mod payables;
 mod payables_state;
 mod mileage;
 mod mileage_state;
+mod scheduled_recurring;
+mod scheduled_recurring_state;
 mod eliminations;
 mod eliminations_state;
 mod consolidation;
@@ -227,6 +229,7 @@ struct Desktop {
     budget: Option<Entity<budget::Budget>>,
     periods: Option<Entity<periods::Periods>>,
     backup: Option<Entity<backup::Backup>>,
+    scheduled_recurring: Option<Entity<scheduled_recurring::ScheduledRecurring>>,
     eliminations: Option<Entity<eliminations::Eliminations>>,
     consolidation: Option<Entity<consolidation::Consolidation>>,
     intercompany: Option<Entity<intercompany::Intercompany>>,
@@ -326,6 +329,7 @@ impl Desktop {
             budget: None,
             periods: None,
             backup: None,
+            scheduled_recurring: None,
             eliminations: None,
             consolidation: None,
             intercompany: None,
@@ -439,6 +443,7 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.scheduled_recurring = None;
         self.eliminations = None;
         self.consolidation = None;
         self.intercompany = None;
@@ -518,6 +523,7 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.scheduled_recurring = None;
         self.eliminations = None;
         self.consolidation = None;
         self.intercompany = None;
@@ -631,6 +637,7 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.scheduled_recurring = None;
         self.eliminations = None;
         self.consolidation = None;
         self.intercompany = None;
@@ -668,6 +675,7 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.scheduled_recurring = None;
         self.eliminations = None;
         self.consolidation = None;
         self.intercompany = None;
@@ -946,6 +954,12 @@ impl Render for Desktop {
             );
         }
         content = content.child(list);
+        if let Some(scheduled_recurring) = self.scheduled_recurring.clone() {
+            return content.child(Button::new("scheduled-recurring-close")
+                .label("Luk planlagte fakturaer")
+                .on_click(cx.listener(|this, _, _, cx| { this.scheduled_recurring = None; cx.notify(); })))
+                .child(scheduled_recurring);
+        }
         if let Some(eliminations) = self.eliminations.clone() {
             return content.child(Button::new("eliminations-close")
                 .label("Luk elimineringer")
@@ -1174,6 +1188,20 @@ impl Render for Desktop {
                             Err(error) => { this.status = error; cx.notify(); return; }
                         };
                         this.company_setup = Some(cx.new(|cx| company_setup::CompanySetup::new(session, origin, company, local, window, cx)));
+                        cx.notify();
+                    }
+                })));
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content = content.child(Button::new("scheduled-recurring-open").label("Planlagte fakturaer").disabled(self.busy)
+                .on_click(cx.listener(|this, _, window, cx| {
+                    if let (Some(session), Some(company)) = (this.session.clone(), this.selected.clone()) {
+                        let origin = this.connection_origin(cx);
+                        let local = match this.managed.as_ref().map(|m| m.journal_identity()).transpose() {
+                            Ok(local) => local,
+                            Err(error) => { this.status = error; cx.notify(); return; }
+                        };
+                        this.scheduled_recurring = Some(cx.new(|cx| scheduled_recurring::ScheduledRecurring::new(session, origin, company, local, window, cx)));
                         cx.notify();
                     }
                 })));

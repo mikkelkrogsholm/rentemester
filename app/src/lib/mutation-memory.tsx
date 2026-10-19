@@ -73,7 +73,7 @@ export function useMutationBlock(key: string) {
     isBlocked: () => local || memory?.has(key) === true,
     persistent,
     verifyPersistence: memory?.verifyPersistence,
-    block: () => { memory?.block(key); setLocal(true); },
+    block: () => { memory?.block(key); setLocal(true); return memory?.persistent() ?? true; },
     release: () => { memory?.release(key); setLocal(false); },
   };
 }

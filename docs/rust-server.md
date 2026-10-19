@@ -59,8 +59,8 @@ adgang afvises. Alle otte særskilte CLI/MCP-handlinger består også i et
 separat workspace med begge retninger, uafhængig godkendelse, fuld paritet
 med HTTP-svarene og uændrede posteringer før og efter genstart.
 
-Der er 140 MCP-tools efter integrationen af konsolidering og elimineringer.
-De samlede native tests består med 170 beståede og én eksisterende ignoreret
+Der er 149 MCP-tools efter integrationen af planlagte fakturaer.
+De samlede native tests består med 178 beståede og én eksisterende ignoreret
 test; native build består. Mac’en er låst op. Administreret
 lokal opstart, almindelig ejeroprettelse, verificering, MFA og læsning af
 saldobalancen er gennemført i det native vindue. Fakturering og udgifter er
@@ -77,8 +77,30 @@ fact- og sluthistorikker. Alle tre arkiver fra web, CLI og MCP er verificeret
 efter fjernelse af kilde og privat nøgle og hver gendannet med ny ejer, MFA
 og genstart. Signeret backup
 understøtter også den eksplicitte V1-koncernkonfiguration og mappinghistorik.
-Ikke-tomme dispositioner, konsolideringsprofiler og elimineringer afvises
-fortsat, indtil deres fulde formater er understøttet.
+Konsolideringsprofiler og elimineringer har også et fuldt signeret format
+med historik og begge payloadversioner. Alle tre arkiver fra web, CLI og MCP
+er verificeret efter fjernelse af kilde og privat nøgle og hver gendannet med
+ny ejer, MFA og genstart. Den fulde koncernrapport og kildebeviser bevares.
+En efterfølgende ny postering blokerer korrekt de forældede
+elimineringsbeviser, også efter endnu en genstart. Ikke-tomme
+dispositioner afvises fortsat.
+
+Planlagte fakturaer har en varig kø med eksplicit samtykke, pause,
+genoptagelse, annullering og gennemgået catch-up eller spring-over. Serveren
+kontrollerer den aktuelle bruger ved hver udstedelse. Webappen kan efter
+aktivt valg køre dagens forekomst, mens den er åben; manglende forekomster,
+uafklarede svar og bortfald af adgang stopper automatikken til gennemgang.
+Udstedelse danner fakturaoriginal og PDF, uden bogføring eller afsendelse.
+Status og genåbning starter ingen kørsler. Det faktiske web-/klientforløb med to MFA-brugere består også efter genstart:
+fire udstedte originaler og PDF’er, præcis kø og spring-over, korrekt
+adgangsafvisning og et accepteret kald med mistet svar uden gentagelse.
+Alle fire fakturaer er ubogførte og usendte; selskabsposteringerne er uændrede. Native kø-/reviewkontroller er integreret;
+native automatisk dispatcher er næste trin.
+
+En ikke-tom kø afvises i backup, indtil fuld historik og nye adgangsrettigheder efter
+gendannelse er understøttet; historikken udelades aldrig. Hostede arbejdere,
+eksterne leverancer og administreret flytning mellem lokal app og server
+er fortsat uafsluttede dele af målet.
 
 Den samlede omskrivning er fortsat åben. Næste levering samler de faktiske
 rapportforløb og fuld backup af deres kilder.

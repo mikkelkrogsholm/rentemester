@@ -14,7 +14,8 @@ const intercompany=process.env.RM_INVITATION_INTERCOMPANY;
 const consolidation=process.env.RM_INVITATION_CONSOLIDATION;
 const eliminations=process.env.RM_INVITATION_ELIMINATIONS==="1";
 const eliminationClients=process.env.RM_INVITATION_ELIMINATION_CLIENTS==="1";
-const feature=ownership||Boolean(intercompany)||Boolean(consolidation)||eliminations||eliminationClients;
+const scheduledRecurring=process.env.RM_INVITATION_SCHEDULED_RECURRING==="1";
+const feature=ownership||Boolean(intercompany)||Boolean(consolidation)||eliminations||eliminationClients||scheduledRecurring;
 const evidence=feature?join(work,"invitations-evidence.json"):"/tmp/rentemester-rust-reports/native-workspace-invitations.json";
 const ownerEmail="owner@example.invalid",ownerPassword="synthetic-owner-password-123",email="reviewer@example.invalid",password="synthetic-invited-password-456";
 function files(prefix:string){return readdirSync(spool).filter(n=>n.startsWith(prefix)&&n.endsWith(".txt"));}
@@ -68,6 +69,15 @@ try{
   const {checkNativeOwnershipClients}=await import("./check-native-ownership-clients");
   await checkNativeOwnership(owner,invited,base,"synthetic-ownership-browser",restarted);
   await checkNativeOwnershipClients(owner,invited,base,"synthetic-ownership-clients",restarted);
+ }
+ if(scheduledRecurring){
+  const restarted=process.argv.includes("--reopen"),anchor="synthetic-scheduled";
+  if(!restarted){
+   const who=await json(invited,"/api/me");if(!who.r.ok()||!who.body.user?.id)throw Error("Current ordinary reviewer required");
+   const created=await json(owner,"/api/companies",{name:"Synthetic Scheduled",slug:anchor,fiscalYearStartMonth:"1",vatPeriodType:null});if(created.r.status()!==201)throw Error(`Scheduled company setup refused ${created.r.status()}`);
+   const granted=await json(owner,"/api/workspace/members/company",{userId:who.body.user.id,action:"grant",companySlug:anchor,role:"owner"});if(!granted.r.ok())throw Error(`Scheduled reviewer grant refused ${granted.r.status()}`);
+  }
+  const {checkNativeScheduledRecurring}=await import("./check-native-scheduled-recurring");await checkNativeScheduledRecurring(owner,invited,base,anchor,restarted);
  }
  if(intercompany||consolidation||eliminations||eliminationClients){
   const mode=intercompany||consolidation;

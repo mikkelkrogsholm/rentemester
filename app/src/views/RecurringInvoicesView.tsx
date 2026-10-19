@@ -1,3 +1,5 @@
+import { useOptionalAuth } from "../lib/auth-context";
+import { ScheduledRecurringView } from "./ScheduledRecurringView";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { useUnsavedChanges } from "../lib/useUnsavedChanges";
 import * as stylex from "@stylexjs/stylex";
@@ -50,6 +52,7 @@ const CHANNEL_LABELS: Record<"manual" | "email" | "digisense", string> = {
 };
 
 export function RecurringInvoicesView() {
+  const auth = useOptionalAuth();
   const { slug = "" } = useParams();
   const { year, setYear } = useCompanyYear();
   // #386: the create-template modal is rendered into the view; it is toggled
@@ -120,6 +123,8 @@ export function RecurringInvoicesView() {
         selectedYear={selectedYear}
         onYearChange={setYear}
       />
+
+      {auth?.backend === "rust" && !selectedYearArchived && <ScheduledRecurringView key={slug} slug={slug} templates={r.templates} />}
 
       {r.templates.length === 0 ? (
         <div className="card archived-notice">

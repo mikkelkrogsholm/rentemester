@@ -1,3 +1,4 @@
+import { ScheduledRecurringProvider } from "./components/ScheduledRecurringProvider";
 import { ButtonLink } from "./components/ui";
 // App shell + routing for the cockpit SPA (#171).
 //
@@ -184,7 +185,7 @@ function CockpitApp() {
   const location = useLocation();
   const canManageWorkspace = !hosted || context?.workspaceRole === "workspace_owner";
   return (
-    <div className="app-shell">
+    <ScheduledRecurringProvider><div className="app-shell">
       <header className="topbar">
         <SkipLink />
         <Link className="brand" to="/">Rentemester <span className="build-version" title="Installeret Rentemester-version">v{packageJson.version}</span></Link>
@@ -224,7 +225,7 @@ function CockpitApp() {
           </Routes>
         </CockpitLayout>
       </CompanyNavigationShell>
-    </div>
+    </div></ScheduledRecurringProvider>
   );
 }
 
