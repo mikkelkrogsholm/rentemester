@@ -376,3 +376,6 @@ mod service_principals;
 pub use service_principals::{ServicePrincipalMutation,MAX_SERVICE_PRINCIPAL_BODY,service_principal_body_schema};
 mod hosted_recurring;
 pub use hosted_recurring::{HostedRecurringMutation,MAX_HOSTED_RECURRING_BODY,hosted_recurring_body_schema};
+
+mod invoice_email;
+pub use invoice_email::{InvoiceEmailMutation, MAX_INVOICE_EMAIL_BODY, invoice_email_body_schema};

@@ -151,7 +151,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 158);
+    assert_eq!(tools.len(), 162);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -1263,7 +1263,7 @@ fn recurring_tools_discovery_and_strict_read_write_admission() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 158);
+    assert_eq!(tools.len(), 162);
     assert_eq!(
         tools
             .iter()
@@ -1334,7 +1334,7 @@ fn asset_readonly_discovery_and_native_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 158);
+    assert_eq!(tools.len(), 162);
     for name in ["assets", "next_asset_depreciation"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
@@ -1401,7 +1401,7 @@ fn accrual_readonly_discovery_and_native_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 158);
+    assert_eq!(tools.len(), 162);
     for name in ["accruals", "accrual_schedule"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
@@ -1496,7 +1496,7 @@ fn budget_mileage_discovery_year_scope_and_body_limits_are_strict() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 158);
+    assert_eq!(tools.len(), 162);
     for name in [
         "budget",
         "budget_vs_actual",
@@ -1598,7 +1598,7 @@ fn privacy_discovery_audited_annotation_and_date_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 158);
+    assert_eq!(tools.len(), 162);
     for (name, readonly) in [
         ("retention", true),
         ("gdpr_export", false),
@@ -1701,7 +1701,7 @@ fn setup_discovery_current_company_read_and_strict_outer_admission() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 158);
+    assert_eq!(tools.len(), 162);
     assert_eq!(
         tools
             .iter()
@@ -1766,7 +1766,7 @@ fn saft_export_stdio_returns_exact_tar_bytes(){
 #[test]
 fn workspace_backup_discovery_confirmation_and_forbidden_selectors(){
  let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})]));
- let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),158);let tool=tools.iter().find(|t|t["name"]=="workspace_backup").unwrap();assert_eq!(tool["annotations"]["readOnlyHint"],false);assert_eq!(tool["annotations"]["idempotentHint"],false);assert_eq!(tool["inputSchema"],json!({"type":"object","required":["confirm"],"properties":{"confirm":{"const":true}},"additionalProperties":false}));
+ let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),162);let tool=tools.iter().find(|t|t["name"]=="workspace_backup").unwrap();assert_eq!(tool["annotations"]["readOnlyHint"],false);assert_eq!(tool["annotations"]["idempotentHint"],false);assert_eq!(tool["inputSchema"],json!({"type":"object","required":["confirm"],"properties":{"confirm":{"const":true}},"additionalProperties":false}));
  for args in [json!({}),json!({"confirm":false}),json!({"confirm":"true"}),json!({"confirm":true,"company":"synthetic"}),json!({"confirm":true,"year":"2026"}),json!({"confirm":true,"id":1}),json!({"confirm":true,"body":"{}"}),json!({"confirm":true,"path":"/tmp/forbidden"}),json!({"confirm":true,"key":"invented"})]{let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),call(2,"workspace_backup",args)]));assert!(rows[1].get("error").is_some()||rows[1]["result"]["isError"]==true);}
 }
 #[test]
@@ -1796,7 +1796,7 @@ fn company_knowledge_mcp_exact_review_once_and_full_response(){
 #[test]
 fn workspace_inbox_discovery_and_strict_selection_contracts() {
  let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})]));
- let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),158);
+ let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),162);
  for(name,read)in[("workspace_inbox",true),("workspace_inbox_source",true),("ingest_workspace_inbox",false),("assign_workspace_inbox",false),("complete_workspace_inbox",false)]{let t=tools.iter().find(|t|t["name"]==name).unwrap();assert_eq!(t["annotations"]["readOnlyHint"],read);assert_eq!(t["inputSchema"]["additionalProperties"],false);}
  for(name,args)in[
  ("workspace_inbox",json!({"company":"synthetic","year":"2026"})),
@@ -1825,7 +1825,7 @@ fn workspace_inbox_missing_confirmation_or_oversized_body_never_executes() {
 
 #[test]
 fn corporate_discovery_and_strict_scope_confirmation_contracts(){
- let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})]));let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),158);
+ let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})]));let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),162);
  for(name,read)in[("corporate_records",true),("corporate_record",true),("corporate_record_original",true),("ingest_corporate_record",false),("link_corporate_record",false),("enrich_corporate_record",false),("supersede_corporate_record",false)]{let t=tools.iter().find(|t|t["name"]==name).unwrap();assert_eq!(t["annotations"]["readOnlyHint"],read);assert_eq!(t["inputSchema"]["additionalProperties"],false);}
  for(name,args)in[("corporate_records",json!({"company":"synthetic","year":"2026"})),("corporate_record_original",json!({"company":"synthetic","recordId":"record","confirm":true})),("ingest_corporate_record",json!({"company":"synthetic","recordId":"record","body":"{}","confirm":true})),("ingest_corporate_record",json!({"company":"synthetic","recordId":null,"body":"{}","confirm":true})),("link_corporate_record",json!({"company":"synthetic","body":"{}","confirm":true})),("enrich_corporate_record",json!({"company":"synthetic","recordId":"record","body":"{}","confirm":true,"actor":"forged"}))]{let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),call(2,name,args)]));assert_eq!(rows[1]["error"]["code"],-32602);}
 }
@@ -1849,7 +1849,7 @@ fn corporate_body_and_specific_frame_bounds_refuse_before_execution(){
 
 #[test]
 fn ownership_discovery_explicit_dates_independent_review_and_strict_arguments(){
- let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})]));let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),158);
+ let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})]));let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),162);
  for(name,read)in[("ownership",true),("ownership_history",true),("propose_ownership",false),("review_ownership",false),("apply_ownership",false)]{let t=tools.iter().find(|t|t["name"]==name).unwrap();assert_eq!(t["annotations"]["readOnlyHint"],read);assert_eq!(t["inputSchema"]["additionalProperties"],false);}
  for(name,args)in[("ownership",json!({"company":"synthetic"})),("ownership_history",json!({"company":"synthetic","confirm":true})),("propose_ownership",json!({"company":"synthetic","body":"{}","confirm":true,"principal":"forged"})),("review_ownership",json!({"company":"synthetic","body":"{}","confirm":true,"snapshotId":"mixed"}))]{let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),call(2,name,args)]));assert_eq!(rows[1]["error"]["code"],-32602);}
 }
@@ -1873,7 +1873,7 @@ fn ownership_proposal_dedicated_frame_preserves_exact_body_and_other_limits(){
 
 #[test]
 fn intercompany_six_tools_preserve_prior_registry_and_strict_companyless_global_read(){
- let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})]));let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),158);
+ let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})]));let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),162);
  for(name,read)in[("intercompany",true),("group_reconciliation",true),("apply_group_manifest",false),("propose_intercompany_mapping",false),("approve_intercompany_mapping",false),("revoke_intercompany_mapping",false)]{let t=tools.iter().find(|t|t["name"]==name).unwrap();assert_eq!(t["annotations"]["readOnlyHint"],read);assert_eq!(t["inputSchema"]["additionalProperties"],false);if !read{assert_eq!(t["inputSchema"]["properties"]["body"]["maxLength"],262144);}}
  for name in ["ownership","corporate_records","workspace_inbox","company_knowledge","companies","post_journal"]{assert!(tools.iter().any(|t|t["name"]==name));}
  for(name,args)in[("group_reconciliation",json!({})),("group_reconciliation",json!({"company":"synthetic","asOf":"2026-01-01"})),("intercompany",json!({"company":"synthetic","confirm":true})),("approve_intercompany_mapping",json!({"company":"synthetic","body":"{}","confirm":true,"actor":"forged"}))]{let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),call(2,name,args)]));assert_eq!(rows[1]["error"]["code"],-32602);}
@@ -1890,7 +1890,7 @@ fn intercompany_native_confirm_size_and_ordinary_frame_limits_remain_fail_closed
 }
 #[test]
 fn consolidation_six_tools_preserve_existing_registry_and_strict_global_selectors(){
- let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})]));let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),158);
+ let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})]));let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),162);
  for(name,read)in[("consolidation",true),("group_report_profiles",true),("group_consolidated_report",true),("propose_consolidation_profile",false),("approve_consolidation_profile",false),("revoke_consolidation_profile",false)]{let t=tools.iter().find(|t|t["name"]==name).unwrap();assert_eq!(t["annotations"]["readOnlyHint"],read);assert_eq!(t["inputSchema"]["additionalProperties"],false);if !read{assert_eq!(t["inputSchema"]["properties"]["body"]["maxLength"],if name=="propose_consolidation_profile"{1048576}else{32768});}}
  for name in ["intercompany","group_reconciliation","propose_ownership","ingest_document","ingest_workspace_inbox","ingest_corporate_record","workspace_backup"]{assert!(tools.iter().any(|t|t["name"]==name));}
  for(name,args)in[("consolidation",json!({"company":"synthetic"})),("group_report_profiles",json!({"company":"synthetic","asOf":"2026-01-01"})),("group_consolidated_report",json!({"profileId":"p","asOf":"2026-01-01"})),("approve_consolidation_profile",json!({"company":"synthetic","body":"{}","confirm":true,"actor":"forged"}))]{let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),call(2,name,args)]));assert_eq!(rows[1]["error"]["code"],-32602);}
@@ -1915,7 +1915,7 @@ fn consolidation_only_proposal_gets_bounded_large_frame_and_native_bodies_stay_b
 
 #[test]
 fn elimination_eight_tools_readonly_plan_strict_discovery_and_confirmation(){
- let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})]));let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),158);
+ let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})]));let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),162);
  for(name,read)in[("eliminations",true),("group_eliminations",true),("plan_elimination",true),("propose_elimination",false),("approve_elimination",false),("reject_elimination",false),("apply_elimination",false),("reverse_elimination",false)]{let tool=tools.iter().find(|t|t["name"]==name).unwrap();assert_eq!(tool["annotations"]["readOnlyHint"],read);assert_eq!(tool["inputSchema"]["additionalProperties"],false);if name=="plan_elimination"{assert!(tool["inputSchema"]["properties"].get("confirm").is_none());}}
  for(name,args)in[("plan_elimination",json!({"company":"synthetic","body":"{}","confirm":true})),("group_eliminations",json!({"company":"synthetic","asOf":"2026-06-01"})),("propose_elimination",json!({"company":"synthetic","body":"{}"})),("apply_elimination",json!({"company":"synthetic","body":"{}","confirm":true,"actor":"forged"}))]{let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),call(2,name,args)]));assert_eq!(rows[1]["error"]["code"],-32602);}
 }
@@ -1931,3 +1931,6 @@ mod scheduled_recurring;
 
 #[path="stdio/hosted_services.rs"]
 mod hosted_services;
+
+#[path="stdio/invoice_email.rs"]
+mod invoice_email;
