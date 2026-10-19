@@ -26,6 +26,8 @@ mod payables;
 mod payables_state;
 mod mileage;
 mod mileage_state;
+mod company_knowledge;
+mod company_knowledge_state;
 mod company_setup;
 mod company_setup_state;
 mod budget;
@@ -209,6 +211,7 @@ struct Desktop {
     budget: Option<Entity<budget::Budget>>,
     periods: Option<Entity<periods::Periods>>,
     backup: Option<Entity<backup::Backup>>,
+    company_knowledge: Option<Entity<company_knowledge::CompanyKnowledge>>,
     company_setup: Option<Entity<company_setup::CompanySetup>>,
     status: String,
     busy: bool,
@@ -299,6 +302,7 @@ impl Desktop {
             budget: None,
             periods: None,
             backup: None,
+            company_knowledge: None,
             company_setup: None,
             status: "Forbind til din Rentemester-server og log ind med e-mail, adgangskode og MFA."
                 .into(),
@@ -403,6 +407,7 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.company_knowledge = None;
         self.company_setup = None;
         self.status = "Forbinder…".into();
         let server = self.connection_origin(cx);
@@ -473,6 +478,7 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.company_knowledge = None;
         self.company_setup = None;
         self.busy = true;
         self.status = "Kontrollerer login…".into();
@@ -577,6 +583,7 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.company_knowledge = None;
         self.company_setup = None;
         self.password
             .update(cx, |input, cx| input.set_value("", window, cx));
@@ -605,6 +612,7 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.company_knowledge = None;
         self.company_setup = None;
         self.selected = Some(slug.clone());
         self.status = "Henter saldobalance…".into();
@@ -874,6 +882,12 @@ impl Render for Desktop {
             );
         }
         content = content.child(list);
+        if let Some(knowledge) = self.company_knowledge.clone() {
+            return content.child(Button::new("knowledge-close")
+                .label("Luk virksomhedsoplysninger")
+                .on_click(cx.listener(|this, _, _, cx| { this.company_knowledge = None; cx.notify(); })))
+                .child(knowledge);
+        }
         if let Some(setup) = self.company_setup.clone() {
             return content.child(Button::new("company-setup-close")
                 .label("Luk virksomhedsopsætning og genindlæs saldobalance")
@@ -1048,6 +1062,20 @@ impl Render for Desktop {
                             Err(error) => { this.status = error; cx.notify(); return; }
                         };
                         this.company_setup = Some(cx.new(|cx| company_setup::CompanySetup::new(session, origin, company, local, window, cx)));
+                        cx.notify();
+                    }
+                })));
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content = content.child(Button::new("knowledge-open").label("Virksomhedsoplysninger").disabled(self.busy)
+                .on_click(cx.listener(|this, _, window, cx| {
+                    if let (Some(session), Some(company)) = (this.session.clone(), this.selected.clone()) {
+                        let origin = this.connection_origin(cx);
+                        let local = match this.managed.as_ref().map(|m| m.journal_identity()).transpose() {
+                            Ok(local) => local,
+                            Err(error) => { this.status = error; cx.notify(); return; }
+                        };
+                        this.company_knowledge = Some(cx.new(|cx| company_knowledge::CompanyKnowledge::new(session, origin, company, local, window, cx)));
                         cx.notify();
                     }
                 })));

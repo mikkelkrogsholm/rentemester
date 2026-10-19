@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "parallel-platform-29",
-  "code_revision": "git:1190e075 plus period audit integration, desktop navigation and composed knowledge/party helper wiring",
+  "current_increment": "parallel-platform-30",
+  "code_revision": "git:6ecfd59a plus native knowledge navigation and composed party-before-knowledge snapshot ordering",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "CompanyKnowledge and signed snapshot codec integrated; actual Group28 J05 browser/CLI/MCP archives independently verified after source/private-key deletion, exact knowledge history/provenance preserved after restore and restart. Composed Group28 completed full reminder fee/principal/partial/final claim flow, then exposed obsolete period-audit unsupported guard. Root regression reproduced and repair passes4claims tests including missing/duplicate/blank-actor audit and corrupt-journal refusals. Scoped Parties server/web/SDK/CLI/MCP integratedff8a7689:103tool union,201client tests/3existingignored and11selectedUI tests/webbuild PASS. Local desktop new-profile signer provisioning and independent public-key export integrated13a15371/82a939c2;102native tests/1existingignored PASS; actual new windows pending lockedMac. Full goal and epic672 remain open. Native bank link/correction audit validator integrated1190e075 and wired alongside physical bank-original checks;6period tests and strict8packageClippy PASS. Runtime rebuilt with103tools and exact artifact manifest at /tmp/rm-platform29-runtime-artifacts.json. Group29 actual composed qualification dispatched on these artifacts. Native desktop build also PASS.",
+  "state": "CompanyKnowledge and signed snapshot codec integrated; actual Group28 J05 browser/CLI/MCP archives independently verified after source/private-key deletion, exact knowledge history/provenance preserved after restore and restart. Composed Group28 completed full reminder fee/principal/partial/final claim flow, then exposed obsolete period-audit unsupported guard. Root regression reproduced and repair passes4claims tests including missing/duplicate/blank-actor audit and corrupt-journal refusals. Scoped Parties server/web/SDK/CLI/MCP integratedff8a7689:103tool union,201client tests/3existingignored and11selectedUI tests/webbuild PASS. Local desktop new-profile signer provisioning and independent public-key export integrated13a15371/82a939c2;102native tests/1existingignored PASS; actual new windows pending lockedMac. Full goal and epic672 remain open. Native bank link/correction audit validator integrated1190e075 and wired alongside physical bank-original checks;6period tests and strict8packageClippy PASS. Runtime rebuilt with103tools and exact artifact manifest at /tmp/rm-platform29-runtime-artifacts.json. Group29 actual composed qualification dispatched on these artifacts. Native desktop build also PASS. Group29 initial Knowledge/Parties passed and restart accounting/reminder/periods/bankcorrection passed; late restart knowledge snapshot failed because later party helper intentionally added another assertion after baseline. Exact saved source IDs prove ordering defect; parties now runs before full knowledge snapshot, equality unchanged. Group30 actual qualification running on unchanged103tool runtime artifacts. Native Knowledge integrated6ecfd59a plus navigation:109tests/1existingignored and nativebuild PASS, actual windows pending lockedMac.",
   "issues_closed": [],
   "next": [
-    "Integrate bank link/correction period-audit validation, then rebuild exact runtime artifacts and rerun composed initial/restart flows including knowledge and parties.",
-    "Preserve native Parties source history in signed portable backup and fresh-target restore.",
-    "Continue remaining server/web and desktop parity from epic672; verify native windows when Mac is available."
+    "Complete repaired Group30 initial/restart qualification with full knowledge and party comparisons.",
+    "Integrate Parties signed backup codec and qualify actual source removal/restore/restart with party-backed knowledge.",
+    "Integrate native Parties screen and shared inbox flow; continue remaining full Rust parity from epic672."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -426,9 +426,19 @@
     "platform29_runtime_build": "/tmp/rm-platform29-runtime-build.log (server/CLI/MCP passed); /tmp/rm-platform29-runtime-artifacts.json",
     "platform29_native_build": "/tmp/rm-platform29-native-build.log (passed; actual newer windows pending)",
     "platform29_composed": {
-      "status": "dispatched; terminal result not yet known",
-      "manifest": "/tmp/rm-platform29-runtime-artifacts.json",
-      "scope": "Group28 claim and bank period-audit repair plus integrated knowledge and parties; root source/artifact freeze during actual runtime"
+      "log": "/tmp/rm-platform29-combined.log",
+      "manifest": "/tmp/rm-platform29-qualification-artifacts.json",
+      "exit": 1,
+      "pass_lines": 65,
+      "browser_confirmations": 8,
+      "scope": "Full initial including knowledge/parties passed; restarted reminders/periods/annual/banklinks/corrections/multiyear/commitments/webGDPR passed. Fullknowledge snapshot comparison failed because later party fixture adds approved assertion; parties restart and later privacyclients/SAFT/accountant/dashboard/integrity not reached. Exactownedcleanup confirmed."
+    },
+    "platform30_native": "/tmp/rm-platform30-native-tests.log (109 passed,1 existing ignored); /tmp/rm-platform30-native-build.log (passed); actual GUI pending",
+    "platform30_composed": {
+      "status": "running",
+      "log": "/tmp/rm-platform30-combined.log",
+      "manifest": "/tmp/rm-platform30-qualification-artifacts.json",
+      "scope": "Same unchanged103tool runtime artifacts; source-proven test dependency fixed by parties before full knowledge baseline, no expectation weakening."
     }
   },
   "verified_history": [
@@ -797,19 +807,19 @@
     },
     {
       "owner": "rust_mileage",
-      "result": "Actual Group29 composed first/restart qualification with103tools, knowledge and parties",
+      "result": "Actual Group30 composed first/restart with knowledge snapshot dependency repaired",
       "ownership": "read-only source; later independent owned synthetic Docker runtime",
       "depends_on": [
-        "repaired1190e075 runtime/artifacts now ready"
+        "unchanged pinned103tool artifacts and corrected helper ordering"
       ],
       "acceptance": "Full initial/restart parity and exact owned cleanup"
     },
     {
       "owner": "rust_budget",
-      "result": "Native GPUI CompanyKnowledge complete read/propose/review/supersede flow",
-      "ownership": "isolated new desktop knowledge screen/state; root main integration",
+      "result": "Native GPUI WorkspaceParties list/inspect/create/roles/source assertions",
+      "ownership": "isolated new desktop parties screen/state; root main integration",
       "depends_on": [
-        "stable native Knowledge SDK contract"
+        "stable six-operation Parties SDK"
       ],
       "acceptance": "Frozen explicit review/confirm, current canonical history/provenance/readback, uncertain outcome retained; build/tests then actual GUI when accessible"
     }

@@ -1185,7 +1185,7 @@ dens faktiske kvitteringsreference og periodens oprindelige lukkebevis.
 Uafklarede svar eller manglende kanonisk genlæsning bevarer en privat
 handlingsblokering. Nyt lokalt portnummer accepteres kun for samme profil,
 bruger, ledger og periode; fjernforbindelser skal fortsat stemme præcist.
-De samlede 102 desktop-tests består. Faktiske vinduesforløb er endnu
+De samlede 109 desktop-tests og build består. Faktiske vinduesforløb er endnu
 ikke verificeret på den låste Mac.
 
 ## Registrér og afstem rykkergebyrer
@@ -1217,7 +1217,8 @@ kildebaserede aliaser og feltudsagn. Visning følger de aktuelle
 virksomhedsrettigheder. Globale ændringer kræver de nødvendige rettigheder
 til alle partens tilknyttede virksomheder. Den oprindelige identitet og
 historik bevares. Web og de seks tilsvarende klientoperationer er integreret;
-det faktiske browserforløb og backupkodningen af parter er næste kontrol.
+det første faktiske browser-/klientforløb består. Backupkodningen af parter
+og den samlede genstartskontrol er næste kontrol.
 
 ## Signeret lokal desktop-backup
 
@@ -1229,3 +1230,14 @@ Eksisterende profiler får ikke automatisk udskiftet eller tilføjet nøgler;
 fjernserverens offentlige nøgle leveres af administratoren.
 Tests og build kvalificerer implementeringen; de nye faktiske vinduesforløb
 afventer adgang til den låste Mac.
+
+
+## Virksomhedsoplysninger i desktop
+
+**Virksomhedsoplysninger** viser serverens aktuelle kontekst, konflikter,
+kilder og hele historikken. Forslag og erstatninger bruger eksplicitte
+JSON-værdier, kilder og gyldighedsdatoer. Gennemgang og bekræftelse er
+særskilte trin. En erstatning er et nyt forslag, som godkendes særskilt.
+Appen kontrollerer den aktuelle historik før ændringen og genlæser serverens
+resultat; uafklarede udfald kræver manuel afklaring. De samlede native tests
+og build består; faktiske nye vinduer er endnu ikke verificeret.
