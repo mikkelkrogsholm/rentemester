@@ -148,7 +148,7 @@ fn save(
         }
         id
     } else {
-        tx.query_row("INSERT INTO vendors(name,address,vat_or_cvr,country_code,identifier_kind,identity_status,email,phone,website,default_expense_account,default_vat_treatment,notes) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12) RETURNING id",&values[..12],|r|r.get(0)).map_err(|_|refused("vendor already exists or could not be stored"))?
+        tx.query_row("INSERT INTO vendors(name,address,vat_or_cvr,country_code,identifier_kind,identity_status,email,phone,website,default_expense_account,default_vat_treatment,notes) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12) RETURNING id",&values[..12],|r|r.get(0)).map_err(|e|if e.sqlite_error().is_some_and(|v|v.extended_code==rusqlite::ffi::SQLITE_CONSTRAINT_UNIQUE){refused("vendor already exists")}else{Error::new("contact_storage_unavailable","contact could not be stored")})?
     };
     tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'vendor',?2,?3,?4)",params![event,crate::gdpr::contact_audit_reference("vendors",id),format!("{event} {}",crate::gdpr::contact_audit_reference("vendors",id)),format!("user:{actor}")]).map_err(invalid)?;
     Ok(json!({"id":id,"ok":true}))

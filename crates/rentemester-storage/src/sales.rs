@@ -41,7 +41,7 @@ pub fn create_customer(
         name,
         input.vat_or_cvr.as_deref(),
     )?;
-    let id:i64=tx.query_row("INSERT INTO customers(name,address,vat_or_cvr,email,phone,website,payment_terms_days,default_currency,notes) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9) RETURNING id",params![name,input.address,input.vat_or_cvr,input.email,input.phone,input.website,input.payment_terms_days,input.default_currency.as_deref().unwrap_or("DKK"),input.notes],|r|r.get(0)).map_err(|_|refused("customer already exists or could not be stored"))?;
+    let id:i64=tx.query_row("INSERT INTO customers(name,address,vat_or_cvr,email,phone,website,ean_number,payment_terms_days,default_currency,notes) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10) RETURNING id",params![name,input.address,input.vat_or_cvr,input.email,input.phone,input.website,normalized_ean(input.ean_number.as_deref())?,input.payment_terms_days,input.default_currency.as_deref().unwrap_or("DKK"),input.notes],|r|r.get(0)).map_err(|e|if e.sqlite_error().is_some_and(|v|v.extended_code==rusqlite::ffi::SQLITE_CONSTRAINT_UNIQUE){refused("customer already exists")}else{Error::new("contact_storage_unavailable","contact could not be stored")})?;
     audit(
         tx,
         "customer_add",
@@ -50,6 +50,11 @@ pub fn create_customer(
         actor,
     )?;
     Ok(json!({"id":id}))
+}
+fn normalized_ean(value:Option<&str>)->Result<Option<String>,Error>{
+    let Some(value)=value.filter(|s|!s.trim().is_empty())else{return Ok(None);};
+    let digits=value.chars().filter(|c|!c.is_whitespace()).collect::<String>();
+    if digits.len()!=13||!digits.bytes().all(|b|b.is_ascii_digit()){return Err(refused("eanNumber must be 13 digits"));}Ok(Some(digits))
 }
 fn validate_customer(input: &Customer) -> Result<(), Error> {
     sales_invoice::text(&input.name, 256)?;
@@ -70,7 +75,7 @@ fn validate_customer(input: &Customer) -> Result<(), Error> {
     }
     if input
         .payment_terms_days
-        .is_some_and(|n| !(1..=365).contains(&n))
+        .is_some_and(|n| !(1..=9_007_199_254_740_991).contains(&n))
         || input
             .default_currency
             .as_deref()
@@ -78,9 +83,7 @@ fn validate_customer(input: &Customer) -> Result<(), Error> {
     {
         return Err(refused("invalid customer payment terms or currency"));
     }
-    if input.ean_number.as_deref().is_some_and(|s| !s.is_empty()) {
-        return Err(refused("public-recipient customer setup is not ported yet"));
-    }
+    normalized_ean(input.ean_number.as_deref())?;
     Ok(())
 }
 /// Merge a strict partial patch; omitted fields survive, explicit null clears optional fields.
@@ -122,7 +125,7 @@ pub fn update_customer(
         name,
         input.vat_or_cvr.as_deref(),
     )?;
-    tx.execute("UPDATE customers SET name=?1,address=?2,vat_or_cvr=?3,email=?4,phone=?5,website=?6,ean_number=?7,payment_terms_days=?8,default_currency=?9,notes=?10 WHERE id=?11 AND archived=0", params![name,input.address,input.vat_or_cvr,input.email,input.phone,input.website,input.ean_number,input.payment_terms_days,input.default_currency,input.notes,id]).map_err(|_|refused("customer already exists or could not be stored"))?;
+    tx.execute("UPDATE customers SET name=?1,address=?2,vat_or_cvr=?3,email=?4,phone=?5,website=?6,ean_number=?7,payment_terms_days=?8,default_currency=?9,notes=?10 WHERE id=?11 AND archived=0", params![name,input.address,input.vat_or_cvr,input.email,input.phone,input.website,normalized_ean(input.ean_number.as_deref())?,input.payment_terms_days,input.default_currency,input.notes,id]).map_err(|_|refused("customer already exists or could not be stored"))?;
     audit(
         tx,
         "customer_update",
