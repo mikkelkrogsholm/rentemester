@@ -67,6 +67,7 @@ import { documentsApi } from "./api/documents";
 import { gdprApi } from "./api/gdpr";
 import { groupApi } from "./api/group";
 import { integrityApi } from "./api/integrity";
+import { invoiceEmailApi } from "./api/invoice-email";
 import { invoicesApi } from "./api/invoices";
 import { mileageApi } from "./api/mileage";
 import { payablesApi } from "./api/payables";
@@ -103,6 +104,7 @@ export const api = {
   ...vatApi,
   ...documentsApi,
   ...invoicesApi,
+  ...invoiceEmailApi,
   ...contactsApi,
   ...mileageApi,
   ...budgetApi,

@@ -1,3 +1,4 @@
+import { NativeInvoiceEmail } from "../components/NativeInvoiceEmail";
 import { NativeInvoicePost } from "../components/NativeInvoicePost";
 import { NativeReminderClaims } from "../components/NativeReminderClaims";
 // Fakturaer — the per-company issued invoices (cockpit-redesign iteration 5;
@@ -148,6 +149,8 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
       <PageHeader title={detail ? `Faktura ${filtered[0]?.invoiceNo ?? documentId ?? ""}` : "Fakturaer"}
         description={`${inv.company.name} · ${currency} · Regnskabsår ${inv.selectedYear}`}
         actions={detail ? <ButtonLink className="btn secondary" to={listReturnTo(slug, "fakturaer", params.get("returnTo"), inv.selectedYear)}>Tilbage til fakturaer</ButtonLink> : !inv.archived && can("company.draft.write") ? <ButtonLink className="btn" to={workflowTo(slug, "fakturaer", "ny", params, inv.selectedYear)}>Udsted faktura</ButtonLink> : undefined} />
+
+      {inv.nativeSales && <NativeInvoiceEmail key={currentScope} slug={slug} invoices={inv.invoices} archived={inv.archived} onChanged={state.reload} />}
 
       <CompanyNav
         slug={slug}
