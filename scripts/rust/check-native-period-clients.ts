@@ -49,6 +49,9 @@ export async function checkNativePeriodClients(
 		const value = JSON.parse(child.stdout);
 		return { status: child.status, value };
 	}
+  function requireCliRefusal(result: ReturnType<typeof cliCall>, context: string) {
+   if(result.status!==1||result.value.ok!==false||result.value.code!=="server_refused"||!Array.isArray(result.value.errors)||!result.value.errors.includes("server refused request (HTTP 422)"))throw new Error(`${context}: ${JSON.stringify(result)}`);
+  }
 	function rpc(name: string, args: Record<string, unknown>, allowFailure = false) {
 		const input =
 			[
@@ -97,14 +100,14 @@ export async function checkNativePeriodClients(
 			: result.result.structuredContent.data;
 	}
 
- let evidence: { start:string;end:string;periodId:number;hash:string;reference:string;year:string };
+ let evidence: { start:string;end:string;periodId:number;hash:string;reference:string;year:string;ledgerUuid:string };
  try {
  const periodRows=()=>cliCall("periods").value.data.periods.periods as Array<{id:number;periodStart:string;effectiveStatus:string;closePacketHash:string;reference:string}>;
  if(!restarted){
   // A historical quarter before the normal smoke corpus; do not lock today's work.
   const today=new Date().toLocaleDateString("sv-SE",{timeZone:"Europe/Copenhagen"});
   const year=Number(today.slice(0,4))-2;
-  evidence={start:`${year}-01-01`,end:`${year}-03-31`,periodId:0,hash:"",reference:"SYNTHETIC-CLIENT-PERIOD-RECEIPT",year:String(year)};
+  evidence={start:`${year}-01-01`,end:`${year}-03-31`,periodId:0,hash:"",reference:"SYNTHETIC-CLIENT-PERIOD-RECEIPT",year:String(year),ledgerUuid:""};
   if(periodRows().some(p=>p.periodStart===evidence.start))throw new Error("Synthetic historical period already exists; reconcile instead of resubmitting");
   const chart=cliCall("accounts").value.data.accounts;
   // Preserve every confirmed role; create only absent control accounts.
@@ -134,24 +137,42 @@ export async function checkNativePeriodClients(
   const periodsBeforeStale=JSON.stringify(periodRows());
   const stale=cliCall("close-period",JSON.stringify({...bounds,reviewId:first.id,packetHash:first.packet.hash}),["--confirm"],true);
   // The public client intentionally redacts native refusal bodies; verify its contract.
-  if(stale.status!==1||stale.value.ok!==false||stale.value.code!=="server_refused"||!Array.isArray(stale.value.errors)||!stale.value.errors.includes("server refused request (HTTP 422)"))throw new Error(`Stale close was not explicitly refused: ${JSON.stringify(stale)}`);
+  requireCliRefusal(stale,"Stale close was not explicitly refused");
   const periodsAfterStale=periodRows();
   if(JSON.stringify(periodsAfterStale)!==periodsBeforeStale||periodsAfterStale.some(p=>p.periodStart===evidence.start))throw new Error("Stale close changed the period register");
   const review=()=>cliCall("review-period",JSON.stringify(bounds),["--confirm"]).value.data.review;
   const close=(r: {id:number;packet:{hash:string}})=>rpc("close_period",{company:"synthetic",body:JSON.stringify({...bounds,reviewId:r.id,packetHash:r.packet.hash}),confirm:true}).period;
   const closed=close(review());evidence.periodId=closed.id;
+  const closedRows=periodRows();
+  if(closedRows.find(p=>p.id===closed.id)?.effectiveStatus!=="closed")throw new Error("Fresh close did not establish observable period lock");
+  const journal=()=>cliCall("journal",undefined,["--year",evidence.year]).value.data.journal;
+  const initialJournal=journal();
+  evidence.ledgerUuid=initialJournal.ledgerUuid;
+  if(typeof evidence.ledgerUuid!=="string"||!/^[0-9a-f]{32}$/.test(evidence.ledgerUuid))throw new Error("Authorized journal did not expose canonical ledger UUID");
+  const journalEntries=()=>journal().entries;
+  const journalBeforeLock=initialJournal.entries;
+  if(!Array.isArray(journalBeforeLock)||!journalBeforeLock.some(entry=>entry.text===posting.input.request.text&&entry.date===evidence.end))throw new Error("Historical posting missing before lock refusal check");
   posting.input.idempotencyKey="synthetic-period-client-lock-refusal";
-  const locked=cliCall("post-journal",JSON.stringify(posting),[],true);if(locked.status!==1||!JSON.stringify(locked.value).includes("closed"))throw new Error("Closed quarter allowed posting");
+  const locked=cliCall("post-journal",JSON.stringify(posting),[],true);
+  requireCliRefusal(locked,"Closed-period posting was not explicitly refused");
+  if(JSON.stringify(journalEntries())!==JSON.stringify(journalBeforeLock)||JSON.stringify(periodRows())!==JSON.stringify(closedRows))throw new Error("Closed-period refusal changed journal or lock state");
   const opened=cliCall("reopen-period",JSON.stringify({...bounds,reason:"Synthetic additional evidence reviewed before filing"}),["--confirm"]).value.data.period;
   if(opened.effectiveStatus!=="open")throw new Error("Justified reopen failed");
   if(close(review()).id!==closed.id)throw new Error("Reclose changed original period identity");
   evidence.hash=periodRows().find(p=>p.id===evidence.periodId)!.closePacketHash;
   cliCall("report-period",JSON.stringify({...bounds,packetHash:evidence.hash,reference:evidence.reference}),["--confirm"]);
+  const reportedRows=JSON.stringify(periodRows());
   const refused=rpc("reopen_period",{company:"synthetic",body:JSON.stringify({...bounds,reason:"Synthetic reported lock check"}),confirm:true},true);
-  if(!refused.result?.isError)throw new Error("Reported period allowed reopening");
-  const conflict=cliCall("report-period",JSON.stringify({...bounds,packetHash:evidence.hash,reference:"CONFLICTING-SYNTHETIC-RECEIPT"}),["--confirm"],true);if(conflict.status!==1)throw new Error("Reported receipt was mutable");
+  const reopenError=refused.result?.structuredContent?.error;
+  if(!refused.result?.isError||reopenError?.code!=="server_refused"||reopenError?.status!==422)throw new Error(`Reported reopen was not explicitly refused: ${JSON.stringify(refused)}`);
+  if(JSON.stringify(periodRows())!==reportedRows)throw new Error("Rejected reopen changed reported period state");
+  const conflict=cliCall("report-period",JSON.stringify({...bounds,packetHash:evidence.hash,reference:"CONFLICTING-SYNTHETIC-RECEIPT"}),["--confirm"],true);
+  requireCliRefusal(conflict,"Conflicting receipt was not explicitly refused");
+  if(JSON.stringify(periodRows())!==reportedRows)throw new Error("Rejected receipt changed reported period state");
   writeFileSync(saved,JSON.stringify(evidence));
  }else evidence=JSON.parse(readFileSync(saved,"utf8"));
+ const ledgerUuid=cliCall("journal",undefined,["--year",evidence.year]).value.data.journal.ledgerUuid;
+ if(typeof ledgerUuid!=="string"||!/^[0-9a-f]{32}$/.test(ledgerUuid)||ledgerUuid!==evidence.ledgerUuid)throw new Error("Authorized journal ledger identity changed after reload/restart");
  const period=periodRows().find(p=>p.id===evidence.periodId);
  if(period?.effectiveStatus!=="reported"||period.closePacketHash!==evidence.hash||period.reference!==evidence.reference)throw new Error("Original close proof/receipt did not persist");
  const vat=rpc("vat",{company:"synthetic",year:evidence.year});if(!vat.vat)throw new Error("Native VAT read unavailable");
