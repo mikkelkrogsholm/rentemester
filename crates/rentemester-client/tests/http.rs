@@ -451,3 +451,104 @@ async fn issued_invoice_pdf_is_authorized_get_and_refuses_html_or_invalid_id() {
     request.recv().unwrap();
     assert_eq!(task.join().unwrap(), 1);
 }
+
+const COMMITMENT_PLAN:&[u8]=br#"{ "commitment":{"commitmentId":"synthetic-contract","vendorPartyId":"vendor:1","type":"subscription","description":"Synthetic service","businessPurpose":"Synthetic work","amount":10.01,"currency":"DKK","frequency":"monthly","nextDate":"2026-01-31","evidenceRefs":["document:1"]} }"#;
+#[tokio::test]
+async fn commitment_plan_and_reads_use_exact_native_contracts() {
+    for path in [
+        "supplier-commitments?startDate=2026-01-31",
+        "supplier-commitments/matches",
+        "supplier-commitments/plan",
+    ] {
+        let (origin, request, task) = server(OK);
+        let api = ApiClient::new(&origin, true, Some("session=synthetic".into())).unwrap();
+        match path {
+            "supplier-commitments/matches" => {
+                api.supplier_commitment_matches("demo").await.unwrap();
+            }
+            "supplier-commitments/plan" => {
+                api.plan_supplier_commitment("demo", COMMITMENT_PLAN.to_vec())
+                    .await
+                    .unwrap();
+            }
+            _ => {
+                api.supplier_commitments("demo", Some("2026-01-31"))
+                    .await
+                    .unwrap();
+            }
+        }
+        let wire = request.recv().unwrap();
+        let method = if path.ends_with("/plan") {
+            "POST"
+        } else {
+            "GET"
+        };
+        assert!(
+            wire.starts_with(format!("{method} /api/companies/demo/{path} HTTP/1.1").as_bytes())
+        );
+        if method == "POST" {
+            assert!(wire.ends_with(COMMITMENT_PLAN));
+        }
+        assert_eq!(task.join().unwrap(), 1);
+    }
+}
+#[tokio::test]
+async fn read_only_commitment_plan_has_no_unknown_write_semantics() {
+    let (origin, request, task) = server(
+        "HTTP/1.1 503 Service Unavailable\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+    );
+    let api = ApiClient::new(&origin, true, None).unwrap();
+    assert_eq!(
+        api.plan_supplier_commitment("demo", COMMITMENT_PLAN.to_vec())
+            .await,
+        Err(Error::Refused { status: 503 })
+    );
+    request.recv().unwrap();
+    assert_eq!(task.join().unwrap(), 1);
+    let (origin, request, task) =
+        server("HTTP/1.1 200 OK\r\nContent-Length: 3\r\nConnection: close\r\n\r\nBAD");
+    let api = ApiClient::new(&origin, true, None).unwrap();
+    assert_eq!(
+        api.plan_supplier_commitment("demo", COMMITMENT_PLAN.to_vec())
+            .await,
+        Err(Error::Protocol)
+    );
+    request.recv().unwrap();
+    assert_eq!(task.join().unwrap(), 1);
+}
+#[tokio::test]
+async fn commitment_writes_keep_domain_hash_and_caller_key_and_never_retry() {
+    use rentemester_client::CommitmentMutation as M;
+    let plan: serde_json::Value = serde_json::from_slice(COMMITMENT_PLAN).unwrap();
+    for(op,path,bytes)in[(M::Apply,"supplier-commitments",serde_json::json!({"commitment":plan["commitment"],"payloadHash":"a".repeat(64),"idempotencyKey":"explicit-caller-key","confirm":true}).to_string()),(M::Change,"supplier-commitments/change",serde_json::json!({"commitmentId":"synthetic-contract","action":"ended","reason":"Synthetic end","expectedPayloadHash":"b".repeat(64),"confirm":true}).to_string()),(M::Match,"supplier-commitments/match",r#"{ "commitmentId":"synthetic-contract","occurrenceDate":"2026-01-31","evidence":{"kind":"canonical_document","id":"1"},"confirm":true }"#.into())]{
+ let(origin,request,task)=server("HTTP/1.1 503 Service Unavailable\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");let api=ApiClient::new(&origin,true,None).unwrap();assert_eq!(api.mutate_supplier_commitment("demo",op,bytes.as_bytes().to_vec(),true).await,Err(Error::OutcomeUnknown));let wire=request.recv().unwrap();assert!(wire.starts_with(format!("POST /api/companies/demo/{path} HTTP/1.1").as_bytes()));assert!(wire.ends_with(bytes.as_bytes()));assert_eq!(task.join().unwrap(),1);
+ }
+}
+#[tokio::test]
+async fn commitment_selectors_confirmation_and_canonical_evidence_are_strict() {
+    use rentemester_client::CommitmentMutation as M;
+    let api = ApiClient::new("http://127.0.0.1:9", true, None).unwrap();
+    for date in [
+        "2026-02-29",
+        "2026-13-01",
+        "2026-01-01&year=2025",
+        "0000-01-01",
+    ] {
+        assert!(matches!(
+            api.supplier_commitments("demo", Some(date)).await,
+            Err(Error::InvalidInput(_))
+        ));
+    }
+    assert!(rentemester_client::valid_commitment_start("2024-02-29"));
+    assert!(matches!(
+        api.mutate_supplier_commitment("demo", M::Apply, vec![], false)
+            .await,
+        Err(Error::InvalidInput(_))
+    ));
+    let spoof=br#"{"commitmentId":"synthetic-contract","occurrenceDate":"2026-01-31","evidence":{"kind":"canonical_document","id":"1","amount":0},"confirm":true}"#;
+    assert!(matches!(
+        api.mutate_supplier_commitment("demo", M::Match, spoof.to_vec(), true)
+            .await,
+        Err(Error::InvalidInput(_))
+    ));
+}

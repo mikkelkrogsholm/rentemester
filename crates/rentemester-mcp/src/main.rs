@@ -3,6 +3,7 @@
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle
 //! https://modelcontextprotocol.io/specification/2025-11-25/server/tools
 mod bank_payables;
+mod commitments;
 mod periods;
 mod receivables;
 mod tools;

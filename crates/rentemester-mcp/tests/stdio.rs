@@ -146,7 +146,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 41);
+    assert_eq!(tools.len(), 47);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -303,8 +303,16 @@ fn domain_discovery_is_strict_and_preview_attestation_is_explicit() {
                 "update_vendor",
                 json!({"company":"demo","id":null,"body":"{}","confirm":true}),
             ),
-            call(7, "delete_customer", json!({"company":"demo","body":"{\"confirm\":true}","confirm":true})),
-            call(8, "delete_vendor", json!({"company":"demo","id":7,"body":"{\"confirm\":true}","confirm":false})),
+            call(
+                7,
+                "delete_customer",
+                json!({"company":"demo","body":"{\"confirm\":true}","confirm":true}),
+            ),
+            call(
+                8,
+                "delete_vendor",
+                json!({"company":"demo","id":7,"body":"{\"confirm\":true}","confirm":false}),
+            ),
         ],
     );
     let values = parsed(&output);
@@ -321,8 +329,17 @@ fn domain_discovery_is_strict_and_preview_attestation_is_explicit() {
     assert_eq!(issue["annotations"]["idempotentHint"], false);
     for name in ["delete_customer", "delete_vendor"] {
         let deletion = tools.iter().find(|t| t["name"] == name).unwrap();
-        assert!(deletion["inputSchema"]["required"].as_array().unwrap().contains(&json!("id")));
-        assert_eq!(deletion["inputSchema"]["properties"]["body"]["contentSchema"]["properties"]["confirm"]["const"], true);
+        assert!(
+            deletion["inputSchema"]["required"]
+                .as_array()
+                .unwrap()
+                .contains(&json!("id"))
+        );
+        assert_eq!(
+            deletion["inputSchema"]["properties"]["body"]["contentSchema"]["properties"]["confirm"]
+                ["const"],
+            true
+        );
         assert_eq!(deletion["annotations"]["destructiveHint"], true);
         assert_eq!(deletion["annotations"]["idempotentHint"], false);
     }
@@ -657,4 +674,85 @@ fn issued_pdf_mcp_rejects_nonpositive_or_extra_write_arguments_before_network() 
         let values = parsed(&output);
         assert_eq!(values[1]["error"]["code"], -32602);
     }
+}
+
+#[test]
+fn commitments_discovery_readonly_plan_and_confirmed_proof_contract() {
+    let output = run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),
+            call(
+                3,
+                "plan_supplier_commitment",
+                json!({"company":"demo","body":"{}","confirm":true}),
+            ),
+            call(
+                4,
+                "supplier_commitment_matches",
+                json!({"company":"demo","startDate":"2026-01-01"}),
+            ),
+            call(
+                5,
+                "approve_supplier_commitment",
+                json!({"company":"demo","body":"{}","confirm":false}),
+            ),
+            call(
+                6,
+                "supplier_commitments",
+                json!({"company":"demo","year":"2026"}),
+            ),
+        ],
+    );
+    let values = parsed(&output);
+    let tools = values[1]["result"]["tools"].as_array().unwrap();
+    let plan = tools
+        .iter()
+        .find(|t| t["name"] == "plan_supplier_commitment")
+        .unwrap();
+    assert_eq!(plan["annotations"]["readOnlyHint"], true);
+    assert_eq!(plan["inputSchema"]["additionalProperties"], false);
+    assert!(plan["inputSchema"]["properties"].get("confirm").is_none());
+    let change = tools
+        .iter()
+        .find(|t| t["name"] == "change_supplier_commitment")
+        .unwrap();
+    assert_eq!(
+        change["inputSchema"]["properties"]["body"]["contentSchema"]["properties"]["expectedPayloadHash"]
+            ["minLength"],
+        64
+    );
+    assert_eq!(change["annotations"]["idempotentHint"], false);
+    for value in &values[2..] {
+        assert_eq!(value["error"]["code"], -32602);
+    }
+}
+#[test]
+fn commitment_status_change_mcp_preserves_body_and_does_not_generate_key() {
+    let (origin, request, task) =
+        http("HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\n{\"ok\":true}");
+    let body = format!(
+        r#"{{ "commitmentId":"synthetic-contract","action":"paused","reason":"Synthetic reviewed pause","expectedPayloadHash":"{}","confirm":true }}"#,
+        "a".repeat(64)
+    );
+    let output = run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "change_supplier_commitment",
+                json!({"company":"demo","body":body,"confirm":true}),
+            ),
+        ],
+    );
+    let values = parsed(&output);
+    assert_eq!(values[1]["result"]["isError"], false);
+    let wire = request.recv().unwrap();
+    assert!(wire.starts_with(b"POST /api/companies/demo/supplier-commitments/change "));
+    assert!(wire.ends_with(body.as_bytes()));
+    task.join().unwrap();
 }

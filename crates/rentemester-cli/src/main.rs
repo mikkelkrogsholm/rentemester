@@ -1,6 +1,7 @@
 use rentemester_engine::{Error, trial_balance::Period};
 use serde_json::json;
 use std::{collections::BTreeMap, io::Read, path::Path, process::ExitCode};
+mod commitments;
 mod receivables;
 mod remote;
 fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {

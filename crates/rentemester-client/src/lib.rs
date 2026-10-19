@@ -3,6 +3,10 @@
 //! Authentication/enrollment is currently performed by the server's browser UI.
 mod auth;
 mod bank_payables;
+mod commitments;
+pub use commitments::{
+    CommitmentMutation, commitment_body_schema, commitment_plan_schema, valid_commitment_start,
+};
 mod periods;
 pub use periods::{PeriodMutation, period_body_schema};
 mod domain;
