@@ -2,7 +2,11 @@
 //! Supply a browser session's Cookie request-header value, never a Set-Cookie header.
 //! Authentication/enrollment is currently performed by the server's browser UI.
 mod auth;
+mod domain;
 pub use auth::{AuthenticatedSession, LoginProgress, MfaFactor, PendingLogin};
+pub use domain::{
+    Confirmation, DomainMutation, MAX_DOMAIN_BODY, domain_body_schema, invoice_body_schema,
+};
 mod credentials;
 pub use credentials::read_cookie_file;
 

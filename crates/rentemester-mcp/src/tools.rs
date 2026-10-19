@@ -1,4 +1,4 @@
-use rentemester_client::{ApiClient, Error, JournalMutation, Report};
+use rentemester_client::{ApiClient, Confirmation, DomainMutation, Error, JournalMutation, Report};
 use serde::Deserialize;
 use serde_json::{Value, json};
 
@@ -41,7 +41,81 @@ pub fn list() -> Value {
         tools.push(tool(name, description, json!({"type":"object","required":["company","envelope"],"properties":{
             "company":company_schema(),"envelope":{"type":"string","maxLength":65536,"description":"Exact server JSON envelope string: confirm:true and input with format, expectedRuleVersion, idempotencyKey and request. Preserved byte-for-byte; never generate a replacement key. Reconcile outcome_unknown using the original key before retrying."}},"additionalProperties":false}), false));
     }
+    for (name, description) in [
+        (
+            "contacts",
+            "List native customer and vendor master data in contacts.customers and contacts.vendors",
+        ),
+        (
+            "accounts",
+            "Read explicit chart accounts and current confirmed posting-role mappings before selecting vendor defaults or invoice posting accounts",
+        ),
+        ("documents", "List native document metadata"),
+        (
+            "invoices",
+            "List issued invoices, with optional server fiscal year selector",
+        ),
+    ] {
+        let mut schema = json!({"type":"object","required":["company"],"properties":{"company":company_schema()},"additionalProperties":false});
+        if name == "invoices" {
+            schema["properties"]["year"] = json!({"type":"string","maxLength":128});
+        }
+        tools.push(tool(name, description, schema, true));
+    }
+    tools.push(tool("preview_invoice","Nonmutating native invoice PDF preview. Review PDF bytes (JSON integer array) and preserve identical body for issue_invoice. No invoice number is reserved; preview errors never imply a mutation.",json!({"type":"object","required":["company","body"],"properties":{"company":company_schema(),"body":native_body(rentemester_client::invoice_body_schema())},"additionalProperties":false}),true));
+    for (name, operation, description) in [
+        (
+            "create_customer",
+            DomainMutation::CreateCustomer,
+            "Create customer master data",
+        ),
+        (
+            "update_customer",
+            DomainMutation::UpdateCustomer(1),
+            "Patch one active customer; omitted fields survive, explicit null clears optional fields",
+        ),
+        (
+            "create_vendor",
+            DomainMutation::CreateVendor,
+            "Create supplier master data, including optional typed identity and validated expense account default",
+        ),
+        (
+            "update_vendor",
+            DomainMutation::UpdateVendor(1),
+            "Patch one active supplier; source documents remain immutable",
+        ),
+        (
+            "issue_invoice",
+            DomainMutation::IssueInvoice,
+            "Issue immutable native invoice/PDF from the identical reviewed preview input; numbering remains server-authoritative",
+        ),
+        (
+            "post_invoice",
+            DomainMutation::PostInvoice,
+            "Post an issued invoice using explicit revenue account, confirmed debtor and output-VAT roles, original evidence and open posting period",
+        ),
+    ] {
+        let mut schema = json!({"type":"object","required":["company","body","confirm"],"properties":{"company":company_schema(),"body":native_body(rentemester_client::domain_body_schema(operation)),"confirm":{"const":true}},"additionalProperties":false});
+        if matches!(
+            operation,
+            DomainMutation::UpdateCustomer(_) | DomainMutation::UpdateVendor(_)
+        ) {
+            schema["required"].as_array_mut().unwrap().push(json!("id"));
+            schema["properties"]["id"] = json!({"type":"integer","minimum":1});
+        }
+        if matches!(operation, DomainMutation::IssueInvoice) {
+            schema["required"]
+                .as_array_mut()
+                .unwrap()
+                .push(json!("previewReviewed"));
+            schema["properties"]["previewReviewed"] = json!({"const":true,"description":"Caller attests reviewing preview_invoice for this identical body; this is not a server preview token"});
+        }
+        tools.push(tool(name,&format!("{description}. Native flat body is forwarded exactly once. No server idempotency keys: do not add an envelope/key, do not automatically retry. On outcome_unknown reconcile contacts/invoices/documents/journal before further action. Native issuance supports DKK/25% VAT."),schema,false));
+    }
     json!({"tools":tools})
+}
+fn native_body(schema: Value) -> Value {
+    json!({"type":"string","minLength":2,"maxLength":262144,"contentMediaType":"application/json","contentSchema":schema,"description":"Exact UTF-8 native JSON body string, forwarded byte-for-byte; shape is specified by contentSchema. No defaults, confirmations or keys are injected."})
 }
 fn company_schema() -> Value {
     json!({"type":"string","minLength":1,"pattern":"^[A-Za-z0-9_-]+$","description":"Explicit company slug from companies"})
@@ -64,6 +138,29 @@ struct ReadArgs {
 struct WriteArgs {
     company: String,
     envelope: String,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DomainReadArgs {
+    company: String,
+    year: Option<String>,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PreviewArgs {
+    company: String,
+    body: String,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DomainWriteArgs {
+    company: String,
+    body: String,
+    confirm: bool,
+    id: Option<i64>,
+    #[serde(rename = "previewReviewed")]
+    preview_reviewed: Option<bool>,
 }
 
 /// Invalid RPC tool/arguments are protocol errors; HTTP/domain failures are tool results.
@@ -105,6 +202,65 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
                 report,
                 args.year.as_deref(),
                 args.account.as_deref(),
+            )
+            .await
+        }
+        "accounts" | "contacts" | "documents" | "invoices" => {
+            if name != "invoices" && args.get("year").is_some() {
+                return Err("year allowed only on invoices");
+            }
+            let args: DomainReadArgs =
+                serde_json::from_value(args).map_err(|_| "invalid domain read arguments")?;
+            if args.year.as_ref().is_some_and(|s| s.len() > 128) {
+                return Err("year selector too long");
+            }
+            match name {
+                "accounts" => api.accounts(&args.company).await,
+                "contacts" => api.contacts(&args.company).await,
+                "documents" => api.documents(&args.company).await,
+                _ => api.invoices(&args.company, args.year.as_deref()).await,
+            }
+        }
+        "preview_invoice" => {
+            let args: PreviewArgs =
+                serde_json::from_value(args).map_err(|_| "invalid preview arguments")?;
+            api.invoice_preview(&args.company, args.body.into_bytes())
+                .await
+        }
+        "create_customer" | "update_customer" | "create_vendor" | "update_vendor"
+        | "issue_invoice" | "post_invoice" => {
+            let update = matches!(name, "update_customer" | "update_vendor");
+            if args.get("id").is_some() != update
+                || args
+                    .get("id")
+                    .is_some_and(|v| v.as_i64().is_none_or(|n| n <= 0))
+                || args.get("previewReviewed").is_some() != (name == "issue_invoice")
+            {
+                return Err(
+                    "updates require positive id; issue_invoice requires previewReviewed:true",
+                );
+            }
+            let args: DomainWriteArgs =
+                serde_json::from_value(args).map_err(|_| "invalid domain mutation arguments")?;
+            if !args.confirm || (name == "issue_invoice" && args.preview_reviewed != Some(true)) {
+                return Err("explicit confirmation and reviewed invoice preview required");
+            }
+            let operation = match name {
+                "create_customer" => DomainMutation::CreateCustomer,
+                "update_customer" => DomainMutation::UpdateCustomer(args.id.unwrap()),
+                "create_vendor" => DomainMutation::CreateVendor,
+                "update_vendor" => DomainMutation::UpdateVendor(args.id.unwrap()),
+                "issue_invoice" => DomainMutation::IssueInvoice,
+                _ => DomainMutation::PostInvoice,
+            };
+            api.domain_mutation(
+                &args.company,
+                operation,
+                args.body.into_bytes(),
+                Confirmation {
+                    confirm: args.confirm,
+                    invoice_preview_reviewed: args.preview_reviewed.unwrap_or(false),
+                },
             )
             .await
         }

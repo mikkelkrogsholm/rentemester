@@ -146,7 +146,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 8);
+    assert_eq!(tools.len(), 19);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -277,4 +277,80 @@ fn malformed_mutation_never_contacts_server_and_notification_never_executes_writ
         values[1]["result"]["structuredContent"]["error"]["code"],
         "invalid_input"
     );
+}
+
+#[test]
+fn domain_discovery_is_strict_and_preview_attestation_is_explicit() {
+    let output = run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),
+            call(
+                3,
+                "issue_invoice",
+                json!({"company":"demo","body":"{}","confirm":true}),
+            ),
+            call(
+                4,
+                "create_customer",
+                json!({"company":"demo","body":"{\"name\":\"Synthetic\"}","confirm":false}),
+            ),
+            call(5, "documents", json!({"company":"demo","year":"2026"})),
+            call(
+                6,
+                "update_vendor",
+                json!({"company":"demo","id":null,"body":"{}","confirm":true}),
+            ),
+        ],
+    );
+    let values = parsed(&output);
+    let tools = values[1]["result"]["tools"].as_array().unwrap();
+    let issue = tools.iter().find(|t| t["name"] == "issue_invoice").unwrap();
+    assert_eq!(
+        issue["inputSchema"]["properties"]["previewReviewed"]["const"],
+        true
+    );
+    assert_eq!(
+        issue["inputSchema"]["properties"]["body"]["contentSchema"]["additionalProperties"],
+        false
+    );
+    assert_eq!(issue["annotations"]["idempotentHint"], false);
+    let preview = tools
+        .iter()
+        .find(|t| t["name"] == "preview_invoice")
+        .unwrap();
+    assert_eq!(preview["annotations"]["readOnlyHint"], true);
+    for result in &values[2..] {
+        assert_eq!(result["error"]["code"], -32602);
+    }
+}
+#[test]
+fn domain_write_forwards_exact_body_without_confirmation_injection() {
+    let (origin, request, task) = http(
+        "HTTP/1.1 200 OK\r\nContent-Length: 31\r\nConnection: close\r\n\r\n{\"ok\":true,\"customer\":{\"id\":7}}",
+    );
+    let body = "{ \"name\":\"Synthetic MCP buyer\", \"email\":null }";
+    let output = run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "create_customer",
+                json!({"company":"demo","body":body,"confirm":true}),
+            ),
+        ],
+    );
+    let values = parsed(&output);
+    assert_eq!(
+        values[1]["result"]["structuredContent"]["data"]["customer"]["id"],
+        7
+    );
+    let wire = request.recv().unwrap();
+    assert!(wire.starts_with(b"POST /api/companies/demo/customers "));
+    assert!(wire.ends_with(body.as_bytes()));
+    task.join().unwrap();
 }

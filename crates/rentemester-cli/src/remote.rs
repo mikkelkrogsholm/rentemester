@@ -1,5 +1,6 @@
 use rentemester_client::{
-    ApiClient, Error as ClientError, JournalMutation, LoginProgress, MfaFactor, Report,
+    ApiClient, Confirmation, DomainMutation, Error as ClientError, JournalMutation, LoginProgress,
+    MfaFactor, Report,
 };
 use rentemester_engine::Error;
 use serde_json::{Value, json};
@@ -14,9 +15,11 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     if args == ["--help"] {
         return Ok(json!({"ok":true,
             "usage":"remote --server ORIGIN [--allow-loopback-http] [--cookie-file PATH] COMMAND [--company SLUG] [--year YEAR] [--account CODE]",
-            "commands":["health","me","companies","journal","trial-balance","income-statement","balance","post-journal","reverse-journal","login"],
+            "commands":["health","me","companies","journal","trial-balance","income-statement","balance","post-journal","reverse-journal","login","accounts","contacts","documents","invoices","preview-invoice","create-customer","update-customer","create-vendor","update-vendor","issue-invoice","post-invoice"],
             "authentication":"Supply a valid MFA-derived browser session as one Cookie request-header value in an owner-only regular file (0600). No Set-Cookie attributes. All commands except health/login require --cookie-file. Login uses --email EMAIL --factor totp|backup --session-out NEW_PATH, reads password then factor code as two newline-terminated stdin lines; stdin must be piped/private. Output file is created0600 and never overwritten. MFA enrollment remains in browser.",
             "writes":"post-journal/reverse-journal read exact bounded server JSON envelope from stdin; requires confirm:true and input.idempotencyKey. Authenticated server session determines actor. No retry; outcome_unknown requires reconciliation using original key.",
+            "domainWrites":"Native flat JSON body on stdin, forwarded byte-for-byte once. Domain writes require --confirm; updates also --id. issue-invoice requires --preview-reviewed after preview-invoice with identical body. These native endpoints do NOT support idempotency keys: never add a key/envelope or auto-retry; reconcile outcome_unknown using contacts/invoices/journal/documents. Native post-invoice body also contains confirm:true. Preview returns PDF bytes as JSON integer array and creates no invoice. Native invoices currently support DKK/25% VAT. Contacts contains customers and vendors. invoices optionally accepts --year.",
+            "domainBodySchemas":{"customerCreate":rentemester_client::domain_body_schema(DomainMutation::CreateCustomer),"customerUpdate":rentemester_client::domain_body_schema(DomainMutation::UpdateCustomer(1)),"vendorCreate":rentemester_client::domain_body_schema(DomainMutation::CreateVendor),"vendorUpdate":rentemester_client::domain_body_schema(DomainMutation::UpdateVendor(1)),"invoicePreviewOrIssue":rentemester_client::invoice_body_schema(),"invoicePost":rentemester_client::domain_body_schema(DomainMutation::PostInvoice)},
             "transport":"HTTPS only unless --allow-loopback-http and literal loopback IP; --server is an origin without path/query/userinfo. No local fallback, redirects, ambient proxies or automatic retries.",
             "exitCodes":{"0":"success","1":"server/transport/protocol failure","2":"usage/configuration failure"},
             "example":"rentemester-rust remote --server http://127.0.0.1:8080 --allow-loopback-http --cookie-file /private/session.cookie trial-balance --company example --year 2026"}));
@@ -24,9 +27,24 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     let mut flags = BTreeMap::new();
     let mut command = None;
     let mut allow_http = false;
+    let mut confirmed = false;
+    let mut preview_reviewed = false;
     let mut cursor = 0;
     while cursor < args.len() {
         let arg = args[cursor].as_str();
+        if arg == "--confirm" || arg == "--preview-reviewed" {
+            let target = if arg == "--confirm" {
+                &mut confirmed
+            } else {
+                &mut preview_reviewed
+            };
+            if *target {
+                return Err(invalid("duplicate confirmation flag"));
+            }
+            *target = true;
+            cursor += 1;
+            continue;
+        }
         if arg == "--allow-loopback-http" {
             if allow_http {
                 return Err(invalid("duplicate --allow-loopback-http"));
@@ -40,6 +58,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
                 "--server",
                 "--cookie-file",
                 "--company",
+                "--id",
                 "--year",
                 "--account",
                 "--email",
@@ -67,6 +86,9 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     }
     let command = command.ok_or_else(|| invalid("expected remote command; see remote --help"))?;
     if command == "login" {
+        if confirmed || preview_reviewed {
+            return Err(invalid("confirmation flags are not login flags"));
+        }
         return login(&flags, allow_http);
     }
     if flags.contains_key("--email")
@@ -80,13 +102,51 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         "trial-balance" => Some(Report::TrialBalance),
         "income-statement" => Some(Report::IncomeStatement),
         "balance" => Some(Report::Balance),
-        "health" | "me" | "companies" | "post-journal" | "reverse-journal" => None,
+        "health" | "me" | "companies" | "post-journal" | "reverse-journal" | "contacts"
+        | "accounts" | "documents" | "invoices" | "preview-invoice" | "create-customer"
+        | "update-customer" | "create-vendor" | "update-vendor" | "issue-invoice"
+        | "post-invoice" => None,
         _ => return Err(invalid("unknown remote command")),
     };
     let mutation = matches!(command, "post-journal" | "reverse-journal");
+    let domain = match command {
+        "create-customer" => Some(DomainMutation::CreateCustomer),
+        "create-vendor" => Some(DomainMutation::CreateVendor),
+        "issue-invoice" => Some(DomainMutation::IssueInvoice),
+        "post-invoice" => Some(DomainMutation::PostInvoice),
+        "update-customer" | "update-vendor" => {
+            let id = flags
+                .get("--id")
+                .and_then(|v| v.parse::<i64>().ok())
+                .filter(|n| *n > 0)
+                .ok_or_else(|| invalid("update requires positive --id"))?;
+            Some(if command == "update-customer" {
+                DomainMutation::UpdateCustomer(id)
+            } else {
+                DomainMutation::UpdateVendor(id)
+            })
+        }
+        _ => None,
+    };
+    if flags.contains_key("--id") && !matches!(command, "update-customer" | "update-vendor") {
+        return Err(invalid("id allowed only on customer/vendor updates"));
+    }
+    if confirmed != domain.is_some() || preview_reviewed != (command == "issue-invoice") {
+        return Err(invalid(
+            "domain writes require --confirm; issue-invoice also requires --preview-reviewed after previewing identical input",
+        ));
+    }
     let company = flags.get("--company").copied();
-    if (report.is_some() || mutation) != company.is_some()
-        || (report.is_none() && (flags.contains_key("--year") || flags.contains_key("--account")))
+    if (report.is_some()
+        || mutation
+        || domain.is_some()
+        || matches!(
+            command,
+            "contacts" | "accounts" | "documents" | "invoices" | "preview-invoice"
+        ))
+        != company.is_some()
+        || ((report.is_none() && command != "invoices") && flags.contains_key("--year"))
+        || (report.is_none() && flags.contains_key("--account"))
     {
         return Err(invalid(
             "company required only for company operations; year/account allowed only on reports",
@@ -108,11 +168,11 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         }
     };
     let client = ApiClient::new(server, allow_http, cookie).map_err(client_error)?;
-    let body = if mutation {
+    let body = if mutation || domain.is_some() || command == "preview-invoice" {
         let mut body = Vec::new();
         std::io::stdin()
             .lock()
-            .take(65_537)
+            .take(262_145)
             .read_to_end(&mut body)
             .map_err(|_| invalid("could not read request from stdin"))?;
         Some(body)
@@ -132,11 +192,36 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
                         flags.get("--account").copied(),
                     )
                     .await
+            } else if let Some(operation) = domain {
+                client
+                    .domain_mutation(
+                        company.unwrap(),
+                        operation,
+                        body.unwrap(),
+                        Confirmation {
+                            confirm: confirmed,
+                            invoice_preview_reviewed: preview_reviewed,
+                        },
+                    )
+                    .await
             } else {
                 match command {
                     "health" => client.health().await,
                     "me" => client.me().await,
                     "companies" => client.companies().await,
+                    "accounts" => client.accounts(company.unwrap()).await,
+                    "contacts" => client.contacts(company.unwrap()).await,
+                    "documents" => client.documents(company.unwrap()).await,
+                    "invoices" => {
+                        client
+                            .invoices(company.unwrap(), flags.get("--year").copied())
+                            .await
+                    }
+                    "preview-invoice" => {
+                        client
+                            .invoice_preview(company.unwrap(), body.unwrap())
+                            .await
+                    }
                     _ => {
                         client
                             .manual_journal(

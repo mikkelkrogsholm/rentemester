@@ -73,3 +73,111 @@ fn cookie_file_permissions_refused_without_secret_disclosure() {
     assert!(result.contains("chmod 600"));
     assert!(!result.contains("do-not-display"));
 }
+#[test]
+fn native_invoice_issue_requires_explicit_reviewed_confirmation() {
+    for flags in [vec![], vec!["--confirm"], vec!["--preview-reviewed"]] {
+        let mut command = Command::new(BIN);
+        command.args([
+            "remote",
+            "issue-invoice",
+            "--server",
+            "http://127.0.0.1:9",
+            "--allow-loopback-http",
+            "--company",
+            "demo",
+        ]);
+        command.args(flags);
+        let output = command.output().unwrap();
+        assert_eq!(output.status.code(), Some(2));
+        assert!(
+            String::from_utf8(output.stdout)
+                .unwrap()
+                .contains("preview-reviewed")
+        );
+    }
+    let output = Command::new(BIN)
+        .args(["remote", "--help"])
+        .output()
+        .unwrap();
+    let help: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(
+        help["domainBodySchemas"]["invoicePost"]["additionalProperties"],
+        false
+    );
+    assert!(
+        help["domainWrites"]
+            .as_str()
+            .unwrap()
+            .contains("do NOT support idempotency")
+    );
+}
+#[cfg(unix)]
+#[test]
+fn native_customer_cli_forwards_exact_flat_body() {
+    use std::{io::Write, os::unix::fs::OpenOptionsExt, process::Stdio};
+    let cookie = std::env::temp_dir().join(format!("rm-domain-cli-{}.cookie", std::process::id()));
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o600)
+        .open(&cookie)
+        .unwrap();
+    file.write_all(b"session=synthetic-secret").unwrap();
+    drop(file);
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let origin = format!("http://{}", listener.local_addr().unwrap());
+    let body = "{ \"name\":\"Synthetic CLI buyer\", \"email\":null }";
+    let task = thread::spawn(move || {
+        let (mut stream, _) = listener.accept().unwrap();
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .unwrap();
+        let mut bytes = Vec::new();
+        loop {
+            let mut chunk = [0; 4096];
+            let size = stream.read(&mut chunk).unwrap();
+            bytes.extend_from_slice(&chunk[..size]);
+            if bytes.ends_with(body.as_bytes()) {
+                break;
+            }
+            assert!(size > 0);
+        }
+        assert!(bytes.starts_with(b"POST /api/companies/demo/customers "));
+        assert!(bytes.ends_with(body.as_bytes()));
+        stream.write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 31\r\nConnection: close\r\n\r\n{\"ok\":true,\"customer\":{\"id\":7}}").unwrap();
+    });
+    let mut child = Command::new(BIN)
+        .args([
+            "remote",
+            "create-customer",
+            "--server",
+            &origin,
+            "--allow-loopback-http",
+            "--company",
+            "demo",
+            "--cookie-file",
+            cookie.to_str().unwrap(),
+            "--confirm",
+        ])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(body.as_bytes())
+        .unwrap();
+    let output = child.wait_with_output().unwrap();
+    std::fs::remove_file(cookie).unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+    let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(value["data"]["customer"]["id"], 7);
+    assert!(!String::from_utf8_lossy(&output.stdout).contains("synthetic-secret"));
+    task.join().unwrap();
+}
