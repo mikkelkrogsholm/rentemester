@@ -86,19 +86,80 @@ fn load_at(dir: &Path) -> Result<Option<Value>, String> {
         return Err("Fakturastatus overskrider grænsen".into());
     }
     let value: Value = serde_json::from_slice(&bytes).map_err(|_| "Fakturastatus er ugyldig")?;
-    if value["format"] != "rentemester-desktop-invoice/1"
-        || !matches!(value["operation"].as_str(), Some("issue" | "post"))
-        || value["body"].as_str().is_none()
-    {
+    if !valid_record(&value) {
         return Err("Ukendt uafklaret fakturaforsøg. Filen bevares.".into());
     }
     Ok(Some(value))
+}
+pub fn is_lifecycle(value: &Value) -> bool {
+    matches!(
+        value["operation"].as_str(),
+        Some("receipt" | "credit" | "refund")
+    )
+}
+fn valid_record(value: &Value) -> bool {
+    if value["format"] != "rentemester-desktop-invoice/1" {
+        return false;
+    }
+    if is_lifecycle(value) {
+        value["invoiceDocumentId"].as_i64().is_some_and(|id| id > 0)
+            && value.as_object().is_some_and(|object| {
+                object.keys().all(|key| {
+                    [
+                        "format",
+                        "operation",
+                        "invoiceDocumentId",
+                        "bankTransactionId",
+                        "grossAmount",
+                        "issueDate",
+                        "origin",
+                        "company",
+                        "principal",
+                        "ledger",
+                        "localIdentity",
+                    ]
+                    .contains(&key.as_str())
+                })
+            })
+    } else {
+        matches!(value["operation"].as_str(), Some("issue" | "post"))
+            && value["body"].as_str().is_some()
+    }
+}
+pub fn resolve_lifecycle(expected: &Value) -> Result<(), String> {
+    if !is_lifecycle(expected) {
+        return Err("Udstedelse eller bogføring kræver sin eksisterende originalkontrol".into());
+    }
+    let dir = ensure()?;
+    if load_at(&dir)?.as_ref() != Some(expected) {
+        return Err("Fakturastatus ændrede sig; den bevares".into());
+    }
+    let suffix = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(|_| "Systemtid kunne ikke læses")?
+        .as_nanos();
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o600)
+        .open(dir.join(format!("invoice-lifecycle-manually-resolved-{suffix}.json")))
+        .map_err(|_| "Manuel afklaring kunne ikke arkiveres")?;
+    file.write_all(expected.to_string().as_bytes())
+        .and_then(|_| file.sync_all())
+        .map_err(|_| "Manuel afklaring kunne ikke gemmes")?;
+    finish_at(&dir, expected)?;
+    fs::File::open(dir)
+        .and_then(|file| file.sync_all())
+        .map_err(|_| "Manuel afklaring kunne ikke synkroniseres".into())
 }
 pub fn begin(value: &Value) -> Result<(), String> {
     let dir = ensure()?;
     begin_at(&dir, value)
 }
 fn begin_at(dir: &Path, value: &Value) -> Result<(), String> {
+    if !valid_record(value) {
+        return Err("Ugyldigt fakturaforsøg; intet sendt".into());
+    }
     if value.to_string().len() > 524288 {
         return Err("Det private fakturaforsøg overskrider grænsen; intet er sendt.".into());
     }
@@ -193,5 +254,19 @@ mod tests {
             file_url(Path::new("/private/Invoice Æ.pdf")),
             "file:///private/Invoice%20%C3%86.pdf"
         );
+    }
+    #[test]
+    fn lifecycle_marker_has_no_persisted_identity_reason_or_replay_body() {
+        let mut value = json!({"format":"rentemester-desktop-invoice/1","operation":"credit","invoiceDocumentId":7,"grossAmount":125,"origin":"https://synthetic.example"});
+        assert!(valid_record(&value));
+        assert!(is_lifecycle(&value));
+        value["body"] = json!("must not persist");
+        assert!(!valid_record(&value));
+        value.as_object_mut().unwrap().remove("body");
+        value["reason"] = json!("must not persist");
+        assert!(!valid_record(&value));
+        assert!(!valid_record(
+            &json!({"format":"rentemester-desktop-invoice/1","operation":"refund","invoiceDocumentId":0})
+        ));
     }
 }

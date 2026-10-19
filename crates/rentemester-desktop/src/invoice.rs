@@ -1,4 +1,6 @@
 //! Native domestic invoice workflow. Server owns totals, numbering, PDF and ledger effects.
+#[path = "invoice_lifecycle.rs"]
+mod lifecycle;
 use crate::{Session, invoice_state, readable};
 use gpui_kit::{
     component::{
@@ -239,6 +241,7 @@ pub struct Invoice {
     original_opened: bool,
     original_reviewed: bool,
     post_review: Option<Vec<u8>>,
+    lifecycle: Option<Entity<lifecycle::Lifecycle>>,
     busy: bool,
     status: String,
 }
@@ -287,6 +290,7 @@ impl Invoice {
             original_opened: false,
             original_reviewed: false,
             post_review: None,
+            lifecycle: None,
             busy: false,
             status: String::new(),
         };
@@ -548,6 +552,29 @@ impl Invoice {
         }
         cx.notify();
     }
+    fn open_lifecycle(
+        &mut self,
+        id: i64,
+        recovery: bool,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if self.busy || self.preview.is_some() || self.post_review.is_some() {
+            return;
+        }
+        if !recovery && (!self.original_reviewed || self.pending.is_some()) {
+            return;
+        }
+        let session = self.session.clone();
+        let origin = self.origin.clone();
+        let company = self.company.clone();
+        let local = self.local_identity.clone();
+        let reviewed = self.original_reviewed && !recovery;
+        self.lifecycle = Some(cx.new(|cx| {
+            lifecycle::Lifecycle::new(session, origin, company, local, id, reviewed, window, cx)
+        }));
+        cx.notify();
+    }
     fn adopt(&mut self, cx: &mut Context<Self>) {
         if !self.original_opened || !self.original_reviewed {
             return;
@@ -587,6 +614,21 @@ impl Invoice {
 }
 impl Render for Invoice {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        if let Some(lifecycle) = self.lifecycle.clone() {
+            return div()
+                .flex()
+                .flex_col()
+                .gap_3()
+                .child(
+                    Button::new("invoice-lifecycle-close")
+                        .label("Luk betaling/kredit og genindlæs fakturaer")
+                        .on_click(cx.listener(|this, _, window, cx| {
+                            this.lifecycle = None;
+                            this.refresh(window, cx);
+                        })),
+                )
+                .child(lifecycle);
+        }
         let mut view = div()
             .flex()
             .flex_col()
@@ -603,6 +645,17 @@ impl Render for Invoice {
         let Some(data) = self.data.clone() else {
             return view;
         };
+        if let Some(record) = self
+            .pending
+            .as_ref()
+            .filter(|record| invoice_state::is_lifecycle(record))
+        {
+            let id = record["invoiceDocumentId"].as_i64().unwrap_or(0);
+            let origin = record["origin"].as_str().unwrap_or(&self.origin).to_owned();
+            return view.child(format!("Uafklaret {} af fakturabilag{id}. Ingen ny faktura, kredit eller betaling sendes. Genlæs og afklar manuelt.",record["operation"].as_str().unwrap_or("handling")))
+                .child(Button::new("invoice-lifecycle-recovery").label("Åbn fakturaens betaling/kredit til manuel afklaring").disabled(self.busy||id<=0).on_click(cx.listener(move|this,_,window,cx|this.open_lifecycle(id,true,window,cx))))
+                .child(Button::new("invoice-lifecycle-recovery-browser").label("Åbn oprindelig server i browser").on_click(move|_,_,cx|cx.open_url(&format!("{origin}/"))));
+        }
         let recovery_origin = self.origin.clone();
         if self.pending.is_some() {
             view = view.child(
@@ -710,6 +763,16 @@ impl Render for Invoice {
                                 .on_click(cx.listener(|this, _, _, cx| this.review_post(cx))),
                         );
                 }
+            }
+            if invoice.is_some_and(|invoice| invoice["posted"] == true) {
+                view = view.child(
+                    Button::new("invoice-lifecycle-open")
+                        .label("Indbetaling, kredit og tilbagebetaling")
+                        .disabled(self.busy || !self.original_reviewed)
+                        .on_click(cx.listener(move |this, _, window, cx| {
+                            this.open_lifecycle(id, false, window, cx)
+                        })),
+                );
             }
             return view.child(
                 Button::new("invoice-new")
