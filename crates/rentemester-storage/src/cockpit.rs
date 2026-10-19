@@ -35,6 +35,22 @@ pub fn read(
     let (name, cvr, country, currency, month, strategy): (String, Option<String>, String, String, i32, String) = tx.query_row(
         "SELECT name,cvr,country,currency,fiscal_year_start_month,fiscal_year_label_strategy FROM companies WHERE id=1", [],
         |r| Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?,r.get(5)?))).map_err(invalid)?;
+    // Immutable identity lets managed desktop recovery distinguish this ledger
+    // from another company served at a reused loopback port.
+    let ledger_uuid: String = tx
+        .query_row(
+            "SELECT ledger_uuid FROM ledger_identity WHERE id=1",
+            [],
+            |r| r.get(0),
+        )
+        .map_err(invalid)?;
+    if ledger_uuid.len() != 32
+        || !ledger_uuid
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    {
+        return Err(invalid("invalid ledger identity"));
+    }
     let start = StartMonth::new(month)?;
     let strategy_value = LabelStrategy::try_from(strategy.as_str())?;
     let mut years = BTreeMap::new();
@@ -59,7 +75,7 @@ pub fn read(
     let period = Period::new(&year.start.to_string(), &year.end.to_string())?;
     let fiscal_years: Vec<Value> = years.values().map(|y| json!({"label":y.display_label,"start":y.start.to_string(),"end":y.end.to_string(),"source":"live"})).collect();
     let company = json!({"name":name,"cvr":cvr,"country":country,"currency":currency,"fiscalYearStartMonth":month,"fiscalYearLabelStrategy":strategy});
-    let mut base = json!({"slug":slug,"selectedYear":label,"archived":false,"archivedSource":null,"company":company,"fiscalYears":fiscal_years,"periodStart":period.start,"periodEnd":period.end});
+    let mut base = json!({"slug":slug,"ledgerUuid":ledger_uuid,"selectedYear":label,"archived":false,"archivedSource":null,"company":company,"fiscalYears":fiscal_years,"periodStart":period.start,"periodEnd":period.end});
     let report = crate::trial_balance_owned(tx, period.clone())?;
     let rows: Vec<Value> = report.accounts.iter().map(|a| Ok(json!({"accountNo":a.account_no,"name":a.name,"type":a.kind,"debit":number(&a.debit)?,"credit":number(&a.credit)?,"balance":number(&a.balance)?}))).collect::<Result<_,Error>>()?;
     let mut trial_balance = base.clone();
@@ -236,6 +252,48 @@ mod tests {
         company.execute("UPDATE companies SET fiscal_year_start_month=?1,fiscal_year_label_strategy=?2 WHERE id=1",rusqlite::params![month,strategy]).unwrap();
         company.execute_batch("INSERT INTO accounts(id,account_no,name,type,normal_balance) VALUES(1,'A','Synthetic cash','asset','debit'),(2,'I','Synthetic revenue','income','credit'),(3,'X','Synthetic expense','expense','debit'); INSERT INTO journal_entries(id,entry_no,transaction_date,text,rule_version,entry_hash) VALUES(1,'S-1','2025-06-01','Synthetic prior sale','fixture','synthetic-hash-1'),(2,'S-2','2026-06-01','Synthetic current expense','fixture','synthetic-hash-2'); INSERT INTO journal_lines(journal_entry_id,account_id,debit_amount,credit_amount) VALUES(1,1,100,0),(1,2,0,100),(2,3,40,0),(2,1,0,40);").unwrap();
         (root, company)
+    }
+    #[test]
+    fn snapshot_identity_survives_reopen_and_distinguishes_ledgers() {
+        let (root, mut company) = fixture(1, "end-year");
+        let expected: String = company
+            .query_row(
+                "SELECT ledger_uuid FROM ledger_identity WHERE id=1",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        let first = super::read(
+            &company.transaction().unwrap(),
+            "synthetic",
+            "2026-10-18",
+            None,
+            None,
+        )
+        .unwrap();
+        assert_eq!(first.journal["ledgerUuid"], expected);
+        assert_eq!(first.trial_balance["ledgerUuid"], expected);
+        drop(company);
+        let mut reopened = rusqlite::Connection::open(root.path().join("company.sqlite")).unwrap();
+        let again = super::read(
+            &reopened.transaction().unwrap(),
+            "synthetic",
+            "2026-10-18",
+            None,
+            None,
+        )
+        .unwrap();
+        assert_eq!(again.journal["ledgerUuid"], expected);
+        let (_other_root, mut other) = fixture(1, "end-year");
+        let different = super::read(
+            &other.transaction().unwrap(),
+            "synthetic",
+            "2026-10-18",
+            None,
+            None,
+        )
+        .unwrap();
+        assert_ne!(different.journal["ledgerUuid"], expected);
     }
     #[test]
     fn live_reports_preserve_prior_year_and_cumulative_result() {
