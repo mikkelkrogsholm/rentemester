@@ -1701,3 +1701,39 @@ og gendannelse fra en selvstændigt verificeret signeret backup med ny ejer og
 MFA bevarer originaler, leverandørhistorik, posteringer og godkendelser.
 Testen kvalificerer denne DKK-købsfamilie; øvrige moms-/udtræksfamilier,
 installeret desktop og den samlede TypeScript-udfasning er fortsat åbne.
+
+## Ret et bankkøb til en leverandørfaktura
+
+Åbn **Leverandørfakturaer → Ret direkte bankkøb**, hvis et køb allerede er
+bogført direkte mod bank, men skal vises som en faktura med en senere betaling.
+Vælg det eksisterende køb, udgiftskonto, momsbehandling, forfaldsdato og
+begrundelse. Fakturadatoen kommer fra originalbilaget; bankdatoen kommer fra
+den tilknyttede bankpost. Almindelig fakturaregistrering accepterer fortsat
+ikke allerede bogførte bilag.
+
+Åbn originalbilaget og den oprindelige postering, og gennemgå datoer, beløb,
+konto, moms og den fulde plan-hash. Bekræft gennemgangen og korrektionen.
+Serveren bevarer originalen og tilføjer samlet en tilbageførsel, en
+kreditorpost på fakturadatoen og en betaling på bankdatoen. Den aktuelle
+bankrelation flyttes til betalingen. Hele forsøget tilbageføres ved fejl.
+
+Planen læses med `POST payables/direct-bank-correction/plan`; anvendelse sker
+med `POST payables/direct-bank-correction/apply`. Begge modtager højst 16 KiB
+JSON. Anvendelse kræver den gennemgåede plan-hash, begrundelse, `confirm:true`
+og en udtrykkelig idempotensnøgle. Header- og bodynøgle skal være ens, hvis
+begge sendes. Samme nøgle og indhold giver den bevarede kvittering; ændret
+indhold giver HTTP 409. Ved et tabt svar kontrolleres kreditorposter,
+posteringer og bankhistorik før en ny handling. Der sendes ikke automatisk igen.
+
+CLI har `direct-bank-payable-correction-plan` og
+`direct-bank-payable-correction`, begge med præcist JSON på stdin; kun
+anvendelse kræver `--confirm`. MCP har tilsvarende navne med understregninger
+og en nøjagtig JSON-streng som `body`. Planen er en læsning uden bekræftelse.
+
+Det syntetiske forløb er verificeret gennem web, CLI og MCP, genstart med MFA
+og signeret backup gendannet under en ny ejer efter fjernelse af kilden og
+den private signeringsnøgle. Købet står åbent på fakturadatoen og betalt på
+bankdatoen, mens endelige udgifter, moms og bankbeløb bevares. Historiske
+brugere og kvitteringer ændres ikke ved gendannelsen. Denne test kvalificerer
+ikke genbrug af importerede korrektionsnøgler under den nye ejer eller en
+installeret desktopapp.
