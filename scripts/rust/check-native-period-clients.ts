@@ -129,8 +129,14 @@ export async function checkNativePeriodClients(
   posting.input.request={transactionDate:evidence.end,text:"Synthetic client period proof change",currency:"DKK",lines:[{accountNo:"8711",debitAmount:"3.25",creditAmount:"0.00"},{accountNo:"8712",debitAmount:"0.00",creditAmount:"3.25"}]};
   posting.input.idempotencyKey="synthetic-period-client-source-change";
   cliCall("post-journal",JSON.stringify(posting));
+  const changed=readiness();
+  if(typeof changed.hash!=="string"||changed.hash===first.packet.hash)throw new Error("Source posting did not change reviewed readiness proof");
+  const periodsBeforeStale=JSON.stringify(periodRows());
   const stale=cliCall("close-period",JSON.stringify({...bounds,reviewId:first.id,packetHash:first.packet.hash}),["--confirm"],true);
-  if(stale.status!==1||!JSON.stringify(stale.value).includes("STALE_OR_MISSING"))throw new Error("Changed ledger accepted stale close review");
+  // The public client intentionally redacts native refusal bodies; verify its contract.
+  if(stale.status!==1||stale.value.ok!==false||stale.value.code!=="server_refused"||!Array.isArray(stale.value.errors)||!stale.value.errors.includes("server refused request (HTTP 422)"))throw new Error(`Stale close was not explicitly refused: ${JSON.stringify(stale)}`);
+  const periodsAfterStale=periodRows();
+  if(JSON.stringify(periodsAfterStale)!==periodsBeforeStale||periodsAfterStale.some(p=>p.periodStart===evidence.start))throw new Error("Stale close changed the period register");
   const review=()=>cliCall("review-period",JSON.stringify(bounds),["--confirm"]).value.data.review;
   const close=(r: {id:number;packet:{hash:string}})=>rpc("close_period",{company:"synthetic",body:JSON.stringify({...bounds,reviewId:r.id,packetHash:r.packet.hash}),confirm:true}).period;
   const closed=close(review());evidence.periodId=closed.id;
