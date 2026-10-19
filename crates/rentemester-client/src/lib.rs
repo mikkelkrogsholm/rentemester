@@ -1,6 +1,8 @@
 //! Origin-bound HTTP adapter shared by interactive and agent clients. No ledger logic.
 //! Supply a browser session's Cookie request-header value, never a Set-Cookie header.
 //! Authentication/enrollment is currently performed by the server's browser UI.
+mod auth;
+pub use auth::{AuthenticatedSession, LoginProgress, MfaFactor, PendingLogin};
 mod credentials;
 pub use credentials::read_cookie_file;
 
@@ -23,7 +25,8 @@ pub enum Error {
         status: u16,
     },
     Protocol,
-    /// The server may have committed. Reconcile using the original idempotency key.
+    /// The server may have committed. Reconcile server state before retrying.
+    /// Ledger writes retain their original idempotency key; authentication has none.
     OutcomeUnknown,
 }
 impl fmt::Display for Error {
@@ -33,9 +36,9 @@ impl fmt::Display for Error {
             Self::Transport => f.write_str("server transport failed"),
             Self::Refused { status } => write!(f, "server refused request (HTTP {status})"),
             Self::Protocol => f.write_str("invalid server response"),
-            Self::OutcomeUnknown => f.write_str(
-                "mutation outcome unknown; reconcile original idempotency key before retrying",
-            ),
+            Self::OutcomeUnknown => {
+                f.write_str("operation outcome unknown; reconcile server state before retrying")
+            }
         }
     }
 }
@@ -198,29 +201,15 @@ impl ApiClient {
         body: Option<Vec<u8>>,
     ) -> Result<Value, Error> {
         let mutation = body.is_some();
-        let mut url = self
-            .base
-            .join(path)
-            .map_err(|_| Error::InvalidInput("invalid endpoint"))?;
-        if !query.is_empty() {
-            url.query_pairs_mut().extend_pairs(query.iter().copied());
-        }
-        let mut request = self
-            .http
-            .request(method, url)
-            .header("origin", &self.origin)
-            .header("accept", "application/json");
-        if let Some(cookie) = &self.cookie {
-            let mut header =
-                HeaderValue::from_str(cookie).map_err(|_| Error::InvalidInput("invalid cookie"))?;
-            header.set_sensitive(true);
-            request = request.header(COOKIE, header);
-        }
-        if let Some(body) = body {
-            request = request
-                .header("content-type", "application/json")
-                .body(body);
-        }
+        let mut response = self
+            .send(
+                method,
+                path,
+                query,
+                body,
+                self.cookie.as_ref().map(|v| v.as_str()),
+            )
+            .await?;
         let unknown = || {
             if mutation {
                 Error::OutcomeUnknown
@@ -228,7 +217,6 @@ impl ApiClient {
                 Error::Transport
             }
         };
-        let mut response = request.send().await.map_err(|_| unknown())?;
         let status = response.status();
         // Any 5xx on a write can follow a commit; never report these as safe refusals.
         if mutation && status.is_server_error() {
@@ -257,6 +245,47 @@ impl ApiClient {
                 Error::Protocol
             }
         })
+    }
+    async fn send(
+        &self,
+        method: Method,
+        path: &str,
+        query: &[(&str, &str)],
+        body: Option<Vec<u8>>,
+        cookie: Option<&str>,
+    ) -> Result<reqwest::Response, Error> {
+        let mutation = body.is_some();
+        let mut url = self
+            .base
+            .join(path)
+            .map_err(|_| Error::InvalidInput("invalid endpoint"))?;
+        if !query.is_empty() {
+            url.query_pairs_mut().extend_pairs(query.iter().copied());
+        }
+        let mut request = self
+            .http
+            .request(method, url)
+            .header("origin", &self.origin)
+            .header("accept", "application/json");
+        if let Some(cookie) = cookie {
+            let mut header =
+                HeaderValue::from_str(cookie).map_err(|_| Error::InvalidInput("invalid cookie"))?;
+            header.set_sensitive(true);
+            request = request.header(COOKIE, header);
+        }
+        if let Some(body) = body {
+            request = request
+                .header("content-type", "application/json")
+                .body(body);
+        }
+        let unknown = || {
+            if mutation {
+                Error::OutcomeUnknown
+            } else {
+                Error::Transport
+            }
+        };
+        request.send().await.map_err(|_| unknown())
     }
 }
 fn company_path(company: &str, resource: &str) -> Result<String, Error> {
