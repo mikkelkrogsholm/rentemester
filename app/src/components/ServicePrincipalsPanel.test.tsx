@@ -52,3 +52,14 @@ test("lost creation response survives remount as an operation ID and only explic
   expect(JSON.parse(posts()[0][1].body)).toEqual({ operationId, confirm: true });
   expect(sessionStorage.getItem("rentemester:service-operation:v1")).toBeNull();
 });
+test("native 429 refusal clears an unissued operation without retrying or creating an unknown lock", async () => {
+  stubGlobal("fetch", vi.fn(async (_url: string, init?: RequestInit) => new Response(JSON.stringify(init?.method === "POST" ? { message: "Request refused" } : { ok: true, principals: [] }), { status: init?.method === "POST" ? 429 : 200, headers: { "content-type": "application/json" } })));
+  renderAt(<ServicePrincipalsPanel onChanged={() => {}} />); await create();
+  await screen.findByText(/Der er foretaget for mange servicehandlinger/);
+  expect(sessionStorage.getItem("rentemester:service-operation:v1")).toBeNull();
+  expect(screen.queryByText(/En servicehandling kræver afklaring/)).toBeNull();
+  expect(posts()).toHaveLength(1);
+  await userEvent.click(screen.getByRole("button", { name: "Annullér" }));
+  expect(screen.getByRole("button", { name: "Opret servicekonto" })).not.toBeDisabled();
+  expect(posts()).toHaveLength(1);
+});

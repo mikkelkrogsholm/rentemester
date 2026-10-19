@@ -59,7 +59,7 @@ async function client(kind,command,body,company=false){
  try{const common=['--server',base,'--allow-loopback-http','--cookie-file',path];let args,input;
  if(kind==='cli'){args=['remote',command,...common,...(company?['--company','synthetic']:[]),...(body===undefined?[]:['--confirm'])];input=body===undefined?'':JSON.stringify(body);}
  else{args=common;const messages=[{jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-11-25',capabilities:{},clientInfo:{name:'synthetic-hosted-proof',version:'1'}}},{jsonrpc:'2.0',method:'notifications/initialized'},{jsonrpc:'2.0',id:2,method:'tools/call',params:{name:command,arguments:body===undefined?{}:{body:JSON.stringify(body),confirm:true}}}];input=messages.map(m=>JSON.stringify(m)).join('\n')+'\n';}
- const out=spawnSync(join(work,kind==='cli'?'rentemester-rust':'rentemester-mcp'),args,{input,encoding:'utf8',timeout:30000,maxBuffer:4*1024*1024});need(!out.error&&out.status===0,'pinned client operation');
+ const out=spawnSync(join(work,kind==='cli'?'rentemester-rust':'rentemester-mcp'),args,{input,encoding:'utf8',timeout:30000,maxBuffer:4*1024*1024});need(!out.error&&out.status===0,`pinned ${kind}/${command} exit=${out.status} error=${out.error?.code??'none'} output=${out.stdout?.slice(0,1000)??''} stderr=${out.stderr?.slice(0,200)??''}`);
  if(kind==='cli')return JSON.parse(out.stdout).data;
  const result=out.stdout.trim().split('\n').map(l=>JSON.parse(l)).find(r=>r.id===2);need(!result?.error&&!result?.result?.isError,'MCP lifecycle receipt');return result.result.structuredContent.data;
  }finally{unlinkSync(path);}}
@@ -97,6 +97,9 @@ async function setup(){
  const service=await serviceContext(main.secret);need(service.user.id===main.serviceAccountId&&service.workspaceRole==='member'&&service.companies.some(c=>c.slug==='synthetic'&&c.role==='bookkeeper'),'real admitted service context');
  const before=await get('/api/workspace/service-principals'),listed=await client('mcp','service_principals');need(isDeepStrictEqual(before,listed),'HTTP/MCP exact lifecycle inventory');
  const rotated=await client('cli','rotate-service-principal',{serviceAccountId:main.serviceAccountId,credentialId:main.credentialId,operationId:randomUUID(),confirm:true});need(rotated.secret&&rotated.credentialId!==main.credentialId,'rotation distinct receipt');await serviceContext(main.secret,401);main=rotated;await serviceContext(main.secret);
+ // Native lifecycle inventory and mutations share the existing10/minute cooldown.
+ // Separate the auxiliary recovery exercise without retrying or relaxing admission.
+ step='existing-lifecycle-cooldown';await new Promise(r=>setTimeout(r,61000));
  step='lost-issuance-explicit-recovery';const operationId=randomUUID(),body=JSON.stringify({displayName:'Synthetic Lost Response Executor',operationId,confirm:true}),session=(await page.context().cookies(base)).map(c=>`${c.name}=${c.value}`).join('; ');
  await new Promise((resolve,reject)=>{const url=new URL(base),socket=createConnection({host:url.hostname,port:Number(url.port)},()=>socket.write(`POST /api/workspace/service-principals HTTP/1.1\r\nHost: ${url.host}\r\nOrigin: ${base}\r\nContent-Type: application/json\r\nCookie: ${session}\r\nContent-Length: ${Buffer.byteLength(body)}\r\nConnection: close\r\n\r\n${body}`));socket.setTimeout(30000,()=>{socket.destroy();reject(Error('lost response fixture timeout'));});socket.on('error',reject);socket.on('data',()=>{});socket.on('end',()=>{socket.destroy();resolve();});});
  const recovered=await client('mcp','recover_service_principal',{operationId,confirm:true});need(recovered.operationId===operationId&&recovered.status==='completed'&&!('secret'in recovered)&&recovered.serviceAccountId&&recovered.credentialId,'explicit recovery without redisclosure');await client('cli','revoke-service-principal',{serviceAccountId:recovered.serviceAccountId,credentialId:recovered.credentialId,operationId:randomUUID(),confirm:true});const inventory=await get('/api/workspace/service-principals');need(inventory.principals.find(p=>p.serviceAccountId===recovered.serviceAccountId)?.activeCredentialCount===0,'recovered credential explicit revoke');
@@ -246,7 +249,7 @@ def main():
             controller = subprocess.Popen(['/opt/homebrew/bin/bun', 'run', str(script)], cwd=REPO,
                                           env={**os.environ, 'RM_HOSTED_BASE': base, 'RM_HOSTED_WORK': str(work), 'RM_HOSTED_PLAYWRIGHT': str(playwright)},
                                           stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
-            evidence['setup'] = command('setup'); evidence['phases'].append('normal-owner-lifecycle-readonly-no-worker'); save()
+            evidence['setup'] = command('setup',timeout=180); evidence['phases'].append('normal-owner-lifecycle-readonly-no-worker'); save()
             stop(); config.pop('firstOwner'); write(); start(worker=True)
             evidence['consent'] = command('consent'); evidence['phases'].append('explicit-hosted-browser-consent-browser-closed'); save()
             evidence['issued'] = command('qualify'); evidence['phases'].append('closed-browser-at-least-35s-exactly-one'); save()

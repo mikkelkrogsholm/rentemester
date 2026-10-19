@@ -37,6 +37,7 @@ export function ServicePrincipalsPanel({ onChanged }: { onChanged: (principals: 
         setMessage("Servicekontoens workspace-adgang er aktiveret. Tildel derefter den nødvendige virksomhedsrolle under Ændr adgang.");
       } else {
         if (action !== "recover" && operationId) throw new Error("Afklar den tidligere servicehandling først.");
+        const hadPendingOperation = !!operationId;
         const id = action === "recover" ? (operationId || recoveryId) : crypto.randomUUID();
         if (!uuid.test(id)) throw new Error("Angiv et gyldigt operations-ID.");
         // Persist before issuing a key; never persist the request or its returned secret.
@@ -58,7 +59,12 @@ export function ServicePrincipalsPanel({ onChanged }: { onChanged: (principals: 
             throw new ApiError("internal", "Kvitteringen kunne ikke bekræftes. Afklar operations-ID før en ny handling.", 200);
           }
         } catch (error) {
-          if (error instanceof ApiError && error.status >= 400 && error.status < 500 && error.status !== 408 && error.code !== "internal" && error.code !== "network" && action !== "recover") clearOperation();
+          if (error instanceof ApiError && error.status >= 400 && error.status < 500 && error.status !== 408) {
+            if (action !== "recover" || !hadPendingOperation) clearOperation();
+            throw new ApiError("refused", error.status === 429
+              ? "Der er foretaget for mange servicehandlinger. Vent et minut, før du prøver igen."
+              : error.message, error.status);
+          }
           throw error;
         }
         if (result.status !== "recovering") clearOperation();
