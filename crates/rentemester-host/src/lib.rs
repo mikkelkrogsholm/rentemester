@@ -629,6 +629,24 @@ impl Owner {
             rentemester_application::bank::execute(c, l, g, context, action)
         })
     }
+    pub fn accountant_export(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        input: &rentemester_storage::accountant::Input,
+    ) -> Result<
+        Attempt<
+            Result<
+                Committed<rentemester_storage::accountant::Download>,
+                rentemester_application::control_fence::Failure,
+            >,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, g, context| {
+            rentemester_application::accountant::export(c, l, g, context, input)
+        })
+    }
     pub fn dashboard(
         &mut self,
         cookie: &VerifiedCookie,

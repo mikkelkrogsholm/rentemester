@@ -1,6 +1,7 @@
 //! Thin browser adapter over the same owner used for authentication.
 mod accruals;
 mod assets;
+mod accountant;
 mod bank;
 mod budget;
 mod company_setup;
@@ -54,6 +55,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             get(budget::handle),
         )
         .route("/api/companies", get(companies))
+        .route("/api/companies/{slug}/accountant-export", post(accountant::export))
         .route("/api/companies/{slug}/overview", get(dashboard::read))
         .route(
             "/api/companies/{slug}/mileage",
