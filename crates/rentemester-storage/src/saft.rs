@@ -118,16 +118,31 @@ pub fn prepare(
         "SELECT account_no AS accountNo,name,type,normal_balance AS normalBalance,default_vat_code AS defaultVatCode FROM accounts ORDER BY account_no",
         &[],
     )?;
-    let customers = rows(
+    let mut customers = rows(
         tx,
         "SELECT id AS customerId,name,vat_or_cvr AS vatOrCvr,address,email,phone,coalesce(default_currency,'DKK') AS defaultCurrency,coalesce(payment_terms_days,30) AS paymentTermsDays FROM customers ORDER BY id",
         &[],
     )?;
-    let suppliers = rows(
+    let mut suppliers = rows(
         tx,
         "SELECT id AS supplierId,name,vat_or_cvr AS vatOrCvr,country_code AS countryCode,identifier_kind AS identifierKind,identity_status AS identityStatus,address,email,phone,default_expense_account AS defaultExpenseAccount,default_vat_treatment AS defaultVatTreatment FROM vendors ORDER BY id",
         &[],
     )?;
+    // SAF-T master data must use the same erasure projection as current contact reads.
+    // Protected invoice originals and immutable audit/journal evidence remain separate.
+    for (table, id_field, contacts) in [
+        ("customers", "customerId", &mut customers),
+        ("vendors", "supplierId", &mut suppliers),
+    ] {
+        for contact in contacts {
+            contact["id"] = contact[id_field].clone();
+            crate::gdpr::overlay_contact(tx, table, contact)?;
+            contact
+                .as_object_mut()
+                .ok_or_else(|| refused("invalid contact projection"))?
+                .remove("id");
+        }
+    }
     let args: &[&dyn ToSql] = &[&period.start, &period.end];
     let mut journal = rows(
         tx,
@@ -362,6 +377,63 @@ mod tests {
             pos += 512 + size.div_ceil(512) * 512;
         }
         map
+    }
+    #[test]
+    fn erased_master_data_stays_masked_without_rewriting_ledger_or_original_rows() {
+        let (_control, mut company) = fixture();
+        company.execute_batch("UPDATE customers SET address='Synthetic private address',email='synthetic-private@example.invalid'; INSERT INTO customers(name) VALUES('Synthetic unrelated customer');").unwrap();
+        let tx = company
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let before = prepare(&tx, "synthetic", &input(), 1767225600000)
+            .unwrap()
+            .source
+            .journal;
+        for name in ["Archived synthetic customer", "Synthetic overseas supplier"] {
+            let erased = crate::gdpr::erase(
+                &tx,
+                &crate::gdpr::Input {
+                    cvr: None,
+                    name: Some(name.into()),
+                    as_of: None,
+                    confirm: true,
+                },
+                "2026-10-19",
+                "synthetic",
+            )
+            .unwrap();
+            assert_eq!(erased["erasedCount"], 1);
+            assert_eq!(erased["refusedCount"], 0);
+        }
+        let snapshot = prepare(&tx, "synthetic", &input(), 1767225600000).unwrap();
+        let xml = saft::render(
+            &snapshot.source,
+            "synthetic",
+            &snapshot.start,
+            &snapshot.end,
+            &snapshot.generated,
+        )
+        .unwrap()
+        .xml;
+        assert!(!xml.contains("Archived synthetic customer"));
+        assert!(!xml.contains("Synthetic overseas supplier"));
+        assert!(!xml.contains("Synthetic private address"));
+        assert!(!xml.contains("synthetic-private@example.invalid"));
+        assert!(!xml.contains("DK87654321"));
+        assert!(xml.contains("Synthetic unrelated customer"));
+        assert_eq!(snapshot.source.journal, before);
+        assert_eq!(
+            tx.query_row("SELECT name FROM customers WHERE id=1", [], |r| r
+                .get::<_, String>(0))
+                .unwrap(),
+            "Archived synthetic customer"
+        );
+        assert_eq!(
+            tx.query_row("SELECT name FROM vendors WHERE id=1", [], |r| r
+                .get::<_, String>(0))
+                .unwrap(),
+            "Synthetic overseas supplier"
+        );
     }
     #[test]
     fn exact_package_reconciles_shared_trial_balance_and_preserves_sources_without_journal_effects()

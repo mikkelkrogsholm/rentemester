@@ -1098,3 +1098,37 @@ genstart, mens den samme lokale profil, bruger og ledger fortsat skal stemme.
 
 Integrationen bestod 78 native tests og build. Faktiske native vinduesforløb
 er endnu ikke verificeret: Mac'en er fortsat låst.
+
+## Flere virksomheder på Rust-serveren
+
+**Tilføj virksomhed** opretter nu et faktisk, separat regnskab med egne
+posteringer, kontoplan og uforanderligt regnskabs-ID. Den aktuelle ejer vælger
+navn, kalender og momsopsætning; der kopieres ingen kontoplan eller saldi.
+Virksomhedsskift og den efterfølgende handling bruger samme serverlås.
+Adgang kontrolleres for den valgte virksomhed ved hver handling.
+
+CLI har `create-company --confirm` med præcist JSON på stdin; MCP har
+`create_company` med `body` og `confirm:true`. Handlingen er workspace-baseret
+og har ingen `company`-vælger eller indre `confirm`. Uafklaret oprettelse skal
+afklares gennem virksomhedslisten før en ny handling; den gentages ikke
+automatisk. Web, normalt ejer-/læserlogin med MFA, adskilte posteringer,
+rettighedsafvisninger og genstart er verificeret på den native Mac-server.
+CLI/MCP har desuden verificeret to nye virksomheder og fuld kanonisk paritet
+efter genstart.
+
+## SAF-T v3-eksport
+
+Revisor-eksportkortet har **SAF-T v3 — generér og download**. Vælg periode og
+hent en TAR med XML, README og manifest. CLI har `saft-export --company SLUG
+--confirm`; MCP har `saft_export`. Begge kræver det præcise native JSON med
+`periodStart`, `periodEnd` og `confirm:true`. Serveren sætter eksporttidspunktet
+og registrerer eksporten i auditsporet.
+
+Dette er Rentemesters eksisterende, afgrænsede v3-profil. Manifestet medtager
+regnskabs- og kildekontekst; originalbilag kontrolleres, men pakkes ikke med.
+Eksporten er ikke en officiel generisk SAF-T-validering eller indberetning.
+Faktisk download, klientparitet, kildekontrol og genstart er verificeret i den
+samlede kørsel. En efterfølgende regression fandt, at slettede kontaktfelter
+kunne genvises i eksportens stamdata. Eksporten bruger nu samme GDPR-maskering
+som kontaktvisningen; rå historik og journal ændres ikke. Målrettede tests
+består, og særskilt web-/CLI-/MCP-kontrol efter sletning og genstart pågår.

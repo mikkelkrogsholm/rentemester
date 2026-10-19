@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "parallel-platform-21",
-  "code_revision": "git:84b57e8c",
+  "current_increment": "parallel-platform-24",
+  "code_revision": "git:50bf283d plus shared SAF-T GDPR projection repair",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Native mileage and current-company profile/chart/explicit-role setup integrated84b57e8c; combined native78tests/1existingignored and build PASS. Root fixed managed-local mileage pending reconciliation after port change, preserving profile/principal/ledger/year and remote origin fences. CUA currently confirms locked Mac; actual new windows unverified. Completed Group20 composed82-tool initial/restart and standalone86tool normal MFA/restart proofs retained. Full Rust goal/epic672 remain open.",
+  "state": "Real multi-company creation/atomic dispatch integrated9a0c12c8 and actual native normal owner/reader verification/MFA, separate postings/reports/current permissions and restart PASS. New company SDK/CLI/MCP integratedee023f40,169tests/3existingignored PASS; actual87tool separate companies/calendars/UUID/catalog/profile/chart/journal parity and fresh MFA/restart PASS after precise primary-link selector repair. SAF-T customv3 web/server/shared clients integrated0808945e with88tools,11focusedRust+48MCP+3UItests, strict8packageClippy/web/nativebuild PASS; Group23 actual Linux composed qualification PASS (70 checks and 8 browser confirmations across initial/restart). Subsequent targeted regression found erased mutable contact fields reappearing in SAF-T MasterFiles; shared-overlay repair passes5storage tests and strictClippy/build; actual isolated privacy qualification running. Signed native backup artifact integrated with12tests/strictClippy; live snapshot/restore still being built. Native windows pending locked Mac; full Rust goal/epic672 remain open.",
   "issues_closed": [],
   "next": [
-    "Integrate real multi-company creation/atomic selection and qualify distinct ledgers/permissions/restart.",
-    "Integrate native VAT/periods, mileage and current-company setup; verify combined native build/tests, then actual windows when unlocked.",
-    "Continue remaining epic server/web capabilities including backup/restore, workspace governance/inbox and full client parity; no full-goal completion claim."
+    "Finish isolated SAF-T post-erasure browser/CLI/MCP and fresh MFA/restart qualification, then integrate next ready full user flow.",
+    "Integrate native VAT/periods and build live signed backup/fresh owner recovery with imported-key reconciliation guard.",
+    "Port complete overdue reminder/post/principal settlement/claim receipt flow; continue remaining epic parity and actual native windows when unlocked."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -298,6 +298,60 @@
       "tests": "/tmp/rm-platform21-native-tests.log (78PASS/1existingignored)",
       "build": "/tmp/rm-platform21-native-build.log (PASS)",
       "scope": "Native navigation and scope resets, frozen reviewed mileage/request/receipt/advisory/canonical readback and exact profile/chart/explicit roles, durable payload-free unknown handling; actual native windows not verified. Current CUA reports locked Mac; no unlock bypass."
+    },
+    "platform22_multi_company": {
+      "revision": "9a0c12c8",
+      "worker_commit": "212613331183421fc1a3732b5f45fe00d84365ca",
+      "log": "/tmp/rm-platform22-native-multi.log",
+      "report": "/tmp/rentemester-rust-reports/native-multi-company.json",
+      "exit": 0,
+      "scope": "Integrated macOS ordinary owner verification/MFA and CompanyForm second company, own same account numbers and same caller key in different ledgers, distinct UUIDs/12.34 vs56.78 postings/reports/switch; normal invited reader verification/MFA, company permission and workspace creation/write refusals, fresh MFA/restart. No offline identity fixture; exact owned cleanup. Linux new-company creation not yet qualified."
+    },
+    "platform22_company_creation_clients": {
+      "revision": "ee023f40 plus primary-link selector repair in0808945e",
+      "report": "/tmp/rentemester-rust-reports/native-company-creation-clients-integrated22.json",
+      "log": "/tmp/rm-platform22-native-company-clients-repaired.log",
+      "exit": 0,
+      "scope": "Pinned87tools, actual CLI and MCP create two separate companies, duplicate/invalid calendar refused,3distinctUUIDs, chosen shifted/nonVAT and standardVAT calendars preserved, empty independent new ledgers/uncopied charts, full HTTP/CLI/MCP catalog/profile/accounts/journal parity and fresh normal MFA/restart; primary journal unchanged. Native server6e987b34/webb1b2078e; sourceee023f40 plus exact helper repair. Initial run failed only ambiguous three-card login link before restart parity; original log retained, no failed product claim. Exact cleanup confirmed."
+    },
+    "platform22_integrated_checks": {
+      "clients": "/tmp/rm-platform22-company-create-tests.log (169PASS/3existingignored)",
+      "owner": "/tmp/rm-platform22-multi-owner-tests-private.log (2PASS with required umask077; first wrong process-profile invocation refused Namespace(Process), not product bypass)",
+      "layout": "/tmp/rm-platform22-multi-layout-tests.log (2PASS)",
+      "ui": "/tmp/rm-platform22-company-form-tests.log (5PASS)",
+      "clippy": "/tmp/rm-platform22-integrated-clippy.log (strict8packagesPASS)",
+      "web": "/tmp/rm-platform22-web-build.log (PASS)"
+    },
+    "platform23_saft": {
+      "revision": "0808945e",
+      "tests": "/tmp/rm-platform23-saft-tests.log (11focusedPASS)",
+      "mcp": "/tmp/rm-platform23-mcp-tests.log (48PASS,88tool union)",
+      "ui": "/tmp/rm-platform23-saft-ui-tests.log (3PASS)",
+      "clippy": "/tmp/rm-platform23-integrated-clippy.log (strict8packagesPASS)",
+      "web": "/tmp/rm-platform23-web-build.log (PASS)",
+      "build": "/tmp/rm-platform23-runtime-build.log (PASS)",
+      "scope": "Existing bounded customv3 XML/README/manifest tar with canonical shared trial balance/journal chain/source/audit context; actual originals verified but not packaged, release provenance unavailable and no official generic validation/submission claim. Actual Group23 first/restart PASS; separate post-erasure MasterFiles regression discovered afterward, fixed in platform24."
+    },
+    "platform23_combined": {
+      "log": "/tmp/rm-platform23-combined.log",
+      "artifacts": "/tmp/rm-platform23-qualification-artifacts.json",
+      "exit": 0,
+      "scope": "PASS:70 checks and8 browser confirmations, initial/restart; actual SAF-T tar/XML/source/TB and all existing composed accounting journeys. Exact owned Docker/volume cleanup verified. This baseline did not cover SAF-T MasterFiles after erasure; separate platform24 repair/qualification required."
+    },
+    "native_backup_artifact": {
+      "revision": "0808945e",
+      "source_commit": "cea6dd7f",
+      "tests": "/tmp/rm-platform22-backup-artifact-tests.log (12PASS)",
+      "clippy": "/tmp/rm-platform22-backup-artifact-clippy.log (PASS runtime lib/tests strict)",
+      "scope": "Typed bounded rentemester-native-backup/1 JSON inventory/identities/coverage signedEd25519; verify requires separately trusted public key; native invoice JSON/PDF paths included. Pure bytes artifact only: no live snapshot/key custody/filesystem restore/admission or lost-computer recovery proof. R33/J05 remain open."
+    },
+    "platform24_saft_privacy": {
+      "before": "/tmp/rm-platform24-saft-privacy-before.log (expected regression failure: erased name exported)",
+      "after": "/tmp/rm-platform24-saft-privacy-after.log (5PASS)",
+      "clippy": "/tmp/rm-platform24-clippy.log (strict storage all-target PASS)",
+      "build": "/tmp/rm-platform24-server-build.log (PASS)",
+      "actual": "/tmp/rm-platform24-saft-privacy-actual.log (running)",
+      "scope": "Shared contact erasure projection for SAF-T customers/suppliers; raw retained records and immutable journal unchanged. Actual targeted browser/CLI/MCP and fresh MFA restart pending, separate from nonempty Group23 accounting baseline."
     }
   },
   "verified_history": [
@@ -638,7 +692,7 @@
   "active_work": [
     {
       "owner": "root",
-      "result": "Integrate real multi-company and native userflows; preserve completed Group20 qualification",
+      "result": "Integrate ready Rust flows and qualify actual combined runtime; retain native window gap honestly",
       "depends_on": [
         "worker commits and actual runtime evidence"
       ],
@@ -646,36 +700,39 @@
     },
     {
       "owner": "rust_mileage",
-      "result": "Read-only actionable signed backup/verify/restore contract for next server-first flow",
-      "ownership": "read-only current source and legacy/R33 evidence, no runtime edits",
+      "result": "Actual isolated SAF-T post-erasure customer/vendor MasterFiles parity and restart",
+      "ownership": "read-only main and isolated exact owned Docker/tmp",
       "depends_on": [
-        "existing signed backup/restore contract and one authoritative runtime Owner"
+        "shared-overlay production repair and rebuilt server",
+        "integrated targeted helper50bf283d"
       ],
-      "acceptance": "Exact format/key custody/permissions, real snapshot/restore primitives and necessary runtime interfaces; finite next implementation, no substitute unsigned export or fake restoration",
+      "acceptance": "Actual complete/refusal/download/source parity/restart and exact cleanup; no blind retry or full-goal completion claim",
       "parallel_with": [
         "native VAT/periods",
-        "native mileage",
-        "multi-company foundation"
+        "live backup recovery",
+        "reminder claims"
       ]
     },
     {
       "owner": "rust_accruals",
-      "result": "Create real second company, switch and post/read separate ledgers",
-      "ownership": "isolated rust-multi-company runtime admitted catalog/manifest selection, host creation and atomic per-request dispatch, AddCompany UI",
+      "result": "Live signed workspace snapshot→verified fresh-target restore→normal fresh owner/MFA recovery",
+      "ownership": "isolated typed Owner/runtime staging/admission, explicit storage business exports/restore validation, backup server/operator CLI modules",
       "depends_on": [
-        "one continuous workspace/control owner, explicit WorkspaceManage fence and fresh company-only initializer"
+        "integrated real multi-company owner/catalog and signed artifact API",
+        "rusqlite admitted-handle backup+serialize feature",
+        "explicit private signing/trust key custody"
       ],
       "parallel_with": [
         "invitations",
         "agent domains",
         "composed qualification"
       ],
-      "acceptance": "Distinct UUIDs and actual journals/reports, exact company permissions/concurrent selection/restart, no fake catalog or production data"
+      "acceptance": "Source unavailable, separate archive/key, all admitted companies+originals+bank+business audit restored with stableUUID/receipts; credentials reprovisioned normally; imported original key cannot duplicate under new principal, fresh key works; invalid signatures/targets/partial publication refuse; J06 global handoff remains separate"
     },
     {
       "owner": "rust_budget",
       "result": "Native VAT overview and explicit period review/close/reopen/filing receipt",
-      "ownership": "isolated desktop periods child/state and additive navigation",
+      "ownership": "isolated desktop periods child/state only; root owns navigation",
       "depends_on": [
         "existing exact VAT/period SDK and server-selected reporting window"
       ],
@@ -688,17 +745,17 @@
     },
     {
       "owner": "rust_client_cli",
-      "result": "Existing bounded SAF-T customv3 export through Rust server/web and clients",
-      "ownership": "isolated new engine/storage/application/server export modules and additive existing export card/API; minimal registries coordinated",
+      "result": "Overdue reminder registration→separate posting→principal settlement→incoming claim bank receipt",
+      "ownership": "isolated engine/storage/application/server reminderclaims modules and exact current Invoice UI/API; narrow canonical principal-carrying adjustment",
       "depends_on": [
-        "existing src/core/saft-export.ts exact profile, shared accounting reducers and CompanyExport fence"
+        "actual source reminder caps/cadence/current principal and existing native invoice/bank/posting gates"
       ],
       "parallel_with": [
         "multi-company foundation",
         "invitations",
         "composed qualification"
       ],
-      "acceptance": "Real downloadable source-complete XML/package, canonical reconciled accounts/journal/audit, explicit custom-profile limits, initial/refusal/restart; no regulator approval or submission claim"
+      "acceptance": "Actual synthetic UI and canonical accounting/source/restart; duplicate/wrong-direction/overclaim and unvalidated invoice-linked journal refusals; no SMTP delivery, interest/compensation scope deferred until this flow works"
     }
   ],
   "integrated_pending_browser": [],
