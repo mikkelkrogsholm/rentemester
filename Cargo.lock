@@ -5718,6 +5718,7 @@ dependencies = [
  "base64 0.22.1",
  "gpui-kit",
  "rentemester-client",
+ "ring",
  "serde_json",
  "sha2 0.10.9",
  "tokio",
