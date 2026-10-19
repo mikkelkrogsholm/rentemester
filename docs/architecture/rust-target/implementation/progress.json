@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Direct-bank purchase corrected atomically into dated payable and settlement through Rust/web/CLI/MCP with restart and source-free restore",
-  "code_revision": "7db036ac1a075cee09f3a2ac33283e7ead403ee2",
+  "current_increment": "Reviewed intercompany disposition lifecycle through Rust/web/CLI/MCP, restart and signed source-free fresh-owner restore",
+  "code_revision": "a3de425971bce24bea49b6484704d0955efcaeb3",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Group58 actual PASS: ordinary verified owner/password/MFA, original-backed DKK direct purchase with invoice date before bank date. Dedicated correction candidates preserve ordinary unregistered-document eligibility. Existing web dialog explicitly selects account/VAT/due date/reason and reviews original file, original journal, full source plan hash and confirmation. One correction appends reversal+invoice-date payable+bank-date settlement; four journals total, one payable/payment, one current bank relation and exact retained original hash/lines. Open125DKK on invoice date, paid0 on bank date; final expense100/VAT25/bank-125 unchanged. Passive HTTP/CLI/MCP plan equality and explicit receipt replay preserve exact result without effects; changed keyed body409 and changed logical hash422 refuse. Fresh ordinary MFA after restart retains canonical history/as-of balances. Signed nonempty archive independently verified, source/private signer removed, fresh owner/MFA restore retains correction provenance/books/originals without imported receipt replay. Exact owned cleanup. Core7/host1 plus prior payables/bank4 regressions and strict checks PASS; web21 tests/types/build, SDK3/CLI1/MCP88(all177tools), integrated server tests/build/strict checks PASS. Mixed VAT/cross-period and closed-period refusal are core-tested; actual closed-period close setup remained blocked by an unrelated missing debtors-role prerequisite and is explicitly unqualified. First actual found incorrect422 keyed-conflict HTTP mapping; corrected to409 without financial changes and complete second actual passed. Prior57/56/55 evidence retained. Full mission/epic672 OPEN: remaining accounting/provider/client parity, installed desktop local/remote journeys, broader transfer/recovery boundaries, packaging/update/signing and TS retirement.",
+  "state": "Group59 actual PASS: two ordinary distinct verified/password/MFA users, source-backed normalized plan ID/full hash, proposal and independent approval; two separately posted real company journals linked to exact entries and actual heads. One-sided nonwaivable exception resolves only after second link; wrong head/hash/self review and unsupported state retries refuse. Evidence-only settlement leaves settled balanced:false; no payment/posting/financial changes. Separate reasoned supersession/reopen preserves original global event chains and actors. Full HTTP/CLI/MCP status parity and fresh two-user MFA restart retain history/books/originals/UUID. Signed Intercompany v2 nonempty six-table section independently verified after source/private-signer deletion, fresh owner/MFA restore and restored target restart preserve exact prior state without imported current authority or financial/lifecycle writes. Exact owned process/runtime cleanup. Initial archive refusal reproduced by no-reporting-manifest regression: consolidation export missed disposition-only company refs; full historical intercompany union fixes this while final catalog membership checks remain. All29 backup regressions, domain17/host2/server binary9/SDK4/CLI1/MCP90(all185tools), strict checks/build and web15 tests/types/build PASS. Reduced-role reviewer/revocation/reversed-source cases remain unit-only; installed native not qualified. Full mission/epic672 OPEN; Group60 contact import now proceeds.",
   "issues_closed": [],
   "next": [
-    "Complete R29 source-backed intercompany disposition review, actual separately posted left/right journal links, settlement evidence and restart through Rust and existing group web pane.",
+    "Complete existing contact-import web modal through native strict CSV/customer/vendor writes, optional verified TLS CVR/cache, repeat/no-effects, restart and signed source-free restore (Group60).",
     "Complete remaining accounting/backend parity and CLI/MCP seams; keep unsupported families and nonempty recovery inventory explicit, with TypeScript retirement gated.",
     "Qualify installed standalone local/remote macOS financial journeys, installation/signing/update provenance; remaining broader J06 boundaries stay open."
   ],
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "Reviewed atomic purchase batch through Rust/web/CLI/MCP, restart and signed source-free restore",
+  "previous_verified_increment": "Direct-bank purchase corrected atomically into dated payable and settlement through Rust/web/CLI/MCP with restart and source-free restore",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -976,6 +976,50 @@
         "report": "/tmp/rentemester-rust-reports/direct-bank-correction-integrated58.json",
         "result": "Real financial correction and original accepted receipt replay passed; changed keyed-body conflict was422 rather than contracted409. Precise HTTP mapping fixed in7db036ac; full second run passed. Owned failed runtime cleaned."
       }
+    },
+    "platform59_intercompany_dispositions": {
+      "report": "/tmp/rentemester-rust-reports/intercompany-dispositions-integrated59-backup3.json",
+      "sha256": "1bb7bf77066c0b02f79d71c38c77ee6ab613325a8290c160cc2098f8decd6468",
+      "log": "/tmp/rm-platform59-backup3-actual.log",
+      "exit": 0,
+      "source_revision": "a3de425971bce24bea49b6484704d0955efcaeb3",
+      "current_artifact_hashes_match_report": true,
+      "normal_two_mfa_users": true,
+      "source_free_restore_and_target_reopen": true,
+      "intercompany_codec_version": 2,
+      "owned_cleanup": true,
+      "earlier_failures": [
+        {
+          "report": "/tmp/rentemester-rust-reports/intercompany-dispositions-integrated59.json",
+          "scope": "Whole lifecycle/client parity/restart passed, archive refused; helper initially omitted response diagnostic."
+        },
+        {
+          "report": "/tmp/rentemester-rust-reports/intercompany-dispositions-integrated59-diagnostic2.json",
+          "scope": "422 portable_backup_refused intercompany refers to unregistered signed company; terminal and exact owned cleanup confirmed."
+        }
+      ],
+      "checks": {
+        "domain": "/tmp/rm-platform59-storage-tests.log",
+        "host": "/tmp/rm-platform59-integrated-host.log",
+        "http": "/tmp/rm-platform59-integrated-http.log",
+        "sdk": "/tmp/rm-platform59-client-tests.log",
+        "cli": "/tmp/rm-platform59-cli-tests.log",
+        "mcp": "/tmp/rm-platform59-mcp-tests.log",
+        "client_clippy": "/tmp/rm-platform59-client-clippy-final.log",
+        "integrated_clippy": "/tmp/rm-platform59-integrated-clippy.log",
+        "backup_reproduction_before": "/tmp/rm-platform59-no-manifest-regression-before.log",
+        "backup29_after": "/tmp/rm-platform59-backup-regression-after.log",
+        "backup_fix_clippy": "/tmp/rm-platform59-backup-fix-clippy.log",
+        "backup_fix_build": "/tmp/rm-platform59-backup-fix-build.log",
+        "web": "/tmp/rm-group59-web-tests.log",
+        "web_build": "/tmp/rm-platform59-integrated-web-build.log"
+      },
+      "unqualified_actual": [
+        "Restricted Reviewer-role permission",
+        "Mid-operation revocation and reversed/stale source",
+        "Installed native GUI",
+        "Production/provider deployment"
+      ]
     }
   },
   "verified_history": [
@@ -1410,6 +1454,12 @@
       "code_revision": "f1fcbcc5fbbb7b93bc7197f48a0ac7c2ef1a31b2",
       "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
       "state": "Group57 actual PASS: two normal distinct invited/password/MFA users, two physically verified original-linked and explicitly canonical supplier-linked DKK purchases plus retained bank CSV. Web purchase rule independently approved, complete two-ready workbench, readable source/account/VAT summary and exact plan hash. Persist binds reviewed hash/caller runKey; read-only exact-key recovery agrees with runId; stale hash and self-review refuse unchanged history. Different human approves and owner explicitly applies two atomic postings. Real audit chain, balanced375DKK trial balance, bank-375/matched2/difference0 and input VAT75/payable-75 pass; real immutable source-bound receipts retained. Exact web/CLI/MCP replay adds no financial effects; all175MCPtools tested. Restart with fresh ordinary MFA preserves complete history/books/originals. Signed nonempty snapshot independently verified; source workspace and private signer deleted; fresh owner/MFA restore preserves exact books/UUID, supplier/party links and historical approvals/receipts. Exact owned cleanup. First attempt was a test-controller incomplete stdout response; complete private SHA-bound proof files and bounded small envelopes fixed the test protocol without relaxing acceptance. Prior56/55/54/53 evidence retained. Full mission/epic672 OPEN: legacy partial-batch execution/provider tax families, remaining accounting and client parity, installed desktop whole journeys, broader transfer and distribution/TS retirement remain incomplete."
+    },
+    {
+      "current_increment": "Direct-bank purchase corrected atomically into dated payable and settlement through Rust/web/CLI/MCP with restart and source-free restore",
+      "code_revision": "7db036ac1a075cee09f3a2ac33283e7ead403ee2",
+      "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
+      "state": "Group58 actual PASS: ordinary verified owner/password/MFA, original-backed DKK direct purchase with invoice date before bank date. Dedicated correction candidates preserve ordinary unregistered-document eligibility. Existing web dialog explicitly selects account/VAT/due date/reason and reviews original file, original journal, full source plan hash and confirmation. One correction appends reversal+invoice-date payable+bank-date settlement; four journals total, one payable/payment, one current bank relation and exact retained original hash/lines. Open125DKK on invoice date, paid0 on bank date; final expense100/VAT25/bank-125 unchanged. Passive HTTP/CLI/MCP plan equality and explicit receipt replay preserve exact result without effects; changed keyed body409 and changed logical hash422 refuse. Fresh ordinary MFA after restart retains canonical history/as-of balances. Signed nonempty archive independently verified, source/private signer removed, fresh owner/MFA restore retains correction provenance/books/originals without imported receipt replay. Exact owned cleanup. Core7/host1 plus prior payables/bank4 regressions and strict checks PASS; web21 tests/types/build, SDK3/CLI1/MCP88(all177tools), integrated server tests/build/strict checks PASS. Mixed VAT/cross-period and closed-period refusal are core-tested; actual closed-period close setup remained blocked by an unrelated missing debtors-role prerequisite and is explicitly unqualified. First actual found incorrect422 keyed-conflict HTTP mapping; corrected to409 without financial changes and complete second actual passed. Prior57/56/55 evidence retained. Full mission/epic672 OPEN: remaining accounting/provider/client parity, installed desktop local/remote journeys, broader transfer/recovery boundaries, packaging/update/signing and TS retirement."
     }
   ],
   "active_work": [
@@ -1439,9 +1489,28 @@
     },
     {
       "delivery": "Group59 R29 intercompany disposition evidence lifecycle",
-      "owner": "root accountable; rust_client_cli source-backed read-only contract proposal",
-      "status": "Not implemented or qualified. Read-only proposal /tmp/rm-platform59-dispositions-contract-proposal.md in preparation; no coding before root contract approval.",
-      "acceptance": "Propose source evidence, independently approve exact payload, bind real separately posted journals on both ledgers, review one-sided/stale exceptions and settlement, preserve exact lifecycle after restart. No automatic posting; current two-company authority and immutable proofs required."
+      "owner": "root thin clients/integration/actual; rust_accruals engine/storage/domain and existing signed Intercompany v2codec; rust_client_cli application/host/current two-company proof/HTTP; rust_budget reusable native web pane; rust_mileage owned actual helper",
+      "status": "COMPLETE finite Group59: actual two-user browser lifecycle, full HTTP/CLI/MCP185 parity, fresh-MFA restart, independent signed source-free fresh-owner restore and restored-target restart PASS at a3de4259, qualified by platform59_intercompany_dispositions. No perfection round; full mission remains open.",
+      "acceptance": "Propose source evidence, independently approve exact payload, bind real separately posted journals on both ledgers, review one-sided/stale exceptions and settlement, preserve exact lifecycle after restart. No automatic posting; current two-company authority and immutable proofs required.",
+      "depends_on": [
+        "Current control transaction authorizes every endpoint/replacement and retained Party/Corporate source; admitted journal snapshots are typed trusted facts, never caller JSON authority.",
+        "Source state-specific replay and immutable global chains remain exact; settlement is evidence only and settled balanced remains false.",
+        "Complete authorized journalCandidates supplies real heads; both ordinary company journals must exist before either link. No head refresh or automatic posting.",
+        "Nonempty signed inventory must preserve four-table history and genuine historical head prefixes before shared unsupported guard is removed."
+      ],
+      "contract_sha256": "1898517df139cd6ee28f331b3289b56656d5e1099bfda4c5a48769e541e42f0b"
+    },
+    {
+      "delivery": "Group60 existing Contacts CSV import with optional CVR enrichment",
+      "owner": "root integration/clients/59 repair; rust_accruals engine/storage and EAN/terms prerequisite; rust_client_cli runtime CVR/provider and fixed app/host/HTTP; rust_budget existing modal; rust_mileage owned actual helper",
+      "status": "Core deefea0d ready (engine2/storage6 and strict checks PASS), web274b9eae ready (14 tests/types/build PASS), actualhelper97f789e2 ready (syntax/controller/AST PASS); fixed runtime/provider and application/host/HTTP checks pending A prerequisite integration. Root thin SDK/CLI/MCP186 drafted, tests pending Cargo lease. No whole Group60 actual qualification.",
+      "contract_sha256": "40a5f7692988b0f8dfe90a2fdba544857d0ee98ca4e2b5c04409b7b6cb1be2c9",
+      "depends_on": [
+        "Shared typed trusted parse/dedup/cache and provider outcomes; no caller-supplied provider authority.",
+        "Current MFA/company.ledger.post before I/O and again under final admitted writer; no SQLite writer held across provider network.",
+        "Source-compatible optional real CVR success/fresh/stale-cache/failure behavior; EAN storage does not enable public invoice delivery."
+      ],
+      "acceptance": "Existing modal imports exact customer/vendor roles and fields with truthful counters, optional synthetic trusted TLS enrichment, no repeat provider/contact/audit effects, unchanged books, current rights/GDPR/isolation, restart and signed source-free fresh-owner restore without provider credentials."
     }
   ],
   "integrated_pending_browser": [

@@ -59,7 +59,8 @@ adgang afvises. Alle otte særskilte CLI/MCP-handlinger består også i et
 separat workspace med begge retninger, uafhængig godkendelse, fuld paritet
 med HTTP-svarene og uændrede posteringer før og efter genstart.
 
-Der er 158 MCP-tools efter integrationen af servicekonti og serversamtykke til planlagte fakturaer.
+Der er 185 verificerede MCP-tools efter dispositionsforløbet i Group59.
+Kontaktimportens næste værktøj er under integration.
 De samlede native tests består med 191 beståede og én eksisterende ignoreret
 test; native build består. Mac’en er låst op. Administreret
 lokal opstart, almindelig ejeroprettelse, verificering, MFA og læsning af
@@ -83,8 +84,10 @@ med historik og begge payloadversioner. Alle tre arkiver fra web, CLI og MCP
 er verificeret efter fjernelse af kilde og privat nøgle og hver gendannet med
 ny ejer, MFA og genstart. Den fulde koncernrapport og kildebeviser bevares.
 En efterfølgende ny postering blokerer korrekt de forældede
-elimineringsbeviser, også efter endnu en genstart. Ikke-tomme
-dispositioner afvises fortsat.
+elimineringsbeviser, også efter endnu en genstart. Ikke-tomme dispositioner
+bevares nu af Intercompany-format version 2 med originale begivenhedskæder,
+posteringstilknytninger og journalbeviser. Den samlede Group59-prøve med
+genstart og signeret gendannelse hos en ny ejer består.
 
 Planlagte fakturaer har en varig kø med eksplicit samtykke, pause,
 genoptagelse, annullering og gennemgået catch-up eller spring-over. Serveren
@@ -1737,3 +1740,45 @@ bankdatoen, mens endelige udgifter, moms og bankbeløb bevares. Historiske
 brugere og kvitteringer ændres ikke ved gendannelsen. Denne test kvalificerer
 ikke genbrug af importerede korrektionsnøgler under den nye ejer eller en
 installeret desktopapp.
+
+## Gennemgå mellemregninger mellem selskaber
+
+Det nye native forløb under koncernoverblikket samler dispositionens parter,
+originale dokumentation, særskilte selskabsposteringer og afviklingsevidens.
+Group59 har bestået den samlede browser-, genstarts- og backupprøve med to
+almindelige brugere, særskilt bogførte selskabsposteringer og en ny ejer
+efter gendannelse. Både kildeworkspace og dets private signeringsnøgle blev
+fjernet før uafhængig verifikation og gendannelse. Det gendannede workspace
+er også genstartet uden nye økonomiske handlinger. Installeret desktop og
+de øvrige dele af omskrivningen er fortsat uafsluttede.
+
+Opret først en læsende plan og behold planens returnerede disposition-ID.
+Gennemgå beløb, dato, selskaber, dokumentation og hele payload-hashen, før
+forslaget gemmes. En anden bruger med aktuel adgang til begge selskaber skal
+godkende den samme disposition. Bogfør derefter begge selskabers faktiske
+posteringer særskilt, før nogen af dem tilknyttes. Tilknytningerne binder
+postering og ledger-head; senere bogføring kan derfor gøre kilden forældet.
+Status viser sådanne problemer uden at ændre eller opfriske beviset.
+
+Registrering af afviklingsevidens foretager ingen betaling. Tilstanden
+`settled` har `balanced:false`; kun `posted` uden undtagelser har
+`balanced:true`. Erstatning og genåbning kræver en begrundelse og bevarer
+historikken. Ingen af disse handlinger bogfører eller eliminerer beløb.
+
+CLI har det globale læsekald `remote group-disposition-status --id ID`
+med valgfrit `--as-of YYYY-MM-DD`. De syv handlingskald hedder
+`plan-group-disposition`, `propose-group-disposition`,
+`approve-group-disposition`, `link-group-disposition`,
+`settle-group-disposition`, `supersede-group-disposition` og
+`reopen-group-disposition`. De bruger `--company` som ankerselskab og
+JSON på stdin, højst 32 KiB. Planen er læsende og kræver ingen bekræftelse;
+ændringer kræver `--confirm` og `confirm:true` i JSON. MCP bruger tilsvarende
+navne med underscores. Se CLI-hjælp og MCP-skemaer for de præcise felter.
+Ved ukendt udfald beholdes ID og anmodning; læs status før næste handling.
+Der er ingen automatisk genafsendelse eller generering af nye nøgler.
+
+Den eksisterende signerede sektion `control/intercompany.json` udvides til
+version 2 med dispositioner, begivenheder, posteringstilknytninger og
+livscyklushistorik. Version 1 læses med tom dispositionshistorik. Gendannelse
+skal validere de oprindelige journalbeviser og bevare historiske aktører uden
+at give dem aktuel adgang.
