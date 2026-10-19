@@ -1,8 +1,5 @@
 //! Bounded manual rule proposals. Unknown conditions/outcomes refuse; never auto-post.
-use crate::{
-    accounting_drafts::{hash, refused},
-    invalid,
-};
+use crate::{accounting_drafts::refused, invalid};
 use rentemester_engine::{Error, fiscal_year::Date};
 use rusqlite::{Transaction, params};
 use serde::Deserialize;
@@ -33,7 +30,20 @@ pub struct Proposal {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Conditions {
     pub currency: String,
-    pub attributes: Attributes,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attributes: Option<Attributes>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub company: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supplier_identity: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub document_type: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supplier_country: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supplier_vat: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vat: Option<String>,
 }
 #[derive(Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -44,6 +54,10 @@ pub struct Attributes {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Outcome {
     pub account: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vat_treatment: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dimensions: Option<std::collections::BTreeMap<String, String>>,
 }
 fn text(s: &str, max: usize) -> Result<(), Error> {
     if s.trim().is_empty() || s.len() > max {
@@ -95,7 +109,51 @@ pub fn change(
         text(&p.rule_id, 128)?;
         text(&p.provenance, 256)?;
         text(&p.rationale, 2000)?;
-        text(&p.conditions.attributes.bank_text, 512)?;
+        if let Some(attributes) = &p.conditions.attributes {
+            text(&attributes.bank_text, 512)?;
+        }
+        if p.conditions.company.is_some_and(|id| id != company) {
+            return Err(refused("condition company must equal selected ledger"));
+        }
+        for v in [&p.conditions.supplier_identity, &p.conditions.supplier_vat]
+            .into_iter()
+            .flatten()
+        {
+            text(v, 256)?;
+        }
+        if p.conditions
+            .document_type
+            .as_deref()
+            .is_some_and(|s| !["purchase_sale", "cash_register_receipt"].contains(&s))
+            || p.conditions
+                .supplier_country
+                .as_deref()
+                .is_some_and(|s| s != "DK")
+            || p.conditions
+                .vat
+                .as_deref()
+                .is_some_and(|s| !["zero", "positive"].contains(&s))
+        {
+            return Err(refused(
+                "unsupported purchase rule condition; explicit DKK domestic purchase review required",
+            ));
+        }
+        if p.outcome
+            .vat_treatment
+            .as_deref()
+            .is_some_and(|s| !["standard", "exempt", "non_deductible"].contains(&s))
+        {
+            return Err(refused("unsupported purchase VAT treatment"));
+        }
+        if let Some(dimensions) = &p.outcome.dimensions {
+            if dimensions.len() > 12 {
+                return Err(refused("bounded dimensions required"));
+            }
+            for (dimension, member) in dimensions {
+                text(dimension, 128)?;
+                text(member, 256)?;
+            }
+        }
         Date::parse(&p.effective_from)?;
         if let Some(to) = &p.effective_to {
             Date::parse(to)?;
@@ -113,12 +171,16 @@ pub fn change(
                 |r| r.get(0),
             )
             .map_err(invalid)?;
+        if p.outcome.vat_treatment.is_some() && !tx.query_row("SELECT EXISTS(SELECT 1 FROM accounts WHERE account_no=?1 AND type='expense' AND active=1)", [&p.outcome.account], |r| r.get::<_,bool>(0)).map_err(invalid)? {
+            return Err(refused("purchase rule requires an active expense account"));
+        }
         if !valid {
             return Err(refused("active account required"));
         }
-        let conditions = json!({"company":company,"currency":p.conditions.currency,"attributes":p.conditions.attributes});
+        let mut conditions = serde_json::to_value(&p.conditions).map_err(invalid)?;
+        conditions["company"] = json!(company);
         let payload = json!({"ruleId":p.rule_id,"companyId":company,"effectiveFrom":p.effective_from,"effectiveTo":p.effective_to,"conditions":conditions,"outcome":p.outcome,"provenance":p.provenance,"rationale":p.rationale});
-        let expected = hash(&serde_json::to_string(&payload).map_err(invalid)?);
+        let expected = crate::idempotency::canonical_payload_hash(&payload)?;
         let version:i64=tx.query_row("SELECT coalesce(max(version),0)+1 FROM posting_rule_versions WHERE company_id=?1 AND rule_id=?2",params![company,p.rule_id],|r|r.get(0)).map_err(invalid)?;
         let id:i64=tx.query_row("INSERT INTO posting_rule_versions(rule_id,company_id,version,effective_from,effective_to,conditions_json,outcome_json,provenance,rationale,created_by,payload_hash,created_at) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12) RETURNING id",params![p.rule_id,company,version,p.effective_from,p.effective_to,conditions.to_string(),serde_json::to_string(&p.outcome).map_err(invalid)?,p.provenance,p.rationale,actor,expected,at],|r|r.get(0)).map_err(invalid)?;
         (
