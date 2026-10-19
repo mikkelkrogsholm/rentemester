@@ -356,3 +356,6 @@ pub use workspace_inbox::{WorkspaceInboxMutation,MAX_WORKSPACE_INBOX_BODY,worksp
 
 mod corporate_records;
 pub use corporate_records::{CorporateRecordMutation,MAX_CORPORATE_BODY,MAX_CORPORATE_INGEST_BODY,MAX_CORPORATE_ORIGINAL_JSON,corporate_record_body_schema};
+
+mod ownership;
+pub use ownership::{OwnershipMutation,MAX_OWNERSHIP_BODY,MAX_OWNERSHIP_PROPOSE_BODY,ownership_body_schema};
