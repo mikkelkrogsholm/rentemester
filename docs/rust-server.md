@@ -1185,7 +1185,7 @@ dens faktiske kvitteringsreference og periodens oprindelige lukkebevis.
 Uafklarede svar eller manglende kanonisk genlæsning bevarer en privat
 handlingsblokering. Nyt lokalt portnummer accepteres kun for samme profil,
 bruger, ledger og periode; fjernforbindelser skal fortsat stemme præcist.
-De samlede 109 desktop-tests og build består. Faktiske vinduesforløb er endnu
+De samlede 116 desktop-tests og build består. Faktiske vinduesforløb er endnu
 ikke verificeret på den låste Mac.
 
 ## Registrér og afstem rykkergebyrer
@@ -1201,8 +1201,7 @@ CLI og MCP har læsning, registrering, bogføring og kravafvikling gennem den
 samme Rust-logik. Det faktiske første web-/klientforløb med fem posteringer,
 originaler og nødvendige afvisninger består. Det efterfølgende periodetjek
 afslørede en forældet afvisning af kravbetalinger; rettelsen kontrollerer nu
-de faktiske posteringer og entydige auditspor. Genstartskontrollen af den
-samlede levering afventer den genbyggede server.
+de faktiske posteringer og entydige auditspor. Den samlede faktiske førstegangs- og genstartskontrol består nu også.
 Mailafsendelse, renter og kompensation er fortsat selvstændige paritetskrav.
 
 ## Virksomhedsoplysninger og parter
@@ -1217,8 +1216,11 @@ kildebaserede aliaser og feltudsagn. Visning følger de aktuelle
 virksomhedsrettigheder. Globale ændringer kræver de nødvendige rettigheder
 til alle partens tilknyttede virksomheder. Den oprindelige identitet og
 historik bevares. Web og de seks tilsvarende klientoperationer er integreret;
-det første faktiske browser-/klientforløb består. Backupkodningen af parter
-og den samlede genstartskontrol er næste kontrol.
+det faktiske browser-/klientforløb og genstart består. Den signerede
+backupkode bevarer alle seks tabeller med partshistorik og kilder. Faktisk
+gendannelse og genstart med partbaserede virksomhedsoplysninger består.
+Web-, CLI- og MCP-arkiver er hver verificeret med den separate offentlige
+nøgle, efter at kildeworkspacet og den private nøgle er fjernet.
 
 ## Signeret lokal desktop-backup
 
@@ -1241,3 +1243,14 @@ særskilte trin. En erstatning er et nyt forslag, som godkendes særskilt.
 Appen kontrollerer den aktuelle historik før ændringen og genlæser serverens
 resultat; uafklarede udfald kræver manuel afklaring. De samlede native tests
 og build består; faktiske nye vinduer er endnu ikke verificeret.
+
+
+## Parter i desktop
+
+**Workspace-parter** viser serverens synlige parter med søgning, sider,
+identifikatorer, virksomhedsroller, kildeudsagn og historik. Oprettelse,
+rolletilknytning og nye aliaser eller feltudsagn kræver en eksplicit
+kildebaseret gennemgang og bekræftelse. Den oprindelige identitet overskrives
+ikke. Serveren afgør rettighederne, og appen genlæser det kanoniske resultat.
+De samlede 116 native tests og build består; faktiske nye vinduer er endnu
+ikke verificeret på den låste Mac.

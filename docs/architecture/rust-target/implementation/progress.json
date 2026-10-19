@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "parallel-platform-30",
-  "code_revision": "git:6ecfd59a plus native knowledge navigation and composed party-before-knowledge snapshot ordering",
+  "current_increment": "parallel-platform-31",
+  "code_revision": "git:7e13f3a4 plus native Parties navigation, J05 --with-parties runner/evidence and unique parallel-test directory names",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "CompanyKnowledge and signed snapshot codec integrated; actual Group28 J05 browser/CLI/MCP archives independently verified after source/private-key deletion, exact knowledge history/provenance preserved after restore and restart. Composed Group28 completed full reminder fee/principal/partial/final claim flow, then exposed obsolete period-audit unsupported guard. Root regression reproduced and repair passes4claims tests including missing/duplicate/blank-actor audit and corrupt-journal refusals. Scoped Parties server/web/SDK/CLI/MCP integratedff8a7689:103tool union,201client tests/3existingignored and11selectedUI tests/webbuild PASS. Local desktop new-profile signer provisioning and independent public-key export integrated13a15371/82a939c2;102native tests/1existingignored PASS; actual new windows pending lockedMac. Full goal and epic672 remain open. Native bank link/correction audit validator integrated1190e075 and wired alongside physical bank-original checks;6period tests and strict8packageClippy PASS. Runtime rebuilt with103tools and exact artifact manifest at /tmp/rm-platform29-runtime-artifacts.json. Group29 actual composed qualification dispatched on these artifacts. Native desktop build also PASS. Group29 initial Knowledge/Parties passed and restart accounting/reminder/periods/bankcorrection passed; late restart knowledge snapshot failed because later party helper intentionally added another assertion after baseline. Exact saved source IDs prove ordering defect; parties now runs before full knowledge snapshot, equality unchanged. Group30 actual qualification running on unchanged103tool runtime artifacts. Native Knowledge integrated6ecfd59a plus navigation:109tests/1existingignored and nativebuild PASS, actual windows pending lockedMac.",
+  "state": "Group30 full actual Linux composed initial/restart PASS:72PASS checks+8browser confirmations on103tool runtime; includes native Parties, full Knowledge, reminder five journals, period/annual, bank links/corrections, privacy/SAFT/accountant/dashboard/integrity, exactownedcleanup. Signed Parties six-table codec integrateddbc2472f with9storage/host tests and strictClippy PASS. Actual Group31 J05 source removal/three independent archive verifies/new-owner MFA/fresh restore/restart PASS, exact party and knowledge histories/originals/2UUIDs retained; exact owned cleanup. Native Knowledge and Parties screens integrated with navigation;116native tests/1existingignored and build PASS. Actual newer native windows still pending lockedMac. Current parallel tracks: shared inbox server/web, thin inbox CLI/MCP, native supplier commitments. Full Rust goal and epic672 remain open.",
   "issues_closed": [],
   "next": [
-    "Complete repaired Group30 initial/restart qualification with full knowledge and party comparisons.",
-    "Integrate Parties signed backup codec and qualify actual source removal/restore/restart with party-backed knowledge.",
-    "Integrate native Parties screen and shared inbox flow; continue remaining full Rust parity from epic672."
+    "Integrate shared inbox server/web and five matching SDK/CLI/MCP operations; qualify two-company upload, explicit routing, one target document and restart/recovery.",
+    "Integrate shared inbox server/web and matching SDK/CLI/MCP, then qualify whole two-company upload/assignment/handoff/recovery flow.",
+    "Integrate native supplier commitments and continue full server/web/desktop parity from epic672."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -435,10 +435,34 @@
     },
     "platform30_native": "/tmp/rm-platform30-native-tests.log (109 passed,1 existing ignored); /tmp/rm-platform30-native-build.log (passed); actual GUI pending",
     "platform30_composed": {
-      "status": "running",
+      "status": "passed",
+      "exit": 0,
       "log": "/tmp/rm-platform30-combined.log",
       "manifest": "/tmp/rm-platform30-qualification-artifacts.json",
-      "scope": "Same unchanged103tool runtime artifacts; source-proven test dependency fixed by parties before full knowledge baseline, no expectation weakening."
+      "pass_lines": 72,
+      "browser_confirmations": 8,
+      "scope": "Full initial and restart with exact unchanged103tool artifacts; reminder five journals/originals/periodproof, annual, banklinks/corrections, fullparty+knowledge, privacy/SAFT/accountant/dashboard/integrity and exercised CLI/MCP parity; exactownedcleanup."
+    },
+    "platform31_backup_codec": {
+      "storage": "/tmp/rm-platform31-backup-storage.log (7 passed)",
+      "host": "/tmp/rm-platform31-backup-host.log (2 passed)",
+      "strict_clippy": "/tmp/rm-platform31-backup-clippy.log (passed)",
+      "server_build": "/tmp/rm-platform31-server-build.log (passed)",
+      "scope": "All6Party source tables, exactIDs/provenance/roles/aliases/fieldassertions/legacylinks, native projections and corrupt reference/hash/schema rollback refusals; credentials/livegrants excluded. Remaining5businesssections still explicit unsupported when nonempty."
+    },
+    "platform31_backup_actual": {
+      "status": "passed",
+      "log": "/tmp/rm-platform31-native-portable-parties.log",
+      "manifest": "/tmp/rm-platform31-qualification-artifacts.json",
+      "report": "/tmp/rentemester-rust-reports/native-portable-backup-parties-integrated31.json",
+      "exit": 0,
+      "scope": "Normal source/restored owner verification and MFA; source/private signer removed before three separate browser/CLI/MCP independent trusted-key archive verifies; exact Party API identity/identifiers/2company roles/defaults/aliases/assertions/history and party-backed Knowledge5+1 histories survive restore/restart;2UUIDs/originals/PDF/bank/oldkey refusal/new intent, exactownedcleanup. Legacy-link source history unit-only; no global singleuse claim."
+    },
+    "platform31_native": {
+      "tests": "/tmp/rm-platform31-native-tests-final.log (116 passed,1 existing ignored)",
+      "build": "/tmp/rm-platform31-native-build.log (passed)",
+      "before_failure": "/tmp/rm-platform31-native-tests.log (parallel test directory timestamp collision; test helper now uses atomic uniqueness)",
+      "scope": "Knowledge/Parties navigation and all existing native states; actual newer GUI still unverified."
     }
   },
   "verified_history": [
@@ -779,49 +803,48 @@
   "active_work": [
     {
       "owner": "root",
-      "result": "Integrate period-audit repair and desktop backup key export; rebuild and accept combined Rust flows",
+      "result": "Integrate complete server/web/native flows and keep whole Rust parity open",
       "depends_on": [
-        "bank audit validator delivery",
-        "exact runtime artifacts"
+        "isolated worker commits",
+        "exact actual qualifications"
       ],
-      "acceptance": "Actual composed first/restart with current authority and preserved originals; fullgoal stays open"
+      "acceptance": "Whole userflows with current authority, original evidence, persistent canonical readback; preserve userchanges"
     },
     {
       "owner": "rust_accruals",
       "result": "Native shared inbox upload, explicit company routing and durable document handoff",
-      "ownership": "isolated new inbox modules and existing React inbox; narrow additive shared registries",
+      "ownership": "isolated new inbox modules, host5routes, existing React inbox/modal and standalonehelper",
       "depends_on": [
-        "current multi-company catalog and protected document publication"
+        "current multi-company catalog and protected native document publication"
       ],
-      "acceptance": "Exact original in one target company, no journal, current rights, durable recovery/restart and duplicate/conflict refusals; nonempty inbox backup still explicit refusal"
+      "acceptance": "Exactly one target original/document, no journal, current rights, durable recovery/restart and conflict refusals; nonempty inbox backup stays explicit refusal"
     },
     {
       "owner": "rust_client_cli",
-      "result": "Include canonical Parties source history in signed portable backup and restore",
-      "ownership": "isolated backup codecs and narrow shared party hash visibility",
+      "result": "Shared inbox SDK/CLI/MCP five-operation parity",
+      "ownership": "isolated new client/cli/mcp modules and minimal command/toolregistries; named ingest-only frame exception",
       "depends_on": [
-        "native Parties integratedff8a7689",
-        "current signed CompanyKnowledge codec"
+        "confirmed inbox route/body/size contracts from rust_accruals"
       ],
-      "acceptance": "All six tables and references preserved, corruption refuses, credentials remain excluded"
+      "acceptance": "Exact confirmed bounded transport, current errors, no actor/default/key inference/retry; preserve103existingtools"
     },
     {
       "owner": "rust_mileage",
-      "result": "Actual Group30 composed first/restart with knowledge snapshot dependency repaired",
-      "ownership": "read-only source; later independent owned synthetic Docker runtime",
+      "result": "Completed actual Group31 J05 Parties/Knowledge qualification; next inbox runtime acceptance awaits integration",
+      "ownership": "read-only rootsource; independent private synthetic AppSupport profile and evidence",
       "depends_on": [
-        "unchanged pinned103tool artifacts and corrected helper ordering"
+        "upcoming inbox server/web/client commits and exact runtime artifacts"
       ],
-      "acceptance": "Full initial/restart parity and exact owned cleanup"
+      "acceptance": "Each browser/CLI/MCP archive independentlyverified after source/privatekey removal, newowner normalMFA, exact allparty+knowledge histories/2UUIDs/originals afterrestore+restart; exactcleanup"
     },
     {
       "owner": "rust_budget",
-      "result": "Native GPUI WorkspaceParties list/inspect/create/roles/source assertions",
-      "ownership": "isolated new desktop parties screen/state; root main integration",
+      "result": "Native supplier commitments and13week forecast flow",
+      "ownership": "isolated new desktop commitments screen/state; root main integration",
       "depends_on": [
-        "stable six-operation Parties SDK"
+        "stable server/SDK commitments contracts"
       ],
-      "acceptance": "Frozen explicit review/confirm, current canonical history/provenance/readback, uncertain outcome retained; build/tests then actual GUI when accessible"
+      "acceptance": "Serverplans/explicit reviewedwrites/canonical lifecycle/source/history and honest forecastcoverage; tests/build then actualGUI whenaccessible"
     }
   ],
   "integrated_pending_browser": [],

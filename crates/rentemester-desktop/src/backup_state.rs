@@ -156,9 +156,11 @@ mod tests {
     use serde_json::json;
     use std::os::unix::fs::{DirBuilderExt, symlink};
     fn temp() -> std::path::PathBuf {
+        static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
         let d = std::env::temp_dir().canonicalize().unwrap().join(format!(
-            "rm-desktop-backup-{}-{}",
+            "rm-desktop-backup-{}-{}-{}",
             std::process::id(),
+            NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .unwrap()
