@@ -34,6 +34,7 @@ mod scheduled_recurring;
 mod hosted_recurring;
 mod reviewed_bookkeeping;
 mod bookkeeping_batch;
+mod payable_correction;
 mod document_party_links;
 mod sales;
 mod invoice_email;
@@ -74,6 +75,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         workers: Arc::new(Semaphore::new(8)),
     };
     Router::new()
+        .route("/api/companies/{slug}/payables/direct-bank-correction/plan", post(payable_correction::handle))
+        .route("/api/companies/{slug}/payables/direct-bank-correction/apply", post(payable_correction::handle))
         .route("/api/group-eliminations", get(eliminations::overview))
         .route("/api/companies/{slug}/eliminations", get(eliminations::handle))
         .route("/api/companies/{slug}/eliminations/{action}", post(eliminations::handle))

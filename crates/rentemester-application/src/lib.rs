@@ -102,3 +102,5 @@ pub mod workspace_transfer;
 pub mod bookkeeping_batch;
 
 pub mod document_party_links;
+
+pub mod direct_bank_payable_correction;

@@ -1302,3 +1302,5 @@ mod receipt_reconciliation;
 mod bookkeeping_batch;
 
 mod document_party_links;
+
+mod direct_bank_payable_correction;
