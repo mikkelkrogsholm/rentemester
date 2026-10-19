@@ -1,0 +1,153 @@
+//! Admitted read-only company sources under one Owner lock; canonical control recheck before return.
+use super::*;
+use rentemester_application::consolidation as app;
+use rentemester_engine::consolidation::{self as policy, Applied, Ledger, Profile};
+use serde_json::Value;
+impl Owner {
+    pub fn consolidation(
+        &mut self,
+        cookies: &rentemester_runtime::auth::CookieVerifier,
+        clock: &dyn Clock,
+        proof: &VerifiedCookie,
+        anchor: Option<&str>,
+        action: app::Action<'_>,
+    ) -> AuthAttempt<Value> {
+        let catalog = self.catalog()?;
+        let selected = self.slug.clone();
+        let mut attempt = self.control_auth(cookies.workspace(), |db| {
+            app::execute(
+                db,
+                cookies,
+                clock,
+                proof,
+                &catalog,
+                anchor.unwrap_or(""),
+                action,
+            )
+        })?;
+        if let app::Action::Plan { from, as_of, .. } = action
+            && let Ok(plan) = &attempt.outcome
+            && plan.get("profile").is_some()
+        {
+            let plan = plan.clone();
+            let result = (|| -> Result<Value, OwnerError> {
+                let profile: Profile = serde_json::from_value(plan["profile"].clone())
+                    .map_err(|_| OwnerError::Context)?;
+                let mut blockers: Vec<String> = serde_json::from_value(plan["blockers"].clone())
+                    .map_err(|_| OwnerError::Context)?;
+                let companies: Vec<String> = serde_json::from_value(plan["companies"].clone())
+                    .map_err(|_| OwnerError::Context)?;
+                let applied: Vec<Applied> = serde_json::from_value(plan["applied"].clone())
+                    .map_err(|_| OwnerError::Context)?;
+                let mut ledgers: Vec<Ledger> = vec![];
+                if blockers.is_empty() {
+                    for company in companies {
+                        self.select_company(&company)?;
+                        self.admit()?;
+                        let result = (|| {
+                            let slots = self.held.0.as_mut().unwrap();
+                            let db = slots.company.as_mut().unwrap();
+                            let tx = db
+                                .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+                                .map_err(|_| policy::refused())?;
+                            let result = if rentemester_application::periods::verify_sources(
+                                &tx,
+                                &mut slots.guard,
+                            )?
+                            .is_empty()
+                            {
+                                rentemester_storage::consolidation::ledger(
+                                    &tx, &company, from, as_of,
+                                )
+                            } else {
+                                Err(policy::refused())
+                            };
+                            tx.rollback().map_err(|_| policy::refused())?;
+                            result
+                        })();
+                        let reusable = self
+                            .held
+                            .0
+                            .as_ref()
+                            .unwrap()
+                            .company
+                            .as_ref()
+                            .unwrap()
+                            .is_autocommit();
+                        self.finish(reusable);
+                        if !reusable {
+                            return Err(OwnerError::Database);
+                        }
+                        match result {
+                            Ok(l) => {
+                                if l.currency != profile.currency {
+                                    blockers.push("all company functional currencies must equal profile currency".into());
+                                }
+                                ledgers.push(l)
+                            }
+                            Err(_) => blockers.push(
+                                "company ledger is unavailable or failed integrity validation"
+                                    .into(),
+                            ),
+                        }
+                    }
+                }
+                let mut rows = vec![];
+                if blockers.is_empty()
+                    && applied
+                        .iter()
+                        .any(|e| e.payload.group_id == profile.group_id)
+                {
+                    let reconciliation = self.intercompany(
+                        cookies,
+                        clock,
+                        proof,
+                        anchor,
+                        rentemester_application::intercompany::Action::Reconciliation(as_of),
+                    )?;
+                    if let Ok(v) = reconciliation.outcome {
+                        rows = serde_json::from_value(v["rows"].clone())
+                            .map_err(|_| OwnerError::Context)?;
+                    } else {
+                        return Err(OwnerError::Context);
+                    }
+                }
+                policy::calculate(
+                    &profile,
+                    plan["profileHash"].as_str().ok_or(OwnerError::Context)?,
+                    from,
+                    as_of,
+                    &ledgers,
+                    &applied,
+                    &rows,
+                    blockers,
+                    rentemester_storage::intercompany::sha,
+                )
+                .map_err(|_| OwnerError::Context)
+            })();
+            self.select_company(&selected)?;
+            let check = self.control_auth(cookies.workspace(), |db| {
+                app::execute(
+                    db,
+                    cookies,
+                    clock,
+                    proof,
+                    &catalog,
+                    anchor.unwrap_or(""),
+                    action,
+                )
+            })?;
+            match check.outcome {
+                Ok(current) if current == plan => {
+                    attempt.outcome = Ok(result?);
+                }
+                Err(f) => attempt.outcome = Err(f),
+                _ => return Err(OwnerError::Context),
+            }
+        }
+        Ok(attempt)
+    }
+}
+#[cfg(test)]
+#[path = "consolidation_tests.rs"]
+mod tests;
