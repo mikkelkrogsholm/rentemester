@@ -266,3 +266,77 @@ async fn domain_reads_target_existing_discovery_routes() {
         task.join().unwrap();
     }
 }
+#[tokio::test]
+async fn bank_payable_writes_keep_exact_native_contracts() {
+    use rentemester_client::BankMutation as B;
+    for(operation,path,body)in[
+ (B::CreateAccount,"bank-accounts",br#"{ "name":"Synthetic client bank", "slug":"synthetic-clients", "currency":"DKK", "ledgerAccountNo":"1800" }"#.as_slice()),
+ (B::ImportStatement,"bank/import",br#"{ "csvContent":"date;text;amount;currency\n2026-10-19;Synthetic payment;-125;DKK\n", "account":"synthetic-clients", "confirm":true }"#.as_slice()),
+ (B::RegisterPayable,"payables",br#"{ "documentId":7,"billDate":"2026-10-19","dueDate":"2026-10-19","expenseAccountNo":"E","vatTreatment":"standard","confirm":true }"#.as_slice()),
+ (B::PayPayable(9),"payables/9/pay",br#"{ "bankTransactionId":8,"amount":125,"paymentAccountNo":"1800","confirm":true }"#.as_slice()),
+ (B::MatchExpense,"documents/book-expense",br#"{ "documentId":7,"bankTransactionId":8,"expenseAccountNo":"E","vatTreatment":"exempt","confirm":true }"#.as_slice())]{let(origin,request,task)=server(OK);let api=ApiClient::new(&origin,true,Some("session=synthetic".into())).unwrap();assert_eq!(api.bank_mutation("demo",operation,body.to_vec(),true).await.unwrap()["ok"],true);let wire=request.recv().unwrap();assert!(wire.starts_with(format!("POST /api/companies/demo/{path} HTTP/1.1").as_bytes()));assert!(wire.ends_with(body));assert_eq!(task.join().unwrap(),1);}
+}
+#[tokio::test]
+async fn bank_reads_use_actual_filter_and_original_options_routes() {
+    for path in [
+        "bank?year=2026",
+        "bank-accounts",
+        "payables?status=all&asOf=2026-10-19",
+        "documents/7/booking-options",
+    ] {
+        let (origin, request, task) = server(OK);
+        let api = ApiClient::new(&origin, true, None).unwrap();
+        if path.starts_with("bank?") {
+            api.bank("demo", Some("2026")).await.unwrap();
+        } else if path == "bank-accounts" {
+            api.bank_accounts("demo").await.unwrap();
+        } else if path.starts_with("payables") {
+            api.payables("demo", Some("all"), Some("2026-10-19"))
+                .await
+                .unwrap();
+        } else {
+            api.expense_booking_options("demo", 7).await.unwrap();
+        }
+        assert!(
+            request
+                .recv()
+                .unwrap()
+                .starts_with(format!("GET /api/companies/demo/{path} HTTP/1.1").as_bytes())
+        );
+        task.join().unwrap();
+    }
+}
+#[tokio::test]
+async fn bank_and_bill_confirmation_shape_and_target_fail_before_network() {
+    use rentemester_client::BankMutation as B;
+    let api = ApiClient::new("http://127.0.0.1:9", true, None).unwrap();
+    for(operation,bytes,confirm)in[(B::CreateAccount,br#"{"name":"Synthetic"}"#.as_slice(),false),(B::ImportStatement,br#"{"csvContent":"x","confirm":true,"profile":"named-unsupported"}"#.as_slice(),true),(B::PayPayable(0),br#"{"bankTransactionId":1,"confirm":true}"#.as_slice(),true),(B::RegisterPayable,br#"{"documentId":1,"billDate":"2026-10-19","dueDate":"2026-10-19","expenseAccountNo":"E","confirm":false}"#.as_slice(),true),(B::MatchExpense,br#"{"documentId":1,"bankTransactionId":2,"expenseAccountNo":"E","vatTreatment":"invented","confirm":true}"#.as_slice(),true)]{assert!(matches!(api.bank_mutation("demo",operation,bytes.to_vec(),confirm).await,Err(Error::InvalidInput(_))));}
+    assert!(matches!(
+        api.payables("demo", Some("invented"), None).await,
+        Err(Error::InvalidInput(_))
+    ));
+    assert!(matches!(
+        api.expense_booking_options("demo", 0).await,
+        Err(Error::InvalidInput(_))
+    ));
+}
+#[tokio::test]
+async fn uncertain_payable_payment_is_attempted_once() {
+    use rentemester_client::BankMutation as B;
+    let (origin, request, task) = server(
+        "HTTP/1.1 503 Service Unavailable\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+    );
+    let api = ApiClient::new(&origin, true, None).unwrap();
+    assert_eq!(
+        api.bank_mutation(
+            "demo",
+            B::PayPayable(3),
+            br#"{"bankTransactionId":7,"confirm":true}"#.to_vec(),
+            true
+        )
+        .await,
+        Err(Error::OutcomeUnknown)
+    );
+    request.recv().unwrap();
+    assert_eq!(task.join().unwrap(), 1);
+}

@@ -112,15 +112,16 @@ pub fn list() -> Value {
         }
         tools.push(tool(name,&format!("{description}. Native flat body is forwarded exactly once. No server idempotency keys: do not add an envelope/key, do not automatically retry. On outcome_unknown reconcile contacts/invoices/documents/journal before further action. Native issuance supports DKK/25% VAT."),schema,false));
     }
+    tools.extend(crate::bank_payables::tools());
     json!({"tools":tools})
 }
-fn native_body(schema: Value) -> Value {
+pub(crate) fn native_body(schema: Value) -> Value {
     json!({"type":"string","minLength":2,"maxLength":262144,"contentMediaType":"application/json","contentSchema":schema,"description":"Exact UTF-8 native JSON body string, forwarded byte-for-byte; shape is specified by contentSchema. No defaults, confirmations or keys are injected."})
 }
-fn company_schema() -> Value {
+pub(crate) fn company_schema() -> Value {
     json!({"type":"string","minLength":1,"pattern":"^[A-Za-z0-9_-]+$","description":"Explicit company slug from companies"})
 }
-fn tool(name: &str, description: &str, schema: Value, read_only: bool) -> Value {
+pub(crate) fn tool(name: &str, description: &str, schema: Value, read_only: bool) -> Value {
     json!({"name":name,"description":description,"inputSchema":schema,"annotations":{"readOnlyHint":read_only,"destructiveHint":!read_only,"idempotentHint":read_only,"openWorldHint":true}})
 }
 #[derive(Deserialize)]
@@ -175,6 +176,9 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     }
     let mut idempotency = None;
     let outcome = match name {
+        name if crate::bank_payables::accepts(name) => {
+            crate::bank_payables::call(api, name, args).await?
+        }
         "me" | "companies" => {
             serde_json::from_value::<Empty>(args).map_err(|_| "expected empty arguments object")?;
             if name == "me" {

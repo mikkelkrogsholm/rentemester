@@ -2,8 +2,10 @@
 //! Supply a browser session's Cookie request-header value, never a Set-Cookie header.
 //! Authentication/enrollment is currently performed by the server's browser UI.
 mod auth;
+mod bank_payables;
 mod domain;
 pub use auth::{AuthenticatedSession, LoginProgress, MfaFactor, PendingLogin};
+pub use bank_payables::{BankMutation, bank_body_schema};
 pub use domain::{
     Confirmation, DomainMutation, MAX_DOMAIN_BODY, domain_body_schema, invoice_body_schema,
 };

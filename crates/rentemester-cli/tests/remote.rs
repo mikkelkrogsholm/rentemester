@@ -181,3 +181,31 @@ fn native_customer_cli_forwards_exact_flat_body() {
     assert!(!String::from_utf8_lossy(&output.stdout).contains("synthetic-secret"));
     task.join().unwrap();
 }
+#[test]
+fn bank_commands_document_native_bodies_and_reject_mixed_filters() {
+    let output = Command::new(BIN)
+        .args(["remote", "--help"])
+        .output()
+        .unwrap();
+    let help: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(
+        help["bankBodySchemas"]["payPayable"]["required"],
+        serde_json::json!(["bankTransactionId", "confirm"])
+    );
+    assert!(
+        help["bankPayables"]
+            .as_str()
+            .unwrap()
+            .contains("not arbitrary journal matching")
+    );
+    for args in [
+        vec!["remote", "bank", "--status", "open"],
+        vec!["remote", "pay-payable", "--confirm"],
+        vec!["remote", "expense-booking-options", "--id", "0"],
+        vec!["remote", "import-bank"],
+        vec!["remote", "bank-accounts", "--year", "2026"],
+    ] {
+        let output = Command::new(BIN).args(args).output().unwrap();
+        assert_eq!(output.status.code(), Some(2));
+    }
+}

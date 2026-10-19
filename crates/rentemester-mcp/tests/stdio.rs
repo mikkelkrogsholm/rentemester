@@ -146,7 +146,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 19);
+    assert_eq!(tools.len(), 28);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -351,6 +351,71 @@ fn domain_write_forwards_exact_body_without_confirmation_injection() {
     );
     let wire = request.recv().unwrap();
     assert!(wire.starts_with(b"POST /api/companies/demo/customers "));
+    assert!(wire.ends_with(body.as_bytes()));
+    task.join().unwrap();
+}
+#[test]
+fn bank_payables_tools_publish_strict_actual_schemas_and_require_confirmation() {
+    let output = run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),
+            call(
+                3,
+                "pay_payable",
+                json!({"company":"demo","body":"{}","confirm":true}),
+            ),
+            call(4, "bank_accounts", json!({"company":"demo","year":"2026"})),
+            call(
+                5,
+                "register_payable",
+                json!({"company":"demo","body":"{}","confirm":false}),
+            ),
+            call(6, "payables", json!({"company":"demo","status":null})),
+            call(
+                7,
+                "expense_booking_options",
+                json!({"company":"demo","id":0}),
+            ),
+        ],
+    );
+    let values = parsed(&output);
+    let tools = values[1]["result"]["tools"].as_array().unwrap();
+    let import = tools.iter().find(|t| t["name"] == "import_bank").unwrap();
+    assert_eq!(
+        import["inputSchema"]["properties"]["body"]["contentSchema"]["required"],
+        json!(["csvContent", "confirm"])
+    );
+    let pay = tools.iter().find(|t| t["name"] == "pay_payable").unwrap();
+    assert_eq!(pay["inputSchema"]["properties"]["id"]["minimum"], 1);
+    assert_eq!(pay["annotations"]["idempotentHint"], false);
+    for result in &values[2..] {
+        assert_eq!(result["error"]["code"], -32602);
+    }
+}
+#[test]
+fn supplier_payment_mcp_keeps_exact_body_and_target() {
+    let (origin, request, task) =
+        http("HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\n{\"ok\":true}");
+    let body = "{ \"bankTransactionId\":9, \"confirm\":true }";
+    let output = run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "pay_payable",
+                json!({"company":"demo","id":7,"body":body,"confirm":true}),
+            ),
+        ],
+    );
+    let values = parsed(&output);
+    assert_eq!(values[1]["result"]["isError"], false);
+    let wire = request.recv().unwrap();
+    assert!(wire.starts_with(b"POST /api/companies/demo/payables/7/pay "));
     assert!(wire.ends_with(body.as_bytes()));
     task.join().unwrap();
 }

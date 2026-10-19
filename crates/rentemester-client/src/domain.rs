@@ -44,10 +44,10 @@ impl DomainMutation {
         })
     }
 }
-fn object(properties: Value, required: &[&str]) -> Value {
+pub(crate) fn object(properties: Value, required: &[&str]) -> Value {
     json!({"type":"object","properties":properties,"required":required,"additionalProperties":false})
 }
-fn optional_text() -> Value {
+pub(crate) fn optional_text() -> Value {
     json!({"type":["string","null"],"maxLength":4096})
 }
 /// Discoverable wire body schema; this validates shape, the server owns domain policy.
@@ -127,6 +127,12 @@ fn matches_type(value: &Value, kind: &str) -> bool {
     }
 }
 fn validate(value: &Value, schema: &Value) -> bool {
+    if schema["enum"]
+        .as_array()
+        .is_some_and(|allowed| !allowed.contains(value))
+    {
+        return false;
+    }
     if let Some(expected) = schema.get("const") {
         return value == expected;
     }
@@ -175,7 +181,7 @@ fn validate(value: &Value, schema: &Value) -> bool {
     }
     true
 }
-fn body(bytes: &[u8], schema: &Value) -> Result<(), Error> {
+pub(crate) fn body(bytes: &[u8], schema: &Value) -> Result<(), Error> {
     if bytes.len() > MAX_DOMAIN_BODY {
         return Err(Error::InvalidInput("domain request exceeds262144 bytes"));
     }
