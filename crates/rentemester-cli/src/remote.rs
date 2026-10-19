@@ -103,6 +103,12 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         }
         if arg.starts_with("--") {
             if ![
+                "--scope",
+                "--company-slugs-json",
+                "--group-profile-id",
+                "--party",
+                "--currency",
+                "--aggregate",
                 "--dimension",
                 "--member",
                 "--replacement-journal-entry-id",
@@ -177,6 +183,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     if crate::reminder_claims::accepts(command){return crate::reminder_claims::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::company_setup::accepts(command){return crate::company_setup::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::privacy::accepts(command){return crate::privacy::run(command,&flags,allow_http,confirmed,preview_reviewed);}
+    if crate::cfo_analytics::accepts(command){return crate::cfo_analytics::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::budget::accepts(command){return crate::budget::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if flags.contains_key("--dimension")||flags.contains_key("--member"){return Err(invalid("dimension/member only on budget-dimension-actuals"));}
     if flags.contains_key("--profile-id") && command != "group-consolidated-report" { return Err(invalid("profile-id allowed only for group-consolidated-report")); }
@@ -192,7 +199,6 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     if crate::accruals::accepts(command){return crate::accruals::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::assets::accepts(command){return crate::assets::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::service_principals::accepts(command){return crate::service_principals::run(command,&flags,allow_http,confirmed,preview_reviewed);}
-    if crate::cfo_analytics::accepts(command){return crate::cfo_analytics::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::contact_import::accepts(command){return crate::contact_import::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::intercompany_dispositions::accepts(command){return crate::intercompany_dispositions::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::payable_correction::accepts(command){return crate::payable_correction::run(command,&flags,allow_http,confirmed,preview_reviewed);}
