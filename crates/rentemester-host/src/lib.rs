@@ -661,6 +661,20 @@ impl Owner {
             rentemester_application::periods::execute(c, l, g, context, action, today)
         })
     }
+    pub fn integrity(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+    ) -> Result<
+        Attempt<
+            Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, _, context| {
+            rentemester_application::integrity::read(c, l, context)
+        })
+    }
     pub fn company_setup(
         &mut self,
         cookie: &VerifiedCookie,

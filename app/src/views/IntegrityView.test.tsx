@@ -69,9 +69,9 @@ function renderView(payload: ReturnType<typeof sample> = sample()) {
 describe("IntegrityView (#333)", () => {
   test("viser PASS-status når hash-kæden er hel", async () => {
     renderView(sample());
-    expect(await screen.findByText(/OK — kæden er hel/)).toBeInTheDocument();
+    expect(await screen.findByText(/OK — den kontrollerede kæde er hel/)).toBeInTheDocument();
     expect(
-      screen.queryByText(/Revisionskæden er brudt/),
+      screen.queryByText(/Hashkontrollen fandt afvigelser/),
     ).not.toBeInTheDocument();
   });
 
@@ -86,7 +86,7 @@ describe("IntegrityView (#333)", () => {
       }),
     );
     expect(
-      await screen.findByText(/Revisionskæden er brudt/),
+      await screen.findByText(/Hashkontrollen fandt afvigelser/),
     ).toBeInTheDocument();
     expect(
       screen.getByText(/2026-00001: entry_hash mismatch/),
@@ -125,12 +125,12 @@ describe("IntegrityView (#333)", () => {
   test("'Verificér igen' refetcher endpointet", async () => {
     const user = userEvent.setup();
     renderView(sample());
-    expect(await screen.findByText(/OK — kæden er hel/)).toBeInTheDocument();
+    expect(await screen.findByText(/OK — den kontrollerede kæde er hel/)).toBeInTheDocument();
     const button = screen.getByRole("button", { name: /Verificér igen/ });
     await user.click(button);
     // Endpointet er idempotent — anden runde giver samme svar; vi tjekker
     // bare at vi er kommet retur til en gyldig state efter klik.
-    expect(await screen.findByText(/OK — kæden er hel/)).toBeInTheDocument();
+    expect(await screen.findByText(/OK — den kontrollerede kæde er hel/)).toBeInTheDocument();
   });
 
   test("citerer bogføringsloven § 14 og linker til Lovgrundlag-viewet", async () => {
@@ -144,4 +144,24 @@ describe("IntegrityView (#333)", () => {
       "/lovgrundlag#DK-BOGFORINGSLOVEN-2022-700",
     );
   });
+  test("native unknown evidence stays unknown without accusing tampering or declaring overdue backup", async () => {
+    const payload = sample();
+    const native = payload as any;
+    native.integrity.auditChain = { available: false, ok: null, entries: null, errors: [], unavailableReason: "Hashkontrol kunne ikke udføres", scopeNote: "Kun hashkæden; ikke fuld revision." };
+    native.integrity.backup = { available: false, ok: null, latestBackupAt: null, latestBackupId: null, backupDue: null, hasActivitySinceBackup: null, daysSinceLatestBackup: null, backupsFound: null, requiredBy: null, checkedAt: null, unavailableReason: "Backup-beviser utilgængelige" };
+    native.integrity.destinations = [];
+    native.integrity.destinationsAvailable = false;
+    native.integrity.destinationsUnavailableReason = "Destinationer er ikke kontrolleret";
+    renderView(native);
+    expect(await screen.findByText("Hashkontrol utilgængelig.")).toBeInTheDocument();
+    expect(screen.getByText("Backupstatus kan ikke fastslås.")).toBeInTheDocument();
+    expect(screen.getByText("Destinationer er ikke kontrolleret")).toBeInTheDocument();
+    expect(screen.getByText("Ikke verificeret")).toBeInTheDocument();
+    expect(screen.getByText("Kun hashkæden; ikke fuld revision.")).toBeInTheDocument();
+    expect(screen.queryByText(/Hashkontrollen fandt afvigelser/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Backup forfalden/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Ingen destinationer konfigureret/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Ingen backup endnu/)).not.toBeInTheDocument();
+  });
+
 });

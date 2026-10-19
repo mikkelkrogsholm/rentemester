@@ -24,8 +24,12 @@ export function IntegrityView() {
   if (state.error) return <ErrorState message={state.error} onRetry={state.reload} />;
   const data = state.data!;
 
-  const chainOk = data.auditChain.ok;
-  const backupOk = data.backup.ok && !data.backup.backupDue;
+  const chainAvailable = data.auditChain.available !== false && data.auditChain.ok !== null;
+  const chainOk = data.auditChain.ok === true;
+  const chainFailed = chainAvailable && data.auditChain.ok === false;
+  const backupAvailable = data.backup.available !== false && data.backup.ok !== null && data.backup.backupDue !== null;
+  const backupOk = data.backup.ok === true && data.backup.backupDue === false;
+  const destinationsAvailable = data.destinationsAvailable !== false;
 
   return (
     <section className="integrity-view">
@@ -51,16 +55,21 @@ export function IntegrityView() {
 
       </PageHeader>
 
-      {!chainOk && (
+      {chainFailed && (
         <div className="callout danger">
-          <strong>Revisionskæden er brudt.</strong> Nogen har ændret bogføringen
-          efter den blev godkendt. {data.auditChain.errors.length} afvigelse
-          {data.auditChain.errors.length === 1 ? "" : "r"} fundet. Bogfør ikke
-          videre — kontakt din revisor og overvej at genskabe fra seneste
-          verificerede backup.
+          <strong>Hashkontrollen fandt afvigelser.</strong> Kædens gemte værdier
+          stemmer ikke med de kontrollerede data. {data.auditChain.errors.length} afvigelse
+          {data.auditChain.errors.length === 1 ? "" : "r"} fundet. Undersøg
+          afvigelserne, før resultatet bruges som dokumentation.
         </div>
       )}
-      {!backupOk && (
+      {!chainAvailable && (
+        <div className="callout warn"><strong>Hashkontrol utilgængelig.</strong> {data.auditChain.unavailableReason ?? "Kontrollen kunne ikke gennemføres."}</div>
+      )}
+      {!backupAvailable && (
+        <div className="callout warn"><strong>Backupstatus kan ikke fastslås.</strong> {data.backup.unavailableReason ?? "Backup-beviser er ikke verificeret."}</div>
+      )}
+      {backupAvailable && !backupOk && data.backup.backupDue === true && (
         <div className="callout warn">
           <strong>Backup forfalden.</strong> Seneste backup{" "}
           {data.backup.latestBackupAt
@@ -74,22 +83,23 @@ export function IntegrityView() {
       <section className="card">
         <h3>Hash-kæden (digital plombe)</h3>
         <p>
-          Hver bogføringspost har et SHA-256-fingeraftryk der bindes til den
-          forrige post. Hvis kæden er hel, kan ingen ændre en bogføring uden at
-          det opdages. Verificeres på hvert kald — det er sikkert at trykke
-          "Verificér igen".
+          Hver bogføringspost har et SHA-256-fingeraftryk, der bindes til den
+          forrige post. Kontrollen sammenligner de gemte værdier med dataenes
+          indhold. En hel kæde er ikke i sig selv bevis for fuld revisionsintegritet.
+          Kontrollen læser data uden at ændre dem.
         </p>
+        {data.auditChain.scopeNote && <p className="muted">{data.auditChain.scopeNote}</p>}
         <div className="table-scroll"><table className="table">
           <tbody>
             <tr>
               <th>Status</th>
               <td className={chainOk ? "ok" : "warn"}>
-                {chainOk ? "OK — kæden er hel" : "FEJL — kæden er brudt"}
+                {!chainAvailable ? "Kan ikke verificeres" : chainOk ? "OK — den kontrollerede kæde er hel" : "FEJL — afvigelser i kæden"}
               </td>
             </tr>
             <tr>
               <th>Antal posteringer</th>
-              <td>{data.auditChain.entries}</td>
+              <td>{data.auditChain.entries ?? "Ukendt"}</td>
             </tr>
           </tbody>
         </table></div>
@@ -116,7 +126,7 @@ export function IntegrityView() {
           <tbody>
             <tr>
               <th>Seneste backup</th>
-              <td>{data.backup.latestBackupAt ?? "Ingen backup endnu"}</td>
+              <td>{data.backup.latestBackupAt ?? (backupAvailable ? "Ingen backup endnu" : "Ukendt")}</td>
             </tr>
             <tr>
               <th>Backup ID</th>
@@ -130,17 +140,17 @@ export function IntegrityView() {
             </tr>
             <tr>
               <th>Antal backups</th>
-              <td>{data.backup.backupsFound}</td>
+              <td>{data.backup.backupsFound ?? "Ukendt"}</td>
             </tr>
             <tr>
               <th>Forfalden</th>
-              <td className={data.backup.backupDue ? "warn" : "ok"}>
-                {data.backup.backupDue ? "Ja — lav en backup nu" : "Nej"}
+              <td className={data.backup.backupDue === null ? "muted" : data.backup.backupDue ? "warn" : "ok"}>
+                {data.backup.backupDue === null ? "Ukendt" : data.backup.backupDue ? "Ja — lav en backup nu" : "Nej"}
               </td>
             </tr>
             <tr>
               <th>Aktivitet siden sidste backup</th>
-              <td>{data.backup.hasActivitySinceBackup ? "Ja" : "Nej"}</td>
+              <td>{data.backup.hasActivitySinceBackup === null ? "Ukendt" : data.backup.hasActivitySinceBackup ? "Ja" : "Nej"}</td>
             </tr>
             <tr>
               <th>Dage siden sidste backup</th>
@@ -148,15 +158,17 @@ export function IntegrityView() {
             </tr>
             <tr>
               <th>Verificeret pr.</th>
-              <td>{data.backup.checkedAt}</td>
+              <td>{data.backup.checkedAt ?? "Ikke verificeret"}</td>
             </tr>
           </tbody>
         </table></div>
       </section>
 
       <section className="card">
-        <h3>Backup-destinationer ({data.destinations.length})</h3>
-        {data.destinations.length === 0 ? (
+        <h3>Backup-destinationer{destinationsAvailable ? ` (${data.destinations.length})` : ""}</h3>
+        {!destinationsAvailable ? (
+          <p className="muted">{data.destinationsUnavailableReason ?? "Backup-destinationer er ikke kontrolleret."}</p>
+        ) : data.destinations.length === 0 ? (
           <p className="muted">
             Ingen destinationer konfigureret. Brug{" "}
             <code>rentemester system backup-add-destination</code> for at

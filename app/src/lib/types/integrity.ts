@@ -1,21 +1,27 @@
 // #333 — Integritet & backup-panel.
 
 export type AuditChainStatus = {
-  ok: boolean;
-  entries: number;
+  ok: boolean | null;
+  entries: number | null;
+  available?: boolean;
+  scope?: string;
+  scopeNote?: string;
+  unavailableReason?: string;
   errors: string[];
 };
 
 export type BackupStatusSummary = {
-  ok: boolean;
+  ok: boolean | null;
   latestBackupAt: string | null;
   latestBackupId: string | null;
-  backupDue: boolean;
-  hasActivitySinceBackup: boolean;
+  backupDue: boolean | null;
+  hasActivitySinceBackup: boolean | null;
   daysSinceLatestBackup: number | null;
-  backupsFound: number;
+  backupsFound: number | null;
   requiredBy: string | null;
-  checkedAt: string;
+  checkedAt: string | null;
+  available?: boolean;
+  unavailableReason?: string;
 };
 
 export type BackupDestinationSummary = {
@@ -41,6 +47,8 @@ export type CompanyIntegrity = {
   auditChain: AuditChainStatus;
   backup: BackupStatusSummary;
   destinations: BackupDestinationSummary[];
+  destinationsAvailable?: boolean;
+  destinationsUnavailableReason?: string;
   legalCitation: { sourceId: string; note: string };
 };
 

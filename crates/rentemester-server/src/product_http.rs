@@ -9,6 +9,7 @@ mod exceptions;
 mod dashboard;
 mod documents;
 mod mileage;
+mod integrity;
 mod payables;
 mod periods;
 mod recurring_invoices;
@@ -191,6 +192,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         )
         .route("/api/companies/{slug}/vat", get(vat::read))
         .route("/api/companies/{slug}/vat/export", get(vat::read))
+        .route("/api/companies/{slug}/integrity", get(integrity::read))
         .route("/api/companies/{slug}/journal", get(read))
         .route("/api/companies/{slug}/trial-balance", get(read))
         .route("/api/companies/{slug}/income-statement", get(read))
