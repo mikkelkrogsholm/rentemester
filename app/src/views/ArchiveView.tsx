@@ -1,3 +1,5 @@
+import { ArchiveImportPanel } from "../components/ArchiveImportPanel";
+import { useOptionalAuth } from "../lib/auth-context";
 import { ButtonLink, PageHeader } from "../components/ui";
 // Om arkivet — an explainer for the read-only #197 archive (Runde 3, it. 11).
 //
@@ -17,6 +19,15 @@ import { ErrorState, Loading } from "../components/Feedback";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 
 export function ArchiveView() {
+  const auth=useOptionalAuth();
+  return auth?.backend==="rust"?<NativeArchiveView/>:<LegacyArchiveView/>;
+}
+function NativeArchiveView(){
+  const {slug=""}=useParams();const {year,setYear}=useCompanyYear();
+  const years=useAsync(signal=>api.fiscalYears(slug,{signal}),[slug]);
+  return <section className="statement"><PageHeader title="Arkiv"><p>Tidligere regnskabsår · skrivebeskyttet historik</p></PageHeader><CompanyNav slug={slug} years={years.data??[]} selectedYear={year??years.data?.[0]?.label??""} onYearChange={setYear}/>{years.error&&<p role="alert">Regnskabsår kunne ikke hentes. Arkivets kilder vises særskilt nedenfor.</p>}<ArchiveImportPanel slug={slug} onChanged={years.reload}/></section>;
+}
+function LegacyArchiveView() {
   const { slug = "" } = useParams();
   const { year, setYear } = useCompanyYear();
 
