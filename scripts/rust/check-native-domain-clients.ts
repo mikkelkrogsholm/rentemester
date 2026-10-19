@@ -107,6 +107,7 @@ export async function checkNativeDomainClients(
 			"contacts",
 			"documents",
 			"invoices",
+			"invoice_pdf",
 			"preview_invoice",
 			"create_customer",
 			"update_customer",
@@ -313,6 +314,35 @@ export async function checkNativeDomainClients(
 			};
 			writeFileSync(saved, JSON.stringify(evidence));
 		} else evidence = JSON.parse(readFileSync(saved, "utf8"));
+		// Both branches read the same saved issued original, using the real browser session.
+		const originalResponse = await page.request.get(
+			`${base}/api/companies/synthetic/invoices/${evidence.invoiceId}/pdf`,
+		);
+		if (
+			!originalResponse.ok() ||
+			originalResponse.headers()["content-type"]?.split(";")[0] !== "application/pdf"
+		)
+			throw new Error("Browser session could not read the issued invoice PDF");
+		const original = await originalResponse.body();
+		if (original.subarray(0, 5).toString("ascii") !== "%PDF-")
+			throw new Error("Issued invoice original is not a PDF");
+		const cliPdf = cliCall("invoice-pdf", undefined, [
+			"--id", String(evidence.invoiceId),
+		]).value.data.pdf;
+		const mcpPdf = rpc("invoice_pdf", {
+			company: "synthetic", id: evidence.invoiceId,
+		}).pdf;
+		for (const [client, pdf] of [["CLI", cliPdf], ["MCP", mcpPdf]] as const) {
+			if (
+				pdf?.contentType !== "application/pdf" ||
+				!Array.isArray(pdf.bytes) ||
+				!pdf.bytes.every((byte: unknown) =>
+					typeof byte === "number" && Number.isInteger(byte) && byte >= 0 && byte <= 255,
+				) ||
+				!Buffer.from(pdf.bytes).equals(original)
+			)
+				throw new Error(`${client} invoice PDF differs from the actual issued original`);
+		}
 		const contacts = cliCall("contacts").value.data.contacts;
         for (const removed of evidence.deletedContacts) {
             if (contacts[`${removed.kind}s`].some((row: {name: string}) => row.name === removed.name)) throw new Error("Deleted CLI/MCP contact returned after restart");
@@ -347,8 +377,8 @@ export async function checkNativeDomainClients(
         catch { await page.screenshot({path:"/tmp/rentemester-rust-domain-client-failure.png",fullPage:true}); throw new Error(`Invoice UI does not show persisted ${invoiceData.selectedYear}/${invoice.status}: ${(await page.locator("body").innerText()).slice(-2500)}`); }
 		console.log(
 			restarted
-				? "PASS: CLI/MCP customer, vendor, contact deletions, original and posted invoice survive restart"
-				: "PASS: CLI customer → MCP vendor → cross-client updates → CLI nonmutating PDF preview → confirmed MCP issue → explicit CLI post; duplicate posting and open-contact deletion refused; disposable contacts deleted through both clients",
+				? "PASS: CLI/MCP customer, vendor, contact deletions, original and posted invoice survive restart; CLI/MCP PDF bytes equal the HTTP issued original"
+				: "PASS: CLI customer → MCP vendor → cross-client updates → CLI nonmutating PDF preview → confirmed MCP issue → explicit CLI post; duplicate posting and open-contact deletion refused; disposable contacts deleted through both clients; CLI/MCP PDF bytes equal the HTTP issued original",
 		);
 	} finally {
 		rmSync(temp, { recursive: true, force: true });
