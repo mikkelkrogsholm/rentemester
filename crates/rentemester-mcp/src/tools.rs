@@ -135,6 +135,7 @@ pub fn list() -> Value {
     tools.extend(crate::bank_reconciliation::tools());
     tools.extend(crate::bank_correction::tools());
     tools.extend(crate::recurring_invoices::tools());
+    tools.extend(crate::scheduled_recurring::tools());
     tools.extend(crate::assets::tools());
     tools.extend(crate::accruals::tools());
     tools.extend(crate::budget::tools());
@@ -235,6 +236,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         name if crate::mileage::accepts(name) => crate::mileage::call(api,name,args).await?,
         name if crate::accruals::accepts(name) => crate::accruals::call(api,name,args).await?,
         name if crate::assets::accepts(name) => crate::assets::call(api,name,args).await?,
+        name if crate::scheduled_recurring::accepts(name)=>crate::scheduled_recurring::call(api,name,args).await?,
         name if crate::recurring_invoices::accepts(name) => crate::recurring_invoices::call(api,name,args).await?,
         "bank_reconciliation_correction_plan" | "bank_reconciliation_correction" => {
             // Correlation only: return the original supported caller key on uncertain outcome.
