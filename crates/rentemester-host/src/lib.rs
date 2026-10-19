@@ -1311,3 +1311,4 @@ mod contact_import;
 mod cfo_analytics;
 
 mod archive_import;
+mod archive_reports;

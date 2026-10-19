@@ -54,6 +54,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
             "exitCodes":{"0":"success","1":"server/transport/protocol failure","2":"usage/configuration failure"},
             "example":"rentemester-rust remote --server http://127.0.0.1:8080 --allow-loopback-http --cookie-file /private/session.cookie trial-balance --company example --year 2026"});
         help["service_principals"]=crate::service_principals::help();
+        help["commands"].as_array_mut().unwrap().extend([json!("overview"),json!("report-export")]);
+        help["reportReads"]=json!({"usage":"journal/trial-balance/income-statement/balance/overview --company SLUG [--year LABEL] [--source live|archive]; --account only journal. report-export --company SLUG --report journal|trial-balance|income-statement|balance --format csv|pdf [--year LABEL] [--source live|archive] [--account journalonly]. Read-only, explicit server/cookie. Server owns source selection and unavailable states. Preserve exact decimal strings. Exports return data {ok,contentType,bytes}, max96MiB; no files/client calculations. Omitted source uses server live-first selection; explicit archive never falls back."});
         help["archiveImport"]=crate::archive_import::help();
         help["commands"].as_array_mut().unwrap().extend(crate::archive_import::COMMANDS.map(|s|json!(s)));
         help["cfoAnalytics"]=crate::cfo_analytics::help();
@@ -105,6 +107,9 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         }
         if arg.starts_with("--") {
             if ![
+                "--source",
+                "--report",
+                "--format",
                 "--fiscal-year",
                 "--import-id",
                 "--scope",
@@ -169,6 +174,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         }
     }
     let command = command.ok_or_else(|| invalid("expected remote command; see remote --help"))?;
+    if !crate::report_reads::accepts(command) && flags.keys().any(|k|["--source","--report","--format"].contains(k)){return Err(invalid("source/report/format allowed only on report reads/exports"));}
     if command == "login" {
         if confirmed || preview_reviewed {
             return Err(invalid("confirmation flags are not login flags"));
@@ -181,6 +187,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     {
         return Err(invalid("email/factor/session-out allowed only with login"));
     }
+    if crate::report_reads::accepts(command){return crate::report_reads::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::cfo_analytics::accepts(command){return crate::cfo_analytics::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if flags.keys().any(|k|["--scope","--company-slugs-json","--group-profile-id","--party","--currency","--aggregate"].contains(k)){return Err(invalid("CFO selectors allowed only on cfo-analytics"));}
     if crate::archive_import::accepts(command){return crate::archive_import::run(command,&flags,allow_http,confirmed,preview_reviewed);}

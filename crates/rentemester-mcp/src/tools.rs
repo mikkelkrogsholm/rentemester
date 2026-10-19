@@ -23,11 +23,13 @@ pub fn list() -> Value {
         ("trial_balance", "Read trial balance"),
         ("income_statement", "Read income statement"),
         ("balance", "Read balance sheet"),
+        ("overview", "Read company overview"),
     ] {
         tools.push(tool(name, description, json!({"type":"object","required":["company"],"properties":{
             "company":company_schema(),"year":{"type":"string","maxLength":128,"description":"Server fiscal year selector"},
-            "account":{"type":"string","maxLength":128,"description":"Optional server account filter"}},"additionalProperties":false}), true));
+            "source":{"enum":["live","archive"],"description":"Explicit source never falls back; omitted source is selected by server"},"account":{"type":"string","maxLength":128,"description":"Journal account filter only"}},"additionalProperties":false}), true));
     }
+    tools.push(tool("report_export","Download exact authorized CSV/PDF bytes for selected report/source. No files, client figures or implicit source fallback. Incomplete financial basis refuses; max96MiB.",json!({"type":"object","required":["company","report","format"],"properties":{"company":company_schema(),"report":{"enum":["journal","trial-balance","income-statement","balance"]},"format":{"enum":["csv","pdf"]},"year":{"type":"string","maxLength":128},"source":{"enum":["live","archive"]},"account":{"type":"string","maxLength":128}},"additionalProperties":false}),true));
     for (name, description) in [
         (
             "post_journal",
@@ -184,7 +186,11 @@ struct ReadArgs {
     company: String,
     year: Option<String>,
     account: Option<String>,
+    source: Option<String>,
 }
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ExportArgs { company:String, report:String, format:String, year:Option<String>, account:Option<String>, source:Option<String> }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct WriteArgs {
@@ -291,7 +297,13 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
                 api.companies().await
             }
         }
-        "journal" | "trial_balance" | "income_statement" | "balance" => {
+        "report_export" => {
+            let args:ExportArgs=serde_json::from_value(args).map_err(|_|"invalid export arguments")?;
+            let report=match args.report.as_str(){"journal"=>Report::Journal,"trial-balance"=>Report::TrialBalance,"income-statement"=>Report::IncomeStatement,"balance"=>Report::Balance,_=>return Err("unknown report")};
+            if args.account.is_some()&&!matches!(report,Report::Journal){return Err("account allowed only on journal");}
+            api.report_export(&args.company,report,args.year.as_deref(),args.account.as_deref(),args.source.as_deref(),&args.format).await
+        }
+        "journal" | "trial_balance" | "income_statement" | "balance" | "overview" => {
             let args: ReadArgs =
                 serde_json::from_value(args).map_err(|_| "invalid report arguments")?;
             if args.year.as_ref().is_some_and(|v| v.len() > 128)
@@ -303,13 +315,16 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
                 "journal" => Report::Journal,
                 "trial_balance" => Report::TrialBalance,
                 "income_statement" => Report::IncomeStatement,
+                "overview" => Report::Overview,
                 _ => Report::Balance,
             };
-            api.report(
+            if args.account.is_some()&&!matches!(report,Report::Journal){return Err("account allowed only on journal");}
+            api.report_source(
                 &args.company,
                 report,
                 args.year.as_deref(),
                 args.account.as_deref(),
+                args.source.as_deref(),
             )
             .await
         }

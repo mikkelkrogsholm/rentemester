@@ -1,5 +1,6 @@
 //! Thin browser adapter over the same owner used for authentication.
 mod archive_import;
+mod archive_reports;
 mod cfo_analytics;
 mod saft;
 mod company_knowledge;
@@ -20,7 +21,6 @@ mod documents;
 mod gdpr;
 mod dimensions;
 mod exceptions;
-mod dashboard;
 mod mileage;
 mod integrity;
 mod multi_year;
@@ -52,7 +52,7 @@ use axum::{
     routing::{get, post},
 };
 use rentemester_application::{
-    control_fence::FailureStage, journal_post, journal_reversal, owned_report::CockpitRequest,
+    control_fence::FailureStage, journal_post, journal_reversal,
 };
 use rentemester_runtime::auth::{SystemClock, VerifiedCookie};
 use serde::Deserialize;
@@ -193,7 +193,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/invoices/reminders/register",post(reminder_claims::handle))
         .route("/api/companies/{slug}/invoices/reminders/post",post(reminder_claims::handle))
         .route("/api/companies/{slug}/invoices/claims/settle",post(reminder_claims::handle))
-        .route("/api/companies/{slug}/overview", get(dashboard::read))
+        .route("/api/companies/{slug}/overview", get(archive_reports::read))
         .route(
             "/api/companies/{slug}/mileage",
             get(mileage::handle).post(mileage::handle),
@@ -378,12 +378,12 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/vat", get(vat::read))
         .route("/api/companies/{slug}/vat/export", get(vat::read))
         .route("/api/companies/{slug}/integrity", get(integrity::read))
-        .route("/api/companies/{slug}/journal", get(read))
-        .route("/api/companies/{slug}/trial-balance", get(read))
-        .route("/api/companies/{slug}/income-statement", get(read))
-        .route("/api/companies/{slug}/balance", get(read))
+        .route("/api/companies/{slug}/journal", get(archive_reports::read))
+        .route("/api/companies/{slug}/trial-balance", get(archive_reports::read))
+        .route("/api/companies/{slug}/income-statement", get(archive_reports::read))
+        .route("/api/companies/{slug}/balance", get(archive_reports::read))
         .route("/api/companies/{slug}/{report}/export", get(read))
-        .route("/api/companies/{slug}/fiscal-years", get(archive_import::handle))
+        .route("/api/companies/{slug}/fiscal-years", get(archive_reports::read))
         .route("/api/companies/{slug}/manual-journal", post(write))
         .route("/api/companies/{slug}/manual-journal-reversal", post(write))
         .with_state(state)
@@ -490,6 +490,7 @@ struct Query {
     year: Option<String>,
     account: Option<String>,
     format: Option<String>,
+    source: Option<String>,
 }
 fn query(request: &Request) -> Result<Query, Box<Response>> {
     let mut result = Query::default();
@@ -499,13 +500,15 @@ fn query(request: &Request) -> Result<Query, Box<Response>> {
             "year" => &mut result.year,
             "account" => &mut result.account,
             "format" => &mut result.format,
+            "source" => &mut result.source,
             _ => return Err(Box::new(refused(StatusCode::BAD_REQUEST, "invalid_query"))),
         };
-        if slot.is_some() || value.len() > 128 {
+        if slot.is_some() || value.len() > 128 || value.is_empty() || value.trim()!=value || value.chars().any(|c|c.is_control()||c=='\u{fffd}') {
             return Err(Box::new(refused(StatusCode::BAD_REQUEST, "invalid_query")));
         }
         *slot = Some(value.into_owned());
     }
+    if result.source.as_deref().is_some_and(|s|!matches!(s,"live"|"archive")) {return Err(Box::new(refused(StatusCode::BAD_REQUEST,"invalid_query")));}
     Ok(result)
 }
 fn selected(state:&Product,request:&Request)->bool {
@@ -547,6 +550,13 @@ async fn read(State(state): State<Product>, request: Request) -> Response {
     let today = chrono::DateTime::<chrono::Utc>::from(std::time::SystemTime::now())
         .format("%Y-%m-%d")
         .to_string();
+    let resource_kind=match resource.as_str(){
+        "journal"=>rentemester_storage::archive_reports::Resource::Journal,
+        "trial-balance"=>rentemester_storage::archive_reports::Resource::TrialBalance,
+        "income-statement"=>rentemester_storage::archive_reports::Resource::IncomeStatement,
+        "balance"=>rentemester_storage::archive_reports::Resource::Balance,
+        _=>return refused(StatusCode::BAD_REQUEST,"invalid_export"),
+    };
     let snapshot_today = today.clone();
     let Ok(permit) = state.workers.clone().try_acquire_owned() else {
         return refused(StatusCode::SERVICE_UNAVAILABLE, "busy");
@@ -557,13 +567,16 @@ async fn read(State(state): State<Product>, request: Request) -> Response {
         let today = snapshot_today;
         let mut owner = native.lock_company(&company_slug).map_err(|_| ())?;
         owner
-            .cockpit_snapshot(
+            .archive_reports(
                 &cookie,
                 &SystemClock,
-                CockpitRequest {
+                rentemester_application::archive_reports::Request {
                     today: &today,
                     year: query.year.as_deref(),
                     account: query.account.as_deref(),
+                    source: query.source.as_deref(),
+                    as_of: None,
+                    resource: resource_kind,
                 },
             )
             .map_err(|_| ())
@@ -572,14 +585,8 @@ async fn read(State(state): State<Product>, request: Request) -> Response {
     match result {
         Ok(Ok(attempt)) => match attempt.outcome {
             Ok(committed) => {
-                let snapshot = committed.value;
-                let (key, value) = match resource.as_str() {
-                    "journal" => ("journal", snapshot.journal),
-                    "trial-balance" => ("trialBalance", snapshot.trial_balance),
-                    "income-statement" => ("incomeStatement", snapshot.income_statement),
-                    "balance" => ("balance", snapshot.balance),
-                    _ => ("fiscalYears", snapshot.fiscal_years),
-                };
+                let value = committed.value;
+                let key=match resource.as_str(){"journal"=>"journal","trial-balance"=>"trialBalance","income-statement"=>"incomeStatement",_=>"balance"};
                 if exporting {
                     let Some(export) =
                         crate::report_export::build(&resource, &format, &value, &today)

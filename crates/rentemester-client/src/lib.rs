@@ -30,6 +30,7 @@ pub use documents::{document_ingest_schema,MAX_DOCUMENT_INGEST_BODY,MAX_DOCUMENT
 mod reviewed_bookkeeping;
 pub use reviewed_bookkeeping::{ReviewedRead,ReviewedMutation,reviewed_body_schema,valid_draft_id};
 mod annual_reports;
+mod report_reads;
 pub use annual_reports::valid_annual_bounds;
 mod auth;
 mod bank_payables;
@@ -101,6 +102,7 @@ pub enum Report {
     TrialBalance,
     IncomeStatement,
     Balance,
+    Overview,
 }
 impl Report {
     fn path(self) -> &'static str {
@@ -109,6 +111,7 @@ impl Report {
             Self::TrialBalance => "trial-balance",
             Self::IncomeStatement => "income-statement",
             Self::Balance => "balance",
+            Self::Overview => "overview",
         }
     }
 }
@@ -189,15 +192,7 @@ impl ApiClient {
         year: Option<&str>,
         account: Option<&str>,
     ) -> Result<Value, Error> {
-        let path = company_path(company, report.path())?;
-        let mut query = Vec::new();
-        if let Some(year) = year {
-            query.push(("year", year));
-        }
-        if let Some(account) = account {
-            query.push(("account", account));
-        }
-        self.get(&path, &query).await
+        self.report_source(company, report, year, account, None).await
     }
     /// Sends the exact caller-provided JSON bytes once. Never generates/replaces an
     /// idempotency key; an uncertain outcome must be reconciled by the caller.

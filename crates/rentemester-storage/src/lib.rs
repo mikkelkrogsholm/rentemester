@@ -600,3 +600,4 @@ pub mod contact_import;
 pub mod cfo_analytics;
 
 pub mod archive_import;
+pub mod archive_reports;

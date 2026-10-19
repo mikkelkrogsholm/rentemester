@@ -10,11 +10,36 @@ pub struct Export {
 fn text(value: &Value) -> String {
     value.as_str().unwrap_or("").to_owned()
 }
+fn money(value: &Value) -> Option<Money> {
+    if let Some(s) = value.as_str() {
+        Money::parse_canonical(s).ok()
+    } else if value.is_number() {
+        Money::parse(&value.to_string()).ok()
+    } else {
+        None
+    }
+}
 fn amount(value: &Value) -> String {
-    value
-        .as_f64()
-        .map(|v| format!("{v:.2}").replace('.', ","))
+    money(value)
+        .map(|m| m.decimal().replace('.', ","))
         .unwrap_or_default()
+}
+fn currency(value: &Value) -> String {
+    value["declaredCurrency"]
+        .as_str()
+        .unwrap_or(value["company"]["currency"].as_str().unwrap_or(""))
+        .to_owned()
+}
+fn source(value: &Value) -> String {
+    if value["source"] == "archive" {
+        format!(
+            "Arkiv · Dinero · {} · import {}",
+            text(&value["evidence"]["sourceHash"]),
+            value["evidence"]["importId"]
+        )
+    } else {
+        "Rentemester · live".into()
+    }
 }
 fn cell(value: &str) -> String {
     if value.contains([';', '"', '\r', '\n']) {
@@ -136,6 +161,56 @@ fn rows(report: &str, value: &Value) -> Vec<Row> {
                 }
             }
         }
+        "journal" => {
+            let mut debit = Money::default();
+            let mut credit = Money::default();
+            if let Some(entries) = value["entries"].as_array() {
+                for entry in entries {
+                    rows.push(Row {
+                        section: true,
+                        total: false,
+                        label: format!(
+                            "{} · {} · {}",
+                            text(&entry["date"]),
+                            text(&entry["entryNo"]),
+                            text(&entry["text"])
+                        ),
+                        amount: String::new(),
+                    });
+                    if let Some(lines) = entry["lines"].as_array() {
+                        for line in lines {
+                            if let Some(m) = money(&line["debit"]) {
+                                debit.add(&m);
+                            }
+                            if let Some(m) = money(&line["credit"]) {
+                                credit.add(&m);
+                            }
+                            for (key, label) in [("debit", "Debet"), ("credit", "Kredit")] {
+                                rows.push(Row {
+                                    section: false,
+                                    total: false,
+                                    label: format!(
+                                        "{} · {} {} · {label}",
+                                        line["date"].as_str().unwrap_or(entry["date"].as_str().unwrap_or("")),
+                                        text(&line["accountNo"]),
+                                        text(&line["accountName"])
+                                    ),
+                                    amount: amount(&line[key]),
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            for (label, total) in [("Debet i alt", debit), ("Kredit i alt", credit)] {
+                rows.push(Row {
+                    section: false,
+                    total: true,
+                    label: label.into(),
+                    amount: total.decimal().replace('.', ","),
+                });
+            }
+        }
         "income-statement" => {
             section(
                 "Indtægter",
@@ -211,9 +286,9 @@ fn csv(report: &str, title: &str, value: &Value, today: &str) -> Vec<u8> {
         ("Virksomhed", text(&value["company"]["name"])),
         ("CVR", text(&value["company"]["cvr"])),
         ("Regnskabsår", text(&value["selectedYear"])),
-        ("Valuta", text(&value["company"]["currency"])),
+        ("Valuta", currency(value)),
         ("Udtrukket", today.into()),
-        ("Kilde", "Rentemester".into()),
+        ("Kilde", source(value)),
     ] {
         if name == "CVR" && item.is_empty() {
             continue;
@@ -280,16 +355,13 @@ fn csv(report: &str, title: &str, value: &Value, today: &str) -> Vec<u8> {
             for entry in entries {
                 if let Some(lines) = entry["lines"].as_array() {
                     for line in lines {
-                        debit.add(
-                            &Money::parse(&line["debit"].to_string())
-                                .expect("native report amount"),
-                        );
-                        credit.add(
-                            &Money::parse(&line["credit"].to_string())
-                                .expect("native report amount"),
-                        );
+                        debit.add(&money(&line["debit"]).expect("native report amount"));
+                        credit.add(&money(&line["credit"]).expect("native report amount"));
                         result += &csv_row(&[
-                            text(&entry["date"]),
+                            line["date"]
+                                .as_str()
+                                .unwrap_or(entry["date"].as_str().unwrap_or(""))
+                                .to_owned(),
                             text(&entry["entryNo"]),
                             text(&line["accountNo"]),
                             text(&line["accountName"]),
@@ -297,12 +369,12 @@ fn csv(report: &str, title: &str, value: &Value, today: &str) -> Vec<u8> {
                                 .as_str()
                                 .unwrap_or(entry["text"].as_str().unwrap_or(""))
                                 .into(),
-                            if line["debit"].as_f64().unwrap_or(0.0) > 0.0 {
+                            if money(&line["debit"]).is_some_and(|m| m != Money::default()) {
                                 amount(&line["debit"])
                             } else {
                                 String::new()
                             },
-                            if line["credit"].as_f64().unwrap_or(0.0) > 0.0 {
+                            if money(&line["credit"]).is_some_and(|m| m != Money::default()) {
                                 amount(&line["credit"])
                             } else {
                                 String::new()
@@ -323,20 +395,22 @@ fn csv(report: &str, title: &str, value: &Value, today: &str) -> Vec<u8> {
         }
         _ => {
             let year = text(&value["selectedYear"]);
-            let prior = year[..4].parse::<i32>().unwrap_or(0) - 1;
             let prior_label = value["priorYearLabel"]
                 .as_str()
-                .map(str::to_owned)
-                .unwrap_or_else(|| prior.to_string());
+                .unwrap_or("ikke tilgængelig");
             let prior_date = value["priorAsOfDate"]
                 .as_str()
-                .map(str::to_owned)
-                .unwrap_or_else(|| format!("{prior}-12-31"));
+                .unwrap_or("ikke tilgængelig");
             let headers = if report == "balance" {
                 vec![
                     "Konto".into(),
                     "Navn".into(),
-                    format!("Pr. {}", text(&value["asOfDate"])),
+                    format!(
+                        "Pr. {}",
+                        value["asOfDate"]
+                            .as_str()
+                            .unwrap_or("ukendt arkivafslutning")
+                    ),
                     format!("Pr. {prior_date}"),
                 ]
             } else {
@@ -462,10 +536,24 @@ fn pdf(title: &str, value: &Value, today: &str, rows: &[Row]) -> Vec<u8> {
         }
         headers.extend([
             format!("Regnskabsår {}", text(&value["selectedYear"])),
-            format!("Valuta {}", text(&value["company"]["currency"])),
+            format!("Valuta {}", currency(value)),
             format!("Udtrukket {today}"),
-            "Kilde: Rentemester".into(),
+            if value["source"] == "archive" {
+                format!(
+                    "Kilde: Arkiv · Dinero · import {}",
+                    value["evidence"]["importId"]
+                )
+            } else {
+                format!("Kilde: {}", source(value))
+            },
         ]);
+        if value["source"] == "archive" {
+            headers.push(format!(
+                "SHA-256: {}",
+                text(&value["evidence"]["sourceHash"])
+            ));
+            headers.push("Afslutningsdato og sammenligningsperiode: ikke dokumenteret".into());
+        }
         for header in headers {
             content += &draw(50, y, &header, 10, false);
             y -= 14;
@@ -526,6 +614,12 @@ fn pdf(title: &str, value: &Value, today: &str, rows: &[Row]) -> Vec<u8> {
     bytes
 }
 pub fn build(report: &str, format: &str, value: &Value, today: &str) -> Option<Export> {
+    if value["source"] == "archive"
+        && report != "journal"
+        && value["completeness"]["status"] != "ready"
+    {
+        return None;
+    }
     let (title, prefix) = match report {
         "income-statement" => ("Resultatopgørelse", "resultatopgorelse"),
         "balance" => ("Balance", "balance"),
@@ -536,7 +630,7 @@ pub fn build(report: &str, format: &str, value: &Value, today: &str) -> Option<E
     };
     let (bytes, content_type) = match format {
         "csv" => (csv(report, title, value, today), "text/csv; charset=utf-8"),
-        "pdf" if report != "journal" => (
+        "pdf" => (
             pdf(title, value, today, &rows(report, value)),
             "application/pdf",
         ),
@@ -546,15 +640,50 @@ pub fn build(report: &str, format: &str, value: &Value, today: &str) -> Option<E
         bytes,
         content_type,
         filename: format!(
-            "{prefix}-{}-{}.{format}",
+            "{prefix}-{}-{}-{}.{format}",
             safe(&text(&value["slug"])),
-            safe(&text(&value["selectedYear"]))
+            safe(&text(&value["selectedYear"])),
+            if value["source"] == "archive" {
+                "archive"
+            } else {
+                "live"
+            }
         ),
     })
 }
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn archive_exports_keep_exact_money_currency_source_and_unknown_comparison() {
+        let mut value = serde_json::json!({"slug":"synthetic","source":"archive","selectedYear":"2024","company":{"name":"Synthetic","currency":"EUR"},"declaredCurrency":"DKK","evidence":{"sourceHash":"exact-original","importId":7},"completeness":{"status":"ready"},"income":[{"accountNo":"8000","name":"Income","amount":"9007199254740993.01","priorAmount":null}],"expense":[],"totalIncome":"9007199254740993.01","totalExpense":"0.00","result":"9007199254740993.01","priorYearLabel":null});
+        let csv = build("income-statement", "csv", &value, "2026-01-01").unwrap();
+        let text = String::from_utf8(csv.bytes).unwrap();
+        assert!(text.contains("9007199254740993,01"));
+        assert!(text.contains("Valuta;DKK"));
+        assert!(text.contains("exact-original"));
+        assert!(text.contains("ikke tilgængelig"));
+        assert!(!text.contains("2023"));
+        assert!(csv.filename.ends_with("-archive.csv"));
+        let pdf = build("income-statement", "pdf", &value, "2026-01-01").unwrap();
+        assert!(String::from_utf8_lossy(&pdf.bytes).contains("9.007.199.254.740.993,01"));
+        value["completeness"]["status"] = serde_json::json!("incomplete");
+        assert!(build("income-statement", "csv", &value, "2026-01-01").is_none());
+        assert!(build("income-statement", "pdf", &value, "2026-01-01").is_none());
+    }
+    #[test]
+    fn archive_journal_exports_do_not_parse_json_quoted_money_or_invent_native_ids() {
+        let value = serde_json::json!({"slug":"synthetic","source":"archive","selectedYear":"2024","company":{"name":"Synthetic"},"declaredCurrency":"DKK","evidence":{"sourceHash":"exact","importId":1},"entries":[{"id":null,"date":"2024-03-01","entryNo":"42","text":"Original","lines":[{"accountNo":"1000","accountName":"Bank","text":"Source","debit":"9007199254740993.01","credit":"0.00"},{"accountNo":"2000","accountName":"Equity","text":"Source","debit":"0.00","credit":"9007199254740993.01"}]}]});
+        let csv = build("journal", "csv", &value, "2026-01-01").unwrap();
+        assert!(
+            String::from_utf8(csv.bytes)
+                .unwrap()
+                .contains("I alt;;;;9007199254740993,01;9007199254740993,01")
+        );
+        let pdf = build("journal", "pdf", &value, "2026-01-01").unwrap();
+        assert!(pdf.bytes.starts_with(b"%PDF-"));
+        assert!(String::from_utf8_lossy(&pdf.bytes).contains("42"));
+    }
     #[test]
     fn pdf_keeps_last_rows_and_byte_offsets_across_pages() {
         let value = serde_json::json!({"company":{"name":"Synthetic ÆØÅ","currency":"DKK"},"selectedYear":"2026"});
