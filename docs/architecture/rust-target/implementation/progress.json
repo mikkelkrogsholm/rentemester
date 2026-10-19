@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "parallel-platform-20",
-  "code_revision": "git:16099ae5",
+  "current_increment": "parallel-platform-20-verified",
+  "code_revision": "git:db8054fe (verified helper16099ae5; pinned artifact revisions recorded separately)",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Native payables integrated7b0acfa2 with62tests/1existingignored and native build PASS. Company setup86-tool clients integrated4fe0fa65:164tests/3existingignored and strictClippy PASS; actual native normal verification/MFA, explicit accounts/roles/refusals and fresh login/restart PASS with no journal changes. Group19 all initial82-tool flows PASS, restart stopped at fixture mileage aggregate ordering; repaired16099ae5 without weakening totals. Group20 composed82-tool qualification running. Full goal/epic672 remain open; native GUI pending human unlock.",
+  "state": "Group20 composed82-tool actual initial AND restart PASS:68PASS checks plus8browser confirmations, including budget/mileage/privacy agents, bank correction/durable receipts, exact multi-year comparison, asset/accrual/recurring/document clients, retention, accountant/dashboard/integrity. Separate86-tool company setup normal verification/MFA and fresh-login restart PASS; integrated4fe0fa65,164tests/3existingignored and strictClippy PASS. Native payables integrated7b0acfa2 with62tests/1existingignored and build PASS; actual new native windows pending human unlock. Full Rust goal/epic672 remain open.",
   "issues_closed": [],
   "next": [
-    "Complete Group20 composed82-tool restart and separate normal native company-setup86-tool qualification.",
-    "Integrate company setup and continue actual multi-company creation plus native VAT/period and mileage userflows.",
-    "Continue remaining epic scope and native window acceptance when Mac is unlocked; no full-goal completion claim."
+    "Integrate real multi-company creation/atomic selection and qualify distinct ledgers/permissions/restart.",
+    "Integrate native VAT/periods, mileage and current-company setup; verify combined native build/tests, then actual windows when unlocked.",
+    "Continue remaining epic server/web capabilities including backup/restore, workspace governance/inbox and full client parity; no full-goal completion claim."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -20,8 +20,8 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "code_revision": "git:3acc4aaa",
-    "state": "Group12 actual50PASS plus obligations initial/restart, including full annual report HTTP/CLI/MCP equality; separate native two-MFA reviewed-client proof8418ffc4 passed"
+    "code_revision": "git:16099ae5 helper;82-tool pinned client artifacts from0d6bc3e4; source HEAD7b0acfa2 plus recorded staged/dirty changes at launch",
+    "state": "Group20 full composed initial/restart PASS; normal two-user invitations18 and standalone86-tool company setup20 separately PASS; all precise artifacts/logs retained"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -274,8 +274,11 @@
     },
     "platform20_combined": {
       "log": "/tmp/rm-platform20-combined.log",
-      "exit": null,
-      "scope": "Running isolated actual82-tool composed qualification, explicitly pinned CLI/MCP hashes, mileage helpers reordered before browser aggregate snapshot; no completion claim."
+      "exit": 0,
+      "scope": "PASS actual first and restart flows: browser mileage aggregate with all client trips, full multi-year snapshots after posting fixtures, correction web and CLI/MCP immutable receipt/history, budget/mileage/privacy agents, asset/accrual/recurring/original document clients, retained refusals and alias fences, accountant/dashboard/integrity plus CLI/MCP idempotent journal replay. Pinned82tool CLI8c93e57/MCPec6ab9; web3bc052, helper6090109 unchanged. Source HEAD7b0acfa2 plus helper ordering later committed16099ae5; staged86 setup not exercised by this82tool Docker proof. Exact owned Docker/container/volume/process cleanup confirmed.",
+      "passed_checks": 68,
+      "additional_browser_confirmations": 8,
+      "artifact_manifest": "/tmp/rm-platform20-artifacts.json"
     },
     "platform20_company_setup": {
       "log": "/tmp/rm-platform20-native-company-setup.log",
@@ -628,7 +631,7 @@
   "active_work": [
     {
       "owner": "root",
-      "result": "Integrate86-tool company setup and verify composed82-tool userflows plus standalone setup",
+      "result": "Integrate real multi-company and native userflows; preserve completed Group20 qualification",
       "depends_on": [
         "worker commits and actual runtime evidence"
       ],
@@ -636,12 +639,17 @@
     },
     {
       "owner": "rust_mileage",
-      "result": "Group20 composed82-tool initial/restart and isolated86-tool native setup qualification",
-      "ownership": "read-only main and exact isolated owned Docker/tmp",
+      "result": "Native current-company profile/chart and explicit role setup",
+      "ownership": "isolated rust-mileage new desktop company_setup.rs/company_setup_state.rs; root owns navigation",
       "depends_on": [
-        "repaired helper order, pinned82/86 client binaries, native327bfd server/web3bc052"
+        "integrated86tool CompanySetupMutation SDK and exact native setup contract"
       ],
-      "acceptance": "Terminal complete/refusal/restart evidence and exact cleanup; earlier partial failures retained"
+      "acceptance": "Reviewed explicit profile/accounts/roles, canonical current scope/readback and manual unknown reconciliation; no inferred accounting, meaningful state tests/native build, actual GUI when unlocked",
+      "parallel_with": [
+        "native VAT/periods",
+        "native mileage",
+        "multi-company foundation"
+      ]
     },
     {
       "owner": "rust_accruals",
@@ -686,22 +694,6 @@
       "acceptance": "Caller chosen trip/rate/basis, full canonical report/advisory/receipt, no client calculation/hidden journals/retries; tests/build and actual GUI when unlocked"
     }
   ],
-  "integrated_pending_browser": [
-    {
-      "source_commit": "e90a9b17",
-      "journey": "Reviewed bank correction web plus agent clients",
-      "state": "Initial actual Group18/19 PASS; restart not reached after unrelated fixture ordering failures; Group20 running"
-    },
-    {
-      "source_commit": "1610d5a9",
-      "journey": "Asset agent registration and explicit depreciation",
-      "state": "Initial actual Group18/19 PASS; restart PASS Group18"
-    },
-    {
-      "source_commit": "ce34e2f5",
-      "journey": "Accrual agent registration and explicit recognition",
-      "state": "Initial actual Group18/19 PASS; restart PASS Group18"
-    }
-  ],
+  "integrated_pending_browser": [],
   "pending_deliveries": []
 }

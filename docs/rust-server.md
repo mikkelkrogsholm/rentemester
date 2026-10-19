@@ -986,7 +986,7 @@ aktuelle bevis igen. Handlingen gemmer afstemningslink og auditspor uden
 nye journalposteringer eller ændringer af leverandørgæld. Forældede beviser
 og gentagelser afvises. CLI/MCP har de samme kandidatlæsninger og bekræftede
 links. Webforløbet og faktisk CLI/MCP-paritet har bestået den første samlede
-fase; genstart afventer ny kontrol.
+fase og efter genstart (Group20).
 
 **Ret** gennemgår et forkert link, efter at den oprindelige postering er
 tilbageført og en korrekt erstatning er bogført særskilt. Serveren kræver
@@ -995,8 +995,8 @@ Bekræftelse med begrundelse gemmer en ny afstemningshændelse og en varig
 kvittering; den foretager ikke selv tilbageførsel eller ny bogføring.
 CLI/MCP tilbyder samme plan og bekræftelse med den oprindelige nøgle.
 Den samlede første serverfase (Group18/19) har verificeret web og CLI/MCP,
-herunder kvitteringer og afvisninger. Genstartskontrollen for rettelser er
-endnu ikke nået i den samlede kørsel.
+herunder kvitteringer og afvisninger. Rettelser og de oprindelige varige kvitteringer har også bestået
+genstartskontrollen (Group20).
 
 
 ## Tilbagevendende fakturaer gennem agentklienterne
@@ -1057,9 +1057,11 @@ Databeskyttelse omfatter opbevaringsrapport, auditeret personudtræk og bekræft
 anonymiseringslag med samme begrænsede dækning som webforløbet. Originaler,
 journaler og eksisterende opbevaringskrav bevares.
 
-Alle disse første forløb har bestået mod den rigtige server (Group19). Den
-samlede genstartskontrol afventer den igangværende kørsel; kørselskontrollens
-rækkefølge er rettet, så rapportens gemte totaler omfatter alle eksempelrejser.
+Alle disse forløb har bestået mod den rigtige server både før og efter
+genstart (Group20). Kørselskontrollens gemte totaler omfatter alle
+eksempelrejser. Den samlede kontrol omfatter 68 beståede checks og otte
+yderligere browserbekræftelser; den separate virksomhedsopsætning er
+kvalificeret med sine egne klientartefakter og sit eget workspace.
 
 ## Virksomhedsopsætning gennem agentklienterne
 
