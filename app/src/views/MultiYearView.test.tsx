@@ -113,6 +113,27 @@ describe("MultiYearView — Flerårsoversigt", () => {
     ).not.toBeInTheDocument();
   });
 
+  test("native completed live years remain comparable and unavailable archives have no numeric row", async () => {
+    const years = multiYear().years.slice(0, 3).map(y => ({ ...y, source: "live" as const }));
+    mockFetch(route({ years, currentYear: null, unavailableYears: [{ year: "2022", source: "archive", reason: "Arkivet indeholder ingen saldobalance." }] }));
+    renderView();
+    await screen.findByRole("heading", { name: "Flerårsoverblik", level: 1 });
+    expect(screen.queryByText("(år til dato)")).not.toBeInTheDocument();
+    expect(screen.getByText(/2022: Arkivet indeholder/)).toBeInTheDocument();
+    const rows = sectionRows(/Resultat — omsætning/);
+    expect(rows).toHaveLength(4);
+    expect(rows.some(r => r.textContent?.includes("2022"))).toBe(false);
+    expect(within(rows[2]).getByText(/\+7\.000,00 kr\./)).toBeInTheDocument();
+  });
+
+  test("keeps a historical year selected for report navigation", async () => {
+    mockFetch(route());
+    renderAt(<MultiYearView />, { route: "/companies/acme-aps/fleraar?year=2024", path: "/companies/:slug/fleraar" });
+    await screen.findByRole("heading", { name: "Flerårsoverblik", level: 1 });
+    expect(screen.getByRole("combobox", { name: "Vælg regnskabsår" })).toHaveValue("2024");
+    expect(screen.getByRole("link", { name: /^Resultatopgørelse$/ })).toHaveAttribute("href", "/companies/acme-aps/resultatopgorelse?year=2024");
+  });
+
   test("an empty company shows the no-years state", async () => {
     mockFetch(route({ years: [] }));
     renderView();

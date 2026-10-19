@@ -10,6 +10,7 @@ mod dashboard;
 mod documents;
 mod mileage;
 mod integrity;
+mod multi_year;
 mod payables;
 mod periods;
 mod recurring_invoices;
@@ -57,6 +58,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             get(budget::handle),
         )
         .route("/api/companies", get(companies))
+        .route("/api/companies/{slug}/multi-year", get(multi_year::read))
         .route("/api/companies/{slug}/exceptions", get(exceptions::handle))
         .route("/api/companies/{slug}/exceptions/{id}/resolve", post(exceptions::handle))
         .route("/api/companies/{slug}/accountant-export", post(accountant::export))

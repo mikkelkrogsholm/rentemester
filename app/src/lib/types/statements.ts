@@ -166,6 +166,9 @@ export type ArchiveResponse = {
 // --- multi-year / Flerårsoversigt (GET .../multi-year) — it. 4 --------------
 
 export type MultiYearRow = {
+  periodStart?: string | null;
+  periodEnd?: string | null;
+  balanced?: boolean;
   /** The fiscal-year label, e.g. "2025". */
   year: string;
   source: "live" | "archive";
@@ -186,6 +189,10 @@ export type MultiYearRow = {
 };
 
 export type CompanyMultiYear = {
+  currentYear?: string | null;
+  asOfDate?: string;
+  archiveDetailsAvailable?: boolean;
+  unavailableYears?: Array<{ year: string; source: "archive"; reason: string }>;
   slug: string;
   company: StatementCompany;
   /** Key figures per fiscal year, oldest→newest for charting a trend. */

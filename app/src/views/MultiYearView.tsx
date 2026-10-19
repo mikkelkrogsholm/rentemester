@@ -28,7 +28,7 @@ import { MultiYearBalanceChart } from "../components/MultiYearBalanceChart";
 
 export function MultiYearView() {
   const { slug = "" } = useParams();
-  const { setYear } = useCompanyYear();
+  const { year: selected, setYear } = useCompanyYear();
   const state = useAsync<CompanyMultiYear>(
     (signal) => api.multiYear(slug, { signal }),
     [slug],
@@ -41,10 +41,9 @@ export function MultiYearView() {
 
   const m = state.data!;
   const currency = m.company.currency || "DKK";
-  // The live/current fiscal year is a partial year next to the full archived
-  // ones — the newest "live" row. Mark it "(år til dato)" so the comparison
-  // is not read as like-for-like.
-  const currentYear =
+  // Native metadata names the actual current fiscal year. Older servers fall
+  // back to their newest live row; completed native live years remain comparable.
+  const currentYear = m.currentYear !== undefined ? m.currentYear :
     [...m.years]
       .filter((y) => y.source === "live")
       .sort((a, b) => b.year.localeCompare(a.year))[0]?.year ?? null;
@@ -54,12 +53,12 @@ export function MultiYearView() {
   const selectorYears = [...m.years]
     .map((y) => ({
       label: y.year,
-      start: null,
-      end: null,
+      start: y.periodStart ?? null,
+      end: y.periodEnd ?? null,
       source: y.source,
     }))
     .sort((a, b) => b.label.localeCompare(a.label));
-  const selectedYear = selectorYears[0]?.label ?? "";
+  const selectedYear = selectorYears.find((y) => y.label === selected)?.label ?? selectorYears[0]?.label ?? "";
 
   // #452: build a chronological priorByYear lookup so a row can compare to
   // the year immediately before it. The API returns years oldest→newest.
@@ -98,6 +97,9 @@ export function MultiYearView() {
         onYearChange={setYear}
       />
 
+      {m.archiveDetailsAvailable === false && m.years.some(y => y.source === "archive") && <p className="muted">Arkivår kan sammenlignes her. Detaljerapporter for arkivår er endnu ikke tilgængelige på denne server.</p>}
+      {m.unavailableYears?.length ? <div className="card archived-notice"><h3>Arkivtal er ikke tilgængelige</h3><ul>{m.unavailableYears.map((y) => <li key={y.year}>{y.year}: {y.reason}</li>)}</ul><p className="muted">Årene er udeladt fra sammenligningen; manglende tal vises ikke som nul.</p></div> : null}
+      {m.years.some((y) => y.balanced === false) && <p className="banner warning" role="alert">Saldobalancen stemmer ikke for alle viste år. Kontrollér rapporterne før tallene bruges.</p>}
       {m.years.length === 0 ? (
         <div className="card archived-notice">
           <h3>Ingen regnskabsår</h3>

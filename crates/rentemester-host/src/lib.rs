@@ -705,6 +705,19 @@ impl Owner {
             rentemester_application::bank::execute(c, l, g, context, action)
         })
     }
+    pub fn multi_year(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        today: &str,
+    ) -> Result<
+        Attempt<Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>>,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, _, context| {
+            rentemester_application::multi_year::read(c, l, context, today)
+        })
+    }
     pub fn exceptions(
         &mut self,
         cookie: &VerifiedCookie,
