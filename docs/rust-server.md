@@ -59,7 +59,7 @@ adgang afvises. Alle otte særskilte CLI/MCP-handlinger består også i et
 separat workspace med begge retninger, uafhængig godkendelse, fuld paritet
 med HTTP-svarene og uændrede posteringer før og efter genstart.
 
-Der er 186 verificerede MCP-tools efter kontaktimporten i Group60.
+Der er 187 verificerede MCP-tools efter CFO-forløbet for løbende bogføring i Group61.
 De samlede native tests består med 191 beståede og én eksisterende ignoreret
 test; native build består. Mac’en er låst op. Administreret
 lokal opstart, almindelig ejeroprettelse, verificering, MFA og læsning af
@@ -1821,3 +1821,14 @@ JSON `{fileName,content,enrichCvr?,confirm:true}`, højst 12 MiB. MCP hedder
 Klienterne bevarer hele svaret, inklusive delvise rækkefejl. Ved ukendt
 udfald skal kontaktregistret læses før en ny eksplicit import; der findes
 ingen automatisk genafsendelse eller opfundet kvitteringsnøgle.
+
+
+## CFO-overblik med sporbare kilder
+
+Det eksisterende `/cfo` bruger Rust-serverens `GET /api/cfo-analytics`. Virksomheds- og porteføljevisninger bevarer eksakte beløbsstrenge, bilags- og posteringsreferencer, den eksplicit koblede part og godkendte dimensioner. Filtre og stabile sider ændrer ikke summerne for hele det valgte datagrundlag. En portefølje summeres kun ved eksplicit valg og fuld adgang; en delvis visning viser ingen totalsum eller skjulte selskabers kilder.
+
+Datoafgrænsning medtager originaler og tilbageførsler på deres faktiske datoer: en senere tilbageførsel fjerner ikke den oprindelige effekt fra et tidligere interval. Koncernvisningen delegerer til den eksisterende godkendte koncernrapport og binder rapportens faktiske selskaber til det valgte omfang. Manglende profil giver en tydelig blokeret visning uden konstruerede tal.
+
+`remote cfo-analytics` og MCP `cfo_analytics` bevarer det fulde native svar uden lokale beregninger. Den faktiske verifikation omfatter to almindelige MFA-brugere, to selskaber, originale købsbilag, dateret tilbageførsel, part/dimensioner, filtre/sider, ændrede rettigheder, web og begge klienter. Genstart og gendannelse under en ny ejer uden kildeworkspace eller gammel signeringsnøgle bevarer de samme kilder og tal. Sammenlignede signerede snapshots viser uændret virksomheds-audit og bogføring.
+
+Dette beviser det løbende bogføringsgrundlag. Importerede historiske regnskabsposter afventer den native arkivimport og dens originale kildebevis; hele CFO-leverancen er derfor fortsat åben. En godkendt koncernprofil og selve webknappen til paginering er ikke kvalificeret i dette konkrete browserforløb. Der er ingen påstand om færdig desktop- eller samlet migrationsleverance.
