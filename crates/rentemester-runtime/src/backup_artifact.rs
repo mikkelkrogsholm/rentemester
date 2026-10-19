@@ -63,6 +63,13 @@ impl SigningKey {
             .map(Self)
             .map_err(|_| Error::InvalidKey)
     }
+    pub(crate) fn sign_detached(&self, bytes: &[u8]) -> [u8; 64] {
+        self.0
+            .sign(bytes)
+            .as_ref()
+            .try_into()
+            .expect("Ed25519 signature length")
+    }
     /// Export separately. The verifier's caller must establish this key's trust out of band.
     pub fn public_key_bytes(&self) -> [u8; 32] {
         self.0
@@ -75,6 +82,14 @@ impl SigningKey {
 /// Explicit verifier input, never resolved from an artifact or from a manifest hint.
 pub struct TrustedPublicKey([u8; 32]);
 impl TrustedPublicKey {
+    pub fn public_key_bytes(&self) -> [u8; 32] {
+        self.0
+    }
+    pub(crate) fn verify_detached(&self, bytes: &[u8], signature: &[u8]) -> Result<(), Error> {
+        signature::UnparsedPublicKey::new(&signature::ED25519, &self.0)
+            .verify(bytes, signature)
+            .map_err(|_| Error::Signature)
+    }
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, Error> {
         Ok(Self(bytes.try_into().map_err(|_| Error::InvalidKey)?))
     }
