@@ -1669,3 +1669,35 @@ skrivebeskyttet. Et reelt afbrudt SMTP-forsøg forblev uafklaret uden genafsende
 Testen kvalificerer ikke de ovennævnte åbne rollback-/kopigrænser eller en
 installeret desktopapp. Se `implementation/progress.json` under Rust-målarkitekturen
 for revisionsbundne beviser og resterende arbejde.
+
+## Bogfør flere køb efter en gennemgået plan
+
+Åbn **Bogføringskø**, vælg perioden, og hent arbejdskøen. Et køb kræver det
+oprindelige bilag, bankkilden, en udtrykkelig leverandørtilknytning og en
+uafhængigt godkendt købsregel. Køen viser alle kandidater og blokeringer;
+et filter gør ikke blokerede køb bogføringsklare.
+
+Gennemgå bilag, leverandør, konto, moms og den præcise plan. Gem planen efter
+særskilt bekræftelse. En anden bruger gennemgår og godkender samme plan;
+derefter kan den anvendes med en ny bekræftelse. Ændrede kilder kræver en ny
+plan. Nye Rust-planer anvender `atomic_v1`: enten gemmes alle posteringer,
+kvitteringer og afsluttende kontroller, eller også tilbageføres hele forsøget.
+Tidligere TypeScript-planer med delvis udførelse bevares som historik; deres
+udførelsesparitet er fortsat åben.
+
+Ved et tabt svar læses kørslen med dens id eller den præcise kørselsnøgle.
+Der sendes ikke automatisk igen. Gentagen anvendelse af samme godkendte plan
+returnerer de oprindelige kvitteringer uden nye posteringer. CLI tilbyder
+`bookkeeping-batch-plan`, `bookkeeping-batch-status`,
+`bookkeeping-batch-persist`, `bookkeeping-batch-approve` og
+`bookkeeping-batch-apply`; MCP bruger tilsvarende navne med understregninger.
+Skrivekald kræver JSON med `confirm:true` og eksplicit bekræftelse i klienten.
+
+Det syntetiske webforløb er verificeret med to almindeligt inviterede brugere
+med MFA, to originale danske køb, bankimport, leverandørtilknytning,
+uafhængig regel- og plangodkendelse, bogføring, moms og bankafstemning.
+HTTP, CLI og MCP giver samme plan, status og gentagne kvitteringer. Genstart
+og gendannelse fra en selvstændigt verificeret signeret backup med ny ejer og
+MFA bevarer originaler, leverandørhistorik, posteringer og godkendelser.
+Testen kvalificerer denne DKK-købsfamilie; øvrige moms-/udtræksfamilier,
+installeret desktop og den samlede TypeScript-udfasning er fortsat åbne.

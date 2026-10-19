@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Managed source freeze/export, fresh staged target, explicit activation and accepted receipt reconciliation",
-  "code_revision": "25d291a239ef2f5747fbb9d723f8232f37767d13",
+  "current_increment": "Reviewed atomic purchase batch through Rust/web/CLI/MCP, restart and signed source-free restore",
+  "code_revision": "36d1f7388f343b14dc0c64ea64bc40c7f907f656",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Group56 actual PASS on synthetic macOS loopback source and fresh target: ordinary owner verification/MFA, accepted lost-response journal and genuine unknown TLS SMTP crash. Reviewed web freeze, signed download matches durable full-wire offer and independent trusted signature verification. Fresh target owner/MFA stages without write authority; reviewed imported journal receipt mapping, destination-bound source release and explicit target activation. Exact original replay returns preserved result/provenance without posting; changed payload refuses and a new key posts once. Both-server restart preserves source moved/nonwriter and target active, source1/target2 journals, original PDF/UUID and unresolved mail history; exactly one original SMTP attempt, no resend. Exact owned cleanup.170MCPtools. Prior55/54/53 evidence retained. Full mission/epic672 remains OPEN: other keyed receipt families, rollback/old-software/copy boundary, installed native GUI, remaining accounting parity and distribution are not qualified.",
+  "state": "Group57 actual PASS: two normal distinct invited/password/MFA users, two physically verified original-linked and explicitly canonical supplier-linked DKK purchases plus retained bank CSV. Web purchase rule independently approved, complete two-ready workbench, readable source/account/VAT summary and exact plan hash. Persist binds reviewed hash/caller runKey; read-only exact-key recovery agrees with runId; stale hash and self-review refuse unchanged history. Different human approves and owner explicitly applies two atomic postings. Real audit chain, balanced375DKK trial balance, bank-375/matched2/difference0 and input VAT75/payable-75 pass; real immutable source-bound receipts retained. Exact web/CLI/MCP replay adds no financial effects; all175MCPtools tested. Restart with fresh ordinary MFA preserves complete history/books/originals. Signed nonempty snapshot independently verified; source workspace and private signer deleted; fresh owner/MFA restore preserves exact books/UUID, supplier/party links and historical approvals/receipts. Exact owned cleanup. First attempt was a test-controller incomplete stdout response; complete private SHA-bound proof files and bounded small envelopes fixed the test protocol without relaxing acceptance. Prior56/55/54/53 evidence retained. Full mission/epic672 OPEN: legacy partial-batch execution/provider tax families, remaining accounting and client parity, installed desktop whole journeys, broader transfer and distribution/TS retirement remain incomplete.",
   "issues_closed": [],
   "next": [
-    "Complete R23 whole server/web purchase batch: exact persisted plan, independent approval, atomic apply and real final controls.",
-    "Complete remaining accounting/backend parity; keep unsupported types explicit and TypeScript retirement gated.",
+    "Complete R20 direct-bank purchase → dated payable and settlement correction in Rust through the existing web modal, with atomic rollback/replay/restart.",
+    "Complete remaining accounting/backend parity and CLI/MCP seams; keep unsupported types explicit and TypeScript retirement gated.",
     "Qualify installed standalone local/remote macOS financial journeys, installation/signing/update provenance; remaining J06 boundaries stay open."
   ],
   "preserve_unrelated_paths": [
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "Issued invoice SMTP delivery, explicit recovery and signed source-free restore through Rust/web/CLI/MCP",
+  "previous_verified_increment": "Managed source freeze/export, fresh staged target, explicit activation and accepted receipt reconciliation",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -871,7 +871,41 @@
       "purchase_vat_tests": "/tmp/rm-batch57-vat-tests.log (4 PASS)",
       "expense_regression": "/tmp/rm-batch57-expense-regression.log (2 PASS)",
       "purchase_vat_clippy": "/tmp/rm-batch57-vat-clippy.log (PASS)",
-      "scope": "Component evidence only. Whole Group57 workflow not yet qualified."
+      "scope": "Component evidence only. Whole Group57 workflow not yet qualified.",
+      "core_tests": "/tmp/rm-batch57-final.log (engine1/storage6 including child-crash rollback and real two-connection apply/replay)",
+      "core_host": "/tmp/rm-batch57-host.log (real namespace originals, current rights and transfer fence)",
+      "core_clippy": "/tmp/rm-batch57-clippy-final.log (five-package alltargets PASS with temporary shared registration/boxing, root integration pending)"
+    },
+    "platform57_atomic_purchase_batch": {
+      "report": "/tmp/rentemester-rust-reports/bookkeeping-batch-integrated57-proof-file2.json",
+      "sha256": "131c71e9dab70d9249b26821e19e73ae2accd400e07d0b5035c20598fc89a52b",
+      "log": "/tmp/rm-platform57-proof-file2.log",
+      "exit": 0,
+      "revision": "36d1f7388f343b14dc0c64ea64bc40c7f907f656",
+      "runnerSha256": "9baad1f4adfd82bf920acabf5172db2798a9bba9c6bd9021de8cd1b65fbe7c30",
+      "browserHelperSha256": "be5e8c249ab4de4f73da65de3ea67ac022b22bbf02f7e3b1c0fffc4a4f971b46",
+      "artifacts": {
+        "server_binary": "62ae02a983ef11135dd43e4ea9ab5ab392bb4d5050f3695085bd6d1230be7a0c",
+        "cli_binary": "4dd6938378288ee2db725140679d38a203bee4b4500ed1946c0a0f9424e51f4b",
+        "mcp_binary": "5db92b47312c4af9fea3928144ee651ff50d5abd134bf47a550b292c747a7139"
+      },
+      "scope": "Normal two-human web reviewed atomic purchase batch, exact canonical HTTP/CLI/MCP parity/replay, fresh-MFA restart, independently verified signed source-free fresh-owner restore, exact original/supplier/link/financial/history retention and owned cleanup. No real company data, external mail, installed desktop or legacy/provider tax execution qualification.",
+      "tests": [
+        "/tmp/rm-platform57-integrated-host.log",
+        "/tmp/rm-platform57-integrated-server.log",
+        "/tmp/rm-platform57-integrated-clippy.log",
+        "/tmp/rm-platform57-integrated-build.log",
+        "/tmp/rm-platform57-integrated-web-build.log",
+        "/tmp/rm-platform57-client-tests.log",
+        "/tmp/rm-platform57-cli-tests.log",
+        "/tmp/rm-platform57-mcp-tests.log",
+        "/tmp/rm-platform57-clients-clippy2.log"
+      ],
+      "first_attempt": {
+        "report": "/tmp/rentemester-rust-reports/bookkeeping-batch-integrated57.json",
+        "observation": "/tmp/rm-platform57-controller-observation.json",
+        "result": "Incomplete test controller stdout, targeted termination, no approval/journal effects observed, owned runtime cleaned; not qualified."
+      }
     }
   },
   "verified_history": [
@@ -1294,18 +1328,25 @@
       "code_revision": "24df2748fe5567a0a61354cb74131cd77cca7412",
       "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
       "state": "Group55 actual PASS: normal owner verification/MFA, issued immutable PDF reviewed in web, verified TLS SMTP with authentication. Accepted duplicate causes no SMTP connection; RCPT550 refuses, separate reviewed retry succeeds. Exact source process killed after durable DATA queue acceptance before final acknowledgment; normal MFA restart preserves unknown reservation, MCP duplicate never resends, explicit owner reconciliation records human acceptance without I/O. Actual received MIME/message-ID/PDF hashes match canonical history; books, originals and UUID unchanged. Signed archive independently verified after source/private-signer deletion, restored under fresh owner/MFA without SMTP config; exact history/originals preserved, no dispatch and missing-config send refused. Exact owned cleanup confirmed. 45 web tests/build, core5 tests, runtime3 tests, server6 tests, SDK3/CLI2/MCP82 and strict checks passed;162tools. Prior Group54/53 proofs retained. Native financial GUI, J06 handoff, remaining parity/packages and full epic672/J01-J07 remain OPEN."
+    },
+    {
+      "current_increment": "Managed source freeze/export, fresh staged target, explicit activation and accepted receipt reconciliation",
+      "code_revision": "25d291a239ef2f5747fbb9d723f8232f37767d13",
+      "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
+      "state": "Group56 actual PASS on synthetic macOS loopback source and fresh target: ordinary owner verification/MFA, accepted lost-response journal and genuine unknown TLS SMTP crash. Reviewed web freeze, signed download matches durable full-wire offer and independent trusted signature verification. Fresh target owner/MFA stages without write authority; reviewed imported journal receipt mapping, destination-bound source release and explicit target activation. Exact original replay returns preserved result/provenance without posting; changed payload refuses and a new key posts once. Both-server restart preserves source moved/nonwriter and target active, source1/target2 journals, original PDF/UUID and unresolved mail history; exactly one original SMTP attempt, no resend. Exact owned cleanup.170MCPtools. Prior55/54/53 evidence retained. Full mission/epic672 remains OPEN: other keyed receipt families, rollback/old-software/copy boundary, installed native GUI, remaining accounting parity and distribution are not qualified."
     }
   ],
   "active_work": [
     {
       "delivery": "Group57 R23 reviewed purchase batch through Rust server and web",
-      "owner": "root integration/clients/actual; rust_accruals rules; rust_mileage purchase/VAT; rust_client_cli batch core/transport; rust_budget web",
+      "owner": "root integration/clients/actual; rust_accruals rules + discovered document-party prerequisite; rust_mileage purchase/VAT + actual helper; rust_client_cli batch core/transport + stale-approval correction; rust_budget web",
       "depends_on": [
         "Approved /tmp/rm-platform57-batch-contract.md fixes source-backed plan and atomic_v1 execution policy.",
-        "Batch core consumes transaction-local rule and stored VAT/purchase proof adapters; web consumes exact source-shaped routes."
+        "Batch core consumes transaction-local rule and stored VAT/purchase proof adapters; web consumes exact source-shaped routes.",
+        "Canonical party with explicit company role → reviewed exact-identifier document link → truthful complete ready workbench. No automatic party resolution, SQL fixture seed or blocker bypass."
       ],
-      "acceptance": "Two original-linked purchases, exact persisted plan, distinct current reviewer, atomic two-posting apply with real audit/TB/range reconciliation/VAT checks; stale/self/authority/fence/rollback/replay/restart proof.",
-      "status": "Rules integrated ad49a5de, purchase/VAT integrated b966dcbb, web integrated8fee0d6f. Thin clients integrated00da872a pass SDK4/CLI1/MCP86 and strict3pkg; core/transport integration and actual two-user browser/restart pending. No Group57 completion claim.",
+      "acceptance": "Two original-linked and explicitly party-linked DKK purchases, exact persisted plan, distinct current reviewer of unchanged sources, atomic two-posting apply with real audit/TB/range reconciliation/VAT checks; stale/self/authority/fence/rollback/replay/restart proof.",
+      "status": "Group57 whole browser/client/restart/source-free restore qualified; see platform57_atomic_purchase_batch. A bounded follow-up adds prepublication backup validation of document-party history and stored rule proof bytes; no current-eligibility reinterpretation of historical records. R20 source-backed next-journey contract preparation is read-only.",
       "execution_policy": "New native atomic_v1 revisions require whole-operation rollback (R23). TypeScript legacy batches use tested partial/resume semantics; preserve their historical bytes and approvals for inspection, refuse native execution of unversioned revisions, and keep full backend parity open. No source TypeScript change or retirement claim.",
       "recovery": "Persist binds explicit caller runKey and reviewed expectedPlanHash. Lost runId recovers through current-authorized read-only exact runKey lookup; no automatic mutation retry."
     }
