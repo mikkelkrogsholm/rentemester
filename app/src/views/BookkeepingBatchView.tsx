@@ -1,3 +1,5 @@
+import { useOptionalAuth } from "../lib/auth-context";
+import { ReviewedBankQueue } from "./ReviewedBankQueue";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
@@ -20,6 +22,11 @@ type Revision = { planHash?: string; approvedAt?: string | null };
 const EMPTY_FILTERS = { status: "", bankAccountId: "", partyId: "", documentQuality: "", account: "", vatTreatment: "", dimension: "", search: "" };
 
 export function BookkeepingBatchView() {
+  const auth = useOptionalAuth();
+  return auth?.backend === "rust" ? <ReviewedBankQueue /> : <LegacyBookkeepingBatchView />;
+}
+
+function LegacyBookkeepingBatchView() {
   const { slug = "" } = useParams();
   const [params, setParams] = useSearchParams();
   const requestedRunId = params.get("runId");

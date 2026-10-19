@@ -776,6 +776,21 @@ impl Owner {
             rentemester_application::dashboard::read(c, l, context, today, year, as_of)
         })
     }
+    pub fn reviewed_bookkeeping(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        action: rentemester_application::reviewed_bookkeeping::Action<'_>,
+    ) -> Result<
+        Attempt<
+            Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, _, context| {
+            rentemester_application::reviewed_bookkeeping::execute(c, l, context, action)
+        })
+    }
     pub fn budget(
         &mut self,
         cookie: &VerifiedCookie,

@@ -538,3 +538,9 @@ pub mod multi_year;
 
 pub mod contact_delete;
 pub mod dimensions;
+
+pub mod accounting_drafts;
+
+pub mod posting_rules;
+
+pub mod bookkeeping_queue;
