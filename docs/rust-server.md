@@ -45,9 +45,23 @@ for web og klienter med almindelig invitation, verificering og to forskellige
 MFA-brugere. Forkerte hashes, selv-godkendelse, overlappende aktive mappings
 og bortfald af adgang afvises.
 
-Der er 126 MCP-tools efter integrationen af mellemregningsafstemning. De samlede native
-tests består med 154 beståede og én eksisterende ignoreret test; native build
-består. Mac'en er nu låst op, og faktisk desktopaccept er i gang. Administreret
+Konsolidering har nu eksplicitte rapportprofiler, uafhængig godkendelse og
+rapporter med selskabernes kildebeviser. Elimineringer har særskilt plan,
+godkendelse, apply og tilbageførsel, inklusive begge mellemregningsretninger.
+Funktionerne er integreret i Rust-serveren og web-UI’et. Konsolideringsforløb
+i separate web- og CLI/MCP-workspaces består med to MFA-brugere og genstart:
+rapportprofiler, uafhængig godkendelse og tilbagekaldelse, eksakte beløb og
+kildebeviser samt uændrede selskabsposteringer. Det samlede forløb med
+elimineringer i begge retninger består også før og efter genstart: plan,
+godkendelse, apply, tilbageførsel og en balanceret konsolideret rapport.
+Forældede kildebeviser, selv-godkendelse, dobbelt apply og bortfald af
+adgang afvises. Alle otte særskilte CLI/MCP-handlinger består også i et
+separat workspace med begge retninger, uafhængig godkendelse, fuld paritet
+med HTTP-svarene og uændrede posteringer før og efter genstart.
+
+Der er 140 MCP-tools efter integrationen af konsolidering og elimineringer.
+De samlede native tests består med 170 beståede og én eksisterende ignoreret
+test; native build består. Mac’en er låst op. Administreret
 lokal opstart, almindelig ejeroprettelse, verificering, MFA og læsning af
 saldobalancen er gennemført i det native vindue. Fakturering og udgifter er
 endnu ikke godkendt i desktop: værktøjets pointer- og scrollstyring fejler
@@ -55,14 +69,19 @@ stadig trods den oplåste Mac. De afgrænsede omgåelsesforsøg er stoppet, og
 kun den private syntetiske profil er bevaret til senere accept.
 
 Native **Mellemregningsafstemning** er også integreret og består tests/build.
-Faktisk betjening i desktop er endnu ikke godkendt. Backupkoden for
-ejerforhold bevarer både tidligere og aktuelle snapshot-/review-/fact-/
-sluthistorikker; faktisk gendannelse er næste accepttrin. Ikke-tom
-koncernkonfiguration, mellemregninger og konsolidering afvises fortsat af
-backup, indtil deres fulde formater er understøttet.
+Native **Konsolideret rapport** og **Elimineringer** er også integreret med
+tests og build.
+Faktisk betjening af de nye skærme i desktop er endnu ikke godkendt.
+Backupkoden for ejerforhold bevarer tidligere og aktuelle snapshot-, review-,
+fact- og sluthistorikker. Alle tre arkiver fra web, CLI og MCP er verificeret
+efter fjernelse af kilde og privat nøgle og hver gendannet med ny ejer, MFA
+og genstart. Signeret backup
+understøtter også den eksplicitte V1-koncernkonfiguration og mappinghistorik.
+Ikke-tomme dispositioner, konsolideringsprofiler og elimineringer afvises
+fortsat, indtil deres fulde formater er understøttet.
 
-Den samlede omskrivning er fortsat åben. Næste funktionelle fundament er den
-eksisterende, eksplicitte koncernkonfiguration og mellemregningsafstemning.
+Den samlede omskrivning er fortsat åben. Næste levering samler de faktiske
+rapportforløb og fuld backup af deres kilder.
 Ejerobservationer bliver ikke automatisk til en koncernkonfiguration.
 
 ## Prøv med syntetiske data

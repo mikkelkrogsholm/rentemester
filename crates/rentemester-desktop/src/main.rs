@@ -26,6 +26,10 @@ mod payables;
 mod payables_state;
 mod mileage;
 mod mileage_state;
+mod eliminations;
+mod eliminations_state;
+mod consolidation;
+mod consolidation_state;
 mod intercompany;
 mod intercompany_state;
 mod ownership;
@@ -223,6 +227,8 @@ struct Desktop {
     budget: Option<Entity<budget::Budget>>,
     periods: Option<Entity<periods::Periods>>,
     backup: Option<Entity<backup::Backup>>,
+    eliminations: Option<Entity<eliminations::Eliminations>>,
+    consolidation: Option<Entity<consolidation::Consolidation>>,
     intercompany: Option<Entity<intercompany::Intercompany>>,
     ownership: Option<Entity<ownership::Ownership>>,
     corporate_records: Option<Entity<corporate_records::CorporateRecords>>,
@@ -320,6 +326,8 @@ impl Desktop {
             budget: None,
             periods: None,
             backup: None,
+            eliminations: None,
+            consolidation: None,
             intercompany: None,
             ownership: None,
             corporate_records: None,
@@ -431,6 +439,8 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.eliminations = None;
+        self.consolidation = None;
         self.intercompany = None;
         self.ownership = None;
         self.corporate_records = None;
@@ -508,6 +518,8 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.eliminations = None;
+        self.consolidation = None;
         self.intercompany = None;
         self.ownership = None;
         self.corporate_records = None;
@@ -619,6 +631,8 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.eliminations = None;
+        self.consolidation = None;
         self.intercompany = None;
         self.ownership = None;
         self.corporate_records = None;
@@ -654,6 +668,8 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.eliminations = None;
+        self.consolidation = None;
         self.intercompany = None;
         self.ownership = None;
         self.corporate_records = None;
@@ -930,6 +946,18 @@ impl Render for Desktop {
             );
         }
         content = content.child(list);
+        if let Some(eliminations) = self.eliminations.clone() {
+            return content.child(Button::new("eliminations-close")
+                .label("Luk elimineringer")
+                .on_click(cx.listener(|this, _, _, cx| { this.eliminations = None; cx.notify(); })))
+                .child(eliminations);
+        }
+        if let Some(consolidation) = self.consolidation.clone() {
+            return content.child(Button::new("consolidation-close")
+                .label("Luk konsolideret rapport")
+                .on_click(cx.listener(|this, _, _, cx| { this.consolidation = None; cx.notify(); })))
+                .child(consolidation);
+        }
         if let Some(intercompany) = self.intercompany.clone() {
             return content.child(Button::new("intercompany-close")
                 .label("Luk mellemregningsafstemning")
@@ -1146,6 +1174,34 @@ impl Render for Desktop {
                             Err(error) => { this.status = error; cx.notify(); return; }
                         };
                         this.company_setup = Some(cx.new(|cx| company_setup::CompanySetup::new(session, origin, company, local, window, cx)));
+                        cx.notify();
+                    }
+                })));
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content = content.child(Button::new("eliminations-open").label("Elimineringer").disabled(self.busy)
+                .on_click(cx.listener(|this, _, window, cx| {
+                    if let (Some(session), Some(company)) = (this.session.clone(), this.selected.clone()) {
+                        let origin = this.connection_origin(cx);
+                        let local = match this.managed.as_ref().map(|m| m.journal_identity()).transpose() {
+                            Ok(local) => local,
+                            Err(error) => { this.status = error; cx.notify(); return; }
+                        };
+                        this.eliminations = Some(cx.new(|cx| eliminations::Eliminations::new(session, origin, company, local, window, cx)));
+                        cx.notify();
+                    }
+                })));
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content = content.child(Button::new("consolidation-open").label("Konsolideret rapport").disabled(self.busy)
+                .on_click(cx.listener(|this, _, window, cx| {
+                    if let (Some(session), Some(company)) = (this.session.clone(), this.selected.clone()) {
+                        let origin = this.connection_origin(cx);
+                        let local = match this.managed.as_ref().map(|m| m.journal_identity()).transpose() {
+                            Ok(local) => local,
+                            Err(error) => { this.status = error; cx.notify(); return; }
+                        };
+                        this.consolidation = Some(cx.new(|cx| consolidation::Consolidation::new(session, origin, company, local, window, cx)));
                         cx.notify();
                     }
                 })));

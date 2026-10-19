@@ -1,16 +1,15 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Native intercompany reconciliation across server/web/CLI/MCP and source-authoritative group reporting",
-  "code_revision": "63763c87 plus scoped native navigation and ordinary intercompany fixtures",
+  "current_increment": "Reviewed consolidation and two-orientation elimination reporting across Rust server, existing web UI, CLI/MCP and native screens",
+  "code_revision": "b33781b9 plus scoped web/native navigation and ordinary integration fixtures",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Actual Group42 intercompany complete browser and six CLI/MCP operations initial+normal two-user MFA restart PASS in separate workspaces: authoritative V1 manifest, independent reviewed mappings, exact reciprocal source/amounts, wronghash/self-review/overlap/privacy/revoke and unchanged company journals. Five root domain tests,10 UI tests and server/CLI/MCP/web builds passed. Native Intercompany integratedbc46c528 with rootnavigation;154native tests/1existingignored and build passed, actual GUI remains unqualified due previously evidenced pointer/scroll tooling failure. Signed Ownership four-table codec integrated63763c87 preserving native v1/v2 source history; worker16storage/5host checks passed, root8targeted host/storage checks passed (4newcodec +4domain/GDPR), runtime rebuild in progress, actual restore helper next. Prior Corporate/Ownership web/client restart and independent three-archive Corporate backup restore proofs remain valid. Fullgoal/epic672 and named journey completion remain open.",
+  "state": "Consolidation profiles/reports and V2 source-exact elimination lifecycle integrated in Rust server/web. SDK/CLI/MCP elimination adapters integrated:140 tools preserve132. Root focused consolidation/elimination checks and15 UI tests PASS; web/server builds PASS. Native consolidation and eliminations integrated with navigation:170 tests PASS/1 existing ignored and build PASS. Actual separate ordinary two-user MFA consolidation browser/client first+restart fixtures PASS: nonempty balanced figures24.68, independent profile approval/revocation, exact full report/source parity and unchanged journals. Actual Group46 both-orientation elimination lifecycle and ready consolidated report first+normalMFA restart PASS: raw assets70.12/debt69.12, exact69.12 eliminations yield assets1.00/debt0/equity1.00, full client profile/report parity, unchanged journals. Actual Group47 all eight elimination CLI/MCP operations first+normalMFA restart PASS in separate ordinary two-owner source workspace: both V2 positions, rejection/newproposal/approval/apply/reverse and final applied canonical state, exact HTTP/CLI/MCP full current/applied parity and unchanged journals. Actual Ownership three-archive independent source-free verification/fresh new-owner-MFA restore/restart PASS; V1 manifest/mapping signed codec integrated479b81f6 with worker22storage/6host tests and Clippy PASS, root6host+22storage regression PASS. Prior actual Group42 intercompany and Group40 ownership/Group38 Corporate proofs retained. Full goal/epic672 and named journeys remain open.",
   "issues_closed": [],
   "next": [
-    "Complete real consolidated profile/report and source-exact elimination lifecycle together; ready balanced reports and blocked/hidden/stale cases required.",
-    "Integrate shared consolidation SDK/CLI/MCP and native screens; maintain actual normal-owner acceptance gaps.",
-    "Qualify three-archive Ownership restore with ordinary independent source reviewer; add group-manifest/intercompany/consolidation backup inventory afterward.",
-    "Preserve all full-scope completion gates below; no final claim based on this increment."
+    "Integrate signed consolidation/elimination archive coverage and qualify source-independent restore with normal new-owner MFA.",
+    "Continue next ready full-scope journey from epic672/completion_gates; preserve actual new native-screen GUI qualification gap.",
+    "No final full-goal claim from completed consolidation/elimination increment."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -461,6 +460,66 @@
       "build": "/tmp/rm-platform31-native-build.log (passed)",
       "before_failure": "/tmp/rm-platform31-native-tests.log (parallel test directory timestamp collision; test helper now uses atomic uniqueness)",
       "scope": "Knowledge/Parties navigation and all existing native states; actual newer GUI still unverified."
+    },
+    "platform45_integrated_checks": {
+      "core": [
+        "/tmp/rm-platform45-consolidation-core.log",
+        "/tmp/rm-platform45-eliminations-core.log"
+      ],
+      "ui": "/tmp/rm-platform45-group-ui.log (15 PASS)",
+      "runtime": "/tmp/rm-platform45-runtime-build.log (PASS)",
+      "web": "/tmp/rm-platform45-web-build.log (PASS)",
+      "native": [
+        "/tmp/rm-platform45-native-tests.log (162 PASS,1 existing ignored)",
+        "/tmp/rm-platform45-native-build.log (PASS)"
+      ]
+    },
+    "platform45_consolidation_actual": {
+      "browser": "/tmp/rentemester-rust-reports/native-consolidation-browser-integrated45.json",
+      "clients": "/tmp/rentemester-rust-reports/native-consolidation-clients-integrated45.json",
+      "status": "PASS initial+restart both separate normal invitation/verification/two-MFA workspaces",
+      "server_sha256": "b6e3c1a98e358f3b7ceeb402c15d01b8260c576390ceef05b693c047dc3bbcb1",
+      "scope": "profiles/propose/independentapprove/revoke, real ready balanced report/fullsource snapshots/exactJSON and unchangedjournals; no appliedeliminations in this fixture"
+    },
+    "platform46_integrated_checks": {
+      "clients": "/tmp/rm-platform46-client-tests.log (PASS)",
+      "runtime": "/tmp/rm-platform46-runtime-build.log (PASS)",
+      "native": [
+        "/tmp/rm-platform46-native-tests.log (170 PASS,1 existing ignored)",
+        "/tmp/rm-platform46-native-build.log (PASS)"
+      ],
+      "backup_regressions": "/tmp/rm-platform46-backup-regressions.log (6host+22storage PASS)"
+    },
+    "platform44_ownership_backup_actual": {
+      "report": "/tmp/rentemester-rust-reports/native-portable-backup-ownership-integrated44.json",
+      "sha256": "8ce8130a6acda0f95e14b897bfaae3150c18f9294d04c3f4303d04a7267b1d7e",
+      "status": "PASS",
+      "sourceUnavailableBeforeVerifyAndRestore": true,
+      "independently_restored_archives": 3,
+      "normalVerificationAndMfa": true,
+      "restart": true,
+      "ownedCleanupCompleted": true,
+      "scope": "Five snapshots,11events,3facts,1ending and priorCorporate/Inbox/Parties/Knowledge/UUID/ledger/PDF/bank checks; no historic authority; legacyv1/reducedroles unitonly. Pinned132tools build provenance44 recorded independently from later unused source integrations."
+    },
+    "platform46_eliminations_consolidation_actual": {
+      "report": "/tmp/rentemester-rust-reports/native-eliminations-consolidation-integrated46.json",
+      "status": "PASS initial+normalMFA restart",
+      "server_sha256": "41b183a23e4f1b2d66b54c23dce27ef2b1b2cf32686392da4a287e4d2dc28c60",
+      "artifacts": "/tmp/rm-platform46-runtime-artifacts.json",
+      "scope": "Actual two-owner both-orientation V2plan/review/apply/reverse; stale/selfreview/duplicate/privacy/exactdate refusals; two appliedeliminations and readyreport assets1.00/debt0/equity1.00 via actualweb and fullCLI/MCPreport parity; unchanged journals"
+    },
+    "platform47_elimination_clients_actual": {
+      "report": "/tmp/rentemester-rust-reports/native-elimination-clients-integrated47.json",
+      "log": "/tmp/rm-platform47-elimination-clients-actual.log",
+      "status": "PASS first+normalMFA restart; exact owned workspace cleaned",
+      "server_sha256": "41b183a23e4f1b2d66b54c23dce27ef2b1b2cf32686392da4a287e4d2dc28c60",
+      "cli_sha256": "b6941e0bc019854db0d699df9e1ac8619a5e53dbade6e112b08feedccdba45be",
+      "mcp_sha256": "b85040dea765478c8ae527fce0c2f5460f5fcaf6eafb4cce4c09672117be2b95",
+      "scope": "All eight operations/both actual positions; reject/newproposal/approve/apply/reverse, independent normalMFA principals/full current/applied HTTPCLI-MCP parity/unchangedjournals; no browserbaseline modified"
+    },
+    "platform47_graphify": {
+      "ast": "/tmp/rm-platform47-graphify.log (PASS)",
+      "semantic": "Focused docs/rust-server.md and implementation/progress.json update only; existing concepts retained, unrelated user documentation not refreshed"
     }
   },
   "verified_history": [
@@ -852,50 +911,25 @@
   "active_work": [
     {
       "owner": "root",
-      "result": "Integrate consolidated profiles, elimination evidence and whole read/report workflows after verified intercompany42",
+      "result": "Integrate signed group-reporting archive coverage after completed actual web/client report journeys",
       "depends_on": [
-        "integrated V1 manifest/mapping backend and six client operations"
+        "integrated Rust profile/report/elimination routes"
       ],
-      "acceptance": "Current all-company authority, independent approval, exact source snapshots/decimal amounts and unchanged journals after restart"
-    },
-    {
-      "owner": "rust_budget",
-      "result": "Thin consolidation SDK/CLI/MCP six-operation parity",
-      "depends_on": [
-        "approved native profile/report route contracts from rust_mileage"
-      ],
-      "acceptance": "Exact confirmed bounds, original decimal-string fullJSON,132tools preserve126existing and scopedproposeframe only"
+      "acceptance": "Ordinary two-user MFA review, exact balanced source figures, both position orientations, unchanged company journals and restart"
     },
     {
       "owner": "rust_mileage",
-      "result": "Real consolidated report profiles and report calculation",
+      "result": "Signed consolidation and elimination source-history backup coverage",
       "depends_on": [
-        "authoritative V1 manifest",
-        "typed validated elimination reader from rust_accruals"
+        "integrated authoritative native history validators",
+        "signed V1 group/mapping codec"
       ],
-      "acceptance": "Source-compatible ready balanced figures and full provenance; fully redacted hidden-member and blocked/stale-proof cases"
-    },
-    {
-      "owner": "rust_accruals",
-      "result": "Source-exact elimination plan/review/apply/reverse lifecycle and typed applied reader",
-      "depends_on": [
-        "exact reciprocal source snapshots and shared native audit verifier"
-      ],
-      "acceptance": "Fresh hash-bound source, distinct authenticated reviewer, exact-date applied projection, append-only evidence and no company journal mutation"
-    },
-    {
-      "owner": "rust_client_cli",
-      "result": "Actual Ownership backup helper with ordinary independently authenticated source reviewer",
-      "depends_on": [
-        "integrated Ownership codec63763c87",
-        "existing native invitation/verification/MFA primitives"
-      ],
-      "acceptance": "All three independently verified source-free archives freshrestore/newownerMFA/restart exactOwnership originals/history/diffs/endings/asOf; legacy/reducedroles unitonly"
+      "acceptance": "Atomic signed source-free reconstruction with exact historical identity/hash/state and older archive compatibility"
     }
   ],
   "integrated_pending_browser": [
-    "Native Intercompany and other newer GPUI business screens remain actual-unqualified; confirmed CUA pointer/scroll limitation",
-    "Ownership signed backup actual restore/restart pending helper extension"
+    "New native business-screen actual qualification limited by confirmed CUA pointer/scroll failure",
+    "Newer group backup actual restore run pending"
   ],
   "pending_deliveries": [],
   "completion_gates": [

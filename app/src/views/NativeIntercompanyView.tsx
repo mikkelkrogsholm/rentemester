@@ -68,7 +68,8 @@ export function NativeIntercompanyView() {
 			<PageHeader title="Mellemregningsafstemning" />
 			<p>
 				Vælg eksplicitte medlemskaber og kontomappings. Selskabernes posteringer
-				ændres aldrig her. Konsolidering og valutaomregning er ikke tilgængelig.
+				ændres aldrig her. Kontrollér modstående saldi og kildeposteringer, og
+				brug rapportpanelet til den eksplicitte koncernrapport.
 			</p>
 			<label>
 				Pr. dato

@@ -1,4 +1,5 @@
 import {useOptionalAuth} from "../lib/auth-context";
+import {NativeConsolidationView} from "./NativeConsolidationView";
 import {NativeIntercompanyView} from "./NativeIntercompanyView";
 import { Button, Input, PageHeader, Select } from "../components/ui";
 import { useState } from "react";
@@ -113,4 +114,4 @@ function Blockers({ blockers }: { blockers: readonly string[] }) {
   return <section className="group-blockers" aria-label="Blokeringer"><h3>Blokeringer</h3><ul>{blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul></section>;
 }
 
-export function GroupOverviewView(){const auth=useOptionalAuth();return auth?.backend==="rust"?<NativeIntercompanyView/>:<LegacyGroupOverviewView/>;}
+export function GroupOverviewView(){const auth=useOptionalAuth();return auth?.backend==="rust"?<><NativeIntercompanyView/><NativeConsolidationView/></>:<LegacyGroupOverviewView/>;}

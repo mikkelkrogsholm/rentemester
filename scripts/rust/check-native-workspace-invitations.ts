@@ -11,7 +11,10 @@ const base=process.env.RM_INVITATION_BASE!;if(!/^http:\/\/127\.0\.0\.1:\d+$/.tes
 const spool=join(config.root,".rentemester"),privateState=join(work,"browser-state.json");
 const ownership=process.env.RM_INVITATION_OWNERSHIP==="1";
 const intercompany=process.env.RM_INVITATION_INTERCOMPANY;
-const feature=ownership||Boolean(intercompany);
+const consolidation=process.env.RM_INVITATION_CONSOLIDATION;
+const eliminations=process.env.RM_INVITATION_ELIMINATIONS==="1";
+const eliminationClients=process.env.RM_INVITATION_ELIMINATION_CLIENTS==="1";
+const feature=ownership||Boolean(intercompany)||Boolean(consolidation)||eliminations||eliminationClients;
 const evidence=feature?join(work,"invitations-evidence.json"):"/tmp/rentemester-rust-reports/native-workspace-invitations.json";
 const ownerEmail="owner@example.invalid",ownerPassword="synthetic-owner-password-123",email="reviewer@example.invalid",password="synthetic-invited-password-456";
 function files(prefix:string){return readdirSync(spool).filter(n=>n.startsWith(prefix)&&n.endsWith(".txt"));}
@@ -66,9 +69,10 @@ try{
   await checkNativeOwnership(owner,invited,base,"synthetic-ownership-browser",restarted);
   await checkNativeOwnershipClients(owner,invited,base,"synthetic-ownership-clients",restarted);
  }
- if(intercompany){
-  if(!["browser","clients"].includes(intercompany))throw Error("Explicit intercompany fixture mode required");
-  const restarted=process.argv.includes("--reopen"),anchor="synthetic-intercompany-left",other="synthetic-intercompany-right";
+ if(intercompany||consolidation||eliminations||eliminationClients){
+  const mode=intercompany||consolidation;
+  if(!eliminations&&!eliminationClients&&!["browser","clients"].includes(mode!))throw Error("Explicit intercompany fixture mode required");
+  const restarted=process.argv.includes("--reopen"),prefix=eliminationClients?"synthetic-eliminations-clients":eliminations?"synthetic-eliminations":consolidation?`synthetic-consolidation-${mode}`:"synthetic-intercompany",anchor=prefix+"-left",other=prefix+"-right";
   if(!restarted){
    const current=await json(invited,"/api/me");if(!current.r.ok()||!current.body.user?.id)throw Error("Current independent reviewer required");
    const elevated=await json(owner,"/api/workspace/members/access",{userId:current.body.user.id,action:"set-role",workspaceRole:"workspace_owner"});if(!elevated.r.ok())throw Error(`Explicit workspace owner grant refused ${elevated.r.status()}`);
@@ -77,7 +81,22 @@ try{
     const granted=await json(owner,"/api/workspace/members/company",{userId:current.body.user.id,action:"grant",companySlug:slug,role:"owner"});if(!granted.r.ok())throw Error(`Intercompany company grant refused ${granted.r.status()}`);
    }
   }
-  if(intercompany==="browser"){
+  if(eliminationClients){
+   const {prepareEliminationClients}=await import("./elimination-client-fixture");const path=join(work,"elimination-client-fixture.json");if(!restarted)writeFileSync(path,JSON.stringify(await prepareEliminationClients(owner,invited,base,anchor,other)),{mode:0o600,flag:"wx"});
+   const {checkNativeEliminationClients}=await import("./check-native-elimination-clients");await checkNativeEliminationClients(owner,invited,base,anchor,other,JSON.parse(readFileSync(path,"utf8")),restarted);
+  }else if(eliminations){
+   const {checkNativeEliminations}=await import("./check-native-eliminations");await checkNativeEliminations(owner,invited,base,anchor,other,restarted);
+   const {eliminationConsolidationFixture}=await import("./consolidation-fixture");const source=JSON.parse(readFileSync("/tmp/rentemester-rust-reports/native-eliminations.json","utf8"));
+   const fixture=eliminationConsolidationFixture(anchor,other,source.asOf);
+   const {checkNativeConsolidationClients}=await import("./check-native-consolidation-clients");await checkNativeConsolidationClients(owner,invited,base,anchor,fixture,restarted);
+   await owner.goto(base+"/koncernstruktur");const region=owner.getByRole("region",{name:"Konsolideret rapport",exact:true});await region.getByLabel("Konsolidering virksomhed",{exact:true}).selectOption(anchor);await region.getByLabel("Konsolidering pr. dato",{exact:true}).fill(source.asOf);await region.getByLabel("Konsolidering fra dato",{exact:true}).fill(source.asOf);await region.getByLabel("Konsolidering rapportprofil",{exact:true}).selectOption(fixture.profile.id);
+   const query=new URLSearchParams({profileId:fixture.profile.id,from:source.asOf,asOf:source.asOf});const [response]=await Promise.all([owner.waitForResponse(r=>r.url()===base+"/api/group-consolidated-report?"+query),region.getByRole("button",{name:"Hent konsolideret rapport",exact:true}).click()]);if(!response.ok())throw Error("Actual two-orientation consolidated report refused");await region.locator('tr[data-line-id="assets"]').getByRole("cell",{name:"1.00",exact:true}).waitFor();
+  }else if(consolidation==="browser"){
+   const {checkNativeConsolidation}=await import("./check-native-consolidation");await checkNativeConsolidation(owner,invited,base,anchor,other,restarted);
+  }else if(consolidation==="clients"){
+   const {prepareConsolidationClients}=await import("./consolidation-fixture");const path=join(work,"consolidation-fixture.json");if(!restarted)writeFileSync(path,JSON.stringify(await prepareConsolidationClients(owner,base,anchor,other)),{mode:0o600,flag:"wx"});
+   const {checkNativeConsolidationClients}=await import("./check-native-consolidation-clients");await checkNativeConsolidationClients(owner,invited,base,anchor,JSON.parse(readFileSync(path,"utf8")),restarted);
+  }else if(intercompany==="browser"){
    const {checkNativeIntercompany}=await import("./check-native-intercompany");await checkNativeIntercompany(owner,invited,base,anchor,other,restarted);
   }else{
    const {prepareIntercompanyClients}=await import("./intercompany-fixture");

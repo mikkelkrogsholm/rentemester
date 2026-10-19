@@ -138,7 +138,7 @@ pub fn execute(
                     .filter(|s| s.mapping.companies().is_subset(&visible))
                     .collect();
                 Ok(
-                    json!({"manifest":current.map(|v|&v.0),"manifestHash":current.map(|v|&v.1),"mappings":rows,"consolidationAvailable":false}),
+                    json!({"manifest":current.map(|v|&v.0),"manifestHash":current.map(|v|&v.1),"mappings":rows,"consolidationAvailable":true}),
                 )
             }
             Action::Reconciliation(d) => {

@@ -37,7 +37,7 @@ export async function checkNativeIntercompanyClients(author:Page,reviewer:Page,b
   if(!restarted){
    const prior=await get(author,path);if(prior.manifest!==null||prior.mappings.length)throw Error('Client helper requires OWN initially unconfigured GLOBAL manifest; never compose with captured browser baseline');
    const manifest=JSON.stringify({...fixture.manifest,confirm:true});cli('author','apply-group-manifest',['--company',anchor],manifest);
-   const current=await get(author,path);if(!current.manifestHash||current.consolidationAvailable!==false||!isDeepStrictEqual(cli('author','intercompany',['--company',anchor]),current)||!isDeepStrictEqual(mcp('reviewer','intercompany',{company:anchor}),await get(reviewer,path)))throw Error('Full current manifest/client parity unavailable');
+   const current=await get(author,path);if(!current.manifestHash||current.consolidationAvailable!==true||!isDeepStrictEqual(cli('author','intercompany',['--company',anchor]),current)||!isDeepStrictEqual(mcp('reviewer','intercompany',{company:anchor}),await get(reviewer,path)))throw Error('Full current manifest/client parity unavailable');
    const proposal=JSON.stringify({...fixture.mapping,confirm:true});mcp('author','propose_intercompany_mapping',{company:anchor,body:proposal,confirm:true});
    const proposed=await get(author,path),state=proposed.mappings.find((m:any)=>m.mapping.id===fixture.mapping.id);if(state?.status!=='proposed'||!state.mappingHash)throw Error('Client mapping proposal missing canonical hash');
    const exact=JSON.stringify({mappingId:fixture.mapping.id,mappingHash:state.mappingHash,confirm:true});
