@@ -79,7 +79,30 @@ const digest=(b:Buffer)=>createHash("sha256").update(b).digest("hex");
 const password="synthetic-portable-password-123";
 const slugs=["synthetic","synthetic-portable-second"];
 async function snapshot(){const out:any={};for(const s of slugs){const journal=(await get(s,"journal")).journal;out[s]={uuid:journal.ledgerUuid,entries:journal.entries,balance:(await get(s,`balance?year=${journal.selectedYear}`)).balance};}return out;}
-const knowledgeEnabled=process.env.RM_PORTABLE_KNOWLEDGE==="1";
+const partiesEnabled=process.env.RM_PORTABLE_PARTIES==="1";
+const knowledgeEnabled=process.env.RM_PORTABLE_KNOWLEDGE==="1"||partiesEnabled;
+const portablePartyId="party-synthetic-portable-shared";
+const portablePartyAlias="synthetic portable reviewed party alias";
+async function partiesViews(){
+ const views:Record<string,unknown>={};
+ for(const slug of slugs)views[slug]={list:await get(slug,`workspace-parties?query=${encodeURIComponent(portablePartyAlias)}&cursor=0&limit=25`),inspect:await get(slug,`workspace-parties/${portablePartyId}`)};
+ return views;
+}
+async function prepareParties(){
+ await post(slugs[0],"workspace-parties",{partyId:portablePartyId,kind:"organization",name:"Synthetic portable shared party",aliases:["Synthetic portable original party alias"],identifiers:[{country:"US",identifierKind:"non_eu",identifier:"SYN-PORTABLE-PARTY-CLAIM"}],source:"synthetic-portable-party-source",observedAt:"2000-01-01",reviewAssertion:"Synthetic owner reviewed source identity",role:"supplier",defaults:{currency:"DKK",paymentTermsDays:14},confirm:true});
+ await post(slugs[1],`workspace-parties/${portablePartyId}/role`,{role:"customer",defaults:{currency:"EUR",paymentTermsDays:30},confirm:true});
+ await post(slugs[0],`workspace-parties/${portablePartyId}/assertion`,{field:"name",value:"Synthetic portable proposed party name",source:"synthetic-portable-proposed-name",observedAt:"2001-01-01",reviewState:"proposed",confirm:true});
+ await post(slugs[1],`workspace-parties/${portablePartyId}/assertion`,{field:"name",value:"Synthetic portable reviewed party name",source:"synthetic-portable-reviewed-name",observedAt:"2002-01-01",reviewState:"approved",confirm:true});
+ await post(slugs[0],`workspace-parties/${portablePartyId}/alias`,{alias:portablePartyAlias,source:"synthetic-portable-reviewed-alias",observedAt:"2002-02-01",reviewState:"approved",confirm:true});
+ const views:any=await partiesViews();
+ for(const slug of slugs){
+  const {list,inspect}=views[slug];const p=inspect.party;
+  if(inspect.ok!==true||p?.partyId!==portablePartyId||p.name!=="Synthetic portable shared party"||list.count!==1||list.rows.length!==1||list.rows[0].partyId!==portablePartyId)throw Error("Party canonical identity/alias discovery missing");
+  if(!isDeepStrictEqual(p.identifiers,[{country:"US",identifier:"SYN-PORTABLE-PARTY-CLAIM",identifierKind:"non_eu"}])||p.roles.length!==2||!p.roles.some((r:any)=>r.companySlug===slugs[0]&&r.role==="supplier"&&isDeepStrictEqual(r.defaults,{currency:"DKK",paymentTermsDays:14}))||!p.roles.some((r:any)=>r.companySlug===slugs[1]&&r.role==="customer"&&isDeepStrictEqual(r.defaults,{currency:"EUR",paymentTermsDays:30})))throw Error("Party identifiers/two-company role defaults missing");
+  if(p.assertions.length!==4||!p.assertions.some((a:any)=>a.field==="identifier"&&a.review_state==="approved")||!p.assertions.some((a:any)=>a.field==="name"&&a.value==="Synthetic portable shared party"&&a.review_state==="approved")||!p.assertions.some((a:any)=>a.value==="Synthetic portable proposed party name"&&a.review_state==="proposed")||!p.assertions.some((a:any)=>a.value==="Synthetic portable reviewed party name"&&a.review_state==="approved")||!p.aliases.some((a:any)=>a.alias===portablePartyAlias&&a.review_state==="approved"&&a.source==="synthetic-portable-reviewed-alias")||p.aliases.length!==2||p.history.length!==1||p.history.some((h:any)=>!h.actor||!h.created_at||!h.payload_hash||h.event_type==="linked"))throw Error("Party append-only assertions/aliases/provenance missing");
+ }
+ return views;
+}
 const knowledgeAsOf="2026-06-01";
 async function knowledgeViews(){
  const views:Record<string,unknown>={};
@@ -100,12 +123,20 @@ async function prepareKnowledge(){
  await review(rejected.assertionId,"rejected","Synthetic source was not accepted");
  const other=(await propose("products_services",["Synthetic distinct second-company service"],"synthetic-portable-second-service",slugs[1])).assertion;
  await review(other.assertionId,"approved","Synthetic separate company source reviewed",slugs[1]);
+ let partyKnowledgeId:string|undefined;
+ if(partiesEnabled){
+  const linked=await post(slugs[0],"knowledge/propose",{predicate:"responsible_party",value:{purpose:"Synthetic portable party-backed source"},source:{kind:"party",ref:portablePartyId},validFrom:"2000-01-01",certainty:"confirmed",confirm:true});
+  partyKnowledgeId=linked.assertion.assertionId;
+  await review(partyKnowledgeId!,"approved","Synthetic canonical party source reviewed");
+ }
  const views:any=await knowledgeViews();const sourceView=views.synthetic;
- if(sourceView.current.context.asOf!=="2026-06-01T00:00:00.000Z"||sourceView.current.history.length!==4)throw Error("Fixed knowledge date/full history missing");
+ if(sourceView.current.context.asOf!=="2026-06-01T00:00:00.000Z"||sourceView.current.history.length!==(partiesEnabled?5:4))throw Error("Fixed knowledge date/full history missing");
  const expected=new Map([[old.assertionId,"superseded"],[changed.replacement.assertionId,"approved"],[pending.assertionId,"proposed"],[rejected.assertionId,"rejected"]]);
+ if(partyKnowledgeId)expected.set(partyKnowledgeId,"approved");
  for(const row of sourceView.current.history){if(expected.get(row.assertionId)!==row.reviewState||!row.source?.ref||!row.actor||!row.principal?.id||row.history.length===0)throw Error("Knowledge review/provenance/history fixture incomplete");}
  const ids=(v:any)=>v.context.assertions.map((a:any)=>a.assertionId);
- if(!isDeepStrictEqual(ids(sourceView.current),[changed.replacement.assertionId])||!ids(sourceView.withProposed).includes(pending.assertionId)||views[slugs[1]].current.history.length!==1||views[slugs[1]].current.context.assertions[0]?.assertionId!==other.assertionId)throw Error("Knowledge proposal/rejection/supersession/company isolation not reflected in actual context");
+ if(!isDeepStrictEqual(ids(sourceView.current),[changed.replacement.assertionId,...(partyKnowledgeId?[partyKnowledgeId]:[])])||!ids(sourceView.withProposed).includes(pending.assertionId)||views[slugs[1]].current.history.length!==1||views[slugs[1]].current.context.assertions[0]?.assertionId!==other.assertionId)throw Error("Knowledge proposal/rejection/supersession/company isolation not reflected in actual context");
+ if(partyKnowledgeId&&!sourceView.current.history.some((a:any)=>a.assertionId===partyKnowledgeId&&a.source.kind==="party"&&a.source.ref===portablePartyId))throw Error("Party-backed knowledge source/history missing");
  return views;
 }
 async function exportClientArtifacts(){
@@ -142,6 +173,7 @@ async function exportClientArtifacts(){
 
 try{
  let saved:any=phase==="source"?{}:JSON.parse(readFileSync(statePath,"utf8"));
+ if(phase!=="source"&&Boolean(saved.parties)!==partiesEnabled)throw Error("RM_PORTABLE_PARTIES must match the source fixture in every phase");
  if(phase==="reopen")await login(page,"restored-owner@example.invalid",password,saved.recovery);
  else{
   const spool=join(config.root,".rentemester");const deliveries=readdirSync(spool).filter(n=>n.startsWith("verification-")&&n.endsWith(".txt"));
@@ -179,12 +211,18 @@ try{
   await post("synthetic","invoices/post",{confirm:true,invoiceDocumentId:saved.invoice.documentId,revenueAccountNo:"1000"});
   const pdf=await page.request.get(company("synthetic",`invoices/${saved.invoice.documentId}/pdf`));if(!pdf.ok())throw Error("Source PDF missing");saved.pdfHash=digest(await pdf.body());
   saved.bank=(await get("synthetic","bank")).bank;saved.snapshot=await snapshot();
+  if(partiesEnabled){
+   saved.parties=await prepareParties();
+   if(!isDeepStrictEqual(await snapshot(),saved.snapshot))throw Error("Party lifecycle changed accounting");
+   saved.partiesEvidence={partyId:portablePartyId,sourceViewsSha256:digest(Buffer.from(JSON.stringify(saved.parties))),associatedCompanies:slugs,legacyLinksCoverage:"Codec unit tests only: native API has no legacy-link registration"};
+  }
   if(knowledgeEnabled){
    saved.knowledge=await prepareKnowledge();
    if(!isDeepStrictEqual(await snapshot(),saved.snapshot))throw Error("Knowledge lifecycle changed accounting");
-   saved.knowledgeEvidence={asOf:knowledgeAsOf,sourceViewsSha256:digest(Buffer.from(JSON.stringify(saved.knowledge))),primaryHistoryRecords:4,secondHistoryRecords:1};
+   saved.knowledgeEvidence={asOf:knowledgeAsOf,sourceViewsSha256:digest(Buffer.from(JSON.stringify(saved.knowledge))),primaryHistoryRecords:partiesEnabled?5:4,secondHistoryRecords:1};
   }
   if(process.env.RM_PORTABLE_CLIENTS==="1")saved.clientEvidence=await exportClientArtifacts();
+  if(partiesEnabled&&!isDeepStrictEqual(await partiesViews(),saved.parties))throw Error("Backup client exports changed party history");
   if(knowledgeEnabled&&!isDeepStrictEqual(await knowledgeViews(),saved.knowledge))throw Error("Backup client exports changed knowledge history");
   if(process.env.RM_PORTABLE_WEB_DOWNLOAD==="1"){
    await page.goto(`${base}/companies/synthetic/integritet`);const card=page.locator(".native-backup");
@@ -204,6 +242,10 @@ try{
    writeFileSync(join(work,"portable.native-backup.json"),await archive.body(),{mode:0o600});
   }
  }else{
+  if(partiesEnabled){
+   if(!saved.parties||!isDeepStrictEqual(await partiesViews(),saved.parties))throw Error("Restored parties identifiers/aliases/assertions/roles/history differ from original native API response");
+   saved.partiesEvidence[phase==="reopen"?"exactAfterRestart":"exactAfterRestore"]=true;
+  }
   if(knowledgeEnabled){
    if(!saved.knowledge||!isDeepStrictEqual(await knowledgeViews(),saved.knowledge))throw Error("Restored knowledge context/history/provenance differs from original fixed-date API response");
    saved.knowledgeEvidence[phase==="reopen"?"exactAfterRestart":"exactAfterRestore"]=true;
@@ -224,6 +266,8 @@ try{
    saved.bank=afterBank;saved.snapshot=await snapshot();
   }
  }
+ if(partiesEnabled&&!isDeepStrictEqual(await partiesViews(),saved.parties))throw Error("Portable phase changed canonical party source history");
+ if(knowledgeEnabled&&!isDeepStrictEqual(await knowledgeViews(),saved.knowledge))throw Error("Portable phase changed fixed-date knowledge source history");
  writeFileSync(statePath,JSON.stringify(saved),{mode:0o600});
  console.log(`PASS: portable ${phase} ordinary verified/MFA owner, immutable ledger/original/PDF/bank and receipt boundary`);
 }catch(e){console.error(await page.locator("body").innerText());await page.screenshot({path:join(work,`failure-${phase}.png`),fullPage:true});throw e;}finally{await browser.close();}
