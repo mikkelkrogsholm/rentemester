@@ -134,6 +134,7 @@ pub fn list() -> Value {
     tools.extend(crate::documents::tools());
     tools.extend(crate::bank_reconciliation::tools());
     tools.extend(crate::bank_correction::tools());
+    tools.extend(crate::recurring_invoices::tools());
     json!({"tools":tools})
 }
 pub(crate) fn native_body(schema: Value) -> Value {
@@ -197,6 +198,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     }
     let mut idempotency = None;
     let outcome = match name {
+        name if crate::recurring_invoices::accepts(name) => crate::recurring_invoices::call(api,name,args).await?,
         "bank_reconciliation_correction_plan" | "bank_reconciliation_correction" => {
             // Correlation only: return the original supported caller key on uncertain outcome.
             // Never mutate the request or trigger replay.

@@ -151,7 +151,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 61);
+    assert_eq!(tools.len(), 65);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -1221,5 +1221,78 @@ fn correction_mcp_selectors_extra_fields_and_native_size_are_strict() {
             &[init("2025-11-25"), ready(), call(2, name, args)],
         ));
         assert_eq!(values[1]["error"]["code"], -32602);
+    }
+}
+
+#[test]
+fn recurring_mcp_exact_generate_once_and_unknown_semantics() {
+    let (origin, request, task) =
+        http("HTTP/1.1 503 Unavailable\r\nContent-Length:0\r\nConnection:close\r\n\r\n");
+    let body = "{ \"asOfDate\":\"2026-01-01\",\"confirm\":true }\n";
+    let v = parsed(&run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "generate_recurring_invoice",
+                json!({"company":"synthetic","id":7,"body":body,"confirm":true}),
+            ),
+        ],
+    ));
+    assert_eq!(
+        v[1]["result"]["structuredContent"]["error"]["code"],
+        "outcome_unknown"
+    );
+    let wire = String::from_utf8(request.recv().unwrap()).unwrap();
+    assert!(
+        wire.starts_with("POST /api/companies/synthetic/recurring-invoices/7/generate HTTP/1.1")
+    );
+    assert!(wire.ends_with(body));
+    task.join().unwrap();
+}
+#[test]
+fn recurring_tools_discovery_and_strict_read_write_admission() {
+    let v = parsed(&run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),
+        ],
+    ));
+    let tools = v[1]["result"]["tools"].as_array().unwrap();
+    assert_eq!(tools.len(), 65);
+    assert_eq!(
+        tools
+            .iter()
+            .find(|t| t["name"] == "recurring_invoices")
+            .unwrap()["annotations"]["readOnlyHint"],
+        true
+    );
+    for (name, args) in [
+        (
+            "recurring_invoices",
+            json!({"company":"synthetic","confirm":true}),
+        ),
+        (
+            "create_recurring_invoice",
+            json!({"company":"synthetic","id":7,"body":"{}","confirm":true}),
+        ),
+        (
+            "generate_recurring_invoice",
+            json!({"company":"synthetic","id":0,"body":"{}","confirm":true}),
+        ),
+        (
+            "retire_recurring_invoice",
+            json!({"company":"synthetic","id":7,"body":" ".repeat(256*1024+1),"confirm":true}),
+        ),
+    ] {
+        let v = parsed(&run(
+            "http://127.0.0.1:9",
+            &[init("2025-11-25"), ready(), call(2, name, args)],
+        ));
+        assert!(v[1].get("error").is_some(), "{v:?}");
     }
 }
