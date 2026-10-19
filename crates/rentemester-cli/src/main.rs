@@ -1,9 +1,14 @@
 use rentemester_engine::{Error, trial_balance::Period};
 use serde_json::json;
 use std::{collections::BTreeMap, io::Read, path::Path, process::ExitCode};
+mod remote;
 fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
+    if args.first().map(String::as_str) == Some("remote") {
+        return remote::run(&args[1..]);
+    }
     if args == ["--help"] {
         return Ok(json!({"ok":true,"commands":[
+            {"name":"remote","usage":"remote --help","scope":"explicit authenticated Rust HTTP server; no local fallback"},
             {"name":"validate-journal","usage":"validate-journal --company PATH < request.json","scope":"experimental source-backed advisory manual validation; no writer authority"},
             {"name":"trial-balance","usage":"trial-balance --company PATH --from YYYY-MM-DD --to YYYY-MM-DD","scope":"experimental local read-only report"},
             {"name":"rehearse-company-baseline","usage":"rehearse-company-baseline --company PATH","scope":"experimental explicit known unversioned physical baseline copy; no adoption authority"},
