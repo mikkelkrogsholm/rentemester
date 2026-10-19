@@ -264,13 +264,17 @@ pub(crate) fn purchase(
         treatment: treatment.into(),
     })
 }
-pub fn post(
-    tx: &Transaction<'_>,
-    input: &Input,
-    subject: &str,
-    latest: Date,
-) -> Result<Value, Error> {
-    crate::journal_post::require_current(tx)?;
+/// Shared read-only preparation; callers must still use post for admission/writes.
+pub(crate) struct Prepared {
+    pub request: ManualJournal,
+    pub gross: Money,
+    pub net: Money,
+    pub deductible: Money,
+    pub treatment: String,
+    pub basis: expense_fx::Basis,
+}
+pub(crate) fn prepare(tx: &Transaction<'_>, input: &Input) -> Result<Prepared, Error> {
+    crate::journal_preview::require_current(tx)?;
     if input.document_id <= 0
         || input.bank_transaction_id <= 0
         || input.document_id > 9_007_199_254_740_991
@@ -366,7 +370,7 @@ pub fn post(
         &basis.gross_dkk,
         &basis.rate,
     )?;
-    let treatment = allocated.treatment.as_str();
+    let treatment = allocated.treatment.clone();
     let date = input.transaction_date.as_deref().unwrap_or(&bank_date);
     if meta.kind() == "internal_voucher" {
         let bound: i64 = tx
@@ -427,6 +431,30 @@ pub fn post(
         created_by_program: None,
         lines,
     };
+    Ok(Prepared {
+        request,
+        gross,
+        net,
+        deductible,
+        treatment,
+        basis,
+    })
+}
+pub fn post(
+    tx: &Transaction<'_>,
+    input: &Input,
+    subject: &str,
+    latest: Date,
+) -> Result<Value, Error> {
+    crate::journal_post::require_current(tx)?;
+    let Prepared {
+        request,
+        gross,
+        net,
+        deductible,
+        treatment,
+        basis,
+    } = prepare(tx, input)?;
     let actor = format!("user:{subject}");
     let mut result = crate::journal_post::post(
         tx,
