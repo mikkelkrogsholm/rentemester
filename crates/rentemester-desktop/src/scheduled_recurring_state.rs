@@ -122,7 +122,16 @@ fn valid_record(value: &Value) -> bool {
             })
         && matches!(
             value["operation"].as_str(),
-            Some("enable" | "pause" | "resume" | "cancel" | "catch-up" | "skip" | "dispatch")
+            Some(
+                "enable"
+                    | "pause"
+                    | "resume"
+                    | "cancel"
+                    | "catch-up"
+                    | "skip"
+                    | "dispatch"
+                    | "reconsent"
+            )
         )
         && value["templateId"]
             .as_i64()
@@ -224,6 +233,16 @@ fn occurrence(v: &Value) -> bool {
         .is_some_and(|i| i <= 9_007_199_254_740_991)
         && text(v, "issueDate").is_ok()
 }
+fn restore_consent(v: &Value) -> bool {
+    v.is_null()
+        || (v.is_object()
+            && v["required"].is_boolean()
+            && hash(&v["boundaryHash"])
+            && (v["historicalOwnerUserId"].is_null() || v["historicalOwnerUserId"].is_string())
+            && v["historicalQueued"]
+                .as_array()
+                .is_some_and(|a| a.iter().all(occurrence)))
+}
 fn row(v: &Value) -> bool {
     id(&v["templateId"]).is_some()
         && hash(&v["templateHash"])
@@ -241,6 +260,7 @@ fn row(v: &Value) -> bool {
             .is_some_and(|a| a.iter().all(occurrence))
         && (v["error"].is_null() || v["error"].is_string())
         && v["history"].is_array()
+        && restore_consent(&v["restoreConsent"])
 }
 impl Snapshot {
     pub fn parse(
@@ -306,6 +326,8 @@ impl Snapshot {
                     .is_some_and(|a| a.iter().all(occurrence))
                 || !p["missedCount"].is_u64()
                 || !p["truncated"].is_boolean()
+                || !restore_consent(&p["restoreConsent"])
+                || p["restoreConsent"] != s["restoreConsent"]
             {
                 return Err("Serverplan matcher ikke præcis aktuel skabelon/stateHash/dato eller kanoniske forekomster".into());
             }
@@ -369,6 +391,11 @@ impl Snapshot {
     pub fn can_write(&self) -> bool {
         matches!(self.role.as_str(), "owner" | "bookkeeper")
     }
+    pub fn restore_required(&self) -> bool {
+        self.selected
+            .as_ref()
+            .is_some_and(|s| s["restoreConsent"]["required"] == true)
+    }
     pub fn same_owner(&self) -> bool {
         self.selected
             .as_ref()
@@ -404,6 +431,7 @@ pub enum Action {
     CatchUp,
     Skip,
     Dispatch,
+    Reconsent,
 }
 impl Action {
     pub fn name(self) -> &'static str {
@@ -415,7 +443,11 @@ impl Action {
             Self::CatchUp => "catch-up",
             Self::Skip => "skip",
             Self::Dispatch => "dispatch",
+            Self::Reconsent => "reconsent",
         }
+    }
+    pub fn activates_app(self) -> bool {
+        matches!(self, Self::Enable | Self::Resume)
     }
     pub fn sdk(self) -> ScheduledRecurringMutation {
         match self {
@@ -426,6 +458,7 @@ impl Action {
             Self::CatchUp => ScheduledRecurringMutation::CatchUp,
             Self::Skip => ScheduledRecurringMutation::Skip,
             Self::Dispatch => ScheduledRecurringMutation::Dispatch,
+            Self::Reconsent => ScheduledRecurringMutation::Reconsent,
         }
     }
 }
@@ -457,7 +490,10 @@ impl Review {
         let allowed = match action {
             Action::Enable => state == "disabled",
             Action::Pause => state == "enabled",
-            Action::Resume => state == "paused" && data.same_owner(),
+            Action::Resume => state == "paused" && data.same_owner() && !data.restore_required(),
+            Action::Reconsent => {
+                state == "paused" && data.role == "owner" && data.restore_required()
+            }
             Action::Cancel | Action::CatchUp | Action::Skip => {
                 matches!(state, "enabled" | "paused")
             }
@@ -466,11 +502,27 @@ impl Review {
         if !allowed {
             return Err("Handlingen passer ikke aktuel tilstand/ejer. Cancelled er terminal; resume/dispatch kræver samme samtykkende bruger og aktuelle rettigheder.".into());
         }
-        if matches!(action, Action::Enable | Action::Resume) {
+        if matches!(action, Action::Enable | Action::Resume | Action::Reconsent) {
             data.reviewed_template()?;
         }
         let mut body = json!({"templateId":s["templateId"]});
         match action {
+            Action::Reconsent => {
+                let p = &data.plan.as_ref().ok_or("Fuld restore-plan kræves")?["plan"];
+                if !consent
+                    || !restore_consent(&s["restoreConsent"])
+                    || s["restoreConsent"] != p["restoreConsent"]
+                    || !s["ownerUserId"].is_null()
+                    || !s["queued"].as_array().is_some_and(|a| a.is_empty())
+                    || !p["normalDue"].is_null()
+                    || !p["queued"].as_array().is_some_and(|a| a.is_empty())
+                    || s["error"] == "unresolved_attempt"
+                    || s["lastRun"].get("status").is_some_and(|v| v != "succeeded")
+                {
+                    return Err("Gennemgå restore-boundary, historisk kø, fuld skabelon og ny ejer med eksplicit samtykke; uafklaret kilde kræver manuel afklaring".into());
+                }
+                body["planHash"] = p["planHash"].clone();
+            }
             Action::Enable => {
                 if !consent {
                     return Err("Giv eksplicit samtykke til skabelonens planlagte udstedelse før aktivering. Ingen automatisk bogføring eller mail.".into());
@@ -517,7 +569,7 @@ impl Review {
         }
         if matches!(
             action,
-            Action::Pause | Action::Resume | Action::Cancel | Action::Skip
+            Action::Pause | Action::Resume | Action::Cancel | Action::Skip | Action::Reconsent
         ) {
             let reason = reason.trim();
             if reason.is_empty() || reason.encode_utf16().count() > 1000 {
@@ -551,6 +603,13 @@ impl Review {
                 == self.snapshot.selected.as_ref().unwrap()["templateHash"]
             && match self.action {
                 Action::Enable | Action::Resume => v["scheduledRecurring"]["state"] == "enabled",
+                Action::Reconsent => {
+                    v["scheduledRecurring"]["state"] == "enabled"
+                        && v["scheduledRecurring"]["ownerUserId"] == self.snapshot.principal
+                        && v["scheduledRecurring"]["restoreConsent"]["required"] == false
+                        && v["scheduledRecurring"]["restoreConsent"]["boundaryHash"]
+                            == self.snapshot.selected.as_ref().unwrap()["restoreConsent"]["boundaryHash"]
+                }
                 Action::Pause => v["scheduledRecurring"]["state"] == "paused",
                 Action::Cancel => v["scheduledRecurring"]["state"] == "cancelled",
                 Action::Dispatch => match v["dispatch"]["status"].as_str() {
@@ -626,6 +685,111 @@ mod tests {
             journal(),
         )
         .unwrap()
+    }
+    fn restored() -> Snapshot {
+        let mut d = data("paused", "new-owner");
+        let boundary = json!({"required":true,"boundaryHash":"d".repeat(64),"historicalOwnerUserId":"old-owner","historicalQueued":[{"periodIndex":2,"issueDate":"2026-07-19"}]});
+        let row = d.selected.as_mut().unwrap();
+        row["restoreConsent"] = boundary.clone();
+        row["ownerUserId"] = Value::Null;
+        row["queued"] = json!([]);
+        row["nextOccurrence"] = Value::Null;
+        d.status["scheduledRecurring"]["rows"][0] = row.clone();
+        let p = &mut d.plan.as_mut().unwrap()["plan"];
+        p["restoreConsent"] = boundary;
+        p["normalDue"] = Value::Null;
+        p["queued"] = json!([]);
+        d
+    }
+    #[test]
+    fn restored_owner_reconsent_freezes_full_plan_history_and_never_activates_app() {
+        let d = restored();
+        let r = Review::prepare(
+            &d,
+            Action::Reconsent,
+            "Reviewed imported consent",
+            &[],
+            None,
+            true,
+        )
+        .unwrap();
+        assert_eq!(
+            r.display,
+            json!({"templateId":7,"planHash":"c".repeat(64),"reason":"Reviewed imported consent","confirm":true})
+        );
+        assert_eq!(serde_json::from_slice::<Value>(&r.body).unwrap(), r.display);
+        assert_eq!(
+            r.snapshot.selected.as_ref().unwrap()["restoreConsent"]["historicalQueued"][0]["periodIndex"],
+            2
+        );
+        assert!(!r.action.activates_app());
+        let marker = r.marker("http://127.0.0.1:1234", Some("private-profile"));
+        assert!(valid_record(&marker));
+        assert_eq!(marker["operation"], "reconsent");
+        assert!(marker.get("reason").is_none());
+        let mut changed = d.clone();
+        changed.plan.as_mut().unwrap()["plan"]["restoreConsent"]["boundaryHash"] =
+            json!("e".repeat(64));
+        assert!(!r.current(&changed));
+        assert!(Review::prepare(&changed, Action::Reconsent, "review", &[], None, true).is_err());
+        assert!(!definite_refusal(503));
+        assert!(!definite_refusal(408));
+    }
+    #[test]
+    fn reconsent_requires_current_admin_full_source_reason_and_cannot_use_resume() {
+        let d = restored();
+        for change in 0..8 {
+            let mut bad = d.clone();
+            match change {
+                0 => bad.role = "bookkeeper".into(),
+                1 => bad.plan = None,
+                2 => bad.plan.as_mut().unwrap()["plan"]["template"]["id"] = json!(8),
+                3 => bad.selected.as_mut().unwrap()["state"] = json!("cancelled"),
+                4 => bad.selected.as_mut().unwrap()["restoreConsent"]["required"] = json!(false),
+                5 => bad.selected.as_mut().unwrap()["ownerUserId"] = json!("new-owner"),
+                6 => bad.selected.as_mut().unwrap()["lastRun"] = json!({"status":"unresolved"}),
+                _ => {
+                    bad.plan.as_mut().unwrap()["plan"]["normalDue"] =
+                        json!({"periodIndex":5,"issueDate":"2026-10-19"})
+                }
+            }
+            assert!(
+                Review::prepare(&bad, Action::Reconsent, "review", &[], None, true).is_err(),
+                "guard {change}"
+            );
+        }
+        assert!(Review::prepare(&d, Action::Reconsent, "", &[], None, true).is_err());
+        assert!(Review::prepare(&d, Action::Reconsent, "review", &[], None, false).is_err());
+        let mut substitute = d.clone();
+        substitute.selected.as_mut().unwrap()["ownerUserId"] = json!("new-owner");
+        assert!(Review::prepare(&substitute, Action::Resume, "resume", &[], None, true).is_err());
+    }
+    #[test]
+    fn reconsent_receipt_requires_new_owner_and_resolved_matching_boundary() {
+        let d = restored();
+        let r = Review::prepare(&d, Action::Reconsent, "review", &[], None, true).unwrap();
+        let mut row = d.selected.clone().unwrap();
+        row["state"] = json!("enabled");
+        row["ownerUserId"] = json!("new-owner");
+        row["restoreConsent"]["required"] = json!(false);
+        let good = json!({"ok":true,"scheduledRecurring":row});
+        assert!(r.receipt(&good));
+        for (field, value) in [
+            ("ownerUserId", json!("old-owner")),
+            ("state", json!("paused")),
+        ] {
+            let mut bad = good.clone();
+            bad["scheduledRecurring"][field] = value;
+            assert!(!r.receipt(&bad));
+        }
+        let mut unresolved = good.clone();
+        unresolved["scheduledRecurring"]["restoreConsent"]["required"] = json!(true);
+        assert!(!r.receipt(&unresolved));
+        let mut wrong_boundary = good.clone();
+        wrong_boundary["scheduledRecurring"]["restoreConsent"]["boundaryHash"] =
+            json!("e".repeat(64));
+        assert!(!r.receipt(&wrong_boundary));
+        assert!(!r.receipt(&json!({"ok":true})));
     }
     #[test]
     fn readonly_status_and_plan_preserve_last_next_missed_history_error_without_local_calendar_or_dispatch()
@@ -962,6 +1126,17 @@ mod tests {
         assert!(!valid_record(&wrong));
         finish_at(&dir, &marker, true).unwrap();
         assert!(load_at(&dir).unwrap().is_none());
+        let restored = restored();
+        let reconsent =
+            Review::prepare(&restored, Action::Reconsent, "review", &[], None, true).unwrap();
+        let restored_marker = reconsent.marker("https://one.invalid", None);
+        begin_at(&dir, &restored_marker).unwrap();
+        // Canonical reads and unknown HTTP outcomes must not resolve the saved intent.
+        assert!(reconsent.current(&restored));
+        assert!(!definite_refusal(503));
+        assert_eq!(load_at(&dir).unwrap(), Some(restored_marker.clone()));
+        assert!(begin_at(&dir, &restored_marker).is_err());
+        finish_at(&dir, &restored_marker, true).unwrap();
         fs::remove_dir_all(dir).unwrap();
     }
 }

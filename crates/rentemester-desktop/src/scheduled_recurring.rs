@@ -280,7 +280,7 @@ impl ScheduledRecurring {
                                         .as_i64()
                                         == this.selected;
                                     let same_reviewed_source=data.principal==activation_source.principal && data.ledger==activation_source.ledger && activation_source.reviewed_template().ok().zip(data.reviewed_template().ok()).is_some_and(|(before,after)|before==after);
-                                    if exact && matches!(action,Action::Enable|Action::Resume) && data.selected.as_ref()==Some(&receipt["scheduledRecurring"]) && same_reviewed_source {
+                                    if exact && action.activates_app() && data.selected.as_ref()==Some(&receipt["scheduledRecurring"]) && same_reviewed_source {
                                         let (session, origin, local) = (
                                             this.session.clone(),
                                             this.origin.clone(),
@@ -299,7 +299,7 @@ impl ScheduledRecurring {
                                                 " Aktiv-app-start blev ikke optaget: {e}"
                                             ));
                                         }
-                                    } else if exact && matches!(action,Action::Enable|Action::Resume) { this.status.push_str(" Den immutable skabelon/principal/ledger matcher ikke det gennemgåede grundlag. Aktiv-app-automatik er IKKE startet; ny source review kræves.");
+                                    } else if exact && action.activates_app() { this.status.push_str(" Den immutable skabelon/principal/ledger matcher ikke det gennemgåede grundlag. Aktiv-app-automatik er IKKE startet; ny source review kræves.");
                                     } else if exact
                                         && matches!(
                                             action,
@@ -308,6 +308,7 @@ impl ScheduledRecurring {
                                                 | Action::CatchUp
                                                 | Action::Skip
                                                 | Action::Dispatch
+                                                | Action::Reconsent
                                         )
                                     {
                                         if let Some(id) = this.selected {
@@ -468,6 +469,15 @@ impl Render for ScheduledRecurring {
                     view = view.child(line);
                 }
             }
+            if review.action == Action::Reconsent {
+                view = view.child(format!("Ny samtykkende ejer: {} · virksomhed {} · ledger {}. Reconsent starter IKKE automatik; separat bekræftet Start kræves.", review.snapshot.principal, review.snapshot.company, review.snapshot.ledger));
+                for line in state::lines(
+                    &review.snapshot.selected.as_ref().unwrap()["restoreConsent"],
+                    "frossenRestoreBoundaryOgHistoriskKø",
+                ) {
+                    view = view.child(line);
+                }
+            }
             view = view.child(div().text_lg().child(format!(
                 "Gennemgå {} · faktisk skabelon {}",
                 review.action.name(),
@@ -483,6 +493,15 @@ impl Render for ScheduledRecurring {
         }
         view = view.child(Input::new(&self.reason).disabled(self.busy));
         let state = selected["state"].as_str().unwrap_or("?");
+        if data.restore_required() {
+            view = view.child("Denne gendannede kø kræver nyt ejersamtykke. Historiske forekomster er bevaret som dokumentation og genkøres ikke. Genoptag under tidligere ejer kan ikke erstatte reconsent.")
+                .child(format!("Aktuel autentificeret bruger: {} · rolle {}", data.principal, data.role));
+            for line in state::lines(&selected["restoreConsent"], "restoreConsent") {
+                view = view.child(line);
+            }
+            view = view.child(Checkbox::new("scheduled-recurring-restore-consent").label("Jeg har gennemgået restore-boundary, historisk kø og fuld skabelon og overtager samtykke under min aktuelle bruger. Automatik kræver separat Start.").checked(self.consent).disabled(self.busy || data.role != "owner").on_click(cx.listener(|this,v,_,cx|{this.consent=*v;cx.notify();})))
+                .child(Button::new("scheduled-recurring-review-reconsent").label("Gennemgå nyt ejersamtykke efter gendannelse").disabled(self.busy || data.role != "owner" || !self.consent || data.plan.is_none()).on_click(cx.listener(|this,_,_,cx|this.prepare(Action::Reconsent,cx))));
+        }
         if state == "disabled" {
             view=view.child(Checkbox::new("scheduled-recurring-consent").label("Jeg samtykker eksplicit til denne skabelons planlagte udstedelse under min aktuelle bruger; ingen automatisk postering/mail eller unattended lokal service loves").checked(self.consent).disabled(self.busy).on_click(cx.listener(|this,v,_,cx|{this.consent=*v;cx.notify();})))
    .child(Button::new("scheduled-recurring-review-enable").label("Gennemgå aktivering med præcis templateHash").disabled(self.busy||!self.consent).on_click(cx.listener(|this,_,_,cx|this.prepare(Action::Enable,cx))));
@@ -495,7 +514,7 @@ impl Render for ScheduledRecurring {
             ),
             (
                 Action::Resume,
-                state == "paused",
+                state == "paused" && !data.restore_required(),
                 "Gennemgå genoptag under samme samtykkende bruger",
             ),
             (
