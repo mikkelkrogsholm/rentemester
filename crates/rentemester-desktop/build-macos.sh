@@ -1,5 +1,5 @@
 #!/bin/sh
-# Bundle the native GUI, same-version Mac server and browser setup assets.
+# Build-time tools only; the bundle runs its native GUI/server and static web assets.
 set -eu
 if [ "$(uname -s)" != Darwin ]; then
   echo "The current bundle helper requires macOS." >&2
@@ -12,26 +12,22 @@ if [ ! -f "$web_source/index.html" ]; then
   echo "Build the cockpit first (cd app && bun run build), or set RENTEMESTER_DESKTOP_WEB_DIR." >&2
   exit 2
 fi
+# Preserve dev/debug defaults; custom Cargo target directory/profile stay consistent at assembly.
+profile=${RENTEMESTER_DESKTOP_PROFILE:-dev}
+target_dir=${CARGO_TARGET_DIR:-"$root/target"}
+target=${CARGO_BUILD_TARGET:-}
 # Build separately: server/storage JSON features must not force another GPUI build.
-CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 cargo build --locked -p rentemester-server -j 4
-CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 cargo +stable build --locked -p rentemester-desktop -j 4
-bundle="$root/target/native/Rentemester Desktop.app"
-mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources/web"
-cp "$root/target/debug/rentemester-desktop" "$bundle/Contents/MacOS/rentemester-desktop"
-cp "$root/target/debug/rentemester-server" "$bundle/Contents/MacOS/rentemester-server"
-cp -R "$web_source/." "$bundle/Contents/Resources/web/"
-cp "$root/assets/brand/rentemester-app-icon.icns" "$bundle/Contents/Resources/Rentemester.icns"
-cat > "$bundle/Contents/Info.plist" <<'PLIST'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0"><dict>
-<key>CFBundleIdentifier</key><string>dk.rentemester.desktop</string>
-<key>CFBundleName</key><string>Rentemester Desktop</string>
-<key>CFBundleExecutable</key><string>rentemester-desktop</string>
-<key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleIconFile</key><string>Rentemester.icns</string>
-<key>CFBundleVersion</key><string>0.1.0</string>
-<key>NSHighResolutionCapable</key><true/>
-</dict></plist>
-PLIST
-printf '%s\n' "$bundle"
+CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 cargo build --locked --profile "$profile" -p rentemester-server -j 4
+CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 cargo +stable build --locked --profile "$profile" -p rentemester-desktop -j 4
+revision=$(git rev-parse HEAD)
+version=$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\([^"]*\)"/\1/p' Cargo.toml)
+server_toolchain=$(rustc --version)
+desktop_toolchain=$(rustc +stable --version)
+architecture=$(uname -m)
+if [ -n "$target" ]; then architecture=${target%%-*}; fi
+set -- --root "$root" --target-dir "$target_dir" --profile "$profile" --target "$target" \
+  --web "$web_source" --icon "$root/assets/brand/rentemester-app-icon.icns" \
+  --output "$root/target/native/Rentemester Desktop.app" --revision "$revision" --version "$version" \
+  --architecture "$architecture" --server-toolchain "$server_toolchain" --desktop-toolchain "$desktop_toolchain"
+if [ -n "$(git status --porcelain -- . ':!graphify-out')" ]; then set -- "$@" --source-dirty; fi
+python3 "$root/scripts/release/assemble-native-macos.py" "$@"
