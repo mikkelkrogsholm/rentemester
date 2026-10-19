@@ -1419,6 +1419,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "rentemester-mcp"
+version = "0.1.0"
+dependencies = [
+ "rentemester-client",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "rentemester-runtime"
 version = "0.1.0"
 dependencies = [

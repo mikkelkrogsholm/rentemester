@@ -1,6 +1,9 @@
 //! Origin-bound HTTP adapter shared by interactive and agent clients. No ledger logic.
 //! Supply a browser session's Cookie request-header value, never a Set-Cookie header.
 //! Authentication/enrollment is currently performed by the server's browser UI.
+mod credentials;
+pub use credentials::read_cookie_file;
+
 use reqwest::{
     Client, Method, Url,
     header::{COOKIE, HeaderValue},

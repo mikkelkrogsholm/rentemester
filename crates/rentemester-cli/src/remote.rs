@@ -82,7 +82,10 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         .get("--server")
         .ok_or_else(|| invalid("explicit --server origin required"))?;
     let cookie = match flags.get("--cookie-file") {
-        Some(path) => Some(read_cookie(path)?),
+        Some(path) => Some(
+            rentemester_client::read_cookie_file(std::path::Path::new(path))
+                .map_err(client_error)?,
+        ),
         None if command == "health" => None,
         None => {
             return Err(invalid(
@@ -148,35 +151,4 @@ fn client_error(error: ClientError) -> Failure {
         ClientError::OutcomeUnknown => (1, "outcome_unknown"),
     };
     (exit, Error::new(code, error.to_string()))
-}
-fn read_cookie(path: &str) -> Result<String, Failure> {
-    // Open first, then inspect the actual file descriptor to avoid path-replacement races.
-    let mut file = std::fs::File::open(path).map_err(|_| invalid("could not open cookie file"))?;
-    let metadata = file
-        .metadata()
-        .map_err(|_| invalid("could not inspect cookie file"))?;
-    if !metadata.is_file() || metadata.len() > 8192 {
-        return Err(invalid(
-            "cookie must be a regular file of at most 8192 bytes",
-        ));
-    }
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::MetadataExt;
-        if metadata.mode() & 0o077 != 0 {
-            return Err(invalid(
-                "cookie file must have no group or other permissions (chmod 600)",
-            ));
-        }
-    }
-    let mut bytes = Vec::new();
-    file.by_ref()
-        .take(8193)
-        .read_to_end(&mut bytes)
-        .map_err(|_| invalid("could not read cookie file"))?;
-    if bytes.len() > 8192 {
-        return Err(invalid("cookie file exceeds limit"));
-    }
-    let value = String::from_utf8(bytes).map_err(|_| invalid("cookie file must be UTF-8"))?;
-    Ok(value.trim_end_matches(['\r', '\n']).to_owned())
 }
