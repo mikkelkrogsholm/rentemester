@@ -517,7 +517,8 @@ impl Review {
                     || !p["normalDue"].is_null()
                     || !p["queued"].as_array().is_some_and(|a| a.is_empty())
                     || s["error"] == "unresolved_attempt"
-                    || s["lastRun"].get("status").is_some_and(|v| v != "succeeded")
+                    || (!s["lastRun"].is_null()
+                        && !matches!(s["lastRun"]["status"].as_str(), Some("succeeded" | "failed")))
                 {
                     return Err("Gennemgå restore-boundary, historisk kø, fuld skabelon og ny ejer med eksplicit samtykke; uafklaret kilde kræver manuel afklaring".into());
                 }
@@ -734,11 +735,17 @@ mod tests {
         assert!(Review::prepare(&changed, Action::Reconsent, "review", &[], None, true).is_err());
         assert!(!definite_refusal(503));
         assert!(!definite_refusal(408));
+        let mut known_failed = restored();
+        known_failed.selected.as_mut().unwrap()["lastRun"] = json!({"status":"failed","periodIndex":1});
+        known_failed.selected.as_mut().unwrap()["error"] = json!("source_refused");
+        let reviewed = Review::prepare(&known_failed, Action::Reconsent, "Reviewed resolved failure", &[], None, true).unwrap();
+        assert!(!reviewed.action.activates_app());
+        assert_eq!(reviewed.snapshot.selected.as_ref().unwrap()["lastRun"]["status"], "failed");
     }
     #[test]
     fn reconsent_requires_current_admin_full_source_reason_and_cannot_use_resume() {
         let d = restored();
-        for change in 0..8 {
+        for change in 0..10 {
             let mut bad = d.clone();
             match change {
                 0 => bad.role = "bookkeeper".into(),
@@ -748,6 +755,8 @@ mod tests {
                 4 => bad.selected.as_mut().unwrap()["restoreConsent"]["required"] = json!(false),
                 5 => bad.selected.as_mut().unwrap()["ownerUserId"] = json!("new-owner"),
                 6 => bad.selected.as_mut().unwrap()["lastRun"] = json!({"status":"unresolved"}),
+                7 => bad.selected.as_mut().unwrap()["lastRun"] = json!({"status":"unknown"}),
+                8 => bad.selected.as_mut().unwrap()["lastRun"] = json!({}),
                 _ => {
                     bad.plan.as_mut().unwrap()["plan"]["normalDue"] =
                         json!({"periodIndex":5,"issueDate":"2026-10-19"})

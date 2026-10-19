@@ -9,6 +9,7 @@ mock.module("../lib/auth-client", () => ({ authClient: { getSession: async () =>
 const { AuthProvider, useAuth } = await import("../lib/auth-context");
 const { MutationMemoryProvider } = await import("../lib/mutation-memory");
 const { ScheduledRecurringProvider, useScheduledRecurringAutomation } = await import("./ScheduledRecurringProvider");
+const { ScheduledRecurringView } = await import("../views/ScheduledRecurringView");
 afterEach(() => { sessionStorage.clear(); restoreGlobals(); });
 beforeEach(() => sessionStorage.clear());
 const row = { templateId: 31, templateHash: "a".repeat(64), stateHash: "b".repeat(64), state: "enabled", ownerUserId: user.id, error: null, missedCount: 0, queued: [] };
@@ -48,4 +49,34 @@ test("unconfirmed success persists a payload-free lock and explicit restart cann
   expect(JSON.parse(saved)).toHaveLength(1); expect(saved).not.toContain("synthetic");
   await start(); await screen.findByText(/En tidligere handling har uafklaret udfald/);
   expect(posts()).toHaveLength(1);
+});
+test("a restored schedule awaiting consent refuses automatic dispatch", async () => {
+  mockFetch({
+    "GET /api/me": { user, workspaceRole: "member", companies: [{ slug: "a", name: "Synthetic", role: "owner", archived: false }] },
+    "GET /api/companies/a/scheduled-recurring": { scheduledRecurring: { rows: [{ ...row, restoreConsent: { required: true } }] } },
+  });
+  mount(); await start();
+  await screen.findByText(/Gennemgå skabelon, samtykke og aktuel adgang/);
+  expect(posts()).toHaveLength(0);
+});
+test("explicit restored-owner consent does not activate the app driver", async () => {
+  const restoreConsent = { required: true, boundaryHash: "d".repeat(64), historicalOwnerUserId: "old-owner", historicalQueued: [] };
+  mockFetch({
+    "GET /api/me": { user, workspaceRole: "member", companies: [{ slug: "a", name: "Synthetic", role: "owner", archived: false }] },
+    "GET /api/companies/a/scheduled-recurring": { scheduledRecurring: { asOfDate: plan.asOfDate, timeZone: "Europe/Copenhagen", rows: [{ ...row, state: "paused", ownerUserId: null, restoreConsent }] } },
+    "GET /api/companies/a/scheduled-recurring/31/plan": { plan: { ...plan, normalDue: null, restoreConsent } },
+    "POST /api/companies/a/scheduled-recurring/reconsent": { scheduledRecurring: { ...row, restoreConsent: { ...restoreConsent, required: false } } },
+  });
+  renderAt(<AuthProvider hosted backend="rust"><MutationMemoryProvider><ScheduledRecurringProvider><ScheduledRecurringView slug="a" /></ScheduledRecurringProvider></MutationMemoryProvider></AuthProvider>, { route: "/companies/a/recurring-invoices", path: "/companies/:slug/recurring-invoices" });
+  await screen.findByRole("option", { name: /Skabelon 31/ });
+  await userEvent.selectOptions(screen.getByLabelText("Planlagt fakturaskabelon"), "31");
+  await userEvent.click(screen.getByRole("button", { name: "Gennemgå forekomster" }));
+  await screen.findByRole("heading", { name: "Synthetic service" });
+  await userEvent.type(screen.getByLabelText("Planlægningsbegrundelse"), "Ny ejer har gennemgået skabelonen");
+  await userEvent.click(screen.getByRole("checkbox", { name: /Jeg bekræfter/ }));
+  await userEvent.click(screen.getByRole("button", { name: "Godkend planlægning efter gendannelse" }));
+  await screen.findByText(/Dit samtykke er gemt. Automatik er ikke startet/);
+  expect(posts()).toHaveLength(1);
+  expect(posts()[0][0]).toContain("/reconsent");
+  expect(screen.queryByText(/Planlagte fakturaer kører, mens denne app er åben/)).toBeNull();
 });

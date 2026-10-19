@@ -154,7 +154,7 @@ export async function checkBackupScheduledRecurring(ctx: Context, state: State, 
       if (!isDeepStrictEqual(actual.history, source.history) || !isDeepStrictEqual(actual.lastRun, source.lastRun) || actual.templateHash !== source.templateHash) throw Error("Imported raw scheduler history/hash changed");
       if (source.state === "enabled" || source.state === "paused") {
         const consent = actual.restoreConsent;
-        if (actual.state !== "paused" || actual.ownerUserId !== null || actual.queued.length !== 0 || actual.nextOccurrence !== null || consent?.required !== true || !/^[0-9a-f]{64}$/.test(consent.boundaryHash) || consent.historicalOwnerUserId !== source.ownerUserId || !isDeepStrictEqual(consent.historicalQueued, source.queued)) throw Error("Imported authority/queue became live or provenance was lost");
+        if (actual.state !== "paused" || actual.ownerUserId !== null || actual.queued.length !== 0 || !isDeepStrictEqual(actual.nextOccurrence, source.nextOccurrence) || consent?.required !== true || !/^[0-9a-f]{64}$/.test(consent.boundaryHash) || consent.historicalOwnerUserId !== source.ownerUserId || !isDeepStrictEqual(consent.historicalQueued, source.queued)) throw Error("Imported authority/queue became live or provenance was lost");
         const p = now.plans[kind];
         if (p.normalDue !== null || p.queued.length || !isDeepStrictEqual(p.restoreConsent, consent)) throw Error("Restored plan enables imported work before reconsent");
       } else if (actual.state !== source.state) throw Error("Cancelled source state changed");

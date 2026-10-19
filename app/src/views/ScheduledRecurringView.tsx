@@ -5,17 +5,23 @@ import { Button, Input, Select } from "../components/ui";
 import { scheduledRecurringApi, type ScheduledAction, type ScheduledPlan } from "../lib/api/scheduled-recurring";
 import { useAsync } from "../lib/useAsync";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useCapabilities } from "../lib/useCapabilities";
+import { useOptionalAuth } from "../lib/auth-context";
+import { ApiError } from "../lib/api/_shared";
 
 const labels: Record<ScheduledAction, string> = {
   enable: "Aktivér planlagte fakturaer", pause: "Sæt på pause", resume: "Genoptag",
   cancel: "Annullér planlægning", "catch-up": "Sæt valgte forekomster i kø",
   skip: "Spring valgte forekomster over", dispatch: "Udsted valgt forekomst",
+  reconsent: "Godkend planlægning efter gendannelse",
 };
 const intervals: Record<string, string> = { weekly: "uge", monthly: "måned", quarterly: "kvartal", yearly: "år" };
 const states = { disabled: "Ikke aktiveret", enabled: "Aktiveret", paused: "På pause", cancelled: "Annulleret" };
 /** All dates, periods, consent and issuance decisions come from the Rust server. */
 export function ScheduledRecurringView({ slug, templates = [] }: { slug: string; templates?: Array<{ id: number; name: string }> }) {
   const automation = useScheduledRecurringAutomation();
+  const capabilities = useCapabilities(slug);
+  const auth = useOptionalAuth();
   const current = useAsync(signal => scheduledRecurringApi.current(slug, signal), [slug]);
   const [templateId, setTemplateId] = useState("");
   const [action, setAction] = useState<ScheduledAction>("enable");
@@ -31,12 +37,16 @@ export function ScheduledRecurringView({ slug, templates = [] }: { slug: string;
   const outcome = useMutationOutcome(refresh, "scheduled-recurring", slug);
   const row = current.data?.rows.find(r => String(r.templateId) === templateId);
   const reviewed = plan?.template && String(plan.templateId) === templateId && plan.templateHash === row?.templateHash && plan.stateHash === row?.stateHash;
-  const usesPlanHash = ["catch-up", "skip", "dispatch"].includes(action);
+  const restoring = row?.restoreConsent?.required === true;
+  const restoreReviewed = !restoring || plan?.restoreConsent?.required === true && plan.restoreConsent.boundaryHash === row.restoreConsent?.boundaryHash;
+  const usesPlanHash = ["catch-up", "skip", "dispatch", "reconsent"].includes(action);
   const needsPlan = usesPlanHash || action === "enable" || action === "resume";
-  const needsReason = ["pause", "resume", "cancel", "skip"].includes(action);
+  const needsReason = ["pause", "resume", "cancel", "skip", "reconsent"].includes(action);
   const choices = plan ? [...(plan.normalDue ? [plan.normalDue] : []), ...plan.queued] : [];
   const canSend = row && confirmed && !busy && !outcome.blocked &&
-    (!needsReason || reason.trim()) && (!needsPlan || reviewed) &&
+    (action !== "reconsent" || restoring && capabilities.can("company.admin") && restoreReviewed) &&
+    (!restoring || !["enable", "resume", "catch-up", "dispatch"].includes(action)) &&
+    (!needsReason || reason.trim().length > 0 && reason.trim().length <= 1000) && (!needsPlan || reviewed) &&
     (!["catch-up", "skip"].includes(action) || periods.length > 0) &&
     (action !== "dispatch" || choices.some(p => String(p.periodIndex) === dispatchPeriod));
   async function loadPlan() {
@@ -54,14 +64,25 @@ export function ScheduledRecurringView({ slug, templates = [] }: { slug: string;
     else if (usesPlanHash) {
       body.planHash = plan!.planHash;
       if (action === "dispatch") body.periodIndex = Number(dispatchPeriod);
-      else body.periodIndexes = periods;
-      if (action === "skip") body.reason = reason;
+      else if (action !== "reconsent") body.periodIndexes = periods;
+      if (action === "skip" || action === "reconsent") body.reason = reason;
     } else { body.expectedStateHash = row.stateHash; body.reason = reason; }
     try {
       automation?.stop(slug, row.templateId);
-      const result = await scheduledRecurringApi.mutate(slug, action, body).catch(outcome.reject);
+      const result = await scheduledRecurringApi.mutate(slug, action, body).then(result => {
+        if (action === "reconsent" && (result.scheduledRecurring?.templateId !== row.templateId ||
+            result.scheduledRecurring.templateHash !== row.templateHash || result.scheduledRecurring.state !== "enabled" ||
+            typeof result.scheduledRecurring.ownerUserId !== "string" || !result.scheduledRecurring.ownerUserId ||
+            auth?.context && result.scheduledRecurring.ownerUserId !== auth.context.user.id ||
+            result.scheduledRecurring.restoreConsent?.required !== false ||
+            result.scheduledRecurring.restoreConsent.boundaryHash !== plan?.restoreConsent?.boundaryHash)) {
+          throw new ApiError("internal", "Serverens godkendelse kunne ikke bekræftes. Gennemgå historikken før du fortsætter.", 200);
+        }
+        return result;
+      }).catch(outcome.reject);
       setMessage(result.dispatch?.status === "failed" ? `Kørslen mislykkedes: ${result.dispatch.error ?? "Se kørselsstatus"}.` :
-        result.generation ? "Fakturaen er udstedt med original og PDF. Den er ikke bogført eller sendt." : "Planlægningen er opdateret.");
+        result.generation ? "Fakturaen er udstedt med original og PDF. Den er ikke bogført eller sendt." :
+        action === "reconsent" ? "Dit samtykke er gemt. Automatik er ikke startet. Gennemgå tidligere køvalg igen, før du vælger nye kørsler." : "Planlægningen er opdateret.");
       if (action === "enable" || action === "resume") automation?.start(slug, row.templateId, result.scheduledRecurring.templateHash);
       refresh();
     } catch (e) { setMessage(e instanceof Error ? e.message : "Handlingen kunne ikke bekræftes."); }
@@ -76,6 +97,8 @@ export function ScheduledRecurringView({ slug, templates = [] }: { slug: string;
     <Button type="button" onClick={refresh} disabled={busy}>Opdatér planlægningsstatus</Button>
     <label>Skabelon<Select aria-label="Planlagt fakturaskabelon" value={templateId} disabled={busy} onChange={e => {
       setTemplateId(e.target.value); setPlan(null); setPeriods([]); setDispatchPeriod(""); setConfirmed(false); setMessage("");
+      const selected = current.data?.rows.find(r => String(r.templateId) === e.target.value);
+      setAction(selected?.restoreConsent?.required && capabilities.can("company.admin") ? "reconsent" : "enable");
     }}><option value="">Vælg skabelon</option>{current.data?.rows.map(r => <option key={r.templateId} value={r.templateId}>{templates.find(t => t.id === r.templateId)?.name ?? `Skabelon ${r.templateId}`} — {states[r.state]}</option>)}</Select></label>
     {!current.data?.rows.length && <p>Opret først en fakturaskabelon ovenfor.</p>}
     {row && <>
@@ -83,6 +106,11 @@ export function ScheduledRecurringView({ slug, templates = [] }: { slug: string;
         <dt>Automatik i denne app</dt><dd>{automation?.active(slug, row.templateId) ? "Kører" : "Ikke startet"}</dd><dt>Manglende forekomster</dt><dd>{row.missedCount}</dd><dt>I kø</dt><dd>{row.queued.length}</dd>
         <dt>Seneste kørsel</dt><dd>{row.lastRun ? `${String(row.lastRun.issueDate ?? "Registreret")} · ${{ succeeded: "Udstedt", failed: "Mislykket", unresolved: "Uafklaret" }[String(row.lastRun.status)] ?? String(row.lastRun.status ?? "")}` : "Ingen"}</dd></dl>
       {row.error && <Banner kind="warning">Kørslen kræver handling: {row.error}</Banner>}
+      {restoring && <section aria-label="Planlægning efter gendannelse"><h3>Godkend planlægningen igen</h3>
+        <p>Historikken er bevaret. Tidligere samtykke og køvalg giver ikke adgang til nye kørsler i det gendannede regnskab. En ejer skal gennemgå skabelonen og godkende planlægningen igen.</p>
+        {row.restoreConsent!.historicalQueued.length > 0 && <p>Tidligere køvalg, som ikke er aktive: {row.restoreConsent!.historicalQueued.map(p => p.issueDate).join(", ")}. Vælg dem igen efter godkendelsen, hvis de skal køres.</p>}
+        {!capabilities.can("company.admin") && <p>Bed en ejer om at gennemgå og godkende planlægningen.</p>}
+      </section>}
       <Button type="button" disabled={busy} onClick={() => void loadPlan()}>Gennemgå forekomster</Button>
       {plan && <div><h3>Plan pr. {plan.asOfDate}</h3>
         {plan.template && <section aria-label="Gennemgå fakturaskabelon"><h4>{plan.template.name}</h4><p>Sælger: {plan.template.payload.seller?.name ?? "Ikke angivet"} · Kunde: {plan.template.payload.buyer?.name ?? "Ikke angivet"}</p><p>Første fakturadato: {plan.template.firstIssueDate} · Betalingsfrist: {plan.template.paymentTermsDays} dage · Interval: {plan.template.intervalCount} × {intervals[plan.template.interval] ?? plan.template.interval}</p><p>Momssats i skabelonen: {plan.template.payload.vatRatePercent == null ? "Ikke angivet" : `${plan.template.payload.vatRatePercent} %`}</p><table><thead><tr><th>Beskrivelse</th><th>Antal</th><th>Enhedspris ekskl. moms</th></tr></thead><tbody>{plan.template.payload.lines.map((line, i) => <tr key={i}><td>{line.description}</td><td>{String(line.quantity)}</td><td>{String(line.unitPriceExVat)} {plan.template.payload.currency ?? ""}</td></tr>)}</tbody></table><p>Beløbene er skabelonens kildepriser. Endelige beløb valideres og beregnes ved udstedelse.</p></section>}
@@ -90,14 +118,15 @@ export function ScheduledRecurringView({ slug, templates = [] }: { slug: string;
         {plan.missed.length ? <fieldset disabled={busy}><legend>Manglende forekomster</legend>{plan.missed.map(p => <label key={p.periodIndex}>
           <input type="checkbox" checked={periods.includes(p.periodIndex)} onChange={e => { setPeriods(e.target.checked ? [...periods, p.periodIndex] : periods.filter(i => i !== p.periodIndex)); setConfirmed(false); }} /> {p.issueDate} (periode {p.periodIndex})</label>)}</fieldset> : <p>Ingen manglende forekomster.</p>}
       </div>}
-      <label>Handling<Select aria-label="Planlægningshandling" value={action} disabled={busy} onChange={e => { setAction(e.target.value as ScheduledAction); setConfirmed(false); }}>{Object.entries(labels).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</Select></label>
+      <label>Handling<Select aria-label="Planlægningshandling" value={action} disabled={busy} onChange={e => { setAction(e.target.value as ScheduledAction); setConfirmed(false); }}>{Object.entries(labels).filter(([id]) => id !== "reconsent" || restoring && capabilities.can("company.admin")).map(([id, label]) => <option key={id} value={id}>{label}</option>)}</Select></label>
       {action === "dispatch" && <label>Forekomst til udstedelse<Select aria-label="Forekomst til udstedelse" value={dispatchPeriod} disabled={busy} onChange={e => { setDispatchPeriod(e.target.value); setConfirmed(false); }}><option value="">Vælg gennemgået forekomst</option>{choices.map(p => <option key={p.periodIndex} value={p.periodIndex}>{p.issueDate} (periode {p.periodIndex})</option>)}</Select></label>}
       {needsReason && <label>Begrundelse<Input aria-label="Planlægningsbegrundelse" value={reason} disabled={busy} onChange={e => { setReason(e.target.value); setConfirmed(false); }} /></label>}
       {needsPlan && !reviewed && <p>Hent en aktuel plan før denne handling.</p>}
+      {action === "reconsent" && <p>Godkendelsen gælder den viste skabelon i det gendannede regnskab. Den udsteder ingen faktura og starter ikke automatik.</p>}
       <label><input type="checkbox" checked={confirmed} disabled={busy || outcome.blocked} onChange={e => setConfirmed(e.target.checked)} /> Jeg bekræfter den valgte handling og de viste forekomster.</label>
-      {automation && row.state === "enabled" && <Button type="button" requiredPermission="company.draft.write" disabled={!confirmed || !reviewed || busy || outcome.blocked || automation.active(slug, row.templateId)} onClick={() => { if (!outcome.isBlocked()) { automation.start(slug, row.templateId, row.templateHash); setConfirmed(false); } }}>Start automatik mens appen er åben</Button>}
+      {automation && row.state === "enabled" && !restoring && <Button type="button" requiredPermission="company.draft.write" disabled={!confirmed || !reviewed || busy || outcome.blocked || automation.active(slug, row.templateId)} onClick={() => { if (!outcome.isBlocked()) { automation.start(slug, row.templateId, row.templateHash); setConfirmed(false); } }}>Start automatik mens appen er åben</Button>}
       {outcome.feedback}
-      <Button type="button" requiredPermission="company.draft.write" disabled={!canSend} onClick={() => void submit()}>{labels[action]}</Button>
+      <Button type="button" requiredPermission={action === "reconsent" ? "company.admin" : "company.draft.write"} disabled={!canSend} onClick={() => void submit()}>{labels[action]}</Button>
     </>}
     {message && <p role="status">{message}</p>}
   </section>;
