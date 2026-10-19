@@ -64,6 +64,11 @@ export function WorkspaceTransferBanner() {
 export function WorkspaceReadOnlyGuard({ children }: { children: ReactNode }) {
   const lifecycle = useWorkspaceTransfer();
   const { pathname } = useLocation();
-  if (!lifecycle?.enabled || lifecycle.writable || pathname === "/flytning") return <>{children}</>;
-  return <fieldset disabled aria-label="Skrivebeskyttet workspace"><legend>Workspace er skrivebeskyttet. Rapportlinks kan fortsat åbnes.</legend>{children}</fieldset>;
+  if (!lifecycle?.enabled) return <>{children}</>;
+  const blocked = !lifecycle.writable && pathname !== "/flytning";
+  // Stable parent and child slots preserve open reviews and outcome handlers.
+  return <fieldset disabled={blocked} aria-label={blocked ? "Skrivebeskyttet workspace" : undefined} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
+    {blocked && <legend>Workspace er skrivebeskyttet. Rapportlinks kan fortsat åbnes.</legend>}
+    {children}
+  </fieldset>;
 }
