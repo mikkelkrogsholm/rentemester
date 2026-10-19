@@ -362,3 +362,6 @@ pub use ownership::{OwnershipMutation,MAX_OWNERSHIP_BODY,MAX_OWNERSHIP_PROPOSE_B
 
 mod intercompany;
 pub use intercompany::{IntercompanyMutation,MAX_INTERCOMPANY_BODY,intercompany_body_schema};
+
+mod consolidation;
+pub use consolidation::{ConsolidationMutation,MAX_CONSOLIDATION_BODY,MAX_CONSOLIDATION_PROPOSE_BODY,consolidation_body_schema};

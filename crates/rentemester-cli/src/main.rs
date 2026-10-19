@@ -15,6 +15,7 @@ mod workspace_inbox;
 mod corporate_records;
 mod ownership;
 mod intercompany;
+mod consolidation;
 mod accruals;
 mod assets;
 mod recurring_invoices;
