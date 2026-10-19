@@ -196,7 +196,9 @@ def main():
                         connection.sendall(value.encode('ascii') + b'\r\n')
                     def line():
                         value = stream.readline(16385)
-                        if not value or len(value) > 16384 or not value.endswith(b'\r\n'):
+                        if not value:
+                            raise EOFError('SMTP peer closed its connection')
+                        if len(value) > 16384 or not value.endswith(b'\r\n'):
                             raise ValueError('bounded SMTP line required')
                         return value[:-2]
                     def auth(raw):
@@ -286,7 +288,7 @@ def main():
                             reply('250 OK')
                         else:
                             reply('503 Bad sequence')
-                except (OSError, ssl.SSLError):
+                except (EOFError, OSError, ssl.SSLError):
                     pass  # Lost final acknowledgement after the intentional crash is expected.
                 except Exception:
                     with lock:
