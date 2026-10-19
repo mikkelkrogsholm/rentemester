@@ -12,6 +12,7 @@ use gpui_kit::{
 };
 mod bank;
 mod bank_state;
+mod contacts;
 mod invoice;
 mod invoice_state;
 mod journal;
@@ -187,6 +188,7 @@ struct Desktop {
     invoice: Option<Entity<invoice::Invoice>>,
     reporting: Option<Entity<reporting::Reporting>>,
     bank: Option<Entity<bank::Bank>>,
+    contacts: Option<Entity<contacts::Contacts>>,
     status: String,
     busy: bool,
 }
@@ -269,6 +271,7 @@ impl Desktop {
             invoice: None,
             reporting: None,
             bank: None,
+            contacts: None,
             status: "Forbind til din Rentemester-server og log ind med e-mail, adgangskode og MFA."
                 .into(),
             busy: false,
@@ -365,6 +368,7 @@ impl Desktop {
         self.invoice = None;
         self.reporting = None;
         self.bank = None;
+        self.contacts = None;
         self.status = "Forbinder…".into();
         let server = self.connection_origin(cx);
         let cookie = PathBuf::from(self.cookie.read(cx).value().to_string());
@@ -427,6 +431,7 @@ impl Desktop {
         self.invoice = None;
         self.reporting = None;
         self.bank = None;
+        self.contacts = None;
         self.busy = true;
         self.status = "Kontrollerer login…".into();
         let origin = self.connection_origin(cx);
@@ -523,6 +528,7 @@ impl Desktop {
         self.invoice = None;
         self.reporting = None;
         self.bank = None;
+        self.contacts = None;
         self.password
             .update(cx, |input, cx| input.set_value("", window, cx));
         self.code
@@ -543,6 +549,7 @@ impl Desktop {
         self.invoice = None;
         self.reporting = None;
         self.bank = None;
+        self.contacts = None;
         self.selected = Some(slug.clone());
         self.status = "Henter saldobalance…".into();
         let year = self.year.read(cx).value().to_string();
@@ -811,6 +818,20 @@ impl Render for Desktop {
             );
         }
         content = content.child(list);
+        if let Some(contacts) = self.contacts.clone() {
+            return content
+                .child(
+                    Button::new("contacts-close")
+                        .label("Luk kontakter og genindlæs saldobalance")
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.contacts = None;
+                            if let Some(slug) = this.selected.clone() {
+                                this.load(slug, cx);
+                            }
+                        })),
+                )
+                .child(contacts);
+        }
         if let Some(bank) = self.bank.clone() {
             return content
                 .child(
@@ -984,6 +1005,37 @@ impl Render for Desktop {
                             };
                             this.bank = Some(cx.new(|cx| {
                                 bank::Bank::new(session, origin, company, year, local, window, cx)
+                            }));
+                            cx.notify();
+                        }
+                    })),
+            );
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content = content.child(
+                Button::new("contacts-open")
+                    .label("Kontakter")
+                    .disabled(self.busy)
+                    .on_click(cx.listener(|this, _, window, cx| {
+                        if let (Some(session), Some(company)) =
+                            (this.session.clone(), this.selected.clone())
+                        {
+                            let origin = this.connection_origin(cx);
+                            let local = match this
+                                .managed
+                                .as_ref()
+                                .map(|m| m.journal_identity())
+                                .transpose()
+                            {
+                                Ok(local) => local,
+                                Err(error) => {
+                                    this.status = error;
+                                    cx.notify();
+                                    return;
+                                }
+                            };
+                            this.contacts = Some(cx.new(|cx| {
+                                contacts::Contacts::new(session, origin, company, local, window, cx)
                             }));
                             cx.notify();
                         }
