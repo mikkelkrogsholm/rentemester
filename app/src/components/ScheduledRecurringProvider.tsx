@@ -63,7 +63,7 @@ function Runner({ job, ownerUserId, stopped, busyCompanies }: { busyCompanies: S
         const current = await scheduledRecurringApi.current(job.slug);
         if (cancelled) return;
         const row = current.rows.find(r => r.templateId === job.templateId);
-        if (!row || row.state !== "enabled" || row.ownerUserId !== ownerUserId || row.templateHash !== job.templateHash || row.error || row.restoreConsent?.required) {
+        if (!row || (row.executionMode !== undefined && row.executionMode !== "app") || row.state !== "enabled" || row.ownerUserId !== ownerUserId || row.templateHash !== job.templateHash || row.error || row.restoreConsent?.required) {
           callbacks.stopped("Automatik er stoppet. Gennemgå skabelon, samtykke og aktuel adgang."); return;
         }
         const plan = await scheduledRecurringApi.plan(job.slug, job.templateId);

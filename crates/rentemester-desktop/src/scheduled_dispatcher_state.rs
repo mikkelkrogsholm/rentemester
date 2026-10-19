@@ -25,6 +25,7 @@ impl Binding {
             .ok_or("Aktiv-app-start kræver fuld readonly serverplan")?;
         if !data.can_write()
             || !data.same_owner()
+            || !app_mode(s)
             || s["state"] != "enabled"
             || !p["plan"]["template"].is_object()
             || p["plan"]["template"]["id"] != s["templateId"]
@@ -46,6 +47,9 @@ impl Binding {
             template: p["plan"]["template"].clone(),
         })
     }
+}
+fn app_mode(row: &Value) -> bool {
+    row.get("executionMode").is_none_or(|mode| mode == "app")
 }
 pub enum Decision {
     Idle,
@@ -71,6 +75,7 @@ pub fn next(binding: &Binding, data: &Snapshot, pending: bool) -> Result<Decisio
         || data.ledger != binding.ledger
         || !data.can_write()
         || !data.same_owner()
+        || !app_mode(s)
         || s["state"] != "enabled"
         || s["templateId"] != binding.template_id
         || s["templateHash"] != binding.template_hash
@@ -257,6 +262,20 @@ mod tests {
     }
     fn pdf() -> Value {
         json!({"ok":true,"pdf":{"contentType":"application/pdf","bytes":[37,80,68,70,45,49]}})
+    }
+    #[test]
+    fn hosted_and_unknown_modes_stop_existing_app_driver_and_refuse_new_activation() {
+        let d = data();
+        let b = binding(&d);
+        for mode in [json!("hosted"), json!("unknown"), Value::Null] {
+            let mut changed = d.clone();
+            changed.selected.as_mut().unwrap()["executionMode"] = mode;
+            assert!(Binding::reviewed("https://synthetic.invalid", None, &changed).is_err());
+            assert!(next(&b, &changed, false).is_err());
+        }
+        let mut app = d.clone();
+        app.selected.as_mut().unwrap()["executionMode"] = json!("app");
+        assert!(next(&b, &app, false).is_ok());
     }
     #[test]
     fn explicit_activation_requires_current_enabled_consenting_owner_and_full_immutable_source() {

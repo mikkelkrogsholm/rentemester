@@ -1,3 +1,5 @@
+import { HostedScheduledRecurring } from "../components/HostedScheduledRecurring";
+import { ScheduledTemplateReview } from "../components/ScheduledTemplateReview";
 import { useScheduledRecurringAutomation } from "../components/ScheduledRecurringProvider";
 import { useRef, useState } from "react";
 import { Banner, ErrorState, Loading } from "../components/Feedback";
@@ -15,7 +17,6 @@ const labels: Record<ScheduledAction, string> = {
   skip: "Spring valgte forekomster over", dispatch: "Udsted valgt forekomst",
   reconsent: "Godkend planlægning efter gendannelse",
 };
-const intervals: Record<string, string> = { weekly: "uge", monthly: "måned", quarterly: "kvartal", yearly: "år" };
 const states = { disabled: "Ikke aktiveret", enabled: "Aktiveret", paused: "På pause", cancelled: "Annulleret" };
 /** All dates, periods, consent and issuance decisions come from the Rust server. */
 export function ScheduledRecurringView({ slug, templates = [] }: { slug: string; templates?: Array<{ id: number; name: string }> }) {
@@ -93,12 +94,12 @@ export function ScheduledRecurringView({ slug, templates = [] }: { slug: string;
   return <section className="card" aria-label="Planlagte fakturaer">
     <h2>Planlagte fakturaer</h2>
     <p>Gennemgå forfaldne forekomster og vælg, hvilke der skal køres eller springes over. Udstedelse opretter en faktura med PDF; bogføring og afsendelse er særskilte handlinger.</p>
-    <p className="muted">Tidspunkt: {current.data?.asOfDate} · {current.data?.timeZone}. Automatik starter kun ved dit valg i denne app og stopper, når appen lukkes eller adgangen bortfalder. Efter dvale skal manglende forekomster gennemgås. Status og genåbning starter ikke automatik.</p>
+    <p className="muted">Tidspunkt: {current.data?.asOfDate} · {current.data?.timeZone}. Appens automatik starter kun ved dit valg og stopper, når appen lukkes eller adgangen bortfalder. Serverens særskilte automatik kræver serversamtykke nedenfor. Efter dvale skal manglende forekomster gennemgås. Status og genåbning starter ikke automatik.</p>
     <Button type="button" onClick={refresh} disabled={busy}>Opdatér planlægningsstatus</Button>
     <label>Skabelon<Select aria-label="Planlagt fakturaskabelon" value={templateId} disabled={busy} onChange={e => {
       setTemplateId(e.target.value); setPlan(null); setPeriods([]); setDispatchPeriod(""); setConfirmed(false); setMessage("");
       const selected = current.data?.rows.find(r => String(r.templateId) === e.target.value);
-      setAction(selected?.restoreConsent?.required && capabilities.can("company.admin") ? "reconsent" : "enable");
+      setAction(selected?.restoreConsent?.required && capabilities.can("company.admin") ? "reconsent" : selected?.executionMode === "hosted" ? "pause" : "enable");
     }}><option value="">Vælg skabelon</option>{current.data?.rows.map(r => <option key={r.templateId} value={r.templateId}>{templates.find(t => t.id === r.templateId)?.name ?? `Skabelon ${r.templateId}`} — {states[r.state]}</option>)}</Select></label>
     {!current.data?.rows.length && <p>Opret først en fakturaskabelon ovenfor.</p>}
     {row && <>
@@ -113,7 +114,7 @@ export function ScheduledRecurringView({ slug, templates = [] }: { slug: string;
       </section>}
       <Button type="button" disabled={busy} onClick={() => void loadPlan()}>Gennemgå forekomster</Button>
       {plan && <div><h3>Plan pr. {plan.asOfDate}</h3>
-        {plan.template && <section aria-label="Gennemgå fakturaskabelon"><h4>{plan.template.name}</h4><p>Sælger: {plan.template.payload.seller?.name ?? "Ikke angivet"} · Kunde: {plan.template.payload.buyer?.name ?? "Ikke angivet"}</p><p>Første fakturadato: {plan.template.firstIssueDate} · Betalingsfrist: {plan.template.paymentTermsDays} dage · Interval: {plan.template.intervalCount} × {intervals[plan.template.interval] ?? plan.template.interval}</p><p>Momssats i skabelonen: {plan.template.payload.vatRatePercent == null ? "Ikke angivet" : `${plan.template.payload.vatRatePercent} %`}</p><table><thead><tr><th>Beskrivelse</th><th>Antal</th><th>Enhedspris ekskl. moms</th></tr></thead><tbody>{plan.template.payload.lines.map((line, i) => <tr key={i}><td>{line.description}</td><td>{String(line.quantity)}</td><td>{String(line.unitPriceExVat)} {plan.template.payload.currency ?? ""}</td></tr>)}</tbody></table><p>Beløbene er skabelonens kildepriser. Endelige beløb valideres og beregnes ved udstedelse.</p></section>}
+        {plan.template && <ScheduledTemplateReview template={plan.template} />}
         {plan.truncated && <Banner kind="warning">Planen viser højst 100 forekomster. Gennemgå resten efter denne behandling.</Banner>}
         {plan.missed.length ? <fieldset disabled={busy}><legend>Manglende forekomster</legend>{plan.missed.map(p => <label key={p.periodIndex}>
           <input type="checkbox" checked={periods.includes(p.periodIndex)} onChange={e => { setPeriods(e.target.checked ? [...periods, p.periodIndex] : periods.filter(i => i !== p.periodIndex)); setConfirmed(false); }} /> {p.issueDate} (periode {p.periodIndex})</label>)}</fieldset> : <p>Ingen manglende forekomster.</p>}
@@ -124,7 +125,8 @@ export function ScheduledRecurringView({ slug, templates = [] }: { slug: string;
       {needsPlan && !reviewed && <p>Hent en aktuel plan før denne handling.</p>}
       {action === "reconsent" && <p>Godkendelsen gælder den viste skabelon i det gendannede regnskab. Den udsteder ingen faktura og starter ikke automatik.</p>}
       <label><input type="checkbox" checked={confirmed} disabled={busy || outcome.blocked} onChange={e => setConfirmed(e.target.checked)} /> Jeg bekræfter den valgte handling og de viste forekomster.</label>
-      {automation && row.state === "enabled" && !restoring && <Button type="button" requiredPermission="company.draft.write" disabled={!confirmed || !reviewed || busy || outcome.blocked || automation.active(slug, row.templateId)} onClick={() => { if (!outcome.isBlocked()) { automation.start(slug, row.templateId, row.templateHash); setConfirmed(false); } }}>Start automatik mens appen er åben</Button>}
+      {automation && row.state === "enabled" && !restoring && (row.executionMode === undefined || row.executionMode === "app") && <Button type="button" requiredPermission="company.draft.write" disabled={!confirmed || !reviewed || busy || outcome.blocked || automation.active(slug, row.templateId)} onClick={() => { if (!outcome.isBlocked()) { automation.start(slug, row.templateId, row.templateHash); setConfirmed(false); } }}>Start automatik mens appen er åben</Button>}
+      {capabilities.can("company.admin") && <HostedScheduledRecurring key={`${row.templateId}:${row.stateHash}`} slug={slug} row={row} onChanged={refresh} />}
       {outcome.feedback}
       <Button type="button" requiredPermission={action === "reconsent" ? "company.admin" : "company.draft.write"} disabled={!canSend} onClick={() => void submit()}>{labels[action]}</Button>
     </>}

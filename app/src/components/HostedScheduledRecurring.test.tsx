@@ -1,0 +1,34 @@
+import { afterEach, expect, test, vi } from "bun:test";
+import { screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { mockFetch } from "../test/fixtures";
+import { renderAt } from "../test/render";
+import { restoreGlobals } from "../test/globals";
+import { HostedScheduledRecurring } from "./HostedScheduledRecurring";
+import type { ScheduledRow } from "../lib/api/scheduled-recurring";
+afterEach(() => { sessionStorage.clear(); restoreGlobals(); });
+const row: ScheduledRow = { templateId: 4, templateHash: "a".repeat(64), stateHash: "b".repeat(64), state: "enabled", ownerUserId: "owner", lastRun: null, nextOccurrence: null, missedCount: 0, queued: [], error: null, history: [], executionMode: "app" };
+const template = { id: 4, name: "Synthetic monthly", interval: "monthly", intervalCount: 1, firstIssueDate: "2026-10-19", paymentTermsDays: 14, deliveryPeriodMode: "issue_month", payload: { seller: { name: "Synthetic Seller", address: "Synthetic road 1", vatOrCvr: "11111111" }, buyer: { name: "Synthetic Buyer" }, currency: "DKK", vatRatePercent: 25, lines: [{ description: "Synthetic service", quantity: 1, unitPriceExVat: 75 }] } };
+const hostedPlan = { templateId: 4, templateHash: row.templateHash, stateHash: row.stateHash, template, schedule: { template, asOfDate: "2026-10-19", missedCount: 0, queued: [], truncated: false }, executor: { serviceAccountId: "svc", credentialId: "key", displayName: "Synthetic worker" }, authorityHash: "d".repeat(64), policy: "normal_due_only", planHash: "c".repeat(64) };
+const posts = () => (fetch as any).mock.calls.filter(([, init]: any[]) => init?.method === "POST");
+test("full source and configured executor review precede a separate hosted consent; reads do not activate", async () => {
+  mockFetch({ "GET /api/companies/a/scheduled-recurring/4/hosted-plan": { hostedPlan }, "POST /api/companies/a/scheduled-recurring/hosted-consent": { scheduledRecurring: { ...row, executionMode: "hosted", hostedConsent: { active: true, serviceAccountId: "svc", credentialId: "key" } } } });
+  const changed = vi.fn(); renderAt(<HostedScheduledRecurring slug="a" row={row} onChanged={changed} />);
+  await userEvent.click(screen.getByRole("button", { name: "Gennemgå serverplan og servicekonto" }));
+  await screen.findByRole("heading", { name: "Synthetic monthly" });
+  expect(screen.getByText(/Sælgers adresse: Synthetic road 1/)).toBeInTheDocument();
+  expect(screen.getByText(/Konfigureret servicekonto: Synthetic worker/)).toBeInTheDocument(); expect(posts()).toHaveLength(0);
+  await userEvent.type(screen.getByLabelText("Begrundelse for serversamtykke"), "Reviewed synthetic monthly source");
+  await userEvent.click(screen.getByRole("checkbox"));
+  await userEvent.click(screen.getByRole("button", { name: "Godkend automatisk udstedelse på serveren" }));
+  await waitFor(() => expect(changed).toHaveBeenCalledTimes(1)); expect(posts()).toHaveLength(1);
+  expect(JSON.parse(posts()[0][1].body)).toEqual({ templateId: 4, serviceAccountId: "svc", credentialId: "key", planHash: hostedPlan.planHash, reason: "Reviewed synthetic monthly source", confirm: true });
+});
+test("missed work refuses hosted consent and recorded consent is not labeled worker health", async () => {
+  mockFetch({ "GET /api/companies/a/scheduled-recurring/4/hosted-plan": { hostedPlan: { ...hostedPlan, schedule: { ...hostedPlan.schedule, missedCount: 1 } } } });
+  renderAt(<HostedScheduledRecurring slug="a" row={{ ...row, executionMode: "hosted", hostedConsent: { active: true, serviceAccountId: "svc", credentialId: "key", grantorUserId: "owner", consentHash: "e", authorityHash: "f", policy: "normal_due_only" } }} onChanged={() => {}} />);
+  expect(screen.getByText(/Det beviser ikke, at serverarbejderen kører/)).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Gennemgå serverplan og servicekonto" })); await screen.findByRole("heading", { name: "Synthetic monthly" });
+  await userEvent.type(screen.getByLabelText("Begrundelse for serversamtykke"), "review"); await userEvent.click(screen.getByRole("checkbox"));
+  expect(screen.getByRole("button", { name: "Godkend automatisk udstedelse på serveren" })).toBeDisabled(); expect(posts()).toHaveLength(0);
+});

@@ -296,6 +296,9 @@ impl Desktop {
         });
         let (binary, web) = local_backend::bundled_paths();
         let workflow_focus = cx.focus_handle();
+        cx.on_focus_lost(window, |this, window, cx| {
+            window.focus(&this.workflow_focus, cx);
+        }).detach();
         window.focus(&workflow_focus, cx);
         let mut desktop = Self {
             workflow_focus,

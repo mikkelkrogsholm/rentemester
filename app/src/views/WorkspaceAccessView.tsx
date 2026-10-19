@@ -1,3 +1,5 @@
+import { ServicePrincipalsPanel } from "../components/ServicePrincipalsPanel";
+import type { ServicePrincipal } from "../lib/api/service-principals";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { useUnsavedChanges } from "../lib/useUnsavedChanges";
 import { Button, Input, PageHeader, Select } from "../components/ui";
@@ -20,7 +22,8 @@ type PendingChange =
   | { kind: "company-revoke"; userId: string; companySlug: string };
 
 export function WorkspaceAccessView() {
-  const { context } = useAuth();
+  const { context, backend } = useAuth();
+  const [servicePrincipals, setServicePrincipals] = useState<ServicePrincipal[]>([]);
   const invitationState = useAsync((signal) => api.workspaceInvitations({ signal }), []);
   const memberState = useAsync((signal) => api.workspaceMembers({ signal }), []);
   const ownedCompanies = context?.companies.filter((company) => !company.archived && company.role === "owner") ?? [];
@@ -100,7 +103,7 @@ export function WorkspaceAccessView() {
     {error && <Banner kind="error">{error}</Banner>}
     <section className="card">
       <h3>Aktive brugere</h3>
-      {members.length === 0 ? <p className="muted">Ingen aktive brugere.</p> : <div className="table-wrap"><div className="table-scroll"><table><thead><tr><th>Bruger</th><th>Workspace</th><th>Virksomhedsadgang</th><th>Sikkerhed</th></tr></thead><tbody>{members.map((member) => <tr key={member.userId}><td>{member.name}<br /><span className="muted">{member.email}</span></td><td>{member.workspaceRole === "workspace_owner" ? "Ejer" : "Medlem"}</td><td>{member.memberships.length === 0 ? "—" : member.memberships.map((membership) => `${membership.companyName}: ${roleLabels[membership.role]}`).join(", ")}</td><td>{member.accessReady ? "Klar" : "Afventer e-mail/MFA"}</td></tr>)}</tbody></table></div></div>}
+      {members.length === 0 ? <p className="muted">Ingen aktive brugere.</p> : <div className="table-wrap"><div className="table-scroll"><table><thead><tr><th>Bruger</th><th>Workspace</th><th>Virksomhedsadgang</th><th>Sikkerhed</th></tr></thead><tbody>{members.map((member) => <tr key={member.userId}><td>{member.name}<br /><span className="muted">{member.email}</span></td><td>{member.workspaceRole === "workspace_owner" ? "Ejer" : "Medlem"}</td><td>{member.memberships.length === 0 ? "—" : member.memberships.map((membership) => `${membership.companyName}: ${roleLabels[membership.role]}`).join(", ")}</td><td>{servicePrincipals.some(p => p.serviceAccountId === member.userId) ? "Servicekonto · særskilt nøgleadgang" : member.accessReady ? "Klar" : "Afventer e-mail/MFA"}</td></tr>)}</tbody></table></div></div>}
     </section>
     <section className="card">
       <h3>Ændr adgang</h3>
@@ -120,6 +123,7 @@ export function WorkspaceAccessView() {
         </>}
       </>}
     </section>
+    {backend === "rust" && context?.workspaceRole === "workspace_owner" && <ServicePrincipalsPanel onChanged={rows => { setServicePrincipals(rows); memberState.reload(); }} />}
     <section className="card">
       <h3>Ny invitation</h3>
       <form onSubmit={submit}>

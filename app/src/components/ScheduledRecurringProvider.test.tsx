@@ -80,3 +80,11 @@ test("explicit restored-owner consent does not activate the app driver", async (
   expect(posts()[0][0]).toContain("/reconsent");
   expect(screen.queryByText(/Planlagte fakturaer kører, mens denne app er åben/)).toBeNull();
 });
+test("hosted or unknown execution mode stops the app before plan fetch and dispatch", async () => {
+  for (const executionMode of ["hosted", "future-mode", null]) {
+    mockFetch({ "GET /api/me": { user, workspaceRole: "member", companies: [{ slug: "a", name: "Synthetic", role: "owner", archived: false }] }, "GET /api/companies/a/scheduled-recurring": { scheduledRecurring: { rows: [{ ...row, executionMode }] } } });
+    const view = mount(); await start();
+    await screen.findByText(/Gennemgå skabelon, samtykke og aktuel adgang/);
+    expect(posts()).toHaveLength(0); view.unmount();
+  }
+});
