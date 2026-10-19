@@ -397,3 +397,6 @@ pub use contact_import::{MAX_CONTACT_IMPORT_BODY,contact_import_body_schema};
 
 mod cfo_analytics;
 pub use cfo_analytics::{CfoAnalyticsQuery,cfo_analytics_schema};
+
+mod archive_import;
+pub use archive_import::{MAX_ARCHIVE_IMPORT_BODY,MAX_ARCHIVE_ORIGINAL,archive_import_body_schema};

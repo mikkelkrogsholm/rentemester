@@ -10,7 +10,7 @@ fn five_batch_tools_have_explicit_read_scope_and_confirmed_exact_bodies() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 187);
+    assert_eq!(tools.len(), 191);
     for (name, read) in [
         ("bookkeeping_batch_plan", true),
         ("bookkeeping_batch_status", true),

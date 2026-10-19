@@ -54,6 +54,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
             "exitCodes":{"0":"success","1":"server/transport/protocol failure","2":"usage/configuration failure"},
             "example":"rentemester-rust remote --server http://127.0.0.1:8080 --allow-loopback-http --cookie-file /private/session.cookie trial-balance --company example --year 2026"});
         help["service_principals"]=crate::service_principals::help();
+        help["archiveImport"]=crate::archive_import::help();
+        help["commands"].as_array_mut().unwrap().extend(crate::archive_import::COMMANDS.map(|s|json!(s)));
         help["cfoAnalytics"]=crate::cfo_analytics::help();
         help["commands"].as_array_mut().unwrap().push(json!("cfo-analytics"));
         help["contactImport"]=crate::contact_import::help();
@@ -103,6 +105,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         }
         if arg.starts_with("--") {
             if ![
+                "--fiscal-year",
+                "--import-id",
                 "--scope",
                 "--company-slugs-json",
                 "--group-profile-id",
@@ -177,13 +181,16 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     {
         return Err(invalid("email/factor/session-out allowed only with login"));
     }
+    if crate::cfo_analytics::accepts(command){return crate::cfo_analytics::run(command,&flags,allow_http,confirmed,preview_reviewed);}
+    if flags.keys().any(|k|["--scope","--company-slugs-json","--group-profile-id","--party","--currency","--aggregate"].contains(k)){return Err(invalid("CFO selectors allowed only on cfo-analytics"));}
+    if crate::archive_import::accepts(command){return crate::archive_import::run(command,&flags,allow_http,confirmed,preview_reviewed);}
+    if flags.keys().any(|k|["--fiscal-year","--import-id"].contains(k)){return Err(invalid("archive selectors allowed only on archive commands"));}
     if command=="create-company" {return crate::company_creation::run(&flags,allow_http,confirmed,preview_reviewed);}
     if command=="workspace-backup"{return crate::portable_backup::run(&flags,allow_http,confirmed,preview_reviewed);}
     if command=="saft-export"{return crate::saft::run(&flags,allow_http,confirmed,preview_reviewed);}
     if crate::reminder_claims::accepts(command){return crate::reminder_claims::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::company_setup::accepts(command){return crate::company_setup::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::privacy::accepts(command){return crate::privacy::run(command,&flags,allow_http,confirmed,preview_reviewed);}
-    if crate::cfo_analytics::accepts(command){return crate::cfo_analytics::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::budget::accepts(command){return crate::budget::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if flags.contains_key("--dimension")||flags.contains_key("--member"){return Err(invalid("dimension/member only on budget-dimension-actuals"));}
     if flags.contains_key("--profile-id") && command != "group-consolidated-report" { return Err(invalid("profile-id allowed only for group-consolidated-report")); }

@@ -1,4 +1,5 @@
 //! Thin browser adapter over the same owner used for authentication.
+mod archive_import;
 mod cfo_analytics;
 mod saft;
 mod company_knowledge;
@@ -76,6 +77,11 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         workers: Arc::new(Semaphore::new(8)),
     };
     Router::new()
+        .route("/api/companies/{slug}/archive-import/plan",post(archive_import::handle))
+        .route("/api/companies/{slug}/archive-import/apply",post(archive_import::handle))
+        .route("/api/companies/{slug}/archives",get(archive_import::handle))
+        .route("/api/companies/{slug}/archives/{fiscalYear}",get(archive_import::handle))
+        .route("/api/companies/{slug}/archive-import/{importId}/original",get(archive_import::handle))
         .route("/api/cfo-analytics",get(cfo_analytics::handle))
         .route("/api/companies/{slug}/payables/direct-bank-correction/plan", post(payable_correction::handle))
         .route("/api/companies/{slug}/payables/direct-bank-correction/apply", post(payable_correction::handle))
@@ -377,7 +383,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/income-statement", get(read))
         .route("/api/companies/{slug}/balance", get(read))
         .route("/api/companies/{slug}/{report}/export", get(read))
-        .route("/api/companies/{slug}/fiscal-years", get(read))
+        .route("/api/companies/{slug}/fiscal-years", get(archive_import::handle))
         .route("/api/companies/{slug}/manual-journal", post(write))
         .route("/api/companies/{slug}/manual-journal-reversal", post(write))
         .with_state(state)

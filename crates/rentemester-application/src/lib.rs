@@ -109,3 +109,5 @@ pub mod direct_bank_payable_correction;
 pub mod contact_import;
 
 pub mod cfo_analytics;
+
+pub mod archive_import;

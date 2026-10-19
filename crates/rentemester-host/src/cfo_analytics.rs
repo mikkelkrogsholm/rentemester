@@ -94,12 +94,17 @@ impl Owner {
                     {
                         return Err(unavailable("physical source differs"));
                     }
-                    rentemester_storage::cfo_analytics::collect(
+                    let archives = rentemester_application::archive_import::verify_physical(
+                        &read,
+                        &mut slots.guard,
+                    )?;
+                    rentemester_storage::cfo_analytics::collect_with_archives(
                         &read,
                         &tx,
                         slug,
                         query,
                         &auth.visible,
+                        &archives,
                     )
                 })();
                 let unchanged = read.total_changes() == initial;

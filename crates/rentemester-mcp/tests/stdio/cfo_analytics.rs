@@ -10,7 +10,7 @@ fn cfo_readonly_discovery_exact_get_and_full_native_evidence() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 187);
+    assert_eq!(tools.len(), 191);
     let t = tools.iter().find(|t| t["name"] == "cfo_analytics").unwrap();
     assert_eq!(t["annotations"]["readOnlyHint"], true);
     assert_eq!(t["inputSchema"]["additionalProperties"], false);
