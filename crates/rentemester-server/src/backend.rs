@@ -78,6 +78,7 @@ pub struct Backend {
     pub(crate) setup: Option<crate::setup_http::Installer>,
     pub(crate) setup_pending: std::sync::atomic::AtomicBool,
     pub(crate) backup_signer: Option<rentemester_runtime::backup_artifact::SigningKey>,
+    pub(crate) scheduled_executor: Option<Arc<rentemester_runtime::service_key::ServiceKey>>,
     keys: MfaKeyring,
     pub(crate) signer: EmailTokenSigner,
     pub(crate) links: RecoveryLinks,
@@ -271,6 +272,7 @@ impl Backend {
             cookies,
             keys,
             backup_signer,
+            scheduled_executor: None,
             signer,
             links,
             spool,
@@ -337,6 +339,8 @@ impl Backend {
         let context = self.clone();
         let request = self.clone();
         let complete = self.clone();
+        let service_context = self.clone();
+        let service_lifecycle = self.clone();
         let handlers = AuthHandlers {
             cookies: self.cookies.clone(),
             sign_in: Box::new(move |input| {
@@ -479,8 +483,14 @@ impl Backend {
             }),
             backup_management: None,
             password_change: None,
-            service_context: None,
-            service_lifecycle: None,
+            service_context: Some(Box::new(move |key| {
+                unwrap(service_context.owner.lock().map_err(|_| unavailable())?
+                    .service_context(&SystemClock, &key))
+            })),
+            service_lifecycle: Some(Box::new(move |input| {
+                unwrap(service_lifecycle.owner.lock().map_err(|_| unavailable())?
+                    .service_lifecycle(&service_lifecycle.cookies, &SystemClock, input.proof(), input.operation()))
+            })),
             session_control: None,
         };
         rentemester_server::identity_router(origin, CookieProfile::Development, handlers)

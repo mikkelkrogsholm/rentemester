@@ -1,5 +1,6 @@
 //! Standalone Rust HTTP process serving the existing cockpit on the API origin.
 mod backend;
+mod hosted_worker;
 mod portable_backup_cli;
 mod product_http;
 mod report_export;
@@ -28,6 +29,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut confirmed_target = None;
     let mut verify_archive = None;
     let mut source_unavailable = false;
+    let mut scheduled_worker = false;
+    let mut scheduled_stdin = false;
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--listen" => listen = args.next().ok_or("--listen requires an address")?.parse()?,
@@ -38,6 +41,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ))
             }
             "--create" => create = true,
+            "--scheduled-worker" => scheduled_worker = true,
+            "--scheduled-service-key-stdin" => scheduled_stdin = true,
             "--restore-backup" => {
                 restore_archive = Some(PathBuf::from(
                     args.next().ok_or("--restore-backup requires archive")?,
@@ -66,6 +71,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!(
                     "rentemester-server [--listen 127.0.0.1:4319] [--web-dir app/dist] [--config PRIVATE.json] [--create] [--origin http://localhost:4319]"
                 );
+                println!("Hosted generation: --scheduled-worker --scheduled-service-key-stdin --config PRIVATE.json (ordinary reopen only; transient stdin service key, no saved cookie/key; 32 candidates every 30 seconds; normal Copenhagen today only, no catch-up)");
                 println!("Build the cockpit first: cd app && bun run build");
                 println!("Without --config, serve the cockpit and health endpoint only.");
                 println!(
@@ -89,6 +95,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             _ => return Err(format!("unknown option: {arg}").into()),
         }
     }
+    hosted_worker::validate_flags(scheduled_worker, scheduled_stdin, config.is_some(), create || restore_archive.is_some() || verify_archive.is_some())?;
     if let Some(archive) = verify_archive {
         if restore_archive.is_some() || create || confirmed_target.is_some() || source_unavailable {
             return Err("verification flags cannot select restore/create".into());
@@ -143,7 +150,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     )?;
     // SQLite/password initialization runs outside Tokio's asynchronous worker threads.
     let setup_origin = origin.clone();
-    let native = tokio::task::spawn_blocking(move || {
+    let mut native = tokio::task::spawn_blocking(move || {
         config
             .map(|path| {
                 (if restore.is_some() {
@@ -163,6 +170,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     })
     .await?
     .map_err(|e| format!("workspace startup refused: {e}"))?;
+    if scheduled_worker {
+        let backend = native.as_mut().ok_or("scheduled worker requires configured workspace")?;
+        let backend = std::sync::Arc::get_mut(backend).ok_or("scheduled worker startup refused")?;
+        let key=hosted_worker::read_key(std::io::stdin().lock(),backend.cookies.workspace())?;
+        backend.scheduled_executor=Some(std::sync::Arc::new(key));
+    }
     let identity = native
         .as_ref()
         .map(|backend| {
@@ -180,11 +193,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "Cockpit served directly by Rust. Native workspace connected: {}",
         native.is_some()
     );
-    axum::serve(
+    let worker = if scheduled_worker {
+        Some(hosted_worker::Worker::start(native.as_ref().ok_or("scheduled worker requires workspace")?.clone()))
+    } else { None };
+    let served = axum::serve(
         listener,
         app.into_make_service_with_connect_info::<SocketAddr>(),
     )
-    .await?;
+    .await;
+    if let Some(worker)=worker { worker.stop().await; }
+    served?;
     Ok(())
 }
 

@@ -29,6 +29,7 @@ mod periods;
 mod portable_backup;
 mod recurring_invoices;
 mod scheduled_recurring;
+mod hosted_recurring;
 mod reviewed_bookkeeping;
 mod sales;
 mod supplier_commitments;
@@ -164,6 +165,9 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/mileage",
             get(mileage::handle).post(mileage::handle),
         )
+        .route("/api/companies/{slug}/scheduled-recurring/{id}/hosted-plan", get(hosted_recurring::handle))
+        .route("/api/companies/{slug}/scheduled-recurring/hosted-consent", post(hosted_recurring::handle))
+        .route("/api/companies/{slug}/scheduled-recurring/hosted-revoke", post(hosted_recurring::handle))
         .route("/api/companies/{slug}/scheduled-recurring", get(scheduled_recurring::handle))
         .route("/api/companies/{slug}/scheduled-recurring/{id}/plan", get(scheduled_recurring::handle))
         .route("/api/companies/{slug}/scheduled-recurring/enable", post(scheduled_recurring::handle))
