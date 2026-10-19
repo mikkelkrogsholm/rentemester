@@ -1524,3 +1524,72 @@ samlingen. Filen `Contents/Resources/native-artifact-manifest.json`
 registrerer repository-revision, dirty-status, værktøjskæder, profil og
 SHA256 for de faktiske filer. Pakken er fortsat usigneret; installation via
 Finder, signering og notarization kræver særskilt verifikation.
+
+
+## Send udstedte fakturaer gennem SMTP
+
+Rust-serveren bruger den udstedte fakturas gemte PDF. Åbn **Fakturaer →
+Maillevering**, vælg faktura, modtager og mailtype, gennemgå PDF’en og
+bekræft afsendelsen. Afsendelse bogfører ikke fakturaen. Mailtypen
+`reminder` ændrer mailteksten; den opretter ingen rykkerpostering eller renter.
+
+Operatøren angiver SMTP pr. virksomhed i den private serverkonfiguration:
+
+```json
+{
+  "invoiceMail": {
+    "example-company": {
+      "host": "smtp.example.invalid",
+      "port": 465,
+      "fromAddress": "faktura@example.invalid",
+      "fromName": "Eksempelvirksomhed",
+      "username": "SMTP_BRUGER",
+      "password": "OPERATOERENS_HEMMELIGHED",
+      "tls": "implicit"
+    }
+  }
+}
+```
+
+`tls` kan være `implicit` (standard) eller påkrævet `starttls`. Forbindelsen
+kontrollerer certifikat og værtsnavn; der er ingen ukrypteret fallback.
+`trustedCaFile` kan vælge en absolut PEM-sti på højst 64 KiB til en privat CA.
+Konfiguration og adgangskoder holdes uden for virksomhedens workspace og
+backup. Uden konfiguration kan historikken stadig læses og ukendte forsøg
+afklares; afsendelse og nye forsøg afvises med `smtp_config_required`.
+
+Før netværkskaldet gemmer motoren en reservation. Kun SMTP-serverens endelige
+positive svar registreres som transportaccept; det beviser ikke levering til
+modtagerens postkasse. En udtrykkelig SMTP-afvisning giver **afvist**, mens
+timeout, forbindelsestab eller nedbrud efter reservation giver **ukendt**.
+Ét forsøg har et samlet netværksbudget på otte sekunder og ingen automatiske
+genforsøg. Gentaget almindelig afsendelse sender aldrig igen.
+
+Ved **ukendt** undersøger ejeren SMTP-loggen og registrerer udfald,
+begrundelse og dokumentation. Afklaringen sender ingen mail. En menneskelig
+accept vises særskilt fra en SMTP-kvittering. Kun et afvist forsøg kan sendes
+igen gennem en separat gennemgang med begrundelse, PDF og bekræftelse.
+Historiske afsendelsesregistreringer vises som historiske og deduplikeres.
+Genstart og backupgendannelse bevarer historikken uden at sende noget.
+
+API’et under `/api/companies/{slug}/invoices` har `GET email-deliveries`,
+`POST send-email`, `POST email-deliveries/reconcile` og
+`POST email-deliveries/retry`. Skrivekald kræver bekræftelse, aktuel
+menneskelig MFA og rettigheden `CompanyExternalSend`. De kan returnere den
+kanoniske `delivery` sammen med HTTP 422 `delivery_refused` eller HTTP 409
+`delivery_unknown`. Ved tabt HTTP-svar læses historikken før videre handling.
+CLI har `invoice-email-status`, `invoice-email-send`,
+`invoice-email-reconcile`, `invoice-email-retry`; MCP bruger tilsvarende navne
+med understregninger. Skriveinput sendes som JSON på stdin med `confirm:true`.
+
+
+Den integrerede syntetiske macOS-test har gennemført almindelig ejeroprettelse
+og MFA, webafsendelse, CLI-dublet uden SMTP-forbindelse, SMTP-afvisning og
+særskilt godkendt genforsøg. Et reelt servernedbrud efter testserverens
+durable modtagelse af DATA blev fulgt af genstart, MCP-dublet uden genafsendelse
+og ejerens dokumenterede afklaring. De modtagne MIME-, message-ID- og PDF-hashes
+matcher historikken, og bogføring samt originaler er uændrede. En signeret
+backup blev verificeret uden kilden og den private signeringsnøgle og
+gendannet med ny ejer/MFA uden SMTP-konfiguration; historik og originaler
+blev bevaret uden afsendelse. Testen videresender ingen mails og kvalificerer
+ikke en virkelig SMTP-udbyder, modtagernes postkasser eller produktionsdrift.

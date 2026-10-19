@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "HTTPS owner and invitation mail, password recovery through web, and clean native bundle assembly",
-  "code_revision": "fd33e4134f4cde23008fc3f80d3a72d0b2081148",
+  "current_increment": "Issued invoice SMTP delivery, explicit recovery and signed source-free restore through Rust/web/CLI/MCP",
+  "code_revision": "24df2748fe5567a0a61354cb74131cd77cca7412",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Actual Group54 PASS without debugger: canonical HTTPS reverse proxy, explicit trusted-CA HTTPS mail gateway, normal first-owner verification/MFA, web invitation and independent invited-user verification/MFA. Gateway accepts reset mail then exceeds eight-second budget; committed link remains usable through actual web reset. Old session/password and consumed token refuse, reset mints no session, new password requires existing MFA; unrelated owner session survives. Restart preserves both identities, existing MFA, accepted invitation and canonical ledger/UUID. Secure HttpOnly cookie verified; exact owned cleanup confirmed. All mail stays synthetic/local; real provider/mailbox/proxy/Linux deployment not qualified. Fixed host recovery wrappers preserve committed/unknown outcomes;2 focused host tests,6 integrated server binary tests,1 runtime gateway input test,1 local Mac restart regression and strict host/runtime/server checks pass. Native clean staging respects target/profile and adds exact SHA256 manifest; fixture/root shell check PASS, Finder/signing/notarization and actual new native financial GUI remain open. Prior Group53 hosted issuance/V3 recovery and all older proofs retained. Full mission/epic672/J01-J07 remain OPEN.",
+  "state": "Group55 actual PASS: normal owner verification/MFA, issued immutable PDF reviewed in web, verified TLS SMTP with authentication. Accepted duplicate causes no SMTP connection; RCPT550 refuses, separate reviewed retry succeeds. Exact source process killed after durable DATA queue acceptance before final acknowledgment; normal MFA restart preserves unknown reservation, MCP duplicate never resends, explicit owner reconciliation records human acceptance without I/O. Actual received MIME/message-ID/PDF hashes match canonical history; books, originals and UUID unchanged. Signed archive independently verified after source/private-signer deletion, restored under fresh owner/MFA without SMTP config; exact history/originals preserved, no dispatch and missing-config send refused. Exact owned cleanup confirmed. 45 web tests/build, core5 tests, runtime3 tests, server6 tests, SDK3/CLI2/MCP82 and strict checks passed;162tools. Prior Group54/53 proofs retained. Native financial GUI, J06 handoff, remaining parity/packages and full epic672/J01-J07 remain OPEN.",
   "issues_closed": [],
   "next": [
-    "Complete durable external invoice delivery with reservation before I/O, explicit current authority and accepted/refused/unknown recovery; keep issuance, posting and sending separate.",
-    "Build J06 managed local/server handoff with durable source fencing and explicit receipt/identity reconciliation after external-effect prerequisites.",
-    "Qualify a copied standalone macOS bundle and actual native financial journeys using a supported interaction route; finish signing/update provenance and full original parity gates."
+    "Build J06 managed local/server handoff with durable source fencing, pending-effect handling and explicit receipt/identity reconciliation.",
+    "Complete remaining whole accounting journeys and baseline backend parity before TypeScript retirement.",
+    "Qualify installed standalone macOS financial journeys and finish signing/update provenance."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "Explicit service-authorized hosted recurring issuance and signed V3 suspended recovery",
+  "previous_verified_increment": "HTTPS owner and invitation mail, password recovery through web, and clean native bundle assembly",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -738,6 +738,71 @@
       "native_package_fixture": "python3 scripts/release/assemble-native-macos.py --self-test: PASS in integrated root",
       "native_package_shell": "sh -n crates/rentemester-desktop/build-macos.sh: PASS",
       "new_native_gui_qualified": false
+    },
+    "platform55_invoice_email_actual": {
+      "report": "/tmp/rentemester-rust-reports/invoice-mail-integrated55-framing-eof3.json",
+      "sha256": "d8e46b8599cd7d2ed7ce667bd91728eb302762e285cec9e76260733439886ac5",
+      "log": "/tmp/rm-platform55-framing-eof-actual.log",
+      "status": "passed",
+      "artifacts": {
+        "server_binary": "f33f39e37e22825e9c6927d64ed0c3d6d1ccc6d4d1ae2cd70c3878be5924d0ed",
+        "cli_binary": "cb3e2920bc93ad1b7500d268c89a4a700bfa5235ef87a95214a39d770c55c42f",
+        "mcp_binary": "b035f332193d1b79907fdd8538e95420d59693dfafa6c39f04755790bf57af19"
+      },
+      "web_files": {
+        "chunk-4ksqn1qr.css": "3e85c66ae179afd6c29c92233aca6d604975d3fea58a6c3c2abb439596d8dd10",
+        "chunk-anfx6es4.js": "3692c28d1ddbd8f3c13604728d1509fbc77b4923c35b02d8ba8acfb660546b00",
+        "chunk-anfx6es4.js.map": "b39db18db925f12076ee58e3040d78973e7148010232f224be6f54ad8389c322",
+        "index.html": "828466fdc08a9f6fc24ed387672a7231e59f04fb23f9f5d307d5e3ca4e3b245c",
+        "licenses/ibm-plex-mono.txt": "23b0a9d0c6d3f140a0b77e483c5cfa6bba574325ef5cb189ed9f2fec4884533f",
+        "licenses/ibm-plex-sans.txt": "d0283623ef57e722fd0eb688a8041589670c608ab780cd3612d06ba6f153d3fd",
+        "licenses/source-serif-4.txt": "18aabf190848725e2576eefb5c29ba06aac1029d02132252a7f312eac2e50cf3",
+        "stylex-fb5ae53142308d22.css": "fb5ae53142308d2204394ddfe01cff4119a6727f7132c9284606036d1c32edd7"
+      },
+      "source_revision_at_launch": "3f2fb1656d9fc1bfae2c9f819b2c435189b4cbef",
+      "runtime_source_sha256": "6839953998892259472b9a22d332c03e5155e1d62c2d18f28e64041744d38352",
+      "runner_sha256": "f57b941dd0fdfa5dc934a7b9401e2075e7860224676e070ef8a5c777bfff2189",
+      "phases": [
+        "web-accepted-cli-duplicate-no-transport",
+        "550-definite-refusal-reviewed-web-retry",
+        "crash-unknown-restart-mcp-no-resend-human-accepted-attestation",
+        "signed-source-free-new-owner-mfa-restore-no-smtp-config"
+      ],
+      "signed_restore": true,
+      "owned_runtime_cleaned": true,
+      "external_mail_forwarded": false,
+      "limits": [
+        "Synthetic local macOS TLS fixture; no real SMTP provider or mailbox delivery claim.",
+        "No new native financial GUI, production Linux, J06 transfer or global archive single-use qualification."
+      ],
+      "diagnosed_first_attempt": {
+        "report": "/tmp/rentemester-rust-reports/invoice-mail-integrated55.json",
+        "result": "All send/crash/restart/reconciliation phases reached; exact MIME check exposed Lettre unconditional final CRLF. Fixed transport slice only; canonical TS goldens unchanged, complete fresh actual rerun passed."
+      },
+      "diagnosed_fixture_attempt": {
+        "report": "/tmp/rentemester-rust-reports/invoice-mail-integrated55-framing2.json",
+        "result": "All three actual received MIME hashes matched canonical evidence; fixture treated normal peer EOF as malformed protocol. Distinguished clean EOF from bounded malformed lines and reran complete fresh scenario."
+      }
+    },
+    "platform55_checks": {
+      "core_tests": "/tmp/rm-invoice-email55-tests-final.log",
+      "core_test_count": 5,
+      "core_clippy": "/tmp/rm-invoice-email55-clippy.log",
+      "runtime_tests": "/tmp/rm-platform55-runtime-framing-tests.log",
+      "runtime_test_count": 3,
+      "runtime_clippy": "/tmp/rm-platform55-framing-clippy.log",
+      "server_tests": "/tmp/rm-platform55-server-tests.log",
+      "server_test_count": 6,
+      "server_clippy": "/tmp/rm-platform55-server-clippy.log",
+      "build": "/tmp/rm-platform55-framing-build.log",
+      "web_tests": "/tmp/rm-platform55-web-tests.log",
+      "web_test_count": 45,
+      "web_build": "/tmp/rm-platform55-web-build-final.log",
+      "sdk_tests": "/tmp/rm-invoice55-client-tests.log",
+      "cli_tests": "/tmp/rm-invoice55-cli-tests.log",
+      "mcp_tests": "/tmp/rm-invoice55-mcp-tests.log",
+      "client_clippy": "/tmp/rm-invoice55-clippy.log",
+      "mcp_tools": 162
     }
   },
   "verified_history": [
@@ -1148,9 +1213,25 @@
       "code_revision": "9d4538c93bb3c4f102ecd3260d4879ac7b9dfe65",
       "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
       "state": "Actual Group53 PASS: normal web owner verification/MFA, web service creation/activation/company grant, CLI rotation/revoke and MCP inventory/lost-response recovery. Explicit reviewed hosted consent then browser-closed server issuance creates exactly one unposted/unsent JSON/PDF with distinct service actor and human grantor; restart with fresh key injection and ordinary MFA preserves exact state without replay. Signed V3 archive independently verified after source/private-key deletion, restored with fresh owner/normal MFA, preserves originals/history/UUID while service inventory is empty, old key refuses and hosted consent/queue stay inactive; closed-browser observation produces no generation. Owned cleanup verified. Web19PASS/build, native191PASS/1existingignored/build; core/server/SDK/CLI/MCP focused tests and strict checks pass,158tools. Actual native financial GUI remains unqualified after bounded keyboard/focus attempt. External delivery/other hosted jobs/J06/full mission/epic672/J01-J07 remain OPEN."
+    },
+    {
+      "current_increment": "HTTPS owner and invitation mail, password recovery through web, and clean native bundle assembly",
+      "code_revision": "fd33e4134f4cde23008fc3f80d3a72d0b2081148",
+      "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
+      "state": "Actual Group54 PASS without debugger: canonical HTTPS reverse proxy, explicit trusted-CA HTTPS mail gateway, normal first-owner verification/MFA, web invitation and independent invited-user verification/MFA. Gateway accepts reset mail then exceeds eight-second budget; committed link remains usable through actual web reset. Old session/password and consumed token refuse, reset mints no session, new password requires existing MFA; unrelated owner session survives. Restart preserves both identities, existing MFA, accepted invitation and canonical ledger/UUID. Secure HttpOnly cookie verified; exact owned cleanup confirmed. All mail stays synthetic/local; real provider/mailbox/proxy/Linux deployment not qualified. Fixed host recovery wrappers preserve committed/unknown outcomes;2 focused host tests,6 integrated server binary tests,1 runtime gateway input test,1 local Mac restart regression and strict host/runtime/server checks pass. Native clean staging respects target/profile and adds exact SHA256 manifest; fixture/root shell check PASS, Finder/signing/notarization and actual new native financial GUI remain open. Prior Group53 hosted issuance/V3 recovery and all older proofs retained. Full mission/epic672/J01-J07 remain OPEN."
     }
   ],
-  "active_work": [],
+  "active_work": [
+    {
+      "delivery": "J06 managed local/server single-writer handoff",
+      "owner": "root; allocate bounded isolated workers after shared transfer contract",
+      "depends_on": [
+        "Durable invoice email history now available; identify pending unknown effects before transfer.",
+        "Existing physical workspace lease is insufficient: add durable moved-source fence and destination admission."
+      ],
+      "acceptance": "Reviewed transfer preserves originals/history; only one source/destination may admit writes, including after crash/reopen. Ambiguous external effects require explicit reconciliation, never replay."
+    }
+  ],
   "integrated_pending_browser": [
     "Actual native financial/scheduling GUI remains unqualified after bounded keyboard and focus-repair attempt; no blind repetition.",
     "Actual standalone macOS copied bundle/Finder/signing/notarization and production Linux/HTTPS/provider deployment remain unqualified.",
