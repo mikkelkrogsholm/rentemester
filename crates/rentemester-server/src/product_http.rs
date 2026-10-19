@@ -1,6 +1,7 @@
 //! Thin browser adapter over the same owner used for authentication.
 mod saft;
 mod company_knowledge;
+mod workspace_inbox;
 mod parties;
 mod workspace_access;
 mod company_creation;
@@ -63,6 +64,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/companies/{slug}/workspace-inbox", get(workspace_inbox::handle).post(workspace_inbox::handle))
+        .route("/api/companies/{slug}/workspace-inbox/{source}", get(workspace_inbox::handle))
+        .route("/api/companies/{slug}/workspace-inbox/{source}/assign", post(workspace_inbox::handle))
+        .route("/api/companies/{slug}/workspace-inbox/{source}/complete", post(workspace_inbox::handle))
         .route("/api/workspace/backup", post(portable_backup::handle))
         .route("/api/workspace/invitations",get(workspace_access::handle).post(workspace_access::handle))
         .route("/api/workspace/invitations/cancel",post(workspace_access::handle))

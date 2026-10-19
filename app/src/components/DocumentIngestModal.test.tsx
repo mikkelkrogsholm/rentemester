@@ -272,3 +272,21 @@ test("copies a selected supplier into the editable voucher snapshot", async () =
   await userEvent.type(screen.getByLabelText("Afsenderadresse"),"Synthetic document override");
   expect(screen.getByLabelText("Afsenderadresse")).toHaveValue("Synthetic document override");
 });
+
+test("explicit alternate inbox intake receives user classification and exact original without company ingestion", async () => {
+  mockFetch({});
+  const submit = vi.fn(async () => ({ documentNo: null }));
+  render(<DocumentIngestModal slug="acme-aps" onClose={noop} onIngested={noop} submit={submit} title="Synthetic inbox intake" successText="Source awaiting routing" allowInternalVoucher={false} />);
+  expect(screen.queryByRole("option", { name: "Internt bilag" })).toBeNull();
+  await pickReceiptType();
+  await userEvent.upload(screen.getByLabelText("Bilagsfil"), receiptFile());
+  await userEvent.click(screen.getByRole("button", { name: "Indlæs bilag" }));
+  await screen.findByText("Source awaiting routing");
+  expect(submit).toHaveBeenCalledTimes(1);
+  const [input, mime] = submit.mock.calls[0] as unknown as [{ metadata: { documentType: string }; fileName: string; fileBase64: string }, string];
+  expect(input.metadata.documentType).toBe("cash_register_receipt");
+  expect(input.fileName).toBe("kvittering.txt");
+  expect(atob(input.fileBase64)).toBe("Kasseboner\n12,00 DKK\n");
+  expect(mime).toBe("text/plain");
+  expect((globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.some(c => String(c[0]).includes("/documents/ingest"))).toBe(false);
+});

@@ -17,7 +17,7 @@ import { Button, Dialog, Input, Select, Textarea, MoneyInput } from "./ui";
 // `LockBanner` for a 409 backup-lock rejection.
 
 import { useRef, useState } from "react";
-import { api, type DocumentIngestMetadata } from "../lib/api";
+import { api, type DocumentIngestMetadata, type DocumentIngestInput } from "../lib/api";
 import { Banner } from "./Feedback";
 import { useAsync } from "../lib/useAsync";
 import { LockBanner } from "./LockBanner";
@@ -38,6 +38,11 @@ export type DocumentIngestModalProps = {
   onIngested: () => void;
   /** Closes the modal without acting. */
   onClose: () => void;
+  /** Explicit alternate intake; ordinary company upload keeps its existing default. */
+  submit?: (input: DocumentIngestInput, mimeType: string) => Promise<{ documentNo: string | null }>;
+  title?: string;
+  successText?: string;
+  allowInternalVoucher?: boolean;
 };
 
 /** Reads a (possibly binary) file as a base64 string, chunked to stay safe. */
@@ -56,9 +61,11 @@ export function DocumentIngestModal({
   slug,
   onIngested,
   onClose: onDismiss,
+  submit, title = "Indlæs bilag", successText, allowInternalVoucher = true,
 }: DocumentIngestModalProps) {
   const contacts = useAsync((signal) => api.contacts(slug, { signal }), [slug]);
   const [selectedVendor, setSelectedVendor] = useState("");
+  const [mimeType, setMimeType] = useState("application/octet-stream");
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileBase64, setFileBase64] = useState<string | null>(null);
   const [documentType, setDocumentType] =
@@ -107,6 +114,7 @@ export function DocumentIngestModal({
     try {
       setFileBase64(await fileToBase64(file));
       setFileName(file.name);
+      setMimeType(file.type || "application/octet-stream");
     } catch {
       setError("Filen kunne ikke læses.");
       setFileName(null);
@@ -229,11 +237,12 @@ export function DocumentIngestModal({
     setError(null);
     setLocked(null);
     try {
-      const result = await api.ingestDocument(slug, {
+      const input: DocumentIngestInput = {
         fileName,
         fileBase64,
         metadata,
-      }).catch(outcome.reject);
+      };
+      const result = await (submit ? submit(input, mimeType) : api.ingestDocument(slug, input)).catch(outcome.reject);
       setDone({ documentNo: result.documentNo });
       onIngested();
     } catch (err) {
@@ -247,7 +256,7 @@ export function DocumentIngestModal({
   }
 
   return (
-    <Dialog title="Indlæs bilag" onClose={onClose} busy={busy} initialFocusRef={closeRef}>
+    <Dialog title={title} onClose={onClose} busy={busy} initialFocusRef={closeRef}>
     {outcome.feedback}
       {guard.confirmation}
 
@@ -257,8 +266,7 @@ export function DocumentIngestModal({
           <>
             <div className="modal-body">
               <p>
-                Bilaget er indlæst
-                {done.documentNo ? ` som ${done.documentNo}` : ""}.
+                {successText ?? `Bilaget er indlæst${done.documentNo ? ` som ${done.documentNo}` : ""}.`}
               </p>
             </div>
             <div className="modal-actions">
@@ -277,8 +285,7 @@ export function DocumentIngestModal({
             <div className="modal-body">
               <p>
                 Vælg en bilagsfil (PDF, billede eller tekst) og udfyld
-                oplysningerne. Interne bilag skal bindes til den importerede
-                bankpost, der udgør det primære bevis.
+                oplysningerne. {allowInternalVoucher ? "Interne bilag skal bindes til den importerede bankpost, der udgør det primære bevis." : "Vælg den faktiske bilagstype. Interne bilag oprettes direkte i virksomheden med dens bankbevis; kontrakter og andre dokumenttyper understøttes endnu ikke i denne indbakke."}
               </p>
             </div>
 
@@ -314,7 +321,7 @@ export function DocumentIngestModal({
                 >
                   <option value="purchase_sale">Køb/salg</option>
                   <option value="cash_register_receipt">Kassebon</option>
-                  <option value="internal_voucher">Internt bilag</option>
+                  {allowInternalVoucher && <option value="internal_voucher">Internt bilag</option>}
                 </Select>
               </label>
               <label className="modal-field">
