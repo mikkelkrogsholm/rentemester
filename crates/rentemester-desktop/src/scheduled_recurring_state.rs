@@ -333,6 +333,39 @@ impl Snapshot {
             plan_error,
         })
     }
+    pub fn reviewed_template(&self) -> Result<&Value, String> {
+        let row = self.selected.as_ref().ok_or("Skabelonkilde mangler")?;
+        let plan = self
+            .plan
+            .as_ref()
+            .ok_or("Fuld readonly plan kræves før Enable/Resume eller aktiv-app-start")?;
+        let p = &plan["plan"];
+        let t = &p["template"];
+        if !t.is_object()
+            || t["id"] != row["templateId"]
+            || p["templateHash"] != row["templateHash"]
+            || p["stateHash"] != row["stateHash"]
+            || [
+                "name",
+                "interval",
+                "intervalCount",
+                "firstIssueDate",
+                "paymentTermsDays",
+                "deliveryPeriodMode",
+                "payload",
+            ]
+            .iter()
+            .any(|k| t.get(*k).is_none())
+            || !t["payload"]["seller"].is_object()
+            || !t["payload"]["buyer"].is_object()
+            || !t["payload"]["lines"]
+                .as_array()
+                .is_some_and(|a| !a.is_empty())
+        {
+            return Err("Fuld immutable skabelon/seller/buyer/lines med præcis templateHash/stateHash skal vises og gennemgås først".into());
+        }
+        Ok(t)
+    }
     pub fn can_write(&self) -> bool {
         matches!(self.role.as_str(), "owner" | "bookkeeper")
     }
@@ -433,6 +466,9 @@ impl Review {
         if !allowed {
             return Err("Handlingen passer ikke aktuel tilstand/ejer. Cancelled er terminal; resume/dispatch kræver samme samtykkende bruger og aktuelle rettigheder.".into());
         }
+        if matches!(action, Action::Enable | Action::Resume) {
+            data.reviewed_template()?;
+        }
         let mut body = json!({"templateId":s["templateId"]});
         match action {
             Action::Enable => {
@@ -532,6 +568,9 @@ impl Review {
         self.receipt(v) && data.selected.as_ref() == Some(&v["scheduledRecurring"])
     }
 }
+pub fn definite_refusal(status: u16) -> bool {
+    (400..500).contains(&status) && status != 408
+}
 pub fn scope(record: &Value, origin: &str, data: &Snapshot, local: Option<&str>) -> bool {
     record["company"] == data.company
         && record["principal"] == data.principal
@@ -566,7 +605,7 @@ mod tests {
         json!({"ok":true,"scheduledRecurring":{"asOfDate":"2026-10-19","timeZone":"Europe/Copenhagen","localService":false,"rows":[queue(state)]}})
     }
     fn plan() -> Value {
-        json!({"ok":true,"plan":{"templateId":7,"templateHash":"a".repeat(64),"stateHash":"b".repeat(64),"asOfDate":"2026-10-19","normalDue":{"periodIndex":5,"issueDate":"2026-10-19"},"missed":[{"periodIndex":0,"issueDate":"2026-05-19"},{"periodIndex":1,"issueDate":"2026-06-19"}],"missedCount":2,"truncated":false,"queued":[{"periodIndex":2,"issueDate":"2026-07-19"}],"planHash":"c".repeat(64)}})
+        json!({"ok":true,"plan":{"templateId":7,"templateHash":"a".repeat(64),"stateHash":"b".repeat(64),"asOfDate":"2026-10-19","normalDue":{"periodIndex":5,"issueDate":"2026-10-19"},"missed":[{"periodIndex":0,"issueDate":"2026-05-19"},{"periodIndex":1,"issueDate":"2026-06-19"}],"missedCount":2,"truncated":false,"queued":[{"periodIndex":2,"issueDate":"2026-07-19"}],"planHash":"c".repeat(64),"template":{"id":7,"name":"Synthetic fixed source","interval":"monthly","intervalCount":1,"firstIssueDate":"2026-05-19","paymentTermsDays":14,"deliveryPeriodMode":"issue_month","payload":{"seller":{"name":"Synthetic Seller"},"buyer":{"name":"Synthetic Buyer"},"lines":[{"description":"Synthetic service"}]}}}})
     }
     fn me(principal: &str, role: &str) -> Value {
         json!({"ok":true,"user":{"id":principal},"companies":[{"slug":"synthetic","role":role}]})
@@ -667,6 +706,12 @@ mod tests {
     {
         let d = data("disabled", "owner");
         assert!(Review::prepare(&d, Action::Enable, "", &[], None, false).is_err());
+        let mut missing = d.clone();
+        missing.plan = None;
+        assert!(Review::prepare(&missing, Action::Enable, "", &[], None, true).is_err());
+        let mut mismatched = d.clone();
+        mismatched.plan.as_mut().unwrap()["plan"]["template"]["id"] = json!(8);
+        assert!(Review::prepare(&mismatched, Action::Enable, "", &[], None, true).is_err());
         let r = Review::prepare(&d, Action::Enable, "", &[], None, true).unwrap();
         assert_eq!(
             r.display,

@@ -13,7 +13,7 @@ use rentemester_client::{Error, Report};
 use serde_json::Value;
 use state::{Action, Review, Snapshot};
 use std::sync::Arc;
-fn read(session: &Session, company: &str, id: Option<i64>) -> Result<Snapshot, String> {
+pub(crate) fn read(session: &Session, company: &str, id: Option<i64>) -> Result<Snapshot, String> {
     let templates = session
         .runtime
         .block_on(session.client.recurring_invoices(company))
@@ -66,6 +66,8 @@ pub struct ScheduledRecurring {
     busy: bool,
     status: String,
     receipt: Option<Value>,
+    dispatcher: Option<Entity<crate::scheduled_dispatcher::ScheduledDispatcher>>,
+    start_review: Option<Snapshot>,
 }
 impl ScheduledRecurring {
     pub fn new(
@@ -98,12 +100,75 @@ impl ScheduledRecurring {
             busy: false,
             status: String::new(),
             receipt: None,
+            dispatcher: None,
+            start_review: None,
         };
         this.load(window, cx);
         this
     }
+    /// Binding alone never activates or dispatches anything.
+    pub fn bind_dispatcher(
+        &mut self,
+        dispatcher: Entity<crate::scheduled_dispatcher::ScheduledDispatcher>,
+    ) {
+        self.dispatcher = Some(dispatcher);
+    }
+    fn prepare_start(&mut self, cx: &mut Context<Self>) {
+        if self.busy || self.pending.is_some() || !self.consent {
+            return;
+        }
+        let Some(data) = &self.data else {
+            return;
+        };
+        match crate::scheduled_dispatcher_state::Binding::reviewed(
+            &self.origin,
+            self.local.as_deref(),
+            data,
+        ) {
+            Ok(_) => {
+                self.start_review = Some(data.clone());
+                self.confirmed = false;
+                self.status="Gennemgå fuld skabelon/plan og bruger før aktiv-app-start. Ingen bogføring/mail eller unattended service.".into();
+            }
+            Err(e) => self.status = e,
+        }
+        cx.notify();
+    }
+    fn start_confirmed(&mut self, cx: &mut Context<Self>) {
+        if self.busy || !self.confirmed || self.pending.is_some() {
+            return;
+        }
+        let (Some(review), Some(data), Some(dispatcher)) =
+            (&self.start_review, &self.data, self.dispatcher.clone())
+        else {
+            return;
+        };
+        if review != data {
+            self.status = "Startkilden ændrede sig; genlæs og gennemgå igen".into();
+            cx.notify();
+            return;
+        }
+        let (session, origin, local) = (
+            self.session.clone(),
+            self.origin.clone(),
+            self.local.clone(),
+        );
+        match dispatcher.update(cx, |d, cx| {
+            d.activate(session, &origin, local.as_deref(), data, cx)
+        }) {
+            Ok(()) => {
+                self.status="Eksplicit aktiv-app-start bekræftet. Global status/Stop følger også efter skærmlukning; hver tick genkontrollerer kilder/adgang.".into();
+                self.start_review = None;
+                self.confirmed = false;
+                self.consent = false;
+            }
+            Err(e) => self.status = e,
+        }
+        cx.notify();
+    }
     fn clear(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.review = None;
+        self.start_review = None;
         self.indexes.clear();
         self.dispatch = None;
         self.consent = false;
@@ -125,7 +190,7 @@ impl ScheduledRecurring {
         let task = cx.background_executor().spawn(async move {
             Ok::<_, String>((read(&session, &company, selected)?, state::load()?))
         });
-        cx.spawn(async move|view,cx|{let result=task.await;let _=view.update(cx,|this,cx|{this.busy=false;match result{Ok((data,pending))=>{this.data=Some(data);this.pending=pending;this.status="Viser serverens aktuelle kø-/kildestatus. Denne visning har eksplicitte review-/dispatchkontroller, ingen timer eller baggrundsservice; åbning og genlæsning udsteder intet.".into();},Err(e)=>this.status=e}cx.notify();});}).detach();
+        cx.spawn(async move|view,cx|{let result=task.await;let _=view.update(cx,|this,cx|{this.busy=false;match result{Ok((data,pending))=>{this.data=Some(data);this.pending=pending;this.status="Viser serverens aktuelle kø-/kildestatus. Åbning og genlæsning aktiverer intet. Kun bekræftet aktivering starter den globale aktiv-app-koordinator; ingen unattended service.".into();},Err(e)=>this.status=e}cx.notify();});}).detach();
         cx.notify();
     }
     fn prepare(&mut self, action: Action, cx: &mut Context<Self>) {
@@ -156,6 +221,18 @@ impl ScheduledRecurring {
         if self.busy || !self.confirmed || self.pending.is_some() {
             return;
         }
+        let lane = if let Some(dispatcher) = self.dispatcher.clone() {
+            match dispatcher.update(cx, |d, _| d.reserve_manual()) {
+                Ok(permit) => Some(permit),
+                Err(e) => {
+                    self.status = e;
+                    cx.notify();
+                    return;
+                }
+            }
+        } else {
+            None
+        };
         let Some(review) = self.review.take() else {
             return;
         };
@@ -171,12 +248,15 @@ impl ScheduledRecurring {
             self.origin.clone(),
             self.local.clone(),
         );
+        let action = review.action;
+        let activation_source = review.snapshot.clone();
         let task=cx.background_executor().spawn(async move{
+   let _lane=lane;
    let fresh=read(&session,&company,selected)?;if !review.current(&fresh){return Err("Bruger, adgang, ledger, skabelon, dato, kø eller kanonisk plan ændrede sig. Intet sendt; genlæs og gennemgå igen.".into());}
    let marker=review.marker(&origin,local.as_deref());state::begin(&marker)?;let response=session.runtime.block_on(session.client.mutate_scheduled_recurring(&company,review.action.sdk(),review.body.as_ref().clone(),true));
    let(message,receipt)=match response{
     Ok(v)=>if review.receipt(&v){state::finish(&marker,false)?;(if review.action==Action::Dispatch{if v["dispatch"]["status"]=="failed"{"Serveren registrerede et kendt mislykket dispatch. Fejlen er terminal i denne leverance; ingen automatisk gentagelse. Kontrollér fuld kvittering, køhistorik og fakturaer.".into()}else{"Serveren bekræftede dispatch. Faktisk generation/udstedelse og dokument/PDF følger kvitteringen: UDSTEDT er ikke bogført og ikke sendt. Kanoniske fakturaer og køstatus genlæses.".into()}}else{format!("Serveren bekræftede {}. Catch-up sætter kun valgte forekomster i kø; skip udsteder intet. Aktivering er samtykke/køtilstand, ikke bevis på afsendelse eller baggrundskørsel.",review.action.name())},Some(v))}else{("Kvitteringen mangler kanonisk skabelon-/køstatus. Udfaldet er uafklaret; genlæs manuelt. Ingen genafsendelse.".into(),None)},
-    Err(Error::Refused{status})=>{state::finish(&marker,false)?;(format!("Serveren afviste handlingen (HTTP{status}). Kontrollér aktuel CompanyDraftWrite, samme samtykkende bruger ved resume/dispatch, eksakt state/plan/templateHash, serverdato og faktiske kø-/missed-forekomster. Cancelled/known-failed gentages ikke automatisk. SDK leverer kun HTTP-status; ingen skjult retry."),None)},
+    Err(Error::Refused{status}) if state::definite_refusal(status)=>{state::finish(&marker,false)?;(format!("Serveren afviste handlingen (HTTP{status}). Kontrollér aktuel CompanyDraftWrite, samme samtykkende bruger ved resume/dispatch, eksakt state/plan/templateHash, serverdato og faktiske kø-/missed-forekomster. Cancelled/known-failed gentages ikke automatisk. SDK leverer kun HTTP-status; ingen skjult retry."),None)},
     Err(Error::InvalidInput(_))=>{state::finish(&marker,false)?;("Native JSON/bekræftelse blev afvist før netværkskald. Kontrollér præcise16KiB-felter, begrundelse og1–100 eksplicitte forekomster. Ingen nøgler eller datoer indsættes.".into(),None)},
     _=>("Udfaldet er uafklaret. Genlæs køhistorik, valgte forekomster og kanoniske fakturaer manuelt før videre handling. Lignende projektion beviser ikke præcis dette forsøg; ingen genafsendelse.".into(),None)
    };
@@ -192,7 +272,53 @@ impl ScheduledRecurring {
                         this.receipt = receipt;
                         this.pending = pending;
                         match next {
-                            Ok(data) => this.data = Some(data),
+                            Ok(data) => {
+                                if let (Some(dispatcher), Some(receipt)) =
+                                    (this.dispatcher.clone(), this.receipt.as_ref())
+                                {
+                                    let exact = receipt["scheduledRecurring"]["templateId"]
+                                        .as_i64()
+                                        == this.selected;
+                                    let same_reviewed_source=data.principal==activation_source.principal && data.ledger==activation_source.ledger && activation_source.reviewed_template().ok().zip(data.reviewed_template().ok()).is_some_and(|(before,after)|before==after);
+                                    if exact && matches!(action,Action::Enable|Action::Resume) && data.selected.as_ref()==Some(&receipt["scheduledRecurring"]) && same_reviewed_source {
+                                        let (session, origin, local) = (
+                                            this.session.clone(),
+                                            this.origin.clone(),
+                                            this.local.clone(),
+                                        );
+                                        if let Err(e) = dispatcher.update(cx, |d, cx| {
+                                            d.activate(
+                                                session,
+                                                &origin,
+                                                local.as_deref(),
+                                                &data,
+                                                cx,
+                                            )
+                                        }) {
+                                            this.status.push_str(&format!(
+                                                " Aktiv-app-start blev ikke optaget: {e}"
+                                            ));
+                                        }
+                                    } else if exact && matches!(action,Action::Enable|Action::Resume) { this.status.push_str(" Den immutable skabelon/principal/ledger matcher ikke det gennemgåede grundlag. Aktiv-app-automatik er IKKE startet; ny source review kræves.");
+                                    } else if exact
+                                        && matches!(
+                                            action,
+                                            Action::Pause
+                                                | Action::Cancel
+                                                | Action::CatchUp
+                                                | Action::Skip
+                                                | Action::Dispatch
+                                        )
+                                    {
+                                        if let Some(id) = this.selected {
+                                            dispatcher.update(cx, |d, cx| {
+                                                d.stop_template(&this.company, id, cx)
+                                            });
+                                        }
+                                    }
+                                }
+                                this.data = Some(data);
+                            }
                             Err(e) => this.status.push_str(&format!(" Genlæsning fejlede: {e}")),
                         }
                     }
@@ -210,10 +336,14 @@ impl ScheduledRecurring {
 }
 impl Render for ScheduledRecurring {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let locked = self.busy || self.review.is_some();
+        let locked = self.busy || self.review.is_some() || self.start_review.is_some();
+        let lane_busy = self
+            .dispatcher
+            .as_ref()
+            .is_some_and(|d| d.read(cx).is_busy());
         let mut view=div().flex().flex_col().gap_3().child(div().text_xl().child("Planlagte fakturaer · kø og eksplicitte reviewkontroller"))
    .child(format!("Aktuel virksomhed {} · {}",self.company,self.origin)).child(self.status.clone())
-   .child("Denne visning er køstyring og manuel planreview/dispatch, ikke færdig unattended automation. Åbning, genstart og genlæsning starter ingen udstedelse. Lokal lukning/søvn udfører ingen baggrundsservice her. Serverens tidszone/dato, missed-regler og forekomster vises uændret.")
+   .child("Enable/Resume eller separat bekræftet Start kan aktivere automatik i den aktuelle app-session. Global status/Stop følger på tværs af skærme/virksomheder. Åbning/status/genstart/genforbindelse aktiverer intet; lukket app er ingen unattended service. Missed/kø/fejl kræver manuel review.")
    .child(Button::new("scheduled-recurring-reload").label("Genlæs kilder/kø/readonly plan; ryd review og forekomstvalg").disabled(locked).on_click(cx.listener(|this,_,window,cx|this.load(window,cx))))
    .child(Button::new("scheduled-recurring-clear").label("Ryd skabelonvalg og genlæs").disabled(locked).on_click(cx.listener(|this,_,window,cx|{this.selected=None;this.load(window,cx);})));
         let Some(data) = self.data.clone() else {
@@ -308,7 +438,7 @@ impl Render for ScheduledRecurring {
             if state::scope(&record, &self.origin, &data, self.local.as_deref()) {
                 view=view.child("Bruger, virksomhed, ledger og privat profil matcher. Lokalt endpoint må ændres ved genstart; arkivering sender intet.")
      .child(Checkbox::new("scheduled-recurring-resolved").label("Jeg har manuelt afklaret dette præcise forsøg i den viste profil/virksomhed").checked(self.resolved).disabled(self.busy).on_click(cx.listener(|this,v,_,cx|{this.resolved=*v;cx.notify();})))
-     .child(Button::new("scheduled-recurring-archive").label("Arkivér manuel afklaring uden genafsendelse").disabled(self.busy||!self.resolved).on_click(cx.listener(|this,_,_,cx|{let(Some(record),Some(data))=(&this.pending,&this.data)else{return;};if this.busy||!this.resolved||!state::scope(record,&this.origin,data,this.local.as_deref()){return;}match state::finish(record,true){Ok(())=>{this.pending=None;this.resolved=false;this.status="Manuel afklaring arkiveret. Intet gentaget.".into();},Err(e)=>this.status=e}cx.notify();})));
+     .child(Button::new("scheduled-recurring-archive").label("Arkivér manuel afklaring uden genafsendelse").disabled(self.busy||!self.resolved||lane_busy).on_click(cx.listener(|this,_,_,cx|{let(Some(record),Some(data))=(&this.pending,&this.data)else{return;};if this.busy||!this.resolved||!state::scope(record,&this.origin,data,this.local.as_deref()){return;}let _lane=if let Some(dispatcher)=this.dispatcher.clone(){match dispatcher.update(cx,|d,_|d.reserve_manual()){Ok(permit)=>Some(permit),Err(e)=>{this.status=e;cx.notify();return;}}}else{None};match state::finish(record,true){Ok(())=>{this.pending=None;this.resolved=false;this.status="Manuel afklaring arkiveret. Intet gentaget.".into();},Err(e)=>this.status=e}cx.notify();})));
             } else {
                 view=view.child("Vælg oprindelig bruger, virksomhed/ledger og privat lokal profil eller nøjagtigt eksternt endpoint for afklaring.");
             }
@@ -320,7 +450,24 @@ impl Render for ScheduledRecurring {
         let Some(selected) = &data.selected else {
             return view.child("Vælg eksplicit en faktisk fakturaskabelon. Ingen første skabelon vælges automatisk. Opret skabelon gennem den eksisterende server/web/CLI-skabelonfunktion, hvis listen er tom.");
         };
+        if let Some(review) = &self.start_review {
+            view = view.child(div().text_lg().child("Gennemgå særskilt aktiv-app-start"));
+            if let Some(plan) = &review.plan {
+                for line in state::lines(plan, "frossenAktivAppKilde") {
+                    view = view.child(line);
+                }
+            }
+            return view.child(format!("Bruger {} · virksomhed {} · ledger {}. Kun serverens normale forekomst for i dag efter frisk adgang/kildekontrol. Ingen missed/catchup, posting/mail eller unattended service.",review.principal,review.company,review.ledger))
+                .child(Checkbox::new("scheduled-recurring-start-confirm").label("Jeg har gennemgået præcis skabelon og samtykker til aktiv-app-kørsel under denne bruger/forbindelse").checked(self.confirmed).disabled(self.busy).on_click(cx.listener(|this,v,_,cx|{this.confirmed=*v;cx.notify();})))
+                .child(Button::new("scheduled-recurring-start-now").label("Bekræft Start automatik i denne app-session").disabled(self.busy||!self.confirmed).on_click(cx.listener(|this,_,_,cx|this.start_confirmed(cx))))
+                .child(Button::new("scheduled-recurring-start-cancel").label("Annullér lokal startreview").disabled(self.busy).on_click(cx.listener(|this,_,_,cx|{this.start_review=None;this.confirmed=false;cx.notify();})));
+        }
         if let Some(review) = &self.review {
+            if let Some(plan) = &review.snapshot.plan {
+                for line in state::lines(&plan["plan"]["template"], "frossenGennemgåetSkabelon") {
+                    view = view.child(line);
+                }
+            }
             view = view.child(div().text_lg().child(format!(
                 "Gennemgå {} · faktisk skabelon {}",
                 review.action.name(),
@@ -421,6 +568,10 @@ impl Render for ScheduledRecurring {
                     .on_click(cx.listener(move |this, _, _, cx| this.prepare(action, cx))),
                 );
             }
+        }
+        if state == "enabled" && self.dispatcher.is_some() {
+            view=view.child(Checkbox::new("scheduled-recurring-active-app-consent").label("Jeg ønsker normal-dagens udstedelse, mens denne autentificerede app er aktiv; ingen unattended service/bogføring/mail").checked(self.consent).disabled(self.busy).on_click(cx.listener(|this,v,_,cx|{this.consent=*v;cx.notify();})))
+                .child(Button::new("scheduled-recurring-review-start").label("Gennemgå særskilt Start automatik i denne app-session").disabled(self.busy||!self.consent||!data.same_owner()).on_click(cx.listener(|this,_,_,cx|this.prepare_start(cx))));
         }
         if state == "enabled" {
             view = view.child(div().text_lg().child(
