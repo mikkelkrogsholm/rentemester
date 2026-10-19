@@ -174,7 +174,7 @@ export async function checkNativeBankReconciliation(page: Page, base: string, re
     .filter({ has: page.getByRole("cell", { name: text, exact: true }) });
   await row.getByText(`Afstemt · ${evidence.entryNo}`, { exact: true }).waitFor();
   await row.getByText("Afstemningsbevis", { exact: true }).click();
-  await row.getByText(note, { exact: true }).waitFor();
+  await row.getByText(note, { exact: true }).first().waitFor();
   await row.getByRole("button", { name: "Ret", exact: true }).waitFor();
   console.log(
     `Browser: native existing-journal reconciliation ${restarted ? "restart" : "initial"} verified`,
