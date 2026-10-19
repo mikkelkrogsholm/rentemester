@@ -15,7 +15,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     if args == ["--help"] {
         return Ok(json!({"ok":true,
             "usage":"remote --server ORIGIN [--allow-loopback-http] [--cookie-file PATH] COMMAND [--company SLUG] [--year YEAR] [--account CODE]",
-            "commands":["accruals","accrual-schedule","register-accrual","recognize-accrual","assets","next-asset-depreciation","register-asset","depreciate-asset","recurring-invoices","create-recurring-invoice","generate-recurring-invoice","retire-recurring-invoice","bank-reconciliation-correction-plan","bank-reconciliation-correction","bank-reconciliation-candidates","bank-reconciliation-link","ingest-document","document-original","reviewed-bank","accounting-drafts","posting-rules","create-bank-draft","submit-draft","reject-draft","approve-draft","annual-report","health","me","companies","journal","trial-balance","income-statement","balance","post-journal","reverse-journal","login","accounts","contacts","documents","invoices","invoice-pdf","preview-invoice","create-customer","update-customer","delete-customer","create-vendor","update-vendor","delete-vendor","issue-invoice","post-invoice","settle-invoice","credit-invoice","refund-invoice","bank","bank-accounts","payables","expense-booking-options","create-bank-account","import-bank","register-payable","pay-payable","match-bank-expense","vat","periods","period-close-readiness","review-period","close-period","reopen-period","report-period","supplier-commitments","supplier-commitment-matches","plan-supplier-commitment","approve-supplier-commitment","change-supplier-commitment","match-supplier-commitment"],
+            "commands":["retention","gdpr-export","gdpr-erase","budget","budget-vs-actual","budget-dimension-actuals","set-budget","mileage","register-mileage","accruals","accrual-schedule","register-accrual","recognize-accrual","assets","next-asset-depreciation","register-asset","depreciate-asset","recurring-invoices","create-recurring-invoice","generate-recurring-invoice","retire-recurring-invoice","bank-reconciliation-correction-plan","bank-reconciliation-correction","bank-reconciliation-candidates","bank-reconciliation-link","ingest-document","document-original","reviewed-bank","accounting-drafts","posting-rules","create-bank-draft","submit-draft","reject-draft","approve-draft","annual-report","health","me","companies","journal","trial-balance","income-statement","balance","post-journal","reverse-journal","login","accounts","contacts","documents","invoices","invoice-pdf","preview-invoice","create-customer","update-customer","delete-customer","create-vendor","update-vendor","delete-vendor","issue-invoice","post-invoice","settle-invoice","credit-invoice","refund-invoice","bank","bank-accounts","payables","expense-booking-options","create-bank-account","import-bank","register-payable","pay-payable","match-bank-expense","vat","periods","period-close-readiness","review-period","close-period","reopen-period","report-period","supplier-commitments","supplier-commitment-matches","plan-supplier-commitment","approve-supplier-commitment","change-supplier-commitment","match-supplier-commitment"],
             "authentication":"Supply a valid MFA-derived browser session as one Cookie request-header value in an owner-only regular file (0600). No Set-Cookie attributes. All commands except health/login require --cookie-file. Login uses --email EMAIL --factor totp|backup --session-out NEW_PATH, reads password then factor code as two newline-terminated stdin lines; stdin must be piped/private. Output file is created0600 and never overwritten. MFA enrollment remains in browser.",
             "writes":"post-journal/reverse-journal read exact bounded server JSON envelope from stdin; requires confirm:true and input.idempotencyKey. Authenticated server session determines actor. No retry; outcome_unknown requires reconciliation using original key.",
             "domainWrites":"Native flat JSON body on stdin, forwarded byte-for-byte once. Domain writes require --confirm; updates/deletions also --id. Deletion body is {confirm:true}; open obligations and historical links can refuse deletion. issue-invoice requires --preview-reviewed after preview-invoice with identical body. These native endpoints do NOT support idempotency keys: never add a key/envelope or auto-retry; reconcile outcome_unknown using contacts/invoices/journal/documents. Native post-invoice body also contains confirm:true. Preview returns PDF bytes as JSON integer array and creates no invoice. Native invoices currently support DKK/25% VAT. Contacts contains customers and vendors. invoices optionally accepts --year.",
@@ -28,6 +28,9 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
             "invoicePdf":"invoice-pdf --company SLUG --id POSITIVE_DOCUMENT_ID reads the immutable issued original via its current authenticated documents-read permission. No stdin body or --confirm. Output data.pdf is {contentType:application/pdf,bytes:[exact byte integers]}; creates no local files.",
             "receivables":crate::receivables::help(),
             "reviewedBookkeeping":crate::reviewed_bookkeeping::help(),
+            "privacyLifecycle":crate::privacy::help(),
+            "budgetLifecycle":crate::budget::help(),
+            "mileageLifecycle":crate::mileage::help(),
             "accrualLifecycle":crate::accruals::help(),
             "assetLifecycle":crate::assets::help(),
             "recurringInvoices":crate::recurring_invoices::help(),
@@ -70,6 +73,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         }
         if arg.starts_with("--") {
             if ![
+                "--dimension",
+                "--member",
                 "--replacement-journal-entry-id",
                 "--bank-transaction-id",
                 "--draft-id",
@@ -122,6 +127,10 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     {
         return Err(invalid("email/factor/session-out allowed only with login"));
     }
+    if crate::privacy::accepts(command){return crate::privacy::run(command,&flags,allow_http,confirmed,preview_reviewed);}
+    if crate::budget::accepts(command){return crate::budget::run(command,&flags,allow_http,confirmed,preview_reviewed);}
+    if flags.contains_key("--dimension")||flags.contains_key("--member"){return Err(invalid("dimension/member only on budget-dimension-actuals"));}
+    if crate::mileage::accepts(command){return crate::mileage::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::accruals::accepts(command){return crate::accruals::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::assets::accepts(command){return crate::assets::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::recurring_invoices::accepts(command){return crate::recurring_invoices::run(command,&flags,allow_http,confirmed,preview_reviewed);}

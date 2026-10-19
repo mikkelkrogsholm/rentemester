@@ -1,6 +1,9 @@
 use rentemester_engine::{Error, trial_balance::Period};
 use serde_json::json;
 use std::{collections::BTreeMap, io::Read, path::Path, process::ExitCode};
+mod privacy;
+mod budget;
+mod mileage;
 mod accruals;
 mod assets;
 mod recurring_invoices;

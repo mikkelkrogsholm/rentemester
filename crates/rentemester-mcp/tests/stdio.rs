@@ -151,7 +151,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 73);
+    assert_eq!(tools.len(), 82);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -1263,7 +1263,7 @@ fn recurring_tools_discovery_and_strict_read_write_admission() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 73);
+    assert_eq!(tools.len(), 82);
     assert_eq!(
         tools
             .iter()
@@ -1334,7 +1334,7 @@ fn asset_readonly_discovery_and_native_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 73);
+    assert_eq!(tools.len(), 82);
     for name in ["assets", "next_asset_depreciation"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
@@ -1401,7 +1401,7 @@ fn accrual_readonly_discovery_and_native_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 73);
+    assert_eq!(tools.len(), 82);
     for name in ["accruals", "accrual_schedule"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
@@ -1425,5 +1425,211 @@ fn accrual_readonly_discovery_and_native_body_gates() {
             &[init("2025-11-25"), ready(), call(2, name, args)],
         ));
         assert!(v[1].get("error").is_some(), "{v:?}");
+    }
+}
+
+#[test]
+fn budget_mcp_native_revision_has_no_injected_inner_confirmation() {
+    let (origin, request, task) =
+        http("HTTP/1.1 503 Unavailable\r\nContent-Length:0\r\nConnection:close\r\n\r\n");
+    let body = "{ \"accountNo\":\"E\",\"period\":\"2026-01\",\"amount\":23.45 }\n";
+    let v = parsed(&run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "set_budget",
+                json!({"company":"synthetic","body":body,"confirm":true}),
+            ),
+        ],
+    ));
+    assert_eq!(
+        v[1]["result"]["structuredContent"]["error"]["code"],
+        "outcome_unknown"
+    );
+    let wire = String::from_utf8(request.recv().unwrap()).unwrap();
+    assert!(wire.starts_with("POST /api/companies/synthetic/budget HTTP/1.1"));
+    assert!(wire.ends_with(body));
+    assert!(!wire.contains("idempotencyKey"));
+    task.join().unwrap();
+}
+#[test]
+fn mileage_mcp_preserves_native_advisory_and_caller_rate() {
+    let reply = r#"{"ok":true,"mileage":{"mileageEntryId":7,"amountBasis":1.35,"warnings":["native rate advisory"],"appliedRules":["native-rule"]}}"#;
+    let response = format!(
+        "HTTP/1.1 200 OK\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{reply}",
+        reply.len()
+    );
+    let (origin, request, task) = http(Box::leak(response.into_boxed_str()));
+    let body = r#"{ "tripDate":"2026-01-31","purpose":"Synthetic visit","fromLocation":"A","toLocation":"B","kilometers":0.15,"vehicle":"Synthetic car","driver":"Synthetic driver","ratePerKm":9,"rateBasis":"Synthetic chosen basis","confirm":true }"#;
+    let v = parsed(&run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "register_mileage",
+                json!({"company":"synthetic","body":body,"confirm":true}),
+            ),
+        ],
+    ));
+    assert_eq!(
+        v[1]["result"]["structuredContent"]["data"],
+        serde_json::from_str::<Value>(reply).unwrap()
+    );
+    let wire = String::from_utf8(request.recv().unwrap()).unwrap();
+    assert!(wire.starts_with("POST /api/companies/synthetic/mileage HTTP/1.1"));
+    assert!(wire.ends_with(body));
+    task.join().unwrap();
+}
+#[test]
+fn budget_mileage_discovery_year_scope_and_body_limits_are_strict() {
+    let v = parsed(&run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),
+        ],
+    ));
+    let tools = v[1]["result"]["tools"].as_array().unwrap();
+    assert_eq!(tools.len(), 82);
+    for name in [
+        "budget",
+        "budget_vs_actual",
+        "budget_dimension_actuals",
+        "mileage",
+    ] {
+        assert_eq!(
+            tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
+            true
+        );
+    }
+    for (name, args) in [
+        ("budget", json!({"company":"synthetic"})),
+        (
+            "mileage",
+            json!({"company":"synthetic","year":"2026","confirm":true}),
+        ),
+        (
+            "set_budget",
+            json!({"company":"synthetic","body":" ".repeat(16*1024+1),"confirm":true}),
+        ),
+        (
+            "register_mileage",
+            json!({"company":"synthetic","body":" ".repeat(32*1024+1),"confirm":true}),
+        ),
+    ] {
+        let v = parsed(&run(
+            "http://127.0.0.1:9",
+            &[init("2025-11-25"), ready(), call(2, name, args)],
+        ));
+        assert!(v[1].get("error").is_some(), "{v:?}");
+    }
+}
+
+#[test]
+fn privacy_mcp_export_is_audited_and_full_unknown_coverage_is_preserved() {
+    let reply = r#"{"ok":true,"gdpr":{"export":{"coverage":{"complete":false},"records":[{"source":"audit_log","retentionUnknown":true,"retainUntil":null,"erasable":false}]}}}"#;
+    let response = format!(
+        "HTTP/1.1 200 OK\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{reply}",
+        reply.len()
+    );
+    let (origin, request, task) = http(Box::leak(response.into_boxed_str()));
+    let body = "{ \"cvr\":\"  SYN-SUBJECT  \",\"asOf\":\"2026-01-31\",\"confirm\":true }\n";
+    let v = parsed(&run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "gdpr_export",
+                json!({"company":"synthetic","body":body,"confirm":true}),
+            ),
+        ],
+    ));
+    assert_eq!(
+        v[1]["result"]["structuredContent"]["data"],
+        serde_json::from_str::<Value>(reply).unwrap()
+    );
+    let wire = String::from_utf8(request.recv().unwrap()).unwrap();
+    assert!(wire.starts_with("POST /api/companies/synthetic/gdpr/export HTTP/1.1"));
+    assert!(wire.ends_with(body));
+    task.join().unwrap();
+}
+#[test]
+fn privacy_mcp_overlay_unknown_is_not_silently_retried() {
+    let (origin, request, task) =
+        http("HTTP/1.1 503 Unavailable\r\nContent-Length:0\r\nConnection:close\r\n\r\n");
+    let body = r#"{"name":"Synthetic subject","confirm":true}"#;
+    let v = parsed(&run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "gdpr_erase",
+                json!({"company":"synthetic","body":body,"confirm":true}),
+            ),
+        ],
+    ));
+    assert_eq!(
+        v[1]["result"]["structuredContent"]["error"]["code"],
+        "outcome_unknown"
+    );
+    let wire = String::from_utf8(request.recv().unwrap()).unwrap();
+    assert!(wire.starts_with("POST /api/companies/synthetic/gdpr/erase HTTP/1.1"));
+    assert!(wire.ends_with(body));
+    task.join().unwrap();
+}
+#[test]
+fn privacy_discovery_audited_annotation_and_date_body_gates() {
+    let v = parsed(&run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),
+        ],
+    ));
+    let tools = v[1]["result"]["tools"].as_array().unwrap();
+    assert_eq!(tools.len(), 82);
+    for (name, readonly) in [
+        ("retention", true),
+        ("gdpr_export", false),
+        ("gdpr_erase", false),
+    ] {
+        assert_eq!(
+            tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
+            readonly
+        );
+    }
+    for (name, args) in [
+        (
+            "retention",
+            json!({"company":"synthetic","asOf":"9999-12-31"}),
+        ),
+        (
+            "gdpr_export",
+            json!({"company":"synthetic","body":"{}","confirm":false}),
+        ),
+        (
+            "gdpr_erase",
+            json!({"company":"synthetic","body":" ".repeat(16*1024+1),"confirm":true}),
+        ),
+    ] {
+        let v = parsed(&run(
+            "http://127.0.0.1:9",
+            &[init("2025-11-25"), ready(), call(2, name, args)],
+        ));
+        assert!(
+            v[1].get("error").is_some() || v[1]["result"]["isError"] == true,
+            "{v:?}"
+        );
     }
 }

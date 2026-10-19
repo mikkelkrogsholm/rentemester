@@ -1,6 +1,12 @@
 //! Origin-bound HTTP adapter shared by interactive and agent clients. No ledger logic.
 //! Supply a browser session's Cookie request-header value, never a Set-Cookie header.
 //! Authentication/enrollment is currently performed by the server's browser UI.
+mod privacy;
+pub use privacy::{MAX_PRIVACY_BODY, privacy_body_schema};
+mod budget;
+pub use budget::{MAX_BUDGET_BODY, budget_body_schema};
+mod mileage;
+pub use mileage::{MAX_MILEAGE_BODY, mileage_body_schema};
 mod accruals;
 pub use accruals::{AccrualMutation, MAX_ACCRUAL_BODY, accrual_body_schema};
 mod assets;
