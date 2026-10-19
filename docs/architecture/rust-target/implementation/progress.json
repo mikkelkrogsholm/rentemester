@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Native active-app recurring dispatch and session lifecycle integration",
-  "code_revision": "85d53411 plus scoped main lifecycle/global coordinator wiring",
+  "current_increment": "Full signed scheduler backup and explicit restored-owner continuation across web/CLI/MCP",
+  "code_revision": "29b6ae709c92d48d8932fa79c62da8244ebccccc",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Native active-app recurring dispatcher integrated across screen/company switches, with explicit reviewed activation only, fresh current owner/access/ledger/template checks, one shared manual/automatic lane, persist-before-POST unknown markers and exact invoice/PDF readback. Root full native suite186PASS/1existingignored; worker16focused tests/nativebuildPASS using exact root main wiring. Actual new native invoice journey remains unqualified because confirmed CUA pointer/scroll tooling fails. Prior actual Group48 source-free three-archive recovery and Group50 web/all9clients/restart PASS retained. Nonempty scheduler backup deliberately refuses pending full codec/restored-owner reconsent; hosted/providerworkers/J06 and full goal/epic672/J01-J07 OPEN.",
+  "state": "Actual Group52 PASS: all3 independently signed web/CLI/MCP archives verified after source/private-key deletion, each fresh normal-new-ownerMFA restore/reopen. Exact15historical scheduler events/5templates/originalJSON+PDF/2UUIDs preserved with imported consent/queue inactive. Browser plus separate CLI/MCP reviewed reconsent performs no issuance; explicit new catch-up+dispatch issues exactly1additional unposted/unsent original/PDF and duplicate period refuses. Each reopen preserves exact21event projection and source/new originals, prior ledger/bank/receipt boundaries; owned cleanup verified. Full signed V1/V2 rebackup/secondrestore/unresolved/corruptrefs covered by focused storage/host tests; not claimed as additional browser scenarios. SDK4/CLI3/MCP77(150tools), core8/backup16, web11+13, native189PASS/1existingignored and builds/strictClippy passed. Actual new native GUI remains unqualified due confirmed CUA pointer/scroll limitation. Hosted workers/provider effects/J06/full goal/epic672/J01-J07 remain OPEN.",
   "issues_closed": [],
   "next": [
-    "Implement full signed scheduler history coverage and explicit restored-owner reconsent; bounded read-only contract saved at /tmp/rm-platform51-scheduler-recovery-contract.md.",
-    "Complete actual new native financial journeys when a supported interaction route is available; preserve confirmed pointer/scroll tooling limitation and do not repeat blind attempts.",
-    "Continue hosted schedulers/durable external effects and J06 managed handoff/receipt reconciliation; retain all original completion_gates."
+    "Implement the next complete hosted scheduling/durable external-effect journey with explicit current authority, restart recovery and no blind replay; keep issue/post/send distinct.",
+    "Build J06 managed local/server handoff and explicit receipt/identity reconciliation after its durable-effect prerequisites; retain all completion gates.",
+    "Finish actual new native financial journeys when a supported interaction route is available; do not repeat the exhausted pointer/scroll route without new evidence."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "parallel-platform-31",
+  "previous_verified_increment": "Native active-app recurring dispatch and session lifecycle integration",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -574,6 +574,43 @@
       "scope": "Main global Entity retained across screens/companies; invalidated at connection/password login/new session/reset/local stop. No activation on constructor/status/reopen/reconnect; explicit reviewed full source only. Shared RAII lane includes manual send/archive. Unknown outcomes persist; no autoreplay.",
       "actual_gui": "unqualified; known CUA pointer/scroll noWindowsAvailable; prior managed-local setup/normalMFA/trialbalance proof retained",
       "next_contract": "/tmp/rm-platform51-scheduler-recovery-contract.md"
+    },
+    "scheduler_backup_restored_authority": {
+      "report": "/tmp/rentemester-rust-reports/native-portable-backup-scheduled-integrated52.json",
+      "sha256": "fff151555878dd2e388cb486a8c7cbed81fdf5f831fcc8ad06aa7154bde7d4b0",
+      "exit": 0,
+      "source_revision": "29b6ae709c92d48d8932fa79c62da8244ebccccc",
+      "runtime_pin": "/var/folders/hh/znsnvw8s1p31zr7fywf_cgfc0000gn/T/Rentemester-J05Scheduled-Pinned-aqrzyfk3",
+      "runtime_artifacts": "/tmp/rm-platform52-runtime-artifacts.json",
+      "actual_log": "/tmp/rm-platform52-scheduled-backup-actual.log",
+      "scope": "Three separate web/CLI/MCP signed archives, all independently verified after source/key deletion and each fresh normal-MFA new-owner restore+reopen. Exact source history15events/5templates/1generation and JSON+PDF preserved; imported authority/queue inactive. One browser+oneCLI+oneMCP reconsent each adds only V2 consent; explicit new catchup/dispatch adds one original/PDF, repeated old/new resolved periods refuse. Exact21event history on each reopen; bothUUIDs/ledger/bank/old-key refusal/fresh intent preserved; owned fixture absent.",
+      "checks": {
+        "source_unavailable": true,
+        "normal_new_owner_mfa_each_archive": true,
+        "owned_cleanup": true,
+        "global_single_use_claim": false,
+        "tamper_wrong_key_missing_source_declaration_existing_target": "all refused"
+      },
+      "checks_logs": {
+        "core": "worker a0e01884 host4/storage4 and strict five-package Clippy",
+        "backup_storage": "/tmp/rm-scheduler-backup-storage-tests.log (6PASS)",
+        "backup_host": "/tmp/rm-scheduler-backup-host-tests.log (10PASS)",
+        "backup_clippy": "/tmp/rm-scheduler-backup-clippy.log",
+        "sdk_cli": "/tmp/rm-scheduled-reconsent-sdk-cli.log (SDK4/CLI3PASS)",
+        "mcp": "/tmp/rm-scheduled-reconsent-mcp-fixed.log (77PASS/150tools)",
+        "clients_clippy": "/tmp/rm-scheduled-reconsent-clippy.log",
+        "web": "/tmp/rm-platform52-reconsent-web-tests.log (11PASS)",
+        "web_regression": "/tmp/rm-platform52-recurring-regression.log (13PASS)",
+        "web_build": "/tmp/rm-platform52-web-build.log",
+        "native": "/tmp/rm-platform52-native-tests.log (189PASS/1existingignored)",
+        "runtime_build": "/tmp/rm-platform52-runtime-build.log"
+      },
+      "unit_only": [
+        "Rebackup after new V2 consent and second restore/file reopen",
+        "Unresolved attempt restore blocks reconsent",
+        "Reduced-role authorization/corrupt chain/marker/original metadata refusal"
+      ],
+      "actual_native_gui": "unqualified; no repeated blind CUA attempts"
     }
   },
   "verified_history": [
@@ -966,13 +1003,19 @@
       "code_revision": "412a1e48 plus scoped web/native integration and nonempty-queue backup refusal",
       "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
       "state": "Actual Group48 allthree independent signed archives passed source-free verify/fresh normal-MFA restore/two reopens: exact group report/history/originals, then intentional freshpost correctlyblocks staleproof. Scheduled generation integrated across Rust backend, React active-app driver,149toolclients andnative queue/review. Actual Group50 ordinarytwoMFA UI+all9CLI/MCPops/restart PASS:4issuedJSON+PDF originals,unposted/unsent,catchup/skip,consent/accessrefusal,knownfailure andoneacceptedlostresponse withoutreplay,unchangedjournals. Root6core+1backup+16view+3driver+178native tests andruntime/web/native builds PASS;1existingnativeignored. Native active-app dispatcher, scheduler signedhistory/restoredauthority,hosted/providerworkers andmanagedJ06handoff remain OPEN; nonemptyqueue backup deliberatelyrefuses pendingfullcodec. Fullgoal/epic672/J01-J07 remain open."
+    },
+    {
+      "current_increment": "Native active-app recurring dispatch and session lifecycle integration",
+      "code_revision": "85d53411 plus scoped main lifecycle/global coordinator wiring",
+      "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
+      "state": "Native active-app recurring dispatcher integrated across screen/company switches, with explicit reviewed activation only, fresh current owner/access/ledger/template checks, one shared manual/automatic lane, persist-before-POST unknown markers and exact invoice/PDF readback. Root full native suite186PASS/1existingignored; worker16focused tests/nativebuildPASS using exact root main wiring. Actual new native invoice journey remains unqualified because confirmed CUA pointer/scroll tooling fails. Prior actual Group48 source-free three-archive recovery and Group50 web/all9clients/restart PASS retained. Nonempty scheduler backup deliberately refuses pending full codec/restored-owner reconsent; hosted/providerworkers/J06 and full goal/epic672/J01-J07 OPEN."
     }
   ],
   "active_work": [],
   "integrated_pending_browser": [
-    "Native active-app dispatcher implemented/tested/built; actual new native invoice and other business-screen GUI acceptance remains unqualified.",
-    "Nonempty scheduler backup explicitly refused pending full signed history codec/restored-authority policy.",
-    "Hosted scheduling/provider effects and J06 managed handoff incomplete."
+    "Actual new native financial/scheduling GUI journeys still unqualified despite tested/built adapters; confirmed CUA pointer/scroll limitation retained.",
+    "Hosted scheduling/provider effects and J06 managed handoff incomplete.",
+    "Repeated signed backup after new scheduler consent and unresolved-attempt restore have focused signed storage/host coverage; Group52 browser acceptance covers source-V1 three independent fresh restores plus new V2 consent/issuance/reopen only."
   ],
   "pending_deliveries": [],
   "completion_gates": [

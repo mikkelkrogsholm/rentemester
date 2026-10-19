@@ -59,7 +59,7 @@ adgang afvises. Alle otte særskilte CLI/MCP-handlinger består også i et
 separat workspace med begge retninger, uafhængig godkendelse, fuld paritet
 med HTTP-svarene og uændrede posteringer før og efter genstart.
 
-Der er 149 MCP-tools efter integrationen af planlagte fakturaer.
+Der er 150 MCP-tools efter integrationen af planlagte fakturaer.
 De samlede native tests består med 178 beståede og én eksisterende ignoreret
 test; native build består. Mac’en er låst op. Administreret
 lokal opstart, almindelig ejeroprettelse, verificering, MFA og læsning af
@@ -103,13 +103,28 @@ kræver genlæsning af den præcise faktura og dens PDF. Native tests og bygning
 består; dette nye fakturaforløb er endnu ikke verificeret i det faktiske
 desktopvindue på grund af den dokumenterede klik-/scrollbegrænsning.
 
-En ikke-tom kø afvises i backup, indtil fuld historik og nye adgangsrettigheder efter
-gendannelse er understøttet; historikken udelades aldrig. Hostede arbejdere,
-eksterne leverancer og administreret flytning mellem lokal app og server
-er fortsat uafsluttede dele af målet.
+Signeret backup bevarer nu hele planlægningshistorikken og fakturaernes
+JSON-originaler og PDF’er. Ved gendannelse er tidligere samtykke og køvalg
+inaktive. En aktuel ejer skal gennemgå skabelonen og give nyt samtykke;
+godkendelsen starter ingen automatik. Historiske køvalg skal vælges igen,
+mens allerede udstedte, oversprungne eller afsluttede fejlperioder fortsat
+er afgjort i planlægningen. Uafklarede forsøg bevares og blokerer nyt samtykke.
 
-Den samlede omskrivning er fortsat åben. Næste levering er fuld backup af
-planlægningshistorikken og en ny ejers eksplicitte godkendelse efter gendannelse.
+Det faktiske forløb består for tre uafhængige arkiver fra web, CLI og MCP:
+verifikation efter fjernelse af kilde og privat nøgle, ny ejer med normalt
+MFA-login, gennemgået samtykke i alle tre klienter, ét nyt køvalg og én
+udstedelse med JSON/PDF samt genåbning. Gentaget udstedelse af samme periode
+afvises; fakturaerne er ubogførte og usendte. Gentagen backup efter nyt
+samtykke og gendannelse af uafklarede forsøg er dækket af signerede
+lagertests, ikke dette browserforløb. Native samtykkekontroller består
+tests og bygning; deres faktiske GUI-forløb er stadig uverificeret.
+
+Hostede arbejdere, eksterne leverancer og administreret flytning mellem lokal
+app og server er fortsat uafsluttede dele af målet.
+
+Den samlede omskrivning er fortsat åben. De næste nødvendige dele er
+varige eksterne handlinger, hostet planlægning og administreret flytning
+mellem lokal app og server.
 Ejerobservationer bliver ikke automatisk til en koncernkonfiguration.
 
 ## Prøv med syntetiske data
