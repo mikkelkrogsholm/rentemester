@@ -6,6 +6,8 @@ rust-version = "1.95"
 publish.workspace = true
 
 [dependencies]
+base64 = "0.22.1"
+sha2 = "0.10"
 gpui-kit = "=0.7.3"
 rentemester-client = { path = "../rentemester-client" }
 serde_json.workspace = true

@@ -13,6 +13,8 @@ use gpui_kit::{
 mod bank;
 mod bank_state;
 mod contacts;
+mod document_state;
+mod documents;
 mod invoice;
 mod invoice_state;
 mod journal;
@@ -189,6 +191,7 @@ struct Desktop {
     reporting: Option<Entity<reporting::Reporting>>,
     bank: Option<Entity<bank::Bank>>,
     contacts: Option<Entity<contacts::Contacts>>,
+    documents: Option<Entity<documents::Documents>>,
     status: String,
     busy: bool,
 }
@@ -272,6 +275,7 @@ impl Desktop {
             reporting: None,
             bank: None,
             contacts: None,
+            documents: None,
             status: "Forbind til din Rentemester-server og log ind med e-mail, adgangskode og MFA."
                 .into(),
             busy: false,
@@ -369,6 +373,7 @@ impl Desktop {
         self.reporting = None;
         self.bank = None;
         self.contacts = None;
+        self.documents = None;
         self.status = "Forbinder…".into();
         let server = self.connection_origin(cx);
         let cookie = PathBuf::from(self.cookie.read(cx).value().to_string());
@@ -432,6 +437,7 @@ impl Desktop {
         self.reporting = None;
         self.bank = None;
         self.contacts = None;
+        self.documents = None;
         self.busy = true;
         self.status = "Kontrollerer login…".into();
         let origin = self.connection_origin(cx);
@@ -529,6 +535,7 @@ impl Desktop {
         self.reporting = None;
         self.bank = None;
         self.contacts = None;
+        self.documents = None;
         self.password
             .update(cx, |input, cx| input.set_value("", window, cx));
         self.code
@@ -550,6 +557,7 @@ impl Desktop {
         self.reporting = None;
         self.bank = None;
         self.contacts = None;
+        self.documents = None;
         self.selected = Some(slug.clone());
         self.status = "Henter saldobalance…".into();
         let year = self.year.read(cx).value().to_string();
@@ -818,6 +826,20 @@ impl Render for Desktop {
             );
         }
         content = content.child(list);
+        if let Some(documents) = self.documents.clone() {
+            return content
+                .child(
+                    Button::new("documents-close")
+                        .label("Luk bilag og genindlæs saldobalance")
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.documents = None;
+                            if let Some(slug) = this.selected.clone() {
+                                this.load(slug, cx);
+                            }
+                        })),
+                )
+                .child(documents);
+        }
         if let Some(contacts) = self.contacts.clone() {
             return content
                 .child(
@@ -1036,6 +1058,39 @@ impl Render for Desktop {
                             };
                             this.contacts = Some(cx.new(|cx| {
                                 contacts::Contacts::new(session, origin, company, local, window, cx)
+                            }));
+                            cx.notify();
+                        }
+                    })),
+            );
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content = content.child(
+                Button::new("documents-open")
+                    .label("Bilag")
+                    .disabled(self.busy)
+                    .on_click(cx.listener(|this, _, window, cx| {
+                        if let (Some(session), Some(company)) =
+                            (this.session.clone(), this.selected.clone())
+                        {
+                            let origin = this.connection_origin(cx);
+                            let local = match this
+                                .managed
+                                .as_ref()
+                                .map(|m| m.journal_identity())
+                                .transpose()
+                            {
+                                Ok(local) => local,
+                                Err(error) => {
+                                    this.status = error;
+                                    cx.notify();
+                                    return;
+                                }
+                            };
+                            this.documents = Some(cx.new(|cx| {
+                                documents::Documents::new(
+                                    session, origin, company, local, window, cx,
+                                )
                             }));
                             cx.notify();
                         }
