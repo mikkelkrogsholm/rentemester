@@ -23,7 +23,7 @@ use std::{
     sync::Arc,
 };
 const MAX_BYTES: usize = 25 * 1024 * 1024;
-const FIELDS: &[(&str, &str)] = &[
+pub(crate) const FIELDS: &[(&str, &str)] = &[
     ("source", "Kilde (fx manuel upload)"),
     ("issueDate", "Bilagsdato YYYY-MM-DD"),
     ("invoiceNo", "Leverandørens faktura-/kvitteringsnummer"),
@@ -127,13 +127,13 @@ fn read(session: &Session, company: &str) -> Result<Data, String> {
     })
 }
 #[derive(Clone)]
-struct Source {
-    filename: String,
-    mime: &'static str,
-    bytes: Arc<Vec<u8>>,
-    hash: String,
+pub(crate) struct Source {
+    pub(crate) filename: String,
+    pub(crate) mime: &'static str,
+    pub(crate) bytes: Arc<Vec<u8>>,
+    pub(crate) hash: String,
 }
-fn file(path: &Path) -> Result<Source, String> {
+pub(crate) fn file(path: &Path) -> Result<Source, String> {
     let before =
         std::fs::symlink_metadata(path).map_err(|_| "Originalfilen kunne ikke undersøges")?;
     if !before.is_file()
@@ -224,7 +224,7 @@ fn decimal(value: &str) -> Result<Number, String> {
     }
     Number::from_str(&normalized).map_err(|_| "Beløbet kunne ikke læses".into())
 }
-fn metadata(kind: &str, values: &[(String, String)]) -> Result<Value, String> {
+pub(crate) fn metadata(kind: &str, values: &[(String, String)]) -> Result<Value, String> {
     let get = |key: &str| {
         values
             .iter()
