@@ -67,6 +67,17 @@ describe("GdprView (#334)", () => {
     await userEvent.click(screen.getByRole("button", { name: "Anonymisér nu" }));
     expect(erasures).toEqual([{ cvr: "DK22222222", confirm: true }]);
   });
+  test("shows partial coverage and refuses to advertise an unknown retention deadline as erasable", async () => {
+    const payload = exportPayload([{ source: "documents", sourceRowId: 1, personalData: { name: "Synthetic subject" }, retainUntil: null, retentionUnknown: true, underRetention: true, erased: false, erasable: false }]);
+    const extended = { ...payload, gdpr: { ...payload.gdpr, export: { ...payload.gdpr.export, coverage: { complete: false, notice: "Originalfiler og andre produktvisninger anonymiseres ikke." } } } };
+    renderView(extended);
+    await userEvent.type(screen.getByPlaceholderText("DK…"), "SYNTHETIC");
+    await userEvent.click(screen.getByRole("button", { name: "Hent indsigtsrapport" }));
+    expect(await screen.findByText("Originalfiler og andre produktvisninger anonymiseres ikke.")).toBeInTheDocument();
+    expect(screen.getByText("Opbevaringsfrist skal afklares")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Anonymisér de 0/ })).toBeDisabled();
+  });
+
   test("kræver mindst ét felt før knappen er klikbar", async () => {
     renderView();
     const submit = await screen.findByRole("button", {

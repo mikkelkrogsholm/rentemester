@@ -21,11 +21,13 @@ export type GdprExportRecord = {
   personalData: GdprPersonalData;
   retainUntil: string | null;
   underRetention: boolean;
+  retentionUnknown?: boolean;
   erased: boolean;
   erasable: boolean;
 };
 
 export type GdprSubjectExport = {
+  coverage?: { complete: boolean; notice: string };
   ok: boolean;
   asOf: string;
   appliedRules: string[];

@@ -5,10 +5,11 @@ mod assets;
 mod bank;
 mod budget;
 mod company_setup;
+mod documents;
+mod gdpr;
 mod dimensions;
 mod exceptions;
 mod dashboard;
-mod documents;
 mod mileage;
 mod integrity;
 mod multi_year;
@@ -80,6 +81,9 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             get(reviewed_bookkeeping::handle).post(reviewed_bookkeeping::handle),
         )
         .route("/api/companies", get(companies))
+        .route("/api/companies/{slug}/retention", get(gdpr::handle))
+        .route("/api/companies/{slug}/gdpr/export", post(gdpr::handle))
+        .route("/api/companies/{slug}/gdpr/erase", post(gdpr::handle))
         .route("/api/companies/{slug}/dimensions", get(dimensions::handle))
         .route("/api/companies/{slug}/dimensions/members", get(dimensions::handle))
         .route("/api/companies/{slug}/dimensions/{line}", get(dimensions::handle))

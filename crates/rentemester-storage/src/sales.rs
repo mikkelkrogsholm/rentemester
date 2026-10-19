@@ -32,6 +32,12 @@ pub fn create_customer(
     actor: &str,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
+    // Identity writers must not reintroduce erased data into raw master/audit views.
+    // Preserve the same conservative guard as edits until native alias binding is supported.
+    let erasures: bool = tx.query_row("SELECT EXISTS(SELECT 1 FROM gdpr_erasures)", [], |r| r.get(0)).map_err(invalid)?;
+    if erasures {
+        return Err(refused("customer creation with prior GDPR erasures requires the identity-alias workflow"));
+    }
     validate_customer(input)?;
     let name = input.name.trim();
     let id:i64=tx.query_row("INSERT INTO customers(name,address,vat_or_cvr,email,phone,website,payment_terms_days,default_currency,notes) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9) RETURNING id",params![name,input.address,input.vat_or_cvr,input.email,input.phone,input.website,input.payment_terms_days,input.default_currency.as_deref().unwrap_or("DKK"),input.notes],|r|r.get(0)).map_err(|_|refused("customer already exists or could not be stored"))?;

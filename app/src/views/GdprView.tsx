@@ -166,8 +166,7 @@ export function GdprView() {
           title="Anonymisér personoplysninger"
           body={
             <p>
-              Anonymisér det gennemgåede subjekt {reviewedSubject?.cvr || reviewedSubject?.name}. Anonymisering erstatter personoplysningerne med en spærret
-              markering. Rækker, der stadig er bogføringspligtige (5-års-fristen),
+              Anonymisér det gennemgåede subjekt {reviewedSubject?.cvr || reviewedSubject?.name}. I GDPR-rapporten skjules de mulige felter med en markering. Originaler og journal ændres ikke. Rækker, der stadig er bogføringspligtige (5-års-fristen),
               springes over. Handlingen kan ikke fortrydes.
             </p>
           }
@@ -203,6 +202,7 @@ function ExportPanel({
         Indsigtsrapport ({records.length} række
         {records.length === 1 ? "" : "r"})
       </h3>
+      {data.export.coverage && <p className="callout warn">{data.export.coverage.notice}</p>}
       <p className="muted">
         Hentet pr. {data.export.asOf}. Under bogføringspligt:{" "}
         {underRetention}. Allerede anonymiseret: {alreadyErased}. Kan
@@ -262,6 +262,8 @@ function RecordRow({ row }: { row: GdprExportRecord }) {
       <td>
         {row.erased ? (
           <span className="pill">Anonymiseret</span>
+        ) : row.retentionUnknown ? (
+          <span className="pill">Opbevaringsfrist skal afklares</span>
         ) : row.underRetention ? (
           <span className="pill warn">Under bogføringspligt</span>
         ) : !row.erasable ? (

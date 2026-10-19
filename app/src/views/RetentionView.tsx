@@ -47,18 +47,19 @@ export function RetentionView() {
       <p className="muted">
         Pr. {r.report.asOf}. Hver data-domæne skal opbevares i 5 år efter udløb
         af det regnskabsår posten vedrører. Tabellen viser hvor mange poster der
-        ligger udløbet (klar til{" "}
-        <Link to={`/companies/${slug}/manage`}>GDPR-anonymisering</Link>) og
+        har passeret opbevaringsfristen (kan gennemgås til{" "}
+        <Link to={`/companies/${slug}/gdpr`}>GDPR-anonymisering</Link>) og
         hvornår næste post udløber.
       </p>
 
       {totalExpired > 0 && (
         <div className="callout warn">
           {totalExpired} post{totalExpired === 1 ? "" : "er"} har overskredet
-          den 5-årige opbevaringspligt og kan anonymiseres.
+          den 5-årige opbevaringspligt og kan gennemgås til anonymisering. Journaltekst og beskyttede originaler bevares.
         </div>
       )}
 
+      {r.report.rows.some(row => (row.unknown ?? 0) > 0) && <p role="alert">Nogle opbevaringsfrister kan ikke fastslås. De poster kan ikke anonymiseres, før grundlaget er afklaret.</p>}
       <div className="table-scroll"><table className="table">
         <thead>
           <tr>

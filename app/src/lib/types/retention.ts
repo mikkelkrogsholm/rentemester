@@ -4,6 +4,7 @@ export type RetentionStatusRow = {
   table: "documents" | "journal_entries" | "bank_transactions";
   total: number;
   expired: number;
+  unknown?: number;
   nextExpiry: string | null;
   oldestExpired: string | null;
 };
