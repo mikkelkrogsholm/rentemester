@@ -59,8 +59,13 @@ fn run_raw(origin: &str, bytes: &[u8]) -> Output {
         .stderr(Stdio::piped())
         .spawn()
         .unwrap();
-    child.stdin.take().unwrap().write_all(bytes).unwrap();
-    child.wait_with_output().unwrap()
+    // Drain stdout while feeding stdin: discovery and document frames can exceed pipe capacity.
+    let bytes = bytes.to_vec();
+    let mut stdin = child.stdin.take().unwrap();
+    let writer = thread::spawn(move || stdin.write_all(&bytes));
+    let output = child.wait_with_output().unwrap();
+    writer.join().unwrap().unwrap();
+    output
 }
 fn parsed(output: &Output) -> Vec<Value> {
     assert!(
@@ -146,7 +151,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 55);
+    assert_eq!(tools.len(), 57);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -921,4 +926,138 @@ fn reviewed_tools_reject_attribution_path_escape_and_mixed_selectors() {
         ));
         assert_eq!(values[1]["error"]["code"], -32602);
     }
+}
+
+#[test]
+fn document_ingestion_uses_large_dedicated_frame_and_exact_native_body() {
+    let (origin, request, task) = http(
+        "HTTP/1.1 200 OK\r\nContent-Length: 52\r\nConnection:close\r\n\r\n{\"ok\":true,\"document\":{\"id\":7,\"documentNo\":\"SYN-1\"}}",
+    );
+    let body = format!(
+        "{{\"confirm\":true,\"fileName\":\"synthetic.txt\",\"fileBase64\":\"{}\",\"metadata\":{{\"source\":\"synthetic\"}}}}",
+        "YQ==".repeat(300000)
+    );
+    let values = parsed(&run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "ingest_document",
+                json!({"company":"synthetic","body":body,"confirm":true}),
+            ),
+        ],
+    ));
+    assert_eq!(
+        values[1]["result"]["structuredContent"]["data"]["document"]["id"],
+        7
+    );
+    let data = request.recv().unwrap();
+    let end = data.windows(4).position(|w| w == b"\r\n\r\n").unwrap() + 4;
+    assert!(data.starts_with(b"POST /api/companies/synthetic/documents/ingest HTTP/1.1"));
+    assert_eq!(&data[end..], body.as_bytes());
+    task.join().unwrap();
+}
+#[test]
+fn document_frame_exception_cannot_relax_generic_admission_or_execute_invalid_uploads() {
+    for method in ["ping", "initialize", "tools/call"] {
+        let message = json!({"jsonrpc":"2.0","id":1,"method":method,"params":{"name":"me","padding":"x".repeat(1048576)}});
+        let output = run("http://127.0.0.1:9", &[message]);
+        assert!(!output.status.success());
+        let value: Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!(value["error"]["code"], -32700);
+    }
+    // Dedicated frame admitted, but body exceeds35MiB: reject before any HTTP mutation.
+    let values = parsed(&run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "ingest_document",
+                json!({"company":"synthetic","body":"x".repeat(35*1024*1024+1),"confirm":true}),
+            ),
+        ],
+    ));
+    assert_eq!(values[1]["error"]["code"], -32602);
+    let values = parsed(&run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "ingest_document",
+                json!({"company":"synthetic","body":"x".repeat(1048577),"confirm":true,"actor":"other"}),
+            ),
+        ],
+    ));
+    assert_eq!(values[1]["error"]["code"], -32602);
+}
+#[test]
+fn document_original_mcp_preserves_non_pdf_binary_and_strict_read_schema() {
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let origin = format!("http://{}", listener.local_addr().unwrap());
+    let (send, request) = mpsc::channel();
+    let task = thread::spawn(move || {
+        let (mut stream, _) = listener.accept().unwrap();
+        let mut bytes = [0; 4096];
+        let n = stream.read(&mut bytes).unwrap();
+        send.send(bytes[..n].to_vec()).unwrap();
+        stream.write_all(b"HTTP/1.1 200 OK\r\nContent-Type: image/jpeg\r\nContent-Length: 5\r\nConnection:close\r\n\r\n\xff\xd8\xff\0x").unwrap();
+    });
+    let values = parsed(&run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "document_original",
+                json!({"company":"synthetic","id":7}),
+            ),
+        ],
+    ));
+    assert_eq!(
+        values[1]["result"]["structuredContent"]["data"]["original"]["contentType"],
+        "image/jpeg"
+    );
+    let bytes: Vec<u8> = serde_json::from_value(
+        values[1]["result"]["structuredContent"]["data"]["original"]["bytes"].clone(),
+    )
+    .unwrap();
+    assert_eq!(bytes, b"\xff\xd8\xff\0x");
+    assert!(
+        request
+            .recv()
+            .unwrap()
+            .starts_with(b"GET /api/companies/synthetic/documents/7/file HTTP/1.1")
+    );
+    task.join().unwrap();
+    for args in [
+        json!({"company":"synthetic","id":0}),
+        json!({"company":"synthetic","id":9007199254740992i64}),
+        json!({"company":"synthetic","id":7,"confirm":true}),
+    ] {
+        let values = parsed(&run(
+            "http://127.0.0.1:9",
+            &[
+                init("2025-11-25"),
+                ready(),
+                call(2, "document_original", args),
+            ],
+        ));
+        assert_eq!(values[1]["error"]["code"], -32602);
+    }
+}
+
+#[test]
+fn document_frame_has_absolute_bound_before_parsing_or_http() {
+    let input = vec![b' '; 2 * 35 * 1024 * 1024 + 65536 + 1];
+    let output = run_raw("http://127.0.0.1:9", &input);
+    assert!(!output.status.success());
+    let value: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(value["error"]["code"], -32700);
 }

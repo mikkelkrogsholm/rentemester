@@ -2,6 +2,7 @@
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/transports
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle
 //! https://modelcontextprotocol.io/specification/2025-11-25/server/tools
+mod documents;
 mod reviewed_bookkeeping;
 mod annual_reports;
 mod bank_payables;
@@ -19,9 +20,10 @@ use std::{
 };
 const PROTOCOL: &str = "2025-11-25";
 const MAX_LINE: usize = 1_048_576;
+const MAX_DOCUMENT_LINE: usize = 2 * rentemester_client::MAX_DOCUMENT_INGEST_BODY + 65_536;
 
 fn help() -> &'static str {
-    "rentemester-mcp --server HTTPS_ORIGIN --cookie-file PATH [--allow-loopback-http]\nMCP 2025-11-25 over newline-delimited JSON-RPC stdio. Requires initialize then notifications/initialized.\nCookie file: one valid MFA-derived browser Cookie request-header value; private regular file (chmod 600 on Unix). Login/enrollment remain in browser.\nBank/payables: bank {company,year?}, bank_accounts {company}, payables {company,status?,asOf?}, expense_booking_options {company,id}; create_bank_account/import_bank/register_payable/match_bank_expense {company,body,confirm:true}; pay_payable additionally id. Exact native flat body; discover contentSchema via tools/list. No generic bank/payable idempotency keys or retries.\nTools: accounts/contacts/documents {company}, invoices {company,year?}; preview_invoice {company,body} returns PDF integer bytes. create_customer/create_vendor/post_invoice {company,body,confirm:true}; update_customer/update_vendor additionally id; delete_customer/delete_vendor {company,id,body,confirm:true} with exact body {confirm:true} and existing obligation/history guards; issue_invoice additionally previewReviewed:true after previewing identical body. Native flat body strings follow tools/list contentSchema; no domain idempotency keys, no retry. Reconcile uncertain domain writes through read/list before further action.\nReviewed: reviewed_bank/accounting_drafts/posting_rules {company}; create_bank_draft {company,body,confirm:true}; submit_draft/reject_draft/approve_draft additionally draftId. Server-owned four-eyes authority, exact native bodies and evidence hashes; no automatic retries.\nAnnual: annual_report {company,fiscalYearStart,fiscalYearEnd} reads preparation/blockers unchanged; no confirm/body/files or filing.\nTools: me {}, companies {}, journal/trial_balance/income_statement/balance {company,year?,account?}; post_journal/reverse_journal {company,envelope}.\ncompany is an explicit company slug. envelope is an exact JSON string containing the server's confirmed request and caller idempotencyKey; never retried or rewritten.\nHTTP requires explicit --allow-loopback-http and literal loopback IP. No local fallback. Unknown write outcomes require reconciliation with original idempotency key.\nStdin messages limited to 1 MiB; string request IDs to 256 bytes; sessions to 100000 requests. Tools execute sequentially with bounded HTTP timeouts. Close stdin to stop. stdout contains protocol messages only during server operation."
+    "rentemester-mcp --server HTTPS_ORIGIN --cookie-file PATH [--allow-loopback-http]\nMCP 2025-11-25 over newline-delimited JSON-RPC stdio. Requires initialize then notifications/initialized.\nCookie file: one valid MFA-derived browser Cookie request-header value; private regular file (chmod 600 on Unix). Login/enrollment remain in browser.\nBank/payables: bank {company,year?}, bank_accounts {company}, payables {company,status?,asOf?}, expense_booking_options {company,id}; create_bank_account/import_bank/register_payable/match_bank_expense {company,body,confirm:true}; pay_payable additionally id. Exact native flat body; discover contentSchema via tools/list. No generic bank/payable idempotency keys or retries.\nTools: accounts/contacts/documents {company}, invoices {company,year?}; preview_invoice {company,body} returns PDF integer bytes. create_customer/create_vendor/post_invoice {company,body,confirm:true}; update_customer/update_vendor additionally id; delete_customer/delete_vendor {company,id,body,confirm:true} with exact body {confirm:true} and existing obligation/history guards; issue_invoice additionally previewReviewed:true after previewing identical body. Native flat body strings follow tools/list contentSchema; no domain idempotency keys, no retry. Reconcile uncertain domain writes through read/list before further action.\nDocuments: ingest_document {company,body,confirm:true}, exact native JSON string max35MiB UTF-8 bytes; bounded ingest-only frame70MiB+64KiB; document_original {company,id} returns recorded MIME/exact original integer bytes (max25MiB). No local document files, keys or retries.\nReviewed: reviewed_bank/accounting_drafts/posting_rules {company}; create_bank_draft {company,body,confirm:true}; submit_draft/reject_draft/approve_draft additionally draftId. Server-owned four-eyes authority, exact native bodies and evidence hashes; no automatic retries.\nAnnual: annual_report {company,fiscalYearStart,fiscalYearEnd} reads preparation/blockers unchanged; no confirm/body/files or filing.\nTools: me {}, companies {}, journal/trial_balance/income_statement/balance {company,year?,account?}; post_journal/reverse_journal {company,envelope}.\ncompany is an explicit company slug. envelope is an exact JSON string containing the server's confirmed request and caller idempotencyKey; never retried or rewritten.\nHTTP requires explicit --allow-loopback-http and literal loopback IP. No local fallback. Unknown write outcomes require reconciliation with original idempotency key.\nStdin messages limited to 1 MiB except tools/call ingest_document: frame70MiB+64KiB, native body35MiB, decoded file25MiB; string request IDs to 256 bytes; sessions to 100000 requests. Tools execute sequentially with bounded HTTP timeouts. Close stdin to stop. stdout contains protocol messages only during server operation."
 }
 fn config(args: Vec<String>) -> Result<ApiClient, &'static str> {
     let mut flags = BTreeMap::new();
@@ -199,13 +201,14 @@ fn serve(api: ApiClient) -> Result<(), &'static str> {
         let mut line = Vec::new();
         let read = input
             .by_ref()
-            .take((MAX_LINE + 1) as u64)
+            .take((MAX_DOCUMENT_LINE + 1) as u64)
             .read_until(b'\n', &mut line)
             .map_err(|_| "stdin read failed")?;
         if read == 0 {
             return Ok(());
         }
-        let oversized = line.len() > MAX_LINE;
+        let mut oversized =
+            line.len() > MAX_DOCUMENT_LINE || line.len() > MAX_LINE && !line.ends_with(b"\n");
         let response = if oversized || !line.ends_with(b"\n") {
             Some(failure(
                 Value::Null,
@@ -213,9 +216,29 @@ fn serve(api: ApiClient) -> Result<(), &'static str> {
                 "invalid or oversized newline-delimited message",
             ))
         } else {
-            match serde_json::from_slice(&line) {
-                Ok(value) => runtime.block_on(session.handle(value, &api)),
-                Err(_) => Some(failure(Value::Null, -32700, "invalid JSON")),
+            match serde_json::from_slice::<Value>(&line) {
+                Ok(value) => {
+                    // Only this named upload tool may use the larger bounded frame. Its complete
+                    // args/body/confirmation are validated before any HTTP execution.
+                    let document_upload = value.get("method").and_then(Value::as_str)
+                        == Some("tools/call")
+                        && value.pointer("/params/name").and_then(Value::as_str)
+                            == Some("ingest_document");
+                    if line.len() > MAX_LINE && !document_upload {
+                        oversized = true;
+                        Some(failure(
+                            Value::Null,
+                            -32700,
+                            "message exceeds1MiB; larger frames are only for ingest_document",
+                        ))
+                    } else {
+                        runtime.block_on(session.handle(value, &api))
+                    }
+                }
+                Err(_) => {
+                    oversized = line.len() > MAX_LINE;
+                    Some(failure(Value::Null, -32700, "invalid JSON"))
+                }
             }
         };
         if let Some(response) = response {
