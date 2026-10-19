@@ -423,12 +423,34 @@ fn saved(rev: &Value) -> Result<Value, Error> {
     }
     Ok(p)
 }
-pub fn approve(tx: &Transaction<'_>, i: &Exact, subject: &str) -> Result<Value, Error> {
+pub fn approve(
+    tx: &Transaction<'_>,
+    i: &Exact,
+    subject: &str,
+    latest: Date,
+    today: &str,
+) -> Result<Value, Error> {
     let rev = revision(tx, i)?;
-    saved(&rev)?;
+    let reviewed = saved(&rev)?;
     if rev["planner_kind"] == "user" && rev["planner_subject_id"] == subject {
         return Err(fail(
             "Independent current human reviewer required; planner cannot approve own revision",
+        ));
+    }
+    let existing:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM bookkeeping_batch_revision_approvals WHERE revision_id=?1 AND principal_kind='user' AND principal_subject_id=?2)",params![number(&rev,"id")?,subject],|r|r.get(0)).map_err(sql)?;
+    if existing {
+        return Ok(json!({"ok":true,"state":status(tx,i.run_id)?}));
+    }
+    let scope = Scope {
+        accounting_from: text(&reviewed, "accountingFrom")?.into(),
+        accounting_to: text(&reviewed, "accountingTo")?.into(),
+        bank_from: text(&reviewed, "bankFrom")?.into(),
+        bank_to: text(&reviewed, "bankTo")?.into(),
+        company_id: reviewed["companyId"].as_i64(),
+    };
+    if plan(tx, &scope, latest, today)? != reviewed {
+        return Err(fail(
+            "Complete candidate universe or reviewed evidence changed; review a fresh plan before approval",
         ));
     }
     let actor = format!("user:{subject}");

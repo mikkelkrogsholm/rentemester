@@ -142,7 +142,6 @@ fn real_namespace_originals_independent_review_current_revocation_and_transfer_g
         confirm: true,
     };
     assert!(call(&mut owner, &proofs[0], Action::Approve(&exact)).is_err());
-    call(&mut owner, &proofs[1], Action::Approve(&exact)).unwrap();
     // Missing physical original is a definite refusal BEFORE any item effect.
     let original = owner
         .held
@@ -159,6 +158,14 @@ fn real_namespace_originals_independent_review_current_revocation_and_transfer_g
     let absolute = root.join("a").join(&original);
     let bytes = std::fs::read(&absolute).unwrap();
     std::fs::write(&absolute, b"changed synthetic original").unwrap();
+    assert_eq!(
+        call(&mut owner, &proofs[1], Action::Approve(&exact))
+            .unwrap_err()
+            .error
+            .code,
+        "bookkeeping_batch_original_unavailable"
+    );
+
     assert_eq!(
         call(&mut owner, &proofs[0], Action::Apply(&exact))
             .unwrap_err()
@@ -185,6 +192,14 @@ fn real_namespace_originals_independent_review_current_revocation_and_transfer_g
     let bank_bytes = std::fs::read(&bank_path).unwrap();
     std::fs::write(&bank_path, b"changed synthetic bank archive").unwrap();
     assert_eq!(
+        call(&mut owner, &proofs[1], Action::Approve(&exact))
+            .unwrap_err()
+            .error
+            .code,
+        "bookkeeping_batch_bank_original_unavailable"
+    );
+
+    assert_eq!(
         call(&mut owner, &proofs[0], Action::Apply(&exact))
             .unwrap_err()
             .error
@@ -192,6 +207,24 @@ fn real_namespace_originals_independent_review_current_revocation_and_transfer_g
         "bookkeeping_batch_bank_original_unavailable"
     );
     std::fs::write(&bank_path, bank_bytes).unwrap();
+    assert_eq!(
+        owner
+            .held
+            .0
+            .as_ref()
+            .unwrap()
+            .company
+            .as_ref()
+            .unwrap()
+            .query_row::<i64, _, _>(
+                "SELECT count(*) FROM bookkeeping_batch_revision_approvals",
+                [],
+                |r| r.get(0)
+            )
+            .unwrap(),
+        0
+    );
+    call(&mut owner, &proofs[1], Action::Approve(&exact)).unwrap();
 
     owner.held.0.as_mut().unwrap().control.as_mut().unwrap().execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('author','a','revoke',NULL,'user:reviewer');").unwrap();
     assert!(call(&mut owner, &proofs[0], Action::Apply(&exact)).is_err());

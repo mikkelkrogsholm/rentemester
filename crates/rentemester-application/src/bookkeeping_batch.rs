@@ -74,7 +74,11 @@ pub fn execute(
                     verify_plan(tx, guard, &p)?;
                     store::persist(tx, input, subject, latest, &today)
                 }
-                Action::Approve(input) => store::approve(tx, input, subject),
+                Action::Approve(input) => {
+                    let p = store::stored_plan(tx, input)?;
+                    verify_plan(tx, guard, &p)?;
+                    store::approve(tx, input, subject, latest, &today)
+                }
                 Action::Apply(input) => {
                     let p = store::stored_plan(tx, input)?;
                     verify_plan(tx, guard, &p)?;

@@ -74,6 +74,9 @@ fn scope() -> Scope {
     }
 }
 fn prepare(db: &mut Connection) -> Exact {
+    prepare_with_review(db, true)
+}
+fn prepare_with_review(db: &mut Connection, approve_revision: bool) -> Exact {
     let tx = db
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .unwrap();
@@ -100,8 +103,10 @@ fn prepare(db: &mut Connection) -> Exact {
         plan_hash: p["planHash"].as_str().unwrap().into(),
         confirm: true,
     };
-    assert!(approve(&tx, &exact, "author").is_err());
-    approve(&tx, &exact, "reviewer").unwrap();
+    assert!(approve(&tx, &exact, "author", horizon(), &day).is_err());
+    if approve_revision {
+        approve(&tx, &exact, "reviewer", horizon(), &day).unwrap();
+    }
     tx.commit().unwrap();
     exact
 }
@@ -294,7 +299,7 @@ fn process_death_before_outer_commit_leaves_no_prefix() {
 #[test]
 fn two_real_connections_concurrent_approval_and_apply_commit_one_outcome() {
     let mut db = fixture();
-    let exact = prepare(&mut db);
+    let exact = prepare_with_review(&mut db, false);
     let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join("concurrent.sqlite");
     db.execute("VACUUM INTO ?1", [path.to_str().unwrap()])
@@ -317,7 +322,7 @@ fn two_real_connections_concurrent_approval_and_apply_commit_one_outcome() {
             let tx = db
                 .transaction_with_behavior(TransactionBehavior::Immediate)
                 .unwrap();
-            approve(&tx, &exact, "reviewer").unwrap();
+            approve(&tx, &exact, "reviewer", horizon(), &today(&tx)).unwrap();
             let result = apply(&tx, &exact, "poster", horizon(), &today(&tx)).unwrap();
             tx.commit().unwrap();
             result["duplicate"].as_bool().unwrap()
@@ -334,4 +339,25 @@ fn two_real_connections_concurrent_approval_and_apply_commit_one_outcome() {
     assert_eq!(count(&db, "bookkeeping_batch_apply_attempts_v2"), 1);
     assert_eq!(count(&db, "bookkeeping_batch_item_receipts"), 2);
     validate_backup(&db).unwrap();
+}
+
+#[test]
+fn changed_evidence_and_new_candidate_refuse_first_approval_without_history_effects() {
+    for change in [
+        "UPDATE documents SET status='processed' WHERE id=1",
+        "INSERT INTO bank_transactions(transaction_date,text,amount,currency)VALUES('2026-10-20','Synthetic new candidate',-10,'DKK')",
+    ] {
+        let mut db = fixture();
+        let exact = prepare_with_review(&mut db, false);
+        let tx = db.transaction().unwrap();
+        let before = status(&tx, exact.run_id).unwrap();
+        tx.execute(change, []).unwrap();
+        let error = approve(&tx, &exact, "reviewer", horizon(), &today(&tx)).unwrap_err();
+        assert!(error.message.contains("changed"), "{error:?}");
+        assert_eq!(count(&tx, "bookkeeping_batch_revision_approvals"), 0);
+        assert_eq!(count(&tx, "bookkeeping_batch_events"), 1);
+        assert_eq!(status(&tx, exact.run_id).unwrap(), before);
+        assert_eq!(count(&tx, "journal_entries"), 0);
+        tx.rollback().unwrap();
+    }
 }
