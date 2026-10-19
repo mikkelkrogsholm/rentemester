@@ -427,3 +427,27 @@ async fn uncertain_period_close_never_retries() {
     request.recv().unwrap();
     assert_eq!(task.join().unwrap(), 1);
 }
+
+#[tokio::test]
+async fn issued_invoice_pdf_is_authorized_get_and_refuses_html_or_invalid_id() {
+    let response = "HTTP/1.1 200 OK\r\nContent-Type: application/pdf\r\nContent-Length: 8\r\nConnection: close\r\n\r\n%PDF-1.7";
+    let (origin, request, task) = server(response);
+    let api = ApiClient::new(&origin, true, Some("session=secret".into())).unwrap();
+    let result = api.invoice_pdf("demo", 7).await.unwrap();
+    assert_eq!(result["pdf"]["bytes"].as_array().unwrap().len(), 8);
+    let wire = String::from_utf8(request.recv().unwrap()).unwrap();
+    assert!(wire.starts_with("GET /api/companies/demo/invoices/7/pdf HTTP/1.1"));
+    assert!(wire.to_lowercase().contains("cookie: session=secret"));
+    assert_eq!(task.join().unwrap(), 1);
+    assert!(matches!(
+        api.invoice_pdf("demo", 0).await,
+        Err(Error::InvalidInput(_))
+    ));
+    let (origin, request, task) = server(
+        "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 5\r\nConnection: close\r\n\r\nhello",
+    );
+    let api = ApiClient::new(&origin, true, None).unwrap();
+    assert_eq!(api.invoice_pdf("demo", 7).await, Err(Error::Protocol));
+    request.recv().unwrap();
+    assert_eq!(task.join().unwrap(), 1);
+}

@@ -264,7 +264,7 @@ impl ApiClient {
     /// for CLI/MCP portability; no local files, invoice numbers or postings are created.
     pub async fn invoice_preview(&self, company: &str, bytes: Vec<u8>) -> Result<Value, Error> {
         body(&bytes, &invoice_body_schema())?;
-        let mut response = self
+        let response = self
             .send(
                 Method::POST,
                 &company_path(company, "invoices/preview")?,
@@ -280,29 +280,51 @@ impl ApiClient {
                     e
                 }
             })?;
-        if !response.status().is_success() {
-            return Err(Error::Refused {
-                status: response.status().as_u16(),
-            });
-        }
-        if response
-            .headers()
-            .get("content-type")
-            .and_then(|h| h.to_str().ok())
-            .is_none_or(|s| s.split(';').next() != Some("application/pdf"))
-        {
-            return Err(Error::Protocol);
-        }
-        let mut pdf = vec![];
-        while let Some(chunk) = response.chunk().await.map_err(|_| Error::Transport)? {
-            if pdf.len().saturating_add(chunk.len()) > MAX_RESPONSE {
-                return Err(Error::Protocol);
-            }
-            pdf.extend_from_slice(&chunk);
-        }
-        if !pdf.starts_with(b"%PDF-") {
-            return Err(Error::Protocol);
-        }
+        let pdf = read_pdf(response).await?;
         Ok(json!({"ok":true,"preview":{"contentType":"application/pdf","bytes":pdf}}))
     }
+    /// Reads the immutable issued original through the current company authorization.
+    pub async fn invoice_pdf(&self, company: &str, id: i64) -> Result<Value, Error> {
+        if id <= 0 {
+            return Err(Error::InvalidInput("positive invoice document id required"));
+        }
+        let response = self
+            .send(
+                Method::GET,
+                &company_path(company, &format!("invoices/{id}/pdf"))?,
+                &[],
+                None,
+                self.cookie.as_ref().map(|v| v.as_str()),
+            )
+            .await?;
+        let pdf = read_pdf(response).await?;
+        Ok(json!({"ok":true,"pdf":{"contentType":"application/pdf","bytes":pdf}}))
+    }
+}
+
+async fn read_pdf(mut response: reqwest::Response) -> Result<Vec<u8>, Error> {
+    if !response.status().is_success() {
+        return Err(Error::Refused {
+            status: response.status().as_u16(),
+        });
+    }
+    if response
+        .headers()
+        .get("content-type")
+        .and_then(|h| h.to_str().ok())
+        .is_none_or(|s| s.split(';').next() != Some("application/pdf"))
+    {
+        return Err(Error::Protocol);
+    }
+    let mut pdf = vec![];
+    while let Some(chunk) = response.chunk().await.map_err(|_| Error::Transport)? {
+        if pdf.len().saturating_add(chunk.len()) > MAX_RESPONSE {
+            return Err(Error::Protocol);
+        }
+        pdf.extend_from_slice(&chunk);
+    }
+    if !pdf.starts_with(b"%PDF-") {
+        return Err(Error::Protocol);
+    }
+    Ok(pdf)
 }

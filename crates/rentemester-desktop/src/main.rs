@@ -10,6 +10,8 @@ use gpui_kit::{
     },
     *,
 };
+mod invoice;
+mod invoice_state;
 mod journal;
 mod journal_attempt;
 mod local_backend;
@@ -179,6 +181,7 @@ struct Desktop {
     selected: Option<String>,
     trial: Option<Trial>,
     journal: Option<Entity<journal::Journal>>,
+    invoice: Option<Entity<invoice::Invoice>>,
     status: String,
     busy: bool,
 }
@@ -258,6 +261,7 @@ impl Desktop {
             selected: options.company,
             trial: None,
             journal: None,
+            invoice: None,
             status: "Forbind til din Rentemester-server og log ind med e-mail, adgangskode og MFA."
                 .into(),
             busy: false,
@@ -351,6 +355,7 @@ impl Desktop {
         self.companies.clear();
         self.trial = None;
         self.journal = None;
+        self.invoice = None;
         self.status = "Forbinder…".into();
         let server = self.connection_origin(cx);
         let cookie = PathBuf::from(self.cookie.read(cx).value().to_string());
@@ -410,6 +415,7 @@ impl Desktop {
         self.companies.clear();
         self.trial = None;
         self.journal = None;
+        self.invoice = None;
         self.busy = true;
         self.status = "Kontrollerer login…".into();
         let origin = self.connection_origin(cx);
@@ -503,6 +509,7 @@ impl Desktop {
         self.companies.clear();
         self.trial = None;
         self.journal = None;
+        self.invoice = None;
         self.password
             .update(cx, |input, cx| input.set_value("", window, cx));
         self.code
@@ -520,6 +527,7 @@ impl Desktop {
         self.busy = true;
         self.trial = None;
         self.journal = None;
+        self.invoice = None;
         self.selected = Some(slug.clone());
         self.status = "Henter saldobalance…".into();
         let year = self.year.read(cx).value().to_string();
@@ -788,6 +796,20 @@ impl Render for Desktop {
             );
         }
         content = content.child(list);
+        if let Some(invoice) = self.invoice.clone() {
+            return content
+                .child(
+                    Button::new("invoice-close")
+                        .label("Luk fakturaer og genindlæs saldobalance")
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.invoice = None;
+                            if let Some(slug) = this.selected.clone() {
+                                this.load(slug, cx);
+                            }
+                        })),
+                )
+                .child(invoice);
+        }
         if self.session.is_some() && self.selected.is_some() {
             if let Some(journal) = self.journal.clone() {
                 content = content
@@ -835,6 +857,37 @@ impl Render for Desktop {
                                     window,
                                     cx,
                                 )
+                            }));
+                            cx.notify();
+                        }
+                    })),
+            );
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content = content.child(
+                Button::new("invoices-open")
+                    .label("Fakturaer")
+                    .disabled(self.busy)
+                    .on_click(cx.listener(|this, _, window, cx| {
+                        if let (Some(session), Some(company)) =
+                            (this.session.clone(), this.selected.clone())
+                        {
+                            let origin = this.connection_origin(cx);
+                            let local = match this
+                                .managed
+                                .as_ref()
+                                .map(|m| m.journal_identity())
+                                .transpose()
+                            {
+                                Ok(identity) => identity,
+                                Err(error) => {
+                                    this.status = error;
+                                    cx.notify();
+                                    return;
+                                }
+                            };
+                            this.invoice = Some(cx.new(|cx| {
+                                invoice::Invoice::new(session, origin, company, local, window, cx)
                             }));
                             cx.notify();
                         }
