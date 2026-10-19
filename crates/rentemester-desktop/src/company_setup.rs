@@ -37,6 +37,8 @@ struct Field {
     input: Entity<InputState>,
 }
 pub struct CompanySetup {
+    entry_focus: FocusHandle,
+    entry_focus_requested: bool,
     session: Arc<Session>,
     origin: String,
     company: String,
@@ -52,6 +54,11 @@ pub struct CompanySetup {
     status: String,
 }
 impl CompanySetup {
+    pub fn focus_entry(&mut self, _: &mut Window, cx: &mut Context<Self>) {
+        self.entry_focus_requested = true;
+        cx.notify();
+    }
+
     pub fn new(
         session: Arc<Session>,
         origin: String,
@@ -61,6 +68,8 @@ impl CompanySetup {
         cx: &mut Context<Self>,
     ) -> Self {
         let mut this = Self {
+            entry_focus: cx.focus_handle(),
+            entry_focus_requested: false,
             session,
             origin,
             company,
@@ -221,7 +230,12 @@ impl CompanySetup {
     }
 }
 impl Render for CompanySetup {
-    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        if self.entry_focus_requested && !self.busy {
+            self.entry_focus_requested = false;
+            let focus = self.entry_focus.clone();
+            window.on_next_frame(move |window, cx| window.focus(&focus, cx));
+        }
         let mut view = div()
             .flex()
             .flex_col()
@@ -231,6 +245,7 @@ impl Render for CompanySetup {
             .child(self.status.clone())
             .child(
                 Button::new("setup-reload")
+                    .track_focus(&self.entry_focus)
                     .label("Genindlæs profil og kontoplan")
                     .disabled(self.busy)
                     .on_click(cx.listener(|this, _, window, cx| this.load(window, cx))),

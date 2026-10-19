@@ -2,6 +2,7 @@
 #[path = "invoice_lifecycle.rs"]
 mod lifecycle;
 use crate::{Session, invoice_state, readable};
+use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::{
     component::{
         Disableable,
@@ -222,6 +223,8 @@ struct Preview {
     reviewed: bool,
 }
 pub struct Invoice {
+    entry_focus: FocusHandle,
+    entry_focus_requested: bool,
     session: Arc<Session>,
     origin: String,
     company: String,
@@ -246,6 +249,11 @@ pub struct Invoice {
     status: String,
 }
 impl Invoice {
+    pub fn focus_entry(&mut self, _: &mut Window, cx: &mut Context<Self>) {
+        self.entry_focus_requested = true;
+        cx.notify();
+    }
+
     pub fn new(
         session: Arc<Session>,
         origin: String,
@@ -271,6 +279,8 @@ impl Invoice {
             })
         };
         let mut this = Self {
+            entry_focus: cx.focus_handle(),
+            entry_focus_requested: false,
             session,
             origin,
             company,
@@ -613,7 +623,12 @@ impl Invoice {
     }
 }
 impl Render for Invoice {
-    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        if self.entry_focus_requested && !self.busy {
+            self.entry_focus_requested = false;
+            let focus = self.entry_focus.clone();
+            window.on_next_frame(move |window, cx| window.focus(&focus, cx));
+        }
         if let Some(lifecycle) = self.lifecycle.clone() {
             return div()
                 .flex()
@@ -621,6 +636,7 @@ impl Render for Invoice {
                 .gap_3()
                 .child(
                     Button::new("invoice-lifecycle-close")
+                        .track_focus(&self.entry_focus)
                         .label("Luk betaling/kredit og genindlæs fakturaer")
                         .on_click(cx.listener(|this, _, window, cx| {
                             this.lifecycle = None;
@@ -638,6 +654,10 @@ impl Render for Invoice {
             .child(self.status.clone())
             .child(
                 Button::new("invoice-refresh")
+                    .when(
+                        self.preview.is_none() && self.post_review.is_none(),
+                        |button| button.track_focus(&self.entry_focus),
+                    )
                     .label("Genindlæs fakturaer og originalregister")
                     .disabled(self.busy || self.preview.is_some() || self.post_review.is_some())
                     .on_click(cx.listener(|this, _, window, cx| this.refresh(window, cx))),
@@ -746,7 +766,7 @@ impl Render for Invoice {
             if invoice.is_some_and(|v| v["posted"] != true) {
                 if let Some(bytes) = &self.post_review {
                     let wire: Value = serde_json::from_slice(bytes).unwrap_or(Value::Null);
-                    view=view.child(format!("Særskilt bogføring: fakturabilag {} · indtægtskonto {} · fakturaens originale beløb, moms og debitor fra serveren.",wire["invoiceDocumentId"],wire["revenueAccountNo"].as_str().unwrap_or("?"))).child(Button::new("invoice-post-confirm").primary().label("Bekræft særskilt indtægtsbogføring").disabled(self.busy).on_click(cx.listener(|this,_,_,cx|this.mutate(true,cx)))).child(Button::new("invoice-post-back").label("Tilbage og vælg konto").disabled(self.busy).on_click(cx.listener(|this,_,_,cx|{this.post_review=None;cx.notify();})));
+                    view=view.child(format!("Særskilt bogføring: fakturabilag {} · indtægtskonto {} · fakturaens originale beløb, moms og debitor fra serveren.",wire["invoiceDocumentId"],wire["revenueAccountNo"].as_str().unwrap_or("?"))).child(Button::new("invoice-post-confirm").track_focus(&self.entry_focus).primary().label("Bekræft særskilt indtægtsbogføring").disabled(self.busy).on_click(cx.listener(|this,_,_,cx|this.mutate(true,cx)))).child(Button::new("invoice-post-back").label("Tilbage og vælg konto").disabled(self.busy).on_click(cx.listener(|this,_,_,cx|{this.post_review=None;cx.notify();})));
                 } else {
                     view = view
                         .child("Indtægtskonto")
@@ -794,6 +814,7 @@ impl Render for Invoice {
             return view
                 .child(
                     Button::new("invoice-preview-open")
+                        .track_focus(&self.entry_focus)
                         .label("Åbn serverens PDF-forhåndsvisning")
                         .on_click(cx.listener(move |this, _, _, cx| {
                             cx.open_url(&invoice_state::file_url(&path));

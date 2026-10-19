@@ -60,6 +60,8 @@ use rentemester_client::{ApiClient, Report};
 use serde_json::Value;
 use std::{path::PathBuf, sync::Arc};
 
+actions!(workflows, [OpenInvoices, OpenCompanySetup, BackToOverview, ScrollWorkflowDown, ScrollWorkflowUp]);
+
 #[derive(Default)]
 struct Options {
     server: String,
@@ -198,6 +200,9 @@ fn readable(error: rentemester_client::Error) -> String {
     }
 }
 struct Desktop {
+    workflow_focus: FocusHandle,
+    close_focus: FocusHandle,
+    body_scroll: ScrollHandle,
     server: Entity<InputState>,
     local_mode: bool,
     local_create: bool,
@@ -290,7 +295,12 @@ impl Desktop {
             input
         });
         let (binary, web) = local_backend::bundled_paths();
+        let workflow_focus = cx.focus_handle();
+        window.focus(&workflow_focus, cx);
         let mut desktop = Self {
+            workflow_focus,
+            close_focus: cx.focus_handle(),
+            body_scroll: ScrollHandle::new(),
             local_mode: options.local,
             local_create: options.local_create,
             local_workspace,
@@ -352,6 +362,133 @@ impl Desktop {
             desktop.connect(cx);
         }
         desktop
+    }
+    fn has_screen(&self) -> bool {
+        self.journal.is_some()
+            || self.invoice.is_some()
+            || self.reporting.is_some()
+            || self.bank.is_some()
+            || self.contacts.is_some()
+            || self.documents.is_some()
+            || self.payables.is_some()
+            || self.mileage.is_some()
+            || self.budget.is_some()
+            || self.periods.is_some()
+            || self.backup.is_some()
+            || self.scheduled_recurring.is_some()
+            || self.eliminations.is_some()
+            || self.consolidation.is_some()
+            || self.intercompany.is_some()
+            || self.ownership.is_some()
+            || self.corporate_records.is_some()
+            || self.workspace_inbox.is_some()
+            || self.commitments.is_some()
+            || self.parties.is_some()
+            || self.company_knowledge.is_some()
+            || self.company_setup.is_some()
+    }
+    fn open_invoices(&mut self, _: &OpenInvoices, window: &mut Window, cx: &mut Context<Self>) {
+        self.open_workflow(true, window, cx);
+    }
+    fn open_company_setup(
+        &mut self,
+        _: &OpenCompanySetup,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        self.open_workflow(false, window, cx);
+    }
+    fn open_workflow(&mut self, invoices: bool, window: &mut Window, cx: &mut Context<Self>) {
+        let same_screen = if invoices {
+            self.invoice.is_some()
+        } else {
+            self.company_setup.is_some()
+        };
+        match workflow_navigation(
+            self.session.is_some() && self.selected.is_some(),
+            self.busy,
+            self.has_screen(),
+            same_screen,
+        ) {
+            WorkflowNavigation::Unavailable => {
+                self.status = "Log ind og vælg en virksomhed før navigation.".into();
+                cx.notify();
+                return;
+            }
+            WorkflowNavigation::KeepCurrent => {
+                self.status = "Den åbne skærm og dens review bevares. Brug ⌘0 til at fokusere dens Luk-knap; Enter lukker eksplicit. Åbn derefter den ønskede arbejdsgang.".into();
+                cx.notify();
+                return;
+            }
+            WorkflowNavigation::Wait => return,
+            WorkflowNavigation::Open | WorkflowNavigation::FocusExisting => {}
+        }
+        if !same_screen {
+            let (Some(session), Some(company)) = (self.session.clone(), self.selected.clone())
+            else {
+                return;
+            };
+            let origin = self.connection_origin(cx);
+            let local = match self
+                .managed
+                .as_ref()
+                .map(|m| m.journal_identity())
+                .transpose()
+            {
+                Ok(local) => local,
+                Err(error) => {
+                    self.status = error;
+                    cx.notify();
+                    return;
+                }
+            };
+            if invoices {
+                self.invoice =
+                    Some(cx.new(|cx| {
+                        invoice::Invoice::new(session, origin, company, local, window, cx)
+                    }));
+            } else {
+                self.company_setup = Some(cx.new(|cx| {
+                    company_setup::CompanySetup::new(session, origin, company, local, window, cx)
+                }));
+            }
+        }
+        self.body_scroll.set_offset(point(px(0.), px(0.)));
+        if invoices {
+            if let Some(view) = &self.invoice {
+                view.update(cx, |v, cx| v.focus_entry(window, cx));
+            }
+        } else if let Some(view) = &self.company_setup {
+            view.update(cx, |v, cx| v.focus_entry(window, cx));
+        }
+        cx.notify();
+    }
+    fn back_to_overview(
+        &mut self,
+        _: &BackToOverview,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        self.body_scroll.set_offset(point(px(0.), px(0.)));
+        if self.has_screen() {
+            self.status = "Luk-knappen har fokus. Enter lukker denne skærm eksplicit; afklar eller annullér først et review, hvis du vil beholde arbejdet.".into();
+            window.focus(&self.close_focus, cx);
+        } else {
+            window.focus(&self.workflow_focus, cx);
+        }
+        cx.notify();
+    }
+    fn scroll_workflow_down(&mut self, _: &ScrollWorkflowDown, _: &mut Window, cx: &mut Context<Self>) {
+        self.scroll_workflow(-1., cx);
+    }
+    fn scroll_workflow_up(&mut self, _: &ScrollWorkflowUp, _: &mut Window, cx: &mut Context<Self>) {
+        self.scroll_workflow(1., cx);
+    }
+    fn scroll_workflow(&self, direction: f32, cx: &mut Context<Self>) {
+        let mut offset = self.body_scroll.offset();
+        offset.y += self.body_scroll.bounds().size.height * (0.8 * direction);
+        self.body_scroll.set_offset(offset);
+        cx.notify();
     }
     fn connection_origin(&self, cx: &App) -> String {
         if self.local_mode {
@@ -728,21 +865,20 @@ impl Desktop {
         cx.notify();
     }
 }
-impl Render for Desktop {
-    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+impl Desktop {
+    fn render_body(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let mut content = div()
-            .id("desktop-scroll")
-            .overflow_y_scroll()
+            .id("desktop-body")
             .flex()
             .flex_col()
             .gap_3()
             .p_6()
-            .size_full()
+            .flex_none()
             .bg(cx.theme().background)
             .text_color(cx.theme().foreground)
-            .child(div().text_2xl().child("Rentemester"))
-            .child(self.scheduled_dispatcher.clone())
-            .child(div().child(if self.local_mode {
+            ;
+        if !self.has_screen() {
+            content = content.child(div().child(if self.local_mode {
                 "Skrivebord · lokal virksomhed"
             } else {
                 "Skrivebord · ekstern server"
@@ -963,68 +1099,69 @@ impl Render for Desktop {
             );
         }
         content = content.child(list);
+        }
         if let Some(scheduled_recurring) = self.scheduled_recurring.clone() {
-            return content.child(Button::new("scheduled-recurring-close")
+            return content.child(Button::new("scheduled-recurring-close").track_focus(&self.close_focus)
                 .label("Luk planlagte fakturaer")
                 .on_click(cx.listener(|this, _, _, cx| { this.scheduled_recurring = None; cx.notify(); })))
                 .child(scheduled_recurring);
         }
         if let Some(eliminations) = self.eliminations.clone() {
-            return content.child(Button::new("eliminations-close")
+            return content.child(Button::new("eliminations-close").track_focus(&self.close_focus)
                 .label("Luk elimineringer")
                 .on_click(cx.listener(|this, _, _, cx| { this.eliminations = None; cx.notify(); })))
                 .child(eliminations);
         }
         if let Some(consolidation) = self.consolidation.clone() {
-            return content.child(Button::new("consolidation-close")
+            return content.child(Button::new("consolidation-close").track_focus(&self.close_focus)
                 .label("Luk konsolideret rapport")
                 .on_click(cx.listener(|this, _, _, cx| { this.consolidation = None; cx.notify(); })))
                 .child(consolidation);
         }
         if let Some(intercompany) = self.intercompany.clone() {
-            return content.child(Button::new("intercompany-close")
+            return content.child(Button::new("intercompany-close").track_focus(&self.close_focus)
                 .label("Luk mellemregningsafstemning")
                 .on_click(cx.listener(|this, _, _, cx| { this.intercompany = None; cx.notify(); })))
                 .child(intercompany);
         }
         if let Some(ownership) = self.ownership.clone() {
-            return content.child(Button::new("ownership-close")
+            return content.child(Button::new("ownership-close").track_focus(&self.close_focus)
                 .label("Luk ejer- og kontrolforhold")
                 .on_click(cx.listener(|this, _, _, cx| { this.ownership = None; cx.notify(); })))
                 .child(ownership);
         }
         if let Some(records) = self.corporate_records.clone() {
-            return content.child(Button::new("corporate-records-close")
+            return content.child(Button::new("corporate-records-close").track_focus(&self.close_focus)
                 .label("Luk selskabsdokumenter")
                 .on_click(cx.listener(|this, _, _, cx| { this.corporate_records = None; cx.notify(); })))
                 .child(records);
         }
         if let Some(inbox) = self.workspace_inbox.clone() {
-            return content.child(Button::new("workspace-inbox-close")
+            return content.child(Button::new("workspace-inbox-close").track_focus(&self.close_focus)
                 .label("Luk fælles bilagsindbakke")
                 .on_click(cx.listener(|this, _, _, cx| { this.workspace_inbox = None; cx.notify(); })))
                 .child(inbox);
         }
         if let Some(commitments) = self.commitments.clone() {
-            return content.child(Button::new("commitments-close")
+            return content.child(Button::new("commitments-close").track_focus(&self.close_focus)
                 .label("Luk forpligtelser og likviditet")
                 .on_click(cx.listener(|this, _, _, cx| { this.commitments = None; cx.notify(); })))
                 .child(commitments);
         }
         if let Some(parties) = self.parties.clone() {
-            return content.child(Button::new("parties-close")
+            return content.child(Button::new("parties-close").track_focus(&self.close_focus)
                 .label("Luk workspace-parter")
                 .on_click(cx.listener(|this, _, _, cx| { this.parties = None; cx.notify(); })))
                 .child(parties);
         }
         if let Some(knowledge) = self.company_knowledge.clone() {
-            return content.child(Button::new("knowledge-close")
+            return content.child(Button::new("knowledge-close").track_focus(&self.close_focus)
                 .label("Luk virksomhedsoplysninger")
                 .on_click(cx.listener(|this, _, _, cx| { this.company_knowledge = None; cx.notify(); })))
                 .child(knowledge);
         }
         if let Some(setup) = self.company_setup.clone() {
-            return content.child(Button::new("company-setup-close")
+            return content.child(Button::new("company-setup-close").track_focus(&self.close_focus)
                 .label("Luk virksomhedsopsætning og genindlæs saldobalance")
                 .on_click(cx.listener(|this, _, _, cx| {
                     this.company_setup = None;
@@ -1032,7 +1169,7 @@ impl Render for Desktop {
                 }))).child(setup);
         }
         if let Some(backup) = self.backup.clone() {
-            return content.child(Button::new("backup-close")
+            return content.child(Button::new("backup-close").track_focus(&self.close_focus)
                 .label("Luk workspace-backup")
                 .on_click(cx.listener(|this, _, _, cx| { this.backup = None; cx.notify(); })))
                 .child(backup);
@@ -1046,7 +1183,7 @@ impl Render for Desktop {
                 }))).child(periods);
         }
         if let Some(budget) = self.budget.clone() {
-            return content.child(Button::new("budget-close")
+            return content.child(Button::new("budget-close").track_focus(&self.close_focus)
                 .label("Luk budget og genindlæs saldobalance")
                 .on_click(cx.listener(|this, _, _, cx| {
                     this.budget = None;
@@ -1054,7 +1191,7 @@ impl Render for Desktop {
                 }))).child(budget);
         }
         if let Some(mileage) = self.mileage.clone() {
-            return content.child(Button::new("mileage-close")
+            return content.child(Button::new("mileage-close").track_focus(&self.close_focus)
                 .label("Luk kørsel og genindlæs saldobalance")
                 .on_click(cx.listener(|this, _, _, cx| {
                     this.mileage = None;
@@ -1062,12 +1199,12 @@ impl Render for Desktop {
                 }))).child(mileage);
         }
         if let Some(payables) = self.payables.clone() {
-            return content.child(Button::new("payables-close").label("Luk leverandørgæld og genindlæs saldobalance").on_click(cx.listener(|this,_,_,cx|{this.payables=None;if let Some(slug)=this.selected.clone(){this.load(slug,cx);}}))).child(payables);
+            return content.child(Button::new("payables-close").track_focus(&self.close_focus).label("Luk leverandørgæld og genindlæs saldobalance").on_click(cx.listener(|this,_,_,cx|{this.payables=None;if let Some(slug)=this.selected.clone(){this.load(slug,cx);}}))).child(payables);
         }
         if let Some(documents) = self.documents.clone() {
             return content
                 .child(
-                    Button::new("documents-close")
+                    Button::new("documents-close").track_focus(&self.close_focus)
                         .label("Luk bilag og genindlæs saldobalance")
                         .on_click(cx.listener(|this, _, _, cx| {
                             this.documents = None;
@@ -1081,7 +1218,7 @@ impl Render for Desktop {
         if let Some(contacts) = self.contacts.clone() {
             return content
                 .child(
-                    Button::new("contacts-close")
+                    Button::new("contacts-close").track_focus(&self.close_focus)
                         .label("Luk kontakter og genindlæs saldobalance")
                         .on_click(cx.listener(|this, _, _, cx| {
                             this.contacts = None;
@@ -1095,7 +1232,7 @@ impl Render for Desktop {
         if let Some(bank) = self.bank.clone() {
             return content
                 .child(
-                    Button::new("bank-close")
+                    Button::new("bank-close").track_focus(&self.close_focus)
                         .label("Luk bank og genindlæs saldobalance")
                         .on_click(cx.listener(|this, _, _, cx| {
                             this.bank = None;
@@ -1109,7 +1246,7 @@ impl Render for Desktop {
         if let Some(reporting) = self.reporting.clone() {
             return content
                 .child(
-                    Button::new("reports-close")
+                    Button::new("reports-close").track_focus(&self.close_focus)
                         .label("Luk rapporter og genindlæs saldobalance")
                         .on_click(cx.listener(|this, _, _, cx| {
                             this.reporting = None;
@@ -1123,7 +1260,7 @@ impl Render for Desktop {
         if let Some(invoice) = self.invoice.clone() {
             return content
                 .child(
-                    Button::new("invoice-close")
+                    Button::new("invoice-close").track_focus(&self.close_focus)
                         .label("Luk fakturaer og genindlæs saldobalance")
                         .on_click(cx.listener(|this, _, _, cx| {
                             this.invoice = None;
@@ -1138,7 +1275,7 @@ impl Render for Desktop {
             if let Some(journal) = self.journal.clone() {
                 content = content
                     .child(
-                        Button::new("journal-close")
+                        Button::new("journal-close").track_focus(&self.close_focus)
                             .label("Luk postering og genindlæs saldobalance")
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.journal = None;
@@ -1188,18 +1325,8 @@ impl Render for Desktop {
             );
         }
         if self.session.is_some() && self.selected.is_some() {
-            content = content.child(Button::new("company-setup-open").label("Virksomhedsopsætning").disabled(self.busy)
-                .on_click(cx.listener(|this, _, window, cx| {
-                    if let (Some(session), Some(company)) = (this.session.clone(), this.selected.clone()) {
-                        let origin = this.connection_origin(cx);
-                        let local = match this.managed.as_ref().map(|m| m.journal_identity()).transpose() {
-                            Ok(identity) => identity,
-                            Err(error) => { this.status = error; cx.notify(); return; }
-                        };
-                        this.company_setup = Some(cx.new(|cx| company_setup::CompanySetup::new(session, origin, company, local, window, cx)));
-                        cx.notify();
-                    }
-                })));
+            content = content.child(Button::new("company-setup-open").label("Virksomhedsopsætning · ⌘2").disabled(self.busy)
+                .on_click(cx.listener(|this,_,window,cx|this.open_company_setup(&OpenCompanySetup,window,cx))));
         }
         if self.session.is_some() && self.selected.is_some() {
             content = content.child(Button::new("scheduled-recurring-open").label("Planlagte fakturaer").disabled(self.busy)
@@ -1408,35 +1535,8 @@ impl Render for Desktop {
                 })));
         }
         if self.session.is_some() && self.selected.is_some() {
-            content = content.child(
-                Button::new("invoices-open")
-                    .label("Fakturaer")
-                    .disabled(self.busy)
-                    .on_click(cx.listener(|this, _, window, cx| {
-                        if let (Some(session), Some(company)) =
-                            (this.session.clone(), this.selected.clone())
-                        {
-                            let origin = this.connection_origin(cx);
-                            let local = match this
-                                .managed
-                                .as_ref()
-                                .map(|m| m.journal_identity())
-                                .transpose()
-                            {
-                                Ok(identity) => identity,
-                                Err(error) => {
-                                    this.status = error;
-                                    cx.notify();
-                                    return;
-                                }
-                            };
-                            this.invoice = Some(cx.new(|cx| {
-                                invoice::Invoice::new(session, origin, company, local, window, cx)
-                            }));
-                            cx.notify();
-                        }
-                    })),
-            );
+            content = content.child(Button::new("invoices-open").label("Fakturaer · ⌘1").disabled(self.busy)
+                .on_click(cx.listener(|this,_,window,cx|this.open_invoices(&OpenInvoices,window,cx))));
         }
         if self.session.is_some() && self.selected.is_some() {
             content = content.child(
@@ -1600,6 +1700,98 @@ impl Render for Desktop {
         content
     }
 }
+impl Render for Desktop {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let authenticated = self.session.is_some() && self.selected.is_some();
+        let mut header = div()
+            .flex_none()
+            .flex()
+            .flex_col()
+            .gap_2()
+            .p_3()
+            .child(div().text_2xl().child("Rentemester"))
+            .child(self.scheduled_dispatcher.clone());
+        if authenticated {
+            header = header
+                .child(
+                    div()
+                        .flex()
+                        .gap_2()
+                        .child(format!(
+                            "Virksomhed: {}",
+                            self.selected.as_deref().unwrap_or("")
+                        ))
+                        .child(
+                            Button::new("workflow-invoices")
+                                .label("Fakturaer · ⌘1")
+                                .disabled(self.busy)
+                                .on_click(cx.listener(|this, _, window, cx| {
+                                    this.open_invoices(&OpenInvoices, window, cx)
+                                })),
+                        )
+                        .child(
+                            Button::new("workflow-company-setup")
+                                .label("Virksomhedsopsætning · ⌘2")
+                                .disabled(self.busy)
+                                .on_click(cx.listener(|this, _, window, cx| {
+                                    this.open_company_setup(&OpenCompanySetup, window, cx)
+                                })),
+                        )
+                        .child(
+                            Button::new("workflow-back")
+                                .label("Tilbage: fokusér Luk · ⌘0")
+                                .disabled(self.busy)
+                                .on_click(cx.listener(|this, _, window, cx| {
+                                    this.back_to_overview(&BackToOverview, window, cx)
+                                })),
+                        ),
+                )
+                .child(self.status.clone());
+        }
+        div()
+            .size_full()
+            .flex()
+            .flex_col()
+            .bg(cx.theme().background)
+            .text_color(cx.theme().foreground)
+            .key_context("RentemesterWorkflows")
+            .track_focus(&self.workflow_focus)
+            .on_action(cx.listener(Self::open_invoices))
+            .on_action(cx.listener(Self::open_company_setup))
+            .on_action(cx.listener(Self::back_to_overview))
+            .on_action(cx.listener(Self::scroll_workflow_down))
+            .on_action(cx.listener(Self::scroll_workflow_up))
+            .child(header)
+            .child(div().id("desktop-scroll").flex_1().min_h_0().overflow_y_scroll()
+                .track_scroll(&self.body_scroll).child(self.render_body(window, cx)))
+    }
+}
+#[derive(Debug, PartialEq, Eq)]
+enum WorkflowNavigation {
+    Unavailable,
+    Wait,
+    KeepCurrent,
+    FocusExisting,
+    Open,
+}
+fn workflow_navigation(
+    authenticated: bool,
+    busy: bool,
+    has_screen: bool,
+    same_screen: bool,
+) -> WorkflowNavigation {
+    if !authenticated {
+        WorkflowNavigation::Unavailable
+    } else if busy {
+        WorkflowNavigation::Wait
+    } else if same_screen {
+        WorkflowNavigation::FocusExisting
+    } else if has_screen {
+        WorkflowNavigation::KeepCurrent
+    } else {
+        WorkflowNavigation::Open
+    }
+}
 fn row(cells: [String; 6]) -> impl IntoElement {
     div()
         .flex()
@@ -1626,6 +1818,21 @@ fn main() {
         .with_assets(gpui_kit::assets::Assets)
         .run(move |cx| {
             gpui_kit::init(cx);
+            cx.bind_keys([
+                KeyBinding::new("pagedown", ScrollWorkflowDown, Some("RentemesterWorkflows")),
+                KeyBinding::new("pageup", ScrollWorkflowUp, Some("RentemesterWorkflows")),
+                KeyBinding::new("cmd-1", OpenInvoices, Some("RentemesterWorkflows")),
+                KeyBinding::new("cmd-2", OpenCompanySetup, Some("RentemesterWorkflows")),
+                KeyBinding::new("cmd-0", BackToOverview, Some("RentemesterWorkflows")),
+            ]);
+            cx.set_menus([Menu::new("Rentemester"), Menu::new("Arbejdsgange").items([
+                MenuItem::action("Rul arbejdsgang ned", ScrollWorkflowDown),
+                MenuItem::action("Rul arbejdsgang op", ScrollWorkflowUp),
+                MenuItem::action("Fakturaer", OpenInvoices),
+                MenuItem::action("Virksomhedsopsætning", OpenCompanySetup),
+                MenuItem::action("Tilbage til oversigt: fokusér Luk", BackToOverview),
+            ])]);
+
             let window = WindowOptions {
                 titlebar: Some(TitlebarOptions {
                     title: Some("Rentemester".into()),
@@ -1646,7 +1853,35 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use super::{companies, trial};
+    use super::{companies, trial, workflow_navigation, WorkflowNavigation};
+    #[test]
+    fn workflow_shortcuts_preserve_open_reviews_and_require_current_connection() {
+        assert_eq!(
+            workflow_navigation(false, false, false, false),
+            WorkflowNavigation::Unavailable
+        );
+        assert_eq!(
+            workflow_navigation(false, false, true, true),
+            WorkflowNavigation::Unavailable
+        );
+        assert_eq!(
+            workflow_navigation(true, true, false, false),
+            WorkflowNavigation::Wait
+        );
+        assert_eq!(
+            workflow_navigation(true, false, true, false),
+            WorkflowNavigation::KeepCurrent
+        );
+        assert_eq!(
+            workflow_navigation(true, false, true, true),
+            WorkflowNavigation::FocusExisting
+        );
+        assert_eq!(
+            workflow_navigation(true, false, false, false),
+            WorkflowNavigation::Open
+        );
+    }
+
     use serde_json::json;
     #[test]
     fn remote_report_requires_real_fields_and_preserves_display_amounts() {
