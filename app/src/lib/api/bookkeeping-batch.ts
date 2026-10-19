@@ -21,12 +21,14 @@ export const bookkeepingBatchApi = {
     request<BookkeepingWorkbenchResponse>(`/api/companies/${encodeURIComponent(slug)}/bookkeeping-workbench?${query(input)}`, options),
   bookkeepingBatchPlan: (slug: string, input: BatchScope, options?: ReadRequestOptions) =>
     request<BookkeepingBatchPlanResponse>(`${path(slug)}?${query(input)}`, options),
-  bookkeepingBatchPersist: (slug: string, input: BatchScope & { runKey: string }) =>
+  bookkeepingBatchPersist: (slug: string, input: BatchScope & { runKey: string; expectedPlanHash?: string }) =>
     request<BookkeepingBatchPersistResponse>(`${path(slug)}/persist`, { method: "POST", body: JSON.stringify({ ...input, confirm: true }) }),
   bookkeepingBatchApprove: (slug: string, input: { runId: number; planHash: string }) =>
     request<BookkeepingBatchApproveResponse>(`${path(slug)}/approve`, { method: "POST", body: JSON.stringify({ ...input, confirm: true }) }),
   bookkeepingBatchApply: (slug: string, input: { runId: number; planHash: string }) =>
     request<BookkeepingBatchApplyResponse>(`${path(slug)}/apply`, { method: "POST", body: JSON.stringify({ ...input, confirm: true }) }),
+  bookkeepingBatchStatusByKey: (slug: string, runKey: string, options?: ReadRequestOptions) =>
+    request<BookkeepingBatchStatusResponse>(`${path(slug)}/runs?${query({ runKey })}`, options),
   bookkeepingBatchStatus: (slug: string, runId: number, options?: ReadRequestOptions) =>
     request<BookkeepingBatchStatusResponse>(`${path(slug)}/runs/${runId}`, options),
 };

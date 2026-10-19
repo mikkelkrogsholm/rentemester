@@ -2,8 +2,9 @@
 // projections. No runtime module imports may pull the ledger into the SPA.
 export type BatchPrincipalKind = "user" | "service-account" | "local-trusted";
 export type FinalCheckName = "audit_chain" | "trial_balance" | "reconciliation" | "vat";
-export type BatchScope = { companyId: number; accountingFrom: string; accountingTo: string; bankFrom: string; bankTo: string };
+export type BatchScope = { companyId?: number; accountingFrom: string; accountingTo: string; bankFrom: string; bankTo: string };
 export type BookkeepingBatchPlan = BatchScope & {
+  companyId: number; executionPolicy?: "atomic_v1";
   items: Array<{
     actionKey: string; evidenceHash: string;
     partition: "ready" | "suggestedMatch" | "missingDocument" | "humanDecision";
@@ -22,7 +23,7 @@ export type BookkeepingWorkbenchInput = {
   vatTreatment?: string; dimension?: string; limit?: number; cursor?: number; search?: string;
 };
 export type WorkbenchRow = {
-  bankTransactionId: number; date: string; text: string; amount: number; currency: string;
+  bankTransactionId: number; date: string; text: string; amount: number | string; currency: string;
   bankAccount: { id: number | null; name: string | null };
   document: {
     id: number; quality: "matched"; party: { id: string; name: string } | null;
