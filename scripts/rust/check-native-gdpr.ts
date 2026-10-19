@@ -109,7 +109,21 @@ export async function checkNativeGdpr(page: Page, base: string, restarted = fals
   await page.getByText("[redigeret — GDPR]", { exact: true }).first().waitFor();
   await page.getByText(/Originalfiler, øvrige kontaktfelter/).waitFor();
   await page.screenshot({ path: "/tmp/rentemester-rust-gdpr.png", fullPage: true });
-  await page.goto(`${base}/companies/synthetic/retention`);
-  await page.getByRole("heading", { name: "Opbevaring", exact: true }).waitFor();
+  const retentionPageErrors: string[] = [];
+  const recordRetentionError = (error: Error) => retentionPageErrors.push(error.message);
+  page.on("pageerror", recordRetentionError);
+  try {
+    const [response] = await Promise.all([
+      page.waitForResponse(r => r.url() === `${url}/retention` && r.request().method() === "GET"),
+      page.goto(`${base}/companies/synthetic/retention`),
+    ]);
+    if (!response.ok()) throw new Error(`Retention UI HTTP ${response.status()}: ${await response.text()}`);
+    await page.getByRole("heading", { name: "Opbevaring", exact: true }).waitFor();
+  } catch (error) {
+    await page.screenshot({ path: "/tmp/rentemester-rust-retention-failure.png", fullPage: true }).catch(() => {});
+    throw new Error(`Retention navigation failed at ${page.url()}; page errors: ${JSON.stringify(retentionPageErrors)}; ${error}`);
+  } finally {
+    page.off("pageerror", recordRetentionError);
+  }
   console.log(restarted ? "PASS: GDPR overlays persist after restart, retained originals and journal unchanged; scoped identity fences and unrelated maintenance persist" : "PASS: real retention/GDPR UI → subject export/review → confirmed overlay; retained subject refused, scope/date/confirmation fenced and partial coverage disclosed");
 }

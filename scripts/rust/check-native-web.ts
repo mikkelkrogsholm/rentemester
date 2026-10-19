@@ -63,6 +63,7 @@ async function checkParallelFeature(page: import("@playwright/test").Page, featu
     await (await import("./check-native-dimensions")).checkNativeDimensions(page, base!, restarted);
     await (await import("./check-native-budget-dimensions")).checkNativeBudgetDimensions(page, base!, restarted);
     await (await import("./check-native-bank-reconciliation")).checkNativeBankReconciliation(page, base!, restarted);
+    await (await import("./check-native-bank-reconciliation-clients")).checkNativeBankReconciliationClients(page, base!, restarted);
     await (await import("./check-native-exception-review")).checkNativeExceptionReview(page, base!, restarted);
     await (await import("./check-native-commitments")).checkNativeCommitments(page, base!, restarted);
     await (await import("./check-native-commitment-clients")).checkNativeCommitmentClients(page, base!, restarted);
