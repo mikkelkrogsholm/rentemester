@@ -39,16 +39,19 @@ import {
  */
 export function useCompanyYear(): {
   year: string | undefined;
+  source: "live" | "archive" | undefined;
   setYear: (year: string) => void;
 } {
   const [params, setParams] = useSearchParams();
   const year = params.get("year") ?? undefined;
   const setYear = (next: string) => {
     const updated = new URLSearchParams(params);
-    updated.set("year", next);
+    const match=/^(live|archive):(.+)$/.exec(next);
+    updated.set("year", match?.[2] ?? next);
+    if(match) updated.set("source",match[1]!); else updated.delete("source");
     setParams(updated, { replace: true });
   };
-  return { year, setYear };
+  return { year, source: (params.get("source") ?? undefined) as "live" | "archive" | undefined, setYear };
 }
 
 /**
@@ -62,14 +65,16 @@ export function accountPostingsTo(
   slug: string,
   year: string,
   accountNo: string,
+  source?: "live" | "archive",
 ): string {
   const params = new URLSearchParams();
   if (year) params.set("year", year);
+  if (source) params.set("source", source);
   params.set("account", accountNo);
   return `/companies/${slug}/posteringer?${params.toString()}`;
 }
 
-type YearControl = { owner: string; slug: string; years: FiscalYearEntry[]; selected: string };
+type YearControl = { owner: string; slug: string; years: FiscalYearEntry[]; selected: string; source?: "live" | "archive" };
 type ShellContext = { controls: YearControl | null; register: (control: YearControl) => void; unregister: (owner: string) => void };
 const CompanyNavigationShellContext = createContext<ShellContext | null>(null);
 export function useCompanyShell() { return useContext(CompanyNavigationShellContext); }
@@ -77,7 +82,7 @@ export function useCompanyShell() { return useContext(CompanyNavigationShellCont
 /** Marks routes that already receive the shared navigation from the app shell. */
 export function CompanyNavigationShell({ children }: { children: ReactNode }) {
   const [controls, setControls] = useState<YearControl | null>(null);
-  const register = useCallback((control: YearControl) => setControls((previous) => previous?.owner === control.owner && previous.slug === control.slug && previous.selected === control.selected && JSON.stringify(previous.years) === JSON.stringify(control.years) ? previous : control), []);
+  const register = useCallback((control: YearControl) => setControls((previous) => previous?.owner === control.owner && previous.slug === control.slug && previous.selected === control.selected && previous.source === control.source && JSON.stringify(previous.years) === JSON.stringify(control.years) ? previous : control), []);
   const unregister = useCallback((_owner: string) => { /* Keep company metadata while the next year is loading. */ }, []);
   const value = useMemo(() => ({ controls, register, unregister }), [controls, register, unregister]);
   return <CompanyNavigationShellContext.Provider value={value}>{children}</CompanyNavigationShellContext.Provider>;
@@ -97,7 +102,8 @@ export function CompanyTaskNavigation({
   // account=…) onto every other tab. Whitelist `?year=` and drop the rest —
   // each view owns its own filter namespace.
   const year = params.get("year");
-  const suffix = year ? `?year=${encodeURIComponent(year)}` : "";
+  const shared = new URLSearchParams(); if(year) shared.set("year",year); if(params.get("source")) shared.set("source",params.get("source")!);
+  const suffix = shared.size ? `?${shared.toString()}` : "";
   const currentRoute = companyRouteForPath(location.pathname);
   const slug = location.pathname.match(/^\/companies\/([^/]+)/)?.[1];
   const visibleRoutes = COMPANY_ROUTE_DEFINITIONS.filter(
@@ -163,18 +169,20 @@ export function CompanyNav({
   slug,
   years,
   selectedYear,
+  selectedSource,
   onYearChange,
 }: {
   slug: string;
   years: FiscalYearEntry[];
   selectedYear: string;
+  selectedSource?: "live" | "archive";
   onYearChange: (year: string) => void;
 }) {
   const shell = useContext(CompanyNavigationShellContext);
   const owner = useId();
   const register = shell?.register;
   const unregister = shell?.unregister;
-  useEffect(() => { register?.({ owner, slug, years, selected: selectedYear }); }, [register, owner, slug, years, selectedYear]);
+  useEffect(() => { register?.({ owner, slug, years, selected: selectedYear, source: selectedSource }); }, [register, owner, slug, years, selectedYear, selectedSource]);
   useEffect(() => () => unregister?.(owner), [unregister, owner]);
   if (shell) return null;
   return (
@@ -184,6 +192,7 @@ export function CompanyNav({
         <YearSelector
           years={years}
           selected={selectedYear}
+          source={selectedSource}
           onChange={onYearChange}
         />
       </div>
@@ -195,24 +204,30 @@ export function CompanyNav({
 export function YearSelector({
   years,
   selected,
+  source,
   onChange,
 }: {
   years: FiscalYearEntry[];
   selected: string;
+  source?: "live" | "archive";
   onChange: (year: string) => void;
 }) {
+  const query=useCompanyYear();
+  const explicitSource=query.source??source;
+  const distinct=Boolean(explicitSource)||new Set(years.map(y=>y.label)).size!==years.length;
+  const selectedSource=explicitSource??years.find(y=>y.label===selected&&y.source==="live")?.source??years.find(y=>y.label===selected)?.source;
   return (
     <label className="year-selector">
       <span className="ys-label">Regnskabsår</span>
       <Select
-        value={selected}
+        value={distinct ? `${selectedSource}:${selected}` : selected}
         onChange={(e) => onChange(e.target.value)}
         aria-label="Vælg regnskabsår"
       >
         {years.map((y) => (
-          <option key={`${y.source}:${y.label}`} value={y.label} disabled={y.selectable === false}>
+          <option key={`${y.source}:${y.label}`} value={distinct ? `${y.source}:${y.label}` : y.label} disabled={y.selectable === false}>
             {y.label}
-            {y.selectable === false ? " (se Arkiv)" : y.source === "archive" ? " (arkiv)" : ""}
+            {y.selectable === false ? " (se Arkiv)" : y.source === "archive" ? " (arkiv)" : distinct ? " (aktiv)" : ""}
           </option>
         ))}
       </Select>

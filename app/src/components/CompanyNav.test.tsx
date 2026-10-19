@@ -110,10 +110,17 @@ test("unsupported archive years stay visible but disabled while legacy years rem
   const select=screen.getByRole("combobox",{name:"Vælg regnskabsår"});
   const unsupported=screen.getByRole("option",{name:"2024 (se Arkiv)"});
   expect(unsupported).toBeDisabled();
-  expect(screen.getByRole("option",{name:"2024"})).not.toBeDisabled();
+  expect(screen.getByRole("option",{name:"2024 (aktiv)"})).not.toBeDisabled();
   expect(screen.getByRole("option",{name:"2023 (arkiv)"})).not.toBeDisabled();
   await userEvent.selectOptions(select,unsupported);
   expect(changed).not.toHaveBeenCalled();
-  await userEvent.selectOptions(select,"2023");
-  expect(changed).toHaveBeenCalledWith("2023");
+  await userEvent.selectOptions(select,"archive:2023");
+  expect(changed).toHaveBeenCalledWith("archive:2023");
+});
+
+
+test("year source is retained between company tasks while per-view filters are excluded", () => {
+ renderNav("/companies/acme-aps/bank?year=2024&source=archive&account=9999&q=source");
+ expect(screen.getByRole("link",{name:"Bilag"})).toHaveAttribute("href","/companies/acme-aps/bilag?year=2024&source=archive");
+ expect(screen.getByRole("link",{name:"Posteringer"})).toHaveAttribute("href","/companies/acme-aps/posteringer?year=2024&source=archive");
 });

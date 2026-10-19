@@ -1,3 +1,4 @@
+import { ReportSourceNotice } from "../components/ReportSourceNotice";
 import { ButtonLink, Button, PageHeader } from "../components/ui";
 // Overblik — the per-company overview dashboard (cockpit-redesign iteration 1).
 //
@@ -12,7 +13,7 @@ import { ButtonLink, Button, PageHeader } from "../components/ui";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
-import { formatDateDa, formatKroner, formatPercent } from "../lib/format";
+import { formatDateDa, formatKroner, formatPercent, moneyNegative, moneyZero } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
 import type {
   CompanyOverview,
@@ -28,19 +29,20 @@ import { AccountantExportCard } from "../components/AccountantExportCard";
 
 export function DashboardView() {
   const { slug = "" } = useParams();
-  const { year, setYear } = useCompanyYear();
+  const { year, source, setYear } = useCompanyYear();
   const state = useAsync<CompanyOverview>(
-    (signal) => api.overview(slug, year, undefined, { signal }),
-    [slug, year],
+    (signal) => api.overview(slug, year, undefined, { signal, ...(source ? {source} : {}) }),
+    [slug, year, source],
   );
 
   if (state.loading && !state.data) return <Loading label="Henter overblik…" />;
-  if (state.error && !state.data)
+  if (state.error && (!state.data || state.data.archived || source === "archive"))
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const o = state.data!;
-  const currency = o.company.currency || "DKK";
-  const positive = o.profitAndLoss.resultat >= 0;
+  const currency = o.declaredCurrency ?? o.company.currency ?? "DKK";
+  const selectedSource = o.selectedSource ?? source;
+  const positive = !moneyNegative(o.profitAndLoss.resultat);
 
   return (
     <section className="overview">
@@ -64,9 +66,11 @@ export function DashboardView() {
         slug={slug}
         years={o.fiscalYears}
         selectedYear={o.selectedYear}
+        selectedSource={selectedSource}
         onYearChange={setYear}
       />
 
+      <ReportSourceNotice report={o} slug={slug}/>
       {o.archived && (
         <ArchivedBanner year={o.selectedYear} source={o.archivedSource} />
       )}
@@ -74,7 +78,7 @@ export function DashboardView() {
       <p className="period-head muted">
         Regnskabsår {o.selectedYear} ·{" "}
         {o.lastPostedDate
-          ? `Senest bogført pr. ${formatDateDa(o.lastPostedDate)}`
+          ? `${o.archived ? "Seneste observerede posteringsdato" : "Senest bogført pr."} ${formatDateDa(o.lastPostedDate)}`
           : "Ingen posteringer bogført endnu"}
       </p>
 
@@ -95,24 +99,24 @@ export function DashboardView() {
             <VatCard
               vat={o.vat}
               currency={currency}
-              to={statementTo(slug, "moms", o.selectedYear)}
+              to={statementTo(slug, "moms", o.selectedYear, selectedSource)}
             />
             <BankCard
               bank={o.bank}
               currency={currency}
-              to={statementTo(slug, "bank", o.selectedYear)}
+              to={statementTo(slug, "bank", o.selectedYear, selectedSource)}
             />
 
             <ReceivablesCard
               receivables={o.receivables}
               currency={currency}
-              to={statementTo(slug, "fakturaer", o.selectedYear)}
+              to={statementTo(slug, "fakturaer", o.selectedYear, selectedSource)}
             />
-            {o.payables && <StatusCard title="Leverandørgæld" to={statementTo(slug, "leverandoerfaktura", o.selectedYear)}>
+            {o.payables && <StatusCard title="Leverandørgæld" to={statementTo(slug, "leverandoerfaktura", o.selectedYear, selectedSource)}>
               <div className="status-figure">{formatKroner(o.payables.openTotal, currency)}</div>
               <p className="muted status-note">{o.payables.openCount} åbne regninger pr. {formatDateDa(o.payables.asOfDate)}.</p>
             </StatusCard>}
-            {o.documents && <StatusCard title="Bilag" to={statementTo(slug, "bilag", o.selectedYear)}>
+            {o.documents && <StatusCard title="Bilag" to={statementTo(slug, "bilag", o.selectedYear, selectedSource)}>
               <div className="status-figure">{o.documents.unlinkedCount}</div>
               <p className="muted status-note">Bilag uden postering · aktuel bilagsstatus. {o.documents.linkedCount} bilag har posteringer.</p>
             </StatusCard>}
@@ -127,21 +131,21 @@ export function DashboardView() {
           label="Omsætning"
           value={formatKroner(o.profitAndLoss.omsaetning, currency)}
           tone="neutral"
-          to={statementTo(slug, "resultatopgorelse", o.selectedYear)}
+          to={statementTo(slug, "resultatopgorelse", o.selectedYear, selectedSource)}
         />
         <KpiCard
           label="Udgifter"
           value={formatKroner(o.profitAndLoss.udgifter, currency)}
           tone="neutral"
-          to={statementTo(slug, "resultatopgorelse", o.selectedYear)}
+          to={statementTo(slug, "resultatopgorelse", o.selectedYear, selectedSource)}
         />
         <KpiCard
           label="Resultat"
           value={formatKroner(o.profitAndLoss.resultat, currency)}
           sub={`Regnskabsår ${o.selectedYear}`}
-          tone={positive ? "result-positive" : "result-negative"}
+          tone={o.profitAndLoss.resultat === null ? "neutral" : positive ? "result-positive" : "result-negative"}
           emphasised
-          to={statementTo(slug, "resultatopgorelse", o.selectedYear)}
+          to={statementTo(slug, "resultatopgorelse", o.selectedYear, selectedSource)}
         />
       </div>
 
@@ -150,7 +154,7 @@ export function DashboardView() {
       <div className="section">
         <h3>Indtægter og udgifter — {o.selectedYear}</h3>
         <div className="card chart-card">
-          <PnlChart months={o.profitAndLoss.months} currency={currency} />
+          {o.profitAndLoss.months.every((month):month is OverviewMonth=>typeof month.month === "number" && typeof month.income === "number" && typeof month.expense === "number") ? <PnlChart months={o.profitAndLoss.months} currency={currency} /> : <><p>Observeret aktivitet pr. faktisk kalendermåned. Dette angiver ikke regnskabsperiodens grænser.</p><table aria-label="Observeret månedsaktivitet"><thead><tr><th>Måned</th><th>Indtægter</th><th>Udgifter</th></tr></thead><tbody>{o.profitAndLoss.months.map(month=><tr key={month.month}><td>{month.label}</td><td>{formatKroner(month.income,currency)}</td><td>{formatKroner(month.expense,currency)}</td></tr>)}</tbody></table></>}
         </div>
       </div>
 
@@ -162,7 +166,7 @@ export function DashboardView() {
       {!o.archived && (
         <div className="section">
           <h3>Eksport til revisor</h3>
-          {o.availability?.accountantExport === false ? <div className="card"><p className="muted">Samlet revisor-eksport er endnu ikke tilgængelig. Hent rapporterne fra <Link to={statementTo(slug, "resultatopgorelse", o.selectedYear)}>Resultatopgørelse</Link> og <Link to={statementTo(slug, "balance", o.selectedYear)}>Balance</Link>.</p></div> : <AccountantExportCard slug={slug} />}
+          {o.availability?.accountantExport === false ? <div className="card"><p className="muted">Samlet revisor-eksport er endnu ikke tilgængelig. Hent rapporterne fra <Link to={statementTo(slug, "resultatopgorelse", o.selectedYear, selectedSource)}>Resultatopgørelse</Link> og <Link to={statementTo(slug, "balance", o.selectedYear, selectedSource)}>Balance</Link>.</p></div> : <AccountantExportCard slug={slug} />}
         </div>
       )}
     </section>
@@ -183,7 +187,7 @@ export function DashboardView() {
 function isFreshEmptyCompany(o: CompanyOverview): boolean {
   if (o.archived) return false;
   const noEntries = o.lastPostedDate === null && o.recentEntries.length === 0;
-  const noBank = o.bank.actualBalance === null && o.bank.balance === 0;
+  const noBank = o.bank.actualBalance === null && moneyZero(o.bank.balance);
   return noEntries && noBank;
 }
 
@@ -235,8 +239,8 @@ function ArchivedUnavailableCard() {
 // --------------------------------------------------------------------------
 
 /** A per-company sub-view route that carries the selected fiscal year. */
-function statementTo(slug: string, view: string, year: string): string {
-  const suffix = year ? `?year=${encodeURIComponent(year)}` : "";
+function statementTo(slug: string, view: string, year: string, source?:"live"|"archive"): string {
+  const suffix = year ? `?year=${encodeURIComponent(year)}${source ? `&source=${encodeURIComponent(source)}` : ""}` : "";
   return `/companies/${slug}/${view}${suffix}`;
 }
 
@@ -354,7 +358,7 @@ function BankCard({
   // The actual statement balance is the headline figure when it is known —
   // it is what the owner's bank app shows. The booked balance and the gap
   // sit below it, clearly labelled, so a difference is never mistaken.
-  const reconciled = difference !== null && Math.abs(difference) < 0.005;
+  const reconciled = difference !== null && (typeof difference === "number" ? Math.abs(difference) < 0.005 : moneyZero(difference));
   return (
     <StatusCard title="Bank" to={to}>
       <div className="status-figure">
@@ -448,12 +452,12 @@ function ReceivablesCard({
 }) {
   // "Hvem skylder mig" — the open balance of issued sales invoices. For a
   // company with no outstanding receivables (Helheim) this is a clean zero.
-  if (receivables === null) return <StatusCard title="Tilgodehavender" to={to}><p className="muted status-note">Tilgodehavender for denne dato er ikke tilgængelige. Historiske saldi og saldi i andre valutaer kræver en særskilt opgørelse.</p></StatusCard>;
+  if (receivables === null || receivables.openCount === null || receivables.openTotal === null) return <StatusCard title="Tilgodehavender" to={to}><p className="muted status-note">Tilgodehavender for denne dato er ikke tilgængelige. Historiske saldi og saldi i andre valutaer kræver en særskilt opgørelse.</p></StatusCard>;
   const { openCount, openTotal } = receivables;
   return (
     <StatusCard title="Tilgodehavender" to={to}>
       <div
-        className={`status-figure${openTotal > 0 ? " status-alert" : ""}`}
+        className={`status-figure${openTotal !== null && !moneyZero(openTotal) && !moneyNegative(openTotal) ? " status-alert" : ""}`}
       >
         {formatKroner(openTotal, currency)}
       </div>
@@ -492,6 +496,7 @@ function ExceptionsCard({
 }) {
   // The exception under the open "Løs" modal — null when no modal is open.
   const [resolving, setResolving] = useState<OverviewExceptionRow | null>(null);
+  if (exceptions.count === null) return <StatusCard title="Opgaver"><p>Opgavestatus er ikke tilgængelig for dette udsnit.</p></StatusCard>;
 
   return (
     <StatusCard title="Opgaver">
@@ -631,7 +636,7 @@ function RecentEntriesCard({
       ) : (
         <ul className="recent-entries">
           {entries.map((e) => (
-            <li key={e.id} className="recent-entry">
+            <li key={e.id ?? e.sourceId} className="recent-entry">
               <span className="recent-entry-text">{e.text}</span>
               <span className="recent-entry-meta">
                 <span className="entry-date">{e.date}</span>

@@ -79,7 +79,15 @@ export function formatCurrency(minorUnits: number, currency = "DKK"): string {
  * identical `"1.234,56 kr."` string as the rest of the system); a non-DKK
  * amount keeps its own currency code.
  */
-export function formatKroner(kroner: number, currency = "DKK"): string {
+export type ReportMoney = number | string | null;
+/** Exact native decimal presentation; legacy numeric callers retain their formatter. */
+export function formatKroner(kroner: ReportMoney, currency = "DKK"): string {
+  if (kroner == null) return "—";
+  if (typeof kroner === "string") {
+    const parts = /^(-?)(\d+)(?:\.(\d{1,2}))?$/.exec(kroner);
+    if (!parts) return "—";
+    return `${parts[1]}${parts[2]!.replace(/\B(?=(\d{3})+(?!\d))/g, ".")},${(parts[3] ?? "").padEnd(2,"0")} ${normalizeCurrency(currency) === "DKK" ? "kr." : normalizeCurrency(currency)}`;
+  }
   if (!Number.isFinite(kroner)) return "—";
   if (normalizeCurrency(currency) === "DKK") return formatKronerDa(kroner);
   return new Intl.NumberFormat("da-DK", {
@@ -342,4 +350,18 @@ export function formatDeadline(daysRemaining: number): string {
   if (daysRemaining === 0) return "i dag";
   if (daysRemaining === 1) return "i morgen";
   return `om ${daysRemaining} dage`;
+}
+
+/** Presentation predicates do not coerce native money through binary floats. */
+export function moneyNegative(value: ReportMoney): boolean { return typeof value === "number" ? value < 0 : typeof value === "string" && /^-/.test(value) && !/^-0(?:\.0+)?$/.test(value); }
+export function moneyZero(value: ReportMoney): boolean { return typeof value === "number" ? value === 0 : typeof value === "string" && /^-?0(?:\.0+)?$/.test(value); }
+/** Exact comparison for the existing journal's optional amount filter, without summing. */
+export function compareMoney(left: ReportMoney, right: string): number | null {
+  const parse=(value:ReportMoney)=>{if(value==null)return null;const p=/^(-?)(\d+)(?:\.(\d*))?$/.exec(String(value));return p?{negative:p[1]==="-",whole:p[2]!.replace(/^0+(?=\d)/,""),fraction:p[3]??""}:null;};
+  const a=parse(left),b=parse(right);if(!a||!b)return null;
+  if(moneyZero(left)&&moneyZero(right))return 0;
+  if(a.negative!==b.negative)return a.negative?-1:1;
+  const length=Math.max(a.fraction.length,b.fraction.length);const x=a.whole,y=b.whole;
+  const order=x.length!==y.length?(x.length<y.length?-1:1):x!==y?(x<y?-1:1):a.fraction.padEnd(length,"0")===b.fraction.padEnd(length,"0")?0:a.fraction.padEnd(length,"0")<b.fraction.padEnd(length,"0")?-1:1;
+  return a.negative?-order:order;
 }

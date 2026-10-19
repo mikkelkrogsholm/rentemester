@@ -3,19 +3,19 @@
 //
 // All money fields below are kroner (DKK with decimals) — use `formatKroner`.
 
-import type { FiscalYearEntry, StatementCompany } from "./common";
+import type { FiscalYearEntry, StatementCompany, ReportMoney, ReportSourceMetadata } from "./common";
 
 // --- income statement (GET .../income-statement?year=) --------------------
 
 export type IncomeStatementLine = {
   accountNo: string;
   name: string;
-  amount: number;
+  amount: ReportMoney;
   /** The same account's amount in the prior calendar year, kroner. */
-  priorAmount: number;
+  priorAmount: ReportMoney;
 };
 
-export type CompanyIncomeStatement = {
+export type CompanyIncomeStatement = ReportSourceMetadata & {
   priorYearLabel?: string | null;
   slug: string;
   selectedYear: string;
@@ -27,12 +27,12 @@ export type CompanyIncomeStatement = {
   fiscalYears: FiscalYearEntry[];
   income: IncomeStatementLine[];
   expense: IncomeStatementLine[];
-  totalIncome: number;
-  totalExpense: number;
-  priorTotalIncome: number;
-  priorTotalExpense: number;
-  result: number;
-  priorResult: number;
+  totalIncome: ReportMoney;
+  totalExpense: ReportMoney;
+  priorTotalIncome: ReportMoney;
+  priorTotalExpense: ReportMoney;
+  result: ReportMoney;
+  priorResult: ReportMoney;
 };
 
 export type IncomeStatementResponse = {
@@ -45,23 +45,23 @@ export type IncomeStatementResponse = {
 export type BalanceLine = {
   accountNo: string;
   name: string;
-  amount: number;
+  amount: ReportMoney;
   /**
    * The same account's balance one fiscal year earlier, kroner. `null` when
    * there is no prior year in the ledger — the view renders «—». ÅRL § 24
    * kræver sammenligningstal på balancen for regnskabsklasse B.
    */
-  priorAmount: number | null;
+  priorAmount: ReportMoney;
 };
 
 export type BalanceSection = {
   lines: BalanceLine[];
-  total: number;
+  total: ReportMoney;
   /** The section total one fiscal year earlier, kroner. `null` when none. */
-  priorTotal: number | null;
+  priorTotal: ReportMoney;
 };
 
-export type CompanyBalance = {
+export type CompanyBalance = ReportSourceMetadata & {
   priorAsOfDate?: string | null;
   slug: string;
   selectedYear: string;
@@ -71,7 +71,7 @@ export type CompanyBalance = {
   archivedSource: string | null;
   company: StatementCompany;
   fiscalYears: FiscalYearEntry[];
-  asOfDate: string;
+  asOfDate: string | null;
   assets: BalanceSection;
   liabilities: BalanceSection;
   /**
@@ -81,16 +81,16 @@ export type CompanyBalance = {
    */
   equity: BalanceSection;
   /** The fiscal year's result, also folded into the equity section. */
-  periodResult: number;
-  totalAssets: number;
-  totalLiabilitiesAndEquity: number;
+  periodResult: ReportMoney;
+  totalAssets: ReportMoney;
+  totalLiabilitiesAndEquity: ReportMoney;
   /**
    * The prior year's `totalLiabilitiesAndEquity`, kroner. `null` when no
    * prior year is available — the view renders «—» in that cell. Mirrors the
    * resultatopgørelsens prior-year footer.
    */
-  priorTotalLiabilitiesAndEquity: number | null;
-  balanced: boolean;
+  priorTotalLiabilitiesAndEquity: ReportMoney;
+  balanced: boolean | null;
 };
 
 export type BalanceResponse = {
@@ -103,13 +103,14 @@ export type BalanceResponse = {
 export type TrialBalanceRow = {
   accountNo: string;
   name: string;
-  type: string;
-  debit: number;
-  credit: number;
-  balance: number;
+  type: string | null;
+  sourceRows?: Array<{lineNo:number;sourceAmount:string;amount:ReportMoney}>;
+  debit: ReportMoney;
+  credit: ReportMoney;
+  balance: ReportMoney;
 };
 
-export type CompanyTrialBalance = {
+export type CompanyTrialBalance = ReportSourceMetadata & {
   slug: string;
   selectedYear: string;
   /** True when the rows are the read-only #197 archived SaldoBalance. */
@@ -118,12 +119,12 @@ export type CompanyTrialBalance = {
   archivedSource: string | null;
   company: StatementCompany;
   fiscalYears: FiscalYearEntry[];
-  periodStart: string;
-  periodEnd: string;
+  periodStart: string | null;
+  periodEnd: string | null;
   rows: TrialBalanceRow[];
-  totalDebit: number;
-  totalCredit: number;
-  balanced: boolean;
+  totalDebit: ReportMoney;
+  totalCredit: ReportMoney;
+  balanced: boolean | null;
 };
 
 export type TrialBalanceResponse = {

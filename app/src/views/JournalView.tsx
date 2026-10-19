@@ -1,3 +1,4 @@
+import { ReportSourceNotice } from "../components/ReportSourceNotice";
 import * as stylex from "@stylexjs/stylex";
 import { ButtonLink, Button, Input, PageHeader } from "../components/ui";
 // Posteringer — the per-company journal (cockpit-redesign iteration 3).
@@ -18,12 +19,12 @@ import { useCapabilities } from "../lib/useCapabilities";
 import { useMemo, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
-import { formatKroner } from "../lib/format";
+import { formatKroner, compareMoney, moneyZero } from "../lib/format";
 // #379 — the EntryRow needs the slug to build the bilag-file URL on the fly.
 import { useAsync } from "../lib/useAsync";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { useDiscardGuard } from "../lib/useDiscardGuard";
-import type { CompanyJournal, JournalEntry } from "../lib/types";
+import type { CompanyJournal } from "../lib/types";
 import { ErrorState, Loading } from "../components/Feedback";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { ArchivedBanner } from "../components/ArchivedBanner";
@@ -35,7 +36,7 @@ export function JournalView() {
   const { slug = "" } = useParams();
   const [posting, setPosting] = useState(false);
   const { can } = useCapabilities();
-  const { year, setYear } = useCompanyYear();
+  const { year, source, setYear } = useCompanyYear();
   // An optional account drill-down: `?account=<accountNo>` filters the journal
   // to the entries that touch that account (set by the statement views).
   const [params, setParams] = useSearchParams();
@@ -81,25 +82,24 @@ export function JournalView() {
     journalLineId !== null;
 
   const state = useAsync<CompanyJournal>(
-    (signal) => api.journal(slug, year, account, { signal }),
-    [slug, year, account],
+    (signal) => api.journal(slug, year, account, { signal, ...(source ? {source} : {}) }),
+    [slug, year, account, source],
   );
 
   const filteredEntries = useMemo(() => {
     const entries = state.data?.entries ?? [];
     if (!hasActiveFilter) return entries;
     const needle = q.trim().toLowerCase();
-    const minN = amountMin === "" ? null : Number(amountMin);
-    const maxN = amountMax === "" ? null : Number(amountMax);
+
     return entries.filter((entry) => {
       if (journalEntryId !== null && entry.id !== journalEntryId) return false;
       if (journalLineId !== null && !entry.lines.some((line) => line.journalLineId === journalLineId)) return false;
       if (needle !== "" && !entryMatchesText(entry, needle)) return false;
       if (fromDate !== "" && entry.date < fromDate) return false;
       if (toDate !== "" && entry.date > toDate) return false;
-      if (minN !== null && !Number.isNaN(minN) && entry.total < minN)
+      if (amountMin !== "" && compareMoney(entry.total, amountMin) === -1)
         return false;
-      if (maxN !== null && !Number.isNaN(maxN) && entry.total > maxN)
+      if (amountMax !== "" && compareMoney(entry.total, amountMax) === 1)
         return false;
       return true;
     });
@@ -107,11 +107,12 @@ export function JournalView() {
 
   if (state.loading && !state.data)
     return <Loading label="Henter posteringer…" />;
-  if (state.error && !state.data)
+  if (state.error && (!state.data || state.data.archived || source === "archive"))
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const j = state.data!;
-  const currency = j.company.currency || "DKK";
+  const currency = j.declaredCurrency ?? j.company.currency ?? "DKK";
+  const selectedSource = j.selectedSource ?? source;
   const totalCount = j.entries.length;
   const matchCount = filteredEntries.length;
 
@@ -119,18 +120,19 @@ export function JournalView() {
     <section className="statement">
       {state.error && <div className="banner warning" role="alert">Status kunne ikke opdateres. De tidligere hentede oplysninger vises fortsat.</div>}
       <PageHeader title="Posteringer" actions={<><div className="row-actions">
-          {j.nativePosting && can("company.ledger.post") && <Button onClick={() => setPosting(true)}>Ny postering</Button>}
-          <ButtonLink className="btn secondary" to={`/companies/${slug}/saldobalance${j.selectedYear ? `?year=${encodeURIComponent(j.selectedYear)}` : ""}`}>Saldobalance</ButtonLink>
+          {!j.archived && j.nativePosting && can("company.ledger.post") && <Button onClick={() => setPosting(true)}>Ny postering</Button>}
+          <ButtonLink className="btn secondary" to={`/companies/${slug}/saldobalance${j.selectedYear ? `?year=${encodeURIComponent(j.selectedYear)}${selectedSource ? `&source=${selectedSource}` : ""}` : ""}`}>Saldobalance</ButtonLink>
           {/* #465 — revisor-anmodning: hele kassekladden som CSV. URL'en
               bærer den aktive konto-drilldown med, så ejeren kan eksportere
               "kun denne konto"-udsnittet direkte. */}
           <a
             className="btn secondary"
-            href={api.journalCsvUrl(slug, j.selectedYear, account ?? null)}
+            href={api.journalCsvUrl(slug, j.selectedYear, account ?? null, selectedSource)}
             download
           >
             Hent CSV
           </a>
+          <a className="btn secondary" href={api.journalPdfUrl(slug,j.selectedYear,account??null,selectedSource)} download>Hent PDF</a>
           <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
           </ButtonLink>
@@ -145,15 +147,17 @@ export function JournalView() {
 
       </PageHeader>
 
-      {posting && j.nativePosting && <ManualJournalForm slug={slug} currency={currency} options={j.nativePosting} onSaved={state.reload} onClose={() => setPosting(false)} />}
+      {!j.archived && posting && j.nativePosting && <ManualJournalForm slug={slug} currency={currency} options={j.nativePosting} onSaved={state.reload} onClose={() => setPosting(false)} />}
 
       <CompanyNav
         slug={slug}
         years={j.fiscalYears}
         selectedYear={j.selectedYear}
+        selectedSource={selectedSource}
         onYearChange={setYear}
       />
 
+      <ReportSourceNotice report={j} slug={slug}/>
       {j.archived && (
         <ArchivedBanner year={j.selectedYear} source={j.archivedSource} />
       )}
@@ -232,7 +236,7 @@ export function JournalView() {
       </div>
 
       <p className="statement-asof muted">
-        {j.periodStart} – {j.periodEnd} ·{" "}
+        {j.periodStart && j.periodEnd ? `${j.periodStart} – ${j.periodEnd}` : "Regnskabsperiodens grænser er ikke oplyst"} ·{" "}
         {hasActiveFilter
           ? `${matchCount} af ${totalCount} posteringer matcher`
           : `${totalCount} posteringer`}
@@ -251,7 +255,7 @@ export function JournalView() {
         <ul className="entry-list">
           {filteredEntries.map((entry) => (
             <EntryRow
-              key={entry.id}
+              key={entry.id ?? entry.sourceId}
               entry={entry}
               currency={currency}
               slug={slug}
@@ -266,7 +270,7 @@ export function JournalView() {
   );
 }
 
-function entryMatchesText(entry: JournalEntry, needle: string): boolean {
+function entryMatchesText(entry: CompanyJournal["entries"][number], needle: string): boolean {
   if (entry.entryNo.toLowerCase().includes(needle)) return true;
   if (entry.text.toLowerCase().includes(needle)) return true;
   for (const line of entry.lines) {
@@ -287,7 +291,7 @@ function EntryRow({
 }: {
   reversalRuleVersion?: string;
   onChanged?: () => void;
-  entry: JournalEntry;
+  entry: CompanyJournal["entries"][number];
   currency: string;
   slug: string;
   /**
@@ -326,7 +330,7 @@ function EntryRow({
           {entry.reversalOfEntryNo && <p>Tilbageførsel af {entry.reversalOfEntryNo}</p>}
           {entry.reversedByEntryNo && <p>Tilbageført ved {entry.reversedByEntryNo}</p>}
           {reversalRuleVersion && !archived && entry.reversalOfEntryId == null && entry.reversedByEntryId == null && can("company.ledger.post") && <Button variant="secondary" onClick={() => setReversing(true)}>Tilbagefør postering</Button>}
-          {reversing && reversalRuleVersion && <JournalReversalForm slug={slug} entry={entry} ruleVersion={reversalRuleVersion} onSaved={() => onChanged?.()} onClose={() => setReversing(false)} />}
+          {reversing && reversalRuleVersion && entry.id !== null && <JournalReversalForm slug={slug} entry={entry} ruleVersion={reversalRuleVersion} onSaved={() => onChanged?.()} onClose={() => setReversing(false)} />}
           <table className="data statement-table">
             <thead>
               <tr>
@@ -348,13 +352,14 @@ function EntryRow({
                     ) : null}
                   </td>
                   <td className="num">
-                    {line.debit ? formatKroner(line.debit, currency) : "—"}
+                    {moneyZero(line.debit) ? "—" : formatKroner(line.debit, currency)}
                   </td>
                   <td className="num">
-                    {line.credit ? formatKroner(line.credit, currency) : "—"}
+                    {moneyZero(line.credit) ? "—" : formatKroner(line.credit, currency)}
                   </td>
                   <td>
-                    {line.journalLineId === null ? (
+                    {line.sourceAmount && <details><summary>Original kildepost</summary><p>Kilde-ID: {line.sourceId}</p><p>Originalbeløb: {line.sourceAmount} · rapportsaldo: {formatKroner(line.balance ?? null,currency)}</p><p>Original dato: {line.date} · bilagstype: {line.voucherType} · momstype: {line.vatType}</p>{line.sourceRunningBalance !== null && line.sourceRunningBalance !== undefined && <p>Original løbende saldo: {line.sourceRunningBalance}</p>}</details>}
+                    {archived || line.journalLineId === null || typeof line.debit !== "number" || typeof line.credit !== "number" ? (
                       <span className="muted">Ingen dimensionshistorik</span>
                     ) : (
                       <DimensionAssignments slug={slug} journalLineId={line.journalLineId} currency={currency} amountMinor={Math.round(Math.abs(line.debit - line.credit) * 100)} />

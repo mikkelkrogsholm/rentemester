@@ -505,7 +505,7 @@ describe("DashboardView — revisor-eksport discoverable (#373)", () => {
       screen.getByRole("heading", { name: /Revisor-eksport/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Generér og download/i }),
+      screen.getByRole("button", { name: "Generér og download" }),
     ).toBeInTheDocument();
   });
 
@@ -524,7 +524,7 @@ describe("DashboardView — revisor-eksport discoverable (#373)", () => {
       screen.queryByRole("heading", { name: /Revisor-eksport/i }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /Generér og download/i }),
+      screen.queryByRole("button", { name: "Generér og download" }),
     ).not.toBeInTheDocument();
   });
 });

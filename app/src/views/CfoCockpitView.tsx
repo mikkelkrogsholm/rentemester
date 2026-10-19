@@ -7,14 +7,7 @@ import { formatKroner, todayIso } from "../lib/format";
 import type { CfoAnalyticsResponse, CfoAnalyticsScope } from "../lib/types";
 import { useAsync } from "../lib/useAsync";
 
-// Native signed decimals stay strings through presentation; no binary-float round trip.
-function amountText(value: number | string, currency?: string): string {
-  if (!currency) return "—";
-  if (typeof value === "number") return formatKroner(value, currency);
-  const parts = /^(-?)(\d+)(?:\.(\d{1,2}))?$/.exec(value);
-  if (!parts) return "—";
-  return `${parts[1]}${parts[2]!.replace(/\B(?=(\d{3})+(?!\d))/g, ".")},${(parts[3] ?? "").padEnd(2,"0")} ${currency === "DKK" ? "kr." : currency}`;
-}
+const amountText=(value:number|string,currency?:string)=>currency?formatKroner(value,currency):"—";
 
 function startOfYear(day: string): string { return `${day.slice(0, 4)}-01-01`; }
 

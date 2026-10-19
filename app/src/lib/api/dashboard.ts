@@ -7,6 +7,8 @@ import type {
   ObligationsResponse,
   OverviewResponse,
 } from "../types";
+import { checkedReportSource } from "./statements";
+import type { ReportSource } from "../types/common";
 import { request, type ReadRequestOptions } from "./_shared";
 
 export const dashboardApi = {
@@ -24,17 +26,18 @@ export const dashboardApi = {
       options,
     ).then((r) => r.fiscalYears.years),
 
-  overview: (slug: string, year?: string, asOf?: string, options?: ReadRequestOptions) => {
+  overview: (slug: string, year?: string, asOf?: string, options?: ReadRequestOptions & {source?:ReportSource}) => {
     const params = new URLSearchParams();
     if (year) params.set("year", year);
     if (asOf) params.set("asOf", asOf);
+    if (options?.source) params.set("source", options.source);
     const query = params.toString();
     return request<OverviewResponse>(
       `/api/companies/${encodeURIComponent(slug)}/overview${
         query ? `?${query}` : ""
       }`,
-      options,
-    ).then((r) => r.overview);
+      options ? {signal:options.signal} : undefined,
+    ).then((r) => checkedReportSource(r.overview,options?.source));
   },
 
   archive: (slug: string, year: string, options?: ReadRequestOptions) =>

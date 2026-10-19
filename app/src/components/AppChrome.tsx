@@ -59,7 +59,7 @@ function CompanyContextHeader() {
   const route = companyRouteForPath(location.pathname)!;
   const slug = location.pathname.match(/^\/companies\/([^/]+)/)?.[1] ?? '';
   const auth = useAuth();
-  const { year, setYear } = useCompanyYear();
+  const { year, source, setYear } = useCompanyYear();
   const shell = useCompanyShell();
   const navigate = useNavigate();
   const [menu, setMenu] = useState(false);
@@ -80,17 +80,17 @@ function CompanyContextHeader() {
     switchRead.current = controller;
     let nextYear: string | undefined;
     if (year) {
-      try { const years = await api.fiscalYears(nextSlug, { signal: controller.signal }); if (years.some((entry) => entry.label === year)) nextYear = year; } catch { /* Destination displays its own authoritative access/read error. */ }
+      try { const years = await api.fiscalYears(nextSlug, { signal: controller.signal }); if (years.some((entry) => entry.label === year && (!source || entry.source === source) && entry.selectable !== false)) nextYear = year; } catch { /* Destination displays its own authoritative access/read error. */ }
     }
     if (controller.signal.aborted) return;
     const permission = restricted[route.id] ?? 'company.read';
     const membership = auth.context?.companies.find((entry) => entry.slug === nextSlug);
     const allowed = !auth.hosted || (membership && ROUTE_PERMISSION_POLICY[membership.role].includes(permission));
     const destination = route.kind === 'page' && allowed ? route.segment : '';
-    navigate(`/companies/${encodeURIComponent(nextSlug)}${destination ? '/' + destination : ''}${nextYear ? '?year=' + encodeURIComponent(nextYear) : ''}`);
+    navigate(`/companies/${encodeURIComponent(nextSlug)}${destination ? '/' + destination : ''}${nextYear ? '?year=' + encodeURIComponent(nextYear) + (source ? '&source=' + encodeURIComponent(source) : '') : ''}`);
   }
   const scope = auth.backend === "rust" && route.id === "liquidity" ? "company" : companyYearScope(route.id);
   const styling = stylex.props(styles.context);
-  return <header {...styling} className={`${styling.className} company-context`}><div {...stylex.props(styles.identity)}><label>Virksomhed <Select aria-label="Skift virksomhed" value={slug} {...stylex.props(styles.picker)} onChange={(event) => void switchCompany(event.target.value)}>{!company && <option value={slug}>{slug}</option>}{companies.data?.map((entry) => <option value={entry.slug} key={entry.slug}>{entry.name}{entry.archived ? ' (arkiv)' : ''}</option>)}</Select></label>{company?.archived && <span role="status">Arkiveret virksomhed · læseadgang</span>}<span {...stylex.props(styles.scope)}>{scope === 'company' ? 'Hele virksomheden' : scope === 'multi-year' ? 'Flere regnskabsår' : scope === 'vat-period' ? 'Momsperiode vælges på siden' : 'Regnskabsår'}</span></div>{scope === 'year' && shell?.controls?.slug === slug && <YearSelector years={shell.controls.years} selected={year ?? shell.controls.selected} onChange={setYear} />}<Button variant="secondary" className="mobile-menu-trigger" aria-haspopup="dialog" aria-expanded={menu} aria-controls={menuId} onClick={() => setMenu(true)}>Menu</Button>{menu && <Dialog id={menuId} title="Virksomhedsnavigation" onClose={() => setMenu(false)}><div className="navigation-dialog-actions"><Button variant="secondary" onClick={() => setMenu(false)}>Luk menu</Button></div><TaskLinks onNavigate={() => setMenu(false)} /></Dialog>}</header>;
+  return <header {...styling} className={`${styling.className} company-context`}><div {...stylex.props(styles.identity)}><label>Virksomhed <Select aria-label="Skift virksomhed" value={slug} {...stylex.props(styles.picker)} onChange={(event) => void switchCompany(event.target.value)}>{!company && <option value={slug}>{slug}</option>}{companies.data?.map((entry) => <option value={entry.slug} key={entry.slug}>{entry.name}{entry.archived ? ' (arkiv)' : ''}</option>)}</Select></label>{company?.archived && <span role="status">Arkiveret virksomhed · læseadgang</span>}<span {...stylex.props(styles.scope)}>{scope === 'company' ? 'Hele virksomheden' : scope === 'multi-year' ? 'Flere regnskabsår' : scope === 'vat-period' ? 'Momsperiode vælges på siden' : 'Regnskabsår'}</span></div>{scope === 'year' && shell?.controls?.slug === slug && <YearSelector years={shell.controls.years} selected={year ?? shell.controls.selected} source={source ?? shell.controls.source} onChange={setYear} />}<Button variant="secondary" className="mobile-menu-trigger" aria-haspopup="dialog" aria-expanded={menu} aria-controls={menuId} onClick={() => setMenu(true)}>Menu</Button>{menu && <Dialog id={menuId} title="Virksomhedsnavigation" onClose={() => setMenu(false)}><div className="navigation-dialog-actions"><Button variant="secondary" onClick={() => setMenu(false)}>Luk menu</Button></div><TaskLinks onNavigate={() => setMenu(false)} /></Dialog>}</header>;
 }
 export function SkipLink() { return <a href="#main-content" className="skip-link" onClick={(event) => { event.preventDefault(); document.getElementById('main-content')?.focus(); }}>Spring til indhold</a>; }

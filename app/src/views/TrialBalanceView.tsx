@@ -1,3 +1,4 @@
+import { ReportSourceNotice } from "../components/ReportSourceNotice";
 import { ButtonLink, PageHeader } from "../components/ui";
 // Saldobalance — the per-company trial balance (cockpit-redesign iteration 2).
 //
@@ -21,10 +22,10 @@ import {
 
 export function TrialBalanceView() {
   const { slug = "" } = useParams();
-  const { year, setYear } = useCompanyYear();
+  const { year, source, setYear } = useCompanyYear();
   const state = useAsync<CompanyTrialBalance>(
-    (signal) => api.trialBalance(slug, year, { signal }),
-    [slug, year],
+    (signal) => api.trialBalance(slug, year, { signal, ...(source ? {source} : {}) }),
+    [slug, year, source],
   );
 
   if (state.loading && !state.data)
@@ -33,26 +34,29 @@ export function TrialBalanceView() {
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const t = state.data!;
-  const currency = t.company.currency || "DKK";
+  const currency = t.declaredCurrency ?? t.company.currency ?? "DKK";
+  const selectedSource = t.selectedSource ?? source;
 
   return (
     <section className="statement">
       <PageHeader title="Saldobalance" actions={<><div className="row-actions">
           {/* #372 — "Hent CSV". #463 — "Hent PDF" som printbar version. */}
+          {t.completeness && t.completeness.status !== "ready" ? <p>CSV og PDF kræver et fuldstændigt rapportgrundlag.</p> : <>
           <a
             className="btn secondary"
-            href={api.statementCsvUrl(slug, "trial-balance", t.selectedYear)}
+            href={api.statementCsvUrl(slug, "trial-balance", t.selectedYear, selectedSource)}
             download
           >
             Hent CSV
           </a>
           <a
             className="btn secondary"
-            href={api.statementPdfUrl(slug, "trial-balance", t.selectedYear)}
+            href={api.statementPdfUrl(slug, "trial-balance", t.selectedYear, selectedSource)}
             download
           >
             Hent PDF
           </a>
+          </>}
           <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
           </ButtonLink>
@@ -71,14 +75,16 @@ export function TrialBalanceView() {
         slug={slug}
         years={t.fiscalYears}
         selectedYear={t.selectedYear}
+        selectedSource={selectedSource}
         onYearChange={setYear}
       />
 
+      <ReportSourceNotice report={t} slug={slug}/>
       {t.archived && (
         <ArchivedBanner year={t.selectedYear} source={t.archivedSource} />
       )}
       <p className="statement-asof muted">
-        {t.periodStart} – {t.periodEnd}
+        {t.periodStart && t.periodEnd ? `${t.periodStart} – ${t.periodEnd}` : "Arkiveret afslutningssnapshot — dato ikke oplyst"}{t.archived && " · Afslutningssaldi, ikke årets debet-/kreditomsætning"}
       </p>
       <div className="card statement-card table-scroll">
         <table className="data statement-table">
@@ -95,7 +101,7 @@ export function TrialBalanceView() {
             {t.rows.length === 0 ? (
               <tr>
                 <td colSpan={5} className="empty-inline">
-                  Ingen posteringer i året.
+                  {t.completeness?.status === "unavailable" ? "Afslutningssaldi ikke tilgængelige." : "Ingen posteringer i året."}
                 </td>
               </tr>
             ) : (
@@ -108,12 +114,13 @@ export function TrialBalanceView() {
                         slug,
                         t.selectedYear,
                         row.accountNo,
+                        selectedSource,
                       )}
                     >
                       {row.accountNo}
                     </Link>
                   </td>
-                  <td>{row.name}</td>
+                  <td>{row.name}{row.sourceRows && <details><summary>Oprindelige saldi for konto {row.accountNo}</summary>{row.sourceRows.map(source=><p key={source.lineNo}>Række {source.lineNo}: {source.sourceAmount} · rapportbeløb {formatKroner(source.amount,currency)}</p>)}</details>}</td>
                   <td className="num">
                     {formatKroner(row.debit, currency)}
                   </td>
@@ -142,7 +149,7 @@ export function TrialBalanceView() {
         </table>
       </div>
       <p className={`statement-check ${t.balanced ? "ok" : "alert"}`}>
-        {t.balanced
+        {t.balanced === null ? "Saldobalancens kontrol kan ikke opgøres med det tilgængelige grundlag." : t.balanced
           ? "Saldobalancen stemmer — debet = kredit."
           : "Saldobalancen stemmer ikke. Kontrollér ledgeren."}
       </p>

@@ -1,7 +1,7 @@
 // Dashboard + Overblik wire types.
 
 import type { ExceptionRow } from "./exceptions";
-import type { FiscalYearEntry } from "./common";
+import type { FiscalYearEntry, ReportMoney, ReportSourceMetadata } from "./common";
 
 export type InvoiceRow = {
   invoiceNumber: string;
@@ -97,11 +97,12 @@ export type OverviewExceptionGroup = {
 };
 
 export type OverviewRecentEntry = {
-  id: number;
+  id: number | null;
+  sourceId?: string; sourceAmount?: string;
   entryNo: string;
   date: string;
   text: string;
-  amount: number;
+  amount: ReportMoney;
 };
 
 /**
@@ -134,7 +135,9 @@ export type OverviewVat = {
   errors?: string[];
 };
 
-export type CompanyOverview = {
+export type ArchiveOverviewMonth = {month:string;label:string;income:ReportMoney;expense:ReportMoney;status:"ready"|"incomplete"};
+
+export type CompanyOverview = ReportSourceMetadata & {
   slug: string;
   selectedYear: string;
   /** True when the figures are derived from the #197 archive, not the ledger. */
@@ -151,40 +154,45 @@ export type CompanyOverview = {
   };
   fiscalYears: FiscalYearEntry[];
   profitAndLoss: {
-    omsaetning: number;
-    udgifter: number;
-    resultat: number;
-    months: OverviewMonth[];
+    omsaetning: ReportMoney;
+    udgifter: ReportMoney;
+    resultat: ReportMoney;
+    months: Array<OverviewMonth | ArchiveOverviewMonth>;
   };
   bank: {
     /** Booked ledger balance of the bank/cash accounts at the year end, kroner. */
-    balance: number;
+    balance: ReportMoney;
     /** Actual statement balance (latest imported `balance_after`), kroner; null when unknown. */
-    actualBalance: number | null;
+    actualBalance: ReportMoney;
     /** balance − actualBalance; the unreconciled gap, kroner; null when unknown. */
-    difference: number | null;
+    difference: ReportMoney;
+    status?: "unavailable";
     bankStatementStatus?: "known" | "no-balance-column" | "none" | "unavailable";
     bankStatementProblem?: string | null;
   };
   /** Money owed TO the company — open issued-invoice balances at year end. */
   receivables: {
     /** Number of issued invoices still carrying an open balance. */
-    openCount: number;
+    openCount: number | null;
+    status?: "unavailable";
     /** Sum of the open balances, kroner. */
-    openTotal: number;
+    openTotal: ReportMoney;
     asOfDate?: string;
     basis?: "current";
   } | null;
-  payables?: { openCount: number; openTotal: number; asOfDate: string };
+  payables?: { openCount: number; openTotal: ReportMoney; asOfDate: string };
   documents?: { linkedCount: number; unlinkedCount: number; basis: "current" };
   availability?: { exceptionReview: boolean; accountantExport: boolean; historicalReceivables: boolean };
   /** The half-yearly VAT position; null for an archived year. */
   vat: OverviewVat | null;
   exceptions: {
-    count: number;
+    count: number | null;
+    status?: "unavailable";
     rows: OverviewExceptionRow[];
     groups: OverviewExceptionGroup[];
   };
+  activity?: {status:"ready"|"incomplete";unclassifiedAccounts: import("./common").ArchiveAccountEvidence[]};
+  operationalState?: "unavailable";
   recentEntries: OverviewRecentEntry[];
   /** Transaction date of the most recent posted entry; null when none. */
   lastPostedDate: string | null;

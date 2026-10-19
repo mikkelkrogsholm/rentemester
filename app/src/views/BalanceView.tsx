@@ -1,3 +1,4 @@
+import { ReportSourceNotice } from "../components/ReportSourceNotice";
 import { ButtonLink, PageHeader } from "../components/ui";
 // Balance — the per-company balance sheet (cockpit-redesign iteration 2).
 //
@@ -26,17 +27,17 @@ import {
 } from "../components/CompanyNav";
 
 /** Render a prior-year amount cell — «—» when no prior year exists. */
-function priorCell(amount: number | null, currency: string) {
+function priorCell(amount: import("../lib/types/common").ReportMoney, currency: string) {
   if (amount === null) return "—";
   return formatKroner(amount, currency);
 }
 
 export function BalanceView() {
   const { slug = "" } = useParams();
-  const { year, setYear } = useCompanyYear();
+  const { year, source, setYear } = useCompanyYear();
   const state = useAsync<CompanyBalance>(
-    (signal) => api.balance(slug, year, { signal }),
-    [slug, year],
+    (signal) => api.balance(slug, year, { signal, ...(source ? {source} : {}) }),
+    [slug, year, source],
   );
 
   if (state.loading && !state.data) return <Loading label="Henter balance…" />;
@@ -44,27 +45,31 @@ export function BalanceView() {
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const b = state.data!;
-  const currency = b.company.currency || "DKK";
+  const currency = b.declaredCurrency ?? b.company.currency ?? "DKK";
+  const selectedSource = b.selectedSource ?? source;
   const priorYear = String(parseInt(b.selectedYear, 10) - 1);
+  const priorHeading = b.priorAsOfDate === null ? "Sammenligning ikke tilgængelig" : `Pr. ${b.priorAsOfDate ?? `${priorYear}-12-31`}`;
 
   return (
     <section className="statement">
       <PageHeader title="Balance" actions={<><div className="row-actions">
           {/* #372 — "Hent CSV". #463 — "Hent PDF" som ren printbar version. */}
+          {b.completeness && b.completeness.status !== "ready" ? <p>CSV og PDF kræver et fuldstændigt rapportgrundlag.</p> : <>
           <a
             className="btn secondary"
-            href={api.statementCsvUrl(slug, "balance", b.selectedYear)}
+            href={api.statementCsvUrl(slug, "balance", b.selectedYear, selectedSource)}
             download
           >
             Hent CSV
           </a>
           <a
             className="btn secondary"
-            href={api.statementPdfUrl(slug, "balance", b.selectedYear)}
+            href={api.statementPdfUrl(slug, "balance", b.selectedYear, selectedSource)}
             download
           >
             Hent PDF
           </a>
+          </>}
           <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
           </ButtonLink>
@@ -83,21 +88,23 @@ export function BalanceView() {
         slug={slug}
         years={b.fiscalYears}
         selectedYear={b.selectedYear}
+        selectedSource={selectedSource}
         onYearChange={setYear}
       />
 
+      <ReportSourceNotice report={b} slug={slug}/>
       {b.archived && (
         <ArchivedBanner year={b.selectedYear} source={b.archivedSource} />
       )}
-      <p className="statement-asof muted">Pr. {b.asOfDate}</p>
+      <p className="statement-asof muted">{b.asOfDate ? `Pr. ${b.asOfDate}` : "Afslutningsdato ikke oplyst"}</p>
       <div className="card statement-card">
         <div className="table-scroll"><table className="data statement-table">
           <thead>
             <tr>
               <th>Konto</th>
               <th>Navn</th>
-              <th className="num">Pr. {b.asOfDate}</th>
-              <th className="num">Pr. {b.priorAsOfDate ?? `${priorYear}-12-31`}</th>
+              <th className="num">{b.asOfDate ? `Pr. ${b.asOfDate}` : "Afslutningsdato ikke oplyst"}</th>
+              <th className="num">{priorHeading}</th>
             </tr>
           </thead>
           <BalanceSection
@@ -109,6 +116,7 @@ export function BalanceView() {
             currency={currency}
             slug={slug}
             year={b.selectedYear}
+            source={selectedSource}
           />
           <BalanceSection
             heading="Passiver"
@@ -119,6 +127,7 @@ export function BalanceView() {
             currency={currency}
             slug={slug}
             year={b.selectedYear}
+            source={selectedSource}
           />
           <BalanceSection
             heading="Egenkapital"
@@ -129,6 +138,7 @@ export function BalanceView() {
             currency={currency}
             slug={slug}
             year={b.selectedYear}
+            source={selectedSource}
           />
           <tbody>
             <tr className="statement-result">
@@ -157,15 +167,17 @@ function BalanceSection({
   currency,
   slug,
   year,
+  source,
 }: {
   heading: string;
   lines: BalanceLine[];
-  total: number;
-  priorTotal: number | null;
+  total: import("../lib/types/common").ReportMoney;
+  priorTotal: import("../lib/types/common").ReportMoney;
   totalLabel: string;
   currency: string;
   slug: string;
   year: string;
+  source?: "live" | "archive";
 }) {
   return (
     <tbody>
@@ -189,7 +201,7 @@ function BalanceSection({
               ) : (
                 <Link
                   className="account-link"
-                  to={accountPostingsTo(slug, year, line.accountNo)}
+                  to={accountPostingsTo(slug, year, line.accountNo, source)}
                 >
                   {line.accountNo}
                 </Link>
@@ -212,10 +224,10 @@ function BalanceSection({
   );
 }
 
-function BalanceCheck({ balanced }: { balanced: boolean }) {
+function BalanceCheck({ balanced }: { balanced: boolean | null }) {
   return (
     <p className={`statement-check ${balanced ? "ok" : "alert"}`}>
-      {balanced
+      {balanced === null ? "Balancens kontrol kan ikke opgøres med det tilgængelige grundlag." : balanced
         ? "Balancen stemmer — aktiver = passiver + egenkapital."
         : "Balancen stemmer ikke. Kontrollér ledgeren."}
     </p>

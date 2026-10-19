@@ -76,3 +76,16 @@ export type StatementCompany = {
 
 /** The three VAT settlement cadences a Danish company can be registered for. */
 export type VatPeriodType = "month" | "quarter" | "half-year";
+
+export type ReportMoney = number | string | null;
+export type ReportSource = "live" | "archive";
+export type ArchiveAccountEvidence = { accountNo: string; name: string; type: string | null; normalBalance: string | null; amount: ReportMoney; sourceRows: Array<{ lineNo: number; sourceAmount: string; amount: ReportMoney }> };
+export type ReportSourceMetadata = {
+  ledgerBasis?: "native_ledger_only";
+  fiscalYears?: FiscalYearEntry[];
+  source?: ReportSource; selectedSource?: ReportSource; declaredCurrency?: string;
+  periodStart?: string | null; periodEnd?: string | null;
+  evidence?: { importId: number; sourceHash: string; parserContract: string; declaredCurrency: string; sourceSystem: string; classificationSource: string; periodBasis: string; observedPostingStart: string | null; observedPostingEnd: string | null };
+  completeness?: { status: "ready" | "incomplete" | "unavailable"; reasons: string[]; hasBalanceFile: boolean; closingBalanceCount: number; unclassifiedAccounts: ArchiveAccountEvidence[] };
+  comparison?: { status: "available" | "unavailable"; reason: string | null };
+};

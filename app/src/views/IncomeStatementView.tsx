@@ -1,3 +1,4 @@
+import { ReportSourceNotice } from "../components/ReportSourceNotice";
 import { ButtonLink, PageHeader } from "../components/ui";
 // Resultatopgørelse — the per-company income statement (cockpit-redesign it. 2).
 //
@@ -8,7 +9,7 @@ import { ButtonLink, PageHeader } from "../components/ui";
 
 import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
-import { formatKroner } from "../lib/format";
+import { formatKroner, moneyNegative } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
 import type { CompanyIncomeStatement, IncomeStatementLine } from "../lib/types";
 import { ErrorState, Loading } from "../components/Feedback";
@@ -21,10 +22,10 @@ import {
 
 export function IncomeStatementView() {
   const { slug = "" } = useParams();
-  const { year, setYear } = useCompanyYear();
+  const { year, source, setYear } = useCompanyYear();
   const state = useAsync<CompanyIncomeStatement>(
-    (signal) => api.incomeStatement(slug, year, { signal }),
-    [slug, year],
+    (signal) => api.incomeStatement(slug, year, { signal, ...(source ? {source} : {}) }),
+    [slug, year, source],
   );
 
   if (state.loading && !state.data)
@@ -33,29 +34,32 @@ export function IncomeStatementView() {
     return <ErrorState message={state.error} onRetry={state.reload} />;
 
   const s = state.data!;
-  const currency = s.company.currency || "DKK";
-  const priorYear = s.priorYearLabel ?? String(parseInt(s.selectedYear, 10) - 1);
-  const positive = s.result >= 0;
+  const currency = s.declaredCurrency ?? s.company.currency ?? "DKK";
+  const selectedSource = s.selectedSource ?? source;
+  const priorYear = s.priorYearLabel === null ? "Sammenligning ikke tilgængelig" : s.priorYearLabel ?? String(parseInt(s.selectedYear, 10) - 1);
+  const positive = !moneyNegative(s.result);
 
   return (
     <section className="statement">
       <PageHeader title="Resultatopgørelse" actions={<><div className="row-actions">
           {/* #372 — CSV-eksport til Excel/Numbers/Sheets.
               #463 — PDF-eksport, ren printbar uden cockpit-chrome. */}
+          {s.completeness && s.completeness.status !== "ready" ? <p>CSV og PDF kræver et fuldstændigt rapportgrundlag.</p> : <>
           <a
             className="btn secondary"
-            href={api.statementCsvUrl(slug, "income-statement", s.selectedYear)}
+            href={api.statementCsvUrl(slug, "income-statement", s.selectedYear, selectedSource)}
             download
           >
             Hent CSV
           </a>
           <a
             className="btn secondary"
-            href={api.statementPdfUrl(slug, "income-statement", s.selectedYear)}
+            href={api.statementPdfUrl(slug, "income-statement", s.selectedYear, selectedSource)}
             download
           >
             Hent PDF
           </a>
+          </>}
           <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>
             Administrér
           </ButtonLink>
@@ -74,9 +78,11 @@ export function IncomeStatementView() {
         slug={slug}
         years={s.fiscalYears}
         selectedYear={s.selectedYear}
+        selectedSource={selectedSource}
         onYearChange={setYear}
       />
 
+      <ReportSourceNotice report={s} slug={slug}/>
       {s.archived && (
         <ArchivedBanner year={s.selectedYear} source={s.archivedSource} />
       )}
@@ -99,6 +105,7 @@ export function IncomeStatementView() {
             currency={currency}
             slug={slug}
             year={s.selectedYear}
+            source={selectedSource}
           />
           <StatementSection
             heading="Udgifter"
@@ -109,9 +116,10 @@ export function IncomeStatementView() {
             currency={currency}
             slug={slug}
             year={s.selectedYear}
+            source={selectedSource}
           />
           <tbody>
-            <tr className={`statement-result ${positive ? "positive" : "negative"}`}>
+            <tr className={`statement-result ${s.result === null ? "" : positive ? "positive" : "negative"}`}>
               <td colSpan={2}>Årets resultat</td>
               <td className="num">{formatKroner(s.result, currency)}</td>
               <td className="num">
@@ -134,15 +142,17 @@ function StatementSection({
   currency,
   slug,
   year,
+  source,
 }: {
   heading: string;
   lines: IncomeStatementLine[];
-  total: number;
-  priorTotal: number;
+  total: import("../lib/types/common").ReportMoney;
+  priorTotal: import("../lib/types/common").ReportMoney;
   totalLabel: string;
   currency: string;
   slug: string;
   year: string;
+  source?: "live" | "archive";
 }) {
   return (
     <tbody>
@@ -161,7 +171,7 @@ function StatementSection({
             <td className="account-no">
               <Link
                 className="account-link"
-                to={accountPostingsTo(slug, year, line.accountNo)}
+                to={accountPostingsTo(slug, year, line.accountNo, source)}
               >
                 {line.accountNo}
               </Link>
