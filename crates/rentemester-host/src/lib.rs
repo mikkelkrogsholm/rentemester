@@ -1275,3 +1275,4 @@ impl Owner{
 }
 
 mod workspace_inbox;
+mod corporate_records;

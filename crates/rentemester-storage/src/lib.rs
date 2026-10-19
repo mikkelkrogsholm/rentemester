@@ -1,4 +1,5 @@
 //! Source-read-only reports/rehearsals and caller-owned transactional primitives.
+pub mod corporate_records;
 pub mod company_knowledge;
 pub mod parties;
 use rentemester_engine::{

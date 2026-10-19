@@ -1,4 +1,5 @@
 //! Shared use-case policy. Trusted adapters own authentication and current source observations.
+pub mod corporate_records;
 pub mod company_knowledge;
 pub mod parties;
 pub mod access;

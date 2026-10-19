@@ -3,6 +3,7 @@ mod saft;
 mod company_knowledge;
 mod workspace_inbox;
 mod parties;
+mod corporate_records;
 mod workspace_access;
 mod company_creation;
 mod accountant;
@@ -162,6 +163,12 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/recurring-invoices/{id}/retire",
             post(recurring_invoices::handle),
         )
+        .route("/api/companies/{slug}/corporate-records",get(corporate_records::handle).post(corporate_records::handle))
+        .route("/api/companies/{slug}/corporate-records/{id}",get(corporate_records::handle))
+        .route("/api/companies/{slug}/corporate-records/{id}/download",get(corporate_records::handle))
+        .route("/api/companies/{slug}/corporate-records/{id}/link",post(corporate_records::handle))
+        .route("/api/companies/{slug}/corporate-records/{id}/enrich",post(corporate_records::handle))
+        .route("/api/companies/{slug}/corporate-records/{id}/supersede",post(corporate_records::handle))
         .route(
             "/api/companies/{slug}/accruals",
             get(accruals::handle).post(accruals::handle),

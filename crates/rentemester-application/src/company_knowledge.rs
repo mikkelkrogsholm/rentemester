@@ -97,12 +97,22 @@ pub fn execute(
             }
             _ => None,
         };
-        if let Some((_, reference)) = source.filter(|s| s.0 == "party") {
+        if let Some((_, reference)) = source.as_ref().filter(|s| s.0 == "party") {
             let (visible, _) = crate::parties::company_sets(&tx, &current.subject, catalog)?;
-            let id = rentemester_engine::company_knowledge::trim(&reference);
+            let id = rentemester_engine::company_knowledge::trim(reference);
             if !rentemester_storage::parties::visible(&tx, id, &visible)? {
                 return Err(error("knowledge_source_unavailable"));
             }
+        }
+        if let Some((_, reference)) = source.as_ref().filter(|s| s.0 == "corporate_record") {
+            let (visible, writable) = crate::parties::company_sets(&tx, &current.subject, catalog)?;
+            crate::corporate_records::require_visible(
+                &tx,
+                rentemester_engine::company_knowledge::trim(reference),
+                &visible,
+                &writable,
+            )
+            .map_err(|_| error("knowledge_source_unavailable"))?;
         }
         let id = if matches!(action, Action::Propose(_) | Action::Supersede(_)) {
             format!(

@@ -96,3 +96,10 @@ describe("WorkspaceRegistryView", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Din rolle har ikke adgang");
   });
 });
+
+test("corporate metadata stays visible while sensitive detail denial exposes no original", async () => {
+ mockFetch({"GET /api/companies/synthetic-company/workspace-parties":{rows:[],count:0},"GET /api/companies/synthetic-company/corporate-records":records,"GET /api/companies/synthetic-company/corporate-records/record-visible":{__error:{code:"not_found",message:"Record kan ikke vises med aktuel adgang"}},"GET /api/companies/synthetic-company/knowledge":{context:{assertions:[],conflicts:[]}}});
+ renderAt(<WorkspaceRegistryView/>,{route:"/companies/synthetic-company/workspace-register",path:"/companies/:slug/workspace-register"});
+ await screen.findByText("articles.pdf");await userEvent.click(screen.getByRole("button",{name:"Vis record record-visible",exact:true}));expect(await screen.findByRole("alert")).toHaveTextContent("Record kan ikke vises");expect(screen.queryByRole("button",{name:"Hent original record-visible"})).not.toBeInTheDocument();
+ expect(screen.getByRole("combobox",{name:"Corporate record type",exact:true})).toBeInTheDocument();expect(screen.getByLabelText("Bekræft corporate record upload")).not.toBeChecked();
+});
