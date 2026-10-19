@@ -530,3 +530,5 @@ pub mod recurring_invoices;
 pub mod dashboard;
 
 pub mod accountant;
+
+pub mod exceptions;

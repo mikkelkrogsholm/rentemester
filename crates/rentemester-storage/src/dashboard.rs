@@ -30,8 +30,7 @@ fn ratio(n: &Value, d: &Value) -> Result<Value, Error> {
         .ok_or_else(|| invalid("overview ratio out of range"))
 }
 fn exceptions(tx: &Transaction<'_>) -> Result<Value, Error> {
-    let mut q=tx.prepare("SELECT id,type,severity,message,required_action FROM exceptions WHERE status='open' ORDER BY id DESC").map_err(invalid)?;
-    let rows=q.query_map([],|r|Ok(json!({"id":r.get::<_,i64>(0)?,"type":r.get::<_,String>(1)?,"severity":r.get::<_,String>(2)?,"message":r.get::<_,String>(3)?,"requiredAction":r.get::<_,Option<String>>(4)?}))).map_err(invalid)?.collect::<Result<Vec<_>,_>>().map_err(invalid)?;
+    let rows = crate::exceptions::rows(tx, "open")?;
     let mut groups = std::collections::BTreeMap::<String, (usize, u8)>::new();
     for row in &rows {
         let rank = match row["severity"].as_str() {
@@ -186,7 +185,7 @@ pub fn read(
         .unwrap_or(Value::Null);
     let equity = amount(&snapshot.balance["equity"]["total"])?;
     Ok(
-        json!({"slug":slug,"selectedYear":year,"archived":false,"archivedSource":null,"company":base["company"],"fiscalYears":base["fiscalYears"],"periodStart":start,"periodEnd":end,"asOfDate":today,"profitAndLoss":{"omsaetning":snapshot.income_statement["totalIncome"],"udgifter":snapshot.income_statement["totalExpense"],"resultat":snapshot.income_statement["result"],"months":months},"bank":{"balance":bank["bookedBalance"],"actualBalance":bank["actualBalance"],"difference":bank["difference"],"bankStatementStatus":bank["bankStatementStatus"],"bankStatementProblem":bank["bankStatementProblem"]},"receivables":receivables,"payables":{"openCount":payables["count"],"openTotal":payables["totalOpenBalance"],"asOfDate":end},"documents":{"linkedCount":documents["linkedCount"],"unlinkedCount":documents["unlinkedCount"],"basis":"current"},"vat":vat,"exceptions":exceptions(tx)?,"recentEntries":recent,"lastPostedDate":last,"keyFigures":{"bruttomargin":ratio(&snapshot.income_statement["result"],&snapshot.income_statement["totalIncome"] )?,"egenkapitalandel":ratio(&number(&equity)?,&snapshot.balance["totalAssets"])?},"availability":{"exceptionReview":false,"accountantExport":true,"historicalReceivables":false}}),
+        json!({"slug":slug,"selectedYear":year,"archived":false,"archivedSource":null,"company":base["company"],"fiscalYears":base["fiscalYears"],"periodStart":start,"periodEnd":end,"asOfDate":today,"profitAndLoss":{"omsaetning":snapshot.income_statement["totalIncome"],"udgifter":snapshot.income_statement["totalExpense"],"resultat":snapshot.income_statement["result"],"months":months},"bank":{"balance":bank["bookedBalance"],"actualBalance":bank["actualBalance"],"difference":bank["difference"],"bankStatementStatus":bank["bankStatementStatus"],"bankStatementProblem":bank["bankStatementProblem"]},"receivables":receivables,"payables":{"openCount":payables["count"],"openTotal":payables["totalOpenBalance"],"asOfDate":end},"documents":{"linkedCount":documents["linkedCount"],"unlinkedCount":documents["unlinkedCount"],"basis":"current"},"vat":vat,"exceptions":exceptions(tx)?,"recentEntries":recent,"lastPostedDate":last,"keyFigures":{"bruttomargin":ratio(&snapshot.income_statement["result"],&snapshot.income_statement["totalIncome"] )?,"egenkapitalandel":ratio(&number(&equity)?,&snapshot.balance["totalAssets"])?},"availability":{"exceptionReview":true,"accountantExport":true,"historicalReceivables":false}}),
     )
 }
 

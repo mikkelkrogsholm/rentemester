@@ -691,6 +691,21 @@ impl Owner {
             rentemester_application::bank::execute(c, l, g, context, action)
         })
     }
+    pub fn exceptions(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        action: rentemester_application::exceptions::Action<'_>,
+    ) -> Result<
+        Attempt<
+            Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, _, context| {
+            rentemester_application::exceptions::execute(c, l, context, action)
+        })
+    }
     pub fn accountant_export(
         &mut self,
         cookie: &VerifiedCookie,
