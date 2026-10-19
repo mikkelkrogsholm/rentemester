@@ -1,4 +1,6 @@
-//! Native source-document intake. No OCR, bookkeeping, duplicate override or replay.
+//! Native source-document intake and explicitly reviewed paid-receipt action.
+#[path = "expense.rs"]
+mod expense;
 use crate::{Session, document_state, invoice_state, readable};
 use base64::{Engine, engine::general_purpose::STANDARD};
 use gpui_kit::{
@@ -318,6 +320,10 @@ pub struct Documents {
     resolved: bool,
     selected: Option<i64>,
     download: Option<(PathBuf, String, String)>,
+    original_opened: bool,
+    original_reviewed: bool,
+    expense: Option<Entity<expense::Expense>>,
+    expense_pending: Option<Value>,
     busy: bool,
     status: String,
 }
@@ -352,6 +358,10 @@ impl Documents {
             resolved: false,
             selected: None,
             download: None,
+            original_opened: false,
+            original_reviewed: false,
+            expense: None,
+            expense_pending: None,
             busy: false,
             status: String::new(),
         };
@@ -390,15 +400,21 @@ impl Documents {
         self.reviewed = false;
         self.resolved = false;
         self.download = None;
+        self.original_opened = false;
+        self.original_reviewed = false;
         self.status = "Henter kanoniske bilag og originalidentiteter…".into();
         let session = self.session.clone();
         let company = self.company.clone();
         let task = cx.background_executor().spawn(async move {
-            Ok::<_, String>((read(&session, &company)?, document_state::load()?))
+            Ok::<_, String>((
+                read(&session, &company)?,
+                document_state::load()?,
+                expense::pending()?,
+            ))
         });
-        cx.spawn_in(window,async move|view,cx|{let result=task.await;let _=view.update_in(cx,|this,window,cx|{this.busy=false;match result{Ok((data,pending))=>{
+        cx.spawn_in(window,async move|view,cx|{let result=task.await;let _=view.update_in(cx,|this,window,cx|{this.busy=false;match result{Ok((data,pending,expense_pending))=>{
             this.reset_metadata(&data.profile,window,cx);
-            this.data=Some(data);this.pending=pending;this.status="Vælg en original og indtast metadata fra den. Serveren validerer filtype, indhold, dubletter og opbevaring; ingen OCR eller bogføring udføres her.".into();
+            this.data=Some(data);this.pending=pending;this.expense_pending=expense_pending;this.status="Vælg en original og indtast metadata fra den. Serveren validerer filtype, indhold, dubletter og opbevaring; ingen OCR eller bogføring udføres her.".into();
         },Err(error)=>this.status=error}cx.notify();});}).detach();
         cx.notify();
     }
@@ -469,6 +485,8 @@ impl Documents {
         self.source = None;
         self.data = None;
         self.download = None;
+        self.original_opened = false;
+        self.original_reviewed = false;
         self.status = "Sender den gennemgåede original og metadata én gang…".into();
         let session = self.session.clone();
         let origin = self.origin.clone();
@@ -488,6 +506,50 @@ impl Documents {
         cx.spawn_in(window,async move|view,cx|{let result=task.await;let _=view.update_in(cx,|this,_window,cx|{this.busy=false;match result{Ok((message,id,source_hash,data,pending))=>{this.status=message;this.pending=pending;this.selected=id;match data{Ok(data)=>{if let Some(id)=id{if let Some(document)=data.documents.iter().find(|v|v["id"]==id){if document["sha256Hash"]==source_hash{this.status.push_str(&format!(" Kanonisk SHA-256 {} svarer præcist til den gennemgåede kilde.",source_hash));}else{this.status.push_str(" Kanonisk hash afviger fra kilden; hent ikke denne original før manuel afklaring.");this.selected=None;}}else{this.status.push_str(" Kvittering bekræftet; genlæs for kanonisk identitet.");}}this.data=Some(data);},Err(error)=>this.status.push_str(&format!(" Genlæsning fejlede: {error}"))}},Err(error)=>{this.status=error;this.pending=document_state::load().ok().flatten();}}cx.notify();});}).detach();
         cx.notify();
     }
+    fn open_expense(
+        &mut self,
+        id: i64,
+        recovery: bool,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if self.busy || self.review.is_some() {
+            return;
+        }
+        let hash = if recovery {
+            None
+        } else {
+            if self.pending.is_some()
+                || self.expense_pending.is_some()
+                || !self.original_reviewed
+                || !self.original_opened
+            {
+                return;
+            }
+            let Some(document) = self
+                .data
+                .as_ref()
+                .and_then(|data| data.documents.iter().find(|row| row["id"] == id))
+            else {
+                return;
+            };
+            let Some((_, _, hash)) = &self.download else {
+                return;
+            };
+            if !expense::unposted(document) || document["sha256Hash"] != *hash {
+                return;
+            }
+            Some(hash.clone())
+        };
+        let session = self.session.clone();
+        let origin = self.origin.clone();
+        let company = self.company.clone();
+        let local = self.local.clone();
+        self.expense = Some(cx.new(|cx| {
+            expense::Expense::new(session, origin, company, local, id, hash, window, cx)
+        }));
+        cx.notify();
+    }
     fn original(&mut self, cx: &mut Context<Self>) {
         if self.busy {
             return;
@@ -500,6 +562,8 @@ impl Documents {
         };
         self.busy = true;
         self.download = None;
+        self.original_opened = false;
+        self.original_reviewed = false;
         self.status =
             "Henter præcis original via serverens autoriserede, hashkontrollerede læsning…".into();
         let session = self.session.clone();
@@ -535,6 +599,21 @@ impl Documents {
 }
 impl Render for Documents {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        if let Some(expense) = self.expense.clone() {
+            return div()
+                .flex()
+                .flex_col()
+                .gap_3()
+                .child(
+                    Button::new("expense-close")
+                        .label("Luk bogføring og genlæs bilag")
+                        .on_click(cx.listener(|this, _, window, cx| {
+                            this.expense = None;
+                            this.load(window, cx);
+                        })),
+                )
+                .child(expense);
+        }
         let blocked = self.busy || self.pending.is_some();
         let mut view = div()
             .flex()
@@ -579,6 +658,11 @@ impl Render for Documents {
                 view=view.child("Åbn den oprindelige bruger, virksomhed og profil for at afklare. Nye uploads er blokeret.");
             }
         }
+        if let Some(record) = &self.expense_pending {
+            let id = record["documentId"].as_i64().unwrap_or(0);
+            view=view.child(format!("Uafklaret bilagsbogføring: bilag{id} · bankrække{}. Ingen ny bogføring sendes før manuel afklaring.",record["bankTransactionId"]))
+            .child(Button::new("expense-recovery-open").label("Åbn manuel afklaring af bilagsbogføring").disabled(self.busy||id<=0).on_click(cx.listener(move|this,_,window,cx|this.open_expense(id,true,window,cx))));
+        }
         view = view.child(div().text_lg().child("Kanoniske bilag"));
         for document in &data.documents {
             let id = document["id"].as_i64().unwrap_or(0);
@@ -601,6 +685,8 @@ impl Render for Documents {
                     .on_click(cx.listener(move |this, _, _, cx| {
                         this.selected = Some(id);
                         this.download = None;
+                        this.original_opened = false;
+                        this.original_reviewed = false;
                         cx.notify();
                     })),
             );
@@ -626,6 +712,22 @@ impl Render for Documents {
                             .on_click(cx.listener(|this, _, _, cx| this.original(cx))),
                     );
             }
+            if let Some(document) = data.documents.iter().find(|document| document["id"] == id) {
+                view = view.child(
+                    Button::new("document-expense-open")
+                        .label("Bogfør betalt DKK-bilag")
+                        .disabled(
+                            self.busy
+                                || self.pending.is_some()
+                                || self.expense_pending.is_some()
+                                || !self.original_reviewed
+                                || !expense::unposted(document),
+                        )
+                        .on_click(cx.listener(move |this, _, window, cx| {
+                            this.open_expense(id, false, window, cx)
+                        })),
+                );
+            }
             if let Some((path, mime, hash)) = self.download.clone() {
                 view = view.child(format!(
                     "Privat original: {} · SHA-256 {hash}",
@@ -635,7 +737,23 @@ impl Render for Documents {
                     view = view.child(
                         Button::new("document-original-open")
                             .label("Åbn original i almindelig filviser")
-                            .on_click(move |_, _, cx| cx.open_url(&invoice_state::file_url(&path))),
+                            .on_click(cx.listener(move |this, _, _, cx| {
+                                cx.open_url(&invoice_state::file_url(&path));
+                                this.original_opened = true;
+                                cx.notify();
+                            })),
+                    );
+                    view = view.child(
+                        Checkbox::new("document-original-reviewed")
+                            .label("Jeg har gennemgået originalbilaget i filviseren før bogføring.")
+                            .checked(self.original_reviewed)
+                            .disabled(self.busy || !self.original_opened)
+                            .on_click(cx.listener(|this, checked, _, cx| {
+                                if this.original_opened {
+                                    this.original_reviewed = *checked;
+                                    cx.notify();
+                                }
+                            })),
                     );
                 } else {
                     view=view.child("JSON/XML er gemt privat som præcise originaler og åbnes ikke automatisk af appen.");
