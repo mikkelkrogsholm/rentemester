@@ -748,6 +748,20 @@ impl Owner {
             rentemester_application::multi_year::read(c, l, context, today)
         })
     }
+    pub fn obligations(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        today: &str,
+        year: Option<&str>,
+    ) -> Result<
+        Attempt<Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>>,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, _, context| {
+            rentemester_application::obligations::read(c, l, context, today, year)
+        })
+    }
     pub fn exceptions(
         &mut self,
         cookie: &VerifiedCookie,

@@ -1,4 +1,4 @@
-import { ButtonLink, Button, PageHeader } from "../components/ui";
+import { Button, ButtonLink, PageHeader } from "../components/ui";
 // Forpligtelser — the per-company obligations view (cockpit-redesign it. 7).
 //
 // Renders `/api/companies/:slug/obligations?year=`: the "hvad skylder jeg og
@@ -9,13 +9,14 @@ import { ButtonLink, Button, PageHeader } from "../components/ui";
 // a summary card above the table. All money fields are kroner — `formatKroner`
 // is used throughout.
 
+import { useState } from "react";
 import { useParams } from "react-router-dom";
+import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
+import { ErrorState, Loading } from "../components/Feedback";
 import { api } from "../lib/api";
 import { formatKroner, tastSelvNumber } from "../lib/format";
-import { useAsync } from "../lib/useAsync";
 import type { CompanyObligations, ObligationRow } from "../lib/types";
-import { ErrorState, Loading } from "../components/Feedback";
-import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
+import { useAsync } from "../lib/useAsync";
 
 export function ObligationsView() {
   const { slug = "" } = useParams();
@@ -57,6 +58,12 @@ export function ObligationsView() {
         onYearChange={setYear}
       />
 
+      {o.coverage && <div className="card" role="note">
+        <h2>Grundlag og begrænsninger</h2>
+        <p>Saldo pr. {o.asOfDate} · regnskabsår {o.periodStart} til {o.periodEnd}.</p>
+        <p>Samlet beløb omfatter bogført gæld og beregnet moms før eventuelle momsbetalinger. Det er ikke en bekræftet betalingsliste.</p>
+        <ul>{o.coverage.notes.map(note => <li key={note}>{note}</li>)}</ul>
+      </div>}
       {o.archived ? (
         <ArchivedNotice year={o.selectedYear} />
       ) : o.obligations.length === 0 ? (
@@ -107,7 +114,10 @@ export function ObligationsView() {
               <tbody>
                 {o.obligations.map((row, i) => (
                   <tr key={`${row.kind}-${row.accountNo ?? i}`}>
-                    <td>{row.label}</td>
+                    <td>{row.label}
+                      {row.note && <p className="muted">{row.note}</p>}
+                      {row.settlementStatus === "unknown" && <p className="muted">Betalingsstatus ukendt{row.provisional ? " · foreløbig momsperiode" : ""}</p>}
+                    </td>
                     <td className="account-no">{row.accountNo ?? "—"}</td>
                     <td className="entry-date">{row.dueDate ?? "—"}</td>
                     <td>
@@ -139,13 +149,13 @@ export function ObligationsView() {
               </tbody>
             </table>
           </div>
-          <p className="statement-check ok">
+          {!o.coverage && <p className="statement-check ok">
             Beløbene er læst direkte fra ledgeren. Frister vises hvor de kan
             udledes — moms efter virksomhedens momsperiode (måned, kvartal eller
             halvår), selskabsskat efter indkomståret, og årsrapporten til
             Erhvervsstyrelsen efter regnskabsåret; øvrige poster har ingen kendt
             dato.
-          </p>
+          </p>}
         </>
       )}
     </section>
@@ -218,6 +228,7 @@ function ObligationActions({
   slug: string;
   currency: string;
 }) {
+  const [copyStatus, setCopyStatus] = useState("");
   const external = EXTERNAL_LINK[row.kind];
   const copyAmount = async () => {
     if (row.kind === "annual-report") return;
@@ -226,8 +237,9 @@ function ObligationActions({
     const text = tastSelvNumber(row.amount);
     try {
       await navigator.clipboard.writeText(text);
+      setCopyStatus("Beløb kopieret");
     } catch {
-      // Clipboard API may be blocked (Safari permission, http) — silent fail.
+      setCopyStatus(`Kopiering mislykkedes. Beløb: ${text}`);
     }
   };
   return (
@@ -243,10 +255,20 @@ function ObligationActions({
         </a>
       )}
       {row.kind === "vat" && (
-        <ButtonLink className="btn small secondary" to={`/companies/${slug}/moms`}>
+        <ButtonLink className="btn small secondary" to={`/companies/${slug}/moms${row.periodStart ? `?year=${row.periodStart.slice(0, 4)}` : ""}`}>
           SKAT-rubrikker
         </ButtonLink>
       )}
+      {row.details && <details>
+        <summary>Momsgrundlag {row.periodStart} til {row.periodEnd}</summary>
+        <dl>
+          <dt>Salgsmoms</dt><dd>{formatKroner(row.details.outputVat, currency)}</dd>
+          <dt>Regulering af salgsmoms</dt><dd>{formatKroner(row.details.outputVatAdjustment, currency)}</dd>
+          <dt>Købsmoms</dt><dd>{formatKroner(row.details.inputVat, currency)}</dd>
+          <dt>Momstilsvar før betalinger</dt><dd>{formatKroner(row.details.payable, currency)}</dd>
+        </dl>
+      </details>}
+      {copyStatus && <span role="status">{copyStatus}</span>}
       {row.kind !== "annual-report" && (
         <Button variant="secondary"
           type="button"

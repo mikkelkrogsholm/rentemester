@@ -24,6 +24,12 @@ export type ObligationRow = {
   daysRemaining: number | null;
   /** The ledger account the figure was read from, when one applies. */
   accountNo: string | null;
+  note?: string;
+  periodStart?: string;
+  periodEnd?: string;
+  provisional?: boolean;
+  settlementStatus?: string;
+  details?: { outputVat: number; outputVatAdjustment: number; inputVat: number; payable: number };
 };
 
 export type CompanyObligations = {
@@ -36,6 +42,10 @@ export type CompanyObligations = {
   obligations: ObligationRow[];
   /** Sum of every obligation's amount, kroner. */
   totalOwed: number;
+  asOfDate?: string;
+  periodStart?: string;
+  periodEnd?: string;
+  coverage?: { complete: boolean; notes: string[] };
 };
 
 export type ObligationsResponse = {

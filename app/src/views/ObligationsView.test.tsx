@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { screen, within } from "@testing-library/react";
-import { ObligationsView } from "./ObligationsView";
+import { mockFetch, obligations } from "../test/fixtures";
 import { renderAt } from "../test/render";
-import { obligations, mockFetch } from "../test/fixtures";
+import { ObligationsView } from "./ObligationsView";
 
 function route(over = {}) {
   return {
@@ -170,4 +170,26 @@ describe("ObligationsView — Forpligtelser", () => {
       ),
     ).toBeInTheDocument();
   });
+});
+
+test("native coverage explains uncertain payments and missing annual deadline without a debt", async () => {
+  mockFetch(route({
+    coverage: { complete: false, notes: ["Indberettet betyder ikke betalt."] },
+    asOfDate: "2026-06-30", periodStart: "2025-07-01", periodEnd: "2026-06-30",
+    totalOwed: 25,
+    obligations: [
+      { kind: "vat", label: "Moms — Q4 2025", amount: 25, dueDate: "2026-03-02", daysRemaining: -10, accountNo: null, periodStart: "2025-10-01", periodEnd: "2025-12-31", settlementStatus: "unknown", details: { outputVat: 25, outputVatAdjustment: 0, inputVat: 0, payable: 25 } },
+      { kind: "annual-report", label: "Årsrapport — regnskabsår 2025/26", amount: 0, dueDate: null, daysRemaining: null, accountNo: null, note: "Regnskabsklasse mangler." },
+    ],
+  }));
+  renderView();
+  expect(await screen.findByText("Grundlag og begrænsninger")).toBeInTheDocument();
+  expect(screen.getByText("Indberettet betyder ikke betalt.")).toBeInTheDocument();
+  expect(screen.getByText("Betalingsstatus ukendt")).toBeInTheDocument();
+  expect(screen.getByText("Momsgrundlag 2025-10-01 til 2025-12-31")).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "SKAT-rubrikker" })).toHaveAttribute("href", "/companies/acme-aps/moms?year=2025");
+  const annual = screen.getByText("Årsrapport — regnskabsår 2025/26").closest("tr")!;
+  expect(within(annual).getByText("Ingen frist")).toBeInTheDocument();
+  expect(within(annual).queryByRole("button")).toBeNull();
+  expect(screen.queryByText(/Beløbene er læst direkte fra ledgeren/)).toBeNull();
 });
