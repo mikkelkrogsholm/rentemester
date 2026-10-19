@@ -577,12 +577,12 @@ pub fn require_contact_identity(
     if !any {
         return Ok(());
     }
-    if let Some(id) = id {
-        if !contact_fields(tx, table, id)?.is_empty() {
-            return Err(refused(
-                "erased contact identity cannot be changed or reintroduced",
-            ));
-        }
+    if let Some(id) = id
+        && !contact_fields(tx, table, id)?.is_empty()
+    {
+        return Err(refused(
+            "erased contact identity cannot be changed or reintroduced",
+        ));
     }
     let name = trimmed(Some(name));
     let cvr = trimmed(cvr);

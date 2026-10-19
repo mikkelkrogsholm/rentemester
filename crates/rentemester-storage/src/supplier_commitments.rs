@@ -440,7 +440,13 @@ pub fn list(tx: &Transaction<'_>, slug: &str, start: &str) -> Result<Value, Erro
         let mut q = tx.prepare(sql).map_err(invalid)?;
         let mut rs = q.query([]).map_err(invalid)?;
         while let Some(r) = rs.next().map_err(invalid)? {
-            options.push(json!({"kind":kind,"id":r.get::<_,i64>(0).map_err(invalid)?.to_string(),"date":r.get::<_,String>(1).map_err(invalid)?,"amount":wire(&legacy_money(r.get_ref(2).map_err(invalid)?)?)?,"currency":r.get::<_,String>(3).map_err(invalid)?,"label":r.get::<_,String>(4).map_err(invalid)?}));
+            let raw_amount = r.get_ref(2).map_err(invalid)?;
+            let amount = if kind == "bank_transaction" {
+                Money::default().subtract(&crate::bank::signed_money(raw_amount)?)
+            } else {
+                legacy_money(raw_amount)?
+            };
+            options.push(json!({"kind":kind,"id":r.get::<_,i64>(0).map_err(invalid)?.to_string(),"date":r.get::<_,String>(1).map_err(invalid)?,"amount":wire(&amount)?,"currency":r.get::<_,String>(3).map_err(invalid)?,"label":r.get::<_,String>(4).map_err(invalid)?}));
         }
     }
     let context = crate::sales::context(tx, slug, start, None)?;

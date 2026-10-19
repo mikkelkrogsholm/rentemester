@@ -63,7 +63,7 @@ fn canonical_evidence(tx: &Transaction<'_>, input: &Match) -> Result<Value, Erro
             (d, a, c, h, v.map(|n| format!("vendor:{n}")))
         }
         "bank_transaction" => {
-            let row:Option<(String,Money,String,String)>=tx.query_row("SELECT transaction_date,amount,currency,transaction_hash FROM bank_transactions WHERE id=?1",[id],|r|Ok((r.get(0)?,legacy_money(r.get_ref(1)?).map_err(|_|rusqlite::Error::InvalidQuery)?,r.get(2)?,r.get(3)?))).optional().map_err(invalid)?;
+            let row:Option<(String,Money,String,String)>=tx.query_row("SELECT transaction_date,amount,currency,transaction_hash FROM bank_transactions WHERE id=?1",[id],|r|Ok((r.get(0)?,crate::bank::signed_money(r.get_ref(1)?).map_err(|_|rusqlite::Error::InvalidQuery)?,r.get(2)?,r.get(3)?))).optional().map_err(invalid)?;
             let (d, a, c, h) = row.ok_or_else(|| refused("bank evidence required"))?;
             if !a.is_negative() {
                 return Err(refused("supplier match requires outgoing bank evidence"));

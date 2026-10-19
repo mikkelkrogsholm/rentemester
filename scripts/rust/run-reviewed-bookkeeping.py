@@ -6,6 +6,8 @@ REPO=Path(__file__).resolve().parents[2]
 def run(command,**kwargs):return subprocess.run(command,check=True,**kwargs)
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('--skip-build',action='store_true');p.add_argument('--server-binary',type=Path,help='Explicit built native server; use --skip-build for composed-main verification');p.add_argument('--web-dir',type=Path,help='Explicit built cockpit directory; use --skip-build for composed-main verification');args=p.parse_args()
+ revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip()
+ source_changes=subprocess.check_output(['git','diff','--name-only','--','crates','app/src','scripts/rust'],cwd=REPO,text=True).splitlines()
  if os.uname().sysname!='Darwin' or os.getuid()==0 or os.getuid()!=os.geteuid():raise RuntimeError('Ordinary macOS user required')
  os.umask(0o077)
  if not args.skip_build:
@@ -53,7 +55,7 @@ def main():
   run(['/opt/homebrew/bin/bun','run','scripts/rust/native-reviewed-fixture.ts'],cwd=REPO,env={**os.environ,'RM_REVIEW_BASE':origin,'RM_REVIEW_VERIFY':verification})
   stop();start()
   run(['/opt/homebrew/bin/bun','run','scripts/rust/native-reviewed-fixture.ts','--reopen'],cwd=REPO,env={**os.environ,'RM_REVIEW_BASE':origin})
-  report=Path('/tmp/rentemester-rust-reports/native-reviewed-bookkeeping.json');data=json.loads(report.read_text());data.update({'revision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip(),'binaryPath':str(binary),'webDirectory':str(web),'suppliedArtifacts':bool(args.server_binary or args.web_dir),'binarySha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'webIndexSha256':hashlib.sha256((web/'index.html').read_bytes()).hexdigest(),'launcherSha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'browserFixtureSha256':hashlib.sha256((REPO/'scripts/rust/native-reviewed-fixture.ts').read_bytes()).hexdigest(),'profile':'local-user-macos','stoppedBeforeOfflineSeed':True,'rootDirectoryLeaseHeldDuringSeed':True,'restartVerified':True});report.write_text(json.dumps(data,indent=2));report.chmod(0o600)
+  report=Path('/tmp/rentemester-rust-reports/native-reviewed-bookkeeping.json');data=json.loads(report.read_text());data.update({'revision':revision,'sourceChangesAtStart':source_changes,'binaryPath':str(binary),'webDirectory':str(web),'suppliedArtifacts':bool(args.server_binary or args.web_dir),'binarySha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'webIndexSha256':hashlib.sha256((web/'index.html').read_bytes()).hexdigest(),'launcherSha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'browserFixtureSha256':hashlib.sha256((REPO/'scripts/rust/native-reviewed-fixture.ts').read_bytes()).hexdigest(),'profile':'local-user-macos','stoppedBeforeOfflineSeed':True,'rootDirectoryLeaseHeldDuringSeed':True,'restartVerified':True});report.write_text(json.dumps(data,indent=2));report.chmod(0o600)
   print('PASS: isolated native two-user password/MFA bank review journey and restart; evidence '+str(report))
  finally:
   stop()

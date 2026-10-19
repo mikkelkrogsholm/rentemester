@@ -190,6 +190,54 @@ fn match_canonical_values_once_excludes_expected_forecast_without_posting() {
     assert!(serde_json::from_value::<Match>(json!({"commitmentId":"synthetic-contract","occurrenceDate":"2026-01-31","evidence":{"kind":"canonical_document","id":"1","amount":1},"confirm":true})).is_err());
 }
 #[test]
+fn outgoing_bank_options_and_matches_use_positive_cost_without_posting() {
+    let mut db = fixture();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    tx.execute_batch("INSERT INTO bank_transactions(id,transaction_date,text,amount,transaction_hash) VALUES(1,'2026-01-31','Synthetic outgoing',-10.01,'synthetic-outgoing'),(2,'2026-01-31','Synthetic incoming',10.01,'synthetic-incoming'),(3,'2026-01-31','Synthetic integer outgoing',-12,'synthetic-integer-outgoing');").unwrap();
+    let report = list(&tx, "synthetic", "2026-01-31").unwrap();
+    let options: Vec<_> = report["evidenceOptions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|v| v["kind"] == "bank_transaction")
+        .collect();
+    assert_eq!(options.len(), 2);
+    assert_eq!(
+        options.iter().find(|v| v["id"] == "1").unwrap()["amount"],
+        10.01
+    );
+    assert_eq!(
+        options.iter().find(|v| v["id"] == "3").unwrap()["amount"],
+        12.0
+    );
+    let i = input();
+    let p = plan(&tx, &i).unwrap();
+    apply(&tx, &apply_input(&i, &p), "synthetic", "now").unwrap();
+    let mut m: Match = serde_json::from_value(json!({"commitmentId":i.commitment_id,"occurrenceDate":"2026-01-31","evidence":{"kind":"bank_transaction","id":"2"},"confirm":true})).unwrap();
+    assert!(match_occurrence(&tx, &m, "synthetic", "now").is_err());
+    m.evidence.id = "1".into();
+    let matched = match_occurrence(&tx, &m, "synthetic", "now").unwrap();
+    assert_eq!(matched["variance"]["amount"], 0.0);
+    assert_eq!(
+        list(&tx, "synthetic", "2026-01-31").unwrap()["forecast"]["periods"][0]["commitments"],
+        0.0
+    );
+    assert_eq!(
+        tx.query_row("SELECT COUNT(*) FROM journal_entries", [], |r| r
+            .get::<_, i64>(0))
+            .unwrap(),
+        0
+    );
+    assert_eq!(
+        tx.query_row("SELECT amount FROM bank_transactions WHERE id=1", [], |r| r
+            .get::<_, f64>(0))
+            .unwrap(),
+        -10.01
+    );
+}
+#[test]
 fn no_opening_mapping_is_null_foreign_money_excluded_budget_is_informational() {
     let mut db = fixture();
     let tx = db

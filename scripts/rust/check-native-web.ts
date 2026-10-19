@@ -53,10 +53,14 @@ async function checkParallelFeature(page: import("@playwright/test").Page, featu
     await (await import("./check-native-domain-clients")).checkNativeDomainClients(page, base!, restarted);
     await (await import("./check-native-contact-delete")).checkNativeContactDelete(page, base!, restarted);
     await (await import("./check-native-bank-clients")).checkNativeBankClients(page, base!, restarted);
+    await (await import("./check-native-receivables-clients")).checkNativeReceivablesClients(page, base!, restarted);
     await (await import("./check-native-period-clients")).checkNativePeriodClients(page, base!, restarted);
     await (await import("./check-native-multi-year")).checkNativeMultiYear(page, base!, restarted);
     await (await import("./check-native-dimensions")).checkNativeDimensions(page, base!, restarted);
     await (await import("./check-native-exception-review")).checkNativeExceptionReview(page, base!, restarted);
+    await (await import("./check-native-commitments")).checkNativeCommitments(page, base!, restarted);
+    await (await import("./check-native-commitment-clients")).checkNativeCommitmentClients(page, base!, restarted);
+    await (await import("./check-native-gdpr")).checkNativeGdpr(page, base!, restarted);
     await (await import("./check-native-accountant")).checkNativeAccountant(page, base!, restarted);
     await (await import("./check-native-dashboard")).checkNativeDashboard(page, base!, restarted);
     await (await import("./check-native-integrity")).checkNativeIntegrity(page, base!);
