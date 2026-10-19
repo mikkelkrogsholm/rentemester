@@ -859,3 +859,85 @@ Dette forsøg brugte aktiv/egenkapital uden bilag. Genopretning efter mistet
 svar er afprøvet med en faktisk TCP-fejl og samme byte-anmodning; lokal
 portgenbinding har fokuserede persistens-/mismatchtests, men er endnu ikke
 separat afprøvet gennem det native vindue.
+
+## Leverandørforpligtelser og likviditetsplan
+
+På **Likviditet** vælges prognosens startdato for hele virksomheden. Opret en
+forpligtelse med eksisterende leverandør, originalt kildebilag, beløb og
+betalingsrytme. Gennemgå planen før godkendelse. En godkendt forekomst kan
+matches med et bilag, en kreditorpost eller en bankudbetaling. Pause og ophør
+kræver begrundelse og bevarer historikken. Planlægning og match bogfører ikke.
+
+De 13 uger viser bogført bank, åbne kunde-/leverandørposter og forventede
+forpligtelser. Manglende bankgrundlag vises som ukendt; beløb i andre valutaer
+omregnes ikke. Budgetbeløb uden betalingsdato bliver ikke opfundne betalinger.
+Prognosen oplyser manglende dækning og er fortsat under udbygning.
+
+CLI tilbyder `supplier-commitments`, `supplier-commitment-matches`,
+`plan-supplier-commitment`, `approve-supplier-commitment`,
+`change-supplier-commitment` og `match-supplier-commitment`; MCP har tilsvarende
+navne med understregning. Planen er en læsning; godkendelse og ændring bruger
+serverens aktuelle hash og udtrykkelig bekræftelse. Klienterne gentager ikke
+automatisk en anmodning med ukendt resultat.
+
+## Indsigt, anonymisering og opbevaring
+
+**GDPR** kan finde en person eller kontakt med navn og identifikator og vise
+indsigtsrapport, datakilder og opbevaringsgrundlag. Anonymisering kræver særskilt
+bekræftelse. Serverens dato afgør opbevaringskontrollen; klienten kan ikke flytte
+kontroldatoen. Beskyttede bilag og bogføringsdata bevares.
+
+Anonymisering bruger maskerede læsninger og uforanderlige registreringer.
+En anonymiseret identitet kan ikke genindføres gennem almindelig
+kontaktvedligeholdelse; andre kontakter kan fortsat vedligeholdes. Dækningen
+er udtrykkeligt delvis. Rapporten angiver de understøttede kilder og må ikke
+læses som en garanti for fysisk sletning af alle felter, originaler og backups.
+
+## Betalinger og original faktura gennem agentklienterne
+
+CLI's `settle-invoice`, `credit-invoice` og `refund-invoice` samt MCP's
+`settle_invoice`, `credit_invoice` og `refund_invoice` bruger serverens
+eksisterende bekræftede betalings-, kreditnota- og tilbagebetalingsforløb.
+De tager det præcise native JSON-input og tilføjer ingen idempotency-nøgle.
+Ved ukendt resultat kontrolleres faktura, bank og journal før næste handling.
+
+`invoice-pdf --company SLUG --id ID` og MCP's `invoice_pdf` læser den udstedte
+original med gældende bilagsadgang. Svaret indeholder PDF'ens nøjagtige bytes
+som JSON-heltal; læsningen opretter ingen lokale filer.
+
+## Flere native desktopforløb
+
+Desktopappen har nu fakturaforhåndsvisning, særskilt udstedelse og bogføring
+samt resultatopgørelse, balance, saldobalance og journal med regnskabsår.
+Build og fokuserede tests er bestået. Faktura- og rapportforløbene mangler
+fortsat accept gennem det rigtige native vindue; Mac'en var låst ved forsøget.
+Det ændrer ikke de tidligere verificerede native login-, lokalserver- og
+manuelle bogføringsforløb. Banklæsning, kontooprettelse og CSV-import med
+udtrykkelig gennemgang er også integreret og består native build og tests.
+Et ukendt importsvar bevares privat til manuel afklaring uden automatisk
+gentagelse. Bankforløbets test i det rigtige vindue afventer også oplåsning.
+
+## Årsrapport og skyldige beløb
+
+**Årsrapport** forbereder regnskabstal og tydeligt markerede skabeloner fra et
+valgt, lukket år. CVR og balancerede bøger skal være på plads; en genåbnet
+periode blokerer igen. Sammenligningstal bruger de samme Rust-beregninger som
+regnskabsrapporterne. Ejer eller revisor skal gennemgå skabelonerne og sørge
+for indberetning. Funktionen er ikke en indsendelse eller et færdigt
+myndighedsgodkendt dokument.
+
+CLI læser samme grundlag med `annual-report --company SLUG
+--fiscal-year-start YYYY-MM-DD --fiscal-year-end YYYY-MM-DD`; MCP bruger
+`annual_report` med `company`, `fiscalYearStart` og `fiscalYearEnd`.
+Manglende forudsætninger returneres uændret i rapporten. De nye læsninger
+består kontrakttests; samlet HTTP/CLI/MCP-kontrol er næste accepttrin.
+
+**Forpligtelser** viser kreditbalancer på gældskonti og særskilt momsgrundlag,
+så moms ikke tælles dobbelt. Manglende oplysninger om momsbetalinger og
+fristgrundlag vises som begrænsninger. Årsrapportens indberetningsrække har
+intet gældsbeløb; fristen står ukendt, når rapporteringsklasse og
+indberetningspligt ikke er fastlagt. Siden giver adgang til momsdetaljer,
+kopiering af beløb og eksterne indberetningssider uden at registrere betaling
+eller indsende noget. Begge sider er kontrolleret gennem den rigtige browser
+og efter servergenstart med syntetiske data, sammen med de tidligere
+bogføringsforløb.

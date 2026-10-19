@@ -1,14 +1,15 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "parallel-platform-5",
-  "code_revision": "git:b6f60a8b",
+  "current_increment": "parallel-platform-12",
+  "code_revision": "git:3acc4aaa",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "combined web/client/contact/dimensions/integrity and restart verified; bank independent-review delivery integrated awaiting actual two-user journey",
+  "state": "Actual annual/obligation web and earlier client journeys passed initial/restart; annual agent reads and native contacts now integrated, new actual HTTP/CLI/MCP annual qualification running.",
   "issues_closed": [],
   "next": [
-    "Verify bank→draft→independent reviewer→exactly-once post using actual separate MFA sessions.",
-    "Continue native invoice workflow, commitments/liquidity and retention/GDPR in isolated parallel worktrees."
+    "Finish actual full-response annual HTTP/CLI/MCP comparison and restart.",
+    "Integrate isolated dimension budget actuals, reviewed-bank agent workflow and native invoice receipt/credit/refund.",
+    "Complete actual native invoice/report/bank/contact window acceptance after human Mac unlock; all epic requirements remain subject to full completion audit."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,8 +20,8 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "code_revision": "git:12a200a9",
-    "state": "Combined domain/CLI/MCP/review/accountant web and restart verified; native Mac profile and remote GPUI password/MFA verified"
+    "code_revision": "git:b4b6ea37",
+    "state": "48 PASS checks plus obligations initial/restart; annual CVR/openyear/close/reopen/rebuild and all earlier server/web/client flows together"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -65,7 +66,66 @@
     "platform5_clippy": "/tmp/rm-platform5-clippy.log (PASS)",
     "platform5_web_build": "/tmp/rm-platform5-web-build.log (PASS)",
     "bank_drafts_integrated_clippy": "/tmp/rm-bank-drafts-integrated-clippy.log (PASS)",
-    "gpui_manual_journal": "/tmp/rentemester-rust-reports/native-journal-ui-evidence.json"
+    "gpui_manual_journal": "/tmp/rentemester-rust-reports/native-journal-ui-evidence.json",
+    "two_user_reviewed_bookkeeping": {
+      "path": "/tmp/rentemester-rust-reports/native-reviewed-bookkeeping.json",
+      "log": "/tmp/rm-main-reviewed-bookkeeping.log",
+      "exit": 0,
+      "scope": "Actual native macOS, two ordinary distinct password/MFA users, bank-backed draft, independent rule/draft review, exactly one journal entry and immutable receipt replay, restart and fresh MFA; code cde51350 plus recorded source changes. Does not qualify later commitments/GDPR aliases/client additions."
+    },
+    "platform9_clients_tests": "/tmp/rm-platform9-clients-tests.log (PASS; HTTP24, CLI remote11, MCP stdio18 plus other selected suites;3 pre-existing ignored)",
+    "platform9_strict_clippy": "/tmp/rm-platform9-integrated-clippy.log (PASS; server/client/CLI/MCP all-targets -D warnings)",
+    "platform9_bank_commitment_regression": "/tmp/rm-platform9-bank-regression.log (7 PASS; outgoing REAL/integer evidence positive-cost projection and exact canonical match, incoming refused, journal/bank unchanged)",
+    "platform9_combined": {
+      "log": "/tmp/rm-platform9-combined.log",
+      "exit": 1,
+      "revision": "fe507c1a",
+      "passed": "18 checks including new CLI/MCP receipts/credits/refunds and exact HTTP/CLI/MCP issued PDF equality",
+      "failed": "Implicit select label did not match exact supplier locator; corrected explicit accessible names at606111cf, reproduced actual headless browser count0 before / selection1 after. Later commitments/GDPR/restart not reached."
+    },
+    "platform10_web_build": "/tmp/rm-platform10-web-build.log (PASS)",
+    "platform10_combined": {
+      "log": "/tmp/rm-platform10-combined.log",
+      "exit": 0,
+      "revision": "606111cf",
+      "passed_checks": 46,
+      "scope": "Initial AND restart: source/hash-reviewed supplier plan, canonical match/dedup, pause/end/history and exact13wk forecast; equivalent CLI/MCP lifecycle; GDPR export, retained refusal, confirmed overlay, partial coverage, erased-identity fences and unrelated maintenance; receivable partial/full credit/refund and HTTP/CLI/MCP original PDF equality; earlier budget/accrual/mileage/recurring/contact/bank/period/multiyear/dimension/review/accountant/dashboard/integrity flows. Owned runtime cleaned. Excludes later annual/obligation routes and desktop bank."
+    },
+    "gpui_invoices_reports": {
+      "readiness": "/tmp/rentemester-rust-reports/native-reports-readiness.json",
+      "state": "Integrated and build/tests pass; native GUI acceptance blocked by locked Mac, human unlock requested; no response yet"
+    },
+    "platform11_combined": {
+      "log": "/tmp/rm-platform11-combined.log",
+      "exit": 0,
+      "revision": "b4b6ea37",
+      "passed_checks": 48,
+      "additional_confirmations": [
+        "obligations initial",
+        "obligations restart"
+      ],
+      "scope": "Actual annual CVR/openyear blockers, ordinary Manage correction, reviewed whole2020 close, preparation placeholders, justified reopen/refusal, reclose/rebuild, exact shared current/prior statements, unchanged journals, full report persisted restart. Obligations own synthetic exact debt, missing deadline basis, copy/official handoff/VAT details and company/query guards initial/restarted. All earlier46 checks retained. Owned runtime cleaned. Excludes later annual client read/native contacts."
+    },
+    "platform11_integrated_clippy": "/tmp/rm-platform11-integrated-clippy-final.log (PASS server/client/CLI/MCP all-targets strict)",
+    "platform11_web_build": "/tmp/rm-platform11-web-build.log (PASS)",
+    "platform11_annual_regression": "/tmp/rm-platform11-annual-regression.log (2 PASS; exact shifted comparison/effective close-reopen/persistence and balanced current year cannot hide broken opening balance)",
+    "gpui_bank": {
+      "commit": "5052129c",
+      "readiness": "/tmp/rentemester-rust-reports/native-bank-readiness.json",
+      "state": "Integrated; isolated native bundle build and29 tests PASS/1 existing ignored. Current-scoped mapped import/account creation, explicit counts/dedup and private manual recovery without retry. Actual native GUI pending human Mac unlock."
+    },
+    "platform12_annual_client_tests": "/tmp/rm-platform12-annual-clients-tests.log (PASS: actual HTTP contract and CLI/MCP subprocess annual selection/blocker/refusal tests)",
+    "platform12_host_clients_build": "/tmp/rm-platform12-host-clients-build.log (PASS;48-tool union)",
+    "platform12_combined": {
+      "log": "/tmp/rm-platform12-combined.log",
+      "revision": "3acc4aaa",
+      "state": "running; readonly annual agent equality initial/restart not claimed yet"
+    },
+    "gpui_contacts": {
+      "commit": "66d18f0f",
+      "readiness": "/tmp/rentemester-rust-reports/native-contacts-readiness.json",
+      "state": "Integrated; native build and35 tests PASS/1 existing ignored. Actual native GUI acceptance pending human Mac unlock; labelled CRUD/review, fresh canonical identity/privacy and exact receipts, private minimal unknown marker without retry."
+    }
   },
   "verified_history": [
     {
@@ -402,58 +462,72 @@
       }
     }
   ],
-  "active_work": {
-    "rust-accruals": {
-      "agent": "/root/rust_accruals",
-      "worktree": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-accruals/rentemester",
-      "status": "running in isolated worktree",
-      "acceptance": "canonical evidence match, hashbound approval, pause/end, truthful forecast and restart",
-      "commit": "a4d7018c",
-      "next": "supplier commitments and 13-week liquidity",
-      "previous_delivery_status": "integrated; actual verification scope recorded above",
+  "active_work": [
+    {
+      "owner": "root",
+      "result": "Integration and actual composed acceptance",
       "depends_on": [
-        "native vendor/bank/payables/budget readers"
-      ]
+        "owned runtime evidence"
+      ],
+      "acceptance": "Server/web/client full journeys and refusals/restart; no full-goal completion claim"
     },
-    "rust-mileage": {
-      "agent": "/root/rust_mileage",
-      "worktree": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-mileage/rentemester",
-      "status": "running in isolated worktree",
-      "acceptance": "subject export, confirmed retention-bounded append-only anonymization, current rights",
-      "commit": "bc51fdb3",
-      "next": "retention and GDPR subject flow",
-      "previous_delivery_status": "integrated; actual verification scope recorded above",
+    {
+      "owner": "rust_mileage",
+      "result": "Actual annual HTTP/CLI/MCP equality within composed browser/restart",
+      "ownership": "read-only main, exact owned Docker/tmp runtime",
       "depends_on": [
-        "canonical erasure/retention schemas and fiscal dates"
-      ]
+        "3acc4aaa server snapshot, correct appdist and48-tool host binaries"
+      ],
+      "parallel_with": [
+        "contacts",
+        "dimension budgets",
+        "annual agent reads"
+      ],
+      "acceptance": "Actual terminal result and exact owned cleanup; no blind reruns"
     },
-    "rust-budget": {
-      "agent": "/root/rust_budget",
-      "worktree": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-budget/rentemester",
-      "status": "running in isolated worktree",
-      "acceptance": "real PDF review, explicit separate posting, unknown-outcome reconciliation, restart",
-      "source_commit": "1fd3b34d",
-      "commit": "a3c0c439",
-      "next": "native invoice preview/issue/post/readback",
-      "previous_delivery_status": "integrated; actual verification scope recorded above",
+    {
+      "owner": "rust_accruals",
+      "result": "Dimension/member budget versus canonical allocated actuals",
+      "ownership": "budget modules/view/API plus dedicated browserhelper",
       "depends_on": [
-        "shared company profile and invoice client operations"
-      ]
+        "canonical current dimension allocations and existing account budgets"
+      ],
+      "parallel_with": [
+        "contacts",
+        "annual agent reads",
+        "composed verification"
+      ],
+      "acceptance": "Exact allocation/replacement/year isolation; unallocated and missing dimension budget truthful; normal budget unchanged, restart"
     },
-    "rust-client-cli": {
-      "agent": "/root/rust_client_cli",
-      "worktree": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-client-cli/rentemester",
-      "status": "running in isolated worktree",
-      "acceptance": "ordinary password/MFA enrollment and distinct reviewers in owned isolated synthetic runtime",
-      "commit": "268d8f71",
-      "source_commit": "7aa6ac81",
-      "next": "actual two-user bank-draft acceptance",
-      "previous_delivery_status": "integrated; actual verification scope recorded above",
+    {
+      "owner": "rust_client_cli",
+      "result": "Reviewed bank→draft→independent review→post through agent clients",
+      "ownership": "new reviewed_bookkeeping client/CLI/MCP modules and standalone two-MFA fixture opt-in",
       "depends_on": [
-        "integrated reviewed bookkeeping and offline synthetic credential fixture"
-      ]
+        "existing native reviewed bank/draft routes and actual independent MFA fixture"
+      ],
+      "parallel_with": [
+        "contacts",
+        "dimension budgets",
+        "composed verification"
+      ],
+      "acceptance": "Exact bodies/current rights, independent reviewer, no invented hashes/keys/retries; canonical receipt reconciliation and exactly-one posting"
+    },
+    {
+      "owner": "rust_budget",
+      "result": "Native receipt, partial/full credit and refund from issued invoice",
+      "ownership": "invoice modules/child lifecycle and additive navigation",
+      "depends_on": [
+        "existing shared receivables APIs and bank reads"
+      ],
+      "parallel_with": [
+        "annual agent reads",
+        "dimension budgets",
+        "composed verification"
+      ],
+      "acceptance": "Labelled source-bound selection, explicit exact confirmations, canonical balances/accounts, no retry after unknown; focused native tests/build and later real window"
     }
-  },
+  ],
   "integrated_pending_browser": [
     {
       "source_commit": "268d8f71",
