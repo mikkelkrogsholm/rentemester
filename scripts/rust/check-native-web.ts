@@ -54,6 +54,8 @@ async function checkParallelFeature(page: import("@playwright/test").Page, featu
     await (await import("./check-native-recurring-clients")).checkNativeRecurringClients(page, base!, restarted);
     await (await import("./check-native-asset-clients")).checkNativeAssetClients(page, base!, restarted);
     await (await import("./check-native-accrual-clients")).checkNativeAccrualClients(page, base!, restarted);
+    await (await import("./check-native-budget-clients")).checkNativeBudgetClients(page, base!, restarted);
+    await (await import("./check-native-mileage-clients")).checkNativeMileageClients(page, base!, restarted);
     await (await import("./check-native-document-clients")).checkNativeDocumentClients(page, base!, restarted);
     await (await import("./check-native-contact-delete")).checkNativeContactDelete(page, base!, restarted);
     await (await import("./check-native-bank-clients")).checkNativeBankClients(page, base!, restarted);
@@ -62,17 +64,19 @@ async function checkParallelFeature(page: import("@playwright/test").Page, featu
     await (await import("./check-native-annual-report")).checkNativeAnnualReport(page, base!, restarted);
     await (await import("./check-native-annual-clients")).checkNativeAnnualClients(page, base!, restarted);
     await (await import("./check-native-obligations")).checkNativeObligations(page, base!, restarted);
-    await (await import("./check-native-multi-year")).checkNativeMultiYear(page, base!, restarted);
     await (await import("./check-native-dimensions")).checkNativeDimensions(page, base!, restarted);
     await (await import("./check-native-budget-dimensions")).checkNativeBudgetDimensions(page, base!, restarted);
     await (await import("./check-native-bank-reconciliation")).checkNativeBankReconciliation(page, base!, restarted);
     await (await import("./check-native-bank-reconciliation-clients")).checkNativeBankReconciliationClients(page, base!, restarted);
     await (await import("./check-native-bank-correction")).checkNativeBankCorrection(page, base!, restarted);
     await (await import("./check-native-bank-correction-clients")).checkNativeBankCorrectionClients(page, base!, restarted);
+    // Full comparison snapshots follow every fixture that can create journal entries.
+    await (await import("./check-native-multi-year")).checkNativeMultiYear(page, base!, restarted);
     await (await import("./check-native-exception-review")).checkNativeExceptionReview(page, base!, restarted);
     await (await import("./check-native-commitments")).checkNativeCommitments(page, base!, restarted);
     await (await import("./check-native-commitment-clients")).checkNativeCommitmentClients(page, base!, restarted);
     await (await import("./check-native-gdpr")).checkNativeGdpr(page, base!, restarted);
+    await (await import("./check-native-privacy-clients")).checkNativePrivacyClients(page, base!, restarted);
     await (await import("./check-native-accountant")).checkNativeAccountant(page, base!, restarted);
     await (await import("./check-native-dashboard")).checkNativeDashboard(page, base!, restarted);
     await (await import("./check-native-integrity")).checkNativeIntegrity(page, base!);
