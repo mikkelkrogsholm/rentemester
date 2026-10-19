@@ -1,6 +1,10 @@
 //! Explicit credential-free business codec and full current native ledger checks.
 //! No path opens, archive parsing, signing, grants or operator authority.
 mod corporate;
+mod ownership;
+pub use ownership::{
+    initialize as initialize_ownership, validate_companies as validate_ownership_companies,
+};
 mod inbox;
 pub use corporate::{
     initialize as initialize_corporate, validate_companies as validate_corporate_companies,
@@ -28,17 +32,7 @@ const AUDIT_TABLES: [&str; 3] = [
     "rm_workspace_document_access_events",
     "rm_workspace_authorization_events",
 ];
-const UNSUPPORTED: [(&str, &[&str]); 3] = [
-    (
-        "ownership",
-        &[
-            "rm_group_manifest_events",
-            "rm_ownership_source_snapshots",
-            "rm_ownership_snapshot_events",
-            "rm_ownership_facts",
-            "rm_ownership_fact_events",
-        ],
-    ),
+const UNSUPPORTED: [(&str, &[&str]); 2] = [
     (
         "intercompany",
         &[
@@ -133,10 +127,20 @@ pub struct Control {
     pub parties_bytes: Vec<u8>,
     pub inbox_bytes: Vec<u8>,
     pub corporate_bytes: Vec<u8>,
+    pub ownership_bytes: Vec<u8>,
     pub unsupported: Vec<(&'static str, u64)>,
 }
 pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
     crate::workspace_members::writer(tx)?;
+    if tx
+        .query_row("SELECT COUNT(*) FROM rm_group_manifest_events", [], |r| {
+            r.get::<_, i64>(0)
+        })
+        .map_err(sql)?
+        != 0
+    {
+        return Err(refused("nonempty unsupported ownership group manifest"));
+    }
     let mut unsupported = vec![];
     for (section, tables) in UNSUPPORTED {
         let mut count = 0u64;
@@ -162,6 +166,7 @@ pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
         parties_bytes: parties::export(tx)?,
         inbox_bytes: inbox::export(tx)?,
         corporate_bytes: corporate::export(tx)?,
+        ownership_bytes: ownership::export(tx)?,
         unsupported,
     })
 }
@@ -445,7 +450,7 @@ mod tests {
             .unwrap();
         let exported = export_control(&tx).unwrap();
         tx.rollback().unwrap();
-        assert_eq!(exported.unsupported.len(), 3);
+        assert_eq!(exported.unsupported.len(), 2);
         let mut restored = Connection::open_in_memory().unwrap();
         initialize_control(&mut restored, &exported.bytes, &"a".repeat(64)).unwrap();
         for table in [
@@ -625,7 +630,7 @@ mod tests {
             .unwrap();
         let exported = export_control(&tx).unwrap();
         tx.rollback().unwrap();
-        assert_eq!(exported.unsupported.len(), 3);
+        assert_eq!(exported.unsupported.len(), 2);
         assert!(
             !exported
                 .unsupported

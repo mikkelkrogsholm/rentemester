@@ -146,6 +146,14 @@ impl Owner {
                     .map(|c| c.slug.clone())
                     .collect::<Vec<_>>(),
             )?;
+            store::validate_ownership_companies(
+                &tx,
+                &catalog
+                    .companies
+                    .iter()
+                    .map(|c| c.slug.clone())
+                    .collect::<Vec<_>>(),
+            )?;
             let mut entries = vec![];
             let mut companies = vec![];
             add(
@@ -204,6 +212,16 @@ impl Owner {
                     },
                     path: "control/corporate-records.json".into(),
                     bytes: business.corporate_bytes,
+                },
+            )?;
+            add(
+                &mut entries,
+                artifact::Snapshot {
+                    kind: artifact::EntryKind::ControlBusiness {
+                        section: artifact::BusinessSection::Ownership,
+                    },
+                    path: "control/ownership.json".into(),
+                    bytes: business.ownership_bytes,
                 },
             )?;
             for c in &catalog.companies {
@@ -292,6 +310,7 @@ impl Owner {
                         artifact::BusinessSection::CompanyKnowledge,
                         artifact::BusinessSection::WorkspaceInbox,
                         artifact::BusinessSection::CorporateRecords,
+                        artifact::BusinessSection::Ownership,
                     ],
                     unsupported,
                     excluded: artifact::Exclusion::ALL.to_vec(),
@@ -443,6 +462,7 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
                     | artifact::BusinessSection::Parties
                     | artifact::BusinessSection::WorkspaceInbox
                     | artifact::BusinessSection::CorporateRecords
+                    | artifact::BusinessSection::Ownership
             )
         })
     {
@@ -598,6 +618,23 @@ fn restore_business(
                 .collect::<Vec<_>>(),
         )?;
     }
+    if a.manifest()
+        .context
+        .coverage
+        .included
+        .contains(&artifact::BusinessSection::Ownership)
+    {
+        store::initialize_ownership(
+            control,
+            entry(artifact::BusinessSection::Ownership)?.bytes(),
+            &a.manifest()
+                .context
+                .companies
+                .iter()
+                .map(|c| c.slug.clone())
+                .collect::<Vec<_>>(),
+        )?;
+    }
     Ok(())
 }
 #[cfg(test)]
@@ -611,6 +648,19 @@ mod tests {
         invalid: bool,
         wrong_uuid: bool,
         inbox_case: Option<u8>,
+    ) -> artifact::VerifiedArtifact {
+        signed_case(
+            corporate, knowledge, parties, invalid, wrong_uuid, inbox_case, false,
+        )
+    }
+    fn signed_case(
+        corporate: bool,
+        knowledge: bool,
+        parties: bool,
+        invalid: bool,
+        wrong_uuid: bool,
+        inbox_case: Option<u8>,
+        ownership: bool,
     ) -> artifact::VerifiedArtifact {
         let mut control = Connection::open_in_memory().unwrap();
         let mut company = Connection::open_in_memory().unwrap();
@@ -791,6 +841,52 @@ mod tests {
                 inbox_original = Some((file.relative_path(), raw.to_vec()));
             }
         }
+        if ownership {
+            use rentemester_storage::ownership as own;
+            let tx = control
+                .transaction_with_behavior(TransactionBehavior::Immediate)
+                .unwrap();
+            for (id, from, bp) in [
+                ("signed-owner-initial", "2000-01-01", 2000),
+                ("signed-owner-later", "2001-01-01", 3000),
+            ] {
+                let input:own::Propose=serde_json::from_value(json!({"snapshotId":id,"source":"Synthetic signed ownership source","observedAt":"2026-01-01","facts":[{"owner":{"kind":"party","partyId":"party-signed-synthetic"},"ownedCompanySlug":"synthetic","validFrom":from,"economicBasisPoints":bp,"controlType":"equity","jurisdiction":"DK","evidenceRefs":["opaque-synthetic-source"]}]})).unwrap();
+                let s = own::propose(
+                    &tx,
+                    &input,
+                    &own::normalized(&input.facts).unwrap(),
+                    "unused",
+                    "user:old-maker",
+                    "old-maker",
+                    "2026-01-01T00:00:00.000Z",
+                )
+                .unwrap();
+                own::review(
+                    &tx,
+                    &own::Review {
+                        snapshot_id: id.into(),
+                        decision: "approved".into(),
+                    },
+                    "user:old-reviewer",
+                    "old-reviewer",
+                    "2026-01-02T00:00:00.000Z",
+                )
+                .unwrap();
+                own::apply(
+                    &tx,
+                    &own::Apply {
+                        snapshot_id: id.into(),
+                        snapshot_hash: s["snapshotHash"].as_str().unwrap().into(),
+                        diff_hash: s["diffHash"].as_str().unwrap().into(),
+                    },
+                    "user:old-applier",
+                    "old-applier",
+                    "2026-01-03T00:00:00.000Z",
+                )
+                .unwrap();
+            }
+            tx.commit().unwrap();
+        }
         let tx = control
             .transaction_with_behavior(TransactionBehavior::Immediate)
             .unwrap();
@@ -810,6 +906,27 @@ mod tests {
                 record_count,
             })
             .collect::<Vec<_>>();
+        if ownership {
+            let mut bytes = business.ownership_bytes;
+            if invalid {
+                let mut v: Value = serde_json::from_slice(&bytes).unwrap();
+                v["format"] = json!("invalid-ownership-codec");
+                bytes = serde_json::to_vec(&v).unwrap();
+            }
+            included.push(artifact::BusinessSection::Ownership);
+            entries.push(artifact::Snapshot {
+                kind: artifact::EntryKind::ControlBusiness {
+                    section: artifact::BusinessSection::Ownership,
+                },
+                path: "control/ownership.json".into(),
+                bytes,
+            });
+        } else {
+            unsupported.push(artifact::UnsupportedSection {
+                section: artifact::BusinessSection::Ownership,
+                record_count: 0,
+            });
+        }
         if corporate {
             let mut bytes = business.corporate_bytes;
             if invalid {
@@ -863,7 +980,7 @@ mod tests {
         }
         if parties {
             let mut bytes = business.parties_bytes;
-            if invalid {
+            if invalid && !ownership {
                 let mut v: Value = serde_json::from_slice(&bytes).unwrap();
                 v["format"] = serde_json::json!("unknown-parties-codec");
                 bytes = serde_json::to_vec(&v).unwrap();
@@ -1098,5 +1215,57 @@ mod tests {
         }
         assert!(validate(&signed(true, false, false, true, false, None)).is_err());
         assert!(validate(&signed(true, false, false, false, true, None)).is_err());
+    }
+    #[test]
+    fn signed_ownership_preserves_history_endings_and_original_principals_without_authority() {
+        let archive = signed_case(false, false, true, false, false, None, true);
+        validate(&archive).unwrap();
+        let mut db = Connection::open_in_memory().unwrap();
+        restore_business(&mut db, &archive, &"a".repeat(64)).unwrap();
+        let tx = db
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
+        use rentemester_storage::ownership as own;
+        assert_eq!(
+            own::ids(&tx).unwrap(),
+            vec!["signed-owner-initial", "signed-owner-later"]
+        );
+        let first = own::load(&tx, "signed-owner-initial").unwrap().public;
+        assert_eq!(first["state"], "applied");
+        assert_eq!(first["principal"]["id"], "old-maker");
+        assert_eq!(first["history"][1]["principal_id"], "old-reviewer");
+        assert_eq!(first["history"][2]["principal_id"], "old-applier");
+        let facts = own::approved(&tx).unwrap();
+        assert_eq!(facts.len(), 2);
+        let old = facts
+            .iter()
+            .find(|(_, f)| f.valid_from == "2000-01-01")
+            .unwrap();
+        assert_eq!(old.1.valid_to_exclusive.as_deref(), Some("2001-01-01"));
+        for table in [
+            "user",
+            "account",
+            "session",
+            "twoFactor",
+            "apikey",
+            "rm_company_membership_events",
+            "rm_workspace_user_access_events",
+        ] {
+            assert_eq!(
+                tx.query_row(&format!("SELECT COUNT(*) FROM {table}"), [], |r| r
+                    .get::<_, i64>(0))
+                    .unwrap(),
+                0
+            );
+        }
+        tx.rollback().unwrap();
+        assert!(
+            validate(&signed_case(false, false, true, true, false, None, true)).is_err(),
+            "valid signature cannot admit unknown ownership codec"
+        );
+        assert!(
+            validate(&signed_case(false, false, true, false, true, None, true)).is_err(),
+            "signed company identity still needs actual ledger UUID"
+        );
     }
 }

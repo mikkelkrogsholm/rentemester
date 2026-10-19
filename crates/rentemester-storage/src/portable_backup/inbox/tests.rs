@@ -123,7 +123,7 @@ fn inbox_codec_roundtrip_all_states_full_original_history_and_credential_free_ne
     control.execute_batch("INSERT INTO user(id,name,email,emailVerified,twoFactorEnabled,createdAt,updatedAt)VALUES('historical-inbox-owner','Synthetic source','old@example.invalid',1,1,'2026-01-01','2026-01-01');INSERT INTO session(id,userId,token,createdAt,updatedAt,expiresAt)VALUES('source-session','historical-inbox-owner','SYNTHETIC-EXCLUDED-TOKEN','2026-01-01','2026-01-01','2027-01-01');INSERT INTO twoFactor(id,userId,secret,backupCodes,verified)VALUES('source-factor','historical-inbox-owner','SYNTHETIC-EXCLUDED-SECRET','[]',1);INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('historical-inbox-owner','activate','workspace_owner','system:fixture');INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('historical-inbox-owner','a','grant','owner','system:fixture');").unwrap();
     let e = exported(&mut control);
     assert!(!e.unsupported.iter().any(|s| s.0 == "workspace-inbox"));
-    assert_eq!(e.unsupported.len(), 3);
+    assert_eq!(e.unsupported.len(), 2);
     assert!(
         !String::from_utf8(e.inbox_bytes.clone())
             .unwrap()
