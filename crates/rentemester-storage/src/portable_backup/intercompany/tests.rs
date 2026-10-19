@@ -199,13 +199,8 @@ fn overwrite_and_nonempty_unencoded_sections_refuse() {
     let tx = c
         .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
         .unwrap();
-    assert!(
-        export_control(&tx)
-            .err()
-            .unwrap()
-            .message
-            .contains("intercompany")
-    );
+    // A malformed retained disposition still refuses after the old blanket guard is removed.
+    assert!(export_control(&tx).is_err());
     let mut c = fixture();
     c.execute("INSERT INTO rm_consolidation_profile_events(profile_id,event_type,profile_hash,canonical_profile,event_hash,actor,created_at) VALUES('synthetic','proposed',?,'{}',?,'user:old','2026-01-01T00:00:00Z')",["a".repeat(64),"b".repeat(64)]).unwrap();
     let tx = c
@@ -241,5 +236,196 @@ fn valid_group_and_mapping_control_export_has_one_exact_new_section() {
     assert!(
         tx.execute("DELETE FROM rm_intercompany_mapping_events", [])
             .is_err()
+    );
+}
+
+#[test]
+fn v1_compatibility_decodes_empty_dispositions_without_rewriting_old_bytes() {
+    let c = fixture();
+    let v1 = dump_version(&c, true).unwrap();
+    let mut restored = db();
+    initialize(&mut restored, &v1, &["a".into(), "b".into()]).unwrap();
+    assert_eq!(dump_version(&restored, true).unwrap(), v1);
+    assert_eq!(
+        restored
+            .query_row(
+                "SELECT count(*) FROM rm_intercompany_dispositions",
+                [],
+                |r| r.get::<_, i64>(0)
+            )
+            .unwrap(),
+        0
+    );
+    let v2 = bytes(&mut restored);
+    let codec: Business = serde_json::from_slice(&v2).unwrap();
+    assert_eq!(codec.format, FORMAT);
+    assert_eq!(codec.tables.len(), 6);
+}
+#[test]
+fn disposition_v2_history_service_principal_and_original_references_roundtrip_or_refuse() {
+    use crate::intercompany_dispositions as d;
+    let mut c = fixture();
+    let tx = c
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    let party=serde_json::from_value(json!({"partyId":"synthetic-codec-party","kind":"organization","name":"Synthetic codec party","source":"synthetic","observedAt":AT,"reviewAssertion":"Explicit synthetic review","role":"related_company"})).unwrap();
+    crate::parties::create(&tx, &party, "unused", "user:owner", AT).unwrap();
+    let record=serde_json::from_value(json!({"recordId":"synthetic-codec-record","type":"intercompany_agreement","bytesBase64":"unused","filename":"synthetic.txt","source":"synthetic","receivedAt":AT,"uploader":"synthetic"})).unwrap();
+    crate::corporate_records::ingest(
+        &tx,
+        &record,
+        b"synthetic codec agreement",
+        "unused",
+        &[],
+        "user:owner",
+    )
+    .unwrap();
+    let disposition=serde_json::from_value(json!({"dispositionId":"synthetic-codec-disposition","type":"loan","economicDate":"2026-01-01","amount":12.34,"currency":"DKK","partyIds":["synthetic-codec-party"],"evidenceRecordIds":["synthetic-codec-record"],"left":{"companySlug":"a","role":"lender","expectedSide":"receivable"},"right":{"companySlug":"b","role":"borrower","expectedSide":"payable"}})).unwrap();
+    let mut action = d::Action::Propose(d::Propose {
+        disposition,
+        confirm: true,
+    });
+    d::prepare(&tx, &mut action).unwrap();
+    let proposed = d::execute(
+        &tx,
+        &action,
+        &[],
+        "service:historic",
+        &d::Principal {
+            kind: "service".into(),
+            id: "historic-service".into(),
+        },
+        AT,
+    )
+    .unwrap();
+    let approved = d::Action::Approve(d::Exact {
+        disposition_id: "synthetic-codec-disposition".into(),
+        payload_hash: proposed["payloadHash"].as_str().unwrap().into(),
+        confirm: true,
+    });
+    d::execute(
+        &tx,
+        &approved,
+        &[],
+        "user:reviewer",
+        &d::Principal {
+            kind: "user".into(),
+            id: "reviewer".into(),
+        },
+        AT,
+    )
+    .unwrap();
+    let snapshots: Vec<_> = ["a", "b"]
+        .into_iter()
+        .enumerate()
+        .map(|(n, company)| d::JournalSnapshot {
+            company_slug: company.into(),
+            ledger_uuid: format!("{n:032x}"),
+            currency: "DKK".into(),
+            ledger_head_hash: Some(format!("{:064x}", n + 1)),
+            entries: vec![d::JournalEntry {
+                id: 1,
+                entry_no: "SYN-1".into(),
+                transaction_date: "2026-01-01".into(),
+                entry_hash: format!("{:064x}", n + 1),
+                status: "posted".into(),
+                reversal_of_entry_id: None,
+                reversed: false,
+                lines: vec![d::JournalLine {
+                    debit: rentemester_engine::money::Money::parse(if n == 0 {
+                        "12.34"
+                    } else {
+                        "0"
+                    })
+                    .unwrap(),
+                    credit: rentemester_engine::money::Money::parse(if n == 0 {
+                        "0"
+                    } else {
+                        "12.34"
+                    })
+                    .unwrap(),
+                }],
+            }],
+        })
+        .collect();
+    for (n, side) in ["left", "right"].into_iter().enumerate() {
+        let link = d::Action::Link(d::Link {
+            disposition_id: "synthetic-codec-disposition".into(),
+            payload_hash: proposed["payloadHash"].as_str().unwrap().into(),
+            confirm: true,
+            side: side.into(),
+            journal_entry_id: 1,
+            ledger_head_hash: snapshots[n].ledger_head_hash.clone(),
+        });
+        d::execute(
+            &tx,
+            &link,
+            &snapshots,
+            "user:reviewer",
+            &d::Principal {
+                kind: "user".into(),
+                id: "reviewer".into(),
+            },
+            AT,
+        )
+        .unwrap();
+    }
+    let settle = d::Action::Settle(d::Settle {
+        disposition_id: "synthetic-codec-disposition".into(),
+        payload_hash: proposed["payloadHash"].as_str().unwrap().into(),
+        confirm: true,
+        settlement_evidence_record_ids: vec!["synthetic-codec-record".into()],
+    });
+    d::execute(
+        &tx,
+        &settle,
+        &snapshots,
+        "user:reviewer",
+        &d::Principal {
+            kind: "user".into(),
+            id: "reviewer".into(),
+        },
+        AT,
+    )
+    .unwrap();
+    assert_eq!(d::validate_history(&tx).unwrap().len(), 2);
+    let parties = super::super::parties::export(&tx).unwrap();
+    let corporate = super::super::corporate::export(&tx).unwrap();
+    let signed = export(&tx).unwrap();
+    tx.commit().unwrap();
+    let mut restored = db();
+    let registered = ["a".into(), "b".into()];
+    super::super::parties::initialize(&mut restored, &parties, &registered).unwrap();
+    super::super::corporate::initialize(&mut restored, &corporate, &registered).unwrap();
+    initialize(&mut restored, &signed, &registered).unwrap();
+    assert_eq!(bytes(&mut restored), signed);
+    let principal: String = restored
+        .query_row(
+            "SELECT principal_kind FROM rm_intercompany_disposition_events ORDER BY id LIMIT 1",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(principal, "service");
+    let mut corrupt: Business = serde_json::from_slice(&signed).unwrap();
+    let events = corrupt
+        .tables
+        .get_mut("rm_intercompany_disposition_events")
+        .unwrap();
+    events.rows[0][9] = Cell::Text("f".repeat(64));
+    let corrupt = serde_json::to_vec(&corrupt).unwrap();
+    let mut target = db();
+    super::super::parties::initialize(&mut target, &parties, &registered).unwrap();
+    super::super::corporate::initialize(&mut target, &corporate, &registered).unwrap();
+    assert!(initialize(&mut target, &corrupt, &registered).is_err());
+    assert_eq!(
+        target
+            .query_row(
+                "SELECT count(*) FROM rm_intercompany_dispositions",
+                [],
+                |r| r.get::<_, i64>(0)
+            )
+            .unwrap(),
+        0
     );
 }

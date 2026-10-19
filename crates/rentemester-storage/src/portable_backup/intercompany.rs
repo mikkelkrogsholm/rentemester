@@ -3,10 +3,18 @@ use super::*;
 use crate::intercompany as source;
 use rentemester_engine::intercompany::{Manifest, Mapping};
 use std::collections::BTreeSet;
-const FORMAT: &str = "rentemester-native-intercompany/1";
+const FORMAT: &str = "rentemester-native-intercompany/2";
+const V1: &str = "rentemester-native-intercompany/1";
 const MAX: usize = 24 * 1024 * 1024;
-const TABLES: [&str; 2] = ["rm_group_manifest_events", "rm_intercompany_mapping_events"];
-const COLS: [&[&str]; 2] = [
+const TABLES: [&str; 6] = [
+    "rm_group_manifest_events",
+    "rm_intercompany_mapping_events",
+    "rm_intercompany_dispositions",
+    "rm_intercompany_disposition_events",
+    "rm_intercompany_disposition_journal_links",
+    "rm_intercompany_disposition_lifecycle_events",
+];
+const COLS: [&[&str]; 6] = [
     &[
         "id",
         "manifest_hash",
@@ -26,6 +34,52 @@ const COLS: [&[&str]; 2] = [
         "actor",
         "created_at",
     ],
+    &[
+        "disposition_id",
+        "canonical_payload",
+        "payload_hash",
+        "created_at",
+    ],
+    &[
+        "id",
+        "disposition_id",
+        "event_type",
+        "payload_hash",
+        "canonical_payload",
+        "actor",
+        "principal_kind",
+        "principal_id",
+        "previous_hash",
+        "event_hash",
+        "created_at",
+    ],
+    &[
+        "id",
+        "disposition_id",
+        "side",
+        "company_slug",
+        "journal_entry_id",
+        "journal_entry_no",
+        "journal_entry_hash",
+        "ledger_head_hash",
+        "linked_at",
+        "actor",
+        "principal_kind",
+        "principal_id",
+    ],
+    &[
+        "id",
+        "disposition_id",
+        "event_type",
+        "payload_hash",
+        "canonical_payload",
+        "actor",
+        "principal_kind",
+        "principal_id",
+        "previous_hash",
+        "event_hash",
+        "created_at",
+    ],
 ];
 fn ensure(ok: bool, why: &str) -> Result<(), Error> {
     if ok { Ok(()) } else { Err(refused(why)) }
@@ -34,14 +88,47 @@ fn shape(db: &Connection) -> Result<(), Error> {
     for (table, cols) in TABLES.iter().zip(COLS) {
         ensure(
             columns(db, table)? == cols,
-            "intercompany schema differs from codec v1",
+            "intercompany schema differs from codec v2",
         )?;
     }
     Ok(())
 }
-fn dump(db: &Connection) -> Result<Vec<u8>, Error> {
+fn dump_version(db: &Connection, legacy: bool) -> Result<Vec<u8>, Error> {
     shape(db)?;
-    let bytes = export_tables(db, &TABLES, FORMAT)?;
+    let base = export_tables(db, &TABLES[..2], if legacy { V1 } else { FORMAT })?;
+    if legacy {
+        return Ok(base);
+    }
+    let mut codec: Business = serde_json::from_slice(&base).map_err(sql)?;
+    for (index, table) in TABLES.iter().enumerate().skip(2) {
+        let order = if index == 2 { "disposition_id" } else { "id" };
+        let mut query = db
+            .prepare(&format!("SELECT * FROM {table} ORDER BY {order}"))
+            .map_err(sql)?;
+        let mut cursor = query.query([]).map_err(sql)?;
+        let mut rows = vec![];
+        while let Some(row) = cursor.next().map_err(sql)? {
+            ensure(rows.len() < 100000, "disposition codec row bound")?;
+            let mut cells = vec![];
+            for i in 0..COLS[index].len() {
+                cells.push(match row.get_ref(i).map_err(sql)? {
+                    ValueRef::Null => Cell::Null,
+                    ValueRef::Integer(n) => Cell::Integer(n),
+                    ValueRef::Text(v) => Cell::Text(std::str::from_utf8(v).map_err(sql)?.into()),
+                    _ => return Err(refused("unsupported disposition codec cell")),
+                });
+            }
+            rows.push(cells);
+        }
+        codec.tables.insert(
+            (*table).into(),
+            Table {
+                columns: COLS[index].iter().map(|s| (*s).into()).collect(),
+                rows,
+            },
+        );
+    }
+    let bytes = serde_json::to_vec(&codec).map_err(sql)?;
     ensure(bytes.len() <= MAX, "intercompany signed section byte bound")?;
     Ok(bytes)
 }
@@ -63,6 +150,16 @@ fn companies(db: &Connection) -> Result<BTreeSet<String>, Error> {
         let m: Mapping = serde_json::from_str(&row.map_err(sql)?)
             .map_err(|_| refused("intercompany canonical evidence is malformed"))?;
         result.extend(m.companies());
+    }
+    let mut q = db
+        .prepare(
+            "SELECT canonical_payload FROM rm_intercompany_dispositions ORDER BY disposition_id",
+        )
+        .map_err(sql)?;
+    for row in q.query_map([], |r| r.get::<_, String>(0)).map_err(sql)? {
+        let d: crate::intercompany_dispositions::Disposition =
+            serde_json::from_str(&row.map_err(sql)?).map_err(sql)?;
+        result.extend([d.left.company_slug, d.right.company_slug]);
     }
     Ok(result)
 }
@@ -91,10 +188,11 @@ fn facts(tx: &Transaction<'_>, registered: &BTreeSet<String>) -> Result<(), Erro
             "intercompany mapping lacks group manifest",
         )?;
     }
+    crate::intercompany_dispositions::validate_history(tx)?;
     Ok(())
 }
 pub(super) fn export(tx: &Transaction<'_>) -> Result<Vec<u8>, Error> {
-    let bytes = dump(tx)?;
+    let bytes = dump_version(tx, false)?;
     facts(tx, &companies(tx)?)?;
     Ok(bytes)
 }
@@ -109,10 +207,13 @@ pub fn initialize(db: &mut Connection, bytes: &[u8], registered: &[String]) -> R
     ensure(bytes.len() <= MAX, "intercompany signed section byte bound")?;
     let codec: Business = serde_json::from_slice(bytes).map_err(sql)?;
     ensure(
-        codec.format == FORMAT && codec.tables.len() == TABLES.len(),
+        (codec.format == FORMAT && codec.tables.len() == TABLES.len())
+            || (codec.format == V1 && codec.tables.len() == 2),
         "unsupported intercompany codec",
     )?;
-    for (name, cols) in TABLES.iter().zip(COLS) {
+    let legacy = codec.format == V1;
+    let count = if legacy { 2 } else { TABLES.len() };
+    for (name, cols) in TABLES[..count].iter().zip(COLS) {
         let table = codec
             .tables
             .get(*name)
@@ -126,9 +227,13 @@ pub fn initialize(db: &mut Connection, bytes: &[u8], registered: &[String]) -> R
             for (col, cell) in cols.iter().zip(row) {
                 ensure(
                     match cell {
-                        Cell::Null => *col == "previous_hash",
-                        Cell::Integer(n) => *col == "id" && *n > 0,
-                        Cell::Text(_) => *col != "id",
+                        Cell::Null => ["previous_hash", "ledger_head_hash"].contains(col),
+                        Cell::Integer(n) => {
+                            ["id", "journal_entry_id"].contains(col)
+                                && *n > 0
+                                && *n <= 9_007_199_254_740_991
+                        }
+                        Cell::Text(_) => !["id", "journal_entry_id"].contains(col),
                     },
                     "intercompany cell type differs",
                 )?;
@@ -148,10 +253,10 @@ pub fn initialize(db: &mut Connection, bytes: &[u8], registered: &[String]) -> R
             "fresh intercompany target required",
         )?;
     }
-    insert_tables(&tx, &codec, &TABLES)?;
+    insert_tables(&tx, &codec, &TABLES[..count])?;
     facts(&tx, &registered.iter().cloned().collect())?;
     ensure(
-        dump(&tx)? == bytes,
+        dump_version(&tx, legacy)? == bytes,
         "intercompany codec ordering/types changed",
     )?;
     crate::control_migration::validate_current_control(&tx)?;
