@@ -47,6 +47,8 @@ async function checkParallelFeature(page: import("@playwright/test").Page, featu
   const name = feature.replace(/-reopen$/, "");
   if (name === "budget" || name === "parallel") await (await import("./check-native-budget")).checkNativeBudget(page, base!, restarted);
   if (name === "accruals" || name === "parallel") await (await import("./check-native-accruals")).checkNativeAccruals(page, base!, restarted);
+  // Client trips must precede the browser's complete fiscal totals snapshot.
+  if (name === "parallel") await (await import("./check-native-mileage-clients")).checkNativeMileageClients(page, base!, restarted);
   if (name === "mileage" || name === "parallel") await (await import("./check-native-mileage")).checkNativeMileage(page, base!, restarted);
   if (name === "recurring" || name === "parallel") await (await import("./check-native-recurring")).checkNativeRecurring(page, base!, restarted);
   if (name === "parallel") {
@@ -55,7 +57,6 @@ async function checkParallelFeature(page: import("@playwright/test").Page, featu
     await (await import("./check-native-asset-clients")).checkNativeAssetClients(page, base!, restarted);
     await (await import("./check-native-accrual-clients")).checkNativeAccrualClients(page, base!, restarted);
     await (await import("./check-native-budget-clients")).checkNativeBudgetClients(page, base!, restarted);
-    await (await import("./check-native-mileage-clients")).checkNativeMileageClients(page, base!, restarted);
     await (await import("./check-native-document-clients")).checkNativeDocumentClients(page, base!, restarted);
     await (await import("./check-native-contact-delete")).checkNativeContactDelete(page, base!, restarted);
     await (await import("./check-native-bank-clients")).checkNativeBankClients(page, base!, restarted);
