@@ -151,7 +151,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 103);
+    assert_eq!(tools.len(), 108);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -1263,7 +1263,7 @@ fn recurring_tools_discovery_and_strict_read_write_admission() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 103);
+    assert_eq!(tools.len(), 108);
     assert_eq!(
         tools
             .iter()
@@ -1334,7 +1334,7 @@ fn asset_readonly_discovery_and_native_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 103);
+    assert_eq!(tools.len(), 108);
     for name in ["assets", "next_asset_depreciation"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
@@ -1401,7 +1401,7 @@ fn accrual_readonly_discovery_and_native_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 103);
+    assert_eq!(tools.len(), 108);
     for name in ["accruals", "accrual_schedule"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
@@ -1496,7 +1496,7 @@ fn budget_mileage_discovery_year_scope_and_body_limits_are_strict() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 103);
+    assert_eq!(tools.len(), 108);
     for name in [
         "budget",
         "budget_vs_actual",
@@ -1598,7 +1598,7 @@ fn privacy_discovery_audited_annotation_and_date_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 103);
+    assert_eq!(tools.len(), 108);
     for (name, readonly) in [
         ("retention", true),
         ("gdpr_export", false),
@@ -1701,7 +1701,7 @@ fn setup_discovery_current_company_read_and_strict_outer_admission() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 103);
+    assert_eq!(tools.len(), 108);
     assert_eq!(
         tools
             .iter()
@@ -1766,7 +1766,7 @@ fn saft_export_stdio_returns_exact_tar_bytes(){
 #[test]
 fn workspace_backup_discovery_confirmation_and_forbidden_selectors(){
  let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})]));
- let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),103);let tool=tools.iter().find(|t|t["name"]=="workspace_backup").unwrap();assert_eq!(tool["annotations"]["readOnlyHint"],false);assert_eq!(tool["annotations"]["idempotentHint"],false);assert_eq!(tool["inputSchema"],json!({"type":"object","required":["confirm"],"properties":{"confirm":{"const":true}},"additionalProperties":false}));
+ let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),108);let tool=tools.iter().find(|t|t["name"]=="workspace_backup").unwrap();assert_eq!(tool["annotations"]["readOnlyHint"],false);assert_eq!(tool["annotations"]["idempotentHint"],false);assert_eq!(tool["inputSchema"],json!({"type":"object","required":["confirm"],"properties":{"confirm":{"const":true}},"additionalProperties":false}));
  for args in [json!({}),json!({"confirm":false}),json!({"confirm":"true"}),json!({"confirm":true,"company":"synthetic"}),json!({"confirm":true,"year":"2026"}),json!({"confirm":true,"id":1}),json!({"confirm":true,"body":"{}"}),json!({"confirm":true,"path":"/tmp/forbidden"}),json!({"confirm":true,"key":"invented"})]{let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),call(2,"workspace_backup",args)]));assert!(rows[1].get("error").is_some()||rows[1]["result"]["isError"]==true);}
 }
 #[test]
@@ -1792,3 +1792,33 @@ fn company_knowledge_mcp_exact_review_once_and_full_response(){
 }
 #[test]fn party_discovery_and_current_scope_arguments_are_strict(){let out=run("http://127.0.0.1:1",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),call(3,"workspace_parties",json!({"company":"a","visibleCompanies":["a","hidden"]})),call(4,"create_workspace_party",json!({"company":"a","partyId":"id","body":"{}","confirm":true}))]);let v=parsed(&out);let tools=v[1]["result"]["tools"].as_array().unwrap();for n in ["workspace_parties","workspace_party","create_workspace_party","link_workspace_party_role","assert_workspace_party_field","assert_workspace_party_alias"]{assert!(tools.iter().any(|t|t["name"]==n));}assert!(v[2]["error"].is_object());assert!(v[3]["error"].is_object());}
 #[test]fn party_assertion_exact_body_once_with_full_response(){let reply=r#"{"ok":true,"party":{"assertions":[{"field":"name","review_state":"approved"}],"unknownFutureEvidence":true}}"#;let response=format!("HTTP/1.1 200 OK\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{reply}",reply.len());let(origin,rx,t)=http(Box::leak(response.into_boxed_str()));let body=r#"{ "field":"name","value":"Synthetic revised","source":"registry","observedAt":"2026-01-01","reviewState":"approved","confirm":true }"#;let out=run(&origin,&[init("2025-11-25"),ready(),call(2,"assert_workspace_party_field",json!({"company":"synthetic","partyId":"party-synthetic","body":body,"confirm":true}))]);let wire=String::from_utf8(rx.recv_timeout(std::time::Duration::from_secs(5)).unwrap()).unwrap();assert!(wire.starts_with("POST /api/companies/synthetic/workspace-parties/party-synthetic/assertion HTTP/1.1"));assert!(wire.ends_with(body));let v=parsed(&out);assert_eq!(v[1]["result"]["structuredContent"]["data"],serde_json::from_str::<Value>(reply).unwrap());t.join().unwrap();}
+
+#[test]
+fn workspace_inbox_discovery_and_strict_selection_contracts() {
+ let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})]));
+ let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),108);
+ for(name,read)in[("workspace_inbox",true),("workspace_inbox_source",true),("ingest_workspace_inbox",false),("assign_workspace_inbox",false),("complete_workspace_inbox",false)]{let t=tools.iter().find(|t|t["name"]==name).unwrap();assert_eq!(t["annotations"]["readOnlyHint"],read);assert_eq!(t["inputSchema"]["additionalProperties"],false);}
+ for(name,args)in[
+ ("workspace_inbox",json!({"company":"synthetic","year":"2026"})),
+ ("workspace_inbox_source",json!({"company":"synthetic","sourceId":"source","confirm":true})),
+ ("ingest_workspace_inbox",json!({"company":"synthetic","sourceId":"source","body":"{}","confirm":true})),
+ ("assign_workspace_inbox",json!({"company":"synthetic","body":"{}","confirm":true})),
+ ("complete_workspace_inbox",json!({"company":"synthetic","sourceId":"source","body":"{}","confirm":true,"actor":"forged"}))]{let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),call(2,name,args)]));assert_eq!(rows[1]["error"]["code"],-32602);}
+}
+#[test]
+fn workspace_inbox_ingest_only_large_frame_exact_body_and_unknown_key() {
+ let(origin,request,task)=http("HTTP/1.1 503 Service Unavailable\r\nContent-Length: 11\r\nConnection:close\r\n\r\n{\"ok\":true}");
+ let body=format!("{{ \"confirm\":true,\"idempotencyKey\":\" original inbox key \",\"bytesBase64\":\"{}\",\"filename\":\"source.txt\",\"mimeType\":\"text/plain\",\"transport\":\"upload\",\"receivedAt\":\"2026-01-01\",\"metadata\":{{\"documentType\":\"cash_register_receipt\"}} }}\n","YWFh".repeat(300000));
+ let rows=parsed(&run(&origin,&[init("2025-11-25"),ready(),call(2,"ingest_workspace_inbox",json!({"company":"synthetic","body":body,"confirm":true}))]));
+ let error=&rows[1]["result"]["structuredContent"]["error"];assert_eq!(error["code"],"outcome_unknown");assert_eq!(error["idempotencyKey"]," original inbox key ");
+ let wire=request.recv().unwrap();let end=wire.windows(4).position(|w|w==b"\r\n\r\n").unwrap()+4;assert!(wire.starts_with(b"POST /api/companies/synthetic/workspace-inbox HTTP/1.1"));assert_eq!(&wire[end..],body.as_bytes());task.join().unwrap();
+ for name in ["assign_workspace_inbox","complete_workspace_inbox","workspace_inbox"]{
+  let output=run("http://127.0.0.1:9",&[call(2,name,json!({"company":"synthetic","sourceId":"source","body":" ".repeat(1048576),"confirm":true}))]);assert!(!output.status.success());let row:Value=serde_json::from_slice(&output.stdout).unwrap();assert_eq!(row["error"]["code"],-32700);
+ }
+}
+#[test]
+fn workspace_inbox_missing_confirmation_or_oversized_body_never_executes() {
+ for args in [json!({"company":"synthetic","body":"{}","confirm":false}),json!({"company":"synthetic","body":" ".repeat(rentemester_client::MAX_WORKSPACE_INBOX_BODY+1),"confirm":true})]{
+  let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),call(2,"ingest_workspace_inbox",args)]));assert_eq!(rows[1]["result"]["structuredContent"]["error"]["code"],"invalid_input");
+ }
+}

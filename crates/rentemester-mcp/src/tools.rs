@@ -141,6 +141,7 @@ pub fn list() -> Value {
     tools.extend(crate::mileage::tools());
     tools.extend(crate::company_knowledge::tools());
     tools.extend(crate::parties::tools());
+    tools.extend(crate::workspace_inbox::tools());
     tools.extend(crate::privacy::tools());
     tools.extend(crate::company_setup::tools());
     tools.extend(crate::reminder_claims::tools());
@@ -215,6 +216,10 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         name if crate::company_setup::accepts(name) => crate::company_setup::call(api,name,args).await?,
         name if crate::privacy::accepts(name) => crate::privacy::call(api,name,args).await?,
         name if crate::budget::accepts(name) => crate::budget::call(api,name,args).await?,
+        name if crate::workspace_inbox::accepts(name) => {
+            if name=="ingest_workspace_inbox"{idempotency=args.get("body").and_then(Value::as_str).filter(|s|s.len()<=rentemester_client::MAX_WORKSPACE_INBOX_BODY).and_then(|s|serde_json::from_str::<Value>(s).ok()).and_then(|v|v["idempotencyKey"].as_str().map(str::to_owned));}
+            crate::workspace_inbox::call(api,name,args).await?
+        },
         name if crate::parties::accepts(name) => crate::parties::call(api,name,args).await?,
         name if crate::company_knowledge::accepts(name) => crate::company_knowledge::call(api,name,args).await?,
         name if crate::mileage::accepts(name) => crate::mileage::call(api,name,args).await?,

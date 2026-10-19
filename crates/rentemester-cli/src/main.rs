@@ -11,6 +11,7 @@ mod budget;
 mod mileage;
 mod company_knowledge;
 mod parties;
+mod workspace_inbox;
 mod accruals;
 mod assets;
 mod recurring_invoices;

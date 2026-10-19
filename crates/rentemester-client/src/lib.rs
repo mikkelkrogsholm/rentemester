@@ -350,3 +350,6 @@ pub use reminder_claims::{ReminderClaimMutation,reminder_claim_body_schema,MAX_R
 
 mod portable_backup;
 pub use portable_backup::{MAX_WORKSPACE_BACKUP_BYTES, WORKSPACE_BACKUP_CONTENT_TYPE};
+
+mod workspace_inbox;
+pub use workspace_inbox::{WorkspaceInboxMutation,MAX_WORKSPACE_INBOX_BODY,workspace_inbox_body_schema};
