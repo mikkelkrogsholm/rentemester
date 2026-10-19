@@ -15,7 +15,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     if args == ["--help"] {
         return Ok(json!({"ok":true,
             "usage":"remote --server ORIGIN [--allow-loopback-http] [--cookie-file PATH] COMMAND [--company SLUG] [--year YEAR] [--account CODE]",
-            "commands":["health","me","companies","journal","trial-balance","income-statement","balance","post-journal","reverse-journal","login","accounts","contacts","documents","invoices","preview-invoice","create-customer","update-customer","delete-customer","create-vendor","update-vendor","delete-vendor","issue-invoice","post-invoice","settle-invoice","credit-invoice","refund-invoice","bank","bank-accounts","payables","expense-booking-options","create-bank-account","import-bank","register-payable","pay-payable","match-bank-expense","vat","periods","period-close-readiness","review-period","close-period","reopen-period","report-period"],
+            "commands":["health","me","companies","journal","trial-balance","income-statement","balance","post-journal","reverse-journal","login","accounts","contacts","documents","invoices","invoice-pdf","preview-invoice","create-customer","update-customer","delete-customer","create-vendor","update-vendor","delete-vendor","issue-invoice","post-invoice","settle-invoice","credit-invoice","refund-invoice","bank","bank-accounts","payables","expense-booking-options","create-bank-account","import-bank","register-payable","pay-payable","match-bank-expense","vat","periods","period-close-readiness","review-period","close-period","reopen-period","report-period"],
             "authentication":"Supply a valid MFA-derived browser session as one Cookie request-header value in an owner-only regular file (0600). No Set-Cookie attributes. All commands except health/login require --cookie-file. Login uses --email EMAIL --factor totp|backup --session-out NEW_PATH, reads password then factor code as two newline-terminated stdin lines; stdin must be piped/private. Output file is created0600 and never overwritten. MFA enrollment remains in browser.",
             "writes":"post-journal/reverse-journal read exact bounded server JSON envelope from stdin; requires confirm:true and input.idempotencyKey. Authenticated server session determines actor. No retry; outcome_unknown requires reconciliation using original key.",
             "domainWrites":"Native flat JSON body on stdin, forwarded byte-for-byte once. Domain writes require --confirm; updates/deletions also --id. Deletion body is {confirm:true}; open obligations and historical links can refuse deletion. issue-invoice requires --preview-reviewed after preview-invoice with identical body. These native endpoints do NOT support idempotency keys: never add a key/envelope or auto-retry; reconcile outcome_unknown using contacts/invoices/journal/documents. Native post-invoice body also contains confirm:true. Preview returns PDF bytes as JSON integer array and creates no invoice. Native invoices currently support DKK/25% VAT. Contacts contains customers and vendors. invoices optionally accepts --year.",
@@ -24,6 +24,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
             "bankBodySchemas":{"createBankAccount":rentemester_client::bank_body_schema(BankMutation::CreateAccount),"importBank":rentemester_client::bank_body_schema(BankMutation::ImportStatement),"registerPayable":rentemester_client::bank_body_schema(BankMutation::RegisterPayable),"payPayable":rentemester_client::bank_body_schema(BankMutation::PayPayable(1)),"matchBankExpense":rentemester_client::bank_body_schema(BankMutation::MatchExpense)},
             "periodLifecycle":"vat optionally accepts --year; periods lists effective locks and original closePacketHash. period-close-readiness requires --from/--to ISO dates. review-period/close-period/reopen-period/report-period require --confirm and exact native stdin body. Review appends audit and returns review.id plus review.packet.hash; close must explicitly cite both, refuses stale proof and blockers. force:true unavailable. Reopen requires justification and unreported closed period. Report records an already completed external filing receipt against original close hash; no tax submission. No auto-retry or generic idempotency; reconcile outcome_unknown with periods/readiness before action.",
             "periodBodySchemas":{"review":rentemester_client::period_body_schema(PeriodMutation::Review),"close":rentemester_client::period_body_schema(PeriodMutation::Close),"reopen":rentemester_client::period_body_schema(PeriodMutation::Reopen),"report":rentemester_client::period_body_schema(PeriodMutation::Report)},
+            "invoicePdf":"invoice-pdf --company SLUG --id POSITIVE_DOCUMENT_ID reads the immutable issued original via its current authenticated documents-read permission. No stdin body or --confirm. Output data.pdf is {contentType:application/pdf,bytes:[exact byte integers]}; creates no local files.",
             "receivables":crate::receivables::help(),
             "transport":"HTTPS only unless --allow-loopback-http and literal loopback IP; --server is an origin without path/query/userinfo. No local fallback, redirects, ambient proxies or automatic retries.",
             "exitCodes":{"0":"success","1":"server/transport/protocol failure","2":"usage/configuration failure"},
@@ -120,6 +121,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         | "accounts"
         | "documents"
         | "invoices"
+        | "invoice-pdf"
         | "preview-invoice"
         | "create-customer"
         | "update-customer"
@@ -202,13 +204,15 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         )),
         _ => None,
     };
-    if command == "expense-booking-options"
+    if matches!(command, "expense-booking-options" | "invoice-pdf")
         && flags
             .get("--id")
             .and_then(|s| s.parse::<i64>().ok())
             .is_none_or(|n| n <= 0)
     {
-        return Err(invalid("booking options require positive --id DOCUMENT_ID"));
+        return Err(invalid(
+            "PDF/booking options require positive --id DOCUMENT_ID",
+        ));
     }
     if command != "payables" && (flags.contains_key("--status") || flags.contains_key("--as-of")) {
         return Err(invalid("status/as-of allowed only on payables"));
@@ -222,10 +226,11 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
                 | "delete-vendor"
                 | "pay-payable"
                 | "expense-booking-options"
+                | "invoice-pdf"
         )
     {
         return Err(invalid(
-            "id allowed only on contact updates/deletions, payable payment or document booking options",
+            "id allowed only on contact updates/deletions, payable payment, invoice PDF or document booking options",
         ));
     }
     if confirmed
@@ -257,6 +262,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
                 | "bank-accounts"
                 | "payables"
                 | "expense-booking-options"
+                | "invoice-pdf"
                 | "vat"
                 | "periods"
                 | "period-close-readiness"
@@ -386,6 +392,11 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
                     "accounts" => client.accounts(company.unwrap()).await,
                     "contacts" => client.contacts(company.unwrap()).await,
                     "documents" => client.documents(company.unwrap()).await,
+                    "invoice-pdf" => {
+                        client
+                            .invoice_pdf(company.unwrap(), flags["--id"].parse::<i64>().unwrap())
+                            .await
+                    }
                     "invoices" => {
                         client
                             .invoices(company.unwrap(), flags.get("--year").copied())

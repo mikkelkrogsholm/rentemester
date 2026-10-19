@@ -146,7 +146,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 40);
+    assert_eq!(tools.len(), 41);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -602,4 +602,59 @@ fn receivables_refusal_unknown_and_mixed_selector_remain_structured() {
         values[1]["result"]["structuredContent"]["error"]["code"],
         "invalid_input"
     );
+}
+
+#[test]
+fn issued_pdf_mcp_publishes_read_only_contract_and_preserves_binary_original() {
+    let (origin, wire, task) = http(
+        "HTTP/1.1 200 OK\r\nContent-Type:application/pdf\r\nContent-Length:19\r\nConnection:close\r\n\r\n%PDF-1.7\nÅ\0\n%%EOF\n",
+    );
+    let output = run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(2, "invoice_pdf", json!({"company":"synthetic","id":7})),
+            json!({"jsonrpc":"2.0","id":3,"method":"tools/list"}),
+        ],
+    );
+    let values = parsed(&output);
+    assert_eq!(values[1]["result"]["isError"], false);
+    let pdf = &values[1]["result"]["structuredContent"]["data"]["pdf"];
+    assert_eq!(pdf["contentType"], "application/pdf");
+    assert_eq!(
+        serde_json::from_value::<Vec<u8>>(pdf["bytes"].clone()).unwrap(),
+        "%PDF-1.7\nÅ\0\n%%EOF\n".as_bytes()
+    );
+    let request = wire.recv().unwrap();
+    assert!(request.starts_with(b"GET /api/companies/synthetic/invoices/7/pdf HTTP/1.1"));
+    task.join().unwrap();
+    let tool = values[2]["result"]["tools"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|t| t["name"] == "invoice_pdf")
+        .unwrap();
+    assert_eq!(tool["inputSchema"]["required"], json!(["company", "id"]));
+    assert_eq!(tool["annotations"]["readOnlyHint"], true);
+    assert_eq!(tool["annotations"]["destructiveHint"], false);
+}
+#[test]
+fn issued_pdf_mcp_rejects_nonpositive_or_extra_write_arguments_before_network() {
+    let messages = [
+        json!({"company":"synthetic","id":0}),
+        json!({"company":"synthetic","id":-1}),
+        json!({"company":"synthetic","id":"7"}),
+        json!({"company":"synthetic"}),
+        json!({"company":"synthetic","id":7,"confirm":true}),
+        json!({"company":"synthetic","id":7,"body":"{}"}),
+    ];
+    for args in messages {
+        let output = run(
+            "http://127.0.0.1:9",
+            &[init("2025-11-25"), ready(), call(2, "invoice_pdf", args)],
+        );
+        let values = parsed(&output);
+        assert_eq!(values[1]["error"]["code"], -32602);
+    }
 }
