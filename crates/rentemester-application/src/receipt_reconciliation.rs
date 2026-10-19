@@ -65,6 +65,19 @@ pub fn execute(
             {
                 return Err(denied());
             }
+            if matches!(action, Action::Reconcile(_))
+                && !matches!(
+                    rentemester_storage::workspace_transfer::current(tx)?
+                        .mode
+                        .as_str(),
+                    "active" | "staged"
+                )
+            {
+                return Err(Error::new(
+                    "workspace_transfer_fenced",
+                    "receipt mapping is permitted only on an active or staged destination",
+                ));
+            }
             Ok(current.subject)
         },
         |tx, subject| {

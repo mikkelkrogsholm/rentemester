@@ -116,3 +116,107 @@ fn inventory_requires_current_owner_and_selected_admin_and_mapping_requires_fres
         0
     );
 }
+
+#[test]
+fn mapping_exception_belongs_to_destination_and_never_unfreezes_source() {
+    use rentemester_storage::workspace_transfer::{self as transfer, Challenge, Company, Fact};
+    let (_directory, mut c, mut l, proof) = auth();
+    let clock = Fixed(1_767_225_900_000);
+    let uuid: String = l
+        .query_row("SELECT ledger_uuid FROM ledger_identity", [], |r| r.get(0))
+        .unwrap();
+    let companies = vec![Company {
+        slug: "a".into(),
+        ledger_uuid: uuid,
+    }];
+    let challenge = Challenge {
+        version: 1,
+        transfer_id: "1".repeat(32),
+        source_instance_id: "2".repeat(32),
+        workspace_id: "w".into(),
+        archive_sha256: "a".repeat(64),
+        destination_instance_id: "3".repeat(32),
+        destination: "https://target.example.invalid".into(),
+        companies: companies.clone(),
+    };
+    let tx = c
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    transfer::append(
+        &tx,
+        Fact::Frozen {
+            transfer_id: challenge.transfer_id.clone(),
+            source_instance_id: challenge.source_instance_id.clone(),
+            workspace_id: "w".into(),
+            destination: challenge.destination.clone(),
+            reason: "Explicit synthetic source handoff".into(),
+            companies,
+        },
+        "user:u",
+        "2026-01-01T00:05:00.000Z",
+    )
+    .unwrap();
+    tx.commit().unwrap();
+    let input = Reconcile {
+        receipt_id: 1,
+        expected_state_hash: "a".repeat(64),
+        reason: "Review retained source receipt".into(),
+        confirm: true,
+    };
+    assert_eq!(
+        execute(
+            &mut c,
+            &mut l,
+            &proof,
+            &clock,
+            selected(),
+            Action::Reconcile(&input)
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "workspace_transfer_fenced"
+    );
+    assert!(
+        execute(
+            &mut c,
+            &mut l,
+            &proof,
+            &clock,
+            selected(),
+            Action::Inventory
+        )
+        .is_ok()
+    );
+    let tx = c
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    transfer::append(
+        &tx,
+        Fact::Staged { challenge },
+        "user:u",
+        "2026-01-01T00:05:01.000Z",
+    )
+    .unwrap();
+    tx.commit().unwrap();
+    // A staged target reaches the domain validator; it still cannot invent a receipt.
+    let missing = execute(
+        &mut c,
+        &mut l,
+        &proof,
+        &clock,
+        selected(),
+        Action::Reconcile(&input),
+    )
+    .unwrap_err();
+    assert_ne!(missing.error.code, "workspace_transfer_fenced");
+    assert_eq!(
+        l.query_row(
+            "SELECT count(*) FROM audit_log WHERE event_type='native_restore_receipt_reconciled'",
+            [],
+            |r| r.get::<_, i64>(0)
+        )
+        .unwrap(),
+        0
+    );
+}
