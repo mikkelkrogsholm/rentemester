@@ -1131,4 +1131,6 @@ Faktisk download, klientparitet, kildekontrol og genstart er verificeret i den
 samlede kørsel. En efterfølgende regression fandt, at slettede kontaktfelter
 kunne genvises i eksportens stamdata. Eksporten bruger nu samme GDPR-maskering
 som kontaktvisningen; rå historik og journal ændres ikke. Målrettede tests
-består, og særskilt web-/CLI-/MCP-kontrol efter sletning og genstart pågår.
+består. Særskilt web-/CLI-/MCP-kontrol efter sletning og genstart med nyt
+MFA-login består også; den dækker de felter, som den fælles kontaktmaskering
+faktisk understøtter.
