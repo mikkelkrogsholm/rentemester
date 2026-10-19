@@ -1,6 +1,11 @@
 //! Explicit credential-free business codec and full current native ledger checks.
 //! No path opens, archive parsing, signing, grants or operator authority.
+mod inbox;
 mod parties;
+pub use inbox::{
+    initialize as initialize_inbox, validate_companies as validate_inbox_companies,
+    validate_company as validate_inbox_company,
+};
 pub use parties::{
     initialize as initialize_parties, validate_companies as validate_party_companies,
 };
@@ -19,7 +24,7 @@ const AUDIT_TABLES: [&str; 3] = [
     "rm_workspace_document_access_events",
     "rm_workspace_authorization_events",
 ];
-const UNSUPPORTED: [(&str, &[&str]); 5] = [
+const UNSUPPORTED: [(&str, &[&str]); 4] = [
     (
         "corporate-records",
         &[
@@ -37,16 +42,6 @@ const UNSUPPORTED: [(&str, &[&str]); 5] = [
             "rm_ownership_snapshot_events",
             "rm_ownership_facts",
             "rm_ownership_fact_events",
-        ],
-    ),
-    (
-        "workspace-inbox",
-        &[
-            "rm_workspace_inbox_sources",
-            "rm_workspace_inbox_events",
-            "rm_workspace_inbox_assignments",
-            "rm_workspace_inbox_exceptions",
-            "rm_workspace_inbox_handoff_claims",
         ],
     ),
     (
@@ -141,6 +136,7 @@ pub struct Control {
     pub bytes: Vec<u8>,
     pub knowledge_bytes: Vec<u8>,
     pub parties_bytes: Vec<u8>,
+    pub inbox_bytes: Vec<u8>,
     pub unsupported: Vec<(&'static str, u64)>,
 }
 pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
@@ -168,6 +164,7 @@ pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
         bytes: export_tables(tx, &AUDIT_TABLES, "rentemester-native-business-control/1")?,
         knowledge_bytes: export_tables(tx, &KNOWLEDGE_TABLES, KNOWLEDGE_FORMAT)?,
         parties_bytes: parties::export(tx)?,
+        inbox_bytes: inbox::export(tx)?,
         unsupported,
     })
 }
@@ -451,7 +448,7 @@ mod tests {
             .unwrap();
         let exported = export_control(&tx).unwrap();
         tx.rollback().unwrap();
-        assert_eq!(exported.unsupported.len(), 5);
+        assert_eq!(exported.unsupported.len(), 4);
         let mut restored = Connection::open_in_memory().unwrap();
         initialize_control(&mut restored, &exported.bytes, &"a".repeat(64)).unwrap();
         for table in [
@@ -631,7 +628,7 @@ mod tests {
             .unwrap();
         let exported = export_control(&tx).unwrap();
         tx.rollback().unwrap();
-        assert_eq!(exported.unsupported.len(), 5);
+        assert_eq!(exported.unsupported.len(), 4);
         assert!(
             !exported
                 .unsupported

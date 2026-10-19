@@ -5818,6 +5818,7 @@ dependencies = [
 name = "rentemester-storage"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
  "rentemester-engine",
  "rusqlite",
  "rustix",

@@ -130,6 +130,14 @@ impl Owner {
                     .map(|c| c.slug.clone())
                     .collect::<Vec<_>>(),
             )?;
+            store::validate_inbox_companies(
+                &tx,
+                &catalog
+                    .companies
+                    .iter()
+                    .map(|c| c.slug.clone())
+                    .collect::<Vec<_>>(),
+            )?;
             let mut entries = vec![];
             let mut companies = vec![];
             add(
@@ -170,6 +178,16 @@ impl Owner {
                     bytes: business.parties_bytes,
                 },
             )?;
+            add(
+                &mut entries,
+                artifact::Snapshot {
+                    kind: artifact::EntryKind::ControlBusiness {
+                        section: artifact::BusinessSection::WorkspaceInbox,
+                    },
+                    path: "control/workspace-inbox.json".into(),
+                    bytes: business.inbox_bytes,
+                },
+            )?;
             for c in &catalog.companies {
                 switch(
                     &mut slots.company,
@@ -184,6 +202,7 @@ impl Owner {
                     .map_err(error)?;
                 let db = slots.company.as_ref().unwrap();
                 let facts = store::company(db)?;
+                store::validate_inbox_company(&tx, db, &c.slug)?;
                 companies.push(artifact::Company {
                     slug: c.slug.clone(),
                     ledger_uuid: facts.uuid,
@@ -253,6 +272,7 @@ impl Owner {
                         artifact::BusinessSection::WorkspaceAudit,
                         artifact::BusinessSection::Parties,
                         artifact::BusinessSection::CompanyKnowledge,
+                        artifact::BusinessSection::WorkspaceInbox,
                     ],
                     unsupported,
                     excluded: artifact::Exclusion::ALL.to_vec(),
@@ -402,6 +422,7 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
                 artifact::BusinessSection::WorkspaceAudit
                     | artifact::BusinessSection::CompanyKnowledge
                     | artifact::BusinessSection::Parties
+                    | artifact::BusinessSection::WorkspaceInbox
             )
         })
     {
@@ -438,6 +459,12 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
     {
         return Err(error("manifest context differs"));
     }
+    let mut control = Connection::open_in_memory().map_err(error)?;
+    restore_business(
+        &mut control,
+        a,
+        &rentemester_runtime::backup_keys::digest(a.manifest_bytes()),
+    )?;
     for c in &ctx.companies {
         if c.schema_version != 36 {
             return Err(error("company schema"));
@@ -449,6 +476,7 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
         db.execute_batch("PRAGMA trusted_schema=OFF;PRAGMA foreign_keys=ON;PRAGMA query_only=ON")
             .map_err(error)?;
         let facts = store::company(&db)?;
+        store::validate_inbox_company(&control, &db, &c.slug)?;
         if facts.uuid != c.ledger_uuid {
             return Err(error("ledger identity differs"));
         }
@@ -471,14 +499,6 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
         }
         db.close().map_err(|(_, e)| error(e))?;
     }
-    // Validate the explicit business codec against a fresh canonical credential-free
-    // control before publication, not by attaching or restoring the source auth DB.
-    let mut control = Connection::open_in_memory().map_err(error)?;
-    restore_business(
-        &mut control,
-        a,
-        &rentemester_runtime::backup_keys::digest(a.manifest_bytes()),
-    )?;
     control.close().map_err(|(_, e)| error(e))?;
     Ok(())
 }
@@ -524,16 +544,35 @@ fn restore_business(
             entry(artifact::BusinessSection::CompanyKnowledge)?.bytes(),
         )?;
     }
+    if a.manifest()
+        .context
+        .coverage
+        .included
+        .contains(&artifact::BusinessSection::WorkspaceInbox)
+    {
+        store::initialize_inbox(
+            control,
+            entry(artifact::BusinessSection::WorkspaceInbox)?.bytes(),
+            &a.manifest()
+                .context
+                .companies
+                .iter()
+                .map(|c| c.slug.clone())
+                .collect::<Vec<_>>(),
+        )?;
+    }
     Ok(())
 }
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
     fn signed(
         knowledge: bool,
         parties: bool,
         invalid: bool,
         wrong_uuid: bool,
+        inbox_case: Option<u8>,
     ) -> artifact::VerifiedArtifact {
         let mut control = Connection::open_in_memory().unwrap();
         let mut company = Connection::open_in_memory().unwrap();
@@ -570,6 +609,95 @@ mod tests {
             .unwrap();
             tx.commit().unwrap();
         }
+        let mut inbox_original = None;
+        if let Some(case) = inbox_case {
+            use rentemester_storage::workspace_inbox as inbox;
+            let raw = b"Synthetic signed inbox original\n";
+            let id = "inbox-signed-source";
+            let now = "2026-01-01T00:00:00.000Z";
+            let input=serde_json::from_value(json!({"sourceId":id,"idempotencyKey":"signed-inbox-key","bytesBase64":"typed-original","filename":"synthetic-inbox.txt","mimeType":"text/plain","transport":"upload","receivedAt":now,"metadata":{"documentType":"cash_register_receipt"},"candidates":[]})).unwrap();
+            let tx = control
+                .transaction_with_behavior(TransactionBehavior::Immediate)
+                .unwrap();
+            inbox::ingest(
+                &tx,
+                "synthetic",
+                &input,
+                raw,
+                "unused",
+                &["synthetic".into()].into_iter().collect(),
+                inbox::Provenance {
+                    actor: "user:historical-source",
+                    now,
+                },
+            )
+            .unwrap();
+            inbox::assign(
+                &tx,
+                "synthetic",
+                id,
+                "synthetic",
+                &["synthetic".into()].into_iter().collect(),
+                "user:historical-source",
+                now,
+            )
+            .unwrap();
+            inbox::claim(
+                &tx,
+                id,
+                "synthetic",
+                "original-claim",
+                now,
+                "2026-01-01T00:02:00.000Z",
+            )
+            .unwrap();
+            tx.commit().unwrap();
+            if case >= 1 {
+                let file = rentemester_runtime::document::Prepared::new(
+                    "synthetic-inbox.txt".into(),
+                    raw.to_vec(),
+                )
+                .unwrap();
+                let metadata=serde_json::from_value(json!({"source":format!("workspace-inbox:{id}"),"documentType":"cash_register_receipt"})).unwrap();
+                let tx = company
+                    .transaction_with_behavior(TransactionBehavior::Immediate)
+                    .unwrap();
+                let doc = rentemester_storage::documents::register(
+                    &tx,
+                    rentemester_storage::documents::Original {
+                        filename: file.filename(),
+                        hash: file.hash(),
+                        path: &file.relative_path(),
+                        mime: file.mime(),
+                    },
+                    &metadata,
+                    "historical-source",
+                    "2026-01-01",
+                )
+                .unwrap();
+                tx.commit().unwrap();
+                if case >= 2 {
+                    let tx = control
+                        .transaction_with_behavior(TransactionBehavior::Immediate)
+                        .unwrap();
+                    inbox::complete(
+                        &tx,
+                        id,
+                        "synthetic",
+                        "original-claim",
+                        doc["document"]["id"].as_i64().unwrap(),
+                        doc["document"]["documentNo"].as_str().unwrap(),
+                        inbox::Provenance {
+                            actor: "user:historical-source",
+                            now,
+                        },
+                    )
+                    .unwrap();
+                    tx.commit().unwrap();
+                }
+                inbox_original = Some((file.relative_path(), raw.to_vec()));
+            }
+        }
         let tx = control
             .transaction_with_behavior(TransactionBehavior::Immediate)
             .unwrap();
@@ -589,6 +717,36 @@ mod tests {
                 record_count,
             })
             .collect::<Vec<_>>();
+        if inbox_case.is_some() {
+            let mut bytes = business.inbox_bytes;
+            if invalid {
+                let mut v: Value = serde_json::from_slice(&bytes).unwrap();
+                v["format"] = json!("unsupported-inbox-codec");
+                bytes = serde_json::to_vec(&v).unwrap();
+            }
+            included.push(artifact::BusinessSection::WorkspaceInbox);
+            entries.push(artifact::Snapshot {
+                kind: artifact::EntryKind::ControlBusiness {
+                    section: artifact::BusinessSection::WorkspaceInbox,
+                },
+                path: "control/workspace-inbox.json".into(),
+                bytes,
+            });
+            if let Some((path, bytes)) = inbox_original.filter(|_| inbox_case != Some(3)) {
+                entries.push(artifact::Snapshot {
+                    kind: artifact::EntryKind::DocumentOriginal {
+                        company: "synthetic".into(),
+                    },
+                    path: format!("synthetic/{path}"),
+                    bytes,
+                });
+            }
+        } else {
+            unsupported.push(artifact::UnsupportedSection {
+                section: artifact::BusinessSection::WorkspaceInbox,
+                record_count: 0,
+            });
+        }
         if parties {
             let mut bytes = business.parties_bytes;
             if invalid {
@@ -668,7 +826,7 @@ mod tests {
     #[test]
     fn signed_knowledge_coverage_is_semantically_validated_and_old_audit_only_remains_supported() {
         for knowledge in [false, true] {
-            let a = signed(knowledge, false, false, false);
+            let a = signed(knowledge, false, false, false, None);
             validate(&a).unwrap();
             let mut restored = Connection::open_in_memory().unwrap();
             restore_business(&mut restored, &a, &"a".repeat(64)).unwrap();
@@ -689,12 +847,12 @@ mod tests {
         }
         // Valid cryptographic signature is insufficient: unsupported section
         // codec must fail the pre-publication semantic validator.
-        assert!(validate(&signed(true, false, true, false)).is_err());
+        assert!(validate(&signed(true, false, true, false, None)).is_err());
     }
     #[test]
     fn signed_party_codec_is_required_validated_and_preserves_facts_without_authority() {
         for knowledge in [false, true] {
-            let a = signed(knowledge, true, false, false);
+            let a = signed(knowledge, true, false, false, None);
             validate(&a).unwrap();
             assert!(
                 a.manifest()
@@ -735,7 +893,47 @@ mod tests {
             tx.rollback().unwrap();
         }
         // Correct artifact signatures cannot legitimize an unknown typed codec or a substituted ledger identity.
-        assert!(validate(&signed(false, true, true, false)).is_err());
-        assert!(validate(&signed(false, true, false, true)).is_err());
+        assert!(validate(&signed(false, true, true, false, None)).is_err());
+        assert!(validate(&signed(false, true, false, true, None)).is_err());
+    }
+    #[test]
+    fn signed_inbox_pending_split_completed_and_physical_original_semantics_validate_before_publication()
+     {
+        for case in 0..3 {
+            let a = signed(false, false, false, false, Some(case));
+            validate(&a).unwrap();
+            let mut restored = Connection::open_in_memory().unwrap();
+            restore_business(&mut restored, &a, &"a".repeat(64)).unwrap();
+            let (claim, state, expiry): (String, String, String) = restored
+                .query_row(
+                    "SELECT claim_id,state,lease_expires_at FROM rm_workspace_inbox_handoff_claims",
+                    [],
+                    |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+                )
+                .unwrap();
+            assert_eq!(claim, "original-claim");
+            assert_eq!(state, if case >= 2 { "completed" } else { "claimed" });
+            assert_eq!(expiry, "2026-01-01T00:02:00.000Z");
+            for table in [
+                "user",
+                "session",
+                "twoFactor",
+                "rm_workspace_user_access_events",
+                "rm_company_membership_events",
+            ] {
+                assert_eq!(
+                    restored
+                        .query_row(&format!("SELECT COUNT(*) FROM {table}"), [], |r| r
+                            .get::<_, i64>(0))
+                        .unwrap(),
+                    0
+                );
+            }
+        }
+        assert!(validate(&signed(false, false, true, false, Some(2))).is_err());
+        assert!(
+            validate(&signed(false, false, false, false, Some(3))).is_err(),
+            "signature and codec cannot replace the actual completed document original"
+        );
     }
 }

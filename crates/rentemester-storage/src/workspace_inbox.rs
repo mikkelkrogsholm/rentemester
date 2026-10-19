@@ -48,7 +48,7 @@ pub struct Candidate {
 pub struct Destination {
     pub company_slug: String,
 }
-fn canonical(v: &Value) -> Result<String, Error> {
+pub(crate) fn canonical(v: &Value) -> Result<String, Error> {
     fn value(v: &Value, depth: usize) -> Result<String, Error> {
         if depth > 32 {
             return Err(refused("inbox JSON nesting exceeds bound"));
