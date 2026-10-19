@@ -76,7 +76,7 @@ pub fn save_public_key(source: &Path, bytes: &[u8; 32], destination: &Path) -> R
     }
     save_bytes(bytes, destination)
 }
-fn save_bytes(bytes: &[u8], path: &Path) -> Result<(), String> {
+pub(crate) fn save_bytes(bytes: &[u8], path: &Path) -> Result<(), String> {
     if path.to_string_lossy().chars().any(char::is_control)
         || !path.is_absolute()
         || path.file_name().is_none()
