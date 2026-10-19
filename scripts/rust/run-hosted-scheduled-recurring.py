@@ -70,28 +70,28 @@ async function observe(expected,minimumMs){const start=Date.now();let latest;
 async function setup(){
  step='ordinary-owner-verification-mfa';await open();const spool=join(work,'workspace','.rentemester'),files=readdirSync(spool).filter(n=>n.startsWith('verification-')&&n.endsWith('.txt'));need(files.length===1,'one normal verification');await page.goto(readFileSync(join(spool,files[0]),'utf8').trim());await enroll();const me=await get('/api/me');need(me.user?.twoFactorEnabled&&me.companies.some(c=>c.slug==='synthetic'&&c.role==='owner'),'ordinary owner current MFA');
  step='ordinary-web-service-create-activate-grant';ownerId=me.user.id;
- await page.goto(base+'/adgang');
+ step='web-service-navigate-access';await page.goto(base+'/adgang');
  const services=page.getByRole('region',{name:'Servicekonti',exact:true});
- await services.getByLabel('Navn på servicekonto',{exact:true}).fill('Synthetic Hosted Executor');
+ step='web-service-fill-name';await services.getByLabel('Navn på servicekonto',{exact:true}).fill('Synthetic Hosted Executor');
  const issued=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/workspace/service-principals'&&r.request().method()==='POST');
- await services.getByRole('button',{name:'Opret servicekonto',exact:true}).click();
- await page.getByRole('dialog',{name:'Bekræft servicehandling',exact:true}).getByRole('button',{name:'Gennemfør servicehandling',exact:true}).click();
- const issuance=await issued;need(issuance.status()===201,'ordinary web service creation');main=await issuance.json();
+ step='web-service-open-create-confirmation';await services.getByRole('button',{name:'Opret servicekonto',exact:true}).click();
+ step='web-service-confirm-create';await page.getByRole('dialog',{name:'Bekræft servicehandling',exact:true}).getByRole('button',{name:'Gennemfør servicehandling',exact:true}).click();
+ step='web-service-create-response';const issuance=await issued;need(issuance.status()===201,'ordinary web service creation');main=await issuance.json();
  need(main.secret&&main.serviceAccountId&&main.credentialId,'one-time lifecycle receipt');
- need(await services.getByLabel('Engangsnøgle',{exact:true}).inputValue()===main.secret,'web one-time credential receipt');
+ step='web-service-one-time-secret';need(await services.getByLabel('Engangsnøgle',{exact:true}).inputValue()===main.secret,'web one-time credential receipt');
  const persisted=await page.evaluate(()=>JSON.stringify({session:{...sessionStorage},local:{...localStorage}}));
  need(!persisted.includes(main.secret),'service plaintext persisted by web UI');
  await services.getByRole('button',{name:'Skjul og glem nøglen',exact:true}).click();
- need(await services.getByLabel('Engangsnøgle',{exact:true}).count()===0,'explicit one-time secret dismissal');
+ step='web-service-one-time-secret';need(await services.getByLabel('Engangsnøgle',{exact:true}).count()===0,'explicit one-time secret dismissal');
  const principal=services.getByRole('region',{name:'Synthetic Hosted Executor',exact:true});
  const activated=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/workspace/members/access'&&r.request().method()==='POST');
- await principal.getByRole('button',{name:'Aktivér workspace-adgang som medlem',exact:true}).click();
+ step='web-service-activate-workspace';await principal.getByRole('button',{name:'Aktivér workspace-adgang som medlem',exact:true}).click();
  await page.getByRole('dialog',{name:'Bekræft servicehandling',exact:true}).getByRole('button',{name:'Gennemfør servicehandling',exact:true}).click();
  need((await activated).ok(),'ordinary explicit service workspace activation');
- await page.getByLabel('Bruger',{exact:true}).selectOption(main.serviceAccountId);
- await page.getByLabel('Virksomhedsrolle',{exact:true}).selectOption('bookkeeper');
+ step='web-service-select-activated-member';await page.getByRole('combobox',{name:'Bruger',exact:true}).selectOption(main.serviceAccountId);
+ await page.getByRole('combobox',{name:'Virksomhedsrolle',exact:true}).selectOption('bookkeeper');
  const granted=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/workspace/members/company'&&r.request().method()==='POST');
- await page.getByRole('button',{name:'Gem virksomhedsrolle',exact:true}).click();
+ step='web-service-company-grant';await page.getByRole('button',{name:'Gem virksomhedsrolle',exact:true}).click();
  await page.getByRole('dialog',{name:'Bekræft adgangsændring',exact:true}).getByRole('button',{name:'Gennemfør ændring',exact:true}).click();
  need((await granted).ok(),'ordinary explicit service bookkeeper grant');
  const service=await serviceContext(main.secret);need(service.user.id===main.serviceAccountId&&service.workspaceRole==='member'&&service.companies.some(c=>c.slug==='synthetic'&&c.role==='bookkeeper'),'real admitted service context');
@@ -117,7 +117,7 @@ async function exportArchive(){step='actual-signed-v3-export';need(isDeepStrictE
 async function restored(){step='source-free-fresh-owner-verification-mfa';await http.dispose();await open();email='restored-owner@example.invalid';const spool=join(work,'restored','.rentemester'),files=readdirSync(spool).filter(n=>n.startsWith('verification-')&&n.endsWith('.txt'));need(files.length===1,'one new-owner verification after signed restore');await page.goto(readFileSync(join(spool,files[0]),'utf8').trim());await enroll();const me=await get('/api/me');need(me.user.id!==ownerId&&me.user.id!==main.serviceAccountId&&me.user.twoFactorEnabled&&me.companies.some(c=>c.slug==='synthetic'&&c.role==='owner'),'genuinely new restored MFA owner');const inventory=await get('/api/workspace/service-principals');need(inventory.principals.length===0,'service credential authority was imported');await serviceContext(main.secret,401);const imported=await row();need(isDeepStrictEqual(imported.history,accepted.row.history)&&imported.templateHash===accepted.row.templateHash,'signed V3 raw history/actors changed');need(imported.state==='paused'&&imported.ownerUserId===null&&imported.queued.length===0&&imported.restoreConsent?.required===true&&imported.hostedConsent?.active===false&&imported.hostedConsent.serviceAccountId===main.serviceAccountId&&imported.hostedConsent.credentialId===main.credentialId,'restored ordinary/hosted authority not suspended with provenance retained');const plan=(await get(prefix+`scheduled-recurring/${templateId}/plan`)).plan;need(plan.normalDue===null&&plan.queued.length===0&&plan.restoreConsent?.required===true,'restored readonly plan made work executable');await page.goto(base+'/companies/synthetic/faktura-skabeloner');const panel=page.getByRole('region',{name:'Planlagte fakturaer',exact:true});await panel.getByLabel('Planlagt fakturaskabelon',{exact:true}).selectOption(String(templateId));await panel.getByRole('region',{name:'Planlægning efter gendannelse',exact:true}).waitFor();await closeBrowser();const observed=await observe(1,35000),again=await row(),proof=await original(accepted.original.documentId);need(isDeepStrictEqual(observed,accepted.recurring)&&isDeepStrictEqual(again,imported)&&isDeepStrictEqual(proof,accepted.original)&&isDeepStrictEqual(await get(prefix+'journal'),baseline.journal),'restore/read/browser closure changed original/history/books or dispatched');return{normalNewOwnerMfa:true,freshOwnerDiffers:true,sourceHistoryExact:true,sourceOriginalsExact:true,ledgerUuid:baseline.journal.journal.ledgerUuid,ordinaryReconsentRequired:true,hostedAuthorityInactive:true,sourceServiceKey401:true,noImportedServicePrincipals:true,readonlyNoGenerationObservedMs:35000,restoredReopenQualified:false,row:imported};}
 
 const input=createInterface({input:process.stdin,crlfDelay:Infinity});
-for await(const line of input){let cmd;try{cmd=JSON.parse(line);let data;if(cmd.action==='setup')data=await setup();else if(cmd.action==='worker-key')data={secret:main.secret};else if(cmd.action==='consent')data=await consent();else if(cmd.action==='qualify')data=await qualify(false);else if(cmd.action==='reconnect')data=await reconnect();else if(cmd.action==='reopened')data=await qualify(true);else if(cmd.action==='export')data=await exportArchive();else if(cmd.action==='restored')data=await restored();else if(cmd.action==='finish'){if(browser)await browser.close();if(http)await http.dispose();process.stdout.write(JSON.stringify({ok:true,data:{finished:true}})+'\n');break;}else throw Error('unknown controller command');process.stdout.write(JSON.stringify({ok:true,data})+'\n');}catch(error){process.stdout.write(JSON.stringify({ok:false,step,failureType:error?.name??'Error'})+'\n');if(browser)await browser.close().catch(()=>{});if(http)await http.dispose().catch(()=>{});process.exitCode=1;break;}}
+for await(const line of input){let cmd;try{cmd=JSON.parse(line);let data;if(cmd.action==='setup')data=await setup();else if(cmd.action==='worker-key')data={secret:main.secret};else if(cmd.action==='consent')data=await consent();else if(cmd.action==='qualify')data=await qualify(false);else if(cmd.action==='reconnect')data=await reconnect();else if(cmd.action==='reopened')data=await qualify(true);else if(cmd.action==='export')data=await exportArchive();else if(cmd.action==='restored')data=await restored();else if(cmd.action==='finish'){if(browser)await browser.close();if(http)await http.dispose();process.stdout.write(JSON.stringify({ok:true,data:{finished:true}})+'\n');break;}else throw Error('unknown controller command');process.stdout.write(JSON.stringify({ok:true,data})+'\n');}catch(error){process.stdout.write(JSON.stringify({ok:false,step,failureType:error?.name??'Error',failureLabel:String(error?.message??'').replace(/rms_[A-Za-z0-9_-]{64}/g,'[redacted-service-key]').replaceAll(password,'[synthetic-password]').slice(0,1600)})+'\n');if(browser)await browser.close().catch(()=>{});if(http)await http.dispose().catch(()=>{});process.exitCode=1;break;}}
 '''
 
 
@@ -173,7 +173,7 @@ def main():
             try: result = json.loads(wire)
             except Exception: raise RuntimeError('Invalid private controller response') from None
             if result.get('ok') is not True:
-                evidence['failedControllerStep'] = result.get('step'); save()
+                evidence['failedControllerStep'] = result.get('step'); evidence['controllerFailureType'] = result.get('failureType'); evidence['controllerFailureLabel'] = result.get('failureLabel'); save()
                 raise RuntimeError('Owned browser controller check failed: ' + action)
             return result['data']
 
