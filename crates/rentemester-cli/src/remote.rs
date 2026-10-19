@@ -29,6 +29,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
             "receivables":crate::receivables::help(),
             "reviewedBookkeeping":crate::reviewed_bookkeeping::help(),
             "saftExport":"saft-export --company SLUG --confirm with exact stdin {periodStart,periodEnd,confirm:true}, max4096 bytes. Audited bounded custom v3 XML tar download returned as JSON {export:{contentType,bytes}}, no local files/official validation/submission or automatic retries.",
+            "reminderClaims":"invoice-reminder-claims --company SLUG --id ID; register-invoice-reminder/post-invoice-reminder/settle-invoice-claims --company SLUG --confirm with exact16KiB stdin body. Separate registration/posting, incoming DKK claim receipts after principal. No email/automatic reminders/keys/retries; canonical read first after unknown write.",
             "companySetup":crate::company_setup::help(),
             "companyCreation":crate::company_creation::help(),
             "privacyLifecycle":crate::privacy::help(),
@@ -132,6 +133,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     }
     if command=="create-company" {return crate::company_creation::run(&flags,allow_http,confirmed,preview_reviewed);}
     if command=="saft-export"{return crate::saft::run(&flags,allow_http,confirmed,preview_reviewed);}
+    if crate::reminder_claims::accepts(command){return crate::reminder_claims::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::company_setup::accepts(command){return crate::company_setup::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::privacy::accepts(command){return crate::privacy::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::budget::accepts(command){return crate::budget::run(command,&flags,allow_http,confirmed,preview_reviewed);}

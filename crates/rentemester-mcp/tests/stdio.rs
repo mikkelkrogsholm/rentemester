@@ -151,7 +151,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 88);
+    assert_eq!(tools.len(), 92);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -1263,7 +1263,7 @@ fn recurring_tools_discovery_and_strict_read_write_admission() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 88);
+    assert_eq!(tools.len(), 92);
     assert_eq!(
         tools
             .iter()
@@ -1334,7 +1334,7 @@ fn asset_readonly_discovery_and_native_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 88);
+    assert_eq!(tools.len(), 92);
     for name in ["assets", "next_asset_depreciation"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
@@ -1401,7 +1401,7 @@ fn accrual_readonly_discovery_and_native_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 88);
+    assert_eq!(tools.len(), 92);
     for name in ["accruals", "accrual_schedule"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
@@ -1496,7 +1496,7 @@ fn budget_mileage_discovery_year_scope_and_body_limits_are_strict() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 88);
+    assert_eq!(tools.len(), 92);
     for name in [
         "budget",
         "budget_vs_actual",
@@ -1598,7 +1598,7 @@ fn privacy_discovery_audited_annotation_and_date_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 88);
+    assert_eq!(tools.len(), 92);
     for (name, readonly) in [
         ("retention", true),
         ("gdpr_export", false),
@@ -1701,7 +1701,7 @@ fn setup_discovery_current_company_read_and_strict_outer_admission() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 88);
+    assert_eq!(tools.len(), 92);
     assert_eq!(
         tools
             .iter()
@@ -1759,3 +1759,6 @@ fn saft_export_stdio_returns_exact_tar_bytes(){
  let body=r#"{ "periodStart":"2026-01-01","periodEnd":"2026-12-31","confirm":true }"#;
  let out=run(&origin,&[init("2025-11-25"),ready(),call(2,"saft_export",json!({"company":"synthetic","body":body,"confirm":true}))]);let rows=parsed(&out);assert_eq!(rows[1]["result"]["structuredContent"]["data"]["export"]["bytes"],json!(vec![120;1024]));let req=request.recv().unwrap();assert!(req.ends_with(body.as_bytes()));assert!(req.starts_with(b"POST /api/companies/synthetic/saft-export HTTP/1.1"));task.join().unwrap();
 }
+
+#[test]fn reminder_claim_tools_read_and_exact_write_are_discoverable(){let out=run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),call(3,"settle_invoice_claims",json!({"company":"synthetic","body":"{}","confirm":false}))]);let rows=parsed(&out);let tools=rows[1]["result"]["tools"].as_array().unwrap();for(name,read)in[("invoice_reminder_claims",true),("register_invoice_reminder",false),("post_invoice_reminder",false),("settle_invoice_claims",false)]{let t=tools.iter().find(|t|t["name"]==name).unwrap();assert_eq!(t["annotations"]["readOnlyHint"],read);}assert!(rows[2]["result"]["isError"]==true||rows[2].get("error").is_some());}
+#[test]fn reminder_claim_canonical_stdio_read_preserves_full_native_body(){let reply=r#"{"ok":true,"reminderClaims":{"principalOpenBalance":0,"ledgerBackedClaimBalance":30,"pendingUnpostedReminders":false,"delivery":{"available":false,"sent":false},"claimPayments":[{"claimPaymentId":9}],"unknownFutureFact":{"available":false}}}"#;let response=format!("HTTP/1.1 200 OK\r\nContent-Length:{}\r\nConnection: close\r\n\r\n{}",reply.len(),reply);let(origin,request,task)=http(Box::leak(response.into_boxed_str()));let out=run(&origin,&[init("2025-11-25"),ready(),call(2,"invoice_reminder_claims",json!({"company":"synthetic","id":7}))]);let rows=parsed(&out);assert_eq!(rows[1]["result"]["structuredContent"]["data"],serde_json::from_str::<Value>(reply).unwrap());assert!(request.recv().unwrap().starts_with(b"GET /api/companies/synthetic/invoices/7/reminder-claims HTTP/1.1"));task.join().unwrap();}

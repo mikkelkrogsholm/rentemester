@@ -3,6 +3,7 @@ mod saft;
 mod workspace_access;
 mod company_creation;
 mod accountant;
+mod reminder_claims;
 mod accruals;
 mod assets;
 mod bank;
@@ -122,6 +123,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             post(accountant::export),
         )
         .route("/api/companies/{slug}/saft-export", post(saft::export))
+        .route("/api/companies/{slug}/invoices/{id}/reminder-claims",get(reminder_claims::handle))
+        .route("/api/companies/{slug}/invoices/reminders/register",post(reminder_claims::handle))
+        .route("/api/companies/{slug}/invoices/reminders/post",post(reminder_claims::handle))
+        .route("/api/companies/{slug}/invoices/claims/settle",post(reminder_claims::handle))
         .route("/api/companies/{slug}/overview", get(dashboard::read))
         .route(
             "/api/companies/{slug}/mileage",

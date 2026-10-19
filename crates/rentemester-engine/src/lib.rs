@@ -53,3 +53,4 @@ pub mod mileage;
 pub mod annual_report;
 
 pub mod saft;
+pub mod reminder_claims;

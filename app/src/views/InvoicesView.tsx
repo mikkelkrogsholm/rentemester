@@ -1,4 +1,5 @@
 import { NativeInvoicePost } from "../components/NativeInvoicePost";
+import { NativeReminderClaims } from "../components/NativeReminderClaims";
 // Fakturaer — the per-company issued invoices (cockpit-redesign iteration 5;
 // human write-actions added in #213, slice 4).
 //
@@ -24,19 +25,19 @@ import { NativeInvoicePost } from "../components/NativeInvoicePost";
 
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
+import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
+import { ConfirmDialog } from "../components/ConfirmDialog";
+import { Banner, ErrorState, Loading } from "../components/Feedback";
+import { Amount, Button, ButtonLink, FilterBar, Input, PageHeader, Pagination, Select } from "../components/ui";
 import { api } from "../lib/api";
-import { useCapabilities } from "../lib/useCapabilities";
 import { formatDateDa, formatKroner, parseDanishAmount, todayIso } from "../lib/format";
-import { useAsync } from "../lib/useAsync";
 import type {
   CompanyInvoiceRow,
   CompanyInvoices,
   InvoiceStatus,
 } from "../lib/types";
-import { Banner, ErrorState, Loading } from "../components/Feedback";
-import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
-import { ConfirmDialog } from "../components/ConfirmDialog";
-import { ButtonLink, Button, Input, Select, Amount, PageHeader, Pagination, FilterBar } from "../components/ui";
+import { useAsync } from "../lib/useAsync";
+import { useCapabilities } from "../lib/useCapabilities";
 import { listPagination, listReturnTo, workflowTo } from "./workflow-navigation";
 
 // #UI-16 — the statutory late-payment reminder fee (rentel. § 9b), in kroner.
@@ -69,6 +70,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
     [slug, year],
   );
   // The invoice row whose "Afstem" ConfirmDialog is open, if any.
+  const [reminderClaimsId,setReminderClaimsId]=useState<number|null>(null);
   const [settling, setSettling] = useState<CompanyInvoiceRow | null>(null);
   // The invoice row whose "Krediter" ConfirmDialog is open, if any (#412).
   const [crediting, setCrediting] = useState<CompanyInvoiceRow | null>(null);
@@ -89,7 +91,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
   const inCurrentScope = interactionScope === currentScope;
   useEffect(() => {
     setInteractionScope(currentScope);
-    setSettling(null); setCrediting(null); setSendingPublic(null); setCheckingPublicStatus(null); setSendingEmail(null); setSendingReminder(null); setReminderBookFee(true);
+    setReminderClaimsId(null); setSettling(null); setCrediting(null); setSendingPublic(null); setCheckingPublicStatus(null); setSendingEmail(null); setSendingReminder(null); setReminderBookFee(true);
   }, [currentScope]);
 
   const q = params.get("q") ?? "";
@@ -154,6 +156,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
         onYearChange={setYear}
       />
 
+      {reminderClaimsId!==null && inCurrentScope && <NativeReminderClaims key={`${currentScope}:${reminderClaimsId}`} slug={slug} id={reminderClaimsId} onChanged={state.reload} onClose={()=>setReminderClaimsId(null)}/> }
       {settling && inCurrentScope && (
         <ConfirmDialog operationKey={String(settling.documentId)}
           title="Afstem faktura mod bankbetaling"
@@ -673,6 +676,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                             Hent PDF
                           </a>
                           {!inv.archived && inv.nativeSales?.refundAvailable && row.posted === true && row.openBalance < 0 && can("company.ledger.post") && <Button type="button" variant="secondary" onClick={() => { setInteractionScope(currentScope); setRefunding(row); }}>Afstem tilbagebetaling</Button>}
+                          {inv.nativeSales && !inv.archived && row.posted && <Button type="button" variant="secondary" onClick={()=>{setInteractionScope(currentScope);setReminderClaimsId(row.documentId);}}>Rykkergebyrer og krav</Button>}
                           {!inv.archived && can("company.ledger.post") && canSettle && (
                             <Button
                               type="button"

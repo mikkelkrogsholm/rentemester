@@ -73,3 +73,5 @@ pub mod workspace_access;
 
 pub mod company_creation;
 pub mod saft;
+
+pub mod reminder_claims;

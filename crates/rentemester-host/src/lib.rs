@@ -799,6 +799,9 @@ impl Owner {
             rentemester_application::exceptions::execute(c, l, context, action)
         })
     }
+    pub fn reminder_claims(&mut self,cookie:&VerifiedCookie,clock:&dyn Clock,action:rentemester_application::reminder_claims::Action<'_>,today:&str)->Result<Attempt<Result<Committed<serde_json::Value>,rentemester_application::control_fence::Failure>>,OwnerError>{
+        self.document_action(cookie,clock,|c,l,g,context|rentemester_application::reminder_claims::execute(c,l,g,context,action,today))
+    }
     pub fn accountant_export(
         &mut self,
         cookie: &VerifiedCookie,

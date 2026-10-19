@@ -1,11 +1,11 @@
 import type {
   InvoicesResponse,
   RecurringInvoiceGenerationResult,
+  RecurringInvoicesResponse,
   RecurringInvoiceTemplateCreatedResult,
   RecurringInvoiceTemplateInput,
-  RecurringInvoicesResponse,
 } from "../types";
-import { request, requestBlob, type ReadRequestOptions } from "./_shared";
+import { type ReadRequestOptions, request, requestBlob } from "./_shared";
 
 /** Preview and issue must serialize the exact same invoice facts. */
 function invoiceRequestPayload(input: InvoiceIssueInput) {
@@ -25,6 +25,10 @@ function invoiceRequestPayload(input: InvoiceIssueInput) {
 }
 
 export const invoicesApi = {
+  invoiceReminderClaims: (slug:string,id:number) => request<{ok:true;reminderClaims:NativeReminderClaimStatus}>(`/api/companies/${encodeURIComponent(slug)}/invoices/${id}/reminder-claims`).then(r=>r.reminderClaims),
+  registerNativeReminder: (slug:string,body:{invoiceDocumentId:number;reminderDate:string;feeAmount:number;note?:string;confirm:true}) => request(`/api/companies/${encodeURIComponent(slug)}/invoices/reminders/register`,{method:"POST",body:JSON.stringify(body)}),
+  postNativeReminder: (slug:string,body:{invoiceDocumentId:number;reminderId:number;transactionDate?:string;receivableAccountNo:string;reminderIncomeAccountNo:string;confirm:true}) => request(`/api/companies/${encodeURIComponent(slug)}/invoices/reminders/post`,{method:"POST",body:JSON.stringify(body)}),
+  settleNativeInvoiceClaims: (slug:string,body:{invoiceDocumentId:number;bankTransactionId:number;confirm:true}) => request(`/api/companies/${encodeURIComponent(slug)}/invoices/claims/settle`,{method:"POST",body:JSON.stringify(body)}),
   refundInvoice: (slug: string, invoiceDocumentId: number, bankTransactionReference: string) =>
     request<{ ok: true; refund: { entryId: number; refundId: number; invoiceNumber: string; remainingCreditBalance: number } }>(`/api/companies/${encodeURIComponent(slug)}/invoices/refund`, {
       method: "POST", body: JSON.stringify({ invoiceDocumentId, bankTransactionReference, confirm: true }),
@@ -430,3 +434,5 @@ export type InvoiceCreditNoteSummary = {
   journalEntryId: number | null;
   journalEntryNo: string | null;
 };
+
+export type NativeReminderClaimStatus={invoiceDocumentId:number;invoiceNumber:string;asOfDate:string;dueDate:string;principalOpenBalance:number;claimOpenBalance:number;totalReminderFees:number;totalClaimPayments:number;ledgerBackedClaimBalance:number;pendingUnpostedReminders:boolean;settlementAvailable:boolean;reminders:Array<{reminderId:number;reminderDate:string;feeAmount:number;journalEntryId:number|null}>;claimPayments:Array<{claimPaymentId:number;paymentDate:string;amount:number;bankTransactionId:number;journalEntryId:number}>;accounts:Array<{accountNo:string;name:string;type:string;normalBalance:string}>;incomingBankTransactions:Array<{id:number;date:string;text:string;amount:number;reference:string|null;bankAccountNo:string|null;sourceHash:string|null;transactionHash:string|null}>;rules:{ruleId:string;maximumFeeAmount:number;maximumReminders:number;minimumDaysBetweenReminders:number};delivery:{available:false;sentByThisFlow:false;priorDeliveryStatus:"unavailable";note:string}};

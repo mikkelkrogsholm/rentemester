@@ -341,3 +341,5 @@ fn company_path(company: &str, resource: &str) -> Result<String, Error> {
 
 mod saft;
 pub use saft::{saft_body_schema,MAX_SAFT_BODY,MAX_SAFT_PACKAGE};
+mod reminder_claims;
+pub use reminder_claims::{ReminderClaimMutation,reminder_claim_body_schema,MAX_REMINDER_CLAIM_BODY};

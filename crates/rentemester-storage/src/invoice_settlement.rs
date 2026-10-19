@@ -219,15 +219,7 @@ fn transfer(
             "receipt exceeds the invoice's outstanding principal; overpayments and claims require a separate flow"
         }));
     }
-    let mut q=tx.prepare("SELECT jl.debit_amount,jl.credit_amount FROM journal_lines jl JOIN journal_entries j ON j.id=jl.journal_entry_id WHERE (j.document_id=?1 OR j.id IN (SELECT journal_entry_id FROM credit_note_postings WHERE original_invoice_document_id=?1)) AND jl.account_id=?2").map_err(invalid)?;
-    let mut rows = q.query(params![id, debtor_id]).map_err(invalid)?;
-    let mut carrying = Money::default();
-    while let Some(r) = rows.next().map_err(invalid)? {
-        carrying.add(
-            &legacy_money(r.get_ref(0).map_err(invalid)?)?
-                .subtract(&legacy_money(r.get_ref(1).map_err(invalid)?)?),
-        );
-    }
+    let carrying = principal_carrying(tx, id, debtor_id)?;
     if carrying != open {
         return Err(refused(
             "invoice outstanding principal does not match its booked receivable; review the linked entries",
@@ -303,4 +295,30 @@ fn transfer(
     Ok(
         json!({"entryId":result["entryId"],"paymentId":payment,"principalAmount":wire(&amount)?,"claimAmount":0,"invoiceNumber":no,"openBalance":wire(&open.subtract(&amount))?}),
     )
+}
+
+/// Same authoritative carrying check for principal transfers and reminder-claim review/settlement.
+/// Only canonical related claim journals may be omitted from the principal projection.
+pub(crate) fn principal_carrying(
+    tx: &Transaction<'_>,
+    id: i64,
+    debtor_id: i64,
+) -> Result<Money, Error> {
+    let mut q=tx.prepare("SELECT j.id,jl.debit_amount,jl.credit_amount FROM journal_lines jl JOIN journal_entries j ON j.id=jl.journal_entry_id WHERE (j.document_id=?1 OR j.id IN (SELECT journal_entry_id FROM credit_note_postings WHERE original_invoice_document_id=?1)) AND jl.account_id=?2").map_err(invalid)?;
+    let mut rows = q.query(params![id, debtor_id]).map_err(invalid)?;
+    let mut carrying = Money::default();
+    let claims = crate::reminder_claims::validated_claims(tx, id)?;
+    while let Some(r) = rows.next().map_err(invalid)? {
+        if claims
+            .journals
+            .contains(&r.get::<_, i64>(0).map_err(invalid)?)
+        {
+            continue;
+        }
+        carrying.add(
+            &legacy_money(r.get_ref(1).map_err(invalid)?)?
+                .subtract(&legacy_money(r.get_ref(2).map_err(invalid)?)?),
+        );
+    }
+    Ok(carrying)
 }
