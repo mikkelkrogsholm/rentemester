@@ -1,5 +1,9 @@
 use super::*;
 use rentemester_application::bank_reconciliation::Action;
+enum Input {
+    Link(rentemester_storage::bank_reconciliation::Apply),
+    Correct(rentemester_storage::bank_reconciliation::correction::Apply),
+}
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
     let mutation = request.method() == axum::http::Method::POST;
     let cookie = match proof(&state, &request, mutation) {
@@ -9,25 +13,28 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     if !selected(&state, &request) {
         return refused(StatusCode::NOT_FOUND, "company_not_found");
     }
+    let correction = request.uri().path().contains("reconciliation-correction");
     let mut bank = None;
+    let mut replacement = None;
     for (key, value) in url::form_urlencoded::parse(request.uri().query().unwrap_or("").as_bytes())
     {
-        if mutation
-            || key != "bankTransactionId"
-            || bank.is_some()
-            || !value.bytes().all(|b| b.is_ascii_digit())
-        {
+        let slot = match key.as_ref() {
+            "bankTransactionId" => &mut bank,
+            "replacementJournalEntryId" if correction => &mut replacement,
+            _ => return refused(StatusCode::BAD_REQUEST, "invalid_query"),
+        };
+        if mutation || slot.is_some() || !value.bytes().all(|b| b.is_ascii_digit()) {
             return refused(StatusCode::BAD_REQUEST, "invalid_query");
         }
-        bank = value
+        *slot = value
             .parse::<i64>()
             .ok()
             .filter(|n| *n > 0 && *n <= 9_007_199_254_740_991);
-        if bank.is_none() {
+        if slot.is_none() {
             return refused(StatusCode::BAD_REQUEST, "invalid_query");
         }
     }
-    if !mutation && bank.is_none() {
+    if !mutation && (bank.is_none() || (correction && replacement.is_none())) {
         return refused(StatusCode::BAD_REQUEST, "invalid_query");
     }
     let input = if mutation {
@@ -41,7 +48,12 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let Ok(bytes) = to_bytes(request.into_body(), 16 * 1024).await else {
             return refused(StatusCode::PAYLOAD_TOO_LARGE, "invalid_input");
         };
-        match serde_json::from_slice::<rentemester_storage::bank_reconciliation::Apply>(&bytes) {
+        let parsed = if correction {
+            serde_json::from_slice(&bytes).map(Input::Correct)
+        } else {
+            serde_json::from_slice(&bytes).map(Input::Link)
+        };
+        match parsed {
             Ok(v) => Some(v),
             Err(_) => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
         }
@@ -55,7 +67,12 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let _permit = permit;
         let mut owner = state.native.owner.lock().map_err(|_| ())?;
         let action = match &input {
-            Some(i) => Action::Apply(i),
+            Some(Input::Link(i)) => Action::Apply(i),
+            Some(Input::Correct(i)) => Action::Correct(i),
+            None if correction => Action::CorrectionPlan {
+                bank: bank.unwrap(),
+                replacement: replacement.unwrap(),
+            },
             None => Action::Candidates(bank.unwrap()),
         };
         owner
@@ -67,7 +84,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         Ok(Ok(attempt)) => match super::documents::outcome(attempt) {
             Ok(v) => response(
                 StatusCode::OK,
-                json!({"ok":true,if mutation{"reconciliation"}else{"reconciliationCandidates"}:v}),
+                json!({"ok":true,if correction {if mutation {"correction"} else {"plan"}} else if mutation {"reconciliation"}else{"reconciliationCandidates"}:v}),
             ),
             Err(r) => *r,
         },

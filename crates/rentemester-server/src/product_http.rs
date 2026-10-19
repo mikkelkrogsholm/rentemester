@@ -241,6 +241,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         )
         .route("/api/companies/{slug}/bank/reconciliation-candidates", get(bank_reconciliation::handle))
         .route("/api/companies/{slug}/bank/reconciliation-link", post(bank_reconciliation::handle))
+        .route("/api/companies/{slug}/bank/reconciliation-correction-plan", get(bank_reconciliation::handle))
+        .route("/api/companies/{slug}/bank/reconciliation-correction", post(bank_reconciliation::handle))
         .route("/api/companies/{slug}/bank", get(bank::handle))
         .route(
             "/api/companies/{slug}/bank-accounts",

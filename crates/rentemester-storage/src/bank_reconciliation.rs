@@ -1,4 +1,5 @@
 //! Append-only manual evidence connecting an imported bank row to existing accounting.
+pub mod correction;
 use crate::{
     bank::{fingerprint, signed_money},
     invalid, legacy_money,
@@ -128,11 +129,16 @@ pub fn document_id(tx: &Transaction<'_>, journal: i64) -> Result<Option<i64>, Er
     )
     .map_err(invalid)
 }
-fn plan(tx: &Transaction<'_>, bank_id: i64, journal: i64) -> Result<Value, Error> {
+fn journal_plan(
+    tx: &Transaction<'_>,
+    bank_id: i64,
+    journal: i64,
+    require_unmatched_bank: bool,
+) -> Result<Value, Error> {
     id(journal)?;
     let bank = bank(tx, bank_id)?;
     let target = amount(&bank)?;
-    let already:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM bank_journal_reconciliations WHERE bank_transaction_id=?1 OR journal_entry_id=?2) OR EXISTS(SELECT 1 FROM bank_journal_reconciliation_links WHERE journal_entry_id=?2) OR EXISTS(SELECT 1 FROM bank_reconciliation_correction_events WHERE replacement_journal_entry_id=?2)",params![bank_id,journal],|r|r.get(0)).map_err(invalid)?;
+    let already:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM bank_journal_reconciliations WHERE (?3 AND bank_transaction_id=?1) OR journal_entry_id=?2) OR EXISTS(SELECT 1 FROM bank_journal_reconciliation_links WHERE journal_entry_id=?2) OR EXISTS(SELECT 1 FROM bank_reconciliation_correction_events WHERE replacement_journal_entry_id=?2)",params![bank_id,journal,require_unmatched_bank],|r|r.get(0)).map_err(invalid)?;
     if already {
         return Err(refused(
             "bank row or journal already reconciled; explicit correction required",
@@ -194,14 +200,14 @@ pub fn candidates(tx: &Transaction<'_>, bank_id: i64) -> Result<Value, Error> {
         .query_map([bank.account_no], |r| r.get::<_, i64>(0))
         .map_err(invalid)?
     {
-        match plan(tx, bank_id, candidate.map_err(invalid)?) {
+        match journal_plan(tx, bank_id, candidate.map_err(invalid)?, true) {
             Ok(p) => plans.push(p),
             Err(e) if e.code == "bank_reconciliation_refused" => {}
             Err(e) => return Err(e),
         }
     }
     Ok(
-        json!({"plans":plans,"correctionAvailable":false,"note":"Vælg kun en allerede bogført postering for samme bankbevægelse. Manuel afstemning opretter ingen ny bogføring. En senere linkkorrektion kræver særskilt gennemgang af tilbageførsel og erstatningspostering; dette flow understøtter kun første link."}),
+        json!({"plans":plans,"correctionAvailable":true,"note":"Vælg kun en allerede bogført postering for samme bankbevægelse. Manuel afstemning opretter ingen ny bogføring. En linkkorrektion kræver en allerede bogført tilbageførsel og en særskilt erstatningspostering, før korrektionens plan kan gennemgås."}),
     )
 }
 #[derive(Deserialize)]
@@ -220,7 +226,7 @@ pub fn apply(tx: &Transaction<'_>, input: &Apply, actor: &str) -> Result<Value, 
             "explicit confirmation and reason (1–1000 bytes) required",
         ));
     }
-    let planned = plan(tx, input.bank_transaction_id, input.journal_entry_id)?;
+    let planned = journal_plan(tx, input.bank_transaction_id, input.journal_entry_id, true)?;
     if planned["planHash"] != input.plan_hash {
         return Err(refused(
             "reviewed bank/journal proof changed; inspect a new plan",

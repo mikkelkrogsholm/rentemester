@@ -27,6 +27,7 @@ export type BankTransactionRow = {
   reconciliationNote?: string | null;
   reconciliationActor?: string | null;
   reconciliationProof?: string | null;
+  reconciliationHistory?: Array<{kind:string;id:number;[key:string]:unknown}>;
 };
 
 export type CompanyBank = {

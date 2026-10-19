@@ -337,3 +337,15 @@ test("native bank offers initial manual link and exposes immutable reason withou
   expect(screen.getByText("Synthetic verified same event")).toBeInTheDocument();
   expect(screen.getByText("native-plan:proof")).toBeInTheDocument();
 });
+
+test("native reversed linked journal exposes correction without offering a new initial link", async () => {
+  const value=bank({manualReconciliationAvailable:true,reconciliationCorrectionAvailable:true});
+  value.transactions=[{...value.transactions[0]!,reconciliationStatus:"unmatched",reconciliationProblem:"Synthetic existing original was reversed"}];
+  mockFetch({"GET /api/companies/acme-aps/bank":{bank:value}});renderView();
+  expect(await screen.findByText("Synthetic existing original was reversed")).toBeInTheDocument();
+  expect(screen.queryByRole("button",{name:"Afstem eksisterende postering"})).toBeNull();
+  expect(screen.queryByRole("button",{name:"Bogfør"})).toBeNull();
+  await userEvent.click(screen.getByRole("button",{name:"Ret"}));
+  expect(screen.getByRole("dialog",{name:"Ret afstemt bankpost"})).toBeInTheDocument();
+  expect(screen.getByRole("link",{name:"Åbn journal og forbered tilbageførsel/erstatning"})).toHaveAttribute("href","/companies/acme-aps/posteringer?year=2026");
+});

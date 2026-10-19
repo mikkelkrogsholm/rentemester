@@ -227,7 +227,7 @@ export function BankView() {
         />
       )}
       {linking && <BankJournalLinkModal slug={slug} transaction={linking} onApplied={state.reload} onClose={() => setLinking(null)} />}
-      {correcting && <BankCorrectionModal slug={slug} transaction={correcting} onApplied={state.reload} onClose={() => setCorrecting(null)} />}
+      {correcting && <BankCorrectionModal slug={slug} transaction={correcting} year={b.selectedYear} onApplied={state.reload} onClose={() => setCorrecting(null)} />}
 
       {b.reconciliationCorrectionAvailable === false && <p className="muted">Manuelle links opretter ingen bogføring. Korrektion af et eksisterende link kræver tilbageførsel og en gennemgået erstatningspostering; linkkorrektion understøttes endnu ikke her.</p>}
       {b.archived ? (
@@ -369,11 +369,11 @@ export function BankView() {
                       </td>
                       <td data-label="Afstemning" role="cell">
                         {tx.reconciliationStatus === "matched" ? (
-                          <div className="row-actions"><span className="flag ok">Afstemt{tx.journalEntryNo ? ` · ${tx.journalEntryNo}` : ""}</span>{b.reconciliationCorrectionAvailable !== false && <Button requiredPermission="company.ledger.post" variant="secondary" type="button" className="btn secondary" onClick={() => setCorrecting({ id: tx.id, text: tx.text, journalEntryNo: tx.journalEntryNo })}>Ret</Button>}{tx.reconciliationNote && <details><summary>Afstemningsbevis</summary><p>{tx.reconciliationNote}</p><p>{tx.reconciliationActor}</p><p className="muted">{tx.reconciliationProof}</p></details>}</div>
+                          <div className="row-actions"><span className="flag ok">Afstemt{tx.journalEntryNo ? ` · ${tx.journalEntryNo}` : ""}</span>{b.reconciliationCorrectionAvailable !== false && <Button requiredPermission="company.ledger.post" variant="secondary" type="button" className="btn secondary" onClick={() => setCorrecting({ id: tx.id, text: tx.text, journalEntryNo: tx.journalEntryNo })}>Ret</Button>}{tx.reconciliationHistory?.length ? <details><summary>Afstemningshistorik</summary><ol>{tx.reconciliationHistory.map(event=><li key={`${event.kind}:${event.id}`}><strong>{event.kind === "correction" ? "Linkkorrektion" : event.kind === "append-only" ? "Manuelt afstemningslink" : "Oprindelig bankpostering"}</strong> · {String(event.entryNo ?? `${event.oldEntryNo ?? ""} → ${event.replacementEntryNo ?? ""}`)}<p>{String(event.note ?? event.reason ?? "")}</p><p className="muted">{String(event.actor ?? "")} · {String(event.createdAt ?? "")}</p></li>)}</ol></details> : null}{tx.reconciliationNote && <details><summary>Afstemningsbevis</summary><p>{tx.reconciliationNote}</p><p>{tx.reconciliationActor}</p><p className="muted">{tx.reconciliationProof}</p></details>}</div>
                         ) : (
                           <div className="row-actions">
                             <span className="flag warning">Uafstemt</span>
-                            {tx.reconciliationProblem ? <span className="muted">{tx.reconciliationProblem}</span> : <>
+                            {tx.reconciliationProblem ? <><span className="muted">{tx.reconciliationProblem}</span>{b.reconciliationCorrectionAvailable && <Button requiredPermission="company.ledger.post" variant="secondary" type="button" onClick={() => setCorrecting({id:tx.id,text:tx.text,journalEntryNo:tx.journalEntryNo})}>Ret</Button>}</> : <>
                             {b.manualReconciliationAvailable && <Button requiredPermission="company.ledger.post" variant="secondary" type="button" onClick={() => setLinking({id:tx.id,date:tx.date,text:tx.text,amount:tx.amount,currency})}>Afstem eksisterende postering</Button>}
                             <Button requiredPermission="company.ledger.post" variant="secondary"
                               type="button"

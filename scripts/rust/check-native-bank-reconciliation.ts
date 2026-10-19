@@ -175,8 +175,7 @@ export async function checkNativeBankReconciliation(page: Page, base: string, re
   await row.getByText(`Afstemt · ${evidence.entryNo}`, { exact: true }).waitFor();
   await row.getByText("Afstemningsbevis", { exact: true }).click();
   await row.getByText(note, { exact: true }).waitFor();
-  if (await row.getByRole("button", { name: "Ret", exact: true }).count())
-    throw new Error("Native view offered unsupported correction route");
+  await row.getByRole("button", { name: "Ret", exact: true }).waitFor();
   console.log(
     `Browser: native existing-journal reconciliation ${restarted ? "restart" : "initial"} verified`,
   );
