@@ -37,7 +37,10 @@ export async function checkNativeCorporateRecords(page:Page,base:string,restarte
    const bytes=Buffer.from((await get(`corporate-records/${id}/download`)).bytesBase64,'base64');if(!bytes.equals(Buffer.from(source))||createHash('sha256').update(bytes).digest('hex')!==canonical.record.sha256)throw Error('Corporate original SHA/bytes mismatch');
    const rows=(await get('corporate-records?cursor=0&limit=100')).rows;if(!rows.some((r:{recordId:string})=>r.recordId===id))throw Error('Own corporate record missing from current list');
   }
-  await page.goto(`${base}/companies/synthetic/workspace-register`);await page.getByRole('button',{name:`Vis record ${evidence.originalId}`,exact:true}).click();
+  const listResponse=page.waitForResponse(r=>r.url()===`${base}/api/companies/synthetic/corporate-records`&&r.request().method()==='GET');
+  await page.goto(`${base}/companies/synthetic/workspace-register`);
+  const listing=await listResponse;if(!listing.ok())throw Error(`Corporate UI list refused ${listing.status()}: ${await listing.text()}`);
+  try{await page.getByRole('button',{name:`Vis record ${evidence.originalId}`,exact:true}).click();}catch(error){console.error('Corporate UI diagnostic',JSON.stringify({url:page.url(),listStatus:listing.status(),list:await listing.json(),body:await page.locator('body').innerText()}));throw error;}
   const event=page.waitForEvent('download');await page.getByRole('button',{name:`Hent original ${evidence.originalId}`,exact:true}).click();const download=await event;const path=join(temp,'original.txt');await download.saveAs(path);if(!readFileSync(path).equals(Buffer.from(evidence.original)))throw Error('Actual corporate browser download changed original');
   if(!isDeepStrictEqual(await get('journal'),journal))throw Error('Corporate governance flow changed journal');
   console.log(`PASS: corporate UI upload/original/link/enrichment/reasoned supersession with immutable hashes/history, duplicate/forgery refusal and no journal effects${restarted?' survive restart':''}`);

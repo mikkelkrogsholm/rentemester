@@ -9,17 +9,18 @@ const config=JSON.parse(readFileSync(join(work,"server.json"),"utf8"));
 if(config.workspace!=="synthetic-native-invitations"||config.companySlug!=="synthetic"||resolve(config.root)!==join(work,"workspace"))throw new Error("Synthetic invitation fixture only");
 const base=process.env.RM_INVITATION_BASE!;if(!/^http:\/\/127\.0\.0\.1:\d+$/.test(base))throw new Error("Literal loopback only");
 const spool=join(config.root,".rentemester"),privateState=join(work,"browser-state.json");
-const evidence="/tmp/rentemester-rust-reports/native-workspace-invitations.json";
+const ownership=process.env.RM_INVITATION_OWNERSHIP==="1";
+const evidence=ownership?join(work,"invitations-evidence.json"):"/tmp/rentemester-rust-reports/native-workspace-invitations.json";
 const ownerEmail="owner@example.invalid",ownerPassword="synthetic-owner-password-123",email="reviewer@example.invalid",password="synthetic-invited-password-456";
 function files(prefix:string){return readdirSync(spool).filter(n=>n.startsWith(prefix)&&n.endsWith(".txt"));}
 function link(prefix:string,before:string[]){const added=files(prefix).filter(n=>!before.includes(n));if(added.length!==1)throw new Error("Expected exactly one new private delivery");return readFileSync(join(spool,added[0]),"utf8").trim();}
 function totp(secret:string){let bits=0,count=0;const bytes:number[]=[];for(const c of secret){const v="ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".indexOf(c);if(v<0)throw new Error("Invalid synthetic MFA key");bits=(bits<<5)|v;count+=5;if(count>=8){count-=8;bytes.push((bits>>>count)&255);}}const counter=Buffer.alloc(8);counter.writeBigUInt64BE(BigInt(Math.floor(Date.now()/30000)));const d=createHmac("sha1",Buffer.from(bytes)).update(counter).digest();const o=d[19]&15;return String((d.readUInt32BE(o)&0x7fffffff)%1000000).padStart(6,"0");}
 async function login(page:Page,email:string,password:string,recovery:string){
- await page.goto(base);await page.getByLabel("E-mail",{exact:true}).fill(email);await page.getByLabel("Adgangskode",{exact:true}).fill(password);await page.getByRole("button",{name:"Log ind",exact:true}).click();await page.getByRole("button",{name:"Brug recovery code"}).click();await page.getByLabel("Recovery code",{exact:true}).fill(recovery);await page.getByRole("button",{name:"Bekræft",exact:true}).click();await page.getByRole("link",{name:"Åbn bogføring"}).waitFor();
+ await page.goto(base);await page.getByLabel("E-mail",{exact:true}).fill(email);await page.getByLabel("Adgangskode",{exact:true}).fill(password);await page.getByRole("button",{name:"Log ind",exact:true}).click();await page.getByRole("button",{name:"Brug recovery code"}).click();await page.getByLabel("Recovery code",{exact:true}).fill(recovery);await page.getByRole("button",{name:"Bekræft",exact:true}).click();await page.locator('a[href="/companies/synthetic/posteringer"]').waitFor();
 }
 async function enroll(page:Page,email:string,password:string){
  await page.goto(base);await page.getByLabel("E-mail",{exact:true}).fill(email);await page.getByLabel("Adgangskode",{exact:true}).fill(password);await page.getByRole("button",{name:"Log ind",exact:true}).click();await page.getByRole("heading",{name:"Opsæt totrinsbekræftelse"}).waitFor();await page.getByLabel("Adgangskode",{exact:true}).fill(password);await page.getByRole("button",{name:"Start opsætning",exact:true}).click();const secret=await page.getByLabel("Opsætningsnøgle").inputValue();await page.getByLabel("Engangskode",{exact:true}).fill(totp(secret));await page.getByRole("button",{name:"Bekræft opsætning",exact:true}).click();
- await page.getByRole("region",{name:"Recovery codes"}).locator("li").first().waitFor();const codes=await page.getByRole("region",{name:"Recovery codes"}).locator("li").allTextContents();if(codes.length<2)throw new Error("Synthetic recovery codes missing");await page.getByRole("button",{name:"Jeg har gemt koderne",exact:true}).click();await page.getByRole("link",{name:"Åbn bogføring"}).waitFor();await page.context().clearCookies();await new Promise(r=>setTimeout(r,11000));await login(page,email,password,codes[0]);return codes[1];
+ await page.getByRole("region",{name:"Recovery codes"}).locator("li").first().waitFor();const codes=await page.getByRole("region",{name:"Recovery codes"}).locator("li").allTextContents();if(codes.length<2)throw new Error("Synthetic recovery codes missing");await page.getByRole("button",{name:"Jeg har gemt koderne",exact:true}).click();await page.locator('a[href="/companies/synthetic/posteringer"]').waitFor();await page.context().clearCookies();await new Promise(r=>setTimeout(r,11000));await login(page,email,password,codes[0]);return codes[1];
 }
 async function json(page:Page,path:string,data?:unknown){const r=data===undefined?await page.request.get(base+path):await page.request.post(base+path,{headers:{origin:base},data});const body=await r.json();return {r,body};}
 const browser=await chromium.launch({headless:true});
@@ -48,6 +49,20 @@ try{
   const context=await json(owner,"/api/me");const ownerId=context.body.user.id;const last=await json(owner,"/api/workspace/members/access",{userId:ownerId,action:"disable"});if(last.r.ok())throw new Error("Last effective owner removed");
   const cancelBefore=files("invitation-");const create=await json(owner,"/api/workspace/invitations",{email:"cancelled@example.invalid",workspaceRole:"member",companySlug:"synthetic",companyRole:"reader"});if(!create.r.ok())throw new Error("Second invitation failed");const cancelledToken=new URLSearchParams(new URL(link("invitation-",cancelBefore)).hash.slice(1)).get("token");if(!(await json(owner,"/api/workspace/invitations/cancel",{invitationId:create.body.invitation.invitationId})).r.ok())throw new Error("Cancel failed");if((await json(invited,"/api/invitations/claim",{token:cancelledToken,name:"Cancelled",password})).r.ok())throw new Error("Cancelled invitation claimed");
   writeFileSync(privateState,JSON.stringify({ownerRecovery,invitedRecovery,invitationId:invitation.invitationId,ledgerUuid:report.body.trialBalance.ledgerUuid}),{mode:0o600});mkdirSync("/tmp/rentemester-rust-reports",{recursive:true});await owner.screenshot({path:"/tmp/rentemester-rust-reports/native-workspace-invitations.png",fullPage:true});writeFileSync(evidence,JSON.stringify({normalInvitationClaim:true,noClaimSession:true,verificationThenDistinctMfaLogin:true,memberUserId:member.userId,invitationId:invitation.invitationId,liveRevokeAndConfirmedRegrant:true,lastOwnerProtected:true,cancelledAndSingleUseProtected:true,restartVerified:false},null,2),{mode:0o600});
+ }
+ if(ownership){
+  const restarted=process.argv.includes("--reopen");
+  if(!restarted){
+   const current=await json(invited,"/api/me");if(!current.r.ok()||!current.body.user?.id)throw Error("Current independently authenticated reviewer required");
+   for(const slug of ["synthetic-ownership-browser","synthetic-ownership-clients"]){
+    const created=await json(owner,"/api/companies",{name:"Synthetic Reviewed Ownership",slug,fiscalYearStartMonth:"1",vatPeriodType:null});if(!created.r.ok())throw Error(`Dedicated ownership company creation refused ${created.r.status()}`);
+    const granted=await json(owner,"/api/workspace/members/company",{userId:current.body.user.id,action:"grant",companySlug:slug,role:"owner"});if(!granted.r.ok())throw Error(`Explicit reviewer company grant refused ${granted.r.status()}`);
+   }
+  }
+  const {checkNativeOwnership}=await import("./check-native-ownership");
+  const {checkNativeOwnershipClients}=await import("./check-native-ownership-clients");
+  await checkNativeOwnership(owner,invited,base,"synthetic-ownership-browser",restarted);
+  await checkNativeOwnershipClients(owner,invited,base,"synthetic-ownership-clients",restarted);
  }
  console.log("PASS: ordinary native invitation/verification/MFA/access journey"+(process.argv.includes("--reopen")?" after restart":""));
 }finally{await browser.close();}

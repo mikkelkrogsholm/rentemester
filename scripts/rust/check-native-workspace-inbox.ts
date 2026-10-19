@@ -65,6 +65,7 @@ export async function checkNativeWorkspaceInbox(page: Page, base: string, restar
   const original = await page.request.get(`${base}/api/companies/${target}/documents/${evidence.documentId}/file`);
   if (!original.ok() || !Buffer.from(await original.body()).equals(bytes)) throw new Error("Target protected original differs from inbox source");
   await page.goto(`${base}/companies/${anchor}/workspace-inbox`);
-  await page.getByRole("link", { name: evidence.documentNo, exact: true }).waitFor();
+  await page.getByRole("link", { name: evidence.documentNo, exact: true })
+    .and(page.locator(`a[href="/companies/${target}/bilag?documentId=${evidence.documentId}"]`)).waitFor();
   return { ok: true, restarted, ...evidence, accountingEffect: "none", claimSplitRecovery: "owned host tests", permissions: "current target revocation tested in owned host tests", backup: "nonempty inbox intentionally refuses portable backup until supported codec" };
 }

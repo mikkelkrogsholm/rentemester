@@ -311,6 +311,7 @@ export function DocumentIngestModal({
               <label className="modal-field">
                 Bilagstype
                 <Select
+                  aria-label="Bilagstype"
                   value={documentType}
                   onChange={(e) =>
                     setDocumentType(

@@ -5,6 +5,39 @@ ejeroprettelse, MFA, sessions, virksomhedsadgang, manuel bogføring, tilbagefør
 virksomhedsstamdata, kontooprettelse, bekræftelse af kontoroller, bankkonti, generisk bankimport, bilagsbogføring med valutakøb samt bilagsindlæsning og resultatopgørelse, balance og saldobalance med CSV/PDF-eksport samt momsoverblik med PDF, kundeoprettelse, udstedelse/bogføring af danske salgsfakturaer samt betalinger, kreditnotaer, afstemning af kundetilbagebetalinger og leverandørkort med bilagsudfyldning samt leverandørgæld med senere bankbetaling. Den
 starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
+## Aktuel Rust-levering
+
+Den fælles bilagsindbakke kører nu gennem Rust-server, web, CLI og MCP.
+Originalen kan visiteres til en eksplicit virksomhed og afleveres til dens
+bilagsregister uden en bogføringspost. Faktiske web- og klientforløb med
+genstart består. Signeret backup, uafhængig verificering efter fjernelse af
+kildedata og privat nøgle samt gendannelse med en ny ejer og MFA består også;
+originaler, historik og målbilag bevares.
+
+Selskabsdokumenter har Rust-understøttelse for immutable originaler,
+metadata, typed links og begrundede erstatninger. Web, CLI, MCP og native
+skærm er integreret. Den signerede backupkode bevarer alle fire tabeller og
+originalbytes, inklusive ældre links uden efterfølgende scope-udsagn.
+Faktisk browseraccept og faktisk backupgendannelse af dette nye område
+mangler stadig; en timeout i den aktuelle visning undersøges.
+
+Ejer- og kontrolforhold har nu Rust-forslag, review af en anden autentificeret
+person og særskilt apply af de præcise snapshot- og diff-hashes. Senere
+daterede observationer bevarer den oprindelige historik. Web, CLI, MCP og
+native skærm bruger serverens fælles regler. Den faktiske test med to normalt
+inviterede og MFA-autentificerede brugere afklarer fortsat reviewtrinnet.
+
+Der er 120 MCP-tools efter integrationen af ejerforhold. De samlede native
+tests består med 146 beståede og én eksisterende ignoreret test; native build
+består. Mac'en er nu låst op, og faktisk desktopaccept er i gang. Administreret
+lokal opstart, almindelig ejeroprettelse, verificering, MFA og læsning af
+saldobalancen er gennemført i det native vindue. Fakturering og udgifter er
+næste konkrete acceptforløb.
+
+Den samlede omskrivning er fortsat åben. Næste funktionelle fundament er den
+eksisterende, eksplicitte koncernkonfiguration og mellemregningsafstemning.
+Ejerobservationer bliver ikke automatisk til en koncernkonfiguration.
+
 ## Prøv med syntetiske data
 
 Fra repository-roden, med Docker og Bun samt projektets afhængigheder installeret:
@@ -1097,7 +1130,7 @@ formularfelter og genafsender intet. Den lokale servers port må ændre sig ved
 genstart, mens den samme lokale profil, bruger og ledger fortsat skal stemme.
 
 Integrationen bestod 78 native tests og build. Faktiske native vinduesforløb
-er endnu ikke verificeret: Mac'en er fortsat låst.
+er endnu ikke verificeret: Mac'en er nu låst op; den aktuelle faktiske desktopaccept er i gang.
 
 ## Flere virksomheder på Rust-serveren
 
@@ -1186,7 +1219,7 @@ Uafklarede svar eller manglende kanonisk genlæsning bevarer en privat
 handlingsblokering. Nyt lokalt portnummer accepteres kun for samme profil,
 bruger, ledger og periode; fjernforbindelser skal fortsat stemme præcist.
 De samlede 116 desktop-tests og build består. Faktiske vinduesforløb er endnu
-ikke verificeret på den låste Mac.
+ikke verificeret; den faktiske accept på den nu oplåste Mac er i gang.
 
 ## Registrér og afstem rykkergebyrer
 
@@ -1231,7 +1264,7 @@ Nøglen skal bevares uafhængigt af arkivet til senere verificering.
 Eksisterende profiler får ikke automatisk udskiftet eller tilføjet nøgler;
 fjernserverens offentlige nøgle leveres af administratoren.
 Tests og build kvalificerer implementeringen; de nye faktiske vinduesforløb
-afventer adgang til den låste Mac.
+afventer det relevante faktiske vinduesforløb på den nu oplåste Mac.
 
 
 ## Virksomhedsoplysninger i desktop
@@ -1253,4 +1286,4 @@ rolletilknytning og nye aliaser eller feltudsagn kræver en eksplicit
 kildebaseret gennemgang og bekræftelse. Den oprindelige identitet overskrives
 ikke. Serveren afgør rettighederne, og appen genlæser det kanoniske resultat.
 De samlede 116 native tests og build består; faktiske nye vinduer er endnu
-ikke verificeret på den låste Mac.
+ikke verificeret; den faktiske accept på den nu oplåste Mac er i gang.

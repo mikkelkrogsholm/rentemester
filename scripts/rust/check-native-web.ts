@@ -45,6 +45,14 @@ function totp(secret: string): string {
 async function checkParallelFeature(page: import("@playwright/test").Page, feature: string) {
   const restarted = feature.endsWith("-reopen");
   const name = feature.replace(/-reopen$/, "");
+  if (name === "inbox") {
+    await (await import("./check-native-workspace-inbox")).checkNativeWorkspaceInbox(page, base!, restarted);
+    await (await import("./check-native-workspace-inbox-clients")).checkNativeWorkspaceInboxClients(page, base!, restarted);
+  }
+  if (name === "corporate") {
+    await (await import("./check-native-corporate-records")).checkNativeCorporateRecords(page, base!, restarted);
+    await (await import("./check-native-corporate-clients")).checkNativeCorporateClients(page, base!, restarted);
+  }
   if (name === "budget" || name === "parallel") await (await import("./check-native-budget")).checkNativeBudget(page, base!, restarted);
   if (name === "accruals" || name === "parallel") await (await import("./check-native-accruals")).checkNativeAccruals(page, base!, restarted);
   // Client trips must precede the browser's complete fiscal totals snapshot.
@@ -109,10 +117,10 @@ try {
     await page.getByRole("button", { name: "Brug recovery code" }).click();
     await page.getByLabel("Recovery code", { exact: true }).fill(process.env.RM_NATIVE_WEB_EXPENSE_REOPEN?.endsWith("-reopen") ? state.backup2 : process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "5" ? state.backup6 : process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "4" ? state.backup5 : process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "3" ? state.backup4 : process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "2" ? state.backup3 : process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "1" ? state.backup2 : state.backup);
     await page.getByRole("button", { name: "Bekræft", exact: true }).click();
-    await page.getByRole("link", { name: "Åbn bogføring" }).click();
+    await page.locator('a[href="/companies/synthetic/posteringer"]').click();
     await page.goto(`${base}/companies/synthetic/posteringer`);
     await page.getByText("Synthetic opening transfer", { exact: true }).waitFor();
-    if (/^(accruals|mileage|budget|recurring|parallel)(-reopen)?$/.test(process.env.RM_NATIVE_WEB_EXPENSE_REOPEN ?? "")) { await checkParallelFeature(page, process.env.RM_NATIVE_WEB_EXPENSE_REOPEN!); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "assets") { await checkNativeAssets(page,base); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "assets-reopen") { await checkNativeAssets(page,base,true); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "5") { await checkNativeAssets(page,base,true); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "4") { await checkNativePeriodReport(page,base,true); await checkNativeAssets(page,base); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "3") { await checkNativePeriod(page,base,true); await checkNativePeriodReport(page,base); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "2") { await checkNativePayable(page,base,true); await checkNativePeriod(page,base); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "1") { await checkNativeCompanySetup(page, base, true); await checkNativeVat(page, base, true); await checkNativeSales(page, base, true); await checkNativeSettlement(page, base, true); await checkNativeCredit(page, base, true); await checkNativeRefund(page, base, true); await checkNativeCustomerEdit(page, base, true); await checkNativePayable(page,base); } else {
+    if (/^(accruals|mileage|budget|recurring|parallel|inbox|corporate)(-reopen)?$/.test(process.env.RM_NATIVE_WEB_EXPENSE_REOPEN ?? "")) { await checkParallelFeature(page, process.env.RM_NATIVE_WEB_EXPENSE_REOPEN!); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "assets") { await checkNativeAssets(page,base); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "assets-reopen") { await checkNativeAssets(page,base,true); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "5") { await checkNativeAssets(page,base,true); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "4") { await checkNativePeriodReport(page,base,true); await checkNativeAssets(page,base); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "3") { await checkNativePeriod(page,base,true); await checkNativePeriodReport(page,base); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "2") { await checkNativePayable(page,base,true); await checkNativePeriod(page,base); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "1") { await checkNativeCompanySetup(page, base, true); await checkNativeVat(page, base, true); await checkNativeSales(page, base, true); await checkNativeSettlement(page, base, true); await checkNativeCredit(page, base, true); await checkNativeRefund(page, base, true); await checkNativeCustomerEdit(page, base, true); await checkNativePayable(page,base); } else {
     // Replaying the same browser operation must not create another journal entry.
     const replay = await page.request.post(`${base}/api/companies/synthetic/manual-journal`, { headers: { origin: base, "content-type": "application/json" }, data: JSON.parse(state.postedBody) });
     if (!replay.ok()) throw new Error(`Idempotency replay refused: ${replay.status()}`);
@@ -181,7 +189,7 @@ try {
   console.log("Browser: native MFA and session complete");
   if (!backupLogin) throw new Error("Missing synthetic CLI login recovery code");
   await checkNativeCliLogin(base, backupLogin);
-  await page.getByRole("link", { name: "Åbn bogføring" }).click();
+  await page.locator('a[href="/companies/synthetic/posteringer"]').click();
     await page.goto(`${base}/companies/synthetic/posteringer`);
   console.log("Browser: company selected and journal loaded");
   await page.getByRole("button", { name: "Ny postering", exact: true }).click();

@@ -23,13 +23,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true', help='Run the complete Chromium journey and clean up')
     parser.add_argument('--check-assets', action='store_true', help='Run installer, asset journey and restart persistence only')
-    parser.add_argument('--check-feature', choices=['accruals','mileage','budget','recurring','parallel','desktop'], help='Run selected new native journey and restart checks')
+    parser.add_argument('--check-feature', choices=['accruals','mileage','budget','recurring','parallel','desktop','inbox','corporate'], help='Run selected new native journey and restart checks')
     parser.add_argument('--port', type=int, default=44321)
     parser.add_argument('--skip-web-build', action='store_true')
     args = parser.parse_args()
     checking = args.check or args.check_assets or bool(args.check_feature)
     host_tools = {}
-    if args.check_feature == 'parallel':
+    if args.check_feature in ('parallel','inbox','corporate'):
         packages = []
         for variable, package, binary in [('RM_NATIVE_CLI_BIN','rentemester-cli','rentemester-rust'),
                                            ('RM_NATIVE_MCP_BIN','rentemester-mcp','rentemester-mcp')]:
@@ -45,6 +45,8 @@ def main():
         run(['bun', 'run', 'build'], cwd=REPO/'app')
     prefix = 'rm-native-web-' + uuid.uuid4().hex[:10]
     volume = prefix + '-data'
+    if checking:
+        print(f'Owned synthetic runtime: {prefix}; volume: {volume}', flush=True)
     origin = f'http://127.0.0.1:{args.port}'
     server = None
     with tempfile.TemporaryDirectory(prefix=prefix) as temp:

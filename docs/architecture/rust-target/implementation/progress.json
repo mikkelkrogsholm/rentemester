@@ -1,15 +1,16 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "parallel-platform-31",
-  "code_revision": "git:7e13f3a4 plus native Parties navigation, J05 --with-parties runner/evidence and unique parallel-test directory names",
+  "current_increment": "Rust shared inbox and corporate records across clients, native ownership, and signed corporate backup integration",
+  "code_revision": "adb2bd03 plus scoped root integration changes",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Group30 full actual Linux composed initial/restart PASS:72PASS checks+8browser confirmations on103tool runtime; includes native Parties, full Knowledge, reminder five journals, period/annual, bank links/corrections, privacy/SAFT/accountant/dashboard/integrity, exactownedcleanup. Signed Parties six-table codec integrateddbc2472f with9storage/host tests and strictClippy PASS. Actual Group31 J05 source removal/three independent archive verifies/new-owner MFA/fresh restore/restart PASS, exact party and knowledge histories/originals/2UUIDs retained; exact owned cleanup. Native Knowledge and Parties screens integrated with navigation;116native tests/1existingignored and build PASS. Actual newer native windows still pending lockedMac. Current parallel tracks: shared inbox server/web, thin inbox CLI/MCP, native supplier commitments. Full Rust goal and epic672 remain open.",
+  "state": "Shared Inbox server/web/CLI/MCP and native screen integrated; actual Group35 UI/client initial+restart passed, actual Group36 J05 Inbox signed backup/source deletion/three independently verified archives/new-owner MFA restore/restart passed with exact originals/history and cleanup. Corporate server/web/CLI/MCP/native and signed four-table backup codec integrated; core/UI/client checks passed, actual browser final detail/list step remains unqualified (Group36 missing button; Group37 canonical list request timeout). Ownership server/web/SDK/CLI/MCP120 tools and native screen integrated; 10 filtered engine/storage/application tests (including one existing GDPR case),8UI tests,146native tests/1existingignored and native build passed. Actual two-user normal invitation/MFA fixture reaches review but helper timeout masks button actionability; improved diagnostic pending rerun. Mac unlocked; actual GPUI managed local owner creation/verification/MFA and canonical trial-balance read passed, invoice/paid-expense acceptance still running. Full Rust goal and epic672 remain open.",
   "issues_closed": [],
   "next": [
-    "Integrate shared inbox server/web and five matching SDK/CLI/MCP operations; qualify two-company upload, explicit routing, one target document and restart/recovery.",
-    "Integrate shared inbox server/web and matching SDK/CLI/MCP, then qualify whole two-company upload/assignment/handoff/recovery flow.",
-    "Integrate native supplier commitments and continue full server/web/desktop parity from epic672."
+    "Finish actual Corporate and independently reviewed Ownership browser/client journeys; repair concrete diagnosed issues only.",
+    "Complete actual native invoices, paid expenses and originals on the unlocked Mac.",
+    "Deliver source-authoritative V1 group foundation and intercompany reconciliation, then consolidation; do not infer group configuration from ownership snapshots.",
+    "Qualify signed Corporate backup restoration; remaining nonempty Ownership/Intercompany/Consolidation backup sections still refuse."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,10 +20,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": {
-    "code_revision": "git:16099ae5 helper;82-tool pinned client artifacts from0d6bc3e4; source HEAD7b0acfa2 plus recorded staged/dirty changes at launch",
-    "state": "Group20 full composed initial/restart PASS; normal two-user invitations18 and standalone86-tool company setup20 separately PASS; all precise artifacts/logs retained"
-  },
+  "previous_verified_increment": "parallel-platform-31",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -798,55 +796,70 @@
         "writer_authority": false,
         "whole_issues_closed": false
       }
+    },
+    {
+      "increment": "Groups35-37",
+      "result": "Inbox actual web/client restart and signed backup full restore passed; Corporate+Ownership source integration and native146tests passed; current Corporate/Ownership actual failures retained without success claim.",
+      "evidence": [
+        "/tmp/rm-platform35-inbox-actual.log",
+        "/tmp/rentemester-rust-reports/native-portable-backup-inbox-integrated36.json",
+        "/tmp/rm-platform37-ownership-core.log",
+        "/tmp/rm-platform37-registry-ui.log",
+        "/tmp/rm-platform37-native-tests.log",
+        "/tmp/rm-platform37-native-build.log",
+        "/tmp/rm-platform37-corporate-diagnostic.log",
+        "/tmp/rm-platform37-ownership-actual.log"
+      ]
     }
   ],
   "active_work": [
     {
       "owner": "root",
-      "result": "Integrate complete server/web/native flows and keep whole Rust parity open",
+      "result": "Integrate complete Rust app userflows and resolve concrete Corporate/Ownership actual acceptance failures",
       "depends_on": [
-        "isolated worker commits",
-        "exact actual qualifications"
+        "isolated commits",
+        "ordinary authenticated synthetic fixtures"
       ],
-      "acceptance": "Whole userflows with current authority, original evidence, persistent canonical readback; preserve userchanges"
-    },
-    {
-      "owner": "rust_accruals",
-      "result": "Native shared inbox upload, explicit company routing and durable document handoff",
-      "ownership": "isolated new inbox modules, host5routes, existing React inbox/modal and standalonehelper",
-      "depends_on": [
-        "current multi-company catalog and protected native document publication"
-      ],
-      "acceptance": "Exactly one target original/document, no journal, current rights, durable recovery/restart and conflict refusals; nonempty inbox backup stays explicit refusal"
-    },
-    {
-      "owner": "rust_client_cli",
-      "result": "Shared inbox SDK/CLI/MCP five-operation parity",
-      "ownership": "isolated new client/cli/mcp modules and minimal command/toolregistries; named ingest-only frame exception",
-      "depends_on": [
-        "confirmed inbox route/body/size contracts from rust_accruals"
-      ],
-      "acceptance": "Exact confirmed bounded transport, current errors, no actor/default/key inference/retry; preserve103existingtools"
+      "acceptance": "Exact canonical readback, original evidence, current authority and restart; full goal stays open"
     },
     {
       "owner": "rust_mileage",
-      "result": "Completed actual Group31 J05 Parties/Knowledge qualification; next inbox runtime acceptance awaits integration",
-      "ownership": "read-only rootsource; independent private synthetic AppSupport profile and evidence",
+      "result": "Actual GPUI managed local invoices/paid expenses/originals after normal owner creation and MFA",
       "depends_on": [
-        "upcoming inbox server/web/client commits and exact runtime artifacts"
+        "unlocked native window and functioning CUA controls"
       ],
-      "acceptance": "Each browser/CLI/MCP archive independentlyverified after source/privatekey removal, newowner normalMFA, exact allparty+knowledge histories/2UUIDs/originals afterrestore+restart; exactcleanup"
+      "acceptance": "Real native UI actions and server readback; report tool limitations honestly"
+    },
+    {
+      "owner": "rust_client_cli",
+      "result": "Actual signed Corporate backup qualification helper",
+      "depends_on": [
+        "integrated Corporate codec adb2bd03"
+      ],
+      "acceptance": "Independent archive verification after source/private-key removal, exact history/bytes/visibility after fresh restore and restart"
+    },
+    {
+      "owner": "rust_accruals",
+      "result": "Authoritative V1 group foundation and whole intercompany reconciliation",
+      "depends_on": [
+        "source group manifest and mapping contracts"
+      ],
+      "acceptance": "Explicit current all-company authority, distinct mapping reviewer, exact source-derived reconciliation; no invented consolidation"
     },
     {
       "owner": "rust_budget",
-      "result": "Native supplier commitments and13week forecast flow",
-      "ownership": "isolated new desktop commitments screen/state; root main integration",
+      "result": "Native Ownership delivered; source consolidation contract and actual Ownership diagnostic supplied",
       "depends_on": [
-        "stable server/SDK commitments contracts"
+        "authoritative V1 group foundation before consolidation"
       ],
-      "acceptance": "Serverplans/explicit reviewedwrites/canonical lifecycle/source/history and honest forecastcoverage; tests/build then actualGUI whenaccessible"
+      "acceptance": "Eight focused native tests/build passed; actual new screen not yet qualified"
     }
   ],
-  "integrated_pending_browser": [],
+  "integrated_pending_browser": [
+    "Corporate detail/list/download and full CLI/MCP/restart qualification",
+    "Ownership independent review/apply through two ordinary MFA users and CLI/MCP/restart",
+    "New GPUI business screens beyond established local authentication/read proof",
+    "Corporate signed backup actual restore/restart"
+  ],
   "pending_deliveries": []
 }

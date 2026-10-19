@@ -26,6 +26,14 @@ mod payables;
 mod payables_state;
 mod mileage;
 mod mileage_state;
+mod ownership;
+mod ownership_state;
+mod corporate_records;
+mod corporate_records_state;
+mod workspace_inbox;
+mod workspace_inbox_state;
+mod commitments;
+mod commitments_state;
 mod parties;
 mod parties_state;
 mod company_knowledge;
@@ -213,6 +221,10 @@ struct Desktop {
     budget: Option<Entity<budget::Budget>>,
     periods: Option<Entity<periods::Periods>>,
     backup: Option<Entity<backup::Backup>>,
+    ownership: Option<Entity<ownership::Ownership>>,
+    corporate_records: Option<Entity<corporate_records::CorporateRecords>>,
+    workspace_inbox: Option<Entity<workspace_inbox::WorkspaceInbox>>,
+    commitments: Option<Entity<commitments::Commitments>>,
     parties: Option<Entity<parties::WorkspaceParties>>,
     company_knowledge: Option<Entity<company_knowledge::CompanyKnowledge>>,
     company_setup: Option<Entity<company_setup::CompanySetup>>,
@@ -305,6 +317,10 @@ impl Desktop {
             budget: None,
             periods: None,
             backup: None,
+            ownership: None,
+            corporate_records: None,
+            workspace_inbox: None,
+            commitments: None,
             parties: None,
             company_knowledge: None,
             company_setup: None,
@@ -411,6 +427,10 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.ownership = None;
+        self.corporate_records = None;
+        self.workspace_inbox = None;
+        self.commitments = None;
         self.parties = None;
         self.company_knowledge = None;
         self.company_setup = None;
@@ -483,6 +503,10 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.ownership = None;
+        self.corporate_records = None;
+        self.workspace_inbox = None;
+        self.commitments = None;
         self.parties = None;
         self.company_knowledge = None;
         self.company_setup = None;
@@ -589,6 +613,10 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.ownership = None;
+        self.corporate_records = None;
+        self.workspace_inbox = None;
+        self.commitments = None;
         self.parties = None;
         self.company_knowledge = None;
         self.company_setup = None;
@@ -619,6 +647,10 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.ownership = None;
+        self.corporate_records = None;
+        self.workspace_inbox = None;
+        self.commitments = None;
         self.parties = None;
         self.company_knowledge = None;
         self.company_setup = None;
@@ -890,6 +922,30 @@ impl Render for Desktop {
             );
         }
         content = content.child(list);
+        if let Some(ownership) = self.ownership.clone() {
+            return content.child(Button::new("ownership-close")
+                .label("Luk ejer- og kontrolforhold")
+                .on_click(cx.listener(|this, _, _, cx| { this.ownership = None; cx.notify(); })))
+                .child(ownership);
+        }
+        if let Some(records) = self.corporate_records.clone() {
+            return content.child(Button::new("corporate-records-close")
+                .label("Luk selskabsdokumenter")
+                .on_click(cx.listener(|this, _, _, cx| { this.corporate_records = None; cx.notify(); })))
+                .child(records);
+        }
+        if let Some(inbox) = self.workspace_inbox.clone() {
+            return content.child(Button::new("workspace-inbox-close")
+                .label("Luk fælles bilagsindbakke")
+                .on_click(cx.listener(|this, _, _, cx| { this.workspace_inbox = None; cx.notify(); })))
+                .child(inbox);
+        }
+        if let Some(commitments) = self.commitments.clone() {
+            return content.child(Button::new("commitments-close")
+                .label("Luk forpligtelser og likviditet")
+                .on_click(cx.listener(|this, _, _, cx| { this.commitments = None; cx.notify(); })))
+                .child(commitments);
+        }
         if let Some(parties) = self.parties.clone() {
             return content.child(Button::new("parties-close")
                 .label("Luk workspace-parter")
@@ -1076,6 +1132,62 @@ impl Render for Desktop {
                             Err(error) => { this.status = error; cx.notify(); return; }
                         };
                         this.company_setup = Some(cx.new(|cx| company_setup::CompanySetup::new(session, origin, company, local, window, cx)));
+                        cx.notify();
+                    }
+                })));
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content = content.child(Button::new("ownership-open").label("Ejer- og kontrolforhold").disabled(self.busy)
+                .on_click(cx.listener(|this, _, window, cx| {
+                    if let (Some(session), Some(company)) = (this.session.clone(), this.selected.clone()) {
+                        let origin = this.connection_origin(cx);
+                        let local = match this.managed.as_ref().map(|m| m.journal_identity()).transpose() {
+                            Ok(local) => local,
+                            Err(error) => { this.status = error; cx.notify(); return; }
+                        };
+                        this.ownership = Some(cx.new(|cx| ownership::Ownership::new(session, origin, company, local, window, cx)));
+                        cx.notify();
+                    }
+                })));
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content = content.child(Button::new("corporate-records-open").label("Selskabsdokumenter").disabled(self.busy)
+                .on_click(cx.listener(|this, _, window, cx| {
+                    if let (Some(session), Some(company)) = (this.session.clone(), this.selected.clone()) {
+                        let origin = this.connection_origin(cx);
+                        let local = match this.managed.as_ref().map(|m| m.journal_identity()).transpose() {
+                            Ok(local) => local,
+                            Err(error) => { this.status = error; cx.notify(); return; }
+                        };
+                        this.corporate_records = Some(cx.new(|cx| corporate_records::CorporateRecords::new(session, origin, company, local, window, cx)));
+                        cx.notify();
+                    }
+                })));
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content = content.child(Button::new("workspace-inbox-open").label("Fælles bilagsindbakke").disabled(self.busy)
+                .on_click(cx.listener(|this, _, window, cx| {
+                    if let (Some(session), Some(company)) = (this.session.clone(), this.selected.clone()) {
+                        let origin = this.connection_origin(cx);
+                        let local = match this.managed.as_ref().map(|m| m.journal_identity()).transpose() {
+                            Ok(local) => local,
+                            Err(error) => { this.status = error; cx.notify(); return; }
+                        };
+                        this.workspace_inbox = Some(cx.new(|cx| workspace_inbox::WorkspaceInbox::new(session, origin, company, local, window, cx)));
+                        cx.notify();
+                    }
+                })));
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content = content.child(Button::new("commitments-open").label("Forpligtelser og likviditet").disabled(self.busy)
+                .on_click(cx.listener(|this, _, window, cx| {
+                    if let (Some(session), Some(company)) = (this.session.clone(), this.selected.clone()) {
+                        let origin = this.connection_origin(cx);
+                        let local = match this.managed.as_ref().map(|m| m.journal_identity()).transpose() {
+                            Ok(local) => local,
+                            Err(error) => { this.status = error; cx.notify(); return; }
+                        };
+                        this.commitments = Some(cx.new(|cx| commitments::Commitments::new(session, origin, company, local, window, cx)));
                         cx.notify();
                     }
                 })));
