@@ -11,6 +11,7 @@ const SAFE_ID: i64 = 9_007_199_254_740_991;
 const RETENTION_MS: i64 = 30 * 86_400_000;
 #[derive(Clone, Copy)]
 pub enum Operation {
+    ClosedHistoryArchiveImport,
     JournalPost,
     JournalReverse,
     ExpenseBook,
@@ -22,6 +23,7 @@ pub enum Operation {
 impl Operation {
     pub fn name(self) -> &'static str {
         match self {
+            Self::ClosedHistoryArchiveImport => "closed_history_archive_import",
             Self::JournalPost => "journal_post",
             Self::JournalReverse => "journal_reverse",
             Self::ExpenseBook => "expense_book",

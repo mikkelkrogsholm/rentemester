@@ -317,6 +317,7 @@ fn child() {
         return;
     }
     let operation = match request["operation"].as_str().unwrap_or("journal_post") {
+        "closed_history_archive_import" => Operation::ClosedHistoryArchiveImport,
         "journal_post" => Operation::JournalPost,
         "journal_reverse" => Operation::JournalReverse,
         "expense_book" => Operation::ExpenseBook,
