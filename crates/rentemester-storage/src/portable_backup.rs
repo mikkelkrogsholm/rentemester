@@ -136,6 +136,7 @@ pub struct Control {
     pub unsupported: Vec<(&'static str, u64)>,
 }
 pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
+ crate::workspace_transfer::current(tx)?;
     crate::workspace_members::writer(tx)?;
     let mut unsupported = vec![];
     for (section, tables) in UNSUPPORTED {
@@ -238,6 +239,7 @@ pub fn initialize_control(
         .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
         .map_err(sql)?;
     insert_tables(&tx, &b, &AUDIT_TABLES)?;
+    crate::workspace_transfer::current(&tx)?;
     tx.execute("INSERT INTO workspace_audit(event_type,entity_type,entity_id,actor) VALUES('native_portable_restore','backup',?1,'system:portable-restore')",[archive_hash]).map_err(sql)?;
     tx.commit().map_err(sql)?;
     crate::control_migration::validate_current_control(db)

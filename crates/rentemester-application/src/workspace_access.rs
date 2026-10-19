@@ -70,6 +70,7 @@ fn admin(
     slug: Option<&str>,
     permission: crate::access::Permission,
 ) -> Result<String, Error> {
+    if permission!=crate::access::Permission::WorkspaceMembersRead {rentemester_storage::workspace_transfer::require_business_write(tx)?;}
     if !r.cookies.accepts_session(proof)
         || proof.workspace() != r.catalog.workspace
         || proof.workspace() != r.key.workspace()
@@ -234,6 +235,7 @@ pub fn claim(
     let uid = new_token().map_err(|e| failure(error(e.code()), true))?;
     let aid = new_token().map_err(|e| failure(error(e.code()), true))?;
     let (id, email) = transact(db, |tx| {
+ rentemester_storage::workspace_transfer::require_business_write(tx)?;
         let i = invites::inspect(tx, &digest, now(r)?, r.catalog)?;
         let id = invites::identity(
             tx,
@@ -260,6 +262,7 @@ pub fn claim(
         }
     })?;
     let ready = transact(db, |tx| {
+ rentemester_storage::workspace_transfer::require_business_write(tx)?;
         let i = invites::inspect(tx, &digest, now(r)?, r.catalog)?;
         invites::accept(tx, &i, &id)
     })?;

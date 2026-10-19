@@ -110,7 +110,7 @@ pub fn execute(
     };
     let slug = context.selection.slug;
     let clock = context.clock;
-    control_fence::execute_cookie_subject(
+    control_fence::execute_cookie_subject_mode(
         control,
         company,
         CookieAuthorization {
@@ -120,6 +120,7 @@ pub fn execute(
         },
         context.selection,
         permission,
+        matches!(action, Action::Preview(_)),
         |tx, actor| {
             Ok(match action {
                 Action::Contacts => Output::Json(sales::contacts(tx, slug, today)?),

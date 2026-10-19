@@ -118,6 +118,7 @@ pub fn execute<T>(
         company,
         selection,
         permission,
+        false,
         |_| {
             Ok(ResolvedHuman {
                 workspace: principal.workspace.to_owned(),
@@ -166,6 +167,26 @@ pub fn execute_cookie_subject<T>(
     permission: Permission,
     apply: impl FnOnce(&Transaction<'_>, &str) -> Result<T, Error>,
 ) -> Result<Committed<T>, Failure> {
+    execute_cookie_subject_mode(
+        control,
+        company,
+        authorization,
+        selection,
+        permission,
+        false,
+        apply,
+    )
+}
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn execute_cookie_subject_mode<T>(
+    control: &mut Connection,
+    company: &mut Connection,
+    authorization: CookieAuthorization<'_>,
+    selection: CompanySelection<'_>,
+    permission: Permission,
+    readonly: bool,
+    apply: impl FnOnce(&Transaction<'_>, &str) -> Result<T, Error>,
+) -> Result<Committed<T>, Failure> {
     let CookieAuthorization {
         cookie,
         clock,
@@ -179,6 +200,7 @@ pub fn execute_cookie_subject<T>(
         company,
         selection,
         permission,
+        readonly,
         |tx| {
             let now = clock
                 .now_unix_ms()
@@ -194,11 +216,13 @@ pub fn execute_cookie_subject<T>(
         apply,
     )
 }
+#[allow(clippy::too_many_arguments)]
 fn execute_resolved<T>(
     control: &mut Connection,
     company: &mut Connection,
     selection: CompanySelection<'_>,
     permission: Permission,
+    readonly: bool,
     resolve: impl FnOnce(&Transaction<'_>) -> Result<ResolvedHuman, Error>,
     apply: impl FnOnce(&Transaction<'_>, &str) -> Result<T, Error>,
 ) -> Result<Committed<T>, Failure> {
@@ -207,6 +231,18 @@ fn execute_resolved<T>(
         company,
         |control_tx| {
             let principal = resolve(control_tx)?;
+            if !readonly
+                && !matches!(
+                    permission,
+                    Permission::CompanyRead
+                        | Permission::CompanyDocumentsRead
+                        | Permission::CompanyExport
+                        | Permission::CompanyKnowledgeRead
+                        | Permission::CompanyOwnershipRead
+                )
+            {
+                rentemester_storage::workspace_transfer::require_business_write(control_tx)?;
+            }
             let observed = rentemester_storage::control_access::observe_human(
                 control_tx,
                 &principal.subject,
@@ -275,7 +311,14 @@ fn execute_resolved<T>(
             }
             Ok(principal.subject)
         },
-        apply,
+        |tx, actor| {
+            let before = tx.total_changes();
+            let result = apply(tx, actor)?;
+            if readonly && tx.total_changes() != before {
+                return Err(error("readonly_operation_changed_data"));
+            }
+            Ok(result)
+        },
     )
 }
 /// Internal only: trusted adapter must resolve current authority under this held writer.

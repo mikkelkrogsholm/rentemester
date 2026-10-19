@@ -97,3 +97,4 @@ pub mod hosted_recurring;
 pub mod invoice_email;
 
 pub mod receipt_reconciliation;
+pub mod workspace_transfer;

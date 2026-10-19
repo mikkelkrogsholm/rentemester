@@ -49,6 +49,9 @@ pub fn execute(
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .map_err(|_| failure(error("control_busy_or_unavailable"), false))?;
     let result = (|| {
+        if write {
+            rentemester_storage::workspace_transfer::require_business_write(&tx)?;
+        }
         let now = clock
             .now_unix_ms()
             .map_err(|_| error("invalid_auth_clock"))?;

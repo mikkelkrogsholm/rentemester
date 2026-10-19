@@ -70,6 +70,9 @@ fn authorize(
     write: bool,
     target: Option<&str>,
 ) -> Result<(String, BTreeSet<String>, String), Error> {
+    if write {
+        rentemester_storage::workspace_transfer::require_business_write(tx)?;
+    }
     if !r.cookies.accepts_session(c.cookie)
         || c.cookie.workspace() != r.catalog.workspace
         || c.selection.workspace != r.catalog.workspace

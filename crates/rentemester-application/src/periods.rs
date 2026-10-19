@@ -113,7 +113,7 @@ pub fn execute(
     } else {
         Permission::CompanyReview
     };
-    control_fence::execute_cookie_subject(
+    control_fence::execute_cookie_subject_mode(
         control,
         company,
         CookieAuthorization {
@@ -123,6 +123,7 @@ pub fn execute(
         },
         context.selection,
         permission,
+        matches!(action, Action::Readiness(..)),
         |tx, actor| {
             let (start, end) = match action {
                 Action::List => return rentemester_storage::periods::list(tx, slug),
@@ -160,7 +161,10 @@ pub fn execute(
 }
 
 /// Reuse native close source assurance without a period decision or accounting write.
-pub fn verify_sources(tx: &Transaction<'_>, guard: &mut NamespaceGuard) -> Result<Vec<Value>, Error> {
+pub fn verify_sources(
+    tx: &Transaction<'_>,
+    guard: &mut NamespaceGuard,
+) -> Result<Vec<Value>, Error> {
     let mut errors = rentemester_storage::periods::verify_sources(tx)?;
     errors.extend(evidence(tx, guard)?);
     Ok(errors)

@@ -390,6 +390,44 @@ impl Owner {
         artifact: &artifact::VerifiedArtifact,
         operator: &Operator,
     ) -> Result<Self, OwnerError> {
+        Self::restore_transfer_impl(
+            target, uid, workspace, primary, profile, artifact, operator, None,
+        )
+    }
+    #[allow(clippy::too_many_arguments)]
+    pub fn stage_transfer_new(
+        target: &Path,
+        uid: u32,
+        workspace: &str,
+        primary: &str,
+        profile: NamespaceProfile,
+        artifact: &artifact::VerifiedArtifact,
+        operator: &Operator,
+        wire_archive_sha256: &str,
+        destination: &str,
+    ) -> Result<Self, OwnerError> {
+        Self::restore_transfer_impl(
+            target,
+            uid,
+            workspace,
+            primary,
+            profile,
+            artifact,
+            operator,
+            Some((wire_archive_sha256, destination)),
+        )
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn restore_transfer_impl(
+        target: &Path,
+        uid: u32,
+        workspace: &str,
+        primary: &str,
+        profile: NamespaceProfile,
+        artifact: &artifact::VerifiedArtifact,
+        operator: &Operator,
+        transfer: Option<(&str, &str)>,
+    ) -> Result<Self, OwnerError> {
         if operator.workspace() != workspace
             || workspace != artifact.manifest().context.workspace_id
             || target.symlink_metadata().is_ok()
@@ -397,6 +435,69 @@ impl Owner {
             return Err(OwnerError::Context);
         }
         validate(artifact).map_err(|_| OwnerError::Database)?;
+        let source_transfer = archive_transfer_state(artifact).map_err(|_| OwnerError::Database)?;
+        if (transfer.is_some() && source_transfer.mode != "frozen")
+            || (transfer.is_none() && source_transfer.mode != "active")
+        {
+            return Err(OwnerError::Context);
+        }
+        if source_transfer.mode != "active"
+            && source_transfer.companies
+                != artifact
+                    .manifest()
+                    .context
+                    .companies
+                    .iter()
+                    .map(|c| rentemester_storage::workspace_transfer::Company {
+                        slug: c.slug.clone(),
+                        ledger_uuid: c.ledger_uuid.clone(),
+                    })
+                    .collect::<Vec<_>>()
+        {
+            return Err(OwnerError::Context);
+        }
+        let staged = if let Some((hash, destination)) = transfer {
+            let destination_instance_id = rentemester_storage::workspace_transfer::digest(
+                rentemester_runtime::auth::new_token()
+                    .map_err(|_| OwnerError::Context)?
+                    .as_str()
+                    .as_bytes(),
+            )[..32]
+                .to_owned();
+            let c = rentemester_storage::workspace_transfer::Challenge {
+                version: 1,
+                transfer_id: source_transfer
+                    .transfer_id
+                    .clone()
+                    .ok_or(OwnerError::Context)?,
+                source_instance_id: source_transfer
+                    .source_instance_id
+                    .clone()
+                    .ok_or(OwnerError::Context)?,
+                workspace_id: workspace.into(),
+                archive_sha256: hash.into(),
+                destination_instance_id,
+                destination: destination.into(),
+                companies: artifact
+                    .manifest()
+                    .context
+                    .companies
+                    .iter()
+                    .map(|c| rentemester_storage::workspace_transfer::Company {
+                        slug: c.slug.clone(),
+                        ledger_uuid: c.ledger_uuid.clone(),
+                    })
+                    .collect(),
+            };
+            c.validate().map_err(|_| OwnerError::Context)?;
+            let wire: rentemester_runtime::workspace_transfer::Challenge =
+                serde_json::from_value(serde_json::to_value(&c).map_err(|_| OwnerError::Context)?)
+                    .map_err(|_| OwnerError::Context)?;
+            wire.validate().map_err(|_| OwnerError::Context)?;
+            Some(c)
+        } else {
+            None
+        };
         let parent = target.parent().ok_or(OwnerError::Context)?;
         let token = rentemester_runtime::auth::new_token().map_err(|_| OwnerError::Context)?;
         let stage = parent.join(format!(".rentemester-restore-{}", token.as_str()));
@@ -410,6 +511,27 @@ impl Owner {
         let slots = owner.held.0.as_mut().unwrap();
         restore_business(slots.control.as_mut().unwrap(), artifact, &archive_hash)
             .map_err(|_| OwnerError::Database)?;
+        if let Some(challenge) = staged {
+            let tx = slots
+                .control
+                .as_mut()
+                .unwrap()
+                .transaction_with_behavior(TransactionBehavior::Immediate)
+                .map_err(|_| OwnerError::Database)?;
+            rentemester_storage::workspace_transfer::append(
+                &tx,
+                rentemester_storage::workspace_transfer::Fact::Staged { challenge },
+                "system:portable-transfer",
+                &rentemester_runtime::backup_keys::timestamp(
+                    rentemester_runtime::auth::SystemClock
+                        .now_unix_ms()
+                        .map_err(|_| OwnerError::Context)?,
+                )
+                .map_err(|_| OwnerError::Context)?,
+            )
+            .map_err(|_| OwnerError::Database)?;
+            tx.commit().map_err(|_| OwnerError::Database)?;
+        }
         for c in &artifact.manifest().context.companies {
             switch(
                 &mut slots.company,
@@ -1360,3 +1482,27 @@ mod intercompany_tests;
 #[cfg(test)]
 #[path = "portable_backup/scheduled_tests.rs"]
 mod scheduled_tests;
+
+fn archive_transfer_state(
+    a: &artifact::VerifiedArtifact,
+) -> Result<rentemester_storage::workspace_transfer::State, rentemester_engine::Error> {
+    let entry = a
+        .entries()
+        .iter()
+        .find(|e| {
+            matches!(
+                e.kind(),
+                artifact::EntryKind::ControlBusiness {
+                    section: artifact::BusinessSection::WorkspaceAudit
+                }
+            )
+        })
+        .ok_or_else(|| error("missing control"))?;
+    let mut db = Connection::open_in_memory().map_err(error)?;
+    store::initialize_control(
+        &mut db,
+        entry.bytes(),
+        &rentemester_runtime::backup_keys::digest(a.manifest_bytes()),
+    )?;
+    rentemester_storage::workspace_transfer::current(&db)
+}

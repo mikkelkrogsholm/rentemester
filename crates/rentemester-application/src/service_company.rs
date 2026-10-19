@@ -201,6 +201,7 @@ fn execute(
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .map_err(|_| initial(error("control_busy_or_unavailable")))?;
     let charged = (|| {
+ rentemester_storage::workspace_transfer::require_business_write(&tx)?;
         let time = now(clock)?;
         let observed = service_context::observe(&tx, key.lookup_hash(), time, &catalog)?;
         authorize(&tx, &observed, &selection)?;
@@ -250,7 +251,7 @@ fn execute(
     let done = control_fence::execute_authorized(
         control,
         company,
-        |tx| {
+        |tx| {rentemester_storage::workspace_transfer::require_business_write(tx)?;
             let current = service_context::observe(tx, key.lookup_hash(), now(clock)?, &catalog)?;
             if !current.same_credential(&charged) {
                 return Err(error("invalid_credentials"));

@@ -1294,3 +1294,5 @@ mod service_identity;
 mod password_recovery;
 
 mod invoice_email;
+
+mod workspace_transfer;

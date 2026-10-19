@@ -49,6 +49,8 @@ pub fn current(
 ) -> Result<WorkspaceContext, Error> {
     admission(tx, hash, now, catalog, true).map(|(context, _)| context)
 }
+/// Current context without consuming usage; frozen workspace reads cannot perform service charges.
+pub fn current_readonly(tx:&Transaction<'_>,hash:&str,now:i64,catalog:&Catalog)->Result<WorkspaceContext,Error>{admission(tx,hash,now,catalog,false).map(|(context,_)|context)}
 /// Transient exact current binding. Not deserializable, serializable, Debug or a later grant.
 pub struct Observation {
     id: String,

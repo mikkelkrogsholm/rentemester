@@ -217,6 +217,7 @@ pub fn execute(
         control,
         company,
         |tx| {
+            if !matches!(action,Action::Plan(_)){rentemester_storage::workspace_transfer::require_business_write(tx)?;}
             if cookie.workspace() != selection.workspace {
                 return Err(refused());
             }
@@ -276,7 +277,7 @@ pub fn candidates(
     selection: CompanySelection<'_>,
     limit: usize,
 ) -> Result<Committed<Value>, Failure> {
-    let source = hosted::bindings(company).map_err(initial)?;
+    let source = if rentemester_storage::workspace_transfer::current(control).map_err(initial)?.mode=="active" {hosted::bindings(company).map_err(initial)?}else{vec![]};
     let live = RefCell::new(BTreeMap::new());
     let today = RefCell::new(String::new());
     control_fence::execute_authorized(
@@ -349,6 +350,7 @@ pub fn dispatch(
     selection: CompanySelection<'_>,
     id: i64,
 ) -> Result<ServiceResult, ServiceFailure> {
+    rentemester_storage::workspace_transfer::require_business_write(control).map_err(|e|service_failure(e,UsageStage::NotCommitted,BusinessStage::NotAttempted,true,true))?;
     // Definite preflight before charging; neither discovery nor a duplicate dispatch consumes quota.
     let found = candidates(
         control,
@@ -427,6 +429,7 @@ pub fn dispatch(
             )
         })?;
     let charge = (|| {
+ rentemester_storage::workspace_transfer::require_business_write(&tx)?;
         let o = observed(&tx, key, clock, &selection)?;
         let (b, _) = binding(&tx, &o, &source.grantor_user_id, &selection)?;
         if b != source {
@@ -471,7 +474,7 @@ pub fn dispatch(
     let result = control_fence::execute_authorized(
         control,
         company,
-        |tx| {
+        |tx| {rentemester_storage::workspace_transfer::require_business_write(tx)?;
             let o = observed(tx, key, clock, &selection)?;
             if !o.same_credential(&charged) {
                 return Err(refused());

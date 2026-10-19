@@ -26,8 +26,11 @@ pub fn execute(
         let now = clock
             .now_unix_ms()
             .map_err(|_| error("invalid_auth_clock"))?;
-        let context =
-            rentemester_storage::service_context::current(&tx, key.lookup_hash(), now, catalog)?;
+        let context = if rentemester_storage::workspace_transfer::current(&tx)?.mode=="active" {
+            rentemester_storage::service_context::current(&tx,key.lookup_hash(),now,catalog)?
+        }else{
+            rentemester_storage::service_context::current_readonly(&tx,key.lookup_hash(),now,catalog)?
+        };
         #[cfg(test)]
         if std::env::var("RM_MFA_FAIL_SQL").ok().as_deref() == Some("1") {
             tx.execute("INSERT INTO main.session(id) VALUES(NULL)", [])
