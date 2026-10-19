@@ -882,6 +882,24 @@ impl Owner {
             )
         })
     }
+    pub fn supplier_commitments(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        action: rentemester_application::supplier_commitments::Action<'_>,
+        now: &str,
+    ) -> Result<
+        Attempt<
+            Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, g, context| {
+            rentemester_application::supplier_commitments::execute(
+                c, l, g, context, action, now,
+            )
+        })
+    }
     pub fn expense(
         &mut self,
         cookie: &VerifiedCookie,

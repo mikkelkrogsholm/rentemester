@@ -546,3 +546,4 @@ pub mod posting_rules;
 pub mod bookkeeping_queue;
 pub mod gdpr;
 pub mod retention;
+pub mod supplier_commitments;

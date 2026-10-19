@@ -62,3 +62,4 @@ pub mod dimensions;
 
 pub mod reviewed_bookkeeping;
 pub mod gdpr;
+pub mod supplier_commitments;

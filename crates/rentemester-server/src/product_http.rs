@@ -18,6 +18,7 @@ mod periods;
 mod recurring_invoices;
 mod reviewed_bookkeeping;
 mod sales;
+mod supplier_commitments;
 mod vat;
 use crate::backend::Backend;
 use axum::{
@@ -145,6 +146,26 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route(
             "/api/companies/{slug}/assets/{id}/depreciate",
             post(assets::handle),
+        )
+        .route(
+            "/api/companies/{slug}/supplier-commitments",
+            get(supplier_commitments::handle).post(supplier_commitments::handle),
+        )
+        .route(
+            "/api/companies/{slug}/supplier-commitments/plan",
+            post(supplier_commitments::handle),
+        )
+        .route(
+            "/api/companies/{slug}/supplier-commitments/change",
+            post(supplier_commitments::handle),
+        )
+        .route(
+            "/api/companies/{slug}/supplier-commitments/match",
+            post(supplier_commitments::handle),
+        )
+        .route(
+            "/api/companies/{slug}/supplier-commitments/matches",
+            get(supplier_commitments::handle),
         )
         .route("/api/companies/{slug}/periods", get(periods::handle))
         .route(

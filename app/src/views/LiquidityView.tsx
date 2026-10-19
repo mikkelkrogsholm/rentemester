@@ -1,6 +1,9 @@
+import { Button, ButtonLink, Input, PageHeader, Select } from "../components/ui";
+import { useOptionalAuth } from "../lib/auth-context";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { useUnsavedChanges } from "../lib/useUnsavedChanges";
-import { ButtonLink, Button, Input, PageHeader, Select } from "../components/ui";
+import { NativeLiquidityView } from "./NativeLiquidityView";
+
 // Likviditet / pengestrøm — the per-company cash-flow view (cockpit-redesign
 // Runde 2, iteration 8).
 //
@@ -12,16 +15,16 @@ import { ButtonLink, Button, Input, PageHeader, Select } from "../components/ui"
 // company has no bank transactions a clean empty state is shown instead. All
 // money fields are kroner — `formatKroner` is used throughout.
 
+import { type FormEvent, useState } from "react";
 import { useParams } from "react-router-dom";
-import { api } from "../lib/api";
-import { formatKroner } from "../lib/format";
-import { useAsync } from "../lib/useAsync";
-import type { CompanyCashflow } from "../lib/types";
-import { ErrorState, Loading } from "../components/Feedback";
 import { CashflowChart } from "../components/CashflowChart";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
-import { useState, type FormEvent } from "react";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { ErrorState, Loading } from "../components/Feedback";
+import { api } from "../lib/api";
+import { formatKroner } from "../lib/format";
+import type { CompanyCashflow } from "../lib/types";
+import { useAsync } from "../lib/useAsync";
 
 function CommitmentMatchForm({slug,rows,onDone}:{slug:string;rows:Array<{commitmentId:string;vendor?:string;purpose?:string}>;onDone:()=>void}) {
   const [commitmentId,setCommitmentId]=useState(rows[0]?.commitmentId??"");const [occurrenceDate,setOccurrenceDate]=useState("");const [kind,setKind]=useState<"canonical_document"|"payable"|"bank_transaction">("canonical_document");const [evidenceId,setEvidenceId]=useState("");const [confirmed,setConfirmed]=useState(false);const [message,setMessage]=useState("");
@@ -56,11 +59,11 @@ function monthlyBalances(cf: CompanyCashflow): Array<number | null> {
   return result;
 }
 
-export function LiquidityView() {
+function LegacyLiquidityView() {
   const { slug = "" } = useParams();
   const { year, setYear } = useCompanyYear();
   const [asOf, setAsOf] = useState(() => new Date().toISOString().slice(0, 10));
-  const [pending, setPending] = useState<{commitmentId:string;action:"paused"|"ended"}|null>(null);
+  const [pending, setPending] = useState<{commitmentId:string;action:"paused"|"ended";expectedPayloadHash:string}|null>(null);
   const state = useAsync<CompanyCashflow>(
     (signal) => api.cashflow(slug, year, { signal }),
     [slug, year],
@@ -78,6 +81,7 @@ export function LiquidityView() {
   const cf = state.data!;
   const currency = cf.company.currency || "DKK";
   const netto = cf.totalIn - cf.totalOut;
+  const forecastAmount=(value:number|null)=>value===null?"Ikke tilgængelig":formatKroner(value,currency);
   const balances = monthlyBalances(cf);
 
   return (
@@ -108,12 +112,12 @@ export function LiquidityView() {
         <section className="section">
           <h3>13 ugers likviditetsprognose</h3>
           <label>Prognose fra <Input aria-label="Prognose fra" type="date" value={asOf} onChange={event=>setAsOf(event.target.value)}/></label>
-          <p className="muted">Primo {formatKroner(commitments.data.forecast.openingCash, currency)} · laveste basepunkt {formatKroner(commitments.data.forecast.lowestPoint, currency)}. Base er kanoniske cash-kilder; scenarieultimo tilføjer kun daterede, reviewede antagelser.</p>
-          <div className="card statement-card table-scroll"><table className="data"><thead><tr><th>Uge</th><th className="num">Tilgodehavender</th><th className="num">Kreditorer</th><th className="num">Forpligtelser</th><th className="num">Base ultimo</th><th className="num">Scenarie ultimo</th></tr></thead><tbody>{commitments.data.forecast.periods.map(p=><tr key={p.weekStart}><td>{p.weekStart}</td><td className="num">{formatKroner(p.receivables,currency)}</td><td className="num">{formatKroner(p.payables,currency)}</td><td className="num">{formatKroner(p.commitments+p.obligations,currency)}</td><td className="num">{formatKroner(p.closingCash,currency)}</td><td className="num">{formatKroner(p.scenarioClosingCash,currency)}</td></tr>)}</tbody></table></div>
+          <p className="muted">Primo {forecastAmount(commitments.data.forecast.openingCash)} · laveste basepunkt {forecastAmount(commitments.data.forecast.lowestPoint)}. Base er kanoniske cash-kilder; scenarieultimo tilføjer kun daterede, reviewede antagelser.</p>
+          <div className="card statement-card table-scroll"><table className="data"><thead><tr><th>Uge</th><th className="num">Tilgodehavender</th><th className="num">Kreditorer</th><th className="num">Forpligtelser</th><th className="num">Base ultimo</th><th className="num">Scenarie ultimo</th></tr></thead><tbody>{commitments.data.forecast.periods.map(p=><tr key={p.weekStart}><td>{p.weekStart}</td><td className="num">{formatKroner(p.receivables,currency)}</td><td className="num">{formatKroner(p.payables,currency)}</td><td className="num">{formatKroner(p.commitments+p.obligations,currency)}</td><td className="num">{forecastAmount(p.closingCash)}</td><td className="num">{forecastAmount(p.scenarioClosingCash)}</td></tr>)}</tbody></table></div>
           <details><summary>Antagelser, forpligtelser og kilder</summary><div className="card statement-card table-scroll"><table className="data"><thead><tr><th>Uge</th><th className="num">Dateret budget</th><th className="num">Scenarie</th><th className="num">Intercompany</th><th className="num">Udateret månedsbudget</th><th>Kilder</th></tr></thead><tbody>{commitments.data.forecast.periods.map(p=><tr key={`sources:${p.weekStart}`}><td>{p.weekStart}</td><td className="num">{formatKroner(p.budgets,currency)}</td><td className="num">{formatKroner(p.scenarios,currency)}</td><td className="num">{formatKroner(p.intercompany,currency)}</td><td className="num">{formatKroner(p.undatedBudgetAssumptions,currency)}</td><td>{p.sources.map(source=><div key={`${source.source}:${source.reference}`}><code>{source.source}</code> · {formatKroner(source.amount,currency)} · <code>{source.reference}</code>{source.assumption?" · antagelse":""}{source.settlementStatus==="unknown"?" · settlement ukendt":""}</div>)}</td></tr>)}</tbody></table></div></details>
           <h3>Abonnementer og leverandørforpligtelser</h3>
           {commitments.data.alerts.length>0&&<div className="card"><h4>Fornyelse og opsigelse</h4><ul>{commitments.data.alerts.map(alert=><li key={`${alert.commitmentId}:${alert.kind}:${alert.date}`}><strong>{alert.date}</strong> · {alert.kind} · <code>{alert.commitmentId}</code></li>)}</ul></div>}
-          {commitments.data.commitments.length===0?<p className="muted">Ingen godkendte forpligtelser.</p>:<div className="card statement-card table-scroll"><table className="data"><thead><tr><th>Leverandør</th><th>Formål</th><th className="num">Beløb</th><th>Frekvens</th><th>Næste</th><th>Fornyelse</th><th>Bilag</th><th>Handling</th></tr></thead><tbody>{commitments.data.commitments.map(c=><tr key={c.commitmentId}><td>{c.vendor}</td><td>{c.purpose}</td><td className="num">{c.amount===null?"—":formatKroner(c.amount,c.currency??currency)}</td><td>{c.frequency}</td><td>{c.nextDate}</td><td>{c.renewalDate??"—"}</td><td>{c.evidenceRefs.length?c.evidenceRefs.join(", "):"Mangler"}</td><td><Button requiredPermission="company.draft.write" variant="secondary" type="button" className="btn secondary" onClick={()=>setPending({commitmentId:c.commitmentId,action:"paused"})}>Pause</Button> <Button requiredPermission="company.draft.write" variant="secondary" type="button" className="btn secondary" onClick={()=>setPending({commitmentId:c.commitmentId,action:"ended"})}>Afslut</Button></td></tr>)}</tbody></table></div>}
+          {commitments.data.commitments.length===0?<p className="muted">Ingen godkendte forpligtelser.</p>:<div className="card statement-card table-scroll"><table className="data"><thead><tr><th>Leverandør</th><th>Formål</th><th className="num">Beløb</th><th>Frekvens</th><th>Næste</th><th>Fornyelse</th><th>Bilag</th><th>Handling</th></tr></thead><tbody>{commitments.data.commitments.map(c=><tr key={c.commitmentId}><td>{c.vendor}</td><td>{c.purpose}</td><td className="num">{c.amount===null?"—":formatKroner(c.amount,c.currency??currency)}</td><td>{c.frequency}</td><td>{c.nextDate}</td><td>{c.renewalDate??"—"}</td><td>{c.evidenceRefs.length?c.evidenceRefs.join(", "):"Mangler"}</td><td><Button requiredPermission="company.draft.write" variant="secondary" type="button" className="btn secondary" onClick={()=>setPending({commitmentId:c.commitmentId,action:"paused",expectedPayloadHash:c.payloadHash})}>Pause</Button> <Button requiredPermission="company.draft.write" variant="secondary" type="button" className="btn secondary" onClick={()=>setPending({commitmentId:c.commitmentId,action:"ended",expectedPayloadHash:c.payloadHash})}>Afslut</Button></td></tr>)}</tbody></table></div>}
           {commitments.data.commitments.length>0&&<details><summary>Match faktisk bilag, kreditor eller bankpost</summary><CommitmentMatchForm slug={slug} rows={commitments.data.commitments} onDone={commitments.reload}/></details>}
           {commitments.data.matches.length>0&&<div className="card"><h4>Faktisk mod forventet</h4><ul>{commitments.data.matches.map(match=><li key={`${match.commitmentId}:${match.occurrenceDate}`}><code>{match.commitmentId}</code> · {match.occurrenceDate} · {match.variance.dateDays} dage · {match.variance.amount===null?"valuta kan ikke sammenlignes":formatKroner(match.variance.amount,currency)} · bilag {match.variance.documentation}</li>)}</ul></div>}
           <p className="muted">Udeladt: {commitments.data.forecast.completeness.excluded.join("; ")}</p>
@@ -257,3 +261,5 @@ function ArchivedNotice({ year }: { year: string }) {
     </div>
   );
 }
+
+export function LiquidityView(){const auth=useOptionalAuth();return auth&&auth.backend!=="rust"?<LegacyLiquidityView/>:<NativeLiquidityView/>;}
