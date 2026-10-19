@@ -154,6 +154,18 @@ impl NamespaceGuard {
         let _ = unlinkat(&directory, temporary.as_str(), AtFlags::empty());
         result
     }
+    /// Read only the content-addressed archive admitted by bank import.
+    pub fn read_bank_statement(&mut self, hash: &str) -> Result<Vec<u8>, Error> {
+        if hash.len() != 64
+            || !hash
+                .bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+        {
+            return Err(Error::Invalid);
+        }
+        let directory = self.original_directory(false, true)?;
+        self.read_original(&directory, &format!("{hash}.txt"), hash)
+    }
     pub fn read_document(&mut self, path: &str, hash: &str) -> Result<Vec<u8>, Error> {
         if hash.len() != 64
             || !hash

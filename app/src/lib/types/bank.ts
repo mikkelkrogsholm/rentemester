@@ -22,9 +22,16 @@ export type BankTransactionRow = {
   runningBalance: number | null;
   reconciliationStatus: "matched" | "unmatched";
   journalEntryNo: string | null;
+  reconciliationProblem?: string | null;
+  reconciliationId?: string | null;
+  reconciliationNote?: string | null;
+  reconciliationActor?: string | null;
+  reconciliationProof?: string | null;
 };
 
 export type CompanyBank = {
+  manualReconciliationAvailable?: boolean;
+  reconciliationCorrectionAvailable?: boolean;
   slug: string;
   selectedYear: string;
   archived: boolean;
@@ -151,4 +158,13 @@ export type CompanyBankAccounts = {
 export type BankAccountsResponse = {
   ok: true;
   bankAccounts: CompanyBankAccounts;
+};
+
+export type BankJournalLinkPlan = {
+  bankTransactionId: number; bankDate: string; bankText: string; bankCurrency: string;
+  bankAmount: number; bankAmountDkk: number; bankAccountNo: string;
+  sourceHash: string; transactionHash: string; journalEntryId: number;
+  journalEntryNo: string; journalHash: string; journalDate: string;
+  journalBankMovement: number; document: { id: number; sha256: string } | null;
+  planHash: string; effect: "link_only_no_posting";
 };

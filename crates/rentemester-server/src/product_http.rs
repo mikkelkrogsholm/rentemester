@@ -3,6 +3,7 @@ mod accountant;
 mod accruals;
 mod assets;
 mod bank;
+mod bank_reconciliation;
 mod budget;
 mod company_setup;
 mod documents;
@@ -238,6 +239,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/account-roles",
             post(company_setup::handle),
         )
+        .route("/api/companies/{slug}/bank/reconciliation-candidates", get(bank_reconciliation::handle))
+        .route("/api/companies/{slug}/bank/reconciliation-link", post(bank_reconciliation::handle))
         .route("/api/companies/{slug}/bank", get(bank::handle))
         .route(
             "/api/companies/{slug}/bank-accounts",

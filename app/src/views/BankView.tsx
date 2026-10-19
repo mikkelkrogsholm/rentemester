@@ -1,4 +1,4 @@
-import { ButtonLink, Button, Input, PageHeader, Select, Pagination, FilterBar } from "../components/ui";
+import { Button, ButtonLink, FilterBar, Input, PageHeader, Pagination, Select } from "../components/ui";
 // Bank — the per-company bank transactions (cockpit-redesign iteration 3).
 //
 // Renders `/api/companies/:slug/bank?year=`: the imported bank_transactions
@@ -17,18 +17,19 @@ import { ButtonLink, Button, Input, PageHeader, Select, Pagination, FilterBar } 
 
 import { useMemo, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { api } from "../lib/api";
-import { formatDateDa, formatKroner } from "../lib/format";
-import { useAsync } from "../lib/useAsync";
-import type { BankTransactionRow, CompanyBank } from "../lib/types";
-import { ErrorState, Loading } from "../components/Feedback";
-import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
+import { BankCorrectionModal } from "../components/BankCorrectionModal";
 import { BankImportModal } from "../components/BankImportModal";
+import { BankJournalLinkModal } from "../components/BankJournalLinkModal";
 import {
   BankReconcileModal,
   type BankReconcileTransaction,
 } from "../components/BankReconcileModal";
-import { BankCorrectionModal } from "../components/BankCorrectionModal";
+import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
+import { ErrorState, Loading } from "../components/Feedback";
+import { api } from "../lib/api";
+import { formatDateDa, formatKroner } from "../lib/format";
+import type { BankTransactionRow, CompanyBank } from "../lib/types";
+import { useAsync } from "../lib/useAsync";
 
 // #451 — the URL keys we own; listed once so "Ryd filtre" can clear them all
 // without touching other params (e.g. `?year=`).
@@ -60,6 +61,7 @@ export function BankView() {
   // while no settle-modal is open.
   const [reconciling, setReconciling] =
     useState<BankReconcileTransaction | null>(null);
+  const [linking, setLinking] = useState<BankReconcileTransaction | null>(null);
   const [correcting, setCorrecting] = useState<{ id: number; text: string; journalEntryNo?: string | null } | null>(null);
 
   // --- #451 filter-bar params (client-side; reflected in URL) ---------------
@@ -224,8 +226,10 @@ export function BankView() {
           onClose={() => setReconciling(null)}
         />
       )}
+      {linking && <BankJournalLinkModal slug={slug} transaction={linking} onApplied={state.reload} onClose={() => setLinking(null)} />}
       {correcting && <BankCorrectionModal slug={slug} transaction={correcting} onApplied={state.reload} onClose={() => setCorrecting(null)} />}
 
+      {b.reconciliationCorrectionAvailable === false && <p className="muted">Manuelle links opretter ingen bogføring. Korrektion af et eksisterende link kræver tilbageførsel og en gennemgået erstatningspostering; linkkorrektion understøttes endnu ikke her.</p>}
       {b.archived ? (
         <ArchivedBankView
           bank={b}
@@ -365,10 +369,12 @@ export function BankView() {
                       </td>
                       <td data-label="Afstemning" role="cell">
                         {tx.reconciliationStatus === "matched" ? (
-                          <div className="row-actions"><span className="flag ok">Afstemt{tx.journalEntryNo ? ` · ${tx.journalEntryNo}` : ""}</span><Button requiredPermission="company.ledger.post" variant="secondary" type="button" className="btn secondary" onClick={() => setCorrecting({ id: tx.id, text: tx.text, journalEntryNo: tx.journalEntryNo })}>Ret</Button></div>
+                          <div className="row-actions"><span className="flag ok">Afstemt{tx.journalEntryNo ? ` · ${tx.journalEntryNo}` : ""}</span>{b.reconciliationCorrectionAvailable !== false && <Button requiredPermission="company.ledger.post" variant="secondary" type="button" className="btn secondary" onClick={() => setCorrecting({ id: tx.id, text: tx.text, journalEntryNo: tx.journalEntryNo })}>Ret</Button>}{tx.reconciliationNote && <details><summary>Afstemningsbevis</summary><p>{tx.reconciliationNote}</p><p>{tx.reconciliationActor}</p><p className="muted">{tx.reconciliationProof}</p></details>}</div>
                         ) : (
                           <div className="row-actions">
                             <span className="flag warning">Uafstemt</span>
+                            {tx.reconciliationProblem ? <span className="muted">{tx.reconciliationProblem}</span> : <>
+                            {b.manualReconciliationAvailable && <Button requiredPermission="company.ledger.post" variant="secondary" type="button" onClick={() => setLinking({id:tx.id,date:tx.date,text:tx.text,amount:tx.amount,currency})}>Afstem eksisterende postering</Button>}
                             <Button requiredPermission="company.ledger.post" variant="secondary"
                               type="button"
                               className="btn secondary"
@@ -383,7 +389,7 @@ export function BankView() {
                               }
                             >
                               Bogfør
-                            </Button>
+                            </Button></>}
                           </div>
                         )}
                       </td>

@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { BankView } from "./BankView";
-import { renderAt } from "../test/render";
 import { bank, invoices, mockFetch } from "../test/fixtures";
+import { renderAt } from "../test/render";
+import { BankView } from "./BankView";
 
 function route(over = {}) {
   return {
@@ -324,4 +324,16 @@ test("ambiguous statement evidence remains unknown and explains the problem", as
   expect(await screen.findByText(/Rækkefølgen i kontoudtoget giver ikke en entydig slutsaldo/)).toBeInTheDocument();
   expect(screen.queryByText(/Intet kontoudtog importeret/)).not.toBeInTheDocument();
   expect(screen.queryByText(/Kontoudtog og bogført saldo stemmer/)).not.toBeInTheDocument();
+});
+
+test("native bank offers initial manual link and exposes immutable reason without unsupported correction", async () => {
+  const value = bank({ manualReconciliationAvailable: true, reconciliationCorrectionAvailable: false });
+  value.transactions[0] = {...value.transactions[0]!,reconciliationNote:"Synthetic verified same event",reconciliationActor:"user:synthetic",reconciliationProof:"native-plan:proof"};
+  mockFetch({"GET /api/companies/acme-aps/bank":{bank:value}});
+  renderView();
+  expect(await screen.findByRole("button",{name:"Afstem eksisterende postering"})).toBeInTheDocument();
+  expect(screen.queryByRole("button",{name:"Ret"})).toBeNull();
+  await userEvent.click(screen.getByText("Afstemningsbevis"));
+  expect(screen.getByText("Synthetic verified same event")).toBeInTheDocument();
+  expect(screen.getByText("native-plan:proof")).toBeInTheDocument();
 });

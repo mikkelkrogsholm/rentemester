@@ -762,6 +762,9 @@ impl Owner {
             rentemester_application::obligations::read(c, l, context, today, year)
         })
     }
+    pub fn bank_reconciliation(&mut self,cookie:&VerifiedCookie,clock:&dyn Clock,action:rentemester_application::bank_reconciliation::Action<'_>)->Result<Attempt<Result<Committed<serde_json::Value>,rentemester_application::control_fence::Failure>>,OwnerError>{
+        self.document_action(cookie,clock,|c,l,g,context|rentemester_application::bank_reconciliation::execute(c,l,g,context,action))
+    }
     pub fn exceptions(
         &mut self,
         cookie: &VerifiedCookie,

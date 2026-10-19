@@ -1,5 +1,5 @@
-import type { BankAccountsResponse, BankResponse } from "../types";
-import { request, type ReadRequestOptions } from "./_shared";
+import type { BankAccountsResponse, BankJournalLinkPlan, BankResponse } from "../types";
+import { type ReadRequestOptions, request } from "./_shared";
 
 export const bankApi = {
   /**
@@ -44,6 +44,10 @@ export const bankApi = {
       options,
     ).then((r) => r.bank),
 
+  bankReconciliationCandidates: (slug: string, id: number, options?: ReadRequestOptions) =>
+    request<{ok:true;reconciliationCandidates:{plans:BankJournalLinkPlan[];note:string}}>(`/api/companies/${encodeURIComponent(slug)}/bank/reconciliation-candidates?bankTransactionId=${id}`, options).then(r=>r.reconciliationCandidates),
+  linkBankJournal: (slug: string, input: {bankTransactionId:number;journalEntryId:number;planHash:string;note:string;confirm:true}) =>
+    request<{ok:true;reconciliation:{id:number;journalEntryNo:string;effect:string}}>(`/api/companies/${encodeURIComponent(slug)}/bank/reconciliation-link`,{method:"POST",body:JSON.stringify(input)}).then(r=>r.reconciliation),
   correctionPlan: (slug:string, bankTransactionId:number, replacementJournalEntryId:number, options?: ReadRequestOptions) =>
     request<{ok:true;plan:unknown}>(`/api/companies/${encodeURIComponent(slug)}/bank/reconciliation-correction-plan?bankTransactionId=${bankTransactionId}&replacementJournalEntryId=${replacementJournalEntryId}`, options).then(r=>r.plan),
 

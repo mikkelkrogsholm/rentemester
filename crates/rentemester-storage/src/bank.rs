@@ -140,7 +140,11 @@ fn numeric(m: &Money) -> Result<String, Error> {
 fn optional_string(s: Option<&str>) -> String {
     s.map(quoted).unwrap_or_else(|| "null".into())
 }
-fn fingerprint(row: &Row, account: Option<i64>, occurrence: usize) -> Result<String, Error> {
+pub(crate) fn fingerprint(
+    row: &Row,
+    account: Option<i64>,
+    occurrence: usize,
+) -> Result<String, Error> {
     let rate = row
         .rate
         .as_ref()
@@ -301,8 +305,8 @@ pub fn read(
     let start = year.start.to_string();
     let end = year.end.to_string();
     let all_accounts = accounts(tx, slug)?;
-    let mut q=tx.prepare("SELECT bt.id,bt.transaction_date,bt.text,COALESCE(bt.amount_dkk,bt.amount),br.journal_entry_no,bt.balance_after,bt.currency,ba.currency FROM bank_transactions bt LEFT JOIN bank_accounts ba ON ba.id=bt.bank_account_id LEFT JOIN bank_journal_reconciliations br ON br.bank_transaction_id=bt.id WHERE bt.transaction_date BETWEEN ?1 AND ?2 ORDER BY bt.transaction_date,bt.id").map_err(sql)?;
-    let transactions=q.query_map(params![start,end],|r|{let journal:Option<String>=r.get(4)?;Ok(json!({"id":r.get::<_,i64>(0)?,"date":r.get::<_,String>(1)?,"text":r.get::<_,String>(2)?,"amount":r.get::<_,f64>(3)?,"runningBalance":if r.get::<_,Option<String>>(7)?.as_deref().unwrap_or(&r.get::<_,String>(6)?)=="DKK" {r.get::<_,Option<f64>>(5)?}else{None},"reconciliationStatus":if journal.is_some(){"matched"}else{"unmatched"},"journalEntryNo":journal}))}).map_err(sql)?.collect::<Result<Vec<_>,_>>().map_err(sql)?;
+    let mut q=tx.prepare("SELECT bt.id,bt.transaction_date,bt.text,COALESCE(bt.amount_dkk,bt.amount),br.journal_entry_no,bt.balance_after,bt.currency,ba.currency,EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=br.journal_entry_id),br.reconciliation_id,link.note,link.created_by,link.source_reference FROM bank_transactions bt LEFT JOIN bank_accounts ba ON ba.id=bt.bank_account_id LEFT JOIN bank_journal_reconciliations br ON br.bank_transaction_id=bt.id LEFT JOIN bank_journal_reconciliation_links link ON link.bank_transaction_id=bt.id AND br.link_kind='append-only' WHERE bt.transaction_date BETWEEN ?1 AND ?2 ORDER BY bt.transaction_date,bt.id").map_err(sql)?;
+    let transactions=q.query_map(params![start,end],|r|{let journal:Option<String>=r.get(4)?;let reversed:bool=r.get(8)?;Ok(json!({"id":r.get::<_,i64>(0)?,"date":r.get::<_,String>(1)?,"text":r.get::<_,String>(2)?,"amount":r.get::<_,f64>(3)?,"runningBalance":if r.get::<_,Option<String>>(7)?.as_deref().unwrap_or(&r.get::<_,String>(6)?)=="DKK" {r.get::<_,Option<f64>>(5)?}else{None},"reconciliationStatus":if journal.is_some() && !reversed{"matched"}else{"unmatched"},"reconciliationProblem":if reversed{Some("Tilknyttet postering er tilbageført; særskilt linkkorrektion kræves.")}else{None},"journalEntryNo":journal,"reconciliationId":r.get::<_,Option<String>>(9)?,"reconciliationNote":r.get::<_,Option<String>>(10)?,"reconciliationActor":r.get::<_,Option<String>>(11)?,"reconciliationProof":r.get::<_,Option<String>>(12)?}))}).map_err(sql)?.collect::<Result<Vec<_>,_>>().map_err(sql)?;
     let matched = transactions
         .iter()
         .filter(|v| v["reconciliationStatus"] == "matched")
@@ -322,7 +326,7 @@ pub fn read(
         .transpose()?;
     let fiscal_years:Vec<_>=years.values().map(|y|json!({"label":y.display_label,"start":y.start.to_string(),"end":y.end.to_string(),"source":"live"})).collect();
     Ok(
-        json!({"slug":slug,"selectedYear":label,"archived":false,"company":all_accounts["company"],"fiscalYears":fiscal_years,"periodStart":start,"periodEnd":end,"accounts":all_accounts["accounts"],"bookedBalance":crate::cockpit::number(&booked)?,"actualBalance":statement.balance.as_ref().map(crate::cockpit::number).transpose()?,"difference":difference,"bankStatementStatus":statement.status,"bankStatementProblem":statement.problem,"matchedCount":matched,"unmatchedCount":transactions.len()-matched,"transactions":transactions}),
+        json!({"slug":slug,"selectedYear":label,"archived":false,"manualReconciliationAvailable":true,"reconciliationCorrectionAvailable":false,"company":all_accounts["company"],"fiscalYears":fiscal_years,"periodStart":start,"periodEnd":end,"accounts":all_accounts["accounts"],"bookedBalance":crate::cockpit::number(&booked)?,"actualBalance":statement.balance.as_ref().map(crate::cockpit::number).transpose()?,"difference":difference,"bankStatementStatus":statement.status,"bankStatementProblem":statement.problem,"matchedCount":matched,"unmatchedCount":transactions.len()-matched,"transactions":transactions}),
     )
 }
 
