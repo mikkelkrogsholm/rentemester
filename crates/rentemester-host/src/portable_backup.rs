@@ -154,6 +154,14 @@ impl Owner {
                     .map(|c| c.slug.clone())
                     .collect::<Vec<_>>(),
             )?;
+            store::validate_intercompany_companies(
+                &tx,
+                &catalog
+                    .companies
+                    .iter()
+                    .map(|c| c.slug.clone())
+                    .collect::<Vec<_>>(),
+            )?;
             let mut entries = vec![];
             let mut companies = vec![];
             add(
@@ -287,9 +295,22 @@ impl Owner {
                     }
                 }
             }
+            add(
+                &mut entries,
+                artifact::Snapshot {
+                    kind: artifact::EntryKind::ControlBusiness {
+                        section: artifact::BusinessSection::Intercompany,
+                    },
+                    path: "control/intercompany.json".into(),
+                    bytes: business.intercompany_bytes,
+                },
+            )?;
             let unsupported = business
                 .unsupported
                 .into_iter()
+                // Dispositions are checked empty by the producer; this section
+                // authenticates the complete supported manifest/mapping codec.
+                .filter(|(name, _)| *name != "intercompany")
                 .map(|(name, record_count)| {
                     Ok(artifact::UnsupportedSection {
                         section: serde_json::from_value(serde_json::json!(name)).map_err(error)?,
@@ -311,6 +332,7 @@ impl Owner {
                         artifact::BusinessSection::WorkspaceInbox,
                         artifact::BusinessSection::CorporateRecords,
                         artifact::BusinessSection::Ownership,
+                        artifact::BusinessSection::Intercompany,
                     ],
                     unsupported,
                     excluded: artifact::Exclusion::ALL.to_vec(),
@@ -463,6 +485,7 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
                     | artifact::BusinessSection::WorkspaceInbox
                     | artifact::BusinessSection::CorporateRecords
                     | artifact::BusinessSection::Ownership
+                    | artifact::BusinessSection::Intercompany
             )
         })
     {
@@ -635,13 +658,30 @@ fn restore_business(
                 .collect::<Vec<_>>(),
         )?;
     }
+    if a.manifest()
+        .context
+        .coverage
+        .included
+        .contains(&artifact::BusinessSection::Intercompany)
+    {
+        store::initialize_intercompany(
+            control,
+            entry(artifact::BusinessSection::Intercompany)?.bytes(),
+            &a.manifest()
+                .context
+                .companies
+                .iter()
+                .map(|c| c.slug.clone())
+                .collect::<Vec<_>>(),
+        )?;
+    }
     Ok(())
 }
 #[cfg(test)]
 mod tests {
     use super::*;
     use serde_json::json;
-    fn signed(
+    pub(super) fn signed(
         corporate: bool,
         knowledge: bool,
         parties: bool,
@@ -1269,3 +1309,6 @@ mod tests {
         );
     }
 }
+#[cfg(test)]
+#[path = "portable_backup/intercompany_tests.rs"]
+mod intercompany_tests;

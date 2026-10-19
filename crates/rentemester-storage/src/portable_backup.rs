@@ -1,7 +1,11 @@
 //! Explicit credential-free business codec and full current native ledger checks.
 //! No path opens, archive parsing, signing, grants or operator authority.
 mod corporate;
+mod intercompany;
 mod ownership;
+pub use intercompany::{
+    initialize as initialize_intercompany, validate_companies as validate_intercompany_companies,
+};
 pub use ownership::{
     initialize as initialize_ownership, validate_companies as validate_ownership_companies,
 };
@@ -36,7 +40,6 @@ const UNSUPPORTED: [(&str, &[&str]); 2] = [
     (
         "intercompany",
         &[
-            "rm_intercompany_mapping_events",
             "rm_intercompany_dispositions",
             "rm_intercompany_disposition_events",
             "rm_intercompany_disposition_journal_links",
@@ -128,19 +131,11 @@ pub struct Control {
     pub inbox_bytes: Vec<u8>,
     pub corporate_bytes: Vec<u8>,
     pub ownership_bytes: Vec<u8>,
+    pub intercompany_bytes: Vec<u8>,
     pub unsupported: Vec<(&'static str, u64)>,
 }
 pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
     crate::workspace_members::writer(tx)?;
-    if tx
-        .query_row("SELECT COUNT(*) FROM rm_group_manifest_events", [], |r| {
-            r.get::<_, i64>(0)
-        })
-        .map_err(sql)?
-        != 0
-    {
-        return Err(refused("nonempty unsupported ownership group manifest"));
-    }
     let mut unsupported = vec![];
     for (section, tables) in UNSUPPORTED {
         let mut count = 0u64;
@@ -167,6 +162,7 @@ pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
         inbox_bytes: inbox::export(tx)?,
         corporate_bytes: corporate::export(tx)?,
         ownership_bytes: ownership::export(tx)?,
+        intercompany_bytes: intercompany::export(tx)?,
         unsupported,
     })
 }
@@ -483,14 +479,14 @@ mod tests {
         );
     }
     #[test]
-    fn nonempty_unsupported_business_is_refused_and_unknown_codec_never_imports_authority() {
+    fn malformed_manifest_is_refused_and_unknown_codec_never_imports_authority() {
         let (mut c, _) = pair();
         c.execute("INSERT INTO rm_group_manifest_events(manifest_hash,canonical_manifest,actor,created_at)VALUES(?1,'{}','system:synthetic','2026-01-01T00:00:00Z')",["a".repeat(64)]).unwrap();
         let tx = c
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .unwrap();
         let e = export_control(&tx).err().unwrap();
-        assert!(e.message.contains("ownership"));
+        assert!(e.message.contains("intercompany"));
         tx.rollback().unwrap();
         let mut fresh = Connection::open_in_memory().unwrap();
         assert!(initialize_control(&mut fresh,br#"{"format":"rentemester-native-business-control/1","tables":{"user":{"columns":[],"rows":[]}}}"#,&"b".repeat(64)).is_err());
