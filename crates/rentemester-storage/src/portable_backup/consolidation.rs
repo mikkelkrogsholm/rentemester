@@ -121,14 +121,9 @@ fn facts(tx: &Transaction<'_>, registered: &BTreeSet<String>) -> Result<(), Erro
 pub(super) fn export(tx: &Transaction<'_>) -> Result<Vec<u8>, Error> {
     let bytes = dump(tx)?;
     let mut registered = companies(tx)?;
-    // The live host subsequently checks the union against the signed catalog.
-    let mut q = tx
-        .prepare("SELECT canonical_manifest FROM rm_group_manifest_events ORDER BY id")
-        .map_err(sql)?;
-    for raw in q.query_map([], |r| r.get::<_, String>(0)).map_err(sql)? {
-        let m: Manifest = serde_json::from_str(&raw.map_err(sql)?).map_err(sql)?;
-        registered.extend(m.companies());
-    }
+    // Dispositions and historical mappings can name companies without any
+    // reporting manifest. The live host checks this full union against its catalog.
+    registered.extend(super::intercompany::companies(tx)?);
     facts(tx, &registered)?;
     Ok(bytes)
 }

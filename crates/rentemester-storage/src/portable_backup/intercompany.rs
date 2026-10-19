@@ -133,7 +133,7 @@ fn dump_version(db: &Connection, legacy: bool) -> Result<Vec<u8>, Error> {
     Ok(bytes)
 }
 /// Collect every historical reference, including groups removed from the current manifest.
-fn companies(db: &Connection) -> Result<BTreeSet<String>, Error> {
+pub(super) fn companies(db: &Connection) -> Result<BTreeSet<String>, Error> {
     let mut result = BTreeSet::new();
     let mut q = db
         .prepare("SELECT canonical_manifest FROM rm_group_manifest_events ORDER BY id")

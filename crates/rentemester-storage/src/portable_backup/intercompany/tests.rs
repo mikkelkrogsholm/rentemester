@@ -264,7 +264,8 @@ fn v1_compatibility_decodes_empty_dispositions_without_rewriting_old_bytes() {
 #[test]
 fn disposition_v2_history_service_principal_and_original_references_roundtrip_or_refuse() {
     use crate::intercompany_dispositions as d;
-    let mut c = fixture();
+    // Dispositions do not require a group/reporting manifest.
+    let mut c = db();
     let tx = c
         .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
         .unwrap();
@@ -392,6 +393,9 @@ fn disposition_v2_history_service_principal_and_original_references_roundtrip_or
     let parties = super::super::parties::export(&tx).unwrap();
     let corporate = super::super::corporate::export(&tx).unwrap();
     let signed = export(&tx).unwrap();
+    let all = super::super::export_control(&tx).unwrap();
+    assert_eq!(all.intercompany_bytes, signed);
+    assert!(super::super::consolidation::validate_companies(&tx, &["a".into()]).is_err());
     tx.commit().unwrap();
     let mut restored = db();
     let registered = ["a".into(), "b".into()];
