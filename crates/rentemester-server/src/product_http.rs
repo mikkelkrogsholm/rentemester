@@ -4,6 +4,7 @@ mod bank;
 mod budget;
 mod company_setup;
 mod documents;
+mod mileage;
 mod payables;
 mod periods;
 mod sales;
@@ -50,6 +51,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             get(budget::handle),
         )
         .route("/api/companies", get(companies))
+        .route(
+            "/api/companies/{slug}/mileage",
+            get(mileage::handle).post(mileage::handle),
+        )
         .route(
             "/api/companies/{slug}/assets",
             get(assets::handle).post(assets::handle),

@@ -134,6 +134,17 @@ describe("MileageView — Kørsel (#335)", () => {
     expect(screen.getByLabelText(/Takst-grundlag/)).toBeInTheDocument();
   });
 
+  test("registration uses the selected fiscal period and accepts hundredth kilometres", async () => {
+    mockFetch(route({ selectedYear: "2024/25", periodStart: "2024-07-01", periodEnd: "2025-06-30" }));
+    renderView();
+    fireEvent.click(await screen.findByRole("button", { name: "Registrér kørsel" }));
+    const date = screen.getByLabelText("Dato");
+    expect(date).toHaveAttribute("min", "2024-07-01");
+    expect(date).toHaveAttribute("max", "2025-06-30");
+    expect(date).toHaveValue("2025-06-30");
+    expect(screen.getByLabelText("Antal km")).toHaveAttribute("step", "0.01");
+  });
+
   test("submitting the register-modal POSTs to /mileage and reloads the list", async () => {
     let posted: { url: string; body: unknown } | null = null;
     // Custom fetch stub: GET serves the list fixture, POST captures the body
@@ -169,6 +180,7 @@ describe("MileageView — Kørsel (#335)", () => {
               mileageEntryId: 42,
               entryNo: "MIL-2026-000042",
               amountBasis: 379,
+              warnings: ["Synthetic advisory: confirm the supplied rate basis."],
             },
           }),
           { status: 200, headers: { "content-type": "application/json" } },
@@ -212,6 +224,7 @@ describe("MileageView — Kørsel (#335)", () => {
       await screen.findByText("MIL-2026-000042", { exact: false }),
     ).toBeInTheDocument();
 
+    expect(screen.getByText("Synthetic advisory: confirm the supplied rate basis.")).toBeInTheDocument();
     expect(posted).not.toBeNull();
     const body = (posted as unknown as { body: Record<string, unknown> }).body;
     expect(body.confirm).toBe(true);

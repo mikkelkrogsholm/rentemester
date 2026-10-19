@@ -63,6 +63,18 @@ impl Decimal {
         }
     }
 }
+pub(crate) fn compare(left: &str, right: &str) -> Result<std::cmp::Ordering, Error> {
+    let a = Decimal::parse(left)?;
+    let b = Decimal::parse(right)?;
+    let scale = a.scale.max(b.scale);
+    Ok(
+        (a.coefficient * BigInt::from(10u8).pow((scale - a.scale) as u32))
+            .cmp(&(b.coefficient * BigInt::from(10u8).pow((scale - b.scale) as u32))),
+    )
+}
+pub(crate) fn positive(value: &str) -> Result<bool, Error> {
+    Ok(Decimal::parse(value)?.coefficient.sign() == Sign::Plus)
+}
 pub(crate) fn parse_scaled(value: &str, scale: u8) -> Result<BigInt, Error> {
     Decimal::parse(value)?.quantize(scale)
 }

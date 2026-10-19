@@ -172,6 +172,8 @@ export function MileageView() {
       {registering && (
         <MileageRegisterModal
           slug={slug}
+          periodStart={m.periodStart}
+          periodEnd={m.periodEnd}
           onRegistered={() => state.reload()}
           onClose={() => setRegistering(false)}
         />
@@ -271,7 +273,7 @@ function EmptyState({
         skattesats for dig.
       </p>
       <div className={["row-actions", stylex.props(viewStyles.site1).className].filter(Boolean).join(" ")} >
-        <Button type="button" className="btn" onClick={onRegister}>
+        <Button requiredPermission="company.ledger.post" type="button" className="btn" onClick={onRegister}>
           Registrér første kørsel
         </Button>
       </div>

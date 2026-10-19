@@ -10,7 +10,7 @@ export type MileageEntryRow = {
   purpose: string;
   fromLocation: string;
   toLocation: string;
-  /** Whole kilometres driven on the trip. */
+  /** Kilometres driven, rounded to hundredths. */
   kilometers: number;
   vehicle: string;
   driver: string;
@@ -48,7 +48,7 @@ export type CompanyMileage = {
   totalKilometers: number;
   totalAmountBasis: number;
   tripCount: number;
-  /** Twelve rows, jan…dec; months with no trips appear with zero values. */
+  /** Twelve rows in fiscal-year order; months with no trips appear with zero values. */
   months: MileageMonthRow[];
 };
 
@@ -77,4 +77,5 @@ export type MileageEntrySummary = {
   mileageEntryId: number | null;
   entryNo: string | null;
   amountBasis: number | null;
+  warnings?: string[];
 };

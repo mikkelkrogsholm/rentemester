@@ -25,6 +25,8 @@ type MaybeApiError = { code?: string; message?: string };
 
 export type MileageRegisterModalProps = {
   slug: string;
+  periodStart?: string;
+  periodEnd?: string;
   /** Called after a successful create so the calling view can refresh. */
   onRegistered: () => void;
   /** Closes the modal without acting. */
@@ -33,10 +35,14 @@ export type MileageRegisterModalProps = {
 
 export function MileageRegisterModal({
   slug,
+  periodStart,
+  periodEnd,
   onRegistered,
   onClose: onDismiss,
 }: MileageRegisterModalProps) {
-  const [tripDate, setTripDate] = useState(todayIso());
+  const initialDate = periodStart && todayIso() < periodStart ? periodStart
+    : periodEnd && todayIso() > periodEnd ? periodEnd : todayIso();
+  const [tripDate, setTripDate] = useState(initialDate);
   const [purpose, setPurpose] = useState("");
   const [fromLocation, setFromLocation] = useState("");
   const [toLocation, setToLocation] = useState("");
@@ -62,7 +68,7 @@ export function MileageRegisterModal({
 
 
   const outcome = useMutationOutcome(onRegistered);
-  const guard = useDiscardGuard(!done && (Boolean(purpose || fromLocation || toLocation || kilometers || driver || ratePerKm || rateBasis || rateSource || notes) || tripDate !== todayIso() || vehicle !== "Privat bil"), onDismiss);
+  const guard = useDiscardGuard(!done && (Boolean(purpose || fromLocation || toLocation || kilometers || driver || ratePerKm || rateBasis || rateSource || notes) || tripDate !== initialDate || vehicle !== "Privat bil"), onDismiss);
   const { onClose } = guard;
 
   function reset() {
@@ -167,6 +173,7 @@ export function MileageRegisterModal({
                 : "—"}{" "}
               i godtgørelsesgrundlag.
             </Banner>
+            {done.warnings?.map((warning) => <Banner key={warning} kind="warning">{warning}</Banner>)}
             <div className={["row-actions", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
               <Button type="button" className="btn" onClick={reset}>
                 Registrér en til
@@ -184,6 +191,8 @@ export function MileageRegisterModal({
                 <Input disabled={outcome.blocked}
                   ref={firstFieldRef}
                   type="date"
+                  min={periodStart}
+                  max={periodEnd}
                   value={tripDate}
                   onChange={(e) => setTripDate(e.target.value)}
                   required
@@ -223,7 +232,7 @@ export function MileageRegisterModal({
                 <span>Antal km</span>
                 <Input disabled={outcome.blocked}
                   type="number"
-                  step="0.1"
+                  step="0.01"
                   min="0"
                   value={kilometers}
                   onChange={(e) => setKilometers(e.target.value)}
