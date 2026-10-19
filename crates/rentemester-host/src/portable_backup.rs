@@ -256,6 +256,7 @@ impl Owner {
                 let facts = store::company(db)?;
                 super::invoice_email::validate_live_sources(db, &mut slots.guard)?;
                 store::validate_inbox_company(&tx, db, &c.slug)?;
+                super::intercompany_dispositions::validate_historical_company(&tx, db, &c.slug, &facts.uuid)?;
                 companies.push(artifact::Company {
                     slug: c.slug.clone(),
                     ledger_uuid: facts.uuid,
@@ -671,6 +672,7 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
         a,
         &rentemester_runtime::backup_keys::digest(a.manifest_bytes()),
     )?;
+    let control_tx = control.transaction_with_behavior(TransactionBehavior::Deferred).map_err(error)?;
     for c in &ctx.companies {
         if c.schema_version != 36 {
             return Err(error("company schema"));
@@ -684,7 +686,8 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
         // Includes the complete scheduler chain/generation/boundary validation
         // before restore_new creates any target stage or publishes a namespace.
         let facts = store::company(&db)?;
-        store::validate_inbox_company(&control, &db, &c.slug)?;
+        store::validate_inbox_company(&control_tx, &db, &c.slug)?;
+        super::intercompany_dispositions::validate_historical_company(&control_tx, &db, &c.slug, &facts.uuid)?;
         if facts.uuid != c.ledger_uuid {
             return Err(error("ledger identity differs"));
         }
@@ -708,6 +711,7 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
         }
         db.close().map_err(|(_, e)| error(e))?;
     }
+    control_tx.rollback().map_err(error)?;
     control.close().map_err(|(_, e)| error(e))?;
     Ok(())
 }

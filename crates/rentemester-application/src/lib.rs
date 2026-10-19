@@ -86,6 +86,7 @@ pub mod workspace_inbox;
 pub mod ownership;
 
 pub mod intercompany;
+pub mod intercompany_dispositions;
 
 pub mod eliminations;
 pub mod consolidation;

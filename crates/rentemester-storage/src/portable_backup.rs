@@ -41,15 +41,9 @@ const AUDIT_TABLES: [&str; 3] = [
     "rm_workspace_authorization_events",
 ];
 const UNSUPPORTED: [(&str, &[&str]); 2] = [
-    (
-        "intercompany",
-        &[
-            "rm_intercompany_dispositions",
-            "rm_intercompany_disposition_events",
-            "rm_intercompany_disposition_journal_links",
-            "rm_intercompany_disposition_lifecycle_events",
-        ],
-    ),
+    // All six intercompany tables are authenticated by the versioned codec.
+    // Retain the coverage bucket with zero unencoded rows for older metadata.
+    ("intercompany", &[]),
     // Preserve the legacy coverage bucket with exactly zero unencoded rows:
     // both native consolidation tables are now authenticated by their codec.
     ("consolidation", &[]),

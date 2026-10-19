@@ -84,6 +84,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/group-consolidated-report", get(consolidation::read))
         .route("/api/companies/{slug}/consolidation", get(consolidation::handle))
         .route("/api/companies/{slug}/consolidation/{action}", post(consolidation::handle))
+        .route("/api/group-dispositions/{id}", get(intercompany_dispositions::status))
+        .route("/api/companies/{slug}/group-dispositions/{action}", post(intercompany_dispositions::handle))
         .route("/api/group-reconciliation", get(intercompany::reconciliation))
         .route("/api/companies/{slug}/intercompany", get(intercompany::handle))
         .route("/api/companies/{slug}/intercompany/{action}", post(intercompany::handle))
@@ -732,6 +734,7 @@ async fn write(State(state): State<Product>, request: Request) -> Response {
 mod ownership;
 
 mod intercompany;
+mod intercompany_dispositions;
 
 mod eliminations;
 mod consolidation;
