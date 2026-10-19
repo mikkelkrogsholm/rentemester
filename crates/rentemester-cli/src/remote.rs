@@ -1,6 +1,6 @@
 use rentemester_client::{
     ApiClient, BankMutation, Confirmation, DomainMutation, Error as ClientError, JournalMutation,
-    LoginProgress, MfaFactor, Report,
+    LoginProgress, MfaFactor, PeriodMutation, Report,
 };
 use rentemester_engine::Error;
 use serde_json::{Value, json};
@@ -15,13 +15,15 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     if args == ["--help"] {
         return Ok(json!({"ok":true,
             "usage":"remote --server ORIGIN [--allow-loopback-http] [--cookie-file PATH] COMMAND [--company SLUG] [--year YEAR] [--account CODE]",
-            "commands":["health","me","companies","journal","trial-balance","income-statement","balance","post-journal","reverse-journal","login","accounts","contacts","documents","invoices","preview-invoice","create-customer","update-customer","create-vendor","update-vendor","issue-invoice","post-invoice","bank","bank-accounts","payables","expense-booking-options","create-bank-account","import-bank","register-payable","pay-payable","match-bank-expense"],
+            "commands":["health","me","companies","journal","trial-balance","income-statement","balance","post-journal","reverse-journal","login","accounts","contacts","documents","invoices","preview-invoice","create-customer","update-customer","create-vendor","update-vendor","issue-invoice","post-invoice","bank","bank-accounts","payables","expense-booking-options","create-bank-account","import-bank","register-payable","pay-payable","match-bank-expense","vat","periods","period-close-readiness","review-period","close-period","reopen-period","report-period"],
             "authentication":"Supply a valid MFA-derived browser session as one Cookie request-header value in an owner-only regular file (0600). No Set-Cookie attributes. All commands except health/login require --cookie-file. Login uses --email EMAIL --factor totp|backup --session-out NEW_PATH, reads password then factor code as two newline-terminated stdin lines; stdin must be piped/private. Output file is created0600 and never overwritten. MFA enrollment remains in browser.",
             "writes":"post-journal/reverse-journal read exact bounded server JSON envelope from stdin; requires confirm:true and input.idempotencyKey. Authenticated server session determines actor. No retry; outcome_unknown requires reconciliation using original key.",
             "domainWrites":"Native flat JSON body on stdin, forwarded byte-for-byte once. Domain writes require --confirm; updates also --id. issue-invoice requires --preview-reviewed after preview-invoice with identical body. These native endpoints do NOT support idempotency keys: never add a key/envelope or auto-retry; reconcile outcome_unknown using contacts/invoices/journal/documents. Native post-invoice body also contains confirm:true. Preview returns PDF bytes as JSON integer array and creates no invoice. Native invoices currently support DKK/25% VAT. Contacts contains customers and vendors. invoices optionally accepts --year.",
             "domainBodySchemas":{"customerCreate":rentemester_client::domain_body_schema(DomainMutation::CreateCustomer),"customerUpdate":rentemester_client::domain_body_schema(DomainMutation::UpdateCustomer(1)),"vendorCreate":rentemester_client::domain_body_schema(DomainMutation::CreateVendor),"vendorUpdate":rentemester_client::domain_body_schema(DomainMutation::UpdateVendor(1)),"invoicePreviewOrIssue":rentemester_client::invoice_body_schema(),"invoicePost":rentemester_client::domain_body_schema(DomainMutation::PostInvoice)},
             "bankPayables":"bank/bank-accounts/payables/expense-booking-options are reads. bank accepts optional --year; payables accepts --status open|paid|overdue|all and --as-of YYYY-MM-DD; expense-booking-options requires --id DOCUMENT_ID. Bank/payable writes use exact native flat stdin JSON (max262144 bytes) and --confirm; pay-payable requires --id PAYABLE_ID. Native body also contains confirm:true except create-bank-account. CSV is generic UTF-8 with ISO dates; named profiles unavailable. match-bank-expense posts a documented purchase against a bank row via documents/book-expense, not arbitrary journal matching. Registration uses immutable original, expense account and confirmed creditors/VAT roles. Payment uses outgoing DKK row, mapped bank ledger account and current open balance. No generic idempotency keys/retry: reconcile uncertain writes using read/list first.",
             "bankBodySchemas":{"createBankAccount":rentemester_client::bank_body_schema(BankMutation::CreateAccount),"importBank":rentemester_client::bank_body_schema(BankMutation::ImportStatement),"registerPayable":rentemester_client::bank_body_schema(BankMutation::RegisterPayable),"payPayable":rentemester_client::bank_body_schema(BankMutation::PayPayable(1)),"matchBankExpense":rentemester_client::bank_body_schema(BankMutation::MatchExpense)},
+            "periodLifecycle":"vat optionally accepts --year; periods lists effective locks and original closePacketHash. period-close-readiness requires --from/--to ISO dates. review-period/close-period/reopen-period/report-period require --confirm and exact native stdin body. Review appends audit and returns review.id plus review.packet.hash; close must explicitly cite both, refuses stale proof and blockers. force:true unavailable. Reopen requires justification and unreported closed period. Report records an already completed external filing receipt against original close hash; no tax submission. No auto-retry or generic idempotency; reconcile outcome_unknown with periods/readiness before action.",
+            "periodBodySchemas":{"review":rentemester_client::period_body_schema(PeriodMutation::Review),"close":rentemester_client::period_body_schema(PeriodMutation::Close),"reopen":rentemester_client::period_body_schema(PeriodMutation::Reopen),"report":rentemester_client::period_body_schema(PeriodMutation::Report)},
             "transport":"HTTPS only unless --allow-loopback-http and literal loopback IP; --server is an origin without path/query/userinfo. No local fallback, redirects, ambient proxies or automatic retries.",
             "exitCodes":{"0":"success","1":"server/transport/protocol failure","2":"usage/configuration failure"},
             "example":"rentemester-rust remote --server http://127.0.0.1:8080 --allow-loopback-http --cookie-file /private/session.cookie trial-balance --company example --year 2026"}));
@@ -62,6 +64,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
                 "--company",
                 "--status",
                 "--as-of",
+                "--from",
+                "--to",
                 "--id",
                 "--year",
                 "--account",
@@ -130,9 +134,32 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         | "import-bank"
         | "register-payable"
         | "pay-payable"
-        | "match-bank-expense" => None,
+        | "match-bank-expense"
+        | "vat"
+        | "periods"
+        | "period-close-readiness"
+        | "review-period"
+        | "close-period"
+        | "reopen-period"
+        | "report-period" => None,
         _ => return Err(invalid("unknown remote command")),
     };
+    let period_operation = match command {
+        "review-period" => Some(PeriodMutation::Review),
+        "close-period" => Some(PeriodMutation::Close),
+        "reopen-period" => Some(PeriodMutation::Reopen),
+        "report-period" => Some(PeriodMutation::Report),
+        _ => None,
+    };
+    if (command == "period-close-readiness")
+        != (flags.contains_key("--from") && flags.contains_key("--to"))
+        || (command != "period-close-readiness"
+            && (flags.contains_key("--from") || flags.contains_key("--to")))
+    {
+        return Err(invalid(
+            "only period-close-readiness requires --from and --to",
+        ));
+    }
     let mutation = matches!(command, "post-journal" | "reverse-journal");
     let domain = match command {
         "create-customer" => Some(DomainMutation::CreateCustomer),
@@ -188,7 +215,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
             "id allowed only on updates, payable payment or document booking options",
         ));
     }
-    if confirmed != (domain.is_some() || bank_operation.is_some())
+    if confirmed != (domain.is_some() || bank_operation.is_some() || period_operation.is_some())
         || preview_reviewed != (command == "issue-invoice")
     {
         return Err(invalid(
@@ -198,7 +225,9 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     let company = flags.get("--company").copied();
     if (report.is_some()
         || mutation
+        || period_operation.is_some()
         || domain.is_some()
+        || bank_operation.is_some()
         || matches!(
             command,
             "contacts"
@@ -210,9 +239,12 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
                 | "bank-accounts"
                 | "payables"
                 | "expense-booking-options"
+                | "vat"
+                | "periods"
+                | "period-close-readiness"
         ))
         != company.is_some()
-        || ((report.is_none() && !matches!(command, "invoices" | "bank"))
+        || ((report.is_none() && !matches!(command, "invoices" | "bank" | "vat"))
             && flags.contains_key("--year"))
         || (report.is_none() && flags.contains_key("--account"))
     {
@@ -236,19 +268,22 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         }
     };
     let client = ApiClient::new(server, allow_http, cookie).map_err(client_error)?;
-    let body =
-        if mutation || domain.is_some() || bank_operation.is_some() || command == "preview-invoice"
-        {
-            let mut body = Vec::new();
-            std::io::stdin()
-                .lock()
-                .take(262_145)
-                .read_to_end(&mut body)
-                .map_err(|_| invalid("could not read request from stdin"))?;
-            Some(body)
-        } else {
-            None
-        };
+    let body = if mutation
+        || domain.is_some()
+        || bank_operation.is_some()
+        || period_operation.is_some()
+        || command == "preview-invoice"
+    {
+        let mut body = Vec::new();
+        std::io::stdin()
+            .lock()
+            .take(262_145)
+            .read_to_end(&mut body)
+            .map_err(|_| invalid("could not read request from stdin"))?;
+        Some(body)
+    } else {
+        None
+    };
     let runtime = tokio::runtime::Runtime::new()
         .map_err(|_| (1, Error::new("transport", "could not start HTTP runtime")))?;
     let response = runtime
@@ -274,12 +309,31 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
                         },
                     )
                     .await
+            } else if let Some(operation) = period_operation {
+                client
+                    .period_mutation(company.unwrap(), operation, body.unwrap(), confirmed)
+                    .await
             } else if let Some(operation) = bank_operation {
                 client
                     .bank_mutation(company.unwrap(), operation, body.unwrap(), confirmed)
                     .await
             } else {
                 match command {
+                    "vat" => {
+                        client
+                            .vat(company.unwrap(), flags.get("--year").copied())
+                            .await
+                    }
+                    "periods" => client.periods(company.unwrap()).await,
+                    "period-close-readiness" => {
+                        client
+                            .period_close_readiness(
+                                company.unwrap(),
+                                flags["--from"],
+                                flags["--to"],
+                            )
+                            .await
+                    }
                     "health" => client.health().await,
                     "me" => client.me().await,
                     "companies" => client.companies().await,

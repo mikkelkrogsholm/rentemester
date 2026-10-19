@@ -209,3 +209,178 @@ fn bank_commands_document_native_bodies_and_reject_mixed_filters() {
         assert_eq!(output.status.code(), Some(2));
     }
 }
+#[test]
+fn period_commands_expose_schemas_and_reject_missing_confirmation_or_bounds() {
+    let help = Command::new(BIN)
+        .args(["remote", "--help"])
+        .output()
+        .unwrap();
+    let value: serde_json::Value = serde_json::from_slice(&help.stdout).unwrap();
+    assert_eq!(
+        value["periodBodySchemas"]["close"]["properties"]["reviewId"]["minimum"],
+        1
+    );
+    for command in [
+        "review-period",
+        "close-period",
+        "reopen-period",
+        "report-period",
+        "period-close-readiness",
+    ] {
+        let output = Command::new(BIN)
+            .args([
+                "remote",
+                command,
+                "--company",
+                "demo",
+                "--server",
+                "http://127.0.0.1:9",
+                "--allow-loopback-http",
+            ])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(2));
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn native_period_review_cli_forwards_confirmed_exact_body() {
+    use std::{io::Write, os::unix::fs::OpenOptionsExt, process::Stdio};
+    let cookie = std::env::temp_dir().join(format!("rm-period-cli-{}.cookie", std::process::id()));
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o600)
+        .open(&cookie)
+        .unwrap();
+    file.write_all(b"session=synthetic-secret").unwrap();
+    drop(file);
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let origin = format!("http://{}", listener.local_addr().unwrap());
+    let body = r#"{ "periodStart":"2025-01-01","periodEnd":"2025-03-31","confirm":true }"#;
+    let task = thread::spawn(move || {
+        let (mut stream, _) = listener.accept().unwrap();
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .unwrap();
+        let mut bytes = Vec::new();
+        loop {
+            let mut chunk = [0; 4096];
+            let size = stream.read(&mut chunk).unwrap();
+            bytes.extend_from_slice(&chunk[..size]);
+            if bytes.ends_with(body.as_bytes()) {
+                break;
+            }
+            assert!(size > 0);
+        }
+        assert!(bytes.starts_with(b"POST /api/companies/demo/periods/close-review "));
+        assert!(bytes.ends_with(body.as_bytes()));
+        stream.write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 31\r\nConnection: close\r\n\r\n{\"ok\":true,\"customer\":{\"id\":7}}").unwrap();
+    });
+    let mut child = Command::new(BIN)
+        .args([
+            "remote",
+            "review-period",
+            "--server",
+            &origin,
+            "--allow-loopback-http",
+            "--company",
+            "demo",
+            "--cookie-file",
+            cookie.to_str().unwrap(),
+            "--confirm",
+        ])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(body.as_bytes())
+        .unwrap();
+    let output = child.wait_with_output().unwrap();
+    std::fs::remove_file(cookie).unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+    let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(value["data"]["customer"]["id"], 7);
+    assert!(!String::from_utf8_lossy(&output.stdout).contains("synthetic-secret"));
+    task.join().unwrap();
+}
+
+#[cfg(unix)]
+#[test]
+fn native_bank_creation_cli_accepts_explicit_company() {
+    use std::{io::Write, os::unix::fs::OpenOptionsExt, process::Stdio};
+    let cookie = std::env::temp_dir().join(format!("rm-bank-cli-{}.cookie", std::process::id()));
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o600)
+        .open(&cookie)
+        .unwrap();
+    file.write_all(b"session=synthetic-secret").unwrap();
+    drop(file);
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let origin = format!("http://{}", listener.local_addr().unwrap());
+    let body = r#"{ "name":"Synthetic bank", "ledgerAccountNo":"B" }"#;
+    let task = thread::spawn(move || {
+        let (mut stream, _) = listener.accept().unwrap();
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .unwrap();
+        let mut bytes = Vec::new();
+        loop {
+            let mut chunk = [0; 4096];
+            let size = stream.read(&mut chunk).unwrap();
+            bytes.extend_from_slice(&chunk[..size]);
+            if bytes.ends_with(body.as_bytes()) {
+                break;
+            }
+            assert!(size > 0);
+        }
+        assert!(bytes.starts_with(b"POST /api/companies/demo/bank-accounts "));
+        assert!(bytes.ends_with(body.as_bytes()));
+        stream.write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 31\r\nConnection: close\r\n\r\n{\"ok\":true,\"customer\":{\"id\":7}}").unwrap();
+    });
+    let mut child = Command::new(BIN)
+        .args([
+            "remote",
+            "create-bank-account",
+            "--server",
+            &origin,
+            "--allow-loopback-http",
+            "--company",
+            "demo",
+            "--cookie-file",
+            cookie.to_str().unwrap(),
+            "--confirm",
+        ])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(body.as_bytes())
+        .unwrap();
+    let output = child.wait_with_output().unwrap();
+    std::fs::remove_file(cookie).unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+    let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(value["data"]["customer"]["id"], 7);
+    assert!(!String::from_utf8_lossy(&output.stdout).contains("synthetic-secret"));
+    task.join().unwrap();
+}

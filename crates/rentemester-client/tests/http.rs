@@ -340,3 +340,88 @@ async fn uncertain_payable_payment_is_attempted_once() {
     request.recv().unwrap();
     assert_eq!(task.join().unwrap(), 1);
 }
+
+#[tokio::test]
+async fn period_lifecycle_preserves_exact_review_proof_and_single_attempt() {
+    use rentemester_client::PeriodMutation as P;
+    for(op,path,bytes) in [
+ (P::Review,"close-review",br#"{ "periodStart":"2025-01-01","periodEnd":"2025-03-31","confirm":true }"#.as_slice()),
+ (P::Close,"close",br#"{"periodStart":"2025-01-01","periodEnd":"2025-03-31","reviewId":7,"packetHash":"original-proof","confirm":true}"#.as_slice()),
+ (P::Reopen,"reopen",br#"{"periodStart":"2025-01-01","periodEnd":"2025-03-31","reason":"Additional original evidence","confirm":true}"#.as_slice()),
+ (P::Report,"report",br#"{"periodStart":"2025-01-01","periodEnd":"2025-03-31","reference":"Synthetic receipt","packetHash":"original-close-proof","confirm":true}"#.as_slice())]{
+ let(origin,request,task)=server(OK);let api=ApiClient::new(&origin,true,Some("session=synthetic".into())).unwrap();
+ api.period_mutation("demo",op,bytes.to_vec(),true).await.unwrap();let wire=request.recv().unwrap();assert!(wire.starts_with(format!("POST /api/companies/demo/periods/{path} HTTP/1.1").as_bytes()));assert!(wire.ends_with(bytes));assert_eq!(task.join().unwrap(),1);
+ }
+}
+#[tokio::test]
+async fn period_reads_and_invalid_commit_contracts() {
+    use rentemester_client::PeriodMutation as P;
+    for path in [
+        "vat?year=2025",
+        "periods",
+        "periods/close-readiness?from=2025-01-01&to=2025-03-31",
+    ] {
+        let (origin, request, task) = server(OK);
+        let api = ApiClient::new(&origin, true, Some("session=synthetic".into())).unwrap();
+        match path {
+            "periods" => {
+                api.periods("demo").await.unwrap();
+            }
+            "vat?year=2025" => {
+                api.vat("demo", Some("2025")).await.unwrap();
+            }
+            _ => {
+                api.period_close_readiness("demo", "2025-01-01", "2025-03-31")
+                    .await
+                    .unwrap();
+            }
+        }
+        assert!(
+            request
+                .recv()
+                .unwrap()
+                .starts_with(format!("GET /api/companies/demo/{path} HTTP/1.1").as_bytes())
+        );
+        assert_eq!(task.join().unwrap(), 1);
+    }
+    let api = ApiClient::new("http://127.0.0.1:9", true, Some("s=x".into())).unwrap();
+    for (op, body, confirm) in [
+        (
+            P::Review,
+            r#"{"periodStart":"2025-01-01","periodEnd":"2025-03-31","confirm":true}"#,
+            false,
+        ),
+        (
+            P::Close,
+            r#"{"periodStart":"2025-01-01","periodEnd":"2025-03-31","confirm":true}"#,
+            true,
+        ),
+        (
+            P::Close,
+            r#"{"periodStart":"2025-01-01","periodEnd":"2025-03-31","reviewId":1,"packetHash":"x","force":true,"confirm":true}"#,
+            true,
+        ),
+        (
+            P::Report,
+            r#"{"periodStart":"2025-01-01","periodEnd":"2025-03-31","reference":"x","packetHash":"x","confirm":true,"idempotencyKey":"ignored"}"#,
+            true,
+        ),
+    ] {
+        assert!(matches!(
+            api.period_mutation("demo", op, body.as_bytes().to_vec(), confirm)
+                .await,
+            Err(Error::InvalidInput(_))
+        ));
+    }
+}
+#[tokio::test]
+async fn uncertain_period_close_never_retries() {
+    use rentemester_client::PeriodMutation;
+    let (origin, request, task) = server(
+        "HTTP/1.1 503 Service Unavailable\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+    );
+    let api = ApiClient::new(&origin, true, None).unwrap();
+    assert_eq!(api.period_mutation("demo",PeriodMutation::Close,br#"{"periodStart":"2025-01-01","periodEnd":"2025-03-31","reviewId":9,"packetHash":"reviewed-proof","confirm":true}"#.to_vec(),true).await,Err(Error::OutcomeUnknown));
+    request.recv().unwrap();
+    assert_eq!(task.join().unwrap(), 1);
+}

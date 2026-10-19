@@ -146,7 +146,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 28);
+    assert_eq!(tools.len(), 35);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -416,6 +416,63 @@ fn supplier_payment_mcp_keeps_exact_body_and_target() {
     assert_eq!(values[1]["result"]["isError"], false);
     let wire = request.recv().unwrap();
     assert!(wire.starts_with(b"POST /api/companies/demo/payables/7/pay "));
+    assert!(wire.ends_with(body.as_bytes()));
+    task.join().unwrap();
+}
+#[test]
+fn period_tools_publish_proof_contract_and_reject_unconfirmed_or_mixed_args() {
+    let output = run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),
+            call(
+                3,
+                "review_period",
+                json!({"company":"demo","body":"{}","confirm":false}),
+            ),
+            call(4, "periods", json!({"company":"demo","year":"2025"})),
+            call(
+                5,
+                "period_close_readiness",
+                json!({"company":"demo","from":"2025-01-01"}),
+            ),
+        ],
+    );
+    let values = parsed(&output);
+    let tools = values[1]["result"]["tools"].as_array().unwrap();
+    let close = tools.iter().find(|t| t["name"] == "close_period").unwrap();
+    assert_eq!(
+        close["inputSchema"]["properties"]["body"]["contentSchema"]["properties"]["reviewId"]["minimum"],
+        1
+    );
+    assert_eq!(close["annotations"]["idempotentHint"], false);
+    for v in &values[2..] {
+        assert_eq!(v["error"]["code"], -32602);
+    }
+}
+#[test]
+fn period_close_mcp_preserves_exact_original_proof() {
+    let (origin, request, task) =
+        http("HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\n{\"ok\":true}");
+    let body = r#"{ "periodStart":"2025-01-01","periodEnd":"2025-03-31","reviewId":9,"packetHash":"reviewed-proof","confirm":true }"#;
+    let output = run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "close_period",
+                json!({"company":"demo","body":body,"confirm":true}),
+            ),
+        ],
+    );
+    let values = parsed(&output);
+    assert_eq!(values[1]["result"]["isError"], false);
+    let wire = request.recv().unwrap();
+    assert!(wire.starts_with(b"POST /api/companies/demo/periods/close "));
     assert!(wire.ends_with(body.as_bytes()));
     task.join().unwrap();
 }

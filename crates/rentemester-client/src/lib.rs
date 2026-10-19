@@ -3,6 +3,8 @@
 //! Authentication/enrollment is currently performed by the server's browser UI.
 mod auth;
 mod bank_payables;
+mod periods;
+pub use periods::{PeriodMutation, period_body_schema};
 mod domain;
 pub use auth::{AuthenticatedSession, LoginProgress, MfaFactor, PendingLogin};
 pub use bank_payables::{BankMutation, bank_body_schema};

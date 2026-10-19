@@ -3,6 +3,7 @@
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle
 //! https://modelcontextprotocol.io/specification/2025-11-25/server/tools
 mod bank_payables;
+mod periods;
 mod tools;
 use rentemester_client::{ApiClient, read_cookie_file};
 use serde_json::{Value, json};

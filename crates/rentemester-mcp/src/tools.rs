@@ -113,6 +113,7 @@ pub fn list() -> Value {
         tools.push(tool(name,&format!("{description}. Native flat body is forwarded exactly once. No server idempotency keys: do not add an envelope/key, do not automatically retry. On outcome_unknown reconcile contacts/invoices/documents/journal before further action. Native issuance supports DKK/25% VAT."),schema,false));
     }
     tools.extend(crate::bank_payables::tools());
+    tools.extend(crate::periods::tools());
     json!({"tools":tools})
 }
 pub(crate) fn native_body(schema: Value) -> Value {
@@ -176,6 +177,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     }
     let mut idempotency = None;
     let outcome = match name {
+        name if crate::periods::accepts(name) => crate::periods::call(api, name, args).await?,
         name if crate::bank_payables::accepts(name) => {
             crate::bank_payables::call(api, name, args).await?
         }
