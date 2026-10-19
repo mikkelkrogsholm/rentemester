@@ -33,14 +33,14 @@ export function NativeReminderClaims({slug,id,onChanged,onClose}:{slug:string;id
     <Button type="button" onClick={()=>setAction("register")}>Gennemgå registrering af gebyr</Button>
    </div>}
    {can("company.ledger.post")&&pending.length>0&&<div>
-    <label>Registreret gebyr<select value={reminder} onChange={e=>setReminder(e.target.value)}><option value="">Vælg gebyr</option>{pending.map(r=><option key={r.reminderId} value={r.reminderId}>{r.reminderDate} · {formatKroner(r.feeAmount,"DKK")}</option>)}</select></label>
+    <label>Registreret gebyr<select aria-label="Registreret gebyr" value={reminder} onChange={e=>setReminder(e.target.value)}><option value="">Vælg gebyr</option>{pending.map(r=><option key={r.reminderId} value={r.reminderId}>{r.reminderDate} · {formatKroner(r.feeAmount,"DKK")}</option>)}</select></label>
     <label>Bogføringsdato for gebyr<Input type="date" value={postDate} onChange={e=>setPostDate(e.target.value)}/></label>
-    <label>Konto til gebyrtilgodehavende<select value={receivable} onChange={e=>setReceivable(e.target.value)}><option value="">Vælg konto</option>{status.accounts.filter(a=>a.type==="asset").map(a=><option key={a.accountNo} value={a.accountNo}>{a.accountNo} · {a.name}</option>)}</select></label>
-    <label>Konto til gebyrindtægt<select value={income} onChange={e=>setIncome(e.target.value)}><option value="">Vælg konto</option>{status.accounts.filter(a=>a.type==="income").map(a=><option key={a.accountNo} value={a.accountNo}>{a.accountNo} · {a.name}</option>)}</select></label>
+    <label>Konto til gebyrtilgodehavende<select aria-label="Konto til gebyrtilgodehavende" value={receivable} onChange={e=>setReceivable(e.target.value)}><option value="">Vælg konto</option>{status.accounts.filter(a=>a.type==="asset").map(a=><option key={a.accountNo} value={a.accountNo}>{a.accountNo} · {a.name}</option>)}</select></label>
+    <label>Konto til gebyrindtægt<select aria-label="Konto til gebyrindtægt" value={income} onChange={e=>setIncome(e.target.value)}><option value="">Vælg konto</option>{status.accounts.filter(a=>a.type==="income").map(a=><option key={a.accountNo} value={a.accountNo}>{a.accountNo} · {a.name}</option>)}</select></label>
     <Button type="button" disabled={!selected||!receivable||!income} onClick={()=>setAction("post")}>Gennemgå særskilt bogføring</Button>
    </div>}
    {can("company.ledger.post")&&<div>
-    <label>Faktisk indbetaling på gebyrkrav<select value={bank} onChange={e=>setBank(e.target.value)}><option value="">Vælg indgående bankpost</option>{status.incomingBankTransactions.map(b=><option key={b.id} value={b.id}>{b.date} · {b.text} · {formatKroner(b.amount,"DKK")} · {b.reference}</option>)}</select></label>
+    <label>Faktisk indbetaling på gebyrkrav<select aria-label="Faktisk indbetaling på gebyrkrav" value={bank} onChange={e=>setBank(e.target.value)}><option value="">Vælg indgående bankpost</option>{status.incomingBankTransactions.map(b=><option key={b.id} value={b.id}>{b.date} · {b.text} · {formatKroner(b.amount,"DKK")} · {b.reference}</option>)}</select></label>
     {receipt&&<p>Bankkonto {receipt.bankAccountNo ?? "Ikke tilgængelig"} · kildehash {receipt.sourceHash ?? "Ikke tilgængelig"} · transaktionshash {receipt.transactionHash ?? "Ikke tilgængelig"}</p>}
     {!status.settlementAvailable&&<p>Afstem først hovedstolen via fakturaens «Afstem», og bogfør alle registrerede gebyrer. Hent derefter opdateret kravstatus.</p>}
     <Button type="button" variant="secondary" onClick={refresh}>Opdatér kravstatus</Button>

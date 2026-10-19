@@ -1142,6 +1142,61 @@ hele workspacets backup. Det bruger serverens signerede fil direkte og
 medtager ingen serverstier eller nøgler i forespørgslen. En afbrudt forespørgsel
 gentages ikke automatisk. Downloadkvitteringen beviser ikke gendannelse.
 
-Web-handlingen og de eksisterende integritetsvisninger består 11 tests og
-web-build. Selve backup-/gendannelsesserveren udvikles parallelt; samlet
-web-download og gendannelse er endnu ikke accepteret.
+Web-handlingen og backup-/gendannelsesserveren er integreret. En isoleret
+forløbstest har hentet filen fra web, fjernet kilde og privat signeringsnøgle,
+verificeret med en separat offentlig nøgle og gendannet til en ny mappe. En
+ny ejer logger ind med almindelig verificering og MFA; originalbilag, begge
+regnskaber og genstart er kontrolleret. Importerede handlingsnøgler kan ikke
+bruges til at gentage gamle posteringer under de nye legitimationsoplysninger.
+Forløbet består også på den samlede hovedbranch med de integrerede
+rykker- og SAF-T-funktioner.
+
+Serverens operator konfigurerer `backupSigningKeyFile` uden for workspace og
+arkiv. `rentemester-server --verify-backup ARKIV --trusted-backup-key NØGLE`
+verificerer filen med en separat betroet offentlig nøgle. Gendannelse kræver
+serverkonfiguration med en ny første ejer og `restoreActor`, samt
+`--restore-backup ARKIV --trusted-backup-key NØGLE --confirm-target NY_ROD
+--source-unavailable`. Målet skal være en ny mappe; eksisterende mapper
+overtages ikke.
+
+Arkiverede virksomheder og ikke-understøttede kontrolregistre med indhold
+afvises eksplicit. Dette beviser ikke generel backup-compliance, global
+engangsbrug af arkivet eller afsluttet overdragelse mellem to aktive servere.
+
+Backup kan også hentes med `remote workspace-backup --confirm` eller MCP
+`workspace_backup` med `confirm:true`. Begge bruger workspace-niveauet og
+accepterer ingen virksomhedsvalg, filstier eller nøgler. Resultatet er
+`{ok:true,backup:{contentType,bytes}}` med serverens præcise signerede fil,
+begrænset til 96 MiB; klienten påstår ikke selv at have verificeret eller
+gendannet den.
+
+## Budget, moms og perioder i desktop
+
+**Budget** viser serverens regnskabsperioder, budget mod faktiske tal og
+dimensionsfiltre. En ændring fastholdes til gennemgang, bekræftes særskilt og
+læses tilbage fra serverens budgetrevisioner. Appen beregner ingen budgettal.
+
+**Moms og perioder** viser momsopgørelsen og den fulde aktuelle kontrolpakke.
+Review og lukning er særskilte handlinger; lukning kræver samme review-ID og
+pakkehash. Genåbning kræver en begrundelse og en lukket, ikke indberettet
+periode. Registrering af en allerede gennemført ekstern indberetning bruger
+dens faktiske kvitteringsreference og periodens oprindelige lukkebevis.
+
+Uafklarede svar eller manglende kanonisk genlæsning bevarer en privat
+handlingsblokering. Nyt lokalt portnummer accepteres kun for samme profil,
+bruger, ledger og periode; fjernforbindelser skal fortsat stemme præcist.
+De samlede 93 desktop-tests og build består. Faktiske vinduesforløb er endnu
+ikke verificeret på den låste Mac.
+
+## Registrér og afstem rykkergebyrer
+
+Fakturaens **Rykkergebyrer og krav** registrerer et eksplicit valgt gebyr på
+en forfalden faktura. Registreringen sender ingen mail og bogfører intet.
+Særskilt gennemgang og bekræftelse bogfører gebyret på de valgte konti.
+Efter hovedstolen er betalt kan indgående DKK-bankposter afvikle gebyrkravet
+delvist eller helt. Originaler og afstemningsrelationer kontrolleres, og
+fremmede, uvaliderede fakturaposteringer blokerer fortsat afstemningen.
+
+CLI og MCP har læsning, registrering, bogføring og kravafvikling gennem den
+samme Rust-logik. Den samlede faktiske web-/klient-/genstartskontrol pågår.
+Mailafsendelse, renter og kompensation er fortsat selvstændige paritetskrav.

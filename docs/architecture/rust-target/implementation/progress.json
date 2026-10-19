@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "parallel-platform-25",
-  "code_revision": "git:17606c4c plus native backup web entry",
+  "current_increment": "parallel-platform-27",
+  "code_revision": "git:b7a12b4b plus reminder accessibility repair and composed harness wiring",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Real multi-company creation/atomic dispatch integrated9a0c12c8 and actual native normal owner/reader verification/MFA, separate postings/reports/current permissions and restart PASS. New company SDK/CLI/MCP integratedee023f40,169tests/3existingignored PASS; actual87tool separate companies/calendars/UUID/catalog/profile/chart/journal parity and fresh MFA/restart PASS after precise primary-link selector repair. SAF-T customv3 web/server/shared clients integrated0808945e with88tools,11focusedRust+48MCP+3UItests, strict8packageClippy/web/nativebuild PASS; Group23 actual Linux composed qualification PASS (70 checks and 8 browser confirmations across initial/restart). Subsequent targeted regression found erased mutable contact fields reappearing in SAF-T MasterFiles; shared-overlay repair passes5storage tests and strictClippy/build; actual isolated privacy qualification PASS through web/CLI/MCP and fresh MFA restart. Signed native backup artifact integrated with12tests/strictClippy; live snapshot/restore still being built. Native windows pending locked Mac; full Rust goal/epic672 remain open. Native backup web download entry ready with11UI/integrity tests andwebbuild PASS; actual integrated backup/server and recovery pending.",
+  "state": "Native budget integrateda6e60027 and recovered VAT/period lifecycle completed in root with exact server review/close/reopen/external-receipt contracts;93native tests/1existingignored and build PASS, actual native windows still pending human Mac unlock. Reminder registration/separateposting/principal/claim receipts integrated46476d9d preserving SAFT92toolunion. Signed whole-workspace backup/fresh-target restore integrated121bc9df; isolated worker J05 actual browserdownload/source deletion/independenttrust/newownerMFA/originals/oldkeyrefusal/freshkey/restart PASS; root integrated J05 PASS; Linux composed92tool initial qualification found inaccessible reminder select labels after successful fee registration/refusal; fixed4explicit accessible names. Repaired93tool composed initial/restart qualification running.180client tests/3existingignored,37UItests,webbuild/nativebuild/strict9packageClippy PASS. Full Rust goal and epic672 remain open. Backup workspace SDK/CLI/MCP adapters integrateda4fc1a09 with187client tests/3existingignored and rebuilt93tools; web37tests/typecheck/build PASS.",
   "issues_closed": [],
   "next": [
-    "Integrate next ready complete user flow: native VAT/periods, reminders/claim receipts or live backup/recovery.",
-    "Integrate native VAT/periods and build live signed backup/fresh owner recovery with imported-key reconciliation guard.",
-    "Port complete overdue reminder/post/principal settlement/claim receipt flow; continue remaining epic parity and actual native windows when unlocked."
+    "Finish repaired93tool composed reminder initial/restart qualification; integrated J05 backup alreadyPASS.",
+    "Deliver remaining complete Rust server flows, beginning company knowledge; add backup agent clients against stable endpoint.",
+    "Continue native task parity and actual windows when Mac is unlocked; preserve full epic/Rust scope."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -359,6 +359,45 @@
       "tests": "/tmp/rm-platform25-backup-ui-tests.log (11PASS)",
       "build": "/tmp/rm-platform25-backup-web-build.log (PASS)",
       "scope": "Rust-only Integrity workspace backup review/confirmation; exact server MIME/blob download, no restore-verification claim; shared unknown-outcome gate, no automatic retry. Backend snapshot/restore delivery and actual integrated download remain pending."
+    },
+    "platform26_integrated": {
+      "native_tests": "/tmp/rm-platform26-native-integrated-tests.log (93PASS,1existingignored)",
+      "native_build": "/tmp/rm-platform26-native-build.log (PASS)",
+      "clients": "/tmp/rm-platform26-clients-tests.log (180PASS,3existingignored)",
+      "ui": "/tmp/rm-platform26-ui-tests.log (37PASS)",
+      "clippy": "/tmp/rm-platform26-clippy.log (strict9packages all-targetPASS)",
+      "web": "/tmp/rm-platform26-web-build.log (PASS)",
+      "runtime": "/tmp/rm-platform26-runtime-build.log (PASS)",
+      "artifacts": "/tmp/rm-platform26-runtime-artifacts.json",
+      "scope": "Budget/periods native source/build/test qualification, no actual new GUI claim. Server/CLI/MCP union includes bothSAFT andreminder; backup included."
+    },
+    "platform26_backup": {
+      "worker_report": "/tmp/rentemester-rust-reports/native-portable-backup-worker26.json",
+      "worker_scope": "Actual J05 browsercard/source+privatekey physicallydeleted/independentpublickeyverify/tamper-key-target refusals/freshrestore/ordinarynewownerMFA/bothUUIDs-journals-reports-originals-PDF-bank/importedkeyrefusal/freshkey/restart PASS. No global singleuse/J06/governance/compliance orLinuxrestoreclaim. Archivedcompany and7nonemptyunsupportedcontrolsections explicitlyrefuse.",
+      "integrated_log": "/tmp/rm-platform26-backup-actual.log (PASS first/restored/restart)",
+      "integrated_report": "/tmp/rentemester-rust-reports/native-portable-backup-integrated26.json"
+    },
+    "platform26_combined": {
+      "log": "/tmp/rm-platform26-combined.log",
+      "artifacts": "/tmp/rm-platform26-qualification-artifacts.json",
+      "exit": 1,
+      "scope": "20 earlierPASS lines; actual reminder registration and duplicate refusal passed. Before fee posting exactlabel selection failed: implicit wrappinglabel included selectoption text. Product4explicit aria-label repair preserveshelperassertions. ExactownedDocker/volume/launchercleanup verified; initialfullflow/restart not claimed."
+    },
+    "platform27_combined": {
+      "log": "/tmp/rm-platform27-combined.log",
+      "artifacts": "/tmp/rm-platform27-qualification-artifacts.json",
+      "exit": null,
+      "scope": "ONE repaired93tool owned Linux composed first/restart with rebuiltweb and4explicit reminder selectnames; currentartifactfreeze, no automaticretry."
+    },
+    "platform27_clients": {
+      "revision": "a4fc1a09",
+      "tests": "/tmp/rm-platform27-clients-tests.log (187PASS,3existingignored)",
+      "build": "/tmp/rm-platform27-client-build.log (PASS)",
+      "clippy": "/tmp/rm-platform27-clippy.log",
+      "ui": "/tmp/rm-platform27-ui-tests.log (37PASS)",
+      "labels": "/tmp/rm-platform27-reminder-label-tests.log (2PASS)",
+      "web": "/tmp/rm-platform27-web-build.log (PASS)",
+      "scope": "Explicit-confirm workspacebackup exactfixedwire/MIME/boundedrawbytes SDK/CLI/MCP; no filepaths/keys/selectors/verificationclaim/retry.93toolunion preservesSAFT/reminder. Four exact accessible reminder selectnames repaired from actualfailedqualification."
     }
   },
   "verified_history": [
@@ -699,70 +738,39 @@
   "active_work": [
     {
       "owner": "root",
-      "result": "Integrate ready Rust flows and qualify actual combined runtime; retain native window gap honestly",
+      "result": "Integrate complete Rust flows; qualify merged reminder/accounting, backup/recovery and native budget/periods",
       "depends_on": [
-        "worker commits and actual runtime evidence"
+        "committed workers and exact actual runtime artifacts"
       ],
-      "acceptance": "Preserve full Rust goal, caller authority/accounting and prior effects; no full-goal completion claim"
+      "acceptance": "Current authority/accounting/privacy and canonical readback; retain fullgoal and nativeGUI gap"
     },
     {
       "owner": "rust_mileage",
-      "result": "Native budget review→confirmed revision→canonical actuals/dimension drilldown",
-      "ownership": "isolated desktop budget child/state only; root owns navigation",
+      "result": "Actual repaired composed93tool reminder/accounting initial/restart",
+      "ownership": "read-only rootsource, isolated ownedDocker/volume/tmp",
       "depends_on": [
-        "existing native budget SDK/read/write/actuals endpoints",
-        "warm desktop compiler coordination"
+        "pinned93clients/server/rebuiltweb/4accessiblelabels"
       ],
-      "acceptance": "Server figures/periods only, exact reviewed single revision, canonical readback; payload-free ambiguity blocker/manual reconciliation; focused native tests/build; actual GUI pending unlock",
-      "parallel_with": [
-        "native VAT/periods",
-        "live backup recovery",
-        "reminder claims"
-      ]
+      "acceptance": "Fullaccounting+reminderweb/agent5journal/source/refusals/restart; exactownedcleanup"
     },
     {
       "owner": "rust_accruals",
-      "result": "Live signed workspace snapshot→verified fresh-target restore→normal fresh owner/MFA recovery",
-      "ownership": "isolated typed Owner/runtime staging/admission, explicit storage business exports/restore validation, backup server/operator CLI modules",
+      "result": "Include source-backed CompanyKnowledge business history in signed snapshot/restore",
+      "ownership": "isolated explicit versioned controlcodec/coverage/restorevalidation, no knowledgeAPI changes",
       "depends_on": [
-        "integrated real multi-company owner/catalog and signed artifact API",
-        "rusqlite admitted-handle backup+serialize feature",
-        "explicit private signing/trust key custody"
+        "legacy controlschema21 within30 and current native signedbackup",
+        "coordinate knowledge tablecontracts with rust_client_cli"
       ],
-      "parallel_with": [
-        "invitations",
-        "agent domains",
-        "composed qualification"
-      ],
-      "acceptance": "Source unavailable, separate archive/key, all admitted companies+originals+bank+business audit restored with stableUUID/receipts; credentials reprovisioned normally; imported original key cannot duplicate under new principal, fresh key works; invalid signatures/targets/partial publication refuse; J06 global handoff remains separate"
-    },
-    {
-      "owner": "rust_budget",
-      "result": "Native VAT overview and explicit period review/close/reopen/filing receipt",
-      "ownership": "isolated desktop periods child/state only; root owns navigation",
-      "depends_on": [
-        "existing exact VAT/period SDK and server-selected reporting window"
-      ],
-      "parallel_with": [
-        "multi-company foundation",
-        "agent domains",
-        "composed qualification"
-      ],
-      "acceptance": "Explicit canonical packet/hash and fresh controls, no invented dates/figures/external filing or retries; focused native tests/build, actual GUI when unlocked"
+      "acceptance": "All relatedtablecolumns/rows/IDs/provenance/reviewhistory preserved, no auth/currentgrants, unknownschemafailclosed; fullsection coverage only if complete; otherunsupportedsections still refuse"
     },
     {
       "owner": "rust_client_cli",
-      "result": "Overdue reminder registration→separate posting→principal settlement→incoming claim bank receipt",
-      "ownership": "isolated engine/storage/application/server reminderclaims modules and exact current Invoice UI/API; narrow canonical principal-carrying adjustment",
+      "result": "Source-backed company knowledge propose/review/supersede/context/history through existingweb",
+      "ownership": "isolated companyknowledge engine/controlstorage/application/server, existingweb and thinclients",
       "depends_on": [
-        "actual source reminder caps/cadence/current principal and existing native invoice/bank/posting gates"
+        "existing controlschema30/currentcompany authority and sourceknowledge contracts"
       ],
-      "parallel_with": [
-        "multi-company foundation",
-        "invitations",
-        "composed qualification"
-      ],
-      "acceptance": "Actual synthetic UI and canonical accounting/source/restart; duplicate/wrong-direction/overclaim and unvalidated invoice-linked journal refusals; no SMTP delivery, interest/compensation scope deferred until this flow works"
+      "acceptance": "Exact source/provenance/effective windows/conflicts/reviewstates/currentpermissions/crosscompany refusals and restart; no accounting effects; backup unsupportedcoverage refusal preserved"
     }
   ],
   "integrated_pending_browser": [],
