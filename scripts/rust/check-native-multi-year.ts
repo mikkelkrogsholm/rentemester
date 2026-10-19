@@ -1,7 +1,8 @@
-import type { Page } from "@playwright/test";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import type { Page } from "@playwright/test";
 import type { CompanyMultiYear, MultiYearRow } from "../../app/src/lib/types/statements";
+
 const saved = "/tmp/rentemester-rust-reports/native-multi-year.json";
 type Evidence = { rows: MultiYearRow[]; selected: string; entryIds: number[] };
 // Run before dashboard/accountant baselines: two original documents and old-year postings are
@@ -75,17 +76,21 @@ export async function checkNativeMultiYear(page: Page, base: string, restarted =
   }
   await page.goto(`${base}/companies/synthetic/fleraar?year=${encodeURIComponent(evidence.selected)}`);
   await page.getByRole("heading", { name: "Flerårsoverblik", exact: true }).waitFor();
-  if (await page.getByRole("combobox", { name: "Vælg regnskabsår" }).inputValue() !== evidence.selected) throw new Error("Comparison discarded selected year");
+  // The integrated shell deliberately uses multi-year scope, without a year filter.
+  await page.locator("header.company-context").getByText("Flere regnskabsår", { exact: true }).waitFor();
+  if (await page.getByRole("combobox", { name: "Vælg regnskabsår" }).count()) throw new Error("Comparison incorrectly presents a single-year filter");
+  if (new URL(page.url()).searchParams.get("year") !== evidence.selected) throw new Error("Comparison discarded historical report context");
   const historicalRow = page.locator("#multiyear-result").getByRole("row").filter({ has: page.getByRole("cell", { name: evidence.selected, exact: true }) });
   await historicalRow.waitFor();
   if ((await historicalRow.innerText()).includes("år til dato")) throw new Error("Historical year marked partial");
   await page.locator("#multiyear-balance").waitFor();
   if (await page.locator("canvas").count() < 2) throw new Error("Comparison charts missing");
   await page.screenshot({ path: "/tmp/rentemester-rust-multi-year.png", fullPage: true });
-  const link = page.locator("section.statement").getByRole("link", { name: "Resultatopgørelse", exact: true });
+  const link = page.getByRole("navigation", { name: "Virksomhedsnavigation", exact: true }).getByRole("link", { name: "Resultatopgørelse", exact: true });
   const href = await link.getAttribute("href");
   if (!href || !href.includes(`year=${encodeURIComponent(evidence.selected)}`)) throw new Error("Report navigation lost fiscal year");
   await link.click();
   await page.getByRole("heading", { name: "Resultatopgørelse", exact: true }).waitFor();
+  if (await page.getByRole("combobox", { name: "Vælg regnskabsår" }).inputValue() !== evidence.selected || new URL(page.url()).searchParams.get("year") !== evidence.selected) throw new Error("Historical report did not retain selected year");
   console.log(restarted ? "PASS: multi-year figures persist and match native income/balance reports after restart" : "PASS: comparison tables/charts, signed historical income, balance/report parity and fiscal navigation; current ledger preserved");
 }
