@@ -5,6 +5,7 @@ mod accountant;
 mod bank;
 mod budget;
 mod company_setup;
+mod dimensions;
 mod exceptions;
 mod dashboard;
 mod documents;
@@ -58,6 +59,17 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             get(budget::handle),
         )
         .route("/api/companies", get(companies))
+        .route("/api/companies/{slug}/dimensions", get(dimensions::handle))
+        .route("/api/companies/{slug}/dimensions/members", get(dimensions::handle))
+        .route("/api/companies/{slug}/dimensions/{line}", get(dimensions::handle))
+        .route("/api/companies/{slug}/dimensions/define", post(dimensions::handle))
+        .route("/api/companies/{slug}/dimensions/member", post(dimensions::handle))
+        .route("/api/companies/{slug}/dimensions/definition-lifecycle", post(dimensions::handle))
+        .route("/api/companies/{slug}/dimensions/member-lifecycle", post(dimensions::handle))
+        .route("/api/companies/{slug}/dimensions/plan", post(dimensions::handle))
+        .route("/api/companies/{slug}/dimensions/apply", post(dimensions::handle))
+        .route("/api/companies/{slug}/dimensions/replace", post(dimensions::handle))
+        .route("/api/companies/{slug}/dimensions/supersede", post(dimensions::handle))
         .route("/api/companies/{slug}/multi-year", get(multi_year::read))
         .route("/api/companies/{slug}/exceptions", get(exceptions::handle))
         .route("/api/companies/{slug}/exceptions/{id}/resolve", post(exceptions::handle))

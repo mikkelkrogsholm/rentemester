@@ -357,7 +357,7 @@ function EntryRow({
                     {line.journalLineId === null ? (
                       <span className="muted">Ingen dimensionshistorik</span>
                     ) : (
-                      <DimensionAssignments slug={slug} journalLineId={line.journalLineId} />
+                      <DimensionAssignments slug={slug} journalLineId={line.journalLineId} currency={currency} amountMinor={Math.round(Math.abs(line.debit - line.credit) * 100)} />
                     )}
                   </td>
                 </tr>
@@ -390,10 +390,9 @@ function EntryRow({
 type Allocation = { dimensionId: string; memberId: string; amountMinor: number; currency: string };
 type AssignmentEvent = {
   id: number; allocations_json: string; source: string; source_ref: string | null; plan_hash: string;
-  event_type: "assigned" | "superseded"; supersedes_assignment_id: number | null;
+  event_type: "assigned" | "superseded"; supersedes_assignment_id: number | null; reason?: string | null;
   actor: string; principal: string; created_at: string;
 };
-
 function parseAllocations(value: string): Allocation[] {
   try {
     const parsed: unknown = JSON.parse(value);
@@ -403,86 +402,76 @@ function parseAllocations(value: string): Allocation[] {
       Number.isSafeInteger((item as Allocation).amountMinor) && typeof (item as Allocation).currency === "string");
   } catch { return []; }
 }
-
-/** Current means an assigned event that no later supersession explicitly retires. */
 function currentAssignment(events: AssignmentEvent[]): AssignmentEvent | null {
-  const retired = new Set(events.map((event) => event.supersedes_assignment_id).filter((id): id is number => id !== null));
-  return events.find((event) => event.event_type === "assigned" && !retired.has(event.id)) ?? null;
+  const retired = new Set(events.map(e => e.supersedes_assignment_id).filter((id): id is number => id !== null));
+  return events.find(e => e.event_type === "assigned" && !retired.has(e.id)) ?? null;
 }
-
-function DimensionAssignments({ slug, journalLineId }: { slug: string; journalLineId: number }) {
+function DimensionAssignments({ slug, journalLineId, currency, amountMinor }: { slug: string; journalLineId: number; currency: string; amountMinor: number }) {
   const state = useAsync<AssignmentEvent[]>((signal) => api.dimensionAssignments(slug, journalLineId, { signal }) as Promise<AssignmentEvent[]>, [slug, journalLineId]);
   if (state.loading && !state.data) return <span className="muted">Henter dimensioner…</span>;
   if (state.error && !state.data) return <span className="muted">Dimensionshistorik kunne ikke hentes</span>;
-  const events = state.data ?? [];
-  const current = currentAssignment(events);
-  if (!current) return <span className="muted">Ingen godkendt dimension</span>;
-  const allocations = parseAllocations(current.allocations_json);
+  const events = state.data ?? [], current = currentAssignment(events);
+  const allocations = current ? parseAllocations(current.allocations_json) : [];
   return <details className="dimension-assignment">
+    <summary>{current ? allocations.map(a => `${a.dimensionId}: ${a.memberId}`).join(", ") || "Godkendt dimension" : "Ingen godkendt dimension"}</summary>
     {state.error && <p role="alert">Dimensionshistorik kunne ikke opdateres. Den tidligere hentede historik vises fortsat.</p>}
-    <summary>{allocations.map((item) => `${item.dimensionId}: ${item.memberId}`).join(", ") || "Godkendt dimension"}</summary>
-    <p className="muted">
-      Kilde: {current.source} · plan-hash <code>{current.plan_hash}</code><br />
+    {current && <p className="muted">Kilde: {current.source} · plan-hash <code>{current.plan_hash}</code><br />
       {current.source_ref && <>Kildereference: {current.source_ref}<br /></>}
-      Godkendt af {current.actor} via {current.principal} · {current.created_at}
-    </p>
-    <DimensionReview slug={slug} journalLineId={journalLineId} current={current} onChanged={state.reload} />
+      Godkendt af {current.actor} via {current.principal} · {current.created_at}</p>}
+    <DimensionReview key={current?.id ?? "new"} slug={slug} journalLineId={journalLineId} current={current} currency={currency} amountMinor={amountMinor} onChanged={state.reload} />
+    {events.length > 0 && <details><summary>Tildelingshistorik ({events.length})</summary><ol>{events.map(e => <li key={e.id}>
+      #{e.id} · {e.event_type} · {parseAllocations(e.allocations_json).map(a => `${a.dimensionId}: ${a.memberId} — ${a.amountMinor} øre ${a.currency}`).join(", ")}<br />
+      {e.supersedes_assignment_id !== null && <>Erstatter hændelse #{e.supersedes_assignment_id}. </>}{e.reason && <>Begrundelse: {e.reason}<br /></>}
+      {e.actor} via {e.principal} · {e.created_at} · plan-hash <code>{e.plan_hash}</code>
+    </li>)}</ol></details>}
   </details>;
 }
-
-/**
- * The legal posting is immutable. A correction therefore first retires the
- * current allocation and only then applies the exact hash-bound replacement.
- * This compact form intentionally accepts only explicit allocation ids and
- * amounts — it does not guess a dimension or silently redistribute amounts.
- */
-function DimensionReview({ slug, journalLineId, current, onChanged }: { slug: string; journalLineId: number; current: AssignmentEvent; onChanged: () => void }) {
+/** All writes use an explicitly reviewed plan; replacements append retirement and assignment atomically. */
+function DimensionReview({ slug, journalLineId, current, currency, amountMinor, onChanged }: { slug: string; journalLineId: number; current: AssignmentEvent | null; currency: string; amountMinor: number; onChanged: () => void }) {
+  const initial = () => current ? parseAllocations(current.allocations_json) : [{ dimensionId: "", memberId: "", amountMinor, currency }];
   const [editing, setEditing] = useState(false);
-  const [allocations, setAllocations] = useState<Allocation[]>(() => parseAllocations(current.allocations_json));
-  const [plan, setPlan] = useState<{ planHash: string } | null>(null);
-  const [reviewed, setReviewed] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [confirmSupersede, setConfirmSupersede] = useState(false);
+  const [allocations, setAllocations] = useState<Allocation[]>(initial);
+  const [plan, setPlan] = useState<{ planHash: string; journalEntryHash?: string; lineAmountMinor?: number; lineCurrency?: string } | null>(null);
+  const [reviewed, setReviewed] = useState(false), [error, setError] = useState<string | null>(null), [confirming, setConfirming] = useState(false);
   const outcome = useMutationOutcome(onChanged);
-  const guard = useDiscardGuard(editing && JSON.stringify(allocations) !== JSON.stringify(parseAllocations(current.allocations_json)), () => {
-    setEditing(false); setPlan(null); setReviewed(false); setConfirmSupersede(false); setAllocations(parseAllocations(current.allocations_json));
+  const guard = useDiscardGuard(editing && JSON.stringify(allocations) !== JSON.stringify(initial()), () => {
+    setEditing(false); setPlan(null); setReviewed(false); setConfirming(false); setAllocations(initial());
   });
-
+  const invalidate = () => { setPlan(null); setReviewed(false); };
   function change(index: number, key: keyof Allocation, value: string) {
-    setPlan(null); setReviewed(false);
-    setAllocations((rows) => rows.map((row, i) => i === index
-      ? { ...row, [key]: key === "amountMinor" ? Number(value) : value } : row));
+    invalidate(); setAllocations(rows => rows.map((row, i) => i === index ? { ...row, [key]: key === "amountMinor" ? Number(value) : value } : row));
   }
   async function makePlan() {
     if (outcome.isBlocked()) return;
-    setError(null);
+    setError(null); invalidate();
     try {
       const result = await api.planDimensionAssignment(slug, { journalLineId, allocations, source: "reviewed" });
       if (!result.ok || !result.plan) throw new Error(result.errors?.join(", ") || "Planen kunne ikke valideres.");
       setPlan(result.plan);
     } catch (cause) { setError(cause instanceof Error ? cause.message : String(cause)); }
   }
-  async function replace(reason: string) {
+  async function apply(reason: string) {
     if (outcome.isBlocked()) return;
-    if (!reason.trim()) throw new Error("Skriv en begrundelse for korrektionen.");
     if (!plan || !reviewed) throw new Error("Gennemgå først den præcise plan.");
-    await api.replaceDimensionAssignment(slug, { journalLineId, expectedAssignmentId: current.id, allocations, source: "reviewed", planHash: plan.planHash, reason, idempotencyKey: `cockpit-dimension-replace-${current.id}-${plan.planHash}` }).catch(outcome.reject);
+    if (current && !reason.trim()) throw new Error("Skriv en begrundelse for korrektionen.");
+    const input = { journalLineId, allocations, source: "reviewed" as const, planHash: plan.planHash, idempotencyKey: `cockpit-dimension-${current?.id ?? "new"}-${plan.planHash}` };
+    await (current ? api.replaceDimensionAssignment(slug, { ...input, expectedAssignmentId: current.id, reason }) : api.applyDimensionAssignment(slug, input)).catch(outcome.reject);
     guard.dismiss(); onChanged();
   }
-  if (!editing) return <>{outcome.feedback}<Button requiredPermission="company.review" disabled={outcome.blocked} variant="secondary" type="button" className="btn secondary" onClick={() => setEditing(true)}>Gennemgå og ret</Button></>;
+  if (!editing) return <>{outcome.feedback}<Button requiredPermission={current ? "company.review" : "company.draft.write"} disabled={outcome.blocked} variant="secondary" type="button" className="btn secondary" onClick={() => setEditing(true)}>{current ? "Gennemgå og ret" : "Fordel på dimensioner"}</Button></>;
   return <div className="dimension-review card">
-    {outcome.feedback}{guard.confirmation}
-    <p><strong>Ret dimensionsklassifikation</strong></p>
-    <p className="muted">Posteringen ændres aldrig. Den nuværende tildeling supersederes og den reviewede plan anvendes atomisk med begrundelse.</p>
-    {allocations.map((allocation, index) => <div className="row-actions" key={`${allocation.dimensionId}-${index}`}>
-      <label>Dimension<Input disabled={outcome.blocked} aria-label={`Dimension ${index + 1}`} value={allocation.dimensionId} onChange={(event) => change(index, "dimensionId", event.target.value)} /></label>
-      <label>Medlem<Input disabled={outcome.blocked} aria-label={`Medlem ${index + 1}`} value={allocation.memberId} onChange={(event) => change(index, "memberId", event.target.value)} /></label>
-      <label>Øre<Input disabled={outcome.blocked} aria-label={`Øre ${index + 1}`} type="number" value={allocation.amountMinor} onChange={(event) => change(index, "amountMinor", event.target.value)} /></label>
+    {outcome.feedback}{guard.confirmation}<p><strong>{current ? "Ret dimensionsklassifikation" : "Fordel på dimensioner"}</strong></p>
+    <p className="muted">Posteringen ændres aldrig. Fordelingen gennemgås som en præcis, hash-bundet plan. En rettelse bevarer den tidligere tildeling med begrundelse.</p>
+    {allocations.map((allocation, index) => <div className="row-actions" key={index}>
+      <label>Dimension<Input disabled={outcome.blocked} aria-label={`Dimension ${index + 1}`} value={allocation.dimensionId} onChange={e => change(index, "dimensionId", e.target.value)} /></label>
+      <label>Medlem<Input disabled={outcome.blocked} aria-label={`Medlem ${index + 1}`} value={allocation.memberId} onChange={e => change(index, "memberId", e.target.value)} /></label>
+      <label>Øre ({allocation.currency})<Input disabled={outcome.blocked} aria-label={`Øre ${index + 1}`} type="number" min="1" step="1" value={allocation.amountMinor} onChange={e => change(index, "amountMinor", e.target.value)} /></label>
+      {allocations.length > 1 && <Button variant="secondary" disabled={outcome.blocked} onClick={() => { invalidate(); setAllocations(rows => rows.filter((_, i) => i !== index)); }}>Fjern fordeling {index + 1}</Button>}
     </div>)}
-    <div className="row-actions"><Button variant="secondary" type="button" className="btn secondary" disabled={outcome.blocked} onClick={() => void makePlan()}>Validér revideret plan</Button><Button variant="secondary" type="button" className="btn secondary" onClick={guard.onClose}>Annullér</Button></div>
-    {plan && <div className="card"><p>Plan-hash: <code>{plan.planHash}</code></p><label><Input disabled={outcome.blocked} type="checkbox" checked={reviewed} onChange={(event) => setReviewed(event.target.checked)} /> Jeg har gennemgået den præcise plan.</label><Button variant="secondary" type="button" className="btn secondary" requiredPermission="company.review" disabled={!reviewed || outcome.blocked} onClick={() => setConfirmSupersede(true)}>Erstat nuværende tildeling atomisk</Button></div>}
-    {error && <p className="muted" role="alert">{error}</p>}
-    {confirmSupersede && <ConfirmDialog title="Erstat dimensionsklassifikation" body={<p>Den nuværende klassifikation bevares i revisionssporet. Supersession og den præcise, hash-bundne erstatning gemmes atomisk, så linjen aldrig står uden en aktuel tildeling.</p>} confirmLabel="Erstat tildeling" confirmKind="danger" noteLabel="Begrundelse" onConfirm={replace} onClose={() => setConfirmSupersede(false)} onRefresh={onChanged} />}
+    <div className="row-actions"><Button variant="secondary" disabled={outcome.blocked} onClick={() => { invalidate(); setAllocations(rows => [...rows, { dimensionId: "", memberId: "", amountMinor: 0, currency }]); }}>Tilføj fordeling</Button><Button variant="secondary" type="button" disabled={outcome.blocked} onClick={() => void makePlan()}>Validér revideret plan</Button><Button variant="secondary" type="button" onClick={guard.onClose}>Annullér</Button></div>
+    {plan && <div className="card"><p>Plan-hash: <code>{plan.planHash}</code></p>{plan.journalEntryHash && <p>Journal-hash: <code>{plan.journalEntryHash}</code> · {plan.lineAmountMinor} øre {plan.lineCurrency}</p>}<label><Input disabled={outcome.blocked} type="checkbox" checked={reviewed} onChange={e => setReviewed(e.target.checked)} /> Jeg har gennemgået den præcise plan.</label><Button variant="secondary" type="button" requiredPermission={current ? "company.review" : "company.draft.write"} disabled={!reviewed || outcome.blocked} onClick={() => setConfirming(true)}>{current ? "Erstat nuværende tildeling atomisk" : "Anvend godkendt fordeling"}</Button></div>}
+    {error && <p role="alert">{error}</p>}
+    {confirming && <ConfirmDialog title={current ? "Erstat dimensionsklassifikation" : "Anvend dimensionsklassifikation"} body={<p>Den præcise, hash-bundne fordeling gemmes i revisionssporet. Journalens beløb og identitet ændres aldrig.</p>} confirmLabel={current ? "Erstat tildeling" : "Anvend tildeling"} confirmKind={current ? "danger" : "primary"} noteLabel={current ? "Begrundelse" : undefined} onConfirm={apply} onClose={() => setConfirming(false)} onRefresh={onChanged} />}
   </div>;
 }
 

@@ -537,3 +537,4 @@ pub mod integrity;
 pub mod multi_year;
 
 pub mod contact_delete;
+pub mod dimensions;

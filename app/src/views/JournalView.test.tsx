@@ -54,13 +54,41 @@ describe("JournalView — Posteringer", () => {
     mockFetch(dimensionsRoute());
     renderView();
     await userEvent.click(await screen.findByRole("button", { name: /Salg af ydelse/ }));
-    await userEvent.click(await screen.findByText(/project: alpha/i));
+    await userEvent.click(await screen.findByText("project: alpha", { selector: "summary" }));
     expect(screen.getByText(/Kilde: reviewed/i)).toBeInTheDocument();
     expect(screen.getByText(/Godkendt af user:owner/i)).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: /Gennemgå og ret/i }));
     await userEvent.click(screen.getByRole("button", { name: /Validér revideret plan/i }));
     expect(await screen.findByText(/Plan-hash:/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Erstat nuværende tildeling atomisk/i })).toBeDisabled();
+  });
+
+  test("initial allocation requires a validated hash, explicit review and confirmation", async () => {
+    mockFetch({ ...route(),
+      "GET /api/companies/acme-aps/dimensions/101": { assignments: [] },
+      "POST /api/companies/acme-aps/dimensions/plan": { ok: true, plan: { planHash: "c".repeat(64), journalEntryHash: "d".repeat(64), lineAmountMinor: 2228628, lineCurrency: "DKK" } },
+      "POST /api/companies/acme-aps/dimensions/apply": { ok: true },
+    });
+    renderView();
+    await userEvent.click(await screen.findByRole("button", { name: /Salg af ydelse/ }));
+    await userEvent.click(await screen.findByText("Ingen godkendt dimension"));
+    await userEvent.click(screen.getByRole("button", { name: "Fordel på dimensioner" }));
+    await userEvent.type(screen.getByLabelText("Dimension 1"), "project");
+    await userEvent.type(screen.getByLabelText("Medlem 1"), "alpha");
+    await userEvent.click(screen.getByRole("button", { name: "Validér revideret plan" }));
+    const apply = await screen.findByRole("button", { name: "Anvend godkendt fordeling" });
+    expect(apply).toBeDisabled();
+    await userEvent.click(screen.getByRole("checkbox", { name: /Jeg har gennemgået/ }));
+    await userEvent.click(apply);
+    expect(screen.getByRole("dialog", { name: "Anvend dimensionsklassifikation" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Anvend tildeling" }));
+    const calls = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
+    const written = calls.find(([url]) => String(url).endsWith("/dimensions/apply"));
+    expect(written).toBeDefined();
+    const body = JSON.parse((written![1] as RequestInit).body as string);
+    expect(body.planHash).toBe("c".repeat(64));
+    expect(body.confirm).toBe(true);
+    expect(body.allocations[0]).toEqual({ dimensionId: "project", memberId: "alpha", amountMinor: 2228628, currency: "DKK" });
   });
 
   test("the company sub-nav exposes the new tabs", async () => {

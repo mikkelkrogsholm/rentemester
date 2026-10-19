@@ -57,3 +57,5 @@ pub mod exceptions;
 pub mod integrity;
 
 pub mod multi_year;
+
+pub mod dimensions;
