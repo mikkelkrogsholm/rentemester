@@ -63,8 +63,8 @@ export function BudgetView() {
     [slug, year, mode],
   );
   const dimensionActuals = useAsync<CompanyBudgetDimensionActuals | null>(
-    (signal) => mode === "compare" ? api.budgetDimensionActuals(slug, year, { signal }) : Promise.resolve(null),
-    [slug, year, mode],
+    (signal) => mode === "compare" && plan.data?.dimensionActualsAvailable !== false && compare.data?.dimensionActualsAvailable !== false ? api.budgetDimensionActuals(slug, year, { signal }) : Promise.resolve(null),
+    [slug, year, mode, plan.data?.dimensionActualsAvailable, compare.data?.dimensionActualsAvailable],
   );
 
   // We always need ONE of the two payloads to render. The plan/compare toggle
@@ -137,6 +137,7 @@ export function BudgetView() {
       ) : (
         <>
           <BudgetVsActualTable data={compare.data!} currency={currency} />
+          {data.dimensionActualsAvailable === false && <p className="muted" role="status">Dimensionssammenligning er endnu ikke tilgængelig. Budget og faktisk vises på kontoniveau.</p>}
           <DimensionBudgetComparison
             slug={slug}
             data={dimensionActuals.data ?? null}

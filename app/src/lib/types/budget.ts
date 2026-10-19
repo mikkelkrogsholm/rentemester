@@ -19,6 +19,8 @@ export type CompanyBudgetLine = {
 export type CompanyBudget = {
   slug: string;
   selectedYear: string;
+  /** False when the server cannot read approved dimension assignments. */
+  dimensionActualsAvailable?: boolean;
   archived: boolean;
   company: StatementCompany;
   fiscalYears: FiscalYearEntry[];
@@ -60,6 +62,8 @@ export type CompanyBudgetVsActualLine = {
 export type CompanyBudgetVsActual = {
   slug: string;
   selectedYear: string;
+  /** False when the server cannot read approved dimension assignments. */
+  dimensionActualsAvailable?: boolean;
   archived: boolean;
   company: StatementCompany;
   fiscalYears: FiscalYearEntry[];
@@ -80,6 +84,8 @@ export type BudgetVsActualResponse = {
 export type CompanyBudgetDimensionActuals = {
   slug: string;
   selectedYear: string;
+  /** False when the server cannot read approved dimension assignments. */
+  dimensionActualsAvailable?: boolean;
   archived: boolean;
   company: StatementCompany;
   fiscalYears: FiscalYearEntry[];

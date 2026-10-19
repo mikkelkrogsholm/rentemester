@@ -42,3 +42,5 @@ pub mod sales;
 pub mod periods;
 
 pub mod assets;
+
+pub mod budget;

@@ -629,6 +629,22 @@ impl Owner {
             rentemester_application::bank::execute(c, l, g, context, action)
         })
     }
+    pub fn budget(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        action: rentemester_application::budget::Action<'_>,
+        today: &str,
+    ) -> Result<
+        Attempt<
+            Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, _, context| {
+            rentemester_application::budget::execute(c, l, context, action, today)
+        })
+    }
     pub fn assets(
         &mut self,
         cookie: &VerifiedCookie,

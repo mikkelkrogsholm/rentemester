@@ -176,3 +176,16 @@ describe("BudgetView — Budget", () => {
     );
   });
 });
+
+
+test("native account budget disables unavailable dimension comparison explicitly", async () => {
+  const routes = route({budget:{dimensionActualsAvailable:false},budgetVsActual:{dimensionActualsAvailable:false}});
+  delete (routes as Record<string, unknown>)["GET /api/companies/acme-aps/budget-dimension-actuals"];
+  mockFetch(routes);
+  renderView();
+  await screen.findByRole("heading", { name: "Budget", level: 1 });
+  await userEvent.click(screen.getByRole("button", {name:"Sammenlign med faktisk"}));
+  expect(await screen.findByText(/Dimensionssammenligning er endnu ikke tilgængelig/)).toBeInTheDocument();
+  expect(screen.queryByLabelText("Filter dimension")).not.toBeInTheDocument();
+  expect(screen.getByRole("columnheader",{name:"Faktisk"})).toBeInTheDocument();
+});
