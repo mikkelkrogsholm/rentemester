@@ -83,7 +83,9 @@ describe("AnnualReportView (#338)", () => {
             equity: { total: 400000, lines: [] },
           },
           notes: [],
-          ledelsespategning: { date: "2026-03-31", body: "Godkendt af ledelsen." },
+          ledelsespategning: { text: "Ledelsens skabelon med dato og underskrifter.", placeholder: true },
+          comparison: { fiscalYearStart: "2024-01-01", fiscalYearEnd: "2024-12-31", available: false },
+          disclaimer: "Ejer eller revisor er ansvarlig for indberetning.",
           errors: [],
         },
       }),
@@ -91,6 +93,9 @@ describe("AnnualReportView (#338)", () => {
     await user.click(screen.getByRole("button", { name: /Byg årsrapport/ }));
     expect(await screen.findByText(/Resultatopgørelse/)).toBeInTheDocument();
     expect(screen.getByText(/Ledelsespåtegning/)).toBeInTheDocument();
-    expect(screen.getByText(/Godkendt af ledelsen/)).toBeInTheDocument();
+    expect(screen.getByText(/Ledelsens skabelon/)).toBeInTheDocument();
+    expect(screen.getByText(/Skabelon — udfyld dato/)).toBeInTheDocument();
+    expect(screen.getByText(/Ingen sammenligningstal/)).toBeInTheDocument();
+    expect(screen.getByText("Ejer eller revisor er ansvarlig for indberetning.", {exact:true})).toBeInTheDocument();
   });
 });

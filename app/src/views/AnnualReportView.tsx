@@ -52,8 +52,8 @@ export function AnnualReportView() {
 
           <p className="muted">
             Forbereder en årsrapport for et lukket regnskabsår. Rentemester
-            samler resultatopgørelse, balance og noter — den endelige aflæsning
-            sker hos revisor.
+            samler resultatopgørelse, balance og noter. Ejer eller revisor
+            gennemgår materialet og er ansvarlig for indberetning.
           </p>
         </div>
 
@@ -104,8 +104,8 @@ function ReportPanel({ report }: { report: AnnualReport }) {
         <h3>Forudsætninger mangler</h3>
         <p className="muted">
           For at en årsrapport kan dannes skal: virksomhedens CVR være
-          registreret, regnskabsåret være lukket under{" "}
-          <Link to="../periods">Periodelås</Link>, og bøgerne skal balancere.
+          registreret under <Link to="../manage">Administrér</Link>, regnskabsåret være lukket under{" "}
+          <Link to="../periodelas">Periodelås</Link>, og bøgerne skal balancere.
         </p>
         <ul className="audit-errors">
           {report.errors.map((err, i) => (
@@ -203,6 +203,22 @@ function ReportPanel({ report }: { report: AnnualReport }) {
         </section>
       )}
 
+      {report.comparison && (
+        <section className="card">
+          <h3>Sammenligningstal {report.comparison.fiscalYearStart} — {report.comparison.fiscalYearEnd}</h3>
+          {!report.comparison.available ? <p className="muted">Ingen sammenligningstal — ingen saldi i den foregående periode.</p> : (
+            <div className="table-scroll"><table className="table"><tbody>
+              <tr><th>Indtægter i alt</th><td className="num">{formatKroner(report.comparison.totalIncome, currency)}</td></tr>
+              <tr><th>Omkostninger i alt</th><td className="num">{formatKroner(report.comparison.totalExpense, currency)}</td></tr>
+              <tr><th>Årets resultat</th><td className="num">{formatKroner(report.comparison.aretsResultat, currency)}</td></tr>
+              <tr><th>Aktiver i alt</th><td className="num">{formatKroner(report.comparison.totalAssets, currency)}</td></tr>
+              <tr><th>Egenkapital i alt</th><td className="num">{formatKroner(report.comparison.equity, currency)}</td></tr>
+            </tbody></table></div>
+          )}
+        </section>
+      )}
+      {report.disclaimer && <p className="callout">{report.disclaimer}</p>}
+
       {report.notes && report.notes.length > 0 && (
         <section className="card">
           <h3>Noter</h3>
@@ -211,6 +227,7 @@ function ReportPanel({ report }: { report: AnnualReport }) {
               <li key={n.id}>
                 <strong>{n.title}</strong>
                 <p>{n.body}</p>
+                {n.placeholder && <span className="muted">Udfyldes og gennemgås af ejer eller revisor.</span>}
               </li>
             ))}
           </ul>
@@ -220,8 +237,8 @@ function ReportPanel({ report }: { report: AnnualReport }) {
       {report.ledelsespategning && (
         <section className="card">
           <h3>Ledelsespåtegning</h3>
-          <p className="muted">Dato: {report.ledelsespategning.date}</p>
-          <p>{report.ledelsespategning.body}</p>
+          {report.ledelsespategning.placeholder && <p className="muted">Skabelon — udfyld dato, sted og underskrifter inden indberetning.</p>}
+          <p>{report.ledelsespategning.text}</p>
         </section>
       )}
     </>

@@ -49,6 +49,24 @@ describe("PeriodsView (#342)", () => {
     ).toBeInTheDocument();
   });
 
+  test("kan kontrollere før første packet og respekterer derefter blokeringer", async () => {
+    mockFetch({
+      "GET /api/companies/acme-aps/periods": payload(),
+      "GET /api/companies/acme-aps/periods/close-readiness": {ok:true,packet:{hash:"synthetic",blockers:1,warnings:0,items:[{code:"SYNTHETIC_BLOCKER",status:"blocked",waivable:false,count:1}]}},
+    });
+    renderAt(<PeriodsView />, { route: "/companies/acme-aps/periodelas", path: "/companies/:slug/periodelas" });
+    const user=userEvent.setup();
+    await user.click(await screen.findByRole("button", {name:"Luk periode …"}));
+    const dialog=within(screen.getByRole("dialog"));
+    await user.type(dialog.getByLabelText("Start (YYYY-MM-DD)"), "2020-01-01");
+    await user.type(dialog.getByLabelText("Slut (YYYY-MM-DD)"), "2020-12-31");
+    expect(dialog.getByRole("button",{name:"Kontrollér"})).toBeEnabled();
+    await user.click(dialog.getByRole("button",{name:"Kontrollér"}));
+    expect(await dialog.findByText(/SYNTHETIC_BLOCKER/)).toBeInTheDocument();
+    expect(dialog.getByRole("button",{name:"Gem review og luk"})).toBeDisabled();
+    expect((fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.filter(([,init])=>init?.method==="POST")).toHaveLength(0);
+  });
+
   test("lister en lukket periode med effective status", async () => {
     renderView(
       payload([

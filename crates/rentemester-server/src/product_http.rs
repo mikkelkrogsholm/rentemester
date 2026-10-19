@@ -13,6 +13,7 @@ mod dashboard;
 mod mileage;
 mod integrity;
 mod multi_year;
+mod annual_report;
 mod payables;
 mod periods;
 mod recurring_invoices;
@@ -97,6 +98,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/dimensions/replace", post(dimensions::handle))
         .route("/api/companies/{slug}/dimensions/supersede", post(dimensions::handle))
         .route("/api/companies/{slug}/multi-year", get(multi_year::read))
+        .route("/api/companies/{slug}/annual-report", get(annual_report::read))
         .route("/api/companies/{slug}/exceptions", get(exceptions::handle))
         .route(
             "/api/companies/{slug}/exceptions/{id}/resolve",

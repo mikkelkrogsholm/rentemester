@@ -547,3 +547,5 @@ pub mod bookkeeping_queue;
 pub mod gdpr;
 pub mod retention;
 pub mod supplier_commitments;
+
+pub mod annual_report;

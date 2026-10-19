@@ -359,7 +359,7 @@ function ClosePeriodModal({
               type="submit"
               className="btn primary"
               disabled={
-                outcome.blocked || (submitting || (periodEndsInFuture && !futureEndAcknowledged) || (packet?.blockers !== 0 && (!force || !forceReason.trim())))
+                outcome.blocked || (submitting || (periodEndsInFuture && !futureEndAcknowledged) || (packet !== null && packet.blockers !== 0 && (!force || !forceReason.trim())))
               }
             >
               {submitting ? "Arbejder …" : packet ? "Gem review og luk" : "Kontrollér"}

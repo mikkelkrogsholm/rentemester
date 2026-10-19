@@ -49,3 +49,5 @@ pub mod asset;
 
 pub mod accrual;
 pub mod mileage;
+
+pub mod annual_report;

@@ -32,8 +32,14 @@ export type AnnualReport = {
     liabilities: AnnualReportSection;
     equity: AnnualReportSection;
   };
-  notes?: Array<{ id: string; title: string; body: string }>;
-  ledelsespategning?: { date: string; body: string };
+  notes?: Array<{ id: string; title: string; body: string; placeholder: boolean }>;
+  comparison?: {
+    fiscalYearStart: string; fiscalYearEnd: string; available: boolean;
+    totalIncome: number; totalExpense: number; aretsResultat: number;
+    totalAssets: number; totalLiabilitiesAndEquity: number; equity: number;
+  };
+  disclaimer?: string;
+  ledelsespategning?: { text: string; placeholder: boolean };
   errors: string[];
 };
 

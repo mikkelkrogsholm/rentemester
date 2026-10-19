@@ -1,0 +1,48 @@
+use super::*;
+pub(super) async fn read(State(state): State<Product>, request: Request) -> Response {
+    let cookie = match proof(&state, &request, false) {
+        Ok(c) => c,
+        Err(r) => return *r,
+    };
+    if !selected(&state, &request) {
+        return refused(StatusCode::NOT_FOUND, "company_not_found");
+    }
+    let mut start = None;
+    let mut end = None;
+    for (key, value) in url::form_urlencoded::parse(request.uri().query().unwrap_or("").as_bytes())
+    {
+        let slot = match key.as_ref() {
+            "fiscalYearStart" => &mut start,
+            "fiscalYearEnd" => &mut end,
+            _ => return refused(StatusCode::BAD_REQUEST, "invalid_query"),
+        };
+        if slot.is_some() || rentemester_engine::fiscal_year::Date::parse(&value).is_err() {
+            return refused(StatusCode::BAD_REQUEST, "invalid_query");
+        }
+        *slot = Some(value.into_owned());
+    }
+    let (Some(start), Some(end)) = (start, end) else {
+        return refused(StatusCode::BAD_REQUEST, "invalid_query");
+    };
+    if start > end || rentemester_engine::annual_report::prior_date(&start).is_err() {
+        return refused(StatusCode::BAD_REQUEST, "invalid_query");
+    }
+    let Ok(permit) = state.workers.clone().try_acquire_owned() else {
+        return refused(StatusCode::SERVICE_UNAVAILABLE, "busy");
+    };
+    let result = tokio::task::spawn_blocking(move || {
+        let _permit = permit;
+        let mut owner = state.native.owner.lock().map_err(|_| ())?;
+        owner
+            .annual_report(&cookie, &SystemClock, &start, &end)
+            .map_err(|_| ())
+    })
+    .await;
+    match result {
+        Ok(Ok(attempt)) => match super::documents::outcome(attempt) {
+            Ok(value) => response(StatusCode::OK, json!({"ok":true,"annualReport":value})),
+            Err(r) => *r,
+        },
+        _ => refused(StatusCode::SERVICE_UNAVAILABLE, "read_unconfirmed"),
+    }
+}
