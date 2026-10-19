@@ -461,8 +461,12 @@ pub fn apply(
     } else {
         input.idempotency_key.clone()
     };
-    if let Some(key) = &key {
-        if let Some(prior)=rows(tx,"SELECT id,plan_hash FROM accounting_dimension_assignment_events WHERE idempotency_key=?1",[key])?.first(){return if prior["plan_hash"]==hash{Ok(json!({"ok":true,"id":prior["id"],"idempotent":true,"planHash":hash}))}else{Err(fail("IDEMPOTENCY_CONFLICT"))}}
+    if let Some(key) = &key
+        && let Some(prior) = rows(tx, "SELECT id,plan_hash FROM accounting_dimension_assignment_events WHERE idempotency_key=?1", [key])?.first()
+    {
+        return if prior["plan_hash"] == hash {
+            Ok(json!({"ok":true,"id":prior["id"],"idempotent":true,"planHash":hash}))
+        } else { Err(fail("IDEMPOTENCY_CONFLICT")) };
     }
     let current = rows(
         tx,

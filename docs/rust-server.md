@@ -324,7 +324,7 @@ Dette forløb understøtter foreløbig fulde danske DKK-fakturaer med standard
 og dobbelt bogføring afvises. PDF understøtter det nuværende latinske tegnsæt,
 herunder danske bogstaver; tekst uden for tegnsættet afvises ved input.
 Fremmed valuta, andre momstyper, offentlig e-faktura,
-ekstern maillevering samt sletning af kunder og leverandører mangler stadig i Rust.
+og ekstern maillevering mangler stadig i Rust.
 Der sendes ingen fakturaer eksternt i dette forløb.
 
 ## Ret kundens oplysninger
@@ -738,8 +738,8 @@ Craten `rentemester-desktop` bruger Longbridges `gpui-kit` 0.7.3 og det fælles
 HTTP-klientbibliotek. En faktisk macOS-app har vist serverens virksomhed og
 saldobalance i et native GPUI/Metal-vindue. Adgangskode og TOTP-MFA er også
 verificeret gennem det native vindue uden cookie-fil. Appen kan både forbinde
-til en ekstern server og administrere en lokal Rust-server. Native skriveforløb
-er under udvikling.
+til en ekstern server og administrere en lokal Rust-server. Manuel bogføring kan gennemgås og bekræftes i det native vindue; flere
+skriveforløb er under udvikling.
 
 Desktop kræver Rust mindst 1.95. Server/CLI/MCP kan fortsat bygges med projektets
 fastlåste 1.94.1, og desktop er udeladt fra standardmedlemmerne.
@@ -821,3 +821,41 @@ Native release-/regelsætprovenance er endnu ikke komplet. Manifestets
 Pakken er en overdragelse til revisor; den er ikke en verificeret backup.
 Browserkontrollen downloader den faktiske pakke, læser manifest og indhold,
 sammenligner originalerne med deres downloads og gentager efter genstart.
+
+
+## Slet ubrugte kontakter
+
+Fra **Kontakter** kan en kunde eller leverandør slettes efter bekræftelse.
+En åben eller overbetalt kundefaktura blokerer handlingen, også efter kunden
+har skiftet navn. Leverandørgæld og historiske fremmednøgler bevares og kan
+blokere sletning. Handlingen skriver auditspor; fakturasnapshots, bilag og
+posteringer ændres ikke. Den rigtige webdialog, manglende bekræftelse, åben
+faktura og persistens efter genstart er kontrolleret med syntetiske data.
+Dette er kontaktvedligeholdelse; GDPR-anonymisering er et særskilt forløb.
+
+## Dimensioner og klassifikation
+
+**Dimensioner** kan oprette dimensioner og medlemmer. Fra en postering kan
+en linje fordeles efter en hash-bundet forhåndsvisning og eksplicit bekræftelse.
+En reviewer kan erstatte en fordeling med begrundelse; tidligere beslutninger
+og bruger/tidspunkt forbliver synlige. Forældet review afvises. En allerede
+brugt planhash kan ikke genbruges; afvisningen efterlader den gældende fordeling
+intakt. Klassifikation ændrer ingen journalbeløb. Oprettelse, fordeling,
+begrundet erstatning og historik er kontrolleret gennem web-UI’et og efter genstart.
+
+## Manuel bogføring i desktopappen
+
+Vælg virksomheden og **Ny postering**. Angiv dato, tekst, debet-/kreditkonto,
+beløb og eventuelt bilag; gennemgå de nøjagtige linjer før **Bogfør postering**.
+Appen gemmer den præcise anmodning og idempotency-nøgle privat før afsendelsen.
+En ukendt status giver kun eksplicit gentagelse med samme anmodning og nøgle.
+En ændret lokal port kræver særskilt bekræftelse og kontrol af samme lokale
+profil, konfiguration, ledgeridentitet, bruger og virksomhed. Eksterne servere
+forbliver bundet til den oprindelige origin.
+
+En rigtig native postering på 12,34 med kvittering og journalaflæsning er
+kontrolleret, efterfulgt af stop/genåbning og korrekt, balanceret saldobalance.
+Dette forsøg brugte aktiv/egenkapital uden bilag. Genopretning efter mistet
+svar er afprøvet med en faktisk TCP-fejl og samme byte-anmodning; lokal
+portgenbinding har fokuserede persistens-/mismatchtests, men er endnu ikke
+separat afprøvet gennem det native vindue.

@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "parallel-platform-4",
-  "code_revision": "git:2ee3d4af",
+  "current_increment": "parallel-platform-5",
+  "code_revision": "git:b6f60a8b",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "integrated bank/period clients, multi-year and integrity; combined browser/restart verification running",
+  "state": "combined web/client/contact/dimensions/integrity and restart verified; bank independent-review delivery integrated awaiting actual two-user journey",
   "issues_closed": [],
   "next": [
-    "Finish combined bank/period client, multi-year and integrity browser/restart verification.",
-    "Integrate complete native desktop journal, dimensions and bank-draft review/post journeys as each becomes ready."
+    "Verify bank→draft→independent reviewer→exactly-once post using actual separate MFA sessions.",
+    "Continue native invoice workflow, commitments/liquidity and retention/GDPR in isolated parallel worktrees."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -23,7 +23,7 @@
     "state": "Combined domain/CLI/MCP/review/accountant web and restart verified; native Mac profile and remote GPUI password/MFA verified"
   },
   "evidence": {
-    "combined_browser_log": "/tmp/rm-parallel-full-journeys.log",
+    "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
     "verified_journeys": [
       "budget revision and actuals",
@@ -39,7 +39,14 @@
       "exception review and optional note/no-op replay preserve journal and underlying facts after restart",
       "actual accountant archive manifest/hashes/original downloads and audit survive restart",
       "macOS native local profile AppSupport create/competing-owner refusal/restart",
-      "managed local GPUI create/browser owner/native private verification/password+backup MFA/report/stop/reopen, stable configuration and keys"
+      "managed local GPUI create/browser owner/native private verification/password+backup MFA/report/stop/reopen, stable configuration and keys",
+      "confirmed contact deletion, missing confirmation/open invoice refusals, unchanged journal and restart",
+      "CLI/MCP bank import/dedupe, bill/payment/direct expense match and restart",
+      "CLI/MCP reviewed VAT/period close, stale proof, lock, reopen/reclose, immutable receipt and restart",
+      "multi-year historical charts, signed totals, current-report parity/navigation and restart",
+      "dimension/member creation, reviewed allocation, reasoned replacement/history, unchanged journal and restart",
+      "actual native integrity chain refresh with unavailable backup evidence",
+      "GPUI exact manual journal review/confirmation/receipt/readback and restart"
     ],
     "cli_password_mfa_login": "PASS: real password/MFA/private0600 session/owner read/existing-file refusal; /tmp/rm-parallel-overview-recurring-login.log",
     "gpui_remote_read": "PASS: actual native company/trial-balance window; /tmp/rentemester-rust-reports/native-desktop-evidence.json",
@@ -53,7 +60,12 @@
     "gpui_managed_local": "/tmp/rentemester-rust-reports/native-local-ui-evidence.json",
     "platform4_clippy": "/tmp/rm-platform4-clippy.log (PASS)",
     "platform4_ui": "26 tests pass: IntegrityView and MultiYearView; /tmp/rm-platform4-ui-tests.log",
-    "platform4_web_build": "/tmp/rm-platform4-web-build.log (PASS)"
+    "platform4_web_build": "/tmp/rm-platform4-web-build.log (PASS)",
+    "combined_browser_scope": "Snapshot based on f6d70d21 plus dimensions lint fix and combined helper wiring; excludes later bank-draft delivery and additive client company-profile method.",
+    "platform5_clippy": "/tmp/rm-platform5-clippy.log (PASS)",
+    "platform5_web_build": "/tmp/rm-platform5-web-build.log (PASS)",
+    "bank_drafts_integrated_clippy": "/tmp/rm-bank-drafts-integrated-clippy.log (PASS)",
+    "gpui_manual_journal": "/tmp/rentemester-rust-reports/native-journal-ui-evidence.json"
   },
   "verified_history": [
     {
@@ -394,74 +406,59 @@
     "rust-accruals": {
       "agent": "/root/rust_accruals",
       "worktree": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-accruals/rentemester",
-      "status": "running read-only main verification",
-      "acceptance": "Actual isolated Rust server, CLI/MCP and browser journeys including safe refusals and persistence",
-      "commit": "83b8172c",
-      "next": "Read-only combined main browser/restart verification",
-      "previous_delivery_status": "previous delivery integrated; group4 verification pending where listed",
+      "status": "running in isolated worktree",
+      "acceptance": "canonical evidence match, hashbound approval, pause/end, truthful forecast and restart",
+      "commit": "a4d7018c",
+      "next": "supplier commitments and 13-week liquidity",
+      "previous_delivery_status": "integrated; actual verification scope recorded above",
       "depends_on": [
-        "integrated group4 contracts",
-        "root native binaries and web build"
+        "native vendor/bank/payables/budget readers"
       ]
     },
     "rust-mileage": {
       "agent": "/root/rust_mileage",
       "worktree": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-mileage/rentemester",
       "status": "running in isolated worktree",
-      "acceptance": "Hash-bound preview/apply, current rights, reasoned replacement, unchanged journal amounts",
-      "commit": "02256c26",
-      "next": "Dimension lifecycle and reviewed allocation/history",
-      "previous_delivery_status": "previous delivery integrated; group4 verification pending where listed",
+      "acceptance": "subject export, confirmed retention-bounded append-only anonymization, current rights",
+      "commit": "bc51fdb3",
+      "next": "retention and GDPR subject flow",
+      "previous_delivery_status": "integrated; actual verification scope recorded above",
       "depends_on": [
-        "canonical dimension event schema",
-        "current company permission fence"
+        "canonical erasure/retention schemas and fiscal dates"
       ]
     },
     "rust-budget": {
       "agent": "/root/rust_budget",
       "worktree": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-budget/rentemester",
       "status": "running in isolated worktree",
-      "acceptance": "Exact request and key retained through unknown outcome; confirmed posting/readback/restart",
+      "acceptance": "real PDF review, explicit separate posting, unknown-outcome reconciliation, restart",
       "source_commit": "1fd3b34d",
-      "commit": "78399177",
-      "next": "Native GPUI manual journal review/post/recover/readback",
-      "previous_delivery_status": "previous delivery integrated; group4 verification pending where listed",
+      "commit": "a3c0c439",
+      "next": "native invoice preview/issue/post/readback",
+      "previous_delivery_status": "integrated; actual verification scope recorded above",
       "depends_on": [
-        "shared native domain client",
-        "managed local and remote desktop login"
+        "shared company profile and invoice client operations"
       ]
     },
     "rust-client-cli": {
       "agent": "/root/rust_client_cli",
       "worktree": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-client-cli/rentemester",
       "status": "running in isolated worktree",
-      "acceptance": "Four-eyes gates, current source hashes, shared journal writer, browser/restart",
-      "commit": "dd4dec6f",
+      "acceptance": "ordinary password/MFA enrollment and distinct reviewers in owned isolated synthetic runtime",
+      "commit": "268d8f71",
       "source_commit": "7aa6ac81",
-      "next": "Bank evidence to draft, independent review and exactly-once posting",
-      "previous_delivery_status": "previous delivery integrated; group4 verification pending where listed",
+      "next": "actual two-user bank-draft acceptance",
+      "previous_delivery_status": "integrated; actual verification scope recorded above",
       "depends_on": [
-        "native bank and document evidence",
-        "canonical draft/rule event schema"
+        "integrated reviewed bookkeeping and offline synthetic credential fixture"
       ]
     }
   },
   "integrated_pending_browser": [
     {
-      "source_commit": "4094dfdd",
-      "journey": "bank/payables CLI/MCP"
-    },
-    {
-      "source_commit": "dab6792a",
-      "journey": "native integrity page"
-    },
-    {
-      "source_commit": "0939c6d1",
-      "journey": "multi-year comparison"
-    },
-    {
-      "source_commit": "a4d7018c",
-      "journey": "VAT/period CLI/MCP lifecycle"
+      "source_commit": "268d8f71",
+      "journey": "bank→draft→independent reviewer→atomic posting",
+      "state": "integrated; dedicated real two-user MFA fixture in progress"
     }
   ],
   "pending_deliveries": []
