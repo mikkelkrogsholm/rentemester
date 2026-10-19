@@ -78,13 +78,19 @@ fn request(date: &str, document: i64, text: String) -> Result<ManualJournal, Err
         lines: vec![],
     })
 }
-pub fn register(
+pub(crate) struct PreparedBill {
+    pub journal: ManualJournal,
+    pub gross: Money,
+    pub vat: Money,
+    pub treatment: String,
+    supplier: Option<String>,
+    invoice: Option<String>,
+}
+pub(crate) fn prepare_bill(
     tx: &Transaction<'_>,
     input: &Register,
-    actor: &str,
-    latest: Date,
-) -> Result<Value, Error> {
-    crate::journal_post::require_current(tx)?;
+    proof: Option<&crate::direct_bank_payable_correction::PurchaseProof>,
+) -> Result<PreparedBill, Error> {
     if !input.confirm || input.document_id <= 0 || input.vendor_id.is_some_and(|v| v <= 0) {
         return Err(refused(
             "positive document/vendor reference and confirmation required",
@@ -109,7 +115,9 @@ pub fn register(
         ));
     }
     let used:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM payables WHERE document_id=?1) OR EXISTS(SELECT 1 FROM journal_entries WHERE document_id=?1)",[input.document_id],|r|r.get(0)).map_err(invalid)?;
-    if used {
+    if let Some(proof) = proof {
+        proof.document_history(tx, input.document_id)?;
+    } else if used {
         return Err(refused(
             "purchase document is already booked; use its existing payable or correction workflow",
         ));
@@ -211,13 +219,57 @@ pub fn register(
         None,
         "Leverandørgæld".into(),
     )?);
+    Ok(PreparedBill {
+        journal,
+        gross,
+        vat,
+        treatment: treatment.to_owned(),
+        supplier: supplier.map(str::to_owned),
+        invoice: meta.invoice_no.clone(),
+    })
+}
+pub fn register(
+    tx: &Transaction<'_>,
+    input: &Register,
+    actor: &str,
+    latest: Date,
+) -> Result<Value, Error> {
+    register_inner(tx, input, actor, latest, None)
+}
+pub(crate) fn register_corrected(
+    tx: &Transaction<'_>,
+    input: &Register,
+    actor: &str,
+    latest: Date,
+    proof: &crate::direct_bank_payable_correction::PurchaseProof,
+) -> Result<Value, Error> {
+    proof.require_reversed(tx)?;
+    register_inner(tx, input, actor, latest, Some(proof))
+}
+fn register_inner(
+    tx: &Transaction<'_>,
+    input: &Register,
+    actor: &str,
+    latest: Date,
+    proof: Option<&crate::direct_bank_payable_correction::PurchaseProof>,
+) -> Result<Value, Error> {
+    crate::journal_post::require_current(tx)?;
+    let PreparedBill {
+        journal,
+        gross,
+        vat,
+        treatment: _,
+        supplier,
+        invoice,
+    } = prepare_bill(tx, input, proof)?;
     let result = post(tx, &journal, actor, latest)?;
-    let id:i64=tx.query_row("INSERT INTO payables(document_id,vendor_id,supplier_name,bill_no,bill_date,due_date,gross_amount,net_amount,vat_amount,currency,journal_entry_id,note) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,'DKK',?10,?11) RETURNING id",params![input.document_id,input.vendor_id,supplier,meta.invoice_no,input.bill_date,input.due_date,wire(&gross)?.as_f64(),wire(&gross.subtract(&vat))?.as_f64(),wire(&vat)?.as_f64(),result["entryId"].as_i64(),input.note],|r|r.get(0)).map_err(invalid)?;
+    let id:i64=tx.query_row("INSERT INTO payables(document_id,vendor_id,supplier_name,bill_no,bill_date,due_date,gross_amount,net_amount,vat_amount,currency,journal_entry_id,note) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,'DKK',?10,?11) RETURNING id",params![input.document_id,input.vendor_id,supplier,invoice,input.bill_date,input.due_date,wire(&gross)?.as_f64(),wire(&gross.subtract(&vat))?.as_f64(),wire(&vat)?.as_f64(),result["entryId"].as_i64(),input.note],|r|r.get(0)).map_err(invalid)?;
     audit(tx, "payable_register", id, actor)?;
     Ok(
-        json!({"payableId":id,"documentId":input.document_id,"supplierName":supplier,"billNo":meta.invoice_no,"grossAmount":wire(&gross)?,"netAmount":wire(&gross.subtract(&vat))?,"vatAmount":wire(&vat)?,"dueDate":input.due_date,"entryId":result["entryId"],"entryNo":result["entryNo"]}),
+        json!({"payableId":id,"documentId":input.document_id,"supplierName":supplier,"billNo":invoice,"grossAmount":wire(&gross)?,"netAmount":wire(&gross.subtract(&vat))?,"vatAmount":wire(&vat)?,"dueDate":input.due_date,"entryId":result["entryId"],"entryNo":result["entryNo"]}),
     )
 }
+
 pub fn document_id(tx: &Transaction<'_>, id: i64) -> Result<i64, Error> {
     tx.query_row("SELECT document_id FROM payables WHERE id=?1", [id], |r| {
         r.get(0)
@@ -268,6 +320,27 @@ pub fn pay(
     actor: &str,
     latest: Date,
 ) -> Result<Value, Error> {
+    pay_inner(tx, id, input, actor, latest, None)
+}
+pub(crate) fn pay_corrected(
+    tx: &Transaction<'_>,
+    id: i64,
+    input: &Payment,
+    actor: &str,
+    latest: Date,
+    proof: &crate::direct_bank_payable_correction::PurchaseProof,
+) -> Result<Value, Error> {
+    proof.require_reversed(tx)?;
+    pay_inner(tx, id, input, actor, latest, Some(proof))
+}
+fn pay_inner(
+    tx: &Transaction<'_>,
+    id: i64,
+    input: &Payment,
+    actor: &str,
+    latest: Date,
+    proof: Option<&crate::direct_bank_payable_correction::PurchaseProof>,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !input.confirm || id <= 0 || input.bank_transaction_id <= 0 {
         return Err(refused(
@@ -303,7 +376,9 @@ pub fn pay(
         ));
     }
     let used:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM bank_journal_reconciliations WHERE bank_transaction_id=?1) OR EXISTS(SELECT 1 FROM payable_payments WHERE bank_transaction_id=?1)",[input.bank_transaction_id],|r|r.get(0)).map_err(invalid)?;
-    if used {
+    if let Some(proof) = proof {
+        proof.payment_history(tx, original.document, input.bank_transaction_id, id)?;
+    } else if used {
         return Err(refused("bank transaction is already reconciled"));
     }
     let bank = match mapping {
@@ -352,8 +427,10 @@ pub fn pay(
         original.document,
         format!("Betaling af leverandørfaktura {id}"),
     )?;
-    journal.source_bank_transaction_id =
-        Some(BankTransactionId::from_sqlite(input.bank_transaction_id));
+    if proof.is_none() {
+        journal.source_bank_transaction_id =
+            Some(BankTransactionId::from_sqlite(input.bank_transaction_id));
+    }
     journal.lines = vec![
         line(
             &creditor,
@@ -435,6 +512,10 @@ pub fn list(tx: &Transaction<'_>, slug: &str, as_of: &str, status: &str) -> Resu
         ("overdueOpenBalance", wire(&overdue)?),
         ("notYetDueOpenBalance", wire(&total.subtract(&overdue))?),
         ("unregisteredDocuments", json!(docs)),
+        (
+            "directBankCorrectionCandidates",
+            crate::direct_bank_payable_correction::candidates(tx)?,
+        ),
         ("expenseAccounts", json!(accounts)),
         ("vendors", vendors),
     ] {

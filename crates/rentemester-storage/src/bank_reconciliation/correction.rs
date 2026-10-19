@@ -67,7 +67,10 @@ fn lines(tx: &Transaction<'_>, entry: i64, opposite: bool) -> Result<Vec<Line>, 
     out.sort();
     Ok(out)
 }
-fn reversal(tx: &Transaction<'_>, original: i64) -> Result<(i64, String, String, String), Error> {
+pub(crate) fn reversal(
+    tx: &Transaction<'_>,
+    original: i64,
+) -> Result<(i64, String, String, String), Error> {
     type Proof = (String, String, Option<i64>, Option<i64>, String);
     let old:Proof=tx.query_row("SELECT status,currency,document_id,source_bank_transaction_id,entry_hash FROM journal_entries WHERE id=?1 AND reversal_of_entry_id IS NULL",[original],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?))).map_err(invalid)?;
     if old.0 != "posted" {
@@ -256,16 +259,33 @@ pub fn apply(
     }
     let by = format!("user:{subject}");
     let payload = json!({"bankTransactionId":input.bank_transaction_id,"replacementJournalEntryId":input.replacement_journal_entry_id,"expectedReconciliationId":input.expected_reconciliation_id,"planHash":input.plan_hash,"reason":input.reason});
-    let outcome=idempotency::execute(tx,ReceiptInput{key:&input.idempotency_key,operation:Operation::BankReconciliationCorrectionApply,principal_kind:PrincipalKind::User,subject,payload:&payload,created_by:&by,created_by_program:"rentemester-native-bank-correction",now_ms},|tx|{
-        if current(tx,input.bank_transaction_id)?.0!=input.expected_reconciliation_id{return Err(refused("current reconciliation changed; inspect a new correction plan"));}
-        let planned=plan(tx,input.bank_transaction_id,input.replacement_journal_entry_id)?;let plan=&planned["plan"];
-        if plan["planHash"]!=input.plan_hash{return Err(refused("reviewed correction proof changed; inspect a new plan"));}
-        let (kind,id)=input.expected_reconciliation_id.split_once(':').ok_or_else(||refused("invalid reconciliation identity"))?;let id:i64=id.parse().map_err(invalid)?;
-        tx.execute("INSERT INTO bank_reconciliation_correction_events(bank_transaction_id,supersedes_kind,supersedes_id,supersedes_reconciliation_id,superseded_journal_entry_id,replacement_journal_entry_id,bank_account_no,bank_amount_dkk,replacement_journal_hash,plan_hash,reason,actor,principal_kind,principal_subject_id,created_at)VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,'user',?13,strftime('%Y-%m-%dT%H:%M:%fZ','now'))",params![input.bank_transaction_id,kind,id,input.expected_reconciliation_id,plan["currentJournalEntryId"].as_i64(),input.replacement_journal_entry_id,plan["bankAccountNo"].as_str(),crate::journal_post::money(&Money::parse(&plan["bankAmountDkk"].to_string())?)?,plan["replacementJournalHash"].as_str(),input.plan_hash,input.reason.trim(),by,subject]).map_err(invalid)?;
-        let id=tx.last_insert_rowid();
-        tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('bank_reconciliation_corrected','bank_transaction',?1,?2,?3)",params![input.bank_transaction_id.to_string(),json!({"plan":plan,"reason":input.reason.trim(),"effect":"correction_evidence_only_no_posting"}).to_string(),by]).map_err(invalid)?;
-        Ok(json!({"ok":true,"id":id,"reconciliationId":format!("correction:{id}"),"planHash":input.plan_hash,"idempotent":false,"effect":"correction_evidence_only_no_posting","errors":[]}))
-    }).map_err(|f|f.error)?;
+    let outcome = idempotency::execute(
+        tx,
+        ReceiptInput {
+            key: &input.idempotency_key,
+            operation: Operation::BankReconciliationCorrectionApply,
+            principal_kind: PrincipalKind::User,
+            subject,
+            payload: &payload,
+            created_by: &by,
+            created_by_program: "rentemester-native-bank-correction",
+            now_ms,
+        },
+        |tx| {
+            apply_reviewed(
+                tx,
+                &ReviewedCorrection {
+                    bank_transaction_id: input.bank_transaction_id,
+                    replacement_journal_entry_id: input.replacement_journal_entry_id,
+                    expected_reconciliation_id: &input.expected_reconciliation_id,
+                    plan_hash: &input.plan_hash,
+                    reason: &input.reason,
+                },
+                subject,
+            )
+        },
+    )
+    .map_err(|f| f.error)?;
     match outcome {
         Outcome::Accepted {
             mut result,
@@ -277,6 +297,52 @@ pub fn apply(
         }
         Outcome::Refused { code } => Err(refused(code)),
     }
+}
+
+pub(crate) struct ReviewedCorrection<'a> {
+    pub bank_transaction_id: i64,
+    pub replacement_journal_entry_id: i64,
+    pub expected_reconciliation_id: &'a str,
+    pub plan_hash: &'a str,
+    pub reason: &'a str,
+}
+pub(crate) fn apply_reviewed(
+    tx: &Transaction<'_>,
+    input: &ReviewedCorrection<'_>,
+    subject: &str,
+) -> Result<Value, Error> {
+    crate::journal_post::require_current(tx)?;
+    if input.reason.trim().is_empty() || input.reason.trim().chars().count() > 1000 {
+        return Err(refused("explicit reason required"));
+    }
+    let by = format!("user:{subject}");
+    if current(tx, input.bank_transaction_id)?.0 != input.expected_reconciliation_id {
+        return Err(refused(
+            "current reconciliation changed; inspect a new correction plan",
+        ));
+    }
+    let planned = plan(
+        tx,
+        input.bank_transaction_id,
+        input.replacement_journal_entry_id,
+    )?;
+    let plan = &planned["plan"];
+    if plan["planHash"] != input.plan_hash {
+        return Err(refused(
+            "reviewed correction proof changed; inspect a new plan",
+        ));
+    }
+    let (kind, id) = input
+        .expected_reconciliation_id
+        .split_once(':')
+        .ok_or_else(|| refused("invalid reconciliation identity"))?;
+    let id: i64 = id.parse().map_err(invalid)?;
+    tx.execute("INSERT INTO bank_reconciliation_correction_events(bank_transaction_id,supersedes_kind,supersedes_id,supersedes_reconciliation_id,superseded_journal_entry_id,replacement_journal_entry_id,bank_account_no,bank_amount_dkk,replacement_journal_hash,plan_hash,reason,actor,principal_kind,principal_subject_id,created_at)VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,'user',?13,strftime('%Y-%m-%dT%H:%M:%fZ','now'))",params![input.bank_transaction_id,kind,id,input.expected_reconciliation_id,plan["currentJournalEntryId"].as_i64(),input.replacement_journal_entry_id,plan["bankAccountNo"].as_str(),crate::journal_post::money(&Money::parse(&plan["bankAmountDkk"].to_string())?)?,plan["replacementJournalHash"].as_str(),input.plan_hash,input.reason.trim(),by,subject]).map_err(invalid)?;
+    let id = tx.last_insert_rowid();
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('bank_reconciliation_corrected','bank_transaction',?1,?2,?3)",params![input.bank_transaction_id.to_string(),json!({"plan":plan,"reason":input.reason.trim(),"effect":"correction_evidence_only_no_posting"}).to_string(),by]).map_err(invalid)?;
+    Ok(
+        json!({"ok":true,"id":id,"reconciliationId":format!("correction:{id}"),"planHash":input.plan_hash,"idempotent":false,"effect":"correction_evidence_only_no_posting","errors":[]}),
+    )
 }
 
 #[cfg(test)]
