@@ -410,7 +410,7 @@ fn restored_accepted_key_never_becomes_new_intent_under_fresh_principal() {
             |r| r.get(0),
         )
         .unwrap();
-    source.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('native_restore_receipt_boundary','mutation_idempotency_tombstones',?1,'Synthetic verified archive boundary','system:portable-restore')",[high.to_string()]).unwrap();
+    source.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('native_restore_receipt_boundary','mutation_idempotency_tombstones',?1,'Imported receipt high-water mark; archive aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; original keys require manual reconciliation under fresh identities','system:portable-restore')",[high.to_string()]).unwrap();
     let tx = source
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .unwrap();

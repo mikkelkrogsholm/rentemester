@@ -64,6 +64,8 @@ pub struct Receipt {
     pub receipt_id: i64,
     pub created_at: String,
     pub expires_at: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reconciliation: Option<Value>,
 }
 pub enum Outcome {
     /// Uncommitted. Release result/receipt only after the caller's known commit.
@@ -98,7 +100,7 @@ fn storage(_: impl std::fmt::Display) -> Error {
         "idempotency storage refused; abort caller transaction",
     )
 }
-fn writer(tx: &Transaction<'_>) -> Result<(), Error> {
+pub(crate) fn writer(tx: &Transaction<'_>) -> Result<(), Error> {
     if tx.transaction_state(Some(MAIN_DB)).map_err(storage)? != TransactionState::Write {
         return Err(Error::new(
             "transaction_required",
@@ -244,7 +246,7 @@ fn audit(db: &Connection, event: &str, id: i64, operation: &str, actor: &str) ->
     if db.execute("INSERT INTO main.audit_log(id,event_type,entity_type,entity_id,message,actor) VALUES(?1,?2,'idempotency_receipt',?3,?4,?5)",params![audit_id,event,id.to_string(),message,actor]).map_err(storage)?!=1 {return Err(storage("audit"));}
     Ok(())
 }
-fn outcome_json(v: &Value) -> Result<String, Error> {
+pub(crate) fn outcome_json(v: &Value) -> Result<String, Error> {
     if v.get("ok") == Some(&Value::Bool(false)) {
         return Err(storage("rejected stored outcome"));
     }
@@ -304,8 +306,33 @@ pub fn execute(
     let op = input.operation.name();
     // A credential-free restore preserves old receipts but creates new live
     // principals. Never reinterpret an imported key as a new executable intent.
-    let imported:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM mutation_idempotency_tombstones t WHERE t.client_key_hash=?1 AND t.ledger_uuid=?2 AND t.operation=?3 AND t.id<=(SELECT COALESCE(MAX(CAST(entity_id AS INTEGER)),0) FROM audit_log WHERE event_type='native_restore_receipt_boundary' AND entity_type='mutation_idempotency_tombstones'))",params![key,ledger,op],|r|r.get(0)).map_err(storage)?;
-    if imported {
+    let imported = crate::receipt_reconciliation::imported_ids(tx, &key, ledger, op)?;
+    if !imported.is_empty() {
+        if let [id] = imported.as_slice()
+            && matches!(input.principal_kind, PrincipalKind::User)
+            && let Some((result, provenance)) =
+                crate::receipt_reconciliation::mapped_replay(tx, *id, input.subject, &payload)?
+        {
+            let (c, e): (String, String) = tx
+                .query_row(
+                    "SELECT created_at,expires_at FROM mutation_idempotency_tombstones WHERE id=?1",
+                    [id],
+                    |r| Ok((r.get(0)?, r.get(1)?)),
+                )
+                .map_err(storage)?;
+            dates(&c, &e)?;
+            audit(tx, "idempotency_replay", *id, op, &actor)?;
+            return Ok(Outcome::Accepted {
+                result,
+                receipt: Receipt {
+                    replayed: true,
+                    receipt_id: *id,
+                    created_at: c,
+                    expires_at: e,
+                    reconciliation: Some(provenance),
+                },
+            });
+        }
         return Err(Error::new("RESTORED_KEY_RECONCILIATION_REQUIRED","Imported request key already belongs to source history; reconcile the original accepted outcome before any new intended operation").into());
     }
 
@@ -355,6 +382,7 @@ pub fn execute(
                 receipt_id: id,
                 created_at: c,
                 expires_at: e,
+                reconciliation: None,
             },
         });
     }
@@ -381,6 +409,7 @@ pub fn execute(
             receipt_id: id,
             created_at: created,
             expires_at: expires,
+            reconciliation: None,
         },
     })
 }

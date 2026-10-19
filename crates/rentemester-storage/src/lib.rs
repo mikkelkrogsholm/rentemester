@@ -579,3 +579,5 @@ pub mod scheduled_recurring;
 pub mod scheduled_recurring_schema;
 
 pub mod invoice_email;
+
+pub mod receipt_reconciliation;

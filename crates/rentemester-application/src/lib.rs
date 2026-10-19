@@ -95,3 +95,5 @@ pub mod scheduled_recurring;
 pub mod hosted_recurring;
 
 pub mod invoice_email;
+
+pub mod receipt_reconciliation;
