@@ -41,6 +41,8 @@ struct Config {
     #[serde(default)]
     backup_signing_key_file: Option<PathBuf>,
     #[serde(default)]
+    transfer_trusted_key_file: Option<PathBuf>,
+    #[serde(default)]
     restore_actor: Option<String>,
     #[serde(default)]
     auth_mail: Option<crate::auth_delivery::Config>,
@@ -73,6 +75,7 @@ pub struct RestoreRequest {
     pub archive: PathBuf,
     pub trusted_key: PathBuf,
     pub confirmed_target: PathBuf,
+    pub transfer: bool,
 }
 
 pub struct Backend {
@@ -81,6 +84,7 @@ pub struct Backend {
     pub(crate) setup: Option<crate::setup_http::Installer>,
     pub(crate) setup_pending: std::sync::atomic::AtomicBool,
     pub(crate) backup_signer: Option<rentemester_runtime::backup_artifact::SigningKey>,
+    pub(crate) transfer_trusted_key: Option<rentemester_runtime::backup_artifact::TrustedPublicKey>,
     pub(crate) scheduled_executor: Option<Arc<rentemester_runtime::service_key::ServiceKey>>,
     pub(crate) invoice_mail: std::collections::BTreeMap<String, Mutex<rentemester_runtime::invoice_mail::SmtpSender>>,
     keys: MfaKeyring,
@@ -158,6 +162,8 @@ impl Backend {
             .as_ref()
             .map(|p| rentemester_runtime::backup_keys::signing_key(p, &config.root))
             .transpose()?;
+        let transfer_trusted_key = config.transfer_trusted_key_file.as_deref()
+            .map(rentemester_runtime::backup_keys::trusted_key).transpose()?;
         let mut owner = if let Some(request) = restore {
             if create || request.confirmed_target != config.root || config.first_owner.is_none() {
                 return Err("restore requires exact configured fresh target, a new firstOwner and no --create".into());
@@ -170,9 +176,20 @@ impl Backend {
                     .ok_or("restoreActor required in private config")?,
                 &config.operator_actors,
             )?;
-            let verified =
-                crate::portable_backup_cli::verified(&request.archive, &request.trusted_key)?;
-            Owner::restore_new(
+            let trusted = rentemester_runtime::backup_keys::trusted_key(&request.trusted_key)?;
+            if request.transfer && !transfer_trusted_key.as_ref().is_some_and(|configured| {
+                configured.public_key_bytes() == trusted.public_key_bytes()
+            }) {
+                return Err("transferTrustedKeyFile must independently configure the same trusted source key".into());
+            }
+            let (verified, wire_hash) = crate::portable_backup_cli::verified_with_hash(&request.archive, &trusted)?;
+            if request.transfer {
+                Owner::stage_transfer_new(
+                    &config.root, config.broker_uid, &config.workspace,
+                    &config.company_slug, config.runtime_profile, &verified,
+                    &operator, &wire_hash, origin,
+                )?
+            } else { Owner::restore_new(
                 &config.root,
                 config.broker_uid,
                 &config.workspace,
@@ -180,7 +197,7 @@ impl Backend {
                 config.runtime_profile,
                 &verified,
                 &operator,
-            )?
+            )? }
         } else if create {
             Owner::create_with_chart_profile(
                 &config.root,
@@ -281,6 +298,7 @@ impl Backend {
             cookies,
             keys,
             backup_signer,
+            transfer_trusted_key,
             scheduled_executor: None,
             invoice_mail,
             signer,

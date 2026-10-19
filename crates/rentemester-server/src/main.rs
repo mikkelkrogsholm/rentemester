@@ -30,6 +30,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut confirmed_target = None;
     let mut verify_archive = None;
     let mut source_unavailable = false;
+    let mut restore_transfer = false;
     let mut scheduled_worker = false;
     let mut scheduled_stdin = false;
     while let Some(arg) = args.next() {
@@ -67,6 +68,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ))
             }
             "--source-unavailable" => source_unavailable = true,
+            "--restore-transfer" => restore_transfer = true,
             "--origin" => public_origin = Some(args.next().ok_or("--origin requires a URL")?),
             "--help" | "-h" => {
                 println!(
@@ -91,6 +93,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!(
                     "Fresh restore: --config NEW_PRIVATE.json --restore-backup ARCHIVE --trusted-backup-key RAW_PUBLIC_KEY --confirm-target EXACT_CONFIG_ROOT --source-unavailable (explicit declaration, no global single-use guarantee)"
                 );
+                println!("Stage handoff: --config NEW_PRIVATE.json --restore-backup OFFERED_ARCHIVE --trusted-backup-key SOURCE_PUBLIC_KEY --confirm-target EXACT_CONFIG_ROOT --restore-transfer (requires transferTrustedKeyFile; remains read-only until reviewed source release activation)");
                 return Ok(());
             }
             _ => return Err(format!("unknown option: {arg}").into()),
@@ -98,7 +101,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     hosted_worker::validate_flags(scheduled_worker, scheduled_stdin, config.is_some(), create || restore_archive.is_some() || verify_archive.is_some())?;
     if let Some(archive) = verify_archive {
-        if restore_archive.is_some() || create || confirmed_target.is_some() || source_unavailable {
+        if restore_archive.is_some() || create || confirmed_target.is_some() || source_unavailable || restore_transfer {
             return Err("verification flags cannot select restore/create".into());
         }
         let verified = portable_backup_cli::verified(
@@ -115,16 +118,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
     let restore = if let Some(archive) = restore_archive {
-        if !source_unavailable {
-            return Err("fresh restore requires explicit --source-unavailable declaration; no global handoff guarantee".into());
+        if config.is_none() {
+            return Err("restore requires --config".into());
+        }
+        if source_unavailable == restore_transfer {
+            return Err("choose exactly one: --source-unavailable recovery or --restore-transfer staged handoff".into());
         }
         Some(backend::RestoreRequest {
             archive,
             trusted_key: trusted_backup_key.ok_or("separate trusted public key required")?,
             confirmed_target: confirmed_target.ok_or("exact --confirm-target required")?,
+            transfer: restore_transfer,
         })
     } else {
-        if trusted_backup_key.is_some() || confirmed_target.is_some() || source_unavailable {
+        if trusted_backup_key.is_some() || confirmed_target.is_some() || source_unavailable || restore_transfer {
             return Err("restore flags require --restore-backup".into());
         }
         None

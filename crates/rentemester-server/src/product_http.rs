@@ -27,6 +27,8 @@ mod obligations;
 mod payables;
 mod periods;
 mod portable_backup;
+mod workspace_transfer;
+mod restored_receipts;
 mod recurring_invoices;
 mod scheduled_recurring;
 mod hosted_recurring;
@@ -85,6 +87,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/workspace-inbox/{source}/assign", post(workspace_inbox::handle))
         .route("/api/companies/{slug}/workspace-inbox/{source}/complete", post(workspace_inbox::handle))
         .route("/api/workspace/backup", post(portable_backup::handle))
+        .route("/api/workspace/transfer", get(workspace_transfer::handle))
+        .route("/api/workspace/transfer/{action}", post(workspace_transfer::handle))
+        .route("/api/companies/{slug}/restore/receipts", get(restored_receipts::handle))
+        .route("/api/companies/{slug}/restore/receipts/reconcile", post(restored_receipts::handle))
         .route("/api/workspace/invitations",get(workspace_access::handle).post(workspace_access::handle))
         .route("/api/workspace/invitations/cancel",post(workspace_access::handle))
         .route("/api/invitations/claim",post(workspace_access::handle))
@@ -661,7 +667,13 @@ async fn write(State(state): State<Product>, request: Request) -> Response {
                 )
                 .map_err(|_| ())?
                 .outcome
-                .map(|v| v.value.result)
+                .map(|v| {
+                    let mut value = v.value.result;
+                    if let Some(receipt) = v.value.receipt {
+                        value["receipt"] = json!(receipt);
+                    }
+                    value
+                })
                 .map_err(|f| (f.fence, f.business)),
             Mutation::Reverse(input) => owner
                 .reverse_human(
@@ -672,7 +684,13 @@ async fn write(State(state): State<Product>, request: Request) -> Response {
                 )
                 .map_err(|_| ())?
                 .outcome
-                .map(|v| v.value.result)
+                .map(|v| {
+                    let mut value = v.value.result;
+                    if let Some(receipt) = v.value.receipt {
+                        value["receipt"] = json!(receipt);
+                    }
+                    value
+                })
                 .map_err(|f| (f.fence, f.business)),
         };
         Ok::<_, ()>(outcome)

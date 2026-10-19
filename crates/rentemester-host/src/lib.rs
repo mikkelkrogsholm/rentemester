@@ -1296,3 +1296,5 @@ mod password_recovery;
 mod invoice_email;
 
 mod workspace_transfer;
+
+mod receipt_reconciliation;
