@@ -84,6 +84,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/group-consolidated-report", get(consolidation::read))
         .route("/api/companies/{slug}/consolidation", get(consolidation::handle))
         .route("/api/companies/{slug}/consolidation/{action}", post(consolidation::handle))
+        .route("/api/companies/{slug}/import", post(contact_import::handle))
         .route("/api/group-dispositions/{id}", get(intercompany_dispositions::status))
         .route("/api/companies/{slug}/group-dispositions/{action}", post(intercompany_dispositions::handle))
         .route("/api/group-reconciliation", get(intercompany::reconciliation))
@@ -735,6 +736,7 @@ mod ownership;
 
 mod intercompany;
 mod intercompany_dispositions;
+mod contact_import;
 
 mod eliminations;
 mod consolidation;

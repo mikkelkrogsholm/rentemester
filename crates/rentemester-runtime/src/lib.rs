@@ -174,3 +174,5 @@ pub mod backup_keys;
 pub mod invoice_mail;
 
 pub mod workspace_transfer;
+
+pub mod contact_import;
