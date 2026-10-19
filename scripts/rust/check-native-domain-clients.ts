@@ -99,6 +99,7 @@ export async function checkNativeDomainClients(
 		vendorId: number;
 		invoiceId: number;
 		invoiceNumber: string;
+        deletedContacts: Array<{kind: string; name: string}>;
 	};
 	try {
 		const tools = rpc("tools/list", {}).tools;
@@ -111,6 +112,8 @@ export async function checkNativeDomainClients(
 			"update_customer",
 			"create_vendor",
 			"update_vendor",
+            "delete_customer",
+            "delete_vendor",
 			"issue_invoice",
 			"post_invoice",
 		]) {
@@ -287,8 +290,23 @@ export async function checkNativeDomainClients(
 			const replay = cliCall("post-invoice", postBody, ["--confirm"], true);
 			if (replay.status !== 1 || replay.value.code !== "server_refused")
 				throw new Error("Duplicate invoice posting accepted");
+            const deletedContacts: Array<{kind: string; name: string}> = [];
+            for (const kind of ["customer", "vendor"]) {
+                const name = `Synthetic disposable client ${kind}`;
+                const disposable = kind === "customer"
+                    ? cliCall("create-customer", JSON.stringify({name}), ["--confirm"]).value.data.customer
+                    : rpc("create_vendor", {company:"synthetic",body:JSON.stringify({name}),confirm:true}).vendor;
+                const deletion = kind === "customer"
+                    ? rpc("delete_customer", {company:"synthetic",id:disposable.id,body:'{"confirm":true}',confirm:true}).customer
+                    : cliCall("delete-vendor", '{"confirm":true}', ["--id",String(disposable.id),"--confirm"]).value.data.vendor;
+                if (deletion.deleted !== true || deletion.id !== disposable.id) throw new Error("Client contact deletion did not return exact target");
+                deletedContacts.push({kind,name});
+            }
+            const used = cliCall("delete-customer", '{"confirm":true}', ["--id",String(customer.id),"--confirm"], true);
+            if (used.status !== 1 || used.value.code !== "server_refused") throw new Error("Client deleted open invoice customer");
 			evidence = {
-				customerId: customer.id,
+				deletedContacts,
+                customerId: customer.id,
 				vendorId: vendor.id,
 				invoiceId: invoice.documentId,
 				invoiceNumber: invoice.invoiceNumber,
@@ -296,6 +314,9 @@ export async function checkNativeDomainClients(
 			writeFileSync(saved, JSON.stringify(evidence));
 		} else evidence = JSON.parse(readFileSync(saved, "utf8"));
 		const contacts = cliCall("contacts").value.data.contacts;
+        for (const removed of evidence.deletedContacts) {
+            if (contacts[`${removed.kind}s`].some((row: {name: string}) => row.name === removed.name)) throw new Error("Deleted CLI/MCP contact returned after restart");
+        }
 		const customer = contacts.customers.find(
 				(c: { id: number }) => c.id === evidence.customerId,
 			),
@@ -326,8 +347,8 @@ export async function checkNativeDomainClients(
         catch { await page.screenshot({path:"/tmp/rentemester-rust-domain-client-failure.png",fullPage:true}); throw new Error(`Invoice UI does not show persisted ${invoiceData.selectedYear}/${invoice.status}: ${(await page.locator("body").innerText()).slice(-2500)}`); }
 		console.log(
 			restarted
-				? "PASS: CLI/MCP customer, vendor, original and posted invoice survive restart"
-				: "PASS: CLI customer → MCP vendor → cross-client updates → CLI nonmutating PDF preview → confirmed MCP issue → explicit CLI post; duplicate posting refused",
+				? "PASS: CLI/MCP customer, vendor, contact deletions, original and posted invoice survive restart"
+				: "PASS: CLI customer → MCP vendor → cross-client updates → CLI nonmutating PDF preview → confirmed MCP issue → explicit CLI post; duplicate posting and open-contact deletion refused; disposable contacts deleted through both clients",
 		);
 	} finally {
 		rmSync(temp, { recursive: true, force: true });

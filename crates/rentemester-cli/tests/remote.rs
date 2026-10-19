@@ -384,3 +384,17 @@ fn native_bank_creation_cli_accepts_explicit_company() {
     assert!(!String::from_utf8_lossy(&output.stdout).contains("synthetic-secret"));
     task.join().unwrap();
 }
+
+#[test]
+fn contact_deletion_requires_explicit_confirmation_and_positive_target() {
+    let help = Command::new(BIN).args(["remote", "--help"]).output().unwrap();
+    let help: serde_json::Value = serde_json::from_slice(&help.stdout).unwrap();
+    for operation in ["delete-customer", "delete-vendor"] {
+        assert!(help["commands"].as_array().unwrap().contains(&serde_json::json!(operation)));
+        for flags in [vec![], vec!["--id", "0", "--confirm"], vec!["--id", "7"]] {
+            let output = Command::new(BIN).args(["remote", operation, "--server", "http://127.0.0.1:9", "--allow-loopback-http", "--company", "demo"]).args(flags).output().unwrap();
+            assert_eq!(output.status.code(), Some(2));
+        }
+    }
+    assert_eq!(help["domainBodySchemas"]["contactDelete"]["properties"]["confirm"]["const"], true);
+}

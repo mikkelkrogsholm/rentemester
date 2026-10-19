@@ -7,8 +7,10 @@ pub const MAX_DOMAIN_BODY: usize = 262_144;
 pub enum DomainMutation {
     CreateCustomer,
     UpdateCustomer(i64),
+    DeleteCustomer(i64),
     CreateVendor,
     UpdateVendor(i64),
+    DeleteVendor(i64),
     IssueInvoice,
     PostInvoice,
 }
@@ -39,6 +41,22 @@ impl DomainMutation {
                     ),
                 )
             }
+            Self::DeleteCustomer(id) | Self::DeleteVendor(id) => {
+                if id <= 0 {
+                    return Err(Error::InvalidInput("positive record id required"));
+                }
+                (
+                    Method::DELETE,
+                    format!(
+                        "{}/{id}",
+                        if matches!(self, Self::DeleteCustomer(_)) {
+                            "customers"
+                        } else {
+                            "vendors"
+                        }
+                    ),
+                )
+            }
             Self::IssueInvoice => (Method::POST, "invoices/issue".into()),
             Self::PostInvoice => (Method::POST, "invoices/post".into()),
         })
@@ -52,6 +70,12 @@ pub(crate) fn optional_text() -> Value {
 }
 /// Discoverable wire body schema; this validates shape, the server owns domain policy.
 pub fn domain_body_schema(operation: DomainMutation) -> Value {
+    if matches!(
+        operation,
+        DomainMutation::DeleteCustomer(_) | DomainMutation::DeleteVendor(_)
+    ) {
+        return object(json!({"confirm":{"const":true}}), &["confirm"]);
+    }
     if matches!(operation, DomainMutation::PostInvoice) {
         return object(
             json!({"invoiceDocumentId":{"type":"integer","minimum":1},"revenueAccountNo":{"type":"string","minLength":1,"maxLength":128},"confirm":{"const":true}}),

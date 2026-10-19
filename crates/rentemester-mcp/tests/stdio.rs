@@ -146,7 +146,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 35);
+    assert_eq!(tools.len(), 37);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -303,6 +303,8 @@ fn domain_discovery_is_strict_and_preview_attestation_is_explicit() {
                 "update_vendor",
                 json!({"company":"demo","id":null,"body":"{}","confirm":true}),
             ),
+            call(7, "delete_customer", json!({"company":"demo","body":"{\"confirm\":true}","confirm":true})),
+            call(8, "delete_vendor", json!({"company":"demo","id":7,"body":"{\"confirm\":true}","confirm":false})),
         ],
     );
     let values = parsed(&output);
@@ -317,6 +319,13 @@ fn domain_discovery_is_strict_and_preview_attestation_is_explicit() {
         false
     );
     assert_eq!(issue["annotations"]["idempotentHint"], false);
+    for name in ["delete_customer", "delete_vendor"] {
+        let deletion = tools.iter().find(|t| t["name"] == name).unwrap();
+        assert!(deletion["inputSchema"]["required"].as_array().unwrap().contains(&json!("id")));
+        assert_eq!(deletion["inputSchema"]["properties"]["body"]["contentSchema"]["properties"]["confirm"]["const"], true);
+        assert_eq!(deletion["annotations"]["destructiveHint"], true);
+        assert_eq!(deletion["annotations"]["idempotentHint"], false);
+    }
     let preview = tools
         .iter()
         .find(|t| t["name"] == "preview_invoice")

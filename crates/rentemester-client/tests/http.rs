@@ -181,6 +181,8 @@ async fn domain_mutations_preserve_flat_native_bytes_and_methods() {
  (D::UpdateCustomer(7),"PATCH","customers/7",br#"{ "email":null }"#.as_slice()),
  (D::CreateVendor,"POST","vendors",br#"{"name":"Synthetic vendor","countryCode":"DK","identifierKind":"dk_cvr","vatOrCvr":"DK12345678"}"#.as_slice()),
  (D::UpdateVendor(8),"PATCH","vendors/8",br#"{"phone":"1234"}"#.as_slice()),
+ (D::DeleteCustomer(7),"DELETE","customers/7",br#"{ "confirm":true }"#.as_slice()),
+ (D::DeleteVendor(8),"DELETE","vendors/8",br#"{"confirm":true}"#.as_slice()),
  (D::IssueInvoice,"POST","invoices/issue",br#"{ "issueDate":"2026-10-19","lines":[{"description":"Synthetic exact decimal","quantity":3,"unitPriceExVat":0.335}] }"#.as_slice()),
  (D::PostInvoice,"POST","invoices/post",br#"{"invoiceDocumentId":9,"revenueAccountNo":"S","confirm":true}"#.as_slice())]{
  let(origin,request,task)=server(OK);let api=ApiClient::new(&origin,true,Some("session=secret".into())).unwrap();assert_eq!(api.domain_mutation("demo",operation,body.to_vec(),Confirmation{confirm:true,invoice_preview_reviewed:true}).await.unwrap()["ok"],true);let wire=request.recv().unwrap();assert!(wire.starts_with(format!("{method} /api/companies/demo/{path} HTTP/1.1").as_bytes()));assert!(wire.ends_with(body));assert!(!String::from_utf8_lossy(&wire).contains("idempotency"));assert_eq!(task.join().unwrap(),1);
@@ -217,7 +219,7 @@ async fn domain_confirmation_and_unknown_fields_fail_before_network() {
         confirm: true,
         invoice_preview_reviewed: false,
     };
-    for(operation,body,confirmation)in[(D::CreateCustomer,br#"{"name":"Synthetic","idempotencyKey":"invented"}"#.as_slice(),confirmed),(D::CreateCustomer,br#"{"name":"Synthetic"}"#.as_slice(),Confirmation{confirm:false,invoice_preview_reviewed:false}),(D::IssueInvoice,br#"{"issueDate":"2026-10-19","lines":[{"description":"Synthetic","quantity":1,"unitPriceExVat":10}]}"#.as_slice(),confirmed),(D::PostInvoice,br#"{"invoiceDocumentId":9,"revenueAccountNo":"S","confirm":false}"#.as_slice(),confirmed)]{assert!(matches!(api.domain_mutation("demo",operation,body.to_vec(),confirmation).await,Err(Error::InvalidInput(_))));}
+    for(operation,body,confirmation)in[(D::CreateCustomer,br#"{"name":"Synthetic","idempotencyKey":"invented"}"#.as_slice(),confirmed),(D::CreateCustomer,br#"{"name":"Synthetic"}"#.as_slice(),Confirmation{confirm:false,invoice_preview_reviewed:false}),(D::IssueInvoice,br#"{"issueDate":"2026-10-19","lines":[{"description":"Synthetic","quantity":1,"unitPriceExVat":10}]}"#.as_slice(),confirmed),(D::PostInvoice,br#"{"invoiceDocumentId":9,"revenueAccountNo":"S","confirm":false}"#.as_slice(),confirmed), (D::DeleteCustomer(7), br#"{"confirm":false}"#.as_slice(),confirmed), (D::DeleteVendor(0), br#"{"confirm":true}"#.as_slice(),confirmed)]{assert!(matches!(api.domain_mutation("demo",operation,body.to_vec(),confirmation).await,Err(Error::InvalidInput(_))));}
 }
 #[tokio::test]
 async fn domain_uncertainty_is_never_retried() {

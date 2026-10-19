@@ -85,6 +85,16 @@ pub fn list() -> Value {
             "Patch one active supplier; source documents remain immutable",
         ),
         (
+            "delete_customer",
+            DomainMutation::DeleteCustomer(1),
+            "Delete an unused customer after confirmation; open or overpaid invoices refuse; immutable invoice snapshots survive",
+        ),
+        (
+            "delete_vendor",
+            DomainMutation::DeleteVendor(1),
+            "Delete an unused supplier after confirmation; obligations and historical foreign keys refuse; original evidence survives",
+        ),
+        (
             "issue_invoice",
             DomainMutation::IssueInvoice,
             "Issue immutable native invoice/PDF from the identical reviewed preview input; numbering remains server-authoritative",
@@ -98,7 +108,10 @@ pub fn list() -> Value {
         let mut schema = json!({"type":"object","required":["company","body","confirm"],"properties":{"company":company_schema(),"body":native_body(rentemester_client::domain_body_schema(operation)),"confirm":{"const":true}},"additionalProperties":false});
         if matches!(
             operation,
-            DomainMutation::UpdateCustomer(_) | DomainMutation::UpdateVendor(_)
+            DomainMutation::UpdateCustomer(_)
+                | DomainMutation::UpdateVendor(_)
+                | DomainMutation::DeleteCustomer(_)
+                | DomainMutation::DeleteVendor(_)
         ) {
             schema["required"].as_array_mut().unwrap().push(json!("id"));
             schema["properties"]["id"] = json!({"type":"integer","minimum":1});
@@ -234,8 +247,11 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
                 .await
         }
         "create_customer" | "update_customer" | "create_vendor" | "update_vendor"
-        | "issue_invoice" | "post_invoice" => {
-            let update = matches!(name, "update_customer" | "update_vendor");
+        | "delete_customer" | "delete_vendor" | "issue_invoice" | "post_invoice" => {
+            let update = matches!(
+                name,
+                "update_customer" | "update_vendor" | "delete_customer" | "delete_vendor"
+            );
             if args.get("id").is_some() != update
                 || args
                     .get("id")
@@ -243,7 +259,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
                 || args.get("previewReviewed").is_some() != (name == "issue_invoice")
             {
                 return Err(
-                    "updates require positive id; issue_invoice requires previewReviewed:true",
+                    "updates/deletions require positive id; issue_invoice requires previewReviewed:true",
                 );
             }
             let args: DomainWriteArgs =
@@ -256,6 +272,8 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
                 "update_customer" => DomainMutation::UpdateCustomer(args.id.unwrap()),
                 "create_vendor" => DomainMutation::CreateVendor,
                 "update_vendor" => DomainMutation::UpdateVendor(args.id.unwrap()),
+                "delete_customer" => DomainMutation::DeleteCustomer(args.id.unwrap()),
+                "delete_vendor" => DomainMutation::DeleteVendor(args.id.unwrap()),
                 "issue_invoice" => DomainMutation::IssueInvoice,
                 _ => DomainMutation::PostInvoice,
             };
