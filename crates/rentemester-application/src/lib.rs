@@ -98,3 +98,7 @@ pub mod invoice_email;
 
 pub mod receipt_reconciliation;
 pub mod workspace_transfer;
+
+pub mod bookkeeping_batch;
+
+pub mod document_party_links;

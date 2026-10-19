@@ -33,6 +33,8 @@ mod recurring_invoices;
 mod scheduled_recurring;
 mod hosted_recurring;
 mod reviewed_bookkeeping;
+mod bookkeeping_batch;
+mod document_party_links;
 mod sales;
 mod invoice_email;
 mod supplier_commitments;
@@ -106,6 +108,16 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/budget-vs-actual",
             get(budget::handle),
         )
+        .route("/api/companies/{slug}/documents/party-links", get(document_party_links::handle))
+        .route("/api/companies/{slug}/documents/{id}/party-links", get(document_party_links::handle))
+        .route("/api/companies/{slug}/documents/party-links/{action}", post(document_party_links::handle))
+        .route("/api/companies/{slug}/bookkeeping-batch", get(bookkeeping_batch::handle))
+        .route("/api/companies/{slug}/bookkeeping-batch/persist", post(bookkeeping_batch::handle))
+        .route("/api/companies/{slug}/bookkeeping-batch/approve", post(bookkeeping_batch::handle))
+        .route("/api/companies/{slug}/bookkeeping-batch/apply", post(bookkeeping_batch::handle))
+        .route("/api/companies/{slug}/bookkeeping-batch/runs", get(bookkeeping_batch::handle))
+        .route("/api/companies/{slug}/bookkeeping-batch/runs/{runId}", get(bookkeeping_batch::handle))
+        .route("/api/companies/{slug}/bookkeeping-workbench", get(bookkeeping_batch::handle))
         .route(
             "/api/companies/{slug}/accounting-drafts",
             get(reviewed_bookkeeping::handle).post(reviewed_bookkeeping::handle),

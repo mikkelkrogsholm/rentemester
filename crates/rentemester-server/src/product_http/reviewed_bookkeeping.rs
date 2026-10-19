@@ -3,7 +3,7 @@ use rentemester_application::reviewed_bookkeeping::Action;
 use rentemester_storage::{accounting_drafts, bookkeeping_queue, posting_rules};
 enum Input {
     Draft(accounting_drafts::Input),
-    Rule(posting_rules::Input),
+    Rule(Box<posting_rules::Input>),
     Bank(bookkeeping_queue::Create),
     Read,
 }
@@ -41,7 +41,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         };
         let parsed = match kind.as_str() {
             "accounting-drafts" => serde_json::from_slice(&bytes).map(Input::Draft),
-            "posting-rules" => serde_json::from_slice(&bytes).map(Input::Rule),
+            "posting-rules" => serde_json::from_slice(&bytes).map(|v| Input::Rule(Box::new(v))),
             "reviewed-bank" => serde_json::from_slice(&bytes).map(Input::Bank),
             _ => return refused(StatusCode::NOT_FOUND, "not_found"),
         };

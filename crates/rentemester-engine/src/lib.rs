@@ -65,3 +65,5 @@ pub mod eliminations;
 pub mod consolidation;
 
 pub mod scheduled_recurring;
+
+pub mod bookkeeping_batch;

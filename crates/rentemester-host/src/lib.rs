@@ -1298,3 +1298,7 @@ mod invoice_email;
 mod workspace_transfer;
 
 mod receipt_reconciliation;
+
+mod bookkeeping_batch;
+
+mod document_party_links;

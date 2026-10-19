@@ -345,6 +345,7 @@ pub fn company(db: &Connection) -> Result<Company, Error> {
     // generation references and all earlier restore boundaries.
     crate::scheduled_recurring::validate_backup(db)?;
     crate::invoice_email::validate_backup(db)?;
+    crate::bookkeeping_batch::validate_backup(db)?;
     crate::migration::integrity(db)?;
     let report = crate::journal_hash::verify(db)?;
     if !report.ok {
