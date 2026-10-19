@@ -142,6 +142,16 @@ impl Owner {
                     bytes: business.bytes,
                 },
             )?;
+            add(
+                &mut entries,
+                artifact::Snapshot {
+                    kind: artifact::EntryKind::ControlBusiness {
+                        section: artifact::BusinessSection::CompanyKnowledge,
+                    },
+                    path: "control/company-knowledge.json".into(),
+                    bytes: business.knowledge_bytes,
+                },
+            )?;
             for c in &catalog.companies {
                 switch(
                     &mut slots.company,
@@ -221,7 +231,10 @@ impl Owner {
                 control_schema_version: 30,
                 companies,
                 coverage: artifact::Coverage {
-                    included: vec![artifact::BusinessSection::WorkspaceAudit],
+                    included: vec![
+                        artifact::BusinessSection::WorkspaceAudit,
+                        artifact::BusinessSection::CompanyKnowledge,
+                    ],
                     unsupported,
                     excluded: artifact::Exclusion::ALL.to_vec(),
                 },
@@ -275,25 +288,9 @@ impl Owner {
         let mut owner = Self::open_guarded(&stage, workspace, primary, guard)?;
         owner.reusable = false;
         let archive_hash = rentemester_runtime::backup_keys::digest(artifact.manifest_bytes());
-        let business = artifact
-            .entries()
-            .iter()
-            .find(|e| {
-                matches!(
-                    e.kind(),
-                    artifact::EntryKind::ControlBusiness {
-                        section: artifact::BusinessSection::WorkspaceAudit
-                    }
-                )
-            })
-            .ok_or(OwnerError::Context)?;
         let slots = owner.held.0.as_mut().unwrap();
-        store::initialize_control(
-            slots.control.as_mut().unwrap(),
-            business.bytes(),
-            &archive_hash,
-        )
-        .map_err(|_| OwnerError::Database)?;
+        restore_business(slots.control.as_mut().unwrap(), artifact, &archive_hash)
+            .map_err(|_| OwnerError::Database)?;
         for c in &artifact.manifest().context.companies {
             switch(
                 &mut slots.company,
@@ -376,7 +373,14 @@ impl Owner {
 fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Error> {
     let ctx = &a.manifest().context;
     if ctx.control_schema_version != 30
-        || ctx.coverage.included != [artifact::BusinessSection::WorkspaceAudit]
+        || !matches!(
+            ctx.coverage.included.as_slice(),
+            [artifact::BusinessSection::WorkspaceAudit]
+                | [
+                    artifact::BusinessSection::WorkspaceAudit,
+                    artifact::BusinessSection::CompanyKnowledge
+                ]
+        )
     {
         return Err(error("unsupported control coverage"));
     }
@@ -447,23 +451,147 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
     // Validate the explicit business codec against a fresh canonical credential-free
     // control before publication, not by attaching or restoring the source auth DB.
     let mut control = Connection::open_in_memory().map_err(error)?;
-    let business = a
-        .entries()
-        .iter()
-        .find(|e| {
-            matches!(
-                e.kind(),
-                artifact::EntryKind::ControlBusiness {
-                    section: artifact::BusinessSection::WorkspaceAudit
-                }
-            )
-        })
-        .ok_or_else(|| error("control business missing"))?;
-    store::initialize_control(
+    restore_business(
         &mut control,
-        business.bytes(),
+        a,
         &rentemester_runtime::backup_keys::digest(a.manifest_bytes()),
     )?;
     control.close().map_err(|(_, e)| error(e))?;
     Ok(())
+}
+
+fn restore_business(
+    control: &mut Connection,
+    a: &artifact::VerifiedArtifact,
+    archive_hash: &str,
+) -> Result<(), rentemester_engine::Error> {
+    let entry = |section| {
+        a.entries().iter().find(|e|matches!(e.kind(),artifact::EntryKind::ControlBusiness{section:s}if *s==section)).ok_or_else(||error("control business section missing"))
+    };
+    store::initialize_control(
+        control,
+        entry(artifact::BusinessSection::WorkspaceAudit)?.bytes(),
+        archive_hash,
+    )?;
+    if a.manifest()
+        .context
+        .coverage
+        .included
+        .contains(&artifact::BusinessSection::CompanyKnowledge)
+    {
+        store::initialize_knowledge(
+            control,
+            entry(artifact::BusinessSection::CompanyKnowledge)?.bytes(),
+        )?;
+    }
+    Ok(())
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn signed(knowledge: bool, invalid: bool) -> artifact::VerifiedArtifact {
+        let mut control = Connection::open_in_memory().unwrap();
+        let mut company = Connection::open_in_memory().unwrap();
+        rentemester_storage::fresh::initialize_empty_pair(
+            &mut control,
+            &mut company,
+            "Synthetic backup coverage",
+        )
+        .unwrap();
+        let tx = control
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
+        let business = store::export_control(&tx).unwrap();
+        tx.rollback().unwrap();
+        let mut entries=vec![
+            artifact::Snapshot{kind:artifact::EntryKind::WorkspaceManifest,path:"workspace.json".into(),bytes:serde_json::to_vec(&serde_json::json!({"version":1,"companies":[{"slug":"synthetic","name":"Synthetic backup coverage","archived":false,"createdAt":"2026-01-01T00:00:00.000Z"}]})).unwrap()},
+            artifact::Snapshot{kind:artifact::EntryKind::ControlBusiness{section:artifact::BusinessSection::WorkspaceAudit},path:"control/workspace-audit.json".into(),bytes:business.bytes},
+            artifact::Snapshot{kind:artifact::EntryKind::CompanyLedger{company:"synthetic".into()},path:"synthetic/data/ledger.sqlite".into(),bytes:snapshot(&company).unwrap()},
+        ];
+        let mut included = vec![artifact::BusinessSection::WorkspaceAudit];
+        let mut unsupported = business
+            .unsupported
+            .into_iter()
+            .map(|(s, record_count)| artifact::UnsupportedSection {
+                section: serde_json::from_value(serde_json::json!(s)).unwrap(),
+                record_count,
+            })
+            .collect::<Vec<_>>();
+        if knowledge {
+            let mut bytes = business.knowledge_bytes;
+            if invalid {
+                let mut value: Value = serde_json::from_slice(&bytes).unwrap();
+                value["format"] = serde_json::json!("unknown-knowledge-codec");
+                bytes = serde_json::to_vec(&value).unwrap();
+            }
+            entries.push(artifact::Snapshot {
+                kind: artifact::EntryKind::ControlBusiness {
+                    section: artifact::BusinessSection::CompanyKnowledge,
+                },
+                path: "control/company-knowledge.json".into(),
+                bytes,
+            });
+            included.push(artifact::BusinessSection::CompanyKnowledge);
+        } else {
+            unsupported.push(artifact::UnsupportedSection {
+                section: artifact::BusinessSection::CompanyKnowledge,
+                record_count: 0,
+            });
+        }
+        let context = artifact::Context {
+            workspace_id: "synthetic-backup".into(),
+            created_at: "2026-01-01T00:00:00.000Z".into(),
+            control_schema_version: 30,
+            companies: vec![artifact::Company {
+                slug: "synthetic".into(),
+                ledger_uuid: store::company(&company).unwrap().uuid,
+                schema_version: 36,
+            }],
+            coverage: artifact::Coverage {
+                included,
+                unsupported,
+                excluded: artifact::Exclusion::ALL.to_vec(),
+            },
+        };
+        // Public RFC8032 test-vector material, never an operator default/file.
+        let der = concat!(
+            "3051020101300506032b657004220420",
+            "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60",
+            "812100",
+            "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a"
+        );
+        let der = (0..der.len())
+            .step_by(2)
+            .map(|i| u8::from_str_radix(&der[i..i + 2], 16).unwrap())
+            .collect::<Vec<_>>();
+        let key = artifact::SigningKey::from_pkcs8(&der).unwrap();
+        let trust = artifact::TrustedPublicKey::from_bytes(&key.public_key_bytes()).unwrap();
+        artifact::verify(&artifact::create(context, entries, &key).unwrap(), &trust).unwrap()
+    }
+    #[test]
+    fn signed_knowledge_coverage_is_semantically_validated_and_old_audit_only_remains_supported() {
+        for knowledge in [false, true] {
+            let a = signed(knowledge, false);
+            validate(&a).unwrap();
+            let mut restored = Connection::open_in_memory().unwrap();
+            restore_business(&mut restored, &a, &"a".repeat(64)).unwrap();
+            for table in [
+                "user",
+                "rm_company_membership_events",
+                "rm_company_knowledge_assertions",
+                "rm_company_knowledge_events",
+            ] {
+                assert_eq!(
+                    restored
+                        .query_row(&format!("SELECT COUNT(*) FROM {table}"), [], |r| r
+                            .get::<_, i64>(0))
+                        .unwrap(),
+                    0
+                );
+            }
+        }
+        // Valid cryptographic signature is insufficient: unsupported section
+        // codec must fail the pre-publication semantic validator.
+        assert!(validate(&signed(true, true)).is_err());
+    }
 }

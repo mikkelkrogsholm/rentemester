@@ -15,7 +15,7 @@ const AUDIT_TABLES: [&str; 3] = [
     "rm_workspace_document_access_events",
     "rm_workspace_authorization_events",
 ];
-const UNSUPPORTED: [(&str, &[&str]); 7] = [
+const UNSUPPORTED: [(&str, &[&str]); 6] = [
     (
         "parties",
         &[
@@ -34,13 +34,6 @@ const UNSUPPORTED: [(&str, &[&str]); 7] = [
             "rm_corporate_record_bytes",
             "rm_corporate_record_links",
             "rm_corporate_record_scope_assertions",
-        ],
-    ),
-    (
-        "company-knowledge",
-        &[
-            "rm_company_knowledge_assertions",
-            "rm_company_knowledge_events",
         ],
     ),
     (
@@ -81,6 +74,49 @@ const UNSUPPORTED: [(&str, &[&str]); 7] = [
         ],
     ),
 ];
+const KNOWLEDGE_FORMAT: &str = "rentemester-native-company-knowledge/1";
+const KNOWLEDGE_TABLES: [&str; 2] = [
+    "rm_company_knowledge_assertions",
+    "rm_company_knowledge_events",
+];
+const KNOWLEDGE_COLUMNS: [&[&str]; 2] = [
+    &[
+        "id",
+        "assertion_id",
+        "company_slug",
+        "predicate",
+        "value_json",
+        "value_hash",
+        "source_kind",
+        "source_ref",
+        "valid_from",
+        "valid_to_exclusive",
+        "certainty",
+        "actor",
+        "principal_kind",
+        "principal_id",
+        "created_at",
+    ],
+    &[
+        "id",
+        "assertion_id",
+        "event_type",
+        "reason",
+        "supersedes_assertion_id",
+        "actor",
+        "principal_kind",
+        "principal_id",
+        "created_at",
+    ],
+];
+fn knowledge_shape(db: &Connection) -> Result<(), Error> {
+    for (name, expected) in KNOWLEDGE_TABLES.iter().zip(KNOWLEDGE_COLUMNS) {
+        if columns(db, name)? != expected {
+            return Err(refused("company knowledge schema differs from codec v1"));
+        }
+    }
+    Ok(())
+}
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "type", content = "value", deny_unknown_fields)]
 enum Cell {
@@ -110,6 +146,7 @@ fn columns(db: &Connection, table: &str) -> Result<Vec<String>, Error> {
 }
 pub struct Control {
     pub bytes: Vec<u8>,
+    pub knowledge_bytes: Vec<u8>,
     pub unsupported: Vec<(&'static str, u64)>,
 }
 pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
@@ -132,11 +169,19 @@ pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
         }
         unsupported.push((section, count));
     }
+    knowledge_shape(tx)?;
+    Ok(Control {
+        bytes: export_tables(tx, &AUDIT_TABLES, "rentemester-native-business-control/1")?,
+        knowledge_bytes: export_tables(tx, &KNOWLEDGE_TABLES, KNOWLEDGE_FORMAT)?,
+        unsupported,
+    })
+}
+fn export_tables(db: &Connection, names: &[&str], format: &str) -> Result<Vec<u8>, Error> {
     let mut tables = BTreeMap::new();
     let mut cell_bytes = 0usize;
-    for table in AUDIT_TABLES {
-        let cols = columns(tx, table)?;
-        let mut q = tx
+    for table in names {
+        let cols = columns(db, table)?;
+        let mut q = db
             .prepare(&format!("SELECT * FROM {table} ORDER BY id LIMIT 100001"))
             .map_err(sql)?;
         let mut rows = q.query([]).map_err(sql)?;
@@ -165,22 +210,20 @@ pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
             out.push(row);
         }
         tables.insert(
-            table.into(),
+            (*table).into(),
             Table {
                 columns: cols,
                 rows: out,
             },
         );
     }
-    Ok(Control {
-        bytes: serde_json::to_vec(&Business {
-            format: "rentemester-native-business-control/1".into(),
-            tables,
-        })
-        .map_err(sql)?,
-        unsupported,
+    serde_json::to_vec(&Business {
+        format: format.into(),
+        tables,
     })
+    .map_err(sql)
 }
+
 pub fn initialize_control(
     db: &mut Connection,
     bytes: &[u8],
@@ -194,12 +237,72 @@ pub fn initialize_control(
     let tx = db
         .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
         .map_err(sql)?;
-    for table in AUDIT_TABLES {
+    insert_tables(&tx, &b, &AUDIT_TABLES)?;
+    tx.execute("INSERT INTO workspace_audit(event_type,entity_type,entity_id,actor) VALUES('native_portable_restore','backup',?1,'system:portable-restore')",[archive_hash]).map_err(sql)?;
+    tx.commit().map_err(sql)?;
+    crate::control_migration::validate_current_control(db)
+}
+/// Restores only historical business assertions/events. Historical principal IDs
+/// are provenance labels; neither table references live authentication authority.
+pub fn initialize_knowledge(db: &mut Connection, bytes: &[u8]) -> Result<(), Error> {
+    crate::control_migration::validate_current_control(db)?;
+    knowledge_shape(db)?;
+    let business: Business = serde_json::from_slice(bytes).map_err(sql)?;
+    if business.format != KNOWLEDGE_FORMAT || business.tables.len() != KNOWLEDGE_TABLES.len() {
+        return Err(refused("unsupported company knowledge codec"));
+    }
+    for (name, expected) in KNOWLEDGE_TABLES.iter().zip(KNOWLEDGE_COLUMNS) {
+        let table = business
+            .tables
+            .get(*name)
+            .ok_or_else(|| refused("company knowledge table missing"))?;
+        if table.columns != expected {
+            return Err(refused("company knowledge codec columns differ"));
+        }
+        for row in &table.rows {
+            if row.len() != expected.len() {
+                return Err(refused("company knowledge codec row differs"));
+            }
+            for (column, cell) in expected.iter().zip(row) {
+                let valid = match (*column, cell) {
+                    ("id", Cell::Integer(_)) => true,
+                    ("id", _) => false,
+                    ("valid_to_exclusive" | "reason" | "supersedes_assertion_id", Cell::Null) => {
+                        true
+                    }
+                    (_, Cell::Text(_)) => true,
+                    _ => false,
+                };
+                if !valid {
+                    return Err(refused("company knowledge codec cell type differs"));
+                }
+            }
+        }
+    }
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .map_err(sql)?;
+    for name in KNOWLEDGE_TABLES {
+        let count: i64 = tx
+            .query_row(&format!("SELECT COUNT(*) FROM {name}"), [], |r| r.get(0))
+            .map_err(sql)?;
+        if count != 0 {
+            return Err(refused("fresh company knowledge target required"));
+        }
+    }
+    insert_tables(&tx, &business, &KNOWLEDGE_TABLES)?;
+    // FK checks are independent of the connection's enforcement PRAGMA. Never
+    // commit dangling events/supersession links, even on a private validation DB.
+    crate::control_migration::validate_current_control(&tx)?;
+    tx.commit().map_err(sql)
+}
+fn insert_tables(tx: &Transaction<'_>, b: &Business, names: &[&str]) -> Result<(), Error> {
+    for table in names {
         let data = b
             .tables
-            .get(table)
+            .get(*table)
             .ok_or_else(|| refused("missing business audit table"))?;
-        if data.columns != columns(&tx, table)? || data.rows.len() > 100000 {
+        if data.columns != columns(tx, table)? || data.rows.len() > 100000 {
             return Err(refused("business audit shape differs"));
         }
         let placeholders = (0..data.columns.len())
@@ -224,10 +327,9 @@ pub fn initialize_control(
             q.execute(rusqlite::params_from_iter(values)).map_err(sql)?;
         }
     }
-    tx.execute("INSERT INTO workspace_audit(event_type,entity_type,entity_id,actor) VALUES('native_portable_restore','backup',?1,'system:portable-restore')",[archive_hash]).map_err(sql)?;
-    tx.commit().map_err(sql)?;
-    crate::control_migration::validate_current_control(db)
+    Ok(())
 }
+
 pub struct Company {
     pub uuid: String,
     pub originals: Vec<(String, String)>,
@@ -346,7 +448,7 @@ mod tests {
             .unwrap();
         let exported = export_control(&tx).unwrap();
         tx.rollback().unwrap();
-        assert_eq!(exported.unsupported.len(), 7);
+        assert_eq!(exported.unsupported.len(), 6);
         let mut restored = Connection::open_in_memory().unwrap();
         initialize_control(&mut restored, &exported.bytes, &"a".repeat(64)).unwrap();
         for table in [
@@ -396,5 +498,297 @@ mod tests {
                 .unwrap(),
             0
         );
+    }
+    fn knowledge_fixture(db: &Connection) {
+        for (id, key, company, predicate, value, source, reference, from, to) in [
+            (
+                11,
+                "knowledge-old",
+                "synthetic",
+                "business_description",
+                r#"{"text":"Synthetic previous activity"}"#,
+                "user",
+                "Synthetic owner interview",
+                "2026-01-01T00:00:00.000Z",
+                Some("2026-05-01T00:00:00.000Z"),
+            ),
+            (
+                23,
+                "knowledge-new",
+                "synthetic",
+                "business_description",
+                r#"{"text":"Synthetic reviewed replacement"}"#,
+                "canonical_setting",
+                "company/synthetic/settings",
+                "2026-02-01T00:00:00.000Z",
+                None,
+            ),
+            (
+                37,
+                "knowledge-rejected",
+                "synthetic",
+                "markets",
+                r#"["Synthetic unverified market"]"#,
+                "external_snapshot",
+                "https://example.invalid/synthetic-evidence",
+                "2026-01-01T00:00:00.000Z",
+                None,
+            ),
+            (
+                48,
+                "knowledge-proposed",
+                "synthetic",
+                "operating_status",
+                r#"{"status":"Synthetic proposed"}"#,
+                "registry",
+                "Synthetic explicit registry reference",
+                "2026-01-01T00:00:00.000Z",
+                None,
+            ),
+            (
+                66,
+                "knowledge-other",
+                "other",
+                "business_description",
+                r#"{"text":"Synthetic separate company"}"#,
+                "user",
+                "Synthetic other owner interview",
+                "2026-01-01T00:00:00.000Z",
+                None,
+            ),
+        ] {
+            use sha2::{Digest, Sha256};
+            let hash = format!("{:x}", Sha256::digest(value.as_bytes()));
+            db.execute("INSERT INTO rm_company_knowledge_assertions(id,assertion_id,company_slug,predicate,value_json,value_hash,source_kind,source_ref,valid_from,valid_to_exclusive,certainty,actor,principal_kind,principal_id,created_at)VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,'confirmed','user:historical-owner','user','historical-owner','2026-01-01T00:00:00.000Z')",params![id,key,company,predicate,value,hash,source,reference,from,to]).unwrap();
+        }
+        for (id, key, event, reason, replacement) in [
+            (101, "knowledge-old", "proposed", None, None),
+            (
+                113,
+                "knowledge-old",
+                "approved",
+                Some("Synthetic original checked"),
+                None,
+            ),
+            (127, "knowledge-new", "proposed", None, None),
+            (
+                139,
+                "knowledge-old",
+                "superseded",
+                Some("Synthetic activity changed"),
+                Some("knowledge-new"),
+            ),
+            (
+                151,
+                "knowledge-new",
+                "approved",
+                Some("Synthetic replacement reviewed"),
+                None,
+            ),
+            (163, "knowledge-rejected", "proposed", None, None),
+            (
+                175,
+                "knowledge-rejected",
+                "rejected",
+                Some("Synthetic evidence rejected"),
+                None,
+            ),
+            (187, "knowledge-proposed", "proposed", None, None),
+            (199, "knowledge-other", "proposed", None, None),
+            (
+                211,
+                "knowledge-other",
+                "approved",
+                Some("Synthetic separate review"),
+                None,
+            ),
+        ] {
+            db.execute("INSERT INTO rm_company_knowledge_events(id,assertion_id,event_type,reason,supersedes_assertion_id,actor,principal_kind,principal_id,created_at)VALUES(?1,?2,?3,?4,?5,'user:historical-reviewer','user','historical-reviewer','2026-02-02T00:00:00.000Z')",params![id,key,event,reason,replacement]).unwrap();
+        }
+        db.execute("INSERT INTO workspace_audit(event_type,entity_type,entity_id,actor)VALUES('synthetic_knowledge_review','company_knowledge','knowledge-new','user:historical-reviewer')",[]).unwrap();
+    }
+    // The source's effective context uses each assertion's latest event and
+    // half-open validity interval. Whole table bytes additionally prove every
+    // original value, hash, provenance field and historical event survived.
+    fn effective(
+        db: &Connection,
+        slug: &str,
+        at: &str,
+        proposed: bool,
+    ) -> Vec<(String, String, String)> {
+        db.prepare("SELECT a.assertion_id,a.value_json,(SELECT e.event_type FROM rm_company_knowledge_events e WHERE e.assertion_id=a.assertion_id ORDER BY e.id DESC LIMIT 1) AS state FROM rm_company_knowledge_assertions a WHERE a.company_slug=?1 AND a.valid_from<=?2 AND (a.valid_to_exclusive IS NULL OR a.valid_to_exclusive>?2) AND (state='approved' OR (?3 AND state='proposed')) ORDER BY a.predicate,a.assertion_id").unwrap().query_map(params![slug,at,proposed],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).unwrap().collect::<Result<Vec<_>,_>>().unwrap()
+    }
+    #[test]
+    fn knowledge_full_history_provenance_effective_context_and_new_authority_survive() {
+        let (mut source, _) = pair();
+        knowledge_fixture(&source);
+        source.execute_batch("INSERT INTO user(id,name,email,emailVerified,createdAt,updatedAt)VALUES('historical-owner','Synthetic historical','historical@example.invalid',1,'2026-01-01','2026-01-01');INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('historical-owner','activate','workspace_owner','system:synthetic');INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('historical-owner','synthetic','grant','owner','system:synthetic');").unwrap();
+        let tx = source
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let exported = export_control(&tx).unwrap();
+        tx.rollback().unwrap();
+        assert_eq!(exported.unsupported.len(), 6);
+        assert!(
+            !exported
+                .unsupported
+                .iter()
+                .any(|s| s.0 == "company-knowledge")
+        );
+        let mut restored = Connection::open_in_memory().unwrap();
+        initialize_control(&mut restored, &exported.bytes, &"c".repeat(64)).unwrap();
+        initialize_knowledge(&mut restored, &exported.knowledge_bytes).unwrap();
+        assert_eq!(
+            export_tables(&restored, &KNOWLEDGE_TABLES, KNOWLEDGE_FORMAT).unwrap(),
+            exported.knowledge_bytes
+        );
+        for at in [
+            "2025-12-31T23:59:59.999Z",
+            "2026-01-31T23:59:59.999Z",
+            "2026-02-01T00:00:00.000Z",
+            "2026-05-01T00:00:00.000Z",
+        ] {
+            for slug in ["synthetic", "other"] {
+                for proposed in [false, true] {
+                    assert_eq!(
+                        effective(&source, slug, at, proposed),
+                        effective(&restored, slug, at, proposed)
+                    );
+                }
+            }
+        }
+        let current = effective(&restored, "synthetic", "2026-03-01T00:00:00.000Z", false);
+        assert_eq!(current.len(), 1);
+        assert_eq!(current[0].0, "knowledge-new");
+        assert_eq!(restored.query_row("SELECT actor FROM workspace_audit WHERE event_type='synthetic_knowledge_review'",[],|r|r.get::<_,String>(0)).unwrap(),"user:historical-reviewer");
+        for table in [
+            "user",
+            "session",
+            "account",
+            "twoFactor",
+            "rm_workspace_user_access_events",
+            "rm_company_membership_events",
+            "apikey",
+        ] {
+            assert_eq!(
+                restored
+                    .query_row(&format!("SELECT COUNT(*) FROM {table}"), [], |r| r
+                        .get::<_, i64>(0))
+                    .unwrap(),
+                0
+            );
+        }
+        // Normal operator/bootstrap creates this new live identity separately;
+        // imported historical labels never confer membership or credentials.
+        restored.execute_batch("INSERT INTO user(id,name,email,emailVerified,createdAt,updatedAt)VALUES('new-owner','Synthetic new','new@example.invalid',0,'2026-03-01','2026-03-01');INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('new-owner','activate','workspace_owner','system:synthetic-restore');").unwrap();
+        let tx = restored
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        grant_restored_owner(
+            &tx,
+            "new-owner",
+            &["synthetic".into(), "other".into()],
+            "system:synthetic-restore",
+        )
+        .unwrap();
+        assert_eq!(
+            crate::workspace_members::membership(&tx, "new-owner", "synthetic")
+                .unwrap()
+                .as_deref(),
+            Some("owner")
+        );
+        assert_eq!(
+            crate::workspace_members::membership(&tx, "historical-owner", "synthetic").unwrap(),
+            None
+        );
+        tx.commit().unwrap();
+        assert_eq!(
+            export_tables(&restored, &KNOWLEDGE_TABLES, KNOWLEDGE_FORMAT).unwrap(),
+            exported.knowledge_bytes
+        );
+        assert!(
+            initialize_knowledge(&mut restored, &exported.knowledge_bytes).is_err(),
+            "no replay into populated target"
+        );
+    }
+    #[test]
+    fn knowledge_unknown_codec_columns_foreign_keys_and_authority_tables_refuse_atomically() {
+        let (mut source, _) = pair();
+        knowledge_fixture(&source);
+        let tx = source
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let exported = export_control(&tx).unwrap();
+        tx.rollback().unwrap();
+        let original: serde_json::Value =
+            serde_json::from_slice(&exported.knowledge_bytes).unwrap();
+        for case in 0..9 {
+            let mut bad = original.clone();
+            match case {
+                0 => bad["format"] = serde_json::json!("rentemester-native-company-knowledge/2"),
+                1 => {
+                    bad["tables"][KNOWLEDGE_TABLES[0]]["columns"][0] =
+                        serde_json::json!("unknown_future_id")
+                }
+                2 => {
+                    bad["tables"][KNOWLEDGE_TABLES[1]]["rows"][0][1]["value"] =
+                        serde_json::json!("missing-assertion")
+                }
+                3 => {
+                    bad["tables"][KNOWLEDGE_TABLES[1]]["rows"][3][4] =
+                        serde_json::json!({"type":"Text","value":"missing-replacement"})
+                }
+                4 => bad["tables"]["user"] = serde_json::json!({"columns":[],"rows":[]}),
+                5 => {
+                    bad["tables"]
+                        .as_object_mut()
+                        .unwrap()
+                        .remove(KNOWLEDGE_TABLES[1]);
+                }
+                6 => {
+                    bad["tables"][KNOWLEDGE_TABLES[0]]["rows"][0][0] =
+                        serde_json::json!({"type":"Null"})
+                }
+                7 => {
+                    bad["tables"][KNOWLEDGE_TABLES[0]]["rows"][0][0] =
+                        serde_json::json!({"type":"Text","value":"11"})
+                }
+                _ => {
+                    bad["tables"][KNOWLEDGE_TABLES[0]]["rows"][0][11] =
+                        serde_json::json!({"type":"Integer","value":123})
+                }
+            }
+            let mut target = Connection::open_in_memory().unwrap();
+            initialize_control(&mut target, &exported.bytes, &"d".repeat(64)).unwrap();
+            assert!(
+                initialize_knowledge(&mut target, &serde_json::to_vec(&bad).unwrap()).is_err(),
+                "case{case}"
+            );
+            for name in [
+                KNOWLEDGE_TABLES[0],
+                KNOWLEDGE_TABLES[1],
+                "user",
+                "rm_company_membership_events",
+            ] {
+                assert_eq!(
+                    target
+                        .query_row(&format!("SELECT COUNT(*) FROM {name}"), [], |r| r
+                            .get::<_, i64>(0))
+                        .unwrap(),
+                    0,
+                    "case{case}"
+                );
+            }
+        }
+        source
+            .execute_batch(
+                "ALTER TABLE rm_company_knowledge_assertions ADD COLUMN unknown_future_field TEXT",
+            )
+            .unwrap();
+        let tx = source
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        assert!(export_control(&tx).is_err());
+        tx.rollback().unwrap();
     }
 }
