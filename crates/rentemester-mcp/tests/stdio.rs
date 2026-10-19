@@ -151,7 +151,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 57);
+    assert_eq!(tools.len(), 59);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -1060,4 +1060,90 @@ fn document_frame_has_absolute_bound_before_parsing_or_http() {
     assert!(!output.status.success());
     let value: Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(value["error"]["code"], -32700);
+}
+
+#[test]
+fn bank_reconciliation_link_forwards_reviewed_proof_exactly_once() {
+    let (origin, request, task) = http(
+        "HTTP/1.1 200 OK\r\nContent-Length: 69\r\nConnection:close\r\n\r\n{\"ok\":true,\"reconciliation\":{\"id\":1,\"effect\":\"link_only_no_posting\"}}",
+    );
+    let body = format!(
+        "{{ \"bankTransactionId\":7,\"journalEntryId\":8,\"planHash\":\"{}\",\"note\":\"Synthetic reviewed source\",\"confirm\":true }}\n",
+        "a".repeat(64)
+    );
+    let values = parsed(&run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "bank_reconciliation_link",
+                json!({"company":"synthetic","body":body,"confirm":true}),
+            ),
+        ],
+    ));
+    assert_eq!(
+        values[1]["result"]["structuredContent"]["data"]["reconciliation"]["effect"],
+        "link_only_no_posting"
+    );
+    let wire = String::from_utf8(request.recv().unwrap()).unwrap();
+    assert!(wire.starts_with("POST /api/companies/synthetic/bank/reconciliation-link HTTP/1.1"));
+    assert!(wire.ends_with(&body));
+    assert!(!wire.contains("idempotency"));
+    task.join().unwrap();
+}
+#[test]
+fn bank_reconciliation_schema_forbids_mixed_selectors_and_oversize() {
+    let values = parsed(&run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),
+        ],
+    ));
+    let tools = values[1]["result"]["tools"].as_array().unwrap();
+    assert_eq!(
+        tools
+            .iter()
+            .find(|t| t["name"] == "bank_reconciliation_candidates")
+            .unwrap()["annotations"]["readOnlyHint"],
+        true
+    );
+    assert_eq!(
+        tools
+            .iter()
+            .find(|t| t["name"] == "bank_reconciliation_link")
+            .unwrap()["annotations"]["idempotentHint"],
+        false
+    );
+    for (name, args) in [
+        (
+            "bank_reconciliation_candidates",
+            json!({"company":"synthetic","bankTransactionId":0}),
+        ),
+        (
+            "bank_reconciliation_candidates",
+            json!({"company":"synthetic","bankTransactionId":7,"year":"2026"}),
+        ),
+        (
+            "bank_reconciliation_candidates",
+            json!({"company":"synthetic","bankTransactionId":9007199254740992i64}),
+        ),
+        (
+            "bank_reconciliation_link",
+            json!({"company":"synthetic","body":"{}","confirm":true,"actor":"other"}),
+        ),
+        (
+            "bank_reconciliation_link",
+            json!({"company":"synthetic","body":"x".repeat(16385),"confirm":true}),
+        ),
+    ] {
+        let values = parsed(&run(
+            "http://127.0.0.1:9",
+            &[init("2025-11-25"), ready(), call(2, name, args)],
+        ));
+        assert_eq!(values[1]["error"]["code"], -32602);
+    }
 }

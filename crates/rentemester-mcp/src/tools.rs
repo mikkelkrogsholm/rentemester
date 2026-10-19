@@ -132,6 +132,7 @@ pub fn list() -> Value {
     tools.extend(crate::annual_reports::tools());
     tools.extend(crate::reviewed_bookkeeping::tools());
     tools.extend(crate::documents::tools());
+    tools.extend(crate::bank_reconciliation::tools());
     json!({"tools":tools})
 }
 pub(crate) fn native_body(schema: Value) -> Value {
@@ -195,6 +196,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     }
     let mut idempotency = None;
     let outcome = match name {
+        "bank_reconciliation_candidates" | "bank_reconciliation_link" => crate::bank_reconciliation::call(api,name,args).await?,
         "ingest_document" | "document_original" => crate::documents::call(api,name,args).await?,
         name if crate::reviewed_bookkeeping::accepts(name) => crate::reviewed_bookkeeping::call(api,name,args).await?,
         "annual_report" => crate::annual_reports::call(api, args).await?,
