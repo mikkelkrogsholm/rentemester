@@ -251,11 +251,11 @@ impl ApiClient {
                 status: response.status().as_u16(),
             });
         }
-        if !response
+        if response
             .headers()
             .get("content-type")
             .and_then(|h| h.to_str().ok())
-            .is_some_and(|s| s.split(';').next() == Some("application/pdf"))
+            .is_none_or(|s| s.split(';').next() != Some("application/pdf"))
         {
             return Err(Error::Protocol);
         }

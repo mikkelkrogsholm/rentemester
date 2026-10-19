@@ -28,6 +28,17 @@ def main():
     parser.add_argument('--skip-web-build', action='store_true')
     args = parser.parse_args()
     checking = args.check or args.check_assets or bool(args.check_feature)
+    host_tools = {}
+    if args.check_feature == 'parallel':
+        packages = []
+        for variable, package, binary in [('RM_NATIVE_CLI_BIN','rentemester-cli','rentemester-rust'),
+                                           ('RM_NATIVE_MCP_BIN','rentemester-mcp','rentemester-mcp')]:
+            if not os.environ.get(variable):
+                packages.extend(['-p', package])
+                host_tools[variable] = str(REPO/'target/debug'/binary)
+        if packages:
+            cargo = shutil.which('cargo') or str(Path.home()/'.cargo/bin/cargo')
+            run([cargo,'build','--locked',*packages],cwd=REPO,env={**os.environ,'CARGO_INCREMENTAL':'0'})
     if not 1 <= args.port <= 65535:
         parser.error('--port must be 1–65535')
     if not args.skip_web_build:
@@ -90,12 +101,25 @@ def main():
             if not setup_link: raise RuntimeError('Missing private installer link')
             print(f'Rust cockpit ready: {origin}',flush=True)
             if checking:
-                environment = {**os.environ,'RM_NATIVE_WEB_URL':origin,'RM_NATIVE_WEB_SETUP':setup_link,'RM_NATIVE_WEB_CONTAINER':prefix,'RM_NATIVE_WEB_STATE':str(Path(temp)/'browser-state.json')}
+                environment = {**os.environ,**host_tools,'RM_NATIVE_WEB_URL':origin,'RM_NATIVE_WEB_SETUP':setup_link,'RM_NATIVE_WEB_CONTAINER':prefix,'RM_NATIVE_WEB_STATE':str(Path(temp)/'browser-state.json')}
                 run(['bun','run','scripts/rust/check-native-web.ts'],cwd=REPO,env=environment)
                 phases = [] if args.check_feature == 'desktop' else [args.check_feature, args.check_feature+'-reopen'] if args.check_feature else ['assets', 'assets-reopen'] if args.check_assets else ['0', '1', '2', '3', '4', '5']
                 for phase in phases:
                     run(['docker','restart','-t','2',prefix],stdout=subprocess.DEVNULL)
                     server.wait(timeout=15)
+                    if phase == 'parallel':
+                        # Controlled fixture only while the synthetic owner is stopped.
+                        seed = """import { Database } from 'bun:sqlite';
+process.umask(0o077);
+const db = new Database('/qualified/parent/workspace/synthetic/data/ledger.sqlite', {readwrite:true, create:false});
+db.query('INSERT INTO exceptions(type,severity,status,message,required_action,source_evidence,posting_preview,resolution_key) VALUES(?,?,?,?,?,?,?,?)').run('SYNTHETIC_REVIEW_REQUIRED','low','open','Synthetic exception review fixture','Record the synthetic review reason; this does not post a journal.',JSON.stringify({source:'rust-browser-fixture',underlyingInvariantSatisfied:false}),JSON.stringify({mustPostSeparately:true}),'rust-browser-exception-review-v1');
+db.close();
+"""
+                        run(['docker','run','--rm','--name',prefix+'-fixture','--network','none',
+                             '--cap-drop','ALL','--security-opt','no-new-privileges','--user','10001:10001',
+                             '--mount',f'type=volume,src={volume},dst=/qualified',
+                             'oven/bun@sha256:5ff609364c049b54eb0ff560ec96319729a972078ef2c755d758f0c6ef89c2d6',
+                             'bun','-e',seed])
                     if '--create' in command: command.remove('--create')
                     server = subprocess.Popen(command,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
                     output = queue.Queue()

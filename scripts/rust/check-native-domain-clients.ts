@@ -307,7 +307,8 @@ export async function checkNativeDomainClients(
 			vendor?.phone !== "12345678"
 		)
 			throw new Error("CLI/MCP master data changes not persisted");
-		const invoices = cliCall("invoices").value.data.invoices.invoices;
+		const invoiceData = cliCall("invoices").value.data.invoices;
+        const invoices = invoiceData.invoices;
 		const invoice = invoices.find(
 			(i: { documentId: number }) => i.documentId === evidence.invoiceId,
 		);
@@ -317,12 +318,12 @@ export async function checkNativeDomainClients(
 			.documents;
 		if (!documents.find((d: { id: number }) => d.id === evidence.invoiceId))
 			throw new Error("Generated original absent from MCP document list");
-		await page.goto(`${base}/companies/synthetic/fakturaer`);
-		await page
-			.getByRole("row")
-			.filter({ hasText: evidence.invoiceNumber })
-			.getByText("Bogført", { exact: true })
-			.waitFor();
+		await page.goto(`${base}/companies/synthetic/fakturaer?year=${encodeURIComponent(invoiceData.selectedYear)}`);
+        const labels: Record<string, string> = { open: "Bogført", overdue: "Forfalden", paid: "Betalt", credited: "Krediteret", refunded: "Refunderet", overpaid: "Overbetalt", written_off: "Afskrevet" };
+        if (!labels[invoice.status]) throw new Error(`Unknown persisted invoice settlement status: ${invoice.status}`);
+        const row = page.getByRole("row").filter({ hasText: evidence.invoiceNumber });
+        try { await row.getByText(labels[invoice.status], { exact: true }).waitFor(); }
+        catch { await page.screenshot({path:"/tmp/rentemester-rust-domain-client-failure.png",fullPage:true}); throw new Error(`Invoice UI does not show persisted ${invoiceData.selectedYear}/${invoice.status}: ${(await page.locator("body").innerText()).slice(-2500)}`); }
 		console.log(
 			restarted
 				? "PASS: CLI/MCP customer, vendor, original and posted invoice survive restart"

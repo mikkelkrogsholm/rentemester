@@ -609,8 +609,9 @@ opsætning. Servergenstart kontrollerer den gemte status og genåbner ikke en
 afsluttet opsætning. Bekræftelseslinks leveres som private lokale filer, ikke
 som eksterne e-mails.
 
-Workspace-ejerskabet bruger foreløbig den eksisterende beskyttede Linux-profil;
-på macOS kører demoen derfor i Docker. Serverens `--config` bruges med native
+Standardprofilen bruger den beskyttede Linux-profil; demoen kan derfor køres
+i Docker på macOS. Native lokal drift på Mac har en særskilt profil, beskrevet
+nedenfor. Serverens `--config` bruges med native
 workspaces og en betroet lokal konfiguration; `--create` opretter et nyt workspace,
 og uden flaget genåbnes det eksisterende. `--origin` angiver browserens lokale
 origin, når serveren kører bag Docker-portmapping.
@@ -681,7 +682,7 @@ target/debug/rentemester-mcp --server https://SERVER \
 
 CLI understøtter health, bruger/virksomheder, journal, saldobalance,
 resultatopgørelse og balance samt eksplicitte posteringer/tilbageførsler med
-serverens JSON-envelope på stdin. MCP tilbyder tilsvarende otte tools over
+serverens JSON-envelope på stdin. MCP tilbyder tilsvarende tools over
 stdio med MCP 2025-11-25. De genbruger serverens bogføring og rettighedskontrol;
 fuld CLI/MCP-funktionsparitet er stadig under omskrivning.
 
@@ -713,7 +714,9 @@ Virksomheden åbner nu på **Overblik** med resultat, månedsdiagram, bank,
 moms, debitorer, kreditorer, bilag og seneste posteringer fra de fælles
 Rust-læsere. Debitorer viser aktuelle åbne fakturaer på tværs af levende
 regnskabsår; historiske debitorsaldi pr. dato er endnu ikke tilgængelige.
-Reviewhandlinger og revisoreksport er fortsat særskilte porteringsopgaver.
+Opgaver kan markeres som gennemgået med en valgfri note. Handlingen bevarer
+de oprindelige fakta, registrerer bruger og tidspunkt og bogfører ikke noget.
+Gentagen markering er en no-op. Revisoreksport er også tilgængelig.
 Den samlede `--check-feature parallel` inkluderer begge sider og genstart.
 
 ## CLI-login med adgangskode og MFA
@@ -750,3 +753,58 @@ crates/rentemester-desktop/build-macos.sh
 Den installerede stable 1.99.1 er brugt til native verifikation. En eksplicit
 serverorigin og særskilt tilladelse til HTTP på loopback kræves. Der er ingen
 automatisk overgang til lokale data ved netværksfejl.
+
+
+## Native lokal server på Mac
+
+En privat serverkonfiguration kan vælge `"runtimeProfile":"local-user-macos"`.
+Standardværdien er fortsat `dedicated-linux`. Mac-profilen kræver en almindelig
+bruger med samme reelle, effektive og gemte bruger-/gruppeidentitet, umask 0077,
+APFS og privat workspace. Filer kontrolleres for ejer, links, identitet og ACL.
+En ikke-nedarvet ACL, der alene nægter sletning, tillades på forældremapper, så
+normal Application Support kan bruges; selve workspacet skal være ACL-frit.
+
+Profilen stoler på kode under den lokale brugerkonto. Linux-profilens separate
+broker, capabilities og no-new-privileges har deres eksisterende kontrakt.
+Mac-serveren kræver loopback-binding og lokal origin. En integreret test opretter
+et syntetisk workspace i Application Support, afviser for åben umask og en ekstra
+samtidig ejer, stopper processen og genåbner de samme filer:
+
+```sh
+CARGO_INCREMENTAL=0 cargo test --locked -p rentemester-server --test macos_local
+```
+
+## Kontakter og fakturering gennem Rust CLI/MCP
+
+Native remote-kommandoer og MCP-tools kan læse kontakter, konti, bilag og
+fakturaer, oprette/rette kunder og leverandører samt forhåndsvise, udstede og
+bogføre fakturaer. Aktøren kommer fra den godkendte serversession.
+
+For dette nye `remote`-interface er `--confirm` et selvstændigt flag; udstedelse
+kræver også `--preview-reviewed`. Dette er adskilt fra TypeScript-CLI'ens
+`--confirm yes`-syntaks. Payload på stdin er serverens nøjagtige JSON-body.
+MCP kræver de tilsvarende eksplicitte bekræftelser. Forhåndsvisningen er en PDF
+repræsenteret som bytes i JSON-output og udsteder ingen faktura.
+
+Domæne-endpoints bruger endnu ikke generelle idempotency-nøgler. Klienten
+opfinder ingen nøgle og gentager ingen writes. Ved ukendt udfald skal klienten
+læse den aktuelle tilstand og afklare resultatet før en ny mutation.
+
+Browserkontrollen opretter en kunde med CLI og en leverandør med MCP, retter
+begge på tværs af klienterne, forhåndsviser via CLI, udsteder via MCP og bogfører
+via CLI. Original, beløb og stamdata kontrolleres igen efter genstart.
+
+## Revisoreksport
+
+Fra **Overblik → Revisor-eksport** vælges en periode og download bekræftes.
+Rust-serveren håndhæver aktuel `company.export`-adgang og samler JSON/CSV,
+rapporter, revisionshistorik og kontrollerede originaler i en portabel tar-fil.
+Manifestet indeholder filernes størrelse og SHA-256. Manglende eller ændrede
+registrerede originaler afviser hele eksporten. Eksporten skriver et auditspor
+og ændrer ingen bogføring.
+
+Native release-/regelsætprovenance er endnu ikke komplet. Manifestets
+`provenance` er derfor null med en eksplicit begrænsning i manifest og README.
+Pakken er en overdragelse til revisor; den er ikke en verificeret backup.
+Browserkontrollen downloader den faktiske pakke, læser manifest og indhold,
+sammenligner originalerne med deres downloads og gentager efter genstart.

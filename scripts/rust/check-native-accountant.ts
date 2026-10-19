@@ -49,7 +49,9 @@ export async function checkNativeAccountant(page: Page, base: string, restarted 
   const documents = JSON.parse(files.get("machine-readable/documents.json")!.toString("utf8"));
   const audit = JSON.parse(files.get("machine-readable/audit-log.json")!.toString("utf8"));
   const banks = JSON.parse(files.get("machine-readable/bank-transactions.json")!.toString("utf8"));
-  if (journal.length !== journalBefore.length || !journal.length || !documents.length || !banks.length || !audit.length) throw new Error("Accountant archive has missing synthetic bookkeeping evidence");
+  if (journal.length !== journalBefore.length || !journal.length || !documents.length || !Array.isArray(banks) || !audit.length) throw new Error("Accountant archive has missing synthetic bookkeeping evidence");
+  const liveBank = (await (await page.request.get(`${url}/bank?year=${encodeURIComponent(overview.selectedYear)}`)).json()).bank;
+  if (banks.length !== liveBank.transactions.length) throw new Error("Accountant archive bank register disagrees with live selected-year bank reader");
   for (const key of ["journal-entries.csv", "trial-balance.csv", "accounts.json", "companies.json", "schema-migrations.json", "vat-report.json", "exceptions.json", "bank-journal-reconciliation-links.json"]) if (!files.get(`machine-readable/${key}`)?.length) throw new Error(`Accountant archive omitted ${key}`);
   for (const copy of manifest.copiedDocuments as Array<{ exportedPath: string; sha256: string; sizeBytes: number; documentId: number }>) {
     const bytes = files.get(copy.exportedPath);

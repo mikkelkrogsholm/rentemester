@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "parallel-product-flows-2",
-  "code_revision": "git:f9048f8f",
+  "current_increment": "parallel-platform-3",
+  "code_revision": "git:12a200a9",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "parallel-integrated-flows-verified; next independent tracks running",
+  "state": "verified integrated web/client/platform increment; independent next tracks running",
   "issues_closed": [],
   "next": [
-    "Lead verifies integrated recurring invoices and company overview with all prior parallel domain flows and restart; retains shared integration ownership.",
-    "Four independent workers: desktop password/MFA, explicit macOS local runtime, domain CLI/MCP coverage, accountant export."
+    "Integrate bank/payable clients and native integrity deliveries; verify their real browser/client journeys.",
+    "Finish managed local GPUI first-owner/native-login/reopen and native multi-year comparison in parallel."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,11 +19,11 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "code_revision": "git:f9048f8f",
-    "state": "Five domain flows + CLI/MCP verified against actual server across restart; native GPUI password/MFA verified"
+    "code_revision": "git:12a200a9",
+    "state": "Combined domain/CLI/MCP/review/accountant web and restart verified; native Mac profile and remote GPUI password/MFA verified"
   },
   "evidence": {
-    "combined_browser_log": "/tmp/rm-parallel-overview-recurring-fixed.log",
+    "combined_browser_log": "/tmp/rm-parallel-full-journeys.log",
     "combined_browser_exit": 0,
     "verified_journeys": [
       "budget revision and actuals",
@@ -34,14 +34,21 @@
       "recurring customer/template/confirmed invoice and PDF/same-period replay/restart",
       "native company overview and all shared reader parity/restart",
       "CLI password/MFA/new private session/current owner/existing-file refusal",
-      "native GPUI password/TOTP/company/balanced trial balance"
+      "native GPUI password/TOTP/company/balanced trial balance",
+      "CLI/MCP customer/vendor edits, PDF preview, invoice issue/post and restart",
+      "exception review and optional note/no-op replay preserve journal and underlying facts after restart",
+      "actual accountant archive manifest/hashes/original downloads and audit survive restart",
+      "macOS native local profile AppSupport create/competing-owner refusal/restart"
     ],
     "cli_password_mfa_login": "PASS: real password/MFA/private0600 session/owner read/existing-file refusal; /tmp/rm-parallel-overview-recurring-login.log",
     "gpui_remote_read": "PASS: actual native company/trial-balance window; /tmp/rentemester-rust-reports/native-desktop-evidence.json",
     "integrated_ui_tests": "52 pass,129 assertions: ManageCompanyView, RecurringInvoicesView, DashboardView",
     "integrated_clippy": "PASS: selected server/client/CLI/MCP all-targets strict clippy",
     "gpui_password_mfa": "/tmp/rentemester-rust-reports/native-desktop-password-mfa-evidence.json",
-    "company_cvr_unit": "3 company setup tests pass including canonical identity/audit/invalid rejection"
+    "company_cvr_unit": "3 company setup tests pass including canonical identity/audit/invalid rejection",
+    "macos_local_main_test": "/tmp/rm-main-macos-local.log",
+    "strict_integrated_clippy": "/tmp/rm-parallel-current-clippy.log",
+    "linux_runtime_profile": "Actual Linux compiled source and combined browser+restart passed with explicit Mac-profile code present"
   },
   "verified_history": [
     {
@@ -382,10 +389,10 @@
     "rust-accruals": {
       "agent": "/root/rust_accruals",
       "worktree": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-accruals/rentemester",
-      "status": "worker running in isolated worktree",
+      "status": "running in isolated worktree",
       "acceptance": "strict discoverable commands/tools; actual endpoint contracts; real server parity",
       "commit": "83b8172c",
-      "next": "core domain CLI/MCP coverage",
+      "next": "VAT/period lifecycle in native CLI/MCP",
       "previous_delivery_status": "integrated; combined real browser and restart verified",
       "depends_on": [
         "shared Rust HTTP client",
@@ -395,10 +402,10 @@
     "rust-mileage": {
       "agent": "/root/rust_mileage",
       "worktree": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-mileage/rentemester",
-      "status": "worker running in isolated worktree",
+      "status": "running in isolated worktree",
       "acceptance": "confirmed audited review, no journal write, permission/revocation refusals",
       "commit": "02256c26",
-      "next": "native exception review",
+      "next": "native multi-year comparison",
       "previous_delivery_status": "accountant69f8fc79 ready, unitverified, awaiting leadintegration/browser",
       "depends_on": [
         "native current permission fence",
@@ -408,11 +415,11 @@
     "rust-budget": {
       "agent": "/root/rust_budget",
       "worktree": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-budget/rentemester",
-      "status": "worker running in isolated worktree",
+      "status": "running in isolated worktree",
       "acceptance": "explicit local create/open, owned child readiness/lifecycle and persistent workspace",
       "source_commit": "1fd3b34d",
       "commit": "78399177",
-      "next": "GPUI managed local backend",
+      "next": "GPUI managed local backend full onboarding/reopen",
       "previous_delivery_status": "integrated; combined real browser and restart verified",
       "depends_on": [
         "explicit macOS local-user runtime",
@@ -422,11 +429,11 @@
     "rust-client-cli": {
       "agent": "/root/rust_client_cli",
       "worktree": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-client-cli/rentemester",
-      "status": "worker running in isolated worktree",
+      "status": "running in isolated worktree",
       "acceptance": "owned synthetic local server start and restart without relaxing Linux guards",
       "commit": "dd4dec6f",
       "source_commit": "7aa6ac81",
-      "next": "macOS local-user runtime",
+      "next": "read-only next independent server/web journey routing",
       "previous_delivery_status": "integrated; combined real browser and restart verified",
       "depends_on": [
         "existing APFS lease",
@@ -434,5 +441,17 @@
       ]
     }
   },
-  "integrated_pending_browser": []
+  "integrated_pending_browser": [],
+  "pending_deliveries": [
+    {
+      "source_commit": "4094dfdd",
+      "journey": "bank/payables CLI/MCP",
+      "state": "worker verified; awaiting integration and actual server checks"
+    },
+    {
+      "source_commit": "dab6792a",
+      "journey": "native integrity page",
+      "state": "worker verified; awaiting integration and browser checks"
+    }
+  ]
 }

@@ -31,7 +31,7 @@ export async function checkNativeExceptionReview(page: Page, base: string, resta
     if (denied.status() !== 404) throw new Error("Exception review crossed selected company boundary");
     await page.goto(`${base}/companies/synthetic`);
     const task = page.locator(".task-row").filter({ hasText: message });
-    await task.getByText(fixture.requiredAction!, { exact: true }).waitFor();
+    await task.locator(".task-row-action").filter({hasText:fixture.requiredAction!}).waitFor();
     await task.getByRole("button", { name: "Markér som gennemgået", exact: true }).click();
     const dialog = page.getByRole("dialog", { name: "Markér opgave som gennemgået", exact: true });
     await dialog.getByText(/dette bogfører ikke noget/).waitFor();
