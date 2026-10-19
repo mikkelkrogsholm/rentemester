@@ -58,10 +58,24 @@ export async function checkNativeBudgetDimensions(page: Page, base: string, rest
       await page.getByRole("row").filter({ hasText: name }).waitFor();
     }
     for (const [index, amount] of ["12.34", "3.21"].entries()) {
+      const original = await post("documents/ingest", {
+        confirm: true,
+        fileName: `synthetic-dimension-budget-${index}.txt`,
+        fileBase64: Buffer.from(`Synthetic dimension budget expense ${index}: DKK${amount}, no VAT, paid by owner.\n`).toString("base64"),
+        metadata: {
+          source: "Synthetic dimension budget fixture",
+          documentType: "cash_register_receipt",
+          issueDate: date,
+          amountIncVat: Number(amount),
+          vatAmount: 0,
+          currency: "DKK",
+        },
+      });
       posting.input.request = {
         transactionDate: date,
         text: `Synthetic dimension budget ${index}`,
         currency: "DKK",
+        documentId: String(original.document.id),
         lines: [
           { accountNo: account, debitAmount: amount, creditAmount: "0.00" },
           { accountNo: "8729", debitAmount: "0.00", creditAmount: amount },

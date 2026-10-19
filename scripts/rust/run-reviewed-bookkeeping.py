@@ -7,7 +7,7 @@ def run(command,**kwargs):return subprocess.run(command,check=True,**kwargs)
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('--skip-build',action='store_true');p.add_argument('--server-binary',type=Path,help='Explicit built native server; use --skip-build for composed-main verification');p.add_argument('--web-dir',type=Path,help='Explicit built cockpit directory; use --skip-build for composed-main verification');args=p.parse_args()
  revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip()
- source_changes=subprocess.check_output(['git','diff','--name-only','--','crates','app/src','scripts/rust'],cwd=REPO,text=True).splitlines()
+ source_changes=subprocess.check_output(['git','diff','HEAD','--name-only','--','crates','app/src','scripts/rust'],cwd=REPO,text=True).splitlines()
  if os.uname().sysname!='Darwin' or os.getuid()==0 or os.getuid()!=os.geteuid():raise RuntimeError('Ordinary macOS user required')
  os.umask(0o077)
  if not args.skip_build:
