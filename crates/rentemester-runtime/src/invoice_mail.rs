@@ -331,6 +331,12 @@ impl Transport for SmtpSender {
         {
             return Handoff::Refused;
         }
+        // Lettre 0.11.23 unconditionally writes CRLF before the DATA terminator.
+        // Supply our canonical MIME without its final CRLF so the received bytes
+        // exactly match the reserved body hash, including the closing boundary.
+        let Some(smtp_data) = message.raw.strip_suffix(b"\r\n") else {
+            return Handoff::Refused;
+        };
         let envelope = match Envelope::new(
             Some(match self.identity.from_address.parse() {
                 Ok(a) => a,
@@ -352,7 +358,7 @@ impl Transport for SmtpSender {
             Err(_) => return Handoff::Refused,
         };
         let result = runtime.block_on(async {
-            tokio::time::timeout(DEADLINE, self.transport.send_raw(&envelope, &message.raw)).await
+            tokio::time::timeout(DEADLINE, self.transport.send_raw(&envelope, smtp_data)).await
         });
         // The inline send future (and its socket) has completed or been dropped. Never spawn
         // a message task. Avoid waiting beyond the deadline for an OS DNS lookup to exit.
