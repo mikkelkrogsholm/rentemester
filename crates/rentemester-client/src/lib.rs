@@ -343,3 +343,6 @@ mod saft;
 pub use saft::{saft_body_schema,MAX_SAFT_BODY,MAX_SAFT_PACKAGE};
 mod reminder_claims;
 pub use reminder_claims::{ReminderClaimMutation,reminder_claim_body_schema,MAX_REMINDER_CLAIM_BODY};
+
+mod portable_backup;
+pub use portable_backup::{MAX_WORKSPACE_BACKUP_BYTES, WORKSPACE_BACKUP_CONTENT_TYPE};

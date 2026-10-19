@@ -4,6 +4,7 @@ use std::{collections::BTreeMap, io::Read, path::Path, process::ExitCode};
 mod reminder_claims;
 mod company_creation;
 mod saft;
+mod portable_backup;
 mod company_setup;
 mod privacy;
 mod budget;

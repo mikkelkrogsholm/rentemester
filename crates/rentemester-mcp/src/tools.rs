@@ -144,6 +144,7 @@ pub fn list() -> Value {
     tools.extend(crate::reminder_claims::tools());
     tools.extend(crate::company_creation::tools());
     tools.extend(crate::saft::tools());
+    tools.extend(crate::portable_backup::tools());
     json!({"tools":tools})
 }
 pub(crate) fn native_body(schema: Value) -> Value {
@@ -228,6 +229,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         "bank_reconciliation_candidates" | "bank_reconciliation_link" => crate::bank_reconciliation::call(api,name,args).await?,
         "ingest_document" | "document_original" => crate::documents::call(api,name,args).await?,
         name if crate::reviewed_bookkeeping::accepts(name) => crate::reviewed_bookkeeping::call(api,name,args).await?,
+        "workspace_backup" => crate::portable_backup::call(api,args).await?,
         "saft_export" => crate::saft::call(api,args).await?,
         "annual_report" => crate::annual_reports::call(api, args).await?,
         name if crate::receivables::accepts(name) => {

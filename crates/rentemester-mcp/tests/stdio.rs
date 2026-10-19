@@ -151,7 +151,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 92);
+    assert_eq!(tools.len(), 93);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -1263,7 +1263,7 @@ fn recurring_tools_discovery_and_strict_read_write_admission() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 92);
+    assert_eq!(tools.len(), 93);
     assert_eq!(
         tools
             .iter()
@@ -1334,7 +1334,7 @@ fn asset_readonly_discovery_and_native_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 92);
+    assert_eq!(tools.len(), 93);
     for name in ["assets", "next_asset_depreciation"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
@@ -1401,7 +1401,7 @@ fn accrual_readonly_discovery_and_native_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 92);
+    assert_eq!(tools.len(), 93);
     for name in ["accruals", "accrual_schedule"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
@@ -1496,7 +1496,7 @@ fn budget_mileage_discovery_year_scope_and_body_limits_are_strict() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 92);
+    assert_eq!(tools.len(), 93);
     for name in [
         "budget",
         "budget_vs_actual",
@@ -1598,7 +1598,7 @@ fn privacy_discovery_audited_annotation_and_date_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 92);
+    assert_eq!(tools.len(), 93);
     for (name, readonly) in [
         ("retention", true),
         ("gdpr_export", false),
@@ -1701,7 +1701,7 @@ fn setup_discovery_current_company_read_and_strict_outer_admission() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 92);
+    assert_eq!(tools.len(), 93);
     assert_eq!(
         tools
             .iter()
@@ -1762,3 +1762,18 @@ fn saft_export_stdio_returns_exact_tar_bytes(){
 
 #[test]fn reminder_claim_tools_read_and_exact_write_are_discoverable(){let out=run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),call(3,"settle_invoice_claims",json!({"company":"synthetic","body":"{}","confirm":false}))]);let rows=parsed(&out);let tools=rows[1]["result"]["tools"].as_array().unwrap();for(name,read)in[("invoice_reminder_claims",true),("register_invoice_reminder",false),("post_invoice_reminder",false),("settle_invoice_claims",false)]{let t=tools.iter().find(|t|t["name"]==name).unwrap();assert_eq!(t["annotations"]["readOnlyHint"],read);}assert!(rows[2]["result"]["isError"]==true||rows[2].get("error").is_some());}
 #[test]fn reminder_claim_canonical_stdio_read_preserves_full_native_body(){let reply=r#"{"ok":true,"reminderClaims":{"principalOpenBalance":0,"ledgerBackedClaimBalance":30,"pendingUnpostedReminders":false,"delivery":{"available":false,"sent":false},"claimPayments":[{"claimPaymentId":9}],"unknownFutureFact":{"available":false}}}"#;let response=format!("HTTP/1.1 200 OK\r\nContent-Length:{}\r\nConnection: close\r\n\r\n{}",reply.len(),reply);let(origin,request,task)=http(Box::leak(response.into_boxed_str()));let out=run(&origin,&[init("2025-11-25"),ready(),call(2,"invoice_reminder_claims",json!({"company":"synthetic","id":7}))]);let rows=parsed(&out);assert_eq!(rows[1]["result"]["structuredContent"]["data"],serde_json::from_str::<Value>(reply).unwrap());assert!(request.recv().unwrap().starts_with(b"GET /api/companies/synthetic/invoices/7/reminder-claims HTTP/1.1"));task.join().unwrap();}
+
+#[test]
+fn workspace_backup_discovery_confirmation_and_forbidden_selectors(){
+ let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"})]));
+ let tools=rows[1]["result"]["tools"].as_array().unwrap();assert_eq!(tools.len(),93);let tool=tools.iter().find(|t|t["name"]=="workspace_backup").unwrap();assert_eq!(tool["annotations"]["readOnlyHint"],false);assert_eq!(tool["annotations"]["idempotentHint"],false);assert_eq!(tool["inputSchema"],json!({"type":"object","required":["confirm"],"properties":{"confirm":{"const":true}},"additionalProperties":false}));
+ for args in [json!({}),json!({"confirm":false}),json!({"confirm":"true"}),json!({"confirm":true,"company":"synthetic"}),json!({"confirm":true,"year":"2026"}),json!({"confirm":true,"id":1}),json!({"confirm":true,"body":"{}"}),json!({"confirm":true,"path":"/tmp/forbidden"}),json!({"confirm":true,"key":"invented"})]{let rows=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),call(2,"workspace_backup",args)]));assert!(rows[1].get("error").is_some()||rows[1]["result"]["isError"]==true);}
+}
+#[test]
+fn workspace_backup_stdio_exact_post_preserves_artifact_bytes_and_refusal_classes(){
+ for(status,mime,expected)in[("200 OK","application/vnd.rentemester.native-backup+json",None),("403 Forbidden","application/json",Some("server_refused")),("503 Unavailable","application/json",Some("outcome_unknown")),("200 OK","application/json",Some("outcome_unknown"))]{
+  let reply=format!("HTTP/1.1 {status}\r\nContent-Type: {mime}\r\nContent-Length: 5\r\nConnection: close\r\n\r\n{{}}\n  ");let(origin,request,task)=http(Box::leak(reply.into_boxed_str()));let rows=parsed(&run(&origin,&[init("2025-11-25"),ready(),call(2,"workspace_backup",json!({"confirm":true}))]));
+  if let Some(code)=expected{assert_eq!(rows[1]["result"]["structuredContent"]["error"]["code"],code);}else{assert_eq!(rows[1]["result"]["structuredContent"]["data"]["backup"],json!({"contentType":"application/vnd.rentemester.native-backup+json","bytes":[123,125,10,32,32]}));}
+  let wire=request.recv().unwrap();assert!(wire.starts_with(b"POST /api/workspace/backup HTTP/1.1\r\n"));let split=wire.windows(4).position(|v|v==b"\r\n\r\n").unwrap()+4;assert_eq!(&wire[split..],br#"{"confirm":true}"#);task.join().unwrap();
+ }
+}
