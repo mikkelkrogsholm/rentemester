@@ -163,6 +163,11 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/recurring-invoices/{id}/retire",
             post(recurring_invoices::handle),
         )
+        .route("/api/companies/{slug}/ownership", get(ownership::handle))
+        .route("/api/companies/{slug}/ownership/history", get(ownership::handle))
+        .route("/api/companies/{slug}/ownership/propose", post(ownership::handle))
+        .route("/api/companies/{slug}/ownership/review", post(ownership::handle))
+        .route("/api/companies/{slug}/ownership/apply", post(ownership::handle))
         .route("/api/companies/{slug}/corporate-records",get(corporate_records::handle).post(corporate_records::handle))
         .route("/api/companies/{slug}/corporate-records/{id}",get(corporate_records::handle))
         .route("/api/companies/{slug}/corporate-records/{id}/download",get(corporate_records::handle))
@@ -658,3 +663,5 @@ async fn write(State(state): State<Product>, request: Request) -> Response {
         _ => refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed"),
     }
 }
+
+mod ownership;

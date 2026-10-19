@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from "bun:test";
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { mockFetch } from "../test/fixtures";
 import { restoreGlobals, stubGlobal } from "../test/globals";
@@ -98,8 +98,20 @@ describe("WorkspaceRegistryView", () => {
 });
 
 test("corporate metadata stays visible while sensitive detail denial exposes no original", async () => {
- mockFetch({"GET /api/companies/synthetic-company/workspace-parties":{rows:[],count:0},"GET /api/companies/synthetic-company/corporate-records":records,"GET /api/companies/synthetic-company/corporate-records/record-visible":{__error:{code:"not_found",message:"Record kan ikke vises med aktuel adgang"}},"GET /api/companies/synthetic-company/knowledge":{context:{assertions:[],conflicts:[]}}});
+ mockFetch({"GET /api/companies/synthetic-company/ownership":{asOf:"2026-01-01",facts:[],partial:false,consolidation:{eligible:false,reason:"existing v1 manifest remains authoritative"}},"GET /api/companies/synthetic-company/ownership/history":{history:[]},"GET /api/companies/synthetic-company/workspace-parties":{rows:[],count:0},"GET /api/companies/synthetic-company/corporate-records":records,"GET /api/companies/synthetic-company/corporate-records/record-visible":{__error:{code:"not_found",message:"Record kan ikke vises med aktuel adgang"}},"GET /api/companies/synthetic-company/knowledge":{context:{assertions:[],conflicts:[]}}});
  renderAt(<WorkspaceRegistryView/>,{route:"/companies/synthetic-company/workspace-register",path:"/companies/:slug/workspace-register"});
- await screen.findByText("articles.pdf");await userEvent.click(screen.getByRole("button",{name:"Vis record record-visible",exact:true}));expect(await screen.findByRole("alert")).toHaveTextContent("Record kan ikke vises");expect(screen.queryByRole("button",{name:"Hent original record-visible"})).not.toBeInTheDocument();
- expect(screen.getByRole("combobox",{name:"Corporate record type",exact:true})).toBeInTheDocument();expect(screen.getByLabelText("Bekræft corporate record upload")).not.toBeChecked();
+ await screen.findByText("articles.pdf");await userEvent.click(screen.getByRole("button",{name:"Vis record record-visible"}));expect(await screen.findByRole("alert")).toHaveTextContent("Record kan ikke vises");expect(screen.queryByRole("button",{name:"Hent original record-visible"})).not.toBeInTheDocument();
+ expect(screen.getByRole("combobox",{name:"Corporate record type"})).toBeInTheDocument();expect(screen.getByLabelText("Bekræft corporate record upload")).not.toBeChecked();
+});
+
+
+test("ownership review exposes full exact hashes and dated direct facts before confirmed mutation", async () => {
+ const hash="a".repeat(64),diffHash="b".repeat(64);
+ mockFetch({"GET /api/companies/synthetic-company/workspace-parties":{rows:[],count:0},"GET /api/companies/synthetic-company/corporate-records":{rows:[],count:0},"GET /api/companies/synthetic-company/knowledge":{context:{assertions:[],conflicts:[]}},"GET /api/companies/synthetic-company/ownership":{asOf:"2000-12-31",partial:false,consolidation:{eligible:false,reason:"existing v1 manifest remains authoritative"},facts:[{owner:{kind:"party",partyId:"party-owner"},ownedCompanySlug:"synthetic-company",validFrom:"2000-01-01",validToExclusive:"2001-01-01",economicBasisPoints:1000,controlType:"equity",jurisdiction:"DK",evidenceRefs:["record-reviewed"]}]},"GET /api/companies/synthetic-company/ownership/history":{history:[{snapshotId:"ownership-reviewed",state:"approved",snapshotHash:hash,diffHash,source:"synthetic",observedAt:"2000-01-01",principal:{kind:"user",id:"maker"},diff:{version:2,add:[],endings:[]},history:[{event_type:"approved",actor:"user:reviewer",principal_id:"reviewer",principal_kind:"user",created_at:"2000-01-01"}]}]}});
+ renderAt(<WorkspaceRegistryView/>,{route:"/companies/synthetic-company/workspace-register",path:"/companies/:slug/workspace-register"});
+ const region=await screen.findByRole("region",{name:"Ejer- og kontrolforhold"});
+ expect(await within(region).findByText("party-owner")).toBeInTheDocument();expect(region).toHaveTextContent("1000 bp");expect(region).toHaveTextContent("2001-01-01 (slutdato eksklusiv)");expect(region).toHaveTextContent("record-reviewed");
+ await userEvent.click(within(region).getByText("Forslag, review og apply"));await userEvent.click(within(region).getByText("ownership-reviewed · approved"));
+ expect(within(region).getByText(hash)).toBeInTheDocument();expect(within(region).getByText(diffHash)).toBeInTheDocument();expect(region).toHaveTextContent("anden autentificeret person");
+ const form=within(region).getByRole("form",{name:"Apply eksakt diff"});expect(within(form).getByRole("button",{name:"Apply eksakt diff"})).toBeDisabled();await userEvent.click(within(form).getByRole("checkbox"));expect(within(form).getByRole("button",{name:"Apply eksakt diff"})).not.toBeDisabled();
 });
