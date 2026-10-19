@@ -158,3 +158,10 @@ pub fn execute(
         },
     )
 }
+
+/// Reuse native close source assurance without a period decision or accounting write.
+pub fn verify_sources(tx: &Transaction<'_>, guard: &mut NamespaceGuard) -> Result<Vec<Value>, Error> {
+    let mut errors = rentemester_storage::periods::verify_sources(tx)?;
+    errors.extend(evidence(tx, guard)?);
+    Ok(errors)
+}

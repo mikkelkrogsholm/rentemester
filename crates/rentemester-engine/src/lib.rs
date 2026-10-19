@@ -58,3 +58,5 @@ pub mod saft;
 pub mod reminder_claims;
 
 pub mod ownership;
+
+pub mod intercompany;

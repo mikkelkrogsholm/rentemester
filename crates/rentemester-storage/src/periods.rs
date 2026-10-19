@@ -331,6 +331,11 @@ pub fn report(tx: &Transaction<'_>, input: &Report, actor: &str) -> Result<Value
     )
 }
 
+/// Read-only canonical accounting sources; physical originals are the caller's separate namespace check.
+pub fn verify_sources(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
+    audit::verify(tx)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -1278,3 +1278,5 @@ mod workspace_inbox;
 mod corporate_records;
 
 mod ownership;
+
+pub mod intercompany;

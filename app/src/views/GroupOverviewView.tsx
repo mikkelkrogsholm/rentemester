@@ -1,3 +1,5 @@
+import {useOptionalAuth} from "../lib/auth-context";
+import {NativeIntercompanyView} from "./NativeIntercompanyView";
 import { Button, Input, PageHeader, Select } from "../components/ui";
 import { useState } from "react";
 import { api } from "../lib/api";
@@ -9,7 +11,7 @@ function currentIsoDate(): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 }
 
-export function GroupOverviewView() {
+function LegacyGroupOverviewView() {
   const [asOf, setAsOf] = useState(currentIsoDate);
   const [from, setFrom] = useState(() => `${currentIsoDate().slice(0, 4)}-01-01`);
   const [selectedProfileId, setSelectedProfileId] = useState("");
@@ -110,3 +112,5 @@ function formatGroupAmount(amount: number, currency: string): string {
 function Blockers({ blockers }: { blockers: readonly string[] }) {
   return <section className="group-blockers" aria-label="Blokeringer"><h3>Blokeringer</h3><ul>{blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul></section>;
 }
+
+export function GroupOverviewView(){const auth=useOptionalAuth();return auth?.backend==="rust"?<NativeIntercompanyView/>:<LegacyGroupOverviewView/>;}

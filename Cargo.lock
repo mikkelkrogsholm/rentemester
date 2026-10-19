@@ -5732,6 +5732,7 @@ dependencies = [
  "serde",
  "serde_json",
  "time",
+ "unicode-normalization",
 ]
 
 [[package]]

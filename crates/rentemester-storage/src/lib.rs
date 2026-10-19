@@ -569,3 +569,5 @@ pub mod portable_backup;
 pub mod workspace_inbox;
 
 pub mod ownership;
+
+pub mod intercompany;
