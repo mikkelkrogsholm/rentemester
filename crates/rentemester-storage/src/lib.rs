@@ -1,4 +1,5 @@
 //! Source-read-only reports/rehearsals and caller-owned transactional primitives.
+pub mod company_knowledge;
 use rentemester_engine::{
     Error,
     money::Money,

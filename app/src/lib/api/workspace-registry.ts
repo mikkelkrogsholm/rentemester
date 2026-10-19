@@ -1,9 +1,9 @@
-import { request, type ReadRequestOptions } from "./_shared";
+import { type ReadRequestOptions, request } from "./_shared";
 export type RegistryList<T>={rows:T[];count:number;nextCursor:number|null};
 export const workspaceRegistryApi={
   workspaceParties:(slug:string, options?: ReadRequestOptions)=>request<RegistryList<{partyId:string;name:string;kind:string;roles:Array<{companySlug:string;role:string}>}>>(`/api/companies/${encodeURIComponent(slug)}/workspace-parties`, options),
   corporateRecords:(slug:string, options?: ReadRequestOptions)=>request<RegistryList<{recordId:string;type:string;filename:string;sha256:string;sensitivity:string}>>(`/api/companies/${encodeURIComponent(slug)}/corporate-records`, options),
-  companyKnowledge:(slug:string, options?: ReadRequestOptions)=>request<{context:{assertions:Array<{assertionId:string;predicate:string;reviewState:string;source:{kind:string}}>;conflicts:string[]}}>(`/api/companies/${encodeURIComponent(slug)}/knowledge`, options),
+  companyKnowledge:(slug:string, options?: ReadRequestOptions, selectors?:{asOf:string;includeProposed:boolean})=>request<{context:{assertions:KnowledgeAssertion[];conflicts:string[]};history:KnowledgeAssertion[]}>(`/api/companies/${encodeURIComponent(slug)}/knowledge${selectors?`?asOf=${encodeURIComponent(selectors.asOf)}&includeProposed=${selectors.includeProposed}`:""}`, options),
   ownership:(slug:string,asOf:string, options?: ReadRequestOptions)=>request<{asOf:string;facts:Array<{owner:{kind:string;companySlug?:string;partyId?:string};ownedCompanySlug:string;economicBasisPoints?:number;economicIntervalBasisPoints?:{min:number;max:number};controlType:string}>;partial:boolean;consolidation:{eligible:boolean;reason:string}}>(`/api/companies/${encodeURIComponent(slug)}/ownership?asOf=${encodeURIComponent(asOf)}`, options),
   ownershipHistory:(slug:string, options?: ReadRequestOptions)=>request<{history:Array<{snapshotId:string;state:string;snapshotHash:string;diffHash:string;history:Array<{event_type:string;created_at:string}>}>}>(`/api/companies/${encodeURIComponent(slug)}/ownership/history`, options),
   partyCreate:(slug:string,body:Record<string,unknown>)=>request<unknown>(`/api/companies/${encodeURIComponent(slug)}/workspace-parties`,{method:"POST",body:JSON.stringify({...body,confirm:true})}),
@@ -14,3 +14,5 @@ export const workspaceRegistryApi={
   knowledgeMutate:(slug:string,action:"propose"|"review"|"supersede",body:Record<string,unknown>)=>request<unknown>(`/api/companies/${encodeURIComponent(slug)}/knowledge/${action}`,{method:"POST",body:JSON.stringify({...body,confirm:true})}),
   ownershipMutate:(slug:string,action:"propose"|"review"|"apply",body:Record<string,unknown>)=>request<{ok:true;snapshot?:unknown;status?:string}>(`/api/companies/${encodeURIComponent(slug)}/ownership/${action}`,{method:"POST",body:JSON.stringify({...body,confirm:true})}),
 };
+
+export type KnowledgeAssertion={assertionId:string;predicate:string;reviewState:string;value:unknown;source:{kind:string;ref:string};[key:string]:unknown};

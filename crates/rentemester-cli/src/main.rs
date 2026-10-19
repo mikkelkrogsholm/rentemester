@@ -9,6 +9,7 @@ mod company_setup;
 mod privacy;
 mod budget;
 mod mileage;
+mod company_knowledge;
 mod accruals;
 mod assets;
 mod recurring_invoices;

@@ -1250,3 +1250,21 @@ mod tests;
 mod company_catalog;
 
 mod portable_backup;
+impl Owner {
+    /// Stable admitted company owner; all knowledge effects use its canonical control writer.
+    pub fn company_knowledge(
+        &mut self,
+        cookies: &rentemester_runtime::auth::CookieVerifier,
+        clock: &dyn rentemester_runtime::auth::Clock,
+        proof: &VerifiedCookie,
+        action: rentemester_application::company_knowledge::Action<'_>,
+    ) -> AuthAttempt<serde_json::Value> {
+        let catalog = self.catalog()?;
+        let slug = self.slug.clone();
+        self.control_auth(cookies.workspace(), |control| {
+            rentemester_application::company_knowledge::execute(
+                control, cookies, clock, proof, &catalog, &slug, action,
+            )
+        })
+    }
+}

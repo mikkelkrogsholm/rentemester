@@ -1,5 +1,6 @@
 //! Thin browser adapter over the same owner used for authentication.
 mod saft;
+mod company_knowledge;
 mod workspace_access;
 mod company_creation;
 mod accountant;
@@ -97,6 +98,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/reviewed-bank",
             get(reviewed_bookkeeping::handle).post(reviewed_bookkeeping::handle),
         )
+        .route("/api/companies/{slug}/knowledge",get(company_knowledge::handle))
+        .route("/api/companies/{slug}/knowledge/propose",post(company_knowledge::handle))
+        .route("/api/companies/{slug}/knowledge/review",post(company_knowledge::handle))
+        .route("/api/companies/{slug}/knowledge/supersede",post(company_knowledge::handle))
         .route("/api/companies", get(companies).post(company_creation::handle))
         .route("/api/companies/{slug}/retention", get(gdpr::handle))
         .route("/api/companies/{slug}/gdpr/export", post(gdpr::handle))
