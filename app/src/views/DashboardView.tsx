@@ -90,6 +90,7 @@ export function DashboardView() {
               exceptions={o.exceptions}
               archived={o.archived}
               onResolved={state.reload}
+              reviewAvailable={o.availability?.exceptionReview !== false}
             />
             <VatCard
               vat={o.vat}
@@ -107,6 +108,14 @@ export function DashboardView() {
               currency={currency}
               to={statementTo(slug, "fakturaer", o.selectedYear)}
             />
+            {o.payables && <StatusCard title="Leverandørgæld" to={statementTo(slug, "leverandoerfaktura", o.selectedYear)}>
+              <div className="status-figure">{formatKroner(o.payables.openTotal, currency)}</div>
+              <p className="muted status-note">{o.payables.openCount} åbne regninger pr. {formatDateDa(o.payables.asOfDate)}.</p>
+            </StatusCard>}
+            {o.documents && <StatusCard title="Bilag" to={statementTo(slug, "bilag", o.selectedYear)}>
+              <div className="status-figure">{o.documents.unlinkedCount}</div>
+              <p className="muted status-note">Bilag uden postering · aktuel bilagsstatus. {o.documents.linkedCount} bilag har posteringer.</p>
+            </StatusCard>}
 
           </>
         )}
@@ -153,7 +162,7 @@ export function DashboardView() {
       {!o.archived && (
         <div className="section">
           <h3>Eksport til revisor</h3>
-          <AccountantExportCard slug={slug} />
+          {o.availability?.accountantExport === false ? <div className="card"><p className="muted">Samlet revisor-eksport er endnu ikke tilgængelig. Hent rapporterne fra <Link to={statementTo(slug, "resultatopgorelse", o.selectedYear)}>Resultatopgørelse</Link> og <Link to={statementTo(slug, "balance", o.selectedYear)}>Balance</Link>.</p></div> : <AccountantExportCard slug={slug} />}
         </div>
       )}
     </section>
@@ -353,7 +362,7 @@ function BankCard({
       </div>
       {actualBalance === null ? (
         <p className="muted status-note">
-          Bogført saldo på bank- og kassekonti — intet kontoudtog importeret
+          {bank.bankStatementProblem ?? (bank.bankStatementStatus === "no-balance-column" ? "Bogført saldo — kontoudtoget har ingen saldokolonne" : bank.bankStatementStatus === "unavailable" ? "Bogført saldo — faktisk banksaldo kan ikke opgøres" : "Bogført saldo på bank- og kassekonti — intet kontoudtog importeret")}
         </p>
       ) : (
         <p className="muted status-note">
@@ -417,6 +426,7 @@ function VatCard({
         Momsperiode {vat.periodLabel} ({vat.periodStart} – {vat.periodEnd}) · {periodStatus} ·{" "}
         {vat.payable >= 0 ? "at betale" : "tilgode"}
       </p>
+      {vat.errors?.length ? <p className="status-note" role="alert">Momsgrundlaget kræver gennemgang: {vat.errors.join(" · ")}</p> : null}
       <p className="muted status-note">
         Indberettes og betales til SKAT senest {vat.deadline} ·{" "}
         <span className={`bank-diff ${tone === "ok" ? "ok" : "alert"}`}>
@@ -438,6 +448,7 @@ function ReceivablesCard({
 }) {
   // "Hvem skylder mig" — the open balance of issued sales invoices. For a
   // company with no outstanding receivables (Helheim) this is a clean zero.
+  if (receivables === null) return <StatusCard title="Tilgodehavender" to={to}><p className="muted status-note">Tilgodehavender for denne dato er ikke tilgængelige. Historiske saldi og saldi i andre valutaer kræver en særskilt opgørelse.</p></StatusCard>;
   const { openCount, openTotal } = receivables;
   return (
     <StatusCard title="Tilgodehavender" to={to}>
@@ -446,6 +457,7 @@ function ReceivablesCard({
       >
         {formatKroner(openTotal, currency)}
       </div>
+      {receivables.basis === "current" && <p className="muted status-note">Aktuelle åbne fakturaer på tværs af regnskabsår · {receivables.asOfDate ? formatDateDa(receivables.asOfDate) : "nu"}.</p>}
       <p className="muted status-note">
         {openCount === 0
           ? "Ingen udestående fakturaer — ingen skylder dig penge."
@@ -468,6 +480,7 @@ function ExceptionsCard({
   exceptions,
   archived,
   onResolved,
+  reviewAvailable = true,
 }: {
   slug: string;
   exceptions: CompanyOverview["exceptions"];
@@ -475,6 +488,7 @@ function ExceptionsCard({
   archived: boolean;
   /** Re-runs the overview load after an exception is resolved. */
   onResolved: () => void;
+  reviewAvailable?: boolean;
 }) {
   // The exception under the open "Løs" modal — null when no modal is open.
   const [resolving, setResolving] = useState<OverviewExceptionRow | null>(null);
@@ -546,13 +560,13 @@ function ExceptionsCard({
                       </p>
                     )}
                   </div>
-                  <Button requiredPermission="company.review" variant="secondary"
+                  {reviewAvailable && <Button requiredPermission="company.review" variant="secondary"
                     type="button"
                     className="btn secondary"
                     onClick={() => setResolving(row)}
                   >
                     Markér som gennemgået
-                  </Button>
+                  </Button>}
                 </li>
               ))}
             </ul>
@@ -560,6 +574,7 @@ function ExceptionsCard({
         </>
       )}
 
+      {!reviewAvailable && exceptions.count > 0 && <p className="muted status-note">Opgaverne kan læses her. Markering som gennemgået er endnu ikke tilgængelig.</p>}
       {resolving && (
         <ConfirmDialog
           title="Markér opgave som gennemgået"

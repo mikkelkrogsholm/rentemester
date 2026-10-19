@@ -131,6 +131,7 @@ export type OverviewVat = {
   daysRemaining: number;
   /** Effective lifecycle state for the exact period shown. */
   periodStatus: "open" | "closed" | "reported";
+  errors?: string[];
 };
 
 export type CompanyOverview = {
@@ -162,6 +163,8 @@ export type CompanyOverview = {
     actualBalance: number | null;
     /** balance − actualBalance; the unreconciled gap, kroner; null when unknown. */
     difference: number | null;
+    bankStatementStatus?: "known" | "no-balance-column" | "none" | "unavailable";
+    bankStatementProblem?: string | null;
   };
   /** Money owed TO the company — open issued-invoice balances at year end. */
   receivables: {
@@ -169,7 +172,12 @@ export type CompanyOverview = {
     openCount: number;
     /** Sum of the open balances, kroner. */
     openTotal: number;
-  };
+    asOfDate?: string;
+    basis?: "current";
+  } | null;
+  payables?: { openCount: number; openTotal: number; asOfDate: string };
+  documents?: { linkedCount: number; unlinkedCount: number; basis: "current" };
+  availability?: { exceptionReview: boolean; accountantExport: boolean; historicalReceivables: boolean };
   /** The half-yearly VAT position; null for an archived year. */
   vat: OverviewVat | null;
   exceptions: {

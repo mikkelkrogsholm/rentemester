@@ -59,6 +59,30 @@ describe("DashboardView — Overblik", () => {
     expect(within(vat as HTMLElement).getByText(/Åben/)).toBeInTheDocument();
   });
 
+  test("native availability preserves task guidance, hides unavailable actions, and links status cards", async () => {
+    mockFetch(overviewRoute({ availability: { exceptionReview: false, accountantExport: false, historicalReceivables: false },
+      receivables: null, payables: { openCount: 2, openTotal: 321.45, asOfDate: "2026-12-31" },
+      documents: { linkedCount: 3, unlinkedCount: 2, basis: "current" },
+      exceptions: { count: 1, rows: [{ id: 1, type: "SYNTHETIC", severity: "high", message: "Synthetic task", requiredAction: "Synthetic concrete guidance" }], groups: [] },
+      bank: { balance: 10, actualBalance: null, difference: null, bankStatementStatus: "no-balance-column" },
+    }));
+    renderDashboard();
+    expect(await screen.findByText("Synthetic concrete guidance")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Markér som gennemgået" })).not.toBeInTheDocument();
+    expect(screen.getByText(/Markering som gennemgået er endnu ikke tilgængelig/)).toBeInTheDocument();
+    expect(screen.getByText(/Samlet revisor-eksport er endnu ikke tilgængelig/)).toBeInTheDocument();
+    expect(screen.getByText(/Tilgodehavender for denne dato er ikke tilgængelige/)).toBeInTheDocument();
+    expect(screen.getByText(/kontoudtoget har ingen saldokolonne/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Leverandørgæld" }).closest("a")).toHaveAttribute("href", "/companies/acme-aps/leverandoerfaktura?year=2026");
+    expect(screen.getByRole("heading", { name: "Bilag" }).closest("a")).toHaveAttribute("href", "/companies/acme-aps/bilag?year=2026");
+  });
+
+  test("current receivables are explicitly dated across fiscal years", async () => {
+    mockFetch(overviewRoute({ receivables: { openCount: 2, openTotal: 300.03, asOfDate: "2026-10-19", basis: "current" } }));
+    renderDashboard();
+    expect(await screen.findByText(/Aktuelle åbne fakturaer på tværs af regnskabsår/)).toBeInTheDocument();
+  });
+
   test("lists recent entries when present", async () => {
     mockFetch(
       overviewRoute({
