@@ -51,6 +51,7 @@ async function checkParallelFeature(page: import("@playwright/test").Page, featu
   if (name === "recurring" || name === "parallel") await (await import("./check-native-recurring")).checkNativeRecurring(page, base!, restarted);
   if (name === "parallel") {
     await (await import("./check-native-domain-clients")).checkNativeDomainClients(page, base!, restarted);
+    await (await import("./check-native-recurring-clients")).checkNativeRecurringClients(page, base!, restarted);
     await (await import("./check-native-document-clients")).checkNativeDocumentClients(page, base!, restarted);
     await (await import("./check-native-contact-delete")).checkNativeContactDelete(page, base!, restarted);
     await (await import("./check-native-bank-clients")).checkNativeBankClients(page, base!, restarted);
