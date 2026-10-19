@@ -1,7 +1,7 @@
 import { Button, Input } from "../components/ui";
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { api } from "../lib/api";
+import { ApiError, api } from "../lib/api";
 import { AuthPanel } from "./LoginView";
 
 export function InvitationView() {
@@ -11,6 +11,7 @@ export function InvitationView() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [complete, setComplete] = useState(false);
+  const [uncertain, setUncertain] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -20,6 +21,7 @@ export function InvitationView() {
   async function submit(event: FormEvent) {
     event.preventDefault();
     setError(null);
+    if (busy || uncertain) return;
     if (!token) {
       setError("Invitationen er ugyldig eller udløbet.");
       return;
@@ -30,9 +32,12 @@ export function InvitationView() {
       setToken("");
       setPassword("");
       setComplete(true);
-    } catch {
+    } catch (cause) {
       setPassword("");
-      setError("Invitationen er ugyldig, udløbet eller allerede brugt.");
+      if (cause instanceof ApiError && ["network", "internal", "outcome_unconfirmed", "auth_delivery_unconfirmed"].includes(cause.code)) {
+        setToken(""); setUncertain(true);
+        setError("Resultatet kunne ikke bekræftes. Kontrollér din bekræftelsesmail og prøv normal login, eller bed ejeren kontrollere invitationens status. Accepten sendes ikke igen.");
+      } else setError("Invitationen er ugyldig, udløbet eller allerede brugt.");
     } finally { setBusy(false); }
   }
 
@@ -44,10 +49,11 @@ export function InvitationView() {
     </> : <>
       <p>Opret din bruger. Virksomhedsdata åbnes først efter e-mailbekræftelse og MFA.</p>
       {error && <p className="banner error" role="alert">{error}</p>}
+      {uncertain && <p><Link to="/">Til login</Link></p>}
       <form onSubmit={submit}>
         <label>Navn<Input aria-label="Navn" autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} required /></label>
         <label>Adgangskode<Input aria-label="Adgangskode" autoComplete="new-password" type="password" minLength={12} value={password} onChange={(event) => setPassword(event.target.value)} required /></label>
-        <Button className="btn" type="submit" disabled={busy}>{busy ? "Accepterer…" : "Acceptér invitation"}</Button>
+        <Button className="btn" type="submit" disabled={busy || uncertain}>{busy ? "Accepterer…" : "Acceptér invitation"}</Button>
       </form>
     </>}
   </AuthPanel>;

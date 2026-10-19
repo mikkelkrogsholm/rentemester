@@ -165,3 +165,5 @@ pub mod namespace;
 pub mod bootstrap;
 
 pub mod document;
+
+pub mod invitation;

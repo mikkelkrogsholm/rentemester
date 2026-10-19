@@ -544,6 +544,21 @@ impl Owner {
             )
         })
     }
+    pub fn workspace_access(
+        &mut self, runtime: &rentemester_application::workspace_access::Runtime<'_>,
+        proof: &VerifiedCookie, action: rentemester_application::workspace_access::Action<'_>,
+        deliver: &mut dyn FnMut(&str,&str)->Result<(),()>,
+    ) -> AuthAttempt<serde_json::Value> {
+        self.control_auth(runtime.cookies.workspace(), |control| rentemester_application::workspace_access::execute(control,runtime,proof,action,deliver))
+    }
+    pub fn claim_invitation(
+        &mut self, runtime: &rentemester_application::workspace_access::Runtime<'_>,
+        verification: &rentemester_application::verification_request::Runtime<'_>,
+        sender: &mut dyn rentemester_runtime::recovery::VerificationSender,
+        input: rentemester_application::workspace_access::Claim<'_>,
+    ) -> AuthAttempt<serde_json::Value> {
+        self.control_auth(runtime.cookies.workspace(), |control| rentemester_application::workspace_access::claim(control,runtime,verification,sender,input))
+    }
     pub fn workspace_context(
         &mut self,
         cookies: &rentemester_runtime::auth::CookieVerifier,

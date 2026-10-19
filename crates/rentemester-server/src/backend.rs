@@ -71,9 +71,10 @@ pub struct Backend {
     pub(crate) setup: Option<crate::setup_http::Installer>,
     pub(crate) setup_pending: std::sync::atomic::AtomicBool,
     keys: MfaKeyring,
-    signer: EmailTokenSigner,
-    links: RecoveryLinks,
-    spool: PathBuf,
+    pub(crate) signer: EmailTokenSigner,
+    pub(crate) links: RecoveryLinks,
+    pub(crate) spool: PathBuf,
+    pub(crate) invitation_key: rentemester_runtime::invitation::InvitationKey,
     pub(crate) catalog: Catalog,
 }
 fn unavailable() -> Failure {
@@ -220,6 +221,7 @@ impl Backend {
             signer,
             links,
             spool,
+            invitation_key: rentemester_runtime::invitation::InvitationKey::new(&config.workspace,&config.cookie_key)?,
             catalog: Catalog {
                 workspace: config.workspace.clone(),
                 companies: vec![RegisteredCompany {
@@ -446,7 +448,7 @@ impl Backend {
     }
 }
 // Explicit development delivery adapter. This is a private local outbox, not an email service.
-struct Spool(PathBuf);
+pub(crate) struct Spool(pub(crate) PathBuf);
 impl VerificationSender for Spool {
     fn enabled(&self) -> bool {
         true

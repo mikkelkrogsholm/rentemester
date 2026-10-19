@@ -47,3 +47,16 @@ describe("InvitationView", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 });
+
+test("does not resend an unconfirmed claim and clears its bearer", async () => {
+  window.history.replaceState(null, "", `/invite#token=${"x".repeat(43)}`);
+  mockFetch({});
+  (fetch as unknown as ReturnType<typeof vi.fn>).mockImplementation(async () => new Response(JSON.stringify({ok:false,code:"internal",errors:["outcome_unconfirmed"]}),{status:503,headers:{"content-type":"application/json"}}));
+  renderAt(<InvitationView />, {route:"/invite",path:"/invite"});
+  await userEvent.type(screen.getByLabelText("Navn"),"Synthetic Invited");
+  await userEvent.type(screen.getByLabelText("Adgangskode"),"synthetic-password-456");
+  await userEvent.click(screen.getByRole("button",{name:"Acceptér invitation"}));
+  expect(await screen.findByRole("alert")).toHaveTextContent("Accepten sendes ikke igen");
+  expect(screen.getByRole("button",{name:"Acceptér invitation"})).toBeDisabled();
+  expect(screen.getByLabelText("Adgangskode")).toHaveValue("");
+});

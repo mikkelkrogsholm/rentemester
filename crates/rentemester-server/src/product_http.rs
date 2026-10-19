@@ -1,4 +1,5 @@
 //! Thin browser adapter over the same owner used for authentication.
+mod workspace_access;
 mod accountant;
 mod accruals;
 mod assets;
@@ -56,6 +57,12 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/workspace/invitations",get(workspace_access::handle).post(workspace_access::handle))
+        .route("/api/workspace/invitations/cancel",post(workspace_access::handle))
+        .route("/api/invitations/claim",post(workspace_access::handle))
+        .route("/api/workspace/members",get(workspace_access::handle))
+        .route("/api/workspace/members/access",post(workspace_access::handle))
+        .route("/api/workspace/members/company",post(workspace_access::handle))
         .route(
             "/api/companies/{slug}/budget",
             get(budget::handle).post(budget::handle),
