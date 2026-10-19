@@ -15,6 +15,7 @@ pub enum ScheduledRecurringMutation {
     CatchUp,
     Skip,
     Dispatch,
+    Reconsent,
 }
 impl ScheduledRecurringMutation {
     pub fn suffix(self) -> &'static str {
@@ -26,6 +27,7 @@ impl ScheduledRecurringMutation {
             Self::CatchUp => "catch-up",
             Self::Skip => "skip",
             Self::Dispatch => "dispatch",
+            Self::Reconsent => "reconsent",
         }
     }
 }
@@ -61,6 +63,7 @@ pub fn scheduled_recurring_body_schema(action: ScheduledRecurringMutation) -> Va
             | ScheduledRecurringMutation::Resume
             | ScheduledRecurringMutation::Cancel
             | ScheduledRecurringMutation::Skip
+            | ScheduledRecurringMutation::Reconsent
     ) {
         properties["reason"] = json!({"type":"string","minLength":1,"description":"Required nonblank after server trimming, at most1000 UTF16 code units; forwarded unchanged"});
         required.push("reason");
@@ -116,6 +119,19 @@ impl ApiClient {
                 .ok_or(Error::InvalidInput("exact templateId required"))?,
             true,
         )?;
+        if action == ScheduledRecurringMutation::Reconsent {
+            // Match the native ECMAScript whitespace boundary without rewriting caller bytes.
+            let reason = value["reason"]
+                .as_str()
+                .ok_or(Error::InvalidInput("reconsent reason required"))?;
+            let trimmed = reason
+                .trim_matches(|c: char| c != '\u{0085}' && (c.is_whitespace() || c == '\u{feff}'));
+            if trimmed.is_empty() || trimmed.encode_utf16().count() > 1000 {
+                return Err(Error::InvalidInput(
+                    "reconsent reason must be nonblank and at most1000 UTF16 units after trimming",
+                ));
+            }
+        }
         for key in ["templateHash", "expectedStateHash", "planHash"] {
             if let Some(hash) = value.get(key).and_then(Value::as_str)
                 && (hash.len() != 64

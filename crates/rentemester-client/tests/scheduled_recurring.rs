@@ -35,7 +35,7 @@ fn server(status: &'static str) -> (String, mpsc::Receiver<Vec<u8>>, thread::Joi
             }
         }
         tx.send(bytes).unwrap();
-        let reply = r#"{"ok":true,"scheduledRecurring":{"templateId":7,"state":"enabled","stateHash":"canonical","localService":false,"queued":[{"periodIndex":0,"issueDate":"2026-01-01"}],"futureEvidence":{"retained":true}},"generation":{"amount":"90071992547409.93","posted":false,"sent":false},"plan":{"truncated":true,"missedCount":101}}"#;
+        let reply = r#"{"ok":true,"scheduledRecurring":{"templateId":7,"state":"enabled","stateHash":"canonical","localService":false,"queued":[{"periodIndex":0,"issueDate":"2026-01-01"}],"futureEvidence":{"retained":true},"restoreConsent":{"required":true,"boundaryHash":"original-boundary","historicalOwnerUserId":"historical-user","historicalQueued":[{"periodIndex":2,"issueDate":"2025-01-01"}]}},"generation":{"amount":"90071992547409.93","posted":false,"sent":false},"plan":{"truncated":true,"missedCount":101,"restoreConsent":null}}"#;
         write!(
             s,
             "HTTP/1.1 {status}\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{reply}",
@@ -57,7 +57,10 @@ fn body(op: Op) -> Vec<u8> {
         _ => "planHash",
     };
     b[key] = json!("a".repeat(64));
-    if matches!(op, Op::Pause | Op::Resume | Op::Cancel | Op::Skip) {
+    if matches!(
+        op,
+        Op::Pause | Op::Resume | Op::Cancel | Op::Skip | Op::Reconsent
+    ) {
         b["reason"] = json!("  Synthetic reviewed reason café  ");
     }
     if matches!(op, Op::CatchUp | Op::Skip) {
@@ -78,6 +81,7 @@ async fn scheduled_mutations_preserve_all_exact_bytes_and_uncertain_outcomes_wit
         Op::CatchUp,
         Op::Skip,
         Op::Dispatch,
+        Op::Reconsent,
     ] {
         for status in ["200 OK", "422 Unprocessable Entity", "503 Unavailable"] {
             let (origin, rx, t) = server(status);
@@ -92,6 +96,11 @@ async fn scheduled_mutations_preserve_all_exact_bytes_and_uncertain_outcomes_wit
                     let v = out.unwrap();
                     assert_eq!(v["scheduledRecurring"]["futureEvidence"]["retained"], true);
                     assert_eq!(v["generation"]["amount"], "90071992547409.93");
+                    assert_eq!(
+                        v["scheduledRecurring"]["restoreConsent"]["historicalOwnerUserId"],
+                        "historical-user"
+                    );
+                    assert!(v["plan"]["restoreConsent"].is_null());
                 }
                 "422 Unprocessable Entity" => assert_eq!(out, Err(Error::Refused { status: 422 })),
                 _ => assert_eq!(out, Err(Error::OutcomeUnknown)),
@@ -149,6 +158,12 @@ async fn unknown_actor_keys_missing_confirmation_duplicates_overflow_and_body_bo
     let api = ApiClient::new("http://127.0.0.1:9", true, Some("session=synthetic".into())).unwrap();
     for (op, change, confirmed) in [
         (Op::Enable, json!({"actor":"user:forged"}), true),
+        (Op::Reconsent, json!({"reason":" \u{feff} \t"}), true),
+        (Op::Reconsent, json!({"reason":"🧾".repeat(501)}), true),
+        (Op::Reconsent, json!({"periodIndex":0}), true),
+        (Op::Reconsent, json!({"confirm":false}), true),
+        (Op::Reconsent, json!({"planHash":"A".repeat(64)}), true),
+        (Op::Reconsent, json!({"templateId":0}), true),
         (Op::Dispatch, json!({"idempotencyKey":"invented"}), true),
         (Op::Dispatch, json!({"confirm":false}), true),
         (Op::Dispatch, json!({}), false),
@@ -190,5 +205,25 @@ async fn unknown_actor_keys_missing_confirmation_duplicates_overflow_and_body_bo
             api.scheduled_recurring_plan("synthetic", id).await,
             Err(Error::InvalidInput(_))
         ));
+    }
+}
+
+#[tokio::test]
+async fn reconsent_accepts_exact_native_utf16_reason_boundary_without_trimming_wire_bytes() {
+    for reason in [
+        format!(" \u{feff}{} ", "🧾".repeat(500)),
+        "\u{0085}".to_owned(),
+    ] {
+        let (origin, rx, t) = server("200 OK");
+        let api = ApiClient::new(&origin, true, Some("session=synthetic".into())).unwrap();
+        let bytes = serde_json::to_vec(
+            &json!({"templateId":7,"planHash":"a".repeat(64),"reason":reason,"confirm":true}),
+        )
+        .unwrap();
+        api.mutate_scheduled_recurring("synthetic", Op::Reconsent, bytes.clone(), true)
+            .await
+            .unwrap();
+        assert!(rx.recv().unwrap().ends_with(&bytes));
+        assert_eq!(t.join().unwrap(), 1);
     }
 }

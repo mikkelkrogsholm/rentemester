@@ -1,7 +1,7 @@
 // Uses the existing real stdio/HTTP harness, with no authentication fixture bypass.
 use super::*;
 #[test]
-fn scheduled_discovery_149_tools_and_strict_read_write_arguments() {
+fn scheduled_discovery_150_tools_and_strict_read_write_arguments() {
     let rows = parsed(&run(
         "http://127.0.0.1:9",
         &[
@@ -11,7 +11,7 @@ fn scheduled_discovery_149_tools_and_strict_read_write_arguments() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 149);
+    assert_eq!(tools.len(), 150);
     for name in ["scheduled_recurring", "scheduled_recurring_plan"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
@@ -26,6 +26,7 @@ fn scheduled_discovery_149_tools_and_strict_read_write_arguments() {
         "catch_up_scheduled_recurring",
         "skip_scheduled_recurring",
         "dispatch_scheduled_recurring",
+        "reconsent_scheduled_recurring",
     ] {
         let t = tools.iter().find(|t| t["name"] == name).unwrap();
         assert_eq!(t["annotations"]["readOnlyHint"], false);
@@ -88,6 +89,45 @@ fn scheduled_dispatch_exact_bytes_and_unknown_outcome() {
     let wire = String::from_utf8(request.recv().unwrap()).unwrap();
     assert!(
         wire.starts_with("POST /api/companies/synthetic/scheduled-recurring/dispatch HTTP/1.1")
+    );
+    assert!(wire.ends_with(&body));
+    t.join().unwrap();
+}
+
+#[test]
+fn reconsent_exact_bytes_and_canonical_restored_consent_response() {
+    let reply = r#"{"ok":true,"scheduledRecurring":{"state":"paused","restoreConsent":{"required":false,"boundaryHash":"historical","historicalOwnerUserId":"old-user","historicalQueued":[{"periodIndex":2,"issueDate":"2025-01-01"}]}},"futureEvidence":{"preserved":true}}"#;
+    let response = format!(
+        "HTTP/1.1 200 OK\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{reply}",
+        reply.len()
+    );
+    let (origin, request, t) = http(Box::leak(response.into_boxed_str()));
+    let body = format!(
+        " {{\"templateId\":7,\"planHash\":\"{}\",\"reason\":\" explicit synthetic consent \",\"confirm\":true}}\n",
+        "a".repeat(64)
+    );
+    let rows = parsed(&run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "reconsent_scheduled_recurring",
+                json!({"company":"synthetic","body":body,"confirm":true}),
+            ),
+        ],
+    ));
+    let result = &rows[1]["result"]["structuredContent"]["data"];
+    assert_eq!(result["scheduledRecurring"]["state"], "paused");
+    assert_eq!(
+        result["scheduledRecurring"]["restoreConsent"]["historicalQueued"][0]["periodIndex"],
+        2
+    );
+    assert_eq!(result["futureEvidence"]["preserved"], true);
+    let wire = String::from_utf8(request.recv().unwrap()).unwrap();
+    assert!(
+        wire.starts_with("POST /api/companies/synthetic/scheduled-recurring/reconsent HTTP/1.1")
     );
     assert!(wire.ends_with(&body));
     t.join().unwrap();

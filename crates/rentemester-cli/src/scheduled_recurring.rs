@@ -21,10 +21,11 @@ pub fn accepts(s: &str) -> bool {
             | "catch-up-scheduled-recurring"
             | "skip-scheduled-recurring"
             | "dispatch-scheduled-recurring"
+            | "reconsent-scheduled-recurring"
     )
 }
 pub fn help() -> Value {
-    json!({"usage":"scheduled-recurring --company SLUG; scheduled-recurring-plan --company SLUG --id TEMPLATE_ID; enable/pause/resume/cancel/catch-up/skip/dispatch-scheduled-recurring --company SLUG --confirm < exact-native.json. Explicit --server/private MFA --cookie-file; native16KiB.","policy":"Status/plan GETs are read-only and never dispatch. Current CompanyRead; mutations current CompanyDraftWrite, server-bound consenting owner and exact current template/state/plan hashes. Catch-up queues only; skip audits only. Dispatch is caller-driven with an active authorized session and creates actual issued JSON/PDF UNPOSTED/UNSENT. No hidden local service credentials, period/date/currency/template/principal defaults, calculation, key injection or automatic retry. After outcome_unknown read canonical status/plan before any further manual action.","bodySchemas":{"enable":scheduled_recurring_body_schema(ScheduledRecurringMutation::Enable),"state":scheduled_recurring_body_schema(ScheduledRecurringMutation::Pause),"catchUp":scheduled_recurring_body_schema(ScheduledRecurringMutation::CatchUp),"skip":scheduled_recurring_body_schema(ScheduledRecurringMutation::Skip),"dispatch":scheduled_recurring_body_schema(ScheduledRecurringMutation::Dispatch)}})
+    json!({"usage":"scheduled-recurring --company SLUG; scheduled-recurring-plan --company SLUG --id TEMPLATE_ID; enable/pause/resume/cancel/catch-up/skip/dispatch/reconsent-scheduled-recurring --company SLUG --confirm < exact-native.json. Explicit --server/private MFA --cookie-file; native16KiB.","policy":"Status/plan GETs are read-only and never dispatch. Current CompanyRead; restored scheduler reconsent requires current CompanyAdmin and ONLY records explicit consent, never dispatches or starts a timer; other mutations current CompanyDraftWrite, server-bound consenting owner and exact current template/state/plan hashes. Catch-up queues only; skip audits only. Dispatch is caller-driven with an active authorized session and creates actual issued JSON/PDF UNPOSTED/UNSENT. No hidden local service credentials, period/date/currency/template/principal defaults, calculation, key injection or automatic retry. After outcome_unknown read canonical status/plan before any further manual action.","bodySchemas":{"reconsent":scheduled_recurring_body_schema(ScheduledRecurringMutation::Reconsent),"enable":scheduled_recurring_body_schema(ScheduledRecurringMutation::Enable),"state":scheduled_recurring_body_schema(ScheduledRecurringMutation::Pause),"catchUp":scheduled_recurring_body_schema(ScheduledRecurringMutation::CatchUp),"skip":scheduled_recurring_body_schema(ScheduledRecurringMutation::Skip),"dispatch":scheduled_recurring_body_schema(ScheduledRecurringMutation::Dispatch)}})
 }
 pub fn run(
     command: &str,
@@ -91,6 +92,7 @@ pub fn run(
                         "cancel-scheduled-recurring" => ScheduledRecurringMutation::Cancel,
                         "catch-up-scheduled-recurring" => ScheduledRecurringMutation::CatchUp,
                         "skip-scheduled-recurring" => ScheduledRecurringMutation::Skip,
+                        "reconsent-scheduled-recurring" => ScheduledRecurringMutation::Reconsent,
                         _ => ScheduledRecurringMutation::Dispatch,
                     },
                     bytes,

@@ -17,6 +17,7 @@ pub fn accepts(name: &str) -> bool {
             | "catch_up_scheduled_recurring"
             | "skip_scheduled_recurring"
             | "dispatch_scheduled_recurring"
+            | "reconsent_scheduled_recurring"
     )
 }
 pub fn tools() -> Vec<Value> {
@@ -42,10 +43,19 @@ pub fn tools() -> Vec<Value> {
         ("catch_up_scheduled_recurring", Op::CatchUp),
         ("skip_scheduled_recurring", Op::Skip),
         ("dispatch_scheduled_recurring", Op::Dispatch),
+        ("reconsent_scheduled_recurring", Op::Reconsent),
     ] {
         let mut body = native_body(scheduled_recurring_body_schema(action));
         body["maxLength"] = json!(MAX_SCHEDULED_RECURRING_BODY);
-        out.push(tool(name,"Exact native16KiB JSON once with inner+outer confirm:true; current CompanyDraftWrite and server-bound consenting owner, current template/state/plan hashes required. Catch-up ONLY queues; skip ONLY audits. Explicit caller-driven dispatch creates actual issued JSON/PDF UNPOSTED/UNSENT; no hidden credentials/service, date/period/currency/template/principal defaults, keys/math or automatic retries. After outcome_unknown read scheduled_recurring and scheduled_recurring_plan before any manual action.",json!({"type":"object","required":["company","body","confirm"],"properties":{"company":company_schema(),"body":body,"confirm":{"const":true}},"additionalProperties":false}),false));
+        let policy = if action == Op::Reconsent {
+            "Current CompanyAdmin; restored-scheduler consent ONLY. Never dispatches, activates a schedule or starts a timer. Exact templateId, reviewed planHash, nonblank reason max1000 UTF16 units after native trimming, inner+outer confirm:true. No replay; reconcile uncertain writes using canonical status/plan."
+        } else {
+            "Current CompanyDraftWrite and server-bound consenting owner; current template/state/plan hashes. Catch-up ONLY queues; skip ONLY audits. Explicit authorized dispatch creates actual issued JSON/PDF UNPOSTED/UNSENT; no hidden credentials/service, date/period/currency/template/principal defaults or math. Inner+outer confirm:true. After outcome_unknown read canonical status/plan before any manual action."
+        };
+        let description = format!(
+            "{policy} Exact native16KiB bytes once. No defaults, keys or automatic retries."
+        );
+        out.push(tool(name,&description,json!({"type":"object","required":["company","body","confirm"],"properties":{"company":company_schema(),"body":body,"confirm":{"const":true}},"additionalProperties":false}),false));
     }
     out
 }
@@ -99,6 +109,7 @@ pub async fn call(
         "cancel_scheduled_recurring" => Op::Cancel,
         "catch_up_scheduled_recurring" => Op::CatchUp,
         "skip_scheduled_recurring" => Op::Skip,
+        "reconsent_scheduled_recurring" => Op::Reconsent,
         _ => Op::Dispatch,
     };
     Ok(api
