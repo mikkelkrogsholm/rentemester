@@ -72,3 +72,5 @@ pub mod bookkeeping_batch;
 pub mod contact_import;
 
 pub mod cfo_analytics;
+
+pub mod archive_import;
