@@ -737,9 +737,9 @@ fortsat i browseren. Den udstedte session bruges derefter med `--cookie-file`.
 Craten `rentemester-desktop` bruger Longbridges `gpui-kit` 0.7.3 og det fælles
 HTTP-klientbibliotek. En faktisk macOS-app har vist serverens virksomhed og
 saldobalance i et native GPUI/Metal-vindue. Adgangskode og TOTP-MFA er også
-verificeret gennem det native vindue uden cookie-fil. Denne første desktopversion er en
-fjernklient med læsning af saldobalance; fulde skriveforløb og lokal administreret
-backend er under udvikling.
+verificeret gennem det native vindue uden cookie-fil. Appen kan både forbinde
+til en ekstern server og administrere en lokal Rust-server. Native skriveforløb
+er under udvikling.
 
 Desktop kræver Rust mindst 1.95. Server/CLI/MCP kan fortsat bygges med projektets
 fastlåste 1.94.1, og desktop er udeladt fra standardmedlemmerne.
@@ -754,6 +754,19 @@ Den installerede stable 1.99.1 er brugt til native verifikation. En eksplicit
 serverorigin og særskilt tilladelse til HTTP på loopback kræves. Der er ingen
 automatisk overgang til lokale data ved netværksfejl.
 
+Vælg lokal drift i vinduet, vælg datamappen og brug **Opret og start lokalt**
+ved første oprettelse. Standardmappen er `~/Library/Application Support/Rentemester`.
+Apppakken indeholder Rust-serveren og web-UI’et. Første ejer og MFA-tilmelding
+oprettes i browseren; appen kan læse det private bekræftelseslink og derefter
+logge ind med adgangskode og TOTP eller backupkode. Serveren bindes til en fri
+loopback-port. Stop og genåbn bruger de samme data og nøgler.
+
+Det samlede lokale forløb er afprøvet med syntetiske data: native oprettelse,
+browseropsætning, native login, saldobalance, stop og genåbning med uændret
+konfiguration og nøgler. CLI-valgene er `--local`, `--create-local` og
+`--local-workspace PATH`. Ved udvikling kan `--server-binary PATH` og
+`--web-dir PATH` angive byggede filer. macOS-pakken har appikonet fra
+`assets/brand/rentemester-app-icon.svg`, eksporteret til PNG og ICNS.
 
 ## Native lokal server på Mac
 
